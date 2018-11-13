@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type ConsensusStatus struct {
@@ -17,12 +16,12 @@ type ConsensusStatus struct {
 	ViewOffset      uint32
 	ViewStartTime   time.Time
 
-	AcceptVotes      []DPosProposalVote
-	RejectedVotes    []DPosProposalVote
-	PendingProposals []DPosProposal
+	AcceptVotes      []msg.DPosProposalVote
+	RejectedVotes    []msg.DPosProposalVote
+	PendingProposals []msg.DPosProposal
 
 	MissingBlocks        []*core.Block
-	MissingBlockConfirms []*chain.ProposalVoteSlot
+	MissingBlockConfirms []*msg.DPosProposalVoteSlot
 }
 
 func (s *ConsensusStatus) Serialize(w io.Writer) error {
@@ -114,7 +113,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return nil
 	}
-	s.AcceptVotes = make([]DPosProposalVote, arrayLength)
+	s.AcceptVotes = make([]msg.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.AcceptVotes[i].Deserialize(r); err != nil {
 			return err
@@ -124,7 +123,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.RejectedVotes = make([]DPosProposalVote, arrayLength)
+	s.RejectedVotes = make([]msg.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.RejectedVotes[i].Deserialize(r); err != nil {
 			return err
@@ -134,7 +133,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingProposals = make([]DPosProposal, arrayLength)
+	s.PendingProposals = make([]msg.DPosProposal, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
@@ -155,9 +154,9 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.MissingBlockConfirms = make([]*chain.ProposalVoteSlot, arrayLength)
+	s.MissingBlockConfirms = make([]*msg.DPosProposalVoteSlot, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
-		s.MissingBlockConfirms[i] = &chain.ProposalVoteSlot{}
+		s.MissingBlockConfirms[i] = &msg.DPosProposalVoteSlot{}
 		if err = s.MissingBlockConfirms[i].Deserialize(r); err != nil {
 			return err
 		}

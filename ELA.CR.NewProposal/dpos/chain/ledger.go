@@ -6,40 +6,41 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Ledger struct {
 	BlockMap        map[common.Uint256]*core.Block
-	BlockConfirmMap map[common.Uint256]*ProposalVoteSlot
+	BlockConfirmMap map[common.Uint256]*msg.DPosProposalVoteSlot
 	LastBlock       *core.Block
 	GenesisBlock    *core.Block
 
-	PendingBlockConfirms map[common.Uint256]*ProposalVoteSlot
+	PendingBlockConfirms map[common.Uint256]*msg.DPosProposalVoteSlot
 
 	backup *Ledger
 }
 
-func (l *Ledger) AppendPendingConfirms(b *ProposalVoteSlot) {
+func (l *Ledger) AppendPendingConfirms(b *msg.DPosProposalVoteSlot) {
 	l.PendingBlockConfirms[b.Hash] = b
 }
 
-func (l *Ledger) GetPendingConfirms(blockHash common.Uint256) (*ProposalVoteSlot, bool) {
+func (l *Ledger) GetPendingConfirms(blockHash common.Uint256) (*msg.DPosProposalVoteSlot, bool) {
 	confirm, ok := l.PendingBlockConfirms[blockHash]
 	return confirm, ok
 }
 
-func (l *Ledger) TryAppendBlock(b *core.Block, p *ProposalVoteSlot) bool {
+func (l *Ledger) TryAppendBlock(b *core.Block, p *msg.DPosProposalVoteSlot) bool {
 	return l.appendBlockInner(b, p, false)
 }
 
-func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*core.Block, []*ProposalVoteSlot, error) {
+func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*core.Block, []*msg.DPosProposalVoteSlot, error) {
 	if l.LastBlock == nil || l.LastBlock.Height < start {
 		return nil, nil, errors.New("Result empty")
 	}
 
 	blocks := make([]*core.Block, 0)
-	blockConfirms := make([]*ProposalVoteSlot, 0)
+	blockConfirms := make([]*msg.DPosProposalVoteSlot, 0)
 
 	//todo improve when merge into arbitrator
 	for k, v := range l.BlockMap {
@@ -67,7 +68,7 @@ func (l *Ledger) Restore() {
 		l.backup.BlockMap[k] = v
 	}
 
-	l.backup.BlockConfirmMap = make(map[common.Uint256]*ProposalVoteSlot)
+	l.backup.BlockConfirmMap = make(map[common.Uint256]*msg.DPosProposalVoteSlot)
 	for k, v := range l.BlockConfirmMap {
 		l.backup.BlockConfirmMap[k] = v
 	}
@@ -86,14 +87,14 @@ func (l *Ledger) Rollback() error {
 		l.BlockMap[k] = v
 	}
 
-	l.BlockConfirmMap = make(map[common.Uint256]*ProposalVoteSlot)
+	l.BlockConfirmMap = make(map[common.Uint256]*msg.DPosProposalVoteSlot)
 	for k, v := range l.backup.BlockConfirmMap {
 		l.BlockConfirmMap[k] = v
 	}
 	return nil
 }
 
-func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*core.Block, missingBlockConfirms []*ProposalVoteSlot) error {
+func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*core.Block, missingBlockConfirms []*msg.DPosProposalVoteSlot) error {
 	//todo limit max blocks count for collecting
 	var err error
 	if missingBlocks, missingBlockConfirms, err = l.GetBlocksAndConfirms(height, 0); err != nil {
@@ -102,7 +103,7 @@ func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*core.Blo
 	return nil
 }
 
-func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*core.Block, missingBlockConfirms []*ProposalVoteSlot) error {
+func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*core.Block, missingBlockConfirms []*msg.DPosProposalVoteSlot) error {
 	for i := range missingBlocks {
 		if !l.appendBlockInner(missingBlocks[i], missingBlockConfirms[i], true) {
 			return errors.New("Append block error")
@@ -111,7 +112,7 @@ func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*core.Block, missing
 	return nil
 }
 
-func (l *Ledger) appendBlockInner(b *core.Block, p *ProposalVoteSlot, ignoreIfExist bool) bool {
+func (l *Ledger) appendBlockInner(b *core.Block, p *msg.DPosProposalVoteSlot, ignoreIfExist bool) bool {
 	if b == nil {
 		log.Info("Block is nil")
 		return false
@@ -141,7 +142,7 @@ func (l *Ledger) appendBlockInner(b *core.Block, p *ProposalVoteSlot, ignoreIfEx
 	return false
 }
 
-func IsValidBlock(b *core.Block, p *ProposalVoteSlot) bool {
+func IsValidBlock(b *core.Block, p *msg.DPosProposalVoteSlot) bool {
 	if !p.Hash.IsEqual(b.Hash()) {
 		log.Info("Received block is not current processing block")
 		return false

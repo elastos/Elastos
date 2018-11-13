@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/config"
+	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/protocol"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
-	"github.com/elastos/Elastos.ELA/dpos/config"
-	"github.com/elastos/Elastos.ELA/dpos/log"
-	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 var (
@@ -50,7 +50,7 @@ type MessageItem struct {
 
 type P2PListener interface {
 	OnBlockReceived(peer *peer.Peer, b *core.Block)
-	OnConfirmReceived(peer *peer.Peer, p *chain.ProposalVoteSlot)
+	OnConfirmReceived(peer *peer.Peer, p *msg.DPosProposalVoteSlot)
 }
 
 type PeerConnectionPool interface {
@@ -160,7 +160,7 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 		}
 		adapter.Broadcast(msgItem.Message)
 	case ReceivedConfirm:
-		confirmMsg, ok := msgItem.Message.(*ConfirmMessage)
+		confirmMsg, ok := msgItem.Message.(*msg.Confirm)
 		if ok {
 			adapter.Listener.OnConfirmReceived(msgItem.Peer, &confirmMsg.Proposal)
 		}
@@ -320,7 +320,7 @@ func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	case p2p.CmdBlock:
 		message = msg.NewBlock(&core.Block{})
 	case ReceivedConfirm:
-		message = &ConfirmMessage{Command: ReceivedConfirm}
+		message = new(msg.Confirm)
 	case AcceptVote:
 		message = &VoteMessage{Command: AcceptVote}
 	case ReceivedProposal:
