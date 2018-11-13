@@ -7,7 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
 	"github.com/elastos/Elastos.ELA/dpos/config"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/cache"
@@ -21,7 +20,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -95,11 +93,6 @@ func Start() {
 	arbitrator.ArbitratorSingleton = &arbitrator.Arbitrator{
 		Name:     config.Parameters.Name,
 		IsOnDuty: false,
-		Leger: chain.Ledger{
-			BlockMap:             make(map[common.Uint256]*core.Block),
-			BlockConfirmMap:      make(map[common.Uint256]*msg.DPosProposalVoteSlot),
-			PendingBlockConfirms: make(map[common.Uint256]*msg.DPosProposalVoteSlot),
-		},
 		BlockCache: cache.ConsensusBlockCache{
 			ConsensusBlocks: make(map[common.Uint256]*core.Block, 0),
 		},
