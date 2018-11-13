@@ -1,16 +1,19 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 )
 
-type OutputPayloadType byte
+type OutputType byte
 
 const (
-	DefaultOutput OutputPayloadType = 0x00
+	DefaultOutput OutputType = 0x00
+	VoteOutput    OutputType = 0x01
 )
 
 type OutputPayload interface {
@@ -18,8 +21,8 @@ type OutputPayload interface {
 	Data() []byte
 	Serialize(w io.Writer) error
 	Deserialize(r io.Reader) error
-	GetType() (OutputPayloadType, error)
-	GetVersion() (byte, error)
+	GetVersion() byte
+	Validate() error
 	String() string
 }
 
@@ -28,6 +31,7 @@ type Output struct {
 	Value         Fixed64
 	OutputLock    uint32
 	ProgramHash   Uint168
+	OutputType    OutputType
 	OutputPayload OutputPayload
 }
 
@@ -37,6 +41,7 @@ func (o Output) String() string {
 		"Value: " + o.Value.String() + "\n\t\t" +
 		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
 		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
+		"OutputType: " + fmt.Sprint(o.OutputType) + "\n\t\t" +
 		"OutputPayload: " + o.OutputPayload.String() + "\n\t\t" +
 		"}"
 }
@@ -58,7 +63,10 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 		return err
 	}
 
-	if txVersion == TxVersionC0 {
+	if txVersion >= TxVersionC0 {
+		if err := WriteUint8(w, byte(o.OutputType)); err != nil {
+			return err
+		}
 		if err := o.OutputPayload.Serialize(w); err != nil {
 			return err
 		}
@@ -86,11 +94,33 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 		return err
 	}
 
-	if txVersion == TxVersionC0 {
-		if err := o.OutputPayload.Deserialize(r); err != nil {
+	if txVersion >= TxVersionC0 {
+		outputType, err := ReadUint8(r)
+		if err != nil {
+			return err
+		}
+		o.OutputType = OutputType(outputType)
+		o.OutputPayload, err = getOutputPayload(OutputType(outputType))
+		if err != nil {
+			return err
+		}
+		if err = o.OutputPayload.Deserialize(r); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func getOutputPayload(outputType OutputType) (OutputPayload, error) {
+	var op OutputPayload
+	switch outputType {
+	case DefaultOutput:
+		op = new(outputpayload.DefaultOutput)
+	case VoteOutput:
+		op = new(outputpayload.VoteOutput)
+	default:
+		return nil, errors.New("invalid transaction output type")
+	}
+	return op, nil
 }

@@ -251,12 +251,19 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 		if output.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
+
 		if version&CheckTxOut == CheckTxOut {
 			if !CheckOutputProgramHash(output.ProgramHash) {
 				return errors.New("output address is invalid")
 			}
 		}
 
+		if txn.Version >= TxVersionC0 {
+			// check output payload
+			if err := output.OutputPayload.Validate(); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

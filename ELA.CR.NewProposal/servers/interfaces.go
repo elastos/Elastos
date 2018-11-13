@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	"time"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
@@ -55,6 +56,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		outputs[i].Address = address
 		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
+		outputs[i].OutputType = uint32(v.OutputType)
 		outputs[i].OutputPayload = getOutputPayloadInfo(v.OutputPayload)
 	}
 
@@ -952,9 +954,24 @@ func getPayloadInfo(p Payload) PayloadInfo {
 }
 
 func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
-	//switch object := op.(type) {
-	//case *DefaultOutput:
-	//}
+	switch object := op.(type) {
+	case *outputpayload.DefaultOutput:
+		obj := new(DefaultOutputInfo)
+		return obj
+	case *outputpayload.VoteOutput:
+		obj := new(VoteOutputInfo)
+		obj.Version = object.Version
+		for _, content := range object.Contents {
+			var contentInfo VoteContentInfo
+			contentInfo.VoteType = content.VoteType
+			for _, candidate := range content.Candidates {
+				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, candidate.String())
+			}
+			obj.Contents = append(obj.Contents, contentInfo)
+		}
+		return obj
+	}
+
 	return nil
 }
 
