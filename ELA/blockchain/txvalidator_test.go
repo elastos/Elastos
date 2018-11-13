@@ -32,7 +32,7 @@ func TestTxValidatorInit(t *testing.T) {
 		os.Exit(-1)
 	}
 	FoundationAddress = *foundation
-	chainStore, err := newTestChainStore()
+	chainStore, err := NewTestChainStore()
 	if err != nil {
 		log.Error(err)
 		os.Exit(-1)
