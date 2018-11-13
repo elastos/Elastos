@@ -12,7 +12,7 @@ import (
 var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
-func newTestChainStore() (*ChainStore, error) {
+func NewTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
 	st, err := NewLevelDB("Chain_UnitTest")
 	if err != nil {
@@ -39,7 +39,7 @@ func newTestChainStore() (*ChainStore, error) {
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
 	var err error
-	testChainStore, err = newTestChainStore()
+	testChainStore, err = NewTestChainStore()
 	if err != nil {
 		t.Error("Create chainstore failed")
 	}

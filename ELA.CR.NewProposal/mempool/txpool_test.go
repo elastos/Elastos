@@ -1,4 +1,4 @@
-package blockchain
+package mempool
 
 import (
 	"bytes"
@@ -32,7 +32,7 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	FoundationAddress = *foundation
 
-	chainStore, err := newTestChainStore()
+	chainStore, err := NewTestChainStore()
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)

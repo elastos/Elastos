@@ -239,3 +239,55 @@ func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	}
 	return true
 }
+
+func GetTxFee(tx *Transaction, assetId Uint256) Fixed64 {
+	feeMap, err := GetTxFeeMap(tx)
+	if err != nil {
+		return 0
+	}
+
+	return feeMap[assetId]
+}
+
+func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
+	feeMap := make(map[Uint256]Fixed64)
+	reference, err := DefaultLedger.Store.GetTxReference(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	var inputs = make(map[Uint256]Fixed64)
+	var outputs = make(map[Uint256]Fixed64)
+	for _, v := range reference {
+		amout, ok := inputs[v.AssetID]
+		if ok {
+			inputs[v.AssetID] = amout + v.Value
+		} else {
+			inputs[v.AssetID] = v.Value
+		}
+	}
+
+	for _, v := range tx.Outputs {
+		amout, ok := outputs[v.AssetID]
+		if ok {
+			outputs[v.AssetID] = amout + v.Value
+		} else {
+			outputs[v.AssetID] = v.Value
+		}
+	}
+
+	//calc the balance of input vs output
+	for outputAssetid, outputValue := range outputs {
+		if inputValue, ok := inputs[outputAssetid]; ok {
+			feeMap[outputAssetid] = inputValue - outputValue
+		} else {
+			feeMap[outputAssetid] -= outputValue
+		}
+	}
+	for inputAssetid, inputValue := range inputs {
+		if _, exist := feeMap[inputAssetid]; !exist {
+			feeMap[inputAssetid] += inputValue
+		}
+	}
+	return feeMap, nil
+}
