@@ -1,4 +1,4 @@
-package blockchain
+package mempool
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
@@ -43,11 +44,11 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	}
 
 	//verify transaction with Concurrency
-	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
+	if errCode := blockchain.CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
 		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash().String())
 		return errCode
 	}
-	if errCode := CheckTransactionContext(txn); errCode != Success {
+	if errCode := blockchain.CheckTransactionContext(txn); errCode != Success {
 		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash().String())
 		return errCode
 	}
@@ -57,7 +58,7 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 		return errCode
 	}
 
-	txn.Fee = GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
+	txn.Fee = blockchain.GetTxFee(txn, blockchain.DefaultLedger.Blockchain.AssetID)
 	buf := new(bytes.Buffer)
 	txn.Serialize(buf)
 	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
@@ -109,7 +110,7 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 		if blockTx.TxType == CoinBase {
 			continue
 		}
-		inputUtxos, err := DefaultLedger.Store.GetTxReference(blockTx)
+		inputUtxos, err := blockchain.DefaultLedger.Store.GetTxReference(blockTx)
 		if err != nil {
 			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", blockTx.Hash()), err)
 			continue
@@ -192,7 +193,7 @@ func (pool *TxPool) removeTransaction(txn *Transaction) {
 	//1.remove from txnList
 	pool.delFromTxList(txn.Hash())
 	//2.remove from UTXO list map
-	result, err := DefaultLedger.Store.GetTxReference(txn)
+	result, err := blockchain.DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
 		log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", txn.Hash()))
 		return
@@ -204,7 +205,7 @@ func (pool *TxPool) removeTransaction(txn *Transaction) {
 
 //check and add to utxo list pool
 func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
-	reference, err := DefaultLedger.Store.GetTxReference(txn)
+	reference, err := blockchain.DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
 		return err
 	}
@@ -300,7 +301,7 @@ func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (pool *TxPool) cleanSideChainPowTx() {
-	arbitrtor, err := GetOnDutyArbiter()
+	arbitrtor, err := blockchain.GetCurrentArbiter()
 	if err != nil {
 		log.Error("get current arbiter failed")
 		return
@@ -309,7 +310,7 @@ func (pool *TxPool) cleanSideChainPowTx() {
 	defer pool.Unlock()
 	for hash, txn := range pool.txnList {
 		if txn.IsSideChainPowTx() {
-			if err = CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
+			if err = blockchain.CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
 				// delete tx
 				delete(pool.txnList, hash)
 				//delete utxo map
@@ -329,7 +330,7 @@ func (pool *TxPool) addToTxList(txn *Transaction) bool {
 		return false
 	}
 	pool.txnList[txnHash] = txn
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
+	blockchain.DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
 
@@ -447,58 +448,6 @@ func (pool *TxPool) RemoveTransaction(txn *Transaction) {
 			pool.removeTransaction(txn)
 		}
 	}
-}
-
-func GetTxFee(tx *Transaction, assetId Uint256) Fixed64 {
-	feeMap, err := GetTxFeeMap(tx)
-	if err != nil {
-		return 0
-	}
-
-	return feeMap[assetId]
-}
-
-func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
-	feeMap := make(map[Uint256]Fixed64)
-	reference, err := DefaultLedger.Store.GetTxReference(tx)
-	if err != nil {
-		return nil, err
-	}
-
-	var inputs = make(map[Uint256]Fixed64)
-	var outputs = make(map[Uint256]Fixed64)
-	for _, v := range reference {
-		amout, ok := inputs[v.AssetID]
-		if ok {
-			inputs[v.AssetID] = amout + v.Value
-		} else {
-			inputs[v.AssetID] = v.Value
-		}
-	}
-
-	for _, v := range tx.Outputs {
-		amout, ok := outputs[v.AssetID]
-		if ok {
-			outputs[v.AssetID] = amout + v.Value
-		} else {
-			outputs[v.AssetID] = v.Value
-		}
-	}
-
-	//calc the balance of input vs output
-	for outputAssetid, outputValue := range outputs {
-		if inputValue, ok := inputs[outputAssetid]; ok {
-			feeMap[outputAssetid] = inputValue - outputValue
-		} else {
-			feeMap[outputAssetid] -= outputValue
-		}
-	}
-	for inputAssetid, inputValue := range inputs {
-		if _, exist := feeMap[inputAssetid]; !exist {
-			feeMap[inputAssetid] += inputValue
-		}
-	}
-	return feeMap, nil
 }
 
 func (pool *TxPool) isTransactionCleaned(tx *Transaction) error {
