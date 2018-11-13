@@ -38,6 +38,20 @@
       "03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
       "03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
       "02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448"
-    ]
+    ],
+    "EnableArbiter": false,
+    "ArbiterConfiguration": {
+      "Name": "",
+      "Magic": 7630403,
+      "SeedList": [
+         "127.0.0.1:31338"
+      ],
+      "NodePort": 30338,
+      "PrintLevel": 1,
+      "SignTolerance": 5,
+      "MaxLogsSize": 0,
+      "MaxPerLogSize": 0,
+      "MaxConnections": 100
+    }
   }
 }
