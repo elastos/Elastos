@@ -198,11 +198,11 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 
 	if TransactionVersion(flagByte[0]) >= TxVersionC0 {
 		tx.Version = TransactionVersion(flagByte[0])
-		txType, err := ReadUint8(r)
+		txType, err := ReadBytes(r, 1)
 		if err != nil {
 			return err
 		}
-		tx.TxType = TransactionType(txType)
+		tx.TxType = TransactionType(txType[0])
 	} else {
 		tx.Version = TxVersionDefault
 		tx.TxType = TransactionType(flagByte[0])

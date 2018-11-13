@@ -1,9 +1,7 @@
-package oppayload
+package outputpayload
 
 import (
 	"io"
-
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 type DefaultOutput struct {
@@ -21,12 +19,12 @@ func (o *DefaultOutput) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (o *DefaultOutput) GetType() (core.OutputPayloadType, error) {
-	return core.DefaultOutput, nil
+func (o *DefaultOutput) GetVersion() byte {
+	return 0
 }
 
-func (o *DefaultOutput) GetVersion() (byte, error) {
-	return 0, nil
+func (o *DefaultOutput) Validate() error {
+	return nil
 }
 
 func (o *DefaultOutput) String() string {

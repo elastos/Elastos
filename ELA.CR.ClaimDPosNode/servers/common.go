@@ -3,6 +3,7 @@ package servers
 import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 )
 
 const TlsPort = 443
@@ -24,12 +25,23 @@ type OutputInfo struct {
 	Address       string            `json:"address"`
 	AssetID       string            `json:"assetid"`
 	OutputLock    uint32            `json:"outputlock"`
+	OutputType    uint32            `json:"outputtype"`
 	OutputPayload OutputPayloadInfo `json:"outputpayload"`
 }
 
 type OutputPayloadInfo interface{}
 
 type DefaultOutputInfo struct{}
+
+type VoteContentInfo struct {
+	VoteType       outputpayload.VoteType `json:"votetype"`
+	CandidatesInfo []string               `json:"candidates"`
+}
+
+type VoteOutputInfo struct {
+	Version  byte              `json:"version"`
+	Contents []VoteContentInfo `json:"contents"`
+}
 
 type ProgramInfo struct {
 	Code      string `json:"code"`
