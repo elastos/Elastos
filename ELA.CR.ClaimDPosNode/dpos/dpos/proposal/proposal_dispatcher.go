@@ -191,6 +191,7 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	log.Debug("[TryAppendAndBroadcastConfirmBlockMsg] len signs:", len(p.currentVoteSlot.Votes))
 	msg := &cs.ConfirmMessage{Command: cs.ReceivedConfirm, Proposal: *p.currentVoteSlot}
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
+	//todo replace with real ledger append block and confirm method
 	if ArbitratorSingleton.Leger.TryAppendBlock(p.processingBlock, p.currentVoteSlot) {
 		cs.P2PClientSingleton.PeerHandler.SendAll(msg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")

@@ -161,14 +161,14 @@ func (h *DposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.eventMonitor.OnViewStarted(viewEvent)
 }
 
-func (h *DposHandlerSwitch) TryStartNewConsensus(peer *peer.Peer, b *core.Block) bool {
+func (h *DposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	if _, ok := ArbitratorSingleton.BlockCache.TryGetValue(b.Hash()); ok {
 		log.Info("[TryStartNewConsensus] failed, already have the block")
 		return false
 	}
 
 	if h.proposalDispatcher.IsVoteSlotEmpty() {
-		if h.currentHandler.TryStartNewConsensus(peer, b) {
+		if h.currentHandler.TryStartNewConsensus(b) {
 			rawData := new(bytes.Buffer)
 			b.Serialize(rawData)
 			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height, RawData: rawData.Bytes()}
