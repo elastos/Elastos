@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -171,7 +171,7 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 }
 
 func InitP2PClient() error {
-	maxPeers := config.Parameters.MaxConnections
+	maxPeers := config.Parameters.ArbiterConfiguration.MaxConnections
 	if maxPeers == 0 {
 		maxPeers = defaultMaxPeers
 	}
@@ -194,12 +194,12 @@ func InitP2PClient() error {
 
 	// Initiate P2P Server configuration
 	serverCfg := server.NewDefaultConfig(
-		config.Parameters.Magic,
+		config.Parameters.ArbiterConfiguration.Magic,
 		p2p.EIP001Version,
 		OpenService,
-		config.Parameters.NodePort,
-		config.Parameters.SeedList,
-		[]string{fmt.Sprint("127.0.0.1:", config.Parameters.NodePort)},
+		config.Parameters.ArbiterConfiguration.NodePort,
+		config.Parameters.ArbiterConfiguration.SeedList,
+		[]string{fmt.Sprint("127.0.0.1:", config.Parameters.ArbiterConfiguration.NodePort)},
 		a.newPeer, a.donePeer,
 		makeEmptyMessage,
 		func() uint64 { return uint64(0) },

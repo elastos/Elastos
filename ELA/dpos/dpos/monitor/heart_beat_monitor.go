@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	config2 "github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/dpos/config"
+	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
@@ -26,14 +25,14 @@ func (m *HeartBeatMonitor) Initialize(listener HeartBeatListener) {
 	m.beatDurations = make(map[string]time.Duration)
 	m.listener = listener
 
-	m.ChangeArbitrators(config2.Parameters.Arbiters)
+	m.ChangeArbitrators(config.Parameters.Arbiters)
 }
 
 func (m *HeartBeatMonitor) ChangeArbitrators(arbitrators []string) {
 	m.beatDurations = make(map[string]time.Duration)
 	m.lastActiveTime = make(map[string]time.Time)
 	for _, v := range arbitrators {
-		if v != config.Parameters.Name {
+		if v != config.Parameters.ArbiterConfiguration.Name {
 			m.beatDurations[v] = 0
 			m.lastActiveTime[v] = time.Now()
 		}
@@ -69,7 +68,7 @@ func (m *HeartBeatMonitor) checkAbnormalState() {
 		}
 	}
 
-	if inactiveCount >= len(config2.Parameters.Arbiters)*2/5 { //todo config inactive count
+	if inactiveCount >= len(config.Parameters.Arbiters)*2/5 { //todo config inactive count
 		m.listener.OnAbnormalStateDetected()
 		for k := range m.lastActiveTime {
 			m.lastActiveTime[k] = now

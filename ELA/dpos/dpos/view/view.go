@@ -3,10 +3,11 @@ package view
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/dpos/config"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ViewListener interface {
@@ -54,7 +55,7 @@ func (v *View) ChangeView(viewOffset *uint32) {
 			log.Error(err)
 		}
 
-		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.Name
+		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
 		log.Info("current onduty arbiter:", currentArbiter)
 
 		v.listener.OnViewChanged(v.isDposOnDuty)
