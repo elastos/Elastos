@@ -5,16 +5,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/store"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type AbnormalRecovering interface {
@@ -207,7 +207,7 @@ func (h *DposHandlerSwitch) ResponseGetBlocks(peer *peer.Peer, startBlockHeight,
 	if currentHeight < endBlockHeight {
 		endHeight = currentHeight
 	}
-	blocks, blockConfirms, err := ArbitratorSingleton.Leger.GetBlocksAndConfirms(startBlockHeight, endHeight)
+	blocks, blockConfirms, err := blockchain.DefaultLedger.GetBlocksAndConfirms(startBlockHeight, endHeight)
 	if err != nil {
 		log.Error(err)
 		return
@@ -239,7 +239,8 @@ func (h *DposHandlerSwitch) HelpToRecoverAbnormal(peer *peer.Peer, height uint32
 	result := false
 
 	h.consensus.RunWithStatusCondition(true, func() {
-		if err := ArbitratorSingleton.Leger.CollectConsensusStatus(height, status.MissingBlocks, status.MissingBlockConfirms); err != nil {
+		var err error
+		if status.MissingBlocks, status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
 			log.Error("Error occurred when collect consensus status from leger: ", err)
 			return
 		}
@@ -264,11 +265,10 @@ func (h *DposHandlerSwitch) HelpToRecoverAbnormal(peer *peer.Peer, height uint32
 }
 
 func (h *DposHandlerSwitch) RecoverAbnormal(status *cs.ConsensusStatus) {
-	ArbitratorSingleton.Leger.Restore()
 	result := false
 
 	h.consensus.RunWithStatusCondition(true, func() {
-		if err := ArbitratorSingleton.Leger.RecoverFromConsensusStatus(status.MissingBlocks, status.MissingBlockConfirms); err != nil {
+		if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlocks, status.MissingBlockConfirms); err != nil {
 			log.Error("Error occurred when recover leger: ", err)
 			return
 		}
@@ -288,8 +288,6 @@ func (h *DposHandlerSwitch) RecoverAbnormal(status *cs.ConsensusStatus) {
 
 	if result {
 		h.isAbnormal = false
-	} else {
-		ArbitratorSingleton.Leger.Rollback()
 	}
 }
 

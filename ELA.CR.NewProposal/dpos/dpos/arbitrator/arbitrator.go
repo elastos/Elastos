@@ -3,12 +3,11 @@ package arbitrator
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 var ArbitratorSingleton *Arbitrator
@@ -32,7 +31,6 @@ type StatusRollback interface {
 type Arbitrator struct {
 	Name       string
 	IsOnDuty   bool
-	Leger      Ledger
 	BlockCache ConsensusBlockCache
 
 	DposManager IDposManager
@@ -66,10 +64,10 @@ func (a *Arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
 		return
 	}
 
-	if a.Leger.LastBlock == nil || a.Leger.LastBlock.Height < b.Height { //new height block coming
+	if blockchain.DefaultLedger.Blockchain.BlockHeight < b.Height { //new height block coming
 		a.DposManager.ProcessHigherBlock(b)
 	} else {
-		log.Warn("a.Leger.LastBlock.Height", a.Leger.LastBlock.Height, "b.Height", b.Height)
+		log.Warn("a.Leger.LastBlock.Height", blockchain.DefaultLedger.Blockchain.BlockHeight, "b.Height", b.Height)
 	}
 }
 
@@ -85,9 +83,5 @@ func (a *Arbitrator) OnConfirmReceived(p *msg.DPosProposalVoteSlot) {
 }
 
 func (a *Arbitrator) ChangeHeight() { //called by leger later
-	blockHeight := uint32(0)
-	if a.Leger.LastBlock != nil {
-		blockHeight = a.Leger.LastBlock.Height
-	}
-	ArbitratorGroupSingleton.ChangeHeight(blockHeight)
+	ArbitratorGroupSingleton.ChangeHeight()
 }

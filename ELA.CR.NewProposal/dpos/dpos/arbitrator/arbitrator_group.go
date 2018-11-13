@@ -1,6 +1,9 @@
 package arbitrator
 
-import "github.com/elastos/Elastos.ELA/dpos/log"
+import (
+	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/dpos/log"
+)
 
 var ArbitratorGroupSingleton ArbitratorGroup
 
@@ -20,7 +23,8 @@ func (ag *ArbitratorGroup) Initialize(listener ArbitratorGroupListener) {
 	ag.listener = listener
 }
 
-func (ag *ArbitratorGroup) ChangeHeight(blockHeight uint32) {
+func (ag *ArbitratorGroup) ChangeHeight() {
+	blockHeight := blockchain.DefaultLedger.Blockchain.BlockHeight
 	ag.OnDutyIndex = blockHeight % uint32(len(ag.Arbitrators))
 	log.Info("[ChangeHeight] block height:", blockHeight, "old index:", ag.OnDutyIndex, "current index:", ag.OnDutyIndex)
 
