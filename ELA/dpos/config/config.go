@@ -34,8 +34,8 @@ type Configuration struct {
 	SyncInterval  time.Duration `json:"SyncInterval"`
 	HttpJsonPort  int           `json:"HttpJsonPort"`
 	HttpRestPort  uint16        `json:"HttpRestPort"`
-	PrintLevel    int           `json:"PrintLevel"`
-	SpvPrintLevel int           `json:"SpvPrintLevel"`
+	PrintLevel    uint8         `json:"PrintLevel"`
+	SpvPrintLevel uint8         `json:"SpvPrintLevel"`
 	SPVLogPath    string        `json:"SPVLogPath"`
 	MaxLogSize    int64         `json:"MaxLogSize"`
 	MaxPerLogSize int64         `json:"MaxPerLogSize"`
