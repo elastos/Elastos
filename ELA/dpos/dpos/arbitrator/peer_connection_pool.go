@@ -5,13 +5,15 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	"github.com/elastos/Elastos.ELA/dpos/config"
-
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	config2 "github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
+	"github.com/elastos/Elastos.ELA/dpos/config"
+	"github.com/elastos/Elastos.ELA/log"
 )
 
 type StatusSyncEventListener interface {
@@ -134,11 +136,17 @@ func (p *PeerConnectionPoolImpl) UpdatePeers() error {
 }
 
 func GetOtherArbitrators() []string {
-	arbitrators := ArbitratorGroupSingleton.Arbitrators //todo lock get Arbitrators operation
+	arbitrators, err := config2.Parameters.GetArbitrators()
+	if err != nil {
+		log.Error("Get arbitrators error")
+		return nil
+	}
+
 	arbiters := make([]string, 0)
 	for _, a := range arbitrators {
-		if a != config.Parameters.Name {
-			arbiters = append(arbiters, a)
+		aStr := common.BytesToHexString(a)
+		if aStr != config.Parameters.Name {
+			arbiters = append(arbiters, aStr)
 		}
 	}
 	return arbiters
