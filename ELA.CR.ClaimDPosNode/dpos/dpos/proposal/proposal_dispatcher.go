@@ -5,14 +5,14 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/handler"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	msg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	peer "github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type ProposalDispatcher struct {
@@ -188,11 +188,11 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Debug("[TryAppendAndBroadcastConfirmBlockMsg] len signs:", len(p.currentVoteSlot.Votes))
-	msg := &msg.Confirm{Proposal: *p.currentVoteSlot}
+	confirmMsg := &msg.Confirm{Proposal: *p.currentVoteSlot}
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
-	//todo replace with real ledger append block and confirm method
-	if ArbitratorSingleton.Leger.TryAppendBlock(p.processingBlock, p.currentVoteSlot) {
-		cs.P2PClientSingleton.PeerHandler.SendAll(msg)
+
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms([]*core.Block{p.processingBlock}, []*msg.DPosProposalVoteSlot{p.currentVoteSlot}); err != nil {
+		cs.P2PClientSingleton.PeerHandler.SendAll(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
 		return true
 	}
@@ -256,8 +256,8 @@ func (p *ProposalDispatcher) CurrentHeight() uint32 {
 	currentBlock := p.GetProcessingBlock()
 	if currentBlock != nil {
 		height = currentBlock.Height
-	} else if ArbitratorSingleton.Leger.LastBlock != nil {
-		height = ArbitratorSingleton.Leger.LastBlock.Height
+	} else {
+		height = blockchain.DefaultLedger.Blockchain.BlockHeight
 	}
 	return height
 }

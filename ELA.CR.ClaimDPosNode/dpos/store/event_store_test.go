@@ -6,10 +6,9 @@ import (
 	"testing"
 	"time"
 
-	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
-	"github.com/elastos/Elastos.ELA/dpos/log"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 func InitEventStore() *EventStore {
@@ -54,7 +53,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 		t.Error("create proposal event table failed!")
 	}
 
-	proposal := &common2.DPosProposal{
+	proposal := &msg.DPosProposal{
 		Sponsor:   "B",
 		BlockHash: common.Uint256{2},
 		Sign:      []byte{1, 2, 3},
@@ -180,8 +179,8 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 		t.Error("create vote event table failed!")
 	}
 
-	vote := &common2.DPosProposalVote{
-		Proposal: common2.DPosProposal{
+	vote := &msg.DPosProposalVote{
+		Proposal: msg.DPosProposal{
 			Sponsor:   "B",
 			BlockHash: common.Uint256{2},
 			Sign:      []byte{1, 2, 3},
