@@ -84,7 +84,7 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 		Proposal: proposal,
 	}
 
-	log.Info("[StartProposal] send proposal message finished")
+	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", cs.P2PClientSingleton.GetMessageHash(msg))
 	cs.P2PClientSingleton.PeerHandler.SendAll(msg)
 
 	rawData := new(bytes.Buffer)
@@ -215,6 +215,8 @@ func (p *ProposalDispatcher) OnBlockAdded(b *core.Block) {
 
 func (p *ProposalDispatcher) FinishConsensus() {
 	log.Info("[FinishConsensus], change states to ConsensusReady")
+	c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
+	p.eventMonitor.OnConsensusFinished(c)
 	p.consensus.SetReady()
 	p.CleanProposals()
 }
@@ -260,9 +262,16 @@ func (p *ProposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *ProposalDispatcher) alreadyExistVote(v common2.DPosProposalVote, voteArray []common2.DPosProposalVote) bool {
-	for _, item := range voteArray {
+func (p *ProposalDispatcher) alreadyExistVote(v common2.DPosProposalVote) bool {
+	for _, item := range p.acceptVotes {
 		if item.Signer == v.Signer {
+			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
+			return true
+		}
+	}
+	for _, item := range p.rejectedVotes {
+		if item.Signer == v.Signer {
+			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the RejectedVotes!")
 			return true
 		}
 	}
@@ -270,9 +279,11 @@ func (p *ProposalDispatcher) alreadyExistVote(v common2.DPosProposalVote, voteAr
 }
 
 func (p *ProposalDispatcher) countAcceptedVote(v common2.DPosProposalVote) {
+	log.Info("[countAcceptedVote] start")
+	defer log.Info("[countAcceptedVote] end")
 
-	if v.Accept && v.IsValid() && !p.alreadyExistVote(v, p.acceptVotes) {
-
+	if v.Accept && v.IsValid() && !p.alreadyExistVote(v) {
+		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes = append(p.acceptVotes, v)
 
 		if float32(len(p.acceptVotes)) >= float32(len(ArbitratorGroupSingleton.Arbitrators)*3)/float32(5) {
@@ -283,9 +294,11 @@ func (p *ProposalDispatcher) countAcceptedVote(v common2.DPosProposalVote) {
 }
 
 func (p *ProposalDispatcher) countRejectedVote(v common2.DPosProposalVote) {
+	log.Info("[countRejectedVote] start")
+	defer log.Info("[countRejectedVote] end")
 
-	if !v.Accept && v.IsValid() && !p.alreadyExistVote(v, p.rejectedVotes) {
-
+	if !v.Accept && v.IsValid() && !p.alreadyExistVote(v) {
+		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes = append(p.rejectedVotes, v)
 
 		if float32(len(p.rejectedVotes)) > float32(len(ArbitratorGroupSingleton.Arbitrators)*2)/float32(5) {

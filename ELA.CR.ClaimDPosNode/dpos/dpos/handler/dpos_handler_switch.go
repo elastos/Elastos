@@ -201,11 +201,11 @@ func (h *DposHandlerSwitch) ProcessRejectVote(p common2.DPosProposalVote) {
 
 func (h *DposHandlerSwitch) ResponseGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
-	currentBlock := h.proposalDispatcher.GetProcessingBlock()
+	currentHeight := h.proposalDispatcher.CurrentHeight()
 
 	endHeight := endBlockHeight
-	if currentBlock.Height < endBlockHeight {
-		endHeight = currentBlock.Height
+	if currentHeight < endBlockHeight {
+		endHeight = currentHeight
 	}
 	blocks, blockConfirms, err := ArbitratorSingleton.Leger.GetBlocksAndConfirms(startBlockHeight, endHeight)
 	if err != nil {
@@ -213,7 +213,9 @@ func (h *DposHandlerSwitch) ResponseGetBlocks(peer *peer.Peer, startBlockHeight,
 		return
 	}
 
-	blocks = append(blocks, currentBlock)
+	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
+		blocks = append(blocks, currentBlock)
+	}
 
 	msg := &cs.ResponseBlocksMessage{Command: cs.ResponseBlocks, Blocks: blocks, BlockConfirms: blockConfirms}
 	peer.SendMessage(msg, nil)

@@ -45,6 +45,7 @@ func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
 
 		h.consensus.RunWithStatusCondition(true, func() {
 			log.Info("[OnViewChanged] start proposal")
+			h.proposalDispatcher.CleanProposals()
 			h.proposalDispatcher.StartProposal(b)
 		})
 	}

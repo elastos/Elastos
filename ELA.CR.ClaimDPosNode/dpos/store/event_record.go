@@ -60,3 +60,11 @@ func (e *EventRecord) OnConsensusStarted(cons log.ConsensusEvent) {
 	}
 	e.currentConsensus = id
 }
+
+func (e *EventRecord) OnConsensusFinished(cons log.ConsensusEvent) {
+	_, err := e.eventStore.UpdateConsensusEvent(cons)
+	if err != nil {
+		log.Error("[OnConsensusFinished], Add message failed:", err.Error())
+		return
+	}
+}

@@ -2,9 +2,9 @@ package store
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 
+	"errors"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -16,26 +16,25 @@ type SqlDBOperator struct {
 	dbFilePath string
 }
 
-func (s *SqlDBOperator) InitConnection(connParams ...interface{}) {
-	//todo complete me
+func (s *SqlDBOperator) InitConnection(connParams ...interface{}) error {
 	driverName, ok := connParams[0].(string)
 	if !ok {
-		log.Error("[InitConnection] Invalid sql db driver name.")
-		return
+		return errors.New("[InitConnection] Invalid sql db driver name.")
 	}
 	s.dbDriverName = driverName
 
 	dbFilePath, ok := connParams[1].(string)
 	if !ok {
-		log.Error("[InitConnection] Invalid sql db file path.")
+		return errors.New("[InitConnection] Invalid sql db file path.")
 	}
 	s.dbFilePath = dbFilePath
+	return nil
 }
 
 func (s *SqlDBOperator) Connect() error {
 	db, err := sql.Open(s.dbDriverName, s.dbFilePath)
 	if err != nil {
-		fmt.Println("[Connect()]  open database error: ", err)
+		log.Error("[Connect]  open database error:", err.Error())
 		return err
 	}
 	s.db = db
@@ -43,12 +42,12 @@ func (s *SqlDBOperator) Connect() error {
 }
 
 func (s *SqlDBOperator) Disconnect() error {
-
 	err := s.db.Close()
 	if err != nil {
-		fmt.Println("[Disconnect()] close database error: ", err)
+		log.Error("[Disconnect] error:", err.Error())
+		return err
 	}
-	return err
+	return nil
 }
 
 func (s *SqlDBOperator) Execute(script string, params ...interface{}) (uint64, error) {
@@ -56,13 +55,11 @@ func (s *SqlDBOperator) Execute(script string, params ...interface{}) (uint64, e
 	log.Debug("[Execute] params:", params)
 	result, err := s.db.Exec(script, params...)
 	if err != nil {
-		fmt.Println("[Execute(script,params...)] db exec error: ", err)
 		return 0, err
 	}
 
 	lastid, err := result.LastInsertId()
 	if err != nil {
-		fmt.Println("[Execute(script,params...)] result lastInsertId error: ", err)
 		return 0, err
 	}
 	return uint64(lastid), nil
@@ -77,9 +74,7 @@ func (s *SqlDBOperator) Query(script string, params ...interface{}) (uint64, err
 	var result int64
 	err := row.Scan(&result)
 	if err != nil {
-		fmt.Println("[Query]  row scan error: ", err)
 		return 0, err
 	}
-	fmt.Println("[Query] result = ", result)
 	return uint64(result), nil
 }
