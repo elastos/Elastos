@@ -14,7 +14,7 @@ func (e *EventLogs) OnProposalFinished(prop ProposalEvent) {
 }
 
 func (e *EventLogs) OnVoteArrived(vote VoteEvent) {
-	Info("[OnProposalArrived], Signer:", vote.Signer, "ReceivedTime:", vote.ReceivedTime, "Result:", vote.Result)
+	Info("[OnVoteArrived], Signer:", vote.Signer, "ReceivedTime:", vote.ReceivedTime, "Result:", vote.Result)
 }
 
 func (e *EventLogs) OnViewStarted(view ViewEvent) {
@@ -24,4 +24,8 @@ func (e *EventLogs) OnViewStarted(view ViewEvent) {
 
 func (e *EventLogs) OnConsensusStarted(cons ConsensusEvent) {
 	Info("[OnConsensusStarted], StartTime:", cons.StartTime, "Height:", cons.Height)
+}
+
+func (e *EventLogs) OnConsensusFinished(cons ConsensusEvent) {
+	Info("[OnConsensusFinished], EndTime:", cons.EndTime, "Height:", cons.EndTime)
 }

@@ -31,6 +31,7 @@ type ViewEvent struct {
 
 type ConsensusEvent struct {
 	StartTime time.Time
+	EndTime   time.Time
 	Height    uint32
 	RawData   []byte
 }
@@ -41,6 +42,7 @@ type EventListener interface {
 	OnVoteArrived(vote VoteEvent)
 	OnViewStarted(view ViewEvent)
 	OnConsensusStarted(cons ConsensusEvent)
+	OnConsensusFinished(cons ConsensusEvent)
 }
 
 type EventMonitor struct {
@@ -86,5 +88,11 @@ func (e *EventMonitor) OnViewStarted(view ViewEvent) {
 func (e *EventMonitor) OnConsensusStarted(cons ConsensusEvent) {
 	for _, l := range e.listeners {
 		l.OnConsensusStarted(cons)
+	}
+}
+
+func (e *EventMonitor) OnConsensusFinished(cons ConsensusEvent) {
+	for _, l := range e.listeners {
+		l.OnConsensusFinished(cons)
 	}
 }
