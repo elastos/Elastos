@@ -1,13 +1,12 @@
 package dpos
 
 import (
-	"io"
 	"os"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	"github.com/elastos/Elastos.ELA/dpos/config"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/consensus"
@@ -17,55 +16,14 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-)
-
-const (
-	SPVLogOutputPath = "./SPVLogs/" // The spv log files output path
-
-	defaultSpvMaxPerLogFileSize int64 = elalog.MBSize * 20
-	defaultSpvMaxLogsFolderSize int64 = elalog.GBSize * 2
 )
 
 func init() {
-	config.Init()
 	log.Init(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogSize,
+		config.Parameters.ArbiterConfiguration.PrintLevel,
+		config.Parameters.ArbiterConfiguration.MaxPerLogSize,
+		config.Parameters.ArbiterConfiguration.MaxLogsSize,
 	)
-
-	spvMaxPerLogFileSize := defaultSpvMaxPerLogFileSize
-	spvMaxLogsFolderSize := defaultSpvMaxLogsFolderSize
-	if config.Parameters.MaxPerLogSize > 0 {
-		spvMaxPerLogFileSize = int64(config.Parameters.MaxPerLogSize) * elalog.MBSize
-	}
-	if config.Parameters.MaxLogSize > 0 {
-		spvMaxLogsFolderSize = int64(config.Parameters.MaxLogSize) * elalog.MBSize
-	}
-	spvLogPath := SPVLogOutputPath
-	if config.Parameters.SPVLogPath != "" {
-		spvLogPath = config.Parameters.SPVLogPath
-	}
-	fileWriter := elalog.NewFileWriter(
-		spvLogPath,
-		spvMaxPerLogFileSize,
-		spvMaxLogsFolderSize,
-	)
-	logWriter := io.MultiWriter(os.Stdout, fileWriter)
-	level := elalog.Level(config.Parameters.SpvPrintLevel)
-	backend := elalog.NewBackend(logWriter, elalog.Llongfile)
-
-	addrlog := backend.Logger("ADDR", level)
-	connlog := backend.Logger("CONN", level)
-	peerlog := backend.Logger("PEER", level)
-
-	addrmgr.UseLogger(addrlog)
-	connmgr.UseLogger(connlog)
-	peer.UseLogger(peerlog)
 }
 
 func initP2P() error {
@@ -91,11 +49,11 @@ func Start() {
 	dposManager := &manager.DposManager{}
 	dposManager.Initialize(dposHandlerSwitch)
 	peerConnectionPool := &arbitrator.PeerConnectionPoolImpl{Listener: dposManager}
-	consensusManager.Initialize(time.Duration(config.Parameters.SignTolerance)*time.Second, proposalManager, dposHandlerSwitch)
+	consensusManager.Initialize(time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, proposalManager, dposHandlerSwitch)
 	dposHandlerSwitch.Initialize(proposalManager, consensusManager, dposManager)
 
 	arbitrator.ArbitratorSingleton = &arbitrator.Arbitrator{
-		Name:     config.Parameters.Name,
+		Name:     config.Parameters.ArbiterConfiguration.Name,
 		IsOnDuty: false,
 		BlockCache: cache.ConsensusBlockCache{
 			ConsensusBlocks: make(map[common.Uint256]*core.Block, 0),

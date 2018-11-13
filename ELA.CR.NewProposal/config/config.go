@@ -66,37 +66,50 @@ type PowConfiguration struct {
 }
 
 type Configuration struct {
-	Magic               uint32           `json:"Magic"`
-	FoundationAddress   string           `json:"FoundationAddress"`
-	Version             int              `json:"Version"`
-	SeedList            []string         `json:"SeedList"`
-	HttpRestPort        int              `json:"HttpRestPort"`
-	MinCrossChainTxFee  int              `json:"MinCrossChainTxFee"`
-	RestCertPath        string           `json:"RestCertPath"`
-	RestKeyPath         string           `json:"RestKeyPath"`
-	HttpInfoPort        uint16           `json:"HttpInfoPort"`
-	HttpInfoStart       bool             `json:"HttpInfoStart"`
-	OpenService         bool             `json:"OpenService"`
-	HttpWsPort          int              `json:"HttpWsPort"`
-	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
-	HttpJsonPort        int              `json:"HttpJsonPort"`
-	OauthServerUrl      string           `json:"OauthServerUrl"`
-	NoticeServerUrl     string           `json:"NoticeServerUrl"`
-	NodePort            uint16           `json:"NodePort"`
-	NodeOpenPort        uint16           `json:"NodeOpenPort"`
-	PrintLevel          uint8            `json:"PrintLevel"`
-	IsTLS               bool             `json:"IsTLS"`
-	CertPath            string           `json:"CertPath"`
-	KeyPath             string           `json:"KeyPath"`
-	CAPath              string           `json:"CAPath"`
-	MultiCoreNum        uint             `json:"MultiCoreNum"`
-	MaxLogsSize         int64            `json:"MaxLogsSize"`
-	MaxPerLogSize       int64            `json:"MaxPerLogSize"`
-	MaxTxsInBlock       int              `json:"MaxTransactionInBlock"`
-	MaxBlockSize        int              `json:"MaxBlockSize"`
-	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
-	Arbiters            []string         `json:"Arbiters"`
-	EnableArbiter       bool             `json:"EnableArbiter"`
+	Magic                uint32               `json:"Magic"`
+	FoundationAddress    string               `json:"FoundationAddress"`
+	Version              int                  `json:"Version"`
+	SeedList             []string             `json:"SeedList"`
+	HttpRestPort         int                  `json:"HttpRestPort"`
+	MinCrossChainTxFee   int                  `json:"MinCrossChainTxFee"`
+	RestCertPath         string               `json:"RestCertPath"`
+	RestKeyPath          string               `json:"RestKeyPath"`
+	HttpInfoPort         uint16               `json:"HttpInfoPort"`
+	HttpInfoStart        bool                 `json:"HttpInfoStart"`
+	OpenService          bool                 `json:"OpenService"`
+	HttpWsPort           int                  `json:"HttpWsPort"`
+	WsHeartbeatInterval  time.Duration        `json:"WsHeartbeatInterval"`
+	HttpJsonPort         int                  `json:"HttpJsonPort"`
+	OauthServerUrl       string               `json:"OauthServerUrl"`
+	NoticeServerUrl      string               `json:"NoticeServerUrl"`
+	NodePort             uint16               `json:"NodePort"`
+	NodeOpenPort         uint16               `json:"NodeOpenPort"`
+	PrintLevel           uint8                `json:"PrintLevel"`
+	IsTLS                bool                 `json:"IsTLS"`
+	CertPath             string               `json:"CertPath"`
+	KeyPath              string               `json:"KeyPath"`
+	CAPath               string               `json:"CAPath"`
+	MultiCoreNum         uint                 `json:"MultiCoreNum"`
+	MaxLogsSize          int64                `json:"MaxLogsSize"`
+	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
+	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
+	MaxBlockSize         int                  `json:"MaxBlockSize"`
+	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
+	Arbiters             []string             `json:"Arbiters"`
+	EnableArbiter        bool                 `json:"EnableArbiter"`
+	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
+}
+
+type ArbiterConfiguration struct {
+	Name           string   `json:"Name"`
+	Magic          uint32   `json:"Magic"`
+	SeedList       []string `json:"SeedList"`
+	NodePort       uint16   `json:"NodePort"`
+	PrintLevel     uint8    `json:"PrintLevel"`
+	SignTolerance  uint64   `json:"SignTolerance"`
+	MaxLogsSize    int64    `json:"MaxLogsSize"`
+	MaxPerLogSize  int64    `json:"MaxPerLogSize"`
+	MaxConnections int      `json:"MaxConnections"`
 }
 
 type ConfigFile struct {
@@ -104,15 +117,15 @@ type ConfigFile struct {
 }
 
 type ChainParams struct {
-	Name               string
-	PowLimit           *big.Int
-	PowLimitBits       uint32
-	TargetTimePerBlock time.Duration
-	TargetTimespan     time.Duration
-	AdjustmentFactor   int64
-	MaxOrphanBlocks    int
-	MinMemoryNodes     uint32
-	CoinbaseLockTime   uint32
+	Name               string        `json:"Name"`
+	PowLimit           *big.Int      `json:"PowLimit"`
+	PowLimitBits       uint32        `json:"PowLimitBits"`
+	TargetTimePerBlock time.Duration `json:"TargetTimePerBlock"`
+	TargetTimespan     time.Duration `json:"TargetTimespan"`
+	AdjustmentFactor   int64         `json:"AdjustmentFactor"`
+	MaxOrphanBlocks    int           `json:"MaxOrphanBlocks"`
+	MinMemoryNodes     uint32        `json:"MinMemoryNodes"`
+	CoinbaseLockTime   uint32        `json:"CoinbaseLockTime"`
 }
 
 type configParams struct {
