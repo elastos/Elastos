@@ -7,7 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type DposOnDutyHandler struct {
@@ -51,7 +50,7 @@ func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
 	}
 }
 
-func (h *DposOnDutyHandler) TryStartNewConsensus(peer *peer.Peer, b *core.Block) bool {
+func (h *DposOnDutyHandler) TryStartNewConsensus(b *core.Block) bool {
 	result := false
 
 	h.consensus.RunWithAllStatusConditions(func() { //ready
