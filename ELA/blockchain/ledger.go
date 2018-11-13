@@ -14,7 +14,7 @@ var DefaultLedger *Ledger
 
 type NewBlocksListener interface {
 	OnBlockReceived(b *Block, confirmed bool)
-	OnConfirmReceived(p *msg.DPosProposalVoteSlot, confirmed bool)
+	OnConfirmReceived(p *msg.DPosProposalVoteSlot)
 }
 
 // Ledger - the struct for ledger

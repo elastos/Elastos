@@ -3,12 +3,11 @@ package arbitrator
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 var ArbitratorSingleton *Arbitrator
@@ -18,7 +17,7 @@ type IDposManager interface {
 
 	Recover()
 
-	ProcessHigherBlock(peer *peer.Peer, b *core.Block)
+	ProcessHigherBlock(b *core.Block)
 	ConfirmBlock()
 
 	ChangeConsensus(onDuty bool)
@@ -52,53 +51,36 @@ func (a *Arbitrator) OnDutyArbitratorChanged(onDuty bool) {
 	a.DposManager.ChangeConsensus(onDuty)
 }
 
-func (a *Arbitrator) OnBlockReceived(peer *peer.Peer, b *core.Block) {
+func (a *Arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
 	a.DposManager.Lock()
 	defer a.DposManager.Unlock()
 
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
-	confirm, ok := ArbitratorSingleton.Leger.GetPendingConfirms(b.Hash())
-	if ok && a.tryConfirmBlock(b, confirm) {
+	if confirmed {
+		a.DposManager.ConfirmBlock()
+		a.ChangeHeight()
 		log.Info("[OnBlockReceived] received confirmed block")
 		return
 	}
 
 	if a.Leger.LastBlock == nil || a.Leger.LastBlock.Height < b.Height { //new height block coming
-		a.DposManager.ProcessHigherBlock(peer, b)
+		a.DposManager.ProcessHigherBlock(b)
 	} else {
 		log.Warn("a.Leger.LastBlock.Height", a.Leger.LastBlock.Height, "b.Height", b.Height)
 	}
-
 }
 
-func (a *Arbitrator) OnConfirmReceived(peer *peer.Peer, p *ProposalVoteSlot) {
+func (a *Arbitrator) OnConfirmReceived(p *msg.DPosProposalVoteSlot) {
 	a.DposManager.Lock()
 	defer a.DposManager.Unlock()
 
 	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
 	defer log.Info("[OnConfirmReceived] end")
 
-	block, ok := ArbitratorSingleton.BlockCache.TryGetValue(p.Hash)
-	if !ok {
-		ArbitratorSingleton.Leger.AppendPendingConfirms(p)
-		log.Warn("[OnConfirmReceived] invalid block:", block)
-		return
-	}
-	if a.Leger.LastBlock == nil || a.Leger.LastBlock.Height < block.Height {
-		a.tryConfirmBlock(block, p)
-	}
-}
-
-func (a *Arbitrator) tryConfirmBlock(b *core.Block, p *ProposalVoteSlot) bool {
-	if a.Leger.TryAppendBlock(b, p) {
-		log.Info("[TryAppendBlock] succeed")
-		a.DposManager.ConfirmBlock()
-		a.ChangeHeight()
-		return true
-	}
-	return false
+	a.DposManager.ConfirmBlock()
+	a.ChangeHeight()
 }
 
 func (a *Arbitrator) ChangeHeight() { //called by leger later
