@@ -4,12 +4,11 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/core"
-	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	msg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -18,10 +17,10 @@ type DposEventConditionHandler interface {
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p common2.DPosProposal)
+	StartNewProposal(p msg.DPosProposal)
 
-	ProcessAcceptVote(p common2.DPosProposalVote)
-	ProcessRejectVote(p common2.DPosProposalVote)
+	ProcessAcceptVote(p msg.DPosProposalVote)
+	ProcessRejectVote(p msg.DPosProposalVote)
 }
 
 type DposEventHandler interface {
@@ -74,7 +73,7 @@ func (d *DposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *DposManager) OnProposalReceived(peer *peer.Peer, p common2.DPosProposal) {
+func (d *DposManager) OnProposalReceived(peer *peer.Peer, p msg.DPosProposal) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -83,7 +82,7 @@ func (d *DposManager) OnProposalReceived(peer *peer.Peer, p common2.DPosProposal
 	log.Info("[OnProposalReceived] end")
 }
 
-func (d *DposManager) OnVoteReceived(peer *peer.Peer, p common2.DPosProposalVote) {
+func (d *DposManager) OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -92,7 +91,7 @@ func (d *DposManager) OnVoteReceived(peer *peer.Peer, p common2.DPosProposalVote
 	log.Info("[OnVoteReceived] end")
 }
 
-func (d *DposManager) OnVoteRejected(peer *peer.Peer, p common2.DPosProposalVote) {
+func (d *DposManager) OnVoteRejected(peer *peer.Peer, p msg.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -122,7 +121,7 @@ func (d *DposManager) OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHei
 	d.handler.ResponseGetBlocks(peer, startBlockHeight, endBlockHeight)
 }
 
-func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*ProposalVoteSlot) {
+func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*msg.DPosProposalVoteSlot) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 

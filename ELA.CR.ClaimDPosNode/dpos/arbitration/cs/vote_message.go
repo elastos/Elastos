@@ -3,12 +3,12 @@ package cs
 import (
 	"io"
 
-	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type VoteMessage struct {
 	Command string
-	Vote    common2.DPosProposalVote
+	Vote    msg.DPosProposalVote
 }
 
 func (msg *VoteMessage) CMD() string {

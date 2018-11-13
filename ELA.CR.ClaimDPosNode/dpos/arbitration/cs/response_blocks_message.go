@@ -4,41 +4,41 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
 )
 
 type ResponseBlocksMessage struct {
 	Command       string
 	Blocks        []*core.Block
-	BlockConfirms []*chain.ProposalVoteSlot
+	BlockConfirms []*msg.DPosProposalVoteSlot
 }
 
-func (msg *ResponseBlocksMessage) CMD() string {
-	return msg.Command
+func (m *ResponseBlocksMessage) CMD() string {
+	return m.Command
 }
 
-func (msg *ResponseBlocksMessage) MaxLength() uint32 {
+func (m *ResponseBlocksMessage) MaxLength() uint32 {
 	//todo add max length
 	return 0
 }
 
-func (msg *ResponseBlocksMessage) Serialize(w io.Writer) error {
-	if err := common.WriteVarUint(w, uint64(len(msg.Blocks))); err != nil {
+func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
+	if err := common.WriteVarUint(w, uint64(len(m.Blocks))); err != nil {
 		return err
 	}
 
-	for _, v := range msg.Blocks {
+	for _, v := range m.Blocks {
 		if err := v.Serialize(w); err != nil {
 			return err
 		}
 	}
 
-	if err := common.WriteVarUint(w, uint64(len(msg.BlockConfirms))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(m.BlockConfirms))); err != nil {
 		return err
 	}
 
-	for _, v := range msg.BlockConfirms {
+	for _, v := range m.BlockConfirms {
 		if err := v.Serialize(w); err != nil {
 			return err
 		}
@@ -47,19 +47,19 @@ func (msg *ResponseBlocksMessage) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (msg *ResponseBlocksMessage) Deserialize(r io.Reader) error {
+func (m *ResponseBlocksMessage) Deserialize(r io.Reader) error {
 	blockCount, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	msg.Blocks = make([]*core.Block, 0)
+	m.Blocks = make([]*core.Block, 0)
 	for i := uint64(0); i < blockCount; i++ {
 		block := &core.Block{}
 		if err = block.Deserialize(r); err != nil {
 			return err
 		}
-		msg.Blocks = append(msg.Blocks, block)
+		m.Blocks = append(m.Blocks, block)
 	}
 
 	blockConfirmCount, err := common.ReadVarUint(r, 0)
@@ -67,13 +67,13 @@ func (msg *ResponseBlocksMessage) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	msg.BlockConfirms = make([]*chain.ProposalVoteSlot, 0)
+	m.BlockConfirms = make([]*msg.DPosProposalVoteSlot, 0)
 	for i := uint64(0); i < blockConfirmCount; i++ {
-		blockConfirm := &chain.ProposalVoteSlot{}
+		blockConfirm := &msg.DPosProposalVoteSlot{}
 		if err = blockConfirm.Deserialize(r); err != nil {
 			return err
 		}
-		msg.BlockConfirms = append(msg.BlockConfirms, blockConfirm)
+		m.BlockConfirms = append(m.BlockConfirms, blockConfirm)
 	}
 
 	return nil
