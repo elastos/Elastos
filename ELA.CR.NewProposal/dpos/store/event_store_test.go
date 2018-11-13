@@ -87,11 +87,6 @@ func TestEventStore_UpdateProposalEvent(t *testing.T) {
 	eventStore.Open()
 	defer eventStore.Close()
 
-	err := eventStore.createProposalEventTable()
-	if err != nil {
-		t.Error("create proposal event table failed!")
-	}
-
 	proposalEvent := log.ProposalEvent{
 		Proposal:     "A",
 		BlockHash:    common.Uint256{},
@@ -100,9 +95,9 @@ func TestEventStore_UpdateProposalEvent(t *testing.T) {
 		Result:       true,
 		RawData:      nil,
 	}
-	_, err = eventStore.UpdateProposalEvent(proposalEvent)
+	_, err := eventStore.UpdateProposalEvent(proposalEvent)
 	if err != nil {
-		t.Error("add proposal event data failed!")
+		t.Error("update proposal event data failed!")
 	}
 }
 
@@ -131,6 +126,21 @@ func TestEventStore_AddConsensusEvent(t *testing.T) {
 		t.Error("add  event data failed!")
 	}
 
+}
+
+func TestEventStore_UpdateConsensusEvent(t *testing.T) {
+	eventStore := InitEventStore()
+	eventStore.Open()
+	defer eventStore.Close()
+	cons := log.ConsensusEvent{
+		StartTime: time.Time{},
+		Height:    0,
+		RawData:   []byte{1},
+	}
+	_, err := eventStore.UpdateConsensusEvent(cons)
+	if err != nil {
+		t.Error("update consensus event data failed!")
+	}
 }
 
 func TestEventStore_AddViewEvent(t *testing.T) {

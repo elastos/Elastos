@@ -59,8 +59,11 @@ const (
 )
 
 func (s *EventStore) Open() error {
-	s.dbOperator.InitConnection(DBDriverName, DBFilePath)
-	err := s.dbOperator.Connect()
+	err := s.dbOperator.InitConnection(DBDriverName, DBFilePath)
+	if err != nil {
+		return err
+	}
+	err = s.dbOperator.Connect()
 	if err != nil {
 		return fmt.Errorf("database connect failed:", err.Error())
 	}
@@ -96,7 +99,17 @@ func (s *EventStore) createConsensusEventTable() error {
 
 func (s *EventStore) AddConsensusEvent(cons ConsensusEvent) (uint64, error) {
 	sql := "INSERT INTO ConsensusEvent(StartTime, Height, RawData) values(?,?,?)"
-	id, err := s.dbOperator.Execute(sql, cons.StartTime.Unix(), cons.Height, cons.RawData)
+	id, err := s.dbOperator.Execute(sql, cons.StartTime.UnixNano(), cons.Height, cons.RawData)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+func (s *EventStore) UpdateConsensusEvent(cons ConsensusEvent) (uint64, error) {
+	sql := "UPDATE ConsensusEvent SET EndTime=? WHERE Height=?"
+	id, err := s.dbOperator.Execute(sql, cons.EndTime.UnixNano(), cons.Height)
+
 	if err != nil {
 		return 0, err
 	}
@@ -110,7 +123,7 @@ func (s *EventStore) createProposalEventTable() error {
 
 func (s *EventStore) AddProposalEvent(event ProposalEvent) (uint64, error) {
 	sqlInsert := "INSERT INTO ProposalEvent(Proposal, BlockHash, ReceivedTime, Result, RawData) values(?,?,?,?,?)"
-	id, err := s.dbOperator.Execute(sqlInsert, event.Proposal, event.BlockHash.Bytes(), event.ReceivedTime.Unix(), event.Result, event.RawData)
+	id, err := s.dbOperator.Execute(sqlInsert, event.Proposal, event.BlockHash.Bytes(), event.ReceivedTime.UnixNano(), event.Result, event.RawData)
 	if err != nil {
 		return 0, err
 	}
@@ -119,7 +132,7 @@ func (s *EventStore) AddProposalEvent(event ProposalEvent) (uint64, error) {
 
 func (s *EventStore) UpdateProposalEvent(event ProposalEvent) (uint64, error) {
 	sqlUpdate := "UPDATE ProposalEvent SET EndTime=?,Result=? WHERE Proposal=? AND BlockHash=?"
-	id, err := s.dbOperator.Execute(sqlUpdate, event.EndTime.Unix(), event.Result, event.Proposal, event.BlockHash.Bytes())
+	id, err := s.dbOperator.Execute(sqlUpdate, event.EndTime.UnixNano(), event.Result, event.Proposal, event.BlockHash.Bytes())
 	if err != nil {
 		return 0, err
 	}
@@ -146,11 +159,11 @@ func (s *EventStore) AddVoteEvent(event VoteEvent) (uint64, error) {
 	sqlSelect := "SELECT ID FROM ProposalEvent WHERE RawData=?"
 	proposalId, err := s.dbOperator.Query(sqlSelect, w.Bytes())
 	if err != nil {
-		proposalId = math.MaxUint64
+		proposalId = math.MaxInt64
 	}
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
 	sql := "INSERT INTO VoteEvent (ProposalID, Signer, ReceivedTime, Result, RawData) values(?,?,?,?,?)"
-	id, err := s.dbOperator.Execute(sql, proposalId, event.Signer, event.ReceivedTime.Unix(), event.Result, event.RawData)
+	id, err := s.dbOperator.Execute(sql, proposalId, event.Signer, event.ReceivedTime.UnixNano(), event.Result, event.RawData)
 	if err != nil {
 		return 0, err
 	}
@@ -166,11 +179,11 @@ func (s *EventStore) AddViewEvent(event ViewEvent) (uint64, error) {
 	sqlSelect := "SELECT ID FROM ConsensusEvent WHERE Height=?"
 	consensusId, err := s.dbOperator.Query(sqlSelect, event.Height)
 	if err != nil {
-		consensusId = math.MaxUint64
+		consensusId = math.MaxInt64
 	}
 
 	sqlInsert := "INSERT INTO ViewEvent(ConsensusID, OnDutyArbitrator, StartTime, Offset) values(?,?,?,?)"
-	id, err := s.dbOperator.Execute(sqlInsert, consensusId, event.OnDutyArbitrator, event.StartTime.Unix(), event.Offset)
+	id, err := s.dbOperator.Execute(sqlInsert, consensusId, event.OnDutyArbitrator, event.StartTime.UnixNano(), event.Offset)
 	if err != nil {
 		return 0, err
 	}
