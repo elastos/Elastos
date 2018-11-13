@@ -3,13 +3,14 @@ package consensus
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/monitor"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/view"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -91,11 +92,12 @@ func (c *Consensus) IsReady() bool {
 }
 
 func (c *Consensus) IsArbitratorOnDuty(arbitrator string) bool {
-	return GetCurrentArbitrator(c.viewOffset) == arbitrator
+	return c.GetOnDutyArbitrator() == arbitrator
 }
 
 func (c *Consensus) GetOnDutyArbitrator() string {
-	return GetCurrentArbitrator(c.viewOffset)
+	a, _ := blockchain.GetNextOnDutyArbiter(c.viewOffset)
+	return common.BytesToHexString(a)
 }
 
 func (c *Consensus) StartConsensus(b *core.Block) {

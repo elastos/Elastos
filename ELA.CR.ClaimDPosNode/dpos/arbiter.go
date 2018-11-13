@@ -104,7 +104,6 @@ func Start() {
 	}
 	cs.P2PClientSingleton.PeerHandler = peerConnectionPool
 
-	arbitrator.ArbitratorGroupSingleton.Initialize(arbitrator.ArbitratorSingleton)
 	arbitrator.ArbitratorSingleton.DposManager.Recover()
 
 	go dposHandlerSwitch.ChangeViewLoop()

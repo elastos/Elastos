@@ -3,11 +3,11 @@ package monitor
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	config2 "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos/config"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type HeartBeatListener interface {
@@ -26,7 +26,7 @@ func (m *HeartBeatMonitor) Initialize(listener HeartBeatListener) {
 	m.beatDurations = make(map[string]time.Duration)
 	m.listener = listener
 
-	m.ChangeArbitrators(ArbitratorGroupSingleton.Arbitrators)
+	m.ChangeArbitrators(config2.Parameters.Arbiters)
 }
 
 func (m *HeartBeatMonitor) ChangeArbitrators(arbitrators []string) {
@@ -69,7 +69,7 @@ func (m *HeartBeatMonitor) checkAbnormalState() {
 		}
 	}
 
-	if inactiveCount >= len(ArbitratorGroupSingleton.Arbitrators)*2/5 { //todo config inactive count
+	if inactiveCount >= len(config2.Parameters.Arbiters)*2/5 { //todo config inactive count
 		m.listener.OnAbnormalStateDetected()
 		for k := range m.lastActiveTime {
 			m.lastActiveTime[k] = now
