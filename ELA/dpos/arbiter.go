@@ -21,6 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -96,8 +97,8 @@ func Start() {
 		IsOnDuty: false,
 		Leger: chain.Ledger{
 			BlockMap:             make(map[common.Uint256]*core.Block),
-			BlockConfirmMap:      make(map[common.Uint256]*chain.ProposalVoteSlot),
-			PendingBlockConfirms: make(map[common.Uint256]*chain.ProposalVoteSlot),
+			BlockConfirmMap:      make(map[common.Uint256]*msg.DPosProposalVoteSlot),
+			PendingBlockConfirms: make(map[common.Uint256]*msg.DPosProposalVoteSlot),
 		},
 		BlockCache: cache.ConsensusBlockCache{
 			ConsensusBlocks: make(map[common.Uint256]*core.Block, 0),

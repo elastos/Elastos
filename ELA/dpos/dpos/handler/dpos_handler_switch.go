@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core"
-	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
@@ -14,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -37,11 +37,11 @@ type IProposalDispatcher interface {
 	CleanProposals()
 	FinishProposal()
 	TryStartSpeculatingProposal(b *core.Block)
-	ProcessProposal(d common2.DPosProposal)
+	ProcessProposal(d msg.DPosProposal)
 
 	FinishConsensus()
 
-	ProcessVote(v common2.DPosProposalVote, accept bool)
+	ProcessVote(v msg.DPosProposalVote, accept bool)
 
 	RequestAbnormalRecovering()
 	TryAppendAndBroadcastConfirmBlockMsg() bool
@@ -134,7 +134,7 @@ func (h *DposHandlerSwitch) FinishConsensus() {
 	})
 }
 
-func (h *DposHandlerSwitch) StartNewProposal(p common2.DPosProposal) {
+func (h *DposHandlerSwitch) StartNewProposal(p msg.DPosProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	rawData := new(bytes.Buffer)
@@ -181,7 +181,7 @@ func (h *DposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	return false
 }
 
-func (h *DposHandlerSwitch) ProcessAcceptVote(p common2.DPosProposalVote) {
+func (h *DposHandlerSwitch) ProcessAcceptVote(p msg.DPosProposalVote) {
 	h.currentHandler.ProcessAcceptVote(p)
 
 	rawData := new(bytes.Buffer)
@@ -190,7 +190,7 @@ func (h *DposHandlerSwitch) ProcessAcceptVote(p common2.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *DposHandlerSwitch) ProcessRejectVote(p common2.DPosProposalVote) {
+func (h *DposHandlerSwitch) ProcessRejectVote(p msg.DPosProposalVote) {
 	h.currentHandler.ProcessRejectVote(p)
 
 	rawData := new(bytes.Buffer)

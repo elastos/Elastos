@@ -3,12 +3,12 @@ package cs
 import (
 	"io"
 
-	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type ProposalMessage struct {
 	Command  string
-	Proposal common2.DPosProposal
+	Proposal msg.DPosProposal
 }
 
 func (msg *ProposalMessage) CMD() string {
