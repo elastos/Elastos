@@ -3,6 +3,7 @@ package arbitrator
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
@@ -83,5 +84,10 @@ func (a *Arbitrator) OnConfirmReceived(p *msg.DPosProposalVoteSlot) {
 }
 
 func (a *Arbitrator) ChangeHeight() { //called by leger later
-	ArbitratorGroupSingleton.ChangeHeight()
+	currentArbiter, err := blockchain.GetOnDutyArbiter()
+	if err != nil {
+		log.Error("Error occurred with change height: get current arbiter error.")
+	}
+
+	a.OnDutyArbitratorChanged(a.Name == common.BytesToHexString(currentArbiter))
 }

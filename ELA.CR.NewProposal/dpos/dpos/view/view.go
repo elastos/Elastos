@@ -1,10 +1,11 @@
 package view
 
 import (
-	"github.com/elastos/Elastos.ELA/dpos/config"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/dpos/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -48,8 +49,12 @@ func (v *View) ChangeView(viewOffset *uint32) {
 	log.Info("[ChangeView] current view offset:", viewOffset)
 
 	if offset > 0 {
-		currentArbiter := GetCurrentArbitrator(*viewOffset)
-		v.isDposOnDuty = currentArbiter == config.Parameters.Name
+		currentArbiter, err := blockchain.GetNextOnDutyArbiter(*viewOffset)
+		if err != nil {
+			log.Error(err)
+		}
+
+		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.Name
 		log.Info("current onduty arbiter:", currentArbiter)
 
 		v.listener.OnViewChanged(v.isDposOnDuty)

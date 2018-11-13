@@ -5,9 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
@@ -171,7 +173,13 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 	}
 
 	if !p.consensus.IsArbitratorOnDuty(d.Sponsor) {
-		log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:", GetCurrentArbitrator(p.consensus.GetViewOffset()), "sponsor:", d.Sponsor)
+		currentArbiter, err := blockchain.GetNextOnDutyArbiter(p.consensus.GetViewOffset())
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
+				common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
+		}
 		p.rejectProposal(d)
 		log.Info("reject: current arbiter is not sponsor")
 		return
@@ -286,7 +294,7 @@ func (p *ProposalDispatcher) countAcceptedVote(v msg.DPosProposalVote) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes = append(p.acceptVotes, v)
 
-		if float32(len(p.acceptVotes)) >= float32(len(ArbitratorGroupSingleton.Arbitrators)*3)/float32(5) {
+		if float32(len(p.acceptVotes)) >= float32(len(config.Parameters.Arbiters)*3)/float32(5) {
 			log.Info("Collect >= 3/5 signs, finish proposal.")
 			p.FinishProposal()
 		}
@@ -301,7 +309,7 @@ func (p *ProposalDispatcher) countRejectedVote(v msg.DPosProposalVote) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes = append(p.rejectedVotes, v)
 
-		if float32(len(p.rejectedVotes)) > float32(len(ArbitratorGroupSingleton.Arbitrators)*2)/float32(5) {
+		if float32(len(p.rejectedVotes)) > float32(len(config.Parameters.Arbiters)*2)/float32(5) {
 			p.CleanProposals()
 			p.consensus.ChangeView()
 		}

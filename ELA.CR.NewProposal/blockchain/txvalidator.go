@@ -73,7 +73,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	}
 
 	if txn.IsSideChainPowTx() {
-		arbitrtor, err := GetCurrentArbiter()
+		arbitrtor, err := GetOnDutyArbiter()
 		if err != nil {
 			return ErrSideChainPowConsensus
 		}
@@ -437,13 +437,17 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func GetCurrentArbiter() ([]byte, error) {
+func GetOnDutyArbiter() ([]byte, error) {
+	return GetNextOnDutyArbiter(uint32(0))
+}
+
+func GetNextOnDutyArbiter(offset uint32) ([]byte, error) {
 	arbitrators, err := config.Parameters.GetArbitrators()
 	if err != nil {
 		return nil, err
 	}
 	height := DefaultLedger.Store.GetHeight()
-	index := height % uint32(len(arbitrators))
+	index := (height + offset) % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
 
 	return arbitrator, nil
