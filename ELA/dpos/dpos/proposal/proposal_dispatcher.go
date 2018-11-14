@@ -121,7 +121,6 @@ func (p *ProposalDispatcher) FinishProposal() {
 	}
 
 	p.FinishConsensus()
-	ArbitratorSingleton.ChangeHeight()
 
 	proposalEvent := log.ProposalEvent{
 		Proposal:  proposal,
