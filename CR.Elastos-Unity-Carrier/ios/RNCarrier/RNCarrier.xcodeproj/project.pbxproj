@@ -11,8 +11,8 @@
 		39859EA0219C3FA000DE141B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859E9F219C3FA000DE141B /* main.m */; };
 		39859EAA219C3FA000DE141B /* RNCarrierTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EA9219C3FA000DE141B /* RNCarrierTests.m */; };
 		39859EB9219C404400DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859EB4219C404400DE141B /* ElastosCarrier.framework */; };
-		39859EBA219C404400DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EB7219C404400DE141B /* CarrierPlugin.m */; };
-		39859EBB219C404400DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EB8219C404400DE141B /* Carrier.m */; };
+		39859EFC219C426800DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EFA219C426800DE141B /* Carrier.m */; };
+		39859EFD219C426800DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EFB219C426800DE141B /* CarrierPlugin.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,10 +35,10 @@
 		39859EA9219C3FA000DE141B /* RNCarrierTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCarrierTests.m; sourceTree = "<group>"; };
 		39859EAB219C3FA000DE141B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		39859EB4219C404400DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
-		39859EB5219C404400DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Carrier.h; path = ../../Carrier/Carrier/Carrier.h; sourceTree = "<group>"; };
-		39859EB6219C404400DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CarrierPlugin.h; path = ../../Carrier/Carrier/CarrierPlugin.h; sourceTree = "<group>"; };
-		39859EB7219C404400DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CarrierPlugin.m; path = ../../Carrier/Carrier/CarrierPlugin.m; sourceTree = "<group>"; };
-		39859EB8219C404400DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Carrier.m; path = ../../Carrier/Carrier/Carrier.m; sourceTree = "<group>"; };
+		39859EF8219C426700DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
+		39859EF9219C426800DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
+		39859EFA219C426800DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
+		39859EFB219C426800DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,10 +82,10 @@
 		39859E8F219C3F9F00DE141B /* RNCarrier */ = {
 			isa = PBXGroup;
 			children = (
-				39859EB5219C404400DE141B /* Carrier.h */,
-				39859EB8219C404400DE141B /* Carrier.m */,
-				39859EB6219C404400DE141B /* CarrierPlugin.h */,
-				39859EB7219C404400DE141B /* CarrierPlugin.m */,
+				39859EF9219C426800DE141B /* Carrier.h */,
+				39859EFA219C426800DE141B /* Carrier.m */,
+				39859EF8219C426700DE141B /* CarrierPlugin.h */,
+				39859EFB219C426800DE141B /* CarrierPlugin.m */,
 				39859E90219C3F9F00DE141B /* AppDelegate.h */,
 				39859E91219C3F9F00DE141B /* AppDelegate.m */,
 				39859E9E219C3FA000DE141B /* Info.plist */,
@@ -200,8 +200,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39859EBB219C404400DE141B /* Carrier.m in Sources */,
-				39859EBA219C404400DE141B /* CarrierPlugin.m in Sources */,
+				39859EFC219C426800DE141B /* Carrier.m in Sources */,
+				39859EFD219C426800DE141B /* CarrierPlugin.m in Sources */,
 				39859EA0219C3FA000DE141B /* main.m in Sources */,
 				39859E92219C3F9F00DE141B /* AppDelegate.m in Sources */,
 			);
