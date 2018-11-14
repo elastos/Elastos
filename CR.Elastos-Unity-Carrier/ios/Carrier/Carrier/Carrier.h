@@ -1,19 +1,22 @@
 //
 //  Carrier.h
-//  Carrier
+//  ELASTOS_RN_FRAMEWORK
 //
-//  Created by jacky.li on 2018/11/14.
-//  Copyright © 2018 elastos. All rights reserved.
+//  Created by jacky.li on 2018/9/25.
+//  Copyright © 2018 Facebook. All rights reserved.
 //
-
-#import <UIKit/UIKit.h>
-
-//! Project version number for Carrier.
-FOUNDATION_EXPORT double CarrierVersionNumber;
-
-//! Project version string for Carrier.
-FOUNDATION_EXPORT const unsigned char CarrierVersionString[];
-
-// In this header, you should import all the public headers of your framework using statements like #import <Carrier/PublicHeader.h>
+#import <Foundation/Foundation.h>
+#import <ElastosCarrier/ElastosCarrier.h>
 
 
+
+@interface Carrier : NSObject
+
+typedef void (^CarrierSendEvent)(ELACarrier *carrier, NSDictionary *param);
+
+-(void) start:(NSDictionary *)config sendEvent:(CarrierSendEvent)sendEvent completion:(void (^)(NSError *error))completion;
+-(ELACarrier *) getIntance;
+-(ELACarrierSession *) createNewSession: (NSString *)name friendId:(NSString *)friendId;
+-(void) clean: (NSString *)name;
+-(void) close;
+@end
