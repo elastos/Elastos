@@ -1,0 +1,442 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		39859E92219C3F9F00DE141B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859E91219C3F9F00DE141B /* AppDelegate.m */; };
+		39859EA0219C3FA000DE141B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859E9F219C3FA000DE141B /* main.m */; };
+		39859EAA219C3FA000DE141B /* RNCarrierTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EA9219C3FA000DE141B /* RNCarrierTests.m */; };
+		39859EB9219C404400DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859EB4219C404400DE141B /* ElastosCarrier.framework */; };
+		39859EBA219C404400DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EB7219C404400DE141B /* CarrierPlugin.m */; };
+		39859EBB219C404400DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859EB8219C404400DE141B /* Carrier.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		39859EA6219C3FA000DE141B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 39859E85219C3F9F00DE141B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 39859E8C219C3F9F00DE141B;
+			remoteInfo = RNCarrier;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		39859E8D219C3F9F00DE141B /* RNCarrier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RNCarrier.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		39859E90219C3F9F00DE141B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		39859E91219C3F9F00DE141B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		39859E9E219C3FA000DE141B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		39859E9F219C3FA000DE141B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		39859EA5219C3FA000DE141B /* RNCarrierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNCarrierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		39859EA9219C3FA000DE141B /* RNCarrierTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCarrierTests.m; sourceTree = "<group>"; };
+		39859EAB219C3FA000DE141B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		39859EB4219C404400DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
+		39859EB5219C404400DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Carrier.h; path = ../../Carrier/Carrier/Carrier.h; sourceTree = "<group>"; };
+		39859EB6219C404400DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CarrierPlugin.h; path = ../../Carrier/Carrier/CarrierPlugin.h; sourceTree = "<group>"; };
+		39859EB7219C404400DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CarrierPlugin.m; path = ../../Carrier/Carrier/CarrierPlugin.m; sourceTree = "<group>"; };
+		39859EB8219C404400DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Carrier.m; path = ../../Carrier/Carrier/Carrier.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		39859E8A219C3F9F00DE141B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39859EB9219C404400DE141B /* ElastosCarrier.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		39859EA2219C3FA000DE141B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		39859E84219C3F9F00DE141B = {
+			isa = PBXGroup;
+			children = (
+				39859EB4219C404400DE141B /* ElastosCarrier.framework */,
+				39859E8F219C3F9F00DE141B /* RNCarrier */,
+				39859EA8219C3FA000DE141B /* RNCarrierTests */,
+				39859E8E219C3F9F00DE141B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		39859E8E219C3F9F00DE141B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				39859E8D219C3F9F00DE141B /* RNCarrier.app */,
+				39859EA5219C3FA000DE141B /* RNCarrierTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		39859E8F219C3F9F00DE141B /* RNCarrier */ = {
+			isa = PBXGroup;
+			children = (
+				39859EB5219C404400DE141B /* Carrier.h */,
+				39859EB8219C404400DE141B /* Carrier.m */,
+				39859EB6219C404400DE141B /* CarrierPlugin.h */,
+				39859EB7219C404400DE141B /* CarrierPlugin.m */,
+				39859E90219C3F9F00DE141B /* AppDelegate.h */,
+				39859E91219C3F9F00DE141B /* AppDelegate.m */,
+				39859E9E219C3FA000DE141B /* Info.plist */,
+				39859E9F219C3FA000DE141B /* main.m */,
+			);
+			path = RNCarrier;
+			sourceTree = "<group>";
+		};
+		39859EA8219C3FA000DE141B /* RNCarrierTests */ = {
+			isa = PBXGroup;
+			children = (
+				39859EA9219C3FA000DE141B /* RNCarrierTests.m */,
+				39859EAB219C3FA000DE141B /* Info.plist */,
+			);
+			path = RNCarrierTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		39859E8C219C3F9F00DE141B /* RNCarrier */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 39859EAE219C3FA000DE141B /* Build configuration list for PBXNativeTarget "RNCarrier" */;
+			buildPhases = (
+				39859E89219C3F9F00DE141B /* Sources */,
+				39859E8A219C3F9F00DE141B /* Frameworks */,
+				39859E8B219C3F9F00DE141B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RNCarrier;
+			productName = RNCarrier;
+			productReference = 39859E8D219C3F9F00DE141B /* RNCarrier.app */;
+			productType = "com.apple.product-type.application";
+		};
+		39859EA4219C3FA000DE141B /* RNCarrierTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 39859EB1219C3FA000DE141B /* Build configuration list for PBXNativeTarget "RNCarrierTests" */;
+			buildPhases = (
+				39859EA1219C3FA000DE141B /* Sources */,
+				39859EA2219C3FA000DE141B /* Frameworks */,
+				39859EA3219C3FA000DE141B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				39859EA7219C3FA000DE141B /* PBXTargetDependency */,
+			);
+			name = RNCarrierTests;
+			productName = RNCarrierTests;
+			productReference = 39859EA5219C3FA000DE141B /* RNCarrierTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		39859E85219C3F9F00DE141B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = elastos;
+				TargetAttributes = {
+					39859E8C219C3F9F00DE141B = {
+						CreatedOnToolsVersion = 10.0;
+					};
+					39859EA4219C3FA000DE141B = {
+						CreatedOnToolsVersion = 10.0;
+						TestTargetID = 39859E8C219C3F9F00DE141B;
+					};
+				};
+			};
+			buildConfigurationList = 39859E88219C3F9F00DE141B /* Build configuration list for PBXProject "RNCarrier" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 39859E84219C3F9F00DE141B;
+			productRefGroup = 39859E8E219C3F9F00DE141B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				39859E8C219C3F9F00DE141B /* RNCarrier */,
+				39859EA4219C3FA000DE141B /* RNCarrierTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		39859E8B219C3F9F00DE141B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		39859EA3219C3FA000DE141B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		39859E89219C3F9F00DE141B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39859EBB219C404400DE141B /* Carrier.m in Sources */,
+				39859EBA219C404400DE141B /* CarrierPlugin.m in Sources */,
+				39859EA0219C3FA000DE141B /* main.m in Sources */,
+				39859E92219C3F9F00DE141B /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		39859EA1219C3FA000DE141B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39859EAA219C3FA000DE141B /* RNCarrierTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		39859EA7219C3FA000DE141B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 39859E8C219C3F9F00DE141B /* RNCarrier */;
+			targetProxy = 39859EA6219C3FA000DE141B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		39859EAC219C3FA000DE141B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		39859EAD219C3FA000DE141B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		39859EAF219C3FA000DE141B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = RNCarrier/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.elastos.rn.RNCarrier;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		39859EB0219C3FA000DE141B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = RNCarrier/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.elastos.rn.RNCarrier;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		39859EB2219C3FA000DE141B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = RNCarrierTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.elastos.rn.RNCarrierTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RNCarrier.app/RNCarrier";
+			};
+			name = Debug;
+		};
+		39859EB3219C3FA000DE141B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = RNCarrierTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.elastos.rn.RNCarrierTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RNCarrier.app/RNCarrier";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		39859E88219C3F9F00DE141B /* Build configuration list for PBXProject "RNCarrier" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39859EAC219C3FA000DE141B /* Debug */,
+				39859EAD219C3FA000DE141B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		39859EAE219C3FA000DE141B /* Build configuration list for PBXNativeTarget "RNCarrier" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39859EAF219C3FA000DE141B /* Debug */,
+				39859EB0219C3FA000DE141B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		39859EB1219C3FA000DE141B /* Build configuration list for PBXNativeTarget "RNCarrierTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39859EB2219C3FA000DE141B /* Debug */,
+				39859EB3219C3FA000DE141B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 39859E85219C3F9F00DE141B /* Project object */;
+}
