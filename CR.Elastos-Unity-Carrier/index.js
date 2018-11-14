@@ -1,5 +1,5 @@
-import { NativeModules } from 'react-native';
+import Carrier from './src/index';
 
-const { CarrierPlugin } = NativeModules;
-
-export default CarrierPlugin;
+export {
+    Carrier
+};
