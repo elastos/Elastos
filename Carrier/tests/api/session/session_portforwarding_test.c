@@ -103,7 +103,6 @@ static ElaCallbacks callbacks = {
 static Condition DEFINE_COND(carrier_ready_cond);
 static Condition DEFINE_COND(carrier_cond);
 static Condition DEFINE_COND(friend_status_cond);
-static Condition DEFINE_COND(portforwarding_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
@@ -175,19 +174,22 @@ static ElaStreamCallbacks stream_callbacks = {
 };
 
 static Condition DEFINE_COND(stream_cond);
+static Condition DEFINE_COND(portforwarding_cond);
 
 struct StreamContextExtra {
     const char *service;
     const char *port;
     const char *shadow_port;
     int sent_count;
+    Condition *pfd_cond;
 };
 
 static StreamContextExtra stream_extra = {
     .service = "test_portforwarding_service",
     .port = "20172",
     .shadow_port = "20173",
-    .sent_count = 1024
+    .sent_count = 1024,
+    .pfd_cond = &portforwarding_cond,
 };
 
 static StreamContext stream_context = {
@@ -211,6 +213,7 @@ static void test_context_reset(TestContext *context)
     session->session = NULL;
 
     cond_reset(context->stream->cond);
+    cond_reset(context->stream->extra->pfd_cond);
 
     stream->stream_id = -1;
     stream->state = 0;
@@ -225,109 +228,13 @@ static TestContext test_context = {
     .context_reset = test_context_reset
 };
 
-#ifdef _MSC_VER
-// For Windows socket API not compatible with POSIX: size_t vs. int
-#pragma warning(push)
-#pragma warning(disable: 4267)
-#endif
-
-static SOCKET tcp_socket_create(const char *host, const char *port)
-{
-    SOCKET sockfd = -1;
-    struct addrinfo hints;
-    struct addrinfo *ai;
-    struct addrinfo *p;
-    int rc;
-
-    assert(host);
-    assert(port);
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = AI_PASSIVE;
-
-    rc = getaddrinfo(host, port, &hints, &ai);
-    if (rc != 0)
-        return -1;
-
-    for (p = ai; p; p = p->ai_next) {
-        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (sockfd < 0)
-            continue;
-
-        int set = 1;
-        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*)&set, sizeof(set));
-        if (bind(sockfd, p->ai_addr, p->ai_addrlen) != 0) {
-            socket_close(sockfd);
-            sockfd = -1;
-            continue;
-        }
-
-        break;
-    }
-
-    freeaddrinfo(ai);
-    return sockfd;
-}
-
-static SOCKET tcp_socket_connect(const char *host, const char *port)
-{
-    SOCKET sockfd = -1;
-    struct addrinfo hints;
-    struct addrinfo *ai;
-    struct addrinfo *p;
-    int rc;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    rc = getaddrinfo(host, port, &hints, &ai);
-    if (rc != 0)
-        return -1;
-
-    for (p = ai; p; p = p->ai_next) {
-        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (sockfd == -1) {
-            continue;
-        }
-
-        if (p->ai_socktype == SOCK_STREAM) {
-            if (connect(sockfd, p->ai_addr  , p->ai_addrlen) != 0) {
-                socket_close(sockfd);
-                sockfd = -1;
-                continue;
-            }
-        }
-
-        break;
-    }
-
-    freeaddrinfo(ai);
-    return sockfd;
-}
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-static int tcp_socket_close(SOCKET sockfd)
-{
-#if !defined(_WIN32) && !defined(_WIN64)
-    return close(sockfd);
-#else
-    return closesocket(sockfd);
-#endif
-}
-
-typedef struct PortforwardingContext {
+typedef struct {
+    const char *ip;
     const char *port;
     int sent_count;
     int recv_count;
     int return_val;
+    Condition *cond;
 } PortForwardingContxt;
 
 static void *client_thread_entry(void *argv)
@@ -342,9 +249,9 @@ static void *client_thread_entry(void *argv)
 
     ctxt->return_val = -1;
 
-    sockfd = tcp_socket_connect("127.0.0.1", ctxt->port);
+    sockfd = socket_connect(ctxt->ip, ctxt->port);
     if (sockfd < 0) {
-        vlogE("client connect to 127.0.0.1:%s failed", ctxt->port);
+        vlogE("client connect to %s:%s failed", ctxt->ip, ctxt->port);
         return NULL;
     }
 
@@ -360,7 +267,7 @@ static void *client_thread_entry(void *argv)
             rc = send(sockfd, pos, left, 0);
             if (rc < 0) {
                 vlogE("client send data error (%d)", errno);
-                tcp_socket_close(sockfd);
+                socket_close(sockfd);
                 return NULL;
             }
 
@@ -374,7 +281,7 @@ static void *client_thread_entry(void *argv)
     vlogI("finished sending %d Kbytes data", ctxt->sent_count);
     vlogI("client send data in success");
 
-    tcp_socket_close(sockfd);
+    socket_close(sockfd);
     ctxt->return_val = 0;
 
     return NULL;
@@ -390,24 +297,24 @@ static void *server_thread_entry(void *argv)
 
     ctxt->return_val = -1;
 
-    sockfd = tcp_socket_create("127.0.0.1", ctxt->port);
+    sockfd = socket_create(SOCK_STREAM, ctxt->ip, ctxt->port);
     if (sockfd < 0) {
-        vlogE("server create on 127.0.0.1:%s failed (sockfd:%d) (%d)",
-              ctxt->port, sockfd, errno);
+        vlogE("server create on %s:%s failed (sockfd:%d) (%d)",
+              ctxt->ip, ctxt->port, sockfd, errno);
         return NULL;
     }
 
     rc = listen(sockfd, 1);
     if (rc < 0) {
         vlogE("server listen failed (%d)", errno);
-        tcp_socket_close(sockfd);
+        socket_close(sockfd);
         return NULL;
     }
 
-    cond_signal(&portforwarding_cond);
+    cond_signal(ctxt->cond);
 
     data_sockfd = accept(sockfd, NULL, NULL);
-    tcp_socket_close((sockfd));
+    socket_close((sockfd));
 
     if (data_sockfd < 0) {
         vlogE("server accept new socket failed.");
@@ -436,72 +343,21 @@ static void *server_thread_entry(void *argv)
     else
         assert(0);
 
-    tcp_socket_close(data_sockfd);
+    socket_close(data_sockfd);
     ctxt->return_val = 0;
     return NULL;
-}
-
-static
-int forwarding_data(const char *service_port, const char *shadow_service_port)
-{
-    pthread_t client_thread;
-    pthread_t server_thread;
-    PortForwardingContxt client_ctxt;
-    PortForwardingContxt server_ctxt;
-    int rc;
-
-    server_ctxt.port = service_port;
-    server_ctxt.recv_count = 0;
-    server_ctxt.sent_count = 0;
-    server_ctxt.return_val = -1;
-
-    rc = pthread_create(&server_thread, NULL, &server_thread_entry, &server_ctxt);
-    if (rc != 0) {
-        vlogE("create server thread failed (%d)", rc);
-        return -1;
-    }
-
-    cond_wait(&portforwarding_cond);
-
-    client_ctxt.port = shadow_service_port;
-    client_ctxt.recv_count = 0;
-    client_ctxt.sent_count = 1024;
-    client_ctxt.return_val = -1;
-
-    rc = pthread_create(&client_thread, NULL, &client_thread_entry, &client_ctxt);
-    if (rc != 0) {
-        vlogE("create client thread failed (%d)", rc);
-        return -1;
-    }
-
-    pthread_join(client_thread, NULL);
-    pthread_join(server_thread, NULL);
-
-    if (client_ctxt.return_val == -1) {
-        vlogE("client thread running failed");
-        return -1;
-    }
-
-    if (server_ctxt.return_val == -1) {
-        vlogE("server thread running failed");
-        return -1;
-    }
-
-    if (client_ctxt.sent_count != server_ctxt.recv_count) {
-        vlogE("the number of sent bytes not match with recv bytes.");
-        return -1;
-    }
-
-    return 0;
 }
 
 static int do_portforwarding_internal(TestContext *context)
 {
     StreamContextExtra *extra = context->stream->extra;
+    pthread_t client_thread;
+    PortForwardingContxt client_ctxt;
     int rc;
     char cmd[32];
     char result[32];
     int pfid = -1;
+
 
     rc = write_cmd("spfsvcadd %s tcp  127.0.0.1 %s\n", extra->service, extra->port);
     TEST_ASSERT_TRUE(rc > 0);
@@ -524,8 +380,34 @@ static int do_portforwarding_internal(TestContext *context)
 
     TEST_ASSERT_TRUE(pfid > 0);
 
-    rc = forwarding_data(extra->port, extra->shadow_port);
+    rc = write_cmd("spfrecvdata 127.0.0.1 %s\n", extra->port);
+    TEST_ASSERT_TRUE(rc > 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    TEST_ASSERT_TRUE(rc == 2);
+    TEST_ASSERT_TRUE(strcmp(cmd, "spfrecvdata") == 0);
+    TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
+
+    client_ctxt.ip = "127.0.0.1";
+    client_ctxt.port = extra->shadow_port;
+    client_ctxt.recv_count = 0;
+    client_ctxt.sent_count = 1024;
+    client_ctxt.return_val = -1;
+    client_ctxt.cond = NULL;
+
+    rc = pthread_create(&client_thread, NULL, &client_thread_entry, &client_ctxt);
     TEST_ASSERT_TRUE(rc == 0);
+
+    pthread_join(client_thread, NULL);
+    TEST_ASSERT_TRUE(client_ctxt.return_val == 0);
+
+    //TODO: wait result of the server.
+    char recv_count[32];
+    rc = read_ack("%32s %32s %32s", cmd, result, recv_count);
+    TEST_ASSERT_TRUE(rc == 3);
+    TEST_ASSERT_TRUE(strcmp(cmd, "spfrecvdata") == 0);
+    TEST_ASSERT_TRUE(strcmp(result, "0") == 0);
+    TEST_ASSERT_TRUE(strcmp(recv_count, "1024") == 0);
 
     rc = ela_stream_close_port_forwarding(context->session->session,
                                               context->stream->stream_id, pfid);
@@ -547,6 +429,8 @@ cleanup:
 static int do_reversed_portforwarding_internal(TestContext *context)
 {
     StreamContextExtra *extra = context->stream->extra;
+    pthread_t server_thread;
+    PortForwardingContxt server_ctxt;
     int rc;
     char cmd[32];
     char result[32];
@@ -556,6 +440,18 @@ static int do_reversed_portforwarding_internal(TestContext *context)
                                      extra->port);
     TEST_ASSERT_TRUE(rc == 0);
 
+    server_ctxt.ip = "127.0.0.1";
+    server_ctxt.port = extra->port;
+    server_ctxt.recv_count = 0;
+    server_ctxt.sent_count = 0;
+    server_ctxt.return_val = -1;
+    server_ctxt.cond = extra->pfd_cond;
+
+    rc = pthread_create(&server_thread, NULL, &server_thread_entry, &server_ctxt);
+    TEST_ASSERT_TRUE(rc == 0);
+
+    cond_wait(extra->pfd_cond);
+
     rc = write_cmd("spfopen %s tcp 127.0.0.1 %s\n", extra->service, extra->shadow_port);
     TEST_ASSERT_TRUE(rc > 0);
 
@@ -564,8 +460,19 @@ static int do_reversed_portforwarding_internal(TestContext *context)
     TEST_ASSERT_TRUE(strcmp(cmd, "spfopen") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
 
-    rc = forwarding_data(extra->port, extra->shadow_port);
-    TEST_ASSERT_TRUE(rc == 0);
+    rc = write_cmd("spfsenddata 127.0.0.1 %s\n", extra->shadow_port);
+    TEST_ASSERT_TRUE(rc > 0);
+
+    char sent_count[32];
+    rc = read_ack("%32s %32s %32s", cmd, result, sent_count);
+    TEST_ASSERT_TRUE(rc == 3);
+    TEST_ASSERT_TRUE(strcmp(cmd, "spfsenddata") == 0);
+    TEST_ASSERT_TRUE(strcmp(result, "0") == 0);
+    TEST_ASSERT_TRUE(strcmp(sent_count, "1024") == 0);
+
+    pthread_join(server_thread, NULL);
+    TEST_ASSERT_TRUE(server_ctxt.return_val != -1);
+    TEST_ASSERT_TRUE(server_ctxt.recv_count == 1024);
 
     rc = write_cmd("spfclose\n");
     TEST_ASSERT_TRUE(rc > 2);
