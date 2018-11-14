@@ -346,6 +346,11 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		// Set new connect list into state.
 		state.connectPeers = connectPeers
 
+		// Notify peer state change for connect list changed.
+		if s.cfg.StateNotifier != nil {
+			s.cfg.StateNotifier.OnStateChange(state)
+		}
+
 		msg.reply <- struct{}{}
 
 	case sendToPeerMsg:
