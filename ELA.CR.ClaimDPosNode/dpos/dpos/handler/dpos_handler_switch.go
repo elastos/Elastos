@@ -5,9 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
@@ -15,6 +12,9 @@ import (
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type AbnormalRecovering interface {
@@ -37,11 +37,11 @@ type IProposalDispatcher interface {
 	CleanProposals()
 	FinishProposal()
 	TryStartSpeculatingProposal(b *core.Block)
-	ProcessProposal(d msg.DPosProposal)
+	ProcessProposal(d core.DPosProposal)
 
 	FinishConsensus()
 
-	ProcessVote(v msg.DPosProposalVote, accept bool)
+	ProcessVote(v core.DPosProposalVote, accept bool)
 
 	RequestAbnormalRecovering()
 	TryAppendAndBroadcastConfirmBlockMsg() bool
@@ -134,7 +134,7 @@ func (h *DposHandlerSwitch) FinishConsensus() {
 	})
 }
 
-func (h *DposHandlerSwitch) StartNewProposal(p msg.DPosProposal) {
+func (h *DposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	rawData := new(bytes.Buffer)
@@ -181,7 +181,7 @@ func (h *DposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	return false
 }
 
-func (h *DposHandlerSwitch) ProcessAcceptVote(p msg.DPosProposalVote) {
+func (h *DposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
 	h.currentHandler.ProcessAcceptVote(p)
 
 	rawData := new(bytes.Buffer)
@@ -190,7 +190,7 @@ func (h *DposHandlerSwitch) ProcessAcceptVote(p msg.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *DposHandlerSwitch) ProcessRejectVote(p msg.DPosProposalVote) {
+func (h *DposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
 	h.currentHandler.ProcessRejectVote(p)
 
 	rawData := new(bytes.Buffer)

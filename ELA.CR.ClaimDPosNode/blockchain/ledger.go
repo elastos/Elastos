@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	. "github.com/elastos/Elastos.ELA/core"
 )
 
@@ -14,7 +13,7 @@ var DefaultLedger *Ledger
 
 type NewBlocksListener interface {
 	OnBlockReceived(b *Block, confirmed bool)
-	OnConfirmReceived(p *msg.DPosProposalVoteSlot)
+	OnConfirmReceived(p *DPosProposalVoteSlot)
 }
 
 // Ledger - the struct for ledger
@@ -82,13 +81,13 @@ func (l *Ledger) GetLocalBlockChainHeight() uint32 {
 }
 
 //Get blocks and confirms by given height range, if end equals zero will be treat as current highest block height
-func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*Block, []*msg.DPosProposalVoteSlot, error) {
+func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*Block, []*DPosProposalVoteSlot, error) {
 	//todo complete me
 	return nil, nil, nil
 }
 
 //Append blocks and confirms directly
-func (l *Ledger) AppendBlocksAndConfirms(blocks []*Block, confirms []*msg.DPosProposalVoteSlot) error {
+func (l *Ledger) AppendBlocksAndConfirms(blocks []*Block, confirms []*DPosProposalVoteSlot) error {
 	//todo complete me
 	return nil
 }
