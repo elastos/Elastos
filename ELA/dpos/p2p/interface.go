@@ -7,12 +7,13 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
-// PeerAddr represent a connect peer's ID and it's host address
+// PeerAddr represent a connect peer's ID and it's IP address
 type PeerAddr struct {
 	// PID is the peer's public key id.
 	PID common.Uint256
 
-	// Addr is the peer's host address.
+	// Addr is the peer's IP address.  It can be host:port format,
+	// or host only and use the DefaultPort passed by server config.
 	Addr string
 }
 
