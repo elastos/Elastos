@@ -453,6 +453,14 @@ func GetNextOnDutyArbiter(offset uint32) ([]byte, error) {
 	return arbitrator, nil
 }
 
+func HasArbitersMajorityCount(num uint32) bool {
+	return num >= config.Parameters.ArbiterConfiguration.MajorityCount
+}
+
+func HasArbitersMinorityCount(num uint32) bool {
+	return num > uint32(len(config.Parameters.Arbiters)) - config.Parameters.ArbiterConfiguration.MajorityCount
+}
+
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	payloadSideChainPow, ok := txn.Payload.(*PayloadSideChainPow)
 	if !ok {
