@@ -13,6 +13,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -35,23 +36,24 @@ var (
 )
 
 type Blockchain struct {
-	BlockHeight    uint32
-	GenesisHash    Uint256
-	BestChain      *BlockNode
-	Root           *BlockNode
-	Index          map[Uint256]*BlockNode
-	IndexLock      sync.RWMutex
-	DepNodes       map[Uint256][]*BlockNode
-	Orphans        map[Uint256]*OrphanBlock
-	PrevOrphans    map[Uint256][]*OrphanBlock
-	OldestOrphan   *OrphanBlock
-	BlockCache     map[Uint256]*Block
-	TimeSource     MedianTimeSource
-	MedianTimePast time.Time
-	OrphanLock     sync.RWMutex
-	BCEvents       *events.Event
-	mutex          sync.RWMutex
-	AssetID        Uint256
+	BlockHeight       uint32
+	GenesisHash       Uint256
+	BestChain         *BlockNode
+	Root              *BlockNode
+	Index             map[Uint256]*BlockNode
+	IndexLock         sync.RWMutex
+	DepNodes          map[Uint256][]*BlockNode
+	Orphans           map[Uint256]*OrphanBlock
+	PrevOrphans       map[Uint256][]*OrphanBlock
+	OldestOrphan      *OrphanBlock
+	BlockCache        map[Uint256]*Block
+	TimeSource        MedianTimeSource
+	MedianTimePast    time.Time
+	OrphanLock        sync.RWMutex
+	BCEvents          *events.Event
+	mutex             sync.RWMutex
+	AssetID           Uint256
+	NewBlocksListener NewBlocksListener
 }
 
 func NewBlockchain(height uint32) *Blockchain {
@@ -67,8 +69,9 @@ func NewBlockchain(height uint32) *Blockchain {
 		BlockCache:   make(map[Uint256]*Block),
 		TimeSource:   NewMedianTime(),
 
-		BCEvents: events.NewEvent(),
-		AssetID:  EmptyHash,
+		BCEvents:          events.NewEvent(),
+		AssetID:           EmptyHash,
+		NewBlocksListener: arbitrator.ArbitratorSingleton,
 	}
 }
 

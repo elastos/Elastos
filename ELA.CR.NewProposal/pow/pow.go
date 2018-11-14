@@ -236,15 +236,11 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 		if pow.SolveBlock(msgBlock) {
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
-				if err != nil {
+				if err := node.LocalNode.AppendBlock(msgBlock); err != nil {
 					log.Debug(err)
 					continue
 				}
-				//TODO if co-mining condition
-				if isOrphan || !inMainChain {
-					continue
-				}
+
 				pow.BroadcastBlock(msgBlock)
 				h := msgBlock.Hash()
 				blockHashes = append(blockHashes, &h)
