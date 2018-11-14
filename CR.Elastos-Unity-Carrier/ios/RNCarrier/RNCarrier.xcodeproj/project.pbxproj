@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		39859B82219BCAA500DE141B /* RNCarrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859B81219BCAA500DE141B /* RNCarrier.m */; };
-		39859B83219BCAA500DE141B /* RNCarrier.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39859B80219BCAA500DE141B /* RNCarrier.h */; };
+		39859B82219BCAA500DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859B81219BCAA500DE141B /* Carrier.m */; };
+		39859B83219BCAA500DE141B /* Carrier.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39859B80219BCAA500DE141B /* Carrier.h */; };
 		39859B8E219BCB6500DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859B8C219BCB6500DE141B /* CarrierPlugin.m */; };
 		39859B90219BCBDA00DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859B8F219BCBDA00DE141B /* ElastosCarrier.framework */; };
 /* End PBXBuildFile section */
@@ -20,7 +20,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				39859B83219BCAA500DE141B /* RNCarrier.h in CopyFiles */,
+				39859B83219BCAA500DE141B /* Carrier.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -28,8 +28,8 @@
 
 /* Begin PBXFileReference section */
 		39859B7D219BCAA500DE141B /* libRNCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		39859B80219BCAA500DE141B /* RNCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNCarrier.h; sourceTree = "<group>"; };
-		39859B81219BCAA500DE141B /* RNCarrier.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCarrier.m; sourceTree = "<group>"; };
+		39859B80219BCAA500DE141B /* Carrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
+		39859B81219BCAA500DE141B /* Carrier.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
 		39859B89219BCB6500DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
 		39859B8C219BCB6500DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
 		39859B8F219BCBDA00DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
@@ -69,8 +69,8 @@
 			children = (
 				39859B89219BCB6500DE141B /* CarrierPlugin.h */,
 				39859B8C219BCB6500DE141B /* CarrierPlugin.m */,
-				39859B80219BCAA500DE141B /* RNCarrier.h */,
-				39859B81219BCAA500DE141B /* RNCarrier.m */,
+				39859B80219BCAA500DE141B /* Carrier.h */,
+				39859B81219BCAA500DE141B /* Carrier.m */,
 			);
 			path = RNCarrier;
 			sourceTree = "<group>";
@@ -132,7 +132,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				39859B8E219BCB6500DE141B /* CarrierPlugin.m in Sources */,
-				39859B82219BCAA500DE141B /* RNCarrier.m in Sources */,
+				39859B82219BCAA500DE141B /* Carrier.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

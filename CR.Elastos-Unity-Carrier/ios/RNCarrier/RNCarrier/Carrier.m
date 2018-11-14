@@ -1,9 +1,9 @@
-#import "RNCarrier.h"
+#import "Carrier.h"
 #import <React/RCTLog.h>
 
 
 
-@interface RNCarrier () <ELACarrierDelegate>{
+@interface Carrier () <ELACarrierDelegate>{
     BOOL _init;
     ELACarrierConnectionStatus connectStatus;
     ELACarrier *elaCarrier;
@@ -17,7 +17,7 @@
 }
 @end
 
-@implementation RNCarrier
+@implementation Carrier
 
 -(ELACarrier *) getIntance{
     return elaCarrier;
