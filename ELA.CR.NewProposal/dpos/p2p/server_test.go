@@ -373,6 +373,88 @@ func TestServer_PeersReconnect(t *testing.T) {
 	}
 }
 
+// Test multiple servers connect to each other.
+func TestServerConnections(t *testing.T) {
+	// Mock 71 server config and addresses.  Why 71 ? because 71[servers]*
+	// ((71-1)*2)[inbound and outbound connections] = 9940, and terminal ulimit
+	// parameter is 10240, so 71 is the maximum servers can mock on my computer.
+	servers := 71
+	cfgs := make([]Config, 0, servers)
+	addrList := make([]PeerAddr, 0, servers)
+	pid := [32]byte{}
+	for i := 0; i < servers; i++ {
+		rand.Read(pid[:])
+		port := 50000 + i
+
+		cfgs = append(cfgs, Config{
+			PID:              pid,
+			MagicNumber:      123123,
+			ProtocolVersion:  0,
+			Services:         0,
+			DefaultPort:      uint16(port),
+			MakeEmptyMessage: makeEmptyMessage,
+		})
+
+		addrList = append(addrList, PeerAddr{
+			PID:  pid,
+			Addr: fmt.Sprintf("localhost:%d", port),
+		})
+	}
+
+	// Start 71 servers.
+	serverChan := make(chan *server, servers)
+	doneChan := make(chan struct{})
+	for _, cfg := range cfgs {
+		s, err := NewServer(&cfg)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+
+		s.Start()
+		s.ConnectPeers(addrList)
+		serverChan <- s
+
+		// There will be 70 outbound connections and 70 inbound connections
+		// for each server
+		go func() {
+			ticker := time.NewTicker(time.Millisecond * 100)
+			defer ticker.Stop()
+
+		out:
+			for {
+				select {
+				case <-ticker.C:
+					connected := s.ConnectedCount()
+					if connected >= int32(servers-1)*2 {
+						break out
+					}
+				case <-time.After(time.Second * 10):
+					t.Fatal("Server connection timeout")
+				}
+			}
+			// Notify server connect peers completed.
+			doneChan <- struct{}{}
+		}()
+	}
+	for i := 0; i < servers; i++ {
+		select {
+		case <-doneChan:
+		case <-time.After(time.Second * 10):
+			t.Fatal("Server connect to peers timeout")
+		}
+	}
+
+cleanup:
+	for {
+		select {
+		case s := <-serverChan:
+			s.Stop()
+		default:
+			break cleanup
+		}
+	}
+}
+
 func makeEmptyMessage(cmd string) (m p2p.Message, e error) {
 	switch cmd {
 	case "message":
