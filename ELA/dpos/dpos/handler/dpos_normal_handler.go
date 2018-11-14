@@ -6,14 +6,13 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type DposNormalHandler struct {
 	*DposHandlerSwitch
 }
 
-func (h *DposNormalHandler) ProcessAcceptVote(p msg.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
@@ -27,7 +26,7 @@ func (h *DposNormalHandler) ProcessAcceptVote(p msg.DPosProposalVote) {
 	}
 }
 
-func (h *DposNormalHandler) ProcessRejectVote(p msg.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
 		h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
@@ -40,7 +39,7 @@ func (h *DposNormalHandler) ProcessRejectVote(p msg.DPosProposalVote) {
 	}
 }
 
-func (h *DposNormalHandler) StartNewProposal(p msg.DPosProposal) {
+func (h *DposNormalHandler) StartNewProposal(p core.DPosProposal) {
 	log.Info("[Normal][OnProposalReceived] received request sign")
 	h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
 		h.consensus.TryChangeView()

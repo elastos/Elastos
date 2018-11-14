@@ -3,15 +3,15 @@ package cs
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ResponseBlocksMessage struct {
 	Command       string
 	Blocks        []*core.Block
-	BlockConfirms []*msg.DPosProposalVoteSlot
+	BlockConfirms []*core.DPosProposalVoteSlot
 }
 
 func (m *ResponseBlocksMessage) CMD() string {
@@ -67,9 +67,9 @@ func (m *ResponseBlocksMessage) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	m.BlockConfirms = make([]*msg.DPosProposalVoteSlot, 0)
+	m.BlockConfirms = make([]*core.DPosProposalVoteSlot, 0)
 	for i := uint64(0); i < blockConfirmCount; i++ {
-		blockConfirm := &msg.DPosProposalVoteSlot{}
+		blockConfirm := &core.DPosProposalVoteSlot{}
 		if err = blockConfirm.Deserialize(r); err != nil {
 			return err
 		}

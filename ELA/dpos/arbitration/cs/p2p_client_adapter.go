@@ -50,7 +50,7 @@ type MessageItem struct {
 
 type P2PListener interface {
 	OnBlockReceived(peer *peer.Peer, b *core.Block)
-	OnConfirmReceived(peer *peer.Peer, p *msg.DPosProposalVoteSlot)
+	OnConfirmReceived(peer *peer.Peer, p *core.DPosProposalVoteSlot)
 }
 
 type PeerConnectionPool interface {
@@ -160,9 +160,14 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 		}
 		adapter.Broadcast(msgItem.Message)
 	case ReceivedConfirm:
-		confirmMsg, ok := msgItem.Message.(*msg.Confirm)
+		msgConfirm, ok := msgItem.Message.(*msg.Confirm)
 		if ok {
-			adapter.Listener.OnConfirmReceived(msgItem.Peer, &confirmMsg.Proposal)
+			slot, ok := msgConfirm.Serializable.(*core.DPosProposalVoteSlot)
+			if !ok {
+				log.Info("[ProcessMessage] received invalid confirm")
+				return
+			}
+			adapter.Listener.OnConfirmReceived(msgItem.Peer, slot)
 		}
 		adapter.Broadcast(msgItem.Message)
 	default:

@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -17,10 +16,10 @@ type DposEventConditionHandler interface {
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p msg.DPosProposal)
+	StartNewProposal(p core.DPosProposal)
 
-	ProcessAcceptVote(p msg.DPosProposalVote)
-	ProcessRejectVote(p msg.DPosProposalVote)
+	ProcessAcceptVote(p core.DPosProposalVote)
+	ProcessRejectVote(p core.DPosProposalVote)
 }
 
 type DposEventHandler interface {
@@ -73,7 +72,7 @@ func (d *DposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *DposManager) OnProposalReceived(peer *peer.Peer, p msg.DPosProposal) {
+func (d *DposManager) OnProposalReceived(peer *peer.Peer, p core.DPosProposal) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -82,7 +81,7 @@ func (d *DposManager) OnProposalReceived(peer *peer.Peer, p msg.DPosProposal) {
 	d.handler.StartNewProposal(p)
 }
 
-func (d *DposManager) OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote) {
+func (d *DposManager) OnVoteReceived(peer *peer.Peer, p core.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -91,7 +90,7 @@ func (d *DposManager) OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote) {
 	d.handler.ProcessAcceptVote(p)
 }
 
-func (d *DposManager) OnVoteRejected(peer *peer.Peer, p msg.DPosProposalVote) {
+func (d *DposManager) OnVoteRejected(peer *peer.Peer, p core.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -121,7 +120,7 @@ func (d *DposManager) OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHei
 	d.handler.ResponseGetBlocks(peer, startBlockHeight, endBlockHeight)
 }
 
-func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*msg.DPosProposalVoteSlot) {
+func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
