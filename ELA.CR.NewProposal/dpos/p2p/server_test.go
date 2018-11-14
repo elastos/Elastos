@@ -41,10 +41,13 @@ func mockRemotePeer(t *testing.T, pid [32]byte, port uint16,
 	pc chan<- *peer.Peer, mc chan<- p2p.Message) error {
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
+		PID:              pid,
 		Magic:            123123,
 		ProtocolVersion:  0,
 		Services:         0,
-		PID:              pid,
+		PingInterval:     defaultPingInterval,
+		PingNonce:        func(pid [32]byte) uint64 { return 0 },
+		PongNonce:        func(pid [32]byte) uint64 { return 0 },
 		MakeEmptyMessage: makeEmptyMessage,
 	}
 
@@ -89,10 +92,13 @@ func mockInboundPeer(t *testing.T, addr PeerAddr, pc chan<- *peer.Peer,
 	mc chan<- p2p.Message) error {
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
+		PID:              addr.PID,
 		Magic:            123123,
 		ProtocolVersion:  0,
 		Services:         0,
-		PID:              addr.PID,
+		PingInterval:     defaultPingInterval,
+		PingNonce:        func(pid [32]byte) uint64 { return 0 },
+		PongNonce:        func(pid [32]byte) uint64 { return 0 },
 		MakeEmptyMessage: makeEmptyMessage,
 	}
 
@@ -125,6 +131,88 @@ func mockInboundPeer(t *testing.T, addr PeerAddr, pc chan<- *peer.Peer,
 	return nil
 }
 
+// Test multiple servers connect to each other.
+func TestServerConnections(t *testing.T) {
+	// Mock 71 server config and addresses.  Why 71 ? because 71[servers]*
+	// ((71-1)*2)[inbound and outbound connections] = 9940, and terminal ulimit
+	// parameter is 10240, so 71 is the maximum servers can mock on my computer.
+	servers := 71
+	cfgs := make([]Config, 0, servers)
+	addrList := make([]PeerAddr, 0, servers)
+	pid := [32]byte{}
+	for i := 0; i < servers; i++ {
+		rand.Read(pid[:])
+		port := 40000 + i
+
+		cfgs = append(cfgs, Config{
+			PID:              pid,
+			MagicNumber:      123123,
+			ProtocolVersion:  0,
+			Services:         0,
+			DefaultPort:      uint16(port),
+			MakeEmptyMessage: makeEmptyMessage,
+		})
+
+		addrList = append(addrList, PeerAddr{
+			PID:  pid,
+			Addr: fmt.Sprintf("localhost:%d", port),
+		})
+	}
+
+	// Start 71 servers.
+	serverChan := make(chan *server, servers)
+	doneChan := make(chan struct{})
+	for _, cfg := range cfgs {
+		s, err := NewServer(&cfg)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+
+		s.Start()
+		s.ConnectPeers(addrList)
+		serverChan <- s
+
+		// There will be 70 outbound connections and 70 inbound connections
+		// for each server
+		go func() {
+			ticker := time.NewTicker(time.Millisecond * 100)
+			defer ticker.Stop()
+
+		out:
+			for {
+				select {
+				case <-ticker.C:
+					connected := s.ConnectedCount()
+					if connected >= int32(servers-1)*2 {
+						break out
+					}
+				case <-time.After(time.Second * 10):
+					t.Fatal("Server connection timeout")
+				}
+			}
+			// Notify server connect peers completed.
+			doneChan <- struct{}{}
+		}()
+	}
+	for i := 0; i < servers; i++ {
+		select {
+		case <-doneChan:
+		case <-time.After(time.Second * 10):
+			t.Fatal("Server connect to peers timeout")
+		}
+	}
+
+cleanup:
+	for {
+		select {
+		case s := <-serverChan:
+			s.Stop()
+		default:
+			break cleanup
+		}
+	}
+}
+
 func TestServer_ConnectPeers(t *testing.T) {
 	// Start peer-to-peer server
 	pid := [32]byte{}
@@ -147,11 +235,12 @@ func TestServer_ConnectPeers(t *testing.T) {
 	msgChan := make(chan p2p.Message)
 
 	// Mock 100 remote peers and addresses.
+	portBase := uint16(50000)
 	addrList := make([]PeerAddr, 0, 100)
 	connectPeers := make(map[common.Uint256]PeerAddr)
 	for i := uint16(0); i < 100; i++ {
 		rand.Read(pid[:])
-		port := 40000 + i
+		port := portBase + i
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
 		connectPeers[pid] = addr
@@ -177,7 +266,7 @@ func TestServer_ConnectPeers(t *testing.T) {
 	}
 
 	for _, p := range connectedPeers {
-		index := p.ToPeer().NA().Port % 40000
+		index := p.ToPeer().NA().Port % portBase
 		if !p.PID().IsEqual(addrList[index].PID) {
 			t.Errorf("Connect peer PID not match, expect %s get %s",
 				common.Uint256(addrList[index].PID), p.PID())
@@ -212,7 +301,7 @@ func TestServer_ConnectPeers(t *testing.T) {
 		t.FailNow()
 	}
 	for _, p := range connectedPeers {
-		index := p.ToPeer().NA().Port % 40000
+		index := p.ToPeer().NA().Port % portBase
 		if !p.PID().IsEqual(addrList[index].PID) {
 			t.Errorf("Connect peer PID not match, expect %s got %s",
 				common.Uint256(addrList[index].PID), p.PID())
@@ -248,7 +337,7 @@ func TestServer_ConnectPeers(t *testing.T) {
 		t.FailNow()
 	}
 	for _, p := range connectedPeers {
-		index := p.ToPeer().NA().Port % 40000
+		index := p.ToPeer().NA().Port % portBase
 		if !p.PID().IsEqual(addrList[index].PID) {
 			t.Errorf("Connect peer PID not match, expect %s got %s",
 				common.Uint256(addrList[index].PID), p.PID())
@@ -348,7 +437,7 @@ func TestServer_PeersReconnect(t *testing.T) {
 	connectPeers := make(map[common.Uint256]PeerAddr)
 	for i := uint16(0); i < 100; i++ {
 		rand.Read(pid[:])
-		port := 40000 + i
+		port := 60000 + i
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
 		connectPeers[pid] = addr
@@ -369,88 +458,6 @@ func TestServer_PeersReconnect(t *testing.T) {
 
 		case <-time.After(time.Minute):
 			t.Fatalf("Connect peers timeout")
-		}
-	}
-}
-
-// Test multiple servers connect to each other.
-func TestServerConnections(t *testing.T) {
-	// Mock 71 server config and addresses.  Why 71 ? because 71[servers]*
-	// ((71-1)*2)[inbound and outbound connections] = 9940, and terminal ulimit
-	// parameter is 10240, so 71 is the maximum servers can mock on my computer.
-	servers := 71
-	cfgs := make([]Config, 0, servers)
-	addrList := make([]PeerAddr, 0, servers)
-	pid := [32]byte{}
-	for i := 0; i < servers; i++ {
-		rand.Read(pid[:])
-		port := 50000 + i
-
-		cfgs = append(cfgs, Config{
-			PID:              pid,
-			MagicNumber:      123123,
-			ProtocolVersion:  0,
-			Services:         0,
-			DefaultPort:      uint16(port),
-			MakeEmptyMessage: makeEmptyMessage,
-		})
-
-		addrList = append(addrList, PeerAddr{
-			PID:  pid,
-			Addr: fmt.Sprintf("localhost:%d", port),
-		})
-	}
-
-	// Start 71 servers.
-	serverChan := make(chan *server, servers)
-	doneChan := make(chan struct{})
-	for _, cfg := range cfgs {
-		s, err := NewServer(&cfg)
-		if !assert.NoError(t, err) {
-			t.FailNow()
-		}
-
-		s.Start()
-		s.ConnectPeers(addrList)
-		serverChan <- s
-
-		// There will be 70 outbound connections and 70 inbound connections
-		// for each server
-		go func() {
-			ticker := time.NewTicker(time.Millisecond * 100)
-			defer ticker.Stop()
-
-		out:
-			for {
-				select {
-				case <-ticker.C:
-					connected := s.ConnectedCount()
-					if connected >= int32(servers-1)*2 {
-						break out
-					}
-				case <-time.After(time.Second * 10):
-					t.Fatal("Server connection timeout")
-				}
-			}
-			// Notify server connect peers completed.
-			doneChan <- struct{}{}
-		}()
-	}
-	for i := 0; i < servers; i++ {
-		select {
-		case <-doneChan:
-		case <-time.After(time.Second * 10):
-			t.Fatal("Server connect to peers timeout")
-		}
-	}
-
-cleanup:
-	for {
-		select {
-		case s := <-serverChan:
-			s.Stop()
-		default:
-			break cleanup
 		}
 	}
 }
