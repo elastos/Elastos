@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "react native plugin for elastos carrier",
   "main": "index.js",
-  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cyber-republic/react-native-elastos-carrier.git"
@@ -31,9 +30,15 @@
   },
   "homepage": "https://github.com/cyber-republic/react-native-elastos-carrier#readme",
   "scripts": {},
-  "devDependencies": {},
   "dependencies": {
     "lodash": "^4.17.5"
   },
-  "peerDependencies": {}
+  "peerDependencies": {
+    "react": "16.2.0",
+    "react-native": "^0.52.0"
+  },
+  "devDependencies": {
+    "react": "16.2.0",
+    "react-native": "^0.52.0"
+  }
 }
