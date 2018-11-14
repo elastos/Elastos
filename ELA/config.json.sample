@@ -52,6 +52,7 @@
       "MaxLogsSize": 0,
       "MaxPerLogSize": 0,
       "MaxConnections": 100
+      "MajorityCount": 3
     }
   }
 }

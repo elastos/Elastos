@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
@@ -292,8 +291,8 @@ func (p *ProposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes = append(p.acceptVotes, v)
 
-		if float32(len(p.acceptVotes)) >= float32(len(config.Parameters.Arbiters)*3)/float32(5) {
-			log.Info("Collect >= 3/5 signs, finish proposal.")
+		if blockchain.HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
+			log.Info("Collect majority signs, finish proposal.")
 			p.FinishProposal()
 		}
 	}
@@ -307,7 +306,7 @@ func (p *ProposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes = append(p.rejectedVotes, v)
 
-		if float32(len(p.rejectedVotes)) > float32(len(config.Parameters.Arbiters)*2)/float32(5) {
+		if blockchain.HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
 			p.CleanProposals()
 			p.consensus.ChangeView()
 		}

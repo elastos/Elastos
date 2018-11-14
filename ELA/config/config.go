@@ -110,6 +110,7 @@ type ArbiterConfiguration struct {
 	MaxLogsSize    int64    `json:"MaxLogsSize"`
 	MaxPerLogSize  int64    `json:"MaxPerLogSize"`
 	MaxConnections int      `json:"MaxConnections"`
+	MajorityCount  uint32   `json:"MajorityCount"`
 }
 
 type ConfigFile struct {

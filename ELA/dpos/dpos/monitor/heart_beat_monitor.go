@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -60,7 +61,7 @@ func (m *HeartBeatMonitor) ResetActive(arbitrator string, t time.Time) {
 }
 
 func (m *HeartBeatMonitor) checkAbnormalState() {
-	inactiveCount := 0
+	inactiveCount := uint32(0)
 	now := time.Now()
 	for _, v := range m.lastActiveTime {
 		if now.After(v.Add(3 * time.Second)) { //todo config inactive time
@@ -68,7 +69,7 @@ func (m *HeartBeatMonitor) checkAbnormalState() {
 		}
 	}
 
-	if inactiveCount >= len(config.Parameters.Arbiters)*2/5 { //todo config inactive count
+	if blockchain.HasArbitersMajorityCount(inactiveCount) { //todo config inactive count
 		m.listener.OnAbnormalStateDetected()
 		for k := range m.lastActiveTime {
 			m.lastActiveTime[k] = now
