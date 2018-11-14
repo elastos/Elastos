@@ -205,6 +205,18 @@ func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
 		state.outboundPeers[sp.ID()] = sp
 	}
 
+	// Add message handler for the new peer.
+	if sp.server.cfg.HandleMessage != nil {
+		sp.Peer.AddMessageFunc(func(peer *peer.Peer, msg p2p.Message) {
+			sp.server.cfg.HandleMessage(peer.PID(), msg)
+		})
+	}
+
+	// Notify peer state change for new peer added.
+	if s.cfg.StateNotifier != nil {
+		s.cfg.StateNotifier.OnStateChange(state)
+	}
+
 	return true
 }
 
@@ -230,6 +242,11 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 		} else {
 			s.connManager.Disconnect(sp.connReq.ID())
 		}
+	}
+
+	// Notify peer state change for done peer removed.
+	if s.cfg.StateNotifier != nil {
+		s.cfg.StateNotifier.OnStateChange(state)
 	}
 }
 
@@ -375,6 +392,20 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 	}
 }
 
+func (s *server) pingNonce(pid [32]byte) uint64 {
+	if s.cfg.PingNonce == nil {
+		return 0
+	}
+	return s.cfg.PingNonce(pid)
+}
+
+func (s *server) pongNonce(pid [32]byte) uint64 {
+	if s.cfg.PongNonce == nil {
+		return 0
+	}
+	return s.cfg.PongNonce(pid)
+}
+
 // newPeerConfig returns the configuration for the given serverPeer.
 func newPeerConfig(sp *serverPeer) *peer.Config {
 	cfg := &peer.Config{
@@ -382,6 +413,9 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 		Magic:            sp.server.cfg.MagicNumber,
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
 		Services:         sp.server.cfg.Services,
+		PingInterval:     sp.server.cfg.PingInterval,
+		PingNonce:        sp.server.pingNonce,
+		PongNonce:        sp.server.pongNonce,
 		MakeEmptyMessage: sp.server.cfg.MakeEmptyMessage,
 	}
 
@@ -619,6 +653,10 @@ func (s *server) ScheduleShutdown(duration time.Duration) {
 	}()
 }
 
+func (s *server) dialTimeout(addr net.Addr) (net.Conn, error) {
+	return net.DialTimeout(addr.Network(), addr.String(), s.cfg.ConnectTimeout)
+}
+
 // parseListeners determines whether each listen address is IPv4 and IPv6 and
 // returns a slice of appropriate net.Addrs to listen on with TCP. It also
 // properly detects addresses which apply to "all interfaces" and adds the
@@ -644,6 +682,12 @@ func parseListeners(addr string) ([]net.Addr, error) {
 // Use start to begin accepting connections from peers.
 func NewServer(origCfg *Config) (*server, error) {
 	cfg := *origCfg // Copy to avoid mutating caller.
+	if cfg.ConnectTimeout <= 0 {
+		cfg.ConnectTimeout = defaultConnectTimeout
+	}
+	if cfg.PingInterval <= 0 {
+		cfg.PingInterval = defaultPingInterval
+	}
 
 	listeners, err := initListeners(cfg)
 	if err != nil {
@@ -663,7 +707,7 @@ func NewServer(origCfg *Config) (*server, error) {
 		Listeners:     listeners,
 		OnAccept:      s.inboundPeerConnected,
 		RetryDuration: connectionRetryInterval,
-		Dial:          dialTimeout,
+		Dial:          s.dialTimeout,
 		OnConnection:  s.outboundPeerConnected,
 	})
 	if err != nil {
