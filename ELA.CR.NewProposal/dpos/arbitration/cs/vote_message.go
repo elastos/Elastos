@@ -3,12 +3,12 @@ package cs
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type VoteMessage struct {
 	Command string
-	Vote    msg.DPosProposalVote
+	Vote    core.DPosProposalVote
 }
 
 func (msg *VoteMessage) CMD() string {

@@ -5,9 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
@@ -15,14 +12,18 @@ import (
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/handler"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type ProposalDispatcher struct {
 	processingBlock  *core.Block
-	currentVoteSlot  *msg.DPosProposalVoteSlot
-	acceptVotes      []msg.DPosProposalVote
-	rejectedVotes    []msg.DPosProposalVote
-	pendingProposals []msg.DPosProposal
+	currentVoteSlot  *core.DPosProposalVoteSlot
+	acceptVotes      []core.DPosProposalVote
+	rejectedVotes    []core.DPosProposalVote
+	pendingProposals []core.DPosProposal
 
 	eventMonitor *log.EventMonitor
 	consensus    IConsensus
@@ -52,7 +53,7 @@ func (p *ProposalDispatcher) GetProcessingBlock() *core.Block {
 	return p.processingBlock
 }
 
-func (p *ProposalDispatcher) ProcessVote(v msg.DPosProposalVote, accept bool) {
+func (p *ProposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	if accept {
 		p.countAcceptedVote(v)
 	} else {
@@ -70,9 +71,9 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &msg.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]msg.DPosProposalVote, 0)}
+	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 
-	proposal := msg.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash()}
+	proposal := core.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash()}
 	proposal.Sign = proposal.SignProposal()
 
 	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
@@ -105,7 +106,7 @@ func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &msg.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]msg.DPosProposalVote, 0)}
+	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 }
 
 func (p *ProposalDispatcher) FinishProposal() {
@@ -135,13 +136,13 @@ func (p *ProposalDispatcher) CleanProposals() {
 	log.Info("Clean proposals")
 	p.processingBlock = nil
 	p.currentVoteSlot = nil
-	p.acceptVotes = make([]msg.DPosProposalVote, 0)
-	p.rejectedVotes = make([]msg.DPosProposalVote, 0)
+	p.acceptVotes = make([]core.DPosProposalVote, 0)
+	p.rejectedVotes = make([]core.DPosProposalVote, 0)
 
 	//todo clear pending proposals that are lower than current consensus height
 }
 
-func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
+func (p *ProposalDispatcher) ProcessProposal(d core.DPosProposal) {
 
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
@@ -187,16 +188,16 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
-	p.currentVoteSlot.Votes = make([]msg.DPosProposalVote, 0)
+	p.currentVoteSlot.Votes = make([]core.DPosProposalVote, 0)
 	for _, v := range p.acceptVotes {
 		p.currentVoteSlot.Votes = append(p.currentVoteSlot.Votes, v)
 	}
 
 	log.Debug("[TryAppendAndBroadcastConfirmBlockMsg] len signs:", len(p.currentVoteSlot.Votes))
-	confirmMsg := &msg.Confirm{Proposal: *p.currentVoteSlot}
+	confirmMsg := msg.NewConfirm(p.currentVoteSlot)
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
 
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms([]*core.Block{p.processingBlock}, []*msg.DPosProposalVoteSlot{p.currentVoteSlot}); err != nil {
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms([]*core.Block{p.processingBlock}, []*core.DPosProposalVoteSlot{p.currentVoteSlot}); err != nil {
 		cs.P2PClientSingleton.AddMessageHash(cs.P2PClientSingleton.GetMessageHash(confirmMsg), p.CurrentHeight())
 		cs.P2PClientSingleton.Server.BroadcastMessage(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
@@ -268,7 +269,7 @@ func (p *ProposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *ProposalDispatcher) alreadyExistVote(v msg.DPosProposalVote) bool {
+func (p *ProposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
 	for _, item := range p.acceptVotes {
 		if item.Signer == v.Signer {
 			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
@@ -284,7 +285,7 @@ func (p *ProposalDispatcher) alreadyExistVote(v msg.DPosProposalVote) bool {
 	return false
 }
 
-func (p *ProposalDispatcher) countAcceptedVote(v msg.DPosProposalVote) {
+func (p *ProposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
@@ -299,7 +300,7 @@ func (p *ProposalDispatcher) countAcceptedVote(v msg.DPosProposalVote) {
 	}
 }
 
-func (p *ProposalDispatcher) countRejectedVote(v msg.DPosProposalVote) {
+func (p *ProposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
@@ -314,8 +315,8 @@ func (p *ProposalDispatcher) countRejectedVote(v msg.DPosProposalVote) {
 	}
 }
 
-func (p *ProposalDispatcher) acceptProposal(d msg.DPosProposal) {
-	vote := msg.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: true}
+func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
+	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: true}
 	vote.Sign = vote.SignVote()
 	voteMsg := &cs.VoteMessage{Command: cs.AcceptVote, Vote: vote}
 	p.ProcessVote(vote, true)
@@ -328,8 +329,8 @@ func (p *ProposalDispatcher) acceptProposal(d msg.DPosProposal) {
 	p.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (p *ProposalDispatcher) rejectProposal(d msg.DPosProposal) {
-	vote := msg.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: false}
+func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
+	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: false}
 	vote.Sign = vote.SignVote()
 	msg := &cs.VoteMessage{Command: cs.RejectVote, Vote: vote}
 	log.Info("[rejectProposal] send rej_vote msg:", cs.P2PClientSingleton.GetMessageHash(msg))

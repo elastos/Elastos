@@ -4,18 +4,18 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type BlockPool struct {
 	sync.RWMutex
 	blockCnt   uint64
 	blockMap   map[common.Uint256]*core.Block
-	confirmMap map[common.Uint256]*msg.DPosProposalVoteSlot
+	confirmMap map[common.Uint256]*core.DPosProposalVoteSlot
 }
 
 func (pool *BlockPool) Init() {
@@ -23,7 +23,7 @@ func (pool *BlockPool) Init() {
 	defer pool.Unlock()
 
 	pool.blockMap = make(map[common.Uint256]*core.Block)
-	pool.confirmMap = make(map[common.Uint256]*msg.DPosProposalVoteSlot)
+	pool.confirmMap = make(map[common.Uint256]*core.DPosProposalVoteSlot)
 }
 
 func (pool *BlockPool) AppendBlock(block *core.Block) error {
@@ -53,7 +53,7 @@ func (pool *BlockPool) AppendBlock(block *core.Block) error {
 	return nil
 }
 
-func (pool *BlockPool) AppendConfirm(confirm *msg.DPosProposalVoteSlot) error {
+func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 	pool.Lock()
 	defer pool.Unlock()
 

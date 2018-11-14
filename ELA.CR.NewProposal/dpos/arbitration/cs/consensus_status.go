@@ -7,7 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type ConsensusStatus struct {
@@ -16,12 +15,12 @@ type ConsensusStatus struct {
 	ViewOffset      uint32
 	ViewStartTime   time.Time
 
-	AcceptVotes      []msg.DPosProposalVote
-	RejectedVotes    []msg.DPosProposalVote
-	PendingProposals []msg.DPosProposal
+	AcceptVotes      []core.DPosProposalVote
+	RejectedVotes    []core.DPosProposalVote
+	PendingProposals []core.DPosProposal
 
 	MissingBlocks        []*core.Block
-	MissingBlockConfirms []*msg.DPosProposalVoteSlot
+	MissingBlockConfirms []*core.DPosProposalVoteSlot
 }
 
 func (s *ConsensusStatus) Serialize(w io.Writer) error {
@@ -113,7 +112,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return nil
 	}
-	s.AcceptVotes = make([]msg.DPosProposalVote, arrayLength)
+	s.AcceptVotes = make([]core.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.AcceptVotes[i].Deserialize(r); err != nil {
 			return err
@@ -123,7 +122,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.RejectedVotes = make([]msg.DPosProposalVote, arrayLength)
+	s.RejectedVotes = make([]core.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.RejectedVotes[i].Deserialize(r); err != nil {
 			return err
@@ -133,7 +132,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingProposals = make([]msg.DPosProposal, arrayLength)
+	s.PendingProposals = make([]core.DPosProposal, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
@@ -154,9 +153,9 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.MissingBlockConfirms = make([]*msg.DPosProposalVoteSlot, arrayLength)
+	s.MissingBlockConfirms = make([]*core.DPosProposalVoteSlot, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
-		s.MissingBlockConfirms[i] = &msg.DPosProposalVoteSlot{}
+		s.MissingBlockConfirms[i] = &core.DPosProposalVoteSlot{}
 		if err = s.MissingBlockConfirms[i].Deserialize(r); err != nil {
 			return err
 		}

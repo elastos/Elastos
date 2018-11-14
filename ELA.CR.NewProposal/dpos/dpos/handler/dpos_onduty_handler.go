@@ -6,14 +6,13 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type DposOnDutyHandler struct {
 	*DposHandlerSwitch
 }
 
-func (h *DposOnDutyHandler) ProcessAcceptVote(p msg.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
@@ -24,7 +23,7 @@ func (h *DposOnDutyHandler) ProcessAcceptVote(p msg.DPosProposalVote) {
 	}
 }
 
-func (h *DposOnDutyHandler) ProcessRejectVote(p msg.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessRejectVote(p core.DPosProposalVote) {
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
 		h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
@@ -33,7 +32,7 @@ func (h *DposOnDutyHandler) ProcessRejectVote(p msg.DPosProposalVote) {
 	}
 }
 
-func (h *DposOnDutyHandler) StartNewProposal(p msg.DPosProposal) {
+func (h *DposOnDutyHandler) StartNewProposal(p core.DPosProposal) {
 }
 
 func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {

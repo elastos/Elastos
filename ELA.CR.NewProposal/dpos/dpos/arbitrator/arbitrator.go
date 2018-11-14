@@ -3,12 +3,12 @@ package arbitrator
 import (
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var ArbitratorSingleton *Arbitrator
@@ -72,7 +72,7 @@ func (a *Arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
 	}
 }
 
-func (a *Arbitrator) OnConfirmReceived(p *msg.DPosProposalVoteSlot) {
+func (a *Arbitrator) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 	a.DposManager.Lock()
 	defer a.DposManager.Unlock()
 

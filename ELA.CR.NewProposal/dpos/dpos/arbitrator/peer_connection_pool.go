@@ -12,7 +12,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
@@ -20,7 +19,7 @@ type StatusSyncEventListener interface {
 	OnPing(peer *peer.Peer, height uint32)
 	OnPong(peer *peer.Peer, height uint32)
 	OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*msg.DPosProposalVoteSlot)
+	OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
 	OnRequestConsensus(peer *peer.Peer, height uint32)
 	OnResponseConsensus(peer *peer.Peer, status *ConsensusStatus)
 }
@@ -28,9 +27,9 @@ type StatusSyncEventListener interface {
 type EventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(peer *peer.Peer, p msg.DPosProposal)
-	OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote)
-	OnVoteRejected(peer *peer.Peer, p msg.DPosProposalVote)
+	OnProposalReceived(peer *peer.Peer, p core.DPosProposal)
+	OnVoteReceived(peer *peer.Peer, p core.DPosProposalVote)
+	OnVoteRejected(peer *peer.Peer, p core.DPosProposalVote)
 }
 
 type PeerConnectionPoolImpl struct {
