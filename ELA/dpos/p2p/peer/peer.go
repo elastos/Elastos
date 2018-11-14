@@ -22,10 +22,6 @@ const (
 	// idleTimeout is the duration of inactivity before we time out a peer.
 	idleTimeout = 2 * time.Minute
 
-	// pingInterval is the interval of time to wait in between sending ping
-	// messages.
-	pingInterval = 30 * time.Second
-
 	// negotiateTimeout is the duration of inactivity before we timeout a
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 30 * time.Second
@@ -69,6 +65,9 @@ type Config struct {
 	Magic            uint32
 	ProtocolVersion  uint32
 	Services         uint64
+	PingInterval     time.Duration
+	PingNonce        func(pid [32]byte) uint64
+	PongNonce        func(pid [32]byte) uint64
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
 	messageFuncs     []MessageFunc
 }
@@ -364,7 +363,7 @@ func (p *Peer) TimeConnected() time.Time {
 
 // handlePingMsg is invoked when a peer receives a ping message.
 func (p *Peer) handlePingMsg(ping *msg.Ping) {
-	p.SendMessage(msg.NewPong(ping.Nonce), nil)
+	p.SendMessage(msg.NewPong(p.cfg.PongNonce(p.pid)), nil)
 }
 
 // handlePongMsg is invoked when a peer receives a pong message.
@@ -610,20 +609,14 @@ cleanup:
 
 // pingHandler periodically pings the peer.  It must be run as a goroutine.
 func (p *Peer) pingHandler() {
-	pingTicker := time.NewTicker(pingInterval)
+	pingTicker := time.NewTicker(p.cfg.PingInterval)
 	defer pingTicker.Stop()
 
 out:
 	for {
 		select {
 		case <-pingTicker.C:
-			nonce := uint64(0)
-			err := binary.Read(rand.Reader, binary.BigEndian, &nonce)
-			if err != nil {
-				log.Errorf("Not sending ping to %s: %v", p, err)
-				continue
-			}
-			p.SendMessage(msg.NewPing(nonce), nil)
+			p.SendMessage(msg.NewPing(p.cfg.PingNonce(p.pid)), nil)
 
 		case <-p.quit:
 			break out

@@ -4,11 +4,17 @@ import (
 	"net"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
+	// defaultConnectTimeout is the default duration we timeout a dial to peer.
 	defaultConnectTimeout = time.Second * 30
+
+	// defaultPingInterval is the default interval of time to wait in between
+	// sending ping messages.
+	defaultPingInterval = time.Second * 10
 )
 
 // Config is a descriptor which specifies the server instance configuration.
@@ -28,13 +34,32 @@ type Config struct {
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
 
+	// ConnectTimeout is the duration before we timeout a dial to peer.
+	ConnectTimeout time.Duration
+
+	// PingInterval is the interval of time to wait in between sending ping
+	// messages.
+	PingInterval time.Duration
+
+	// PingNonce will be invoked before send a ping message to the connect peer
+	// with the given PID, to get the nonce value within the ping message.
+	PingNonce func(pid common.Uint256) uint64
+
+	// PongNonce will be invoked before send a pong message to the connect peer
+	// with the given PID, to get the nonce value within the pong message.
+	PongNonce func(pid common.Uint256) uint64
+
 	// MakeEmptyMessage will be invoked to creates a message of the appropriate
 	// concrete type based on the command.
-	MakeEmptyMessage func(string) (p2p.Message, error)
-}
+	MakeEmptyMessage func(command string) (p2p.Message, error)
 
-func dialTimeout(addr net.Addr) (net.Conn, error) {
-	return net.DialTimeout(addr.Network(), addr.String(), defaultConnectTimeout)
+	// HandleMessage will be invoked to handle the received message from
+	// connected peers.  The peer's public key id will be pass together with
+	// the received message.
+	HandleMessage func(pid common.Uint256, msg p2p.Message)
+
+	// StateNotifier notifies the server peer state changes.
+	StateNotifier StateNotifier
 }
 
 // normalizeAddress returns addr with the passed default port appended if
