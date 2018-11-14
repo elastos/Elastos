@@ -3,12 +3,12 @@ package manager
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type DposEventConditionHandler interface {
@@ -124,13 +124,9 @@ func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, bl
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
-	//todo call add blocks and confirms by ledger
-	//for _, v := range blocks {
-	//	ArbitratorSingleton.OnBlockReceived(peer, v)
-	//}
-	//for _, v := range blockConfirms {
-	//	ArbitratorSingleton.OnConfirmReceived(peer, v)
-	//}
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(blocks, blockConfirms); err != nil {
+		log.Error("Response blocks error: ", err)
+	}
 }
 
 func (d *DposManager) OnRequestConsensus(peer *peer.Peer, height uint32) {
