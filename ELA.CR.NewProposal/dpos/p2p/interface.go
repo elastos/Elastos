@@ -28,7 +28,8 @@ type Peer interface {
 
 // StateNotifier notifies the server peer state changes.
 type StateNotifier interface {
-	// OnStateChange will be invoked when peers connected or disconnected.
+	// OnStateChange will be invoked when connect list changed or peers
+	// connected and disconnected.
 	//
 	// Notify: do not modify the invoked state value.  It's read only.
 	OnStateChange(state *peerState)
