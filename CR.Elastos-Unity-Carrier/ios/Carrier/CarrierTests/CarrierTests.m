@@ -1,6 +1,6 @@
 //
-//  RNCarrierTests.m
-//  RNCarrierTests
+//  CarrierTests.m
+//  CarrierTests
 //
 //  Created by jacky.li on 2018/11/14.
 //  Copyright © 2018 elastos. All rights reserved.
@@ -8,11 +8,11 @@
 
 #import <XCTest/XCTest.h>
 
-@interface RNCarrierTests : XCTestCase
+@interface CarrierTests : XCTestCase
 
 @end
 
-@implementation RNCarrierTests
+@implementation CarrierTests
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.

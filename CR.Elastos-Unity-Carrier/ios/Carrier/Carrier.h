@@ -8,7 +8,13 @@
 #import <Foundation/Foundation.h>
 #import <ElastosCarrier/ElastosCarrier.h>
 
+#import <UIKit/UIKit.h>
 
+//! Project version number for Carrier.
+FOUNDATION_EXPORT double CarrierVersionNumber;
+
+//! Project version string for Carrier.
+FOUNDATION_EXPORT const unsigned char CarrierVersionString[];
 
 @interface Carrier : NSObject
 
