@@ -151,6 +151,19 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 		return
 	}
 
+	if !p.consensus.IsArbitratorOnDuty(d.Sponsor) {
+		currentArbiter, err := blockchain.GetNextOnDutyArbiter(p.consensus.GetViewOffset())
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
+				common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
+		}
+		p.rejectProposal(d)
+		log.Warn("reject: current arbiter is not sponsor")
+		return
+	}
+
 	currentBlock, ok := ArbitratorSingleton.BlockCache.TryGetValue(d.BlockHash)
 	if !ok || !p.consensus.IsRunning() {
 		p.pendingProposals = append(p.pendingProposals, d)
@@ -167,19 +180,6 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 
 	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
 		log.Warn("[ProcessProposal] Invalid block hash")
-		return
-	}
-
-	if !p.consensus.IsArbitratorOnDuty(d.Sponsor) {
-		currentArbiter, err := blockchain.GetNextOnDutyArbiter(p.consensus.GetViewOffset())
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
-				common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
-		}
-		p.rejectProposal(d)
-		log.Warn("reject: current arbiter is not sponsor")
 		return
 	}
 
