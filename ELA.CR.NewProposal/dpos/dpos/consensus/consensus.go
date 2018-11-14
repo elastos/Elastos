@@ -103,9 +103,9 @@ func (c *Consensus) GetOnDutyArbitrator() string {
 func (c *Consensus) StartConsensus(b *core.Block) {
 	now := time.Now()
 	ArbitratorSingleton.BlockCache.Reset()
-	ArbitratorSingleton.BlockCache.AddValue(b.Hash(), b)
-
 	c.SetRunning()
+
+	ArbitratorSingleton.BlockCache.AddValue(b.Hash(), b)
 	c.currentView.ResetView(now)
 	log.Info("[StartConsensus] consensus started")
 }

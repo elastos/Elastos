@@ -76,9 +76,6 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 	proposal.Sign = proposal.SignProposal()
 
 	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
-	selfVote := msg.DPosProposalVote{Proposal: proposal, Signer: ArbitratorSingleton.Name, Accept: true}
-	selfVote.Sign = selfVote.SignVote()
-	p.countAcceptedVote(selfVote)
 
 	msg := &cs.ProposalMessage{
 		Command:  cs.ReceivedProposal,
@@ -147,9 +144,10 @@ func (p *ProposalDispatcher) CleanProposals() {
 func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 
 	log.Info("[ProcessProposal] start")
+	defer log.Info("[ProcessProposal] end")
 
 	if !d.IsValid() {
-		log.Info("Invalid proposal.")
+		log.Warn("Invalid proposal.")
 		return
 	}
 
@@ -163,12 +161,12 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 	}
 
 	if currentBlock.Height != p.processingBlock.Height {
-		log.Info("[ProcessProposal] Invalid block height")
+		log.Warn("[ProcessProposal] Invalid block height")
 		return
 	}
 
 	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
-		log.Info("[ProcessProposal] Invalid block hash")
+		log.Warn("[ProcessProposal] Invalid block hash")
 		return
 	}
 
@@ -181,12 +179,11 @@ func (p *ProposalDispatcher) ProcessProposal(d msg.DPosProposal) {
 				common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		}
 		p.rejectProposal(d)
-		log.Info("reject: current arbiter is not sponsor")
+		log.Warn("reject: current arbiter is not sponsor")
 		return
 	}
 
 	p.acceptProposal(d)
-	log.Info("[ProcessProposal] end")
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
@@ -200,7 +197,8 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
 
 	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms([]*core.Block{p.processingBlock}, []*msg.DPosProposalVoteSlot{p.currentVoteSlot}); err != nil {
-		cs.P2PClientSingleton.PeerHandler.SendAll(confirmMsg)
+		cs.P2PClientSingleton.AddMessageHash(cs.P2PClientSingleton.GetMessageHash(confirmMsg), p.CurrentHeight())
+		cs.P2PClientSingleton.Server.BroadcastMessage(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
 		return true
 	}
