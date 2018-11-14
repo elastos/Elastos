@@ -78,8 +78,8 @@ func (d *DposManager) OnProposalReceived(peer *peer.Peer, p msg.DPosProposal) {
 	defer d.dposLock.Unlock()
 
 	log.Info("[OnProposalReceived] started")
+	defer log.Info("[OnProposalReceived] end")
 	d.handler.StartNewProposal(p)
-	log.Info("[OnProposalReceived] end")
 }
 
 func (d *DposManager) OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote) {
@@ -87,8 +87,8 @@ func (d *DposManager) OnVoteReceived(peer *peer.Peer, p msg.DPosProposalVote) {
 	defer d.dposLock.Unlock()
 
 	log.Info("[OnVoteReceived] started")
+	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(p)
-	log.Info("[OnVoteReceived] end")
 }
 
 func (d *DposManager) OnVoteRejected(peer *peer.Peer, p msg.DPosProposalVote) {
@@ -96,8 +96,8 @@ func (d *DposManager) OnVoteRejected(peer *peer.Peer, p msg.DPosProposalVote) {
 	defer d.dposLock.Unlock()
 
 	log.Info("[OnVoteRejected] started")
+	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(p)
-	log.Info("[OnVoteRejected] end")
 }
 
 func (d *DposManager) OnPing(peer *peer.Peer, height uint32) {

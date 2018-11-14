@@ -42,8 +42,11 @@ func (h *DposNormalHandler) ProcessRejectVote(p msg.DPosProposalVote) {
 
 func (h *DposNormalHandler) StartNewProposal(p msg.DPosProposal) {
 	log.Info("[Normal][OnProposalReceived] received request sign")
-	h.consensus.RunWithStatusCondition(true, func() {
+	h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
 		h.consensus.TryChangeView()
+	})
+
+	h.consensus.RunWithStatusCondition(true, func() {
 		h.proposalDispatcher.ProcessProposal(p)
 	})
 }
@@ -61,7 +64,9 @@ func (h *DposNormalHandler) TryStartNewConsensus(b *core.Block) bool {
 	h.consensus.RunWithAllStatusConditions(
 		func() { //ready
 			log.Info("[Normal][OnBlockReceived] received first unsigned block, start consensus")
+			h.proposalDispatcher.CleanProposals()
 			h.consensus.StartConsensus(b)
+			h.proposalDispatcher.TryStartSpeculatingProposal(b)
 			result = true
 		},
 		func() { //running
