@@ -13,7 +13,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -69,9 +68,8 @@ func NewBlockchain(height uint32) *Blockchain {
 		BlockCache:   make(map[Uint256]*Block),
 		TimeSource:   NewMedianTime(),
 
-		BCEvents:          events.NewEvent(),
-		AssetID:           EmptyHash,
-		NewBlocksListener: arbitrator.ArbitratorSingleton,
+		BCEvents: events.NewEvent(),
+		AssetID:  EmptyHash,
 	}
 }
 
@@ -138,7 +136,6 @@ func GetGenesisBlock() (*Block, error) {
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
 	txAttr := NewAttribute(Nonce, nonce)
 	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
-
 	//block
 	block := &Block{
 		Header:       header,

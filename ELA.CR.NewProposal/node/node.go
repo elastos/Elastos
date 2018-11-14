@@ -3,7 +3,6 @@ package node
 import (
 	"errors"
 	"github.com/elastos/Elastos.ELA/mempool"
-	"math/rand"
 	"net"
 	"strings"
 	"sync"
@@ -139,7 +138,7 @@ func NewNode(conn net.Conn, inbound bool) *node {
 
 func InitLocalNode() protocol.Noder {
 	LocalNode = &node{
-		id:                 rand.New(rand.NewSource(time.Now().Unix())).Uint64(),
+		//id:                 rand.New(rand.NewSource(time.Now().Unix())).Uint64(),
 		version:            protocol.ProtocolVersion,
 		relay:              true,
 		SyncBlkReqSem:      MakeSemaphore(protocol.MaxSyncHdrReq),

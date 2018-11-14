@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"os"
 	"time"
 
@@ -63,6 +64,8 @@ func Start() {
 	cs.P2PClientSingleton.PeerHandler = peerConnectionPool
 
 	arbitrator.ArbitratorSingleton.DposManager.Recover()
+
+	blockchain.DefaultLedger.Blockchain.NewBlocksListener = arbitrator.ArbitratorSingleton
 
 	go dposHandlerSwitch.ChangeViewLoop()
 	go consensusManager.StartHeartHeat()
