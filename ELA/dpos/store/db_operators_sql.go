@@ -2,10 +2,11 @@ package store
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
-
 	"errors"
+
 	"github.com/elastos/Elastos.ELA/dpos/log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type SqlDBOperator struct {

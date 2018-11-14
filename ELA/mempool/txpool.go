@@ -301,7 +301,7 @@ func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (pool *TxPool) cleanSideChainPowTx() {
-	arbitrtor, err := blockchain.GetCurrentArbiter()
+	arbitrtor, err := blockchain.GetOnDutyArbiter()
 	if err != nil {
 		log.Error("get current arbiter failed")
 		return
