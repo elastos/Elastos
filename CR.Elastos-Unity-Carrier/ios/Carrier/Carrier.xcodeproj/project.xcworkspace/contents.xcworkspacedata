@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:RNCarrier.xcodeproj">
+      location = "self:Carrier.xcodeproj">
    </FileRef>
 </Workspace>

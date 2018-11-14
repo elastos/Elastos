@@ -7,139 +7,137 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		39859B82219BCAA500DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859B81219BCAA500DE141B /* Carrier.m */; };
-		39859B83219BCAA500DE141B /* Carrier.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39859B80219BCAA500DE141B /* Carrier.h */; };
-		39859B8E219BCB6500DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859B8C219BCB6500DE141B /* CarrierPlugin.m */; };
-		39859B90219BCBDA00DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859B8F219BCBDA00DE141B /* ElastosCarrier.framework */; };
+		39859C13219BD95D00DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859C11219BD95D00DE141B /* CarrierPlugin.m */; };
+		39859C14219BD95D00DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859C12219BD95D00DE141B /* Carrier.m */; };
+		39859C16219BD96500DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859C15219BD96400DE141B /* ElastosCarrier.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		39859B7B219BCAA500DE141B /* CopyFiles */ = {
+		39859BFB219BD8EC00DE141B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				39859B83219BCAA500DE141B /* Carrier.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		39859B7D219BCAA500DE141B /* libRNCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		39859B80219BCAA500DE141B /* Carrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
-		39859B81219BCAA500DE141B /* Carrier.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
-		39859B89219BCB6500DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
-		39859B8C219BCB6500DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
-		39859B8F219BCBDA00DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
+		39859BFD219BD8EC00DE141B /* libCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		39859C0F219BD95D00DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
+		39859C10219BD95D00DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
+		39859C11219BD95D00DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
+		39859C12219BD95D00DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
+		39859C15219BD96400DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		39859B7A219BCAA500DE141B /* Frameworks */ = {
+		39859BFA219BD8EC00DE141B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39859B90219BCBDA00DE141B /* ElastosCarrier.framework in Frameworks */,
+				39859C16219BD96500DE141B /* ElastosCarrier.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		39859B74219BCAA500DE141B = {
+		39859BF4219BD8EC00DE141B = {
 			isa = PBXGroup;
 			children = (
-				39859B8F219BCBDA00DE141B /* ElastosCarrier.framework */,
-				39859B7F219BCAA500DE141B /* RNCarrier */,
-				39859B7E219BCAA500DE141B /* Products */,
+				39859C15219BD96400DE141B /* ElastosCarrier.framework */,
+				39859BFF219BD8EC00DE141B /* Carrier */,
+				39859BFE219BD8EC00DE141B /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		39859B7E219BCAA500DE141B /* Products */ = {
+		39859BFE219BD8EC00DE141B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				39859B7D219BCAA500DE141B /* libRNCarrier.a */,
+				39859BFD219BD8EC00DE141B /* libCarrier.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		39859B7F219BCAA500DE141B /* RNCarrier */ = {
+		39859BFF219BD8EC00DE141B /* Carrier */ = {
 			isa = PBXGroup;
 			children = (
-				39859B89219BCB6500DE141B /* CarrierPlugin.h */,
-				39859B8C219BCB6500DE141B /* CarrierPlugin.m */,
-				39859B80219BCAA500DE141B /* Carrier.h */,
-				39859B81219BCAA500DE141B /* Carrier.m */,
+				39859C0F219BD95D00DE141B /* Carrier.h */,
+				39859C12219BD95D00DE141B /* Carrier.m */,
+				39859C10219BD95D00DE141B /* CarrierPlugin.h */,
+				39859C11219BD95D00DE141B /* CarrierPlugin.m */,
 			);
-			path = RNCarrier;
+			path = Carrier;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		39859B7C219BCAA500DE141B /* RNCarrier */ = {
+		39859BFC219BD8EC00DE141B /* Carrier */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 39859B86219BCAA500DE141B /* Build configuration list for PBXNativeTarget "RNCarrier" */;
+			buildConfigurationList = 39859C06219BD8EC00DE141B /* Build configuration list for PBXNativeTarget "Carrier" */;
 			buildPhases = (
-				39859B79219BCAA500DE141B /* Sources */,
-				39859B7A219BCAA500DE141B /* Frameworks */,
-				39859B7B219BCAA500DE141B /* CopyFiles */,
+				39859BF9219BD8EC00DE141B /* Sources */,
+				39859BFA219BD8EC00DE141B /* Frameworks */,
+				39859BFB219BD8EC00DE141B /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = RNCarrier;
-			productName = RNCarrier;
-			productReference = 39859B7D219BCAA500DE141B /* libRNCarrier.a */;
+			name = Carrier;
+			productName = Carrier;
+			productReference = 39859BFD219BD8EC00DE141B /* libCarrier.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		39859B75219BCAA500DE141B /* Project object */ = {
+		39859BF5219BD8EC00DE141B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = elastos;
 				TargetAttributes = {
-					39859B7C219BCAA500DE141B = {
+					39859BFC219BD8EC00DE141B = {
 						CreatedOnToolsVersion = 10.0;
 					};
 				};
 			};
-			buildConfigurationList = 39859B78219BCAA500DE141B /* Build configuration list for PBXProject "RNCarrier" */;
+			buildConfigurationList = 39859BF8219BD8EC00DE141B /* Build configuration list for PBXProject "Carrier" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = 39859B74219BCAA500DE141B;
-			productRefGroup = 39859B7E219BCAA500DE141B /* Products */;
+			mainGroup = 39859BF4219BD8EC00DE141B;
+			productRefGroup = 39859BFE219BD8EC00DE141B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				39859B7C219BCAA500DE141B /* RNCarrier */,
+				39859BFC219BD8EC00DE141B /* Carrier */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		39859B79219BCAA500DE141B /* Sources */ = {
+		39859BF9219BD8EC00DE141B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39859B8E219BCB6500DE141B /* CarrierPlugin.m in Sources */,
-				39859B82219BCAA500DE141B /* Carrier.m in Sources */,
+				39859C14219BD95D00DE141B /* Carrier.m in Sources */,
+				39859C13219BD95D00DE141B /* CarrierPlugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		39859B84219BCAA500DE141B /* Debug */ = {
+		39859C04219BD8EC00DE141B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -198,7 +196,7 @@
 			};
 			name = Debug;
 		};
-		39859B85219BCAA500DE141B /* Release */ = {
+		39859C05219BD8EC00DE141B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -251,7 +249,7 @@
 			};
 			name = Release;
 		};
-		39859B87219BCAA500DE141B /* Debug */ = {
+		39859C07219BD8EC00DE141B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -266,7 +264,7 @@
 			};
 			name = Debug;
 		};
-		39859B88219BCAA500DE141B /* Release */ = {
+		39859C08219BD8EC00DE141B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -284,25 +282,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		39859B78219BCAA500DE141B /* Build configuration list for PBXProject "RNCarrier" */ = {
+		39859BF8219BD8EC00DE141B /* Build configuration list for PBXProject "Carrier" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				39859B84219BCAA500DE141B /* Debug */,
-				39859B85219BCAA500DE141B /* Release */,
+				39859C04219BD8EC00DE141B /* Debug */,
+				39859C05219BD8EC00DE141B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		39859B86219BCAA500DE141B /* Build configuration list for PBXNativeTarget "RNCarrier" */ = {
+		39859C06219BD8EC00DE141B /* Build configuration list for PBXNativeTarget "Carrier" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				39859B87219BCAA500DE141B /* Debug */,
-				39859B88219BCAA500DE141B /* Release */,
+				39859C07219BD8EC00DE141B /* Debug */,
+				39859C08219BD8EC00DE141B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 39859B75219BCAA500DE141B /* Project object */;
+	rootObject = 39859BF5219BD8EC00DE141B /* Project object */;
 }
