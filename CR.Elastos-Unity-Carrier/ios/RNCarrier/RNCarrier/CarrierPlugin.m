@@ -8,7 +8,7 @@
 
 #import "CarrierPlugin.h"
 #import <React/RCTLog.h>
-#import "Carrier.h"
+#import "RNCarrier.h"
 
 #define NULL_ERR [NSNull null]
 
