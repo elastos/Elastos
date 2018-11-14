@@ -283,6 +283,11 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 
 		// Loop through the new received connect peer addresses.
 		for _, addr := range msg.addrList {
+			// Do not create connection to self.
+			if addr.PID.IsEqual(s.cfg.PID) {
+				continue
+			}
+
 			// Normalize peer address.
 			port := strconv.FormatUint(uint64(s.cfg.DefaultPort), 10)
 			addr.Addr = normalizeAddress(addr.Addr, port)
@@ -505,6 +510,38 @@ func (s *server) ConnectedCount() int32 {
 	return <-replyChan
 }
 
+// ConnectPeers let server connect the peers in the given addrList, and
+// disconnect peers that not in the addrList.
+func (s *server) ConnectPeers(addrList []PeerAddr) {
+	reply := make(chan struct{})
+	s.query <- connectPeersMsg{addrList: addrList, reply: reply}
+	<-reply
+}
+
+// SendMessageToPeer send a message to the peer with the given id, error
+// will be returned if there is no matches, or fail to send the message.
+func (s *server) SendMessageToPeer(id common.Uint256, msg p2p.Message) error {
+	reply := make(chan error)
+	s.query <- sendToPeerMsg{id: id, msg: msg, reply: reply}
+	return <-reply
+}
+
+// ConnectedPeers returns an array consisting of all connected peers.
+//
+// This function is safe for concurrent access and is part of the
+// IServer interface implementation.
+func (s *server) ConnectedPeers() []Peer {
+	replyChan := make(chan []*serverPeer)
+	s.query <- getPeersMsg{reply: replyChan}
+	serverPeers := <-replyChan
+
+	peers := make([]Peer, 0, len(serverPeers))
+	for _, sp := range serverPeers {
+		peers = append(peers, (Peer)(sp))
+	}
+	return peers
+}
+
 // Start begins accepting connections from peers.
 func (s *server) Start() {
 	// Already started?
@@ -603,41 +640,9 @@ func parseListeners(addr string) ([]net.Addr, error) {
 	return netAddrs, nil
 }
 
-// ConnectPeers let server connect the peers in the given addrList, and
-// disconnect peers that not in the addrList.
-func (s *server) ConnectPeers(addrList []PeerAddr) {
-	reply := make(chan struct{})
-	s.query <- connectPeersMsg{addrList: addrList, reply: reply}
-	<-reply
-}
-
-// SendMessageToPeer send a message to the peer with the given id, error
-// will be returned if there is no matches, or fail to send the message.
-func (s *server) SendMessageToPeer(id common.Uint256, msg p2p.Message) error {
-	reply := make(chan error)
-	s.query <- sendToPeerMsg{id: id, msg: msg, reply: reply}
-	return <-reply
-}
-
-// ConnectedPeers returns an array consisting of all connected peers.
-//
-// This function is safe for concurrent access and is part of the
-// IServer interface implementation.
-func (s *server) ConnectedPeers() []Peer {
-	replyChan := make(chan []*serverPeer)
-	s.query <- getPeersMsg{reply: replyChan}
-	serverPeers := <-replyChan
-
-	peers := make([]Peer, 0, len(serverPeers))
-	for _, sp := range serverPeers {
-		peers = append(peers, (Peer)(sp))
-	}
-	return peers
-}
-
 // NewServer returns a new server instance by the given config.
 // Use start to begin accepting connections from peers.
-func NewServer(origCfg *Config) (Server, error) {
+func NewServer(origCfg *Config) (*server, error) {
 	cfg := *origCfg // Copy to avoid mutating caller.
 
 	listeners, err := initListeners(cfg)
