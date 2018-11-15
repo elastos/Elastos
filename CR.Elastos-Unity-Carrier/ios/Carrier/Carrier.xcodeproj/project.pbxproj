@@ -8,10 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		39859FCC219C515700DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC7219C515600DE141B /* CarrierPlugin.m */; };
-		39859FCD219C515700DE141B /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39859FC8219C515600DE141B /* ElastosCarrier.framework */; };
 		39859FCE219C515700DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC9219C515600DE141B /* Carrier.m */; };
-		39859FCF219C516C00DE141B /* Carrier.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39859FCA219C515600DE141B /* Carrier.h */; };
-		39859FD0219C516C00DE141B /* CarrierPlugin.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39859FCB219C515700DE141B /* CarrierPlugin.h */; };
+		399BDD12219D37B200453AA7 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; };
+		399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -19,10 +18,9 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "include/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
+			dstSubfolderSpec = 10;
 			files = (
-				39859FCF219C516C00DE141B /* Carrier.h in CopyFiles */,
-				39859FD0219C516C00DE141B /* CarrierPlugin.h in CopyFiles */,
+				399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -31,10 +29,10 @@
 /* Begin PBXFileReference section */
 		39859FBB219C512100DE141B /* libCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		39859FC7219C515600DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
-		39859FC8219C515600DE141B /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 		39859FC9219C515600DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
 		39859FCA219C515600DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
 		39859FCB219C515700DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
+		399BDD11219D37B200453AA7 /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39859FCD219C515700DE141B /* ElastosCarrier.framework in Frameworks */,
+				399BDD12219D37B200453AA7 /* ElastosCarrier.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,8 +54,8 @@
 				39859FC9219C515600DE141B /* Carrier.m */,
 				39859FCB219C515700DE141B /* CarrierPlugin.h */,
 				39859FC7219C515600DE141B /* CarrierPlugin.m */,
-				39859FC8219C515600DE141B /* ElastosCarrier.framework */,
 				39859FBC219C512100DE141B /* Products */,
+				399BDD0F219D378800453AA7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -67,6 +65,14 @@
 				39859FBB219C512100DE141B /* libCarrier.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		399BDD0F219D378800453AA7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				399BDD11219D37B200453AA7 /* ElastosCarrier.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,6 +142,7 @@
 		39859FC2219C512100DE141B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -184,7 +191,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -195,6 +202,7 @@
 		39859FC3219C512100DE141B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -237,7 +245,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -248,11 +256,14 @@
 		39859FC5219C512100DE141B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
+					"$(PROJECT_DIR)",
 				);
+				HEADER_SEARCH_PATHS = "${SRCROOT}";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -264,11 +275,14 @@
 		39859FC6219C512100DE141B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
+					"$(PROJECT_DIR)",
 				);
+				HEADER_SEARCH_PATHS = "${SRCROOT}";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
