@@ -7,15 +7,14 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/handler"
+	"github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
 
 type ProposalDispatcher struct {
@@ -26,12 +25,14 @@ type ProposalDispatcher struct {
 	pendingProposals []core.DPosProposal
 
 	eventMonitor *log.EventMonitor
-	consensus    IConsensus
+	consensus    manager.IConsensus
+	network      DposNetwork
 }
 
-func (p *ProposalDispatcher) Initialize(consensus IConsensus, eventMonitor *log.EventMonitor) {
+func (p *ProposalDispatcher) Initialize(consensus manager.IConsensus, eventMonitor *log.EventMonitor, network DposNetwork) {
 	p.consensus = consensus
 	p.eventMonitor = eventMonitor
+	p.network = network
 }
 
 func (p *ProposalDispatcher) OnAbnormalStateDetected() {
@@ -40,13 +41,13 @@ func (p *ProposalDispatcher) OnAbnormalStateDetected() {
 
 func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
-	msg := &cs.RequestConsensusMessage{Command: cs.RequestConsensus, Height: height}
-	peer, err := cs.P2PClientSingleton.PeerHandler.GetLastActivePeer()
-	if err != nil {
-		log.Error("[RequestAbnormalRecovering]", err.Error())
+	msgItem := &msg2.RequestConsensusMessage{Height: height}
+	peerID := p.network.GetActivePeer()
+	if peerID == nil {
+		log.Error("[RequestAbnormalRecovering] can not find active peer")
 		return
 	}
-	peer.SendMessage(msg, nil)
+	p.network.SendMessageToPeer(*peerID, msgItem)
 }
 
 func (p *ProposalDispatcher) GetProcessingBlock() *core.Block {
@@ -83,13 +84,12 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 
 	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
 
-	msg := &cs.ProposalMessage{
-		Command:  cs.ReceivedProposal,
+	m := &msg2.ProposalMessage{
 		Proposal: proposal,
 	}
 
-	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", cs.P2PClientSingleton.GetMessageHash(msg))
-	cs.P2PClientSingleton.PeerHandler.SendAll(msg)
+	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", msg2.GetMessageHash(m))
+	p.network.BroadcastMessage(m)
 
 	rawData := new(bytes.Buffer)
 	proposal.Serialize(rawData)
@@ -202,8 +202,7 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
 
 	if err := node.LocalNode.AppendConfirm(p.currentVoteSlot); err != nil {
-		cs.P2PClientSingleton.AddMessageHash(cs.P2PClientSingleton.GetMessageHash(confirmMsg), p.CurrentHeight())
-		cs.P2PClientSingleton.Server.BroadcastMessage(confirmMsg)
+		p.network.BroadcastMessage(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
 		return true
 	}
@@ -232,11 +231,7 @@ func (p *ProposalDispatcher) FinishConsensus() {
 	p.CleanProposals()
 }
 
-func (p *ProposalDispatcher) OnSendPing(peer *peer.Peer) {
-	p.consensus.ResponseHeartBeat(peer, cs.Ping, p.CurrentHeight())
-}
-
-func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *cs.ConsensusStatus) error {
+func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.ConsensusStatus) error {
 	if height > p.CurrentHeight() {
 		return errors.New("Requesting height greater than current processing height")
 	}
@@ -250,7 +245,7 @@ func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *cs.Co
 	return nil
 }
 
-func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *cs.ConsensusStatus) error {
+func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
 	if status.ProcessingBlock.Height < p.CurrentHeight() {
 		return errors.New("Recovering height less than current processing height")
 	}
@@ -327,10 +322,11 @@ func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
 		log.Error("[acceptProposal] sign failed")
 		return
 	}
-	voteMsg := &cs.VoteMessage{Command: cs.AcceptVote, Vote: vote}
+	voteMsg := &msg2.VoteMessage{Command: msg2.AcceptVote, Vote: vote}
+
 	p.ProcessVote(vote, true)
-	cs.P2PClientSingleton.PeerHandler.SendAll(voteMsg)
-	log.Info("[acceptProposal] send acc_vote msg:", cs.P2PClientSingleton.GetMessageHash(voteMsg).String())
+	p.network.BroadcastMessage(voteMsg)
+	log.Info("[acceptProposal] send acc_vote msg:", msg2.GetMessageHash(voteMsg).String())
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
@@ -346,8 +342,8 @@ func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
 		log.Error("[rejectProposal] sign failed")
 		return
 	}
-	msg := &cs.VoteMessage{Command: cs.RejectVote, Vote: vote}
-	log.Info("[rejectProposal] send rej_vote msg:", cs.P2PClientSingleton.GetMessageHash(msg))
+	msg := &msg2.VoteMessage{Command: msg2.RejectVote, Vote: vote}
+	log.Info("[rejectProposal] send rej_vote msg:", msg2.GetMessageHash(msg))
 
 	_, ok := ArbitratorSingleton.BlockCache.TryGetValue(d.BlockHash)
 	if !ok {
@@ -355,7 +351,7 @@ func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
 		return
 	}
 	p.ProcessVote(vote, false)
-	cs.P2PClientSingleton.PeerHandler.SendAll(msg)
+	p.network.BroadcastMessage(msg)
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)

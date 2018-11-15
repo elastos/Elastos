@@ -1,4 +1,4 @@
-package cs
+package msg
 
 import (
 	"io"

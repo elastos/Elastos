@@ -1,13 +1,11 @@
 package dpos
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
-	"os"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/consensus"
@@ -27,31 +25,21 @@ func init() {
 	)
 }
 
-func initP2P() error {
-	if err := cs.InitP2PClient(); err != nil {
-		return err
-	}
-
-	cs.P2PClientSingleton.Start()
-	return nil
-}
-
 func Start() {
-	log.Info("1. Start arbitrator P2P networks.")
-	if err := initP2P(); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	log.Info("2. Start initialize character.")
+	log.Info("1. Start initialize character.")
 	proposalManager := &proposal.ProposalDispatcher{}
 	consensusManager := &consensus.Consensus{}
 	dposHandlerSwitch := &handler.DposHandlerSwitch{}
 	dposManager := &manager.DposManager{}
-	dposManager.Initialize(dposHandlerSwitch)
-	peerConnectionPool := &arbitrator.PeerConnectionPoolImpl{Listener: dposManager}
-	consensusManager.Initialize(time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, proposalManager, dposHandlerSwitch)
-	dposHandlerSwitch.Initialize(proposalManager, consensusManager, dposManager)
+
+	var id [32]byte //fixme init id with current public key
+	network, err := arbitrator.NewDposNetwork(id, dposManager)
+	if err != nil {
+		log.Error("Start p2p network error")
+	}
+	dposManager.Initialize(dposHandlerSwitch, proposalManager, network)
+	consensusManager.Initialize(time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
+	dposHandlerSwitch.Initialize(proposalManager, consensusManager, network, dposManager)
 
 	arbitrator.ArbitratorSingleton = &arbitrator.Arbitrator{
 		Name:     config.Parameters.ArbiterConfiguration.Name,
@@ -61,15 +49,13 @@ func Start() {
 		},
 		DposManager: dposManager,
 	}
-	cs.P2PClientSingleton.PeerHandler = peerConnectionPool
 
 	arbitrator.ArbitratorSingleton.DposManager.Recover()
 
 	blockchain.DefaultLedger.Blockchain.NewBlocksListener = arbitrator.ArbitratorSingleton
 
 	go dposHandlerSwitch.ChangeViewLoop()
-	go consensusManager.StartHeartHeat()
 
-	log.Info("3. Start loop to process message queue")
-	cs.P2PClientSingleton.Work()
+	log.Info("2. Start loop to process message queue")
+	network.Start()
 }
