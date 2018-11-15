@@ -1,1 +1,1 @@
-# Elastos.ELA.SideChain.ID
+# Elastos.ELA.SideChain.NeoVM

@@ -1,0 +1,30 @@
+{
+  "ActiveNet": "regnet",
+  "Magic": 2018001,
+  "DefaultPort": 20608,
+  "SeedList": [
+  ],
+  "SpvConfig": {
+    "Magic": 2017001,
+    "SeedList": [
+    ],
+    "DefaultPort": 20866,
+    "Foundation": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+  },
+  "Foundation": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+  "MinTxFee": 100,
+  "ExchangeRate": 1,
+  "DisableTxFilters": false,
+  "MinCrossChainTxFee": 10000,
+  "Mining": false,
+  "MinerInfo": "SideNeoVM",
+  "MinerAddr": "EeVY3DD2rD199vdFHLtQpWwDJNMDDF35VF",
+  "LogLevel": 1,
+  "MaxLogsFolderSize": 2000000000,
+  "MaxPerLogFileSize": 20000000,
+  "HttpInfoStart": true,
+  "HttpInfoPort": 30603,
+  "HttpRestPort": 30604,
+  "HttpJsonPort": 30606,
+  "PrintSyncState": false
+}
