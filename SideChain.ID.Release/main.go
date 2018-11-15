@@ -21,7 +21,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
@@ -190,17 +189,7 @@ func main() {
 		}
 	}()
 
-	if cfg.HttpInfoStart {
-		go httpnodeinfo.New(&httpnodeinfo.Config{
-			NodePort:     cfg.DefaultPort,
-			HttpJsonPort: cfg.HttpJsonPort,
-			HttpRestPort: cfg.HttpRestPort,
-			Chain:        chain,
-			Server:       server,
-		}).Start()
-	}
-
-	if cfg.PrintSyncState {
+	if cfg.MonitorState {
 		go printSyncState(idChainStore.ChainStore, server)
 	}
 
