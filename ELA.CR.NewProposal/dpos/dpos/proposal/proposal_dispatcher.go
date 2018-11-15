@@ -11,6 +11,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/handler"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -73,7 +74,12 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 
 	proposal := core.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash()}
-	proposal.Sign = proposal.SignProposal()
+	var err error
+	proposal.Sign, err = proposal.SignProposal()
+	if err != nil {
+		log.Error("[StartProposal] start proposal failed:", err.Error())
+		return
+	}
 
 	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
 
@@ -195,7 +201,7 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	confirmMsg := msg.NewConfirm(p.currentVoteSlot)
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
 
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms([]*core.Block{p.processingBlock}, []*core.DPosProposalVoteSlot{p.currentVoteSlot}); err != nil {
+	if err := node.LocalNode.AppendConfirm(p.currentVoteSlot); err != nil {
 		cs.P2PClientSingleton.AddMessageHash(cs.P2PClientSingleton.GetMessageHash(confirmMsg), p.CurrentHeight())
 		cs.P2PClientSingleton.Server.BroadcastMessage(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
@@ -315,7 +321,12 @@ func (p *ProposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 
 func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
 	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: true}
-	vote.Sign = vote.SignVote()
+	var err error
+	vote.Sign, err = vote.SignVote()
+	if err != nil {
+		log.Error("[acceptProposal] sign failed")
+		return
+	}
 	voteMsg := &cs.VoteMessage{Command: cs.AcceptVote, Vote: vote}
 	p.ProcessVote(vote, true)
 	cs.P2PClientSingleton.PeerHandler.SendAll(voteMsg)
@@ -329,7 +340,12 @@ func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
 
 func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
 	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: false}
-	vote.Sign = vote.SignVote()
+	var err error
+	vote.Sign, err = vote.SignVote()
+	if err != nil {
+		log.Error("[rejectProposal] sign failed")
+		return
+	}
 	msg := &cs.VoteMessage{Command: cs.RejectVote, Vote: vote}
 	log.Info("[rejectProposal] send rej_vote msg:", cs.P2PClientSingleton.GetMessageHash(msg))
 
