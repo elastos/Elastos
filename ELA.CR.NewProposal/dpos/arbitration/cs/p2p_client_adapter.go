@@ -34,7 +34,6 @@ const (
 	ReceivedProposal  = "proposal"
 	AcceptVote        = "acc_vote"
 	RejectVote        = "rej_vote"
-	ReceivedConfirm   = "confirm"
 	Ping              = "ping"
 	Pong              = "pong"
 	GetBlocks         = "get_blc"
@@ -157,9 +156,11 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 				return
 			}
 			adapter.Listener.OnBlockReceived(msgItem.Peer, block)
+			adapter.Broadcast(msgItem.Message)
+		} else {
+			log.Error("[ProcessMessage] invalid block message")
 		}
-		adapter.Broadcast(msgItem.Message)
-	case ReceivedConfirm:
+	case p2p.CmdConfirm:
 		msgConfirm, ok := msgItem.Message.(*msg.Confirm)
 		if ok {
 			slot, ok := msgConfirm.Serializable.(*core.DPosProposalVoteSlot)
@@ -168,8 +169,10 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 				return
 			}
 			adapter.Listener.OnConfirmReceived(msgItem.Peer, slot)
+			adapter.Broadcast(msgItem.Message)
+		} else {
+			log.Error("[ProcessMessage] invalid confirm message")
 		}
-		adapter.Broadcast(msgItem.Message)
 	default:
 		log.Error("[ProcessMessage] unknown message:", msgItem.Message.CMD())
 	}
@@ -324,8 +327,8 @@ func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 		message = new(msg.Reject)
 	case p2p.CmdBlock:
 		message = msg.NewBlock(&core.Block{})
-	case ReceivedConfirm:
-		message = new(msg.Confirm)
+	case p2p.CmdConfirm:
+		message = msg.NewConfirm(&core.DPosProposalVoteSlot{})
 	case AcceptVote:
 		message = &VoteMessage{Command: AcceptVote}
 	case ReceivedProposal:
