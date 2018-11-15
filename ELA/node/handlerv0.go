@@ -195,10 +195,16 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	LocalNode.syncTimer.update()
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
-	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
+
+	err := LocalNode.AppendBlock(block)
 	if err != nil {
-		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+		return fmt.Errorf("receive invalid block %s, err: %s", hash.String(), err.Error())
 	}
+
+	//_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
+	//if err != nil {
+	//	return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+	//}
 
 	if !LocalNode.IsSyncHeaders() {
 		// relay
@@ -207,11 +213,11 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 			log.Debug("Relay block")
 		}
 
-		if isOrphan && !LocalNode.IsRequestedBlock(hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
-			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
-			SendGetBlocks(node, locator, *orphanRoot)
-		}
+		//if isOrphan && !LocalNode.IsRequestedBlock(hash) {
+		//	orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+		//	locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
+		//	SendGetBlocks(node, locator, *orphanRoot)
+		//}
 	}
 
 	return nil
@@ -223,7 +229,11 @@ func (h *HandlerV0) onConfirm(msgConfirm *msg.Confirm) error {
 		return fmt.Errorf("[onConfirm] received invalid confirm")
 	}
 
-	LocalNode.AppendConfirm(confirm)
+	err := LocalNode.AppendConfirm(confirm)
+	if err != nil {
+		return fmt.Errorf("receive invalid confirm %s, err: %s", confirm.Hash, err.Error())
+	}
+
 	return nil
 }
 

@@ -1,9 +1,13 @@
 package core
 
 import (
+	"bytes"
 	"io"
 
+	"github.com/elastos/Elastos.ELA/config"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 type DPosProposalVote struct {
@@ -14,12 +18,53 @@ type DPosProposalVote struct {
 	Sign   []byte
 }
 
-func (v *DPosProposalVote) SignVote() []byte {
-	return []byte{2}
+func (v *DPosProposalVote) Data() []byte {
+	buf := new(bytes.Buffer)
+	if err := v.SerializeUnsigned(buf); err != nil {
+		return []byte{0}
+	}
+
+	return buf.Bytes()
+}
+
+func (v *DPosProposalVote) SignVote() ([]byte, error) {
+	privateKey, err := common.HexStringToBytes(config.Parameters.ArbiterConfiguration.PrivateKey)
+	if err != nil {
+		return []byte{0}, err
+	}
+
+	signature, err := crypto.Sign(privateKey, v.Data())
+	if err != nil {
+		return []byte{0}, err
+	}
+
+	return signature, nil
 }
 
 func (v *DPosProposalVote) IsValid() bool {
-	//todo [merge] verify signature
+	var isArbiter bool
+	for _, a := range config.Parameters.Arbiters {
+		if a == v.Signer {
+			isArbiter = true
+		}
+	}
+	if !isArbiter {
+		return false
+	}
+
+	publicKey, err := common.HexStringToBytes(v.Signer)
+	if err != nil {
+		return false
+	}
+	pubKey, err := crypto.DecodePoint(publicKey[1:])
+	if err != nil {
+		return false
+	}
+	err = crypto.Verify(*pubKey, v.Data(), v.Sign)
+	if err != nil {
+		return false
+	}
+
 	return true
 }
 
