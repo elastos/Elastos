@@ -4,11 +4,11 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
+	"github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 )
 
 type DposEventConditionHandler interface {
@@ -29,23 +29,83 @@ type DposEventHandler interface {
 
 	FinishConsensus()
 
-	ProcessPing(peer *peer.Peer, height uint32)
-	ProcessPong(peer *peer.Peer, height uint32)
+	ProcessPing(id common.Uint256, height uint32)
+	ProcessPong(id common.Uint256, height uint32)
 
 	RequestAbnormalRecovering()
-	HelpToRecoverAbnormal(peer *peer.Peer, height uint32)
-	RecoverAbnormal(status *cs.ConsensusStatus)
+	HelpToRecoverAbnormal(id common.Uint256, height uint32)
+	RecoverAbnormal(status *msg.ConsensusStatus)
 
-	ResponseGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32)
+	ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32)
+}
+
+type AbnormalRecovering interface {
+	CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error
+	RecoverFromConsensusStatus(status *msg.ConsensusStatus) error
+}
+
+type IProposalDispatcher interface {
+	AbnormalRecovering
+
+	Initialize(consensus IConsensus, eventMonitor *log.EventMonitor, network arbitrator.DposNetwork)
+
+	//status
+	GetProcessingBlock() *core.Block
+	IsVoteSlotEmpty() bool
+	CurrentHeight() uint32
+
+	//proposal
+	StartProposal(b *core.Block)
+	CleanProposals()
+	FinishProposal()
+	TryStartSpeculatingProposal(b *core.Block)
+	ProcessProposal(d core.DPosProposal)
+
+	FinishConsensus()
+
+	ProcessVote(v core.DPosProposalVote, accept bool)
+
+	OnAbnormalStateDetected()
+	RequestAbnormalRecovering()
+	TryAppendAndBroadcastConfirmBlockMsg() bool
+}
+
+type IConsensus interface {
+	AbnormalRecovering
+
+	IsRunning() bool
+	SetRunning()
+	IsReady() bool
+	SetReady()
+
+	IsOnDuty() bool
+	SetOnDuty(onDuty bool)
+
+	RunWithStatusCondition(condition bool, closure func())
+	RunWithAllStatusConditions(ready func(), running func())
+
+	IsArbitratorOnDuty(arbitrator string) bool
+	GetOnDutyArbitrator() string
+
+	StartConsensus(b *core.Block)
+	ProcessBlock(b *core.Block)
+
+	ChangeView()
+	TryChangeView() bool
+	GetViewOffset() uint32
 }
 
 type DposManager struct {
-	dposLock sync.Mutex
-	handler  DposEventHandler
+	dposLock   sync.Mutex
+	handler    DposEventHandler
+	network    arbitrator.DposNetwork
+	dispatcher IProposalDispatcher
 }
 
-func (d *DposManager) Initialize(handler DposEventHandler) {
+func (d *DposManager) Initialize(handler DposEventHandler, dispatcher IProposalDispatcher, network arbitrator.DposNetwork) {
 	d.handler = handler
+	d.network = network
+	d.dispatcher = dispatcher
 }
 
 func (d *DposManager) Recover() {
@@ -72,7 +132,7 @@ func (d *DposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *DposManager) OnProposalReceived(peer *peer.Peer, p core.DPosProposal) {
+func (d *DposManager) OnProposalReceived(id common.Uint256, p core.DPosProposal) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -81,7 +141,7 @@ func (d *DposManager) OnProposalReceived(peer *peer.Peer, p core.DPosProposal) {
 	d.handler.StartNewProposal(p)
 }
 
-func (d *DposManager) OnVoteReceived(peer *peer.Peer, p core.DPosProposalVote) {
+func (d *DposManager) OnVoteReceived(id common.Uint256, p core.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -90,7 +150,7 @@ func (d *DposManager) OnVoteReceived(peer *peer.Peer, p core.DPosProposalVote) {
 	d.handler.ProcessAcceptVote(p)
 }
 
-func (d *DposManager) OnVoteRejected(peer *peer.Peer, p core.DPosProposalVote) {
+func (d *DposManager) OnVoteRejected(id common.Uint256, p core.DPosProposalVote) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
@@ -99,28 +159,28 @@ func (d *DposManager) OnVoteRejected(peer *peer.Peer, p core.DPosProposalVote) {
 	d.handler.ProcessRejectVote(p)
 }
 
-func (d *DposManager) OnPing(peer *peer.Peer, height uint32) {
+func (d *DposManager) OnPing(id common.Uint256, height uint32) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
-	d.handler.ProcessPing(peer, height)
+	d.handler.ProcessPing(id, height)
 }
 
-func (d *DposManager) OnPong(peer *peer.Peer, height uint32) {
+func (d *DposManager) OnPong(id common.Uint256, height uint32) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
-	d.handler.ProcessPong(peer, height)
+	d.handler.ProcessPong(id, height)
 }
 
-func (d *DposManager) OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32) {
+func (d *DposManager) OnGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
-	d.handler.ResponseGetBlocks(peer, startBlockHeight, endBlockHeight)
+	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
+func (d *DposManager) OnResponseBlocks(id common.Uint256, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
@@ -129,16 +189,20 @@ func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, bl
 	}
 }
 
-func (d *DposManager) OnRequestConsensus(peer *peer.Peer, height uint32) {
+func (d *DposManager) OnRequestConsensus(id common.Uint256, height uint32) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
-	d.handler.HelpToRecoverAbnormal(peer, height)
+	d.handler.HelpToRecoverAbnormal(id, height)
 }
 
-func (d *DposManager) OnResponseConsensus(peer *peer.Peer, status *cs.ConsensusStatus) {
+func (d *DposManager) OnResponseConsensus(id common.Uint256, status *msg.ConsensusStatus) {
 	d.dposLock.Lock()
 	defer d.dposLock.Unlock()
 
 	d.handler.RecoverAbnormal(status)
+}
+
+func (d *DposManager) OnBadNetwork() {
+	d.dispatcher.OnAbnormalStateDetected()
 }

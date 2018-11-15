@@ -3,15 +3,14 @@ package consensus
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/monitor"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/view"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -20,21 +19,17 @@ const (
 )
 
 type Consensus struct {
-	heartBeatMonitor *HeartBeatMonitor
-	consensusStatus  uint32
-	viewOffset       uint32
+	consensusStatus uint32
+	viewOffset      uint32
 
 	currentView view.View
 	//todo uncomment me later
 	//statusLock  sync.Mutex
 }
 
-func (c *Consensus) Initialize(tolerance time.Duration, listener HeartBeatListener, viewListener view.ViewListener) {
+func (c *Consensus) Initialize(tolerance time.Duration, viewListener view.ViewListener) {
 	c.currentView = view.View{}
 	c.currentView.Initialize(tolerance, viewListener)
-
-	c.heartBeatMonitor = &HeartBeatMonitor{}
-	c.heartBeatMonitor.Initialize(listener)
 }
 
 func (c *Consensus) IsOnDuty() bool {
@@ -43,11 +38,6 @@ func (c *Consensus) IsOnDuty() bool {
 
 func (c *Consensus) SetOnDuty(onDuty bool) {
 	c.currentView.SetOnDuty(onDuty)
-}
-
-func (c *Consensus) ResetHeartBeatInterval(arbitrator string) {
-	c.heartBeatMonitor.Reset(arbitrator)
-	c.heartBeatMonitor.ResetActive(arbitrator, time.Now())
 }
 
 func (c *Consensus) RunWithStatusCondition(condition bool, closure func()) {
@@ -126,23 +116,14 @@ func (c *Consensus) TryChangeView() bool {
 	return c.currentView.TryChangeView(&c.viewOffset)
 }
 
-func (c *Consensus) ResponseHeartBeat(peer *peer.Peer, cmd string, height uint32) {
-	msg := &cs.PongMessage{Command: cmd, Height: height}
-	peer.SendMessage(msg, nil)
-}
-
-func (c *Consensus) StartHeartHeat() {
-	c.heartBeatMonitor.HeartBeatTick()
-}
-
-func (c *Consensus) CollectConsensusStatus(height uint32, status *cs.ConsensusStatus) error {
+func (c *Consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error {
 	status.ConsensusStatus = c.consensusStatus
 	status.ViewOffset = c.viewOffset
 	status.ViewStartTime = c.currentView.GetViewStartTime()
 	return nil
 }
 
-func (c *Consensus) RecoverFromConsensusStatus(status *cs.ConsensusStatus) error {
+func (c *Consensus) RecoverFromConsensusStatus(status *msg.ConsensusStatus) error {
 	c.consensusStatus = status.ConsensusStatus
 	c.viewOffset = status.ViewOffset
 	c.currentView.ResetView(status.ViewStartTime)

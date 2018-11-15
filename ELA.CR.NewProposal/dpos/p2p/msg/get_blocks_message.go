@@ -1,4 +1,4 @@
-package cs
+package msg
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -6,13 +6,12 @@ import (
 )
 
 type GetBlocksMessage struct {
-	Command          string
 	StartBlockHeight uint32
 	EndBlockHeight   uint32
 }
 
 func (msg *GetBlocksMessage) CMD() string {
-	return msg.Command
+	return GetBlocks
 }
 
 func (msg *GetBlocksMessage) MaxLength() uint32 {

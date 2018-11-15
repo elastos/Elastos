@@ -1,16 +1,15 @@
-package cs
+package msg
 
 import (
 	"io"
 )
 
 type ResponseConsensusMessage struct {
-	Command   string
 	Consensus ConsensusStatus
 }
 
 func (msg *ResponseConsensusMessage) CMD() string {
-	return msg.Command
+	return ResponseConsensus
 }
 
 func (msg *ResponseConsensusMessage) MaxLength() uint32 {
