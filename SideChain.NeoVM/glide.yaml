@@ -1,0 +1,21 @@
+package: github.com/elastos/Elastos.ELA.SideChain.NeoVM
+import:
+- package: github.com/golang/crypto
+- package: github.com/golang/sys
+- package: github.com/elastos/Elastos.ELA.Utility
+  version: release_v0.1.1
+- package: github.com/elastos/Elastos.ELA.SideChain
+  version: release_v0.1.1
+- package: github.com/mattn/go-sqlite3
+- package: github.com/syndtr/goleveldb
+  subpackages:
+  - leveldb
+  - leveldb/errors
+  - leveldb/filter
+  - leveldb/iterator
+  - leveldb/opt
+  - leveldb/util
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
