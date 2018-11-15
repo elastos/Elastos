@@ -17,7 +17,7 @@
 		39859FB9219C512100DE141B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "include/$(PRODUCT_NAME)";
+			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
 				399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */,
@@ -260,7 +260,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/**",
 					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "${SRCROOT}";
@@ -279,7 +278,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/**",
 					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "${SRCROOT}";
