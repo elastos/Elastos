@@ -48,6 +48,9 @@ func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error
 	case p2p.CmdBlock:
 		message = msg.NewBlock(&core.Block{})
 
+	case p2p.CmdConfirm:
+		message = msg.NewConfirm(&core.DPosProposalVoteSlot{})
+
 	case p2p.CmdTx:
 		message = msg.NewTx(&core.Transaction{})
 
@@ -76,6 +79,9 @@ func (h *HandlerV0) HandleMessage(message p2p.Message) {
 
 	case *msg.Block:
 		h.onBlock(message)
+
+	case *msg.Confirm:
+		h.onConfirm(message)
 
 	case *msg.Tx:
 		h.onTx(message)
@@ -157,8 +163,14 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		node.SendMessage(v0.NewNotFound(hash))
 		return err
 	}
-
 	node.SendMessage(msg.NewBlock(block))
+
+	confirm, err := LocalNode.GetConfirm(hash)
+	if err != nil {
+		log.Debugf("Can't get confirm from hash %s", hash)
+		return err
+	}
+	node.SendMessage(msg.NewConfirm(confirm))
 
 	return nil
 }
@@ -202,6 +214,16 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 		}
 	}
 
+	return nil
+}
+
+func (h *HandlerV0) onConfirm(msgConfirm *msg.Confirm) error {
+	confirm, ok := msgConfirm.Serializable.(*core.DPosProposalVoteSlot)
+	if !ok {
+		return fmt.Errorf("[onConfirm] received invalid confirm")
+	}
+
+	LocalNode.AppendConfirm(confirm)
 	return nil
 }
 

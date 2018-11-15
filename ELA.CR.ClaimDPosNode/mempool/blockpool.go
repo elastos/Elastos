@@ -107,3 +107,15 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 
 	return nil
 }
+
+func (pool *BlockPool) GetConfirm(hash common.Uint256) (*core.DPosProposalVoteSlot, error) {
+	pool.Lock()
+	defer pool.Unlock()
+
+	confirm, exist := pool.confirmMap[hash]
+	if !exist {
+		return nil, errors.New("not found confirm")
+	}
+
+	return confirm, nil
+}
