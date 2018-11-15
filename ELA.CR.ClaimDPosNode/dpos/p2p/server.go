@@ -214,7 +214,7 @@ func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
 
 	// Notify peer state change for new peer added.
 	if s.cfg.StateNotifier != nil {
-		s.cfg.StateNotifier.OnStateChange(state)
+		s.cfg.StateNotifier.OnNewPeer(sp.PID())
 	}
 
 	return true
@@ -246,7 +246,7 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 
 	// Notify peer state change for done peer removed.
 	if s.cfg.StateNotifier != nil {
-		s.cfg.StateNotifier.OnStateChange(state)
+		s.cfg.StateNotifier.OnDonePeer(sp.PID())
 	}
 }
 
@@ -348,7 +348,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 
 		// Notify peer state change for connect list changed.
 		if s.cfg.StateNotifier != nil {
-			s.cfg.StateNotifier.OnStateChange(state)
+			s.cfg.StateNotifier.OnConnectPeers(connectPeers)
 		}
 
 		msg.reply <- struct{}{}
