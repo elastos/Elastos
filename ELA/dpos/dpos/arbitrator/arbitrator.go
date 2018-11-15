@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -22,6 +23,25 @@ type IDposManager interface {
 	ConfirmBlock()
 
 	ChangeConsensus(onDuty bool)
+}
+
+type StatusSyncEventListener interface {
+	OnPing(id common.Uint256, height uint32)
+	OnPong(id common.Uint256, height uint32)
+	OnGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32)
+	OnResponseBlocks(id common.Uint256, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
+	OnRequestConsensus(id common.Uint256, height uint32)
+	OnResponseConsensus(id common.Uint256, status *msg.ConsensusStatus)
+}
+
+type NetworkEventListener interface {
+	StatusSyncEventListener
+
+	OnProposalReceived(id common.Uint256, p core.DPosProposal)
+	OnVoteReceived(id common.Uint256, p core.DPosProposalVote)
+	OnVoteRejected(id common.Uint256, p core.DPosProposalVote)
+
+	OnBadNetwork()
 }
 
 type Arbitrator struct {

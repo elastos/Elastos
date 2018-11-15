@@ -7,78 +7,19 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 )
-
-type AbnormalRecovering interface {
-	CollectConsensusStatus(height uint32, status *cs.ConsensusStatus) error
-	RecoverFromConsensusStatus(status *cs.ConsensusStatus) error
-}
-
-type IProposalDispatcher interface {
-	AbnormalRecovering
-
-	Initialize(consensus IConsensus, eventMonitor *log.EventMonitor)
-
-	//status
-	GetProcessingBlock() *core.Block
-	IsVoteSlotEmpty() bool
-	CurrentHeight() uint32
-
-	//proposal
-	StartProposal(b *core.Block)
-	CleanProposals()
-	FinishProposal()
-	TryStartSpeculatingProposal(b *core.Block)
-	ProcessProposal(d core.DPosProposal)
-
-	FinishConsensus()
-
-	ProcessVote(v core.DPosProposalVote, accept bool)
-
-	RequestAbnormalRecovering()
-	TryAppendAndBroadcastConfirmBlockMsg() bool
-}
-
-type IConsensus interface {
-	AbnormalRecovering
-
-	IsRunning() bool
-	SetRunning()
-	IsReady() bool
-	SetReady()
-
-	IsOnDuty() bool
-	SetOnDuty(onDuty bool)
-
-	RunWithStatusCondition(condition bool, closure func())
-	RunWithAllStatusConditions(ready func(), running func())
-
-	IsArbitratorOnDuty(arbitrator string) bool
-	GetOnDutyArbitrator() string
-
-	StartConsensus(b *core.Block)
-	ProcessBlock(b *core.Block)
-
-	ChangeView()
-	TryChangeView() bool
-	GetViewOffset() uint32
-
-	StartHeartHeat()
-	ResponseHeartBeat(peer *peer.Peer, cmd string, height uint32)
-	ResetHeartBeatInterval(arbitrator string)
-}
 
 type DposHandlerSwitch struct {
 	proposalDispatcher IProposalDispatcher
 	consensus          IConsensus
+	network            DposNetwork
 
 	onDutyHandler  *DposOnDutyHandler
 	normalHandler  *DposNormalHandler
@@ -90,9 +31,10 @@ type DposHandlerSwitch struct {
 	isAbnormal bool
 }
 
-func (h *DposHandlerSwitch) Initialize(dispatcher IProposalDispatcher, consensus IConsensus, locker sync.Locker) {
+func (h *DposHandlerSwitch) Initialize(dispatcher IProposalDispatcher, consensus IConsensus, network DposNetwork, locker sync.Locker) {
 	h.proposalDispatcher = dispatcher
 	h.consensus = consensus
+	h.network = network
 	h.locker = locker
 	h.isAbnormal = false
 
@@ -108,7 +50,7 @@ func (h *DposHandlerSwitch) Initialize(dispatcher IProposalDispatcher, consensus
 
 	h.eventMonitor.RegisterListener(eventRecorder)
 	h.eventMonitor.RegisterListener(eventLogs)
-	h.proposalDispatcher.Initialize(consensus, h.eventMonitor)
+	h.proposalDispatcher.Initialize(consensus, h.eventMonitor, network)
 	h.SwitchTo(false)
 }
 
@@ -199,7 +141,7 @@ func (h *DposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *DposHandlerSwitch) ResponseGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32) {
+func (h *DposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
 	currentHeight := h.proposalDispatcher.CurrentHeight()
 
@@ -217,16 +159,16 @@ func (h *DposHandlerSwitch) ResponseGetBlocks(peer *peer.Peer, startBlockHeight,
 		blocks = append(blocks, currentBlock)
 	}
 
-	msg := &cs.ResponseBlocksMessage{Command: cs.ResponseBlocks, Blocks: blocks, BlockConfirms: blockConfirms}
-	peer.SendMessage(msg, nil)
+	msg := &msg2.ResponseBlocksMessage{Command: msg2.ResponseBlocks, Blocks: blocks, BlockConfirms: blockConfirms}
+	h.network.SendMessageToPeer(id, msg)
 }
 
-func (h *DposHandlerSwitch) ProcessPing(peer *peer.Peer, height uint32) {
-	h.processHeartBeat(peer, height, true)
+func (h *DposHandlerSwitch) ProcessPing(id common.Uint256, height uint32) {
+	h.processHeartBeat(id, height)
 }
 
-func (h *DposHandlerSwitch) ProcessPong(peer *peer.Peer, height uint32) {
-	h.processHeartBeat(peer, height, false)
+func (h *DposHandlerSwitch) ProcessPong(id common.Uint256, height uint32) {
+	h.processHeartBeat(id, height)
 }
 
 func (h *DposHandlerSwitch) RequestAbnormalRecovering() {
@@ -234,8 +176,8 @@ func (h *DposHandlerSwitch) RequestAbnormalRecovering() {
 	h.isAbnormal = true
 }
 
-func (h *DposHandlerSwitch) HelpToRecoverAbnormal(peer *peer.Peer, height uint32) {
-	status := &cs.ConsensusStatus{}
+func (h *DposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint32) {
+	status := &msg2.ConsensusStatus{}
 	result := false
 
 	h.consensus.RunWithStatusCondition(true, func() {
@@ -259,12 +201,12 @@ func (h *DposHandlerSwitch) HelpToRecoverAbnormal(peer *peer.Peer, height uint32
 	})
 
 	if result {
-		msg := &cs.ResponseConsensusMessage{Command: cs.ResponseConsensus, Consensus: *status}
-		peer.SendMessage(msg, nil)
+		msg := &msg2.ResponseConsensusMessage{Consensus: *status}
+		h.network.SendMessageToPeer(id, msg)
 	}
 }
 
-func (h *DposHandlerSwitch) RecoverAbnormal(status *cs.ConsensusStatus) {
+func (h *DposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
 	result := false
 
 	h.consensus.RunWithStatusCondition(true, func() {
@@ -303,29 +245,19 @@ func (h *DposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.ChangeView(&firstBlockHash)
 }
 
-func (h *DposHandlerSwitch) processHeartBeat(peer *peer.Peer, height uint32, needResponse bool) {
-	currentHeight := h.proposalDispatcher.CurrentHeight()
-	name, ok := GetPeerName(peer)
-
-	if h.tryRequestBlocks(peer, height) {
+func (h *DposHandlerSwitch) processHeartBeat(id common.Uint256, height uint32) {
+	if h.tryRequestBlocks(id, height) {
 		log.Info("Found higher block, requesting it.")
-	}
-
-	if needResponse {
-		h.consensus.ResponseHeartBeat(peer, cs.Pong, currentHeight)
-	}
-	if ok {
-		h.consensus.ResetHeartBeatInterval(name)
 	}
 }
 
-func (h *DposHandlerSwitch) tryRequestBlocks(peer *peer.Peer, sourceHeight uint32) bool {
+func (h *DposHandlerSwitch) tryRequestBlocks(id common.Uint256, sourceHeight uint32) bool {
 	height := h.proposalDispatcher.CurrentHeight()
 	if sourceHeight > height {
-		msg := &cs.GetBlocksMessage{Command: cs.GetBlocks,
+		msg := &msg2.GetBlocksMessage{
 			StartBlockHeight: height,
 			EndBlockHeight:   sourceHeight}
-		peer.SendMessage(msg, nil)
+		h.network.SendMessageToPeer(id, msg)
 
 		return true
 	}

@@ -1,4 +1,4 @@
-package cs
+package msg
 
 import (
 	"io"
@@ -7,12 +7,11 @@ import (
 )
 
 type RequestConsensusMessage struct {
-	Command string
 	Height  uint32
 }
 
 func (msg *RequestConsensusMessage) CMD() string {
-	return msg.Command
+	return RequestConsensus
 }
 
 func (msg *RequestConsensusMessage) MaxLength() uint32 {

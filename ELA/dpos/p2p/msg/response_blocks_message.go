@@ -1,4 +1,4 @@
-package cs
+package msg
 
 import (
 	"io"
@@ -15,7 +15,7 @@ type ResponseBlocksMessage struct {
 }
 
 func (m *ResponseBlocksMessage) CMD() string {
-	return m.Command
+	return ResponseBlocks
 }
 
 func (m *ResponseBlocksMessage) MaxLength() uint32 {
