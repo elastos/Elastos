@@ -366,6 +366,11 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 
 				if nbr.IsRelay() {
 					nbr.SendMessage(msg.NewBlock(message))
+					confirm, err := node.GetConfirm(message.Hash())
+					if err != nil {
+						return err
+					}
+					nbr.SendMessage(msg.NewConfirm(confirm))
 				}
 			default:
 				log.Warn("unknown relay message type")
