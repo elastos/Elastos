@@ -119,6 +119,7 @@ Run Elashell:
 ```shell
 $ ./elashell.sh
 ```
+Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name. For the entire command list please see the [COMMANDS.md](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/COMMANDS.md) file.
 
 Or run Elatests:
 ```shell
@@ -365,6 +366,7 @@ Run Elashell:
 ```shell
 $ ./elashell.sh
 ```
+Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name. For the entire command list please see the [COMMANDS.md](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/COMMANDS.md) file.
 
 Or run Elatests:
 ```shell
@@ -584,6 +586,7 @@ Run Elashell:
 ```shell
 $ ./elashell.sh
 ```
+Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name. For the entire command list please see the [COMMANDS.md](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/COMMANDS.md) file.
 
 Or run Elatests:
 ```shell

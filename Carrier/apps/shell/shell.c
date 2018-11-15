@@ -1742,57 +1742,57 @@ struct command {
     void (*function)(ElaCarrier *w, int argc, char *argv[]);
     const char *help;
 } commands[] = {
-    { "help",       help,                   "help [cmd]" },
-    { "clear",      clear_screen,           "clear [log | out]" },
+    { "help",       help,                   "help - Display available command list. *OR* help [Command] - Display usage description for specific command." },
+    { "clear",      clear_screen,           "clear - Clear log and output view in shell. *OR* clear [log | out] - Clear log or output view in shell." },
 
-    { "address",    get_address,            "address" },
-    { "nodeid",     get_nodeid,             "nodeid" },
-    { "userid",     get_userid,             "userid" },
-    { "me",         self_info,              "me [set] [name | description | gender | phone | email | region] [value]" },
-    { "nospam",     self_nospam,            "nospam [ value ]" },
-    { "presence",   self_presence,          "presence [ none | away | busy ]" },
+    { "address",    get_address,            "address - Display own address." },
+    { "nodeid",     get_nodeid,             "nodeid - Display own node ID." },
+    { "userid",     get_userid,             "userid - Display own user ID." },
+    { "me",         self_info,              "me - Display own details. *OR* me set [name | description | gender | phone | email | region] [Value] - Set own user details individually." },
+    { "nospam",     self_nospam,            "nospam - Display current nospam value. *OR* nospam [ value ] - Change nospam value to enforce address change." },
+    { "presence",   self_presence,          "presence - Display current presence. *OR* presence [ none | away | busy ] - Display self presence." },
 
-    { "fadd",       friend_add,             "fadd address hello" },
-    { "faccept",    friend_accept,          "faccept userid" },
-    { "fremove",    friend_remove,          "fremove userid" },
-    { "friends",    list_friends,           "friends" },
-    { "friend",     show_friend,            "friend userid" },
-    { "label",      label_friend,           "label userid name" },
-    { "msg",        send_message,           "msg userid message" },
-    { "invite",     invite,                 "invite userid data" },
-    { "ireply",     reply_invite,           "ireply userid [confirm message | refuse reason]" },
+    { "fadd",       friend_add,             "fadd [Address] [Message] - Add new friend." },
+    { "faccept",    friend_accept,          "faccept [User ID] - Accept friend request." },
+    { "fremove",    friend_remove,          "fremove [User ID] - Remove friend." },
+    { "friends",    list_friends,           "friends - List all friends." },
+    { "friend",     show_friend,            "friend [User ID] - Display friend details." },
+    { "label",      label_friend,           "label [User ID] [Name] - Add label to friend." },
+    { "msg",        send_message,           "msg [User ID] [Message] - Send message to a friend." },
+    { "invite",     invite,                 "invite [User ID] [Message] - Invite friend." },
+    { "ireply",     reply_invite,           "ireply [User ID] confirm [Message] *OR* ireply [User ID] refuse [Message] - Confirm or refuse invitation with a message." },
 
-    { "gnew",       group_new,              "gnew" },
-    { "gleave",     group_leave,            "gleave groupid" },
-    { "ginvite",    group_invite,           "ginvite groupid userid" },
-    { "gjoin",      group_join,             "gjoin userid cookie" },
-    { "gmsg",       group_send_message,     "gmsg groupid message" },
-    { "gtitle",     group_set_title,        "gtitle groupid [title]" },
-    { "gpeers",     group_list_peers,       "gpeers groupid" },
-    { "glist",      group_list,             "glist" },
+    { "gnew",       group_new,              "gnew - Create new group." },
+    { "gleave",     group_leave,            "gleave [Group ID] - Leave group." },
+    { "ginvite",    group_invite,           "ginvite [Group ID] [User ID] - Invite user to group." },
+    { "gjoin",      group_join,             "gjoin [User ID] cookie - Group invitation from user with cookies." },
+    { "gmsg",       group_send_message,     "gmsg [Group ID] [Message] - Send message to group." },
+    { "gtitle",     group_set_title,        "gtitle [Group ID] - Display title of group. *OR* gtitle [Group ID] [Title] -  Set title of group." },
+    { "gpeers",     group_list_peers,       "gpeers [Group ID] - Display list of participants in group." },
+    { "glist",      group_list,             "glist - Display list of joined group." },
 
-    { "sinit",      session_init,           "sinit" },
-    { "snew",       session_new,            "snew userid" },
-    { "sadd",       stream_add,             "sadd [plain] [reliable] [multiplexing] [portforwarding]"},
-    { "sremove",    stream_remove,          "sremove id" },
-    { "srequest",   session_request,        "srequest bundle" },
-    { "sreply",     session_reply_request,  "sreply ok/sreply refuse [reason]"},
-    { "swrite",     stream_write,           "swrite streamid string" },
-    { "sbulkwrite", stream_bulk_write,      "sbulkwrite streamid packet-size packet-count" },
-    { "sbulkrecv",  stream_bulk_receive,    "sbulkrecv start | end" },
-    { "scadd",      stream_add_channel,     "scadd stream" },
-    { "sinfo",      stream_get_info,        "sinfo id"},
-    { "scclose",    stream_close_channel,   "scclose stream channel" },
-    { "scwrite",    stream_write_channel,   "scwrite stream channel string" },
-    { "scpend",     stream_pend_channel,    "scpend stream channel" },
-    { "scresume",   stream_resume_channel,  "scresume stream channel" },
-    { "sclose",     session_close,          "sclose" },
-    { "spfsvcadd",  session_add_service,    "spfsvcadd name tcp|udp host port" },
-    { "spfsvcremove", session_remove_service, "spfsvcremove name" },
-    { "spfopen",    portforwarding_open,    "spfopen stream service tcp|udp host port" },
-    { "spfclose",   portforwarding_close,   "spfclose stream pfid" },
-    { "scleanup",   session_cleanup,        "scleanup" },
-    { "kill",       kill_carrier,           "kill" },
+    { "sinit",      session_init,           "sinit - Initialize session." },
+    { "snew",       session_new,            "snew [User ID] - Start new session with user." },
+    { "sadd",       stream_add,             "sadd [plain | reliable | multiplexing | portforwarding] - Add session properties."},
+    { "sremove",    stream_remove,          "sremove [Session ID] - Leave session." },
+    { "srequest",   session_request,        "srequest bundle - Bundle and start session." },
+    { "sreply",     session_reply_request,  "sreply ok - Accept session request. *OR* sreply refuse [Message] - Refuse session request with reason as a message."},
+    { "swrite",     stream_write,           "swrite [Stream ID] [String]  - Send data to stream." },
+    { "sbulkwrite", stream_bulk_write,      "sbulkwrite [Stream ID] [Packet size] [Packet count] -  Send bulk data to stream." },
+    { "sbulkrecv",  stream_bulk_receive,    "sbulkrecv [ start | end ] - Start or end receiving in bulk." },
+    { "scadd",      stream_add_channel,     "scadd [Stream]  - Add stream channel." },
+    { "sinfo",      stream_get_info,        "sinfo [ID] - Display stream information."},
+    { "scclose",    stream_close_channel,   "scclose [Stream] channel - Close stream channel." },
+    { "scwrite",    stream_write_channel,   "scwrite [Stream] channel [String] - Write to stream channel." },
+    { "scpend",     stream_pend_channel,    "scpend [Stream] channel - Display pending stream channels." },
+    { "scresume",   stream_resume_channel,  "scresume [Stream] channel - Resume stream." },
+    { "sclose",     session_close,          "sclose - Close session." },
+    { "spfsvcadd",  session_add_service,    "spfsvcadd [Name] [tcp|udp] [Host] [Port] - Add service to session." },
+    { "spfsvcremove", session_remove_service, "spfsvcremove [Name] - Remove service from session." },
+    { "spfopen",    portforwarding_open,    "spfopen [Stream] [Service] [tcp|udp] [Host] [Port] - Open portforwarding." },
+    { "spfclose",   portforwarding_close,   "spfclose [Stream] [PF ID] - Close portforwarding." },
+    { "scleanup",   session_cleanup,        "scleanup - Cleanup session." },
+    { "kill",       kill_carrier,           "kill - Stop carrier." },
     { NULL }
 };
 
@@ -1804,7 +1804,7 @@ static void help(ElaCarrier *w, int argc, char *argv[])
     struct command *p;
 
     if (argc == 1) {
-        output("Available commands list:\n");
+        output(" Use *help [Command]* to see usage description for a specific command.\n Available commands list:\n");
 
         for (p = commands; p->cmd; p++) {
             cmd_len = strlen(p->cmd);
@@ -2302,4 +2302,3 @@ quit:
     history_save();
     return 0;
 }
-

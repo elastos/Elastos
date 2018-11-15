@@ -16,7 +16,7 @@ extensions = ['sphinx.ext.todo',
 
 # Breathe configuration parameters
 breathe_projects = {
-    "CarrierAPI"            : "@CARRIERAPI_INT_DIR@/carrierAPI/xml/"
+    "CarrierAPI"            : "@CARRIERAPI_INT_DIR@/CarrierAPI/xml/"
 }
 
 breathe_show_define_initializer = True
