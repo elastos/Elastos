@@ -1,16 +1,19 @@
-package arbitrator
+package dpos
 
 import (
 	"errors"
 	"math/rand"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	p2p2 "github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"github.com/elastos/Elastos.ELA/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type PeerItem struct {
@@ -21,32 +24,28 @@ type PeerItem struct {
 	Sequence    uint32
 }
 
-type messageItem struct {
-	ID      common.Uint256
-	Message p2p2.Message
+type blockItem struct {
+	Block     *core.Block
+	Confirmed bool
 }
 
-type DposNetwork interface {
-	Start()
-	Stop() error
-
-	SendMessageToPeer(id common.Uint256, msg p2p2.Message) error
-	BroadcastMessage(msg p2p2.Message)
-
-	Reset(epochInfo interface{}) error
-	ChangeHeight(height uint32) error
-
-	GetActivePeer() *common.Uint256
+type messageItem struct {
+	ID      common.Uint256
+	Message utip2p.Message
 }
 
 type dposNetwork struct {
-	listener      NetworkEventListener
+	listener      manager.NetworkEventListener
 	directPeers   map[string]PeerItem
 	currentHeight uint32
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
 	quit         chan bool
+
+	changeViewChan      chan bool
+	blockReceivedChan   chan blockItem
+	confirmReceivedChan chan *core.DPosProposalVoteSlot
 }
 
 func (n *dposNetwork) Start() {
@@ -54,12 +53,19 @@ func (n *dposNetwork) Start() {
 	n.connectPeers()
 
 	go func() {
+	out:
 		for {
 			select {
 			case msgItem := <-n.messageQueue:
 				n.processMessage(msgItem)
+			case <-n.changeViewChan:
+				n.changeView()
+			case blockItem := <-n.blockReceivedChan:
+				n.blockReceived(blockItem.Block, blockItem.Confirmed)
+			case confirm := <-n.confirmReceivedChan:
+				n.confirmReceived(confirm)
 			case <-n.quit:
-				return
+				break out
 			}
 		}
 	}()
@@ -94,11 +100,11 @@ func (n *dposNetwork) Reset(epochInfo interface{}) error {
 	return nil
 }
 
-func (n *dposNetwork) SendMessageToPeer(id common.Uint256, msg p2p2.Message) error {
+func (n *dposNetwork) SendMessageToPeer(id common.Uint256, msg utip2p.Message) error {
 	return n.p2pServer.SendMessageToPeer(id, msg)
 }
 
-func (n *dposNetwork) BroadcastMessage(msg p2p2.Message) {
+func (n *dposNetwork) BroadcastMessage(msg utip2p.Message) {
 	n.p2pServer.BroadcastMessage(msg)
 }
 
@@ -136,6 +142,18 @@ func (n *dposNetwork) GetActivePeer() *common.Uint256 {
 	return &id
 }
 
+func (n *dposNetwork) PostChangeViewTask() {
+	n.changeViewChan <- true
+}
+
+func (n *dposNetwork) PostBlockReceivedTask(b *core.Block, confirmed bool) {
+	n.blockReceivedChan <- blockItem{b, confirmed}
+}
+
+func (n *dposNetwork) PostConfirmReceivedTask(p *core.DPosProposalVoteSlot) {
+	n.confirmReceivedChan <- p
+}
+
 func (n *dposNetwork) getValidPeers() (result []p2p.PeerAddr) {
 	result = make([]p2p.PeerAddr, 0)
 	for _, v := range n.directPeers {
@@ -152,7 +170,7 @@ func (n *dposNetwork) notifyFlag(flag p2p.NotifyFlag) {
 	}
 }
 
-func (n *dposNetwork) handleMessage(pid common.Uint256, msg p2p2.Message) {
+func (n *dposNetwork) handleMessage(pid common.Uint256, msg utip2p.Message) {
 	n.messageQueue <- &messageItem{pid, msg}
 }
 
@@ -210,17 +228,31 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 	}
 }
 
+func (n *dposNetwork) changeView() {
+	n.listener.OnChangeView()
+}
+
+func (n *dposNetwork) blockReceived(b *core.Block, confirmed bool) {
+	n.listener.OnBlockReceived(b, confirmed)
+}
+
+func (n *dposNetwork) confirmReceived(p *core.DPosProposalVoteSlot) {
+	n.listener.OnConfirmReceived(p)
+}
+
 func (n *dposNetwork) getCurrentHeight(pid common.Uint256) uint64 {
 	//todo get current height from proposal dispatcher
 	return 0
 }
 
-func NewDposNetwork(pid [32]byte, listener NetworkEventListener) (DposNetwork, error) {
+func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener) (*dposNetwork, error) {
 	network := &dposNetwork{
-		listener:      listener,
-		directPeers:   make(map[string]PeerItem),
-		messageQueue:  make(chan *messageItem, 10000), //todo config handle capacity though config file
-		currentHeight: 0,
+		listener:       listener,
+		directPeers:    make(map[string]PeerItem),
+		messageQueue:   make(chan *messageItem, 10000), //todo config handle capacity though config file
+		quit:           make(chan bool),
+		changeViewChan: make(chan bool),
+		currentHeight:  0,
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)
@@ -246,7 +278,7 @@ func NewDposNetwork(pid [32]byte, listener NetworkEventListener) (DposNetwork, e
 	return network, nil
 }
 
-func makeEmptyMessage(cmd string) (message p2p2.Message, err error) {
+func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 	switch cmd {
 	case msg.AcceptVote:
 		message = &msg.VoteMessage{Command: msg.AcceptVote}

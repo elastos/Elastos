@@ -49,8 +49,15 @@ type EventMonitor struct {
 	listeners []EventListener
 }
 
-func (e *EventMonitor) Initialize() {
-	e.listeners = make([]EventListener, 0)
+func NewEventMoniter() *EventMonitor {
+	e := &EventMonitor{
+		listeners: make([]EventListener, 0),
+	}
+
+	eventLogs := &EventLogs{}
+	e.RegisterListener(eventLogs)
+
+	return e
 }
 
 func (e *EventMonitor) RegisterListener(l EventListener) {

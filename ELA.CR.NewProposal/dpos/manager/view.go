@@ -1,4 +1,4 @@
-package view
+package manager
 
 import (
 	"time"
@@ -14,7 +14,7 @@ type ViewListener interface {
 	OnViewChanged(isOnDuty bool)
 }
 
-type View struct {
+type view struct {
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
@@ -22,28 +22,23 @@ type View struct {
 	listener ViewListener
 }
 
-func (v *View) Initialize(tolerance time.Duration, listener ViewListener) {
-	v.signTolerance = tolerance
-	v.listener = listener
-}
-
-func (v *View) IsOnDuty() bool {
+func (v *view) IsOnDuty() bool {
 	return v.isDposOnDuty
 }
 
-func (v *View) SetOnDuty(onDuty bool) {
+func (v *view) SetOnDuty(onDuty bool) {
 	v.isDposOnDuty = onDuty
 }
 
-func (v *View) GetViewStartTime() time.Time {
+func (v *view) GetViewStartTime() time.Time {
 	return v.viewStartTime
 }
 
-func (v *View) ResetView(t time.Time) {
+func (v *view) ResetView(t time.Time) {
 	v.viewStartTime = t
 }
 
-func (v *View) ChangeView(viewOffset *uint32) {
+func (v *view) ChangeView(viewOffset *uint32) {
 	offset, offsetTime := v.CalculateOffsetTime(v.viewStartTime)
 	*viewOffset += uint32(offset)
 	v.viewStartTime = time.Now().Add(-offsetTime)
@@ -62,7 +57,7 @@ func (v *View) ChangeView(viewOffset *uint32) {
 	}
 }
 
-func (v *View) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) {
+func (v *view) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) {
 	duration := time.Now().Sub(startTime)
 	offset := duration / v.signTolerance
 	offsetTime := duration % v.signTolerance
@@ -70,7 +65,7 @@ func (v *View) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) 
 	return uint32(offset), offsetTime
 }
 
-func (v *View) TryChangeView(viewOffset *uint32) bool {
+func (v *view) TryChangeView(viewOffset *uint32) bool {
 	if time.Now().After(v.viewStartTime.Add(v.signTolerance)) {
 		log.Info("[TryChangeView] succeed")
 		v.ChangeView(viewOffset)
@@ -79,6 +74,6 @@ func (v *View) TryChangeView(viewOffset *uint32) bool {
 	return false
 }
 
-func (v *View) GetViewInterval() time.Duration {
+func (v *view) GetViewInterval() time.Duration {
 	return v.signTolerance
 }
