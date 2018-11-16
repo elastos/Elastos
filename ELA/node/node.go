@@ -367,9 +367,9 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 
 				if nbr.IsRelay() {
 					nbr.SendMessage(msg.NewBlock(message))
-					confirm, err := node.GetConfirm(message.Hash())
-					if err != nil {
-						return err
+					confirm, ok := node.GetConfirm(message.Hash())
+					if !ok {
+						return errors.New("not found confirm")
 					}
 					nbr.SendMessage(msg.NewConfirm(confirm))
 				}
