@@ -1,29 +1,22 @@
 # react-native-carrier
 
 ## Getting started
+` npm install --save react-native-elastos-carrier `
+` react-native link react-native-elastos-carrier `
 
 
-### Mostly automatic installation
+## Next step
+### iOS
+* open xcode
+* add ElastosCarrier.framework to **Linked Frameworks and Libraries** from **/node_modules/react-native-elastos-carrier/ios/Carrier** folder
+* run project
 
 
-
-### Manual installation
-
-
-#### iOS
-
-
-
-#### Android
-
-
-
-## Additional configurations
-
-
-
-
-## Usage
-```javascript
-
+### Android
+add following lines to project build.gradle 
 ```
+flatDir{
+    dirs "$rootDir/../node_modules/react-native-elastos-carrier/android/libs"
+}
+```
+under allprojects repositories block.
