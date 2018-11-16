@@ -165,8 +165,8 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 	}
 	node.SendMessage(msg.NewBlock(block))
 
-	confirm, err := LocalNode.GetConfirm(hash)
-	if err != nil {
+	confirm, ok := LocalNode.GetConfirm(hash)
+	if !ok {
 		log.Debugf("Can't get confirm from hash %s", hash)
 		return err
 	}
