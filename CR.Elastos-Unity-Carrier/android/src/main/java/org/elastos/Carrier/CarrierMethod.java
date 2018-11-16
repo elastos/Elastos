@@ -1,4 +1,4 @@
-package carrier;
+package org.elassto.Carrier;
 
 
 import com.facebook.react.bridge.Arguments;
