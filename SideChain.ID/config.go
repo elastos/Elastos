@@ -31,13 +31,13 @@ type appconfig struct {
 	TestNet            bool     `ini:"testnet" comment:"Use the test network"`
 	RegTest            bool     `ini:"regtest" comment:"Use the regression test network"`
 	Magic              uint32   `ini:"magic" comment:"Magic number of the peer-to-peer network"`
+	DefaultPort        uint16   `ini:"port" comment:"The default port for the peer-to-peer network"`
 	SeedPeers          []string `ini:"seedpeer,omitempty,allowshadow" comment:"Add a seed peer to connect with at startup"`
-	DisableListen      bool     `ini:"nolisten" comment:"Disable listening for incoming connections -- NOTE: Listening is automatically disabled if the --connect used without also specifying listen interfaces via --listen"`
 	Listeners          []string `ini:"listen,omitempty,allowshadow" comment:"Add an interface/port to listen for connections (default all interfaces port: 20608, testnet: 21608)"`
 	DisableTxFilters   bool     `ini:"notxfilter" comment:"Disable transaction filtering support"`
 	Foundation         string   `ini:"foundation" comment:"The specified payment of foundation address to use for receive mine and fee rewards"`
 	MinTxFee           int64    `ini:"mintxfee" comment:"The minimum transaction fee in ELA/kB to be considered a non-zero fee"`
-	MinCrossChainTxFee int      `ini:"mincrosschaintxfee" comment:"The minimum cross chain transaction fee in ELA/kB to be considered a non-zero fee"`
+	MinCrossChainTxFee int64    `ini:"mincrosschaintxfee" comment:"The minimum cross chain transaction fee in ELA/kB to be considered a non-zero fee"`
 	ExchangeRate       float64  `ini:"exchangeragte" comment:"The exchange rate between side chain and main chain in ELA(side)/ELA(main)"`
 	HttpRestPort       uint16   `ini:"restport" comment:"Specify the interface/port to listen on to provide RESTful service (default interfaces port: 30604)"`
 	HttpJsonPort       uint16   `ini:"jsonport" comment:"Specify the interface/port to listen on to provide JSON-RPC service (default interfaces port: 30606)"`
@@ -69,17 +69,25 @@ func loadConfig() (*appconfig, error) {
 		HttpJsonPort:      30606,
 		dataDir:           defaultDataDir,
 	}
+	spvCfg := spvconfig{}
 
-	// Load configuration from file.
-	file, err := ini.ShadowLoad(configFilename)
-	if err != nil {
-		return &appCfg, err
-	}
+	if !loadOldConfig(&appCfg, &spvCfg) {
+		// Load configuration from file.
+		file, err := ini.ShadowLoad(configFilename)
+		if err != nil {
+			return &appCfg, err
+		}
 
-	// Map basic options in Application section
-	err = file.Section("Application").MapTo(&appCfg)
-	if err != nil {
-		return &appCfg, err
+		// Map basic options in Application section
+		err = file.Section("Application").MapTo(&appCfg)
+		if err != nil {
+			return &appCfg, err
+		}
+		// Map SPV options in SPV Options section
+		err = file.Section("SPV Options").MapTo(&spvCfg)
+		if err != nil {
+			return &appCfg, err
+		}
 	}
 
 	// Multiple networks can't be selected simultaneously.
@@ -107,6 +115,9 @@ func loadConfig() (*appconfig, error) {
 	if len(appCfg.SeedPeers) > 0 {
 		activeNetParams.SeedList = appCfg.SeedPeers
 	}
+	if appCfg.DefaultPort > 0 {
+		activeNetParams.DefaultPort = appCfg.DefaultPort
+	}
 
 	if len(appCfg.Foundation) > 0 {
 		foundation, err := common.Uint168FromAddress(appCfg.Foundation)
@@ -125,13 +136,6 @@ func loadConfig() (*appconfig, error) {
 	}
 	if appCfg.MinCrossChainTxFee > 0 {
 		activeNetParams.MinCrossChainTxFee = appCfg.MinCrossChainTxFee
-	}
-
-	// Map SPV options in SPV Options section
-	spvCfg := spvconfig{}
-	err = file.Section("SPV Options").MapTo(&spvCfg)
-	if err != nil {
-		return &appCfg, err
 	}
 
 	// Multiple networks can't be selected simultaneously.
