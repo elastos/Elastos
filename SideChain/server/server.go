@@ -743,13 +743,18 @@ func New(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *config.Pa
 		services &^= pact.SFNodeBloom
 	}
 
+	// If no listeners added, create default listener.
+	if len(params.ListenAddrs) == 0 {
+		params.ListenAddrs = []string{fmt.Sprint(":", params.DefaultPort)}
+	}
+
 	cfg := p2psvr.NewDefaultConfig(
 		params.Magic,
 		pact.EBIP002Version,
 		uint64(services),
 		params.DefaultPort,
 		params.SeedList,
-		[]string{fmt.Sprint(":", params.DefaultPort)},
+		params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(chain.GetBestHeight()) },
 	)

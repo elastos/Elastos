@@ -22,6 +22,10 @@ type Params struct {
 	// SeedList defines a list of seed peers.
 	SeedList []string
 
+	// The interface/port to listen for connections
+	// (default all interfaces port: 20608, testnet: 21608)
+	ListenAddrs []string
+
 	// Foundation defines the foundation address which receiving mining
 	// rewards.
 	Foundation common.Uint168
@@ -72,7 +76,7 @@ type Params struct {
 
 	// MinCrossChainTxFee defines the minimum transaction fee of a cross chain
 	// transaction.
-	MinCrossChainTxFee int
+	MinCrossChainTxFee int64
 
 	// SpvParams defines the parameters used by side chain SPV module.
 	SpvParams SpvParams
