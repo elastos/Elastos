@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class CarrierPlugin implements ReactPackage {
+public class RNCarrierPackage implements ReactPackage {
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
