@@ -201,9 +201,16 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 }
 
 func (d *dposManager) changeHeight() {
+	//fixme uncomment me later
+	//if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil{
+	//	log.Error("Error occurred with change height: ", err)
+	//	return
+	//}
+
 	currentArbiter, err := blockchain.GetOnDutyArbiter()
 	if err != nil {
 		log.Error("Error occurred with change height: get current arbiter error.")
+		return
 	}
 
 	onDuty := d.publicKey == common.BytesToHexString(currentArbiter)

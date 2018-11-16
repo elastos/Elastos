@@ -27,9 +27,6 @@ type Consensus interface {
 	IsOnDuty() bool
 	SetOnDuty(onDuty bool)
 
-	RunWithStatusCondition(condition bool, closure func())
-	RunWithAllStatusConditions(ready func(), running func())
-
 	IsArbitratorOnDuty(arbitrator string) bool
 	GetOnDutyArbitrator() string
 
@@ -66,21 +63,6 @@ func (c *consensus) IsOnDuty() bool {
 
 func (c *consensus) SetOnDuty(onDuty bool) {
 	c.currentView.SetOnDuty(onDuty)
-}
-
-func (c *consensus) RunWithStatusCondition(condition bool, closure func()) {
-	if condition {
-		closure()
-	}
-}
-
-func (c *consensus) RunWithAllStatusConditions(ready func(), running func()) {
-	switch c.consensusStatus {
-	case consensusReady:
-		ready()
-	case consensusRunning:
-		running()
-	}
 }
 
 func (c *consensus) SetRunning() {
