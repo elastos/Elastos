@@ -183,7 +183,7 @@ script:
     fi
 
   - make && make install && make dist
-  - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE && ls -l
+  - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
 
 deploy:
   provider: releases

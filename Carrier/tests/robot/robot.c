@@ -84,7 +84,7 @@ void print_friend_info(const ElaFriendInfo* info, int order)
 
     print_user_info(&info->user_info);
     vlogD("        label: %s", info->label);
-    vlogD("     presence: %s", info->presence);
+    vlogD("     presence: %d", info->presence);
 }
 
 static void connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
