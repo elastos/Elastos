@@ -94,10 +94,7 @@ func (h *dposHandlerSwitch) SwitchTo(onDuty bool) {
 }
 
 func (h *dposHandlerSwitch) FinishConsensus() {
-
-	h.consensus.RunWithStatusCondition(true, func() {
-		h.proposalDispatcher.FinishConsensus()
-	})
+	h.proposalDispatcher.FinishConsensus()
 }
 
 func (h *dposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
@@ -202,59 +199,45 @@ func (h *dposHandlerSwitch) RequestAbnormalRecovering() {
 
 func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint32) {
 	status := &msg2.ConsensusStatus{}
-	result := false
 
-	h.consensus.RunWithStatusCondition(true, func() {
-		var err error
-		if status.MissingBlocks, status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
-			log.Error("Error occurred when collect consensus status from leger: ", err)
-			return
-		}
-
-		if err := h.consensus.CollectConsensusStatus(height, status); err != nil {
-			log.Error("Error occurred when collect consensus status from consensus object: ", err)
-			return
-		}
-
-		if err := h.proposalDispatcher.CollectConsensusStatus(height, status); err != nil {
-			log.Error("Error occurred when collect consensus status from proposal dispatcher object: ", err)
-			return
-		}
-
-		result = true
-	})
-
-	if result {
-		msg := &msg2.ResponseConsensusMessage{Consensus: *status}
-		h.network.SendMessageToPeer(id, msg)
+	var err error
+	if status.MissingBlocks, status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
+		log.Error("Error occurred when collect consensus status from leger: ", err)
+		return
 	}
+
+	if err := h.consensus.CollectConsensusStatus(height, status); err != nil {
+		log.Error("Error occurred when collect consensus status from consensus object: ", err)
+		return
+	}
+
+	if err := h.proposalDispatcher.CollectConsensusStatus(height, status); err != nil {
+		log.Error("Error occurred when collect consensus status from proposal dispatcher object: ", err)
+		return
+	}
+
+	msg := &msg2.ResponseConsensusMessage{Consensus: *status}
+	h.network.SendMessageToPeer(id, msg)
 }
 
 func (h *dposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
-	result := false
 
-	h.consensus.RunWithStatusCondition(true, func() {
-		if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlocks, status.MissingBlockConfirms); err != nil {
-			log.Error("Error occurred when recover leger: ", err)
-			return
-		}
-
-		if err := h.proposalDispatcher.RecoverFromConsensusStatus(status); err != nil {
-			log.Error("Error occurred when recover proposal dispatcher object: ", err)
-			return
-		}
-
-		if err := h.consensus.RecoverFromConsensusStatus(status); err != nil {
-			log.Error("Error occurred when recover consensus object: ", err)
-			return
-		}
-
-		result = true
-	})
-
-	if result {
-		h.isAbnormal = false
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlocks, status.MissingBlockConfirms); err != nil {
+		log.Error("Error occurred when recover leger: ", err)
+		return
 	}
+
+	if err := h.proposalDispatcher.RecoverFromConsensusStatus(status); err != nil {
+		log.Error("Error occurred when recover proposal dispatcher object: ", err)
+		return
+	}
+
+	if err := h.consensus.RecoverFromConsensusStatus(status); err != nil {
+		log.Error("Error occurred when recover consensus object: ", err)
+		return
+	}
+
+	h.isAbnormal = false
 }
 
 func (h *dposHandlerSwitch) OnViewChanged(isOnDuty bool) {
