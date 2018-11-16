@@ -2,11 +2,9 @@ package blockchain
 
 import (
 	"container/list"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math/big"
-	"math/rand"
 	"sort"
 	"sync"
 	"time"
@@ -132,9 +130,7 @@ func GetGenesisBlock() (*Block, error) {
 		},
 	}
 
-	nonce := make([]byte, 8)
-	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := NewAttribute(Nonce, nonce)
+	txAttr := NewAttribute(Nonce, []byte{77, 101, 130, 33, 7, 252, 253, 82})
 	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
 	//block
 	block := &Block{
