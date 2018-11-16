@@ -35,8 +35,8 @@ interface FriendsIterator {
 	 * @param
 	 * 		context:		The application defined context data.
 	 *
-     * @return
+	 * @return
 	 * 		True to continue iterate next friend user info, false to stop iteration.
-     */
+	 */
 	boolean onIterated(FriendInfo friendInfo, Object context);
 }

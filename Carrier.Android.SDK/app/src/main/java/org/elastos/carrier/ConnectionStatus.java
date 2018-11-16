@@ -49,7 +49,7 @@ public enum ConnectionStatus {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public static ConnectionStatus valueOf(int status) {
 		switch (status) {
 			case 0:
@@ -67,7 +67,7 @@ public enum ConnectionStatus {
 	 *
 	 * @return
 	 * 		The connection status value.
-     */
+	 */
 	public int value() {
 		switch (this) {
 			case Connected:

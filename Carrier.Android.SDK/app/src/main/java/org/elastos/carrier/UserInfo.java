@@ -83,7 +83,7 @@ public class UserInfo {
 	 *
 	 * @param
 	 * 		userId		The user ID to set
-     */
+	 */
 	void setUserId(String userId) {
 		this.userId = userId;
 	}
@@ -93,7 +93,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The user ID
-     */
+	 */
 	public String getUserId() {
 		return userId;
 	}
@@ -106,7 +106,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setName(String name)  {
 		if (name == null || name.length() > MAX_USER_NAME_LEN)
 			throw new IllegalArgumentException("Invalid name length, expected (0,(0," +
@@ -119,7 +119,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The nickname.
-     */
+	 */
 	public String getName() {
 		return name;
 	}
@@ -135,7 +135,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setDescription(String description) {
 		if (description == null || description.length() > MAX_USER_DESCRIPTION_LEN)
 			throw new IllegalArgumentException("Invalid description length, expected (0,(0," +
@@ -148,7 +148,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The brief description of user
-     */
+	 */
 	public String getDescription() {
 		return description;
 	}
@@ -158,7 +158,7 @@ public class UserInfo {
 	 *
 	 * @param
 	 * 		hasAvatar	Has avatar or not
-     */
+	 */
 	public void setHasAvatar(boolean hasAvatar) {
 		this.hasAvatar = hasAvatar;
 	}
@@ -168,7 +168,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		True if have avatar, otherwise is not
-     */
+	 */
 	public boolean hasAvatar() {
 		return hasAvatar;
 	}
@@ -181,7 +181,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setGender(String gender) {
 		if (gender == null || gender.length() > MAX_GENDER_LEN)
 			throw new IllegalArgumentException("Invalid gender length, expected (0, (0," +
@@ -194,7 +194,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The user's gender.
-     */
+	 */
 	public String getGender() {
 		return gender;
 	}
@@ -207,7 +207,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setPhone(String phone) {
 		if (phone == null || phone.length() > MAX_PHONE_LEN)
 			throw new IllegalArgumentException("Invalid phone length, expected (0, (0," +
@@ -220,7 +220,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The phone number of user
-     */
+	 */
 	public String getPhone() {
 		return phone;
 	}
@@ -233,7 +233,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setEmail(String email) {
 		if (email == null || email.length() > MAX_EMAIL_LEN)
 			throw new IllegalArgumentException("Invalid email length, expected (0, (0," +
@@ -246,7 +246,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The email address
-     */
+	 */
 	public String getEmail() {
 		return email;
 	}
@@ -259,7 +259,7 @@ public class UserInfo {
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
-     */
+	 */
 	public void setRegion(String region) {
 		if (region == null || region.length() > MAX_REGION_LEN )
 			throw new IllegalArgumentException("Invalid region length, expected (0, (0," +
@@ -272,7 +272,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The region.
-     */
+	 */
 	public String getRegion() {
 		return region;
 	}
@@ -282,7 +282,7 @@ public class UserInfo {
 	 *
 	 * @return
 	 * 		The debug description of UserInfo object.
-     */
+	 */
 	@Override
 	public String toString() {
 		return String.format("UserInfo[id:%s, name:%s, description:%s, hasAvatar:%s," +

@@ -20,151 +20,151 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class SessionNewTest {
-    private static final String TAG = "SessionNewTest";
-    private static Carrier carrierInst;
-    private static TestHandler handler;
-    private static Manager sessionMgr;
-    private static RobotProxy robotProxy;
-    private static RobotProxy.RobotIdReceiver receiver;
-    private static String robotId;
-    private static String robotAddress;
+	private static final String TAG = "SessionNewTest";
+	private static Carrier carrierInst;
+	private static TestHandler handler;
+	private static Manager sessionMgr;
+	private static RobotProxy robotProxy;
+	private static RobotProxy.RobotIdReceiver receiver;
+	private static String robotId;
+	private static String robotAddress;
 
-    private static Context getAppContext() {
-        return InstrumentationRegistry.getTargetContext();
-    }
+	private static Context getAppContext() {
+		return InstrumentationRegistry.getTargetContext();
+	}
 
-    private static String getAppPath() {
-        return getAppContext().getFilesDir().getAbsolutePath();
-    }
+	private static String getAppPath() {
+		return getAppContext().getFilesDir().getAbsolutePath();
+	}
 
-    static class TestHandler extends AbstractCarrierHandler {
-        Synchronizer synch = new Synchronizer();
+	static class TestHandler extends AbstractCarrierHandler {
+		Synchronizer synch = new Synchronizer();
 
-        public void onReady(Carrier carrier) {
-            synch.wakeup();
-        }
+		public void onReady(Carrier carrier) {
+			synch.wakeup();
+		}
 
-        public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
-            if (status == ConnectionStatus.Connected)
-                synch.wakeup();
-        }
-    }
+		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
+			if (status == ConnectionStatus.Connected)
+				synch.wakeup();
+		}
+	}
 
-    static class TestReceiver implements RobotProxy.RobotIdReceiver {
-        private Synchronizer synch = new Synchronizer();
+	static class TestReceiver implements RobotProxy.RobotIdReceiver {
+		private Synchronizer synch = new Synchronizer();
 
-        @Override
-        public void onReceived(String address, String userId) {
-            robotAddress = address;
-            robotId = userId;
-            synch.wakeup();
-        }
-    }
+		@Override
+		public void onReceived(String address, String userId) {
+			robotAddress = address;
+			robotId = userId;
+			synch.wakeup();
+		}
+	}
 
-    static class TestStreamHandler extends AbstractStreamHandler {
-        Synchronizer synch = new Synchronizer();
-        Stream stream;
-        StreamState state;
+	static class TestStreamHandler extends AbstractStreamHandler {
+		Synchronizer synch = new Synchronizer();
+		Stream stream;
+		StreamState state;
 
-        byte[] receivedData;
+		byte[] receivedData;
 
-        @Override
-        public void onStateChanged(Stream stream, StreamState state) {
+		@Override
+		public void onStateChanged(Stream stream, StreamState state) {
 			Log.i(TAG, "Stream " + stream.getStreamId() + "'s state changed to be " + state.name());
-            this.stream = stream;
-            this.state = state;
-            synch.wakeup();
-        }
+			this.stream = stream;
+			this.state = state;
+			synch.wakeup();
+		}
 
-        @Override
-        public void onStreamData(Stream stream, byte[] data) {
-            this.stream = stream;
-            this.receivedData = data;
-            synch.wakeup();
-        }
-    }
+		@Override
+		public void onStreamData(Stream stream, byte[] data) {
+			this.stream = stream;
+			this.receivedData = data;
+			synch.wakeup();
+		}
+	}
 
-    static class TestSessionRequestCompleteHandler implements SessionRequestCompleteHandler {
-        Synchronizer synch = new Synchronizer();
+	static class TestSessionRequestCompleteHandler implements SessionRequestCompleteHandler {
+		Synchronizer synch = new Synchronizer();
 
-        Session session;
-        int status;
-        String reason;
-        String sdp;
+		Session session;
+		int status;
+		String reason;
+		String sdp;
 
-        public void onCompletion(Session session, int status, String reason, String sdp) {
-            this.session = session;
-            this.status = status;
-            this.reason = reason;
-            this.sdp = sdp;
+		public void onCompletion(Session session, int status, String reason, String sdp) {
+			this.session = session;
+			this.status = status;
+			this.reason = reason;
+			this.sdp = sdp;
 
-            synch.wakeup();
-        }
-    }
+			synch.wakeup();
+		}
+	}
 
-    @BeforeClass
-    public static void setUp() {
-        try {
-            TestReceiver receiver = new TestReceiver();
-            robotProxy = RobotProxy.getRobot(getAppContext());
-            robotProxy.bindRobot(receiver);
-            receiver.synch.await(); // for acquiring robot id.
+	@BeforeClass
+	public static void setUp() {
+		try {
+			TestReceiver receiver = new TestReceiver();
+			robotProxy = RobotProxy.getRobot(getAppContext());
+			robotProxy.bindRobot(receiver);
+			receiver.synch.await(); // for acquiring robot id.
 
-            handler = new TestHandler();
-            Carrier.initializeInstance(new TestOptions(getAppPath()), handler);
-            carrierInst = Carrier.getInstance();
-            carrierInst.start(1000);
-            handler.synch.await();
+			handler = new TestHandler();
+			Carrier.initializeInstance(new TestOptions(getAppPath()), handler);
+			carrierInst = Carrier.getInstance();
+			carrierInst.start(1000);
+			handler.synch.await();
 
-            sessionMgr = Manager.getInstance(carrierInst);
-            robotProxy.tellRobotInitSessionManager();
+			sessionMgr = Manager.getInstance(carrierInst);
+			robotProxy.tellRobotInitSessionManager();
 			robotProxy.waitForSesionManagerInitialzed();
 
-        } catch (CarrierException e) {
-            Log.e(TAG, "error: " + e.getErrorCode());
-            e.printStackTrace();
-        }
-    }
+		} catch (CarrierException e) {
+			Log.e(TAG, "error: " + e.getErrorCode());
+			e.printStackTrace();
+		}
+	}
 
-    @AfterClass
-    public static void tearDown() {
-        try {
-            robotProxy.tellRobotCleanupSessionManager();
-            sessionMgr.cleanup();
-            carrierInst.kill();
-            robotProxy.unbindRobot();
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
+	@AfterClass
+	public static void tearDown() {
+		try {
+			robotProxy.tellRobotCleanupSessionManager();
+			sessionMgr.cleanup();
+			carrierInst.kill();
+			robotProxy.unbindRobot();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    private void makeFriendAnyWay() {
-        try {
-            if (!carrierInst.isFriend(robotId))
-                carrierInst.addFriend(robotAddress, "auto-accepted");
+	private void makeFriendAnyWay() {
+		try {
+			if (!carrierInst.isFriend(robotId))
+				carrierInst.addFriend(robotAddress, "auto-accepted");
 
-            handler.synch.await(); // for friend added.
-        } catch (CarrierException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
-    }
+			handler.synch.await(); // for friend added.
+		} catch (CarrierException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
 
-    @Test
-    public void testSession() {
-        makeFriendAnyWay();
+	@Test
+	public void testSession() {
+		makeFriendAnyWay();
 
-        try {
-            Session session = sessionMgr.newSession(robotId);
+		try {
+			Session session = sessionMgr.newSession(robotId);
 
-            TestStreamHandler streamHandler = new TestStreamHandler();
-            Stream  stream = session.addStream(StreamType.Text, 0, streamHandler);
-            streamHandler.synch.await();
-            assertEquals(streamHandler.stream, stream);
-            assertEquals(streamHandler.state, StreamState.Initialized);
+			TestStreamHandler streamHandler = new TestStreamHandler();
+			Stream  stream = session.addStream(StreamType.Text, 0, streamHandler);
+			streamHandler.synch.await();
+			assertEquals(streamHandler.stream, stream);
+			assertEquals(streamHandler.state, StreamState.Initialized);
 
-            TestSessionRequestCompleteHandler reqCompleteHandler = new TestSessionRequestCompleteHandler();
-            session.request(reqCompleteHandler);
+			TestSessionRequestCompleteHandler reqCompleteHandler = new TestSessionRequestCompleteHandler();
+			session.request(reqCompleteHandler);
 
 			streamHandler.synch.await();
 			assertEquals(streamHandler.stream, stream);
@@ -173,17 +173,17 @@ public class SessionNewTest {
 			robotProxy.waitForSessionRequestArrival();
 			robotProxy.tellRobotReplySessionRequestAndStart();
 
-            reqCompleteHandler.synch.await();
-            assertEquals(reqCompleteHandler.session, session);
-            assertEquals(reqCompleteHandler.status, 0);
-            assertNull(reqCompleteHandler.reason);
-            assertNotNull(reqCompleteHandler.sdp);
+			reqCompleteHandler.synch.await();
+			assertEquals(reqCompleteHandler.session, session);
+			assertEquals(reqCompleteHandler.status, 0);
+			assertNull(reqCompleteHandler.reason);
+			assertNotNull(reqCompleteHandler.sdp);
 
-            session.start(reqCompleteHandler.sdp);
+			session.start(reqCompleteHandler.sdp);
 			streamHandler.synch.await();
-            assertEquals(streamHandler.state, StreamState.Connecting);
+			assertEquals(streamHandler.state, StreamState.Connecting);
 			streamHandler.synch.await();
-            assertEquals(streamHandler.state, StreamState.Connected);
+			assertEquals(streamHandler.state, StreamState.Connected);
 
 			robotProxy.waitForSessionConnected();
 
@@ -192,8 +192,8 @@ public class SessionNewTest {
 				data[i] = (byte)i;
 			}
 
-            stream.writeData(data);
-            streamHandler.synch.await();
+			stream.writeData(data);
+			streamHandler.synch.await();
 
 			assertEquals(data.length, streamHandler.receivedData.length);
 			assertEquals(streamHandler.receivedData.length, 10);
@@ -201,13 +201,13 @@ public class SessionNewTest {
 				assertEquals(data[i], streamHandler.receivedData[i]);
 			}
 
-            session.removeStream(stream);
-            session.close();
+			session.removeStream(stream);
+			session.close();
 
-        } catch (CarrierException e) {
+		} catch (CarrierException e) {
 			Log.e(TAG, "error: " + e.getErrorCode());
-            e.printStackTrace();
+			e.printStackTrace();
 			assertTrue(false);
-        }
-    }
+		}
+	}
 }

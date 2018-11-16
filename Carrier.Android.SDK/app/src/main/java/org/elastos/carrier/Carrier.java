@@ -27,6 +27,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.elastos.carrier.exceptions.CarrierException;
 
@@ -46,12 +49,18 @@ public class Carrier {
 	 */
 	public static final int MAX_KEY_LEN = 45;
 
+	/**
+	 * Carrier App message max length.
+	 */
+	public static final int MAX_APP_MESSAGE_LEN = 1024;
+
 	private static final String TAG = "CarrierCore";
 	private static Carrier carrier;
 	private Thread carrierThread;
 	private CarrierHandler handler;
 	private long nativeCookie = 0;  // store the native (JNI-layered) carrier handler
 	private boolean didKill = false;
+	private Hashtable<String, Group> groups = new Hashtable<>();
 
 	static {
 		System.loadLibrary("carrierjni");
@@ -119,6 +128,40 @@ public class Carrier {
 
 		void onFriendInviteRequest(Carrier carrier, String from, String data) {
 			carrier.handler.onFriendInviteRequest(carrier, from, data);
+		}
+
+		void onGroupInvite(Carrier carrier, String from, byte[] cookie) {
+			carrier.handler.onGroupInvite(carrier, from, cookie);
+		}
+
+		void onGroupConnected(Carrier carrier, String groupId) {
+			Group group = carrier.groups.get(groupId);
+			if (group != null)
+				group.connected();
+		}
+
+		void onGroupMessage(Carrier carrier, String groupId, String from, byte[] message) {
+			Group group = carrier.groups.get(groupId);
+			if (group != null)
+				group.messageReceived(from, message);
+		}
+
+		void onGroupTitle(Carrier carrier, String groupId, String from, String title) {
+			Group group = carrier.groups.get(groupId);
+			if (group != null)
+				group.titleChanged(from, title);
+		}
+
+		void onPeerName(Carrier carrier, String groupId, String peerId, String peerName) {
+			Group group = carrier.groups.get(groupId);
+			if (group != null)
+				group.peerNameChanged(peerId, peerName);
+		}
+
+		void onPeerListChanged(Carrier carrier, String groupId) {
+			Group group = carrier.groups.get(groupId);
+			if (group != null)
+				group.peerListChanged();
 		}
 	}
 
@@ -265,6 +308,7 @@ public class Carrier {
 										 FriendInviteResponseHandler handler);
 	private native boolean reply_friend_invite(String from, int status, String reason,
 											   String data);
+
 	private static native int get_error_code();
 
 	private Carrier(CarrierHandler handler) {
@@ -464,7 +508,7 @@ public class Carrier {
 
 	/**
 	 * Get userid associated with the carrier node instance.
-     *
+	 *
 	 * @return
 	 * 		the userid.
 	 */
@@ -798,7 +842,7 @@ public class Carrier {
 	 */
 	public void sendFriendMessage(String to, String message) throws CarrierException {
 		if (to == null || to.length() == 0 ||
-				message == null || message.length() == 0)
+				message == null || message.length() == 0 || message.length() > MAX_APP_MESSAGE_LEN)
 			throw new IllegalArgumentException();
 
 		sendFriendMessage(to, message.getBytes(UTF8));
@@ -810,7 +854,7 @@ public class Carrier {
 	 * The message length may not exceed MAX_APP_MESSAGE_LEN, and message itself
 	 * should be text-formatted. Larger messages must be split by application
 	 * and sent as separate messages. Other nodes can reassemble the fragments.
-     *
+	 *
 	 * @param
 	 * 		to 			The target id
 	 * @param
@@ -902,5 +946,90 @@ public class Carrier {
 		else
 			Log.d(TAG, String.format("Refused friend invite to %s with status %d and " +
 					"reason %s", to, status, reason));
+	}
+
+	/**
+	 * Create a new group.
+	 *
+	 * @param
+	 * 		handler		The interface handler of carrier group
+	 *
+	 * @return
+	 *	  The instance of the newly created group
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public Group newGroup(GroupHandler handler) throws CarrierException {
+		Group group = new Group(this, handler);
+		groups.put(group.getId(), group);
+		return group;
+	}
+
+	/**
+	 * Join a group associating with cookie into which remote friend invites.
+	 *
+	 * This function should be called only if application received a group
+	 * invitation from remote friend.
+	 *
+	 * @param
+	 *	  friendId	The friend who send a group invitation
+	 * @param
+	 *	  cookie	The cookie information to join group
+	 * @param
+	 *	  handler	The interface handler of carrier group
+	 *
+	 * @return
+	 *		The instance of the group joined in
+	 *
+	 * @throws
+	 * 		CarrierException
+	 * 		IllegalArgumentException
+	 */
+	public Group groupJoin(String friendId, byte[] cookie, GroupHandler handler )
+		throws CarrierException {
+		if (friendId == null || cookie == null || handler == null ||
+				friendId.length() == 0 || cookie.length == 0)
+			throw new IllegalArgumentException();
+
+		Group group = new Group(this, handler, friendId, cookie);
+		groups.put(group.getId(), group);
+		return group;
+	}
+
+	/**
+	 * Leave a group.
+	 *
+	 * @param
+	 *	  group		The instance of the group to leave
+	 *
+	 * @throws
+	 * 		CarrierException
+	 * 		IllegalArgumentException
+	 */
+	public void groupLeave(Group group) throws CarrierException {
+		if (group == null)
+			throw new IllegalArgumentException();
+
+		Group tmp = groups.remove(group.getId());
+		if (tmp == null)
+			throw new IllegalArgumentException();
+
+		try {
+			group.leave();
+		} catch (CarrierException e) {
+			groups.put(group.getId(), group);
+			throw e;
+		}
+	}
+
+	/**
+	 * Get groups in the Carrier instance.
+	 *
+	 * @return
+	 * 		A collection of groups joined in
+	 */
+	public Collection<Group> getGroups() {
+		return Collections.unmodifiableCollection(groups.values());
 	}
 }

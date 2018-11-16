@@ -71,7 +71,7 @@ public class FriendInfo extends UserInfo {
 	 *
 	 * @param
 	 * 		status		The ConnectionStatus object.
-     */
+	 */
 	public void setConnectionStatus(ConnectionStatus status) {
 		this.connection = status;
 	}
@@ -81,7 +81,7 @@ public class FriendInfo extends UserInfo {
 	 *
 	 * @return
 	 * 		The ConnectionStatus object.
-     */
+	 */
 	public ConnectionStatus getConnectionStatus() {
 		return this.connection;
 	}
@@ -94,7 +94,7 @@ public class FriendInfo extends UserInfo {
 	 *
 	 * @param
 	 * 		status		The presence status.
-     */
+	 */
 	public void setPresence(PresenceStatus status) {
 		this.presence = status;
 	}
@@ -104,7 +104,7 @@ public class FriendInfo extends UserInfo {
 	 *
 	 * @return
 	 * 		The presence of friend.
-     */
+	 */
 	public PresenceStatus getPresence() {
 		return presence;
 	}
@@ -114,7 +114,7 @@ public class FriendInfo extends UserInfo {
  	 *
  	 * @return
  	 * 		The debug description of current FriendInfo object.
-     */
+	 */
 	@Override
 	public String toString() {
 		return String.format("FriendInfo[%s, label:%s, presence:%s, connection:%s]",

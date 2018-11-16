@@ -65,7 +65,7 @@ public interface CarrierHandler {
 	 * @param
 	 * 		userInfo 	The updated user information
 	 */
-	void onSelfInfoChanged(Carrier carrier	, UserInfo userInfo);
+	void onSelfInfoChanged(Carrier carrier, UserInfo userInfo);
 
 	/**
 	 * The callback function to iterate the each friend item in friend list.
@@ -161,7 +161,7 @@ public interface CarrierHandler {
 
 	/**
 	 * The callback function to process the friend invite request.
-     *
+	 *
 	 * @param
 	 * 		carrier   	Carrier node instance
 	 * @param
@@ -170,4 +170,16 @@ public interface CarrierHandler {
 	 * 		data       	The application defined data sent from friend
 	 */
 	void onFriendInviteRequest(Carrier carrier, String from, String data);
+
+	/**
+	 * The callback function to process the group invite request.
+	 *
+	 * @param
+	 *      carrier     Carrier node instance
+	 * @param
+	 *      from        The user id from who send the invite request
+	 * @param
+	 *      cookie      The application defined cookie send from friend
+	 */
+	void onGroupInvite(Carrier carrier, String from, byte[] cookie);
 }

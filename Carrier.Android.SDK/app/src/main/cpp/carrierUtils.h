@@ -56,4 +56,6 @@ int newJavaPresenceStatus(JNIEnv* env, ElaPresenceStatus presence, jobject* jpre
 
 int newNativePresenceStatus(JNIEnv *env, jobject jpresence, ElaPresenceStatus *presence);
 
+int newJavaGroupPeerInfo(JNIEnv* env, const ElaGroupPeer* peer, jobject* jpeerInfo);
+
 #endif //__CARRIER_UTILS_H__

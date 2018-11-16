@@ -551,7 +551,7 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
     assert(msg);
     assert(len);
 
-    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, len);
+    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, (size_t)len);
     (*env)->ReleaseStringUTFChars(env, jto, to);
 
     if (rc < 0) {
@@ -744,7 +744,7 @@ static JNINativeMethod gMethods[] = {
                                                                    (void*)inviteFriend         },
         {"reply_friend_invite","("_J("String;I")_J("String;")_J("String;)Z"),\
                                                                    (void*)replyFriendInvite    },
-        {"get_error_code",     "()I",                              (void*)getErrorCode         },
+        {"get_error_code",     "()I",                              (void*)getErrorCode         }
 };
 
 int registerCarrierMethods(JNIEnv* env)
@@ -760,4 +760,3 @@ void unregisterCarrierMethods(JNIEnv* env)
     if (clazz)
         (*env)->UnregisterNatives(env, clazz);
 }
-

@@ -184,4 +184,18 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 */
 	@Override
 	public void onFriendInviteRequest(Carrier carrier, String from, String data) {}
+
+
+	/**
+	 * The callback function to process the group invite request.
+	 *
+	 * @param
+	 *      carrier     Carrier node instance
+	 * @param
+	 *      from        The user id from who send the invite request
+	 * @param
+	 *      cookie      The application defined cookie send from friend
+	 */
+	@Override
+	public void onGroupInvite(Carrier carrier, String from, byte[] cookie) {}
 }

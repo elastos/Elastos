@@ -444,7 +444,258 @@ void cbOnFriendInviteRquest(ElaCarrier* carrier, const char* from, const void* h
     (*hc->env)->DeleteLocalRef(hc->env, jhello);
 }
 
-ElaCallbacks  carrierCallbacks = {
+static
+void cbOnGroupInvite(ElaCarrier *carrier, const char *from,
+                     const void *cookie, size_t length, void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfrom;
+    jstring jcookie;
+
+    assert(carrier);
+    assert(from);
+    assert(cookie);
+    assert(length > 0);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jfrom = (*hc->env)->NewStringUTF(hc->env, from);
+    if (!jfrom) {
+        logE("New java String object error");
+        return;
+    }
+
+    jcookie = (*hc->env)->NewByteArray(hc->env, length);
+    if (!jcookie) {
+        logE("New Java byte array error");
+        (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+        return;
+    }
+    (*hc->env)->SetByteArrayRegion(hc->env, jcookie, 0, length, (jbyte *)cookie);
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onGroupInvite",
+                        "("_W("Carrier;")_J("String;[B)V"),
+                        hc->carrier, jfrom, jcookie)) {
+        logE("Call Carrier.Callbacks.onGroupInvite error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+    (*hc->env)->DeleteLocalRef(hc->env, jcookie);
+}
+
+static
+void cbOnGroupConnected(ElaCarrier *carrier, const char *groupid, void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jgroupid;
+
+    assert(carrier);
+    assert(groupid);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jgroupid = (*hc->env)->NewStringUTF(hc->env, groupid);
+    if (!jgroupid) {
+        logE("New java String object error");
+        return;
+    }
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onGroupConnected",
+                        "("_W("Carrier;")_J("String;)V"),
+                        hc->carrier, jgroupid)) {
+        logE("Call Carrier.Callbacks.onGroupConnected error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+}
+
+static
+void cbOnGroupMessage(ElaCarrier *carrier, const char *groupid,
+                      const char *from, const void *message, size_t length,
+                      void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jgroupid;
+    jstring jfrom;
+    jstring jmessage;
+
+    assert(carrier);
+    assert(groupid);
+    assert(from);
+    assert(message);
+    assert(length > 0);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jgroupid = (*hc->env)->NewStringUTF(hc->env, groupid);
+    if (!jgroupid) {
+        logE("New java String object error");
+        return;
+    }
+
+    jfrom = (*hc->env)->NewStringUTF(hc->env, from);
+    if (!jfrom) {
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        logE("New java String object error");
+        return;
+    }
+
+    jmessage = (*hc->env)->NewByteArray(hc->env, length);
+    if (!jmessage) {
+        logE("New Java byte array error");
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+        return;
+    }
+    (*hc->env)->SetByteArrayRegion(hc->env, jmessage, 0, length, (jbyte *)message);
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onGroupMessage",
+                        "("_W("Carrier;")_J("String;")_J("String;[B)V"),
+                        hc->carrier, jgroupid, jfrom, jmessage)) {
+        logE("Call Carrier.Callbacks.onGroupMessage error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+    (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+    (*hc->env)->DeleteLocalRef(hc->env, jmessage);
+}
+
+static
+void cbOnGroupTitle(ElaCarrier *carrier, const char *groupid,
+                    const char *from, const char *title, void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jgroupid;
+    jstring jfrom;
+    jstring jtitle;
+
+    assert(carrier);
+    assert(groupid);
+    assert(from);
+    assert(title);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jgroupid = (*hc->env)->NewStringUTF(hc->env, groupid);
+    if (!jgroupid) {
+        logE("New java String object error");
+        return;
+    }
+
+    jfrom = (*hc->env)->NewStringUTF(hc->env, from);
+    if (!jfrom) {
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        logE("New java String object error");
+        return;
+    }
+
+    jtitle = (*hc->env)->NewStringUTF(hc->env, title);
+    if (!jtitle) {
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+        logE("New java String object error");
+        return;
+    }
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onGroupTitle",
+                        "("_W("Carrier;")_J("String;")_J("String;")_J("String;)V"),
+                        hc->carrier, jgroupid, jfrom, jtitle)) {
+        logE("Call Carrier.Callbacks.onGroupTitle error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+    (*hc->env)->DeleteLocalRef(hc->env, jfrom);
+    (*hc->env)->DeleteLocalRef(hc->env, jtitle);
+}
+
+static
+void cbOnPeerName(ElaCarrier *carrier, const char *groupid,
+                  const char *peerid, const char *peerName,
+                  void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jgroupid;
+    jstring jpeerid;
+    jstring jpeerName;
+
+    assert(carrier);
+    assert(groupid);
+    assert(peerid);
+    assert(peerName);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jgroupid = (*hc->env)->NewStringUTF(hc->env, groupid);
+    if (!jgroupid) {
+        logE("New java String object error");
+        return;
+    }
+
+    jpeerid = (*hc->env)->NewStringUTF(hc->env, peerid);
+    if (!jpeerid) {
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        logE("New java String object error");
+        return;
+    }
+
+    jpeerName = (*hc->env)->NewStringUTF(hc->env, peerName);
+    if (!jpeerName) {
+        (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+        (*hc->env)->DeleteLocalRef(hc->env, jpeerid);
+        logE("New java String object error");
+        return;
+    }
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onPeerName",
+                        "("_W("Carrier;")_J("String;")_J("String;")_J("String;)V"),
+                        hc->carrier, jgroupid, jpeerid, jpeerName)) {
+        logE("Call Carrier.Callbacks.onPeerName error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+    (*hc->env)->DeleteLocalRef(hc->env, jpeerid);
+    (*hc->env)->DeleteLocalRef(hc->env, jpeerName);
+}
+
+static
+void cbOnPeerListChanged(ElaCarrier *carrier, const char *groupid, void *context)
+{
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jgroupid;
+
+    assert(carrier);
+    assert(groupid);
+
+    assert(carrier == hc->nativeCarrier);
+    assert(hc->env);
+
+    jgroupid = (*hc->env)->NewStringUTF(hc->env, groupid);
+    if (!jgroupid) {
+        logE("New java String object error");
+        return;
+    }
+
+    if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
+                        "onPeerListChanged",
+                        "("_W("Carrier;")_J("String;)V"),
+                        hc->carrier, jgroupid)) {
+        logE("Call Carrier.Callbacks.onPeerListChanged error");
+    }
+
+    (*hc->env)->DeleteLocalRef(hc->env, jgroupid);
+}
+
+ElaCallbacks carrierCallbacks = {
         .idle            = cbOnIdle,
         .connection_status = cbOnConnection,
         .ready           = cbOnReady,
@@ -458,6 +709,14 @@ ElaCallbacks  carrierCallbacks = {
         .friend_removed  = cbOnFriendRemoved,
         .friend_message  = cbOnFriendMessage,
         .friend_invite   = cbOnFriendInviteRquest,
+        .group_invite    = cbOnGroupInvite,
+        .group_callbacks = {
+            .group_connected   = cbOnGroupConnected,
+            .group_message     = cbOnGroupMessage,
+            .group_title       = cbOnGroupTitle,
+            .peer_name         = cbOnPeerName,
+            .peer_list_changed = cbOnPeerListChanged
+        }
 };
 
 int handlerCtxtSet(HandlerContext* hc, JNIEnv* env, jobject jcarrier, jobject jcallbacks)

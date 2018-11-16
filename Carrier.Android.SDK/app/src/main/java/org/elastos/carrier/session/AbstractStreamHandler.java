@@ -28,7 +28,7 @@ package org.elastos.carrier.session;
  */
 public class AbstractStreamHandler implements StreamHandler {
 
-    /* Common callbacks */
+	/* Common callbacks */
 	/**
 	 * The callback function to report state of stream when it's state changes.
 	 *
@@ -39,7 +39,7 @@ public class AbstractStreamHandler implements StreamHandler {
 	 */
 	public void onStateChanged(Stream stream, StreamState state) {}
 
-    /* Stream layered data callbacks */
+	/* Stream layered data callbacks */
 	/**
 	 * The callback will be called when the stream receives incoming packet.
 	 *
@@ -54,7 +54,7 @@ public class AbstractStreamHandler implements StreamHandler {
 	 */
 	public void onStreamData(Stream stream, byte[] data) {}
 
-    /* Channel callbacks */
+	/* Channel callbacks */
 	/**
 	 * The callback function to be called when new multiplexing channel request to open.
 	 *

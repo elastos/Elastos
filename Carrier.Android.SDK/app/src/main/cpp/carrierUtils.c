@@ -365,3 +365,42 @@ errorExit:
     (*env)->DeleteGlobalRef(env, jobj);
     return 0;
 }
+
+int newJavaGroupPeerInfo(JNIEnv* env, const ElaGroupPeer* peer, jobject* jpeerInfo)
+{
+    jclass clazz;
+    jmethodID ctor;
+    jobject jobj;
+    jstring jname, juserid;
+
+    clazz = (*env)->FindClass(env, _T("Group$PeerInfo"));
+    if (!clazz) {
+        logE("Java class 'GroupPeerInfo' not found");
+        return 0;
+    }
+
+    ctor = (*env)->GetMethodID(env, clazz, "<init>", "("_J("String;")_J("String;)V"));
+    if (!ctor) {
+        logE("Contructor GroupPeerInfo() not found");
+        return 0;
+    }
+
+    jname = (*env)->NewStringUTF(env, peer->name);
+    if (!jname)
+        return 0;
+
+    juserid = (*env)->NewStringUTF(env, peer->userid);
+    if (!juserid) {
+        (*env)->DeleteLocalRef(env, jname);
+        return 0;
+    }
+
+    jobj = (*env)->NewObject(env, clazz, ctor, jname, juserid);
+    if (!jobj) {
+        logE("New class GroupPeerInfo object error");
+        return 0;
+    }
+
+    *jpeerInfo = jobj;
+    return 1;
+}

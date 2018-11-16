@@ -30,139 +30,139 @@ import org.elastos.carrier.exceptions.CarrierException;
  * The class representing Carrier session manager.
  */
 public class Manager {
-    private static final String TAG = "SessionMgr";
+	private static final String TAG = "SessionMgr";
 
-    private static Manager sessionMgr;
+	private static Manager sessionMgr;
 
-    private Carrier carrier;
-    private boolean didCleanup;
+	private Carrier carrier;
+	private boolean didCleanup;
 
-    // jni native methods.
-    private static native boolean native_init(Carrier carrier, ManagerHandler handler);
-    private static native void native_cleanup(Carrier carrier);
-    private native Session create_session(Carrier carrier, String to);
-    private static native int get_error_code();
+	// jni native methods.
+	private static native boolean native_init(Carrier carrier, ManagerHandler handler);
+	private static native void native_cleanup(Carrier carrier);
+	private native Session create_session(Carrier carrier, String to);
+	private static native int get_error_code();
 
-    /**
-     * Get a carrier session manager instance.
-     *
-     * This function is convinience way to get instance without interest to session request
-     * from friends.
-     *
-     * @param
-     * 		carrier		Carrier node instance
-     *
-     * @return
-     * 		A carrier session manager
-     *
-     * @throws
-     * 		CarrierException
-     */
-    public static Manager getInstance(Carrier carrier) throws CarrierException {
+	/**
+	 * Get a carrier session manager instance.
+	 *
+	 * This function is convinience way to get instance without interest to session request
+	 * from friends.
+	 *
+	 * @param
+	 * 		carrier		Carrier node instance
+	 *
+	 * @return
+	 * 		A carrier session manager
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public static Manager getInstance(Carrier carrier) throws CarrierException {
 
-        return getInstance(carrier, null);
-    }
+		return getInstance(carrier, null);
+	}
 
-    /**
-     * Get a carrier session manager instance.
-     *
-     * @param
-     * 		carrier		Carrier node instance
-     * @param
-     *      handler     The interface handler for carrier session manager to comply with
-     *
-     * @return
-     * 		A carrier session manager
-     *
-     * @throws
-     * 		CarrierException
-     */
-    public static Manager getInstance(Carrier carrier, ManagerHandler handler)
+	/**
+	 * Get a carrier session manager instance.
+	 *
+	 * @param
+	 * 		carrier		Carrier node instance
+	 * @param
+	 *      handler     The interface handler for carrier session manager to comply with
+	 *
+	 * @return
+	 * 		A carrier session manager
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public static Manager getInstance(Carrier carrier, ManagerHandler handler)
 			throws CarrierException {
 
-        if (sessionMgr != null && sessionMgr.carrier != carrier) {
-            sessionMgr.cleanup();
-        }
+		if (sessionMgr != null && sessionMgr.carrier != carrier) {
+			sessionMgr.cleanup();
+		}
 
-        if (sessionMgr == null) {
-            if (carrier == null)
-                throw new IllegalArgumentException();
+		if (sessionMgr == null) {
+			if (carrier == null)
+				throw new IllegalArgumentException();
 
-            Log.d(TAG, "Attempt to create carrier session manager instance ...");
+			Log.d(TAG, "Attempt to create carrier session manager instance ...");
 
-            if (!native_init(carrier, handler))
-                throw CarrierException.fromErrorCode(get_error_code());
+			if (!native_init(carrier, handler))
+				throw CarrierException.fromErrorCode(get_error_code());
 
-            sessionMgr = new Manager(carrier);
+			sessionMgr = new Manager(carrier);
 
-            Log.d(TAG, "Carrier session manager instance created");
-        }
+			Log.d(TAG, "Carrier session manager instance created");
+		}
 
-        return sessionMgr;
-    }
+		return sessionMgr;
+	}
 
-    /**
-     * Get a carrier session manager instance.
-     *
-     * @return
-     * 		A carrier session manager or null
-     */
-    public static Manager getInstance() {
-        return sessionMgr;
-    }
+	/**
+	 * Get a carrier session manager instance.
+	 *
+	 * @return
+	 * 		A carrier session manager or null
+	 */
+	public static Manager getInstance() {
+		return sessionMgr;
+	}
 
-    private Manager(Carrier carrier) {
-        this.carrier = carrier;
-        this.didCleanup = false;
-    }
+	private Manager(Carrier carrier) {
+		this.carrier = carrier;
+		this.didCleanup = false;
+	}
 
-    @Override
-    protected void finalize() throws Throwable {
-        cleanup();
-        super.finalize();
-    }
+	@Override
+	protected void finalize() throws Throwable {
+		cleanup();
+		super.finalize();
+	}
 
-    /**
-     * Clean up carrier session manager.
-     */
-    public synchronized void cleanup() {
-        if (!didCleanup) {
-            native_cleanup(carrier);
+	/**
+	 * Clean up carrier session manager.
+	 */
+	public synchronized void cleanup() {
+		if (!didCleanup) {
+			native_cleanup(carrier);
 			carrier = null;
-            Manager.sessionMgr = null;
-            didCleanup = true;
-        }
-    }
+			Manager.sessionMgr = null;
+			didCleanup = true;
+		}
+	}
 
-    /**
-     * Create a new session to a friend.
-     *
-     * The session object represent a conversation handle to a friend.
-     *
-     * @param
-     *      to          The target id(userid or userid@nodeid).
-     *
-     * @return
-     *      The new Session object
-     *
-     * @throws
-     *      IllegalArgumentException
-     * 		CarrierException
-     */
-    public Session newSession(String to) throws CarrierException {
+	/**
+	 * Create a new session to a friend.
+	 *
+	 * The session object represent a conversation handle to a friend.
+	 *
+	 * @param
+	 *      to          The target id(userid or userid@nodeid).
+	 *
+	 * @return
+	 *      The new Session object
+	 *
+	 * @throws
+	 *      IllegalArgumentException
+	 * 		CarrierException
+	 */
+	public Session newSession(String to) throws CarrierException {
 
-        if (to == null)
-            throw new IllegalArgumentException();
+		if (to == null)
+			throw new IllegalArgumentException();
 
-        Log.d(TAG, "Attempt to create a new session to:" + to);
+		Log.d(TAG, "Attempt to create a new session to:" + to);
 
-        Session session = create_session(carrier, to);
-        if (session == null) {
-            throw CarrierException.fromErrorCode(get_error_code());
-        }
+		Session session = create_session(carrier, to);
+		if (session == null) {
+			throw CarrierException.fromErrorCode(get_error_code());
+		}
 
-        Log.d(TAG, "Session to " + to +  " created");
+		Log.d(TAG, "Session to " + to +  " created");
 
-        return session;
-    }
+		return session;
+	}
 }

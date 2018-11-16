@@ -27,11 +27,13 @@
 #include "ela_session.h"
 
 extern int registerCarrierMethods(JNIEnv* env);
+extern int registerCarrierGroupMethods(JNIEnv* env);
 extern int registerCarrierSessionManagerMethods(JNIEnv* env);
 extern int registerCarrierSessionMethods(JNIEnv* env);
 extern int registerCarrierStreamMethods(JNIEnv* env);
 
 extern void unregisterCarrierMethods(JNIEnv* env);
+extern void unregisterCarrierGroupMethods(JNIEnv* env);
 extern void unregisterCarrierSessionManagerMethods(JNIEnv* env);
 extern void unregisterCarrierSessionMethods(JNIEnv* env);
 extern void unregisterCarrierStreamMethods(JNIEnv* env);
@@ -88,6 +90,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     }
 
     if ((registerCarrierMethods(env) != JNI_TRUE) ||
+        (registerCarrierGroupMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionManagerMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionMethods(env) != JNI_TRUE) ||
         (registerCarrierStreamMethods(env) != JNI_TRUE))
@@ -125,6 +128,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     unregisterCarrierSessionManagerMethods(env);
     unregisterCarrierSessionMethods(env);
     unregisterCarrierStreamMethods(env);
+    unregisterCarrierGroupMethods(env);
     unregisterCarrierMethods(env);
 }
 

@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-package org.elastos.carrier.session;
+package org.elastos.carrier;
 
-import org.elastos.carrier.Carrier;
-
-/**
- * The interface to session Manager.
- */
-public interface ManagerHandler {
-
+interface GroupPeersIterator {
 	/**
-	 * An callback function that handle session request.
+	 * The callback function to iterate each peer in a group.
 	 *
 	 * @param
-	 *      carrier     A handle to the Carrier node instance
+	 * 		peerInfo		The information of a peer in the group
 	 * @param
-	 *      from        The id who send the message
-	 * @param
-	 *      sdp         The remote users SDP. Reference: https://tools.ietf.org/html/rfc4566
+	 * 		context 		The application defined context data.
 	 *
+	 * @return
+	 * 		True to continue iterate next peer, false to stop iteration.
 	 */
-	void onSessionRequest(Carrier carrier, String from, String sdp);
+	boolean onIterated(Group.PeerInfo peerInfo, Object context);
 }

@@ -48,7 +48,7 @@ public class FriendMessageTest {
 			synch.wakeup();
 		}
 
-        @Override
+		@Override
 		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
 			from = friendId;
 			friendStatus = status;
@@ -56,7 +56,7 @@ public class FriendMessageTest {
 				synch.wakeup();
 		}
 
-        @Override
+		@Override
 		public void onFriendMessage(Carrier whisper, String friendId, byte[] message) {
 			msgBody = new String(message);
 			from = friendId;

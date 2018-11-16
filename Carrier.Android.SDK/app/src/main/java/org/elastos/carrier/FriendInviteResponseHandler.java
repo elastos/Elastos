@@ -38,6 +38,6 @@ public interface FriendInviteResponseHandler {
 	 * 		reason		The error message if status is error, otherwise null
 	 * @param
 	 * 		data		The application defined data return by target user
-     */
+	 */
 	void onReceived(String from, int status, String reason, String data);
 }

@@ -54,7 +54,7 @@ public abstract class CarrierException extends Exception {
 		super(message, cause, enableSuppression, writableStackTrace);
 		this.errorCode = errorCode;
 	}
-    */
+	*/
 
 	protected CarrierException(int errorCode, Throwable cause) {
 		super(cause);
@@ -86,7 +86,7 @@ public abstract class CarrierException extends Exception {
 	private static int getFacility(int errorCode) {
 		return (errorCode & 0x8FFFFFFF) >> 24;
 	}
-	
+
 	public static CarrierException fromErrorCode(int errorCode, String message, Throwable cause) {
 		CarrierException e;
 
