@@ -27,18 +27,18 @@ func (pool *BlockPool) Init() {
 }
 
 func (pool *BlockPool) AppendBlock(block *core.Block) error {
-	pool.Lock()
-	defer pool.Unlock()
 
 	hash := block.Hash()
-	if _, exist := pool.blockMap[hash]; exist {
+	if _, exist := pool.GetBlock(hash); exist {
 		return errors.New("duplicate block in pool")
 	}
 	// verify block
 	if err := blockchain.PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, blockchain.DefaultLedger.Blockchain.TimeSource); err != nil {
 		return err
 	}
-	pool.blockMap[hash] = block
+	if ok := pool.AddToBlockMap(block); !ok {
+		return errors.New("duplicate block in pool")
+	}
 
 	isConfirmed := true
 	// confirm block
@@ -48,7 +48,9 @@ func (pool *BlockPool) AppendBlock(block *core.Block) error {
 	}
 
 	// notify arbiter new block received
-	blockchain.DefaultLedger.Blockchain.NewBlocksListener.OnBlockReceived(block, isConfirmed)
+	if blockchain.DefaultLedger.Blockchain.NewBlocksListener != nil {
+		blockchain.DefaultLedger.Blockchain.NewBlocksListener.OnBlockReceived(block, isConfirmed)
+	}
 
 	return nil
 }
@@ -77,10 +79,7 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 }
 
 func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
-	pool.Lock()
-	defer pool.Unlock()
-
-	block, exist := pool.blockMap[hash]
+	block, exist := pool.GetBlock(hash)
 	if !exist {
 		return errors.New("there is no block in pool when confirming block")
 	}
@@ -104,6 +103,32 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 	if isOrphan || !inMainChain {
 		return errors.New("add orphan block")
 	}
+
+	return nil
+}
+
+func (pool *BlockPool) AddToBlockMap(block *core.Block) bool {
+	pool.Lock()
+	defer pool.Unlock()
+
+	hash := block.Hash()
+	if _, ok := pool.blockMap[hash]; ok {
+		return false
+	}
+	pool.blockMap[hash] = block
+
+	return true
+}
+
+func (pool *BlockPool) GetBlock(hash common.Uint256) (*core.Block, bool) {
+	pool.RLock()
+	defer pool.RUnlock()
+
+	block, ok := pool.blockMap[hash]
+	return block, ok
+}
+
+func (pool *BlockPool) AddToConfirmMap(confirm *core.DPosProposalVoteSlot) error {
 
 	return nil
 }
