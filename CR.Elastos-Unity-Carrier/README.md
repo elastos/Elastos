@@ -1,8 +1,11 @@
 # react-native-carrier
 
 ## Getting started
-` npm install --save react-native-elastos-carrier `
-` react-native link react-native-elastos-carrier `
+```
+npm install --save react-native-elastos-carrier
+
+react-native link react-native-elastos-carrier
+```
 
 
 ## Next step
@@ -20,3 +23,6 @@ flatDir{
 }
 ```
 under allprojects repositories block.
+
+
+
