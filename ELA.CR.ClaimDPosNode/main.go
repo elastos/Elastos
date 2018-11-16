@@ -4,7 +4,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos"
@@ -17,6 +16,8 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -96,8 +97,9 @@ func main() {
 	startConsensus()
 
 	if config.Parameters.EnableArbiter {
-		log.Info("5. Start the dpos")
-		dpos.Start()
+		log.Info("5. Start the manager")
+		arbitrator := dpos.NewArbitrator()
+		arbitrator.Start()
 	}
 
 	select {}

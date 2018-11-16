@@ -1,15 +1,14 @@
-package handler
+package manager
 
 import (
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type DposOnDutyHandler struct {
-	*DposHandlerSwitch
+	*dposHandlerSwitch
 }
 
 func (h *DposOnDutyHandler) ProcessAcceptVote(p core.DPosProposalVote) {
@@ -36,7 +35,7 @@ func (h *DposOnDutyHandler) StartNewProposal(p core.DPosProposal) {
 }
 
 func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
-	b, ok := ArbitratorSingleton.BlockCache.TryGetValue(*firstBlockHash)
+	b, ok := h.manager.GetBlockCache().TryGetValue(*firstBlockHash)
 	if !ok {
 		log.Info("[OnViewChanged] get block failed for proposal")
 	} else {

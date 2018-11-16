@@ -1,66 +1,90 @@
-package handler
+package manager
 
 import (
 	"bytes"
-	"sync"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type DposHandlerSwitch struct {
-	proposalDispatcher IProposalDispatcher
-	consensus          IConsensus
+type DposEventConditionHandler interface {
+	TryStartNewConsensus(b *core.Block) bool
+
+	ChangeView(firstBlockHash *common.Uint256)
+
+	StartNewProposal(p core.DPosProposal)
+
+	ProcessAcceptVote(p core.DPosProposalVote)
+	ProcessRejectVote(p core.DPosProposalVote)
+}
+
+type DposHandlerSwitch interface {
+	ViewListener
+	DposEventConditionHandler
+
+	Initialize(dispatcher ProposalDispatcher, consensus Consensus)
+	SwitchTo(isOnDuty bool)
+
+	FinishConsensus()
+
+	ProcessPing(id common.Uint256, height uint32)
+	ProcessPong(id common.Uint256, height uint32)
+
+	RequestAbnormalRecovering()
+	HelpToRecoverAbnormal(id common.Uint256, height uint32)
+	RecoverAbnormal(status *msg2.ConsensusStatus)
+
+	ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32)
+}
+
+type dposHandlerSwitch struct {
+	proposalDispatcher ProposalDispatcher
+	consensus          Consensus
 	network            DposNetwork
+	manager            DposManager
 
 	onDutyHandler  *DposOnDutyHandler
 	normalHandler  *DposNormalHandler
 	currentHandler DposEventConditionHandler
 
-	locker       sync.Locker
 	eventMonitor *log.EventMonitor
 
 	isAbnormal bool
 }
 
-func (h *DposHandlerSwitch) Initialize(dispatcher IProposalDispatcher, consensus IConsensus, network DposNetwork, locker sync.Locker) {
-	h.proposalDispatcher = dispatcher
-	h.consensus = consensus
-	h.network = network
-	h.locker = locker
-	h.isAbnormal = false
+func NewHandler(network DposNetwork, manager DposManager, monitor *log.EventMonitor) DposHandlerSwitch {
+	h := &dposHandlerSwitch{
+		network:      network,
+		manager:      manager,
+		eventMonitor: monitor,
+		isAbnormal:   false,
+	}
 
 	h.normalHandler = &DposNormalHandler{h}
 	h.onDutyHandler = &DposOnDutyHandler{h}
 
-	h.eventMonitor = &log.EventMonitor{}
-	h.eventMonitor.Initialize()
-
-	eventRecorder := &store.EventRecord{}
-	eventRecorder.Initialize()
-	eventLogs := &log.EventLogs{}
-
-	h.eventMonitor.RegisterListener(eventRecorder)
-	h.eventMonitor.RegisterListener(eventLogs)
-	h.proposalDispatcher.Initialize(consensus, h.eventMonitor, network)
 	h.SwitchTo(false)
+
+	return h
 }
 
-func (h *DposHandlerSwitch) AddListeners(listeners ...log.EventListener) {
+func (h *dposHandlerSwitch) Initialize(dispatcher ProposalDispatcher, consensus Consensus) {
+	h.proposalDispatcher = dispatcher
+	h.consensus = consensus
+}
+
+func (h *dposHandlerSwitch) AddListeners(listeners ...log.EventListener) {
 	for _, l := range listeners {
 		h.eventMonitor.RegisterListener(l)
 	}
 }
 
-func (h *DposHandlerSwitch) SwitchTo(onDuty bool) {
+func (h *dposHandlerSwitch) SwitchTo(onDuty bool) {
 	if onDuty {
 		h.currentHandler = h.onDutyHandler
 	} else {
@@ -69,14 +93,14 @@ func (h *DposHandlerSwitch) SwitchTo(onDuty bool) {
 	h.consensus.SetOnDuty(true)
 }
 
-func (h *DposHandlerSwitch) FinishConsensus() {
+func (h *dposHandlerSwitch) FinishConsensus() {
 
 	h.consensus.RunWithStatusCondition(true, func() {
 		h.proposalDispatcher.FinishConsensus()
 	})
 }
 
-func (h *DposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
+func (h *dposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	rawData := new(bytes.Buffer)
@@ -91,7 +115,7 @@ func (h *DposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
 	h.eventMonitor.OnProposalArrived(proposalEvent)
 }
 
-func (h *DposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
+func (h *dposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.currentHandler.ChangeView(firstBlockHash)
 
 	viewEvent := log.ViewEvent{
@@ -103,8 +127,8 @@ func (h *DposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.eventMonitor.OnViewStarted(viewEvent)
 }
 
-func (h *DposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
-	if _, ok := ArbitratorSingleton.BlockCache.TryGetValue(b.Hash()); ok {
+func (h *dposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
+	if _, ok := h.manager.GetBlockCache().TryGetValue(b.Hash()); ok {
 		log.Info("[TryStartNewConsensus] failed, already have the block")
 		return false
 	}
@@ -123,7 +147,7 @@ func (h *DposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	return false
 }
 
-func (h *DposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
+func (h *dposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
 	h.currentHandler.ProcessAcceptVote(p)
 
 	rawData := new(bytes.Buffer)
@@ -132,7 +156,7 @@ func (h *DposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *DposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
+func (h *dposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
 	h.currentHandler.ProcessRejectVote(p)
 
 	rawData := new(bytes.Buffer)
@@ -141,7 +165,7 @@ func (h *DposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *DposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
+func (h *dposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
 	currentHeight := h.proposalDispatcher.CurrentHeight()
 
@@ -163,20 +187,20 @@ func (h *DposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeigh
 	h.network.SendMessageToPeer(id, msg)
 }
 
-func (h *DposHandlerSwitch) ProcessPing(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) ProcessPing(id common.Uint256, height uint32) {
 	h.processHeartBeat(id, height)
 }
 
-func (h *DposHandlerSwitch) ProcessPong(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) ProcessPong(id common.Uint256, height uint32) {
 	h.processHeartBeat(id, height)
 }
 
-func (h *DposHandlerSwitch) RequestAbnormalRecovering() {
+func (h *dposHandlerSwitch) RequestAbnormalRecovering() {
 	h.proposalDispatcher.RequestAbnormalRecovering()
 	h.isAbnormal = true
 }
 
-func (h *DposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint32) {
 	status := &msg2.ConsensusStatus{}
 	result := false
 
@@ -206,7 +230,7 @@ func (h *DposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint
 	}
 }
 
-func (h *DposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
+func (h *dposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
 	result := false
 
 	h.consensus.RunWithStatusCondition(true, func() {
@@ -233,10 +257,10 @@ func (h *DposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
 	}
 }
 
-func (h *DposHandlerSwitch) OnViewChanged(isOnDuty bool) {
+func (h *dposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.SwitchTo(isOnDuty)
 
-	firstBlockHash, ok := ArbitratorSingleton.BlockCache.GetFirstArrivedBlockHash()
+	firstBlockHash, ok := h.manager.GetBlockCache().GetFirstArrivedBlockHash()
 	if isOnDuty && !ok {
 		log.Warn("[OnViewChanged] firstBlockHash is nil")
 		return
@@ -245,13 +269,13 @@ func (h *DposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.ChangeView(&firstBlockHash)
 }
 
-func (h *DposHandlerSwitch) processHeartBeat(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) processHeartBeat(id common.Uint256, height uint32) {
 	if h.tryRequestBlocks(id, height) {
 		log.Info("Found higher block, requesting it.")
 	}
 }
 
-func (h *DposHandlerSwitch) tryRequestBlocks(id common.Uint256, sourceHeight uint32) bool {
+func (h *dposHandlerSwitch) tryRequestBlocks(id common.Uint256, sourceHeight uint32) bool {
 	height := h.proposalDispatcher.CurrentHeight()
 	if sourceHeight > height {
 		msg := &msg2.GetBlocksMessage{
@@ -262,16 +286,4 @@ func (h *DposHandlerSwitch) tryRequestBlocks(id common.Uint256, sourceHeight uin
 		return true
 	}
 	return false
-}
-
-func (h *DposHandlerSwitch) ChangeViewLoop() {
-	for {
-		h.locker.Lock()
-		if h.consensus.IsRunning() {
-			h.consensus.TryChangeView()
-		}
-		h.locker.Unlock()
-
-		time.Sleep(1 * time.Second)
-	}
 }
