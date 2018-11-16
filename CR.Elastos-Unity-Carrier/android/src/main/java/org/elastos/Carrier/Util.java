@@ -1,6 +1,5 @@
 package org.elastos.Carrier;
 
-import com.elastos_rn_framework.MainApplication;
 import android.content.Context;
 import android.util.Log;
 
@@ -16,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.WritableArray;
 
@@ -24,15 +24,20 @@ public class Util {
     private static String TAG = "[ CarrierPlugin ]";
 
     public static Util _util;
-    public static Util singleton() {
+    public static Util singleton(ReactApplicationContext context) {
+        if(context == null && _util == null){
+            Log.e(TAG, "util context error");
+            return null;
+        }
         if (_util == null) {
-            _util = new Util();
+            _util = new Util(context);
         }
         return _util;
     }
 
-    public Util(){
-        mContext = MainApplication.getContext();
+
+    public Util(ReactApplicationContext context){
+        mContext = context;
     }
 
     public String getCarrierFilePath(String name){

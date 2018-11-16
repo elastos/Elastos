@@ -33,7 +33,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
 
     public RN_CARRIER(ReadableMap config) {
 
-        util = Util.singleton();
+        util = Util.singleton(null);
 
         start(config);
     }

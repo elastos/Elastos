@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 
 public class RN_UserInfo extends UserInfo {
-    private Util util = Util.singleton();
+    private Util util = Util.singleton(null);
 
     private String userId;
 

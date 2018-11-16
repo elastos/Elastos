@@ -43,7 +43,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
         RN_CARRIER._reactContext = reactContext;
 
-        util = Util.singleton();
+        util = Util.singleton(reactContext);
 
         reactContext.addLifecycleEventListener(this);
     }
