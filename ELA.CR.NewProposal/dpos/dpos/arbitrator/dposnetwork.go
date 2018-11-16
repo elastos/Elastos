@@ -6,9 +6,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	p2p2 "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/log"
 )
 
 type PeerItem struct {
@@ -49,6 +51,7 @@ type dposNetwork struct {
 
 func (n *dposNetwork) Start() {
 	n.p2pServer.Start()
+	n.connectPeers()
 
 	go func() {
 		for {
@@ -60,6 +63,25 @@ func (n *dposNetwork) Start() {
 			}
 		}
 	}()
+}
+
+func (n *dposNetwork) connectPeers() {
+	addrList := make([]p2p.PeerAddr, 0)
+	for _, seed := range config.Parameters.ArbiterConfiguration.SeedList {
+		publicKey, err := common.HexStringToBytes(seed.PublicKey)
+		if err != nil || len(publicKey) != 33 {
+			log.Errorf("connect to arbiter %s failed: %v:", seed.PublicKey, err)
+			continue
+		}
+
+		var pid [32]byte
+		copy(pid[:], publicKey[1:])
+		addrList = append(addrList, p2p.PeerAddr{
+			PID:  pid,
+			Addr: seed.Addrress,
+		})
+	}
+	n.p2pServer.ConnectPeers(addrList)
 }
 
 func (n *dposNetwork) Stop() error {
@@ -206,10 +228,10 @@ func NewDposNetwork(pid [32]byte, listener NetworkEventListener) (DposNetwork, e
 	//fixme replace hard code config with config file
 	server, err := p2p.NewServer(&p2p.Config{
 		PID:              pid,
-		MagicNumber:      123123,
-		ProtocolVersion:  0,
-		Services:         0,
-		DefaultPort:      20338,
+		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,
+		ProtocolVersion:  config.Parameters.ArbiterConfiguration.ProtocolVersion,
+		Services:         config.Parameters.ArbiterConfiguration.Services,
+		DefaultPort:      config.Parameters.ArbiterConfiguration.NodePort,
 		MakeEmptyMessage: makeEmptyMessage,
 		HandleMessage:    network.handleMessage,
 		PingNonce:        network.getCurrentHeight,
