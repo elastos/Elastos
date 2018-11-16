@@ -32,8 +32,7 @@ func Start() {
 	dposHandlerSwitch := &handler.DposHandlerSwitch{}
 	dposManager := &manager.DposManager{}
 
-	var id [32]byte //fixme init id with current public key
-	network, err := arbitrator.NewDposNetwork(id, dposManager)
+	network, err := arbitrator.NewDposNetwork(config.Parameters.GetArbiterID(), dposManager)
 	if err != nil {
 		log.Error("Start p2p network error")
 	}

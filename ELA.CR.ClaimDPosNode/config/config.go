@@ -101,17 +101,24 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	Name           string   `json:"Name"`
-	Magic          uint32   `json:"Magic"`
-	SeedList       []string `json:"SeedList"`
-	NodePort       uint16   `json:"NodePort"`
-	PrintLevel     uint8    `json:"PrintLevel"`
-	SignTolerance  uint64   `json:"SignTolerance"`
-	MaxLogsSize    int64    `json:"MaxLogsSize"`
-	MaxPerLogSize  int64    `json:"MaxPerLogSize"`
-	MaxConnections int      `json:"MaxConnections"`
-	MajorityCount  uint32   `json:"MajorityCount"`
-	PrivateKey     string   `json:"PrivateKey"`
+	Name            string `json:"Name"`
+	Magic           uint32 `json:"Magic"`
+	SeedList        []Seed `json:"SeedList"`
+	NodePort        uint16 `json:"NodePort"`
+	ProtocolVersion uint32 `json:"ProtocolVersion"`
+	Services        uint64 `json:"Services"`
+	PrintLevel      uint8  `json:"PrintLevel"`
+	SignTolerance   uint64 `json:"SignTolerance"`
+	MaxLogsSize     int64  `json:"MaxLogsSize"`
+	MaxPerLogSize   int64  `json:"MaxPerLogSize"`
+	MaxConnections  int    `json:"MaxConnections"`
+	MajorityCount   uint32 `json:"MajorityCount"`
+	PrivateKey      string `json:"PrivateKey"`
+}
+
+type Seed struct {
+	PublicKey string `json:"PublicKey"`
+	Addrress  string `json:"Address"`
 }
 
 type ConfigFile struct {
@@ -177,4 +184,17 @@ func (config *Configuration) GetArbitrators() ([][]byte, error) {
 	}
 
 	return arbitersByte, nil
+}
+
+func (config *Configuration) GetArbiterID() [32]byte {
+	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
+	if err != nil || len(publicKey) != 33 {
+		log.Fatalf("get arbiter public key erro %v", err)
+		os.Exit(1)
+	}
+
+	var pid [32]byte
+	copy(pid[:], publicKey[1:])
+
+	return pid
 }
