@@ -1,4 +1,4 @@
-package org.elassto.Carrier;
+package org.elastos.Carrier;
 
 import org.elastos.carrier.UserInfo;
 import com.facebook.react.bridge.WritableNativeMap;

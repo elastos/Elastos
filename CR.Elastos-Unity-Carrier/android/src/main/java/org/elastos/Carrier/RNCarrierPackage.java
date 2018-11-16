@@ -1,4 +1,4 @@
-package org.elassto.Carrier;
+package org.elastos.Carrier;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

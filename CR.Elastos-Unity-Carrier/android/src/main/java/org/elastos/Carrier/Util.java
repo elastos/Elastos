@@ -1,4 +1,4 @@
-package org.elassto.Carrier;
+package org.elastos.Carrier;
 
 import com.elastos_rn_framework.MainApplication;
 import android.content.Context;
