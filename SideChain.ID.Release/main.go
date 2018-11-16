@@ -98,7 +98,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	serviceCfg := spv.Config{
+	spvCfg := spv.Config{
 		DataDir:        filepath.Join(cfg.dataDir, "data_spv"),
 		Magic:          activeNetParams.SpvParams.Magic,
 		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
@@ -107,7 +107,7 @@ func main() {
 		GenesisAddress: genesisAddress,
 		TxStore:        spv.NewTxStore(idChainStore.ChainStore),
 	}
-	spvService, err := spv.NewService(&serviceCfg)
+	spvService, err := spv.NewService(&spvCfg)
 	if err != nil {
 		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
