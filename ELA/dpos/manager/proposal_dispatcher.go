@@ -1,4 +1,4 @@
-package proposal
+package manager
 
 import (
 	"bytes"
@@ -7,8 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
-	"github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/node"
@@ -17,7 +15,31 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
-type ProposalDispatcher struct {
+type ProposalDispatcher interface {
+	AbnormalRecovering
+
+	//status
+	GetProcessingBlock() *core.Block
+	IsVoteSlotEmpty() bool
+	CurrentHeight() uint32
+
+	//proposal
+	StartProposal(b *core.Block)
+	CleanProposals()
+	FinishProposal()
+	TryStartSpeculatingProposal(b *core.Block)
+	ProcessProposal(d core.DPosProposal)
+
+	FinishConsensus()
+
+	ProcessVote(v core.DPosProposalVote, accept bool)
+
+	OnAbnormalStateDetected()
+	RequestAbnormalRecovering()
+	TryAppendAndBroadcastConfirmBlockMsg() bool
+}
+
+type proposalDispatcher struct {
 	processingBlock  *core.Block
 	currentVoteSlot  *core.DPosProposalVoteSlot
 	acceptVotes      []core.DPosProposalVote
@@ -25,21 +47,16 @@ type ProposalDispatcher struct {
 	pendingProposals []core.DPosProposal
 
 	eventMonitor *log.EventMonitor
-	consensus    manager.IConsensus
+	consensus    Consensus
 	network      DposNetwork
+	manager      DposManager
 }
 
-func (p *ProposalDispatcher) Initialize(consensus manager.IConsensus, eventMonitor *log.EventMonitor, network DposNetwork) {
-	p.consensus = consensus
-	p.eventMonitor = eventMonitor
-	p.network = network
-}
-
-func (p *ProposalDispatcher) OnAbnormalStateDetected() {
+func (p *proposalDispatcher) OnAbnormalStateDetected() {
 	p.RequestAbnormalRecovering()
 }
 
-func (p *ProposalDispatcher) RequestAbnormalRecovering() {
+func (p *proposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
 	msgItem := &msg2.RequestConsensusMessage{Height: height}
 	peerID := p.network.GetActivePeer()
@@ -50,11 +67,11 @@ func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 	p.network.SendMessageToPeer(*peerID, msgItem)
 }
 
-func (p *ProposalDispatcher) GetProcessingBlock() *core.Block {
+func (p *proposalDispatcher) GetProcessingBlock() *core.Block {
 	return p.processingBlock
 }
 
-func (p *ProposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
+func (p *proposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	if accept {
 		p.countAcceptedVote(v)
 	} else {
@@ -62,11 +79,11 @@ func (p *ProposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	}
 }
 
-func (p *ProposalDispatcher) IsVoteSlotEmpty() bool {
+func (p *proposalDispatcher) IsVoteSlotEmpty() bool {
 	return p.currentVoteSlot == nil || len(p.currentVoteSlot.Votes) == 0
 }
 
-func (p *ProposalDispatcher) StartProposal(b *core.Block) {
+func (p *proposalDispatcher) StartProposal(b *core.Block) {
 	if p.processingBlock != nil {
 		log.Info("[StartProposal] start proposal failed")
 		return
@@ -74,7 +91,7 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 	p.processingBlock = b
 	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 
-	proposal := core.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash()}
+	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash()}
 	var err error
 	proposal.Sign, err = proposal.SignProposal()
 	if err != nil {
@@ -82,7 +99,7 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 		return
 	}
 
-	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
+	log.Debug("[StartProposal] sponsor:", p.manager.GetPublicKey())
 
 	m := &msg2.ProposalMessage{
 		Proposal: proposal,
@@ -105,7 +122,7 @@ func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 	p.acceptProposal(proposal)
 }
 
-func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
+func (p *proposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
 
 	if p.processingBlock != nil {
 		return
@@ -114,7 +131,7 @@ func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
 	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 }
 
-func (p *ProposalDispatcher) FinishProposal() {
+func (p *proposalDispatcher) FinishProposal() {
 	proposal, blockHash := p.acceptVotes[0].Proposal.Sponsor, p.processingBlock.Hash()
 
 	log.Info("[p.consensus.IsOnDuty()]", p.consensus.IsOnDuty())
@@ -136,7 +153,7 @@ func (p *ProposalDispatcher) FinishProposal() {
 	p.eventMonitor.OnProposalFinished(proposalEvent)
 }
 
-func (p *ProposalDispatcher) CleanProposals() {
+func (p *proposalDispatcher) CleanProposals() {
 	log.Info("Clean proposals")
 	p.processingBlock = nil
 	p.currentVoteSlot = nil
@@ -146,7 +163,7 @@ func (p *ProposalDispatcher) CleanProposals() {
 	//todo clear pending proposals that are lower than current consensus height
 }
 
-func (p *ProposalDispatcher) ProcessProposal(d core.DPosProposal) {
+func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
@@ -169,7 +186,7 @@ func (p *ProposalDispatcher) ProcessProposal(d core.DPosProposal) {
 		return
 	}
 
-	currentBlock, ok := ArbitratorSingleton.BlockCache.TryGetValue(d.BlockHash)
+	currentBlock, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.consensus.IsRunning() {
 		p.pendingProposals = append(p.pendingProposals, d)
 		log.Info("Received pending proposal.")
@@ -191,7 +208,7 @@ func (p *ProposalDispatcher) ProcessProposal(d core.DPosProposal) {
 	p.acceptProposal(d)
 }
 
-func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
+func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	p.currentVoteSlot.Votes = make([]core.DPosProposalVote, 0)
 	for _, v := range p.acceptVotes {
 		p.currentVoteSlot.Votes = append(p.currentVoteSlot.Votes, v)
@@ -210,7 +227,7 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	return false
 }
 
-func (p *ProposalDispatcher) OnBlockAdded(b *core.Block) {
+func (p *proposalDispatcher) OnBlockAdded(b *core.Block) {
 
 	if p.consensus.IsRunning() {
 		for i, v := range p.pendingProposals {
@@ -223,7 +240,7 @@ func (p *ProposalDispatcher) OnBlockAdded(b *core.Block) {
 	}
 }
 
-func (p *ProposalDispatcher) FinishConsensus() {
+func (p *proposalDispatcher) FinishConsensus() {
 	log.Info("[FinishConsensus], change states to ConsensusReady")
 	c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
 	p.eventMonitor.OnConsensusFinished(c)
@@ -231,7 +248,7 @@ func (p *ProposalDispatcher) FinishConsensus() {
 	p.CleanProposals()
 }
 
-func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.ConsensusStatus) error {
+func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.ConsensusStatus) error {
 	if height > p.CurrentHeight() {
 		return errors.New("Requesting height greater than current processing height")
 	}
@@ -245,7 +262,7 @@ func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 	return nil
 }
 
-func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
+func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
 	if status.ProcessingBlock.Height < p.CurrentHeight() {
 		return errors.New("Recovering height less than current processing height")
 	}
@@ -257,7 +274,7 @@ func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusSt
 	return nil
 }
 
-func (p *ProposalDispatcher) CurrentHeight() uint32 {
+func (p *proposalDispatcher) CurrentHeight() uint32 {
 	var height uint32
 	currentBlock := p.GetProcessingBlock()
 	if currentBlock != nil {
@@ -268,7 +285,7 @@ func (p *ProposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *ProposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
+func (p *proposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
 	for _, item := range p.acceptVotes {
 		if item.Signer == v.Signer {
 			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
@@ -284,7 +301,7 @@ func (p *ProposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
 	return false
 }
 
-func (p *ProposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
+func (p *proposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
@@ -299,7 +316,7 @@ func (p *ProposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 	}
 }
 
-func (p *ProposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
+func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
@@ -314,8 +331,8 @@ func (p *ProposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 	}
 }
 
-func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
-	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: true}
+func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
+	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: true}
 	var err error
 	vote.Sign, err = vote.SignVote()
 	if err != nil {
@@ -334,8 +351,8 @@ func (p *ProposalDispatcher) acceptProposal(d core.DPosProposal) {
 	p.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
-	vote := core.DPosProposalVote{Proposal: d, Signer: ArbitratorSingleton.Name, Accept: false}
+func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
+	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: false}
 	var err error
 	vote.Sign, err = vote.SignVote()
 	if err != nil {
@@ -345,7 +362,7 @@ func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
 	msg := &msg2.VoteMessage{Command: msg2.RejectVote, Vote: vote}
 	log.Info("[rejectProposal] send rej_vote msg:", msg2.GetMessageHash(msg))
 
-	_, ok := ArbitratorSingleton.BlockCache.TryGetValue(d.BlockHash)
+	_, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok {
 		log.Error("[rejectProposal] can't find block")
 		return
@@ -357,4 +374,19 @@ func (p *ProposalDispatcher) rejectProposal(d core.DPosProposal) {
 	vote.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: vote.Signer, ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
 	p.eventMonitor.OnVoteArrived(voteEvent)
+}
+
+func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager) ProposalDispatcher {
+	p := &proposalDispatcher{
+		processingBlock:  nil,
+		currentVoteSlot:  nil,
+		acceptVotes:      make([]core.DPosProposalVote, 0),
+		rejectedVotes:    make([]core.DPosProposalVote, 0),
+		pendingProposals: make([]core.DPosProposal, 0),
+		eventMonitor:     eventMonitor,
+		consensus:        consensus,
+		network:          network,
+		manager:          manager,
+	}
+	return p
 }

@@ -1,15 +1,14 @@
-package handler
+package manager
 
 import (
 	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type DposNormalHandler struct {
-	*DposHandlerSwitch
+	*dposHandlerSwitch
 }
 
 func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
@@ -17,7 +16,7 @@ func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
 		h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
-			if block, ok := ArbitratorSingleton.BlockCache.TryGetValue(p.Proposal.BlockHash); ok {
+			if block, ok := h.manager.GetBlockCache().TryGetValue(p.Proposal.BlockHash); ok {
 				h.proposalDispatcher.TryStartSpeculatingProposal(block)
 			}
 
@@ -30,7 +29,7 @@ func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
 	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) {
 
 		h.consensus.RunWithStatusCondition(h.consensus.IsRunning(), func() {
-			if block, ok := ArbitratorSingleton.BlockCache.TryGetValue(p.Proposal.BlockHash); ok {
+			if block, ok := h.manager.GetBlockCache().TryGetValue(p.Proposal.BlockHash); ok {
 				h.proposalDispatcher.TryStartSpeculatingProposal(block)
 			}
 

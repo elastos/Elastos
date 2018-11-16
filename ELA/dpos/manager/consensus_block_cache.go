@@ -1,8 +1,9 @@
-package cache
+package manager
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ConsensusBlockCacheListener interface {
