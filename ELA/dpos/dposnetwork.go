@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -38,6 +39,7 @@ type dposNetwork struct {
 	listener      manager.NetworkEventListener
 	directPeers   map[string]PeerItem
 	currentHeight uint32
+	account       account.DposAccount
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -245,7 +247,7 @@ func (n *dposNetwork) getCurrentHeight(pid common.Uint256) uint64 {
 	return 0
 }
 
-func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener) (*dposNetwork, error) {
+func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
 		listener:       listener,
 		directPeers:    make(map[string]PeerItem),
@@ -253,6 +255,7 @@ func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener) (*dposN
 		quit:           make(chan bool),
 		changeViewChan: make(chan bool),
 		currentHeight:  0,
+		account:        dposAccount,
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)

@@ -6,6 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -58,9 +59,10 @@ func (a *arbitrator) changeViewLoop() {
 }
 
 func NewArbitrator() Arbitrator {
+	dposAccount := account.NewDposAccount()
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
-	network, err := NewDposNetwork(config.Parameters.GetArbiterID(), dposManager)
+	network, err := NewDposNetwork(config.Parameters.GetArbiterID(), dposManager, dposAccount)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil
@@ -74,7 +76,7 @@ func NewArbitrator() Arbitrator {
 	dposHandlerSwitch := NewHandler(network, dposManager, eventMoniter)
 
 	consensus := NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher := NewDispatcher(consensus, eventMoniter, network, dposManager)
+	proposalDispatcher := NewDispatcher(consensus, eventMoniter, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network)
