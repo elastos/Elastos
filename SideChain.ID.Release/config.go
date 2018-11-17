@@ -75,7 +75,7 @@ func loadConfig() (*appconfig, error) {
 		// Load configuration from file.
 		file, err := ini.ShadowLoad(configFilename)
 		if err != nil {
-			return &appCfg, err
+			return &appCfg, nil
 		}
 
 		// Map basic options in Application section
