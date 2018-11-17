@@ -6,16 +6,19 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 func CheckConfirm(confirm *core.DPosProposalVoteSlot) error {
 	signers := make(map[string]struct{})
 	sponsors := make(map[string]struct{})
 	for _, vote := range confirm.Votes {
-		if !vote.IsValid() {
+		if !IsVoteValid(&vote) {
 			return errors.New("[onConfirm] confirm contain invalid vote")
 		}
-		if !vote.Proposal.IsValid() {
+		if !IsProposalValid(&vote.Proposal) {
 			return errors.New("[onConfirm] confirm contain invalid proposal")
 		}
 		signers[vote.Signer] = struct{}{}
@@ -42,4 +45,58 @@ func CheckBlockWithConfirmation(block *core.Block, confirm *core.DPosProposalVot
 	fmt.Println("CheckBlockWithConfirmation Tracer ...")
 
 	return nil
+}
+
+func IsProposalValid(proposal *core.DPosProposal) bool {
+	var isArbiter bool
+	for _, a := range config.Parameters.Arbiters {
+		if a == proposal.Sponsor {
+			isArbiter = true
+		}
+	}
+	if !isArbiter {
+		return false
+	}
+
+	publicKey, err := common.HexStringToBytes(proposal.Sponsor)
+	if err != nil {
+		return false
+	}
+	pubKey, err := crypto.DecodePoint(publicKey[1:])
+	if err != nil {
+		return false
+	}
+	err = crypto.Verify(*pubKey, proposal.Data(), proposal.Sign)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func IsVoteValid(vote *core.DPosProposalVote) bool {
+	var isArbiter bool
+	for _, a := range config.Parameters.Arbiters {
+		if a == vote.Signer {
+			isArbiter = true
+		}
+	}
+	if !isArbiter {
+		return false
+	}
+
+	publicKey, err := common.HexStringToBytes(vote.Signer)
+	if err != nil {
+		return false
+	}
+	pubKey, err := crypto.DecodePoint(publicKey[1:])
+	if err != nil {
+		return false
+	}
+	err = crypto.Verify(*pubKey, vote.Data(), vote.Sign)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
