@@ -51,7 +51,8 @@ namespace Elastos {
 
 		public:
 
-			TransactionHub(const std::vector<TransactionPtr> &transactions,
+			TransactionHub(const std::vector<Asset> &assetArray,
+				const std::vector<TransactionPtr> &transactions,
 				   const SubAccountPtr &subAccount,
 				   const boost::shared_ptr<Listener> &listener);
 
@@ -148,7 +149,7 @@ namespace Elastos {
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			void UpdateAssets(const UInt256ValueMap<std::string> &assetIDMap);
+			void UpdateAssets(const std::vector<Asset> &assetArray);
 
 			nlohmann::json GetAllSupportedAssets() const;
 

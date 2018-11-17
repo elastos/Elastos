@@ -42,15 +42,30 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		Peer::Peer(PeerManager *manager, uint32_t magicNumber) :
-				_status(Unknown),
+				_status(Disconnected),
 				_magicNumber(magicNumber),
 				_pingTime(DBL_MAX),
 				_mempoolTime(DBL_MAX),
 				_disconnectTime(DBL_MAX),
 				_manager(manager),
-				_socket(-1) {
+				_socket(-1),
+				_waitingForNetwork(0),
+				_needsFilterUpdate(false),
+				_nonce(0),
+				_feePerKb(0),
+				_sentVerack(false),
+				_gotVerack(false),
+				_sentGetaddr(false),
+				_sentFilter(false),
+				_sentGetdata(false),
+				_sentMempool(false),
+				_sentGetblocks(false),
+				_version(0),
+				_lastblock(0),
+				_earliestKeyTime(0),
+				_currentBlockHeight(0),
+				_startTime(0) {
 
-//			initDefaultMessages();
 			RegisterListner(_manager);
 		}
 
@@ -190,7 +205,6 @@ namespace Elastos {
 				memcpy(&buf[off], hash, sizeof(uint32_t));
 				off += sizeof(uint32_t);
 				memcpy(&buf[off], message, message.GetSize());
-				Pinfo("sending {}", type);
 
 				size_t msgLen = 0;
 				socket = _socket;
@@ -198,7 +212,9 @@ namespace Elastos {
 
 				while (socket >= 0 && !error && msgLen < sizeof(buf)) {
 					n = send(socket, &buf[msgLen], sizeof(buf) - msgLen, MSG_NOSIGNAL);
-					if (n >= 0) msgLen += n;
+					if (n >= 0) {
+						msgLen += n;
+					}
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
 					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
@@ -346,7 +362,6 @@ namespace Elastos {
 							Perror("error reading {}, message length {} is too long", type, msgLen);
 							error = EPROTO;
 						} else {
-							Pdebug("start read head: len = {}", msgLen);
 							payload.Resize(size_t(msgLen));
 							len = 0;
 							socket = _socket;

@@ -820,9 +820,9 @@ namespace Elastos {
 					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
 					// we do not reset connect failure count yet incase this request times out
 					if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
-						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(0), UINT256_ZERO));
+						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(), UINT256_ZERO));
 					} else {
-						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(0), UINT256_ZERO));
+						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), UINT256_ZERO));
 					}
 				} else { // we're already synced
 					_connectFailureCount = 0; // reset connect failure count
@@ -1204,7 +1204,7 @@ namespace Elastos {
 						if (_lastBlock->getHeight() >= peer->GetLastBlock() &&
 							(!_lastOrphan || !_lastOrphan->isEqual(block.get()))) {
 							peer->Pinfo("calling getblocks");
-							GetBlocksParameter getBlocksParameter(getBlockLocators(0), UINT256_ZERO);
+							GetBlocksParameter getBlocksParameter(getBlockLocators(), UINT256_ZERO);
 							peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 						}
 
@@ -1667,7 +1667,7 @@ namespace Elastos {
 			return r;
 		}
 
-		std::vector<UInt256> PeerManager::getBlockLocators(size_t locatorsCount) {
+		std::vector<UInt256> PeerManager::getBlockLocators() {
 			// append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
 			// finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
 			MerkleBlockPtr block = _lastBlock;
@@ -1675,7 +1675,7 @@ namespace Elastos {
 
 			std::vector<UInt256> locators;
 			while (block != nullptr && block->getHeight() > 0) {
-				if (i < locatorsCount || locatorsCount == 0) locators.push_back(block->getHash());
+				locators.push_back(block->getHash());
 				if (++i >= 10) step *= 2;
 
 				for (j = 0; block && j < step; j++) {
@@ -1683,7 +1683,7 @@ namespace Elastos {
 				}
 			}
 
-			if (i < locatorsCount) locators.push_back(_chainParams.getRaw()->checkpoints[0].hash);
+			locators.push_back(_chainParams.getRaw()->checkpoints[0].hash);
 			return locators;
 		}
 

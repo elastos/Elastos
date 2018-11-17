@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <sstream>
+#include <SDK/Plugin/Transaction/Asset.h>
 
 #include "SDK/Common/Log.h"
 #include "CoreSpvService.h"
@@ -34,7 +35,7 @@ namespace Elastos {
 
 		const WalletPtr &CoreSpvService::getWallet() {
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new TransactionHub(loadTransactions(), _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new TransactionHub(loadAssets(), loadTransactions(), _subAccount, createWalletListener()));
 			}
 			return _wallet;
 		}
@@ -117,6 +118,11 @@ namespace Elastos {
 		std::vector<PeerInfo> CoreSpvService::loadPeers() {
 			//todo complete me
 			return std::vector<PeerInfo>();
+		}
+
+		std::vector<Asset> CoreSpvService::loadAssets() {
+			// todo complete me
+			return std::vector<Asset>();
 		}
 
 		int CoreSpvService::getForkId() const {
@@ -312,7 +318,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
-			_executor->execute(Runnable([this, replace, &blocks]() -> void {
+			_executor->execute(Runnable([this, replace, blocks]() -> void {
 				try {
 					_listener->saveBlocks(replace, blocks);
 				}
@@ -326,7 +332,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
-			_executor->execute(Runnable([this, replace, &peers]() -> void {
+			_executor->execute(Runnable([this, replace, peers]() -> void {
 				try {
 					_listener->savePeers(replace, peers);
 				}

@@ -78,6 +78,8 @@ namespace Elastos {
 
 			virtual std::vector<PeerInfo> loadPeers();
 
+			virtual std::vector<Asset> loadAssets();
+
 			virtual int getForkId() const;
 
 			typedef boost::shared_ptr<PeerManager::Listener> PeerManagerListenerPtr;

@@ -12,6 +12,7 @@ namespace Elastos {
 		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
 
 		PeerInfo::PeerInfo() :
+				Address(UINT128_ZERO),
 				Port(0),
 				Timestamp(0),
 				Services(SERVICES_NODE_NETWORK),

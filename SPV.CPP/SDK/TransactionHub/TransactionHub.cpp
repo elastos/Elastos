@@ -25,12 +25,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		TransactionHub::TransactionHub(const std::vector<TransactionPtr> &txArray,
+		TransactionHub::TransactionHub(const std::vector<Asset> &assetArray,
+						const std::vector<TransactionPtr> &txArray,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Listener> &listener) :
 				_subAccount(subAccount),
 				_transactions(this, subAccount) {
 
+			_transactions.UpdateAssets(assetArray);
 			_transactions.InitWithTransactions(txArray);
 
 			_subAccount->InitAccount(txArray, this);
@@ -605,9 +607,9 @@ namespace Elastos {
 			}
 		}
 
-		void TransactionHub::UpdateAssets(const UInt256ValueMap<std::string> &assetIDMap) {
+		void TransactionHub::UpdateAssets(const std::vector<Asset> &assetArray) {
 			boost::mutex::scoped_lock scopedLock(lock);
-			_transactions.UpdateAssets(assetIDMap);
+			_transactions.UpdateAssets(assetArray);
 		}
 
 		nlohmann::json TransactionHub::GetAllSupportedAssets() const {

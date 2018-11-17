@@ -98,9 +98,6 @@ namespace Elastos {
 		}
 
 		const WalletPtr &SpvService::getWallet() {
-			if (_wallet != nullptr) {
-				UpdateAssets();
-			}
 			return CoreSpvService::getWallet();
 		}
 
@@ -211,12 +208,7 @@ namespace Elastos {
 
 #ifndef NDEBUG
 				if (blocks.size() == 1) {
-					time_t now = time(NULL);
-					char tbuf[20];
-					strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", localtime(&now));
-					getPeerManager()->getDownloadPeer()->Pinfo(
-							"{}: checkpoint ====> {},  uint256(\"{}\"), {}, {} ,",
-							tbuf,
+					Log::debug("checkpoint ====> {{ {},  uint256(\"{}\"), {}, {} }},",
 							blocks[i]->getHeight(),
 							Utils::UInt256ToString(blocks[i]->getHash(), true),
 							blocks[i]->getTimestamp(),
@@ -236,7 +228,6 @@ namespace Elastos {
 						  [replace, &blocks](PeerManager::Listener *listener) {
 							  listener->saveBlocks(replace, blocks);
 						  });
-			delete &blocks;
 		}
 
 		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
@@ -259,15 +250,6 @@ namespace Elastos {
 						  [replace, &peers](PeerManager::Listener *listener) {
 							  listener->savePeers(replace, peers);
 						  });
-			delete &peers;
-
-			if (willReconnect) {
-				pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
-				getPeerManager()->getRaw()->reconnectTaskCount++;
-				pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
-				getPeerManager()->disconnect();
-				startReconnect(2);
-			}
 		}
 
 		bool SpvService::networkIsReachable() {
@@ -368,6 +350,46 @@ namespace Elastos {
 			return peers;
 		}
 
+		std::vector<Asset> SpvService::loadAssets() {
+			std::vector<Asset> assets;
+
+			AssetEntity defaultAssetEntity;
+			UInt256 defaultAssetID = Asset::GetELAAssetID();
+			std::string assetStringID = Utils::UInt256ToString(defaultAssetID);
+			if (!_databaseManager.GetAssetDetails(ISO, assetStringID, defaultAssetEntity)) {
+				Asset defaultAsset;
+				defaultAsset.setName("ELA");
+				defaultAsset.setPrecision(0x08);
+				defaultAsset.setAssetType(Asset::AssetType::Token);
+				defaultAsset.SetHash(defaultAssetID);
+
+				ByteStream stream;
+				defaultAsset.Serialize(stream);
+
+				defaultAssetEntity.AssetID = assetStringID;
+				defaultAssetEntity.Asset = stream.getBuffer();
+
+				// TODO how to set these two value?
+				defaultAssetEntity.Amount = 0;
+				defaultAssetEntity.TxHash = assetStringID;
+
+				_databaseManager.PutAsset(ISO, defaultAssetEntity);
+			}
+
+			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets(ISO);
+
+			for (size_t i = 0; i < assetsEntity.size(); ++i) {
+				Asset asset;
+				ByteStream stream(assetsEntity[i].Asset);
+				if (asset.Deserialize(stream)) {
+					asset.SetHash(Utils::UInt256FromString(assetsEntity[i].AssetID));
+					assets.push_back(asset);
+				}
+			}
+
+			return assets;
+		}
+
 		int SpvService::getForkId() const {
 			return _forkId;
 		}
@@ -416,15 +438,19 @@ namespace Elastos {
 
 		void SpvService::UpdateAssets() {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
-			UInt256ValueMap<std::string> assetIDMap;
-			std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity) {
+			std::vector<Asset> assetArray;
+			std::for_each(assets.begin(), assets.end(), [&assetArray](const AssetEntity &entity) {
 				Asset asset;
 				ByteStream stream(entity.Asset);
-				asset.Deserialize(stream);
-				assetIDMap.Insert(asset.GetHash(), entity.AssetID);
+				if (!asset.Deserialize(stream)) {
+					Log::error("Update assets deserialize fail");
+				} else {
+					asset.SetHash(Utils::UInt256FromString(entity.AssetID));
+					assetArray.push_back(asset);
+				}
 			});
 
-			_wallet->UpdateAssets(assetIDMap);
+			_wallet->UpdateAssets(assetArray);
 		}
 
 		Asset SpvService::FindAsset(const std::string &assetID) const {
@@ -440,6 +466,8 @@ namespace Elastos {
 				Log::error("Asset {} deserialize fail", assetID);
 				return Asset();
 			}
+			asset.SetHash(Utils::UInt256FromString(assetEntity.AssetID));
+
 			return asset;
 		}
 

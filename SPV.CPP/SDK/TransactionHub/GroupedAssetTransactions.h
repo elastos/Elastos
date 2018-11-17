@@ -12,6 +12,7 @@
 #include "SDK/Common/ElementSet.h"
 #include "UInt256ValueSet.h"
 #include "Plugin/Transaction/Transaction.h"
+#include "Plugin/Transaction/Asset.h"
 #include "SDK/Account/ISubAccount.h"
 
 namespace Elastos {
@@ -34,7 +35,7 @@ namespace Elastos {
 
 			bool Exist(const UInt256 &hash);
 
-			const TransactionPtr &GetExistTransaction(const UInt256 &hash) const;
+			const TransactionPtr GetExistTransaction(const UInt256 &hash) const;
 
 			void SortTransaction();
 
@@ -115,8 +116,6 @@ namespace Elastos {
 		public:
 			GroupedAssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount);
 
-			typedef UInt256ValueMap<std::string> AssetIDMap;
-
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
 
 			std::vector<TransactionPtr> GetTransactions(const UInt256 &assetID) const;
@@ -135,7 +134,7 @@ namespace Elastos {
 
 			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
 
-			void UpdateAssets(const AssetIDMap &assetIDMap);
+			void UpdateAssets(const std::vector<Asset> &assetArray);
 
 			AssetTransactionsPtr &operator[](const UInt256 &assetID);
 
@@ -171,7 +170,6 @@ namespace Elastos {
 			UInt256 GetUniqueAssetID(const std::vector<TransactionOutput> &outputs) const;
 
 		private:
-			AssetIDMap _assetIDMap;
 			typedef UInt256ValueMap<AssetTransactionsPtr> AssetTransactionMap;
 			mutable AssetTransactionMap _groupedTransactions;
 

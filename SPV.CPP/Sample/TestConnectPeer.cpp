@@ -194,8 +194,8 @@ void TestConnectPeer::RunPeerConnectTest() {
 	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain");
 	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA");
 
-	std::cout << "side chain wallet addrs: " << sidechainWallet->GetAllAddress(0, INT_MAX) << std::endl;
-	std::cout << "main chain wallet addrs: " << mainchainWallet->GetAllAddress(0, INT_MAX) << std::endl;
+	Log::debug("side chain wallet addrs: {}", sidechainWallet->GetAllAddress(0, INT_MAX).dump());
+	Log::debug("main chain wallet addrs: {}", mainchainWallet->GetAllAddress(0, INT_MAX).dump());
 	sleep(4);
 
 	bool hasTransfer = false, hasDeposit = false, hasWithdraw = false, hasRegisterId = false;
@@ -236,7 +236,5 @@ void TestConnectPeer::RunPeerConnectTest() {
 		sleep(10);
 	}
 
-	masterWallet->DestroyWallet(mainchainWallet);
-//	masterWallet->DestroyWallet(sidechainWallet);
 	walletManager->DestroyWallet(masterWallet->GetId());
 }

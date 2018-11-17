@@ -22,11 +22,11 @@ namespace Elastos {
 
 		void BloomFilterMessage::Send(const SendMessageParameter &param) {
 			const BloomFilterParameter &bloomFilterParameter = static_cast<const BloomFilterParameter &>(param);
-			ByteStream byteStream;
-			bloomFilterParameter.Filter->Serialize(byteStream);
+			ByteStream stream;
+			bloomFilterParameter.Filter->Serialize(stream);
 			_peer->SetSentFilter(true);
 			_peer->SetSentMempool(false);
-			SendMessage(byteStream.getBuffer(), Type());
+			SendMessage(stream.getBuffer(), Type());
 		}
 
 		std::string BloomFilterMessage::Type() const {

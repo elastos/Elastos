@@ -92,6 +92,8 @@ namespace Elastos {
 
 			virtual std::vector<PeerInfo> loadPeers();
 
+			virtual std::vector<Asset> loadAssets();
+
 			virtual int getForkId() const;
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();

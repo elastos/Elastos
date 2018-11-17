@@ -312,7 +312,7 @@ namespace Elastos {
 							hashes[1] = hashes[0]; // if right branch is missing, dup left branch
 						BRSHA256_2(&md, hashes, sizeof(hashes));
 					} else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
-				} else md = hashes[(*hashIdx)++]; // leaf
+				} else md = _hashes[(*hashIdx)++]; // leaf
 			}
 
 			return md;

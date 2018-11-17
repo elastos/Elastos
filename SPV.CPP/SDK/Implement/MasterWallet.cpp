@@ -403,6 +403,10 @@ namespace Elastos {
 				fixedInfo.setEaliestPeerTime(timeStamp);
 			}
 
+			std::vector<UInt256> visibleAssets;
+			visibleAssets.push_back(Asset::GetELAAssetID());
+			fixedInfo.SetVisibleAssets(visibleAssets);
+
 			Log::info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
 								   fixedInfo.getEarliestPeerTime());
 

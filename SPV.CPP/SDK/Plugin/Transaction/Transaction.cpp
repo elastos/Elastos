@@ -41,7 +41,8 @@ namespace Elastos {
 				_assetTableID(""),
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
-				_isRegistered(false) {
+				_isRegistered(false),
+				_txHash(UINT256_ZERO) {
 		}
 
 		Transaction::Transaction(const Transaction &tx) {

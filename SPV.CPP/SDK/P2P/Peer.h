@@ -44,7 +44,6 @@ namespace Elastos {
 				Disconnected = 0,
 				Connecting = 1,
 				Connected = 2,
-				Unknown = -2
 			};
 
 			class Listener {

@@ -37,6 +37,7 @@ namespace Elastos {
 			ostream.writeVarBytes(_filter);
 			ostream.writeUint32(_hashFuncs);
 			ostream.writeUint32(_tweak);
+			ostream.writeByte(_flags);
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH
@@ -53,6 +54,11 @@ namespace Elastos {
 
 			if (!istream.readUint32(_tweak)) {
 				Log::error("Bloom filter deserialize tweak fail");
+				return false;
+			}
+
+			if (!istream.readByte(_flags)) {
+				Log::error("Bloom filter deserialize flags fail");
 				return false;
 			}
 

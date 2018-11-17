@@ -232,7 +232,7 @@ namespace Elastos {
 
 			bool verifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer);
 
-			std::vector<UInt256> getBlockLocators(size_t locatorsCount);
+			std::vector<UInt256> getBlockLocators();
 
 			void loadMempools();
 

@@ -24,6 +24,9 @@ namespace Elastos {
 				if (!transactions[i]->isSigned()) continue;
 				AddUsedAddrs(transactions[i]);
 			}
+
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
 		Key HDSubAccount::DeriveMainAccountKey(const std::string &payPassword) {

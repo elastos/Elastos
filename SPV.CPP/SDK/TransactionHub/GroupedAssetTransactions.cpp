@@ -241,7 +241,7 @@ namespace Elastos {
 			return _allTx.Contains(hash);
 		}
 
-		const TransactionPtr &AssetTransactions::GetExistTransaction(const UInt256 &hash) const {
+		const TransactionPtr AssetTransactions::GetExistTransaction(const UInt256 &hash) const {
 			return _allTx.Get(hash);
 		}
 
@@ -646,7 +646,7 @@ namespace Elastos {
 		}
 
 		void GroupedAssetTransactions::Append(const TransactionPtr &transaction) {
-			transaction->SetAssetTableID(_assetIDMap[transaction->GetAssetID()]);
+			transaction->SetAssetTableID(Utils::UInt256ToString(transaction->GetAssetID()));
 			_groupedTransactions[transaction->GetAssetID()]->Append(transaction);
 		}
 
@@ -654,13 +654,14 @@ namespace Elastos {
 			return _groupedTransactions.Empty();
 		}
 
-		void GroupedAssetTransactions::UpdateAssets(const AssetIDMap &assetIDMap) {
-			_assetIDMap = assetIDMap;
-			_assetIDMap.ForEach([this](const UInt256 &key, const std::string &value) {
-				if (!_groupedTransactions.Contains(key))
-					_groupedTransactions.Insert(key, AssetTransactionsPtr(
+		void GroupedAssetTransactions::UpdateAssets(const std::vector<Asset> &assetArray) {
+			for (size_t i = 0; i < assetArray.size(); ++i) {
+				UInt256 assetID = assetArray[i].GetHash();
+				if (!_groupedTransactions.Contains(assetID)) {
+					_groupedTransactions.Insert(assetID, AssetTransactionsPtr(
 							new AssetTransactions(_lockable, _subAccount, _listeningAddrs)));
-			});
+				}
+			}
 		}
 
 		void GroupedAssetTransactions::BatchSet(const boost::function<void(const TransactionPtr &)> &fun) {
@@ -786,9 +787,9 @@ namespace Elastos {
 
 		nlohmann::json GroupedAssetTransactions::GetAllSupportedAssets() const {
 			std::vector<std::string> result;
-			for (AssetIDMap::MapType::const_iterator it = _assetIDMap.CBegin(); it != _assetIDMap.CEnd(); ++it) {
-				result.push_back(Utils::UInt256ToString(it->first));
-			}
+			_groupedTransactions.ForEach([this, &result](const UInt256 &key, const AssetTransactionsPtr &value) {
+				result.push_back(Utils::UInt256ToString(key));
+			});
 			nlohmann::json j;
 			std::for_each(result.begin(), result.end(), [&j](const std::string &asset){
 				j.push_back(asset);
@@ -797,11 +798,11 @@ namespace Elastos {
 		}
 
 		bool GroupedAssetTransactions::ContainsAsset(const std::string &assetID) {
-			return _assetIDMap.Contains(Utils::UInt256FromString(assetID));
+			return _groupedTransactions.Contains(Utils::UInt256FromString(assetID));
 		}
 
 		bool GroupedAssetTransactions::ContainsAsset(const UInt256 &assetID) {
-			return _assetIDMap.Contains(assetID);
+			return _groupedTransactions.Contains(assetID);
 		}
 
 	}
