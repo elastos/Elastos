@@ -60,8 +60,7 @@ func (a *arbitrator) changeViewLoop() {
 func NewArbitrator() Arbitrator {
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
-	var id [32]byte //fixme init id with current public key
-	network, err := NewDposNetwork(id, dposManager)
+	network, err := NewDposNetwork(config.Parameters.GetArbiterID(), dposManager)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil

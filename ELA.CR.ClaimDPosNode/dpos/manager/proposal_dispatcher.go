@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/node"
@@ -50,6 +51,7 @@ type proposalDispatcher struct {
 	consensus    Consensus
 	network      DposNetwork
 	manager      DposManager
+	account      account.DposAccount
 }
 
 func (p *proposalDispatcher) OnAbnormalStateDetected() {
@@ -93,7 +95,7 @@ func (p *proposalDispatcher) StartProposal(b *core.Block) {
 
 	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash()}
 	var err error
-	proposal.Sign, err = proposal.SignProposal()
+	proposal.Sign, err = p.account.SignProposal(&proposal)
 	if err != nil {
 		log.Error("[StartProposal] start proposal failed:", err.Error())
 		return
@@ -168,7 +170,7 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if !d.IsValid() {
+	if !blockchain.IsProposalValid(&d) {
 		log.Warn("Invalid proposal.")
 		return
 	}
@@ -305,7 +307,7 @@ func (p *proposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
-	if v.Accept && v.IsValid() && !p.alreadyExistVote(v) {
+	if v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes = append(p.acceptVotes, v)
 
@@ -320,7 +322,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
-	if !v.Accept && v.IsValid() && !p.alreadyExistVote(v) {
+	if !v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes = append(p.rejectedVotes, v)
 
@@ -334,7 +336,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
 	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: true}
 	var err error
-	vote.Sign, err = vote.SignVote()
+	vote.Sign, err = p.account.SignVote(&vote)
 	if err != nil {
 		log.Error("[acceptProposal] sign failed")
 		return
@@ -354,7 +356,7 @@ func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
 func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
 	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: false}
 	var err error
-	vote.Sign, err = vote.SignVote()
+	vote.Sign, err = p.account.SignVote(&vote)
 	if err != nil {
 		log.Error("[rejectProposal] sign failed")
 		return
@@ -387,6 +389,7 @@ func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network 
 		consensus:        consensus,
 		network:          network,
 		manager:          manager,
+		account:          account.NewDposAccount(),
 	}
 	return p
 }
