@@ -48,18 +48,7 @@ func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...
 	v.checkSanityFunctions = append(v.checkSanityFunctions, &BlockValidateAction{Name: name, Handler: function})
 }
 
-func (v *Validator) CheckBlockSanity(block *types.Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[PowCheckBlockSanity] block validate invalid parameter:" + str)
-			} else {
-				err = errors.New("[PowCheckBlockSanity] block validate panic")
-			}
-		}
-	}()
-
+func (v *Validator) CheckBlockSanity(block *types.Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	for _, checkFunc := range v.checkSanityFunctions {
 		if err := checkFunc.Handler(block, powLimit, timeSource); err != nil {
 			return errors.New("[powCheckBlockSanity] error:" + err.Error())

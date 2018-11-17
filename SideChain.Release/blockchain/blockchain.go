@@ -30,16 +30,16 @@ var (
 type Config struct {
 	ChainStore     *ChainStore
 	ChainParams    *config.Params
+	Validator      *Validator
 	CheckTxSanity  func(*types.Transaction) error
 	CheckTxContext func(*types.Transaction) error
 	GetTxFee       func(tx *types.Transaction, assetId Uint256) Fixed64
 }
 
 type BlockChain struct {
-	cfg         Config
+	cfg         *Config
 	chainParams *config.Params
 	db          *ChainStore
-	validator   *Validator
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -76,7 +76,7 @@ func New(cfg *Config) (*BlockChain, error) {
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
 	adjustmentFactor := chainParams.AdjustmentFactor
 	chain := BlockChain{
-		cfg:                 *cfg,
+		cfg:                 cfg,
 		chainParams:         chainParams,
 		db:                  cfg.ChainStore,
 		GenesisHash:         genesisHash,
@@ -93,7 +93,6 @@ func New(cfg *Config) (*BlockChain, error) {
 		BlockCache:          make(map[Uint256]*types.Block),
 		TimeSource:          NewMedianTime(),
 	}
-	chain.validator = NewValidator(&chain)
 
 	endHeight := cfg.ChainStore.GetHeight()
 	startHeight := uint32(0)
@@ -814,7 +813,7 @@ func (b *BlockChain) maybeAcceptBlock(block *types.Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = b.validator.CheckBlockContext(block, prevNode)
+	err = b.cfg.Validator.CheckBlockContext(block, prevNode)
 	if err != nil {
 		log.Error("powCheckBlockContext error!", err)
 		return false, err
@@ -966,7 +965,7 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
-	err = b.validator.CheckBlockSanity(block, b.chainParams.PowLimit, b.TimeSource)
+	err = b.cfg.Validator.CheckBlockSanity(block, b.chainParams.PowLimit, b.TimeSource)
 	if err != nil {
 		log.Error("powCheckBlockSanity error!", err)
 		return false, false, err
