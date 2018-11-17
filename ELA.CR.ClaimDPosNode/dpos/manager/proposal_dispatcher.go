@@ -378,7 +378,7 @@ func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
 	p.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager) ProposalDispatcher {
+func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) ProposalDispatcher {
 	p := &proposalDispatcher{
 		processingBlock:  nil,
 		currentVoteSlot:  nil,
@@ -389,7 +389,7 @@ func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network 
 		consensus:        consensus,
 		network:          network,
 		manager:          manager,
-		account:          account.NewDposAccount(),
+		account:          dposAccount,
 	}
 	return p
 }
