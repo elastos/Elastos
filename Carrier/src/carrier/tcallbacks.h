@@ -37,6 +37,7 @@ typedef struct TransactedCallback {
     void *callback_func;
     void *callback_context;
     struct timeval expire_time;
+    char *bundle;
 } TransactedCallback;
 
 static

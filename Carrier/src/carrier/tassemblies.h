@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __tassemblies_H__
-#define __tassemblies_H__
+#ifndef __TASSEMBLIES_H__
+#define __TASSEMBLIES_H__
 
 #include <string.h>
 #include <rc_mem.h>
@@ -32,10 +32,11 @@ typedef struct TransactedAssembly {
     char ext[ELA_MAX_EXTENSION_NAME_LEN + 1];
     char friendid[ELA_MAX_ID_LEN + 1];
     int64_t tid;
+    char *bundle;
+    char *reason;
     uint8_t *data;
     size_t  data_len;
     size_t  data_off;
-    bool    reason_parsed; // for response invitation.
     struct timeval expire_time;
     hash_entry_t he;
 } TransactedAssembly;
@@ -122,4 +123,4 @@ int tassemblies_iterator_remove(hashtable_iterator_t *iterator)
     return hashtable_iterator_remove(iterator);
 }
 
-#endif /* __tassemblies_H__ */
+#endif /* __TASSEMBLIES_H__ */

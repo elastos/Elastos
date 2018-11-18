@@ -380,11 +380,13 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
         output("Send message unsuccessfully(0x%x).\n", ela_get_error());
 }
 
-static void invite_response_callback(ElaCarrier *w, const char *friendid,
+static void invite_response_callback(ElaCarrier *w, const char *friendid, const char *bundle,
                                      int status, const char *reason,
                                      const void *data, size_t len, void *context)
 {
-    output("Got invite response from %s. ", friendid);
+    output("Got invite response from %s with bundle: %s\n", friendid,
+            bundle ? bundle : "N/A");
+
     if (status == 0) {
         char *new_arg[1] = {NULL};
         char *add_stream_arg[2] = {NULL, NULL};
@@ -415,7 +417,7 @@ static void invite(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_invite_friend(w, argv[0], argv[1], strlen(argv[1]),
+    rc = ela_invite_friend(w, argv[0], NULL, argv[1], strlen(argv[1]),
                                invite_response_callback, NULL);
     if (rc == 0)
         output("Send invite request successfully.\n");
@@ -447,7 +449,7 @@ static void reply_invite(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_reply_friend_invite(w, argv[0], status, reason, msg, msg_len);
+    rc = ela_reply_friend_invite(w, argv[0], NULL, status, reason, msg, msg_len);
     if (rc == 0)
         output("Send invite reply to inviter successfully.\n");
     else
@@ -1040,7 +1042,7 @@ static void message_callback(ElaCarrier *w, const char *from,
     }
 }
 
-static void invite_request_callback(ElaCarrier *w, const char *from,
+static void invite_request_callback(ElaCarrier *w, const char *from, const char *bundle,
                                     const void *data, size_t len, void *context)
 {
     char *new_arg[1] = {NULL};

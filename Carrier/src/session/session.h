@@ -69,7 +69,7 @@ typedef struct IceTransportOptions {
 } IceTransportOptions;
 
 typedef void (*friend_invite_callback)(ElaCarrier *, const char *from,
-              const char *data, size_t len, void *context);
+              const char *bundle, const char *data, size_t len, void *context);
 
 struct ElaCarrier       {
     pthread_mutex_t         ext_mutex;

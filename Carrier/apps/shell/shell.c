@@ -826,27 +826,32 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
 }
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
-                                     int status, const char *reason,
-                                     const void *data, size_t len, void *context)
+                            const char *bundle, int status, const char *reason,
+                            const void *data, size_t len, void *context)
 {
     output("Got invite response from %s. ", friendid);
     if (status == 0) {
-        output("message within response: %.*s\n", (int)len, (const char *)data);
+        output("message within response: %.*s ", (int)len, (const char *)data);
     } else {
-        output("refused: %s\n", reason);
+        output("refused: %s ", reason);
     }
+    output("and bundle: %s\n",  bundle ? bundle : "N/A");
 }
 
 static void invite(ElaCarrier *w, int argc, char *argv[])
 {
+    const char *bundle = NULL;
     int rc;
 
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         output("Invalid command syntax.\n");
         return;
     }
 
-    rc = ela_invite_friend(w, argv[1], argv[2], strlen(argv[2]),
+    if (argc == 4)
+        bundle = argv[3];
+
+    rc = ela_invite_friend(w, argv[1], bundle, argv[2], strlen(argv[2]),
                                invite_response_callback, NULL);
     if (rc == 0)
         output("Send invite request success.\n");
@@ -858,11 +863,12 @@ static void reply_invite(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
     int status = 0;
+    const char *bundle = NULL;
     const char *reason = NULL;
     const char *msg = NULL;
     size_t msg_len = 0;
 
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
         output("Invalid command syntax.\n");
         return;
     }
@@ -878,7 +884,10 @@ static void reply_invite(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_reply_friend_invite(w, argv[1], status, reason, msg, msg_len);
+    if (argc == 5)
+        bundle = argv[4];
+
+    rc = ela_reply_friend_invite(w, argv[1], bundle, status, reason, msg, msg_len);
     if (rc == 0)
         output("Send invite reply to inviter success.\n");
     else
@@ -897,8 +906,9 @@ static void session_request_callback(ElaCarrier *w, const char *from,
     session_ctx.remote_sdp[len] = 0;
     session_ctx.sdp_len = len;
 
-    output("Session request from[%s] with bundle: %s\nSDP:\n%s.\n", from,
-           bundle ? bundle : "", session_ctx.remote_sdp);
+    assert(!bundle);
+
+    output("Session request from[%s]\nSDP:\n%s.\n", from, session_ctx.remote_sdp);
     output("Reply use following commands:\n");
     output("  sreply refuse [reason]\n");
     output("OR:\n");
@@ -912,8 +922,10 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
 {
     int rc;
 
-    output("Session complete, bundle: %s, status: %d, reason: %s\n", bundle, status,
-           reason ? reason : "null");
+    assert(!bundle);
+
+    output("Session complete, status: %d, reason: %s\n", status,
+           reason ? reason : "N/A");
 
     if (status != 0)
         return;
@@ -1356,13 +1368,14 @@ static void stream_remove(ElaCarrier *w, int argc, char *argv[])
 static void session_request(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
+    const char *bundle = NULL;
 
-    if (argc != 2) {
+    if (argc != 1) {
         output("Invalid command syntax.\n");
         return;
     }
 
-    rc = ela_session_request(session_ctx.ws, argv[1],
+    rc = ela_session_request(session_ctx.ws, NULL,
                              session_request_complete_callback, NULL);
     if (rc < 0) {
         output("session request failed.\n");
@@ -1759,8 +1772,8 @@ struct command {
     { "friend",     show_friend,            "friend [User ID] - Display friend details." },
     { "label",      label_friend,           "label [User ID] [Name] - Add label to friend." },
     { "msg",        send_message,           "msg [User ID] [Message] - Send message to a friend." },
-    { "invite",     invite,                 "invite [User ID] [Message] - Invite friend." },
-    { "ireply",     reply_invite,           "ireply [User ID] confirm [Message] *OR* ireply [User ID] refuse [Message] - Confirm or refuse invitation with a message." },
+    { "invite",     invite,                 "invite [User ID] [Message] [Bundle] - Invite friend." },
+    { "ireply",     reply_invite,           "ireply [User ID] confirm [Message] [Bundle] *OR* ireply [User ID] refuse [Reason] [Bundle] - Confirm or refuse invitation with a message or reason." },
 
     { "gnew",       group_new,              "gnew - Create new group." },
     { "gleave",     group_leave,            "gleave [Group ID] - Leave group." },
@@ -1775,8 +1788,8 @@ struct command {
     { "snew",       session_new,            "snew [User ID] - Start new session with user." },
     { "sadd",       stream_add,             "sadd [plain | reliable | multiplexing | portforwarding] - Add session properties."},
     { "sremove",    stream_remove,          "sremove [Session ID] - Leave session." },
-    { "srequest",   session_request,        "srequest bundle - Bundle and start session." },
-    { "sreply",     session_reply_request,  "sreply ok - Accept session request. *OR* sreply refuse [Message] - Refuse session request with reason as a message."},
+    { "srequest",   session_request,        "srequest - Send a sesion request." },
+    { "sreply",     session_reply_request,  "sreply ok - Accept a session request. *OR* sreply refuse [Reason] - Refuse a session request with a reason."},
     { "swrite",     stream_write,           "swrite [Stream ID] [String]  - Send data to stream." },
     { "sbulkwrite", stream_bulk_write,      "sbulkwrite [Stream ID] [Packet size] [Packet count] -  Send bulk data to stream." },
     { "sbulkrecv",  stream_bulk_receive,    "sbulkrecv [ start | end ] - Start or end receiving in bulk." },
@@ -2043,14 +2056,14 @@ static void message_callback(ElaCarrier *w, const char *from,
     output("Message from friend[%s]: %.*s\n", from, (int)len, (const char *)msg);
 }
 
-static void invite_request_callback(ElaCarrier *w, const char *from,
+static void invite_request_callback(ElaCarrier *w, const char *from, const char *bundle,
                                     const void *data, size_t len, void *context)
 {
-    output("Invite request from[%s] with data: %.*s\n", from,
-           (int)len, (const char *)data);
+    output("Invite request from[%s] with data: %.*s and bundle: %s\n", from,
+           (int)len, (const char *)data, bundle ? bundle : "N/A");
     output("Reply use following commands:\n");
-    output("  ireply %s confirm [message]\n", from);
-    output("  ireply %s refuse [reason]\n", from);
+    output("  ireply %s confirm [message] [bundle]\n", from);
+    output("  ireply %s refuse [reason] [bundle]\n", from);
 }
 
 static void sprint_group_invite_cookie_string(const void *cookie, size_t len,

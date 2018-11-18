@@ -47,6 +47,7 @@
 
 struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
+    char *bundle;
     char *data;
     int len;
     char gcookie[128];
@@ -57,6 +58,7 @@ struct CarrierContextExtra {
 
 static CarrierContextExtra extra = {
     .userid = {0},
+    .bundle = NULL,
     .data   = NULL,
     .len    = 0,
     .gcookie = {0},
@@ -230,16 +232,20 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
     write_ack("%s\n", msg);
 }
 
-static void friend_invite_cb(ElaCarrier *w, const char *from,
+static void friend_invite_cb(ElaCarrier *w, const char *from, const char *bundle,
                              const void *data, size_t len, void *context)
 {
+    CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
+
     vlogD("Recevied friend invite from %s", from);
     vlogD(" data: %s", (const char *)data);
+
+    if (bundle)
+        extra->bundle = strdup(bundle);
 
     if (len <= ELA_MAX_APP_MESSAGE_LEN)
         write_ack("data %s\n", data);
     else {
-        CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
         extra->data = (char*)malloc(len);
         memcpy(extra->data, data, len);
         extra->len = (int)len;

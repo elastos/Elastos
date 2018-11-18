@@ -53,6 +53,7 @@ const char *stream_state_name(ElaStreamState state);
 
 struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
+    char *bundle;
     char *data;
     int len;
     char gcookie[128];
@@ -407,12 +408,14 @@ static void fremove(TestContext *context, int argc, char *argv[])
     write_ack("fremove succeeded\n");
 }
 
-static void invite_response_callback(ElaCarrier *w, const char *friendid,
+static void invite_response_callback(ElaCarrier *w, const char *friendid, const char *bundle,
                                      int status, const char *reason,
                                      const void *data, size_t len, void *context)
 {
     vlogD("Received invite response from friend %s", friendid);
 
+    if (bundle)
+        vlogD("bundle: %s\n", bundle);
     if (status == 0) {
         vlogD("Message within response: %.*s", (int)len, (const char *)data);
     } else {
@@ -430,7 +433,7 @@ static void finvite(TestContext *context, int argc, char *argv[])
 
     CHK_ARGS(argc == 3);
 
-    rc = ela_invite_friend(w, argv[1], argv[2], strlen(argv[2] + 1),
+    rc = ela_invite_friend(w, argv[1], NULL, argv[2], strlen(argv[2] + 1),
                                invite_response_callback, NULL);
     if (rc < 0)
         vlogE("Send invite request to friend %s error (0x%x)",
@@ -464,7 +467,7 @@ static void freplyinvite(TestContext *context, int argc, char *argv[])
         return;
     }
 
-    rc = ela_reply_friend_invite(w, argv[1], status, reason, msg, msg_len);
+    rc = ela_reply_friend_invite(w, argv[1], NULL, status, reason, msg, msg_len);
     if (rc < 0)
         vlogE("Reply invite request from friend %s error (0x%x)",
               argv[1], ela_get_error());
@@ -478,28 +481,34 @@ static void freplyinvite_bigdata(TestContext *context, int argc, char *argv[])
     int rc;
     int status = 0;
     CarrierContextExtra *extra = context->carrier->extra;
+    char *data = NULL;
+    size_t len = 0;
     const char *reason = NULL;
 
     CHK_ARGS(argc == 3 || argc == 4);
 
     if (argc == 3 && strcmp(argv[2], "confirm") == 0) {
-        // Do nothing.
-    } else if (argc == 4 && strcmp(argv[2], "refuse") == 0) {
+        data = extra->data;
+        len = extra->len;
+    } else if (strcmp(argv[2], "refuse") == 0) {
         status = -1; // TODO: fix to correct status code.
-        reason = argv[3];
+        if (argc == 3)
+            reason = "";
+        else
+            reason = argv[3];
     } else {
         vlogE("Unknown sub command: %s", argv[2]);
         return;
     }
 
-    rc = ela_reply_friend_invite(w, argv[1], status, reason, extra->data,
-                                 extra->len);
+    rc = ela_reply_friend_invite(w, argv[1], extra->bundle, status, reason, data, len);
     if (rc < 0)
         vlogE("Reply invite request from friend %s error (0x%x)",
               argv[1], ela_get_error());
     else
         vlogD("Reply invite request from friend %s success", argv[1]);
 
+    FREE_ANYWAY(extra->bundle);
     FREE_ANYWAY(extra->data);
 }
 
@@ -1001,8 +1010,6 @@ static void spfsenddata(TestContext *context, int argc, char *argv[])
 {
     ElaSession *session = context->session->session;
     StreamContext *stream_ctxt = context->stream;
-    PortForwardingProtocol protocol;
-    int pfid;
     pthread_t client_thread;
     PortForwardingContxt client_ctxt;
 

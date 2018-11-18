@@ -46,6 +46,7 @@ table friendmsg {
 table invitereq {
     ext    : string;
     tid    : long;
+    bundle : string;
     totalsz: uint;
     data   : [uint8];
 }
@@ -53,6 +54,7 @@ table invitereq {
 table invitersp {
     ext    : string;
     tid    : long;
+    bundle : string;
     totalsz: uint;
     status : int;
     reason : string;

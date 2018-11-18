@@ -197,13 +197,14 @@ static void carrier_friend_message_cb(ElaCarrier *w, const char *from,
 }
 
 static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
+                                     const char *bundle,
                                      const void *data, size_t len,
                                      void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
 
     if (cbs && cbs->friend_invite)
-        cbs->friend_invite(w, from, data, len, context);
+        cbs->friend_invite(w, from, bundle, data, len, context);
 }
 
 static void carrier_peer_list_changed_cb(ElaCarrier *w,

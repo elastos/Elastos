@@ -95,14 +95,13 @@ int ela_session_register_strerror()
     return 0;
 }
 
-static void friend_invite(ElaCarrier *w, const char *from,
+static void friend_invite(ElaCarrier *w, const char *from, const char *bundle,
                           const char *data, size_t len, void *context)
 {
     SessionExtension *ext;
     ElaSessionRequestCallback *callback = NULL;
     void *callback_context = NULL;
     list_iterator_t it;
-    const char *bundle;
     const char *sdp;
 
     ext = (SessionExtension *)context;
@@ -111,23 +110,16 @@ static void friend_invite(ElaCarrier *w, const char *from,
         return;
     }
 
-    bundle = data;
-    sdp = data + strlen(bundle) + 1;
-
-    // bundle\x0sdp\x0\x0
-    assert(data[len-1] == 0);
-    assert(strlen(bundle) + strlen(sdp) + 3 == len);
-
-    vlogD("Session: Session request from %s with bundle: %s, SDP: %s", from, bundle, sdp);
+    vlogD("Session: Session request from %s with bundle: %s, SDP: %s",
+          from, bundle, data);
 
     pthread_rwlock_rdlock(&ext->callbacks_lock);
 
-    if (!*bundle) {
+    if (!bundle || !*bundle) {
         // No bundle, use global callback handle
         callback = ext->default_callback;
         callback_context = ext->default_context;
         bundle = NULL;
-        len -= 2;
     } else {
         list_iterate(ext->callbacks, &it);
         while(list_iterator_has_next(&it)) {
@@ -153,13 +145,12 @@ static void friend_invite(ElaCarrier *w, const char *from,
             callback = ext->default_callback;
             callback_context = ext->default_context;
         }
-        len -= strlen(bundle) + 2;
     }
 
     pthread_rwlock_unlock(&ext->callbacks_lock);
 
     if (callback)
-        callback(w, from, bundle, sdp, len, callback_context);
+        callback(w, from, bundle, data, len, callback_context);
 }
 
 static void remove_transport(ElaTransport *);
@@ -609,29 +600,17 @@ void ela_session_close(ElaSession *ws)
 }
 
 static void friend_invite_response(ElaCarrier *w, const char *from,
-                                   int status, const char *reason,
-                                   const void *data, size_t len, void *context)
+                        const char *bundle, int status, const char *reason,
+                        const void *data, size_t len, void *context)
 {
     ElaSession *ws = (ElaSession*)context;
-    const char *bundle = NULL;
-    const char *sdp = NULL;
 
-    if (data)  {
-        bundle = (const char *)data;
-        sdp = (const char *)data + strlen(bundle) + 1;
+    vlogD("Session: Session response from %s with bundle: %s, SDP: %s",
+          from, bundle, (const char *)data);
 
-        // bundle\x0sdp\x0\x0
-        assert(((const char *)data)[len-1] == 0);
-        assert(strlen(bundle) + strlen(sdp) + 3 == len);
-
-        vlogD("Session: Session response from %s with bundle: %s, SDP: %s", from, bundle, sdp);
-        len -= strlen(bundle) + 2;
-    } else
-        len = 0;
-
-    if (ws->complete_callback) {
-        ws->complete_callback(ws, bundle, status, reason, (const char *)sdp, len, ws->context);
-    }
+    if (ws->complete_callback)
+        ws->complete_callback(ws, bundle, status, reason,
+                             (const char *)data, len, ws->context);
 }
 
 int ela_session_request(ElaSession *ws, const char *bundle,
@@ -640,12 +619,11 @@ int ela_session_request(ElaSession *ws, const char *bundle,
     ElaCarrier *w;
     int rc = 0;
     list_iterator_t iterator;
-    char data[ELA_MAX_BUNDLE_LEN + SDP_MAX_LEN + 2];
-    size_t data_len;
-    char *sdp;
+    char sdp[SDP_MAX_LEN];
     char *ext_to;
 
-    if (!ws || !callback || (bundle && strlen(bundle) > ELA_MAX_BUNDLE_LEN)) {
+    if (!ws || !callback ||
+        (bundle && (!*bundle || strlen(bundle) > ELA_MAX_BUNDLE_LEN))) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -689,25 +667,15 @@ reprepare:
         }
     }
 
-    if (bundle && bundle[0]) {
-        data_len = strlen(bundle) + 1;
-        strcpy(data, bundle);
-    } else {
-        data_len = 1;
-        data[0] = 0;
-    }
-    sdp = data + data_len;
-
-    rc = ws->encode_local_sdp(ws, sdp, SDP_MAX_LEN);
+    rc = ws->encode_local_sdp(ws, sdp, sizeof(sdp));
     if (rc < 0) {
         vlogE("Session: Encode local SDP failed(0x%x).", rc);
         ela_set_error(rc);
         return -1;
     }
-    // IMPORTANT: bundle\x0sdp\x0\x0
+
+    // IMPORTANT: add terminal null
     sdp[rc] = 0;
-    sdp[rc+1] = 0;
-    data_len += (rc + 2);
 
     vlogD("Session: Encode local SDP success[%s].", sdp);
 
@@ -719,7 +687,7 @@ reprepare:
     strcat(ext_to, ":");
     strcat(ext_to, extension_name);
 
-    rc = ela_invite_friend(w, ext_to, data, data_len,
+    rc = ela_invite_friend(w, ext_to, bundle, sdp, (size_t)rc + 1,
                            friend_invite_response, (void *)ws);
 
     vlogD("Session: Session request to %s %s.", ws->to,
@@ -733,13 +701,13 @@ int ela_session_reply_request(ElaSession *ws, const char *bundle,
 {
     ElaCarrier *w;
     int rc = 0;
-    char data[ELA_MAX_BUNDLE_LEN + SDP_MAX_LEN + 2];
-    size_t data_len;
-    char *sdp;
+    char sdp[SDP_MAX_LEN];
+    char *local_sdp = NULL;
+    size_t sdp_len = 0;
     char *ext_to;
 
     if (!ws || (status != 0 && !reason)  ||
-            (bundle && strlen(bundle) > ELA_MAX_BUNDLE_LEN)) {
+            (bundle && (!*bundle || strlen(bundle) > ELA_MAX_BUNDLE_LEN))){
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -756,15 +724,6 @@ int ela_session_reply_request(ElaSession *ws, const char *bundle,
     crypto_create_keypair(ws->public_key, ws->secret_key);
     crypto_random_nonce(ws->nonce);
     crypto_random_nonce(ws->credential);
-
-    if (bundle && bundle[0]) {
-        data_len = strlen(bundle) + 1;
-        strcpy(data, bundle);
-    } else {
-        data_len = 1;
-        data[0] = 0;
-    }
-    sdp = data + data_len;
 
     if (status == 0) {
         list_iterator_t iterator;
@@ -801,12 +760,14 @@ reprepare:
             ela_set_error(rc);
             return -1;
         }
-        // IMPORTANT: bundle\x0sdp\x0\x0
+
+        // IMPORTANT: add terminal null
         sdp[rc] = 0;
-        sdp[rc + 1] = 0;
-        data_len += (rc + 2);
 
         vlogD("Session: Encode local SDP success[%s].", sdp);
+
+        local_sdp = sdp;
+        sdp_len = rc + 1;
     }
 
     ext_to = (char *)alloca(ELA_MAX_ID_LEN + strlen(extension_name) + 2);
@@ -814,8 +775,8 @@ reprepare:
     strcat(ext_to, ":");
     strcat(ext_to, extension_name);
 
-    rc = ela_reply_friend_invite(w, ext_to, status, reason,
-                                 data, data_len);
+    rc = ela_reply_friend_invite(w, ext_to, bundle, status, reason,
+                                 local_sdp, sdp_len);
 
     vlogD("Session: Session reply to %s %s.", ws->to,
           rc == 0 ? "success" : "failed");
