@@ -3,6 +3,7 @@ package dpos
 import (
 	"errors"
 	"math/rand"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
@@ -38,10 +39,11 @@ type messageItem struct {
 
 type dposNetwork struct {
 	listener           manager.NetworkEventListener
-	directPeers        map[string]PeerItem
 	currentHeight      uint32
 	account            account.DposAccount
 	proposalDispatcher manager.ProposalDispatcher
+	directPeers        map[string]PeerItem
+	peersLock          sync.Mutex
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -106,6 +108,9 @@ func (n *dposNetwork) connectPeers() {
 func (n *dposNetwork) OnProducersChanged() {
 
 	connectionInfoMap := n.getProducersConnectionInfo()
+
+	n.peersLock.Lock()
+	defer n.peersLock.Unlock()
 	for k, v := range connectionInfoMap {
 
 		if _, ok := n.directPeers[k]; !ok {
@@ -134,7 +139,11 @@ func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
 
 	for _, v := range arbitrators {
 		pubKey := common.BytesToHexString(v)
+
+		n.peersLock.Lock()
 		ad, ok := n.directPeers[pubKey]
+		n.peersLock.Unlock()
+
 		if !ok {
 			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
 			continue
@@ -165,6 +174,7 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 		return nil
 	}
 
+	n.peersLock.Lock()
 	for _, v := range n.directPeers {
 		if v.Sequence <= offset {
 			v.NeedConnect = false
@@ -176,6 +186,8 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 	}
 
 	n.p2pServer.ConnectPeers(n.getValidPeers())
+	n.peersLock.Unlock()
+
 	n.currentHeight = height
 	return nil
 }
