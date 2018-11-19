@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -101,19 +100,21 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	Name            string `json:"Name"`
-	Magic           uint32 `json:"Magic"`
-	SeedList        []Seed `json:"SeedList"`
-	NodePort        uint16 `json:"NodePort"`
-	ProtocolVersion uint32 `json:"ProtocolVersion"`
-	Services        uint64 `json:"Services"`
-	PrintLevel      uint8  `json:"PrintLevel"`
-	SignTolerance   uint64 `json:"SignTolerance"`
-	MaxLogsSize     int64  `json:"MaxLogsSize"`
-	MaxPerLogSize   int64  `json:"MaxPerLogSize"`
-	MaxConnections  int    `json:"MaxConnections"`
-	MajorityCount   uint32 `json:"MajorityCount"`
-	PrivateKey      string `json:"PrivateKey"`
+	Name             string `json:"Name"`
+	Magic            uint32 `json:"Magic"`
+	SeedList         []Seed `json:"SeedList"`
+	NodePort         uint16 `json:"NodePort"`
+	ProtocolVersion  uint32 `json:"ProtocolVersion"`
+	Services         uint64 `json:"Services"`
+	PrintLevel       uint8  `json:"PrintLevel"`
+	SignTolerance    uint64 `json:"SignTolerance"`
+	MaxLogsSize      int64  `json:"MaxLogsSize"`
+	MaxPerLogSize    int64  `json:"MaxPerLogSize"`
+	MaxConnections   int    `json:"MaxConnections"`
+	MajorityCount    uint32 `json:"MajorityCount"`
+	ArbitratorsCount uint32 `json:"ArbitratorsCount"`
+	CandidatesCount  uint32 `json:"CandidatesCount"`
+	PrivateKey       string `json:"PrivateKey"`
 }
 
 type Seed struct {
@@ -168,25 +169,7 @@ func init() {
 	}
 }
 
-func (config *Configuration) GetArbitrators() ([][]byte, error) {
-	//todo finish this when arbitrator election scenario is done
-	if len(config.Arbiters) == 0 {
-		return nil, errors.New("arbiters not configured")
-	}
-
-	var arbitersByte [][]byte
-	for _, arbiter := range config.Arbiters {
-		arbiterByte, err := common.HexStringToBytes(arbiter)
-		if err != nil {
-			return nil, err
-		}
-		arbitersByte = append(arbitersByte, arbiterByte)
-	}
-
-	return arbitersByte, nil
-}
-
-func (config *Configuration) GetArbiterPublicKey() []byte {
+func (config *Configuration) GetArbiterID() []byte {
 	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
 	if err != nil || len(publicKey) != 33 {
 		log.Fatalf("get arbiter public key erro %v", err)

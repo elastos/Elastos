@@ -74,6 +74,8 @@
       "MaxPerLogSize": 0,
       "MaxConnections": 100,
       "MajorityCount": 3,
+      "ArbitratorsCount": 5,
+      "CandidatesCount": 0,
       "PrivateKey": "e372ca1032257bb4be1ac99c4861ec542fd55c25c37f5f58ba8b177850b3fdeb"
     }
   }

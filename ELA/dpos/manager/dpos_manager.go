@@ -241,12 +241,7 @@ func (d *dposManager) changeHeight() {
 	//	return
 	//}
 
-	currentArbiter, err := blockchain.GetOnDutyArbiter()
-	if err != nil {
-		log.Error("Error occurred with change height: get current arbiter error.")
-		return
-	}
-
+	currentArbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
 	onDuty := d.publicKey == common.BytesToHexString(currentArbiter)
 
 	if onDuty {

@@ -45,10 +45,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	log.Info("[ChangeView] current view offset:", *viewOffset)
 
 	if offset > 0 {
-		currentArbiter, err := blockchain.GetNextOnDutyArbiter(*viewOffset)
-		if err != nil {
-			log.Error(err)
-		}
+		currentArbiter := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
 		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
 		log.Info("current onduty arbiter:", currentArbiter)

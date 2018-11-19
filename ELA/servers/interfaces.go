@@ -600,11 +600,7 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, "")
 	}
 
-	arbitratorsBytes, err := config.Parameters.GetArbitrators()
-	if err != nil {
-		return ResponsePack(InternalError, "")
-	}
-
+	arbitratorsBytes := chain.DefaultLedger.Arbitrators.GetArbitrators()
 	index := int(block.Header.Height) % len(arbitratorsBytes)
 
 	var arbitrators []string

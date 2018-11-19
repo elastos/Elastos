@@ -301,16 +301,13 @@ func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (pool *TxPool) cleanSideChainPowTx() {
-	arbitrtor, err := blockchain.GetOnDutyArbiter()
-	if err != nil {
-		log.Error("get current arbiter failed")
-		return
-	}
+	arbitrator := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+
 	pool.Lock()
 	defer pool.Unlock()
 	for hash, txn := range pool.txnList {
 		if txn.IsSideChainPowTx() {
-			if err = blockchain.CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
+			if err := blockchain.CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 				// delete tx
 				delete(pool.txnList, hash)
 				//delete utxo map
