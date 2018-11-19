@@ -3,6 +3,7 @@ package blockchain
 import (
 	"errors"
 	"sort"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
@@ -50,31 +51,49 @@ type arbitrators struct {
 	nextCandidates  [][]byte
 
 	listener ArbitratorsListener
+	lock     sync.Mutex
 }
 
 func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
 	if confirmed {
+		a.lock.Lock()
 		a.onChainHeightIncreased()
+		a.lock.Unlock()
 	}
 }
 
 func (a *arbitrators) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	a.onChainHeightIncreased()
 }
 
 func (a *arbitrators) GetArbitrators() [][]byte {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	return a.currentArbitrators
 }
 
 func (a *arbitrators) GetCandidates() [][]byte {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	return a.candidates
 }
 
 func (a *arbitrators) GetNextArbitrators() [][]byte {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	return a.nextArbitrators
 }
 
 func (a *arbitrators) GetNextCandidates() [][]byte {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	return a.nextCandidates
 }
 
@@ -166,6 +185,7 @@ func (a *arbitrators) updateNextArbitrators() error {
 }
 
 func (a *arbitrators) sortArbitrators() error {
+
 	strArbitrators := make([]string, len(a.currentArbitrators))
 	for i := 0; i < len(strArbitrators); i++ {
 		strArbitrators[i] = common.BytesToHexString(a.currentArbitrators[i])
