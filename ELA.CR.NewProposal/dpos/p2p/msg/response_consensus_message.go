@@ -4,6 +4,8 @@ import (
 	"io"
 )
 
+const DefaultResponseConsensusMessageDataSize = 8000000 * 10
+
 type ResponseConsensusMessage struct {
 	Consensus ConsensusStatus
 }
@@ -13,8 +15,7 @@ func (msg *ResponseConsensusMessage) CMD() string {
 }
 
 func (msg *ResponseConsensusMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return DefaultResponseConsensusMessageDataSize
 }
 
 func (msg *ResponseConsensusMessage) Serialize(w io.Writer) error {

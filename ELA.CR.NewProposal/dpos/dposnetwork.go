@@ -89,6 +89,7 @@ func (n *dposNetwork) connectPeers() {
 			Addr: seed.Addrress,
 		})
 	}
+	log.Info("[connectPeers] addr list:", addrList)
 	n.p2pServer.ConnectPeers(addrList)
 }
 
@@ -139,6 +140,10 @@ func (n *dposNetwork) GetActivePeer() *common.Uint256 {
 	if len(peers) == 0 {
 		return nil
 	}
+	if len(peers) == 1 {
+		id := peers[0].PID()
+		return &id
+	}
 	i := rand.Int31n(int32(len(peers)) - 1)
 	id := peers[i].PID()
 	return &id
@@ -177,55 +182,52 @@ func (n *dposNetwork) handleMessage(pid common.Uint256, msg utip2p.Message) {
 }
 
 func (n *dposNetwork) processMessage(msgItem *messageItem) {
-	processed := false
 	m := msgItem.Message
 	switch m.CMD() {
 	case msg.ReceivedProposal:
-		_, processed = m.(*msg.ProposalMessage)
+		msgProposal, processed := m.(*msg.ProposalMessage)
 		if processed {
-			n.listener.OnProposalReceived(msgItem.ID, m.(*msg.ProposalMessage).Proposal)
+			n.listener.OnProposalReceived(msgItem.ID, msgProposal.Proposal)
 		}
 	case msg.AcceptVote:
-		_, processed = m.(*msg.VoteMessage)
+		msgVote, processed := m.(*msg.VoteMessage)
 		if processed {
-			n.listener.OnVoteReceived(msgItem.ID, m.(*msg.VoteMessage).Vote)
+			n.listener.OnVoteReceived(msgItem.ID, msgVote.Vote)
 		}
 	case msg.RejectVote:
-		_, processed = m.(*msg.VoteMessage)
+		msgVote, processed := m.(*msg.VoteMessage)
 		if processed {
-			n.listener.OnVoteRejected(msgItem.ID, m.(*msg.VoteMessage).Vote)
+			n.listener.OnVoteRejected(msgItem.ID, msgVote.Vote)
 		}
 	case msg.CmdPing:
-		_, processed = m.(*msg.Ping)
+		msgPing, processed := m.(*msg.Ping)
 		if processed {
-			n.listener.OnPing(msgItem.ID, uint32(m.(*msg.Ping).Nonce))
+			n.listener.OnPing(msgItem.ID, uint32(msgPing.Nonce))
 		}
 	case msg.CmdPong:
-		_, processed = m.(*msg.Pong)
+		msgPong, processed := m.(*msg.Pong)
 		if processed {
-			n.listener.OnPong(msgItem.ID, uint32(m.(*msg.Pong).Nonce))
+			n.listener.OnPong(msgItem.ID, uint32(msgPong.Nonce))
 		}
 	case msg.GetBlocks:
-		_, processed = m.(*msg.GetBlocksMessage)
+		msgGetBlocks, processed := m.(*msg.GetBlocksMessage)
 		if processed {
-			messageObj := m.(*msg.GetBlocksMessage)
-			n.listener.OnGetBlocks(msgItem.ID, messageObj.StartBlockHeight, messageObj.EndBlockHeight)
+			n.listener.OnGetBlocks(msgItem.ID, msgGetBlocks.StartBlockHeight, msgGetBlocks.EndBlockHeight)
 		}
 	case msg.ResponseBlocks:
-		_, processed = m.(*msg.ResponseBlocksMessage)
+		msgResponseBlocks, processed := m.(*msg.ResponseBlocksMessage)
 		if processed {
-			messageObj := m.(*msg.ResponseBlocksMessage)
-			n.listener.OnResponseBlocks(msgItem.ID, messageObj.Blocks, messageObj.BlockConfirms)
+			n.listener.OnResponseBlocks(msgItem.ID, msgResponseBlocks.Blocks, msgResponseBlocks.BlockConfirms)
 		}
 	case msg.RequestConsensus:
-		_, processed = m.(*msg.RequestConsensusMessage)
+		msgRequestConsensus, processed := m.(*msg.RequestConsensusMessage)
 		if processed {
-			n.listener.OnRequestConsensus(msgItem.ID, m.(*msg.RequestConsensusMessage).Height)
+			n.listener.OnRequestConsensus(msgItem.ID, msgRequestConsensus.Height)
 		}
 	case msg.ResponseConsensus:
-		_, processed = m.(*msg.ResponseConsensusMessage)
+		msgResponseConsensus, processed := m.(*msg.ResponseConsensusMessage)
 		if processed {
-			n.listener.OnResponseConsensus(msgItem.ID, &m.(*msg.ResponseConsensusMessage).Consensus)
+			n.listener.OnResponseConsensus(msgItem.ID, &msgResponseConsensus.Consensus)
 		}
 	}
 }
@@ -249,13 +251,15 @@ func (n *dposNetwork) getCurrentHeight(pid common.Uint256) uint64 {
 
 func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
-		listener:       listener,
-		directPeers:    make(map[string]PeerItem),
-		messageQueue:   make(chan *messageItem, 10000), //todo config handle capacity though config file
-		quit:           make(chan bool),
-		changeViewChan: make(chan bool),
-		currentHeight:  0,
-		account:        dposAccount,
+		listener:            listener,
+		directPeers:         make(map[string]PeerItem),
+		messageQueue:        make(chan *messageItem, 10000), //todo config handle capacity though config file
+		quit:                make(chan bool),
+		changeViewChan:      make(chan bool),
+		blockReceivedChan:   make(chan blockItem, 10),                  //todo config handle capacity though config file
+		confirmReceivedChan: make(chan *core.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
+		currentHeight:       0,
+		account:             dposAccount,
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)

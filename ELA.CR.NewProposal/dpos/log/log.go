@@ -1,6 +1,9 @@
 package log
 
 import (
+	"github.com/elastos/Elastos.ELA/dpos/p2p"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	elaLog "github.com/elastos/Elastos.ELA/log"
 )
 
@@ -12,6 +15,9 @@ var logger *elaLog.Logger
 
 func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
 	logger = elaLog.NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	connmgr.UseLogger(logger)
+	peer.UseLogger(logger)
+	p2p.UseLogger(logger)
 }
 
 func Debug(a ...interface{}) {

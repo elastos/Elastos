@@ -42,7 +42,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	offset, offsetTime := v.CalculateOffsetTime(v.viewStartTime)
 	*viewOffset += uint32(offset)
 	v.viewStartTime = time.Now().Add(-offsetTime)
-	log.Info("[ChangeView] current view offset:", viewOffset)
+	log.Info("[ChangeView] current view offset:", *viewOffset)
 
 	if offset > 0 {
 		currentArbiter, err := blockchain.GetNextOnDutyArbiter(*viewOffset)

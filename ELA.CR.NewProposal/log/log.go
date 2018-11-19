@@ -188,6 +188,16 @@ func (l *Logger) Fatalf(format string, a ...interface{}) {
 	l.Outputf(fatalLog, format, a...)
 }
 
+// Level returns the current logging level.
+func (l *Logger) Level() elalog.Level {
+	return elalog.Level(l.level)
+}
+
+// SetLevel changes the logging level to the passed level.
+func (l *Logger) SetLevel(level elalog.Level) {
+	l.level = uint8(level)
+}
+
 func Debug(a ...interface{}) {
 	logger.Debug(a...)
 }

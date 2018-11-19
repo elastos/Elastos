@@ -62,7 +62,7 @@ func IsProposalValid(proposal *core.DPosProposal) bool {
 	if err != nil {
 		return false
 	}
-	pubKey, err := crypto.DecodePoint(publicKey[1:])
+	pubKey, err := crypto.DecodePoint(publicKey)
 	if err != nil {
 		return false
 	}
@@ -89,7 +89,7 @@ func IsVoteValid(vote *core.DPosProposalVote) bool {
 	if err != nil {
 		return false
 	}
-	pubKey, err := crypto.DecodePoint(publicKey[1:])
+	pubKey, err := crypto.DecodePoint(publicKey)
 	if err != nil {
 		return false
 	}

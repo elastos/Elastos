@@ -8,6 +8,9 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+//todo move to config
+const DefaultResponseBlocksMessageDataSize = 8000000 * 10
+
 type ResponseBlocksMessage struct {
 	Command       string
 	Blocks        []*core.Block
@@ -19,8 +22,7 @@ func (m *ResponseBlocksMessage) CMD() string {
 }
 
 func (m *ResponseBlocksMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return DefaultResponseBlocksMessageDataSize
 }
 
 func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
