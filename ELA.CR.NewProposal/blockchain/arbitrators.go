@@ -16,36 +16,49 @@ type ArbitratorsConfig struct {
 	MajorityCount    uint32
 }
 
+type ArbitratorsListener interface {
+	OnNewElection()
+}
+
 type Arbitrators interface {
 	NewBlocksListener
 
 	GetArbitrators() [][]byte
 	GetCandidates() [][]byte
+	GetNextArbitrators() [][]byte
+	GetNextCandidates() [][]byte
 
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
 
 	HasArbitersMajorityCount(num uint32) bool
 	HasArbitersMinorityCount(num uint32) bool
+
+	RegisterListener(listener ArbitratorsListener)
+	UnregisterListener(listener ArbitratorsListener)
 }
 
 type arbitrators struct {
-	config ArbitratorsConfig
+	config           ArbitratorsConfig
+	dutyChangedCount uint32
 
 	currentArbitrators [][]byte
 	candidates         [][]byte
+
+	nextArbitrators [][]byte
+	nextCandidates  [][]byte
+
+	listener ArbitratorsListener
 }
 
 func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
-	if err := a.updateArbitrators(); err != nil {
-		log.Error("Update arbitrators error: ", err)
+	if confirmed {
+		a.onChainHeightIncreased()
 	}
 }
 
 func (a *arbitrators) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
-	if err := a.updateArbitrators(); err != nil {
-		log.Error("Update arbitrators error: ", err)
-	}
+	a.onChainHeightIncreased()
 }
 
 func (a *arbitrators) GetArbitrators() [][]byte {
@@ -54,6 +67,14 @@ func (a *arbitrators) GetArbitrators() [][]byte {
 
 func (a *arbitrators) GetCandidates() [][]byte {
 	return a.candidates
+}
+
+func (a *arbitrators) GetNextArbitrators() [][]byte {
+	return a.nextArbitrators
+}
+
+func (a *arbitrators) GetNextCandidates() [][]byte {
+	return a.nextCandidates
 }
 
 func (a *arbitrators) GetOnDutyArbitrator() []byte {
@@ -77,7 +98,41 @@ func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num > a.config.ArbitratorsCount-a.config.MajorityCount
 }
 
-func (a *arbitrators) updateArbitrators() error {
+func (a *arbitrators) RegisterListener(listener ArbitratorsListener) {
+	a.listener = listener
+}
+
+func (a *arbitrators) UnregisterListener(listener ArbitratorsListener) {
+	a.listener = nil
+}
+
+func (a *arbitrators) onChainHeightIncreased() {
+	if a.isNewElection() {
+		a.changeCurrentArbitrators()
+
+		if err := a.updateNextArbitrators(); err != nil {
+			log.Error("Update arbitrators error: ", err)
+		}
+
+		if a.listener != nil {
+			a.listener.OnNewElection()
+		}
+	} else {
+		a.dutyChangedCount++
+	}
+}
+
+func (a *arbitrators) isNewElection() bool {
+	return a.dutyChangedCount == a.config.ArbitratorsCount-1
+}
+
+func (a *arbitrators) changeCurrentArbitrators() {
+	a.currentArbitrators = a.nextArbitrators
+	a.candidates = a.nextCandidates
+	a.dutyChangedCount = 0
+}
+
+func (a *arbitrators) updateNextArbitrators() error {
 	producers, err := a.parseProducersDesc()
 	if err == nil {
 		return err
@@ -87,19 +142,19 @@ func (a *arbitrators) updateArbitrators() error {
 		return errors.New("Producers count less than arbitrators count.")
 	}
 
-	a.currentArbitrators = producers[:a.config.ArbitratorsCount]
-	a.sortCurrentArbitrators()
+	a.nextArbitrators = producers[:a.config.ArbitratorsCount]
+	a.sortArbitrators()
 
 	if uint32(len(producers)) < a.config.ArbitratorsCount+a.config.CandidatesCount {
-		a.candidates = producers[a.config.ArbitratorsCount:]
+		a.nextCandidates = producers[a.config.ArbitratorsCount:]
 	} else {
-		a.candidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
+		a.nextCandidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
 	}
 
 	return nil
 }
 
-func (a *arbitrators) sortCurrentArbitrators() {
+func (a *arbitrators) sortArbitrators() {
 	//todo sort arbitrators
 }
 

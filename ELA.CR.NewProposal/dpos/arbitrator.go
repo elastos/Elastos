@@ -17,6 +17,7 @@ import (
 
 type Arbitrator interface {
 	blockchain.NewBlocksListener
+	blockchain.ArbitratorsListener
 
 	Start()
 	Stop() error
@@ -55,6 +56,10 @@ func (a *arbitrator) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 	a.network.PostConfirmReceivedTask(p)
 }
 
+func (a *arbitrator) OnNewElection() {
+	a.network.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetNextArbitrators())
+}
+
 func (a *arbitrator) changeViewLoop() {
 	for a.enableViewLoop {
 		a.network.PostChangeViewTask()
@@ -89,6 +94,7 @@ func NewArbitrator() Arbitrator {
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network)
+	network.Initialize(proposalDispatcher)
 
 	result := &arbitrator{
 		enableViewLoop: true,
