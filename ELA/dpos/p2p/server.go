@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -15,7 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
@@ -61,23 +61,23 @@ var _ net.Addr = simpleAddr{}
 // to all connected peers except specified excluded peers.
 type broadcastMsg struct {
 	message      p2p.Message
-	excludePeers []common.Uint256
+	excludePeers []peer.PID
 }
 
 // peerState maintains state of inbound, persistent, outbound peers as well
 // as banned peers and outbound groups.
 type peerState struct {
-	connectPeers  map[common.Uint256]PeerAddr
+	connectPeers  map[peer.PID]PeerAddr
 	inboundPeers  map[uint64]*serverPeer
 	outboundPeers map[uint64]*serverPeer
 }
 
 // havePeer returns how many connected peers matches to given PID, if no matches
 // return 0
-func (ps *peerState) havePeer(pid common.Uint256) int {
+func (ps *peerState) havePeer(pid peer.PID) int {
 	var matches int
 	ps.forAllPeers(func(sp *serverPeer) {
-		if pid.IsEqual(sp.PID()) {
+		if sp.PID().Equal(pid) {
 			matches++
 		}
 	})
@@ -151,7 +151,7 @@ func newServerPeer(s *server) *serverPeer {
 // the communications.
 func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 	// Check if received PID matches PeerAddr PID.
-	if sp.connReq != nil && !v.PID.IsEqual(sp.connReq.PID) {
+	if sp.connReq != nil && !bytes.Equal(v.PID[:], sp.connReq.PID[:]) {
 		log.Infof("Disconnecting peer %v - version PID not match", sp)
 		sp.Disconnect()
 		return
@@ -161,7 +161,7 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 }
 
 // PID returns the peer's public key id.
-func (sp *serverPeer) PID() common.Uint256 {
+func (sp *serverPeer) PID() peer.PID {
 	return sp.Peer.PID()
 }
 
@@ -259,7 +259,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 		}
 
 		for _, ep := range bmsg.excludePeers {
-			if ep.IsEqual(sp.PID()) {
+			if sp.PID().Equal(ep) {
 				return
 			}
 		}
@@ -274,7 +274,7 @@ type connectPeersMsg struct {
 }
 
 type sendToPeerMsg struct {
-	id    common.Uint256
+	pid   peer.PID
 	msg   p2p.Message
 	reply chan error
 }
@@ -296,12 +296,12 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		// in connect list, and disconnect peers not in connect list.
 
 		// connectPeers saves the new received connect peer addresses.
-		connectPeers := make(map[common.Uint256]PeerAddr)
+		connectPeers := make(map[peer.PID]PeerAddr)
 
 		// Loop through the new received connect peer addresses.
 		for _, addr := range msg.addrList {
 			// Do not create connection to self.
-			if addr.PID.IsEqual(s.cfg.PID) {
+			if addr.PID.Equal(s.cfg.PID) {
 				continue
 			}
 
@@ -327,7 +327,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		}
 
 		// disconnectPeers saves the peers need to be disconnected.
-		disconnectPeers := make(map[common.Uint256]struct{})
+		disconnectPeers := make(map[peer.PID]struct{})
 
 		// Peers not in new received connect list need to be disconnected.
 		for pid, addr := range state.connectPeers {
@@ -362,7 +362,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		sent := false
 		done := make(chan error, 1)
 		state.forAllPeers(func(sp *serverPeer) {
-			if !sent && msg.id.IsEqual(sp.PID()) {
+			if !sent && sp.PID().Equal(msg.pid) {
 				sp.SendMessage(msg.msg, done)
 				if err := <-done; err == nil {
 					sent = true
@@ -397,14 +397,14 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 	}
 }
 
-func (s *server) pingNonce(pid [32]byte) uint64 {
+func (s *server) pingNonce(pid peer.PID) uint64 {
 	if s.cfg.PingNonce == nil {
 		return 0
 	}
 	return s.cfg.PingNonce(pid)
 }
 
-func (s *server) pongNonce(pid [32]byte) uint64 {
+func (s *server) pongNonce(pid peer.PID) uint64 {
 	if s.cfg.PongNonce == nil {
 		return 0
 	}
@@ -419,6 +419,7 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
 		Services:         sp.server.cfg.Services,
 		PingInterval:     sp.server.cfg.PingInterval,
+		SignNonce:        sp.server.cfg.SignNonce,
 		PingNonce:        sp.server.pingNonce,
 		PongNonce:        sp.server.pongNonce,
 		MakeEmptyMessage: sp.server.cfg.MakeEmptyMessage,
@@ -535,7 +536,7 @@ func (s *server) AddPeer(sp *serverPeer) {
 
 // BroadcastMessage sends msg to all peers currently connected to the server
 // except those in the passed peers to exclude.
-func (s *server) BroadcastMessage(msg p2p.Message, exclPeers ...common.Uint256) {
+func (s *server) BroadcastMessage(msg p2p.Message, exclPeers ...peer.PID) {
 	// XXX: Need to determine if this is an alert that has already been
 	// broadcast and refrain from broadcasting again.
 	bmsg := broadcastMsg{message: msg, excludePeers: exclPeers}
@@ -559,9 +560,9 @@ func (s *server) ConnectPeers(addrList []PeerAddr) {
 
 // SendMessageToPeer send a message to the peer with the given id, error
 // will be returned if there is no matches, or fail to send the message.
-func (s *server) SendMessageToPeer(id common.Uint256, msg p2p.Message) error {
+func (s *server) SendMessageToPeer(id peer.PID, msg p2p.Message) error {
 	reply := make(chan error)
-	s.query <- sendToPeerMsg{id: id, msg: msg, reply: reply}
+	s.query <- sendToPeerMsg{pid: id, msg: msg, reply: reply}
 	return <-reply
 }
 
