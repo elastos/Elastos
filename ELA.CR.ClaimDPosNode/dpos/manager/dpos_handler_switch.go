@@ -73,10 +73,7 @@ func NewHandler(network DposNetwork, manager DposManager, monitor *log.EventMoni
 func (h *dposHandlerSwitch) Initialize(dispatcher ProposalDispatcher, consensus Consensus) {
 	h.proposalDispatcher = dispatcher
 	h.consensus = consensus
-	currentArbiter, err := blockchain.GetNextOnDutyArbiter(h.consensus.GetViewOffset())
-	if err != nil {
-		log.Error(err)
-	}
+	currentArbiter := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(h.consensus.GetViewOffset())
 	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
 	h.SwitchTo(isDposOnDuty)
 }

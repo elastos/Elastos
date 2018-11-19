@@ -33,24 +33,24 @@ var (
 )
 
 type Blockchain struct {
-	BlockHeight       uint32
-	GenesisHash       Uint256
-	BestChain         *BlockNode
-	Root              *BlockNode
-	Index             map[Uint256]*BlockNode
-	IndexLock         sync.RWMutex
-	DepNodes          map[Uint256][]*BlockNode
-	Orphans           map[Uint256]*OrphanBlock
-	PrevOrphans       map[Uint256][]*OrphanBlock
-	OldestOrphan      *OrphanBlock
-	BlockCache        map[Uint256]*Block
-	TimeSource        MedianTimeSource
-	MedianTimePast    time.Time
-	OrphanLock        sync.RWMutex
-	BCEvents          *events.Event
-	mutex             sync.RWMutex
-	AssetID           Uint256
-	NewBlocksListener NewBlocksListener
+	BlockHeight        uint32
+	GenesisHash        Uint256
+	BestChain          *BlockNode
+	Root               *BlockNode
+	Index              map[Uint256]*BlockNode
+	IndexLock          sync.RWMutex
+	DepNodes           map[Uint256][]*BlockNode
+	Orphans            map[Uint256]*OrphanBlock
+	PrevOrphans        map[Uint256][]*OrphanBlock
+	OldestOrphan       *OrphanBlock
+	BlockCache         map[Uint256]*Block
+	TimeSource         MedianTimeSource
+	MedianTimePast     time.Time
+	OrphanLock         sync.RWMutex
+	BCEvents           *events.Event
+	mutex              sync.RWMutex
+	AssetID            Uint256
+	NewBlocksListeners []NewBlocksListener
 }
 
 func NewBlockchain(height uint32) *Blockchain {
@@ -81,6 +81,12 @@ func Init(store IChainStore) error {
 	DefaultLedger.Blockchain = NewBlockchain(0)
 	DefaultLedger.Store = store
 	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
+	DefaultLedger.Arbitrators = NewArbitrators(ArbitratorsConfig{
+		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
+		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+	})
+	DefaultLedger.Blockchain.NewBlocksListeners = []NewBlocksListener{DefaultLedger.Arbitrators}
 	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
 	if err != nil {
 		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")
