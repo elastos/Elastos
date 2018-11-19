@@ -1,11 +1,13 @@
 package peer
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"io"
 	"net"
 	"strconv"
@@ -32,6 +34,14 @@ var (
 	// to peer, but the peer was disconnected.
 	ErrPeerDisconnected = errors.New("peer already disconnected")
 )
+
+// PID is the encoded public key data used as peer's ID.
+type PID [33]byte
+
+// Equal returns if the passed PID is equal to origin PID.
+func (p PID) Equal(o PID) bool {
+	return bytes.Equal(p[:], o[:])
+}
 
 // outMsg is used to house a message to be sent along with a channel to signal
 // when the message has been sent (or won't be sent due to things such as
@@ -61,13 +71,14 @@ type MessageFunc func(peer *Peer, msg p2p.Message)
 
 // Config is a descriptor which specifies the peer instance configuration.
 type Config struct {
-	PID              [32]byte
+	PID              PID
 	Magic            uint32
 	ProtocolVersion  uint32
 	Services         uint64
 	PingInterval     time.Duration
-	PingNonce        func(pid [32]byte) uint64
-	PongNonce        func(pid [32]byte) uint64
+	SignNonce        func(nonce []byte) (signature [64]byte)
+	PingNonce        func(pid PID) uint64
+	PongNonce        func(pid PID) uint64
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
 	messageFuncs     []MessageFunc
 }
@@ -141,7 +152,7 @@ type Peer struct {
 	flagsMtx           sync.Mutex // protects the peer flags below
 	na                 *p2p.NetAddress
 	id                 uint64
-	pid                [32]byte
+	pid                PID
 	services           uint64
 	versionKnown       bool
 	advertisedProtoVer uint32 // protocol version advertised by remote
@@ -222,7 +233,7 @@ func (p *Peer) ID() uint64 {
 // PID returns the peer public key id.
 //
 // This function is safe for concurrent access.
-func (p *Peer) PID() [32]byte {
+func (p *Peer) PID() PID {
 	p.flagsMtx.Lock()
 	pid := p.pid
 	p.flagsMtx.Unlock()
@@ -695,8 +706,15 @@ func (p *Peer) readRemoteVersionMsg() error {
 	}
 
 	// Detect self connections.
-	if verMsg.PID.IsEqual(p.cfg.PID) {
+	if p.cfg.PID.Equal(verMsg.PID) {
 		return errors.New("disconnecting peer connected to self")
+	}
+
+	// Verify signature of the message nonce.
+	pk, err := crypto.DecodePoint(verMsg.PID[:])
+	err = crypto.Verify(*pk, verMsg.Nonce[:], verMsg.Signature[:])
+	if err != nil {
+		return errors.New("disconnecting peer verify signature failed")
 	}
 
 	// Negotiate the protocol version and set the services to what the remote
@@ -722,8 +740,15 @@ func (p *Peer) readRemoteVersionMsg() error {
 // localVersionMsg creates a version message that can be used to send to the
 // remote peer.
 func (p *Peer) localVersionMsg() (*msg.Version, error) {
+	// Create a 32 bytes nonce value
+	nonce := [32]byte{}
+	_, err := rand.Read(nonce[:])
+	if err != nil {
+		return nil, errors.New("create local version nonce failed")
+	}
 	// Version message.
-	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services, p.cfg.PID)
+	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services, p.cfg.PID,
+		nonce, p.cfg.SignNonce(nonce[:]))
 
 	// Advertise the services flag
 	msg.Services = p.cfg.Services

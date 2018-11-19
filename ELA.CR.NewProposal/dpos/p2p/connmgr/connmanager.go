@@ -45,7 +45,7 @@ type ConnReq struct {
 	// The following variables must only be used atomically.
 	id uint64
 
-	PID        [32]byte // PID is the peer public key id from PeerAddr
+	PID        [33]byte // PID is the peer public key id from PeerAddr
 	Addr       net.Addr
 	conn       net.Conn
 	state      ConnState

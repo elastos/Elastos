@@ -169,8 +169,8 @@ func TestPeerConnection(t *testing.T) {
 			verack <- struct{}{}
 		}
 	}
-	var pid1 [32]byte
-	var pid2 [32]byte
+	var pid1 peer.PID
+	var pid2 peer.PID
 	rand.Read(pid1[:])
 	rand.Read(pid2[:])
 	peer1Cfg := &peer.Config{
@@ -338,8 +338,11 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		t.Fatal("Peer did not send version message")
 	}
 
+	nonce := [32]byte{}
+	rand.Read(nonce[:])
 	// Remote peer writes version message advertising invalid protocol version 1
-	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID)
+	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID,
+		nonce, peerCfg.SignNonce(nonce[:]))
 
 	err = p2p.WriteMessage(
 		remoteConn.Writer,
