@@ -1,17 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/go-ini/ini"
 )
 
 const (
-	configFilename        = "./did.conf"
+	ConfigFilename        = "./config.json"
 	defaultLogLevel       = "info"
 	defaultLogsFolderSize = 2 * elalog.GBSize  // 2 GB
 	defaultMaxLogFileSize = 20 * elalog.MBSize // 20 MB
@@ -24,8 +28,37 @@ var (
 	activeNetParams = &params.MainNetParams
 
 	// Load configuration from file.
-	cfg, loadConfigErr = loadConfig()
+	cfg, loadConfigErr = loadNewConfig()
 )
+
+type oldconf struct {
+	Configuration struct {
+		Magic                      uint32
+		SpvMagic                   uint32
+		SeedList                   []string
+		SpvSeedList                []string
+		ExchangeRate               float64
+		MinCrossChainTxFee         int64
+		HttpRestPort               uint16
+		HttpJsonPort               uint16
+		NodePort                   uint16
+		PrintLevel                 elalog.Level
+		MaxLogsSize                int64
+		MaxPerLogSize              int64
+		FoundationAddress          string
+		MainChainFoundationAddress string
+		PowConfiguration           struct {
+			PayToAddr  string
+			AutoMining bool
+			MinerInfo  string
+			MinTxFee   int64
+			ActiveNet  string
+		}
+	}
+}
+
+// loadConfig fills the parameters into new config options from the old
+// config file.  Returns if load from old config file.
 
 type appconfig struct {
 	TestNet            bool     `ini:"testnet" comment:"Use the test network"`
@@ -60,7 +93,7 @@ type spvconfig struct {
 	Foundation  string   `ini:"foundation" comment:"The specified payment of foundation address to use for receive mine and fee rewards"`
 }
 
-func loadConfig() (*appconfig, error) {
+func loadNewConfig() (*appconfig, error) {
 	appCfg := appconfig{
 		LogLevel:          defaultLogLevel,
 		MaxLogsFolderSize: defaultLogsFolderSize,
@@ -71,23 +104,9 @@ func loadConfig() (*appconfig, error) {
 	}
 	spvCfg := spvconfig{}
 
-	if !loadOldConfig(&appCfg, &spvCfg) {
+	if !loadConfig(&appCfg, &spvCfg) {
 		// Load configuration from file.
-		file, err := ini.ShadowLoad(configFilename)
-		if err != nil {
-			return &appCfg, nil
-		}
-
-		// Map basic options in Application section
-		err = file.Section("Application").MapTo(&appCfg)
-		if err != nil {
-			return &appCfg, err
-		}
-		// Map SPV options in SPV Options section
-		err = file.Section("SPV Options").MapTo(&spvCfg)
-		if err != nil {
-			return &appCfg, err
-		}
+		os.Exit(0)
 	}
 
 	// Multiple networks can't be selected simultaneously.
@@ -169,4 +188,72 @@ func loadConfig() (*appconfig, error) {
 	}
 
 	return &appCfg, nil
+}
+
+func loadConfig(appCfg *appconfig, spvCfg *spvconfig) bool {
+
+	data, err := ioutil.ReadFile(ConfigFilename)
+	if err != nil {
+		fmt.Println("read config file error:", err.Error())
+		return false
+	}
+
+	// Map Application Options.
+	oldCfg := new(oldconf)
+	err = json.Unmarshal(data, oldCfg)
+	if err != nil {
+		fmt.Println("config file json unmarshal error:", err.Error())
+		return false
+	}
+
+	config := oldCfg.Configuration
+	powCfg := oldCfg.Configuration.PowConfiguration
+
+	switch strings.ToLower(powCfg.ActiveNet) {
+	case "testnet":
+		appCfg.TestNet = true
+	case "regnet":
+		appCfg.RegTest = true
+	}
+
+	appCfg.Magic = config.Magic
+	appCfg.SeedPeers = config.SeedList
+	appCfg.DefaultPort = config.NodePort
+	appCfg.DisableTxFilters = false
+	appCfg.Foundation = config.FoundationAddress
+	appCfg.MinTxFee = powCfg.MinTxFee
+	appCfg.MinCrossChainTxFee = config.MinCrossChainTxFee
+	appCfg.ExchangeRate = config.ExchangeRate
+	appCfg.HttpRestPort = config.HttpRestPort
+	appCfg.HttpJsonPort = config.HttpJsonPort
+	appCfg.Mining = powCfg.AutoMining
+	appCfg.MinerInfo = powCfg.MinerInfo
+	appCfg.MinerAddr = powCfg.PayToAddr
+
+	switch config.PrintLevel {
+	case elalog.LevelDebug:
+		appCfg.LogLevel = "debug"
+	case elalog.LevelInfo:
+		appCfg.LogLevel = "info"
+	case elalog.LevelWarn:
+		appCfg.LogLevel = "warn"
+	case elalog.LevelError:
+		appCfg.LogLevel = "error"
+	case elalog.LevelFatal:
+		appCfg.LogLevel = "fatal"
+	case elalog.LevelOff:
+		appCfg.LogLevel = "off"
+	default:
+		appCfg.LogLevel = "info"
+	}
+	appCfg.MaxLogsFolderSize = config.MaxLogsSize
+	appCfg.MaxPerLogFileSize = config.MaxPerLogSize
+	appCfg.MonitorState = true
+
+	// Map SPV Options.
+	spvCfg.Magic = config.SpvMagic
+	spvCfg.SeedPeers = config.SpvSeedList
+	spvCfg.Foundation = config.MainChainFoundationAddress
+
+	return true
 }
