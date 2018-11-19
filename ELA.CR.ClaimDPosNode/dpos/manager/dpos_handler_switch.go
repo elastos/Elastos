@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/config"
@@ -33,14 +34,14 @@ type DposHandlerSwitch interface {
 
 	FinishConsensus()
 
-	ProcessPing(id common.Uint256, height uint32)
-	ProcessPong(id common.Uint256, height uint32)
+	ProcessPing(id peer.PID, height uint32)
+	ProcessPong(id peer.PID, height uint32)
 
 	RequestAbnormalRecovering()
-	HelpToRecoverAbnormal(id common.Uint256, height uint32)
+	HelpToRecoverAbnormal(id peer.PID, height uint32)
 	RecoverAbnormal(status *msg2.ConsensusStatus)
 
-	ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32)
+	ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
 }
 
 type dposHandlerSwitch struct {
@@ -167,7 +168,7 @@ func (h *dposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *dposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
+func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
 	currentHeight := h.proposalDispatcher.CurrentHeight()
 
@@ -189,11 +190,11 @@ func (h *dposHandlerSwitch) ResponseGetBlocks(id common.Uint256, startBlockHeigh
 	h.network.SendMessageToPeer(id, msg)
 }
 
-func (h *dposHandlerSwitch) ProcessPing(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) ProcessPing(id peer.PID, height uint32) {
 	h.processHeartBeat(id, height)
 }
 
-func (h *dposHandlerSwitch) ProcessPong(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) ProcessPong(id peer.PID, height uint32) {
 	h.processHeartBeat(id, height)
 }
 
@@ -202,7 +203,7 @@ func (h *dposHandlerSwitch) RequestAbnormalRecovering() {
 	h.isAbnormal = true
 }
 
-func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 	status := &msg2.ConsensusStatus{}
 
 	var err error
@@ -257,13 +258,13 @@ func (h *dposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.ChangeView(&firstBlockHash)
 }
 
-func (h *dposHandlerSwitch) processHeartBeat(id common.Uint256, height uint32) {
+func (h *dposHandlerSwitch) processHeartBeat(id peer.PID, height uint32) {
 	if h.tryRequestBlocks(id, height) {
 		log.Info("Found higher block, requesting it.")
 	}
 }
 
-func (h *dposHandlerSwitch) tryRequestBlocks(id common.Uint256, sourceHeight uint32) bool {
+func (h *dposHandlerSwitch) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
 	height := h.proposalDispatcher.CurrentHeight()
 	if sourceHeight > height {
 		msg := &msg2.GetBlocksMessage{
