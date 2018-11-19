@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/account"
@@ -22,7 +23,6 @@ type PeerItem struct {
 	Address     p2p.PeerAddr
 	NeedConnect bool
 	Peer        *peer.Peer
-	VoteStatus  interface{}
 	Sequence    uint32
 }
 
@@ -37,10 +37,11 @@ type messageItem struct {
 }
 
 type dposNetwork struct {
-	listener      manager.NetworkEventListener
-	directPeers   map[string]PeerItem
-	currentHeight uint32
-	account       account.DposAccount
+	listener           manager.NetworkEventListener
+	directPeers        map[string]PeerItem
+	currentHeight      uint32
+	account            account.DposAccount
+	proposalDispatcher manager.ProposalDispatcher
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -51,9 +52,16 @@ type dposNetwork struct {
 	confirmReceivedChan chan *core.DPosProposalVoteSlot
 }
 
+func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) {
+	n.proposalDispatcher = proposalDispatcher
+}
+
 func (n *dposNetwork) Start() {
 	n.p2pServer.Start()
 	n.connectPeers()
+
+	n.OnProducersChanged()
+	n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetArbitrators())
 
 	go func() {
 	out:
@@ -94,13 +102,48 @@ func (n *dposNetwork) connectPeers() {
 	n.p2pServer.ConnectPeers(addrList)
 }
 
+//todo fired when producers changed
+func (n *dposNetwork) OnProducersChanged() {
+
+	connectionInfoMap := n.getProducersConnectionInfo()
+	for k, v := range connectionInfoMap {
+
+		if _, ok := n.directPeers[k]; !ok {
+			n.directPeers[k] = PeerItem{
+				Address:     v,
+				NeedConnect: false,
+				Peer:        nil,
+				Sequence:    0,
+			}
+		}
+	}
+	//todo clean canceled producers connection info
+}
+
+func (n *dposNetwork) getProducersConnectionInfo() map[string]p2p.PeerAddr {
+	//todo complete me
+	return nil
+}
+
 func (n *dposNetwork) Stop() error {
 	n.quit <- true
 	return n.p2pServer.Stop()
 }
 
-func (n *dposNetwork) Reset(epochInfo interface{}) error {
-	//todo update direct peers, including current arbitrators and candidate arbitrators
+func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
+
+	for _, v := range arbitrators {
+		pubKey := common.BytesToHexString(v)
+		ad, ok := n.directPeers[pubKey]
+		if !ok {
+			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
+			continue
+		}
+
+		ad.NeedConnect = true
+		ad.Sequence += uint32(len(arbitrators))
+	}
+
 	return nil
 }
 
@@ -133,6 +176,7 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 	}
 
 	n.p2pServer.ConnectPeers(n.getValidPeers())
+	n.currentHeight = height
 	return nil
 }
 
@@ -263,8 +307,7 @@ func (n *dposNetwork) confirmReceived(p *core.DPosProposalVoteSlot) {
 }
 
 func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
-	//todo get current height from proposal dispatcher
-	return 0
+	return uint64(n.proposalDispatcher.CurrentHeight())
 }
 
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
@@ -282,7 +325,6 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)
 
-	//fixme replace hard code config with config file
 	server, err := p2p.NewServer(&p2p.Config{
 		PID:              pid,
 		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,

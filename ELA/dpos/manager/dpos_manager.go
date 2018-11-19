@@ -14,13 +14,15 @@ import (
 )
 
 type DposNetwork interface {
+	Initialize(proposalDispatcher ProposalDispatcher)
+
 	Start()
 	Stop() error
 
 	SendMessageToPeer(id peer.PID, msg utip2p.Message) error
 	BroadcastMessage(msg utip2p.Message)
 
-	Reset(epochInfo interface{}) error
+	UpdatePeers(arbitrators [][]byte) error
 	ChangeHeight(height uint32) error
 
 	GetActivePeer() *peer.PID

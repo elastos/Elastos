@@ -102,6 +102,7 @@ func main() {
 		blockchain.DefaultLedger.Blockchain.NewBlocksListener = arbitrator
 		arbitrator.Start()
 		blockchain.DefaultLedger.Blockchain.NewBlocksListeners = append(blockchain.DefaultLedger.Blockchain.NewBlocksListeners, arbitrator)
+		blockchain.DefaultLedger.Arbitrators.RegisterListener(arbitrator)
 	}
 
 	select {}
