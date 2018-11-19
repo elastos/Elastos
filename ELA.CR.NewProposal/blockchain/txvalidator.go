@@ -73,11 +73,8 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	}
 
 	if txn.IsSideChainPowTx() {
-		arbitrtor, err := GetOnDutyArbiter()
-		if err != nil {
-			return ErrSideChainPowConsensus
-		}
-		if err = CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
+		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 			log.Warn("[CheckSideChainPowConsensus],", err)
 			return ErrSideChainPowConsensus
 		}
@@ -435,30 +432,6 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 		}
 	}
 	return nil
-}
-
-func GetOnDutyArbiter() ([]byte, error) {
-	return GetNextOnDutyArbiter(uint32(0))
-}
-
-func GetNextOnDutyArbiter(offset uint32) ([]byte, error) {
-	arbitrators, err := config.Parameters.GetArbitrators()
-	if err != nil {
-		return nil, err
-	}
-	height := DefaultLedger.Store.GetHeight()
-	index := (height + offset) % uint32(len(arbitrators))
-	arbitrator := arbitrators[index]
-
-	return arbitrator, nil
-}
-
-func HasArbitersMajorityCount(num uint32) bool {
-	return num >= config.Parameters.ArbiterConfiguration.MajorityCount
-}
-
-func HasArbitersMinorityCount(num uint32) bool {
-	return num > uint32(len(config.Parameters.Arbiters)) - config.Parameters.ArbiterConfiguration.MajorityCount
 }
 
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {

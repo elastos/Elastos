@@ -175,13 +175,9 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 	}
 
 	if !p.consensus.IsArbitratorOnDuty(d.Sponsor) {
-		currentArbiter, err := blockchain.GetNextOnDutyArbiter(p.consensus.GetViewOffset())
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
-				common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
-		}
+		currentArbiter := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(p.consensus.GetViewOffset())
+		log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
+			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
 		return
@@ -305,7 +301,7 @@ func (p *proposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes = append(p.acceptVotes, v)
 
-		if blockchain.HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
+		if blockchain.DefaultLedger.Arbitrators.HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
 			log.Info("Collect majority signs, finish proposal.")
 			p.FinishProposal()
 		}
@@ -320,7 +316,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes = append(p.rejectedVotes, v)
 
-		if blockchain.HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
+		if blockchain.DefaultLedger.Arbitrators.HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
 			p.CleanProposals()
 			p.consensus.ChangeView()
 		}

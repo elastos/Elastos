@@ -60,8 +60,10 @@ func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error
 	}
 
 	// notify arbiter new block received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListener != nil {
-		blockchain.DefaultLedger.Blockchain.NewBlocksListener.OnBlockReceived(block, isConfirmed)
+	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
+		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
+			v.OnBlockReceived(block, isConfirmed)
+		}
 	}
 
 	return isConfirmed, nil
@@ -79,8 +81,10 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 	pool.AddToConfirmMap(confirm)
 
 	// notify arbiter new confirm received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListener != nil {
-		blockchain.DefaultLedger.Blockchain.NewBlocksListener.OnConfirmReceived(confirm)
+	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
+		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
+			v.OnConfirmReceived(confirm)
+		}
 	}
 
 	if err := pool.ConfirmBlock(confirm.Hash); err != nil {

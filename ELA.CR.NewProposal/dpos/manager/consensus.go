@@ -88,7 +88,7 @@ func (c *consensus) IsArbitratorOnDuty(arbitrator string) bool {
 }
 
 func (c *consensus) GetOnDutyArbitrator() string {
-	a, _ := blockchain.GetNextOnDutyArbiter(c.viewOffset)
+	a := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(c.viewOffset)
 	return common.BytesToHexString(a)
 }
 
