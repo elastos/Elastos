@@ -186,15 +186,12 @@ func (config *Configuration) GetArbitrators() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (config *Configuration) GetArbiterID() [32]byte {
+func (config *Configuration) GetArbiterPublicKey() []byte {
 	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
 	if err != nil || len(publicKey) != 33 {
 		log.Fatalf("get arbiter public key erro %v", err)
 		os.Exit(1)
 	}
 
-	var pid [32]byte
-	copy(pid[:], publicKey[1:])
-
-	return pid
+	return publicKey
 }

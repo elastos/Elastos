@@ -11,6 +11,7 @@ import (
 type DposAccount interface {
 	SignProposal(proposal *core.DPosProposal) ([]byte, error)
 	SignVote(vote *core.DPosProposalVote) ([]byte, error)
+	SignPeerNonce(nonce []byte) (signature [64]byte)
 }
 
 type dposAccount struct {
@@ -48,6 +49,22 @@ func (a *dposAccount) SignVote(vote *core.DPosProposalVote) ([]byte, error) {
 	}
 
 	return signature, nil
+}
+
+func (a *dposAccount) SignPeerNonce(nonce []byte) (signature [64]byte) {
+	privateKey, err := a.derivePrivateKey()
+	if err != nil {
+		return signature
+	}
+
+	sign, err := crypto.Sign(privateKey, nonce)
+	if err != nil || len(signature) != 64 {
+		return signature
+	}
+
+	copy(signature[:], sign)
+
+	return signature
 }
 
 func NewDposAccount() DposAccount {

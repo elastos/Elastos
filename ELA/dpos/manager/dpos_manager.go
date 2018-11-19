@@ -5,6 +5,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
@@ -14,30 +15,30 @@ type DposNetwork interface {
 	Start()
 	Stop() error
 
-	SendMessageToPeer(id common.Uint256, msg utip2p.Message) error
+	SendMessageToPeer(id peer.PID, msg utip2p.Message) error
 	BroadcastMessage(msg utip2p.Message)
 
 	Reset(epochInfo interface{}) error
 	ChangeHeight(height uint32) error
 
-	GetActivePeer() *common.Uint256
+	GetActivePeer() *peer.PID
 }
 
 type StatusSyncEventListener interface {
-	OnPing(id common.Uint256, height uint32)
-	OnPong(id common.Uint256, height uint32)
-	OnGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(id common.Uint256, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
-	OnRequestConsensus(id common.Uint256, height uint32)
-	OnResponseConsensus(id common.Uint256, status *msg.ConsensusStatus)
+	OnPing(id peer.PID, height uint32)
+	OnPong(id peer.PID, height uint32)
+	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
+	OnResponseBlocks(id peer.PID, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
+	OnRequestConsensus(id peer.PID, height uint32)
+	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 }
 
 type NetworkEventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(id common.Uint256, p core.DPosProposal)
-	OnVoteReceived(id common.Uint256, p core.DPosProposalVote)
-	OnVoteRejected(id common.Uint256, p core.DPosProposalVote)
+	OnProposalReceived(id peer.PID, p core.DPosProposal)
+	OnVoteReceived(id peer.PID, p core.DPosProposalVote)
+	OnVoteRejected(id peer.PID, p core.DPosProposalVote)
 
 	OnChangeView()
 	OnBadNetwork()
@@ -118,37 +119,37 @@ func (d *dposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *dposManager) OnProposalReceived(id common.Uint256, p core.DPosProposal) {
+func (d *dposManager) OnProposalReceived(id peer.PID, p core.DPosProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 	d.handler.StartNewProposal(p)
 }
 
-func (d *dposManager) OnVoteReceived(id common.Uint256, p core.DPosProposalVote) {
+func (d *dposManager) OnVoteReceived(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(p)
 }
 
-func (d *dposManager) OnVoteRejected(id common.Uint256, p core.DPosProposalVote) {
+func (d *dposManager) OnVoteRejected(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(p)
 }
 
-func (d *dposManager) OnPing(id common.Uint256, height uint32) {
+func (d *dposManager) OnPing(id peer.PID, height uint32) {
 	d.handler.ProcessPing(id, height)
 }
 
-func (d *dposManager) OnPong(id common.Uint256, height uint32) {
+func (d *dposManager) OnPong(id peer.PID, height uint32) {
 	d.handler.ProcessPong(id, height)
 }
 
-func (d *dposManager) OnGetBlocks(id common.Uint256, startBlockHeight, endBlockHeight uint32) {
+func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id common.Uint256, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
+func (d *dposManager) OnResponseBlocks(id peer.PID, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
@@ -157,11 +158,11 @@ func (d *dposManager) OnResponseBlocks(id common.Uint256, blocks []*core.Block, 
 	}
 }
 
-func (d *dposManager) OnRequestConsensus(id common.Uint256, height uint32) {
+func (d *dposManager) OnRequestConsensus(id peer.PID, height uint32) {
 	d.handler.HelpToRecoverAbnormal(id, height)
 }
 
-func (d *dposManager) OnResponseConsensus(id common.Uint256, status *msg.ConsensusStatus) {
+func (d *dposManager) OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus) {
 	d.handler.RecoverAbnormal(status)
 }
 
