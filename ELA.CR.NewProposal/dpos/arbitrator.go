@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -66,8 +67,10 @@ func NewArbitrator() Arbitrator {
 	dposAccount := account.NewDposAccount()
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
-	id := config.Parameters.GetArbiterID()
-	log.Info("ID:", common.Uint256(id).String())
+	pk := config.Parameters.GetArbiterPublicKey()
+	var id peer.PID
+	copy(id[:], pk)
+	log.Info("ID:", common.BytesToHexString(pk))
 	network, err := NewDposNetwork(id, dposManager, dposAccount)
 	if err != nil {
 		log.Error("Init p2p network error")

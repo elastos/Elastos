@@ -31,7 +31,7 @@ type blockItem struct {
 }
 
 type messageItem struct {
-	ID      common.Uint256
+	ID      peer.PID
 	Message utip2p.Message
 }
 
@@ -82,8 +82,8 @@ func (n *dposNetwork) connectPeers() {
 			continue
 		}
 
-		var pid [32]byte
-		copy(pid[:], publicKey[1:])
+		var pid peer.PID
+		copy(pid[:], publicKey)
 		addrList = append(addrList, p2p.PeerAddr{
 			PID:  pid,
 			Addr: seed.Addrress,
@@ -103,7 +103,7 @@ func (n *dposNetwork) Reset(epochInfo interface{}) error {
 	return nil
 }
 
-func (n *dposNetwork) SendMessageToPeer(id common.Uint256, msg utip2p.Message) error {
+func (n *dposNetwork) SendMessageToPeer(id peer.PID, msg utip2p.Message) error {
 	return n.p2pServer.SendMessageToPeer(id, msg)
 }
 
@@ -135,7 +135,7 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 	return nil
 }
 
-func (n *dposNetwork) GetActivePeer() *common.Uint256 {
+func (n *dposNetwork) GetActivePeer() *peer.PID {
 	peers := n.p2pServer.ConnectedPeers()
 	if len(peers) == 0 {
 		return nil
@@ -177,7 +177,7 @@ func (n *dposNetwork) notifyFlag(flag p2p.NotifyFlag) {
 	}
 }
 
-func (n *dposNetwork) handleMessage(pid common.Uint256, msg utip2p.Message) {
+func (n *dposNetwork) handleMessage(pid peer.PID, msg utip2p.Message) {
 	n.messageQueue <- &messageItem{pid, msg}
 }
 
@@ -244,12 +244,12 @@ func (n *dposNetwork) confirmReceived(p *core.DPosProposalVoteSlot) {
 	n.listener.OnConfirmReceived(p)
 }
 
-func (n *dposNetwork) getCurrentHeight(pid common.Uint256) uint64 {
+func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
 	//todo get current height from proposal dispatcher
 	return 0
 }
 
-func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
+func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
 		listener:            listener,
 		directPeers:         make(map[string]PeerItem),
@@ -275,6 +275,7 @@ func NewDposNetwork(pid [32]byte, listener manager.NetworkEventListener, dposAcc
 		HandleMessage:    network.handleMessage,
 		PingNonce:        network.getCurrentHeight,
 		PongNonce:        network.getCurrentHeight,
+		SignNonce:        dposAccount.SignPeerNonce,
 		StateNotifier:    notifier,
 	})
 	if err != nil {
