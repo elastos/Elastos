@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 type DPosProposalVote struct {
@@ -83,7 +84,7 @@ func (v *DPosProposalVote) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	sign, err := common.ReadVarBytes(r, DefaultDPosSignDataLength, "sign data")
+	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
 	if err != nil {
 		return err
 	}

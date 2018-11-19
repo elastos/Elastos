@@ -8,10 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-const (
-	DefaultDPosSignDataLength = crypto.SignatureLength
-)
-
 type DPosProposal struct {
 	Sponsor   string //todo [merge] replace with public key
 	BlockHash common.Uint256
@@ -54,8 +50,8 @@ func (p *DPosProposal) Deserialize(r io.Reader) error {
 	if err := p.DeserializeUnSigned(r); err != nil {
 		return err
 	}
-	sign, err := common.ReadVarBytes(r, DefaultDPosSignDataLength, "sign data")
-	if err == nil {
+	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
+	if err != nil {
 		return err
 	}
 	p.Sign = sign

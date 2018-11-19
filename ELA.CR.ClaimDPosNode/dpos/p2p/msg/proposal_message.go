@@ -6,6 +6,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
+const DefaultProposalMessageDataSize = 164 //67+32+65
+
 type ProposalMessage struct {
 	Proposal core.DPosProposal
 }
@@ -15,8 +17,7 @@ func (m *ProposalMessage) CMD() string {
 }
 
 func (m *ProposalMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return DefaultProposalMessageDataSize
 }
 
 func (m *ProposalMessage) Serialize(w io.Writer) error {

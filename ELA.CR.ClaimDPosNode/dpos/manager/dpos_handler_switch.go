@@ -10,6 +10,7 @@ import (
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/config"
 )
 
 type DposEventConditionHandler interface {
@@ -68,14 +69,18 @@ func NewHandler(network DposNetwork, manager DposManager, monitor *log.EventMoni
 	h.normalHandler = &DposNormalHandler{h}
 	h.onDutyHandler = &DposOnDutyHandler{h}
 
-	h.SwitchTo(false)
-
 	return h
 }
 
 func (h *dposHandlerSwitch) Initialize(dispatcher ProposalDispatcher, consensus Consensus) {
 	h.proposalDispatcher = dispatcher
 	h.consensus = consensus
+	currentArbiter, err := blockchain.GetNextOnDutyArbiter(h.consensus.GetViewOffset())
+	if err != nil {
+		log.Error(err)
+	}
+	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
+	h.SwitchTo(isDposOnDuty)
 }
 
 func (h *dposHandlerSwitch) AddListeners(listeners ...log.EventListener) {

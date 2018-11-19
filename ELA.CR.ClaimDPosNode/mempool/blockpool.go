@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/log"
 )
 
 type BlockPool struct {
@@ -26,23 +27,25 @@ func (pool *BlockPool) Init() {
 	pool.confirmMap = make(map[common.Uint256]*core.DPosProposalVoteSlot)
 }
 
-func (pool *BlockPool) AppendBlock(block *core.Block) error {
+func (pool *BlockPool) AppendBlock(block *core.Block) (bool, error) {
+	log.Info("[AppendBlock] start")
+	defer log.Info("[AppendBlock] end")
 
 	hash := block.Hash()
 	if _, exist := pool.GetBlock(hash); exist {
-		return errors.New("duplicate block in pool")
+		return false, errors.New("duplicate block in pool")
 	}
 	// verify block
 	if err := blockchain.PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, blockchain.DefaultLedger.Blockchain.TimeSource); err != nil {
-		return err
+		return false, err
 	}
 	pool.AddToBlockMap(block)
 
 	isConfirmed := true
 	// confirm block
 	if err := pool.ConfirmBlock(hash); err != nil {
+		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String())
 		isConfirmed = false
-		return err
 	}
 
 	// notify arbiter new block received
@@ -50,7 +53,7 @@ func (pool *BlockPool) AppendBlock(block *core.Block) error {
 		blockchain.DefaultLedger.Blockchain.NewBlocksListener.OnBlockReceived(block, isConfirmed)
 	}
 
-	return nil
+	return isConfirmed, nil
 }
 
 func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
@@ -77,6 +80,8 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 }
 
 func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
+	log.Info("[ConfirmBlock] start")
+	defer log.Info("[ConfirmBlock] end")
 	block, exist := pool.GetBlock(hash)
 	if !exist {
 		return errors.New("there is no block in pool when confirming block")

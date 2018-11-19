@@ -181,7 +181,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
-		log.Debug("received block message from unknown peer")
+		log.Debug("Received block message from unknown peer")
 		return fmt.Errorf("received block message from unknown peer")
 	}
 
@@ -196,9 +196,13 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
-	err := LocalNode.AppendBlock(block)
+	ok, err := LocalNode.AppendBlock(block)
 	if err != nil {
-		return fmt.Errorf("receive invalid block %s, err: %s", hash.String(), err.Error())
+		log.Debugf("Received invalid block %s", hash.String())
+		return fmt.Errorf("Receive invalid block %s, err: %s", hash.String(), err.Error())
+	}
+	if !ok {
+		log.Debugf("Received unconfirmed block %s", hash.String())
 	}
 
 	//_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)

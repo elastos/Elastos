@@ -10,6 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type Arbitrator interface {
@@ -43,10 +45,12 @@ func (a *arbitrator) Stop() error {
 }
 
 func (a *arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
+	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
 func (a *arbitrator) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
 
@@ -62,7 +66,9 @@ func NewArbitrator() Arbitrator {
 	dposAccount := account.NewDposAccount()
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
-	network, err := NewDposNetwork(config.Parameters.GetArbiterID(), dposManager, dposAccount)
+	id := config.Parameters.GetArbiterID()
+	log.Info("ID:", common.Uint256(id).String())
+	network, err := NewDposNetwork(id, dposManager, dposAccount)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil

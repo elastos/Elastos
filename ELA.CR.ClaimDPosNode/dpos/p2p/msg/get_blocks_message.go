@@ -15,8 +15,7 @@ func (msg *GetBlocksMessage) CMD() string {
 }
 
 func (msg *GetBlocksMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return 8
 }
 
 func (msg *GetBlocksMessage) Serialize(w io.Writer) error {

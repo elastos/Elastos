@@ -223,10 +223,10 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	if err := node.LocalNode.AppendConfirm(p.currentVoteSlot); err != nil {
 		p.network.BroadcastMessage(confirmMsg)
 		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
-		return true
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (p *proposalDispatcher) OnBlockAdded(b *core.Block) {
