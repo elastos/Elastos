@@ -4,7 +4,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
@@ -20,7 +21,7 @@ const (
 // Config is a descriptor which specifies the server instance configuration.
 type Config struct {
 	// PID is the public key id of this server.
-	PID [32]byte
+	PID peer.PID
 
 	// MagicNumber is the peer-to-peer network ID to connect to.
 	MagicNumber uint32
@@ -41,13 +42,19 @@ type Config struct {
 	// messages.
 	PingInterval time.Duration
 
+	// SignNonce will be invoked when creating a version message to do the
+	// protocol negotiate.  The passed nonce is a 32 bytes length random value,
+	// and returns the signature of the nonce value to proof you have the right
+	// of the PID(public key) you've provided.
+	SignNonce func(nonce []byte) (signature [64]byte)
+
 	// PingNonce will be invoked before send a ping message to the connect peer
 	// with the given PID, to get the nonce value within the ping message.
-	PingNonce func(pid common.Uint256) uint64
+	PingNonce func(pid peer.PID) uint64
 
 	// PongNonce will be invoked before send a pong message to the connect peer
 	// with the given PID, to get the nonce value within the pong message.
-	PongNonce func(pid common.Uint256) uint64
+	PongNonce func(pid peer.PID) uint64
 
 	// MakeEmptyMessage will be invoked to creates a message of the appropriate
 	// concrete type based on the command.
@@ -56,7 +63,7 @@ type Config struct {
 	// HandleMessage will be invoked to handle the received message from
 	// connected peers.  The peer's public key id will be pass together with
 	// the received message.
-	HandleMessage func(pid common.Uint256, msg p2p.Message)
+	HandleMessage func(pid peer.PID, msg p2p.Message)
 
 	// StateNotifier notifies the server peer state changes.
 	StateNotifier StateNotifier

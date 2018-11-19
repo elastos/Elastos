@@ -2,7 +2,7 @@ package peer_test
 
 import (
 	"fmt"
-	"math/rand"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"net"
 	"time"
 
@@ -30,13 +30,20 @@ func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 // active.
 func mockRemotePeer() error {
 	// Configure peer to act as a simnet node that offers no services.
-	var pid [32]byte
-	rand.Read(pid[:])
+	var pid peer.PID
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
 	peerCfg := &peer.Config{
-		Magic:            123123,
-		ProtocolVersion:  0,
-		Services:         0,
-		PID:              pid,
+		Magic:           123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		PID:             pid,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
 		MakeEmptyMessage: makeEmptyMessage,
 	}
 

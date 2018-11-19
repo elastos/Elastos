@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
 
 // NotifyFlag identifies notifies should be callback.
@@ -63,29 +63,29 @@ const (
 type Notifier struct {
 	flags    NotifyFlag
 	notify   func(flag NotifyFlag)
-	addrList chan map[common.Uint256]PeerAddr
-	newPeer  chan common.Uint256
-	donePeer chan common.Uint256
+	addrList chan map[peer.PID]PeerAddr
+	newPeer  chan peer.PID
+	donePeer chan peer.PID
 }
 
-func (n *Notifier) OnConnectPeers(addrList map[common.Uint256]PeerAddr) {
+func (n *Notifier) OnConnectPeers(addrList map[peer.PID]PeerAddr) {
 	n.addrList <- addrList
 }
 
-func (n *Notifier) OnNewPeer(pid common.Uint256) {
+func (n *Notifier) OnNewPeer(pid peer.PID) {
 	n.newPeer <- pid
 }
 
-func (n *Notifier) OnDonePeer(pid common.Uint256) {
+func (n *Notifier) OnDonePeer(pid peer.PID) {
 	n.donePeer <- pid
 }
 
 func (n *Notifier) notifyHandler() {
 	// The current connect peer addresses.
-	var addrList map[common.Uint256]PeerAddr
+	var addrList map[peer.PID]PeerAddr
 
 	// Connected peers whether inbound or outbound or both.
-	var connected = make(map[common.Uint256]int)
+	var connected = make(map[peer.PID]int)
 
 	// The timeout timer used to trigger peers connection timeout.
 	var timer *time.Timer
@@ -165,15 +165,15 @@ func NewNotifier(flags NotifyFlag, notify func(flag NotifyFlag)) *Notifier {
 	n := Notifier{
 		flags:    flags,
 		notify:   notify,
-		addrList: make(chan map[common.Uint256]PeerAddr),
-		newPeer:  make(chan common.Uint256),
-		donePeer: make(chan common.Uint256),
+		addrList: make(chan map[peer.PID]PeerAddr),
+		newPeer:  make(chan peer.PID),
+		donePeer: make(chan peer.PID),
 	}
 	go n.notifyHandler()
 	return &n
 }
 
-func equalList(list1 map[common.Uint256]PeerAddr, list2 map[common.Uint256]PeerAddr) bool {
+func equalList(list1 map[peer.PID]PeerAddr, list2 map[peer.PID]PeerAddr) bool {
 	if len(list1) != len(list2) || list1 == nil || list2 == nil {
 		return false
 	}

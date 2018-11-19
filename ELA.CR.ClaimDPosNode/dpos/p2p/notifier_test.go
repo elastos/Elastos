@@ -3,6 +3,7 @@ package p2p
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"testing"
 	"time"
 
@@ -13,19 +14,26 @@ import (
 
 func TestNotifier(t *testing.T) {
 	// Start peer-to-peer server
-	pid := [32]byte{}
-	rand.Read(pid[:])
+	pid := peer.PID{}
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
 
 	notifyChan := make(chan NotifyFlag)
 	notifier := NewNotifier(NFNetStabled|NFBadNetwork, func(flag NotifyFlag) {
 		notifyChan <- flag
 	})
 	server, err := NewServer(&Config{
-		PID:              pid,
-		MagicNumber:      123123,
-		ProtocolVersion:  0,
-		Services:         0,
-		DefaultPort:      20338,
+		PID:             pid,
+		MagicNumber:     123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		DefaultPort:     20338,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
 		MakeEmptyMessage: makeEmptyMessage,
 		StateNotifier:    notifier,
 	})
@@ -60,11 +68,13 @@ func TestNotifier(t *testing.T) {
 	peerChan := make(chan *peer.Peer, peers)
 	addrList = addrList[:0]
 	for i := 0; i < peers; i++ {
-		rand.Read(pid[:])
+		priKey, pubKey, _ := crypto.GenerateKeyPair()
+		ePubKey, _ := pubKey.EncodePoint(true)
+		copy(pid[:], ePubKey)
 		port := portBase + i
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
-		err := mockRemotePeer(t, addr.PID, uint16(port), peerChan, nil)
+		err := mockRemotePeer(t, pid, priKey, uint16(port), peerChan, nil)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
