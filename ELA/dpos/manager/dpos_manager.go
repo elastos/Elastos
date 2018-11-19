@@ -77,7 +77,7 @@ type dposManager struct {
 	consensus  Consensus
 }
 
-func NewManager(name string, ) DposManager {
+func NewManager(name string) DposManager {
 	m := &dposManager{
 		publicKey:  name,
 		blockCache: &ConsensusBlockCache{},

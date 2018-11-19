@@ -7,7 +7,7 @@ import (
 )
 
 type RequestConsensusMessage struct {
-	Height  uint32
+	Height uint32
 }
 
 func (msg *RequestConsensusMessage) CMD() string {
@@ -15,8 +15,7 @@ func (msg *RequestConsensusMessage) CMD() string {
 }
 
 func (msg *RequestConsensusMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return 4
 }
 
 func (msg *RequestConsensusMessage) Serialize(w io.Writer) error {

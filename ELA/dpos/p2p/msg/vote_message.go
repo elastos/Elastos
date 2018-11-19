@@ -6,6 +6,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
+const DefaultVoteMessageDataSize = 297 //164+67+1+65
+
 type VoteMessage struct {
 	Command string
 	Vote    core.DPosProposalVote
@@ -16,8 +18,7 @@ func (msg *VoteMessage) CMD() string {
 }
 
 func (msg *VoteMessage) MaxLength() uint32 {
-	//todo add max length
-	return 0
+	return DefaultVoteMessageDataSize
 }
 
 func (msg *VoteMessage) Serialize(w io.Writer) error {
