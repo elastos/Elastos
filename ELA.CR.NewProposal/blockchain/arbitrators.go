@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
@@ -108,10 +109,14 @@ func (a *arbitrators) UnregisterListener(listener ArbitratorsListener) {
 
 func (a *arbitrators) onChainHeightIncreased() {
 	if a.isNewElection() {
-		a.changeCurrentArbitrators()
+		if err := a.changeCurrentArbitrators(); err != nil {
+			log.Error("Change current arbitrators error: ", err)
+			return
+		}
 
 		if err := a.updateNextArbitrators(); err != nil {
 			log.Error("Update arbitrators error: ", err)
+			return
 		}
 
 		if a.listener != nil {
@@ -126,10 +131,17 @@ func (a *arbitrators) isNewElection() bool {
 	return a.dutyChangedCount == a.config.ArbitratorsCount-1
 }
 
-func (a *arbitrators) changeCurrentArbitrators() {
+func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
 	a.candidates = a.nextCandidates
+
+	if err := a.sortArbitrators(); err != nil {
+		return err
+	}
+
 	a.dutyChangedCount = 0
+
+	return nil
 }
 
 func (a *arbitrators) updateNextArbitrators() error {
@@ -143,7 +155,6 @@ func (a *arbitrators) updateNextArbitrators() error {
 	}
 
 	a.nextArbitrators = producers[:a.config.ArbitratorsCount]
-	a.sortArbitrators()
 
 	if uint32(len(producers)) < a.config.ArbitratorsCount+a.config.CandidatesCount {
 		a.nextCandidates = producers[a.config.ArbitratorsCount:]
@@ -154,8 +165,23 @@ func (a *arbitrators) updateNextArbitrators() error {
 	return nil
 }
 
-func (a *arbitrators) sortArbitrators() {
-	//todo sort arbitrators
+func (a *arbitrators) sortArbitrators() error {
+	strArbitrators := make([]string, len(a.currentArbitrators))
+	for i := 0; i < len(strArbitrators); i++ {
+		strArbitrators[i] = common.BytesToHexString(a.currentArbitrators[i])
+	}
+	sort.Strings(strArbitrators)
+
+	a.currentArbitrators = make([][]byte, len(strArbitrators))
+	for i := 0; i < len(strArbitrators); i++ {
+		value, err := common.HexStringToBytes(strArbitrators[i])
+		if err != nil {
+			return err
+		}
+		a.currentArbitrators[i] = value
+	}
+
+	return nil
 }
 
 func (a *arbitrators) parseProducersDesc() ([][]byte, error) {
