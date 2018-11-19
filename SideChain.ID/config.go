@@ -66,7 +66,6 @@ type appconfig struct {
 	Magic              uint32   `ini:"magic" comment:"Magic number of the peer-to-peer network"`
 	DefaultPort        uint16   `ini:"port" comment:"The default port for the peer-to-peer network"`
 	SeedPeers          []string `ini:"seedpeer,omitempty,allowshadow" comment:"Add a seed peer to connect with at startup"`
-	Listeners          []string `ini:"listen,omitempty,allowshadow" comment:"Add an interface/port to listen for connections (default all interfaces port: 20608, testnet: 21608)"`
 	DisableTxFilters   bool     `ini:"notxfilter" comment:"Disable transaction filtering support"`
 	Foundation         string   `ini:"foundation" comment:"The specified payment of foundation address to use for receive mine and fee rewards"`
 	MinTxFee           int64    `ini:"mintxfee" comment:"The minimum transaction fee in ELA/kB to be considered a non-zero fee"`
@@ -177,9 +176,7 @@ func loadNewConfig() (*appconfig, error) {
 	if spvCfg.Magic > 0 {
 		activeNetParams.SpvParams.Magic = spvCfg.Magic
 	}
-	if spvCfg.DefaultPort > 0 {
-		activeNetParams.SpvParams.DefaultPort = spvCfg.DefaultPort
-	}
+
 	if len(spvCfg.SeedPeers) > 0 {
 		activeNetParams.SpvParams.SeedList = spvCfg.SeedPeers
 	}
