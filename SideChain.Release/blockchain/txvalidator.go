@@ -236,7 +236,7 @@ func (v *TransactionValidateBase) CheckReferencedOutputImpl(txn *core.Transactio
 			return false, ErrUnknownReferedTxn
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value <= 0 {
+		if referTxnOut.Value < 0 {
 			log.Warn("Value of referenced transaction output is invalid")
 			return false, ErrInvalidReferedTxn
 		}
