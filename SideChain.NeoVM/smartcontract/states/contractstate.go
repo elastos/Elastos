@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 )
 

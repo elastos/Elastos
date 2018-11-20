@@ -2,9 +2,9 @@ package states
 
 import (
 	"io"
+	"bytes"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"bytes"
 )
 
 type AccountState struct {

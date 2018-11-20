@@ -1,34 +1,45 @@
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/database"
-	side "github.com/elastos/Elastos.ELA.SideChain/types"
+	"errors"
+	"math/big"
+	"fmt"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	side "github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain/database"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type IDChainStore struct {
-	*blockchain.ChainStore
+type AVMChainStore struct {
+	*sb.ChainStore
+	Chain *sb.BlockChain
 }
 
-func NewChainStore(path string, genesisBlock *side.Block) (*IDChainStore, error) {
-	chainStore, err := blockchain.NewChainStore(path, genesisBlock)
+func NewChainStore(path string, genesisBlock *side.Block) (*AVMChainStore, error) {
+	chainStore, err := sb.NewChainStore(path, genesisBlock)
 	if err != nil {
 		return nil, err
 	}
 
-	store := &IDChainStore{
+	store := &AVMChainStore{
 		ChainStore: chainStore,
+		Chain: nil,
 	}
 
-	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
+	store.RegisterFunctions(true, sb.StoreFuncNames.PersistTransactions, store.persistTransactions)
 
 	return store, nil
 }
 
-func (c *IDChainStore) persistTransactions(batch database.Batch, b *side.Block) error {
+func (c *AVMChainStore) persistTransactions(batch database.Batch, b *side.Block) error {
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
@@ -51,7 +62,7 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *side.Block) 
 		}
 
 		if txn.TxType == side.Deploy {
-
+			c.PersistDeployTransaction(b, txn, batch)
 		}
 
 		if txn.TxType == types.Invoke {
@@ -61,20 +72,111 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *side.Block) 
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash Uint256) {
-	key := []byte{byte(blockchain.IX_Identification)}
-	key = append(key, idKey...)
-
-	// PUT VALUE
-	batch.Put(key, txHash.Bytes())
+func (c *AVMChainStore) PersistDeployTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
+	payloadDeploy, ok := tx.Payload.(*types.PayloadDeploy)
+	if !ok {
+		return errors.New("invalid deploy payload")
+	}
+	dbCache := NewDBCache(c)
+	smartcontract, err := smartcontract.NewSmartContract(&smartcontract.Context{
+		Caller:       payloadDeploy.ProgramHash,
+		StateMachine: *service.NewStateMachine(dbCache, NewDBCache(c)),
+		DBCache:      batch,
+		Code:         payloadDeploy.Code.Code,
+		Time:         big.NewInt(int64(block.Timestamp)),
+		BlockNumber:  big.NewInt(int64(block.Height)),
+		Gas:          payloadDeploy.Gas,
+		Trigger:      avm.Application,
+	})
+	if err != nil {
+		return err
+	}
+	ret, err := smartcontract.DeployContract(payloadDeploy)
+	if err != nil {
+		return err
+	}
+	codeHash, err := avm.ToCodeHash(ret)
+	if err != nil {
+		return err
+	}
+	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
+	data := avm.UInt168ToUInt160(codeHash)
+	dbCache.GetOrAdd(states.ST_Contract, string(data), &states.ContractState{
+		Code:        payloadDeploy.Code,
+		Name:        payloadDeploy.Name,
+		Version:     payloadDeploy.CodeVersion,
+		Author:      payloadDeploy.Author,
+		Email:       payloadDeploy.Email,
+		Description: payloadDeploy.Description,
+		ProgramHash: payloadDeploy.ProgramHash,
+	})
+	return nil
 }
 
-func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
-	key := []byte{byte(blockchain.IX_Identification)}
-	data, err := c.Get(append(key, idKey...))
+func (c *AVMChainStore) persisInvokeTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
+	payloadInvoke := tx.Payload.(*types.PayloadInvoke)
+	constractState := states.NewContractState()
+	if !payloadInvoke.CodeHash.IsEqual(common.Uint168{}) {
+		contract, err := c.GetContract(&payloadInvoke.CodeHash)
+		if err != nil {
+			return err
+		}
+		state, err := states.GetStateValue(states.ST_Contract, contract)
+		if err != nil {
+			return err
+		}
+		constractState = state.(*states.ContractState)
+	}
+	dbCache := NewDBCache(c)
+	stateMachine := service.NewStateMachine(dbCache, NewDBCache(c))
+	////stateMachine.StateReader.NotifyEvent.Subscribe(events.EventRunTimeNotify, c.onContractNotify)
+	////stateMachine.StateReader.LogEvent.Subscribe(events.EventRunTimeLog, onContractLog)
+	smartcontract, err := smartcontract.NewSmartContract(&smartcontract.Context{
+		Caller:         payloadInvoke.ProgramHash,
+		StateMachine:   *stateMachine,
+		DBCache:        batch,
+		CodeHash:       payloadInvoke.CodeHash,
+		Input:          payloadInvoke.Code,
+		SignableData:   tx,
+		CacheCodeTable: NewCacheCodeTable(dbCache),
+		Time:           big.NewInt(int64(block.Timestamp)),
+		BlockNumber:    big.NewInt(int64(block.Height)),
+		Gas:            payloadInvoke.Gas,
+		ReturnType:     constractState.Code.ReturnType,
+		ParameterTypes: constractState.Code.ParameterTypes,
+		Trigger:      	avm.Application,
+	})
 	if err != nil {
-		return nil, err
+		//log.Error(err.Error(), tx.Hash())
+		//httpwebsocket.PushResult(tx.Hash(), int64(SmartCodeError), INVOKE_TRANSACTION, err)
+		fmt.Println(err.Error(), tx.Hash())
 	}
 
-	return data, nil
+	ret, err := smartcontract.InvokeContract()
+	if err != nil {
+		//log.Info("contract failed:", err)
+		//httpwebsocket.PushResult(tx.Hash(), int64(OutOfGas), INVOKE_TRANSACTION, ret)
+		return err
+	}
+	fmt.Println("InvokeContract ret=", ret)
+	stateMachine.CloneCache.Commit()
+	dbCache.Commit()
+	//httpwebsocket.PushResult(tx.Hash(), int64(Success), INVOKE_TRANSACTION, ret)
+	return nil
+}
+
+func (c *AVMChainStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
+	prefix := []byte{byte(states.ST_Contract)}
+
+	hashBytes := avm.UInt168ToUInt160(codeHash)
+	bData, err_get := c.Get(append(prefix, hashBytes...))
+	if err_get != nil {
+		return nil, err_get
+	}
+	return bData, nil
+}
+
+func (c *AVMChainStore) Close() error {
+	c.ChainStore.Close()
+	return nil
 }

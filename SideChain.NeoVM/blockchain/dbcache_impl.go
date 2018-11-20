@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/storage"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 )

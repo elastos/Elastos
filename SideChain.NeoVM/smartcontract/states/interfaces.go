@@ -4,10 +4,18 @@ import (
 	"io"
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
-	"fmt"
+)
+
+const (
+	// ASSET
+	ST_Info       blockchain.EntryPrefix = 0xc0
+	ST_Contract   blockchain.EntryPrefix = 0xc2
+	ST_Storage    blockchain.EntryPrefix = 0xc3
+	ST_Account    blockchain.EntryPrefix = 0xc4
+	ST_AssetState blockchain.EntryPrefix = 0xc5
 )
 
 type IStateValueInterface interface {
@@ -22,10 +30,10 @@ type IStateKeyInterface interface {
 
 var (
 	StatesMap = map[blockchain.EntryPrefix]IStateValueInterface{
-		store.ST_Contract:   new(ContractState),
-		store.ST_Account:    new(AccountState),
-		store.ST_AssetState: new(AssetState),
-		store.ST_Storage:    new(StorageItem),
+		ST_Contract:   new(ContractState),
+		ST_Account:    new(AccountState),
+		ST_AssetState: new(AssetState),
+		ST_Storage:    new(StorageItem),
 	}
 )
 

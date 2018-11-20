@@ -1,4 +1,4 @@
-package blockchain
+package service
 
 import (
 	"math/big"

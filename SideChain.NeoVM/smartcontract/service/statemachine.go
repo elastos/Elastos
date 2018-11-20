@@ -1,4 +1,4 @@
-package blockchain
+package service
 
 import (
 	"math"
@@ -14,7 +14,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/errors"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
 
@@ -101,7 +100,7 @@ func (s *StateMachine) CreateAsset(engine *avm.ExecutionEngine) bool {
 		Expiration: 0,//DefaultLedger.Store.GetHeight() + 1 + 2000000,
 		IsFrozen:   false,
 	}
-	s.CloneCache.GetInnerCache().GetWriteSet().Add(store.ST_AssetState, string(assetID.Bytes()), assetState)
+	s.CloneCache.GetInnerCache().GetWriteSet().Add(states.ST_AssetState, string(assetID.Bytes()), assetState)
 	avm.PushData(engine, assetState)
 	return true
 }
@@ -156,7 +155,7 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 	codeHash := funcCode.CodeHash()
 	key := avm.UInt168ToUInt160(&codeHash)
 
-	s.CloneCache.GetInnerCache().GetOrAdd(store.ST_Contract, string(key), &contractState)
+	s.CloneCache.GetInnerCache().GetOrAdd(states.ST_Contract, string(key), &contractState)
 	avm.PushData(engine, contractState)
 	return true
 }
@@ -168,7 +167,7 @@ func (s *StateMachine) GetContract(engine *avm.ExecutionEngine) bool {
 		return false
 	}
 	keyStr := avm.UInt168ToUInt160(hash)
-	item, err := s.CloneCache.TryGet(store.ST_Contract, string(keyStr))
+	item, err := s.CloneCache.TryGet(states.ST_Contract, string(keyStr))
 	if err != nil {
 		return false
 	}
@@ -220,7 +219,7 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 	}
 	codeHash := funcCode.CodeHash()
 	keyStr := avm.UInt168ToUInt160(&codeHash)
-	item, err := s.CloneCache.TryGet(store.ST_Contract, string(keyStr))
+	item, err := s.CloneCache.TryGet(states.ST_Contract, string(keyStr))
 	if err != nil {
 		item = &states.ContractState{
 			Code:        funcCode,
@@ -231,7 +230,7 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 			Description: common.BytesToHexString(descByte),
 		}
 		if !engine.IsTestMode() {
-			s.CloneCache.GetInnerCache().GetOrAdd(store.ST_Contract, string(keyStr), item)
+			s.CloneCache.GetInnerCache().GetOrAdd(states.ST_Contract, string(keyStr), item)
 		}
 
 		if needStorage {
@@ -244,14 +243,14 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 				return false
 			}
 			storageKey := states.NewStorageKey(oldHash, []byte{})
-			datas := s.CloneCache.Find(store.ST_Storage, storage.KeyToStr(storageKey))
+			datas := s.CloneCache.Find(states.ST_Storage, storage.KeyToStr(storageKey))
 			for datas.Next() {
 				key := datas.Key()
 				value := datas.Value()
 				reader := bytes.NewReader(key[1:len(key)])
 				storageKey.Deserialize(reader)
 				storageKey.CodeHash = &codeHash
-				s.CloneCache.GetInnerCache().GetWriteSet().Add(store.ST_Storage, storage.KeyToStr(storageKey), states.NewStorageItem(value))
+				s.CloneCache.GetInnerCache().GetWriteSet().Add(states.ST_Storage, storage.KeyToStr(storageKey), states.NewStorageItem(value))
 			}
 		}
 	}
@@ -289,20 +288,20 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 		return false
 	}
 	keyStr := string(avm.UInt168ToUInt160(hash))
-	item, err := s.CloneCache.TryGet(store.ST_Contract, keyStr)
+	item, err := s.CloneCache.TryGet(states.ST_Contract, keyStr)
 	if err != nil || item == nil {
 		fmt.Println(err)
 		return false
 	}
 	if !engine.IsTestMode() {
-		s.CloneCache.GetInnerCache().TryDelete(store.ST_Contract, keyStr)
+		s.CloneCache.GetInnerCache().TryDelete(states.ST_Contract, keyStr)
 	}
 
 	return true
 }
 
 func (s *StateMachine) CheckStorageContext(context *StorageContext) (bool, error) {
-	item, err := s.CloneCache.TryGet(store.ST_Contract, string(context.codeHash.Bytes()))
+	item, err := s.CloneCache.TryGet(states.ST_Contract, string(context.codeHash.Bytes()))
 	if err != nil {
 		return false, err
 	}
@@ -324,7 +323,7 @@ func (s *StateMachine) StorageGet(engine *avm.ExecutionEngine) bool {
 	}
 	key := avm.PopByteArray(engine)
 	storageKey := states.NewStorageKey(context.codeHash, key)
-	item, err := s.CloneCache.TryGet(store.ST_Storage, storage.KeyToStr(storageKey))
+	item, err := s.CloneCache.TryGet(states.ST_Storage, storage.KeyToStr(storageKey))
 	if err != nil && err.Error() != "leveldb: not found" {
 		return false
 	}
@@ -354,7 +353,7 @@ func (s *StateMachine) StoragePut(engine *avm.ExecutionEngine) bool {
 	}
 	value := avm.PopByteArray(engine)
 	storageKey := states.NewStorageKey(context.codeHash, key)
-	s.CloneCache.GetInnerCache().GetWriteSet().Add(store.ST_Storage, storage.KeyToStr(storageKey), states.NewStorageItem(value))
+	s.CloneCache.GetInnerCache().GetWriteSet().Add(states.ST_Storage, storage.KeyToStr(storageKey), states.NewStorageItem(value))
 	return true
 }
 
@@ -382,7 +381,7 @@ func (s *StateMachine) StorageFind(engine *avm.ExecutionEngine) bool {
 	key := avm.PopByteArray(engine)
 
 	storageKey := states.NewStorageKey(context.codeHash, key)
-	datas := s.CloneCache.Find(store.ST_Storage, storage.KeyToStr(storageKey))
+	datas := s.CloneCache.Find(states.ST_Storage, storage.KeyToStr(storageKey))
 	avm.PushData(engine, datas)
 	return true;
 }
@@ -405,7 +404,7 @@ func (s *StateMachine) AccountIsStandard(e *avm.ExecutionEngine) bool {
 		return false
 	}
 	keyStr := avm.UInt168ToUInt160(hash)
-	item, err := s.CloneCache.TryGet(store.ST_Contract, string(keyStr))
+	item, err := s.CloneCache.TryGet(states.ST_Contract, string(keyStr))
 	if err != nil {
 		return false
 	}

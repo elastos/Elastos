@@ -115,9 +115,6 @@ const (
 	CHECKREGID    = 0xAD
 	CHECKMULTISIG = 0xAE // For each signature and public key pair CHECKSIG is executed. If more public keys than signatures are listed some key/sig pairs can fail. All signatures need to match a public key. If all signatures are valid 1 is returned 0 otherwise. Due to a bug one extra unused value is removed from the stack.
 
-	CHECKLOCKTIMEVERIFY = 0xb1
-	CHECKSEQUENCEVERIFY = 0xb2
-
 	// Array
 	ARRAYSIZE = 0xC0
 	PACK      = 0xC1

@@ -11,21 +11,18 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 )
 
 type HttpServiceExtend struct {
 	*sideser.HttpService
 
 	cfg   *sideser.Config
-	store *store.AVMChainStore
 	elaAssetID Uint256
 }
 
-func NewHttpService(cfg *sideser.Config, store *store.AVMChainStore, assetid Uint256) *HttpServiceExtend {
+func NewHttpService(cfg *sideser.Config, assetid Uint256) *HttpServiceExtend {
 	server := &HttpServiceExtend{
 		HttpService: sideser.NewHttpService(cfg),
-		store:       store,
 		cfg:         cfg,
 		elaAssetID: assetid,
 	}

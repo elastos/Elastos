@@ -14,7 +14,7 @@ import (
 
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
+	nc  "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
@@ -64,7 +64,7 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
-	avmChainStore, err := store.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
+	avmChainStore, err := nc.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
@@ -173,7 +173,7 @@ func main() {
 		GetTransaction:              service.GetTransaction,
 		GetPayloadInfo:              sv.GetPayloadInfo,
 		GetPayload:                  service.GetPayload,
-	}, avmChainStore, mempoolCfg.ChainParams.ElaAssetId)
+	}, mempoolCfg.ChainParams.ElaAssetId)
 
 	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
 	defer rpcServer.Stop()
