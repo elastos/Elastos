@@ -235,7 +235,7 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 	case msg.ResponseBlocks:
 		msgResponseBlocks, processed := m.(*msg.ResponseBlocksMessage)
 		if processed {
-			n.listener.OnResponseBlocks(msgItem.ID, msgResponseBlocks.Blocks, msgResponseBlocks.BlockConfirms)
+			n.listener.OnResponseBlocks(msgItem.ID, msgResponseBlocks.BlockConfirms)
 		}
 	case msg.RequestConsensus:
 		msgRequestConsensus, processed := m.(*msg.RequestConsensusMessage)
@@ -307,7 +307,7 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 	switch cmd {
 	case utip2p.CmdBlock:
-		message = utimsg.NewBlock(&core.Block{})
+		message = utimsg.NewBlock(&core.BlockConfirm{})
 	case msg.AcceptVote:
 		message = &msg.VoteMessage{Command: msg.AcceptVote}
 	case msg.ReceivedProposal:

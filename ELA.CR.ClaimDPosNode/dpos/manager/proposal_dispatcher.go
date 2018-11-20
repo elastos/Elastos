@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type ProposalDispatcher interface {
@@ -216,13 +215,8 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 		p.currentVoteSlot.Votes = append(p.currentVoteSlot.Votes, v)
 	}
 
-	log.Debug("[TryAppendAndBroadcastConfirmBlockMsg] len signs:", len(p.currentVoteSlot.Votes))
-	confirmMsg := msg.NewConfirm(p.currentVoteSlot)
-	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block.")
-
+	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty],append confirm.")
 	if err := node.LocalNode.AppendConfirm(p.currentVoteSlot); err != nil {
-		p.network.BroadcastMessage(confirmMsg)
-		log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty], broadcast ReceivedConfirm msg to confirm the block. ok")
 		return false
 	}
 
