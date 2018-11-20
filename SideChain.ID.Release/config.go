@@ -31,7 +31,7 @@ var (
 	cfg, loadConfigErr = loadNewConfig()
 )
 
-type oldconf struct {
+type config struct {
 	Configuration struct {
 		Magic                      uint32
 		SpvMagic                   uint32
@@ -196,15 +196,15 @@ func loadConfig(appCfg *appconfig, spvCfg *spvconfig) bool {
 	}
 
 	// Map Application Options.
-	oldCfg := new(oldconf)
-	err = json.Unmarshal(data, oldCfg)
+	Cfg := new(config)
+	err = json.Unmarshal(data, Cfg)
 	if err != nil {
 		fmt.Println("config file json unmarshal error:", err.Error())
 		return false
 	}
 
-	config := oldCfg.Configuration
-	powCfg := oldCfg.Configuration.PowConfiguration
+	config := Cfg.Configuration
+	powCfg := Cfg.Configuration.PowConfiguration
 
 	switch strings.ToLower(powCfg.ActiveNet) {
 	case "testnet":
