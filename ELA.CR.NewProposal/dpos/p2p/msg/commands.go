@@ -13,6 +13,9 @@ const (
 	CmdPing    = "ping"
 	CmdPong    = "pong"
 
+	CmdInv      = "inventory"
+	CmdGetBlock = "getblock"
+
 	ReceivedProposal  = "proposal"
 	AcceptVote        = "acc_vote"
 	RejectVote        = "rej_vote"

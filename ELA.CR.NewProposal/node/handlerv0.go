@@ -178,6 +178,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	node := h.base.node
 	block := msgBlock.Serializable.(*core.Block)
+	log.Debug("[onblock] handlerV0 received block:", block.Hash().String())
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {

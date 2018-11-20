@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
+	utimsg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type PeerItem struct {
@@ -209,6 +210,23 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnPong(msgItem.ID, uint32(msgPong.Nonce))
 		}
+	case utip2p.CmdBlock:
+		msgBlock, processed := m.(*utimsg.Block)
+		if processed {
+			if block, ok := msgBlock.Serializable.(*core.Block); ok {
+				n.listener.OnBlock(msgItem.ID, block)
+			}
+		}
+	case msg.CmdInv:
+		msgInv, processed := m.(*msg.Inventory)
+		if processed {
+			n.listener.OnInv(msgItem.ID, msgInv.BlockHash)
+		}
+	case msg.CmdGetBlock:
+		msgGetBlock, processed := m.(*msg.GetBlock)
+		if processed {
+			n.listener.OnGetBlock(msgItem.ID, msgGetBlock.BlockHash)
+		}
 	case msg.GetBlocks:
 		msgGetBlocks, processed := m.(*msg.GetBlocksMessage)
 		if processed {
@@ -288,12 +306,18 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 
 func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 	switch cmd {
+	case utip2p.CmdBlock:
+		message = utimsg.NewBlock(&core.Block{})
 	case msg.AcceptVote:
 		message = &msg.VoteMessage{Command: msg.AcceptVote}
 	case msg.ReceivedProposal:
 		message = &msg.ProposalMessage{}
 	case msg.RejectVote:
 		message = &msg.VoteMessage{Command: msg.RejectVote}
+	case msg.CmdInv:
+		message = &msg.Inventory{}
+	case msg.CmdGetBlock:
+		message = &msg.GetBlock{}
 	case msg.GetBlocks:
 		message = &msg.GetBlocksMessage{}
 	case msg.ResponseBlocks:
