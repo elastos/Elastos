@@ -79,6 +79,9 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	if block.Height > BlockHeightCheckTxOut {
 		version += CheckTxOut
 	}
+	if block.Height > BlockHeightCheckCoinbaseTxDposReward {
+		version += CheckCoinbaseTxDposReward
+	}
 
 	txIds := make([]Uint256, 0, len(transactions))
 	existingTxIds := make(map[Uint256]struct{})
@@ -133,30 +136,18 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 }
 
 func CheckBlockContext(block *Block) error {
-	var rewardInCoinbase = Fixed64(0)
 	var totalTxFee = Fixed64(0)
 
-	for index, tx := range block.Transactions {
-		if errCode := CheckTransactionContext(tx); errCode != Success {
+	for i := 1; i < len(block.Transactions); i++ {
+		if errCode := CheckTransactionContext(block.Transactions[i]); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 
-		if index == 0 {
-			// Calculate reward in coinbase
-			for _, output := range tx.Outputs {
-				rewardInCoinbase += output.Value
-			}
-			continue
-		}
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
 	}
 
-	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
-		return errors.New("reward amount in coinbase not correct")
-	}
-	return nil
+	return checkCoinbaseTransactionContext(block, block.Transactions[0], totalTxFee)
 }
 
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
@@ -290,4 +281,70 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 		}
 	}
 	return feeMap, nil
+}
+
+func checkCoinbaseTransactionContext(block *Block, coinbase *Transaction, totalTxFee Fixed64) error {
+	var rewardInCoinbase = Fixed64(0)
+	outputAddressMap := make(map[Uint168]Fixed64)
+
+	for index, output := range coinbase.Outputs {
+		rewardInCoinbase += output.Value
+
+		if index >= 2 {
+			outputAddressMap[output.ProgramHash] = output.Value
+		}
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+		return errors.New("Reward amount in coinbase not correct")
+	}
+
+	if block.Version > 0 {
+		arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
+		candidates := DefaultLedger.Arbitrators.GetCandidates()
+		if len(arbitrators)+len(candidates) != len(coinbase.Outputs)-2 {
+			return errors.New("Coinbase output count not match.")
+		}
+
+		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
+		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
+		totalTopProducersReward := float64(dposTotalReward) * 0.75
+		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitrators))))
+		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitrators)+len(candidates))))
+
+		for _, v := range arbitrators {
+			ad, err := crypto.PublicKeyToStandardProgramHash(v)
+			if err != nil {
+				return err
+			}
+
+			amount, ok := outputAddressMap[*ad]
+			if !ok {
+				return errors.New("Unknown dpos reward address.")
+			}
+
+			if amount != individualProducerReward+individualBlockConfirmReward {
+				return errors.New("Incorrect dpos reward amount.")
+			}
+		}
+
+		for _, v := range candidates {
+			ad, err := crypto.PublicKeyToStandardProgramHash(v)
+			if err != nil {
+				return err
+			}
+
+			amount, ok := outputAddressMap[*ad]
+			if !ok {
+				return errors.New("Unknown dpos reward address.")
+			}
+
+			if amount != individualProducerReward+individualBlockConfirmReward {
+				return errors.New("Incorrect dpos reward amount.")
+			}
+		}
+	}
+
+	return nil
 }
