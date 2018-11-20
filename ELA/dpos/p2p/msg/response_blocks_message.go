@@ -13,8 +13,7 @@ const DefaultResponseBlocksMessageDataSize = 8000000 * 10
 
 type ResponseBlocksMessage struct {
 	Command       string
-	Blocks        []*core.Block
-	BlockConfirms []*core.DPosProposalVoteSlot
+	BlockConfirms []*core.BlockConfirm
 }
 
 func (m *ResponseBlocksMessage) CMD() string {
@@ -26,16 +25,6 @@ func (m *ResponseBlocksMessage) MaxLength() uint32 {
 }
 
 func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
-	if err := common.WriteVarUint(w, uint64(len(m.Blocks))); err != nil {
-		return err
-	}
-
-	for _, v := range m.Blocks {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
 	if err := common.WriteVarUint(w, uint64(len(m.BlockConfirms))); err != nil {
 		return err
 	}
@@ -50,28 +39,14 @@ func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
 }
 
 func (m *ResponseBlocksMessage) Deserialize(r io.Reader) error {
-	blockCount, err := common.ReadVarUint(r, 0)
-	if err != nil {
-		return err
-	}
-
-	m.Blocks = make([]*core.Block, 0)
-	for i := uint64(0); i < blockCount; i++ {
-		block := &core.Block{}
-		if err = block.Deserialize(r); err != nil {
-			return err
-		}
-		m.Blocks = append(m.Blocks, block)
-	}
-
 	blockConfirmCount, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	m.BlockConfirms = make([]*core.DPosProposalVoteSlot, 0)
+	m.BlockConfirms = make([]*core.BlockConfirm, 0)
 	for i := uint64(0); i < blockConfirmCount; i++ {
-		blockConfirm := &core.DPosProposalVoteSlot{}
+		blockConfirm := &core.BlockConfirm{}
 		if err = blockConfirm.Deserialize(r); err != nil {
 			return err
 		}

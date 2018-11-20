@@ -33,7 +33,7 @@ type StatusSyncEventListener interface {
 	OnInv(id peer.PID, blockHash common.Uint256)
 	OnGetBlock(id peer.PID, blockHash common.Uint256)
 	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(id peer.PID, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
+	OnResponseBlocks(id peer.PID, blockConfirms []*core.BlockConfirm)
 	OnRequestConsensus(id peer.PID, height uint32)
 	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 }
@@ -182,11 +182,11 @@ func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight 
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id peer.PID, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot) {
+func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*core.BlockConfirm) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(blocks, blockConfirms); err != nil {
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(blockConfirms); err != nil {
 		log.Error("Response blocks error: ", err)
 	}
 }
