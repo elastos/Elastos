@@ -236,7 +236,10 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 		if pow.SolveBlock(msgBlock) {
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
-				if _, err := node.LocalNode.AppendBlock(msgBlock); err != nil {
+				if _, err := node.LocalNode.AppendBlock(&BlockConfirm{
+					BlockFlag: true,
+					Block:     msgBlock,
+				}); err != nil {
 					log.Error("[AppendBlock] err:", err.Error())
 					continue
 				}
@@ -289,8 +292,11 @@ func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
 	return false
 }
 
-func (pow *PowService) BroadcastBlock(MsgBlock *Block) error {
-	return node.LocalNode.Relay(nil, MsgBlock)
+func (pow *PowService) BroadcastBlock(block *Block) error {
+	return node.LocalNode.Relay(nil, &BlockConfirm{
+		BlockFlag: true,
+		Block:     block,
+	})
 }
 
 func (pow *PowService) Start() {

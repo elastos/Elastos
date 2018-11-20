@@ -46,7 +46,7 @@ func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error
 		message = &v0.GetData{}
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.Block{})
+		message = msg.NewBlock(&core.BlockConfirm{})
 
 	case p2p.CmdConfirm:
 		message = msg.NewConfirm(&core.DPosProposalVoteSlot{})
@@ -78,10 +78,17 @@ func (h *HandlerV0) HandleMessage(message p2p.Message) {
 		h.onGetData(message)
 
 	case *msg.Block:
-		h.onBlock(message)
-
-	case *msg.Confirm:
-		h.onConfirm(message)
+		blockConfirm, ok := message.Serializable.(*core.BlockConfirm)
+		if !ok {
+			return
+		}
+		if blockConfirm.BlockFlag {
+			h.onBlock(blockConfirm)
+			return
+		}
+		if blockConfirm.ConfirmFlag {
+			h.onConfirm(blockConfirm.Confirm)
+		}
 
 	case *msg.Tx:
 		h.onTx(message)
@@ -163,24 +170,32 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		node.SendMessage(v0.NewNotFound(hash))
 		return err
 	}
-	node.SendMessage(msg.NewBlock(block))
 
 	confirm, ok := LocalNode.GetConfirm(hash)
 	if !ok {
 		log.Debugf("Can't get confirm from hash %s", hash)
-		return err
+		node.SendMessage(msg.NewBlock(&core.BlockConfirm{
+			BlockFlag: true,
+			Block:     block,
+		}))
+		return nil
 	}
-	node.SendMessage(msg.NewConfirm(confirm))
+
+	node.SendMessage(msg.NewBlock(&core.BlockConfirm{
+		BlockFlag:   true,
+		Block:       block,
+		ConfirmFlag: true,
+		Confirm:     confirm,
+	}))
 
 	return nil
 }
 
-func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
+func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
 	node := h.base.node
-	block := msgBlock.Serializable.(*core.Block)
-	log.Debug("[onblock] handlerV0 received block:", block.Hash().String())
+	hash := msgBlock.Block.Hash()
+	log.Debug("[onblock] handlerV0 received block:", hash.String())
 
-	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
 		log.Debug("Received block message from unknown peer")
 		return fmt.Errorf("received block message from unknown peer")
@@ -197,7 +212,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
-	ok, err := LocalNode.AppendBlock(block)
+	ok, err := LocalNode.AppendBlock(msgBlock)
 	if err != nil {
 		log.Debugf("Received invalid block %s", hash.String())
 		return fmt.Errorf("Receive invalid block %s, err: %s", hash.String(), err.Error())
@@ -214,7 +229,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	if !LocalNode.IsSyncHeaders() {
 		// relay
 		if !LocalNode.ExistedID(hash) {
-			LocalNode.Relay(node, block)
+			LocalNode.Relay(node, msgBlock)
 			log.Debug("Relay block")
 		}
 
@@ -228,12 +243,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	return nil
 }
 
-func (h *HandlerV0) onConfirm(msgConfirm *msg.Confirm) error {
-	confirm, ok := msgConfirm.Serializable.(*core.DPosProposalVoteSlot)
-	if !ok {
-		return fmt.Errorf("[onConfirm] received invalid confirm")
-	}
-
+func (h *HandlerV0) onConfirm(confirm *core.DPosProposalVoteSlot) error {
 	err := LocalNode.AppendConfirm(confirm)
 	if err != nil {
 		return fmt.Errorf("receive invalid confirm %s, err: %s", confirm.Hash, err.Error())
