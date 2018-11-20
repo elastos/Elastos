@@ -12,17 +12,17 @@ import (
 	"strconv"
 	"time"
 
-	bc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
@@ -64,21 +64,21 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
-	idChainStore, err := bc.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
+	avmChainStore, err := store.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
 	}
-	defer idChainStore.Close()
+	defer avmChainStore.Close()
 
 	chainCfg := blockchain.Config{
 		ChainParams: activeNetParams,
-		ChainStore:  idChainStore.ChainStore,
+		ChainStore:  avmChainStore.ChainStore,
 	}
 
 	mempoolCfg := mempool.Config{
 		ChainParams: activeNetParams,
-		ChainStore:  idChainStore.ChainStore,
+		ChainStore:  avmChainStore.ChainStore,
 	}
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
@@ -105,7 +105,7 @@ func main() {
 		SeedList:       activeNetParams.SpvParams.SeedList,
 		Foundation:     activeNetParams.SpvParams.Foundation,
 		GenesisAddress: genesisAddress,
-		TxStore:        spv.NewTxStore(idChainStore.ChainStore),
+		TxStore:        spv.NewTxStore(avmChainStore.ChainStore),
 	}
 	spvService, err := spv.NewService(&serviceCfg)
 	if err != nil {
@@ -127,6 +127,8 @@ func main() {
 		eladlog.Fatalf("BlockChain initialize failed, %s", err)
 		os.Exit(1)
 	}
+
+	avmChainStore.Chain = chain
 
 	txPool := mempool.New(&mempoolCfg)
 
@@ -171,7 +173,7 @@ func main() {
 		GetTransaction:              service.GetTransaction,
 		GetPayloadInfo:              sv.GetPayloadInfo,
 		GetPayload:                  service.GetPayload,
-	}, idChainStore, mempoolCfg.ChainParams.ElaAssetId)
+	}, avmChainStore, mempoolCfg.ChainParams.ElaAssetId)
 
 	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
 	defer rpcServer.Stop()
@@ -200,7 +202,7 @@ func main() {
 	}
 
 	if cfg.PrintSyncState {
-		go printSyncState(idChainStore.ChainStore, server)
+		go printSyncState(avmChainStore.ChainStore, server)
 	}
 
 	<-interrupt.C
@@ -230,8 +232,6 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
-	s.RegisterAction("getidentificationtxbyidandpath", service.GetIdentificationTxByIdAndPath, "id", "path")
-
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
 
 	return s
