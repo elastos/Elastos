@@ -1,3 +1,0 @@
-rootProject.name = 'test_android'
-
-include ':app'
