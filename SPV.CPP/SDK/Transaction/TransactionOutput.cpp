@@ -33,16 +33,27 @@ namespace Elastos {
 			_output->programHash = output.getProgramHash();
 			_output->outputLock = output.getOutputLock();
 
+			std::string addr = Utils::UInt168ToAddress(_output->programHash);
+			size_t addressSize = sizeof(_output->raw.address);
+			strncpy(_output->raw.address, addr.c_str(), addressSize - 1);
+			_output->raw.address[addressSize - 1] = 0;
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t amount, const CMBlock &script, int signType) {
+		TransactionOutput::TransactionOutput(const std::string &toAddress, uint64_t amount,
+											 const UInt256 &assetID, uint32_t outputLock) {
 			_output = ELATxOutputNew();
-			ELATxOutputSetScript(_output, (const uint8_t *)script, script.GetSize(), signType);
+
 			_output->raw.amount = amount;
-			_output->assetId = Key::getSystemAssetId();
-			if (!Utils::UInt168FromAddress(_output->programHash, _output->raw.address)) {
-				Log::getLogger()->error("Invalid receiver address: {}", _output->raw.address);
+			if (!Utils::UInt168FromAddress(_output->programHash, toAddress)) {
+				Log::getLogger()->error("Invalid to address {}", toAddress);
 			}
+
+			size_t addressSize = sizeof(_output->raw.address);
+			strncpy(_output->raw.address, toAddress.c_str(), addressSize - 1);
+			_output->raw.address[addressSize - 1] = 0;
+
+			_output->assetId = assetID;
+			_output->outputLock = outputLock;
 		}
 
 		TransactionOutput::~TransactionOutput() {
@@ -156,14 +167,7 @@ namespace Elastos {
 		nlohmann::json TransactionOutput::toJson() const {
 			nlohmann::json jsonData;
 
-			std::string addr = _output->raw.address;
-			jsonData["Address"] = addr;
-
 			jsonData["Amount"] = _output->raw.amount;
-
-			jsonData["ScriptLen"] = _output->raw.scriptLen;
-
-			jsonData["Script"] = Utils::encodeHex((const uint8_t *)_output->raw.script, _output->raw.scriptLen);
 
 			jsonData["AssetId"] = Utils::UInt256ToString(_output->assetId);
 
@@ -171,37 +175,30 @@ namespace Elastos {
 
 			jsonData["ProgramHash"] = Utils::UInt168ToString(_output->programHash);
 
+			std::string addr = _output->raw.address;
+			assert(addr == Utils::UInt168ToAddress(_output->programHash));
+			jsonData["Address"] = Utils::UInt168ToAddress(_output->programHash);
+
 			jsonData["SignType"] = _output->signType;
 
 			return jsonData;
 		}
 
 		void TransactionOutput::fromJson(const nlohmann::json &jsonData) {
-			std::string address = jsonData["Address"].get<std::string>();
-			size_t addressSize = sizeof(_output->raw.address);
-			strncpy(_output->raw.address, address.c_str(), addressSize - 1);
-			_output->raw.address[addressSize - 1] = 0;
-
 			_output->raw.amount = jsonData["Amount"].get<uint64_t>();
 
 			_output->signType = jsonData["SignType"].get<int>();
 
-			size_t scriptLen = jsonData["ScriptLen"].get<size_t>();
-			std::string scriptString = jsonData["Script"].get<std::string>();
-			ELATxOutputSetScript(_output, nullptr, 0, _output->signType);
-			if (scriptLen > 0) {
-				if (scriptLen == scriptString.length() / 2) {
-					CMBlock script = Utils::decodeHex(scriptString);
-					ELATxOutputSetScript(_output, (const uint8_t *)script, script.GetSize(), _output->signType);
-				} else {
-					Log::getLogger()->error("scriptLen={} and script=\"{}\" do not match of json",
-											_output->raw.scriptLen, scriptString);
-				}
-			}
-
 			_output->assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>());
 			_output->outputLock = jsonData["OutputLock"].get<uint32_t>();
 			_output->programHash = Utils::UInt168FromString(jsonData["ProgramHash"].get<std::string>());
+
+			std::string addrFromProgramHash = Utils::UInt168ToAddress(_output->programHash);
+			std::string address = jsonData["Address"].get<std::string>();
+			assert(address == addrFromProgramHash);
+			size_t addressSize = sizeof(_output->raw.address);
+			strncpy(_output->raw.address, addrFromProgramHash.c_str(), addressSize - 1);
+			_output->raw.address[addressSize - 1] = 0;
 		}
 
 	}

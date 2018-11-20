@@ -760,6 +760,7 @@ int BRWalletRegisterTransaction(BRWallet *wallet, BRTransaction *tx)
         wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
         wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
         if (wallet->txAdded) wallet->txAdded(wallet->callbackInfo, tx);
+        if (wallet->balanceChanged) wallet->balanceChanged(wallet->callbackInfo, wallet->balance);
     }
 
     return r;

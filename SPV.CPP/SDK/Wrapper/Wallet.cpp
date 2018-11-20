@@ -395,14 +395,10 @@ namespace Elastos {
 			ParamChecker::checkCondition(outputs == NULL || outCount == 0, Error::CreateTransaction, "Invalid outputs");
 
 			for (i = 0; outputs && i < outCount; i++) {
-				assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
-				CMBlock script;
-				script.SetMemFixed(outputs[i].script, outputs[i].scriptLen);
+				ELATxOutput *ELAOutput = (ELATxOutput *)&outputs[i];
 
-				Address address(outputs[i].address);
-
-				TransactionOutput *output = new TransactionOutput(outputs[i].amount, script, address.getSignType());
-				transaction->outputs.push_back(output);
+				transaction->outputs.push_back(new TransactionOutput(ELAOutput->raw.address, ELAOutput->raw.amount,
+																	 ELAOutput->assetId, ELAOutput->outputLock));
 				amount += outputs[i].amount;
 			}
 
@@ -501,12 +497,10 @@ namespace Elastos {
 				ParamChecker::checkCondition(outCount < 1, Error::CreateTransaction, "Output count is not enough");
 			} else if (transaction && balance - (amount + feeAmount) > 0) { // add change output
 				wallet->WalletUnusedAddrs(wallet, &addr, 1, 1);
-				CMBlock script(BRAddressScriptPubKey(nullptr, 0, addr.s));
-				BRAddressScriptPubKey(script, script.GetSize(), addr.s);
-				Address address(addr.s);
 
-				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script,
-																  address.getSignType());
+				UInt256 assetID = transaction->outputs[0]->getAssetId();
+
+				TransactionOutput *output = new TransactionOutput(addr.s, balance - (amount + feeAmount), assetID, 0);
 
 				transaction->outputs.push_back(output);
 			}
@@ -529,12 +523,8 @@ namespace Elastos {
 			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
 										 "Invalid receiver address " + toAddress);
 
-			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput());
-			output->setProgramHash(u168Address);
-			output->setAmount(amount);
-			output->setAddress(toAddress);
-			output->setAssetId(Key::getSystemAssetId());
-			output->setOutputLock(0);
+			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput(
+				toAddress, amount, Key::getSystemAssetId(), 0));
 
 			BRTxOutput outputs[1];
 			outputs[0] = *output->getRaw();
