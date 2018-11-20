@@ -72,7 +72,7 @@ func NewArbitrator() Arbitrator {
 	dposAccount := account.NewDposAccount()
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
-	pk := config.Parameters.GetArbiterPublicKey()
+	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
 	log.Info("ID:", common.BytesToHexString(pk))
