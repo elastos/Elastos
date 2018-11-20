@@ -4,9 +4,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+  "github.com/elastos/Elastos.ELA.SideChain/service"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SideChain/service"
 )
 
 type DeployInfo struct {

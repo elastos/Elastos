@@ -38,7 +38,7 @@ func (c *Contract) Deserialize(r io.Reader) error {
 		return err
 	}
 	c.Parameters = ByteToContractParameterType(p)
-
+  
 	c.Code, err = common.ReadVarBytes(r, avm.MaxItemSize, "Contract Deserialize Code")
 	if err != nil {
 		return err
