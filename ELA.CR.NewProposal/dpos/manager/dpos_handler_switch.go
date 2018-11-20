@@ -173,17 +173,20 @@ func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, end
 	if currentHeight < endBlockHeight {
 		endHeight = currentHeight
 	}
-	blocks, blockConfirms, err := blockchain.DefaultLedger.GetBlocksAndConfirms(startBlockHeight, endHeight)
+	blockConfirms, err := blockchain.DefaultLedger.GetBlocksAndConfirms(startBlockHeight, endHeight)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
 	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
-		blocks = append(blocks, currentBlock)
+		blockConfirms = append(blockConfirms, &core.BlockConfirm{
+			BlockFlag: true,
+			Block:     currentBlock,
+		})
 	}
 
-	msg := &msg2.ResponseBlocksMessage{Command: msg2.ResponseBlocks, Blocks: blocks, BlockConfirms: blockConfirms}
+	msg := &msg2.ResponseBlocksMessage{Command: msg2.ResponseBlocks, BlockConfirms: blockConfirms}
 	h.network.SendMessageToPeer(id, msg)
 }
 
@@ -196,7 +199,7 @@ func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 	status := &msg2.ConsensusStatus{}
 
 	var err error
-	if status.MissingBlocks, status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
+	if status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
 		log.Error("Error occurred when collect consensus status from leger: ", err)
 		return
 	}
@@ -217,7 +220,7 @@ func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 
 func (h *dposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
 
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlocks, status.MissingBlockConfirms); err != nil {
+	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlockConfirms); err != nil {
 		log.Error("Error occurred when recover leger: ", err)
 		return
 	}

@@ -48,9 +48,6 @@ func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error
 	case p2p.CmdBlock:
 		message = msg.NewBlock(&core.BlockConfirm{})
 
-	case p2p.CmdConfirm:
-		message = msg.NewConfirm(&core.DPosProposalVoteSlot{})
-
 	case p2p.CmdTx:
 		message = msg.NewTx(&core.Transaction{})
 

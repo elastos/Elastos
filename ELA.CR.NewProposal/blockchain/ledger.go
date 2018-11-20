@@ -81,13 +81,13 @@ func (l *Ledger) GetLocalBlockChainHeight() uint32 {
 }
 
 //Get blocks and confirms by given height range, if end equals zero will be treat as current highest block height
-func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*Block, []*DPosProposalVoteSlot, error) {
+func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*BlockConfirm, error) {
 	//todo complete me
-	return nil, nil, nil
+	return nil, nil
 }
 
 //Append blocks and confirms directly
-func (l *Ledger) AppendBlocksAndConfirms(blocks []*Block, confirms []*DPosProposalVoteSlot) error {
+func (l *Ledger) AppendBlocksAndConfirms(confirms []*BlockConfirm) error {
 	//todo complete me
 	return nil
 }
