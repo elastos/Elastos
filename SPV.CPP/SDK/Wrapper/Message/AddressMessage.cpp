@@ -56,7 +56,7 @@ namespace Elastos {
 					else
 						inet_ntop(AF_INET6, &p.address, host, sizeof(host));
 
-					peer_dbg(peer, "peers[%zu] = %s, timestamp = %zu, port = %d, services = %zu",
+					peer_dbg(peer, "peers[%zu] = %s, timestamp = %llu, port = %d, services = %llu",
 							 i, host, p.timestamp, p.port, p.services);
 
 					if (! (p.services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks

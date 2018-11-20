@@ -37,7 +37,7 @@ namespace Elastos {
 			nlohmann::json j;
 			j << *this;
 			std::ofstream o(path.string());
-			j >> o;
+			o << j;
 		}
 
 		const std::vector<CoinInfo> &MasterWalletStore::GetSubWalletInfoList() const {
