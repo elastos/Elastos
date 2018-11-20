@@ -93,13 +93,16 @@ func (c *consensus) GetOnDutyArbitrator() string {
 }
 
 func (c *consensus) StartConsensus(b *core.Block) {
+	log.Info("[StartConsensus] consensus start")
+	defer log.Info("[StartConsensus] consensus end")
+
 	now := time.Now()
 	c.manager.GetBlockCache().Reset()
 	c.SetRunning()
 
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
 	c.currentView.ResetView(now)
-	log.Info("[StartConsensus] consensus started")
+
 }
 
 func (c *consensus) GetViewOffset() uint32 {

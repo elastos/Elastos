@@ -6,9 +6,11 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
+	utimsg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type DposNetwork interface {
@@ -27,6 +29,9 @@ type DposNetwork interface {
 type StatusSyncEventListener interface {
 	OnPing(id peer.PID, height uint32)
 	OnPong(id peer.PID, height uint32)
+	OnBlock(id peer.PID, block *core.Block)
+	OnInv(id peer.PID, blockHash common.Uint256)
+	OnGetBlock(id peer.PID, blockHash common.Uint256)
 	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
 	OnResponseBlocks(id peer.PID, blocks []*core.Block, blockConfirms []*core.DPosProposalVoteSlot)
 	OnRequestConsensus(id peer.PID, height uint32)
@@ -93,6 +98,7 @@ func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalD
 	d.dispatcher = dispatcher
 	d.consensus = consensus
 	d.network = network
+	d.blockCache.Listener = d.dispatcher.(*proposalDispatcher)
 }
 
 func (d *dposManager) GetPublicKey() string {
@@ -108,6 +114,8 @@ func (d *dposManager) Recover() {
 }
 
 func (d *dposManager) ProcessHigherBlock(b *core.Block) {
+	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
+	d.network.BroadcastMessage(msg.NewInventory(b.Hash()))
 	d.handler.TryStartNewConsensus(b)
 }
 
@@ -138,11 +146,33 @@ func (d *dposManager) OnVoteRejected(id peer.PID, p core.DPosProposalVote) {
 }
 
 func (d *dposManager) OnPing(id peer.PID, height uint32) {
-	d.handler.ProcessPing(id, height)
+	d.processHeartBeat(id, height)
 }
 
 func (d *dposManager) OnPong(id peer.PID, height uint32) {
-	d.handler.ProcessPong(id, height)
+	d.processHeartBeat(id, height)
+}
+
+func (d *dposManager) OnBlock(id peer.PID, block *core.Block) {
+	log.Info("[ProcessBlock] received block:", block.Hash().String())
+	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
+		if _, err := node.LocalNode.AppendBlock(block); err != nil {
+			log.Error("[AppendBlock] err:", err.Error())
+		}
+	}
+}
+
+func (d *dposManager) OnInv(id peer.PID, blockHash common.Uint256) {
+	if _, err := getBlock(blockHash); err != nil {
+		log.Info("[ProcessInv] send getblock:", blockHash.String())
+		d.network.SendMessageToPeer(id, msg.NewGetBlock(blockHash))
+	}
+}
+
+func (d *dposManager) OnGetBlock(id peer.PID, blockHash common.Uint256) {
+	if block, err := getBlock(blockHash); err == nil {
+		d.network.SendMessageToPeer(id, utimsg.NewBlock(block))
+	}
 }
 
 func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
@@ -222,4 +252,32 @@ func (d *dposManager) changeHeight() {
 		log.Info("[onDutyArbitratorChanged] onduty -> not onduty")
 	}
 	d.ChangeConsensus(onDuty)
+}
+
+func (d *dposManager) processHeartBeat(id peer.PID, height uint32) {
+	if d.tryRequestBlocks(id, height) {
+		log.Info("Found higher block, requesting it.")
+	}
+}
+
+func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
+	height := d.dispatcher.CurrentHeight()
+	if sourceHeight > height {
+		msg := &msg.GetBlocksMessage{
+			StartBlockHeight: height,
+			EndBlockHeight:   sourceHeight}
+		d.network.SendMessageToPeer(id, msg)
+
+		return true
+	}
+	return false
+}
+
+func getBlock(blockHash common.Uint256) (*core.Block, error) {
+	block, have := node.LocalNode.GetBlock(blockHash)
+	if have {
+		return block, nil
+	}
+
+	return blockchain.DefaultLedger.GetBlockWithHash(blockHash)
 }
