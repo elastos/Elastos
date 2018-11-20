@@ -44,19 +44,24 @@
       <sourceFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/generated/res/rs/androidTest/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/generated/res/resValues/androidTest/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/generated/source/apt/test/debug" isTestSource="true" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/annotations" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/attr" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/check-manifest" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/extractedTypedefs" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/incremental" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/intermediate-jars" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/javaPrecompile" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/jniLibs" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/library_and_local_jars_jni" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packaged-aidl" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packaged-classes" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packagedAssets" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packaged_res" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/public_res" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/publish-proguard" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/shaders" />
