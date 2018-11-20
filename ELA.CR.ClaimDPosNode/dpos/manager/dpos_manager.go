@@ -156,7 +156,10 @@ func (d *dposManager) OnPong(id peer.PID, height uint32) {
 func (d *dposManager) OnBlock(id peer.PID, block *core.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-		if _, err := node.LocalNode.AppendBlock(block); err != nil {
+		if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
+			BlockFlag: true,
+			Block:     block,
+		}); err != nil {
 			log.Error("[AppendBlock] err:", err.Error())
 		}
 	}

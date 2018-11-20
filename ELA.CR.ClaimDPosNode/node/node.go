@@ -355,11 +355,11 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					nbr.SendMessage(msg.NewTx(message))
 					node.txnCnt++
 				}
-			case *Block:
+			case *BlockConfirm:
 				log.Debug("Relay block message")
-				if nbr.BloomFilter().IsLoaded() {
+				if nbr.BloomFilter().IsLoaded() && message.BlockFlag {
 					inv := msg.NewInventory()
-					blockHash := message.Hash()
+					blockHash := message.Block.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
 					nbr.SendMessage(inv)
 					continue
@@ -367,11 +367,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 
 				if nbr.IsRelay() {
 					nbr.SendMessage(msg.NewBlock(message))
-					confirm, ok := node.GetConfirm(message.Hash())
-					if !ok {
-						return errors.New("not found confirm")
-					}
-					nbr.SendMessage(msg.NewConfirm(confirm))
 				}
 			default:
 				log.Warn("unknown relay message type")

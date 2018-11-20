@@ -27,10 +27,12 @@ func (pool *BlockPool) Init() {
 	pool.confirmMap = make(map[common.Uint256]*core.DPosProposalVoteSlot)
 }
 
-func (pool *BlockPool) AppendBlock(block *core.Block) (bool, error) {
+func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error) {
 	log.Info("[AppendBlock] start")
 	defer log.Info("[AppendBlock] end")
 
+	// add block
+	block := blockConfirm.Block
 	hash := block.Hash()
 	if _, exist := pool.GetBlock(hash); exist {
 		return false, errors.New("duplicate block in pool")
@@ -41,8 +43,17 @@ func (pool *BlockPool) AppendBlock(block *core.Block) (bool, error) {
 	}
 	pool.AddToBlockMap(block)
 
-	isConfirmed := true
+	// add confirm
+	if blockConfirm.ConfirmFlag {
+		err := pool.AppendConfirm(blockConfirm.Confirm)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+
 	// confirm block
+	isConfirmed := true
 	if err := pool.ConfirmBlock(hash); err != nil {
 		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String())
 		isConfirmed = false
@@ -87,15 +98,12 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 		return errors.New("there is no block in pool when confirming block")
 	}
 
-	// FIXME use chain params
-	if config.Parameters.ChainParam.Name != "RegNet" {
-		confirm, exist := pool.confirmMap[hash]
-		if !exist {
-			return errors.New("there is no block confirmation in pool when confirming block")
-		}
-		if err := blockchain.CheckBlockWithConfirmation(block, confirm); err != nil {
-			return errors.New("block confirmation validate failed")
-		}
+	confirm, exist := pool.confirmMap[hash]
+	if !exist {
+		return errors.New("there is no block confirmation in pool when confirming block")
+	}
+	if err := blockchain.CheckBlockWithConfirmation(block, confirm); err != nil {
+		return errors.New("block confirmation validate failed")
 	}
 
 	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
