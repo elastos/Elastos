@@ -1,0 +1,201 @@
+package smartcontract
+
+import (
+	"math/big"
+	"bytes"
+	"strconv"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
+	"github.com/elastos/Elastos.ELA.SideChain/database"
+
+	st "github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
+)
+
+type SmartContract struct {
+	Engine         Engine
+	Code           []byte
+	Input          []byte
+	ParameterTypes []contract.ContractParameterType
+	Caller         common.Uint168
+	CodeHash       common.Uint168
+	ReturnType     contract.ContractParameterType
+}
+
+type Context struct {
+	Caller         common.Uint168
+	Code           []byte
+	Input          []byte
+	CodeHash       common.Uint168
+	CacheCodeTable interfaces.IScriptTable
+	Time           *big.Int
+	BlockNumber    *big.Int
+	SignableData   SignableData
+	StateMachine   blockchain.StateMachine
+	DBCache        database.Batch
+	Gas            common.Fixed64
+	ReturnType     contract.ContractParameterType
+	ParameterTypes []contract.ContractParameterType
+	Trigger        avm.TriggerType
+}
+
+type Engine interface {
+	Create(caller common.Uint168, code []byte) ([]byte, error)
+	Call(caller common.Uint168, codeHash common.Uint168, input []byte) ([]byte, error)
+}
+
+func NewSmartContract(context *Context) (*SmartContract, error) {
+	e := avm.NewExecutionEngine(context.SignableData,
+		new(avm.CryptoECDsa),
+		avm.MAXSTEPS,
+		context.CacheCodeTable,
+		context.StateMachine,
+		context.Gas,
+		context.Trigger,
+		false,
+	)
+
+	return &SmartContract{
+		Engine:         e,
+		Code:           context.Code,
+		CodeHash:       context.CodeHash,
+		Input:          context.Input,
+		Caller:         context.Caller,
+		ReturnType:     context.ReturnType,
+		ParameterTypes: context.ParameterTypes,
+	}, nil
+}
+
+func (sc *SmartContract) DeployContract(payload *types.PayloadDeploy) ([]byte, error) {
+	buffer := new(bytes.Buffer)
+	paramBuilder := avm.NewParamsBuider(buffer)
+	var parameterTypes []byte
+	parameterTypes = contract.ContractParameterTypeToByte(payload.Code.ParameterTypes)
+	returnType := byte(payload.Code.ReturnType)
+	paramBuilder.EmitSysCall("Neo.Contract.Create", payload.Code.Code, parameterTypes, returnType, payload.Name,
+		payload.CodeVersion, payload.Author, payload.Email, payload.Description)
+	_ , err := sc.Engine.Call(sc.Caller, sc.CodeHash, paramBuilder.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return sc.Code, nil
+}
+
+func (sc *SmartContract) InvokeContract() (interface{}, error) {
+	_, err := sc.Engine.Call(sc.Caller, sc.CodeHash, sc.Input)
+	if err != nil {
+		return nil, err
+	}
+	return sc.InvokeResult()
+}
+
+func (sc *SmartContract) InvokeResult() (interface{}, error) {
+	engine := sc.Engine.(*avm.ExecutionEngine)
+	if engine.GetEvaluationStack().Count() > 0 && avm.Peek(engine) != nil {
+		switch sc.ReturnType {
+		case contract.Boolean:
+			return avm.PopBoolean(engine), nil
+		case contract.Integer:
+			return avm.PopBigInt(engine), nil
+		case contract.ByteArray:
+			bs := avm.PopByteArray(engine)
+			return bs, nil
+		case contract.String:
+			return string(avm.PopByteArray(engine)), nil
+		case contract.Hash160, contract.Hash256:
+			data := avm.PopByteArray(engine)
+			return common.BytesToHexString(common.BytesReverse(data)), nil
+		case contract.PublicKey:
+			return common.BytesToHexString(avm.PopByteArray(engine)), nil
+		case contract.Object:
+			data := avm.PeekStackItem(engine)
+			switch data.(type) {
+			case *datatype.Boolean:
+				return data.GetBoolean(), nil
+			case *datatype.Integer:
+				return data.GetBigInteger(), nil
+			case *datatype.ByteArray:
+				return common.BytesToHexString(data.GetByteArray()), nil
+			case *datatype.GeneralInterface:
+				interop := data.GetInterface()
+				switch interop.(type) {
+				case *st.Header:
+					return service.GetHeaderInfo(interop.(*st.Header)), nil
+				case *st.Block:
+					return service.GetBlockInfo(interop.(*st.Block)), nil
+				case *st.Transaction:
+					return service.GetTXInfo(interop.(*st.Transaction)), nil
+				case *st.Asset:
+					return service.GetAssetInfo(interop.(*st.Asset)), nil
+				}
+			}
+
+		}
+	}
+	return nil, nil
+}
+
+func (sc *SmartContract) InvokeParamsTransform() ([]byte, error) {
+	builder := avm.NewParamsBuider(new(bytes.Buffer))
+	b := bytes.NewBuffer(sc.Input)
+	for _, k := range sc.ParameterTypes {
+		switch k {
+		case contract.Boolean:
+			p, err := common.ReadUint8(b)
+			if err != nil {
+				return nil, err
+			}
+			if p >= 1 {
+				builder.EmitPushBool(true)
+			} else {
+				builder.EmitPushBool(false)
+			}
+		case contract.Integer:
+			p, err := common.ReadVarBytes(b, avm.MAX_BIGINTEGER, "SmartContract InvokeParamsTransform Integer")
+			if err != nil {
+				return nil, err
+			}
+			i, err := strconv.ParseInt(string(p), 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			builder.EmitPushInteger(int64(i))
+		case contract.Hash160:
+			p, err := common.ReadVarBytes(b, 20, "SmartContract InvokeParamsTransform Hash160")
+			if err != nil {
+				return nil, err
+			}
+			builder.EmitPushByteArray(common.BytesReverse(p))
+		case contract.Hash256:
+			p, err := common.ReadVarBytes(b, 32, "SmartContract InvokeParamsTransform Hash256")
+			if err != nil {
+				return nil, err
+			}
+			builder.EmitPushByteArray(common.BytesReverse(p))
+		case contract.Hash168:
+			p, err := common.ReadVarBytes(b, 21, "SmartContract InvokeParamsTransform Hash168")
+			if err != nil {
+				return nil, err
+			}
+			builder.EmitPushByteArray(common.BytesReverse(p))
+		case contract.ByteArray, contract.String:
+			p, err := common.ReadVarBytes(b, common.MaxVarStringLength, "SmartContract InvokeParamsTransform ByteArray")
+			if err != nil {
+				return nil, err
+			}
+			builder.EmitPushByteArray(p)
+
+		}
+		builder.EmitPushCall(sc.CodeHash.Bytes())
+		return builder.Bytes(), nil
+	}
+	return nil, nil
+}

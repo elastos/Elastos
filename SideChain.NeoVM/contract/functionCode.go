@@ -4,11 +4,8 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-)
 
-const (
-	MaxContractCodeSize = 1024 * 1024 * 10// 10MB
-	MaxParameterSize = 1000
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
 
 type FunctionCode struct {
@@ -47,13 +44,13 @@ func (fc *FunctionCode) Serialize(w io.Writer) error {
 
 // method of SerializableData
 func (fc *FunctionCode) Deserialize(r io.Reader) error {
-	code, err := common.ReadVarBytes(r, MaxContractCodeSize, "FunctionCode Deserialize Code")
+	code, err := common.ReadVarBytes(r, avm.MaxItemSize, "FunctionCode Deserialize Code")
 	if err != nil {
 		return err
 	}
 	fc.Code = code
 
-	parameterTypes, err := common.ReadVarBytes(r, MaxParameterSize, "FunctionCode Deserialize parameterTypes")
+	parameterTypes, err := common.ReadVarBytes(r, avm.MaxParameterSize, "FunctionCode Deserialize parameterTypes")
 	if err != nil {
 		return err
 	}
@@ -87,7 +84,7 @@ func (fc *FunctionCode) GetReturnType() ContractParameterType {
 func (fc *FunctionCode) CodeHash() common.Uint168 {
 	zeroHash := common.Uint168{}
 	if fc.codeHash == zeroHash {
-		hash, err := ToCodeHash(fc.Code)
+		hash, err := avm.ToCodeHash(fc.Code)
 		if err != nil {
 			return zeroHash
 		}

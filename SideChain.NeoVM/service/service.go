@@ -1,12 +1,11 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 
 	sideser "github.com/elastos/Elastos.ELA.SideChain/service"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
@@ -19,11 +18,11 @@ type HttpServiceExtend struct {
 	*sideser.HttpService
 
 	cfg   *sideser.Config
-	store *blockchain.IDChainStore
+	store *store.AVMChainStore
 	elaAssetID Uint256
 }
 
-func NewHttpService(cfg *sideser.Config, store *blockchain.IDChainStore, assetid Uint256) *HttpServiceExtend {
+func NewHttpService(cfg *sideser.Config, store *store.AVMChainStore, assetid Uint256) *HttpServiceExtend {
 	server := &HttpServiceExtend{
 		HttpService: sideser.NewHttpService(cfg),
 		store:       store,
@@ -31,48 +30,6 @@ func NewHttpService(cfg *sideser.Config, store *blockchain.IDChainStore, assetid
 		elaAssetID: assetid,
 	}
 	return server
-}
-
-func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (interface{}, error) {
-	id, ok := param.String("id")
-	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "id is null")
-	}
-	_, err := Uint168FromAddress(id)
-	if err != nil {
-		return nil, util.NewError(int(sideser.InvalidParams), "invalid id")
-	}
-	path, ok := param.String("path")
-	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "path is null")
-	}
-
-	buf := new(bytes.Buffer)
-	buf.WriteString(id)
-	buf.WriteString(path)
-	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
-	if err != nil {
-		return nil, util.NewError(int(sideser.UnknownTransaction), "get identification transaction failed")
-	}
-	txHash, err := Uint256FromBytes(txHashBytes)
-	if err != nil {
-		return nil, util.NewError(int(sideser.InvalidTransaction), "invalid transaction hash")
-	}
-
-	txn, height, err := s.store.GetTransaction(*txHash)
-	if err != nil {
-		return nil, util.NewError(int(sideser.UnknownTransaction), "get transaction failed")
-	}
-	bHash, err := s.store.GetBlockHash(height)
-	if err != nil {
-		return nil, util.NewError(int(sideser.UnknownBlock), "get block failed")
-	}
-	header, err := s.store.GetHeader(bHash)
-	if err != nil {
-		return nil, util.NewError(int(sideser.UnknownBlock), "get header failed")
-	}
-
-	return s.cfg.GetTransactionInfo(s.cfg, header, txn), nil
 }
 
 func GetTransactionInfoFromBytes(txInfoBytes []byte) (*sideser.TransactionInfo, error) {
@@ -299,7 +256,3 @@ func ArrayString(value interface{}) ([]string, bool) {
 		return nil, false
 	}
 }
-
-//func (s *pow.Service) GetCfg(minerAddr string) {
-//	s.cfg
-//}

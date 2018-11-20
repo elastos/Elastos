@@ -19,7 +19,6 @@ type PayloadDeploy struct {
 	Gas         common.Fixed64
 }
 
-
 func (dc *PayloadDeploy) Data(version byte) []byte  {
 	buf := new(bytes.Buffer)
 	err := dc.Serialize(buf, version)

@@ -18,6 +18,7 @@ build/
 /glide.lock
 vendor/*
 /did
+sideNeo
 *.conf
 *.json
 *.bin
