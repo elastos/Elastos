@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK_ELATxOutput_H
 #define __ELASTOS_SDK_ELATxOutput_H
 
+#include <Core/BRTransaction.h>
+#include <SDK/Common/Utils.h>
 #include "BRAddress.h"
 #include "BRTransaction.h"
 
@@ -26,17 +28,6 @@ namespace Elastos {
 				outputLock = 0;
 				programHash = UINT168_ZERO;
 				signType = ELA_STANDARD;
-			}
-
-			ELATxOutput(const ELATxOutput *output) {
-				raw = output->raw;
-				assetId = output->assetId;
-				outputLock = output->outputLock;
-				programHash = output->programHash;
-				signType = output->signType;
-
-				raw.script = nullptr;
-				ELATxOutputSetScript((ELATxOutput *)output, output->raw.script, output->raw.scriptLen, signType);
 			}
 
 			BRTxOutput raw;

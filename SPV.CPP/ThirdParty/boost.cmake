@@ -21,7 +21,6 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 		--ndk-root=$ENV{ANDROID_NDK}
 		--ndk-api-level=${CMAKE_SYSTEM_VERSION}
 	)
-	set(BOOST_BUILD_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/boost/build.sh)
 	set(Boost_INCLUDE_DIRS ${BOOST_INSTALL_DIR}/${CMAKE_ANDROID_ARCH_ABI}/include)
 elseif(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 	set(BOOST_BUILD_COMMENT "Building boost for ios...")
@@ -29,7 +28,6 @@ elseif(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 		BUILD_COMMAND
 		SRCDIR=${BOOST_EXTRACT_DIR} OUTPUT_DIR=${BOOST_BUILD_DIR} ./boost.sh -ios --boost-libs "\"${BOOST_BUILD_COMPONENTS}\""
 	)
-	set(BOOST_BUILD_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/boost/boost.sh)
 	set(Boost_INCLUDE_DIRS ${BOOST_BUILD_DIR}/ios/prefix/include)
 else()
 	set(BOOST_BUILD_COMMENT "Building boost...")
@@ -42,7 +40,6 @@ else()
 		--prefix=${BOOST_INSTALL_DIR}
 		--extract-dir=${BOOST_EXTRACT_DIR}
 	)
-	set(BOOST_BUILD_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/boost/build.sh)
 	set(Boost_INCLUDE_DIRS ${BOOST_INSTALL_DIR}/include)
 endif()
 
@@ -64,7 +61,6 @@ add_custom_command(
 	OUTPUT ${COMPONENTS_LIBRARY_PATH}
 	COMMAND ${BUILD_COMMAND}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/boost
-	DEPENDS ${BOOST_BUILD_SCRIPT}
 )
 
 add_custom_target(build_boost DEPENDS ${COMPONENTS_LIBRARY_PATH})

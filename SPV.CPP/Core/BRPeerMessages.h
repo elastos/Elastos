@@ -26,7 +26,7 @@ extern "C" {
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
-#define MESSAGE_TIMEOUT    10.0
+//#define MESSAGE_TIMEOUT    10.0
 #define PTHREAD_STACK_SIZE  (512 * 1024)
 
 typedef enum {

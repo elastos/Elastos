@@ -1691,6 +1691,7 @@ void BRPeerManagerConnect(BRPeerManager *manager)
         _BRPeerManagerSyncStopped(manager);
         pthread_mutex_unlock(&manager->lock);
         if (manager->syncStopped) manager->syncStopped(manager->info, ENETUNREACH);
+		if (manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
     }
     else {
         pthread_mutex_unlock(&manager->lock);
