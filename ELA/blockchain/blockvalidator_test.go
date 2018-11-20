@@ -65,7 +65,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	var block core.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	fmt.Println("MedianTime %s", timeSource.AdjustedTime().String())
+	fmt.Printf("MedianTime %s", timeSource.AdjustedTime().String())
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	if err != nil {
 		t.Error(err.Error())

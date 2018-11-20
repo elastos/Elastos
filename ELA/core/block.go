@@ -9,11 +9,13 @@ import (
 )
 
 const (
-	BlockVersion          uint32 = 0
-	GenesisNonce          uint32 = 2083236893
-	InvalidBlockSize      int    = -1
-	CheckTxOut                   = 1 << 1
-	BlockHeightCheckTxOut        = 88812
+	BlockVersion                         uint32 = 0
+	GenesisNonce                         uint32 = 2083236893
+	InvalidBlockSize                     int    = -1
+	CheckTxOut                                  = 1 << 1
+	CheckCoinbaseTxDposReward                   = 1 << 2
+	BlockHeightCheckTxOut                       = 88812
+	BlockHeightCheckCoinbaseTxDposReward        = 108812 //fixme edit value later
 )
 
 type Block struct {
