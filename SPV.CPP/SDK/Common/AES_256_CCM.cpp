@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <openssl/evp.h>
+#include <openssl/ssl.h>
 #include "Utils.h"
 
 #include "AES_256_CCM.h"
@@ -146,7 +147,11 @@ namespace Elastos {
 
 		bool AES_256_CCM::Init() {
 			if (false == _bInit) {
+#if OPENSSL_API_COMPAT < 0x10100000L
 				OpenSSL_add_all_algorithms();
+#else
+				OPENSSL_init_ssl(0, NULL);
+#endif
 				_bInit = true;
 			}
 

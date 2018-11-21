@@ -49,6 +49,8 @@ tags
 *.bak
 .DS_Store
 
+cmake-*
+
 ThirdParty/openssl/install
 ThirdParty/openssl/openssl-1.0.2o.tar.gz
 ThirdParty/openssl/openssl-1.0.2o

@@ -1,0 +1,12 @@
+<ranlib>$(AndroidNDKRoot)/toolchains/mipsel-linux-android-4.9/prebuilt/$(PlatformOS)-x86_64/bin/mipsel-linux-android-ranlib
+<compileflags>-gcc-toolchain
+<compileflags>$(AndroidNDKRoot)/toolchains/mipsel-linux-android-4.9/prebuilt/$(PlatformOS)-x86_64
+<compileflags>-target
+<compileflags>mipsel-none-linux-android
+<compileflags>-mips32
+<compileflags>-fpic
+<compileflags>--sysroot
+<compileflags>$(AndroidNDKRoot)/sysroot
+<compileflags>-isystem
+<compileflags>$(AndroidNDKRoot)/sysroot/usr/include/mipsel-linux-android
+<compileflags>-D__ANDROID_API__=$(NDK_API_LEVEL)

@@ -27,7 +27,7 @@ namespace Elastos {
 		KeyStore::KeyStore(const std::string &rootPath) :
 			_rootPath(rootPath),
 			_walletJson(rootPath) {
-			OpenSSL_add_all_algorithms();
+			AES_256_CCM::Init();
 		}
 
 		KeyStore::~KeyStore() {

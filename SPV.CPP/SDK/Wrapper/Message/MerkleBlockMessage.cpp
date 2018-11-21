@@ -18,7 +18,7 @@
 #include "ELACoreExt/ELAPeerManager.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 #include "Plugin/Registry.h"
-#include "Plugin/Block/MerkleBlock.h"
+#include "SDK/Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {

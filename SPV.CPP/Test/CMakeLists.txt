@@ -15,7 +15,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} TEST_SOURCE_FILES)
 foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
-	target_link_libraries(${TEST_TARGET_NAME} ${SPVSDK_SHARED_TARGET})
+	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
 	target_link_libraries(${TEST_TARGET_NAME} dl)
 	add_dependencies(${TEST_TARGET_NAME} copy_test_data)
 
@@ -33,7 +33,7 @@ foreach(src ${TEST_SOURCE_FILES})
 	endif()
 endforeach()
 
-if(NOT SPV_FOR_ANDROID)
+if(NOT ${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID} AND NOT ${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 	add_custom_command(
 		TARGET auto_run_test
 		POST_BUILD

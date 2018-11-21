@@ -3,9 +3,7 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/sqlite"
 )
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/sqlite SQLITE_SOURCE_FILES)
-
-add_library(sqlite STATIC ${SQLITE_SOURCE_FILES})
+add_library(sqlite STATIC ${CMAKE_CURRENT_SOURCE_DIR}/sqlite/sqlite3.c)
 
 set_target_properties(sqlite PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libsqlite.a)
 set_target_properties(sqlite PROPERTIES POSITION_INDEPENDENT_CODE ON)
