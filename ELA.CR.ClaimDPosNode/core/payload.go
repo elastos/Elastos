@@ -38,6 +38,12 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadWithdrawFromSideChain)
 	case TransferCrossChainAsset:
 		p = new(PayloadTransferCrossChainAsset)
+	case RegisterProducer:
+		p = new(PayloadRegisterProducer)
+	case CancelProducer:
+		p = new(PayloadCancelProducer)
+	case VoteProducer:
+		p = new(PayloadVoteProducer)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

@@ -55,6 +55,10 @@ func StartRPCServer() {
 	// mining interfaces
 	mainMux["togglemining"] = ToggleMining
 	mainMux["discretemining"] = DiscreteMining
+	// vote interfaces
+	mainMux["listproducers"] = ListProducers
+	mainMux["producerstatus"] = ProducerStatus
+	mainMux["votestatus"] = VoteStatus
 
 	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
