@@ -1,0 +1,11 @@
+<ranlib>$(AndroidNDKRoot)/toolchains/x86_64-4.9/prebuilt/$(PlatformOS)-x86_64/bin/x86_64-linux-android-ranlib
+<compileflags>-gcc-toolchain
+<compileflags>$(AndroidNDKRoot)/toolchains/x86_64-4.9/prebuilt/$(PlatformOS)-x86_64
+<compileflags>-target
+<compileflags>x86_64-none-linux-android
+<compileflags>-fPIC
+<compileflags>--sysroot
+<compileflags>$(AndroidNDKRoot)/sysroot
+<compileflags>-isystem
+<compileflags>$(AndroidNDKRoot)/sysroot/usr/include/x86_64-linux-android
+<compileflags>-D__ANDROID_API__=$(NDK_API_LEVEL)
