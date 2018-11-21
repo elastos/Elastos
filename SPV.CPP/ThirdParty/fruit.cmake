@@ -2,11 +2,7 @@
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "build shared library")
 set(FRUIT_TESTS_USE_PRECOMPILED_HEADERS OFF CACHE INTERNAL "Don't use pre-compiled headers")
 
-if(SPV_FOR_ANDROID)
-	set(BOOST_DIR ${BOOST_INSTALL_DIR}/${CMAKE_ANDROID_ARCH_ABI}/include CACHE INTERNAL "boost dir")
-else()
-	set(BOOST_DIR ${BOOST_INSTALL_DIR}/include CACHE INTERNAL "boost dir")
-endif()
+set(BOOST_DIR ${Boost_INCLUDE_DIRS} CACHE INTERNAL "boost dir")
 include_directories("${BOOST_DIR}")
 
 add_subdirectory(fruit EXCLUDE_FROM_ALL)

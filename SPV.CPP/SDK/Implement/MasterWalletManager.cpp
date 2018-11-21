@@ -6,6 +6,9 @@
 #include <SDK/Common/Utils.h>
 #include <Core/BRBase58.h>
 #include <Core/BRBIP39Mnemonic.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
@@ -338,6 +341,12 @@ namespace Elastos {
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+
+#ifndef BUILD_SHARED_LIBS
+			Log::getLogger()->info("Registering plugin ...");
+			REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);
+			REGISTER_MERKLEBLOCKPLUGIN(SidechainMerkleBlock);
+#endif
 
 			ParamChecker::checkPathExists(rootPath);
 
