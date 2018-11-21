@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 type ArbitratorsConfig struct {
@@ -29,6 +30,8 @@ type Arbitrators interface {
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
+	GetArbitratorsProgramHashes() []*common.Uint168
+	GetCandidatesProgramHashes() []*common.Uint168
 
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
@@ -45,7 +48,10 @@ type arbitrators struct {
 	dutyChangedCount uint32
 
 	currentArbitrators [][]byte
-	candidates         [][]byte
+	currentCandidates  [][]byte
+
+	currentArbitratorsProgramHashes []*common.Uint168
+	currentCandidatesProgramHashes  []*common.Uint168
 
 	nextArbitrators [][]byte
 	nextCandidates  [][]byte
@@ -80,7 +86,7 @@ func (a *arbitrators) GetCandidates() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	return a.candidates
+	return a.currentCandidates
 }
 
 func (a *arbitrators) GetNextArbitrators() [][]byte {
@@ -95,6 +101,20 @@ func (a *arbitrators) GetNextCandidates() [][]byte {
 	defer a.lock.Unlock()
 
 	return a.nextCandidates
+}
+
+func (a *arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	return a.currentArbitratorsProgramHashes
+}
+
+func (a *arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	return a.currentCandidatesProgramHashes
 }
 
 func (a *arbitrators) GetOnDutyArbitrator() []byte {
@@ -152,10 +172,28 @@ func (a *arbitrators) isNewElection() bool {
 
 func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
-	a.candidates = a.nextCandidates
+	a.currentCandidates = a.nextCandidates
 
 	if err := a.sortArbitrators(); err != nil {
 		return err
+	}
+
+	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
+	for index, v := range a.currentArbitrators {
+		hash, err := crypto.PublicKeyToStandardProgramHash(v)
+		if err != nil {
+			return err
+		}
+		a.currentArbitratorsProgramHashes[index] = hash
+	}
+
+	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
+	for index, v := range a.currentCandidates {
+		hash, err := crypto.PublicKeyToStandardProgramHash(v)
+		if err != nil {
+			return err
+		}
+		a.currentCandidatesProgramHashes[index] = hash
 	}
 
 	a.dutyChangedCount = 0

@@ -301,25 +301,21 @@ func checkCoinbaseTransactionContext(block *Block, coinbase *Transaction, totalT
 	}
 
 	if block.Version > 0 {
-		arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
-		candidates := DefaultLedger.Arbitrators.GetCandidates()
-		if len(arbitrators)+len(candidates) != len(coinbase.Outputs)-2 {
+		arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
+		candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
+		if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
 			return errors.New("Coinbase output count not match.")
 		}
 
 		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
 		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
 		totalTopProducersReward := float64(dposTotalReward) * 0.75
-		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitrators))))
-		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitrators)+len(candidates))))
+		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
+		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
 
-		for _, v := range arbitrators {
-			ad, err := crypto.PublicKeyToStandardProgramHash(v)
-			if err != nil {
-				return err
-			}
+		for _, v := range arbitratorsHashes {
 
-			amount, ok := outputAddressMap[*ad]
+			amount, ok := outputAddressMap[*v]
 			if !ok {
 				return errors.New("Unknown dpos reward address.")
 			}
@@ -329,13 +325,9 @@ func checkCoinbaseTransactionContext(block *Block, coinbase *Transaction, totalT
 			}
 		}
 
-		for _, v := range candidates {
-			ad, err := crypto.PublicKeyToStandardProgramHash(v)
-			if err != nil {
-				return err
-			}
+		for _, v := range candidatesHashes {
 
-			amount, ok := outputAddressMap[*ad]
+			amount, ok := outputAddressMap[*v]
 			if !ok {
 				return errors.New("Unknown dpos reward address.")
 			}
