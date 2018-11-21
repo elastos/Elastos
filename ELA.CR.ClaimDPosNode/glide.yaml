@@ -21,3 +21,4 @@ import:
   - leveldb/iterator
   - leveldb/opt
   - leveldb/util
+- package: github.com/urfave/cli

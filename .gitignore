@@ -13,3 +13,5 @@ Logs/
 /ela-cli
 *.db
 rollback
+*.dat
+*.txn

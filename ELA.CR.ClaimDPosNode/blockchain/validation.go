@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/core/contract/program"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
