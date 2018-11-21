@@ -156,6 +156,23 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
+type RegisterProducerInfo struct {
+	PublicKey string
+	NickName  string
+	Url       string
+	Location  uint64
+}
+
+type CancelProducerInfo struct {
+	PublicKey string
+}
+
+type VoteProducerInfo struct {
+	Voter      string
+	Stake      string
+	PublicKeys []string
+}
+
 type UTXOInfo struct {
 	AssetId       string `json:"assetid"`
 	Txid          string `json:"txid"`
