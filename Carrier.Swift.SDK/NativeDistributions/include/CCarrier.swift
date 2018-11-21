@@ -535,13 +535,15 @@ internal struct CCallbacks {
      * @param
      *      from        [in] The user id from who send the invite request.
      * @param
+     *      bundle      [in] The bundle attached to this invite request.
+     * @param
      *      data        [in] The application defined data send from friend.
      * @param
      *      len         [in] The data length in bytes.
      * @param
      *      context     [in] The application defined context data.
      */
-    var friend_invite: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void)!
+    var friend_invite: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     init() {}
 }
@@ -1064,6 +1066,8 @@ internal func ela_send_friend_message(_ carrier: OpaquePointer!,
  * @param
  *      from        [in] The target user id.
  * @param
+ *      bundle      [in] The bundle attached to this invite response.
+ * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
  * @param
@@ -1076,7 +1080,7 @@ internal func ela_send_friend_message(_ carrier: OpaquePointer!,
  *      context     [in] The application defined context data.
  */
 internal typealias CFriendInviteResponseCallback = @convention(c)
-    (OpaquePointer?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
+    (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
 
 
 /**
@@ -1090,6 +1094,8 @@ internal typealias CFriendInviteResponseCallback = @convention(c)
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
  *      to          [in] The target userid.
+ * @param
+ *      bundle      [in] The bundle attached to this invitation.
  * @param
  *      data        [in] The application defined data send to target user.
  * @param
@@ -1108,6 +1114,7 @@ internal typealias CFriendInviteResponseCallback = @convention(c)
 @_silgen_name("ela_invite_friend")
 internal func ela_invite_friend(_ carrier: OpaquePointer!,
                                 _ to: UnsafePointer<Int8>!,
+                                _ bundle: UnsafePointer<Int8>?,
                                 _ data: UnsafePointer<Int8>!,
                                 _ len: Int,
                                 _ callback: CFriendInviteResponseCallback!,
@@ -1123,6 +1130,8 @@ internal func ela_invite_friend(_ carrier: OpaquePointer!,
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
  *      to          [in] The userid who send invite request.
+ * @param
+ *      bundle      [in] The bundle attached to this invitation reply.
  * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
@@ -1144,6 +1153,7 @@ internal func ela_invite_friend(_ carrier: OpaquePointer!,
 @_silgen_name("ela_reply_friend_invite")
 internal func ela_reply_friend_invite(_ carrier: OpaquePointer!,
                                       _ to: UnsafePointer<Int8>!,
+                                      _ bundle: UnsafePointer<Int8>?,
                                       _ status: Int32,
                                       _ reason: UnsafePointer<Int8>!,
                                       _ data: UnsafePointer<Int8>!,

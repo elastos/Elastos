@@ -183,6 +183,7 @@ private func onFriendMessage(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
 }
 
 private func onFriendInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
+                            _: UnsafePointer<Int8>?,
                             cdata: UnsafePointer<Int8>?, _: Int,
                             cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)

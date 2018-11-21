@@ -646,7 +646,7 @@ public class Carrier: NSObject {
 
         let cb: CFriendInviteResponseCallback = {
 
-           (_, cfrom, cstatus, creason, cdata, clen, cctxt) in
+           (_, cfrom, _, cstatus, creason, cdata, clen, cctxt) in
 
                 let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
                     .takeRetainedValue() as! [AnyObject?]
@@ -678,7 +678,7 @@ public class Carrier: NSObject {
         let result = target.withCString { (cto) -> Int32 in
             return data.withCString { (cdata) -> Int32 in
                 let len = data.utf8CString.count
-                return ela_invite_friend(ccarrier, cto, cdata, len, cb, cctxt)
+                return ela_invite_friend(ccarrier, cto, nil, cdata, len, cb, cctxt)
             }
         }
 
@@ -752,7 +752,7 @@ public class Carrier: NSObject {
                 }
             }
 
-            return ela_reply_friend_invite(ccarrier, cto, CInt(status),
+            return ela_reply_friend_invite(ccarrier, cto, nil, CInt(status),
                                            creason, cdata, len)
         }
 
