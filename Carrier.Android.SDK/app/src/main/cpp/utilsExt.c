@@ -28,7 +28,7 @@
 
 int setIntField(JNIEnv* env, jobject jobj, const char* name, int value)
 {
-    jclass* jcls;
+    jclass jcls;
     jfieldID fieldid;
 
     jcls = (*env)->GetObjectClass(env, jobj);
@@ -45,7 +45,7 @@ int setIntField(JNIEnv* env, jobject jobj, const char* name, int value)
 
 int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value)
 {
-    jclass* jcls;
+    jclass jcls;
     jfieldID fieldid;
 
     jcls = (*env)->GetObjectClass(env, jobj);
@@ -62,7 +62,7 @@ int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value)
 
 int getLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t* value)
 {
-    jclass* jcls;
+    jclass jcls;
     jfieldID fieldid;
 
     jcls = (*env)->GetObjectClass(env, jobj);
