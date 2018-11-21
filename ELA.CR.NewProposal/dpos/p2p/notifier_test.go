@@ -74,7 +74,7 @@ func TestNotifier(t *testing.T) {
 		port := portBase + i
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
-		err := mockRemotePeer(t, pid, priKey, uint16(port), peerChan, nil)
+		err := mockRemotePeer(pid, priKey, uint16(port), peerChan, nil)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
