@@ -38,7 +38,7 @@ func (msg *message) Deserialize(r io.Reader) error {
 	return err
 }
 
-func mockRemotePeer(t *testing.T, pid peer.PID, priKey []byte, port uint16,
+func mockRemotePeer(pid peer.PID, priKey []byte, port uint16,
 	pc chan<- *peer.Peer, mc chan<- p2p.Message) error {
 
 	// Configure peer to act as a simnet node that offers no services.
@@ -80,9 +80,6 @@ func mockRemotePeer(t *testing.T, pid peer.PID, priKey []byte, port uint16,
 
 				case *message:
 					mc <- m
-					if !m.pid.Equal(pid) {
-						t.Fatal("PID in message not match")
-					}
 				}
 			})
 
@@ -95,8 +92,8 @@ func mockRemotePeer(t *testing.T, pid peer.PID, priKey []byte, port uint16,
 	return nil
 }
 
-func mockInboundPeer(t *testing.T, addr PeerAddr, priKey []byte,
-	pc chan<- *peer.Peer, mc chan<- p2p.Message) error {
+func mockInboundPeer(addr PeerAddr, priKey []byte, pc chan<- *peer.Peer,
+	mc chan<- p2p.Message) error {
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
 		PID:             addr.PID,
@@ -130,9 +127,6 @@ func mockInboundPeer(t *testing.T, addr PeerAddr, priKey []byte,
 
 		case *message:
 			mc <- m
-			if !m.pid.Equal(addr.PID) {
-				t.Fatal("PID in message not match")
-			}
 		}
 	})
 
@@ -275,7 +269,7 @@ func TestServer_ConnectPeers(t *testing.T) {
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
 		connectPeers[pid] = addr
-		err := mockRemotePeer(t, pid, priKey, port, peerChan, msgChan)
+		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
@@ -377,7 +371,7 @@ func TestServer_ConnectPeers(t *testing.T) {
 
 	// Mock 50 inbound peers with PID in connect list.
 	for i, addr := range addrList[:50] {
-		err := mockInboundPeer(t, addr, priKeys[:50][i], peerChan, msgChan)
+		err := mockInboundPeer(addr, priKeys[:50][i], peerChan, msgChan)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
@@ -481,7 +475,7 @@ func TestServer_PeersReconnect(t *testing.T) {
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
 		connectPeers[pid] = addr
-		err := mockRemotePeer(t, pid, priKey, port, peerChan, msgChan)
+		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
@@ -499,6 +493,101 @@ func TestServer_PeersReconnect(t *testing.T) {
 		case <-time.After(time.Minute):
 			t.Fatalf("Connect peers timeout")
 		}
+	}
+}
+
+func TestServer_BroadcastMessage(t *testing.T) {
+	// Start peer-to-peer server
+	pid := peer.PID{}
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
+	server, err := NewServer(&Config{
+		PID:             pid,
+		MagicNumber:     123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		DefaultPort:     20338,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
+		MakeEmptyMessage: makeEmptyMessage,
+	})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	defer server.Stop()
+	server.Start()
+
+	peerChan := make(chan *peer.Peer)
+	msgChan := make(chan p2p.Message)
+
+	// Mock 100 remote peers and addresses.
+	priKeys := make([][]byte, 0, 100)
+	addrList := make([]PeerAddr, 0, 100)
+	connectPeers := make(map[peer.PID]PeerAddr)
+	for i := uint16(0); i < 100; i++ {
+		priKey, pubKey, _ := crypto.GenerateKeyPair()
+		priKeys = append(priKeys, priKey)
+		ePubKey, _ := pubKey.EncodePoint(true)
+		copy(pid[:], ePubKey)
+		port := 60000 + i
+		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
+		addrList = append(addrList, addr)
+		connectPeers[pid] = addr
+		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+
+	// Mock 100 outbound peers.
+	server.ConnectPeers(addrList)
+	for i := 0; i < 100; i++ {
+		select {
+		case <-peerChan:
+		case <-time.After(time.Second):
+			t.Fatalf("Connect peers timeout")
+		}
+	}
+	if !assert.Equal(t, int32(100), server.ConnectedCount()) {
+		t.FailNow()
+	}
+
+	// Mock 100 inbound peers.
+	for i, addr := range addrList {
+		err := mockInboundPeer(addr, priKeys[i], peerChan, msgChan)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+	for i := 0; i < 100; i++ {
+		select {
+		case <-peerChan:
+		case <-time.After(time.Second):
+			t.Fatalf("Connect peers timeout")
+		}
+	}
+	if !assert.Equal(t, int32(200), server.ConnectedCount()) {
+		t.FailNow()
+	}
+
+	// Each PID should receive only one message.
+	server.BroadcastMessage(&message{pid: pid})
+	count := 0
+out:
+	for {
+		select {
+		case <-msgChan:
+			count++
+		case <-time.After(time.Second):
+			break out
+		}
+	}
+	if !assert.Equal(t, 100, count) {
+		t.FailNow()
 	}
 }
 

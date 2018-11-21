@@ -253,6 +253,8 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 // handleBroadcastMsg deals with broadcasting messages to peers.  It is invoked
 // from the peerHandler goroutine.
 func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
+	// Group peers by PID, so each peer only get one broadcast message.
+	groups := make(map[peer.PID]*serverPeer)
 	state.forAllPeers(func(sp *serverPeer) {
 		if !sp.Connected() {
 			return
@@ -264,8 +266,12 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 			}
 		}
 
-		sp.SendMessage(bmsg.message, nil)
+		groups[sp.PID()] = sp
 	})
+
+	for _, sp := range groups {
+		sp.SendMessage(bmsg.message, nil)
+	}
 }
 
 type connectPeersMsg struct {
