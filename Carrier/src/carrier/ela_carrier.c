@@ -3438,7 +3438,8 @@ int ela_group_send_message(ElaCarrier *w, const char *groupid, const void *msg,
     uint32_t group_number;
     int rc;
 
-    if (!w || !groupid || !*groupid || !msg || !length) {
+    if (!w || !groupid || !*groupid || !msg || !length ||
+        length > ELA_MAX_APP_MESSAGE_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3499,7 +3500,8 @@ int ela_group_set_title(ElaCarrier *w, const char *groupid, const char *title)
     uint32_t group_number;
     int rc;
 
-    if (!w || !groupid || !*groupid || !title || !*title) {
+    if (!w || !groupid || !*groupid || !title || !*title ||
+        strlen(title) > ELA_MAX_GROUP_TITLE_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3605,7 +3607,7 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
         return -1;
     }
 
-    if (w->is_ready) {
+    if (!w->is_ready) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
         return -1;
     }
