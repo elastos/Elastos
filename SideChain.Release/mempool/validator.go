@@ -119,7 +119,7 @@ func (v *Validator) checkReferencedOutput(txn *types.Transaction) error {
 			return ruleError(ErrUnknownReferedTx, str)
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value <= 0 {
+		if referTxnOut.Value < 0 {
 			str := fmt.Sprint("Value of referenced transaction output is invalid")
 			return ruleError(ErrInvalidReferedTx, str)
 		}
