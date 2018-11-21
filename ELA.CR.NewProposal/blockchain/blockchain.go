@@ -11,6 +11,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
