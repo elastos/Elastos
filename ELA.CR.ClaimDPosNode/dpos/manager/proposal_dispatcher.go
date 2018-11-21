@@ -92,7 +92,7 @@ func (p *proposalDispatcher) StartProposal(b *core.Block) {
 	p.processingBlock = b
 	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 
-	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash()}
+	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.consensus.GetViewOffset()}
 	var err error
 	proposal.Sign, err = p.account.SignProposal(&proposal)
 	if err != nil {
