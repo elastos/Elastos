@@ -55,9 +55,10 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 	}
 
 	proposal := &core.DPosProposal{
-		Sponsor:   "B",
-		BlockHash: common.Uint256{2},
-		Sign:      []byte{1, 2, 3},
+		Sponsor:    "B",
+		BlockHash:  common.Uint256{2},
+		Sign:       []byte{1, 2, 3},
+		ViewOffset: 0,
 	}
 
 	buf := new(bytes.Buffer)
@@ -182,9 +183,10 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 
 	vote := &core.DPosProposalVote{
 		Proposal: core.DPosProposal{
-			Sponsor:   "B",
-			BlockHash: common.Uint256{2},
-			Sign:      []byte{1, 2, 3},
+			Sponsor:    "B",
+			BlockHash:  common.Uint256{2},
+			Sign:       []byte{1, 2, 3},
+			ViewOffset: 1,
 		},
 		Signer: "A",
 		Accept: false,
