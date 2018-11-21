@@ -3,12 +3,11 @@ language: c
 matrix:
   include:
   - os: osx
-    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Debug
+    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Debug RUN_TEST=ON
     if: NOT tag IS present
 
   - os: osx
-    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Release
-    if: tag IS present
+    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Release RUN_TEST=ON
 
   - os: osx
     env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Debug
@@ -25,6 +24,13 @@ matrix:
   - os: osx
     env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Release
     if: tag IS present
+
+  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Debug RUN_TEST=ON
+    sudo: true
+    if: NOT tag IS present
+
+  - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release RUN_TEST=ON
+    sudo: true
 
   - language: android
     sudo: true
@@ -122,13 +128,6 @@ matrix:
     env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
     if: tag IS present
 
-  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Debug
-    sudo: true
-    if: NOT tag IS present
-
-  - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release
-    sudo: true
-
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       if [[ "$ENABLE_DOCS" != "" ]]; then
@@ -157,11 +156,14 @@ install:
         tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
         export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
       fi
+    else
+      ulimit -c unlimited;
+      sudo sysctl kern.corefile=/cores/core;
+      easy_install six;
     fi
 
 script:
-  - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV_$BUILD_TYPE && cd $BUILD_ENV_$BUILD_TYPE
-
+  - cd $TRAVIS_BUILD_DIR/build && mkdir ${BUILD_ENV}_$BUILD_TYPE && cd ${BUILD_ENV}_$BUILD_TYPE
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       export OUTPUT_TYPE=so;
       if [[ "$ANDROID_ABI" == "" ]]; then
@@ -184,6 +186,21 @@ script:
 
   - make && make install && make dist
   - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
+  - if [[ "$RUN_TEST" != "" ]]; then
+      cd bin && export LD_LIBRARY_PATH=../lib;
+      ./elatests --robot -c ../etc/carrier/tests.conf &
+      ./elatests --cases -c ../etc/carrier/tests.conf -r 3;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ -f core ]]; then
+        sudo apt-get install gdb;
+        echo bt | gdb ./elatests core;
+      fi
+    else
+      if [[ -f /cores/core ]]; then
+        echo bt | lldb -c /cores/core;
+      fi
+    fi
 
 deploy:
   provider: releases
