@@ -173,11 +173,12 @@ type UpdateProducerInfo struct {
 }
 
 type UTXOInfo struct {
+	TxType        byte   `json:"txtype"`
+	TxID          string `json:"txid"`
 	AssetId       string `json:"assetid"`
-	Txid          string `json:"txid"`
 	VOut          uint32 `json:"vout"`
 	Address       string `json:"address"`
 	Amount        string `json:"amount"`
-	Confirmations uint32 `json:"confirmations"`
 	OutputLock    uint32 `json:"outputlock"`
+	Confirmations uint32 `json:"confirmations"`
 }

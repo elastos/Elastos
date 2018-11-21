@@ -7,6 +7,7 @@ import (
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 )
 
 const (
@@ -81,7 +82,7 @@ type Transaction struct {
 	Inputs         []*Input
 	Outputs        []*Output
 	LockTime       uint32
-	Programs       []*Program
+	Programs       []*pg.Program
 	Fee            Fixed64
 	FeePerKB       Fixed64
 
@@ -191,7 +192,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 		return errors.New("transaction write program count error: " + err.Error())
 	}
 	for i := uint64(0); i < count; i++ {
-		var program Program
+		var program pg.Program
 		if err := program.Deserialize(r); err != nil {
 			return errors.New("transaction deserialize program error: " + err.Error())
 		}

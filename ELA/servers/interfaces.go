@@ -748,13 +748,14 @@ func ListUnspent(param Params) map[string]interface{} {
 					"unknown transaction "+unspent.TxId.String()+" from persisted utxo")
 			}
 			result = append(result, UTXOInfo{
+				TxType:        byte(tx.TxType),
+				TxID:          ToReversedString(unspent.TxId),
 				AssetId:       ToReversedString(chain.DefaultLedger.Blockchain.AssetID),
-				Txid:          ToReversedString(unspent.TxId),
 				VOut:          unspent.Index,
 				Amount:        unspent.Value.String(),
 				Address:       address,
-				Confirmations: bestHeight - height + 1,
 				OutputLock:    tx.Outputs[unspent.Index].OutputLock,
+				Confirmations: bestHeight - height + 1,
 			})
 		}
 	}
