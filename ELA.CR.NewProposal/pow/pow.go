@@ -406,43 +406,35 @@ out:
 }
 
 func (pow *PowService) distributeDposReward(coinBaseTx *Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
-	if uint32(len(arbitrators)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
+	arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
+	if uint32(len(arbitratorsHashes)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
 		return 0, errors.New("Current arbitrators count less than required arbitrators count.")
 	}
-	candidates := DefaultLedger.Arbitrators.GetCandidates()
+	candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
 
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) * 0.75
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitrators))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitrators)+len(candidates))))
+	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
+	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
 
 	realDposReward := common.Fixed64(0)
-	for _, v := range arbitrators {
-		programHash, err := crypto.PublicKeyToStandardProgramHash(v)
-		if err != nil {
-			return 0, err
-		}
+	for _, v := range arbitratorsHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       individualBlockConfirmReward + individualProducerReward,
-			ProgramHash: *programHash,
+			ProgramHash: *v,
 		})
 
 		realDposReward += individualBlockConfirmReward + individualProducerReward
 	}
 
-	for _, v := range candidates {
-		programHash, err := crypto.PublicKeyToStandardProgramHash(v)
-		if err != nil {
-			return 0, err
-		}
+	for _, v := range candidatesHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       individualProducerReward,
-			ProgramHash: *programHash,
+			ProgramHash: *v,
 		})
 
 		realDposReward += individualBlockConfirmReward
