@@ -162,32 +162,84 @@ func TestCheckTransactionOutput(t *testing.T) {
 		{AssetID: common.EmptyHash, ProgramHash: FoundationAddress},
 	}
 	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "asset ID in coinbase is invalid")
+	assert.EqualError(t, err, "Asset ID in coinbase is invalid")
 
-	// reward to foundation in coinbase = 30%
+	// reward to foundation in coinbase = 30% (CheckTxOut version)
 	totalReward := RewardAmountPerBlock
 	t.Logf("Block reward amount %s", totalReward.String())
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward := totalReward - foundationReward
-	t.Logf("Miner reward amount %s", minerReward.String())
 	tx.Outputs = []*core.Output{
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
 	err = CheckTransactionOutput(core.CheckTxOut, tx)
 	assert.NoError(t, err)
 
-	// reward to foundation in coinbase < 30%
+	// reward to foundation in coinbase < 30% (CheckTxOut version)
 	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward = totalReward - foundationReward
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
+	}
+	err = CheckTransactionOutput(core.CheckTxOut, tx)
+	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
+
+	// reward to foundation in coinbase = 30%, reward to miner in coinbase >= 35%
+	foundationReward = common.Fixed64(float64(totalReward) * 0.3)
+	t.Logf("Foundation reward amount %s", foundationReward.String())
+	minerReward := common.Fixed64(float64(totalReward) * 0.35)
 	t.Logf("Miner reward amount %s", minerReward.String())
+	dposReward := totalReward - foundationReward - minerReward
 	tx.Outputs = []*core.Output{
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
+	err = CheckTransactionOutput(core.CheckTxOut|core.CheckCoinbaseTxDposReward, tx)
+	assert.NoError(t, err)
+
+	// reward to foundation in coinbase = 30%, reward to miner in coinbase < 35%
+	foundationReward = common.Fixed64(float64(totalReward) * 0.3)
+	t.Logf("Foundation reward amount %s", foundationReward.String())
+	minerReward = common.Fixed64(float64(totalReward) * 0.3499999)
+	t.Logf("Miner reward amount %s", minerReward.String())
+	dposReward = totalReward - foundationReward - minerReward
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
+	}
+	err = CheckTransactionOutput(core.CheckTxOut|core.CheckCoinbaseTxDposReward, tx)
+	assert.EqualError(t, err, "Reward to dpos in coinbase < 35%")
+
+	// reward to foundation in coinbase < 30%, reward to miner in coinbase >= 35%
+	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
+	t.Logf("Foundation reward amount %s", foundationReward.String())
+	minerReward = common.Fixed64(float64(totalReward) * 0.35)
+	t.Logf("Miner reward amount %s", minerReward.String())
+	dposReward = totalReward - foundationReward - minerReward
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
+	}
+	err = CheckTransactionOutput(core.CheckTxOut|core.CheckCoinbaseTxDposReward, tx)
+	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
+
+	// reward to foundation in coinbase < 30%, reward to miner in coinbase < 35%
+	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
+	t.Logf("Foundation reward amount %s", foundationReward.String())
+	minerReward = common.Fixed64(float64(totalReward) * 0.3499999)
+	t.Logf("Miner reward amount %s", minerReward.String())
+	dposReward = totalReward - foundationReward - minerReward
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
+	}
+	err = CheckTransactionOutput(core.CheckTxOut|core.CheckCoinbaseTxDposReward, tx)
 	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
 
 	// normal transaction

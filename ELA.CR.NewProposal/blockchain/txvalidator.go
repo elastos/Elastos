@@ -16,7 +16,7 @@ import (
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
+func CheckTransactionSanity(checkFlags uint64, txn *Transaction) ErrCode {
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
 		return ErrTransactionSize
@@ -27,7 +27,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionOutput(version, txn); err != nil {
+	if err := CheckTransactionOutput(checkFlags, txn); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
@@ -207,7 +207,7 @@ func CheckTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(version uint32, txn *Transaction) error {
+func CheckTransactionOutput(checkFlags uint64, txn *Transaction) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -236,7 +236,7 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
-		if version&CheckCoinbaseTxDposReward == CheckCoinbaseTxDposReward {
+		if checkFlags&CheckCoinbaseTxDposReward == CheckCoinbaseTxDposReward {
 			if Fixed64(minerReward) < Fixed64(float64(totalReward)*0.35) {
 				return errors.New("Reward to dpos in coinbase < 35%")
 			}
@@ -259,7 +259,7 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 
-		if version&CheckTxOut == CheckTxOut {
+		if checkFlags&CheckTxOut == CheckTxOut {
 			if !CheckOutputProgramHash(output.ProgramHash) {
 				return errors.New("output address is invalid")
 			}
