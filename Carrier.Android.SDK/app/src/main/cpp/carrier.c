@@ -563,7 +563,7 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
 }
 
 static
-void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
+void friendInviteRspCallback(ElaCarrier* carrier, const char* from, const char *bundle, int status,
                               const char* reason, const void* data, size_t length, void* context)
 {
     jstring jfrom = NULL;
@@ -572,6 +572,7 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
 
     (void)carrier;
     (void)length;
+    (void)bundle;
 
     ARG(context, 0, JNIEnv*, env);
     ARG(context, 1, jobject, jhandler);
@@ -639,7 +640,7 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
     argv[0] = getCarrierEnv(env, thiz);
     argv[1] = gjhandler;
 
-    rc  = ela_invite_friend(getCarrier(env, thiz), to, data, strlen(data) + 1,
+    rc  = ela_invite_friend(getCarrier(env, thiz), to, NULL, data, strlen(data) + 1,
                             friendInviteRspCallback, (void*)argv);
 
     (*env)->ReleaseStringUTFChars(env, jto, to);
@@ -693,7 +694,7 @@ jboolean replyFriendInvite(JNIEnv* env, jobject thiz, jstring jto, jint jstatus,
         return JNI_FALSE;
     }
 
-    rc  = ela_reply_friend_invite(getCarrier(env, thiz), to, jstatus, reason,
+    rc  = ela_reply_friend_invite(getCarrier(env, thiz), to, NULL, jstatus, reason,
                                   data, data ? strlen(data) + 1 : 0);
 
     (*env)->ReleaseStringUTFChars(env, jto, to);

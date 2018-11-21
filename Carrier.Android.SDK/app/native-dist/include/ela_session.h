@@ -62,8 +62,6 @@ extern "C" {
 
 #define ELA_MAX_USER_DATA_LEN   2048
 
-#define ELA_MAX_BUNDLE_LEN      128
-
 typedef struct ElaSession ElaSession;
 
 /**
