@@ -15,6 +15,10 @@ const (
 	IX_Unspent_UTXO   DataEntryPrefix = 0x91
 	IX_SideChain_Tx   DataEntryPrefix = 0x92
 
+	// VOTE
+	VOTE_RegisterProducer DataEntryPrefix = 0xc1
+	VOTE_VoteProducer     DataEntryPrefix = 0xc2
+
 	// ASSET
 	ST_Info DataEntryPrefix = 0xc0
 

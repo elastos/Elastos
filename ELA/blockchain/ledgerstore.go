@@ -9,6 +9,7 @@ import (
 // IChainStore provides func with store package.
 type IChainStore interface {
 	InitWithGenesisBlock(genesisblock *Block) (uint32, error)
+	InitProducerVotes() error
 
 	SaveBlock(b *Block) error
 	GetBlock(hash Uint256) (*Block, error)
@@ -27,6 +28,10 @@ type IChainStore interface {
 
 	PersistSidechainTx(sidechainTxHash Uint256)
 	GetSidechainTx(sidechainTxHash Uint256) (byte, error)
+
+	GetRegisteredProducers() []*PayloadRegisterProducer
+	GetProducerVote(programHash Uint168) Fixed64
+	GetProducerStatus(programHash Uint168) ProducerState
 
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32

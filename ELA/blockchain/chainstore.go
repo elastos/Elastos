@@ -14,10 +14,24 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const ValueNone = 0
-const ValueExist = 1
+const (
+	ValueNone  = 0
+	ValueExist = 1
 
-const TaskChanCap = 4
+	TaskChanCap = 4
+
+	ProducerUnRegistered ProducerState = 0x00
+	ProducerRegistered   ProducerState = 0x01
+	ProducerRegistering  ProducerState = 0x02
+)
+
+type ProducerState byte
+
+type ProducerInfo struct {
+	Payload   *PayloadRegisterProducer
+	RegHeight uint32
+	Vote      Fixed64
+}
 
 type persistTask interface{}
 
@@ -44,6 +58,8 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
+
+	producerVotes map[Uint168]*ProducerInfo
 }
 
 func NewChainStore() (IChainStore, error) {
@@ -61,6 +77,7 @@ func NewChainStore() (IChainStore, error) {
 		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
+		producerVotes:      make(map[Uint168]*ProducerInfo, 0),
 	}
 
 	go store.loop()
@@ -112,6 +129,42 @@ func (c *ChainStore) clearCache(b *Block) {
 			c.headerIdx.Remove(e)
 		}
 	}
+}
+
+func (c *ChainStore) InitProducerVotes() error {
+	producerBytes, err := c.getRegisteredProducers()
+	if err != nil {
+		return err
+	}
+	r := bytes.NewReader(producerBytes)
+	length, err := ReadUint64(r)
+	if err != nil {
+		return err
+	}
+
+	for i := uint64(0); i < length; i++ {
+		h, err := ReadUint32(r)
+		if err != nil {
+			return err
+		}
+		var p PayloadRegisterProducer
+		err = p.Deserialize(r, PayloadRegisterProducerVersion)
+		if err != nil {
+			return err
+		}
+
+		programHash, err := PublicKeyToProgramHash(p.PublicKey)
+		if err != nil {
+			return errors.New("[InitProducerVotes]" + err.Error())
+		}
+		vote, _ := c.getProducerVote(*programHash)
+		c.producerVotes[*programHash] = &ProducerInfo{
+			Payload:   &p,
+			RegHeight: h,
+			Vote:      vote,
+		}
+	}
+	return nil
 }
 
 func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
@@ -381,6 +434,44 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	}
 
 	return data[0], nil
+}
+
+func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	result := make([]*PayloadRegisterProducer, 0)
+	for _, p := range c.producerVotes {
+		result = append(result, p.Payload)
+	}
+
+	return result
+}
+
+func (c *ChainStore) GetProducerVote(programHash Uint168) Fixed64 {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	info, ok := c.producerVotes[programHash]
+	if !ok {
+		return Fixed64(0)
+	}
+
+	return info.Vote
+}
+
+func (c *ChainStore) GetProducerStatus(programHash Uint168) ProducerState {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if p, ok := c.producerVotes[programHash]; ok {
+		if c.currentBlockHeight-p.RegHeight >= 6 {
+			return ProducerRegistered
+		} else {
+			return ProducerRegistering
+		}
+	}
+	return ProducerUnRegistered
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
