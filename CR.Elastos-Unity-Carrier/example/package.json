@@ -7,10 +7,11 @@
     "test": "jest"
   },
   "dependencies": {
+    "lodash": "^4.17.11",
     "native-base": "2.7.0",
     "react": "16.4.1",
     "react-native": "0.56.0",
-    "react-native-elastos-carrier": "https://github.com/cyber-republic/react-native-elastos-carrier.git"
+    "react-native-elastos-carrier": "file:../"
   },
   "devDependencies": {
     "babel-eslint": "7.2.3",

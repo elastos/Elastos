@@ -31,14 +31,10 @@
   "homepage": "https://github.com/cyber-republic/react-native-elastos-carrier#readme",
   "scripts": {},
   "dependencies": {
-    "lodash": "^4.17.5"
+    "lodash": "^4.17.11"
   },
   "peerDependencies": {
-    "react": "16.2.0",
-    "react-native": "^0.52.0"
+    "react-native": "0.56.0"
   },
-  "devDependencies": {
-    "react": "16.2.0",
-    "react-native": "^0.52.0"
-  }
+  "devDependencies": {}
 }

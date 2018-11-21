@@ -27,6 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		395DBE5D21A547880070B61D /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ElastosCarrier.h; path = ElastosCarrier.framework/Headers/ElastosCarrier.h; sourceTree = "<group>"; };
 		39859FBB219C512100DE141B /* libCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		39859FC7219C515600DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
 		39859FC9219C515600DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
@@ -50,6 +51,7 @@
 		39859FB2219C512100DE141B = {
 			isa = PBXGroup;
 			children = (
+				395DBE5D21A547880070B61D /* ElastosCarrier.h */,
 				39859FCA219C515600DE141B /* Carrier.h */,
 				39859FC9219C515600DE141B /* Carrier.m */,
 				39859FCB219C515700DE141B /* CarrierPlugin.h */,
