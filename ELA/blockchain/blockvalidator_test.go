@@ -5,14 +5,15 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"math/rand"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/stretchr/testify/assert"
 	"github.com/elastos/Elastos.ELA/config"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -83,4 +84,30 @@ func TestCheckBlockSanity(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func TestCheckCoinbaseTransactionContext(t *testing.T) {
+	totalTxFee := common.Fixed64(rand.Int63())
+	totalReward := RewardAmountPerBlock + totalTxFee
+
+	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
+	minerReward := common.Fixed64(float64(totalReward) * 0.35)
+	dposReward := totalReward - foundationReward - minerReward
+
+	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+
+	//test coinbase inflation
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
+	}
+	err := checkCoinbaseTransactionContext(0, tx, totalTxFee)
+	assert.NoError(t, err)
+
+	//output count should match
+	err = checkCoinbaseTransactionContext(core.CheckCoinbaseTxDposReward, tx, totalTxFee)
+	assert.EqualError(t, err, "Coinbase output count not match.")
+
+	//todo check each arbitrators reward when arbitrators mock object is ready
 }
