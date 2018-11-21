@@ -75,13 +75,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// Check transaction outputs after a update checkpoint.
-	version := uint32(0)
-	if block.Height > BlockHeightCheckTxOut {
-		version += CheckTxOut
-	}
-	if block.Height > BlockHeightCheckCoinbaseTxDposReward {
-		version += CheckCoinbaseTxDposReward
-	}
+	checkFlag := BlockHeightVersions.GetCheckFlags(block.Height)
 
 	txIds := make([]Uint256, 0, len(transactions))
 	existingTxIds := make(map[Uint256]struct{})
@@ -96,7 +90,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(version, txn); errCode != Success {
+		if errCode := CheckTransactionSanity(checkFlag, txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -147,7 +141,8 @@ func CheckBlockContext(block *Block) error {
 		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
 	}
 
-	return checkCoinbaseTransactionContext(block, block.Transactions[0], totalTxFee)
+	checkFlags := BlockHeightVersions.GetCheckFlags(block.Height)
+	return checkCoinbaseTransactionContext(checkFlags, block.Transactions[0], totalTxFee)
 }
 
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
@@ -283,7 +278,7 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 	return feeMap, nil
 }
 
-func checkCoinbaseTransactionContext(block *Block, coinbase *Transaction, totalTxFee Fixed64) error {
+func checkCoinbaseTransactionContext(checkFlags uint64, coinbase *Transaction, totalTxFee Fixed64) error {
 	var rewardInCoinbase = Fixed64(0)
 	outputAddressMap := make(map[Uint168]Fixed64)
 
@@ -300,7 +295,7 @@ func checkCoinbaseTransactionContext(block *Block, coinbase *Transaction, totalT
 		return errors.New("Reward amount in coinbase not correct")
 	}
 
-	if block.Version > 0 {
+	if checkFlags&CheckCoinbaseTxDposReward != 0 {
 		arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
 		candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
 		if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
