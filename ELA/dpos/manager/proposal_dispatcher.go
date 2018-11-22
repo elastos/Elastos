@@ -34,6 +34,7 @@ type ProposalDispatcher interface {
 	FinishConsensus()
 
 	ProcessVote(v core.DPosProposalVote, accept bool)
+	AddPendingVote(v core.DPosProposalVote)
 
 	OnAbnormalStateDetected()
 	RequestAbnormalRecovering()
@@ -46,6 +47,7 @@ type proposalDispatcher struct {
 	acceptVotes        map[common.Uint256]core.DPosProposalVote
 	rejectedVotes      map[common.Uint256]core.DPosProposalVote
 	pendingProposals   map[common.Uint256]core.DPosProposal
+	pendingVotes       map[common.Uint256]core.DPosProposalVote
 
 	eventMonitor *log.EventMonitor
 	consensus    Consensus
@@ -83,6 +85,10 @@ func (p *proposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	} else {
 		p.countRejectedVote(v)
 	}
+}
+
+func (p *proposalDispatcher) AddPendingVote(v core.DPosProposalVote) {
+	p.pendingVotes[v.Hash()] = v
 }
 
 func (p *proposalDispatcher) IsProcessingBlockEmpty() bool {
@@ -161,8 +167,9 @@ func (p *proposalDispatcher) CleanProposals() {
 	log.Info("Clean proposals")
 	p.processingBlock = nil
 	p.processingProposal = nil
-	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote, 0)
-	p.rejectedVotes = make(map[common.Uint256]core.DPosProposalVote, 0)
+	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote)
+	p.rejectedVotes = make(map[common.Uint256]core.DPosProposalVote)
+	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
 
 	//todo clear pending proposals that are lower than current consensus height
 }
@@ -274,6 +281,11 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 		status.PendingProposals = append(status.PendingProposals, v)
 	}
 
+	status.PendingVotes = make([]core.DPosProposalVote, 0, len(p.pendingVotes))
+	for _, v := range p.pendingVotes {
+		status.PendingVotes = append(status.PendingVotes, v)
+	}
+
 	return nil
 }
 
@@ -298,6 +310,11 @@ func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusSt
 	p.pendingProposals = make(map[common.Uint256]core.DPosProposal)
 	for _, v := range status.PendingProposals {
 		p.pendingProposals[v.Hash()] = v
+	}
+
+	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
+	for _, v := range status.PendingVotes {
+		p.pendingVotes[v.Hash()] = v
 	}
 
 	return nil
@@ -361,7 +378,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 }
 
 func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
-	p.processingProposal = &d
+	p.setProcessingProposal(d)
 
 	vote := core.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: true}
 	var err error
@@ -383,7 +400,7 @@ func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
 }
 
 func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
-	p.processingProposal = &d
+	p.setProcessingProposal(d)
 
 	vote := core.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: false}
 	var err error
@@ -409,13 +426,29 @@ func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
 	p.eventMonitor.OnVoteArrived(voteEvent)
 }
 
+func (p *proposalDispatcher) setProcessingProposal(d core.DPosProposal) {
+	p.processingProposal = &d
+
+	for _, v := range p.pendingVotes {
+		if v.ProposalHash.IsEqual(d.Hash()) {
+			if v.Accept {
+				p.countAcceptedVote(v)
+			} else {
+				p.countRejectedVote(v)
+			}
+		}
+	}
+	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
+}
+
 func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) ProposalDispatcher {
 	p := &proposalDispatcher{
 		processingBlock:    nil,
 		processingProposal: nil,
-		acceptVotes:        make(map[common.Uint256]core.DPosProposalVote, 0),
-		rejectedVotes:      make(map[common.Uint256]core.DPosProposalVote, 0),
-		pendingProposals:   make(map[common.Uint256]core.DPosProposal, 0),
+		acceptVotes:        make(map[common.Uint256]core.DPosProposalVote),
+		rejectedVotes:      make(map[common.Uint256]core.DPosProposalVote),
+		pendingProposals:   make(map[common.Uint256]core.DPosProposal),
+		pendingVotes:       make(map[common.Uint256]core.DPosProposalVote),
 		eventMonitor:       eventMonitor,
 		consensus:          consensus,
 		network:            network,

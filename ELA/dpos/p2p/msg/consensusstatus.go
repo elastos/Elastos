@@ -19,6 +19,7 @@ type ConsensusStatus struct {
 	AcceptVotes      []core.DPosProposalVote
 	RejectedVotes    []core.DPosProposalVote
 	PendingProposals []core.DPosProposal
+	PendingVotes     []core.DPosProposalVote
 
 	MissingBlockConfirms []*core.BlockConfirm
 }
@@ -71,6 +72,15 @@ func (s *ConsensusStatus) Serialize(w io.Writer) error {
 		}
 	}
 
+	if err := common.WriteVarUint(w, uint64(len(s.PendingVotes))); err != nil {
+		return err
+	}
+	for _, v := range s.PendingProposals {
+		if err := v.Serialize(w); err != nil {
+			return err
+		}
+	}
+
 	if err := common.WriteVarUint(w, uint64(len(s.MissingBlockConfirms))); err != nil {
 		return err
 	}
@@ -89,7 +99,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	if err = s.ProcessingProposal.Deserialize(r); err != nil{
+	if err = s.ProcessingProposal.Deserialize(r); err != nil {
 		return err
 	}
 
@@ -132,6 +142,16 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 		return err
 	}
 	s.PendingProposals = make([]core.DPosProposal, arrayLength)
+	for i := uint64(0); i < arrayLength; i++ {
+		if err = s.PendingProposals[i].Deserialize(r); err != nil {
+			return err
+		}
+	}
+
+	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
+		return err
+	}
+	s.PendingVotes = make([]core.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
