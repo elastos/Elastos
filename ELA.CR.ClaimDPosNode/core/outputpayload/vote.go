@@ -8,6 +8,10 @@ import (
 )
 
 const (
+	MaxVoteProducersPerTransaction = 50
+)
+
+const (
 	Delegate VoteType = 0x00
 	CRC      VoteType = 0x01
 )
@@ -134,6 +138,21 @@ func (o *VoteOutput) Validate() error {
 			candidateMap[candidate] = struct{}{}
 		}
 	}
+
+	for _, content := range o.Contents {
+		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
+			return errors.New("invalid public key length.")
+		}
+		phs := make(map[common.Uint168]struct{}, 0)
+		for _, programHash := range content.Candidates {
+			_, ok := phs[programHash]
+			if ok {
+				return errors.New("duplicated programHash.")
+			}
+			phs[programHash] = struct{}{}
+		}
+	}
+
 	return nil
 }
 
