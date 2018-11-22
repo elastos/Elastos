@@ -8,23 +8,23 @@ import (
 
 const DefaultVoteMessageDataSize = 297 //164+67+1+65
 
-type VoteMessage struct {
+type Vote struct {
 	Command string
 	Vote    core.DPosProposalVote
 }
 
-func (msg *VoteMessage) CMD() string {
+func (msg *Vote) CMD() string {
 	return msg.Command
 }
 
-func (msg *VoteMessage) MaxLength() uint32 {
+func (msg *Vote) MaxLength() uint32 {
 	return DefaultVoteMessageDataSize
 }
 
-func (msg *VoteMessage) Serialize(w io.Writer) error {
+func (msg *Vote) Serialize(w io.Writer) error {
 	return msg.Vote.Serialize(w)
 }
 
-func (msg *VoteMessage) Deserialize(r io.Reader) error {
+func (msg *Vote) Deserialize(r io.Reader) error {
 	return msg.Vote.Deserialize(r)
 }

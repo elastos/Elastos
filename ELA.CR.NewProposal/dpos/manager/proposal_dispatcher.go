@@ -60,7 +60,7 @@ func (p *proposalDispatcher) OnAbnormalStateDetected() {
 
 func (p *proposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
-	msgItem := &msg2.RequestConsensusMessage{Height: height}
+	msgItem := &msg2.RequestConsensus{Height: height}
 	peerID := p.network.GetActivePeer()
 	if peerID == nil {
 		log.Error("[RequestAbnormalRecovering] can not find active peer")
@@ -106,7 +106,7 @@ func (p *proposalDispatcher) StartProposal(b *core.Block) {
 
 	log.Debug("[StartProposal] sponsor:", p.manager.GetPublicKey())
 
-	m := &msg2.ProposalMessage{
+	m := &msg2.Proposal{
 		Proposal: proposal,
 	}
 
@@ -370,7 +370,7 @@ func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
 		log.Error("[acceptProposal] sign failed")
 		return
 	}
-	voteMsg := &msg2.VoteMessage{Command: msg2.AcceptVote, Vote: vote}
+	voteMsg := &msg2.Vote{Command: msg2.CmdAcceptVote, Vote: vote}
 
 	p.ProcessVote(vote, true)
 	p.network.BroadcastMessage(voteMsg)
@@ -392,7 +392,7 @@ func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
 		log.Error("[rejectProposal] sign failed")
 		return
 	}
-	msg := &msg2.VoteMessage{Command: msg2.RejectVote, Vote: vote}
+	msg := &msg2.Vote{Command: msg2.CmdRejectVote, Vote: vote}
 	log.Info("[rejectProposal] send rej_vote msg:", msg2.GetMessageHash(msg))
 
 	_, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
