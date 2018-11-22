@@ -6,7 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-const DefaultProposalMessageDataSize = 164 //67+32+65
+const DefaultProposalMessageDataSize = 134 //33+32+4+65
 
 type Proposal struct {
 	Proposal core.DPosProposal
