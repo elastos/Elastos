@@ -11,16 +11,15 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/boltdb/bolt"
 	"github.com/cevaris/ordered_map"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var (
-	BKTHeaders    = []byte("Headers")
-	BKTHeightHash = []byte("HeightHash")
-	BKTChainTip   = []byte("ChainTip")
-	KEYChainTip   = []byte("ChainTip")
+	BKTHeaders  = []byte("H")
+	BKTIndexes  = []byte("I")
+	BKTChainTip = []byte("B")
 )
 
 // Ensure headers implement database.Headers interface.
@@ -28,37 +27,20 @@ var _ HeaderStore = (*headers)(nil)
 
 type headers struct {
 	*sync.RWMutex
-	*bolt.DB
+	db        *leveldb.DB
 	cache     *cache
 	newHeader func() util.BlockHeader
 }
 
 func NewHeaderStore(dataDir string, newHeader func() util.BlockHeader) (*headers, error) {
-	db, err := bolt.Open(filepath.Join(dataDir, "headers.bin"), 0644,
-		&bolt.Options{InitialMmapSize: 5000000})
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "HEADER"), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	db.Update(func(btx *bolt.Tx) error {
-		_, err := btx.CreateBucketIfNotExists(BKTHeaders)
-		if err != nil {
-			return err
-		}
-		_, err = btx.CreateBucketIfNotExists(BKTHeightHash)
-		if err != nil {
-			return err
-		}
-		_, err = btx.CreateBucketIfNotExists(BKTChainTip)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
 	headers := &headers{
 		RWMutex:   new(sync.RWMutex),
-		DB:        db,
+		db:        db,
 		cache:     newCache(100),
 		newHeader: newHeader,
 	}
@@ -95,29 +77,29 @@ func (h *headers) Put(header *util.Header, newTip bool) error {
 	if newTip {
 		h.cache.tip = header
 	}
-	return h.Update(func(tx *bolt.Tx) error {
+	key := toKey(BKTHeaders, header.Hash().Bytes()...)
 
-		bytes, err := header.Serialize()
+	bytes, err := header.Serialize()
+	if err != nil {
+		return err
+	}
+
+	err = h.db.Put(key, bytes, nil)
+	if err != nil {
+		return err
+	}
+
+	if newTip {
+		err = h.db.Put(BKTChainTip, bytes, nil)
 		if err != nil {
 			return err
 		}
+	}
 
-		err = tx.Bucket(BKTHeaders).Put(header.Hash().Bytes(), bytes)
-		if err != nil {
-			return err
-		}
-
-		if newTip {
-			err = tx.Bucket(BKTChainTip).Put(KEYChainTip, bytes)
-			if err != nil {
-				return err
-			}
-		}
-
-		var key [4]byte
-		binary.LittleEndian.PutUint32(key[:], header.Height)
-		return tx.Bucket(BKTHeightHash).Put(key[:], header.Hash().Bytes())
-	})
+	var height [4]byte
+	binary.LittleEndian.PutUint32(height[:], header.Height)
+	index := toKey(BKTIndexes, height[:]...)
+	return h.db.Put(index, header.Hash().Bytes(), nil)
 }
 
 func (h *headers) GetPrevious(header *util.Header) (*util.Header, error) {
@@ -140,17 +122,7 @@ func (h *headers) Get(hash *common.Uint256) (header *util.Header, err error) {
 		return header, nil
 	}
 
-	err = h.View(func(tx *bolt.Tx) error {
-
-		header, err = h.getHeader(tx, BKTHeaders, hash.Bytes())
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return header, err
+	return h.getHeader(toKey(BKTHeaders, hash.Bytes()...))
 }
 
 func (h *headers) GetBest() (header *util.Header, err error) {
@@ -161,35 +133,23 @@ func (h *headers) GetBest() (header *util.Header, err error) {
 		return h.cache.tip, nil
 	}
 
-	err = h.View(func(tx *bolt.Tx) error {
-
-		header, err = h.getHeader(tx, BKTChainTip, KEYChainTip)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return header, err
+	return h.getHeader(BKTChainTip)
 }
 
 func (h *headers) GetByHeight(height uint32) (header *util.Header, err error) {
 	h.RLock()
 	defer h.RUnlock()
 
-	err = h.View(func(tx *bolt.Tx) error {
-		var key [4]byte
-		binary.LittleEndian.PutUint32(key[:], height)
-		hashBytes := tx.Bucket(BKTHeightHash).Get(key[:])
-		header, err = h.getHeader(tx, BKTHeaders, hashBytes)
-		if err != nil {
-			return err
-		}
-		return err
-	})
+	var key [4]byte
+	binary.LittleEndian.PutUint32(key[:], height)
+	hashBytes, err := h.db.Get(toKey(BKTIndexes, key[:]...), nil)
 	if err != nil {
-		return header, fmt.Errorf("header not exist on height %d", height)
+		return nil, err
+	}
+
+	header, err = h.getHeader(toKey(BKTHeaders, hashBytes...))
+	if err != nil {
+		return nil, err
 	}
 
 	return header, err
@@ -199,32 +159,32 @@ func (h *headers) Clear() error {
 	h.Lock()
 	defer h.Unlock()
 
-	return h.Update(func(tx *bolt.Tx) error {
-		err := tx.DeleteBucket(BKTHeaders)
-		if err != nil {
-			return err
-		}
-
-		return tx.DeleteBucket(BKTChainTip)
-	})
+	batch := new(leveldb.Batch)
+	inter := h.db.NewIterator(nil, nil)
+	for inter.Next() {
+		batch.Delete(inter.Key())
+	}
+	inter.Release()
+	return h.db.Write(batch, nil)
 }
 
 // Close db
 func (h *headers) Close() error {
 	h.Lock()
 	defer h.Unlock()
-	return h.DB.Close()
+	return h.db.Close()
 }
 
-func (h *headers) getHeader(tx *bolt.Tx, bucket []byte, key []byte) (*util.Header, error) {
-	headerBytes := tx.Bucket(bucket).Get(key)
-	if headerBytes == nil {
-		return nil, fmt.Errorf("header %s does not exist in database", hex.EncodeToString(key))
+func (h *headers) getHeader(key []byte) (*util.Header, error) {
+	data, err := h.db.Get(key, nil)
+	if err != nil {
+		return nil, fmt.Errorf("header %s does not exist in database",
+			hex.EncodeToString(key))
 	}
 
 	var header util.Header
 	header.BlockHeader = h.newHeader()
-	err := header.Deserialize(headerBytes)
+	err = header.Deserialize(data)
 	if err != nil {
 		return nil, err
 	}
@@ -273,4 +233,12 @@ func (cache *cache) Get(hash *common.Uint256) (*util.Header, error) {
 		return nil, errors.New("Header not found in cache ")
 	}
 	return sh.(*util.Header), nil
+}
+
+func toKey(bucket []byte, index ...byte) []byte {
+	return append(bucket, index...)
+}
+
+func subKey(bucket []byte, key []byte) []byte {
+	return key[len(bucket):]
 }

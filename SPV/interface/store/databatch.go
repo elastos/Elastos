@@ -4,60 +4,51 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/binary"
-	"encoding/gob"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/boltdb/bolt"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 // Ensure dataBatch implement DataBatch interface.
 var _ DataBatch = (*dataBatch)(nil)
 
 type dataBatch struct {
-	mutex  sync.Mutex
-	boltTx *bolt.Tx
-	sqlTx  *sql.Tx
+	mutex sync.Mutex
+	*leveldb.DB
+	*leveldb.Batch
+	sqlTx *sql.Tx
 }
 
 func (b *dataBatch) Txs() TxsBatch {
-	return &txsBatch{Tx: b.boltTx}
+	return &txsBatch{Batch: b.Batch}
 }
 
 func (b *dataBatch) Ops() OpsBatch {
-	return &opsBatch{Tx: b.boltTx}
+	return &opsBatch{Batch: b.Batch}
 }
 
 func (b *dataBatch) Que() QueBatch {
 	return &queBatch{Tx: b.sqlTx}
 }
 
-// Delete all transactions, ops, queued items on
-// the given height.
+// Delete all transactions, ops, queued items on the given height.
 func (b *dataBatch) DelAll(height uint32) error {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
 	var key [4]byte
 	binary.BigEndian.PutUint32(key[:], height)
-	data := b.boltTx.Bucket(BKTHeightTxs).Get(key[:])
-
-	var txMap = make(map[common.Uint256]uint32)
-	err := gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-	if err != nil {
-		return err
-	}
-
-	txsBucket := b.boltTx.Bucket(BKTTxs)
-	opsBucket := b.boltTx.Bucket(BKTOps)
-	for txId := range txMap {
+	data, _ := b.DB.Get(toKey(BKTHeightTxs, key[:]...), nil)
+	for _, txId := range getTxIds(data) {
 		var utx util.Tx
-		data := txsBucket.Get(txId.Bytes())
-		err := utx.Deserialize(bytes.NewReader(data))
+		data, err := b.DB.Get(toKey(BKTTxs, txId.Bytes()...), nil)
 		if err != nil {
+			return err
+		}
+		if err := utx.Deserialize(bytes.NewReader(data)); err != nil {
 			return err
 		}
 
@@ -68,25 +59,22 @@ func (b *dataBatch) DelAll(height uint32) error {
 		}
 
 		for index := range tx.Outputs {
-			outpoint := core.NewOutPoint(utx.Hash, uint16(index)).Bytes()
-			opsBucket.Delete(outpoint)
+			outpoint := core.NewOutPoint(utx.Hash, uint16(index))
+			b.Batch.Delete(toKey(BKTOps, outpoint.Bytes()...))
 		}
 
-		if err := b.boltTx.Bucket(BKTTxs).Delete(txId.Bytes()); err != nil {
-			return err
-		}
+		b.Batch.Delete(toKey(BKTTxs, txId.Bytes()...))
 	}
 
-	err = b.boltTx.Bucket(BKTHeightTxs).Delete(key[:])
-	if err != nil {
-		return err
-	}
+	b.Batch.Delete(toKey(BKTHeightTxs, key[:]...))
 
 	return b.Que().DelAll(height)
 }
 
 func (b *dataBatch) Commit() error {
-	if err := b.boltTx.Commit(); err != nil {
+	defer b.sqlTx.Rollback()
+
+	if err := b.DB.Write(b.Batch, nil); err != nil {
 		return err
 	}
 
@@ -98,13 +86,6 @@ func (b *dataBatch) Commit() error {
 }
 
 func (b *dataBatch) Rollback() error {
-	if err := b.boltTx.Rollback(); err != nil {
-		return err
-	}
-
-	if err := b.sqlTx.Rollback(); err != nil {
-		return err
-	}
-
-	return nil
+	b.Batch.Reset()
+	return b.sqlTx.Rollback()
 }

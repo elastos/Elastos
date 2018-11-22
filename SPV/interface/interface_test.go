@@ -2,7 +2,6 @@ package _interface
 
 import (
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"math/rand"
 	"os"
 	"testing"
@@ -21,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/stretchr/testify/assert"
 )
@@ -168,7 +168,7 @@ func TestNewSPVService(t *testing.T) {
 
 	service, err := newSpvService(config)
 	if err != nil {
-		t.Error("NewSPVService error %s", err.Error())
+		t.Errorf("NewSPVService error %s", err.Error())
 	}
 
 	confirmedListener := &TxListener{
@@ -210,10 +210,16 @@ out:
 				t.FailNow()
 			}
 
-			height := rand.Int31n(int32(best.Height))
-			t.Logf("GetTransactionIds from height %d", height)
+			height := uint32(rand.Int31n(int32(best.Height)))
 
-			txIds, err := service.GetTransactionIds(uint32(height))
+			t.Logf("GetBlock from height %d", height)
+			_, err = service.headers.GetByHeight(height)
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			t.Logf("GetTransactionIds from height %d", height)
+			txIds, err := service.GetTransactionIds(height)
 			if !assert.NoError(t, err) {
 				t.FailNow()
 			}

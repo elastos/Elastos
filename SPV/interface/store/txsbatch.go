@@ -3,13 +3,12 @@ package store
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
-	"github.com/boltdb/bolt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 // Ensure txsBatch implement TxsBatch interface.
@@ -17,7 +16,8 @@ var _ TxsBatch = (*txsBatch)(nil)
 
 type txsBatch struct {
 	sync.Mutex
-	*bolt.Tx
+	*leveldb.DB
+	*leveldb.Batch
 	addTxs []*util.Tx
 	delTxs []*util.Tx
 }
@@ -31,11 +31,7 @@ func (b *txsBatch) Put(tx *util.Tx) error {
 		return err
 	}
 
-	err := b.Tx.Bucket(BKTTxs).Put(tx.Hash.Bytes(), buf.Bytes())
-	if err != nil {
-		return err
-	}
-
+	b.Batch.Put(toKey(BKTTxs, tx.Hash.Bytes()...), buf.Bytes())
 	b.addTxs = append(b.addTxs, tx)
 	return nil
 }
@@ -45,17 +41,15 @@ func (b *txsBatch) Del(txId *common.Uint256) error {
 	defer b.Unlock()
 
 	var tx util.Tx
-	data := b.Tx.Bucket(BKTTxs).Get(txId.Bytes())
-	err := tx.Deserialize(bytes.NewReader(data))
+	data, err := b.DB.Get(toKey(BKTTxs, txId.Bytes()...), nil)
 	if err != nil {
 		return err
 	}
-
-	err = b.Tx.Bucket(BKTTxs).Delete(txId.Bytes())
-	if err != nil {
+	if err := tx.Deserialize(bytes.NewReader(data)); err != nil {
 		return err
 	}
 
+	b.Batch.Delete(toKey(BKTTxs, txId.Bytes()...))
 	b.delTxs = append(b.delTxs, &tx)
 	return nil
 }
@@ -66,29 +60,25 @@ func (b *txsBatch) DelAll(height uint32) error {
 
 	var key [4]byte
 	binary.BigEndian.PutUint32(key[:], height)
-	data := b.Tx.Bucket(BKTHeightTxs).Get(key[:])
-
-	var txMap = make(map[common.Uint256]uint32)
-	err := gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-	if err != nil {
-		return err
+	data, _ := b.DB.Get(toKey(BKTHeightTxs, key[:]...), nil)
+	for _, txID := range getTxIds(data) {
+		b.Batch.Delete(toKey(BKTTxs, txID.Bytes()...))
 	}
+	b.Batch.Delete(toKey(BKTHeightTxs, key[:]...))
 
-	txBucket := b.Tx.Bucket(BKTTxs)
-	for txId := range txMap {
-		if err := txBucket.Delete(txId.Bytes()); err != nil {
-			return err
-		}
-	}
+	return nil
+}
 
-	return b.Tx.Bucket(BKTHeightTxs).Delete(key[:])
+func (b *txsBatch) Rollback() error {
+	b.Lock()
+	defer b.Unlock()
+	b.Batch.Reset()
+	return nil
 }
 
 func (b *txsBatch) Commit() error {
 	b.Lock()
 	defer b.Unlock()
-
-	index := b.Tx.Bucket(BKTHeightTxs)
 
 	// Put height index for added transactions.
 	if len(b.addTxs) > 0 {
@@ -96,22 +86,11 @@ func (b *txsBatch) Commit() error {
 		for height, txs := range groups {
 			var key [4]byte
 			binary.BigEndian.PutUint32(key[:], height)
-			data := index.Get(key[:])
-
-			var txMap = make(map[common.Uint256]uint32)
-			// Ignore decode error, could be first adding.
-			gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-
+			data, _ := b.DB.Get(toKey(BKTHeightTxs, key[:]...), nil)
 			for _, tx := range txs {
-				txMap[tx.Hash] = height
+				data = putTxId(data, &tx.Hash)
 			}
-
-			var buf = new(bytes.Buffer)
-			if err := gob.NewEncoder(buf).Encode(txMap); err != nil {
-				return err
-			}
-
-			return index.Put(key[:], buf.Bytes())
+			b.Batch.Put(toKey(BKTHeightTxs, key[:]...), data)
 		}
 	}
 
@@ -121,34 +100,15 @@ func (b *txsBatch) Commit() error {
 		for height, txs := range groups {
 			var key [4]byte
 			binary.BigEndian.PutUint32(key[:], height)
-			data := index.Get(key[:])
-
-			var txMap = make(map[common.Uint256]uint32)
-			err := gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-			if err != nil {
-				return err
-			}
-
+			data, _ := b.DB.Get(toKey(BKTHeightTxs, key[:]...), nil)
 			for _, tx := range txs {
-				delete(txMap, tx.Hash)
+				data = delTxId(data, &tx.Hash)
 			}
-
-			var buf = new(bytes.Buffer)
-			if err = gob.NewEncoder(buf).Encode(txMap); err != nil {
-				return err
-			}
-
-			return index.Put(key[:], buf.Bytes())
+			b.Batch.Delete(toKey(BKTHeightTxs, key[:]...))
 		}
 	}
 
-	return b.Tx.Commit()
-}
-
-func (b *txsBatch) Rollback() error {
-	b.Lock()
-	defer b.Unlock()
-	return b.Tx.Rollback()
+	return b.DB.Write(b.Batch, nil)
 }
 
 func groupByHeight(txs []*util.Tx) map[uint32][]*util.Tx {

@@ -1,17 +1,18 @@
 package store
 
 import (
-	"github.com/boltdb/bolt"
 	"path/filepath"
 	"sync"
+
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 // Ensure dataStore implement DataStore interface.
 var _ DataStore = (*dataStore)(nil)
 
 type dataStore struct {
-	*sync.RWMutex
-	*bolt.DB
+	sync.RWMutex
+	db    *leveldb.DB
 	addrs *addrs
 	txs   *txs
 	ops   *ops
@@ -19,36 +20,41 @@ type dataStore struct {
 }
 
 func NewDataStore(dataDir string) (*dataStore, error) {
-	db, err := bolt.Open(filepath.Join(dataDir, "data_store.bin"), 0644,
-		&bolt.Options{InitialMmapSize: 5000000})
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "DATA"), nil)
 	if err != nil {
 		return nil, err
 	}
-	store := new(dataStore)
-	store.RWMutex = new(sync.RWMutex)
-	store.DB = db
-
-	store.addrs, err = NewAddrs(db)
 	if err != nil {
 		return nil, err
 	}
 
-	store.txs, err = NewTxs(db)
+	addrs, err := NewAddrs(db)
 	if err != nil {
 		return nil, err
 	}
 
-	store.ops, err = NewOps(db)
+	txs, err := NewTxs(db)
 	if err != nil {
 		return nil, err
 	}
 
-	store.que, err = NewQue(dataDir)
+	ops, err := NewOps(db)
 	if err != nil {
 		return nil, err
 	}
 
-	return store, nil
+	que, err := NewQue(dataDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dataStore{
+		db:    db,
+		addrs: addrs,
+		txs:   txs,
+		ops:   ops,
+		que:   que,
+	}, nil
 }
 
 func (d *dataStore) Addrs() Addrs {
@@ -68,18 +74,14 @@ func (d *dataStore) Que() Que {
 }
 
 func (d *dataStore) Batch() DataBatch {
-	boltTx, err := d.DB.Begin(true)
-	if err != nil {
-		panic(err)
-	}
-
 	sqlTx, err := d.que.Begin()
 	if err != nil {
 		panic(err)
 	}
 
 	return &dataBatch{
-		boltTx: boltTx,
+		DB:d.db,
+		Batch: new(leveldb.Batch),
 		sqlTx:  sqlTx,
 	}
 }
@@ -88,24 +90,26 @@ func (d *dataStore) Clear() error {
 	d.Lock()
 	defer d.Unlock()
 
-	return d.Update(func(tx *bolt.Tx) error {
-		tx.DeleteBucket(BKTAddrs)
-		tx.DeleteBucket(BKTTxs)
-		tx.DeleteBucket(BKTHeightTxs)
-		tx.DeleteBucket(BKTOps)
-		return nil
-	})
+	d.que.Clear()
+
+	it := d.db.NewIterator(nil, nil)
+	batch := new(leveldb.Batch)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	it.Release()
+
+	return d.db.Write(batch, nil)
 }
 
 // Close db
 func (d *dataStore) Close() error {
-	d.addrs.Close()
-	d.txs.Close()
-	d.ops.Close()
-
 	d.Lock()
 	defer d.Unlock()
 
+	d.addrs.Close()
+	d.txs.Close()
+	d.ops.Close()
 	d.que.Close()
-	return d.DB.Close()
+	return d.db.Close()
 }

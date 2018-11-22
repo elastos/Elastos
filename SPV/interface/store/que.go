@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
@@ -25,7 +26,7 @@ const (
 var _ Que = (*que)(nil)
 
 type que struct {
-	*sync.RWMutex
+	sync.RWMutex
 	*sql.DB
 }
 
@@ -40,7 +41,7 @@ func NewQue(dataDir string) (*que, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &que{RWMutex: new(sync.RWMutex), DB: db}, nil
+	return &que{DB: db}, nil
 }
 
 // Put a queue item to database

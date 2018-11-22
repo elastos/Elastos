@@ -16,7 +16,7 @@ type cache struct {
 	headers *ordered_map.OrderedMap
 }
 
-func newHeaderCache(size int) *cache {
+func newCache(size int) *cache {
 	return &cache{
 		size:    size,
 		headers: ordered_map.NewOrderedMap(),

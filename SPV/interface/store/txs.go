@@ -7,65 +7,46 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/syndtr/goleveldb/leveldb"
+	dbutil "github.com/syndtr/goleveldb/leveldb/util"
 )
 
 var (
-	BKTTxs       = []byte("Txs")
-	BKTHeightTxs = []byte("HeightTxs")
+	BKTTxs       = []byte("T")
+	BKTHeightTxs = []byte("H")
 )
 
 // Ensure txs implement Txs interface.
 var _ Txs = (*txs)(nil)
 
 type txs struct {
-	*sync.RWMutex
-	*bolt.DB
+	sync.RWMutex
+	db *leveldb.DB
 }
 
-func NewTxs(db *bolt.DB) (*txs, error) {
-	store := new(txs)
-	store.RWMutex = new(sync.RWMutex)
-	store.DB = db
-
-	db.Update(func(btx *bolt.Tx) error {
-		_, err := btx.CreateBucketIfNotExists(BKTTxs)
-		if err != nil {
-			return err
-		}
-		_, err = btx.CreateBucketIfNotExists(BKTHeightTxs)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
-	return store, nil
+func NewTxs(db *leveldb.DB) (*txs, error) {
+	return &txs{db: db}, nil
 }
 
-func (t *txs) Put(txn *util.Tx) (err error) {
+func (t *txs) Put(txn *util.Tx) error {
 	t.Lock()
 	defer t.Unlock()
 
-	return t.Update(func(tx *bolt.Tx) error {
-		buf := new(bytes.Buffer)
-		if err = txn.Serialize(buf); err != nil {
-			return err
-		}
+	buf := new(bytes.Buffer)
+	if err := txn.Serialize(buf); err != nil {
+		return err
+	}
 
-		if err = tx.Bucket(BKTTxs).Put(txn.Hash.Bytes(), buf.Bytes()); err != nil {
-			return err
-		}
+	batch := new(leveldb.Batch)
+	batch.Put(toKey(BKTTxs, txn.Hash.Bytes()...), buf.Bytes())
 
-		var key [4]byte
-		binary.BigEndian.PutUint32(key[:], txn.Height)
-		data := tx.Bucket(BKTHeightTxs).Get(key[:])
+	var key [4]byte
+	binary.BigEndian.PutUint32(key[:], txn.Height)
+	data, _ := t.db.Get(toKey(BKTHeightTxs, key[:]...), nil)
+	batch.Put(toKey(BKTHeightTxs, key[:]...), putTxId(data, &txn.Hash))
 
-		data = putTxId(data, &txn.Hash)
-
-		return tx.Bucket(BKTHeightTxs).Put(key[:], data)
-	})
+	return t.db.Write(batch, nil)
 }
 
 func putTxId(data []byte, txId *common.Uint256) []byte {
@@ -86,11 +67,15 @@ func (t *txs) Get(hash *common.Uint256) (txn *util.Tx, err error) {
 	t.RLock()
 	defer t.RUnlock()
 
-	err = t.View(func(tx *bolt.Tx) error {
-		data := tx.Bucket(BKTTxs).Get(hash.Bytes())
-		txn = new(util.Tx)
-		return txn.Deserialize(bytes.NewReader(data))
-	})
+	data, err := t.db.Get(toKey(BKTTxs, hash.Bytes()...), nil)
+	if err != nil {
+		return nil, err
+	}
+	txn = new(util.Tx)
+	err = txn.Deserialize(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
 
 	return txn, err
 }
@@ -99,17 +84,10 @@ func (t *txs) GetIds(height uint32) (txIds []*common.Uint256, err error) {
 	t.RLock()
 	defer t.RUnlock()
 
-	err = t.View(func(tx *bolt.Tx) error {
-		var key [4]byte
-		binary.BigEndian.PutUint32(key[:], height)
-		data := tx.Bucket(BKTHeightTxs).Get(key[:])
-
-		txIds = getTxIds(data)
-
-		return nil
-	})
-
-	return txIds, err
+	var key [4]byte
+	binary.BigEndian.PutUint32(key[:], height)
+	data, _ := t.db.Get(toKey(BKTHeightTxs, key[:]...), nil)
+	return getTxIds(data), nil
 }
 
 func getTxIds(data []byte) (txIds []*common.Uint256) {
@@ -124,7 +102,7 @@ func getTxIds(data []byte) (txIds []*common.Uint256) {
 	data = data[2:]
 	for i := uint16(0); i < count; i++ {
 		var txId common.Uint256
-		copy(txId[:], data[i*common.UINT256SIZE : (i+1)*common.UINT256SIZE])
+		copy(txId[:], data[i*common.UINT256SIZE:(i+1)*common.UINT256SIZE])
 		txIds = append(txIds, &txId)
 	}
 
@@ -135,44 +113,45 @@ func (t *txs) GetAll() (txs []*util.Tx, err error) {
 	t.RLock()
 	defer t.RUnlock()
 
-	err = t.View(func(tx *bolt.Tx) error {
-		return tx.Bucket(BKTTxs).ForEach(func(k, v []byte) error {
-			var txn util.Tx
-			err := txn.Deserialize(bytes.NewReader(v))
-			if err != nil {
-				return err
-			}
-			txs = append(txs, &txn)
-			return nil
-		})
-	})
-
+	it := t.db.NewIterator(dbutil.BytesPrefix(BKTTxs), nil)
+	defer it.Release()
+	for it.Next() {
+		var txn util.Tx
+		err := txn.Deserialize(bytes.NewReader(it.Value()))
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, &txn)
+	}
 	return txs, err
 }
 
-func (t *txs) Del(txId *common.Uint256) (err error) {
+func (t *txs) Del(txId *common.Uint256) error {
 	t.Lock()
 	defer t.Unlock()
 
-	return t.DB.Update(func(tx *bolt.Tx) error {
-		var txn util.Tx
-		data := tx.Bucket(BKTTxs).Get(txId.Bytes())
-		err := txn.Deserialize(bytes.NewReader(data))
-		if err != nil {
-			return err
-		}
+	var txn util.Tx
+	data, err := t.db.Get(toKey(BKTTxs, txId.Bytes()...), nil)
+	if err != nil {
+		return err
+	}
 
-		var key [4]byte
-		binary.BigEndian.PutUint32(key[:], txn.Height)
-		data = tx.Bucket(BKTHeightTxs).Get(key[:])
+	if err := txn.Deserialize(bytes.NewReader(data)); err != nil {
+		return err
+	}
 
-		data = delTxId(data, &txn.Hash)
+	var key [4]byte
+	binary.BigEndian.PutUint32(key[:], txn.Height)
+	data, _ = t.db.Get(toKey(BKTHeightTxs, key[:]...), nil)
 
-		return tx.Bucket(BKTHeightTxs).Put(key[:], data)
-	})
+	batch := new(leveldb.Batch)
+	batch.Delete(toKey(BKTTxs, txId.Bytes()...))
+	batch.Put(toKey(BKTHeightTxs, key[:]...), delTxId(data, &txn.Hash))
+
+	return t.db.Write(batch, nil)
 }
 
-func delTxId(data []byte, hash *common.Uint256) []byte{
+func delTxId(data []byte, hash *common.Uint256) []byte {
 	// Get tx count
 	var count uint16
 	if len(data) == 0 {
@@ -184,7 +163,7 @@ func delTxId(data []byte, hash *common.Uint256) []byte{
 	data = data[2:]
 	for i := uint16(0); i < count; i++ {
 		var txId common.Uint256
-		copy(txId[:],data[i*common.UINT256SIZE : (i+1)*common.UINT256SIZE])
+		copy(txId[:], data[i*common.UINT256SIZE:(i+1)*common.UINT256SIZE])
 		if txId.IsEqual(*hash) {
 			data = append(data[0:i*common.UINT256SIZE], data[(i+1)*common.UINT256SIZE:]...)
 			break
@@ -197,29 +176,27 @@ func delTxId(data []byte, hash *common.Uint256) []byte{
 }
 
 func (t *txs) Batch() TxsBatch {
-	tx, err := t.DB.Begin(true)
-	if err != nil {
-		panic(err)
-	}
-
-	return &txsBatch{Tx: tx}
+	return &txsBatch{DB: t.db, Batch: new(leveldb.Batch)}
 }
 
 func (t *txs) Clear() error {
 	t.Lock()
 	defer t.Unlock()
 
-	return t.DB.Update(func(tx *bolt.Tx) error {
-		if err := tx.DeleteBucket(BKTTxs); err != nil {
-			return err
-		}
+	it := t.db.NewIterator(dbutil.BytesPrefix(BKTTxs), nil)
+	batch := new(leveldb.Batch)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	it.Release()
 
-		if err := tx.DeleteBucket(BKTHeightTxs); err != nil {
-			return err
-		}
+	it = t.db.NewIterator(dbutil.BytesPrefix(BKTHeightTxs), nil)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	it.Release()
 
-		return nil
-	})
+	return t.db.Write(batch, nil)
 }
 
 func (t *txs) Close() error {

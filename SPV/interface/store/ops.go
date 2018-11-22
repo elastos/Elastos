@@ -5,58 +5,44 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/syndtr/goleveldb/leveldb"
+	dbutil "github.com/syndtr/goleveldb/leveldb/util"
 )
 
 var (
-	BKTOps = []byte("Ops")
+	BKTOps = []byte("O")
 )
 
 // Ensure ops implement Ops interface.
 var _ Ops = (*ops)(nil)
 
 type ops struct {
-	*sync.RWMutex
-	*bolt.DB
+	sync.RWMutex
+	db *leveldb.DB
 }
 
-func NewOps(db *bolt.DB) (*ops, error) {
-	store := new(ops)
-	store.RWMutex = new(sync.RWMutex)
-	store.DB = db
-
-	db.Update(func(btx *bolt.Tx) error {
-		_, err := btx.CreateBucketIfNotExists(BKTOps)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
-	return store, nil
+func NewOps(db *leveldb.DB) (*ops, error) {
+	return &ops{db: db}, nil
 }
 
-func (o *ops) Put(op *util.OutPoint, addr common.Uint168) (err error) {
+func (o *ops) Put(op *util.OutPoint, addr common.Uint168) error {
 	o.Lock()
 	defer o.Unlock()
-	return o.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(BKTOps).Put(op.Bytes(), addr.Bytes())
-	})
+	return o.db.Put(toKey(BKTOps, op.Bytes()...), addr.Bytes(), nil)
 }
 
 func (o *ops) HaveOp(op *util.OutPoint) (addr *common.Uint168) {
 	o.RLock()
 	defer o.RUnlock()
 
-	o.View(func(tx *bolt.Tx) error {
-		addrBytes := tx.Bucket(BKTOps).Get(op.Bytes())
-		var err error
-		if addr, err = common.Uint168FromBytes(addrBytes); err != nil {
-			return err
-		}
+	addrBytes, err := o.db.Get(toKey(BKTOps, op.Bytes()...), nil)
+	if err != nil {
 		return nil
-	})
+	}
+	if addr, err = common.Uint168FromBytes(addrBytes); err != nil {
+		return nil
+	}
 	return addr
 }
 
@@ -64,35 +50,33 @@ func (o *ops) GetAll() (ops []*util.OutPoint, err error) {
 	o.RLock()
 	defer o.RUnlock()
 
-	err = o.View(func(tx *bolt.Tx) error {
-		return tx.Bucket(BKTOps).ForEach(func(k, v []byte) error {
-			op, err := util.OutPointFromBytes(k)
-			if err != nil {
-				return err
-			}
-			ops = append(ops, op)
-			return nil
-		})
-	})
+	it := o.db.NewIterator(dbutil.BytesPrefix(BKTOps), nil)
+	defer it.Release()
+	for it.Next() {
+		op, err := util.OutPointFromBytes(subKey(BKTOps, it.Key()))
+		if err != nil {
+			return nil, err
+		}
+		ops = append(ops, op)
+	}
 
-	return ops, err
+	return ops, it.Error()
 }
 
 func (o *ops) Batch() OpsBatch {
-	tx, err := o.Begin(true)
-	if err != nil {
-		panic(err)
-	}
-
-	return &opsBatch{Tx: tx}
+	return &opsBatch{DB: o.db, Batch: new(leveldb.Batch)}
 }
 
 func (o *ops) Clear() error {
 	o.Lock()
 	defer o.Unlock()
-	return o.DB.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket(BKTOps)
-	})
+	it := o.db.NewIterator(dbutil.BytesPrefix(BKTOps), nil)
+	defer it.Release()
+	batch := new(leveldb.Batch)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	return o.db.Write(batch, nil)
 }
 
 func (o *ops) Close() error {
