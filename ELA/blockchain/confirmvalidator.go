@@ -97,3 +97,29 @@ func IsVoteValid(vote *core.DPosProposalVote) bool {
 
 	return true
 }
+
+func IsIllegalProposalsValid(d *core.DposIllegalProposals) bool {
+
+	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
+		return false
+	}
+
+	// proposal can not be same
+	if d.Evidence.Proposal.Hash().IsEqual(d.CompareEvidence.Proposal.Hash()) {
+		return false
+	}
+
+	if d.Evidence.Proposal.Sponsor != d.CompareEvidence.Proposal.Sponsor {
+		return false
+	}
+
+	if d.Evidence.Proposal.ViewOffset != d.Evidence.Proposal.ViewOffset {
+		return false
+	}
+
+	if !IsProposalValid(&d.Evidence.Proposal) || !IsProposalValid(&d.Evidence.Proposal) {
+		return false
+	}
+
+	return true
+}
