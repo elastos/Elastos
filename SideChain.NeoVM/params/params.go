@@ -141,7 +141,8 @@ var TestNetParams = config.Params{
 // RegNetParams defines the network parameters for the regression test network.
 var RegNetParams = config.Params{
 	Name: "regnet",
-
+	SeedList: []string{
+	},
 	Foundation:         testNetFoundation,
 	ElaAssetId:         elaAssetId,
 	GenesisBlock:       genesisBlock,

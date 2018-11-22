@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type PayloadDeploy struct {
-	Code        *contract.FunctionCode
+	Code        *FunctionCode
 	Name        string
 	CodeVersion string
 	Author      string
@@ -73,7 +72,7 @@ func (dc *PayloadDeploy) Serialize(w io.Writer, version byte) error {
 }
 
 func (dc *PayloadDeploy) Deserialize(r io.Reader, version byte) error {
-	dc.Code = new (contract.FunctionCode)
+	dc.Code = new (FunctionCode)
 	err := dc.Code.Deserialize(r)
 	if err != nil {
 		return err

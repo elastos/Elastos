@@ -1,6 +1,8 @@
 package interfaces
 
-import "github.com/elastos/Elastos.ELA.SideChain/types"
+import (
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+)
 
 type IScriptTable interface {
 	GetScript(hash []byte) ([]byte)

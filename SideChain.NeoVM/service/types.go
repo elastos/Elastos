@@ -1,16 +1,16 @@
 package service
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
-
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-    "github.com/elastos/Elastos.ELA.SideChain/service"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	nt "github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 type DeployInfo struct {
-	Code        contract.FunctionCode
+	Code        nt.FunctionCode
 	Name        string
 	CodeVersion string
 	Author      string

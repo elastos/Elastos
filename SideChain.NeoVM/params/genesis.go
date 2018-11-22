@@ -37,7 +37,7 @@ var (
 	hash1, _ = Uint168FromAddress(addr1)
 	output = &types.Output{
 		AssetID: elaAssetId,
-		Value: 10000 * 100000000,
+		Value: 100000 * 100000000,
 		ProgramHash: *hash1,
 	}
 	coinBase = types.Transaction{

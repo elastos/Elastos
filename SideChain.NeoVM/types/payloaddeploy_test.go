@@ -2,11 +2,14 @@ package types
 
 import (
 	"testing"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"fmt"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 )
 
 func TestPayloadDeploy_Serialize(t *testing.T) {

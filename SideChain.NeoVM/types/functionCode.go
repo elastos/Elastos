@@ -1,4 +1,4 @@
-package contract
+package types
 
 import (
 	"io"
@@ -6,6 +6,8 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 )
 
 type FunctionCode struct {
@@ -13,10 +15,10 @@ type FunctionCode struct {
 	Code []byte
 
 	// Contract parameter type list
-	ParameterTypes []ContractParameterType
+	ParameterTypes []contract.ContractParameterType
 
 	// Contract return type list
-	ReturnType ContractParameterType
+	ReturnType contract.ContractParameterType
 
 	codeHash common.Uint168
 }
@@ -29,7 +31,7 @@ func (fc *FunctionCode) Serialize(w io.Writer) error {
 		return err
 	}
 
-	err = common.WriteVarBytes(w, ContractParameterTypeToByte(fc.ParameterTypes))
+	err = common.WriteVarBytes(w, contract.ContractParameterTypeToByte(fc.ParameterTypes))
 	if err != nil {
 		return err
 	}
@@ -54,13 +56,13 @@ func (fc *FunctionCode) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	fc.ParameterTypes = ByteToContractParameterType(parameterTypes)
+	fc.ParameterTypes = contract.ByteToContractParameterType(parameterTypes)
 
 	returnType, err := common.ReadUint8(r)
 	if err != nil {
 		return err
 	}
-	fc.ReturnType = ContractParameterType(returnType)
+	fc.ReturnType = contract.ContractParameterType(returnType)
 
 	return nil
 }
@@ -71,12 +73,12 @@ func (fc *FunctionCode) GetCode() []byte {
 }
 
 // Get the list of parameter value
-func (fc *FunctionCode) GetParameterTypes() []ContractParameterType {
+func (fc *FunctionCode) GetParameterTypes() []contract.ContractParameterType {
 	return fc.ParameterTypes
 }
 
 // Get the list of return value
-func (fc *FunctionCode) GetReturnType() ContractParameterType {
+func (fc *FunctionCode) GetReturnType() contract.ContractParameterType {
 	return fc.ReturnType
 }
 
@@ -84,7 +86,7 @@ func (fc *FunctionCode) GetReturnType() ContractParameterType {
 func (fc *FunctionCode) CodeHash() common.Uint168 {
 	zeroHash := common.Uint168{}
 	if fc.codeHash == zeroHash {
-		hash, err := avm.ToCodeHash(fc.Code)
+		hash, err := params.ToCodeHash(fc.Code)
 		if err != nil {
 			return zeroHash
 		}

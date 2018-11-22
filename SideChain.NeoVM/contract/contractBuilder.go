@@ -1,9 +1,11 @@
 package contract
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"errors"
-	"github.com/elastos/Elastos.ELA.SideChain/vm"
+
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
 
 //create a Single Singature contract for owner
@@ -40,7 +42,7 @@ func CreateSignatureRedeemScript(pubkey *crypto.PublicKey) ([]byte, error) {
 	}
 	sb := NewProgramBuilder()
 	sb.PushData(temp)
-	sb.AddOp(vm.CHECKSIG)
+	sb.AddOp(avm.CHECKSIG)
 	return sb.ToArray(), nil
 }
 

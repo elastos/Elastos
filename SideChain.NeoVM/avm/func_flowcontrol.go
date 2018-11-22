@@ -3,8 +3,9 @@ package avm
 import (
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
 )
 
 func opNop(e *ExecutionEngine) (VMState, error) {

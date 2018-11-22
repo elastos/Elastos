@@ -2,6 +2,7 @@ package avm
 
 import (
 	"errors"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 )
 

@@ -1,12 +1,12 @@
-package blockchain
+package store
 
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
-
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
 )
 
 type CacheCodeTable struct {
@@ -28,7 +28,7 @@ func (table *CacheCodeTable) GetScript(codeHash []byte) ([]byte) {
 func (table *CacheCodeTable) GetTxReference(tx *interfaces.IDataContainer) (map[*types.Input]*types.Output, error) {
 	txn := (*tx).(*types.Transaction)
 	store := table.dbCache.GetChainStoreDb()
-	chainStore := store.(*AVMChainStore)
+	chainStore := store.(*LedgerStore)
 	if chainStore == nil {
 		return nil, errors.New("error ChainStore on GetTxReference")
 	}

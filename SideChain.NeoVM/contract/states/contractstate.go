@@ -4,16 +4,16 @@ import (
 	"io"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
-	"github.com/elastos/Elastos.ELA.SideChain/vm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 type ContractState struct {
 	StateBase
-	Code        *contract.FunctionCode
+	Code        *types.FunctionCode
 	Name        string
 	Version     string
 	Author      string
@@ -23,7 +23,7 @@ type ContractState struct {
 }
 
 func NewContractState() *ContractState {
-	Code := &contract.FunctionCode{
+	Code := &types.FunctionCode{
 		ReturnType: contract.Void,
 	}
 	return &ContractState{
@@ -83,7 +83,7 @@ func (contractState *ContractState) Deserialize(r io.Reader) error {
 	}
 	contractState.StateBase = stateBase
 
-	f := new(contract.FunctionCode)
+	f := new(types.FunctionCode)
 	err = f.Deserialize(r)
 	if err != nil {
 		return err
@@ -143,11 +143,11 @@ func (contractState *ContractState) IsMultiSigContract() bool {
 	if len(script) < 37 {
 		return false
 	}
-	if script[i] > vm.PUSH16 {
+	if script[i] > avm.PUSH16 {
 		return false;
 	}
 
-	if script[i] < vm.PUSH1 && script[i] != 1 && script[i] != 2 {
+	if script[i] < avm.PUSH1 && script[i] != 1 && script[i] != 2 {
 		return false
 	}
 	switch script[i] {
@@ -201,7 +201,7 @@ func (contractState *ContractState) IsMultiSigContract() bool {
 		i++
 	}
 
-	if script[i] != vm.CHECKMULTISIG {
+	if script[i] != avm.CHECKMULTISIG {
 		i++
 		return false
 	}
@@ -219,7 +219,7 @@ func (contractState *ContractState) IsSignatureCotract() bool {
 	if len(script) != 35 {
 		return false
 	}
-	if script[0] != 33 || script[34] != vm.CHECKSIG {
+	if script[0] != 33 || script[34] != avm.CHECKSIG {
 		return false
 	}
 	return true

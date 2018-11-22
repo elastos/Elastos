@@ -7,13 +7,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 )
 
-const (
-	Invoke types.TxType= 0x0A
-)
+const Invoke types.TxType = 0x0A
+
 
 type PayloadInvoke struct {
 	CodeHash    common.Uint168
@@ -59,7 +57,7 @@ func (ic *PayloadInvoke) Deserialize(r io.Reader, version byte) error {
 	}
 	ic.CodeHash = codeHash
 
-	ic.Code, err = common.ReadVarBytes(r, avm.MaxItemSize, "PayloadInvoke Deserialize Code")
+	ic.Code, err = common.ReadVarBytes(r, contract.MAXCodeSize, "PayloadInvoke Deserialize Code")
 	if err != nil {
 		return err
 	}

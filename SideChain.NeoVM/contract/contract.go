@@ -5,9 +5,10 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
+
+const MAXCodeSize uint32 = 1024 * 1024
+const MAXCodeParameter uint32 = 252
 
 //Contract address is the hash of contract program .
 //which be used to control asset or indicate the smart contract address �?
@@ -33,13 +34,13 @@ type Contract struct {
 func (c *Contract) Deserialize(r io.Reader) error {
 	c.OwnerPubkeyHash.Deserialize(r)
 
-	p, err := common.ReadVarBytes(r, avm.MaxParameterSize, "Contract Deserialize Parameters")
+	p, err := common.ReadVarBytes(r, MAXCodeParameter, "Contract Deserialize Parameters")
 	if err != nil {
 		return err
 	}
 	c.Parameters = ByteToContractParameterType(p)
   
-	c.Code, err = common.ReadVarBytes(r, avm.MaxItemSize, "Contract Deserialize Code")
+	c.Code, err = common.ReadVarBytes(r, MAXCodeSize, "Contract Deserialize Code")
 	if err != nil {
 		return err
 	}

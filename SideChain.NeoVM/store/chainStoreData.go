@@ -1,78 +1,91 @@
-package blockchain
+package store
 
 import (
 	"errors"
+	"bytes"
 	"math/big"
 	"fmt"
 
-	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	side "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
-
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
+	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+
 )
 
-type AVMChainStore struct {
-	*sb.ChainStore
-	Chain *sb.BlockChain
-}
-
-func NewChainStore(path string, genesisBlock *side.Block) (*AVMChainStore, error) {
-	chainStore, err := sb.NewChainStore(path, genesisBlock)
-	if err != nil {
-		return nil, err
-	}
-
-	store := &AVMChainStore{
-		ChainStore: chainStore,
-		Chain: nil,
-	}
-
-	store.RegisterFunctions(true, sb.StoreFuncNames.PersistTransactions, store.persistTransactions)
-
-	return store, nil
-}
-
-func (c *AVMChainStore) persistTransactions(batch database.Batch, b *side.Block) error {
-	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
-			return err
-		}
-
-		if txn.TxType == side.RegisterAsset {
-			regPayload := txn.Payload.(*side.PayloadRegisterAsset)
-			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
-				return err
+func (c *LedgerStore) PersisAccount(batch database.Batch, block *side.Block) error {
+	accounts := make(map[common.Uint168]*states.AccountState, 0)
+	for _, txn := range block.Transactions {
+		for index := 0; index < len(txn.Outputs); index++ {
+			output := txn.Outputs[index]
+			programHash := output.ProgramHash
+			assetId := output.AssetID
+			if account, ok := accounts[programHash]; ok {
+				account.Balances[assetId] += output.Value
+			} else {
+				account, err := c.GetAccount(&programHash)
+				if err != nil && err.Error() != ErrDBNotFound.Error() {
+					return err
+				}
+				if account != nil {
+					account.Balances[assetId] += output.Value
+				} else {
+					balances := make(map[common.Uint256]common.Fixed64, 0)
+					balances[assetId] = output.Value
+					account = states.NewAccountState(programHash, balances)
+				}
+				accounts[programHash] = account
 			}
 		}
 
-		if txn.TxType == side.RechargeToSideChain {
-			rechargePayload := txn.Payload.(*side.PayloadRechargeToSideChain)
-			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
+		for index := 0; index < len(txn.Inputs); index++ {
+			if txn.TxType == side.CoinBase {
+				continue
+			}
+			input := txn.Inputs[index]
+			transaction, _, err := c.GetTransaction(input.Previous.TxID)
 			if err != nil {
 				return err
 			}
-			c.PersistMainchainTx(batch, *hash)
+			index := input.Previous.Index
+			output := transaction.Outputs[index]
+			programHash := output.ProgramHash
+			assetID := output.AssetID
+			if account, ok := accounts[programHash]; ok {
+				account.Balances[assetID] -= output.Value
+			} else {
+				account, err := c.GetAccount(&programHash)
+				if err != nil && err.Error() != ErrDBNotFound.Error() {
+					return err
+				}
+				account.Balances[assetID] -= output.Value
+				accounts[programHash] = account
+			}
+			if accounts[programHash].Balances[assetID] < 0 {
+				return errors.New(fmt.Sprintf("account programHash:%v, assetId:%v insufficient of balance", programHash, assetID))
+			}
 		}
+	}
+	for programHash, value := range accounts {
+		accountKey := new(bytes.Buffer)
+		accountKey.WriteByte(byte(states.ST_Account))
+		programHash.Serialize(accountKey)
 
-		if txn.TxType == side.Deploy {
-			c.PersistDeployTransaction(b, txn, batch)
-		}
-
-		if txn.TxType == types.Invoke {
-
-		}
+		accountValue := new(bytes.Buffer)
+		value.Serialize(accountValue)
+		batch.Put(accountKey.Bytes(), accountValue.Bytes())
 	}
 	return nil
 }
 
-func (c *AVMChainStore) PersistDeployTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
+func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
 	payloadDeploy, ok := tx.Payload.(*types.PayloadDeploy)
 	if !ok {
 		return errors.New("invalid deploy payload")
@@ -95,12 +108,12 @@ func (c *AVMChainStore) PersistDeployTransaction(block *side.Block, tx *side.Tra
 	if err != nil {
 		return err
 	}
-	codeHash, err := avm.ToCodeHash(ret)
+	codeHash, err := params.ToCodeHash(ret)
 	if err != nil {
 		return err
 	}
 	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
-	data := avm.UInt168ToUInt160(codeHash)
+	data := params.UInt168ToUInt160(codeHash)
 	dbCache.GetOrAdd(states.ST_Contract, string(data), &states.ContractState{
 		Code:        payloadDeploy.Code,
 		Name:        payloadDeploy.Name,
@@ -110,10 +123,11 @@ func (c *AVMChainStore) PersistDeployTransaction(block *side.Block, tx *side.Tra
 		Description: payloadDeploy.Description,
 		ProgramHash: payloadDeploy.ProgramHash,
 	})
+	dbCache.Commit()
 	return nil
 }
 
-func (c *AVMChainStore) persisInvokeTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
+func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
 	payloadInvoke := tx.Payload.(*types.PayloadInvoke)
 	constractState := states.NewContractState()
 	if !payloadInvoke.CodeHash.IsEqual(common.Uint168{}) {
@@ -144,7 +158,7 @@ func (c *AVMChainStore) persisInvokeTransaction(block *side.Block, tx *side.Tran
 		Gas:            payloadInvoke.Gas,
 		ReturnType:     constractState.Code.ReturnType,
 		ParameterTypes: constractState.Code.ParameterTypes,
-		Trigger:      	avm.Application,
+		Trigger:        avm.Application,
 	})
 	if err != nil {
 		//log.Error(err.Error(), tx.Hash())
@@ -165,10 +179,10 @@ func (c *AVMChainStore) persisInvokeTransaction(block *side.Block, tx *side.Tran
 	return nil
 }
 
-func (c *AVMChainStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
+func (c *LedgerStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
 	prefix := []byte{byte(states.ST_Contract)}
 
-	hashBytes := avm.UInt168ToUInt160(codeHash)
+	hashBytes := params.UInt168ToUInt160(codeHash)
 	bData, err_get := c.Get(append(prefix, hashBytes...))
 	if err_get != nil {
 		return nil, err_get
@@ -176,7 +190,20 @@ func (c *AVMChainStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
 	return bData, nil
 }
 
-func (c *AVMChainStore) Close() error {
-	c.ChainStore.Close()
+func (c *LedgerStore) GetAccount(programHash *common.Uint168) (*states.AccountState, error) {
+	accountPrefix := []byte{byte(states.ST_Account)}
+	state, err := c.Get(append(accountPrefix, programHash.Bytes()...))
+	if err != nil {
+		return nil, err
+	}
+
+	accountState := new(states.AccountState)
+	accountState.Deserialize(bytes.NewBuffer(state))
+
+	return accountState, nil
+}
+
+func (c *LedgerStore) Close() error {
+	c.Close()
 	return nil
 }

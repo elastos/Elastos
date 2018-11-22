@@ -4,13 +4,14 @@ import (
 	"errors"
 	"math"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 type validator struct {
@@ -109,6 +110,7 @@ func checkOutputProgramHash(programHash common.Uint168) bool {
 		prefix == common.PrefixMultisig ||
 		prefix == common.PrefixCrossChain ||
 		prefix == common.PrefixRegisterId ||
+		prefix == params.PrefixSmartContract ||
 		programHash == empty {
 		return true
 	}

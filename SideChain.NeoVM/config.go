@@ -24,7 +24,7 @@ const (
 
 var (
 	// Set default active net params.
-	activeNetParams = &params.MainNetParams
+	activeNetParams = &params.RegNetParams
 
 	// Load configuration from file.
 	cfg, loadConfigErr = loadConfig()
@@ -90,6 +90,7 @@ func loadConfig() (*config, error) {
 		HttpRestPort:      30604,
 		HttpJsonPort:      30606,
 		dataDir:           defaultDataDir,
+		PrintSyncState:    true,
 	}
 
 	_, err := os.Stat(configFilename)
@@ -146,7 +147,7 @@ func loadConfig() (*config, error) {
 		activeNetParams.DisableTxFilters = true
 	}
 	if cfg.MinCrossChainTxFee > 0 {
-		activeNetParams.MinCrossChainTxFee = cfg.MinCrossChainTxFee
+		activeNetParams.MinCrossChainTxFee = int64(cfg.MinCrossChainTxFee)
 	}
 
 	if cfg.SpvConfig == nil {

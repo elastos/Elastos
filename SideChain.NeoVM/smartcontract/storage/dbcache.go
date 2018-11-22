@@ -6,10 +6,10 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
 
 type DBCache interface {
@@ -59,7 +59,7 @@ func (cloneCache *CloneCache) TryGet(prefix blockchain.EntryPrefix, key string) 
 }
 
 func (cloneCache *CloneCache) TryDelete(prefix blockchain.EntryPrefix, hash common.Uint168) bool {
-	keyStr := string(avm.UInt168ToUInt160(&hash))
+	keyStr := string(params.UInt168ToUInt160(&hash))
 	cloneCache.innerCache.GetWriteSet().Delete(keyStr)
 	result := cloneCache.dbCache.TryDelete(prefix, keyStr)
 	return result

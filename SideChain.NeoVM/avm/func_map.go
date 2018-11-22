@@ -1,8 +1,9 @@
 package avm
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"errors"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 )
 
 func opNewMap(e *ExecutionEngine) (VMState, error) {

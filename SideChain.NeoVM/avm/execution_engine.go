@@ -18,7 +18,7 @@ import (
 const (
 	MAXSTEPS                      = -1
 	ratio                         = 100000
-	gasFree                       = 10 * 100000000;
+	gasFree                       = 10 * 100000000
 	StackLimit             uint32 = 2 * 1024
 	MaxItemSize            uint32 = 1024 * 1024
 	MaxArraySize           uint32 = 1024
@@ -35,7 +35,6 @@ func NewExecutionEngine(container interfaces.IDataContainer, crypto interfaces.I
 	testMode bool) *ExecutionEngine {
 	var engine ExecutionEngine
 	engine.crypto = crypto
-
 	engine.dataContainer = container
 
 	engine.table = table

@@ -8,9 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"crypto/sha256"
-	"golang.org/x/crypto/ripemd160"
 )
 
 type BigIntSorter []big.Int
@@ -492,27 +489,4 @@ func PushData(e *ExecutionEngine, data interface{})  {
 		return;
 	}
 	e.evaluationStack.Push(d)
-}
-
-const (
-	pPrefixSmartContract = 0x1c
-)
-
-
-func ToCodeHash(code []byte) (*common.Uint168, error) {
-	if len(code) < 1 {
-		return nil, errors.ErrorProgramCode
-	}
-	hash := sha256.Sum256(code)
-	md160 := ripemd160.New()
-	md160.Write(hash[:])
-	data := md160.Sum([]byte{pPrefixSmartContract})
-	return common.Uint168FromBytes(data)
-}
-
-func UInt168ToUInt160(hash *common.Uint168) []byte {
-	hashBytes := make([]byte, len(hash) - 1)
-	data := hash.Bytes()
-	copy(hashBytes, data[1 : len(hash)])
-	return hashBytes
 }

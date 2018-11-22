@@ -1,4 +1,4 @@
-package blockchain
+package store
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/storage"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"

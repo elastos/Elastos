@@ -50,9 +50,9 @@ func (accountState *AccountState) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	accountState.IsFrozen = false;
+	accountState.IsFrozen = false
 	if isFrozen > 0 {
-		accountState.IsFrozen = true;
+		accountState.IsFrozen = true
 	}
 	l, err := common.ReadUint64(r)
 	if err != nil {

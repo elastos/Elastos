@@ -12,15 +12,10 @@ import (
 	"strconv"
 	"time"
 
-	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
-	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
-	nc  "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
-
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 
@@ -29,6 +24,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+
+	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
+	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
+	nc  "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 )
 
 const (
@@ -64,25 +64,26 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
-	avmChainStore, err := nc.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
 	}
-	defer avmChainStore.Close()
+	defer chainStore.Close()
 
 	chainCfg := blockchain.Config{
 		ChainParams: activeNetParams,
-		ChainStore:  avmChainStore.ChainStore,
+		ChainStore:  chainStore,
 	}
 
 	mempoolCfg := mempool.Config{
 		ChainParams: activeNetParams,
-		ChainStore:  avmChainStore.ChainStore,
+		ChainStore: chainStore,
 	}
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
+
 
 	eladlog.Info("2. SPV module init")
 	genesisHash := activeNetParams.GenesisBlock.Hash()
@@ -105,7 +106,7 @@ func main() {
 		SeedList:       activeNetParams.SpvParams.SeedList,
 		Foundation:     activeNetParams.SpvParams.Foundation,
 		GenesisAddress: genesisAddress,
-		TxStore:        spv.NewTxStore(avmChainStore.ChainStore),
+		TxStore:        spv.NewTxStore(chainStore),
 	}
 	spvService, err := spv.NewService(&serviceCfg)
 	if err != nil {
@@ -122,18 +123,26 @@ func main() {
 	chainCfg.CheckTxSanity = txValidator.CheckTransactionSanity
 	chainCfg.CheckTxContext = txValidator.CheckTransactionContext
 
-	chain, err := blockchain.New(&chainCfg)
+	chain, err := nc.NewBlockChain(&chainCfg, txValidator)
 	if err != nil {
 		eladlog.Fatalf("BlockChain initialize failed, %s", err)
 		os.Exit(1)
 	}
-
-	avmChainStore.Chain = chain
+	nc.DefaultChain = chain
+	ledgerStore, err := store.NewLedgerStore(chainStore)
+	if err != nil {
+		eladlog.Fatalf("init DefaultLedgerStore failed, %s", err)
+		os.Exit(1)
+	}
+	batch := ledgerStore.NewBatch()
+	ledgerStore.PersisAccount(batch, activeNetParams.GenesisBlock)
+	batch.Commit()
 
 	txPool := mempool.New(&mempoolCfg)
+	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain)
 
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(chain, txPool, activeNetParams)
+	server, err := server.New(chain.BlockChain, txPool, activeNetParams)
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
@@ -147,7 +156,7 @@ func main() {
 		MinerAddr:                 cfg.MinerAddr,
 		MinerInfo:                 cfg.MinerInfo,
 		Server:                    server,
-		Chain:                     chain,
+		Chain:                     chain.BlockChain,
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
@@ -164,7 +173,7 @@ func main() {
 	eladlog.Info("5. --Start the RPC service")
 	service := sv.NewHttpService(&service.Config{
 		Server:                      server,
-		Chain:                       chain,
+		Chain:                       chain.BlockChain,
 		TxMemPool:                   txPool,
 		PowService:                  powService,
 		GetBlockInfo:                service.GetBlockInfo,
@@ -191,18 +200,8 @@ func main() {
 		}
 	}()
 
-	if cfg.HttpInfoStart {
-		go httpnodeinfo.New(&httpnodeinfo.Config{
-			NodePort:     cfg.DefaultPort,
-			HttpJsonPort: cfg.HttpJsonPort,
-			HttpRestPort: cfg.HttpRestPort,
-			Chain:        chain,
-			Server:       server,
-		}).Start()
-	}
-
 	if cfg.PrintSyncState {
-		go printSyncState(avmChainStore.ChainStore, server)
+		go printSyncState(ledgerStore.ChainStore, server)
 	}
 
 	<-interrupt.C

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 )
