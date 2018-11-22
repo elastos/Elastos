@@ -13,25 +13,39 @@ type DposNormalHandler struct {
 
 func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
-	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) && h.consensus.IsRunning() {
+	if !h.consensus.IsRunning() {
+		return
+	}
 
-		if block, ok := h.manager.GetBlockCache().TryGetValue(p.Proposal.BlockHash); ok {
-			h.proposalDispatcher.TryStartSpeculatingProposal(block)
-		}
-
+	currentProposal, ok := h.tryGetCurrentProposal()
+	if !ok {
+		//todo add to pending votes
+	} else if currentProposal.IsEqual(p.ProposalHash) {
 		h.proposalDispatcher.ProcessVote(p, true)
 	}
 }
 
 func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
-	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) && h.consensus.IsRunning() {
+	log.Info("[Normal-ProcessRejectVote] start")
+	if !h.consensus.IsRunning() {
+		return
+	}
 
-		if block, ok := h.manager.GetBlockCache().TryGetValue(p.Proposal.BlockHash); ok {
-			h.proposalDispatcher.TryStartSpeculatingProposal(block)
-		}
-
+	currentProposal, ok := h.tryGetCurrentProposal()
+	if !ok {
+		//todo add to pending votes
+	} else if currentProposal.IsEqual(p.ProposalHash) {
 		h.proposalDispatcher.ProcessVote(p, false)
 	}
+}
+
+func (h *DposNormalHandler) tryGetCurrentProposal() (common.Uint256, bool) {
+	currentProposal := h.proposalDispatcher.GetProcessingProposal()
+	if currentProposal == nil {
+		//todo request proposal from vote sender
+		return common.Uint256{}, false
+	}
+	return currentProposal.Hash(), true
 }
 
 func (h *DposNormalHandler) StartNewProposal(p core.DPosProposal) {

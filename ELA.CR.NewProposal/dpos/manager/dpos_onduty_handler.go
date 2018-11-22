@@ -14,15 +14,18 @@ type DposOnDutyHandler struct {
 func (h *DposOnDutyHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 
-	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) && h.consensus.IsRunning() {
+	currentProposal := h.proposalDispatcher.GetProcessingProposal()
+	if currentProposal != nil && currentProposal.Hash().IsEqual(p.ProposalHash) && h.consensus.IsRunning() {
 		log.Info("[OnVoteReceived] Received needed sign, collect it")
 		h.proposalDispatcher.ProcessVote(p, true)
 	}
 }
 
 func (h *DposOnDutyHandler) ProcessRejectVote(p core.DPosProposalVote) {
+	log.Info("[Onduty-ProcessRejectVote] start")
 
-	if h.consensus.IsArbitratorOnDuty(p.Proposal.Sponsor) && h.consensus.IsRunning() {
+	currentProposal := h.proposalDispatcher.GetProcessingProposal()
+	if currentProposal != nil && currentProposal.Hash().IsEqual(p.ProposalHash) && h.consensus.IsRunning() {
 		h.proposalDispatcher.ProcessVote(p, false)
 	}
 }
