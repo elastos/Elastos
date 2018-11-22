@@ -161,6 +161,7 @@ type RegisterProducerInfo struct {
 	NickName  string
 	Url       string
 	Location  uint64
+	IP        string
 }
 
 type CancelProducerInfo struct {

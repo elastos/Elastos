@@ -7,6 +7,7 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 )
 
 var testChainStore *ChainStore
@@ -156,6 +157,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		NickName:  nickName1,
 		Url:       "http://www.test.com",
 		Location:  1,
+		IP:        "127.0.0.1",
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -166,6 +168,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
 		Location:  2,
+		IP:        "127.0.0.1",
 	}
 
 	// 2. Should have no producer in db
@@ -246,25 +249,28 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	}
 }
 
-func TestChainStore_PersistVoteProducer(t *testing.T) {
+func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
 	// 1.Prepare data
-
-	addr2 := "EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD"
+	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
 	publicKey2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	nickName2 := "nickname 2"
-	stake1 := common.Fixed64(110000000)
-	payload1 := &ela.PayloadVoteProducer{
-		Voter:      "voter",
-		Stake:      stake1,
-		PublicKeys: []string{publicKey2},
+	nickName1 := "nickname 1"
+	ip1 := "168.192.1.1"
+	payload1 := &ela.PayloadUpdateProducer{
+		PayloadRegisterProducer: &ela.PayloadRegisterProducer{
+			PublicKey: publicKey2,
+			NickName:  nickName1,
+			Url:       "http://www.test.com",
+			Location:  2,
+			IP:        ip1,
+		},
 	}
 
-	// 2. Run PersistVoteProducer
-	err := testChainStore.PersistVoteProducer(payload1)
+	// 2. Run RegisterProducer
+	err := testChainStore.PersistUpdateProducer(payload1)
 	if err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
@@ -277,33 +283,202 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 4. Check payload
-	if producers[0].NickName != nickName2 {
-		t.Error("GetRegisteredProducers failed")
-	}
 	if producers[0].PublicKey != publicKey2 {
 		t.Error("GetRegisteredProducers failed")
 	}
+	if producers[0].NickName != nickName1 {
+		t.Error("GetRegisteredProducers failed")
+	}
+	if producers[0].IP != ip1 {
+		t.Error("GetRegisteredProducers failed")
+	}
+}
 
-	// 5. Run GetProducerVote
-	programHash, _ := common.Uint168FromAddress(addr2)
-	vote1 := testChainStore.GetProducerVote(*programHash)
-	if vote1 != stake1 {
-		t.Error("GetProducerVote failed")
+func TestChainStore_PersistVoteProducer(t *testing.T) {
+	if testChainStore == nil {
+		t.Error("Chainstore init failed")
 	}
 
-	// 6. Run PersistVoteProducer
-	err = testChainStore.PersistVoteProducer(payload1)
+	// 1.Prepare data
+	addr1 := "EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD"
+	programHash1, _ := common.Uint168FromAddress(addr1)
+	stake1 := common.Fixed64(110000000)
+	output := &ela.Output{
+		AssetID:     common.Uint256{},
+		Value:       stake1,
+		OutputLock:  0,
+		ProgramHash: *programHash1,
+		OutputType:  ela.VoteOutput,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType: outputpayload.Delegate,
+					Candidates: []common.Uint168{
+						*programHash1,
+					},
+				},
+			},
+		},
+	}
+	addr2 := "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
+	programHash2, _ := common.Uint168FromAddress(addr2)
+	output2 := &ela.Output{
+		AssetID:     common.Uint256{},
+		Value:       stake1,
+		OutputLock:  0,
+		ProgramHash: *programHash1,
+		OutputType:  ela.VoteOutput,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType: outputpayload.Delegate,
+					Candidates: []common.Uint168{
+						*programHash1,
+						*programHash2,
+					},
+				},
+			},
+		},
+	}
+
+	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
+	publicKey2 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	nickName2 := "nickname 2"
+	payload2 := &ela.PayloadRegisterProducer{
+		PublicKey: publicKey2,
+		NickName:  nickName2,
+		Url:       "http://www.test.com",
+		Location:  1,
+		IP:        "127.0.0.1",
+	}
+
+	// 2. Run RegisterProducer
+	err := testChainStore.PersistRegisterProducer(payload2)
 	if err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
 
-	// 7.
-	vote2 := testChainStore.GetProducerVote(*programHash)
+	// 3. Run PersistVoteProducer
+	err = testChainStore.PersistVoteOutput(output)
+	if err != nil {
+		t.Error("PersistRegisterProducer failed")
+	}
+	testChainStore.BatchCommit()
+
+	// 4. Check vote
+	vote1 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash1)
+	if vote1 != stake1 {
+		t.Error("GetProducerVote failed")
+	}
+
+	// 5. Run PersistVoteProducer
+	err = testChainStore.PersistVoteOutput(output)
+	if err != nil {
+		t.Error("PersistRegisterProducer failed")
+	}
+	testChainStore.BatchCommit()
+
+	// 6. Check vote
+	vote2 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash1)
 	if vote2 != stake1*2 {
 		t.Error("GetProducerVote failed")
 	}
 
+	// 7. Run PersistVoteProducer
+	err = testChainStore.PersistVoteOutput(output2)
+	if err != nil {
+		t.Error("PersistRegisterProducer failed")
+	}
+	testChainStore.BatchCommit()
+
+	// 8. Check vote
+	vote3 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash1)
+	if vote3 != stake1*3 {
+		t.Error("GetProducerVote failed")
+	}
+	vote4 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash2)
+	if vote4 != stake1 {
+		t.Error("GetProducerVote failed")
+	}
+}
+
+func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
+	if testChainStore == nil {
+		t.Error("Chainstore init failed")
+	}
+
+	// 1.Prepare data
+	addr1 := "EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD"
+	programHash1, _ := common.Uint168FromAddress(addr1)
+	stake1 := common.Fixed64(110000000)
+	output := &ela.Output{
+		AssetID:     common.Uint256{},
+		Value:       stake1,
+		OutputLock:  0,
+		ProgramHash: *programHash1,
+		OutputType:  ela.VoteOutput,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType: outputpayload.Delegate,
+					Candidates: []common.Uint168{
+						*programHash1,
+					},
+				},
+			},
+		},
+	}
+	addr2 := "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
+	programHash2, _ := common.Uint168FromAddress(addr2)
+	output2 := &ela.Output{
+		AssetID:     common.Uint256{},
+		Value:       stake1,
+		OutputLock:  0,
+		ProgramHash: *programHash1,
+		OutputType:  ela.VoteOutput,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType: outputpayload.Delegate,
+					Candidates: []common.Uint168{
+						*programHash1,
+						*programHash2,
+					},
+				},
+			},
+		},
+	}
+
+	// 2. Run PersistCancelVoteOutput
+	err := testChainStore.PersistCancelVoteOutput(output)
+	if err != nil {
+		t.Error("PersistCancelVoteOutput failed")
+	}
+	testChainStore.BatchCommit()
+
+	// 3. Check vote
+	vote1 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash1)
+	if vote1 != stake1*2 {
+		t.Error("GetProducerVote failed")
+	}
+
+	// 4. Run PersistCancelVoteOutput
+	err = testChainStore.PersistCancelVoteOutput(output2)
+	if err != nil {
+		t.Error("PersistCancelVoteOutput failed")
+	}
+	testChainStore.BatchCommit()
+
+	// 5. Check Vote
+	vote2 := testChainStore.GetProducerVote(outputpayload.Delegate, *programHash2)
+	if vote2 != 0 {
+		t.Error("GetProducerVote failed")
+	}
 }
 
 func TestChainStoreDone(t *testing.T) {

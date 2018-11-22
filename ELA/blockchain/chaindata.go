@@ -525,6 +525,43 @@ func (c *ChainStore) PersistVoteOutput(output *Output) error {
 	return nil
 }
 
+func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
+	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	if !ok {
+		return errors.New("[PersistVoteOutput] invalid output payload")
+	}
+
+	for _, vote := range pyaload.Contents {
+		for _, hash := range vote.Candidates {
+			// subtract vote to database
+			key := []byte{byte(vote.VoteType)}
+			k := append(key, hash.Bytes()...)
+			oldStake, err := c.getProducerVote(vote.VoteType, hash)
+			if err != nil {
+				return nil
+			} else {
+				votes := oldStake - output.Value
+				votesBytes, err := votes.Bytes()
+				if err != nil {
+					return err
+				}
+				c.BatchPut(k, votesBytes)
+			}
+
+			// subtract vote to mempool
+			c.mu.Lock()
+			if p, ok := c.producerVotes[hash]; ok {
+				if v, ok := p.Vote[vote.VoteType]; ok {
+					c.producerVotes[hash].Vote[vote.VoteType] = v - output.Value
+				}
+			}
+			c.mu.Unlock()
+		}
+	}
+
+	return nil
+}
+
 func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
 	key := []byte{byte(VOTE_RegisterProducer)}
 	data, err := c.Get(key)
@@ -592,6 +629,16 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					c.PersistVoteOutput(output)
+				}
+			}
+			for _, input := range txn.Inputs {
+				transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+				if err != nil {
+					return err
+				}
+				output := transaction.Outputs[input.Previous.Index]
+				if output.OutputType == VoteOutput {
+					c.PersistCancelVoteOutput(output)
 				}
 			}
 		}
