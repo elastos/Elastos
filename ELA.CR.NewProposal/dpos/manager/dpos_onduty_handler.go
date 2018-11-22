@@ -3,6 +3,7 @@ package manager
 import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -11,7 +12,7 @@ type DposOnDutyHandler struct {
 	*dposHandlerSwitch
 }
 
-func (h *DposOnDutyHandler) ProcessAcceptVote(p core.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
@@ -21,7 +22,7 @@ func (h *DposOnDutyHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	}
 }
 
-func (h *DposOnDutyHandler) ProcessRejectVote(p core.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Onduty-ProcessRejectVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
