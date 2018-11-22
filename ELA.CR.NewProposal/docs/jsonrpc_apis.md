@@ -853,7 +853,8 @@ result sample:
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
-                "votes": "3.11100000"
+                "votes": "3.11100000",
+                "ip": "127.0.0.1"
             },
             {
                 "address": "EVM5DvheR7FFgEApTE4TX3HyTzNb2VnXfn",
@@ -861,7 +862,8 @@ result sample:
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
-                "votes": "3.11100000"
+                "votes": "3.11100000",
+                "ip": "127.0.0.1"
             },
             {
                 "address": "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda",
@@ -869,7 +871,8 @@ result sample:
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
-                "votes": "0"
+                "votes": "0",
+                "ip": "127.0.0.1"
             }
         ],
         "total_votes": "6.22200000"

@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -645,116 +646,77 @@ func TestCheckRegisterProducerTransaction(t *testing.T) {
 	t.Log("[TestCheckRegisterProducerTransaction] PASSED")
 }
 
-func TestCheckVoteProducerTransaction(t *testing.T) {
-	// 1. Generate a vote register producer transaction
-	addr1 := "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
-	errAddr := "ZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
+func TestCheckVoteProducerOutput(t *testing.T) {
+	// 1. Generate a vote output
 	publicKey1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
-	publicKey2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	errPublicKey := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
-
-	tx1 := new(core.Transaction)
-	tx1.TxType = core.TransferAsset
-	tx1.Payload = &core.PayloadTransferAsset{}
-	txID1 := tx1.Hash()
-
-	tx2 := new(core.Transaction)
-	tx2.TxType = core.VoteProducer
-	tx2.Payload = &core.PayloadVoteProducer{
-		Voter:      addr1,
-		Stake:      1.0,
-		PublicKeys: []string{publicKey1},
-	}
-	txID2 := tx2.Hash()
-
-	txn := new(core.Transaction)
-	txn.TxType = core.CancelProducer
-	txn.Payload = &core.PayloadVoteProducer{
-		Voter:      addr1,
-		Stake:      1.0,
-		PublicKeys: []string{publicKey1},
-	}
-	txn.Inputs = []*core.Input{
-		&core.Input{
-			Previous: core.OutPoint{
-				TxID:  txID1,
-				Index: 0,
-			},
-			Sequence: 0,
-		},
-	}
-	txn.Outputs = []*core.Output{
+	programHash1, _ := PublicKeyToProgramHash(publicKey1)
+	outputs := []*core.Output{
 		&core.Output{
-			AssetID:     common.Uint256{1},
+			AssetID:     common.Uint256{},
 			Value:       1.0,
 			OutputLock:  0,
-			ProgramHash: common.Uint168{1},
+			ProgramHash: common.Uint168{123},
+			OutputType:  core.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						Candidates: []common.Uint168{
+							*programHash1,
+						},
+					},
+				},
+			},
+		},
+		&core.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			OutputType:  core.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType:   outputpayload.Delegate,
+						Candidates: []common.Uint168{},
+					},
+				},
+			},
+		},
+		&core.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			OutputType:  core.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						Candidates: []common.Uint168{
+							*programHash1,
+							*programHash1,
+						},
+					},
+				},
+			},
 		},
 	}
 
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).PersistTransaction(tx1, 1)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	// 2. Check transaction
-	err := CheckVoteProducerTransaction(txn)
+	// 2. Check output payload
+	err := outputs[0].OutputPayload.(*outputpayload.VoteOutput).Validate()
 	assert.NoError(t, err)
 
-	// 3. Change voter in payload
-	txn.Payload.(*core.PayloadVoteProducer).Voter = errAddr
-
-	// 4. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid voter.")
-
-	// 5. Change public key in payload
-	txn.Payload.(*core.PayloadVoteProducer).Voter = addr1
-	txn.Payload.(*core.PayloadVoteProducer).PublicKeys = make([]string, 31)
-
-	// 6. Check transaction
-	err = CheckVoteProducerTransaction(txn)
+	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
 	assert.EqualError(t, err, "Invalid public key length.")
 
-	// 7. Change public key in payload
-	txn.Payload.(*core.PayloadVoteProducer).PublicKeys = []string{errPublicKey}
+	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	assert.EqualError(t, err, "Duplicated programHash.")
 
-	// 8. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid public key.")
-
-	// 9. Change public key in payload
-	txn.Payload.(*core.PayloadVoteProducer).PublicKeys[0] = publicKey2
-
-	// 10. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "Duplicated public keys.")
-
-	// 11. Change stake in payload
-	txn.Payload.(*core.PayloadVoteProducer).PublicKeys[0] = publicKey1
-	txn.Payload.(*core.PayloadVoteProducer).Stake = -1.0
-
-	// 12. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid stake.")
-
-	// 13. Change txid
-	txn.Payload.(*core.PayloadVoteProducer).Stake = 1.0
-	txn.Inputs[0].Previous.TxID = txID2
-
-	// 14. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid inputs.")
-
-	// 15. Persist transaction
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).PersistTransaction(tx2, 1)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	// 16. Check transaction
-	err = CheckVoteProducerTransaction(txn)
-	assert.EqualError(t, err, "No suffrage input.")
-
-	t.Log("[TestCheckVoteProducerTransaction] PASSED")
+	t.Log("[TestCheckVoteProducerOutput] PASSED")
 }
 
 func TestCheckCancelProducerTransaction(t *testing.T) {
