@@ -4,6 +4,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 )
 
 // IChainStore provides func with store package.
@@ -30,7 +31,7 @@ type IChainStore interface {
 	GetSidechainTx(sidechainTxHash Uint256) (byte, error)
 
 	GetRegisteredProducers() []*PayloadRegisterProducer
-	GetProducerVote(programHash Uint168) Fixed64
+	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
 	GetProducerStatus(programHash Uint168) ProducerState
 
 	GetCurrentBlockHash() Uint256

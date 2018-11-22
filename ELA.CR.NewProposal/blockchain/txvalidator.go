@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	MaxVoteProducersPerTransaction = 30
+	MaxVoteProducersPerTransaction = 50
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -87,21 +87,28 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	if txn.IsRegisterProducerTx() {
 		if err := CheckRegisterProducerTransaction(txn); err != nil {
 			log.Warn("[CheckRegisterProducerTransaction],", err)
-			return ErrInvalidOutput
+			return ErrTransactionPayload
 		}
 	}
 
 	if txn.IsCancelProducerTx() {
 		if err := CheckCancelProducerTransaction(txn); err != nil {
 			log.Warn("[CheckCancelProducerTransaction],", err)
-			return ErrInvalidOutput
+			return ErrTransactionPayload
 		}
 	}
 
-	if txn.IsVoteProducerTx() {
-		if err := CheckVoteProducerTransaction(txn); err != nil {
-			log.Warn("[CheckVoteProducerTransaction],", err)
-			return ErrInvalidOutput
+	//if txn.IsVoteProducerTx() {
+	//	if err := CheckVoteProducerTransaction(txn); err != nil {
+	//		log.Warn("[CheckVoteProducerTransaction],", err)
+	//		return ErrInvalidOutput
+	//	}
+	//}
+
+	if txn.IsUpdateProducerTx() {
+		if err := CheckUpdateProducerTransaction(txn); err != nil {
+			log.Warn("[CheckUpdateProducerTransaction],", err)
+			return ErrTransactionPayload
 		}
 	}
 
@@ -450,7 +457,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadTransferCrossChainAsset:
 	case *PayloadRegisterProducer:
 	case *PayloadCancelProducer:
-	case *PayloadVoteProducer:
+	case *PayloadUpdateProducer:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -653,64 +660,68 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 	return errors.New("Invalid producer.")
 }
 
-func CheckVoteProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadVoteProducer)
-	if !ok {
-		return errors.New("Invalid payload.")
-	}
-	// check voter
-	_, err := Uint168FromAddress(payload.Voter)
-	if err != nil {
-		return errors.New("Invalid voter.")
-	}
+//func CheckVoteProducerTransaction(txn *Transaction) error {
+//	payload, ok := txn.Payload.(*PayloadVoteProducer)
+//	if !ok {
+//		return errors.New("Invalid payload.")
+//	}
+//	// check voter
+//	_, err := Uint168FromAddress(payload.Voter)
+//	if err != nil {
+//		return errors.New("Invalid voter.")
+//	}
+//
+//	// check public keys
+//	if len(payload.PublicKeys) == 0 || len(payload.PublicKeys) > MaxVoteProducersPerTransaction {
+//		return errors.New("Invalid public key length.")
+//	}
+//	var count int
+//	producers := DefaultLedger.Store.GetRegisteredProducers()
+//	for _, pk := range payload.PublicKeys {
+//		_, err := PublicKeyToProgramHash(pk)
+//		if err != nil {
+//			return errors.New("Invalid public key.")
+//		}
+//		for _, p := range producers {
+//			if p.PublicKey == pk {
+//				count++
+//			}
+//		}
+//	}
+//	if count != len(payload.PublicKeys) {
+//		return errors.New("Duplicated public keys.")
+//	}
+//
+//	// check stake: output[0].amount equal to stake * len(publicKeys)
+//	if payload.Stake <= 0 {
+//		return errors.New("Invalid stake.")
+//	}
+//	if len(txn.Outputs) < 1 {
+//		return errors.New("Invalid outputs.")
+//	}
+//	value := payload.Stake * Fixed64(len(payload.PublicKeys))
+//	if txn.Outputs[0].Value != value {
+//		return errors.New("Invalid stake value.")
+//	}
+//
+//	// check if inputs has suffrage
+//	for _, input := range txn.Inputs {
+//		if input.Previous.Index == 0 {
+//			tx, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+//			if err != nil {
+//				return errors.New("Invalid inputs.")
+//			}
+//			if tx.IsVoteProducerTx() {
+//				if _, ok := tx.Payload.(*PayloadVoteProducer); ok {
+//					return errors.New("No suffrage input.")
+//				}
+//			}
+//		}
+//	}
+//
+//	return nil
+//}
 
-	// check public keys
-	if len(payload.PublicKeys) == 0 || len(payload.PublicKeys) > MaxVoteProducersPerTransaction {
-		return errors.New("Invalid public key length.")
-	}
-	var count int
-	producers := DefaultLedger.Store.GetRegisteredProducers()
-	for _, pk := range payload.PublicKeys {
-		_, err := PublicKeyToProgramHash(pk)
-		if err != nil {
-			return errors.New("Invalid public key.")
-		}
-		for _, p := range producers {
-			if p.PublicKey == pk {
-				count++
-			}
-		}
-	}
-	if count != len(payload.PublicKeys) {
-		return errors.New("Duplicated public keys.")
-	}
-
-	// check stake: output[0].amount equal to stake * len(publicKeys)
-	if payload.Stake <= 0 {
-		return errors.New("Invalid stake.")
-	}
-	if len(txn.Outputs) < 1 {
-		return errors.New("Invalid outputs.")
-	}
-	value := payload.Stake * Fixed64(len(payload.PublicKeys))
-	if txn.Outputs[0].Value != value {
-		return errors.New("Invalid stake value.")
-	}
-
-	// check if inputs has suffrage
-	for _, input := range txn.Inputs {
-		if input.Previous.Index == 0 {
-			tx, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
-			if err != nil {
-				return errors.New("Invalid inputs.")
-			}
-			if tx.IsVoteProducerTx() {
-				if _, ok := tx.Payload.(*PayloadVoteProducer); ok {
-					return errors.New("No suffrage input.")
-				}
-			}
-		}
-	}
-
+func CheckUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
