@@ -301,11 +301,17 @@ func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) e
 	key := []byte{byte(VOTE_RegisterProducer)}
 	hBuf := new(bytes.Buffer)
 	height := c.GetHeight()
-	WriteUint32(hBuf, height)
+	err := WriteUint32(hBuf, height)
+	if err != nil {
+		return errors.New("write height failed")
+	}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
 		count := new(bytes.Buffer)
-		WriteUint64(count, uint64(1))
+		err = WriteUint64(count, uint64(1))
+		if err != nil {
+			return errors.New("write count failed")
+		}
 		c.BatchPut(key, append(count.Bytes(), append(hBuf.Bytes(), payload.Data(PayloadRegisterProducerVersion)...)...))
 		return c.recordProducer(payload, height)
 	}
@@ -335,7 +341,10 @@ func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) e
 
 	// PUT VALUE: length(uint64),oldProducers(height+payload),newProducer
 	value := new(bytes.Buffer)
-	WriteUint64(value, length+uint64(1))
+	err = WriteUint64(value, length+uint64(1))
+	if err != nil {
+		return errors.New("write new count failed")
+	}
 	c.BatchPut(key, append(append(value.Bytes(), producerBytes[8:]...),
 		append(hBuf.Bytes(), payload.Data(PayloadRegisterProducerVersion)...)...))
 
@@ -384,7 +393,10 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 		}
 		if p.PublicKey != payload.PublicKey {
 			buf := new(bytes.Buffer)
-			WriteUint32(buf, h)
+			err := WriteUint32(buf, h)
+			if err != nil {
+				return errors.New("write height failed")
+			}
 			p.Serialize(buf, PayloadRegisterProducerVersion)
 			newProducerBytes = append(newProducerBytes, buf.Bytes()...)
 			count++
@@ -392,7 +404,10 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 	}
 
 	value := new(bytes.Buffer)
-	WriteUint64(value, count)
+	err = WriteUint64(value, count)
+	if err != nil {
+		return errors.New("write count failed")
+	}
 	newProducerBytes = append(value.Bytes(), newProducerBytes...)
 
 	c.BatchPut(key, newProducerBytes)
@@ -454,13 +469,19 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 			pld = &p
 		}
 		buf := new(bytes.Buffer)
-		WriteUint32(buf, h)
+		err = WriteUint32(buf, h)
+		if err != nil {
+			return errors.New("write height failed")
+		}
 		pld.Serialize(buf, PayloadRegisterProducerVersion)
 		newProducerBytes = append(newProducerBytes, buf.Bytes()...)
 	}
 
 	value := new(bytes.Buffer)
-	WriteUint64(value, length)
+	err = WriteUint64(value, length)
+	if err != nil {
+		return errors.New("write count failed")
+	}
 	newProducerBytes = append(value.Bytes(), newProducerBytes...)
 
 	c.BatchPut(key, newProducerBytes)
