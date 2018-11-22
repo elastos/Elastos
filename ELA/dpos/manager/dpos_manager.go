@@ -39,7 +39,6 @@ type StatusSyncEventListener interface {
 	OnRequestConsensus(id peer.PID, height uint32)
 	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 	OnRequestProposal(id peer.PID, hash common.Uint256)
-	OnResponseProposal(id peer.PID, proposal *core.DPosProposal)
 }
 
 type NetworkEventListener interface {
@@ -140,13 +139,13 @@ func (d *dposManager) OnProposalReceived(id peer.PID, p core.DPosProposal) {
 func (d *dposManager) OnVoteReceived(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
-	d.handler.ProcessAcceptVote(p)
+	d.handler.ProcessAcceptVote(id, p)
 }
 
 func (d *dposManager) OnVoteRejected(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
-	d.handler.ProcessRejectVote(p)
+	d.handler.ProcessRejectVote(id, p)
 }
 
 func (d *dposManager) OnPing(id peer.PID, height uint32) {
@@ -239,11 +238,11 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 }
 
 func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
-	//todo complete me
-}
-
-func (d *dposManager) OnResponseProposal(id peer.PID, proposal *core.DPosProposal) {
-	//todo complete me
+	currentProposal := d.dispatcher.GetProcessingProposal()
+	if currentProposal != nil {
+		responseProposal := &msg.Proposal{Proposal: *currentProposal}
+		d.network.SendMessageToPeer(id, responseProposal)
+	}
 }
 
 func (d *dposManager) changeHeight() {
@@ -273,10 +272,10 @@ func (d *dposManager) processHeartBeat(id peer.PID, height uint32) {
 func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
 	height := d.dispatcher.CurrentHeight()
 	if sourceHeight > height {
-		msg := &msg.GetBlocks{
+		m := &msg.GetBlocks{
 			StartBlockHeight: height,
 			EndBlockHeight:   sourceHeight}
-		d.network.SendMessageToPeer(id, msg)
+		d.network.SendMessageToPeer(id, m)
 
 		return true
 	}
