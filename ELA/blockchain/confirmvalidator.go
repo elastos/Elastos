@@ -100,24 +100,68 @@ func IsVoteValid(vote *core.DPosProposalVote) bool {
 
 func IsIllegalProposalsValid(d *core.DposIllegalProposals) bool {
 
+	// proposal hash and block should match
 	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
 		return false
 	}
 
-	// proposal can not be same
+	// should be in same height
+	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+		return false
+	}
+
+	// proposals can not be same
 	if d.Evidence.Proposal.Hash().IsEqual(d.CompareEvidence.Proposal.Hash()) {
 		return false
 	}
 
+	// should be same sponsor
 	if d.Evidence.Proposal.Sponsor != d.CompareEvidence.Proposal.Sponsor {
 		return false
 	}
 
+	// should in same view
 	if d.Evidence.Proposal.ViewOffset != d.Evidence.Proposal.ViewOffset {
 		return false
 	}
 
+	// proposal should be valid
 	if !IsProposalValid(&d.Evidence.Proposal) || !IsProposalValid(&d.Evidence.Proposal) {
+		return false
+	}
+
+	return true
+}
+
+func IsIllegalVotesValid(d *core.DposIllegalVotes) bool {
+
+	// vote, proposal and block should match
+	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
+		return false
+	}
+
+	// should be in same height
+	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+		return false
+	}
+
+	// votes can not be same
+	if d.Evidence.Vote.Hash().IsEqual(d.CompareEvidence.Vote.Hash()) {
+		return false
+	}
+
+	// should be same signer
+	if d.Evidence.Vote.Signer != d.CompareEvidence.Vote.Signer {
+		return false
+	}
+
+	// should in same view
+	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
+		return false
+	}
+
+	if !IsProposalValid(&d.Evidence.Proposal) || IsProposalValid(&d.CompareEvidence.Proposal) ||
+		!IsVoteValid(&d.Evidence.Vote) || IsVoteValid(&d.CompareEvidence.Vote) {
 		return false
 	}
 

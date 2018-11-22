@@ -6,6 +6,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
+const MaxIllegalProposalSize = 1000000
+
 type IllegalProposals struct {
 	Proposals core.DposIllegalProposals
 }
@@ -15,7 +17,7 @@ func (msg *IllegalProposals) CMD() string {
 }
 
 func (msg *IllegalProposals) MaxLength() uint32 {
-	return DefaultProposalMessageDataSize * 2
+	return MaxIllegalProposalSize
 }
 
 func (msg *IllegalProposals) Serialize(w io.Writer) error {
