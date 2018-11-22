@@ -308,6 +308,11 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnRequestProposal(msgItem.ID, msgRequestProposal.ProposalHash)
 		}
+	case msg.CmdIllegalProposals:
+		msgIllegalProposals, processed := m.(*msg.IllegalProposals)
+		if processed {
+			n.listener.OnIllegalProposalReceived(msgItem.ID, &msgIllegalProposals.Proposals)
+		}
 	}
 }
 
@@ -387,6 +392,8 @@ func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 		message = &msg.ResponseConsensus{}
 	case msg.CmdRequestProposal:
 		message = &msg.RequestProposal{}
+	case msg.CmdIllegalProposals:
+		message = &msg.IllegalProposals{}
 	default:
 		return nil, errors.New("Received unsupported message, CMD " + cmd)
 	}
