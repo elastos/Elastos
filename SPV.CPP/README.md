@@ -1,127 +1,446 @@
-# Elastos.ELA.SPV.Cpp
+# Elastos SPV C++
+
+- [Summary](#summary)
+- [Getting started](#getting-started)
+  - [Initialize](#Initialize)
+  - [Create master wallet](#create-master-wallet)
+  - [Create sub wallet](#create-sub-wallet)
+  - [Sub wallet](#sub-wallet)
+  - [Main chain sub wallet](#main-chain-sub-wallet)
+  - [ID chain sub wallet](#id-chain-sub-wallet)
+  - [Side chain sub wallet](#side-chain-sub-wallet)
+  - [Sign and publish transaction](#sign-and-publish-transaction)
+  - [Remove master wallet](#remove-master-wallet)
+  - [Deinitialize](#deinitialize)
+- [Build guide](#build-guide)
+- [Development](#development)
+- [More](#more)
 
 ## Summary
+
 This repository is a basic library aimed to provide a serials of wallet related interfaces for anyone who want to build a wallet themselves.
 
+## Getting started
 
-## Build on Ubuntu/MacOs
-### Check the required tools
-Make sure your computer have installed the required packages below:
-* [git](https://www.git-scm.com/downloads)
-* [cmake](https://cmake.org/download)
-* [wget](https://www.gnu.org/software/wget)
+#### Initialize
 
-### Clone source code
-Open a terminal, go to `/home/xxx/dev`
-```shell
-$ cd /home/xxx/dev/
-$ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
-$ cd Elastos.ELA.SPV.Cpp
-$ git submodule init
-$ git submodule update
+At first, copy all files(CoinConfig.json, mnemonic_chinese.txt mnemonic_*.txt) from `Data` directory of source code to the `rootPath`, and then create instance of **MasterWalletManager**
+
+```c++
+const std::string rootPath = "./Data"
+try {
+    MasterWalletManager *manager = new MasterWalletManager(rootPath);
+    if (manager == nullptr) {
+        // fail process
+    }
+} catch (...) {
+	// exception process
+}
 ```
 
-### Build Elastos.ELA.SPV.Cpp
+Get created **MasterWallet** and **SubWallet** lists
 
-Create a build directory `cmake-build`
-```shell
-$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build
+```c++
+try {
+    std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
+    if (masterWallets.size() == 0) {
+        // see create master wallet below
+    } else {
+        for (size_t i = 0; i < masterWallets.size(); ++i) {
+            std::vector<ISubWalelt *> subWallets = masterWallets[i]->GetAllSubWallets();
+            // see transaction operation below
+        }
+    }
+} catch (...) {
+    // exception process
+}
 ```
 
-Execute cmake command to generate Makefile, and make
-```shell
-$ cd cmake-build
-$ cmake ..
-$ make
+#### Create master wallet
+
+If **MasterWallet** lists are empty, then create one as need
+
+Create standard HD master wallet with mnemonic
+
+```c++
+const std::string walletID = "HDWalletID";
+const std::string phrasePassword = "";
+const std::string payPassword = "Pay_Password~123^456";
+const bool singleAddress = false;
+try {
+    const std::string mnemonic = manager->GenerateMnemonic("english");
+    IMasterWallet *masterWallet = manager->CreateMasterWallet(
+        walletID, mnemonic, phrasePassword, payPassword, singleAddress);
+} catch (...) {
+    // exception process
+}
 ```
 
-## Build for IOS
+Create 3/4 multi sign master wallet with mnemonic
 
-### Check the required tools
+```c++
+// ...
+const nlohmann::json coSigners = nlohmann::json::parse(
+		"[\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\","
+		" \"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\","
+		" \"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\"]");
+uint32_t requiredSignCount = 3;
+
+try {
+	// ...
+    IMasterWallet *masterWallet = manager->CreateMultiSignMasterWallet(
+        walletID, mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount);
+} catch (...) {
+    // exception process
+}
+```
+
+Create 3/4 readonly multi sign master wallet
+
+```c++
+// ...
+nlohmann::json coSigners = nlohmann::json::parse(
+		"[\"03FC8B9408A7C5AE6F8109BA97CE5429C1CD1F09C0655E4EC05FC0649754E4FB6C\","
+		" \"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\","
+		" \"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\","
+		" \"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\"]");
+uint32_t requiredSignCount = 3;
+
+try {
+    // ...
+    IMasterWallet *masterWallet = manager->CreateMultiSignMasterWallet(
+        walletID, coSigners, requiredSignCount);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Create sub wallet
+
+Get all supported sub wallet ID
+
+```c++
+// ...
+try {
+    std::vector<std::string> subWalletIDList = masterWallet->GetSupportedChains();
+} catch (...) {
+    // exception process
+}
+```
+
+Create a subwallet
+
+```c++
+uint64_t feePerKB = 10000;
+try {
+    ISubWallet *subWallet = masterWallet->CreateSubWallet(subWalletIDList[0], feePerKB);
+} catch (...) {
+    // exception process
+}
+```
+
+Register callback for sub wallet
+
+```c++
+class SubWalletCallback: public ISubWalletCallback {
+    public:
+        ~SubWalletCallback() {}
+        SubWalletCallback() {}
+
+        virtual void OnTransactionStatusChanged(
+            const std::string &txid,const std::string &status,
+            const nlohmann::json &desc,uint32_t confirms) {
+            std::cout << "OnTransactionStatusChanged -> " << std::endl;
+        }
+        virtual void OnBlockSyncStarted() {
+            std::cout << "OnBlockSyncStarted" << std::endl;
+        }
+        virtual void OnBlockHeightIncreased(uint32_t currentBlockHeight, int progress) {
+            std::cout << "OnBlockHeightIncreased -> " << std::endl;
+        }
+        virtual void OnBlockSyncStopped() {
+            std::cout << "OnBlockSyncStopped" << std::endl;
+        }
+        virtual void OnBalanceChanged(uint64_t balance) {
+            std::cout << "OnBalanceChanged -> " << std::endl;
+        }
+}
+
+try {
+    SubWalletCallback *callback = new SubWalletCallback();
+    subWallet->AddCallback(callback);
+} catch (...) {
+    // exception process
+}
+```
+
+Remove callback from sub wallet
+
+```c++
+// ...
+try {
+    subWallet->RemoveCallback(callback);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Sub wallet
+
+Create normal transfer asset transaction
+
+```c++
+const std::string fromAddress = "";
+const std::string toAddress = "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7";
+uint64_t amount = 100000000; // 1 ELA
+const std::string memo = "Hello elastos";
+const std::string remark = "Hello SPV"
+try {
+    nlohmann::json tx = subWallet->CreateTransaction(
+        fromAddress, toAddress, amount, memo, remark);
+} catch (...) {
+    // exception process
+}
+```
+
+Create multi sign transaction
+
+```c++
+try {
+    nlohmann::json tx = subWallet->CreateMultiSignTransaction(
+        fromAddress, toAddress, amount, memo);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Main chain sub wallet
+
+Deposit 1 ELA to ID chain
+
+```c++
+// get genesis address of ID chain
+std::string toAddress;
+try {
+    IIdChainSubWallet *IDSubWallet = dynamic_cast<IIdChainSubWallet *>(subWallet);
+    if (nullptr == IDSubWallet) {
+        // subWallet is not instance of IIdChainSubWallet
+    }
+    toAddress = IDSubWallet->GetGenesisAddress();
+} catch (...) {
+    // exception process
+}
+
+// ...
+uint64_t amount = 100000000;
+// side chain message
+nlohmann::json addressList, amountList, outputIndexList;
+addresses.push_back("EUjtxVuLk3vA1VSqN3EKiK4dY5u7izJQWi");
+amountList.push_back(amount);
+outputIndexList.push_back(0); // the first output use for deposit
+// ...
+try {
+	IMainchainSubWallet *mcSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if (nullptr == mcSubWallet) {
+        // subWallet is not instance of IMainchainSubWallet
+        // do something
+    }
+    nlohmann::json tx = mcSubWallet->CreateDepositTransaction(
+        fromAddress, toAddress, amount, addresses,
+        amountList, outputIndexList, memo, remark);
+} catch (...) {
+    // exception process
+}
+```
+
+#### ID chain sub wallet
+
+Create register ID transaction
+
+```c++
+// ...
+const nlohmann::json payload = "...";
+const nlohmann::json program = "...";
+try {
+    IIdChainSubWallet *IDSubWallet = dynamic_cast<IIdChainSubWallet *>(subWallet);
+    if (nullptr == IDSubWallet) {
+        // subWallet is not instance of IIdChainSubWallet
+    }
+    nlohmann::json tx = IDSubWallet->CreateIdTransaction(
+        fromAddress, payload, program, memo, remark);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Side chain sub wallet
+
+Withdraw 1 ELA from ID chain
+
+```c++
+// ...
+uint64_t amount = 100000000;
+// main chain message
+nlohmann::json addressList, amountList, outputIndexList;
+addressList.push_back("EYMVuGs1FscpgmghSzg243R6PzPiszrgj7");
+amountList.push_back(amount);
+outputIndexList.push_back(0);
+try {
+    ISidechainSubWallet *SideSubWallet = dynamic_cast<ISidechainSubWallet *>(subWallet);
+    if (nullptr == SideSubWallet) {
+        // subWallet is not instance of ISidechainSubWallet
+    }
+    nlohmann::json tx = SideSubWallet->CreateWithdrawTransaction(
+        fromAddress, amount, addressList, amountList, outputIndexList);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Sign and publish transaction
+
+Calculate `tx` fee
+
+```c++
+uint64_t feePerKB = 10000;
+try {
+    uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
+} catch (...) {
+    // exception process
+}
+```
+
+Update `tx` fee
+
+```c++
+try {
+    nlohmann::json tx = subWallet->UpdateTransactionFee(tx, fee);
+} catch (...) {
+    // exception process
+}
+```
+
+Sign `tx`
+
+```c++
+// ...
+try {
+    nlohmann::json tx = subWallet->SignTransaction(tx, payPassword);
+} catch (...) {
+    // exception process
+}
+```
+
+If `tx` is multi sign transaction, we can check signed signers
+
+```c++
+// ...
+try {
+    nlohmann::json signedSigners = subWallet->GetTransactionSignedSigners(tx);
+    std::cout << "Signed signers: " << signedSigners.dump() << std::endl;
+} catch (...) {
+    // exception process
+}
+```
+
+After signed `tx`, it's time to publish `tx` now
+
+```c++
+// ...
+try {
+    nlohmann::json result = subWallet->PublishTransaction(tx);
+    std::cout << "Published tx result: " << result.dump() << std::endl;
+} catch (...) {
+    // exception process
+}
+```
+
+#### Remove master wallet
+
+Destroy a master wallet created before, and remove local storage
+
+```c++
+try {
+    manager->DestroyWallet(walletID);
+} catch (...) {
+    // exception process
+}
+```
+
+#### Deinitialize
+
+Delete instance **MasterWalletManager** before program exit
+
+```c++
+delete manager;
+```
+
+
+
+
+## Build guide
 
 Make sure your computer have installed the required packages below:
 
 - [git](https://www.git-scm.com/downloads)
 - [cmake](https://cmake.org/download)
 - [wget](https://www.gnu.org/software/wget)
-- [xcode](https://developer.apple.com/xcode/download)
+- [xcode](https://developer.apple.com/xcode/download)  (for IOS or MacOS)
+- [ndk](https://developer.android.com/ndk/downloads/)  (for Android)
 
-### Clone source code
-
-Open terminal, go to `/Users/xxx/dev`
+### Prepare source code
+Open a terminal, go to */home/xxx/dev*
 
 ```shell
-$ cd /Users/xxx/dev/
+$ cd /home/xxx/dev/
 $ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
 $ cd Elastos.ELA.SPV.Cpp
 $ git submodule init
-$ git submodule update
+$ git submodule update --force --recursive
 ```
 
-### Build Elastos.ELA.SPV.Cpp
+### Build on Ubuntu/MacOS
+Create a build directory *cmake-build*
+```shell
+$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
+$ mkdir cmake-build
+$ cd cmake-build
+$ cmake ..
+$ make -j 8
+```
 
-Create a build directory `cmake-build-ios`
+### Build for IOS
+Create a build directory *cmake-build-ios*
 
 ```shell
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build-ios
-```
-
-Execute cmake command to generate Makefile, and make
-
-```shell
 $ cd cmake-build-ios
 $ cmake -DSPV_PLATFORM=IOS ..
-$ make
+$ make -j 8
 ```
 
-Note: If built successfully, you will see output static library in directory cmake-build-ios/lib/, which combined with all dependent static libraries(libsqlite.a libboost_*.a libcrypto.a libssl.a libbigint.a). Only support architecture armv7 & arm64 for iPhone now, and minimum IOS target version is 10.0
+Note: If built successfully, you will see output static library in directory *cmake-build-ios/lib/*, which combined with all dependent static libraries(libsqlite.a libboost_*.a libcrypto.a libssl.a libbigint.a). Only support architecture armv7 & arm64 for iPhone now, and minimum IOS target version is 10.0
 
-## Build for Android
+### Build for Android
 
-### Check the required tools
-Make sure your computer have installed the required packages below:
-* [git](https://www.git-scm.com/downloads)
-* [cmake](https://cmake.org/download)
-* [wget](https://www.gnu.org/software/wget)
-* [ndk](https://developer.android.com/ndk/downloads/)
-
-### Install ndk
 `NDK` version: r16+
 
-Unzip to somewhere, for example `/Users/xxx/dev/android-ndk-r16`
+Unzip to somewhere, for example */Users/xxx/dev/android-ndk-r16*
 
-Set system environment variable `ANDROID_NDK` to `/Users/xxx/dev/android-ndk-r16`
+Set system environment variable **ANDROID_NDK** to */Users/xxx/dev/android-ndk-r16*
 
-### Clone source code
-Open terminal, go to `/Users/xxx/dev`
-```shell
-$ cd /Users/xxx/dev/
-$ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
-$ cd Elastos.ELA.SPV.Cpp
-$ git submodule init
-$ git submodule update
-```
-
-### Build Elastos.ELA.SPV.Cpp
-
-Create a build directory `cmake-build-ndk`
+Create a build directory *cmake-build-ndk*
 ```shell
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build-ndk
-```
-
-Execute cmake command to generate Makefile, and make
-```shell
 $ cd cmake-build-ndk
 $ cmake -DSPV_PLATFORM=Android ..
-$ make
+$ make -j 8
 ```
 
-
 ## Development
-Patches are welcome. Please submit pull requests against the `dev` branch.
+Patches are welcome. Please submit pull requests against the **dev** branch.
 
 
 ## More
