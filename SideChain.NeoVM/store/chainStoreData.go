@@ -17,7 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 )
 
 func (c *LedgerStore) PersisAccount(batch database.Batch, block *side.Block) error {
@@ -90,10 +90,10 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 	if !ok {
 		return errors.New("invalid deploy payload")
 	}
-	dbCache := NewDBCache(c)
+	dbCache := blockchain.NewDBCache(c)
 	smartcontract, err := smartcontract.NewSmartContract(&smartcontract.Context{
 		Caller:       payloadDeploy.ProgramHash,
-		StateMachine: *service.NewStateMachine(dbCache, NewDBCache(c)),
+		StateMachine: *service.NewStateMachine(dbCache, dbCache),
 		DBCache:      batch,
 		Code:         payloadDeploy.Code.Code,
 		Time:         big.NewInt(int64(block.Timestamp)),
@@ -141,8 +141,8 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 		}
 		constractState = state.(*states.ContractState)
 	}
-	dbCache := NewDBCache(c)
-	stateMachine := service.NewStateMachine(dbCache, NewDBCache(c))
+	dbCache := blockchain.NewDBCache(c)
+	stateMachine := service.NewStateMachine(dbCache, dbCache)
 	////stateMachine.StateReader.NotifyEvent.Subscribe(events.EventRunTimeNotify, c.onContractNotify)
 	////stateMachine.StateReader.LogEvent.Subscribe(events.EventRunTimeLog, onContractLog)
 	smartcontract, err := smartcontract.NewSmartContract(&smartcontract.Context{

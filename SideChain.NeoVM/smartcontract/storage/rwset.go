@@ -44,7 +44,7 @@ func (rw *RWSet) Add(prefix blockchain.EntryPrefix, key string, value states.ISt
 		Item:      value,
 		IsDeleted: false,
 	}
-	return nil;
+	return nil
 }
 
 func (rw *RWSet) Delete(key string) {

@@ -3,14 +3,19 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"bytes"
+	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 
 	sideser "github.com/elastos/Elastos.ELA.SideChain/service"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
 
 type HttpServiceExtend struct {
@@ -235,6 +240,144 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 	return result, nil
 }
 
+func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error) {
+	script, ok := param.String("code")
+	if !ok {
+		return nil, util.NewError(int(sideser.InvalidParams), "Invalid script: "+ script)
+	}
+	code, err := HexStringToBytes(script)
+	if err != nil {
+		return nil, util.NewError(int(sideser.InvalidParams), "")
+	}
+
+	returntype, ok:= param.String("returnType")
+	if !ok {
+		returntype = "Void"
+	}
+
+	engine := RunScript(code)
+	var ret map[string]interface{}
+	ret = make(map[string]interface{})
+	ret["state"] = engine.GetState()
+	ret["gas_consumed"] = engine.GetGasConsumed()
+	if engine.GetEvaluationStack().Count() > 0 {
+		ret["result"] = getResult(avm.PopStackItem(engine), returntype)
+	}
+
+	return ret, nil
+}
+
+func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, error) {
+	buffer := new(bytes.Buffer)
+	paramBuilder := avm.NewParamsBuider(buffer)
+
+	args, ok := param["params"]
+	paraseJsonToBytes(args.([]interface{}), paramBuilder)
+
+	if !ok {
+		return nil, util.NewError(int(sideser.InvalidParams), "Invalid params: "+ args.(string))
+	}
+	operation, ok := param.String("operation")
+	if ok && operation != "" {
+		paramBuilder.EmitPushByteArray([]byte(operation))
+	}
+	returnType, ok := param.String("returnType")
+	if !ok {
+		returnType = "Void"
+	}
+
+	script, ok := param.String("hex")
+	if !ok {
+		return nil, util.NewError(int(sideser.InvalidParams), "Invalid hex: "+ script)
+	}
+	codeHashBytes, err := HexStringToBytes(script)
+	if err != nil {
+		return nil, util.NewError(int(sideser.InvalidParams), "Invalid hex: "+ err.Error())
+	}
+	codeHash, err := Uint168FromBytes(codeHashBytes)
+	if err != nil {
+		codeHash = &Uint168{}
+	}
+	codeHashBytes = params.UInt168ToUInt160(codeHash)
+	paramBuilder.EmitPushCall(codeHashBytes)
+	engine := RunScript(paramBuilder.Bytes())
+	var ret map[string]interface{}
+	ret = make(map[string]interface{})
+	ret["state"] = engine.GetState()
+	ret["gas_consumed"] = engine.GetGasConsumed()
+	if engine.GetEvaluationStack().Count() > 0 {
+		ret["result"] = getResult(avm.PopStackItem(engine), returnType)
+	}
+	return ret, nil
+}
+
+func paraseJsonToBytes(data []interface{}, builder *avm.ParamsBuilder) error {
+
+	for i := len(data) - 1; i >= 0; i -- {
+		item := data[i].(map[string]interface{})
+		value := item["value"]
+		if item["type"] == "Boolean" {
+			builder.EmitPushBool(value.(bool))
+		} else if item["type"] == "Integer" {
+			value := value.(float64)
+			builder.EmitPushInteger(int64(value))
+		} else if item["type"] == "String" {
+			builder.EmitPushByteArray([]byte(value.(string)))
+		} else if item["type"] == "ByteArray" || item["type"] == "Hash256" || item["type"] == "Hash168" {
+			paramBytes, err := HexStringToBytes(value.(string))
+			if err != nil {
+				return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
+			}
+			builder.EmitPushByteArray(paramBytes)
+		} else if item["type"] == "Hash160" {
+			paramBytes, err := HexStringToBytes(value.(string))
+			if err != nil {
+				return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
+			}
+			if len(paramBytes) == 21 {
+				temp := make([]byte, 20)
+				copy(temp, paramBytes[1:])
+				paramBytes = temp
+			}
+			builder.EmitPushByteArray(paramBytes)
+		} else if item["type"] == "Array" {
+			count := len(value.([]interface{}))
+			paraseJsonToBytes(value.([]interface{}), builder)
+			builder.EmitPushInteger(int64(count))
+			builder.Emit(avm.PACK)
+		}
+	}
+	return nil
+}
+
+func getResult(item datatype.StackItem, returnType string) interface{} {
+
+	switch item.(type) {
+	case *datatype.Boolean:
+		return item.GetBoolean()
+	case *datatype.Integer:
+		return item.GetBigInteger()
+	case *datatype.ByteArray:
+		if returnType == "String" {
+			return string(item.GetByteArray())
+		} else if returnType == "Integer" {
+			return item.GetBigInteger()
+		} else {
+			return item.GetByteArray()
+		}
+	case *datatype.GeneralInterface:
+		interop := item.GetInterface()
+		buf := bytes.NewBuffer([]byte{})
+		interop.Serialize(buf)
+		return BytesToHexString(buf.Bytes())
+	case *datatype.Array:
+		items := item.GetArray()
+		for i := 0; i < len(items); i++ {
+			return getResult(items[i], returnType)
+		}
+	}
+	return ""
+}
 
 func ArrayString(value interface{}) ([]string, bool) {
 	switch v := value.(type) {

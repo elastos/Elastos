@@ -137,6 +137,8 @@ func main() {
 	batch := ledgerStore.NewBatch()
 	ledgerStore.PersisAccount(batch, activeNetParams.GenesisBlock)
 	batch.Commit()
+	sv.Store = ledgerStore
+	sv.Table = store.NewCacheCodeTable(nc.NewDBCache(ledgerStore))
 
 	txPool := mempool.New(&mempoolCfg)
 	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain)
@@ -232,6 +234,8 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
+	s.RegisterAction("invokescript", service.InvokeScript, "code")
+	s.RegisterAction("invokefunction", service.InvokeFunction, "hex", "operation", "params")
 
 	return s
 }

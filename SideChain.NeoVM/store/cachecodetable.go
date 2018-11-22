@@ -7,13 +7,14 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 )
 
 type CacheCodeTable struct {
-	dbCache *DBCache
+	dbCache *blockchain.DBCache
 }
 
-func NewCacheCodeTable(dbCache *DBCache) *CacheCodeTable {
+func NewCacheCodeTable(dbCache *blockchain.DBCache) *CacheCodeTable {
 	return &CacheCodeTable{dbCache: dbCache}
 }
 

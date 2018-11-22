@@ -486,7 +486,7 @@ func Count(e *ExecutionEngine) int {
 func PushData(e *ExecutionEngine, data interface{})  {
 	d, err := NewStackItem(data)
 	if err != nil {
-		return;
+		return
 	}
 	e.evaluationStack.Push(d)
 }
