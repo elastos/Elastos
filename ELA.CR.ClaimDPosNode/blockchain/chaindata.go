@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -352,13 +353,12 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 	c.producerVotes[*programHash] = &ProducerInfo{
 		Payload:   payload,
 		RegHeight: regHeight,
-		Vote:      Fixed64(0),
+		Vote:      make(map[outputpayload.VoteType]Fixed64, 0),
 	}
 	return nil
 }
 
 func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error {
-	//remove from VOTE_RegisterProducer
 	key := []byte{byte(VOTE_RegisterProducer)}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
@@ -397,19 +397,22 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 
 	c.BatchPut(key, newProducerBytes)
 
-	//remove from VOTE_VoteProducer
-	key = []byte{byte(VOTE_VoteProducer)}
 	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("[PersistCancelProducer]" + err.Error())
 	}
 
-	_, err = c.getProducerVote(*programHash)
-	if err == nil {
-		c.BatchDelete(append(key, programHash.Bytes()...))
+	// remove from database
+	for _, voteType := range outputpayload.VoteTypes {
+		keyVote := []byte{byte(voteType)}
+
+		_, err = c.getProducerVote(voteType, *programHash)
+		if err == nil {
+			c.BatchDelete(append(keyVote, programHash.Bytes()...))
+		}
 	}
 
-	//remove from mempool
+	// remove from mempool
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	_, ok := c.producerVotes[*programHash]
@@ -420,39 +423,103 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 	return nil
 }
 
-func (c *ChainStore) PersistVoteProducer(payload *PayloadVoteProducer) error {
-	key := []byte{byte(VOTE_VoteProducer)}
-	stake, err := payload.Stake.Bytes()
+func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error {
+	// update producer in database
+	key := []byte{byte(VOTE_RegisterProducer)}
+	producerBytes, err := c.getRegisteredProducers()
+	if err != nil {
+		return err
+	}
+	r := bytes.NewReader(producerBytes)
+	length, err := ReadUint64(r)
 	if err != nil {
 		return err
 	}
 
-	for _, pk := range payload.PublicKeys {
-		//add vote to level db
-		programHash, err := PublicKeyToProgramHash(pk)
+	var newProducerBytes []byte
+	for i := uint64(0); i < length; i++ {
+		h, err := ReadUint32(r)
 		if err != nil {
-			return errors.New("[PersistVoteProducer]" + err.Error())
+			return err
 		}
-		k := append(key, programHash.Bytes()...)
-		oldStake, err := c.getProducerVote(*programHash)
+		var p PayloadRegisterProducer
+		err = p.Deserialize(r, PayloadRegisterProducerVersion)
 		if err != nil {
-			c.BatchPut(k, stake)
+			return err
+		}
+		var pld Payload
+		if p.PublicKey == payload.PublicKey {
+			pld = payload
 		} else {
-			votes := payload.Stake + oldStake
-			votesBytes, err := votes.Bytes()
-			if err != nil {
-				return err
-			}
-			c.BatchPut(k, votesBytes)
+			pld = &p
 		}
+		buf := new(bytes.Buffer)
+		WriteUint32(buf, h)
+		pld.Serialize(buf, PayloadRegisterProducerVersion)
+		newProducerBytes = append(newProducerBytes, buf.Bytes()...)
+	}
 
-		//add vote to mempool
-		c.mu.Lock()
-		v, ok := c.producerVotes[*programHash]
-		if ok {
-			c.producerVotes[*programHash].Vote = v.Vote + payload.Stake
+	value := new(bytes.Buffer)
+	WriteUint64(value, length)
+	newProducerBytes = append(value.Bytes(), newProducerBytes...)
+
+	c.BatchPut(key, newProducerBytes)
+
+	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
+	if err != nil {
+		return errors.New("[PersistCancelProducer]" + err.Error())
+	}
+
+	// update producer in mempool
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	info, ok := c.producerVotes[*programHash]
+	if !ok {
+		return errors.New("[PersistCancelProducer], Not found producer in mempool.")
+	}
+	info.Payload = payload.PayloadRegisterProducer
+	return nil
+}
+
+func (c *ChainStore) PersistVoteOutput(output *Output) error {
+	stake, err := output.Value.Bytes()
+	if err != nil {
+		return err
+	}
+
+	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	if !ok {
+		return errors.New("[PersistVoteOutput] invalid output payload")
+	}
+
+	for _, vote := range pyaload.Contents {
+		for _, hash := range vote.Candidates {
+			// add vote to database
+			key := []byte{byte(vote.VoteType)}
+			k := append(key, hash.Bytes()...)
+			oldStake, err := c.getProducerVote(vote.VoteType, hash)
+			if err != nil {
+				c.BatchPut(k, stake)
+			} else {
+				votes := output.Value + oldStake
+				votesBytes, err := votes.Bytes()
+				if err != nil {
+					return err
+				}
+				c.BatchPut(k, votesBytes)
+			}
+
+			// add vote to mempool
+			c.mu.Lock()
+			if p, ok := c.producerVotes[hash]; ok {
+				if v, ok := p.Vote[vote.VoteType]; ok {
+					c.producerVotes[hash].Vote[vote.VoteType] = v + output.Value
+				} else {
+					c.producerVotes[hash].Vote[vote.VoteType] = output.Value
+				}
+			}
+			c.mu.Unlock()
 		}
-		c.mu.Unlock()
 	}
 
 	return nil
@@ -468,8 +535,8 @@ func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
 	return data, nil
 }
 
-func (c *ChainStore) getProducerVote(programHash Uint168) (Fixed64, error) {
-	key := []byte{byte(VOTE_VoteProducer)}
+func (c *ChainStore) getProducerVote(voteType outputpayload.VoteType, programHash Uint168) (Fixed64, error) {
+	key := []byte{byte(voteType)}
 	key = append(key, programHash.Bytes()...)
 
 	// PUT VALUE
@@ -515,10 +582,17 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == VoteProducer {
-			err := c.PersistVoteProducer(txn.Payload.(*PayloadVoteProducer))
+		if txn.TxType == UpdateProducer {
+			err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer))
 			if err != nil {
 				return err
+			}
+		}
+		if txn.TxType == TransferAsset {
+			for _, output := range txn.Outputs {
+				if output.OutputType == VoteOutput {
+					c.PersistVoteOutput(output)
+				}
 			}
 		}
 	}
@@ -711,18 +785,7 @@ func PublicKeyToProgramHash(publicKey string) (*Uint168, error) {
 	if err != nil {
 		return nil, errors.New("[getProgramHash] public key to bytes")
 	}
-	pk, err := crypto.DecodePoint(pkBytes)
-	if err != nil {
-		return nil, errors.New("[getProgramHash] public key decode failed")
-	}
-	// Set redeem script
-	redeemScript, err := crypto.CreateStandardRedeemScript(pk)
-	if err != nil {
-		return nil, errors.New("[getProgramHash] public key to reedem script failed")
-	}
-
-	// Set program hash
-	programHash, err := crypto.ToProgramHash(redeemScript)
+	programHash, err := crypto.PublicKeyToStandardProgramHash(pkBytes)
 	if err != nil {
 		return nil, errors.New("[getProgramHash] public key to program hash failed")
 	}

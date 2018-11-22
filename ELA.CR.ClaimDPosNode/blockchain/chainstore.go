@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -30,7 +31,7 @@ type ProducerState byte
 type ProducerInfo struct {
 	Payload   *PayloadRegisterProducer
 	RegHeight uint32
-	Vote      Fixed64
+	Vote      map[outputpayload.VoteType]Fixed64
 }
 
 type persistTask interface{}
@@ -157,7 +158,11 @@ func (c *ChainStore) InitProducerVotes() error {
 		if err != nil {
 			return errors.New("[InitProducerVotes]" + err.Error())
 		}
-		vote, _ := c.getProducerVote(*programHash)
+		vote := make(map[outputpayload.VoteType]Fixed64, 0)
+		for _, voteType := range outputpayload.VoteTypes {
+			v, _ := c.getProducerVote(voteType, *programHash)
+			vote[voteType] = v
+		}
 		c.producerVotes[*programHash] = &ProducerInfo{
 			Payload:   &p,
 			RegHeight: h,
@@ -448,7 +453,7 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	return result
 }
 
-func (c *ChainStore) GetProducerVote(programHash Uint168) Fixed64 {
+func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -457,7 +462,12 @@ func (c *ChainStore) GetProducerVote(programHash Uint168) Fixed64 {
 		return Fixed64(0)
 	}
 
-	return info.Vote
+	vote, ok := info.Vote[voteType]
+	if !ok {
+		return Fixed64(0)
+	}
+
+	return vote
 }
 
 func (c *ChainStore) GetProducerStatus(programHash Uint168) ProducerState {

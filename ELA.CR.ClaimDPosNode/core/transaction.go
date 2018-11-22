@@ -31,7 +31,7 @@ const (
 
 	RegisterProducer TransactionType = 0xc1
 	CancelProducer   TransactionType = 0xc2
-	VoteProducer     TransactionType = 0xc3
+	UpdateProducer   TransactionType = 0xc3
 )
 
 func (self TransactionType) Name() string {
@@ -58,8 +58,8 @@ func (self TransactionType) Name() string {
 		return "RegisterProducer"
 	case CancelProducer:
 		return "CancelProducer"
-	case VoteProducer:
-		return "VoteProducer"
+	case UpdateProducer:
+		return "UpdateProducer"
 	default:
 		return "Unknown"
 	}
@@ -296,8 +296,8 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 }
 
-func (tx *Transaction) IsVoteProducerTx() bool {
-	return tx.TxType == VoteProducer
+func (tx *Transaction) IsUpdateProducerTx() bool {
+	return tx.TxType == UpdateProducer
 }
 
 func (tx *Transaction) IsCancelProducerTx() bool {

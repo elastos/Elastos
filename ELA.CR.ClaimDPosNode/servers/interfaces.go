@@ -945,7 +945,6 @@ func (s producerSorter) Less(i, j int) bool {
 	}
 	return *ivalue > *jvalue
 }
-
 func ListProducers(param Params) map[string]interface{} {
 	start, _ := param.Int("start")
 	limit, ok := param.Int("limit")
@@ -970,7 +969,7 @@ func ListProducers(param Params) map[string]interface{} {
 		if state == chain.ProducerRegistered {
 			active = true
 		}
-		vote := chain.DefaultLedger.Store.GetProducerVote(*programHash)
+		vote := chain.DefaultLedger.Store.GetProducerVote(outputpayload.Delegate, *programHash)
 		producer := Producer{
 			Address:  addr,
 			Nickname: p.NickName,
@@ -1037,7 +1036,7 @@ func VoteStatus(param Params) map[string]interface{} {
 			if err != nil {
 				return ResponsePack(InternalError, "unknown transaction "+unspent.TxId.String()+" from persisted utxo")
 			}
-			if tx.IsVoteProducerTx() {
+			if tx.Outputs[unspent.Index].OutputType == VoteOutput {
 				voting += unspent.Value
 			}
 			bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
@@ -1114,11 +1113,12 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CancelProducerInfo)
 		obj.PublicKey = object.PublicKey
 		return obj
-	case *PayloadVoteProducer:
-		obj := new(VoteProducerInfo)
-		obj.Voter = object.Voter
-		obj.Stake = object.Stake.String()
-		obj.PublicKeys = object.PublicKeys
+	case *PayloadUpdateProducer:
+		obj := new(UpdateProducerInfo)
+		obj.PublicKey = object.PublicKey
+		obj.NickName = object.NickName
+		obj.Url = object.Url
+		obj.Location = object.Location
 		return obj
 	}
 	return nil
