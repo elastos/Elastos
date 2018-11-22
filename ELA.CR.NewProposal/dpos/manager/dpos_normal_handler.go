@@ -19,7 +19,7 @@ func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 
 	currentProposal, ok := h.tryGetCurrentProposal()
 	if !ok {
-		//todo add to pending votes
+		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
 		h.proposalDispatcher.ProcessVote(p, true)
 	}
@@ -33,7 +33,7 @@ func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
 
 	currentProposal, ok := h.tryGetCurrentProposal()
 	if !ok {
-		//todo add to pending votes
+		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
 		h.proposalDispatcher.ProcessVote(p, false)
 	}
