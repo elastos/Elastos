@@ -3,6 +3,8 @@ package manager
 import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -11,13 +13,13 @@ type DposNormalHandler struct {
 	*dposHandlerSwitch
 }
 
-func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	if !h.consensus.IsRunning() {
 		return
 	}
 
-	currentProposal, ok := h.tryGetCurrentProposal()
+	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
@@ -25,13 +27,13 @@ func (h *DposNormalHandler) ProcessAcceptVote(p core.DPosProposalVote) {
 	}
 }
 
-func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessRejectVote] start")
 	if !h.consensus.IsRunning() {
 		return
 	}
 
-	currentProposal, ok := h.tryGetCurrentProposal()
+	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
@@ -39,10 +41,11 @@ func (h *DposNormalHandler) ProcessRejectVote(p core.DPosProposalVote) {
 	}
 }
 
-func (h *DposNormalHandler) tryGetCurrentProposal() (common.Uint256, bool) {
+func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p core.DPosProposalVote) (common.Uint256, bool) {
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal == nil {
-		//todo request proposal from vote sender
+		requestProposal := &msg.RequestProposal{ProposalHash: p.ProposalHash}
+		h.network.SendMessageToPeer(id, requestProposal)
 		return common.Uint256{}, false
 	}
 	return currentProposal.Hash(), true

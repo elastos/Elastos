@@ -24,7 +24,6 @@ const (
 	CmdRequestConsensus  = "req_con"
 	CmdResponseConsensus = "res_con"
 	CmdRequestProposal   = "req_pro"
-	CmdResponseProposal  = "res_pro"
 )
 
 func GetMessageHash(msg p2p.Message) common.Uint256 {

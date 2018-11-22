@@ -21,8 +21,8 @@ type DposEventConditionHandler interface {
 
 	StartNewProposal(p core.DPosProposal)
 
-	ProcessAcceptVote(p core.DPosProposalVote)
-	ProcessRejectVote(p core.DPosProposalVote)
+	ProcessAcceptVote(id peer.PID, p core.DPosProposalVote)
+	ProcessRejectVote(id peer.PID, p core.DPosProposalVote)
 }
 
 type DposHandlerSwitch interface {
@@ -144,8 +144,8 @@ func (h *dposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	return false
 }
 
-func (h *dposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
-	h.currentHandler.ProcessAcceptVote(p)
+func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
+	h.currentHandler.ProcessAcceptVote(id, p)
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
@@ -153,8 +153,8 @@ func (h *dposHandlerSwitch) ProcessAcceptVote(p core.DPosProposalVote) {
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *dposHandlerSwitch) ProcessRejectVote(p core.DPosProposalVote) {
-	h.currentHandler.ProcessRejectVote(p)
+func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
+	h.currentHandler.ProcessRejectVote(id, p)
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
