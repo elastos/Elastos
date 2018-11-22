@@ -20,7 +20,8 @@ type ProposalDispatcher interface {
 
 	//status
 	GetProcessingBlock() *core.Block
-	IsVoteSlotEmpty() bool
+	GetProcessingProposal() *core.DPosProposal
+	IsProcessingBlockEmpty() bool
 	CurrentHeight() uint32
 
 	//proposal
@@ -40,11 +41,11 @@ type ProposalDispatcher interface {
 }
 
 type proposalDispatcher struct {
-	processingBlock  *core.Block
-	currentVoteSlot  *core.DPosProposalVoteSlot
-	acceptVotes      []core.DPosProposalVote
-	rejectedVotes    []core.DPosProposalVote
-	pendingProposals []core.DPosProposal
+	processingBlock    *core.Block
+	processingProposal *core.DPosProposal
+	acceptVotes        map[common.Uint256]core.DPosProposalVote
+	rejectedVotes      map[common.Uint256]core.DPosProposalVote
+	pendingProposals   map[common.Uint256]core.DPosProposal
 
 	eventMonitor *log.EventMonitor
 	consensus    Consensus
@@ -72,6 +73,10 @@ func (p *proposalDispatcher) GetProcessingBlock() *core.Block {
 	return p.processingBlock
 }
 
+func (p *proposalDispatcher) GetProcessingProposal() *core.DPosProposal {
+	return p.processingProposal
+}
+
 func (p *proposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	if accept {
 		p.countAcceptedVote(v)
@@ -80,8 +85,8 @@ func (p *proposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	}
 }
 
-func (p *proposalDispatcher) IsVoteSlotEmpty() bool {
-	return p.currentVoteSlot == nil || len(p.currentVoteSlot.Votes) == 0
+func (p *proposalDispatcher) IsProcessingBlockEmpty() bool {
+	return p.processingBlock == nil
 }
 
 func (p *proposalDispatcher) StartProposal(b *core.Block) {
@@ -90,7 +95,6 @@ func (p *proposalDispatcher) StartProposal(b *core.Block) {
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 
 	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.consensus.GetViewOffset()}
 	var err error
@@ -129,11 +133,10 @@ func (p *proposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &core.DPosProposalVoteSlot{Hash: b.Hash(), Votes: make([]core.DPosProposalVote, 0)}
 }
 
 func (p *proposalDispatcher) FinishProposal() {
-	proposal, blockHash := p.acceptVotes[0].Proposal.Sponsor, p.processingBlock.Hash()
+	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
 	log.Info("[p.consensus.IsOnDuty()]", p.consensus.IsOnDuty())
 	log.Info("[FinishProposal] try append and broad cast confirm block msg")
@@ -157,9 +160,9 @@ func (p *proposalDispatcher) FinishProposal() {
 func (p *proposalDispatcher) CleanProposals() {
 	log.Info("Clean proposals")
 	p.processingBlock = nil
-	p.currentVoteSlot = nil
-	p.acceptVotes = make([]core.DPosProposalVote, 0)
-	p.rejectedVotes = make([]core.DPosProposalVote, 0)
+	p.processingProposal = nil
+	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote, 0)
+	p.rejectedVotes = make(map[common.Uint256]core.DPosProposalVote, 0)
 
 	//todo clear pending proposals that are lower than current consensus height
 }
@@ -185,7 +188,7 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 
 	currentBlock, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.consensus.IsRunning() {
-		p.pendingProposals = append(p.pendingProposals, d)
+		p.pendingProposals[d.Hash()] = d
 		log.Info("Received pending proposal.")
 		return
 	} else {
@@ -206,13 +209,17 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 }
 
 func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
-	p.currentVoteSlot.Votes = make([]core.DPosProposalVote, 0)
+	currentVoteSlot := &core.DPosProposalVoteSlot{
+		Hash:     p.processingBlock.Hash(),
+		Proposal: *p.processingProposal,
+		Votes:    make([]core.DPosProposalVote, 0),
+	}
 	for _, v := range p.acceptVotes {
-		p.currentVoteSlot.Votes = append(p.currentVoteSlot.Votes, v)
+		currentVoteSlot.Votes = append(currentVoteSlot.Votes, v)
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty],append confirm.")
-	if err := node.LocalNode.AppendConfirm(p.currentVoteSlot); err != nil {
+	if err := node.LocalNode.AppendConfirm(currentVoteSlot); err != nil {
 		return false
 	}
 
@@ -222,10 +229,10 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 func (p *proposalDispatcher) OnBlockAdded(b *core.Block) {
 
 	if p.consensus.IsRunning() {
-		for i, v := range p.pendingProposals {
+		for k, v := range p.pendingProposals {
 			if v.BlockHash.IsEqual(b.Hash()) {
 				p.ProcessProposal(v)
-				p.pendingProposals = append(p.pendingProposals[0:i], p.pendingProposals[i+1:]...)
+				delete(p.pendingProposals, k)
 				break
 			}
 		}
@@ -248,9 +255,25 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 	if p.processingBlock != nil {
 		status.ProcessingBlock = *p.processingBlock
 	}
-	status.AcceptVotes = p.acceptVotes
-	status.RejectedVotes = p.rejectedVotes
-	status.PendingProposals = p.pendingProposals
+	if p.processingProposal != nil {
+		status.ProcessingProposal = *p.processingProposal
+	}
+
+	status.AcceptVotes = make([]core.DPosProposalVote, 0, len(p.acceptVotes))
+	for _, v := range p.acceptVotes {
+		status.AcceptVotes = append(status.AcceptVotes, v)
+	}
+
+	status.RejectedVotes = make([]core.DPosProposalVote, 0, len(p.rejectedVotes))
+	for _, v := range p.acceptVotes {
+		status.RejectedVotes = append(status.RejectedVotes, v)
+	}
+
+	status.PendingProposals = make([]core.DPosProposal, 0, len(p.pendingProposals))
+	for _, v := range p.pendingProposals {
+		status.PendingProposals = append(status.PendingProposals, v)
+	}
+
 	return nil
 }
 
@@ -260,9 +283,23 @@ func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusSt
 	}
 
 	p.processingBlock = &status.ProcessingBlock
-	p.acceptVotes = status.AcceptVotes
-	p.rejectedVotes = status.RejectedVotes
-	p.pendingProposals = status.PendingProposals
+	p.processingProposal = &status.ProcessingProposal
+
+	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote)
+	for _, v := range status.AcceptVotes {
+		p.acceptVotes[v.Hash()] = v
+	}
+
+	p.rejectedVotes = make(map[common.Uint256]core.DPosProposalVote)
+	for _, v := range status.RejectedVotes {
+		p.rejectedVotes[v.Hash()] = v
+	}
+
+	p.pendingProposals = make(map[common.Uint256]core.DPosProposal)
+	for _, v := range status.PendingProposals {
+		p.pendingProposals[v.Hash()] = v
+	}
+
 	return nil
 }
 
@@ -278,18 +315,18 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 }
 
 func (p *proposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
-	for _, item := range p.acceptVotes {
-		if item.Signer == v.Signer {
-			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
-			return true
-		}
+	_, ok := p.acceptVotes[v.Hash()]
+	if ok {
+		log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
+		return true
 	}
-	for _, item := range p.rejectedVotes {
-		if item.Signer == v.Signer {
-			log.Info("[alreadyExistVote]: ", v.Signer, "aready in the RejectedVotes!")
-			return true
-		}
+
+	_, ok = p.rejectedVotes[v.Hash()]
+	if ok {
+		log.Info("[alreadyExistVote]: ", v.Signer, "aready in the RejectedVotes!")
+		return true
 	}
+
 	return false
 }
 
@@ -299,7 +336,7 @@ func (p *proposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 
 	if v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
-		p.acceptVotes = append(p.acceptVotes, v)
+		p.acceptVotes[v.Hash()] = v
 
 		if blockchain.DefaultLedger.Arbitrators.HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
 			log.Info("Collect majority signs, finish proposal.")
@@ -314,7 +351,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 
 	if !v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
-		p.rejectedVotes = append(p.rejectedVotes, v)
+		p.rejectedVotes[v.Hash()] = v
 
 		if blockchain.DefaultLedger.Arbitrators.HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
 			p.CleanProposals()
@@ -324,7 +361,9 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 }
 
 func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
-	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: true}
+	p.processingProposal = &d
+
+	vote := core.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: true}
 	var err error
 	vote.Sign, err = p.account.SignVote(&vote)
 	if err != nil {
@@ -344,7 +383,9 @@ func (p *proposalDispatcher) acceptProposal(d core.DPosProposal) {
 }
 
 func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
-	vote := core.DPosProposalVote{Proposal: d, Signer: p.manager.GetPublicKey(), Accept: false}
+	p.processingProposal = &d
+
+	vote := core.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: false}
 	var err error
 	vote.Sign, err = p.account.SignVote(&vote)
 	if err != nil {
@@ -370,16 +411,16 @@ func (p *proposalDispatcher) rejectProposal(d core.DPosProposal) {
 
 func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) ProposalDispatcher {
 	p := &proposalDispatcher{
-		processingBlock:  nil,
-		currentVoteSlot:  nil,
-		acceptVotes:      make([]core.DPosProposalVote, 0),
-		rejectedVotes:    make([]core.DPosProposalVote, 0),
-		pendingProposals: make([]core.DPosProposal, 0),
-		eventMonitor:     eventMonitor,
-		consensus:        consensus,
-		network:          network,
-		manager:          manager,
-		account:          dposAccount,
+		processingBlock:    nil,
+		processingProposal: nil,
+		acceptVotes:        make(map[common.Uint256]core.DPosProposalVote, 0),
+		rejectedVotes:      make(map[common.Uint256]core.DPosProposalVote, 0),
+		pendingProposals:   make(map[common.Uint256]core.DPosProposal, 0),
+		eventMonitor:       eventMonitor,
+		consensus:          consensus,
+		network:            network,
+		manager:            manager,
+		account:            dposAccount,
 	}
 	return p
 }

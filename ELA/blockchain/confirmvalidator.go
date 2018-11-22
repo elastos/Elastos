@@ -12,25 +12,22 @@ import (
 )
 
 func CheckConfirm(confirm *core.DPosProposalVoteSlot) error {
+	if !IsProposalValid(&confirm.Proposal) {
+		return errors.New("[onConfirm] confirm contain invalid proposal")
+	}
+
 	signers := make(map[string]struct{})
-	sponsors := make(map[string]struct{})
+	proposalHash := confirm.Proposal.Hash()
 	for _, vote := range confirm.Votes {
-		if !IsVoteValid(&vote) {
+		if !proposalHash.IsEqual(vote.ProposalHash) || !IsVoteValid(&vote) {
 			return errors.New("[onConfirm] confirm contain invalid vote")
 		}
-		if !IsProposalValid(&vote.Proposal) {
-			return errors.New("[onConfirm] confirm contain invalid proposal")
-		}
+
 		signers[vote.Signer] = struct{}{}
-		sponsors[vote.Proposal.Sponsor] = struct{}{}
 	}
 
 	if len(signers) < int(config.Parameters.ArbiterConfiguration.MajorityCount) {
 		return errors.New("[onConfirm] signers less than majority count")
-	}
-
-	if len(sponsors) != 1 {
-		return errors.New("[onConfirm] different sponsors in votes")
 	}
 
 	return nil

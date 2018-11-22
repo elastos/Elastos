@@ -7,12 +7,13 @@ import (
 )
 
 type DPosProposalVoteSlot struct {
-	Hash  common.Uint256
-	Votes []DPosProposalVote
+	Hash     common.Uint256
+	Proposal DPosProposal
+	Votes    []DPosProposalVote
 }
 
 func (p *DPosProposalVoteSlot) TryAppend(v DPosProposalVote) bool {
-	if p.Hash.IsEqual(v.Proposal.BlockHash) {
+	if p.Proposal.Hash().IsEqual(v.ProposalHash) {
 		p.Votes = append(p.Votes, v)
 		return true
 	}
@@ -21,6 +22,10 @@ func (p *DPosProposalVoteSlot) TryAppend(v DPosProposalVote) bool {
 
 func (p *DPosProposalVoteSlot) Serialize(w io.Writer) error {
 	if err := p.Hash.Serialize(w); err != nil {
+		return err
+	}
+
+	if err := p.Proposal.Serialize(w); err != nil {
 		return err
 	}
 
@@ -39,6 +44,10 @@ func (p *DPosProposalVoteSlot) Serialize(w io.Writer) error {
 
 func (p *DPosProposalVoteSlot) Deserialize(r io.Reader) error {
 	if err := p.Hash.Deserialize(r); err != nil {
+		return err
+	}
+
+	if err := p.Proposal.Deserialize(r); err != nil {
 		return err
 	}
 
