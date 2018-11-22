@@ -9,11 +9,13 @@ import (
 )
 
 type DPosProposalVote struct {
-	Proposal DPosProposal
+	ProposalHash common.Uint256
 
 	Signer string
 	Accept bool
 	Sign   []byte
+
+	hash *common.Uint256
 }
 
 func (v *DPosProposalVote) Data() []byte {
@@ -26,7 +28,7 @@ func (v *DPosProposalVote) Data() []byte {
 }
 
 func (v *DPosProposalVote) SerializeUnsigned(w io.Writer) error {
-	if err := v.Proposal.Serialize(w); err != nil {
+	if err := v.ProposalHash.Serialize(w); err != nil {
 		return err
 	}
 
@@ -56,7 +58,7 @@ func (v *DPosProposalVote) Serialize(w io.Writer) error {
 }
 
 func (v *DPosProposalVote) DeserializeUnsigned(r io.Reader) error {
-	if err := v.Proposal.Deserialize(r); err != nil {
+	if err := v.ProposalHash.Deserialize(r); err != nil {
 		return err
 	}
 
@@ -91,4 +93,14 @@ func (v *DPosProposalVote) Deserialize(r io.Reader) error {
 
 	v.Sign = sign
 	return nil
+}
+
+func (v *DPosProposalVote) Hash() common.Uint256 {
+	if v.hash == nil {
+		buf := new(bytes.Buffer)
+		v.SerializeUnsigned(buf)
+		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		v.hash = &hash
+	}
+	return *v.hash
 }

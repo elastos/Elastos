@@ -130,7 +130,7 @@ func (h *dposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 		return false
 	}
 
-	if h.proposalDispatcher.IsVoteSlotEmpty() {
+	if h.proposalDispatcher.IsProcessingBlockEmpty() {
 		if h.currentHandler.TryStartNewConsensus(b) {
 			rawData := new(bytes.Buffer)
 			b.Serialize(rawData)

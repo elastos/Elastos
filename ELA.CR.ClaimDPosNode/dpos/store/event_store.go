@@ -151,7 +151,7 @@ func (s *EventStore) AddVoteEvent(event VoteEvent) (uint64, error) {
 		return 0, err
 	}
 	w := bytes.NewBuffer(nil)
-	err = vote.Proposal.Serialize(w)
+	err = vote.ProposalHash.Serialize(w)
 	if err != nil {
 		return 0, err
 	}
