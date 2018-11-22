@@ -26,14 +26,19 @@ const (
 	// ETBlockDisconnected indicates the associated block was disconnected
 	// from the main chain.
 	ETBlockDisconnected
+
+	// ETTransactionAccepted indicates the associated transaction was accepted
+	// into transaction mem pool.
+	ETTransactionAccepted
 )
 
 // notificationTypeStrings is a map of notification types back to their constant
 // names for pretty printing.
 var notificationTypeStrings = map[EventType]string{
-	ETBlockAccepted:     "ETBlockAccepted",
-	ETBlockConnected:    "ETBlockConnected",
-	ETBlockDisconnected: "ETBlockDisconnected",
+	ETBlockAccepted:       "ETBlockAccepted",
+	ETBlockConnected:      "ETBlockConnected",
+	ETBlockDisconnected:   "ETBlockDisconnected",
+	ETTransactionAccepted: "ETTransactionAccepted",
 }
 
 // String returns the EventType in human-readable form.
@@ -47,9 +52,10 @@ func (n EventType) String() string {
 // Event defines notification that is sent to the caller via the callback
 // function provided during the call to New and consists of a notification type
 // as well as associated data that depends on the type as follows:
-// 	- ETBlockAccepted:     *core.Block
-// 	- ETBlockConnected:    *core.Block
-// 	- ETBlockDisconnected: *core.Block
+// 	- ETBlockAccepted:     *types.Block
+// 	- ETBlockConnected:    *types.Block
+// 	- ETBlockDisconnected: *types.Block
+// 	- ETTransactionAccepted: *types.Transaction
 type Event struct {
 	Type EventType
 	Data interface{}

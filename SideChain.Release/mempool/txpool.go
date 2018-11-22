@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -65,8 +66,15 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)
 	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
+
 	//add the transaction to process scope
-	p.addToTxList(tx)
+	p.Lock()
+	p.txnList[tx.Hash()] = tx
+	p.Unlock()
+
+	// Notify transaction accepted.
+	events.Notify(events.ETTransactionAccepted, tx)
+
 	return nil
 }
 
@@ -232,17 +240,6 @@ func (p *TxPool) cleanMainchainTx(txs []*types.Transaction) {
 			}
 		}
 	}
-}
-
-func (p *TxPool) addToTxList(txn *types.Transaction) bool {
-	p.Lock()
-	defer p.Unlock()
-	txnHash := txn.Hash()
-	if _, ok := p.txnList[txnHash]; ok {
-		return false
-	}
-	p.txnList[txnHash] = txn
-	return true
 }
 
 func (p *TxPool) delFromTxList(txId Uint256) bool {

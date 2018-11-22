@@ -879,7 +879,7 @@ func Unmarshal(result interface{}, target interface{}) error {
 }
 
 func (s *HttpService) verifyAndSendTx(tx *types.Transaction) error {
-	// if transaction is verified unsucessfully then will not put it into transaction pool
+	// if transaction is not valid, then it will not put into mem pool.
 	if err := s.cfg.TxMemPool.AppendToTxPool(tx); err != nil {
 		if e, ok := err.(mempool.RuleError); ok {
 			log.Errorf("adding transaction pool error, "+
