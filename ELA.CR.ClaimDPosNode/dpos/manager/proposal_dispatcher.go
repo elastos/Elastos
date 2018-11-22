@@ -272,7 +272,7 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 	}
 
 	status.RejectedVotes = make([]core.DPosProposalVote, 0, len(p.rejectedVotes))
-	for _, v := range p.acceptVotes {
+	for _, v := range p.rejectedVotes {
 		status.RejectedVotes = append(status.RejectedVotes, v)
 	}
 
