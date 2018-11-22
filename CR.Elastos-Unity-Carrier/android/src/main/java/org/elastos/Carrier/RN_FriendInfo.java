@@ -31,4 +31,8 @@ public class RN_FriendInfo extends RN_UserInfo {
 
         return rs;
     }
+
+    public ConnectionStatus getConnection(){
+        return this.connection;
+    }
 }

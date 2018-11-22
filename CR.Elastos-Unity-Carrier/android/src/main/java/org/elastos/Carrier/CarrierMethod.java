@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.Iterator;
 
 import org.elastos.carrier.*;
+import org.elastos.carrier.session.*;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.json.JSONObject;
 
@@ -36,6 +37,9 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
     private HashMap<String, RN_CARRIER> ALL_MAP = new HashMap<String, RN_CARRIER>();
     private Util util;
+
+    private Session _session;
+    private Stream _stream;
 
 
     public CarrierMethod(ReactApplicationContext reactContext) {
@@ -247,6 +251,25 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     @ReactMethod
     public void createSession(String name, String friendId, Callback cb){
         Carrier _carrier = getInstanceByName(name);
+        cb.invoke(null, ok);
+        RN_FriendInfo info = null;
+        try{
+            FriendInfo friendInfo = _carrier.getFriend(friendId);
+            info = new RN_FriendInfo(friendInfo);
+        }catch(CarrierException e){
+            util.error("get friend info " + e.getErrorCode());
+            cb.invoke(e.toString(), null);
+            return;
+        }
+
+        if (info.getConnection().value() != 0) {
+            cb.invoke(String.format("target %s is offline", friendId));
+            return;
+        }
+
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.start(friendId);
+
         cb.invoke(null, ok);
     }
 

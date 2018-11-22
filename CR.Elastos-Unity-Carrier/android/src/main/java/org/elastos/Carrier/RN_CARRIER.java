@@ -13,8 +13,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import org.elastos.carrier.*;
 import org.elastos.carrier.Carrier;
-import org.elastos.carrier.exceptions.CarrierException;
-import org.elastos.carrier.session.Manager;
+import org.elastos.carrier.exceptions.*;
+import org.elastos.carrier.session.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,6 +30,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
 
     private Util util;
     private Carrier _carrier;
+    private RN_SESSION _rs;
 
     public RN_CARRIER(ReadableMap config) {
 
@@ -82,6 +83,8 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         try{
             Carrier.initializeInstance(options, this);
             _carrier = Carrier.getInstance();
+
+            _rs = new RN_SESSION(_carrier);
 
             util.log(String.format("Address => %s", _carrier.getAddress()));
             util.log(String.format("UserID => %s", _carrier.getUserId()));
@@ -202,6 +205,8 @@ public class RN_CARRIER extends AbstractCarrierHandler {
     }
 
 
+
+
     public Carrier getCarrierInstance(){
         return _carrier;
     }
@@ -226,6 +231,11 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         WritableArray array = Arguments.createArray();
         array.pushArray(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
+    }
+
+
+    public RN_SESSION getRNSessionInstance(){
+        return _rs;
     }
 
 
