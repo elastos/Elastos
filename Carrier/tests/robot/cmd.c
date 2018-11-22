@@ -1008,8 +1008,6 @@ static void spf_open(TestContext *context, int argc, char *argv[])
 
 static void spfsenddata(TestContext *context, int argc, char *argv[])
 {
-    ElaSession *session = context->session->session;
-    StreamContext *stream_ctxt = context->stream;
     pthread_t client_thread;
     PortForwardingContxt client_ctxt;
 

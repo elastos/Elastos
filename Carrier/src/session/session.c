@@ -102,7 +102,6 @@ static void friend_invite(ElaCarrier *w, const char *from, const char *bundle,
     ElaSessionRequestCallback *callback = NULL;
     void *callback_context = NULL;
     list_iterator_t it;
-    const char *sdp;
 
     ext = (SessionExtension *)context;
     if (!ext) {

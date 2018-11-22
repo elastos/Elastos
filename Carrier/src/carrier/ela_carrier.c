@@ -97,7 +97,7 @@ const char* ela_get_version(void)
 
 static bool is_valid_key(const char *key)
 {
-    char result[DHT_PUBLIC_KEY_SIZE << 1];
+    char result[DHT_PUBLIC_KEY_SIZE];
     ssize_t len;
 
     len = base58_decode(key, strlen(key), result, sizeof(result));
@@ -2543,7 +2543,7 @@ int ela_get_friend_info(ElaCarrier *w, const char *friendid,
 }
 
 int ela_set_friend_label(ElaCarrier *w,
-                             const char *friendid, const char *label)
+                         const char *friendid, const char *label)
 {
     uint32_t friend_number;
     FriendInfo *fi;
@@ -2586,7 +2586,7 @@ bool ela_is_friend(ElaCarrier *w, const char *userid)
     uint32_t friend_number;
     int rc;
 
-    if (!w || !userid) {
+    if (!w || !userid || !*userid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return false;
     }
@@ -2597,6 +2597,7 @@ bool ela_is_friend(ElaCarrier *w, const char *userid)
         return false;
     }
 
+    ela_set_error(ELASUCCESS);
     return !!friends_exist(w->friends, friend_number);
 }
 
@@ -2611,7 +2612,7 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
     size_t _len;
     int rc;
 
-    if (!w || !hello || !address) {
+    if (!w || !hello || !*hello || !address || !*address) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2696,7 +2697,7 @@ int ela_accept_friend(ElaCarrier *w, const char *userid)
     FriendInfo *fi;
     int rc;
 
-    if (!w || !userid) {
+    if (!w || !userid || !*userid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2757,7 +2758,7 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
     FriendInfo *fi;
     int rc;
 
-    if (!w || !friendid) {
+    if (!w || !friendid || !*friendid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2774,7 +2775,7 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
 
     rc = get_friend_number(w, friendid, &friend_number);
     if (rc < 0) {
-        ela_set_error(rc);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
     }
 
@@ -3013,7 +3014,8 @@ int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
 
         if (len == 0) {
             TransactedCallback *tcb;
-            tcb = (TransactedCallback *)rc_alloc(sizeof(TransactedCallback) + (bundle ? strlen(bundle) + 1 : 0), NULL);
+            tcb = (TransactedCallback *)rc_alloc(sizeof(TransactedCallback) +
+                                    (bundle ? strlen(bundle) + 1 : 0), NULL);
             if (!tcb) {
                 ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
                 free(_data);
@@ -3065,11 +3067,18 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to, const char *bundle,
     ElaCP *cp;
     int rc;
 
-    if (!w || (bundle && (!*bundle || bundle_len > ELA_MAX_BUNDLE_LEN))
-           || (!status && !data) || (status && !reason)
-           || (status  && reason_len > ELA_MAX_INVITE_REPLY_REASON_LEN)
-           || (!data && len)
-           || (data && (!len || len > ELA_MAX_INVITE_DATA_LEN))) {
+    if (!w || (bundle && (!*bundle || bundle_len > ELA_MAX_BUNDLE_LEN))) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (status && (!reason || reason_len > ELA_MAX_INVITE_REPLY_REASON_LEN
+            || data || len > 0)) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!status && (reason || !data || !len || len > ELA_MAX_INVITE_DATA_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3102,7 +3111,7 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to, const char *bundle,
 
     rc = get_friend_number(w, userid, &friend_number);
     if (rc < 0) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
     }
 
@@ -3195,6 +3204,11 @@ int ela_get_turn_server(ElaCarrier *w, ElaTurnServer *turn_server)
 
     if (!w || !turn_server) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
         return -1;
     }
 
@@ -3344,7 +3358,7 @@ int ela_leave_group(ElaCarrier *w, const char *groupid)
         return -1;
     }
 
-    vlogD("Carrier: Group %s deleted", groupid);
+    vlogD("Carrier: Leaved from Group %s", groupid);
 
     return 0;
 }
@@ -3607,6 +3621,12 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
         return -1;
     }
 
+    rc = (int)base58_decode(peerid, strlen(peerid), peerpk, sizeof(peerpk));
+    if (rc != sizeof(peerpk)) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
     if (!w->is_ready) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
         return -1;
@@ -3621,17 +3641,6 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
     rc = dht_group_peer_count(&w->dht, group_number, &peer_count);
     if (rc < 0) {
         ela_set_error(rc);
-        return -1;
-    }
-
-    if (!is_valid_key(peerid)) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-        return -1;
-    }
-
-    rc = (int)base58_decode(peerid, sizeof(peerid) + 1, peerpk, sizeof(peerpk));
-    if (rc < 0) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
         return -1;
     }
 
@@ -3652,7 +3661,7 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
     if (i == peer_count) {
         vlogE("Carrier: Can not find peer (%s) in group (%lu)", peerid,
               group_number);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
     }
 
@@ -3666,7 +3675,6 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
     }
 
     strcpy(peer->userid, peerid);
-
     return 0;
 }
 

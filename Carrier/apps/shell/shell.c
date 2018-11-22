@@ -1368,7 +1368,6 @@ static void stream_remove(ElaCarrier *w, int argc, char *argv[])
 static void session_request(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
-    const char *bundle = NULL;
 
     if (argc != 1) {
         output("Invalid command syntax.\n");
