@@ -241,18 +241,18 @@ func (n *dposNetwork) handleMessage(pid peer.PID, msg utip2p.Message) {
 func (n *dposNetwork) processMessage(msgItem *messageItem) {
 	m := msgItem.Message
 	switch m.CMD() {
-	case msg.ReceivedProposal:
-		msgProposal, processed := m.(*msg.ProposalMessage)
+	case msg.CmdReceivedProposal:
+		msgProposal, processed := m.(*msg.Proposal)
 		if processed {
 			n.listener.OnProposalReceived(msgItem.ID, msgProposal.Proposal)
 		}
-	case msg.AcceptVote:
-		msgVote, processed := m.(*msg.VoteMessage)
+	case msg.CmdAcceptVote:
+		msgVote, processed := m.(*msg.Vote)
 		if processed {
 			n.listener.OnVoteReceived(msgItem.ID, msgVote.Vote)
 		}
-	case msg.RejectVote:
-		msgVote, processed := m.(*msg.VoteMessage)
+	case msg.CmdRejectVote:
+		msgVote, processed := m.(*msg.Vote)
 		if processed {
 			n.listener.OnVoteRejected(msgItem.ID, msgVote.Vote)
 		}
@@ -283,23 +283,23 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnGetBlock(msgItem.ID, msgGetBlock.BlockHash)
 		}
-	case msg.GetBlocks:
-		msgGetBlocks, processed := m.(*msg.GetBlocksMessage)
+	case msg.CmdGetBlocks:
+		msgGetBlocks, processed := m.(*msg.GetBlocks)
 		if processed {
 			n.listener.OnGetBlocks(msgItem.ID, msgGetBlocks.StartBlockHeight, msgGetBlocks.EndBlockHeight)
 		}
-	case msg.ResponseBlocks:
-		msgResponseBlocks, processed := m.(*msg.ResponseBlocksMessage)
+	case msg.CmdResponseBlocks:
+		msgResponseBlocks, processed := m.(*msg.ResponseBlocks)
 		if processed {
 			n.listener.OnResponseBlocks(msgItem.ID, msgResponseBlocks.BlockConfirms)
 		}
-	case msg.RequestConsensus:
-		msgRequestConsensus, processed := m.(*msg.RequestConsensusMessage)
+	case msg.CmdRequestConsensus:
+		msgRequestConsensus, processed := m.(*msg.RequestConsensus)
 		if processed {
 			n.listener.OnRequestConsensus(msgItem.ID, msgRequestConsensus.Height)
 		}
-	case msg.ResponseConsensus:
-		msgResponseConsensus, processed := m.(*msg.ResponseConsensusMessage)
+	case msg.CmdResponseConsensus:
+		msgResponseConsensus, processed := m.(*msg.ResponseConsensus)
 		if processed {
 			n.listener.OnResponseConsensus(msgItem.ID, &msgResponseConsensus.Consensus)
 		}
@@ -372,24 +372,24 @@ func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 	switch cmd {
 	case utip2p.CmdBlock:
 		message = utimsg.NewBlock(&core.BlockConfirm{})
-	case msg.AcceptVote:
-		message = &msg.VoteMessage{Command: msg.AcceptVote}
-	case msg.ReceivedProposal:
-		message = &msg.ProposalMessage{}
-	case msg.RejectVote:
-		message = &msg.VoteMessage{Command: msg.RejectVote}
+	case msg.CmdAcceptVote:
+		message = &msg.Vote{Command: msg.CmdAcceptVote}
+	case msg.CmdReceivedProposal:
+		message = &msg.Proposal{}
+	case msg.CmdRejectVote:
+		message = &msg.Vote{Command: msg.CmdRejectVote}
 	case msg.CmdInv:
 		message = &msg.Inventory{}
 	case msg.CmdGetBlock:
 		message = &msg.GetBlock{}
-	case msg.GetBlocks:
-		message = &msg.GetBlocksMessage{}
-	case msg.ResponseBlocks:
-		message = &msg.ResponseBlocksMessage{}
-	case msg.RequestConsensus:
-		message = &msg.RequestConsensusMessage{}
-	case msg.ResponseConsensus:
-		message = &msg.ResponseConsensusMessage{}
+	case msg.CmdGetBlocks:
+		message = &msg.GetBlocks{}
+	case msg.CmdResponseBlocks:
+		message = &msg.ResponseBlocks{}
+	case msg.CmdRequestConsensus:
+		message = &msg.RequestConsensus{}
+	case msg.CmdResponseConsensus:
+		message = &msg.ResponseConsensus{}
 	case msg.CmdRequestProposal:
 		message = &msg.RequestProposal{}
 	case msg.CmdResponseProposal:

@@ -16,15 +16,15 @@ const (
 	CmdInv      = "inventory"
 	CmdGetBlock = "getblock"
 
-	ReceivedProposal    = "proposal"
-	AcceptVote          = "acc_vote"
-	RejectVote          = "rej_vote"
-	GetBlocks           = "get_blc"
-	ResponseBlocks      = "res_blc"
-	RequestConsensus    = "req_con"
-	ResponseConsensus   = "res_con"
-	CmdRequestProposal  = "req_pro"
-	CmdResponseProposal = "res_pro"
+	CmdReceivedProposal  = "proposal"
+	CmdAcceptVote        = "acc_vote"
+	CmdRejectVote        = "rej_vote"
+	CmdGetBlocks         = "get_blc"
+	CmdResponseBlocks    = "res_blc"
+	CmdRequestConsensus  = "req_con"
+	CmdResponseConsensus = "res_con"
+	CmdRequestProposal   = "req_pro"
+	CmdResponseProposal  = "res_pro"
 )
 
 func GetMessageHash(msg p2p.Message) common.Uint256 {

@@ -8,22 +8,22 @@ import (
 
 const DefaultProposalMessageDataSize = 164 //67+32+65
 
-type ProposalMessage struct {
+type Proposal struct {
 	Proposal core.DPosProposal
 }
 
-func (m *ProposalMessage) CMD() string {
-	return ReceivedProposal
+func (m *Proposal) CMD() string {
+	return CmdReceivedProposal
 }
 
-func (m *ProposalMessage) MaxLength() uint32 {
+func (m *Proposal) MaxLength() uint32 {
 	return DefaultProposalMessageDataSize
 }
 
-func (m *ProposalMessage) Serialize(w io.Writer) error {
+func (m *Proposal) Serialize(w io.Writer) error {
 	return m.Proposal.Serialize(w)
 }
 
-func (m *ProposalMessage) Deserialize(r io.Reader) error {
+func (m *Proposal) Deserialize(r io.Reader) error {
 	return m.Proposal.Deserialize(r)
 }
