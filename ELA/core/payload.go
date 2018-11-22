@@ -42,8 +42,8 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadRegisterProducer)
 	case CancelProducer:
 		p = new(PayloadCancelProducer)
-	case VoteProducer:
-		p = new(PayloadVoteProducer)
+	case UpdateProducer:
+		p = new(PayloadUpdateProducer)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

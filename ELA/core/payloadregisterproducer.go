@@ -15,6 +15,7 @@ type PayloadRegisterProducer struct {
 	NickName  string
 	Url       string
 	Location  uint64
+	IP        string
 }
 
 func (a *PayloadRegisterProducer) Data(version byte) []byte {
@@ -46,6 +47,10 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 		return errors.New("[PayloadRegisterProducer], Location serialize failed.")
 	}
 
+	err = WriteVarString(w, a.IP)
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], IP serialize failed.")
+	}
 	return nil
 }
 
@@ -70,10 +75,16 @@ func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
 		return errors.New("[PayloadRegisterProducer], Location deserialize failed.")
 	}
 
+	ip, err := ReadVarString(r)
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], Location deserialize failed.")
+	}
+
 	a.PublicKey = publicKey
 	a.NickName = nickName
 	a.Url = url
 	a.Location = location
+	a.IP = ip
 
 	return nil
 }

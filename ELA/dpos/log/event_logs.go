@@ -27,5 +27,5 @@ func (e *EventLogs) OnConsensusStarted(cons ConsensusEvent) {
 }
 
 func (e *EventLogs) OnConsensusFinished(cons ConsensusEvent) {
-	Info("[OnConsensusFinished], EndTime:", cons.EndTime, "Height:", cons.EndTime)
+	Info("[OnConsensusFinished], EndTime:", cons.EndTime, "Height:", cons.Height)
 }

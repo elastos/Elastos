@@ -7,12 +7,17 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type VoteType byte
-
 const (
 	Delegate VoteType = 0x00
 	CRC      VoteType = 0x01
 )
+
+type VoteType byte
+
+var VoteTypes = []VoteType{
+	Delegate,
+	CRC,
+}
 
 type VoteContent struct {
 	VoteType   VoteType

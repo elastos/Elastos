@@ -167,10 +167,8 @@ type CancelProducerInfo struct {
 	PublicKey string
 }
 
-type VoteProducerInfo struct {
-	Voter      string
-	Stake      string
-	PublicKeys []string
+type UpdateProducerInfo struct {
+	*RegisterProducerInfo
 }
 
 type UTXOInfo struct {
