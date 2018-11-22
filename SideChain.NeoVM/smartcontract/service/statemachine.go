@@ -100,7 +100,7 @@ func (s *StateMachine) CreateAsset(engine *avm.ExecutionEngine) bool {
 		Admin:      *admin,
 		Issuer:     *issue,
 		Owner:      owner,
-		Expiration: 0,//DefaultLedger.Store.GetHeight() + 1 + 2000000,
+		Expiration: blockchain.DefaultChain.GetBestHeight() + 1 + 2000000,
 		IsFrozen:   false,
 	}
 	s.CloneCache.GetInnerCache().GetWriteSet().Add(states.ST_AssetState, string(assetID.Bytes()), assetState)
@@ -304,7 +304,8 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 }
 
 func (s *StateMachine) CheckStorageContext(context *StorageContext) (bool, error) {
-	item, err := s.CloneCache.TryGet(states.ST_Contract, string(context.codeHash.Bytes()))
+	hashStr := string(params.UInt168ToUInt160(context.codeHash))
+	item, err := s.CloneCache.TryGet(states.ST_Contract, hashStr)
 	if err != nil {
 		return false, err
 	}

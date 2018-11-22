@@ -362,6 +362,8 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 			return string(item.GetByteArray())
 		} else if returnType == "Integer" {
 			return item.GetBigInteger()
+		} else if returnType == "Hash168" {
+			return BytesToHexString(item.GetByteArray())
 		} else {
 			return item.GetByteArray()
 		}

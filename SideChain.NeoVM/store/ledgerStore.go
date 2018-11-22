@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var (
@@ -19,7 +20,7 @@ type LedgerStore struct {
 }
 
 func NewLedgerStore(store *sb.ChainStore) (*LedgerStore, error) {
-	ledger := &LedgerStore {
+	ledger := &LedgerStore{
 		ChainStore: store,
 	}
 	ledger.RegisterFunctions(true, sb.StoreFuncNames.PersistTransactions, ledger.persistTransactions)
@@ -59,4 +60,8 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 		}
 	}
 	return nil
+}
+
+func (c *LedgerStore) GetUnspents(txid common.Uint256) ([]*side.Output, error) {
+	return c.GetUnspents(txid)
 }

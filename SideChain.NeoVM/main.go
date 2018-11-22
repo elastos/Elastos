@@ -134,9 +134,14 @@ func main() {
 		eladlog.Fatalf("init DefaultLedgerStore failed, %s", err)
 		os.Exit(1)
 	}
-	batch := ledgerStore.NewBatch()
-	ledgerStore.PersisAccount(batch, activeNetParams.GenesisBlock)
-	batch.Commit()
+	chain.Store = ledgerStore
+
+	if !ledgerStore.IsBlockInStore(&genesisHash) {
+		batch := ledgerStore.NewBatch()
+		ledgerStore.PersisAccount(batch, activeNetParams.GenesisBlock)
+		batch.Commit()
+	}
+
 	sv.Store = ledgerStore
 	sv.Table = store.NewCacheCodeTable(nc.NewDBCache(ledgerStore))
 
@@ -185,7 +190,6 @@ func main() {
 		GetPayloadInfo:              sv.GetPayloadInfo,
 		GetPayload:                  service.GetPayload,
 	}, mempoolCfg.ChainParams.ElaAssetId)
-
 	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
 	defer rpcServer.Stop()
 	go func() {

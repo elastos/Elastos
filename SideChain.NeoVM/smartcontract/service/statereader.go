@@ -277,7 +277,11 @@ func (s *StateReader) CheckWitnessHash(engine *avm.ExecutionEngine, programHash 
 	if err != nil {
 		return false, err
 	}
-	return contains(hashForVerify, programHash), nil
+	ret := contains(hashForVerify, programHash)
+	if !ret {
+		return ret, errors.New("can't find programhash" + programHash.String())
+	}
+	return ret, nil
 }
 
 func (s *StateReader) CheckWitnessPublicKey(engine *avm.ExecutionEngine, publicKey *crypto.PublicKey) (bool, error) {
@@ -443,9 +447,14 @@ func (s *StateReader) BlockChainGetAccount(e *avm.ExecutionEngine) bool {
 	if err != nil {
 		return false
 	}
-	account, err := blockchain.DefaultChain.Store.GetAccount(hash)
 
-	avm.PushData(e, account)
+	if blockchain.DefaultChain != nil {
+		account, err := blockchain.DefaultChain.Store.GetAccount(hash)
+		if err != nil {
+			return false
+		}
+		avm.PushData(e, account)
+	}
 	return true
 }
 

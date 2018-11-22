@@ -111,7 +111,7 @@ func opSetItem(e *ExecutionEngine) (VMState, error) {
 
 func opNewArray(e *ExecutionEngine) (VMState, error) {
 	count := PopInt(e)
-	items := NewStackItems();
+	items := NewStackItems()
 	for i := 0; i < count; i++ {
 		items = append(items, datatype.NewBoolean(false))
 	}
