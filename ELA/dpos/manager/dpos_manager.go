@@ -38,6 +38,8 @@ type StatusSyncEventListener interface {
 	OnResponseBlocks(id peer.PID, blockConfirms []*core.BlockConfirm)
 	OnRequestConsensus(id peer.PID, height uint32)
 	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
+	OnRequestProposal(id peer.PID, hash common.Uint256)
+	OnResponseProposal(id peer.PID, proposal *core.DPosProposal)
 }
 
 type NetworkEventListener interface {
@@ -234,6 +236,14 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 
 	d.ConfirmBlock()
 	d.changeHeight()
+}
+
+func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
+	//todo complete me
+}
+
+func (d *dposManager) OnResponseProposal(id peer.PID, proposal *core.DPosProposal) {
+	//todo complete me
 }
 
 func (d *dposManager) changeHeight() {
