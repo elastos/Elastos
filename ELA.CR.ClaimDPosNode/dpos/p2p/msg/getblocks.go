@@ -5,20 +5,20 @@ import (
 	"io"
 )
 
-type GetBlocksMessage struct {
+type GetBlocks struct {
 	StartBlockHeight uint32
 	EndBlockHeight   uint32
 }
 
-func (msg *GetBlocksMessage) CMD() string {
-	return GetBlocks
+func (msg *GetBlocks) CMD() string {
+	return CmdGetBlocks
 }
 
-func (msg *GetBlocksMessage) MaxLength() uint32 {
+func (msg *GetBlocks) MaxLength() uint32 {
 	return 8
 }
 
-func (msg *GetBlocksMessage) Serialize(w io.Writer) error {
+func (msg *GetBlocks) Serialize(w io.Writer) error {
 	if err := common.WriteUint32(w, msg.StartBlockHeight); err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (msg *GetBlocksMessage) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (msg *GetBlocksMessage) Deserialize(r io.Reader) error {
+func (msg *GetBlocks) Deserialize(r io.Reader) error {
 	var err error
 
 	if msg.StartBlockHeight, err = common.ReadUint32(r); err != nil {

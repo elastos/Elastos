@@ -11,20 +11,20 @@ import (
 //todo move to config
 const DefaultResponseBlocksMessageDataSize = 8000000 * 10
 
-type ResponseBlocksMessage struct {
+type ResponseBlocks struct {
 	Command       string
 	BlockConfirms []*core.BlockConfirm
 }
 
-func (m *ResponseBlocksMessage) CMD() string {
-	return ResponseBlocks
+func (m *ResponseBlocks) CMD() string {
+	return CmdResponseBlocks
 }
 
-func (m *ResponseBlocksMessage) MaxLength() uint32 {
+func (m *ResponseBlocks) MaxLength() uint32 {
 	return DefaultResponseBlocksMessageDataSize
 }
 
-func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
+func (m *ResponseBlocks) Serialize(w io.Writer) error {
 	if err := common.WriteVarUint(w, uint64(len(m.BlockConfirms))); err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (m *ResponseBlocksMessage) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (m *ResponseBlocksMessage) Deserialize(r io.Reader) error {
+func (m *ResponseBlocks) Deserialize(r io.Reader) error {
 	blockConfirmCount, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err

@@ -273,7 +273,7 @@ func (d *dposManager) processHeartBeat(id peer.PID, height uint32) {
 func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
 	height := d.dispatcher.CurrentHeight()
 	if sourceHeight > height {
-		msg := &msg.GetBlocksMessage{
+		msg := &msg.GetBlocks{
 			StartBlockHeight: height,
 			EndBlockHeight:   sourceHeight}
 		d.network.SendMessageToPeer(id, msg)

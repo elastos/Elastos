@@ -183,7 +183,7 @@ func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, end
 		})
 	}
 
-	msg := &msg2.ResponseBlocksMessage{Command: msg2.ResponseBlocks, BlockConfirms: blockConfirms}
+	msg := &msg2.ResponseBlocks{Command: msg2.CmdResponseBlocks, BlockConfirms: blockConfirms}
 	h.network.SendMessageToPeer(id, msg)
 }
 
@@ -211,7 +211,7 @@ func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 		return
 	}
 
-	msg := &msg2.ResponseConsensusMessage{Consensus: *status}
+	msg := &msg2.ResponseConsensus{Consensus: *status}
 	h.network.SendMessageToPeer(id, msg)
 }
 
