@@ -18,9 +18,10 @@ type NewBlocksListener interface {
 
 // Ledger - the struct for ledger
 type Ledger struct {
-	Blockchain  *Blockchain
-	Store       IChainStore
-	Arbitrators Arbitrators
+	Blockchain     *Blockchain
+	Store          IChainStore
+	Arbitrators    Arbitrators
+	HeightVersions HeightVersions
 }
 
 //check weather the transaction contains the doubleSpend.

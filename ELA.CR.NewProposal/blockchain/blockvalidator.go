@@ -74,9 +74,6 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 	}
 
-	// Check transaction outputs after a update checkpoint.
-	checkFlag := BlockHeightVersions.GetCheckFlags(block.Height)
-
 	txIds := make([]Uint256, 0, len(transactions))
 	existingTxIds := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
@@ -90,7 +87,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(checkFlag, txn); errCode != Success {
+		if errCode := CheckTransactionSanity(block.Height, txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -141,8 +138,7 @@ func CheckBlockContext(block *Block) error {
 		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
 	}
 
-	checkFlags := BlockHeightVersions.GetCheckFlags(block.Height)
-	return checkCoinbaseTransactionContext(checkFlags, block.Transactions[0], totalTxFee)
+	return checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
@@ -278,7 +274,7 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 	return feeMap, nil
 }
 
-func checkCoinbaseTransactionContext(checkFlags uint64, coinbase *Transaction, totalTxFee Fixed64) error {
+func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
 	var rewardInCoinbase = Fixed64(0)
 	outputAddressMap := make(map[Uint168]Fixed64)
 
@@ -295,42 +291,8 @@ func checkCoinbaseTransactionContext(checkFlags uint64, coinbase *Transaction, t
 		return errors.New("Reward amount in coinbase not correct")
 	}
 
-	if checkFlags&CheckCoinbaseTxDposReward != 0 {
-		arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
-		candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
-		if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
-			return errors.New("Coinbase output count not match.")
-		}
-
-		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
-		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
-		totalTopProducersReward := float64(dposTotalReward) * 0.75
-		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
-
-		for _, v := range arbitratorsHashes {
-
-			amount, ok := outputAddressMap[*v]
-			if !ok {
-				return errors.New("Unknown dpos reward address.")
-			}
-
-			if amount != individualProducerReward+individualBlockConfirmReward {
-				return errors.New("Incorrect dpos reward amount.")
-			}
-		}
-
-		for _, v := range candidatesHashes {
-
-			amount, ok := outputAddressMap[*v]
-			if !ok {
-				return errors.New("Unknown dpos reward address.")
-			}
-
-			if amount != individualProducerReward+individualBlockConfirmReward {
-				return errors.New("Incorrect dpos reward amount.")
-			}
-		}
+	if err := DefaultLedger.HeightVersions.CheckCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
+		return err
 	}
 
 	return nil

@@ -44,7 +44,7 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	}
 
 	//verify transaction with Concurrency
-	if errCode := blockchain.CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
+	if errCode := blockchain.CheckTransactionSanity(blockchain.DefaultLedger.Blockchain.BlockHeight+1, txn); errCode != Success {
 		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash().String())
 		return errCode
 	}

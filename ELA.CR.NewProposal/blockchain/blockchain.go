@@ -101,7 +101,7 @@ func Init(store IChainStore) error {
 func GetGenesisBlock() (*Block, error) {
 	// header
 	header := Header{
-		Version:    BlockVersion,
+		Version:    0,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
 		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
