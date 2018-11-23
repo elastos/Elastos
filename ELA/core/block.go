@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	BlockVersion     uint32 = 0
 	GenesisNonce     uint32 = 2083236893
 	InvalidBlockSize int    = -1
 )
