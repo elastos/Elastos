@@ -103,7 +103,7 @@ class App extends Component{
         break;
       case 'addFriend':
         try{
-          rs = await this.carrier.addFriend('DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc', 'hello');
+          rs = await this.carrier.addFriend('GXf39cyA3xhsXKumERHsykhjZcNuj7uzKR4uVdCwnrMfZNsHnQTQ', 'hello');
           console.log(rs);
         }catch(e){
           this.setError(e);
@@ -118,7 +118,7 @@ class App extends Component{
         break;
       case 'getFriendInfo':
         try{
-          tmp = await this.carrier.getFriendInfo('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
+          tmp = await this.carrier.getFriendInfo('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv');
           rs = JSON.stringify(tmp);
         }catch(e){
           this.setError(e);
@@ -126,7 +126,7 @@ class App extends Component{
         break;
       case 'sendMessage':
         try{
-          rs = await this.carrier.sendMessage('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV', 'adsfsfdsf');
+          rs = await this.carrier.sendMessage('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv', 'adsfsfdsf');
         }catch(e){
           this.setError(e);
         }
@@ -136,8 +136,12 @@ class App extends Component{
         rs = await this.carrier.close();
         break;
       case 'createSession':
-        await this.carrier.createSession('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
-        rs = 'ok';
+        try{
+          rs = await this.carrier.createSession('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv');
+        }catch(e){
+          this.setError(e);
+        }
+        
         break;
     }
     if(rs || _.isString(rs)){

@@ -44,17 +44,17 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
     public void start(String friendId) {
         util.log(String.format("[ RN_SESSION.create ] => %s", friendId));
 
-        RN_FriendInfo info = null;
-        try{
-            FriendInfo friendInfo = _carrier.getFriend(friendId);
-            info = new RN_FriendInfo(friendInfo);
-        }catch(CarrierException e){
-            util.error("get friend info " + e.getErrorCode());
-        }
-
-        if (info == null || info.getConnection().value() != 0) {
-            return;
-        }
+//        RN_FriendInfo info = null;
+//        try{
+//            FriendInfo friendInfo = _carrier.getFriend(friendId);
+//            info = new RN_FriendInfo(friendInfo);
+//        }catch(CarrierException e){
+//            util.error("get friend info " + e.getErrorCode());
+//        }
+//
+//        if (info == null || info.getConnection().value() != 0) {
+//            return;
+//        }
 
         if (mState == StreamState.Initialized || mState == StreamState.TransportReady
                 || mState == StreamState.Connecting) {
@@ -67,7 +67,8 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         else {
             mState = StreamState.Closed;
 
-            int sopt = Stream.PROPERTY_PLAIN
+            int sopt = Stream.PROPERTY_MULTIPLEXING
+                    | Stream.PROPERTY_PORT_FORWARDING
                     | Stream.PROPERTY_RELIABLE;
 
             try {

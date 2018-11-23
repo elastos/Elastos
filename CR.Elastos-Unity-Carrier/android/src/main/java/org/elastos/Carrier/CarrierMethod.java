@@ -251,7 +251,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     @ReactMethod
     public void createSession(String name, String friendId, Callback cb){
         Carrier _carrier = getInstanceByName(name);
-        cb.invoke(null, ok);
+
         RN_FriendInfo info = null;
         try{
             FriendInfo friendInfo = _carrier.getFriend(friendId);
