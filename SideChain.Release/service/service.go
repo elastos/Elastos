@@ -20,14 +20,15 @@ import (
 )
 
 const (
-	DestroyAddress           = "0000000000000000000000000000000000"
+	DestroyAddress = "0000000000000000000000000000000000"
 )
 
 type Config struct {
-	Server     server.IServer
-	Chain      *blockchain.BlockChain
-	TxMemPool  *mempool.TxPool
-	PowService *pow.Service
+	Server      server.IServer
+	Chain       *blockchain.BlockChain
+	TxMemPool   *mempool.TxPool
+	PowService  *pow.Service
+	SetLogLevel func(level elalog.Level)
 
 	GetBlockInfo                func(cfg *Config, block *types.Block, verbose bool) BlockInfo
 	GetTransactionInfo          func(cfg *Config, header *types.Header, tx *types.Transaction) *TransactionInfo
@@ -124,7 +125,7 @@ func (s *HttpService) SetLogLevel(param util.Params) (interface{}, error) {
 		return nil, util.NewError(int(InvalidParams), "level must be an integer in 0-6")
 	}
 
-	log.SetLevel(elalog.Level(level))
+	s.cfg.SetLogLevel(elalog.Level(level))
 	return fmt.Sprint("log level has been set to ", level), nil
 }
 
@@ -146,7 +147,7 @@ func (s *HttpService) SubmitAuxBlock(param util.Params) (interface{}, error) {
 		return nil, util.NewError(int(InvalidParams), "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	return  blockHash, nil
+	return blockHash, nil
 }
 
 func (s *HttpService) CreateAuxBlock(param util.Params) (interface{}, error) {
