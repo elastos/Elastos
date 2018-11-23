@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/cli/transfer"
 	"github.com/elastos/Elastos.ELA/cli/wallet"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
@@ -39,7 +40,7 @@ func main() {
 	app.Commands = []cli.Command{
 		//*info.NewCommand(),
 		*wallet.NewCommand(),
-		//*mine.NewCommand(),
+		*transfer.NewCommand(),
 	}
 	sort.Sort(cli.CommandsByName(app.Commands))
 	sort.Sort(cli.FlagsByName(app.Flags))

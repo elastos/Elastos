@@ -1,4 +1,4 @@
-package wallet
+package transfer
 
 import (
 	"bufio"
@@ -6,8 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -19,6 +17,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/urfave/cli"
 )
 
@@ -148,8 +148,7 @@ func createMultiOutputTransaction(c *cli.Context, wallet account.Wallet, path, f
 	return nil
 }
 
-func signTransaction(name string, password []byte, context *cli.Context, wallet account.Wallet) error {
-	defer common.ClearBytes(password)
+func signTransaction(context *cli.Context, wallet account.Wallet) error {
 
 	content, err := getTransactionContent(context)
 	if err != nil {
@@ -173,12 +172,13 @@ func signTransaction(name string, password []byte, context *cli.Context, wallet 
 		return errors.New("transaction was fully signed, no need more sign")
 	}
 
-	//password, err = GetPassword(password, false)
+	//password, err := clicom.GetPassword([]byte{}, false)
 	//if err != nil {
 	//	return err
 	//}
+	//defer common.ClearBytes(password)
 
-	_, err = wallet.Sign(name, password, &txn)
+	_, err = wallet.Sign(account.DefaultKeystoreFile, []byte{}, &txn)
 	if err != nil {
 		return err
 	}

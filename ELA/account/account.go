@@ -1,10 +1,12 @@
 package account
 
 import (
+	"errors"
+
+	"github.com/elastos/Elastos.ELA/core/contract"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA/core/contract"
-	"github.com/pkg/errors"
 )
 
 type Account struct {

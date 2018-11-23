@@ -4,27 +4,20 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
+	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/servers"
 
+	"github.com/elaio/gopass"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/howeyc/gopass"
-	"github.com/urfave/cli"
 )
-
-func PrintError(c *cli.Context, err error, cmd string) {
-	fmt.Println("Incorrect Usage:", err)
-	fmt.Println("")
-	cli.ShowCommandHelp(c, cmd)
-}
 
 func FormatOutput(o []byte) error {
 	var out bytes.Buffer
@@ -36,37 +29,6 @@ func FormatOutput(o []byte) error {
 	_, err = out.WriteTo(os.Stdout)
 
 	return err
-}
-
-func GetPassword(password []byte, confirmed bool) ([]byte, error) {
-	if len(password) > 0 {
-		return []byte(password), nil
-	}
-
-	fmt.Print("INPUT PASSWORD:")
-
-	password, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, err
-	}
-
-	if !confirmed {
-		return password, nil
-	} else {
-
-		fmt.Print("CONFIRM PASSWORD:")
-
-		confirm, err := gopass.GetPasswd()
-		if err != nil {
-			return nil, err
-		}
-
-		if !bytes.Equal(password, confirm) {
-			return nil, errors.New("input password unmatched")
-		}
-	}
-
-	return password, nil
 }
 
 // GetConfirmedPassword gets double confirmed password from user input
@@ -101,7 +63,7 @@ func FileExisted(filename string) bool {
 
 func ShowAccountInfo(name string, password []byte) error {
 	var err error
-	password, err = GetPassword(password, false)
+	password, err = clicom.GetPassword(password, false)
 	if err != nil {
 		return err
 	}
@@ -131,7 +93,7 @@ func ShowAccountBalance(name string, password []byte) error {
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 
 	var err error
-	password, err = GetPassword(password, false)
+	password, err = clicom.GetPassword(password, false)
 	if err != nil {
 		return err
 	}
