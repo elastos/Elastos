@@ -119,6 +119,10 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 		return errors.New("add orphan block")
 	}
 
+	err = blockchain.DefaultLedger.Blockchain.AddConfirm(confirm)
+	if err != nil {
+		return errors.New("add confirm failed")
+	}
 	return nil
 }
 
