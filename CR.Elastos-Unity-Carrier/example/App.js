@@ -41,9 +41,9 @@ class App extends Component{
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'addFriend')}>
             <Text>addFriend</Text>
           </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
             <Text>acceptFriend</Text>
-          </Button> */}
+          </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getFriendInfo')}>
             <Text>getFriendInfo</Text>
           </Button>
@@ -103,7 +103,7 @@ class App extends Component{
         break;
       case 'addFriend':
         try{
-          rs = await this.carrier.addFriend('GXf39cyA3xhsXKumERHsykhjZcNuj7uzKR4uVdCwnrMfZNsHnQTQ', 'hello');
+          rs = await this.carrier.addFriend('FFqmEuri4AQxD7w83pgLYwthSQhJ47XaAChyaARWnUji9rE86gUp', 'hello');
           console.log(rs);
         }catch(e){
           this.setError(e);
@@ -111,14 +111,14 @@ class App extends Component{
         break;
       case 'acceptFriend':
         try{
-          rs = await this.carrier.acceptFriend('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
+          rs = await this.carrier.acceptFriend('47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM');
         }catch(e){
           this.setError(e);
         }
         break;
       case 'getFriendInfo':
         try{
-          tmp = await this.carrier.getFriendInfo('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv');
+          tmp = await this.carrier.getFriendInfo('7VBxbJPczHZZwLfs4NhtUvv66CxyhMaSsbakpS8wjccw');
           rs = JSON.stringify(tmp);
         }catch(e){
           this.setError(e);

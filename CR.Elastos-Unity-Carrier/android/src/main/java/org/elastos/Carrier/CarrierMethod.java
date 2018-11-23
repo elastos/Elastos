@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 import org.elastos.carrier.*;
 import org.elastos.carrier.session.*;
-import org.elastos.carrier.exceptions.CarrierException;
+import org.elastos.carrier.exceptions.ElastosException;
 import org.json.JSONObject;
 
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -98,7 +98,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
         try{
             cb.invoke(null, _carrier.getAddress());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getAddress] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -112,7 +112,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             RN_UserInfo info = new RN_UserInfo(_carrier.getSelfInfo());
             cb.invoke(null, info.toJS());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getSelfInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -128,7 +128,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             new_info.extendWithHashMap(map);
             _carrier.setSelfInfo(new_info);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[setSelfInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -141,7 +141,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.addFriend(address, msg);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[addFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -152,9 +152,10 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         Carrier _carrier = getInstanceByName(name);
 
         try{
-            _carrier.acceptFriend(userId);
+            // TODO acceptFriend
+            _carrier.AcceptFriend(userId);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[acceptFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -168,7 +169,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             FriendInfo f_info = _carrier.getFriend(friendId);
             RN_FriendInfo ff = new RN_FriendInfo(f_info);
             cb.invoke(null, ff.toJS());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getFriendInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -179,9 +180,10 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         Carrier _carrier = getInstanceByName(name);
 
         try{
-            _carrier.labelFriend(friendId, label);
+            // TODO labelFriend
+            _carrier.LabelFriend(friendId, label);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[setLabel] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -202,7 +204,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             }
 
             cb.invoke(null, fl);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getFriendList] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -215,7 +217,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.sendFriendMessage(userId, msg);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[sendFriendMessageTo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -228,7 +230,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.removeFriend(userId);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[removeFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -256,7 +258,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             FriendInfo friendInfo = _carrier.getFriend(friendId);
             info = new RN_FriendInfo(friendInfo);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("get friend info " + e.getErrorCode());
             cb.invoke(e.toString(), null);
             return;

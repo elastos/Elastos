@@ -90,7 +90,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
             util.log(String.format("UserID => %s", _carrier.getUserId()));
 
             util.log("carrier start success");
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[carrier init] "+e.toString());
         }
 
@@ -186,7 +186,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         sendEvent("onFriendRequest", param);
     }
 
-    @Override
+//    @Override
     public void onFriendMessage(Carrier carrier, String from, byte[] msg){
         util.log(String.format("[ onFriendMessage ] : %s, %s", from, msg));
 

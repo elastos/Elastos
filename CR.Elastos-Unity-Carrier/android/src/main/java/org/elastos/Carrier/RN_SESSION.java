@@ -3,7 +3,7 @@ package org.elastos.Carrier;
 import org.elastos.carrier.Carrier;
 import org.elastos.carrier.FriendInfo;
 import org.elastos.carrier.session.*;
-import org.elastos.carrier.exceptions.CarrierException;
+import org.elastos.carrier.exceptions.ElastosException;
 
 
 public class RN_SESSION extends AbstractStreamHandler implements SessionRequestCompleteHandler {
@@ -17,11 +17,20 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
     private Manager _manager;
 
+    String sessionRequestSdp;
+
     public RN_SESSION(Carrier carrier){
         _carrier = carrier;
         try{
-            _manager = Manager.getInstance(_carrier);
-        }catch(CarrierException e){
+            _manager = Manager.getInstance(_carrier, new ManagerHandler(){
+                @Override
+                public void onSessionRequest(Carrier carrier, String s, String s1) {
+                    util.log(String.format("[ onSessionRequest ] => %s, %s", s, s1));
+                    sessionRequestSdp = s1;
+
+                }
+            });
+        }catch(ElastosException e){
             util.error(String.format("[ Session Manager ] => %s", e.getErrorCode()));
         }
 
@@ -48,7 +57,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 //        try{
 //            FriendInfo friendInfo = _carrier.getFriend(friendId);
 //            info = new RN_FriendInfo(friendInfo);
-//        }catch(CarrierException e){
+//        }catch(ElastosException e){
 //            util.error("get friend info " + e.getErrorCode());
 //        }
 //
@@ -75,7 +84,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
                 _session = _manager.newSession(friendId);
                 _session.addStream(StreamType.Application, sopt, this);
             }
-            catch (CarrierException e) {
+            catch (ElastosException e) {
                 e.printStackTrace();
 
                 if (_session == null) {
@@ -93,6 +102,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
     @Override
     public void onCompletion(Session session, int status, String reason, String sdp) {
+        util.log(String.format("[ onCompletion ] => status=%s, reason=%s, sdp=%s", status, reason, sdp));
         if (status != 0) {
             util.log(String.format("Session request completion with error (%d:%s", status, reason));
             close();
@@ -102,7 +112,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         try {
             session.start(sdp);
             util.log("Session started success.");
-        } catch (CarrierException e) {
+        } catch (ElastosException e) {
             util.error("Session start error " + e.getErrorCode());
         }
     }
@@ -116,7 +126,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
                 try{
                     _session.request(this);
                     util.log("Session request sent.");
-                }catch(CarrierException e){
+                }catch(ElastosException e){
                     util.error("[ Session.request ]");
                 }
 
