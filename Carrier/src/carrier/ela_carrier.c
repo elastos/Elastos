@@ -1963,22 +1963,24 @@ void notify_friend_message_cb(uint32_t friend_number, const uint8_t *message,
 }
 
 static
-void notify_group_invite_cb(uint32_t fnum, const uint8_t *cookie,
+void notify_group_invite_cb(uint32_t friend_number, const uint8_t *cookie,
                             size_t len, void *user_data)
 {
     FriendInfo *fi;
     ElaCarrier *w = (ElaCarrier *)user_data;
 
-    fi = friends_get(w->friends, fnum);
+    fi = friends_get(w->friends, friend_number);
     if (!fi) {
+        vlogE("Carrier: Unknown friend number %u, group invite dropped.",
+              friend_number);
         return;
     }
 
     if (w->callbacks.group_invite) {
-        char uid[ELA_MAX_ID_LEN + 1];
+        char friendid[ELA_MAX_ID_LEN + 1];
 
-        strcpy(uid, fi->info.user_info.userid);
-        w->callbacks.group_invite(w, uid, (const char *)cookie, len, w->context);
+        strcpy(friendid, fi->info.user_info.userid);
+        w->callbacks.group_invite(w, friendid, cookie, len, w->context);
     }
 
     deref(fi);
@@ -1990,8 +1992,9 @@ int get_groupid_by_number(ElaCarrier *w, uint32_t group_number,
 {
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
     size_t textlen = length;
-    char *groupid;
     int rc;
+
+    assert(length >= ELA_MAX_ID_LEN + 1);
 
     rc = dht_group_get_public_key(&w->dht, group_number, public_key);
     if (rc < 0) {
@@ -1999,12 +2002,7 @@ int get_groupid_by_number(ElaCarrier *w, uint32_t group_number,
         return -1;
     }
 
-    groupid = base58_encode(public_key, sizeof(public_key), groupid_buf,
-                            &textlen);
-    if (!groupid) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
-        return -1;
-    }
+    base58_encode(public_key, sizeof(public_key), groupid_buf, &textlen);
 
     return 0;
 }
@@ -2015,8 +2013,9 @@ int get_peerid_by_number(ElaCarrier *w, uint32_t group_number,
 {
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
     size_t textlen = length;
-    char *peerid;
     int rc;
+
+    assert(length >= ELA_MAX_ID_LEN + 1);
 
     rc = dht_group_get_peer_public_key(&w->dht, group_number, peer_number,
                                        public_key);
@@ -2025,12 +2024,7 @@ int get_peerid_by_number(ElaCarrier *w, uint32_t group_number,
         return -1;
     }
 
-    peerid = base58_encode(public_key, sizeof(public_key), peerid_buf,
-                            &textlen);
-    if (!peerid) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
-        return -1;
-    }
+    base58_encode(public_key, sizeof(public_key), peerid_buf, &textlen);
 
     return 0;
 }
@@ -2141,8 +2135,8 @@ void notify_group_peer_name_cb(uint32_t group_number, uint32_t peer_number,
     }
 
     if (w->callbacks.group_callbacks.peer_name)
-        w->callbacks.group_callbacks.peer_name(w, groupid, peerid,
-                                              name, w->context);
+        w->callbacks.group_callbacks.peer_name(w, groupid, peerid, name,
+                                               w->context);
 }
 
 static
@@ -2476,6 +2470,7 @@ bool ela_is_ready(ElaCarrier *w)
         return false;
     }
 
+    ela_set_error(0);
     return w->is_ready;
 }
 
@@ -2597,7 +2592,7 @@ bool ela_is_friend(ElaCarrier *w, const char *userid)
         return false;
     }
 
-    ela_set_error(ELASUCCESS);
+    ela_set_error(0);
     return !!friends_exist(w->friends, friend_number);
 }
 

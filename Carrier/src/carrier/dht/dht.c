@@ -668,9 +668,8 @@ void notify_conference_message_cb(Tox *tox, uint32_t conference_number,
 {
     DHTCallbacks *cbs = (DHTCallbacks *)context;
 
-    if (type != TOX_MESSAGE_TYPE_NORMAL) {
+    if (type != TOX_MESSAGE_TYPE_NORMAL)
         return;
-    }
 
     cbs->notify_group_message(conference_number, peer_number,
                               message, length, cbs->context);
@@ -711,8 +710,6 @@ void notify_conference_peer_list_changed_cb(Tox *tox,
 void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
             const char *func, const char *message, void *user_data)
 {
-    char *buf;
-    size_t len;
     int _level;
 
     switch(level) {
@@ -734,11 +731,7 @@ void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
         break;
     }
 
-    len = strlen(file) + sizeof(uint32_t) + strlen(func) + strlen(message) + 8;
-    buf = (char *)alloca(len);
-
-    sprintf(buf, "<%s>:%s\n", func, message);
-    vlog(_level, "%s", buf);
+    vlog(_level, "<%s>:%s\n", func, message);
 }
 
 int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
@@ -806,8 +799,8 @@ int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
                   const uint8_t *address)
 {
     Tox *tox = dht->tox;
-    bool success;
     TOX_ERR_BOOTSTRAP error;
+    bool rc;
 
     assert(dht);
     assert(*ipv4 || *ipv6);
@@ -815,28 +808,28 @@ int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
     assert(address);
 
     if (*ipv4) {
-        success = tox_bootstrap(tox, ipv4, (uint16_t)port, address, &error);
-        if (!success) {
+        rc = tox_bootstrap(tox, ipv4, (uint16_t)port, address, &error);
+        if (!rc) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv4, port, error);
             return __dht_bootstrap_error(error);
         }
 
-        success = tox_add_tcp_relay(tox, ipv4, (uint16_t)port, address, &error);
-        if (!success)  {
+        rc = tox_add_tcp_relay(tox, ipv4, (uint16_t)port, address, &error);
+        if (!rc)  {
             vlogE("DHT: add tcp relay %s:%d error (%d).", ipv4, port, error);
             return __dht_bootstrap_error(error);
         }
     }
 
     if (*ipv6) {
-        success = tox_bootstrap(tox, ipv6, (uint16_t)port, address, &error);
-        if (!success) {
+        rc = tox_bootstrap(tox, ipv6, (uint16_t)port, address, &error);
+        if (!rc) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv6, port, error);
             return __dht_bootstrap_error(error);
         }
 
-        success = tox_add_tcp_relay(tox, ipv6, (uint16_t)port, address, &error);
-        if (!success)  {
+        rc = tox_add_tcp_relay(tox, ipv6, (uint16_t)port, address, &error);
+        if (!rc)  {
             vlogE("DHT: add tcp relay %s:%d error (%d).", ipv6, port, error);
             return __dht_bootstrap_error(error);
         }
@@ -941,7 +934,7 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
 
     for (i = 0; i < list_sz; i++) {
         size_t desc_len;
-        bool success;
+        bool rc;
         TOX_ERR_FRIEND_QUERY error;
         TOX_USER_STATUS user_status;
         TOX_ERR_FRIEND_GET_PUBLIC_KEY _error;
@@ -953,9 +946,9 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
             return __dht_friend_query_error(error);
         }
 
-        success = tox_friend_get_status_message(tox, friend_list[i], desc,
+        rc = tox_friend_get_status_message(tox, friend_list[i], desc,
                                                 &error);
-        if (!success) {
+        if (!rc) {
             vlogE("DHT: get friend status message error (%d).", error);
             return __dht_friend_query_error(error);
         }
@@ -966,15 +959,15 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
             return __dht_friend_query_error(error);
         }
 
-        success = tox_friend_get_public_key(tox, friend_list[i], public_key, &_error);
-        if (!success) {
+        rc = tox_friend_get_public_key(tox, friend_list[i], public_key, &_error);
+        if (!rc) {
             vlogE("DHT: get friend public key error (%d).", _error);
             return __dht_friend_get_pk_error(_error);
         }
 
-        success = cb(friend_list[i], public_key, (int)user_status, desc, desc_len,
+        rc = cb(friend_list[i], public_key, (int)user_status, desc, desc_len,
                      context);
-        if (!success)
+        if (!rc)
             return 0;
     }
 
@@ -1040,13 +1033,13 @@ int dht_self_set_desc(DHT *dht, uint8_t *desc, size_t length)
 {
     Tox *tox = dht->tox;
     TOX_ERR_SET_INFO error;
-    bool success;
+    bool rc;
 
     assert(tox);
     assert(desc);
 
-    success = tox_self_set_status_message(tox, desc, length, &error);
-    if (!success) {
+    rc = tox_self_set_status_message(tox, desc, length, &error);
+    if (!rc) {
         vlogE("DHT: set self description error (%d).", error);
         return __dht_set_info_error(error);
     }
@@ -1169,9 +1162,7 @@ int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
         return rc;
     }
 
-    addr = inet_ntop(AF_INET, &in_addr,
-        addr_buf, sizeof(addr_buf));
-
+    addr = inet_ntop(AF_INET, &in_addr, addr_buf, sizeof(addr_buf));
     if (!addr || strlen(addr) >= buflen)
         return -1;
 
@@ -1183,13 +1174,15 @@ int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
 int dht_group_get_public_key(DHT *dht, uint32_t group_number,
                              uint8_t *public_key)
 {
-    bool success;
+    Tox *tox = dht->tox;
+    bool rc;
 
-    assert(dht);
+    assert(tox);
+    assert(group_number != UINT32_MAX);
     assert(public_key);
 
-    success = tox_conference_get_id(dht->tox, group_number, public_key);
-    if (!success) {
+    rc = tox_conference_get_id(tox, group_number, public_key);
+    if (!rc) {
         vlogE("DHT: get group public key error.");
         return ELA_DHT_ERROR(ELAERR_NOT_EXIST);
     }
@@ -1200,13 +1193,14 @@ int dht_group_get_public_key(DHT *dht, uint32_t group_number,
 int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
                                    uint32_t *group_number)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_BY_ID error;
 
-    assert(dht);
+    assert(tox);
     assert(public_key);
     assert(group_number);
 
-    *group_number = tox_conference_by_id(dht->tox, public_key, &error);
+    *group_number = tox_conference_by_id(tox, public_key, &error);
     if (error != TOX_ERR_CONFERENCE_BY_ID_OK) {
         vlogE("DHT: get group number by public key error (%d).", error);
         return __dht_group_number_by_public_key_error(error);
@@ -1217,9 +1211,13 @@ int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
 
 int dht_group_new(DHT *dht, uint32_t *group_number)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_NEW error;
 
-    *group_number = tox_conference_new(dht->tox, &error);
+    assert(tox);
+    assert(group_number);
+
+    *group_number = tox_conference_new(tox, &error);
     if (error != TOX_ERR_CONFERENCE_NEW_OK) {
         vlogE("DHT: create group error (%d).", error);
         return __dht_group_new_error(error);
@@ -1230,13 +1228,14 @@ int dht_group_new(DHT *dht, uint32_t *group_number)
 
 int dht_group_leave(DHT *dht, uint32_t group_number)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_DELETE error;
     bool rc;
 
-    assert(dht);
+    assert(tox);
     assert(group_number != UINT32_MAX);
 
-    rc = tox_conference_delete(dht->tox, group_number, &error);
+    rc = tox_conference_delete(tox, group_number, &error);
     if (!rc) {
         vlogW("DHT: Delete group %lu error (%d)", group_number, error);
         return __dht_group_delete_error(error);
@@ -1247,11 +1246,14 @@ int dht_group_leave(DHT *dht, uint32_t group_number)
 
 int dht_group_invite(DHT *dht, uint32_t group_number, uint32_t friend_number)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_INVITE error;
 
-    assert(dht);
+    assert(tox);
+    assert(group_number != UINT32_MAX);
+    assert(friend_number != UINT32_MAX);
 
-    tox_conference_invite(dht->tox, friend_number, group_number, &error);
+    tox_conference_invite(tox, friend_number, group_number, &error);
     if (error != TOX_ERR_CONFERENCE_INVITE_OK) {
         vlogE("DHT: Invite friend %lu into group %lu error (%d)",
               friend_number, group_number, error);
@@ -1264,15 +1266,16 @@ int dht_group_invite(DHT *dht, uint32_t group_number, uint32_t friend_number)
 int dht_group_join(DHT *dht, uint32_t friend_number, const uint8_t *cookie,
                    size_t length, uint32_t *group_number)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_JOIN error;
 
-    assert(dht);
+    assert(tox);
     assert(friend_number != UINT32_MAX);
     assert(cookie);
+    assert(length > 0);
     assert(group_number);
 
-    *group_number = tox_conference_join(dht->tox, friend_number, cookie, length,
-                                        &error);
+    *group_number = tox_conference_join(tox, friend_number, cookie, length, &error);
     if (error != TOX_ERR_CONFERENCE_JOIN_OK) {
         vlogE("DHT: Friend %lu join group error (%d)", friend_number, error);
         return __dht_group_join_error(error);
@@ -1284,14 +1287,16 @@ int dht_group_join(DHT *dht, uint32_t friend_number, const uint8_t *cookie,
 int dht_group_send_message(DHT *dht, uint32_t group_number,
                            const uint8_t *msg, size_t length)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_SEND_MESSAGE error;
 
-    assert(dht);
+    assert(tox);
+    assert(group_number != UINT32_MAX);
     assert(msg);
     assert(length);
 
-    tox_conference_send_message(dht->tox, group_number,
-                TOX_MESSAGE_TYPE_NORMAL, msg, length, &error);
+    tox_conference_send_message(tox, group_number, TOX_MESSAGE_TYPE_NORMAL,
+                                msg, length, &error);
     if (error != TOX_ERR_CONFERENCE_SEND_MESSAGE_OK) {
         vlogE("DHT: Send a message to group %lu error (%d).",
               group_number, error);
@@ -1304,13 +1309,16 @@ int dht_group_send_message(DHT *dht, uint32_t group_number,
 int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
                         size_t length)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_TITLE error;
     size_t len;
 
-    assert(dht);
+    assert(tox);
+    assert(group_number != UINT32_MAX);
     assert(title);
+    assert(length > 0);
 
-    len = tox_conference_get_title_size(dht->tox, group_number, &error);
+    len = tox_conference_get_title_size(tox, group_number, &error);
     if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
         vlogE("DHT: Get title size of group %lu error (%d)", group_number,
               error);
@@ -1318,7 +1326,7 @@ int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
     }
 
     if (len > length)
-        return ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        return ELA_DHT_ERROR(ELAERR_BUFFER_TOO_SMALL);
 
     tox_conference_get_title(dht->tox, group_number, (uint8_t *)title, &error);
     if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
@@ -1331,12 +1339,14 @@ int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
 
 int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_TITLE error;
 
-    assert(dht);
+    assert(tox);
+    assert(group_number != UINT32_MAX);
     assert(title);
 
-    tox_conference_set_title(dht->tox, group_number, (const uint8_t *)title,
+    tox_conference_set_title(tox, group_number, (const uint8_t *)title,
                              strlen(title) + 1, &error);
     if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
         vlogE("DHT: Get title of group %lu error (%d)", group_number, error);
@@ -1348,16 +1358,16 @@ int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title)
 
 int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_PEER_QUERY error;
 
-    assert(dht);
+    assert(tox);
     assert(group_number != UINT32_MAX);
     assert(peer_count);
 
-    *peer_count = tox_conference_peer_count(dht->tox, group_number, &error);
+    *peer_count = tox_conference_peer_count(tox, group_number, &error);
     if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
-        vlogE("DHT: Get peer count of group %lu error (%d)", group_number,
-              error);
+        vlogE("DHT: Get peer count of group %lu error (%d)", group_number, error);
         return __dht_group_peer_query_error(error);
     }
 
@@ -1367,15 +1377,17 @@ int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count)
 int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
                             char *name, size_t length)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_PEER_QUERY error;
     size_t len;
 
-    assert(dht);
+    assert(tox);
     assert(group_number !=  UINT32_MAX);
     assert(peer_number != UINT32_MAX);
     assert(name);
+    assert(length > 0);
 
-    len = tox_conference_peer_get_name_size(dht->tox, group_number, peer_number,
+    len = tox_conference_peer_get_name_size(tox, group_number, peer_number,
                                             &error);
     if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer %lu name size of group %lu error (%d)", peer_number,
@@ -1384,9 +1396,9 @@ int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_numbe
     }
 
     if (len > length)
-        return ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        return ELA_DHT_ERROR(ELAERR_BUFFER_TOO_SMALL);
 
-    tox_conference_peer_get_name(dht->tox, group_number, peer_number,
+    tox_conference_peer_get_name(tox, group_number, peer_number,
                                  (uint8_t *)name, &error);
     if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer %lu name of group %lu error (%d)", group_number,
@@ -1400,14 +1412,15 @@ int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_numbe
 int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
                                   uint32_t peer_number, uint8_t *public_key)
 {
+    Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_PEER_QUERY error;
 
-    assert(dht);
+    assert(tox);
     assert(group_number !=  UINT32_MAX);
     assert(peer_number != UINT32_MAX);
     assert(public_key);
 
-    tox_conference_peer_get_public_key(dht->tox, group_number, peer_number,
+    tox_conference_peer_get_public_key(tox, group_number, peer_number,
                                        public_key, &error);
     if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer %lu public key from group %lu error (%d)",
@@ -1420,16 +1433,20 @@ int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
 
 uint32_t dht_get_group_count(DHT *dht)
 {
-    assert(dht);
+    Tox *tox = dht->tox;
 
-    return tox_conference_get_chatlist_size(dht->tox);
+    assert(tox);
+
+    return tox_conference_get_chatlist_size(tox);
 }
 
 int dht_get_group_list(DHT *dht, uint32_t *group_number_list)
 {
-    assert(dht);
+    Tox *tox = dht->tox;
+
+    assert(tox);
     assert(group_number_list);
 
-    tox_conference_get_chatlist(dht->tox, group_number_list);
+    tox_conference_get_chatlist(tox, group_number_list);
     return 0;
 }
