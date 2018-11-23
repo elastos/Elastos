@@ -132,7 +132,7 @@ $ ./elatests.sh
 
 With CMake, Elastos Carrier can be cross-compiled to run on Android as a target platform, while compilation is carried out on Ubuntu / Debian / Linux host.
 
-**Prerequisite**: Android NDK 'android-ndk-r16b' or higher must be downloaded onto the host Linux based host.
+**Prerequisite**: Android NDK 'android-ndk-r16b' or higher must be downloaded onto the Linux based host.
 Android NDKs (such as 'Linux 64-bit (x86)') can be downloaded from https://developer.android.com/ndk/downloads/ .
 Please make sure to extract the downloaded NDK.
 
@@ -512,7 +512,34 @@ $ make dist
 
 With CMake, Elastos Carrier can be cross-compiled to run only on Windows as target platform, while compilation is carried out on a Windows host. Both 32-bit and 64-bit target versions are supported.
 
-**Prerequisite**: Visual Studio IDE is required. The Community version can be downloaded at https://visualstudio.microsoft.com/downloads/ for free.
+
+#### 2. Set up Environment
+
+**Prerequisites**:
+- Visual Studio IDE is required. The Community version can be downloaded at https://visualstudio.microsoft.com/downloads/ for free.
+- Download and install "Visual Studio Command Prompt (devCmd)" from https://marketplace.visualstudio.com/items?itemName=ShemeerNS.VisualStudioCommandPromptdevCmd .
+- Install 'Desktop development with C++' Workload
+
+
+Start the program 'Visual Studio Installer'.
+***
+Alternative:
+Start Visual Studio IDE.
+In the menu, go to "Tools >> Get Tools and Features", it will open the Visual Studio Installer.
+***
+
+Make sure 'Desktop development with C++' Workload is installed.
+
+On the right side, make sure in the 'Installation details' all of the following are installed:
+"Windows 8.1 SDK and UCRT SDK" <- might have to be selected additionally
+"Windows 10 SDK (10.0.17134.0)" <- might have to be selected additionally
+"VC++ 2017 version 15.9 ... tools"
+"C++ Profiling tools"
+"Visual C++ tools for CMake"
+"Visual C++ ATL for x86 and x64"
+Additional tools are optional, some additional ones are installed by default with the Workload.
+
+After modifications, restarting of Visual Studio might be required.
 
 To build for a 32-bit target , select `x86 Native Tools Command Console` to run building commands, otherwise, select `x64 Native Tools Command Console` for a 64-bit target.
 
@@ -520,8 +547,8 @@ To build for a 32-bit target , select `x86 Native Tools Command Console` to run 
 
 To compile the project from source code for the target to run on Windows, carry out the following steps:
 
-
-Open a new terminal window.
+In Visual Studio, open Visual Studio Command Prompt from the menu "Tools >> Visual Studio Command Prompt"
+It will open a new terminal window.
 
 Navigate to the previously downloaded folder that contains the source code of the Carrier project.
 
@@ -579,18 +606,20 @@ is displayed in the terminal for a simple evaluation of test results.
 To run elashell or elatests, first extract the distribution package created previously and enter the extracted folder.
 Then, change directory to the 'bin' folder.
 ```shell
-$ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
+$ cd YOUR-DISTRIBUTION-PACKAGE-PATH\bin
 ```
 
-Run Elashell:
+Run Elashell:<br/>
+Make sure to replace 'YOUR-DISTRIBUTION-PACKAGE-PATH'.
 ```shell
-$ ./elashell.sh
+$ elashell --config=YOUR-DISTRIBUTION-PACKAGE-PATH\etc\carrier\elashell.conf
 ```
 Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name. For the entire command list please see the [COMMANDS.md](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/COMMANDS.md) file.
 
-Or run Elatests:
+Or run Elatests:<br/>
+Make sure to replace 'YOUR-DISTRIBUTION-PACKAGE-PATH'.
 ```shell
-$ ./elatests.sh
+$ elatests --config=YOUR-DISTRIBUTION-PACKAGE-PATH\etc\carrier\tests.conf
 ```
 
 ***
