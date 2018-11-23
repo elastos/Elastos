@@ -364,6 +364,9 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 		RegHeight: regHeight,
 		Vote:      make(map[outputpayload.VoteType]Fixed64, 0),
 	}
+	for _, t := range outputpayload.VoteTypes {
+		c.dirty[t] = true
+	}
 	return nil
 }
 
@@ -435,6 +438,9 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 		return errors.New("[PersistCancelProducer], Not found producer in mempool.")
 	}
 	delete(c.producerVotes, *programHash)
+	for _, t := range outputpayload.VoteTypes {
+		c.dirty[t] = true
+	}
 	return nil
 }
 
@@ -538,6 +544,7 @@ func (c *ChainStore) PersistVoteOutput(output *Output) error {
 				} else {
 					c.producerVotes[hash].Vote[vote.VoteType] = output.Value
 				}
+				c.dirty[vote.VoteType] = true
 			}
 			c.mu.Unlock()
 		}
@@ -575,6 +582,7 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 				if v, ok := p.Vote[vote.VoteType]; ok {
 					c.producerVotes[hash].Vote[vote.VoteType] = v - output.Value
 				}
+				c.dirty[vote.VoteType] = true
 			}
 			c.mu.Unlock()
 		}
@@ -646,7 +654,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == TransferAsset {
+		if txn.TxType == TransferAsset && txn.Version >= TxVersionC0 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					c.PersistVoteOutput(output)
@@ -840,7 +848,8 @@ func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
 func (c *ChainStore) RollbackConfirm(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Confirm))
-	if err := b.Hash().Serialize(key); err != nil {
+	hash := b.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
 

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -25,6 +27,8 @@ const (
 	ProducerRegistered   ProducerState = 0x01
 	ProducerRegistering  ProducerState = 0x02
 )
+
+var currentVoteType outputpayload.VoteType
 
 type ProducerState byte
 
@@ -65,7 +69,9 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	producerVotes map[Uint168]*ProducerInfo
+	producerVotes    map[Uint168]*ProducerInfo
+	dirty            map[outputpayload.VoteType]bool
+	orderedProducers map[outputpayload.VoteType][]*PayloadRegisterProducer
 }
 
 func NewChainStore() (IChainStore, error) {
@@ -84,6 +90,8 @@ func NewChainStore() (IChainStore, error) {
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
 		producerVotes:      make(map[Uint168]*ProducerInfo, 0),
+		dirty:              make(map[outputpayload.VoteType]bool, 0),
+		orderedProducers:   make(map[outputpayload.VoteType][]*PayloadRegisterProducer),
 	}
 
 	go store.loop()
@@ -177,6 +185,9 @@ func (c *ChainStore) InitProducerVotes() error {
 			Payload:   &p,
 			RegHeight: h,
 			Vote:      vote,
+		}
+		for _, t := range outputpayload.VoteTypes {
+			c.dirty[t] = true
 		}
 	}
 	return nil
@@ -451,6 +462,25 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	return data[0], nil
 }
 
+type producerSorter []*ProducerInfo
+
+func (s producerSorter) Len() int {
+	return len(s)
+}
+
+func (s producerSorter) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s producerSorter) Less(i, j int) bool {
+	ivalue, _ := s[i].Vote[currentVoteType]
+	jvalue, _ := s[j].Vote[currentVoteType]
+	if ivalue == jvalue {
+		return strings.Compare(s[i].Payload.PublicKey, s[j].Payload.PublicKey) > 0
+	}
+	return ivalue > jvalue
+}
+
 func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -461,6 +491,38 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	}
 
 	return result
+}
+
+func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if dirty, ok := c.dirty[voteType]; ok && dirty {
+		producersInfo := make([]*ProducerInfo, 0)
+		for _, v := range c.producerVotes {
+			producersInfo = append(producersInfo, v)
+		}
+		if len(producersInfo) == 0 {
+			return nil, errors.New("[GetRegisteredProducers] not found producer")
+		}
+
+		currentVoteType = voteType
+		sort.Sort(producerSorter(producersInfo))
+
+		producers := make([]*PayloadRegisterProducer, 0)
+		for _, p := range producersInfo {
+			producers = append(producers, p.Payload)
+		}
+
+		c.orderedProducers[voteType] = producers
+		c.dirty[voteType] = false
+	}
+
+	if result, ok := c.orderedProducers[voteType]; ok {
+		return result, nil
+	}
+
+	return nil, errors.New("[GetRegisteredProducers] not found vote")
 }
 
 func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64 {
