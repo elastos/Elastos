@@ -46,6 +46,11 @@ type persistBlockTask struct {
 	reply chan bool
 }
 
+type persistConfirmTask struct {
+	confirm *DPosProposalVoteSlot
+	reply   chan bool
+}
+
 type ChainStore struct {
 	IStore
 
@@ -104,6 +109,11 @@ func (c *ChainStore) loop() {
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
+			case *persistConfirmTask:
+				c.handlePersistConfirmTask(task.confirm)
+				task.reply <- true
+				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
+				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Hash.String())
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
@@ -663,6 +673,16 @@ func (c *ChainStore) SaveBlock(b *Block) error {
 	return nil
 }
 
+func (c *ChainStore) SaveConfirm(confirm *DPosProposalVoteSlot) error {
+	log.Debug("SaveBlock()")
+
+	reply := make(chan bool)
+	c.taskCh <- &persistConfirmTask{confirm: confirm, reply: reply}
+	<-reply
+
+	return nil
+}
+
 func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 	block, err := c.GetBlock(blockHash)
 	if err != nil {
@@ -681,6 +701,10 @@ func (c *ChainStore) handlePersistBlockTask(b *Block) {
 	c.clearCache(b)
 }
 
+func (c *ChainStore) handlePersistConfirmTask(confirm *DPosProposalVoteSlot) {
+	c.persistConfirm(confirm)
+}
+
 func (c *ChainStore) persistBlock(block *Block) {
 	err := c.persist(block)
 	if err != nil {
@@ -694,6 +718,18 @@ func (c *ChainStore) persistBlock(block *Block) {
 	c.mu.Unlock()
 
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+}
+
+func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
+	c.NewBatch()
+	if err := c.PersistConfirm(confirm); err != nil {
+		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
+		return
+	}
+	if err := c.BatchCommit(); err != nil {
+		log.Fatal("[persistConfirm]: error to commit confirm:", err.Error())
+		return
+	}
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
