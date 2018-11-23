@@ -659,7 +659,7 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
 errorExit:
     if (to) (*env)->ReleaseStringUTFChars(env, jto, to);
     if (data) (*env)->ReleaseStringUTFChars(env, jdata, data);
-    if (gjhandler) (*env)->DeleteWeakGlobalRef(env, gjhandler);
+    if (gjhandler) (*env)->DeleteGlobalRef(env, gjhandler);
     return JNI_FALSE;
 }
 

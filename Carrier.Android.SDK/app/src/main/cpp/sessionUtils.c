@@ -129,7 +129,7 @@ int newJavaCloseReason(JNIEnv* env, CloseReason reason, jobject* jreason)
         return 0;
     }
 
-    const char* signature = "(I)L"_S("CloseReason;");
+    const char* signature = "(I)"_S("CloseReason;");
     jobject jobj = NULL;
     int result = callStaticObjectMethod(env, clazz, "valueOf", signature, &jobj, (int)reason);
     if (!result) {

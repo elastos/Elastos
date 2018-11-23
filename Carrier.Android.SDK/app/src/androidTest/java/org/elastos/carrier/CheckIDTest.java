@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(AndroidJUnit4.class)
+//@RunWith(AndroidJUnit4.class)
 public class CheckIDTest {
 	@Test
 	public void checkValidId() {
@@ -38,5 +38,4 @@ public class CheckIDTest {
 		String address = "2Y7Evx1pxdBaebzecH1nSiwv4M6UgaNJ8T1BJTLmiYX5S8GRjptF";
 		assertEquals(Carrier.getIdFromAddress(address), userId);
 	}
-
 }

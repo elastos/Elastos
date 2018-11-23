@@ -459,9 +459,9 @@ void onChannelPendingCallback(ElaSession* ws, int stream, int channel,
     }
 
     if (!callVoidMethod(env, cc->clazz, cc->handler, "onChannelPending",
-                        "("_S("Session;I)V"),
+                        "("_S("Stream;I)V"),
                         cc->object, channel)) {
-        logE("Call java callback 'void onChannelPending(Session, int) error");
+        logE("Call java callback 'void onChannelPending(Stream, int) error");
     }
 
     detachJvm(env, needDetach);
@@ -486,9 +486,9 @@ void onChannelResumeCallback(ElaSession* ws, int stream, int channel,
     }
 
     if (!callVoidMethod(env, cc->clazz, cc->handler, "onChannelResume",
-                        "("_S("Session;I)V"),
+                        "("_S("Stream;I)V"),
                         cc->object, channel)) {
-        logE("Call java callback 'void onChannelResume(Session, int) error");
+        logE("Call java callback 'void onChannelResume(Stream, int) error");
     }
 
     detachJvm(env, needDetach);

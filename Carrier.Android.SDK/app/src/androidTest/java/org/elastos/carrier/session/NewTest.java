@@ -1,7 +1,12 @@
-package org.elastos.carrier;
+package org.elastos.carrier.session;
 
+import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import org.elastos.carrier.AbstractCarrierHandler;
+import org.elastos.carrier.Carrier;
+import org.elastos.carrier.ConnectionStatus;
+import org.elastos.carrier.FriendInfo;
 import org.elastos.carrier.common.RobotConnector;
 import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestContext;
@@ -12,22 +17,25 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@RunWith(JUnit4.class)
-public class FriendMessageTest {
-	private static final String TAG = "FriendMessageTest";
+@RunWith(AndroidJUnit4.class)
+public class NewTest {
+	private static final String TAG = "SessionNewTest";
 	private static Synchronizer friendConnSyncher = new Synchronizer();
 	private static Synchronizer commonSyncher = new Synchronizer();
 	private static TestContext context = new TestContext();
-	private static final TestHandler handler = new TestHandler(context);
+	private static TestHandler handler = new TestHandler(context);
+	private static SessionManagerHandler sessionHandler = new SessionManagerHandler();
 	private static RobotConnector robot;
 	private static Carrier carrier;
+	private static Manager sessionManager;
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -65,95 +73,45 @@ public class FriendMessageTest {
 			Log.d(TAG, String.format("Friend %s removed", friendId));
 			commonSyncher.wakeup();
 		}
+	}
 
+	static class SessionManagerHandler implements ManagerHandler {
 		@Override
-		public void onFriendMessage(Carrier carrier, String from, byte[] message) {
-			TestContext.Bundle bundle = mContext.getExtra();
-			bundle.setFrom(from);
-			bundle.setExtraData(getActualValue(message));
-
-			Log.d(TAG, String.format("Friend message %s ", from));
-			commonSyncher.wakeup();
-		}
-	}
-
-	private static String getActualValue(byte[] data) {
-		//The string from robot has '\n', delete it.
-		byte[] newArray = new byte[data.length - 1];
-		System.arraycopy(data, 0, newArray, 0, data.length - 1);
-		return new String(newArray);
-	}
-
-	@Test
-	public void testSendMessageToFriend() {
-		friendConnSyncher.reset();
-		commonSyncher.reset();
-
-		try {
-			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
-			assertTrue(carrier.isFriend(robot.getNodeid()));
-			String out = "message-test";
-
-			carrier.sendFriendMessage(robot.getNodeid(), out);
-
-			String[] args = robot.readAck();
-			assertTrue(args != null && args.length == 1);
-			assertEquals(out, getActualValue(args[0].getBytes()));
-		}
-		catch (CarrierException e) {
-			e.printStackTrace();
-			fail();
+		public void onSessionRequest(Carrier carrier, String from, String sdp) {
+			Log.d(TAG, String.format("Session Request from %s", from));
 		}
 	}
 
 	@Test
-	public void testReceiveMessageFromFriend() {
+	public void testNewSession() {
 		try {
 			friendConnSyncher.reset();
 			commonSyncher.reset();
 
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue(carrier.isFriend(robot.getNodeid()));
-
-			String msg = "message-test";
-			assertTrue(robot.writeCmd(String.format("fmsg %s %s", carrier.getUserId(), msg)));
-
-			// wait for message from robot.
-			commonSyncher.await();
-
-			TestContext.Bundle bundle = context.getExtra();
-			assertEquals(robot.getNodeid(), bundle.getFrom());
-			assertEquals(msg, bundle.getExtraData().toString());
+			Session session = sessionManager.newSession(robot.getNodeid());
+			assertNotNull(session);
+			session.close();
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			fail();
 		}
 	}
 
 	@Test
-	public void testSendMessageToStranger() {
+	public void testNewSessionWithStrager() {
 		try {
-			TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context);
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertFalse(carrier.isFriend(robot.getNodeid()));
-			String msg = "test-message";
-			carrier.sendFriendMessage(robot.getNodeid(), msg);
+			Session session = sessionManager.newSession(robot.getNodeid());
+			assertNull(session);
 		}
 		catch (CarrierException e) {
-			e.printStackTrace();
 			assertEquals(e.getErrorCode(), 0x8100000A);
-		}
-	}
-
-	@Test
-	public void testSendMessageToSelf() {
-		try {
-			String msg = "test-message";
-			carrier.sendFriendMessage(carrier.getUserId(), msg);
-		}
-		catch (CarrierException e) {
-			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x81000001);
 		}
 	}
 
@@ -178,6 +136,9 @@ public class FriendMessageTest {
 				carrier.wait();
 			}
 			Log.i(TAG, "Carrier node is ready now");
+
+			sessionManager = Manager.getInstance(carrier, sessionHandler);
+			assertNotNull(sessionManager);
 		}
 		catch (CarrierException | InterruptedException e) {
 			e.printStackTrace();
@@ -187,7 +148,9 @@ public class FriendMessageTest {
 
 	@AfterClass
 	public static void tearDown() {
+		sessionManager.cleanup();
 		carrier.kill();
+
 		if (isConnectToRobot) {
 			robot.disconnect();
 		}

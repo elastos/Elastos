@@ -1,149 +1,270 @@
 package org.elastos.carrier;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import org.elastos.carrier.common.RobotConnector;
+import org.elastos.carrier.common.Synchronizer;
+import org.elastos.carrier.common.TestContext;
+import org.elastos.carrier.common.TestHelper;
+import org.elastos.carrier.common.TestOptions;
+import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.elastos.carrier.robot.RobotProxy;
-import org.elastos.carrier.common.TestOptions;
-import org.elastos.carrier.common.Synchronizer;
-import org.elastos.carrier.exceptions.CarrierException;
+import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnit4.class)
 public class FriendInviteTest {
 	private static final String TAG = "FriendInviteTest";
-	private static Carrier carrierInst;
-	private static TestOptions options;
-	private static TestHandler handler;
-	private static RobotProxy robotProxy;
-	private static String robotId;
-	private static String robotAddress;
 
-	private static Context getAppContext() {
-		return InstrumentationRegistry.getTargetContext();
-	}
-
-	private static String getAppPath() {
-		return getAppContext().getFilesDir().getAbsolutePath();
-	}
+	private static TestContext context = new TestContext();
+	private static Synchronizer friendConnSyncher = new Synchronizer();
+	private static Synchronizer commonSyncher = new Synchronizer();
+	private static final TestHandler handler = new TestHandler(context);
+	private static RobotConnector robot;
+	private static Carrier carrier;
 
 	static class TestHandler extends AbstractCarrierHandler {
-		Synchronizer synch = new Synchronizer();
+		private TestContext mContext;
 
-		String from;
-		String msgBody;
-		ConnectionStatus friendStatus;
+		TestHandler(TestContext context) {
+			mContext = context;
+		}
 
 		@Override
 		public void onReady(Carrier carrier) {
-			synch.wakeup();
+			synchronized (carrier) {
+				carrier.notify();
+			}
 		}
 
 		@Override
 		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
-			from = friendId;
-			friendStatus = status;
-			if (status == ConnectionStatus.Connected)
-				synch.wakeup();
+			TestContext.Bundle bundle = mContext.getExtra();
+			bundle.setRobotOnline(status == ConnectionStatus.Connected);
+			bundle.setRobotConnectionStatus(status);
+			bundle.setFrom(friendId);
+
+			Log.d(TAG, "Robot connection status changed -> " + status.toString());
+
+			friendConnSyncher.wakeup();
 		}
-	}
-
-	static class InviteResponseHandler implements FriendInviteResponseHandler {
-		Synchronizer synch = new Synchronizer();
-
-		String from;
-		int status = -1;
-		String data;
-
-		public void onReceived(String from, int status, String reason, String data) {
-			this.from = from;
-			this.status = status;
-			this.data = data;
-			synch.wakeup();
-		}
-	}
-
-	static class TestReceiver implements RobotProxy.RobotIdReceiver {
-		private Synchronizer synch = new Synchronizer();
 
 		@Override
-		public void onReceived(String address, String userId) {
-			robotAddress = address;
-			robotId = userId;
-			synch.wakeup();
+		public void onFriendAdded(Carrier carrier, FriendInfo info) {
+			Log.d(TAG, String.format("Friend %s added", info.getUserId()));
+			commonSyncher.wakeup();
+		}
+
+		@Override
+		public void onFriendRemoved(Carrier carrier, String friendId) {
+			Log.d(TAG, String.format("Friend %s removed", friendId));
+			commonSyncher.wakeup();
+		}
+
+		@Override
+		public void onFriendInviteRequest(Carrier carrier, String from, String data) {
+			TestContext.Bundle bundle = mContext.getExtra();
+			bundle.setFrom(from);
+			LocalData localData = (LocalData)bundle.getExtraData();
+			if (localData == null) {
+				localData = new LocalData();
+			}
+			localData.data = data;
+			bundle.setExtraData(localData);
+			Log.d(TAG, String.format("Friend [%s] invite info [%s]", from, data));
+
+			commonSyncher.wakeup();
 		}
 	}
 
+	static class LocalData {
+		private int status = 0;
+		private String reason = null;
+		private String data = null;
+	}
+
+	class InviteResposeHandler implements FriendInviteResponseHandler {
+		TestContext mContext;
+		InviteResposeHandler(TestContext context) {
+			mContext = context;
+		}
+
+		public void onReceived(String from, int status, String reason, String data) {
+			TestContext.Bundle bundle = mContext.getExtra();
+			LocalData localData = (LocalData)bundle.getExtraData();
+			if (localData == null) {
+				localData = new LocalData();
+			}
+			localData.status = status;
+			localData.reason = reason;
+			localData.data = data;
+			bundle.setExtraData(localData);
+			Log.d(TAG, String.format("onReceived from [%s], data is [%s]", from, data));
+
+			commonSyncher.wakeup();
+		}
+	}
+
+	@Test
+	public void testFriendInviteConfirm() {
+		try {
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertTrue((carrier.isFriend(robot.getNodeid())));
+			String hello = "hello";
+			InviteResposeHandler h = new InviteResposeHandler(context);
+			carrier.inviteFriend(robot.getNodeid(), hello, h);
+			String[] args = robot.readAck();
+			if (args == null || args.length != 2) {
+				fail();
+			}
+			assertEquals(args[0], "data");
+			assertEquals(args[1], hello);
+
+			String invite_rsp_data = "invitation-confirmed";
+			assertTrue(robot.writeCmd(String.format("freplyinvite %s confirm %s", carrier.getUserId(),
+				invite_rsp_data)));
+
+			// wait for invite response callback invoked.
+			commonSyncher.await();
+
+			TestContext.Bundle bundle = context.getExtra();
+			LocalData localData = (LocalData) bundle.getExtraData();
+			assertEquals(bundle.getFrom(), robot.getNodeid());
+			assertEquals(localData.status, 0);
+			assertTrue(localData.reason == null || localData.reason.isEmpty());
+			assertEquals(localData.data, invite_rsp_data);
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testFriendInviteReject() {
+		try {
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertTrue((carrier.isFriend(robot.getNodeid())));
+
+			String hello = "hello";
+			InviteResposeHandler h = new InviteResposeHandler(context);
+			carrier.inviteFriend(robot.getNodeid(), hello, h);
+			String[] args = robot.readAck();
+			if (args == null || args.length != 2) {
+				fail();
+			}
+			assertEquals(args[0], "data");
+			assertEquals(args[1], hello);
+
+			String reason = "unknown-error";
+			assertTrue(robot.writeCmd(String.format("freplyinvite %s refuse %s", carrier.getUserId(),
+				reason)));
+
+			// wait for invite response callback invoked.
+			commonSyncher.await();
+
+			TestContext.Bundle bundle = context.getExtra();
+			LocalData localData = (LocalData) bundle.getExtraData();
+			assertEquals(bundle.getFrom(), robot.getNodeid());
+			assertTrue(localData.status != 0);
+			assertEquals(localData.reason, reason);
+			assertTrue(localData.data == null || localData.data.isEmpty());
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testFriendInviteStranger() {
+		try {
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertFalse((carrier.isFriend(robot.getNodeid())));
+
+			String hello = "hello";
+			InviteResposeHandler h = new InviteResposeHandler(context);
+			carrier.inviteFriend(robot.getNodeid(), hello, h);
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			assertEquals(e.getErrorCode(), 0x8100000A);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testFriendInviteSelf() {
+		try {
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			String hello = "hello";
+			InviteResposeHandler h = new InviteResposeHandler(context);
+			carrier.inviteFriend(carrier.getUserId(), hello, h);
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			assertEquals(e.getErrorCode(), 0x8100000A);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	private static boolean isConnectToRobot = false;
 	@BeforeClass
 	public static void setUp() {
-		options = new TestOptions(getAppPath());
-		handler = new TestHandler();
+		robot = RobotConnector.getInstance();
+		if (!robot.isConnected()) {
+			isConnectToRobot = true;
+			if (!robot.connectToRobot()) {
+				android.util.Log.e(TAG, "Connection to robot failed, abort this test");
+				fail();
+			}
+		}
 
+		TestOptions options = new TestOptions(context.getAppPath());
 		try {
-			TestReceiver receiver = new TestReceiver();
-			robotProxy = RobotProxy.getRobot(getAppContext());
-			robotProxy.bindRobot(receiver);
-			receiver.synch.await();
-
 			Carrier.initializeInstance(options, handler);
-			carrierInst = Carrier.getInstance();
-			carrierInst.start(1000);
-			handler.synch.await();
-		} catch (CarrierException e) {
+			carrier = Carrier.getInstance();
+			carrier.start(0);
+			synchronized (carrier) {
+				carrier.wait();
+			}
+			Log.i(TAG, "Carrier node is ready now");
+		}
+		catch (CarrierException | InterruptedException e) {
 			e.printStackTrace();
+			Log.e(TAG, "Carrier node start failed, abort this test.");
 		}
 	}
 
 	@AfterClass
 	public static void tearDown() {
-		try {
-			carrierInst.kill();
-			robotProxy.unbindRobot();
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void makeFriendAnyWay() {
-		try {
-			if (!carrierInst.isFriend(robotId))
-				carrierInst.addFriend(robotAddress, "auto-accepted");
-
-			handler.synch.await(); // for friend added.
-		} catch (CarrierException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
-	}
-
-	@Test
-	public void testInviteFriend() {
-		makeFriendAnyWay();
-
-		try {
-			InviteResponseHandler handler = new InviteResponseHandler();
-			String reqData = "Invite Friend";
-
-			carrierInst.inviteFriend(robotId, reqData, handler);
-			handler.synch.await();
-
-			assertEquals(handler.from, robotId);
-			assertEquals(handler.status, 0);
-			assertEquals(handler.data, reqData);
-		} catch (CarrierException e) {
-			e.printStackTrace();
-			String error = String.format("error: 0x%x", e.getErrorCode());
-			Log.e(TAG, "error: " + error);
-			assertTrue(false);
+		carrier.kill();
+		if (isConnectToRobot) {
+			robot.disconnect();
 		}
 	}
 }

@@ -1,10 +1,7 @@
-package org.elastos.carrier.session;
+package org.elastos.carrier;
 
-import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import org.elastos.carrier.AbstractCarrierHandler;
-import org.elastos.carrier.Carrier;
 import org.elastos.carrier.common.TestContext;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.CarrierException;
@@ -12,27 +9,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-import javax.xml.parsers.FactoryConfigurationError;
-
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@RunWith(AndroidJUnit4.class)
-public class ManagerTest {
-	private static String TAG = "SessionManagerTest";
+@RunWith(JUnit4.class)
+public class GetIDTest {
+	private static final String TAG = "GetIDTest";
 	private static TestContext context = new TestContext();
-	private static TestHandler handler = new TestHandler(context);
+	private static TestHandler handler = new TestHandler();
 	private static Carrier carrier;
 
 	static class TestHandler extends AbstractCarrierHandler {
-		private TestContext mContext;
-
-		TestHandler(TestContext context) {
-			mContext = context;
-		}
-
 		@Override
 		public void onReady(Carrier carrier) {
 			synchronized (carrier) {
@@ -42,11 +31,11 @@ public class ManagerTest {
 	}
 
 	@Test
-	public void testGetInstanceWithoutRequestHandler() {
+	public void testGetAddress() {
 		try {
-			Manager sessionMgr = Manager.getInstance(carrier);
-			assertNotNull(sessionMgr);
-			sessionMgr.cleanup();
+			String address = carrier.getAddress();
+			assertTrue(address != null && !address.isEmpty());
+			assertTrue(Carrier.isValidAddress(address));
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
@@ -55,16 +44,24 @@ public class ManagerTest {
 	}
 
 	@Test
-	public void testGetInstanceWithRequestHandler() {
+	public void testGetNodeId() {
 		try {
-			Manager sessionMgr = Manager.getInstance(carrier, new ManagerHandler() {
-				@Override
-				public void onSessionRequest(Carrier carrier, String from, String sdp) {
-					Log.i(TAG, "onSessionRequest");
-				}
-			});
-			assertNotNull(sessionMgr);
-			sessionMgr.cleanup();
+			String nodeId = carrier.getNodeId();
+			assertTrue(nodeId != null && !nodeId.isEmpty());
+			assertTrue(Carrier.isValidId(nodeId));
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testGetUserId() {
+		try {
+			String userid = carrier.getUserId();
+			assertTrue(userid != null && !userid.isEmpty());
+			assertTrue(Carrier.isValidId(userid));
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
@@ -74,8 +71,9 @@ public class ManagerTest {
 
 	@BeforeClass
 	public static void setUp() {
+		TestOptions options = new TestOptions(context.getAppPath());
+
 		try {
-			TestOptions options = new TestOptions(context.getAppPath());
 			Carrier.initializeInstance(options, handler);
 			carrier = Carrier.getInstance();
 			carrier.start(0);
@@ -83,20 +81,15 @@ public class ManagerTest {
 				carrier.wait();
 			}
 			Log.i(TAG, "Carrier node is ready now");
-
 		}
 		catch (CarrierException | InterruptedException e) {
 			e.printStackTrace();
+			Log.e(TAG, "Carrier node start failed, abort this test.");
 		}
 	}
 
 	@AfterClass
 	public static void tearDown() {
-		try {
-			carrier.kill();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+		carrier.kill();
 	}
 }

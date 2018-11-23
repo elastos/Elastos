@@ -53,7 +53,7 @@ void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char 
 
     assert(carrier);
     assert(from);
-    assert(!bundle);
+    // assert(!bundle);
     assert(sdp);
 
     (void)carrier;

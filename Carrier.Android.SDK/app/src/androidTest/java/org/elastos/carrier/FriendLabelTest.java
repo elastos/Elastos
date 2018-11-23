@@ -20,12 +20,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 @RunWith(JUnit4.class)
-public class FriendMessageTest {
-	private static final String TAG = "FriendMessageTest";
+public class FriendLabelTest {
+	private static final String TAG = "FriendLabelTest";
+
 	private static Synchronizer friendConnSyncher = new Synchronizer();
 	private static Synchronizer commonSyncher = new Synchronizer();
 	private static TestContext context = new TestContext();
-	private static final TestHandler handler = new TestHandler(context);
+	private static TestHandler handler = new TestHandler(context);
 	private static RobotConnector robot;
 	private static Carrier carrier;
 
@@ -51,6 +52,7 @@ public class FriendMessageTest {
 			bundle.setFrom(friendId);
 
 			Log.d(TAG, "Robot connection status changed -> " + status.toString());
+
 			friendConnSyncher.wakeup();
 		}
 
@@ -65,65 +67,21 @@ public class FriendMessageTest {
 			Log.d(TAG, String.format("Friend %s removed", friendId));
 			commonSyncher.wakeup();
 		}
-
-		@Override
-		public void onFriendMessage(Carrier carrier, String from, byte[] message) {
-			TestContext.Bundle bundle = mContext.getExtra();
-			bundle.setFrom(from);
-			bundle.setExtraData(getActualValue(message));
-
-			Log.d(TAG, String.format("Friend message %s ", from));
-			commonSyncher.wakeup();
-		}
-	}
-
-	private static String getActualValue(byte[] data) {
-		//The string from robot has '\n', delete it.
-		byte[] newArray = new byte[data.length - 1];
-		System.arraycopy(data, 0, newArray, 0, data.length - 1);
-		return new String(newArray);
 	}
 
 	@Test
-	public void testSendMessageToFriend() {
-		friendConnSyncher.reset();
-		commonSyncher.reset();
-
-		try {
-			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
-			assertTrue(carrier.isFriend(robot.getNodeid()));
-			String out = "message-test";
-
-			carrier.sendFriendMessage(robot.getNodeid(), out);
-
-			String[] args = robot.readAck();
-			assertTrue(args != null && args.length == 1);
-			assertEquals(out, getActualValue(args[0].getBytes()));
-		}
-		catch (CarrierException e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-
-	@Test
-	public void testReceiveMessageFromFriend() {
+	public void testSetFriendLabel() {
 		try {
 			friendConnSyncher.reset();
 			commonSyncher.reset();
 
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
-			assertTrue(carrier.isFriend(robot.getNodeid()));
+			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			String msg = "message-test";
-			assertTrue(robot.writeCmd(String.format("fmsg %s %s", carrier.getUserId(), msg)));
-
-			// wait for message from robot.
-			commonSyncher.await();
-
-			TestContext.Bundle bundle = context.getExtra();
-			assertEquals(robot.getNodeid(), bundle.getFrom());
-			assertEquals(msg, bundle.getExtraData().toString());
+			String label = "test_robot";
+			carrier.labelFriend(robot.getNodeid(), label);
+			FriendInfo info = carrier.getFriend(robot.getNodeid());
+			assertEquals(info.getLabel(), label);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
@@ -132,28 +90,40 @@ public class FriendMessageTest {
 	}
 
 	@Test
-	public void testSendMessageToStranger() {
+	public void testSetStrangerLabel() {
 		try {
-			TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context);
-			assertFalse(carrier.isFriend(robot.getNodeid()));
-			String msg = "test-message";
-			carrier.sendFriendMessage(robot.getNodeid(), msg);
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertFalse((carrier.isFriend(robot.getNodeid())));
+
+			String label = "test_robot";
+			carrier.labelFriend(robot.getNodeid(), label);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
 			assertEquals(e.getErrorCode(), 0x8100000A);
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
 
 	@Test
-	public void testSendMessageToSelf() {
+	public void testSetSelfLabel() {
 		try {
-			String msg = "test-message";
-			carrier.sendFriendMessage(carrier.getUserId(), msg);
+			String label = "test_robot";
+			carrier.labelFriend(carrier.getUserId(), label);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x81000001);
+			assertEquals(e.getErrorCode(), 0x8100000A);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail();
 		}
 	}
 
