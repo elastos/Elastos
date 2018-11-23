@@ -45,7 +45,7 @@ var (
 	fileWriter = elalog.NewFileWriter(configFileWriter())
 	logWriter  = io.MultiWriter(os.Stdout, fileWriter)
 	backend    = elalog.NewBackend(logWriter, elalog.Llongfile)
-	level, _ = elalog.LevelFromString(cfg.LogLevel)
+	level, _   = elalog.LevelFromString(cfg.LogLevel)
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
@@ -61,6 +61,20 @@ var (
 	restlog = backend.Logger("REST", level)
 	eladlog = backend.Logger("ELAD", level)
 )
+
+func setLogLevel(level elalog.Level) {
+	bcdblog.SetLevel(level)
+	txmplog.SetLevel(level)
+	synclog.SetLevel(level)
+	peerlog.SetLevel(level)
+	minrlog.SetLevel(level)
+	spvslog.SetLevel(level)
+	srvrlog.SetLevel(level)
+	httplog.SetLevel(level)
+	rpcslog.SetLevel(level)
+	restlog.SetLevel(level)
+	eladlog.SetLevel(level)
+}
 
 // The default amount of logging is none.
 func init() {
