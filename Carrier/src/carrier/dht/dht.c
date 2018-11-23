@@ -712,6 +712,14 @@ void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
 {
     int _level;
 
+    (void)file;
+    (void)line;
+    (void)user_data;
+
+    assert(file);
+    assert(func);
+    assert(message);
+
     switch(level) {
     case TOX_LOG_LEVEL_TRACE:
     default:

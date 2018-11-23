@@ -9,7 +9,7 @@ ExternalProject_Add(
 
     PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
     URL "https://github.com/iwhisperio/libcrystal/archive/master.zip"
-    URL_HASH SHA256=6a40c3dbef8ec82b5a65febc6333f038dcedc4d9d5a290baf67b4750e6fcbc17
+    URL_HASH SHA256=5defa6ede9f33b7653e86dd63a1681a524c13b77141d69744742a4dbcac25514
     DOWNLOAD_NAME "libcrystal-master.zip"
     DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
