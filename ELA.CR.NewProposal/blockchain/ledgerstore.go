@@ -34,6 +34,7 @@ type IChainStore interface {
 	GetSidechainTx(sidechainTxHash Uint256) (byte, error)
 
 	GetRegisteredProducers() []*PayloadRegisterProducer
+	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
 	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
 	GetProducerStatus(programHash Uint168) ProducerState
 

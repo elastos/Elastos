@@ -599,9 +599,15 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
+	if payload.NickName == "" {
+		return errors.New("Invalid nick name.")
+	}
 	for _, p := range producers {
 		if p.PublicKey == payload.PublicKey {
 			return errors.New("Duplicated public key.")
+		}
+		if p.NickName == payload.NickName {
+			return errors.New("Duplicated nick name.")
 		}
 	}
 	var signed bool
@@ -618,19 +624,14 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("Public key unsigned.")
 	}
 
-	// check nick name
-	if payload.NickName == "" {
-		return errors.New("Invalid nick name.")
-	}
-	for _, p := range producers {
-		if p.NickName == payload.NickName {
-			return errors.New("Duplicated nick name.")
-		}
-	}
-
 	// check url
 	if payload.Url == "" {
 		return errors.New("Invalid url.")
+	}
+
+	// check ip
+	if payload.IP == "" {
+		return errors.New("Invalid IP.")
 	}
 
 	return nil
