@@ -8,6 +8,7 @@ const (
 	DATA_BlockHash   DataEntryPrefix = 0x00
 	DATA_Header      DataEntryPrefix = 0x01
 	DATA_Transaction DataEntryPrefix = 0x02
+	DATA_Confirm     DataEntryPrefix = 0x03
 
 	// INDEX
 	IX_HeaderHashList DataEntryPrefix = 0x80
