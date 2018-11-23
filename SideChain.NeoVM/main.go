@@ -27,7 +27,7 @@ import (
 
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
-	nc  "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 )
 
@@ -136,10 +136,15 @@ func main() {
 	}
 	chain.Store = ledgerStore
 
-	if !ledgerStore.IsBlockInStore(&genesisHash) {
+
+	flag, err := ledgerStore.Get([]byte(store.AccountPersisFlag))
+	if err != nil {
 		batch := ledgerStore.NewBatch()
 		ledgerStore.PersisAccount(batch, activeNetParams.GenesisBlock)
 		batch.Commit()
+
+		flag = []byte{1}
+		ledgerStore.Put([]byte(store.AccountPersisFlag), flag)
 	}
 
 	sv.Store = ledgerStore
@@ -147,7 +152,6 @@ func main() {
 
 	txPool := mempool.New(&mempoolCfg)
 	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain)
-
 	eladlog.Info("3. Start the P2P networks")
 	server, err := server.New(chain.BlockChain, txPool, activeNetParams)
 	if err != nil {

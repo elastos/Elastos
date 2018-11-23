@@ -352,21 +352,23 @@ func paraseJsonToBytes(data []interface{}, builder *avm.ParamsBuilder) error {
 
 func getResult(item datatype.StackItem, returnType string) interface{} {
 
+	if returnType == "String" {
+		return string(item.GetByteArray())
+	} else if returnType == "Integer" {
+		return item.GetBigInteger()
+	} else if returnType == "Hash168" {
+		return BytesToHexString(item.GetByteArray())
+	} else if returnType == "Boolean" {
+		return item.GetBoolean()
+	}
+
 	switch item.(type) {
 	case *datatype.Boolean:
 		return item.GetBoolean()
 	case *datatype.Integer:
 		return item.GetBigInteger()
 	case *datatype.ByteArray:
-		if returnType == "String" {
-			return string(item.GetByteArray())
-		} else if returnType == "Integer" {
-			return item.GetBigInteger()
-		} else if returnType == "Hash168" {
-			return BytesToHexString(item.GetByteArray())
-		} else {
-			return item.GetByteArray()
-		}
+		 return item.GetByteArray()
 	case *datatype.GeneralInterface:
 		interop := item.GetInterface()
 		buf := bytes.NewBuffer([]byte{})
@@ -374,8 +376,11 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 		return BytesToHexString(buf.Bytes())
 	case *datatype.Array:
 		items := item.GetArray()
-		for i := 0; i < len(items); i++ {
-			return getResult(items[i], returnType)
+		size := len(items)
+		var list = make([]interface{}, size)
+		for i := 0; i < size; i++ {
+			list[i] = getResult(items[i], returnType)
+			return list
 		}
 	}
 	return ""

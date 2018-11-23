@@ -103,5 +103,5 @@ func (r *VmReader) ReadVarInt(max uint64) uint64 {
 func (r *VmReader) ReadVarString() string {
 	bs := r.ReadVarBytes(0X7fffffc7)
 	return string(bs)
-	//return Encoding.UTF8.GetString(reader.ReadVarBytes());
+	//return Encoding.UTF8.GetString(reader.ReadVarBytes())
 }

@@ -3,15 +3,19 @@ package mempool
 import (
 	"errors"
 	"math"
+	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 )
 
 type validator struct {
@@ -32,6 +36,8 @@ func NewValidator(cfg *mempool.Config) *mempool.Validator {
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionOutput, val.checkTransactionOutput)
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionPayload, val.checkTransactionPayload)
 	val.RegisterContextFunc(mempool.FuncNames.CheckTransactionSignature, val.checkTransactionSignature)
+	val.RegisterSanityFunc(mempool.FuncNames.CheckAttributeProgram, val.checkAttributeProgram)
+
 	return val.Validator
 }
 
@@ -136,9 +142,81 @@ func (v *validator) checkTransactionSignature(txn *side.Transaction) error {
 		return errors.New("[ID checkTransactionSignature] Sort program hashes error:" + err.Error())
 	}
 
-	err = mempool.RunPrograms(txn, hashes, txn.Programs)
+	err = RunPrograms(txn, hashes, txn.Programs)
 	if err != nil {
 		return errors.New("[ID checkTransactionSignature] Run program error:" + err.Error())
+	}
+
+	return nil
+}
+
+func (v *validator) checkAttributeProgram(txn *side.Transaction) error {
+	// Check attributes
+	for _, attr := range txn.Attributes {
+		if !side.IsValidAttributeType(attr.Usage) {
+			str := fmt.Sprintf("[checkAttributeProgram] invalid attribute usage %s", attr.Usage.Name())
+			return mempool.RuleError{ErrorCode: mempool.ErrAttributeProgram, Description: str}
+		}
+	}
+
+	// Check programs
+	for _, program := range txn.Programs {
+		if program.Code == nil {
+			str := fmt.Sprint("[checkAttributeProgram] invalid program code nil")
+			return mempool.RuleError{ErrorCode: mempool.ErrAttributeProgram, Description: str}
+		}
+		if program.Parameter == nil {
+			str := fmt.Sprint("[checkAttributeProgram] invalid program parameter nil")
+			return mempool.RuleError{ErrorCode: mempool.ErrAttributeProgram, Description: str}
+		}
+		_, err := params.ToProgramHash(program.Code)
+
+		if err != nil {
+			str := fmt.Sprintf("[checkAttributeProgram] invalid program code %x", program.Code)
+			return mempool.RuleError{ErrorCode: mempool.ErrAttributeProgram, Description: str}
+		}
+	}
+	return nil
+}
+
+func RunPrograms(tx *side.Transaction, hashes []common.Uint168, programs []*side.Program) error {
+	if tx == nil {
+		return errors.New("invalid data content nil transaction")
+	}
+	if len(hashes) != len(programs) {
+		return errors.New("The number of data hashes is different with number of programs.")
+	}
+
+	for i := 0; i < len(programs); i++ {
+		programHash, err := params.ToProgramHash(programs[i].Code)
+		if err != nil {
+			return err
+		}
+
+		if !hashes[i].IsEqual(*programHash) {
+			return errors.New("The data hashes is different with corresponding program code.")
+		}
+		//execute program on AVM
+		dbCache := blockchain.NewDBCache(blockchain.DefaultChain.Store)
+		stateMachine := service.NewStateMachine(dbCache, dbCache)
+		se := avm.NewExecutionEngine(tx, new(avm.CryptoECDsa), avm.MAXSTEPS, store.NewCacheCodeTable(dbCache),
+			stateMachine, 0, avm.Verification, false)
+		se.LoadScript(programs[i].Code, false)
+		se.LoadScript(programs[i].Parameter, true)
+		se.Execute()
+
+		if se.GetState() != avm.HALT {
+			return errors.New("[AVM] Finish State not equal to HALT.")
+		}
+		
+		if se.GetEvaluationStack().Count() != 1 {
+			return errors.New("[AVM] Execute Engine Stack Count Error.")
+		}
+
+		success := se.GetExecuteResult()
+		if !success {
+			return errors.New("[AVM] Check Sig FALSE.")
+		}
 	}
 
 	return nil

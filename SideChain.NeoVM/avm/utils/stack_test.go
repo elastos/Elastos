@@ -52,12 +52,12 @@ func TestRandomAccessStack_CopyTo(t *testing.T) {
 	}
 
 	var toStack = NewRandAccessStack()
-	stack.CopyTo(toStack, -1);
+	stack.CopyTo(toStack, -1)
 	for i := 0; i < 10; i++ {
 		assertEqual(t, stack.Peek(i), toStack.Peek(i))
 	}
 
-	toStack.Clear();
+	toStack.Clear()
 	assertEqual(t, toStack.Count(), 0)
 
 	stack.CopyTo(toStack, 0)

@@ -32,14 +32,14 @@ func NewStateMachine(dbCache storage.DBCache, innerCache storage.DBCache) *State
 
 	stateMachine.StateReader.Register("Neo.Asset.Create", stateMachine.CreateAsset)
 	stateMachine.StateReader.Register("Neo.Contract.Create", stateMachine.CreateContract)
-	stateMachine.StateReader.Register("Neo.Contract.Migrate", stateMachine.ContractMigrate);
+	stateMachine.StateReader.Register("Neo.Contract.Migrate", stateMachine.ContractMigrate)
 	stateMachine.StateReader.Register("Neo.Blockchain.GetContract", stateMachine.GetContract)
 	stateMachine.StateReader.Register("Neo.Asset.Renew", stateMachine.AssetRenew)
 	stateMachine.StateReader.Register("Neo.Storage.Get", stateMachine.StorageGet)
 	stateMachine.StateReader.Register("Neo.Contract.Destroy", stateMachine.ContractDestory)
 	stateMachine.StateReader.Register("Neo.Storage.Put", stateMachine.StoragePut)
 	stateMachine.StateReader.Register("Neo.Storage.Delete", stateMachine.StorageDelete)
-	stateMachine.StateReader.Register("Neo.Storage.Find", stateMachine.StorageFind);
+	stateMachine.StateReader.Register("Neo.Storage.Find", stateMachine.StorageFind)
 	stateMachine.StateReader.Register("Neo.Contract.GetStorageContext", stateMachine.GetStorageContext)
 	stateMachine.StateReader.Register("Neo.Account.IsStandard", stateMachine.AccountIsStandard)
 
@@ -286,7 +286,7 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 	if data == nil {
 		return false
 	}
-	hash, err := crypto.ToProgramHash(data)
+	hash, err := params.ToCodeHash(data)
 	if err != nil {
 		return false
 	}

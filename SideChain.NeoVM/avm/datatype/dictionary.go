@@ -13,7 +13,7 @@ type Dictionary struct {
 func NewDictionary() *Dictionary {
 	var dictionary Dictionary
 	dictionary.dic = make(map[StackItem]StackItem)
-	return &dictionary;
+	return &dictionary
 }
 
 func (dic *Dictionary) GetValue(key StackItem) StackItem {

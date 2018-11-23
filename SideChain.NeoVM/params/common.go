@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/ripemd160"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -20,8 +21,11 @@ func ToCodeHash(code []byte) (*common.Uint168, error) {
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
 	md160.Write(hash[:])
-	data := md160.Sum([]byte{PrefixSmartContract})
-	return common.Uint168FromBytes(data)
+	data := md160.Sum([]byte{})
+	data = common.BytesReverse(data)
+	bytes := []byte{PrefixSmartContract}
+	bytes = append(bytes, data...)
+	return common.Uint168FromBytes(bytes)
 }
 
 func UInt168ToUInt160(hash *common.Uint168) []byte {
@@ -29,4 +33,12 @@ func UInt168ToUInt160(hash *common.Uint168) []byte {
 	data := hash.Bytes()
 	copy(hashBytes, data[1 : len(hash)])
 	return hashBytes
+}
+
+func ToProgramHash(code []byte) (*common.Uint168, error){
+	hash, err := crypto.ToProgramHash(code)
+	if hash == nil && len(code) > 0 {
+		hash, err = ToCodeHash(code)
+	}
+	return hash, err
 }

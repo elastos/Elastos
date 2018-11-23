@@ -69,5 +69,5 @@ func (a *Array) Reverse() {
 	for i := l -1; i >= 0; i-- {
 		items = append(items, a.items[i])
 	}
-	a.items = items;
+	a.items = items
 }

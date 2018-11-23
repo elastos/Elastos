@@ -5,10 +5,9 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-)
 
-const MAXCodeSize uint32 = 1024 * 1024
-const MAXCodeParameter uint32 = 252
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+)
 
 //Contract address is the hash of contract program .
 //which be used to control asset or indicate the smart contract address �?
@@ -34,13 +33,13 @@ type Contract struct {
 func (c *Contract) Deserialize(r io.Reader) error {
 	c.OwnerPubkeyHash.Deserialize(r)
 
-	p, err := common.ReadVarBytes(r, MAXCodeParameter, "Contract Deserialize Parameters")
+	p, err := common.ReadVarBytes(r, avm.MaxParameterSize, "Contract Deserialize Parameters")
 	if err != nil {
 		return err
 	}
 	c.Parameters = ByteToContractParameterType(p)
   
-	c.Code, err = common.ReadVarBytes(r, MAXCodeSize, "Contract Deserialize Code")
+	c.Code, err = common.ReadVarBytes(r, avm.MaxItemSize, "Contract Deserialize Code")
 	if err != nil {
 		return err
 	}
@@ -92,4 +91,93 @@ func ByteToContractParameterType(b []byte) []ContractParameterType {
 	}
 
 	return c
+}
+
+
+func IsMultiSigContract(script []byte) bool {
+	m := 0
+	n := 0
+	i := 0
+
+	if len(script) < 37 {
+		return false
+	}
+	if script[i] > avm.PUSH16 {
+		return false
+	}
+
+	if script[i] < avm.PUSH1 && script[i] != 1 && script[i] != 2 {
+		return false
+	}
+	switch script[i] {
+	case 1:
+		i++
+		m = int(script[i])
+		i++
+	case 2:
+		i++
+		m = int(script[i])
+		i += 2
+	default:
+		m = int(script[i]) - 80
+		i++
+	}
+	if m < 1 || m > 1024 {
+		return false
+	}
+	for script[i] == 33 {
+		i += 34
+		if len(script) <= i {
+			return false
+		}
+		n++
+	}
+	if n < m || n > 1024 {
+		return false
+	}
+	switch script[i] {
+	case 1:
+		i++
+		if n != int(script[i]) {
+			return false
+		}
+		i++
+	case 2:
+		if len(script) < i + 3 {
+			return false
+		} else {
+			i++
+			if n != int(script[i]) {
+				return false
+			}
+		}
+		i += 2
+	default:
+		if n != int(script[i]) - 80 {
+			i++
+			return false
+		}
+		i++
+	}
+
+	if script[i] != avm.CHECKMULTISIG {
+		i++
+		return false
+	}
+	i++
+	if len(script) != i {
+		return false
+	}
+
+	return true
+}
+
+func IsSignatureCotract(script []byte) bool {
+	if len(script) != 35 {
+		return false
+	}
+	if script[0] != 33 || script[34] != avm.CHECKSIG {
+		return false
+	}
+	return true
 }

@@ -20,6 +20,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 )
 
+const AccountPersisFlag = "AccountPersisFlag"
+
 func (c *LedgerStore) PersisAccount(batch database.Batch, block *side.Block) error {
 	accounts := make(map[common.Uint168]*states.AccountState, 0)
 	for _, txn := range block.Transactions {

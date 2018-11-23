@@ -13,7 +13,7 @@ type StateBase struct {
 
 func (stateBase *StateBase) Serialize(w io.Writer) error {
 	common.WriteUint8(w, stateBase.StateVersion)
-	return nil;
+	return nil
 }
 
 func (stateBase *StateBase) Deserialize(r io.Reader) error {

@@ -48,7 +48,7 @@ func NewStateReader() *StateReader {
 	stateReader.Register("Neo.Blockchain.GetValidators", stateReader.BlockChainGetValidators)
 	stateReader.Register("Neo.Blockchain.GetAsset", stateReader.BlockChainGetAsset)
 
-	stateReader.Register("Neo.Header.GetIndex", stateReader.HeaderGetHeight);
+	stateReader.Register("Neo.Header.GetIndex", stateReader.HeaderGetHeight)
 	stateReader.Register("Neo.Header.GetHash", stateReader.HeaderGetHash)
 	stateReader.Register("Neo.Header.GetVersion", stateReader.HeaderGetVersion)
 	stateReader.Register("Neo.Header.GetPrevHash", stateReader.HeaderGetPrevHash)
@@ -98,13 +98,13 @@ func NewStateReader() *StateReader {
 
 	stateReader.Register("Neo.Storage.GetContext", stateReader.StorageGetContext)
 	stateReader.Register("Neo.Storage.GetReadOnlyContext", stateReader.StorageGetReadOnlyContext)
-	stateReader.Register("Neo.StorageContext.AsReadOnly", stateReader.StorageContextAsReadOnly);
+	stateReader.Register("Neo.StorageContext.AsReadOnly", stateReader.StorageContextAsReadOnly)
 
-	stateReader.Register("Neo.Iterator.Key", stateReader.IteratorKey);
-	stateReader.Register("Neo.Iterator.Next", stateReader.EnumeratorNext);
-	stateReader.Register("Neo.Iterator.Value", stateReader.EnumeratorValue);
-	stateReader.Register("Neo.Iterator.Keys", stateReader.IteratorKeys);
-	stateReader.Register("Neo.Iterator.Values", stateReader.IteratorValues);
+	stateReader.Register("Neo.Iterator.Key", stateReader.IteratorKey)
+	stateReader.Register("Neo.Iterator.Next", stateReader.EnumeratorNext)
+	stateReader.Register("Neo.Iterator.Value", stateReader.EnumeratorValue)
+	stateReader.Register("Neo.Iterator.Keys", stateReader.IteratorKeys)
+	stateReader.Register("Neo.Iterator.Values", stateReader.IteratorValues)
 
 
 	return &stateReader
@@ -248,10 +248,10 @@ func (s *StateReader) SerializeStackItem(item datatype.StackItem, w io.Writer) {
 		common.WriteVarBytes(w, item.GetByteArray())
 	case *datatype.GeneralInterface:
 		w.Write([]byte{byte(datatype.TYPE_InteropInterface)})
-		w.Write(item.GetByteArray());
+		w.Write(item.GetByteArray())
 	case *datatype.Array:
 		w.Write([]byte{byte(datatype.TYPE_Array)})
-		items := item.GetArray();
+		items := item.GetArray()
 		common.WriteVarUint(w, (uint64(len(items))))
 		for i := 0; i < len(items); i++ {
 			s.SerializeStackItem(items[i], w)
@@ -259,7 +259,7 @@ func (s *StateReader) SerializeStackItem(item datatype.StackItem, w io.Writer) {
 	case *datatype.Dictionary:
 		dict := item.(*datatype.Dictionary)
 		w.Write([]byte{byte(datatype.TYPE_Map)})
-		dictMap := dict.GetMap();
+		dictMap := dict.GetMap()
 		common.WriteVarUint(w, (uint64(len(dictMap))))
 		for key := range dictMap {
 			s.SerializeStackItem(key, w)
