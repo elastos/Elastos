@@ -165,6 +165,7 @@ func main() {
 		Chain:                       chain,
 		TxMemPool:                   txPool,
 		PowService:                  powService,
+		SetLogLevel:                 setLogLevel,
 		GetBlockInfo:                service.GetBlockInfo,
 		GetTransactionInfo:          sv.GetTransactionInfo,
 		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
