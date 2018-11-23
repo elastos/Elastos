@@ -612,6 +612,7 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.RollbackUnspendUTXOs(b)
 	c.RollbackUnspend(b)
 	c.RollbackCurrentBlock(b)
+	c.RollbackConfirm(b)
 	c.BatchCommit()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
@@ -730,6 +731,21 @@ func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
 		log.Fatal("[persistConfirm]: error to commit confirm:", err.Error())
 		return
 	}
+}
+
+func (c *ChainStore) GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error) {
+	var confirm = new(DPosProposalVoteSlot)
+	prefix := []byte{byte(DATA_Confirm)}
+	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
+		return nil, err
+	}
+
+	if err = confirm.Deserialize(bytes.NewReader(confirmBytes)); err != nil {
+		return nil, err
+	}
+
+	return confirm, nil
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {

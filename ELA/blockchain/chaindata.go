@@ -837,6 +837,17 @@ func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
 	return nil
 }
 
+func (c *ChainStore) RollbackConfirm(b *Block) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DATA_Confirm))
+	if err := b.Hash().Serialize(key); err != nil {
+		return err
+	}
+
+	c.BatchDelete(key.Bytes())
+	return nil
+}
+
 func GetUint16Array(source []byte) ([]uint16, error) {
 	if source == nil {
 		return nil, errors.New("[Common] , GetUint16Array err, source = nil")
