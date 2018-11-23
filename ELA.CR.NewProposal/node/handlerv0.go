@@ -168,16 +168,22 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		return err
 	}
 
-	confirm, ok := LocalNode.GetConfirm(hash)
-	if !ok {
-		log.Debugf("Can't get confirm from hash %s", hash)
-		node.SendMessage(msg.NewBlock(&core.BlockConfirm{
-			BlockFlag: true,
-			Block:     block,
-		}))
-		return nil
+	var confirm *core.DPosProposalVoteSlot
+	confirm, err = chain.DefaultLedger.Store.GetConfirm(hash)
+	if err != nil {
+		var ok bool
+		confirm, ok = LocalNode.GetConfirm(hash)
+		if !ok {
+			log.Debugf("Can't get confirm from hash %s, only send block", hash)
+			node.SendMessage(msg.NewBlock(&core.BlockConfirm{
+				BlockFlag: true,
+				Block:     block,
+			}))
+			return nil
+		}
 	}
 
+	log.Debugf("send block and confirm: %s", hash)
 	node.SendMessage(msg.NewBlock(&core.BlockConfirm{
 		BlockFlag:   true,
 		Block:       block,

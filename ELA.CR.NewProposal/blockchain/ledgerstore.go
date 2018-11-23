@@ -18,6 +18,7 @@ type IChainStore interface {
 	IsDoubleSpend(tx *Transaction) bool
 
 	SaveConfirm(confirm *DPosProposalVoteSlot) error
+	GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error)
 
 	GetHeader(hash Uint256) (*Header, error)
 
