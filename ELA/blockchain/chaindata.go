@@ -351,6 +351,10 @@ func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) e
 	return c.recordProducer(payload, height)
 }
 
+func (c *ChainStore) RollbackRegisterProducer(payload *PayloadRegisterProducer) error {
+	return c.PersistCancelProducer(&PayloadCancelProducer{PublicKey: payload.PublicKey})
+}
+
 func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight uint32) error {
 	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
 	if err != nil {
@@ -440,6 +444,55 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 	delete(c.producerVotes, *programHash)
 	for _, t := range outputpayload.VoteTypes {
 		c.dirty[t] = true
+	}
+	return nil
+}
+
+func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
+	height := DefaultLedger.Blockchain.GetBestHeight()
+	for i := uint32(0); i <= height; i++ {
+		hash, err := DefaultLedger.Store.GetBlockHash(height)
+		if err != nil {
+			return err
+		}
+		block, err := DefaultLedger.Store.GetBlock(hash)
+		if err != nil {
+			return err
+		}
+
+		for _, tx := range block.Transactions {
+			if tx.TxType == RegisterProducer {
+				if err = c.PersistRegisterProducer(tx.Payload.(*PayloadRegisterProducer)); err != nil {
+					return err
+				}
+			}
+			if tx.TxType == UpdateProducer {
+				if err = c.PersistUpdateProducer(tx.Payload.(*PayloadUpdateProducer)); err != nil {
+					return err
+				}
+			}
+			if tx.TxType == TransferAsset && tx.Version >= TxVersionC0 {
+				for _, output := range tx.Outputs {
+					if output.OutputType == VoteOutput {
+						if err = c.PersistVoteOutput(output); err != nil {
+							return err
+						}
+					}
+				}
+				for _, input := range tx.Inputs {
+					transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+					if err != nil {
+						return err
+					}
+					output := transaction.Outputs[input.Previous.Index]
+					if output.OutputType == VoteOutput {
+						if err = c.PersistCancelVoteOutput(output); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -657,7 +710,9 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		if txn.TxType == TransferAsset && txn.Version >= TxVersionC0 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
-					c.PersistVoteOutput(output)
+					if err := c.PersistVoteOutput(output); err != nil {
+						return err
+					}
 				}
 			}
 			for _, input := range txn.Inputs {
@@ -667,7 +722,9 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				}
 				output := transaction.Outputs[input.Previous.Index]
 				if output.OutputType == VoteOutput {
-					c.PersistCancelVoteOutput(output)
+					if err = c.PersistCancelVoteOutput(output); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -690,6 +747,38 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				if err := c.RollbackSidechainTx(hash); err != nil {
 					return err
+				}
+			}
+		}
+		if txn.TxType == RegisterProducer {
+			regPayload := txn.Payload.(*PayloadRegisterProducer)
+			if err := c.RollbackRegisterProducer(regPayload); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == CancelProducer || txn.TxType == UpdateProducer {
+			if err := c.RollbackCancelOrUpdateProducer(); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == TransferAsset && txn.Version >= TxVersionC0 {
+			for _, output := range txn.Outputs {
+				if output.OutputType == VoteOutput {
+					if err := c.PersistCancelVoteOutput(output); err != nil {
+						return err
+					}
+				}
+			}
+			for _, input := range txn.Inputs {
+				transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+				if err != nil {
+					return err
+				}
+				output := transaction.Outputs[input.Previous.Index]
+				if output.OutputType == VoteOutput {
+					if err = c.PersistVoteOutput(output); err != nil {
+						return err
+					}
 				}
 			}
 		}
