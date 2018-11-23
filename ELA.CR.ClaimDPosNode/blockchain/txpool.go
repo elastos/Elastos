@@ -265,7 +265,7 @@ func (pool *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 			newGenesisHashData := newPayload[32:64]
 
 			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
-				replaceList = append(replaceList, txn)
+				replaceList = append(replaceList, v)
 			}
 		}
 	}
