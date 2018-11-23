@@ -20,7 +20,7 @@ const (
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(checkFlags uint64, txn *Transaction) ErrCode {
+func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
 		return ErrTransactionSize
@@ -31,7 +31,7 @@ func CheckTransactionSanity(checkFlags uint64, txn *Transaction) ErrCode {
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionOutput(checkFlags, txn); err != nil {
+	if err := CheckTransactionOutput(blockHeight, txn); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
@@ -246,7 +246,7 @@ func CheckTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(checkFlags uint64, txn *Transaction) error {
+func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -269,16 +269,13 @@ func CheckTransactionOutput(checkFlags uint64, txn *Transaction) error {
 		}
 
 		foundationReward := txn.Outputs[0].Value
-		minerReward := txn.Outputs[1].Value
 
 		if Fixed64(foundationReward) < Fixed64(float64(totalReward)*0.3) {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
-		if checkFlags&CheckCoinbaseTxDposReward == CheckCoinbaseTxDposReward {
-			if Fixed64(minerReward) < Fixed64(float64(totalReward)*0.35) {
-				return errors.New("Reward to dpos in coinbase < 35%")
-			}
+		if err := DefaultLedger.HeightVersions.CheckCoinbaseMinerReward(blockHeight, txn, totalReward); err != nil {
+			return err
 		}
 
 		return nil
@@ -298,10 +295,8 @@ func CheckTransactionOutput(checkFlags uint64, txn *Transaction) error {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 
-		if checkFlags&CheckTxOut == CheckTxOut {
-			if !CheckOutputProgramHash(output.ProgramHash) {
-				return errors.New("output address is invalid")
-			}
+		if err := DefaultLedger.HeightVersions.CheckOutputProgramHash(blockHeight, txn, output.ProgramHash); err != nil {
+			return err
 		}
 
 		if txn.Version >= TxVersionC0 {
@@ -314,18 +309,6 @@ func CheckTransactionOutput(checkFlags uint64, txn *Transaction) error {
 	}
 
 	return nil
-}
-
-func CheckOutputProgramHash(programHash Uint168) bool {
-	var empty = Uint168{}
-	prefix := programHash[0]
-	if prefix == PrefixStandard ||
-		prefix == PrefixMultisig ||
-		prefix == PrefixCrossChain ||
-		programHash == empty {
-		return true
-	}
-	return false
 }
 
 func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {

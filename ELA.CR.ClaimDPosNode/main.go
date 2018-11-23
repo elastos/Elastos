@@ -5,6 +5,8 @@ import (
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/blockhistory"
+	"github.com/elastos/Elastos.ELA/blockchain/txhistory"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/log"
@@ -61,6 +63,32 @@ func startConsensus() {
 	}
 }
 
+func initVersions() {
+	txV0 := &txhistory.TxVersionV0{}
+	txV1 := &txhistory.TxVersionV1{}
+	txVCurrent := &blockchain.TxVersionMain{}
+
+	blockV0 := &blockhistory.BlockVersionV0{}
+	blockVCurrent := &blockchain.BlockVersionMain{}
+
+	blockchain.DefaultLedger.HeightVersions = blockchain.NewHeightVersions(
+		map[uint32]blockchain.VersionInfo{
+			0: {
+				map[byte]blockchain.TxVersion{txV0.GetVersion(): txV0},
+				map[uint32]blockchain.BlockVersion{blockV0.GetVersion(): blockV0},
+			},
+			88812: {
+				map[byte]blockchain.TxVersion{txV1.GetVersion(): txV1},
+				map[uint32]blockchain.BlockVersion{blockV0.GetVersion(): blockV0},
+			},
+			108812: {
+				map[byte]blockchain.TxVersion{txV1.GetVersion(): txV1, txVCurrent.GetVersion(): txVCurrent},
+				map[uint32]blockchain.BlockVersion{blockVCurrent.GetVersion(): blockVCurrent},
+			}, //fixme height edit  later
+		},
+	)
+}
+
 func main() {
 	//var blockChain *ledger.Blockchain
 	var err error
@@ -74,6 +102,7 @@ func main() {
 	defer chainStore.Close()
 
 	err = blockchain.Init(chainStore)
+	initVersions()
 	if err != nil {
 		goto ERROR
 	}
