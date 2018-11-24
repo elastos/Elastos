@@ -10,7 +10,6 @@ import (
 )
 
 type ConsensusStatus struct {
-	ProcessingBlock    core.Block
 	ProcessingProposal core.DPosProposal
 	ConsensusStatus    uint32
 	ViewOffset         uint32
@@ -25,10 +24,6 @@ type ConsensusStatus struct {
 }
 
 func (s *ConsensusStatus) Serialize(w io.Writer) error {
-	if err := s.ProcessingBlock.Serialize(w); err != nil {
-		return err
-	}
-
 	if err := s.ProcessingProposal.Serialize(w); err != nil {
 		return err
 	}
@@ -95,10 +90,6 @@ func (s *ConsensusStatus) Serialize(w io.Writer) error {
 
 func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	var err error
-	if err = s.ProcessingBlock.Deserialize(r); err != nil {
-		return err
-	}
-
 	if err = s.ProcessingProposal.Deserialize(r); err != nil {
 		return err
 	}
