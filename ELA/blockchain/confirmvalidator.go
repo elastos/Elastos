@@ -46,8 +46,9 @@ func CheckBlockWithConfirmation(block *core.Block, confirm *core.DPosProposalVot
 
 func IsProposalValid(proposal *core.DPosProposal) bool {
 	var isArbiter bool
-	for _, a := range config.Parameters.Arbiters {
-		if a == proposal.Sponsor {
+	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
+		pubStr := common.BytesToHexString(a)
+		if pubStr == proposal.Sponsor {
 			isArbiter = true
 		}
 	}
@@ -73,8 +74,9 @@ func IsProposalValid(proposal *core.DPosProposal) bool {
 
 func IsVoteValid(vote *core.DPosProposalVote) bool {
 	var isArbiter bool
-	for _, a := range config.Parameters.Arbiters {
-		if a == vote.Signer {
+	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
+		pubStr := common.BytesToHexString(a)
+		if pubStr == vote.Signer {
 			isArbiter = true
 		}
 	}
