@@ -256,11 +256,10 @@ func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
 }
 
 func (d *dposManager) changeHeight() {
-	//fixme uncomment me later
-	//if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil{
-	//	log.Error("Error occurred with change height: ", err)
-	//	return
-	//}
+	if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil{
+		log.Error("Error occurred with change height: ", err)
+		return
+	}
 
 	currentArbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
 	onDuty := d.publicKey == common.BytesToHexString(currentArbiter)

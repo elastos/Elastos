@@ -60,9 +60,8 @@ func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) 
 
 func (n *dposNetwork) Start() {
 	n.p2pServer.Start()
-	n.connectPeers()
 
-	n.OnProducersChanged()
+	n.UpdateProducersInfo()
 	n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetArbitrators())
 
 	go func() {
@@ -84,33 +83,23 @@ func (n *dposNetwork) Start() {
 	}()
 }
 
-func (n *dposNetwork) connectPeers() {
-	addrList := make([]p2p.PeerAddr, 0)
-	for _, seed := range config.Parameters.ArbiterConfiguration.SeedList {
-		publicKey, err := common.HexStringToBytes(seed.PublicKey)
-		if err != nil || len(publicKey) != 33 {
-			log.Errorf("connect to arbiter %s failed: %v:", seed.PublicKey, err)
-			continue
-		}
-
-		var pid peer.PID
-		copy(pid[:], publicKey)
-		addrList = append(addrList, p2p.PeerAddr{
-			PID:  pid,
-			Addr: seed.Addrress,
-		})
-	}
-	log.Info("[connectPeers] addr list:", addrList)
-	n.p2pServer.ConnectPeers(addrList)
-}
-
-//todo fired when producers changed
-func (n *dposNetwork) OnProducersChanged() {
+func (n *dposNetwork) UpdateProducersInfo() {
 
 	connectionInfoMap := n.getProducersConnectionInfo()
 
 	n.peersLock.Lock()
 	defer n.peersLock.Unlock()
+
+	needDeletedPeers := make([]string, 0)
+	for k := range n.directPeers {
+		if _, ok := connectionInfoMap[k]; !ok {
+			needDeletedPeers = append(needDeletedPeers, k)
+		}
+	}
+	for _, v := range needDeletedPeers {
+		delete(n.directPeers, v)
+	}
+
 	for k, v := range connectionInfoMap {
 
 		if _, ok := n.directPeers[k]; !ok {
@@ -122,12 +111,23 @@ func (n *dposNetwork) OnProducersChanged() {
 			}
 		}
 	}
-	//todo clean canceled producers connection info
 }
 
-func (n *dposNetwork) getProducersConnectionInfo() map[string]p2p.PeerAddr {
-	//todo complete me
-	return nil
+func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
+	producers := blockchain.DefaultLedger.Store.GetRegisteredProducers()
+	for _, v := range producers {
+		pk, err := common.HexStringToBytes(v.PublicKey)
+		if err != nil || len(pk) != 33 {
+			log.Warn("Parse producer connecting info error: ", err)
+			continue
+		}
+
+		pid := peer.PID{}
+		copy(pid[:], pk)
+		result[v.PublicKey] = p2p.PeerAddr{PID: pid, Addr: v.IP}
+	}
+
+	return result
 }
 
 func (n *dposNetwork) Stop() error {
@@ -187,6 +187,8 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 
 	n.p2pServer.ConnectPeers(n.getValidPeers())
 	n.peersLock.Unlock()
+
+	go n.UpdateProducersInfo()
 
 	n.currentHeight = height
 	return nil
