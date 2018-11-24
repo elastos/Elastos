@@ -30,9 +30,9 @@ const (
 	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
 
-	RegisterProducer TransactionType = 0xc1
-	CancelProducer   TransactionType = 0xc2
-	UpdateProducer   TransactionType = 0xc3
+	RegisterProducer TransactionType = 0x09
+	CancelProducer   TransactionType = 0x0a
+	UpdateProducer   TransactionType = 0x0b
 )
 
 func (self TransactionType) Name() string {
@@ -70,7 +70,7 @@ type TransactionVersion byte
 
 const (
 	TxVersionDefault TransactionVersion = 0x00
-	TxVersionC0      TransactionVersion = 0xC0
+	TxVersionC0      TransactionVersion = 0x09
 )
 
 type Transaction struct {

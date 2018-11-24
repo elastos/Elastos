@@ -165,7 +165,7 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 		if !IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-		if errCode := CheckTransactionContext(tx); errCode != Success {
+		if errCode := CheckTransactionContext(nextBlockHeight, tx); errCode != Success {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}

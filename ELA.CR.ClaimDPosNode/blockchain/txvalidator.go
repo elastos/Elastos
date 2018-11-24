@@ -65,7 +65,7 @@ func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func CheckTransactionContext(txn *Transaction) ErrCode {
+func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -154,17 +154,15 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return ErrIneffectiveCoinbase
 	}
 
-	if txn.Version >= TxVersionC0 {
-		for _, output := range txn.Outputs {
-			if err := output.OutputPayload.Validate(); err != nil {
-				log.Warn("[OutputPayload],", err)
-				return ErrInvalidOutput
-			}
-		}
-		if err := CheckVoteProducerOutputs(txn.Outputs, references); err != nil {
-			log.Warn("[CheckVoteProducerOutputs],", err)
+	for _, output := range txn.Outputs {
+		if err := DefaultLedger.HeightVersions.CheckOutputPayload(blockHeight, txn, output); err != nil {
+			log.Warn("[OutputPayload],", err)
 			return ErrInvalidOutput
 		}
+	}
+	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references); err != nil {
+		log.Warn("[CheckVoteProducerOutputs],", err)
+		return ErrInvalidOutput
 	}
 
 	return Success
@@ -299,13 +297,9 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return err
 		}
 
-		if txn.Version >= TxVersionC0 {
-			// check output payload
-			if err := output.OutputPayload.Validate(); err != nil {
-				return err
-			}
+		if err := DefaultLedger.HeightVersions.CheckOutputPayload(blockHeight, txn, output); err != nil {
+			return err
 		}
-
 	}
 
 	return nil
@@ -567,23 +561,6 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 	if totalInput-totalOutput < Fixed64(config.Parameters.MinCrossChainTxFee) {
 		return errors.New("Invalid transaction fee")
 	}
-	return nil
-}
-
-func CheckVoteProducerOutputs(outputs []*Output, references map[*Input]*Output) error {
-	programHashes := make(map[Uint168]struct{})
-	for _, v := range references {
-		programHashes[v.ProgramHash] = struct{}{}
-	}
-
-	for _, o := range outputs {
-		if o.OutputType == VoteOutput {
-			if _, ok := programHashes[o.ProgramHash]; !ok {
-				return errors.New("Invalid vote output")
-			}
-		}
-	}
-
 	return nil
 }
 
