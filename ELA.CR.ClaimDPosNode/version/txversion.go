@@ -1,9 +1,10 @@
-package blockchain
+package version
 
 import (
 	"errors"
 	"math"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -51,8 +52,8 @@ func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *core.Transactio
 		outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
 	}
 
-	arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
-	candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
+	arbitratorsHashes := blockchain.DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
+	candidatesHashes := blockchain.DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
 	if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
 		return errors.New("Coinbase output count not match.")
 	}
