@@ -15,7 +15,7 @@ const (
 )
 
 // TransactionType represents different transaction types with different payload format.
-// The TransactionType range is 0x00 - 0xBF. When it is greater than 0xBF it will be
+// The TransactionType range is 0x00 - 0x08. When it is greater than 0x08 it will be
 // interpreted as a TransactionVersion.
 type TransactionType byte
 
