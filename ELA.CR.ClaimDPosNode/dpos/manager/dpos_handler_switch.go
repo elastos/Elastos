@@ -194,12 +194,7 @@ func (h *dposHandlerSwitch) RequestAbnormalRecovering() {
 
 func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 	status := &msg2.ConsensusStatus{}
-
-	var err error
-	if status.MissingBlockConfirms, err = blockchain.DefaultLedger.GetBlocksAndConfirms(height, 0); err != nil {
-		log.Error("Error occurred when collect consensus status from leger: ", err)
-		return
-	}
+	log.Info("[HelpToRecoverAbnormal] peer id:", common.BytesToHexString(id[:]))
 
 	if err := h.consensus.CollectConsensusStatus(height, status); err != nil {
 		log.Error("Error occurred when collect consensus status from consensus object: ", err)
@@ -216,12 +211,6 @@ func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 }
 
 func (h *dposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
-
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(status.MissingBlockConfirms); err != nil {
-		log.Error("Error occurred when recover leger: ", err)
-		return
-	}
-
 	if err := h.proposalDispatcher.RecoverFromConsensusStatus(status); err != nil {
 		log.Error("Error occurred when recover proposal dispatcher object: ", err)
 		return

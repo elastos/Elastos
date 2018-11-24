@@ -128,10 +128,12 @@ func (c *consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusS
 	status.ConsensusStatus = c.consensusStatus
 	status.ViewOffset = c.viewOffset
 	status.ViewStartTime = c.currentView.GetViewStartTime()
+	log.Info("[CollectConsensusStatus] status.ConsensusStatus:", status.ConsensusStatus)
 	return nil
 }
 
 func (c *consensus) RecoverFromConsensusStatus(status *msg.ConsensusStatus) error {
+	log.Info("[RecoverFromConsensusStatus] status.ConsensusStatus:", status.ConsensusStatus)
 	c.consensusStatus = status.ConsensusStatus
 	c.viewOffset = status.ViewOffset
 	c.currentView.ResetView(status.ViewStartTime)
