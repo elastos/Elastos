@@ -591,7 +591,6 @@ func (c *ChainStore) persistBlock(block *Block) {
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
-
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
 }
 

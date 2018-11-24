@@ -22,11 +22,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-var TaskCh chan bool
+var BlockPersistCompletedSignal = make(chan common.Uint256)
 
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
-	hashUpdateSecs = 15
+	hashUpdateSecs = 5
 )
 
 type auxBlockPool struct {
@@ -264,7 +264,6 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
-
 	// fake a btc blockheader and coinbase
 	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Header
@@ -273,11 +272,10 @@ func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			// if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
-			// 	return false
-			// }
 			return false
-
+		case hash := <-BlockPersistCompletedSignal:
+			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
+			return false
 		default:
 			// Non-blocking select to fall through
 		}
@@ -341,12 +339,14 @@ func (pow *PowService) RollbackTransaction(v interface{}) {
 func (pow *PowService) BlockPersistCompleted(v interface{}) {
 	log.Debug()
 	if block, ok := v.(*Block); ok {
-		log.Infof("persist block: %x", block.Hash())
+		log.Infof("persist block: %s", block.Hash())
 		err := node.LocalNode.CleanSubmittedTransactions(block)
 		if err != nil {
 			log.Warn(err)
 		}
 		node.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
+		BlockPersistCompletedSignal <- block.Hash()
+		log.Info("pow service: block persist completed. Block Hash:", block.Hash())
 	}
 }
 
