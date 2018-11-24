@@ -65,13 +65,19 @@ type serverPeer struct {
 // newServerPeer returns a new serverPeer instance. The peer needs to be set by
 // the caller.
 func newServerPeer(s *server) *serverPeer {
-	f := filter.New()
-	f.RegisterTxFilter(msg.TFBloom, bloom.NewTxFilter)
-	f.RegisterTxFilter(msg.TFTxType, filter.NewTxTypeFilter)
+	filter := filter.New(func(filterType filter.TxFilterType) filter.TxFilter {
+		switch filterType {
+		case filter.FTBloom:
+			return bloom.NewTxFilter()
+		case filter.FTTxType:
+			return filter.NewTxTypeFilter()
+		}
+		return nil
+	})
 
 	return &serverPeer{
 		server:         s,
-		filter:         filter.New(),
+		filter:         filter,
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
 		blockProcessed: make(chan struct{}, 1),
@@ -339,11 +345,7 @@ func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, filterAdd *msg.FilterAdd) {
 		return
 	}
 
-	err := sp.filter.Update(&msg.TxFilter{
-		Type: msg.TFBloom,
-		Op:   msg.OpFilterAdd,
-		Data: filterAdd.Data,
-	})
+	err := sp.filter.Add(filterAdd.Data)
 	if err != nil {
 		log.Debugf("%s sent invalid filteradd request with error %s"+
 			" -- disconnecting", sp, err)
@@ -369,15 +371,9 @@ func (sp *serverPeer) OnFilterClear(_ *peer.Peer, filterClear *msg.FilterClear) 
 		return
 	}
 
-	err := sp.filter.Update(&msg.TxFilter{
-		Type: msg.TFBloom,
-		Op:   msg.OpFilterClear,
-	})
-	if err != nil {
-		log.Debugf("%s sent invalid filterclear request with error %s"+
-			" -- disconnecting", sp, err)
-		sp.Disconnect()
-	}
+	sp.filter.Clear()
+
+	sp.SetDisableRelayTx(true)
 }
 
 // OnFilterLoad is invoked when a peer receives a filterload
@@ -396,9 +392,8 @@ func (sp *serverPeer) OnFilterLoad(_ *peer.Peer, filterLoad *msg.FilterLoad) {
 
 	buf := new(bytes.Buffer)
 	filterLoad.Serialize(buf)
-	err := sp.filter.Update(&msg.TxFilter{
-		Type: msg.TFBloom,
-		Op:   msg.OpFilterAdd,
+	err := sp.filter.Load(&msg.TxFilterLoad{
+		Type: filter.FTBloom,
 		Data: buf.Bytes(),
 	})
 	if err != nil {
@@ -426,32 +421,25 @@ func (sp *serverPeer) enforceTxFilterFlag(cmd string) bool {
 	return true
 }
 
-// OnTxFilter is invoked when a peer receives a txfilter message and it used to
+// OnTxFilterLoad is invoked when a peer receives a txfilter message and it used to
 // load a transaction filter that should be used for delivering merkle blocks and
 // associated transactions that match the filter. The peer will be disconnected
 // if the server is not configured to allow transaction filtering.
-func (sp *serverPeer) OnTxFilter(_ *peer.Peer, tf *msg.TxFilter) {
+func (sp *serverPeer) OnTxFilterLoad(_ *peer.Peer, tf *msg.TxFilterLoad) {
 	// Disconnect and/or ban depending on the tx filter services flag and
 	// negotiated protocol version.
 	if !sp.enforceTxFilterFlag(tf.CMD()) {
 		return
 	}
 
-	err := sp.filter.Update(tf)
+	sp.SetDisableRelayTx(false)
+
+	err := sp.filter.Load(tf)
 	if err != nil {
 		log.Debugf("%s sent invalid txfilter request with error %s"+
 			" -- disconnecting", sp, err)
 		sp.Disconnect()
 		return
-	}
-
-	switch tf.Op {
-	case msg.OpFilterLoad:
-		sp.SetDisableRelayTx(false)
-
-	case msg.OpClearAll:
-		sp.SetDisableRelayTx(true)
-
 	}
 }
 
@@ -647,18 +635,18 @@ out:
 		case p := <-s.newPeers:
 			sp := newServerPeer(s)
 			sp.Peer = peer.New(p, &peer.Listeners{
-				OnMemPool:     sp.OnMemPool,
-				OnTx:          sp.OnTx,
-				OnBlock:       sp.OnBlock,
-				OnInv:         sp.OnInv,
-				OnNotFound:    sp.OnNotFound,
-				OnGetData:     sp.OnGetData,
-				OnGetBlocks:   sp.OnGetBlocks,
-				OnFilterAdd:   sp.OnFilterAdd,
-				OnFilterClear: sp.OnFilterClear,
-				OnFilterLoad:  sp.OnFilterLoad,
-				OnTxFilter:    sp.OnTxFilter,
-				OnReject:      sp.OnReject,
+				OnMemPool:      sp.OnMemPool,
+				OnTx:           sp.OnTx,
+				OnBlock:        sp.OnBlock,
+				OnInv:          sp.OnInv,
+				OnNotFound:     sp.OnNotFound,
+				OnGetData:      sp.OnGetData,
+				OnGetBlocks:    sp.OnGetBlocks,
+				OnFilterAdd:    sp.OnFilterAdd,
+				OnFilterClear:  sp.OnFilterClear,
+				OnFilterLoad:   sp.OnFilterLoad,
+				OnTxFilterLoad: sp.OnTxFilterLoad,
+				OnReject:       sp.OnReject,
 			})
 
 			peers[p] = sp
@@ -821,7 +809,7 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = &msg.FilterLoad{}
 
 	case p2p.CmdTxFilter:
-		message = &msg.TxFilter{}
+		message = &msg.TxFilterLoad{}
 
 	case p2p.CmdReject:
 		message = &msg.Reject{}
