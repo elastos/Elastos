@@ -74,18 +74,18 @@ func initVersions() {
 
 	blockchain.DefaultLedger.HeightVersions = NewHeightVersions(
 		map[uint32]VersionInfo{
-			0: {
+			GenesisHeightVersion: {
 				map[byte]TxVersion{txV0.GetVersion(): txV0},
 				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
-			88812: {
+			HeightVersion1: {
 				map[byte]TxVersion{txV1.GetVersion(): txV1},
 				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
-			108812: {
+			HeightVersion2: {
 				map[byte]TxVersion{txV1.GetVersion(): txV1, txVCurrent.GetVersion(): txVCurrent},
 				map[uint32]BlockVersion{blockVCurrent.GetVersion(): blockVCurrent},
-			}, //fixme height edit  later
+			},
 		},
 	)
 }

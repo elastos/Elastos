@@ -130,7 +130,7 @@ func CheckBlockContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
-		if errCode := CheckTransactionContext(block.Transactions[i]); errCode != Success {
+		if errCode := CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 
