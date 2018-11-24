@@ -10,6 +10,12 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const (
+	GenesisHeightVersion = uint32(0)
+	HeightVersion1       = uint32(88812)
+	HeightVersion2       = uint32(108812) //fixme edit height later
+)
+
 type TxCheckMethod func(TxVersion) error
 type BlockCheckMethod func(BlockVersion) error
 
@@ -21,6 +27,12 @@ type VersionInfo struct {
 type heightVersions struct {
 	versions      map[uint32]VersionInfo
 	sortedHeights []uint32
+}
+
+func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *core.Transaction, output *core.Output) error {
+	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
+		return v.CheckOutputPayload(output)
+	})
 }
 
 func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *core.Transaction, programHash Uint168) error {
@@ -41,6 +53,12 @@ func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *
 	})
 }
 
+func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *core.Transaction, outputs []*core.Output, references map[*core.Input]*core.Output) error {
+	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
+		return version.CheckVoteProducerOutputs(outputs, references)
+	})
+}
+
 func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
@@ -56,14 +74,23 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
-	v := h.findTxVersion(&info, tx)
+	v := h.findTxVersion(blockHeight, &info, tx)
 	if v == nil {
 		return fmt.Errorf("Block height ", blockHeight, "can not support transaction version ", tx.Version)
 	}
 	return txFun(v)
 }
 
-func (h *heightVersions) findTxVersion(info *VersionInfo, tx *core.Transaction) TxVersion {
+func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *core.Transaction) TxVersion {
+	// before HeightVersion2 tx version means tx type, use special get method instead
+	if blockHeight < HeightVersion2 {
+		if blockHeight < HeightVersion1 {
+			return info.CompatibleTxVersions[0]
+		} else {
+			return info.CompatibleTxVersions[1]
+		}
+	}
+
 	v, ok := info.CompatibleTxVersions[byte(tx.Version)]
 	if !ok {
 		return nil
