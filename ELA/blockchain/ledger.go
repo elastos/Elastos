@@ -3,8 +3,9 @@ package blockchain
 import (
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/core"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var FoundationAddress Uint168
@@ -14,6 +15,14 @@ var DefaultLedger *Ledger
 type NewBlocksListener interface {
 	OnBlockReceived(b *Block, confirmed bool)
 	OnConfirmReceived(p *DPosProposalVoteSlot)
+}
+
+type HeightVersions interface {
+	CheckOutputProgramHash(blockHeight uint32, tx *Transaction, programHash Uint168) error
+	CheckCoinbaseMinerReward(blockHeight uint32, tx *Transaction, totalReward Fixed64) error
+	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error
+
+	GetProducersDesc(block *Block) ([][]byte, error)
 }
 
 // Ledger - the struct for ledger

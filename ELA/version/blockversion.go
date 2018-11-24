@@ -1,8 +1,9 @@
-package blockchain
+package version
 
 import (
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -21,7 +22,7 @@ func (b *BlockVersionMain) GetVersion() uint32 {
 }
 
 func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
-	producersInfo := DefaultLedger.Store.GetRegisteredProducers()
+	producersInfo := blockchain.DefaultLedger.Store.GetRegisteredProducers()
 	if uint32(len(producersInfo)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
 		return nil, errors.New("producers count less than min arbitrators count.")
 	}

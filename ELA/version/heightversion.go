@@ -1,9 +1,10 @@
-package blockchain
+package version
 
 import (
 	"fmt"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -15,14 +16,6 @@ type BlockCheckMethod func(BlockVersion) error
 type VersionInfo struct {
 	CompatibleTxVersions    map[byte]TxVersion
 	CompatibleBlockVersions map[uint32]BlockVersion
-}
-
-type HeightVersions interface {
-	CheckOutputProgramHash(blockHeight uint32, tx *core.Transaction, programHash Uint168) error
-	CheckCoinbaseMinerReward(blockHeight uint32, tx *core.Transaction, totalReward Fixed64) error
-	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *core.Transaction, rewardInCoinbase Fixed64) error
-
-	GetProducersDesc(block *core.Block) ([][]byte, error)
 }
 
 type heightVersions struct {
@@ -109,7 +102,7 @@ func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
 	return h.sortedHeights[len(h.sortedHeights)-1]
 }
 
-func NewHeightVersions(versions map[uint32]VersionInfo) HeightVersions {
+func NewHeightVersions(versions map[uint32]VersionInfo) blockchain.HeightVersions {
 
 	h := &heightVersions{
 		versions:      versions,

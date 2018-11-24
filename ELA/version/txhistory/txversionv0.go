@@ -1,14 +1,14 @@
 package txhistory
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/version"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type TxVersionV0 struct {
-	blockchain.TxVersionMain
+	version.TxVersionMain
 }
 
 func (v *TxVersionV0) GetVersion() byte {
