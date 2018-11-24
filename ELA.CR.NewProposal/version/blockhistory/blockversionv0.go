@@ -3,7 +3,7 @@ package blockhistory
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -17,7 +17,7 @@ var originalArbitrators = []string{
 }
 
 type BlockVersionV0 struct {
-	blockchain.BlockVersionMain
+	version.BlockVersionMain
 }
 
 func (b *BlockVersionV0) GetVersion() uint32 {

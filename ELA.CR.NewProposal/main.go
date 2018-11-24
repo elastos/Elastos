@@ -5,8 +5,6 @@ import (
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/blockhistory"
-	"github.com/elastos/Elastos.ELA/blockchain/txhistory"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/log"
@@ -18,6 +16,9 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
+	. "github.com/elastos/Elastos.ELA/version"
+	"github.com/elastos/Elastos.ELA/version/blockhistory"
+	"github.com/elastos/Elastos.ELA/version/txhistory"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -66,24 +67,24 @@ func startConsensus() {
 func initVersions() {
 	txV0 := &txhistory.TxVersionV0{}
 	txV1 := &txhistory.TxVersionV1{}
-	txVCurrent := &blockchain.TxVersionMain{}
+	txVCurrent := &TxVersionMain{}
 
 	blockV0 := &blockhistory.BlockVersionV0{}
-	blockVCurrent := &blockchain.BlockVersionMain{}
+	blockVCurrent := &BlockVersionMain{}
 
-	blockchain.DefaultLedger.HeightVersions = blockchain.NewHeightVersions(
-		map[uint32]blockchain.VersionInfo{
+	blockchain.DefaultLedger.HeightVersions = NewHeightVersions(
+		map[uint32]VersionInfo{
 			0: {
-				map[byte]blockchain.TxVersion{txV0.GetVersion(): txV0},
-				map[uint32]blockchain.BlockVersion{blockV0.GetVersion(): blockV0},
+				map[byte]TxVersion{txV0.GetVersion(): txV0},
+				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
 			88812: {
-				map[byte]blockchain.TxVersion{txV1.GetVersion(): txV1},
-				map[uint32]blockchain.BlockVersion{blockV0.GetVersion(): blockV0},
+				map[byte]TxVersion{txV1.GetVersion(): txV1},
+				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
 			108812: {
-				map[byte]blockchain.TxVersion{txV1.GetVersion(): txV1, txVCurrent.GetVersion(): txVCurrent},
-				map[uint32]blockchain.BlockVersion{blockVCurrent.GetVersion(): blockVCurrent},
+				map[byte]TxVersion{txV1.GetVersion(): txV1, txVCurrent.GetVersion(): txVCurrent},
+				map[uint32]BlockVersion{blockVCurrent.GetVersion(): blockVCurrent},
 			}, //fixme height edit  later
 		},
 	)
