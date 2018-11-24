@@ -5,7 +5,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -63,16 +62,22 @@ type arbitrators struct {
 func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
 	if confirmed {
 		a.lock.Lock()
-		a.onChainHeightIncreased()
+		a.onChainHeightIncreased(b)
 		a.lock.Unlock()
 	}
 }
 
 func (a *arbitrators) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+	block, err := DefaultLedger.GetBlockWithHash(p.Hash)
+	if err != nil {
+		log.Error("Error occurred when changing arbitrators, details: ", err)
+		return
+	}
+
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	a.onChainHeightIncreased()
+	a.onChainHeightIncreased(block)
 }
 
 func (a *arbitrators) GetArbitrators() [][]byte {
@@ -146,14 +151,14 @@ func (a *arbitrators) UnregisterListener(listener ArbitratorsListener) {
 	a.listener = nil
 }
 
-func (a *arbitrators) onChainHeightIncreased() {
+func (a *arbitrators) onChainHeightIncreased(block *core.Block) {
 	if a.isNewElection() {
 		if err := a.changeCurrentArbitrators(); err != nil {
 			log.Error("Change current arbitrators error: ", err)
 			return
 		}
 
-		if err := a.updateNextArbitrators(); err != nil {
+		if err := a.updateNextArbitrators(block); err != nil {
 			log.Error("Update arbitrators error: ", err)
 			return
 		}
@@ -201,8 +206,9 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	return nil
 }
 
-func (a *arbitrators) updateNextArbitrators() error {
-	producers, err := a.parseProducersDesc()
+func (a *arbitrators) updateNextArbitrators(block *core.Block) error {
+
+	producers, err := DefaultLedger.HeightVersions.GetProducersDesc(block)
 	if err == nil {
 		return err
 	}
@@ -240,24 +246,6 @@ func (a *arbitrators) sortArbitrators() error {
 	}
 
 	return nil
-}
-
-func (a *arbitrators) parseProducersDesc() ([][]byte, error) {
-	//todo parse by get vote results instead
-	if len(config.Parameters.Arbiters) == 0 {
-		return nil, errors.New("arbiters not configured")
-	}
-
-	var arbitersByte [][]byte
-	for _, arbiter := range config.Parameters.Arbiters {
-		arbiterByte, err := common.HexStringToBytes(arbiter)
-		if err != nil {
-			return nil, err
-		}
-		arbitersByte = append(arbitersByte, arbiterByte)
-	}
-
-	return arbitersByte, nil
 }
 
 func NewArbitrators(arbitratorsConfig ArbitratorsConfig) Arbitrators {

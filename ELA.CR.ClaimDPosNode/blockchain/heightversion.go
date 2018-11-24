@@ -21,6 +21,8 @@ type HeightVersions interface {
 	CheckOutputProgramHash(blockHeight uint32, tx *core.Transaction, programHash Uint168) error
 	CheckCoinbaseMinerReward(blockHeight uint32, tx *core.Transaction, totalReward Fixed64) error
 	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *core.Transaction, rewardInCoinbase Fixed64) error
+
+	GetProducersDesc(block *core.Block) ([][]byte, error)
 }
 
 type heightVersions struct {
@@ -44,6 +46,17 @@ func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
 	})
+}
+
+func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
+	heightKey := h.findLastAvailableHeightKey(block.Height)
+	info := h.versions[heightKey]
+
+	v := h.findBlockVersion(&info, block)
+	if v == nil {
+		return nil, fmt.Errorf("Block height ", block.Height, "can not support block version ", block.Version)
+	}
+	return v.GetProducersDesc()
 }
 
 func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun TxCheckMethod) error {
