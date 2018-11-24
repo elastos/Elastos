@@ -1,6 +1,8 @@
 package manager
 
 import (
+	"time"
+
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -115,7 +117,14 @@ func (d *dposManager) GetBlockCache() *ConsensusBlockCache {
 }
 
 func (d *dposManager) Recover() {
-	d.handler.RequestAbnormalRecovering()
+	for {
+		if peerID := d.network.GetActivePeer(); peerID != nil {
+			d.handler.RequestAbnormalRecovering()
+			return
+		}
+
+		time.Sleep(time.Second)
+	}
 }
 
 func (d *dposManager) ProcessHigherBlock(b *core.Block) {
@@ -201,6 +210,7 @@ func (d *dposManager) OnRequestConsensus(id peer.PID, height uint32) {
 }
 
 func (d *dposManager) OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus) {
+	log.Info("[OnResponseConsensus], status:", *status)
 	d.handler.RecoverAbnormal(status)
 }
 

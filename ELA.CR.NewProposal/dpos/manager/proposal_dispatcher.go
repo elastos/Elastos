@@ -102,6 +102,7 @@ func (p *proposalDispatcher) StartProposal(b *core.Block) {
 	}
 	p.processingBlock = b
 
+	p.network.BroadcastMessage(msg2.NewInventory(b.Hash()))
 	proposal := core.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.consensus.GetViewOffset()}
 	var err error
 	proposal.Sign, err = p.account.SignProposal(&proposal)
@@ -227,6 +228,7 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg][OnDuty],append confirm.")
 	if err := node.LocalNode.AppendConfirm(currentVoteSlot); err != nil {
+		log.Error("[AppendConfirm] err:", err.Error())
 		return false
 	}
 
@@ -259,9 +261,6 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 		return errors.New("Requesting height greater than current processing height")
 	}
 
-	if p.processingBlock != nil {
-		status.ProcessingBlock = *p.processingBlock
-	}
 	if p.processingProposal != nil {
 		status.ProcessingProposal = *p.processingProposal
 	}
@@ -290,11 +289,6 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 }
 
 func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
-	if status.ProcessingBlock.Height < p.CurrentHeight() {
-		return errors.New("Recovering height less than current processing height")
-	}
-
-	p.processingBlock = &status.ProcessingBlock
 	p.processingProposal = &status.ProcessingProposal
 
 	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote)
