@@ -82,8 +82,8 @@ type Listeners struct {
 	// message.
 	OnFilterLoad func(p *Peer, msg *msg.FilterLoad)
 
-	// OnTxFilter is invoked when a peer receives a txfilter message.
-	OnTxFilter func(p *Peer, msg *msg.TxFilter)
+	// OnTxFilterLoad is invoked when a peer receives a txfilter message.
+	OnTxFilterLoad func(p *Peer, msg *msg.TxFilterLoad)
 
 	// OnReject is invoked when a peer receives a reject message.
 	OnReject func(p *Peer, msg *msg.Reject)
