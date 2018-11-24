@@ -375,23 +375,23 @@ out:
 		default:
 			// Non-blocking select to fall through
 		}
-		log.Debug("<================Packing Block==============>")
+		log.Info("<================Packing Block==============>")
 		//time.Sleep(15 * time.Second)
 
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
 		if err != nil {
-			log.Debug("generage block err", err)
+			log.Error("generate block err", err)
 			continue
 		}
 
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock) {
 			log.Info("<================Solved Block==============>")
-			//send the valid block to p2p networkd
+			//send the valid block to p2p network
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
-					log.Debug(err)
+					log.Error(err)
 					continue
 				}
 				//TODO if co-mining condition
