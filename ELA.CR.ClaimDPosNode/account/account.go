@@ -10,9 +10,10 @@ import (
 )
 
 type Account struct {
-	PrivateKey  []byte
-	PublicKey   *crypto.PublicKey
-	ProgramHash common.Uint168
+	PrivateKey   []byte
+	PublicKey    *crypto.PublicKey
+	ProgramHash  common.Uint168
+	RedeemScript []byte
 }
 
 func NewAccount() (*Account, error) {
@@ -27,9 +28,10 @@ func NewAccount() (*Account, error) {
 	}
 
 	return &Account{
-		PrivateKey:  priKey,
-		PublicKey:   pubKey,
-		ProgramHash: *programHash,
+		PrivateKey:   priKey,
+		PublicKey:    pubKey,
+		ProgramHash:  *programHash,
+		RedeemScript: signatureRedeemScript,
 	}, nil
 }
 
@@ -50,9 +52,10 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 		return nil, err
 	}
 	return &Account{
-		PrivateKey:  privateKey,
-		PublicKey:   pubKey,
-		ProgramHash: *programHash,
+		PrivateKey:   privateKey,
+		PublicKey:    pubKey,
+		ProgramHash:  *programHash,
+		RedeemScript: signatureRedeemScript,
 	}, nil
 }
 

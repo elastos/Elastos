@@ -56,84 +56,72 @@ func GetConfirmedPassword() ([]byte, error) {
 	return first, nil
 }
 
-func FileExisted(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
-}
-
-func ShowAccountInfo(name string, password []byte) error {
-	var err error
-	password, err = clicom.GetPassword(password, false)
-	if err != nil {
-		return err
-	}
-
-	keyStore, err := account.OpenKeystore(name, password)
-	if err != nil {
-		return err
-	}
-
+func ShowAccountInfo(client *account.ClientImpl) error {
 	// print header
 	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PUBLIC KEY")
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
-	// print account
-	publicKey := keyStore.GetPublicKey()
-	publicKeyBytes, _ := publicKey.EncodePoint(true)
-	fmt.Printf("%-34s %-66s\n", keyStore.Address(), hex.EncodeToString(publicKeyBytes))
+	mainAccount, err := client.GetDefaultAccount()
+	if err != nil {
+		return err
+	}
+	publicKey, err := mainAccount.PublicKey.EncodePoint(true)
+	if err != nil {
+		return err
+	}
+	addr, err := mainAccount.ProgramHash.ToAddress()
+	fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
 	// print divider line
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
 	return nil
 }
 
-func ShowAccountBalance(name string, password []byte) error {
+func ShowAccountBalance(name string) error {
 	// print header
 	fmt.Printf("%5s %34s %-20s%22s \n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 
-	var err error
-	password, err = clicom.GetPassword(password, false)
+	var fileStore account.FileStore
+	fileStore.SetPath(name)
+	storeAddresses, err := fileStore.LoadAccountData()
 	if err != nil {
 		return err
 	}
 
-	keyStore, err := account.OpenKeystore(name, password)
-	if err != nil {
-		return err
-	}
-
-	result, err := jsonrpc.CallParams(account.ElaServer(), "listunspent", util.Params{
-		"addresses": []string{keyStore.Address()},
-	})
-	if err != nil {
-		return err
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		return err
-	}
-	var utxos []servers.UTXOInfo
-	err = json.Unmarshal(data, &utxos)
-
-	//var availabelUtxos []servers.UTXOInfo
-	availableAmount := common.Fixed64(0)
-	lockedAmount := common.Fixed64(0)
-	for _, utxo := range utxos {
-		amount, err := common.StringToFixed64(utxo.Amount)
+	for _, a := range storeAddresses {
+		result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+			"addresses": []string{a.Address},
+		})
 		if err != nil {
 			return err
 		}
-
-		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
-			lockedAmount += *amount
-			continue
+		data, err := json.Marshal(result)
+		if err != nil {
+			return err
 		}
-		availableAmount += *amount
-	}
+		var utxos []servers.UTXOInfo
+		err = json.Unmarshal(data, &utxos)
 
-	fmt.Printf("%5d %34s %-20s%22s \n", 0, keyStore.Address(), availableAmount.String(), "("+lockedAmount.String()+")")
-	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
+		//var availabelUtxos []servers.UTXOInfo
+		availableAmount := common.Fixed64(0)
+		lockedAmount := common.Fixed64(0)
+		for _, utxo := range utxos {
+			amount, err := common.StringToFixed64(utxo.Amount)
+			if err != nil {
+				return err
+			}
+
+			if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+				lockedAmount += *amount
+				continue
+			}
+			availableAmount += *amount
+		}
+
+		fmt.Printf("%5d %34s %-20s%22s \n", 0, a.Address, availableAmount.String(), "("+lockedAmount.String()+")")
+		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
+	}
 
 	return nil
 }

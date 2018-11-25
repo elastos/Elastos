@@ -4,10 +4,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
+
+	"github.com/elastos/Elastos.ELA/config"
 
 	"github.com/elaio/gopass"
 	"github.com/urfave/cli"
 )
+
+func LocalServer() string {
+	return "http://localhost" + ":" + strconv.Itoa(config.Parameters.HttpJsonPort)
+}
 
 func PrintError(c *cli.Context, err error, cmd string) {
 	fmt.Println("Incorrect Usage:", err)
