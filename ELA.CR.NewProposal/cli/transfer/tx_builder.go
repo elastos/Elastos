@@ -1,29 +1,35 @@
 package transfer
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
+	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
+	pg "github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/urfave/cli"
 )
 
-func createTransaction(c *cli.Context, wallet account.Wallet) error {
+type Transfer struct {
+	Address string
+	Amount  *common.Fixed64
+}
 
+func createTransaction(c *cli.Context) error {
 	feeStr := c.String("fee")
 	if feeStr == "" {
 		return errors.New("use --fee to specify transfer fee")
@@ -35,14 +41,11 @@ func createTransaction(c *cli.Context, wallet account.Wallet) error {
 	}
 
 	from := c.String("from")
-	if from == "" {
-		from = wallet.Address()
-	}
 
-	multiOutput := c.String("file")
-	if multiOutput != "" {
-		return createMultiOutputTransaction(c, wallet, multiOutput, from, fee)
-	}
+	//multiOutput := c.String("file")
+	//if multiOutput != "" {
+	//	return createMultiOutputTransaction(c, wallet, multiOutput, from, fee)
+	//}
 
 	amountStr := c.String("amount")
 	if amountStr == "" {
@@ -58,7 +61,6 @@ func createTransaction(c *cli.Context, wallet account.Wallet) error {
 	var to string
 	standard := c.String("to")
 	deposit := c.String("deposit")
-	withdraw := c.String("withdraw")
 	if deposit != "" {
 		// TODO fix cross chain tx
 		//to = config.Params().DepositAddress
@@ -66,17 +68,11 @@ func createTransaction(c *cli.Context, wallet account.Wallet) error {
 		//if err != nil {
 		//	return errors.New("create transaction failed: " + err.Error())
 		//}
-	} else if withdraw != "" {
-		//to = account.DESTROY_ADDRESS
-		//txn, err = wallet.CreateCrossChainTransaction(from, to, withdraw, amount, fee)
-		//if err != nil {
-		//	return errors.New("create transaction failed: " + err.Error())
-		//}
 	} else if standard != "" {
 		to = standard
 		lockStr := c.String("lock")
 		if lockStr == "" {
-			txn, err = wallet.CreateTransaction(from, to, amount, fee)
+			txn, err = CreateTransaction(from, to, amount, fee)
 			if err != nil {
 				return errors.New("create transaction failed: " + err.Error())
 			}
@@ -85,130 +81,21 @@ func createTransaction(c *cli.Context, wallet account.Wallet) error {
 			if err != nil {
 				return errors.New("invalid lock height")
 			}
-			txn, err = wallet.CreateLockedTransaction(from, to, amount, fee, uint32(lock))
+			txn, err = CreateLockedTransaction(from, to, amount, fee, uint32(lock))
 			if err != nil {
 				return errors.New("create transaction failed: " + err.Error())
 			}
 		}
 	} else {
-		return errors.New("use --to or --deposit or --withdraw to specify receiver address")
+		return errors.New("use --to or --deposit to specify receiver address")
 	}
 
 	output(0, 0, txn)
 
-	return nil
-}
-
-func createMultiOutputTransaction(c *cli.Context, wallet account.Wallet, path, from string, fee *common.Fixed64) error {
-	if _, err := os.Stat(path); err != nil {
-		return errors.New("invalid multi output file path")
-	}
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
-	if err != nil {
-		return errors.New("open multi output file failed")
-	}
-
-	scanner := bufio.NewScanner(file)
-	var multiOutput []*account.Transfer
-	for scanner.Scan() {
-		columns := strings.Split(scanner.Text(), ",")
-		if len(columns) < 2 {
-			return errors.New(fmt.Sprint("invalid multi output line:", columns))
-		}
-		amountStr := strings.TrimSpace(columns[1])
-		amount, err := common.StringToFixed64(amountStr)
-		if err != nil {
-			return errors.New("invalid multi output transaction amount: " + amountStr)
-		}
-		address := strings.TrimSpace(columns[0])
-		multiOutput = append(multiOutput, &account.Transfer{address, amount})
-		log.Info("Multi output address:", address, ", amount:", amountStr)
-	}
-
-	lockStr := c.String("lock")
-	var txn *core.Transaction
-	if lockStr == "" {
-		txn, err = wallet.CreateMultiOutputTransaction(from, fee, multiOutput...)
-		if err != nil {
-			return errors.New("create multi output transaction failed: " + err.Error())
-		}
-	} else {
-		lock, err := strconv.ParseUint(lockStr, 10, 32)
-		if err != nil {
-			return errors.New("invalid lock height")
-		}
-		txn, err = wallet.CreateLockedMultiOutputTransaction(from, fee, uint32(lock), multiOutput...)
-		if err != nil {
-			return errors.New("create multi output transaction failed: " + err.Error())
-		}
-	}
-
-	output(0, 0, txn)
-
-	return nil
-}
-
-func signTransaction(context *cli.Context, wallet account.Wallet) error {
-
-	content, err := getTransactionContent(context)
-	if err != nil {
-		return err
-	}
-	rawData, err := common.HexStringToBytes(content)
-	if err != nil {
-		return errors.New("decode transaction content failed")
-	}
-
-	var txn core.Transaction
-	err = txn.Deserialize(bytes.NewReader(rawData))
-	if err != nil {
-		return errors.New("deserialize transaction failed")
-	}
-
-	program := txn.Programs[0]
-
-	haveSign, needSign, err := crypto.GetSignStatus(program.Code, program.Parameter)
-	if haveSign == needSign {
-		return errors.New("transaction was fully signed, no need more sign")
-	}
-
-	//password, err := clicom.GetPassword([]byte{}, false)
-	//if err != nil {
-	//	return err
-	//}
-	//defer common.ClearBytes(password)
-
-	_, err = wallet.Sign(account.DefaultKeystoreFile, []byte{}, &txn)
-	if err != nil {
-		return err
-	}
-
-	haveSign, needSign, _ = crypto.GetSignStatus(program.Code, program.Parameter)
-	fmt.Println("[", haveSign, "/", needSign, "] Transaction successfully signed")
-
-	output(haveSign, needSign, &txn)
-
-	return nil
-}
-
-func sendTransaction(context *cli.Context) error {
-	content, err := getTransactionContent(context)
-	if err != nil {
-		return err
-	}
-
-	result, err := jsonrpc.CallParams(account.ElaServer(), "sendrawtransaction", util.Params{
-		"data": content,
-	})
-	if err != nil {
-		return err
-	}
-	fmt.Println(result.(string))
 	return nil
 }
 
 func getTransactionContent(context *cli.Context) (string, error) {
-
 	// If parameter with file path is not empty, read content from file
 	if filePath := strings.TrimSpace(context.String("file")); filePath != "" {
 
@@ -241,46 +128,146 @@ func getTransactionContent(context *cli.Context) (string, error) {
 	return content, nil
 }
 
-func output(haveSign, needSign int, txn *core.Transaction) error {
-	// Serialise transaction content
-	buf := new(bytes.Buffer)
-	err := txn.Serialize(buf)
+func CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error) {
+	return CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
+}
+
+func CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error) {
+	return CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
+}
+
+func CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*core.Transaction, error) {
+	return CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
+}
+
+func CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
+	return createTransaction_(fromAddress, fee, lockedUntil, outputs...)
+}
+
+func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
+	// Check if output is valid
+	if len(outputs) == 0 {
+		return nil, errors.New("[Wallet], Invalid transaction target")
+	}
+
+	// Check if from address is valid
+	spender, err := common.Uint168FromAddress(fromAddress)
 	if err != nil {
-		fmt.Println("serialize error", err)
+		return nil, errors.New(fmt.Sprint("[Wallet], Invalid spender address: ", fromAddress, ", error: ", err))
 	}
-	content := common.BytesToHexString(buf.Bytes())
+	// Create transaction outputs
+	var totalOutputAmount = common.Fixed64(0) // The total amount will be spend
+	var txOutputs []*core.Output              // The outputs in transaction
+	totalOutputAmount += *fee                 // Add transaction fee
 
-	// Print transaction hex string content to console
-	fmt.Println(content)
+	for _, output := range outputs {
+		receiver, err := common.Uint168FromAddress(output.Address)
+		if err != nil {
+			return nil, errors.New(fmt.Sprint("[Wallet], Invalid receiver address: ", output.Address, ", error: ", err))
+		}
 
-	// Output to file
-	fileName := "to_be_signed" // Create transaction file name
-
-	if haveSign == 0 {
-		//	Transaction created do nothing
-	} else if needSign > haveSign {
-		fileName = fmt.Sprint(fileName, "_", haveSign, "_of_", needSign)
-	} else if needSign == haveSign {
-		fileName = "ready_to_send"
+		txOutput := &core.Output{
+			AssetID:       *account.SystemAssetID,
+			ProgramHash:   *receiver,
+			Value:         *output.Amount,
+			OutputLock:    lockedUntil,
+			OutputType:    core.DefaultOutput,
+			OutputPayload: &outputpayload.DefaultOutput{},
+		}
+		totalOutputAmount += *output.Amount
+		txOutputs = append(txOutputs, txOutput)
 	}
-	fileName = fileName + ".txn"
 
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+		"addresses": []string{fromAddress},
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	_, err = file.Write([]byte(content))
+	data, err := json.Marshal(result)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	var utxos []servers.UTXOInfo
+	err = json.Unmarshal(data, &utxos)
+
+	var availabelUtxos []servers.UTXOInfo
+	for _, utxo := range utxos {
+		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+			continue
+		}
+		availabelUtxos = append(availabelUtxos, utxo)
 	}
 
-	var tx core.Transaction
-	txBytes, _ := hex.DecodeString(content)
-	tx.Deserialize(bytes.NewReader(txBytes))
+	// Create transaction inputs
+	var txInputs []*core.Input // The inputs in transaction
+	for _, utxo := range availabelUtxos {
+		txIDReverse, _ := hex.DecodeString(utxo.TxID)
+		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
+		input := &core.Input{
+			Previous: core.OutPoint{
+				TxID:  *txID,
+				Index: uint16(utxo.VOut),
+			},
+			Sequence: 4294967295,
+		}
+		txInputs = append(txInputs, input)
+		amount, _ := common.StringToFixed64(utxo.Amount)
+		if *amount < totalOutputAmount {
+			totalOutputAmount -= *amount
+		} else if *amount == totalOutputAmount {
+			totalOutputAmount = 0
+			break
+		} else if *amount > totalOutputAmount {
+			change := &core.Output{
+				AssetID:       *account.SystemAssetID,
+				Value:         *amount - totalOutputAmount,
+				OutputLock:    uint32(0),
+				ProgramHash:   *spender,
+				OutputType:    core.DefaultOutput,
+				OutputPayload: &outputpayload.DefaultOutput{},
+			}
+			txOutputs = append(txOutputs, change)
+			totalOutputAmount = 0
+			break
+		}
+	}
+	if totalOutputAmount > 0 {
+		return nil, errors.New("[Wallet], Available token is not enough")
+	}
 
-	// Print output file to console
-	fmt.Println("File: ", fileName)
+	password, err := clicom.GetPassword([]byte{}, false)
+	if err != nil {
+		return nil, err
+	}
+	client, err := account.Open(account.KeystoreFileName, password)
+	programHash, err := common.Uint168FromAddress(fromAddress)
+	if err != nil {
+		return nil, err
+	}
+	acc := client.GetAccountByProgramHash(*programHash)
+	if acc == nil {
+		return nil, errors.New(fromAddress + " is not local account")
+	}
 
-	return nil
+	return newTransaction(acc.RedeemScript, txInputs, txOutputs, core.TransferAsset), nil
+}
+
+func newTransaction(redeemScript []byte, inputs []*core.Input, outputs []*core.Output, txType core.TransactionType) *core.Transaction {
+	txPayload := &core.PayloadTransferAsset{}
+	txAttr := core.NewAttribute(core.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	attributes := make([]*core.Attribute, 0)
+	attributes = append(attributes, &txAttr)
+	var program = &pg.Program{redeemScript, nil}
+
+	return &core.Transaction{
+		Version:    core.TxVersionC0,
+		TxType:     txType,
+		Payload:    txPayload,
+		Attributes: attributes,
+		Inputs:     inputs,
+		Outputs:    outputs,
+		Programs:   []*pg.Program{program},
+		LockTime:   0,
+	}
 }

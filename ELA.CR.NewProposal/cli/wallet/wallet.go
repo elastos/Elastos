@@ -32,12 +32,12 @@ func createWallet(name string, password []byte) error {
 		return err
 	}
 
-	_, err = account.Create(name, password)
+	client, err := account.Create(name, password)
 	if err != nil {
 		return err
 	}
 
-	return ShowAccountInfo(name, password)
+	return ShowAccountInfo(client)
 }
 
 func walletAction(context *cli.Context) error {
@@ -45,11 +45,8 @@ func walletAction(context *cli.Context) error {
 		cli.ShowSubcommandHelp(context)
 		return nil
 	}
-	// wallet name is wallet.dat by default
+	// wallet name is keystore.dat by default
 	name := context.String("name")
-	if name == "" {
-		os.Exit(1)
-	}
 	passwd := context.String("password")
 
 	// create wallet
@@ -61,14 +58,17 @@ func walletAction(context *cli.Context) error {
 		return nil
 	}
 
-	password, err := common.GetPassword([]byte{}, false)
-	if err != nil {
-		return err
-	}
-
 	// show account info
 	if context.Bool("account") {
-		if err := ShowAccountInfo(name, []byte(password)); err != nil {
+		password, err := common.GetPassword([]byte(passwd), false)
+		if err != nil {
+			return err
+		}
+		client, err := account.Open(name, password)
+		if err != nil {
+			return err
+		}
+		if err := ShowAccountInfo(client); err != nil {
 			fmt.Println("error: show account info failed,", err)
 			cli.ShowCommandHelpAndExit(context, "account", 3)
 		}
@@ -76,7 +76,7 @@ func walletAction(context *cli.Context) error {
 
 	// list accounts information
 	if context.Bool("list") {
-		if err := ShowAccountBalance(name, []byte(password)); err != nil {
+		if err := ShowAccountBalance(name); err != nil {
 			fmt.Println("error: list accounts information failed,", err)
 			cli.ShowCommandHelpAndExit(context, "list", 6)
 		}
@@ -123,7 +123,7 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "name, n",
 				Usage: "wallet name",
-				Value: account.DefaultKeystoreFile,
+				Value: account.KeystoreFileName,
 			},
 			cli.StringFlag{
 				Name:  "password, p",

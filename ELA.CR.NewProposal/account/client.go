@@ -2,257 +2,79 @@ package account
 
 import (
 	"bytes"
-	"encoding/hex"
-	"encoding/json"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"math/rand"
-	"strconv"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
-	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
-	pg "github.com/elastos/Elastos.ELA/core/contract/program"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/vm"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 )
 
-const (
-	DESTROY_ADDRESS = "0000000000000000000000000000000000"
-)
+type Client interface {
+	Sign(txn *core.Transaction) error
 
-var IDReverse, _ = hex.DecodeString("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0")
-var SystemAssetID, _ = common.Uint256FromBytes(common.BytesReverse(IDReverse))
-
-type Transfer struct {
-	Address string
-	Amount  *common.Fixed64
+	ContainsAccount(pubKey *crypto.PublicKey) bool
+	CreateAccount() (*Account, error)
+	DeleteAccount(programHash common.Uint168) error
+	GetAccount(pubKey *crypto.PublicKey) (*Account, error)
+	GetDefaultAccount() (*Account, error)
+	GetAccountByProgramHash(programHash common.Uint168) *Account
+	GetAccounts() []*Account
 }
 
-type CrossChainOutput struct {
-	Address           string
-	Amount            *common.Fixed64
-	CrossChainAddress string
+type ClientImpl struct {
+	mu sync.Mutex
+
+	path      string
+	iv        []byte
+	masterKey []byte
+
+	mainAccount common.Uint168
+	accounts    map[common.Uint168]*Account
+
+	FileStore
 }
 
-var wallet Wallet // Single instance of wallet
-
-type Wallet interface {
-	Open(name string, password []byte) error
-	//ChangePassword(oldPassword, newPassword []byte) error
-
-	AddStandardAccount(publicKey *crypto.PublicKey) (*common.Uint168, error)
-	AddMultiSignAccount(M uint, publicKey ...*crypto.PublicKey) (*common.Uint168, error)
-
-	CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error)
-	CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error)
-	CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, output ...*Transfer) (*core.Transaction, error)
-	CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, output ...*Transfer) (*core.Transaction, error)
-	//CreateCrossChainTransaction(fromAddress, toAddress, crossChainAddress string, amount, fee *common.Fixed64) (*core.Transaction, error)
-
-	Sign(name string, password []byte, transaction *core.Transaction) (*core.Transaction, error)
-
-	Address() string
-
-	//Reset() error
-}
-
-type WalletImpl struct {
-	Keystore
-}
-
-func Create(name string, password []byte) (*WalletImpl, error) {
-	keyStore, err := CreateKeystore(name, password)
-	if err != nil {
-		log.Error("Wallet create key store failed:", err)
-		return nil, err
+func Create(path string, password []byte) (*ClientImpl, error) {
+	client := NewClient(path, password, true)
+	if client == nil {
+		return nil, errors.New("client nil")
 	}
-
-	return &WalletImpl{
-		Keystore: keyStore,
-	}, nil
-}
-
-func (wallet *WalletImpl) Open(name string, password []byte) error {
-	keyStore, err := OpenKeystore(name, password)
-	if err != nil {
-		return err
-	}
-	wallet.Keystore = keyStore
-	return nil
-}
-
-func (wallet *WalletImpl) AddStandardAccount(publicKey *crypto.PublicKey) (*common.Uint168, error) {
-	redeemScript, err := crypto.CreateStandardRedeemScript(publicKey)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
-	}
-
-	programHash, err := crypto.ToProgramHash(redeemScript)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateStandardAddress failed")
-	}
-
-	//err = wallet.AddAddress(programHash, redeemScript, TypeStand)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	return programHash, nil
-}
-
-func (wallet *WalletImpl) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKey) (*common.Uint168, error) {
-	redeemScript, err := crypto.CreateMultiSignRedeemScript(M, publicKeys)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
-	}
-
-	programHash, err := crypto.ToProgramHash(redeemScript)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateMultiSignAddress failed")
-	}
-
-	//err = wallet.AddAddress(programHash, redeemScript, TypeMulti)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	return programHash, nil
-}
-
-func (wallet *WalletImpl) CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error) {
-	return wallet.CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
-}
-
-func (wallet *WalletImpl) CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error) {
-	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
-}
-
-func (wallet *WalletImpl) CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*core.Transaction, error) {
-	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
-}
-
-func (wallet *WalletImpl) CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
-	return wallet.createTransaction(fromAddress, fee, lockedUntil, outputs...)
-}
-
-func (wallet *WalletImpl) createTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
-	// Check if output is valid
-	if len(outputs) == 0 {
-		return nil, errors.New("[Wallet], Invalid transaction target")
-	}
-
-	// Check if from address is valid
-	spender, err := common.Uint168FromAddress(fromAddress)
-	if err != nil {
-		return nil, errors.New(fmt.Sprint("[Wallet], Invalid spender address: ", fromAddress, ", error: ", err))
-	}
-	// Create transaction outputs
-	var totalOutputAmount = common.Fixed64(0) // The total amount will be spend
-	var txOutputs []*core.Output              // The outputs in transaction
-	totalOutputAmount += *fee                 // Add transaction fee
-
-	for _, output := range outputs {
-		receiver, err := common.Uint168FromAddress(output.Address)
-		if err != nil {
-			return nil, errors.New(fmt.Sprint("[Wallet], Invalid receiver address: ", output.Address, ", error: ", err))
-		}
-
-		txOutput := &core.Output{
-			AssetID:       *SystemAssetID,
-			ProgramHash:   *receiver,
-			Value:         *output.Amount,
-			OutputLock:    lockedUntil,
-			OutputType:    core.DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
-		}
-		totalOutputAmount += *output.Amount
-		txOutputs = append(txOutputs, txOutput)
-	}
-
-	result, err := jsonrpc.CallParams(ElaServer(), "listunspent", util.Params{
-		"addresses": []string{fromAddress},
-	})
-	if err != nil {
-		return nil, err
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		return nil, err
-	}
-	var utxos []servers.UTXOInfo
-	err = json.Unmarshal(data, &utxos)
-
-	var availabelUtxos []servers.UTXOInfo
-	for _, utxo := range utxos {
-		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
-			continue
-		}
-		availabelUtxos = append(availabelUtxos, utxo)
-	}
-
-	// Create transaction inputs
-	var txInputs []*core.Input // The inputs in transaction
-	for _, utxo := range availabelUtxos {
-		txIDReverse, _ := hex.DecodeString(utxo.TxID)
-		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
-		input := &core.Input{
-			Previous: core.OutPoint{
-				TxID:  *txID,
-				Index: uint16(utxo.VOut),
-			},
-			Sequence: 4294967295,
-		}
-		txInputs = append(txInputs, input)
-		amount, _ := common.StringToFixed64(utxo.Amount)
-		if *amount < totalOutputAmount {
-			totalOutputAmount -= *amount
-		} else if *amount == totalOutputAmount {
-			totalOutputAmount = 0
-			break
-		} else if *amount > totalOutputAmount {
-			change := &core.Output{
-				AssetID:       *SystemAssetID,
-				Value:         *amount - totalOutputAmount,
-				OutputLock:    uint32(0),
-				ProgramHash:   *spender,
-				OutputType:    core.DefaultOutput,
-				OutputPayload: &outputpayload.DefaultOutput{},
-			}
-			txOutputs = append(txOutputs, change)
-			totalOutputAmount = 0
-			break
-		}
-	}
-	if totalOutputAmount > 0 {
-		return nil, errors.New("[Wallet], Available token is not enough")
-	}
-
-	keystoreFile, err := OpenKeystoreFile(DefaultKeystoreFile)
+	account, err := client.CreateAccount()
 	if err != nil {
 		return nil, err
 	}
 
-	redeemScript, err := keystoreFile.GetRedeemScript()
-	if err != nil {
-		return nil, err
-	}
+	client.mainAccount = account.ProgramHash
 
-	return wallet.newTransaction(redeemScript, txInputs, txOutputs, core.TransferAsset), nil
+	return client, nil
 }
 
-func (wallet *WalletImpl) Sign(name string, password []byte, txn *core.Transaction) (*core.Transaction, error) {
-	// Verify password
-	//err := wallet.Open(name, password)
-	//if err != nil {
-	//	return nil, err
-	//}
+func Open(path string, password []byte) (*ClientImpl, error) {
+	client := NewClient(path, password, false)
+	if client == nil {
+		return nil, errors.New("client nil")
+	}
+	if err := client.LoadAccounts(); err != nil {
+		return nil, errors.New("Load accounts failure")
+	}
+
+	return client, nil
+}
+
+func (cl *ClientImpl) Sign(txn *core.Transaction) (*core.Transaction, error) {
 	// Get sign type
 	signType, err := crypto.GetScriptType(txn.Programs[0].Code)
 	if err != nil {
@@ -260,17 +82,14 @@ func (wallet *WalletImpl) Sign(name string, password []byte, txn *core.Transacti
 	}
 	// Look up transaction type
 	if signType == vm.CHECKSIG {
-
 		// Sign single transaction
-		txn, err = wallet.signStandardTransaction(txn)
+		txn, err = cl.signStandardTransaction(txn)
 		if err != nil {
 			return nil, err
 		}
-
 	} else if signType == vm.CHECKMULTISIG {
-
 		// Sign multi sign transaction
-		txn, err = wallet.signMultiSignTransaction(txn)
+		txn, err = cl.signMultiSignTransaction(txn)
 		if err != nil {
 			return nil, err
 		}
@@ -279,53 +98,57 @@ func (wallet *WalletImpl) Sign(name string, password []byte, txn *core.Transacti
 	return txn, nil
 }
 
-func (wallet *WalletImpl) signStandardTransaction(txn *core.Transaction) (*core.Transaction, error) {
+func (cl *ClientImpl) signStandardTransaction(txn *core.Transaction) (*core.Transaction, error) {
 	code := txn.Programs[0].Code
 	// Get signer
 	programHash, err := crypto.GetSigner(code)
-	// Check if current user is a valid signer
-	if *programHash != *wallet.Keystore.GetProgramHash() {
-		return nil, errors.New("[Wallet], Invalid signer")
+
+	acct := cl.GetAccountByProgramHash(*programHash)
+	if acct == nil {
+		return nil, errors.New("no available account in wallet to do single-sign")
 	}
+
 	// Sign transaction
-	signedTx, err := wallet.Keystore.Sign(txn)
+	signature, err := SignBySigner(txn, acct)
 	if err != nil {
 		return nil, err
 	}
 	// Add verify program for transaction
 	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(signedTx)))
-	buf.Write(signedTx)
+	buf.WriteByte(byte(len(signature)))
+	buf.Write(signature)
 	// Add signature
 	txn.Programs[0].Parameter = buf.Bytes()
 
 	return txn, nil
 }
 
-func (wallet *WalletImpl) signMultiSignTransaction(txn *core.Transaction) (*core.Transaction, error) {
+func (cl *ClientImpl) signMultiSignTransaction(txn *core.Transaction) (*core.Transaction, error) {
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
-	var signerIndex = -1
 	programHashes, err := crypto.GetSigners(code)
 	if err != nil {
 		return nil, err
 	}
-	userProgramHash := wallet.Keystore.GetProgramHash()
-	for i, programHash := range programHashes {
-		if *userProgramHash == *programHash {
+	var signerIndex = -1
+	var acc *Account
+	for i, hash := range programHashes {
+		acc := cl.GetAccountByProgramHash(*hash)
+		if acc != nil {
 			signerIndex = i
 			break
 		}
 	}
 	if signerIndex == -1 {
-		return nil, errors.New("[Wallet], Invalid multi sign signer")
+		return nil, errors.New("no available account detected")
 	}
 	// Sign transaction
-	signature, err := wallet.Keystore.Sign(txn)
+	signature, err := SignBySigner(txn, acc)
 	if err != nil {
 		return nil, err
 	}
+
 	// Append signature
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
@@ -337,32 +160,264 @@ func (wallet *WalletImpl) signMultiSignTransaction(txn *core.Transaction) (*core
 	return txn, nil
 }
 
-func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*core.Input, outputs []*core.Output, txType core.TransactionType) *core.Transaction {
-	// Create payload
-	txPayload := &core.PayloadTransferAsset{}
-	// Create attributes
-	txAttr := core.NewAttribute(core.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
-	attributes := make([]*core.Attribute, 0)
-	attributes = append(attributes, &txAttr)
-	// Create program
-	var program = &pg.Program{redeemScript, nil}
-	// Create transaction
-	return &core.Transaction{
-		Version:    core.TxVersionC0,
-		TxType:     txType,
-		Payload:    txPayload,
-		Attributes: attributes,
-		Inputs:     inputs,
-		Outputs:    outputs,
-		Programs:   []*pg.Program{program},
-		LockTime:   0,
+func (cl *ClientImpl) GetDefaultAccount() (*Account, error) {
+	return cl.GetAccountByProgramHash(cl.mainAccount), nil
+}
+
+func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
+	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(pubKey)
+	if err != nil {
+		return nil, errors.New("CreateSignatureRedeemScript failed")
+	}
+	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
+	if err != nil {
+		return nil, errors.New("ToCodeHash failed")
+	}
+	return cl.GetAccountByProgramHash(*programHash), nil
+}
+
+func (cl *ClientImpl) GetAccountByProgramHash(programHash common.Uint168) *Account {
+	cl.mu.Lock()
+	defer cl.mu.Unlock()
+	if account, ok := cl.accounts[programHash]; ok {
+		return account
+	}
+	return nil
+}
+
+func NewClient(path string, password []byte, create bool) *ClientImpl {
+	client := &ClientImpl{
+		path:      path,
+		accounts:  map[common.Uint168]*Account{},
+		FileStore: FileStore{path: path},
+	}
+
+	go client.ProcessSignals()
+
+	passwordKey := crypto.ToAesKey(password)
+	if create {
+		//create new client
+		client.iv = make([]byte, 16)
+		client.masterKey = make([]byte, 32)
+
+		//generate random number for iv/masterkey
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		for i := 0; i < 16; i++ {
+			client.iv[i] = byte(r.Intn(256))
+		}
+		for i := 0; i < 32; i++ {
+			client.masterKey[i] = byte(r.Intn(256))
+		}
+
+		//new client store (build DB)
+		client.BuildDatabase(path)
+
+		if err := client.SaveStoredData("Version", []byte(KeystoreVersion)); err != nil {
+			log.Error(err)
+			return nil
+		}
+
+		pwdhash := sha256.Sum256(passwordKey)
+		if err := client.SaveStoredData("PasswordHash", pwdhash[:]); err != nil {
+			log.Error(err)
+			return nil
+		}
+		if err := client.SaveStoredData("IV", client.iv[:]); err != nil {
+			log.Error(err)
+			return nil
+		}
+
+		aesmk, err := crypto.AesEncrypt(client.masterKey[:], passwordKey, client.iv)
+		if err != nil {
+			log.Error(err)
+			return nil
+		}
+		if err := client.SaveStoredData("MasterKey", aesmk); err != nil {
+			log.Error(err)
+			return nil
+		}
+
+	} else {
+		if ok := client.verifyPasswordKey(passwordKey); !ok {
+			return nil
+		}
+		var err error
+		client.iv, err = client.LoadStoredData("IV")
+		if err != nil {
+			fmt.Println("error: failed to load iv")
+			return nil
+		}
+		encryptedMasterKey, err := client.LoadStoredData("MasterKey")
+		if err != nil {
+			fmt.Println("error: failed to load master key")
+			return nil
+		}
+		client.masterKey, err = crypto.AesDecrypt(encryptedMasterKey, passwordKey, client.iv)
+		if err != nil {
+			fmt.Println("error: failed to decrypt master key")
+			return nil
+		}
+	}
+	common.ClearBytes(passwordKey)
+
+	return client
+}
+
+// CreateAccount create a new Account then save it
+func (cl *ClientImpl) CreateAccount() (*Account, error) {
+	account, err := NewAccount()
+	if err != nil {
+		return nil, err
+	}
+	if err := cl.SaveAccount(account); err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
+// SaveAccount saves a Account to memory and db
+func (cl *ClientImpl) SaveAccount(ac *Account) error {
+	cl.mu.Lock()
+	defer cl.mu.Unlock()
+
+	// save Account to memory
+	programHash := ac.ProgramHash
+	cl.accounts[programHash] = ac
+
+	decryptedPrivateKey := make([]byte, 96)
+	temp, err := ac.PublicKey.EncodePoint(false)
+	if err != nil {
+		return err
+	}
+	for i := 1; i <= 64; i++ {
+		decryptedPrivateKey[i-1] = temp[i]
+	}
+	for i := len(ac.PrivateKey) - 1; i >= 0; i-- {
+		decryptedPrivateKey[96+i-len(ac.PrivateKey)] = ac.PrivateKey[i]
+	}
+	encryptedPrivateKey, err := cl.EncryptPrivateKey(decryptedPrivateKey)
+	if err != nil {
+		return err
+	}
+	common.ClearBytes(decryptedPrivateKey)
+
+	// save Account keys to db
+	err = cl.SaveAccountData(programHash.Bytes(), encryptedPrivateKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// LoadAccounts loads all accounts from db to memory
+func (cl *ClientImpl) LoadAccounts() error {
+	accounts := map[common.Uint168]*Account{}
+
+	storeAddresses, err := cl.LoadAccountData()
+	if err != nil {
+		return err
+	}
+	for _, a := range storeAddresses {
+		if a.Type == MAINACCOUNT {
+			p, _ := common.HexStringToBytes(a.ProgramHash)
+			acc, _ := common.Uint168FromBytes(p)
+			cl.mainAccount = *acc
+		}
+		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		privateKey := keyPair[64:96]
+		ac, err := NewAccountWithPrivateKey(privateKey)
+		accounts[ac.ProgramHash] = ac
+	}
+
+	cl.accounts = accounts
+	return nil
+}
+
+func (cl *ClientImpl) EncryptPrivateKey(prikey []byte) ([]byte, error) {
+	enc, err := crypto.AesEncrypt(prikey, cl.masterKey, cl.iv)
+	if err != nil {
+		return nil, err
+	}
+
+	return enc, nil
+}
+
+func (cl *ClientImpl) DecryptPrivateKey(prikey []byte) ([]byte, error) {
+	if prikey == nil {
+		return nil, errors.New("The PriKey is nil")
+	}
+	if len(prikey) != 96 {
+		return nil, errors.New("The len of PriKeyEnc is not 96bytes")
+	}
+
+	dec, err := crypto.AesDecrypt(prikey, cl.masterKey, cl.iv)
+	if err != nil {
+		return nil, err
+	}
+
+	return dec, nil
+}
+
+func (cl *ClientImpl) verifyPasswordKey(passwordKey []byte) bool {
+	savedPasswordHash, err := cl.LoadStoredData("PasswordHash")
+	if err != nil {
+		fmt.Println("error: failed to load password hash")
+		return false
+	}
+	if savedPasswordHash == nil {
+		fmt.Println("error: saved password hash is nil")
+		return false
+	}
+	passwordHash := sha256.Sum256(passwordKey)
+	///ClearBytes(passwordKey, len(passwordKey))
+	if !bytes.Equal(savedPasswordHash, passwordHash[:]) {
+		fmt.Println("error: password wrong")
+		return false
+	}
+	return true
+}
+
+func (client *ClientImpl) ProcessSignals() {
+	clientSignalHandler := func(signal os.Signal, v interface{}) {
+		switch signal {
+		case syscall.SIGINT:
+			log.Info("Caught interrupt signal, program exits.")
+		case syscall.SIGTERM:
+			log.Info("Caught termination signal, program exits.")
+		}
+		// hold the mutex lock to prevent any wallet db changes
+		client.FileStore.Lock()
+		os.Exit(0)
+	}
+	signalSet := signalset.New()
+	signalSet.Register(syscall.SIGINT, clientSignalHandler)
+	signalSet.Register(syscall.SIGTERM, clientSignalHandler)
+	sigChan := make(chan os.Signal, MaxSignalQueueLen)
+	signal.Notify(sigChan)
+	for {
+		select {
+		case sig := <-sigChan:
+			signalSet.Handle(sig, nil)
+		default:
+			time.Sleep(time.Second)
+		}
 	}
 }
 
-func ElaServer() string {
-	return "http://localhost" + ":" + strconv.Itoa(config.Parameters.HttpJsonPort)
-}
-
-func GetKeystore() {
-
+func SignBySigner(txn *core.Transaction, acc *Account) ([]byte, error) {
+	log.Debug()
+	buf := new(bytes.Buffer)
+	txn.SerializeUnsigned(buf)
+	signature, err := crypto.Sign(acc.PrivKey(), buf.Bytes())
+	if err != nil {
+		return nil, errors.New("[Signature],SignBySigner failed.")
+	}
+	return signature, nil
 }

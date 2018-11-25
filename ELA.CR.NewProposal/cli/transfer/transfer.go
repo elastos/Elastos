@@ -16,26 +16,28 @@ func transferAction(context *cli.Context) error {
 		return nil
 	}
 
-	wallet := &account.WalletImpl{}
-	password, err := common.GetPassword([]byte{}, false)
-	if err != nil {
-		return err
-	}
-	err = wallet.Open(account.DefaultKeystoreFile, []byte(password))
-	if err != nil {
-		return err
-	}
+	// wallet name is keystore.dat by default
+	name := context.String("name")
+	passwd := context.String("password")
 
 	// transaction actions
 	if param := context.String("transaction"); param != "" {
 		switch param {
 		case "create":
-			if err := createTransaction(context, wallet); err != nil {
+			if err := createTransaction(context); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(701)
 			}
 		case "sign":
-			if err := signTransaction(context, wallet); err != nil {
+			password, err := common.GetPassword([]byte(passwd), false)
+			if err != nil {
+				return err
+			}
+			client, err := account.Open(name, password)
+			if err != nil {
+				return err
+			}
+			if err := signTransaction(context, client); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(702)
 			}
@@ -96,6 +98,15 @@ func NewCommand() *cli.Command {
 				Name: "file, f",
 				Usage: "the file path to specify a CSV file path with [address,amount] format as multi output content,\n" +
 					"\tor the transaction file path with the hex string content to be sign or send",
+			},
+			cli.StringFlag{
+				Name:  "name, n",
+				Usage: "wallet name",
+				Value: account.KeystoreFileName,
+			},
+			cli.StringFlag{
+				Name:  "password, p",
+				Usage: "wallet password",
 			},
 		},
 		Action: transferAction,
