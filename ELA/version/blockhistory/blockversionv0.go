@@ -55,3 +55,19 @@ func (b *BlockVersionV0) DiscreteMiningBlock(block *core.Block) error {
 
 	return nil
 }
+
+func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error {
+	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
+	rewardCyberRepublic := common.Fixed64(float64(totalReward) * 0.3)
+	rewardMergeMiner := common.Fixed64(float64(totalReward) * 0.35)
+	rewardDposArbiter := common.Fixed64(totalReward) - rewardCyberRepublic - rewardMergeMiner
+	block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
+	block.Transactions[0].Outputs[1].Value = rewardMergeMiner
+	block.Transactions[0].Outputs = append(block.Transactions[0].Outputs, &core.Output{
+		AssetID:     blockchain.DefaultLedger.Blockchain.AssetID,
+		Value:       rewardDposArbiter,
+		ProgramHash: blockchain.FoundationAddress,
+	})
+
+	return nil
+}

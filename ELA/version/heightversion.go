@@ -88,6 +88,12 @@ func (h *heightVersions) DiscreteMiningBlock(block *core.Block) error {
 	})
 }
 
+func (h *heightVersions) AssignCoinbaseTxRewards(block *core.Block, totalReward Fixed64) error {
+	return h.checkBlock(block, func(version BlockVersion) error {
+		return version.AssignCoinbaseTxRewards(block, totalReward)
+	})
+}
+
 func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun TxCheckMethod) error {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]

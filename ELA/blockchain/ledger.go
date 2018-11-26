@@ -29,6 +29,7 @@ type HeightVersions interface {
 
 	GetProducersDesc(block *Block) ([][]byte, error)
 	DiscreteMiningBlock(block *Block) error
+	AssignCoinbaseTxRewards(block *Block, totalReward Fixed64) error
 }
 
 // Ledger - the struct for ledger
