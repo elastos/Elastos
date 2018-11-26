@@ -20,7 +20,6 @@ const (
 	defaultLogsFolderSize = 2 * elalog.GBSize  // 2 GB
 	defaultMaxLogFileSize = 20 * elalog.MBSize // 20 MB
 	defaultLogDir         = "./logs/"
-	defaultDataDir        = "./"
 )
 
 var (
@@ -60,7 +59,7 @@ type config struct {
 // loadConfig fills the parameters into new config options from the old
 // config file.  Returns if load from old config file.
 
-type appconfig struct {
+type appConfig struct {
 	TestNet            bool     `ini:"testnet" comment:"Use the test network"`
 	RegTest            bool     `ini:"regtest" comment:"Use the regression test network"`
 	Magic              uint32   `ini:"magic" comment:"Magic number of the peer-to-peer network"`
@@ -82,7 +81,7 @@ type appconfig struct {
 	MonitorState       bool     `ini:"monitorstate" comment:"Print logs in 10 second interval to monitor node connections and sync status"`
 }
 
-type spvconfig struct {
+type spvConfig struct {
 	TestNet     bool     `ini:"testnet" comment:"Use the test network"`
 	RegTest     bool     `ini:"regtest" comment:"Use the regression test network"`
 	Magic       uint32   `ini:"magic" comment:"Magic number of the peer-to-peer network"`
@@ -91,15 +90,15 @@ type spvconfig struct {
 	Foundation  string   `ini:"foundation" comment:"The specified payment of foundation address to use for receive mine and fee rewards"`
 }
 
-func loadNewConfig() (*appconfig, error) {
-	appCfg := appconfig{
+func loadNewConfig() (*appConfig, error) {
+	appCfg := appConfig{
 		LogLevel:          defaultLogLevel,
 		MaxLogsFolderSize: defaultLogsFolderSize,
 		MaxPerLogFileSize: defaultMaxLogFileSize,
 		HttpRestPort:      30604,
 		HttpJsonPort:      30606,
 	}
-	spvCfg := spvconfig{}
+	spvCfg := spvConfig{}
 
 	if !loadConfig(&appCfg, &spvCfg) {
 		// Load configuration from file.
@@ -183,7 +182,7 @@ func loadNewConfig() (*appconfig, error) {
 	return &appCfg, nil
 }
 
-func loadConfig(appCfg *appconfig, spvCfg *spvconfig) bool {
+func loadConfig(appCfg *appConfig, spvCfg *spvConfig) bool {
 
 	data, err := ioutil.ReadFile(ConfigFilename)
 	if err != nil {
