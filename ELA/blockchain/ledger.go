@@ -24,6 +24,7 @@ type HeightVersions interface {
 	CheckVoteProducerOutputs(blockHeight uint32, tx *Transaction, outputs []*Output, references map[*Input]*Output) error
 
 	GetProducersDesc(block *Block) ([][]byte, error)
+	DiscreteMiningBlock(block *Block) error
 }
 
 // Ledger - the struct for ledger

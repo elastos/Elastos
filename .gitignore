@@ -8,6 +8,7 @@
 /vendor/*
 Chain/
 Chain_UnitTest/
+ArbiterLogs/
 Logs/
 /ela
 /ela-cli

@@ -2,6 +2,8 @@ package blockhistory
 
 import (
 	"errors"
+	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA/version"
 
@@ -39,4 +41,17 @@ func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	}
 
 	return arbitersByte, nil
+}
+
+func (b *BlockVersionV0) DiscreteMiningBlock(block *core.Block) error {
+	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
+	if err != nil {
+		return err
+	}
+
+	if isOrphan || !inMainChain {
+		return errors.New("Append to best chain error.")
+	}
+
+	return nil
 }

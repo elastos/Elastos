@@ -2,6 +2,9 @@ package version
 
 import (
 	"errors"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
@@ -12,6 +15,7 @@ import (
 type BlockVersion interface {
 	GetVersion() uint32
 	GetProducersDesc() ([][]byte, error)
+	DiscreteMiningBlock(block *core.Block) error
 }
 
 type BlockVersionMain struct {
@@ -36,4 +40,16 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 		result = append(result, arbiterByte)
 	}
 	return result, nil
+}
+
+func (b *BlockVersionMain) DiscreteMiningBlock(block *core.Block) error {
+	if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
+		BlockFlag: true,
+		Block:     block,
+	}); err != nil {
+		log.Error("[AppendBlock] err:", err.Error())
+		return err
+	}
+
+	return nil
 }

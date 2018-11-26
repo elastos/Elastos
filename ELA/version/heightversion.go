@@ -70,6 +70,12 @@ func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 	return v.GetProducersDesc()
 }
 
+func (h *heightVersions) DiscreteMiningBlock(block *core.Block) error {
+	return h.checkBlock(block, func(version BlockVersion) error {
+		return version.DiscreteMiningBlock(block)
+	})
+}
+
 func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun TxCheckMethod) error {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
@@ -99,13 +105,13 @@ func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx
 	}
 }
 
-func (h *heightVersions) checkBlock(blockHeight uint32, block *core.Block, blockFun BlockCheckMethod) error {
-	heightKey := h.findLastAvailableHeightKey(blockHeight)
+func (h *heightVersions) checkBlock(block *core.Block, blockFun BlockCheckMethod) error {
+	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
 	v := h.findBlockVersion(&info, block)
 	if v == nil {
-		return fmt.Errorf("Block height ", blockHeight, "can not support block version ", block.Version)
+		return fmt.Errorf("Block height ", block.Height, "can not support block version ", block.Version)
 	}
 	return blockFun(v)
 }
