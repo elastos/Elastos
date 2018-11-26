@@ -77,6 +77,23 @@ int getLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t* value)
     return 1;
 }
 
+int getStaticObjectField(JNIEnv* env, jobject jobj, const char* name, const char* sig, jobject* value)
+{
+    jclass jcls;
+    jfieldID fieldid;
+
+    jcls = (*env)->GetObjectClass(env, jobj);
+    if (!jcls)
+        return 0;
+
+    fieldid = (*env)->GetStaticFieldID(env, jcls, name, sig);
+    if (!fieldid)
+        return 0;
+
+    *value = (*env)->GetStaticObjectField(env, jcls, fieldid);
+    return 1;
+}
+
 int getString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName,
               char* buf, int length)
 {

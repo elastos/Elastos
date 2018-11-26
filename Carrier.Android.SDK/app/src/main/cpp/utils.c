@@ -150,6 +150,20 @@ int callIntMethod(JNIEnv *env, jclass jcls, jobject jobj, const char* methodName
     return 0;
 }
 
+int callLongMethod(JNIEnv *env, jclass jcls, jobject jobj, const char* methodName,
+        const char* sig,  jlong* result, ...)
+{
+    jmethodID method = getMethod(env, jcls, jobj, methodName, sig);
+    if (method) {
+        va_list args;
+        va_start(args, result);
+        *result = (*env)->CallLongMethodV(env, jobj, method, args);
+        va_end(args);
+        return 1;
+    }
+    return 0;
+}
+
 int callBooleanMethod(JNIEnv *env, jclass jcls, jobject jobj, const char* methodName,
         const char* sig, jboolean* result, ...)
 {

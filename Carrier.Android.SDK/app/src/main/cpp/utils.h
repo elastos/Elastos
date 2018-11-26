@@ -30,6 +30,7 @@
 #define _J(type)  "Ljava/lang/"type
 #define _W(type)  "Lorg/elastos/carrier/"type
 #define _S(type)  "Lorg/elastos/carrier/session/"type
+#define _F(type)  "Lorg/elastos/carrier/filetransfer/"type
 
 void setErrorCode(int errno);
 int _getErrorCode(void);
@@ -61,6 +62,15 @@ int callIntMethod(JNIEnv* env,
         const char* methodName,
         const char* sig,
         jint* result,
+        ...
+    );
+
+int callLongMethod(JNIEnv *env,
+        jclass jclazz,
+        jobject jobj,
+        const char* methodName,
+        const char* sig,
+        jlong* result,
         ...
     );
 

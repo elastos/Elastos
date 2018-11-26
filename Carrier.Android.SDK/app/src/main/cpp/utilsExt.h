@@ -35,6 +35,12 @@ int getInt(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, int*
 }
 
 static inline
+int getLong(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, uint64_t* value)
+{
+    return callLongMethod(env, clazz, jobj, methodName, "()J", (jlong*)value);
+}
+
+static inline
 int getBoolean(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, int* value)
 {
     return callBooleanMethod(env, clazz, jobj, methodName, "()Z", (jboolean*)value);
@@ -50,6 +56,8 @@ int setIntField(JNIEnv* env, jobject jobj, const char* name, int value);
 
 int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value);
 int getLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t* value);
+
+int getStaticObjectField(JNIEnv* env, jobject jobj, const char* name, const char* sig, jobject* value);
 
 int getString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName,
               char* buf, int length);

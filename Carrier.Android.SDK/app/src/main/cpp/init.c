@@ -25,18 +25,23 @@
 #include "log.h"
 #include "utils.h"
 #include "ela_session.h"
+#include "ela_filetransfer.h"
 
 extern int registerCarrierMethods(JNIEnv* env);
 extern int registerCarrierGroupMethods(JNIEnv* env);
 extern int registerCarrierSessionManagerMethods(JNIEnv* env);
 extern int registerCarrierSessionMethods(JNIEnv* env);
 extern int registerCarrierStreamMethods(JNIEnv* env);
+extern int registerCarrierFileTransferMethods(JNIEnv* env);
+extern int registerCarrierFileTransferManagerMethods(JNIEnv* env);
 
 extern void unregisterCarrierMethods(JNIEnv* env);
 extern void unregisterCarrierGroupMethods(JNIEnv* env);
 extern void unregisterCarrierSessionManagerMethods(JNIEnv* env);
 extern void unregisterCarrierSessionMethods(JNIEnv* env);
 extern void unregisterCarrierStreamMethods(JNIEnv* env);
+extern void unregisterCarrierFileTransferMethods(JNIEnv* env);
+extern void unregisterCarrierFileTransferManagerMethods(JNIEnv* env);
 
 static jclass gClazzLoader = NULL;
 
@@ -93,8 +98,9 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
         (registerCarrierGroupMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionManagerMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionMethods(env) != JNI_TRUE) ||
-        (registerCarrierStreamMethods(env) != JNI_TRUE))
-    {
+        (registerCarrierStreamMethods(env) != JNI_TRUE) ||
+        (registerCarrierFileTransferMethods(env) != JNI_TRUE) ||
+        (registerCarrierFileTransferManagerMethods(env) != JNI_TRUE)) {
         logE("Register all native methods error");
         return -1;
     }
@@ -130,5 +136,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     unregisterCarrierStreamMethods(env);
     unregisterCarrierGroupMethods(env);
     unregisterCarrierMethods(env);
+    unregisterCarrierFileTransferMethods(env);
+    unregisterCarrierFileTransferManagerMethods(env);
 }
 
