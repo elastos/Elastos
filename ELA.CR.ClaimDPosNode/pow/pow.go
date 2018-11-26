@@ -265,13 +265,15 @@ func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 	// fake a btc blockheader and coinbase
+	log.Debug()
 	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Header
 	targetDifficulty := CompactToBig(header.Bits)
-
+	log.Debug()
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
+			log.Info("five second countdown ends. Re-generate block.")
 			return false
 		case hash := <-BlockPersistCompletedSignal:
 			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
@@ -369,8 +371,10 @@ func (pow *PowService) cpuMining() {
 
 out:
 	for {
+		log.Info("before select")
 		select {
 		case <-pow.quit:
+			log.Info("pow quit")
 			break out
 		default:
 			// Non-blocking select to fall through
@@ -379,6 +383,7 @@ out:
 		//time.Sleep(15 * time.Second)
 
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		log.Info("generate block end")
 		if err != nil {
 			log.Error("generate block err", err)
 			continue
@@ -395,13 +400,20 @@ out:
 					continue
 				}
 				//TODO if co-mining condition
+				log.Info("solve block okay")
 				if isOrphan || !inMainChain {
 					continue
 				}
-				pow.BroadcastBlock(msgBlock)
+				log.Info("solve block continue")
+				err = pow.BroadcastBlock(msgBlock)
+				if err != nil {
+					log.Error("BroadcastBlock error:", err)
+				}
+				log.Info("broadcast block end")
 			}
+			log.Info("block header end")
 		}
-
+		log.Info("solve block end")
 	}
 
 	pow.wg.Done()
