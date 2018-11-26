@@ -132,7 +132,7 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 	}
 
 	header := Header{
-		Version:    1,
+		Version:    DefaultLedger.HeightVersions.GetDefaultBlockVersion(nextBlockHeight),
 		Previous:   *DefaultLedger.Blockchain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
