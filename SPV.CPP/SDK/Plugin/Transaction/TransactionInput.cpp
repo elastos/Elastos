@@ -2,9 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "TransactionInput.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include "TransactionInput.h"
 
 namespace Elastos {
 	namespace ElaWallet {

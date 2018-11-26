@@ -6,7 +6,7 @@
 
 #include "catch.hpp"
 
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 #include "Account/StandardAccount.h"
 
 using namespace Elastos::ElaWallet;

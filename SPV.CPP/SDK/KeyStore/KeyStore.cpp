@@ -2,22 +2,24 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <fstream>
-#include <sstream>
-#include <nlohmann/json.hpp>
-#include <openssl/evp.h>
-#include <SDK/Common/ParamChecker.h>
-
-#include "Log.h"
 #include "KeyStore.h"
 #include "SjclFile.h"
-#include "Base64.h"
-#include "CMemBlock.h"
-#include "SDK/Crypto/Crypto.h"
-#include "StandardAccount.h"
-#include "SimpleAccount.h"
-#include "MultiSignAccount.h"
-#include "Utils.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/CMemBlock.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Base64.h>
+#include <SDK/Crypto/Crypto.h>
+#include <SDK/Account/StandardAccount.h>
+#include <SDK/Account/SimpleAccount.h>
+#include <SDK/Account/MultiSignAccount.h>
+
+#include <openssl/evp.h>
+#include <nlohmann/json.hpp>
+
+#include <fstream>
+#include <sstream>
 
 #define WALLET_DATA_MAX_SIZE 10000
 
@@ -27,7 +29,6 @@ namespace Elastos {
 		KeyStore::KeyStore(const std::string &rootPath) :
 			_rootPath(rootPath),
 			_walletJson(rootPath) {
-			AES_256_CCM::Init();
 		}
 
 		KeyStore::~KeyStore() {

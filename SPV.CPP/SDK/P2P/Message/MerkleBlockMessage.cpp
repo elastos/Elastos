@@ -2,21 +2,22 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/scoped_ptr.hpp>
+#include "MerkleBlockMessage.h"
+
+#include <SDK/P2P/PeerManager.h>
+#include <SDK/P2P/Peer.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Plugin/Block/AuxPow.h>
+#include <SDK/Plugin/Block/ELAMerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRArray.h>
 #include <Core/BRMerkleBlock.h>
 
-#include "SDK/P2P/PeerManager.h"
-#include "BRArray.h"
-#include "BRMerkleBlock.h"
-
-#include "SDK/P2P/Peer.h"
-#include "MerkleBlockMessage.h"
-#include "Log.h"
-#include "Utils.h"
-#include "SDK/Plugin/Block/AuxPow.h"
-#include "SDK/Plugin/Block/ELAMerkleBlock.h"
-#include "Plugin/Registry.h"
-#include "SDK/Plugin/Block/MerkleBlock.h"
+#include <boost/scoped_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

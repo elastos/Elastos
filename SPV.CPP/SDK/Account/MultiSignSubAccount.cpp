@@ -2,9 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ParamChecker.h>
 #include "MultiSignSubAccount.h"
-#include "Plugin/Transaction/Program.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Plugin/Transaction/Program.h>
+
+#include <Core/BRAddress.h>
 
 #define SignatureScriptLength 65
 

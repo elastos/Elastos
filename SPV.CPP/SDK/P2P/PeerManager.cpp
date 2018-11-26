@@ -2,29 +2,32 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "PeerManager.h"
+#include "Message/PingMessage.h"
+#include "Message/GetBlocksMessage.h"
+#include "Message/BloomFilterMessage.h"
+#include "Message/MempoolMessage.h"
+#include "Message/GetDataMessage.h"
+#include "Message/InventoryMessage.h"
+#include "Message/GetHeadersMessage.h"
+
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Block/ELAMerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/arith_uint256.h>
+#include <SDK/Base/BloomFilter.h>
+
+#include <Core/BRArray.h>
+#include <Core/BRChainParams.h>
+#include <Core/BRAddress.h>
+
+#include <netdb.h>
 #include <netinet/in.h>
 #include <boost/bind.hpp>
 #include <arpa/inet.h>
-#include <Core/BRChainParams.h>
-#include <netdb.h>
-#include <SDK/P2P/Message/PingMessage.h>
-#include <SDK/P2P/Message/GetBlocksMessage.h>
-#include <SDK/P2P/Message/BloomFilterMessage.h>
-#include <SDK/P2P/Message/MempoolMessage.h>
-#include <SDK/P2P/Message/GetDataMessage.h>
-#include <SDK/P2P/Message/InventoryMessage.h>
-#include <SDK/P2P/Message/GetHeadersMessage.h>
-#include <Plugin/Transaction/Asset.h>
-
-#include "PeerManager.h"
-#include "Utils.h"
-#include "Log.h"
-#include "BRArray.h"
-#include "SDK/Plugin/Block/ELAMerkleBlock.h"
-#include "arith_uint256.h"
-#include "Plugin/Registry.h"
-#include "Plugin/Block/MerkleBlock.h"
-#include "SDK/Base/BloomFilter.h"
 
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
@@ -93,9 +96,9 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::fireSyncIsInactive() {
+		void PeerManager::fireSyncIsInactive(uint32_t time) {
 			if (!_listener.expired()) {
-				_listener.lock()->syncIsInactive();
+				_listener.lock()->syncIsInactive(time);
 			}
 		}
 
@@ -110,11 +113,11 @@ namespace Elastos {
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
-								 const PluginType &plugins) :
+								 const PluginType &plugin) :
 				_wallet(wallet),
 				_lastBlock(nullptr),
 				_lastOrphan(nullptr),
-				_pluginTypes(plugins),
+				_pluginType(plugin),
 				_reconnectSeconds(reconnectSeconds),
 				_earliestKeyTime(earliestKeyTime),
 				_averageTxPerBlock(1400),
@@ -1364,7 +1367,8 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnRelayedPingMsg(const PeerPtr &peer) {
-			fireSyncIsInactive();
+			// TODO add time later
+			fireSyncIsInactive(60);
 		}
 
 		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,

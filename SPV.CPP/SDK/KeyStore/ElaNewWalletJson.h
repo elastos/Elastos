@@ -7,8 +7,8 @@
 
 #include "ElaWebWalletJson.h"
 #include "CoinInfo.h"
-#include "Mstream.h"
-#include "CoinInfo.h"
+
+#include <SDK/Common/Mstream.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_PAYLOADIDCHAIN_H__
 #define __ELASTOS_SDK_PAYLOADIDCHAIN_H__
 
-#include "BRInt.h"
-
-#include "CMemBlock.h"
 #include "IPayload.h"
+#include <SDK/Common/CMemBlock.h>
+
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

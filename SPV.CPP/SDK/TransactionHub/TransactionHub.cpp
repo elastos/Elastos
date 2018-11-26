@@ -2,25 +2,26 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <stdlib.h>
+#include "TransactionHub.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Account/MultiSignSubAccount.h>
+
+#include <Core/BRAddress.h>
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRArray.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRAddress.h>
+#include <Core/BRBIP32Sequence.h>
+
 #include <boost/scoped_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <SDK/Common/Log.h>
-#include <Core/BRAddress.h>
-#include <Core/BRBIP32Sequence.h>
-#include <SDK/Common/ParamChecker.h>
-#include <Plugin/Transaction/Asset.h>
-#include <Plugin/Transaction/Payload/PayloadRegisterAsset.h>
-
-#include "BRAddress.h"
-#include "BRBIP39Mnemonic.h"
-#include "BRArray.h"
-#include "BRTransaction.h"
-
-#include "TransactionHub.h"
-#include "Utils.h"
-#include "Account/MultiSignSubAccount.h"
+#include <cstdlib>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -248,7 +249,8 @@ namespace Elastos {
 				// when a wallet address is used in a transaction, generate a new address to replace it
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-				balanceChanged(_balance);
+				// TODO heropan check here balanceChanged(_balance);
+				balanceChanged();
 				txAdded(transaction);
 			}
 
@@ -601,7 +603,7 @@ namespace Elastos {
 				});
 			}
 
-			if (count > 0)
+			if (count > 0) {
 				txUpdated(hashes, TX_UNCONFIRMED, 0);
 				balanceChanged();
 			}

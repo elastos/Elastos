@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_KEYSTORE_H__
 #define __ELASTOS_SDK_KEYSTORE_H__
 
-#include <boost/filesystem.hpp>
-
 #include "ElaNewWalletJson.h"
-#include "IAccount.h"
+#include <SDK/Account/IAccount.h>
+
+#include <boost/filesystem.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

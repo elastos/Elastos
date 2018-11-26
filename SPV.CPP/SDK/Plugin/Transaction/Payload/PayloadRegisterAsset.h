@@ -6,8 +6,8 @@
 #define __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
 
 #include "IPayload.h"
-#include "Plugin/Transaction/Asset.h"
-#include "BRInt.h"
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,13 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/make_shared.hpp>
-#include <cstring>
-#include <BRTransaction.h>
-#include <SDK/Common/Log.h>
-#include <Core/BRTransaction.h>
-#include <SDK/Common/ParamChecker.h>
-
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
 #include "Payload/PayloadIssueToken.h"
@@ -19,10 +12,18 @@
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "Payload/PayloadTransferAsset.h"
 #include "Payload/PayloadRegisterIdentification.h"
-#include "BRCrypto.h"
-#include "Utils.h"
-#include "BRAddress.h"
-#include "SDK/TransactionHub/TransactionHub.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
+
+#include <Core/BRCrypto.h>
+#include <Core/BRAddress.h>
+#include <Core/BRTransaction.h>
+
+#include <boost/make_shared.hpp>
+#include <cstring>
 
 #define STANDARD_FEE_PER_KB 10000
 #define DEFAULT_PAYLOAD_TYPE  TransferAsset
@@ -256,7 +257,7 @@ namespace Elastos {
 
 			ParamChecker::checkCondition(keysCount <= 0, Error::Transaction,
 										 "Transaction sign key not found");
-			LOG_DEBUG("tx sign with {} keys", keysCount);
+			SPVLOG_DEBUG("tx sign with {} keys", keysCount);
 
 			for (i = 0; i < keysCount; i++) {
 				addrs[i] = Address::None;
@@ -605,8 +606,7 @@ namespace Elastos {
 			return fee;
 		}
 
-		void
-		Transaction::generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet,
+		nlohmann::json Transaction::generateExtraTransactionInfo(const WalletPtr &wallet,
 												  uint32_t lastBlockHeight) {
 
 			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash()));
@@ -663,7 +663,7 @@ namespace Elastos {
 				summary["Incoming"] = jIn;
 			}
 
-			rawTxJson["Summary"] = summary;
+			return summary;
 		}
 
 		std::string Transaction::getConfirmInfo(uint32_t lastBlockHeight) {

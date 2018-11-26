@@ -5,26 +5,25 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONHUB_H__
 #define __ELASTOS_SDK_TRANSACTIONHUB_H__
 
-#include <map>
-#include <string>
+#include <SDK/TransactionHub/GroupedAssetTransactions.h>
+#include <SDK/TransactionHub/UTXOList.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Base/Lockable.h>
+#include <SDK/Base/Address.h>
+#include <SDK/Common/ElementSet.h>
+#include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/Wrapper/WrapperList.h>
+#include <SDK/Account/ISubAccount.h>
+
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/enable_shared_from_this.hpp>
-
-#include "BRInt.h"
-
-#include "SDK/Base/Lockable.h"
-#include "Wrapper.h"
-#include "Plugin/Transaction/Transaction.h"
-#include "SDK/Common/ElementSet.h"
-#include "UTXOList.h"
-#include "SDK/Base/Address.h"
-#include "SDK/Crypto/MasterPubKey.h"
-#include "Plugin/Transaction/TransactionOutput.h"
-#include "WrapperList.h"
-#include "GroupedAssetTransactions.h"
-#include "Account/ISubAccount.h"
+#include <string>
+#include <map>
 
 #define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
 #define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee

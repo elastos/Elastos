@@ -3,9 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "GetBlocksMessage.h"
-#include "Log.h"
-#include "Utils.h"
-#include "SDK/P2P/Peer.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/P2P/Peer.h>
 
 namespace Elastos {
 	namespace ElaWallet {

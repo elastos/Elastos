@@ -6,8 +6,8 @@
 
 #include <fstream>
 #include <catch.hpp>
+#include <SDK/Common/arith_uint256.h>
 
-#include "arith_uint256.h"
 
 TEST_CASE("test", "[arith_uint256]") {
 	arith_uint256 bu(3);

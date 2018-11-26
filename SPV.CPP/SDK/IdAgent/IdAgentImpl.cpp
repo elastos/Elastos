@@ -2,14 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <algorithm>
-#include <SDK/Common/ParamChecker.h>
-
-#include "Utils.h"
 #include "IdAgentImpl.h"
-#include "MasterWallet.h"
-#include "SDK/Base/Address.h"
-#include "SDK/Account/StandardAccount.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Implement/MasterWallet.h>
+#include <SDK/Base/Address.h>
+#include <SDK/Account/StandardAccount.h>
+
+#include <Core/BRAddress.h>
+
+#include <algorithm>
 
 using namespace nlohmann;
 

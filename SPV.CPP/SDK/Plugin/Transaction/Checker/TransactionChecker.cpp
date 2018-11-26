@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ParamChecker.h>
-#include "Log.h"
-#include "SDK/Base/Address.h"
 #include "TransactionChecker.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Base/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {

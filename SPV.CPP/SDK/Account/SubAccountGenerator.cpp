@@ -2,14 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "Utils.h"
-#include "ParamChecker.h"
 #include "SubAccountGenerator.h"
 #include "HDSubAccount.h"
 #include "SingleSubAccount.h"
 #include "MultiSignAccount.h"
 #include "MultiSignSubAccount.h"
 #include "StandardSingleSubAccount.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/ParamChecker.h>
+
+#include <Core/BRCrypto.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -36,7 +36,6 @@
 *.xcodeproj
 
 .idea/
-test
 [dD]ebug
 *[dD]ebug
 *[rR]elease

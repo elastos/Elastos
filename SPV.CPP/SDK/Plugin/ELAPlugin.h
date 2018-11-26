@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_ELAPLUGIN_H__
 #define __ELASTOS_SDK_ELAPLUGIN_H__
 
-#include <fruit/fruit.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Interface/IPlugin.h>
 
-#include "Interface/IPlugin.h"
-#include "Block/MerkleBlock.h"
-#include "Plugin/Registry.h"
+#include <fruit/fruit.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,6 +30,5 @@ namespace Elastos {
 
 	}
 }
-
 
 #endif //__ELASTOS_SDK_ELAPLUGIN_H__

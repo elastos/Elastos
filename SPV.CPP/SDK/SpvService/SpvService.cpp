@@ -2,18 +2,20 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/thread.hpp>
-
-#include "BRMerkleBlock.h"
-#include "BRTransaction.h"
 
 #include "SpvService.h"
-#include "Plugin/Transaction/Payload/PayloadRegisterAsset.h"
-#include "Utils.h"
-#include "Log.h"
-#include "Plugin/Transaction/Asset.h"
-#include "Plugin/Registry.h"
-#include "Plugin/Block/MerkleBlock.h"
+
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRTransaction.h>
+
+#include <boost/thread.hpp>
 
 #define BACKGROUND_THREAD_COUNT 1
 
@@ -277,15 +279,14 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::syncIsInactive() {
+		void SpvService::syncIsInactive(uint32_t time) {
 			Log::getLogger()->info("time to disconnect");
 
-			_peerManager->lock();
-			_peerManager->reconnectTaskCount()++;
+			_peerManager->Lock();
+			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 			_peerManager->Unlock();
 
 			if (_peerManager->getConnectStatus() == Peer::Connected) {
-				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 				_peerManager->disconnect();
 			}
 

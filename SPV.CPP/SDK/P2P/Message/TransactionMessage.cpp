@@ -2,14 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <Core/BRTransaction.h>
-#include "BRArray.h"
-
-#include "SDK/P2P/Peer.h"
 #include "TransactionMessage.h"
-#include "Plugin/Transaction/Transaction.h"
-#include "Log.h"
-#include "Utils.h"
+
+#include <SDK/P2P/Peer.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRTransaction.h>
+#include <Core/BRArray.h>
 
 namespace Elastos {
 	namespace ElaWallet {

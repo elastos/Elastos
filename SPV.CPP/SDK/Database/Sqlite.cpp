@@ -2,11 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Sqlite.h"
+
+#include <SDK/Common/Log.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
-
-#include "Sqlite.h"
-#include "Log.h"
 
 namespace Elastos {
 	namespace ElaWallet {

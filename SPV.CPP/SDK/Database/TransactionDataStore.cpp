@@ -2,14 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <string>
-#include <string>
-#include <sstream>
+#include "TransactionDataStore.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
 
-#include "TransactionDataStore.h"
+#include <string>
+#include <string>
+#include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {

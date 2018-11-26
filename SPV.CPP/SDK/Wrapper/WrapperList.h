@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_OBJECTLIST_H__
 #define __ELASTOS_SDK_OBJECTLIST_H__
 
-#include <vector>
+#include <SDK/Wrapper/Wrapper.h>
 
-#include "Wrapper.h"
+#include <vector>
 
 namespace Elastos {
     namespace ElaWallet {

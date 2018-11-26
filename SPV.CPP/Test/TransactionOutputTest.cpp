@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "SDK/Transaction/TransactionOutput.h"
 #include "BRAddress.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 
 using namespace Elastos::ElaWallet;
 

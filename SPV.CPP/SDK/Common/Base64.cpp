@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Base64.h"
+
 #include <assert.h>
 #include <string.h>
 #include <vector>
-
-#include "Base64.h"
 
 namespace Elastos {
 	namespace ElaWallet {

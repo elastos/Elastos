@@ -5,23 +5,24 @@
 #ifndef __ELASTOS_SDK_PEERMANAGER_H__
 #define __ELASTOS_SDK_PEERMANAGER_H__
 
+#include "Peer.h"
+#include "TransactionPeerList.h"
+#include "PublishedTransaction.h"
+
+#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/Common/CMemBlock.h>
+#include <SDK/Base/Lockable.h>
+#include <SDK/Base/BloomFilter.h>
+#include <SDK/Wrapper/ChainParams.h>
+#include <SDK/Wrapper/WrapperList.h>
+#include <SDK/Plugin/Interface/IMerkleBlock.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
+
 #include <string>
 #include <vector>
 #include <boost/weak_ptr.hpp>
 #include <boost/thread/mutex.hpp>
-
-#include "SDK/Base/Lockable.h"
-#include "SDK/P2P/Peer.h"
-#include "ChainParams.h"
-#include "SDK/TransactionHub/TransactionHub.h"
-#include "WrapperList.h"
-#include "CMemBlock.h"
-#include "PublishedTransaction.h"
-#include "TransactionPeerList.h"
-#include "Plugin/Interface/IMerkleBlock.h"
-#include "Plugin/Block/MerkleBlock.h"
-#include "Plugin/Registry.h"
-#include "SDK/Base/BloomFilter.h"
 
 #define PEER_MAX_CONNECTIONS 3
 
@@ -78,7 +79,7 @@ namespace Elastos {
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
 						const boost::shared_ptr<Listener> &listener,
-						const PluginType &plugins);
+						const PluginType &plugin);
 
 			~PeerManager();
 
@@ -195,7 +196,7 @@ namespace Elastos {
 
 			void fireBlockHeightIncreased(uint32_t height);
 
-			void fireSyncIsInactive();
+			void fireSyncIsInactive(uint32_t time);
 
 			int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
 
@@ -266,6 +267,7 @@ namespace Elastos {
 			PeerPtr _downloadPeer;
 
 			mutable std::string _downloadPeerName;
+			time_t _keepAliveTimestamp;
 			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;

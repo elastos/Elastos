@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_TOKENPLUGIN_H__
 #define __ELASTOS_SDK_TOKENPLUGIN_H__
 
-#include <fruit/fruit.h>
+#include <SDK/Plugin/Interface/IPlugin.h>
+#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
 
-#include "Interface/IPlugin.h"
-#include "Block/SidechainMerkleBlock.h"
-#include "Plugin/Registry.h"
+#include <fruit/fruit.h>
 
 namespace Elastos {
 	namespace ElaWallet {

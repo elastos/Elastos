@@ -2,13 +2,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <Core/BRTransaction.h>
+#include "TransactionHub.h"
+#include "GroupedAssetTransactions.h"
+
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Common/Utils.h>
-#include <Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Log.h>
-#include "GroupedAssetTransactions.h"
-#include "SDK/TransactionHub/TransactionHub.h"
+
+#include <Core/BRTransaction.h>
+#include <Core/BRAddress.h>
 
 #define DEFAULT_FEE_PER_KB 10000
 

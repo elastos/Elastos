@@ -2,12 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/Log.h>
-#include <cfloat>
-#include "BRInt.h"
-#include "BRAddress.h"
-
 #include "BloomFilter.h"
+
+#include <SDK/Common/Log.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRAddress.h>
+
+#include <cfloat>
 
 #define BLOOM_MAX_HASH_FUNCS 50
 

@@ -2,14 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-#include <Core/BRMerkleBlock.h>
-#include <SDK/Common/Log.h>
-
-#include "Utils.h"
 #include "MerkleBlock.h"
 #include "SidechainMerkleBlock.h"
-#include "Plugin/Registry.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Plugin/Registry.h>
+
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRCrypto.h>
+
+#include <sstream>
 
 #define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty target
 

@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_BASE64_H__
 #define __ELASTOS_SDK_BASE64_H__
 
-#include <string>
+#include <SDK/Common/CMemBlock.h>
 
-#include <CMemBlock.h>
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {

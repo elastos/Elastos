@@ -5,19 +5,19 @@
 #ifndef __ELASTOS_SDK_PEER_H__
 #define __ELASTOS_SDK_PEER_H__
 
+#include "PeerInfo.h"
+#include "Message/Message.h"
+
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ElementSet.h>
+#include <SDK/Common/UInt256ValueSet.h>
+#include <SDK/Common/CMemBlock.h>
+
 #include <deque>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/function.hpp>
-#include <SDK/Common/Log.h>
-
-#include "Wrapper.h"
-#include "CMemBlock.h"
-#include "PeerInfo.h"
-#include "SDK/P2P/Message/Message.h"
-#include "SDK/Common/ElementSet.h"
-#include "UInt256ValueSet.h"
-
 
 #define REJECT_INVALID     0x10 // transaction is invalid for some reason (invalid signature, output value > input, etc)
 #define REJECT_SPENT       0x12 // an input is already spent
@@ -210,7 +210,7 @@ namespace Elastos {
 
 			void AddKnownTxHashes(const std::vector<UInt256> &txHashes);
 
-			bool isIPv4() const;
+			bool IsIPv4() const;
 
 			double GetStartTime() const;
 

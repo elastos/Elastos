@@ -5,15 +5,16 @@
 #ifndef __ELASTOS_SDK_IDAUXPOW_H__
 #define __ELASTOS_SDK_IDAUXPOW_H__
 
-#include <vector>
-
-#include "BRInt.h"
-#include "BRTransaction.h"
-#include "BRMerkleBlock.h"
-
-#include "Plugin/Transaction/Transaction.h"
-#include "Plugin/Interface/ELAMessageSerializable.h"
 #include "ELAMerkleBlock.h"
+
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRMerkleBlock.h>
+
+#include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {

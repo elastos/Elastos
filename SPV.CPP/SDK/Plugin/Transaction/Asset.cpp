@@ -1,13 +1,15 @@
 // Copyright (c) 2012-2018 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#include "Asset.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRCrypto.h>
 
 #include <cstring>
-#include <SDK/Common/Log.h>
-#include <Plugin/Transaction/Transaction.h>
-
-#include "Asset.h"
-#include "BRInt.h"
 
 namespace Elastos {
 	namespace ElaWallet {

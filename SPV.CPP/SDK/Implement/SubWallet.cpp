@@ -2,25 +2,26 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/scoped_ptr.hpp>
-#include <algorithm>
-#include <Core/BRTransaction.h>
-
-#include "BRTransaction.h"
-#include "BRKey.h"
-#include "BRArray.h"
-
-#include "SubWallet.h"
-#include "MasterWallet.h"
 #include "SubWalletCallback.h"
-#include "Utils.h"
-#include "Log.h"
-#include "ParamChecker.h"
-#include "Plugin/Transaction/TransactionOutput.h"
-#include "Plugin/Transaction/Checker/TransactionChecker.h"
-#include "Plugin/Transaction/Completer/TransactionCompleter.h"
-#include "Account/MultiSignSubAccount.h"
-#include "Account/SubAccountGenerator.h"
+#include "MasterWallet.h"
+#include "SubWallet.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/Checker/TransactionChecker.h>
+#include <SDK/Plugin/Transaction/Completer/TransactionCompleter.h>
+#include <SDK/Account/MultiSignSubAccount.h>
+#include <SDK/Account/SubAccountGenerator.h>
+
+#include <Core/BRTransaction.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRKey.h>
+#include <Core/BRArray.h>
+
+#include <algorithm>
+#include <boost/scoped_ptr.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -155,10 +156,8 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
-				nlohmann::json txJson = transactions[i]->toJson();
-				transactions[i]->generateExtraTransactionInfo(txJson, _walletManager->getWallet(),
+				jsonList[i]["Summary"] = transactions[i]->generateExtraTransactionInfo(_walletManager->getWallet(),
 															  _walletManager->getPeerManager()->GetLastBlockHeight());
-				jsonList[i] = txJson;
 			}
 			nlohmann::json j;
 			j["Transactions"] = jsonList;

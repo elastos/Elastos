@@ -5,12 +5,13 @@
 #ifndef __ELASTOS_SDK_IDAGENTIMPL_H__
 #define __ELASTOS_SDK_IDAGENTIMPL_H__
 
+#include "IdItem.h"
+
+#include <SDK/Crypto/Key.h>
+#include <SDK/Common/Mstream.h>
+
 #include <map>
 #include <vector>
-
-#include "IdItem.h"
-#include "SDK/Crypto/Key.h"
-#include "SDK/Common/Mstream.h"
 
 namespace Elastos {
 	namespace ElaWallet {

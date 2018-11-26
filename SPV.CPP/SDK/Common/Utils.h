@@ -5,15 +5,15 @@
 #ifndef __ELASTOS_SDK_UTILS_H__
 #define __ELASTOS_SDK_UTILS_H__
 
-#include <string>
-#include <assert.h>
-#include <random>
-#include<functional>
-#include <set>
-
-#include "BRInt.h"
-
 #include "CMemBlock.h"
+
+#include <Core/BRInt.h>
+
+#include <string>
+#include <cassert>
+#include <random>
+#include <functional>
+#include <set>
 
 namespace Elastos {
 	namespace ElaWallet {

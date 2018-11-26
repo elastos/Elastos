@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_REGISTRY_H__
 #define __ELASTOS_SDK_REGISTRY_H__
 
-#include <map>
-#include <memory>
+#include "Interface/IPlugin.h"
+
 #include <fruit/fruit.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-
-#include "Interface/IPlugin.h"
+#include <map>
+#include <memory>
 
 namespace Elastos {
 	namespace ElaWallet {

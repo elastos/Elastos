@@ -2,9 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "SimpleAccount.h"
+
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
-#include "SimpleAccount.h"
+
+#include <Core/BRCrypto.h>
 
 namespace Elastos {
 	namespace ElaWallet {

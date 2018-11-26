@@ -1,23 +1,20 @@
-
-
-#include <climits>
-#include <iostream>
-#include <boost/scoped_ptr.hpp>
-#include <Plugin/Transaction/Transaction.h>
-#include <Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include "TestConnectPeer.h"
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MainchainSubWallet.h>
 #include <SDK/Implement/SidechainSubWallet.h>
 #include <SDK/Implement/IdChainSubWallet.h>
 #include <SDK/Implement/MasterWallet.h>
+#include <SDK/Common/Log.h>
 
-#include "BRChainParams.h"
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRSet.h>
+#include <Interface/MasterWalletManager.h>
 
-#include "Wrapper/ChainParams.h"
-#include "MasterWalletManager.h"
-#include "Log.h"
-
-#include "TestConnectPeer.h"
+#include <climits>
+#include <iostream>
+#include <boost/scoped_ptr.hpp>
 
 using namespace Elastos::ElaWallet;
 

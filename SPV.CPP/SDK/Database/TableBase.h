@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_TABLEBASE_H__
 #define __ELASTOS_SDK_TABLEBASE_H__
 
+#include "Sqlite.h"
+
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
-
-#include "Sqlite.h"
 
 namespace Elastos {
 	namespace ElaWallet {

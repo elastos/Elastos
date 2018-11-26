@@ -2,12 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cstring>
-#include <stdlib.h>
-#include <assert.h>
-
-#include "Utils.h"
 #include "IdMerkleBlock.h"
+
+#include <SDK/Common/Utils.h>
+
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
 
 namespace Elastos {
 	namespace ElaWallet {

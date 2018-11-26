@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/shared_ptr.hpp>
+#include <Interface/ISubWallet.h>
+#include <Interface/IMasterWallet.h>
+#include <Interface/MasterWalletManager.h>
 
-#include "ISubWallet.h"
-#include "IMasterWallet.h"
-#include "MasterWalletManager.h"
+#include <boost/shared_ptr.hpp>
 
 #ifndef _ELATSOS_SAMPLE_TESTCONNECTPEER_H_
 #define _ELATSOS_SAMPLE_TESTCONNECTPEER_H_

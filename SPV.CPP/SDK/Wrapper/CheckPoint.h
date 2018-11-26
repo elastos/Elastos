@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_CHECKPOINT_H__
 #define __ELASTOS_SDK_CHECKPOINT_H__
 
-#include "BRChainParams.h"
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/Common/Mstream.h>
 
-#include "Wrapper.h"
-#include "Mstream.h"
+#include <Core/BRChainParams.h>
 
 namespace Elastos {
 	namespace ElaWallet {

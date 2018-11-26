@@ -5,20 +5,20 @@
 #ifndef __ELASTOS_SDK_SPVSERVICE_H__
 #define __ELASTOS_SDK_SPVSERVICE_H__
 
-#include <vector>
-#include <boost/function.hpp>
-#include <boost/filesystem.hpp>
-
-#include <nlohmann/json.hpp>
-#include <SDK/Plugin/Transaction/Asset.h>
-
 #include "TransactionCreationParams.h"
 #include "CoreSpvService.h"
-#include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
-#include "KeyStore/KeyStore.h"
-#include "Plugin/Transaction/Transaction.h"
-#include "CMemBlock.h"
+
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Database/DatabaseManager.h>
+#include <SDK/KeyStore/KeyStore.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Common/CMemBlock.h>
+
+#include <nlohmann/json.hpp>
+#include <boost/function.hpp>
+#include <boost/filesystem.hpp>
+#include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {

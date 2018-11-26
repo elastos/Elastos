@@ -1,17 +1,18 @@
 // Copyright (c) 2012-2018 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#include <float.h>
-
-#include "SDK/P2P/Peer.h"
-#include "BRArray.h"
 
 #include "InventoryMessage.h"
-#include "Log.h"
-#include "Utils.h"
 #include "GetDataMessage.h"
 #include "GetBlocksMessage.h"
 #include "PingMessage.h"
+
+#include <SDK/P2P/Peer.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRArray.h>
+#include <float.h>
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
 

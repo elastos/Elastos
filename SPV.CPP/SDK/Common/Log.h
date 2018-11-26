@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_LOG_H__
 #define __ELASTOS_SDK_LOG_H__
 
+#include <Config.h>
 #include <spdlog/spdlog.h>
-#include "Config.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -86,7 +86,7 @@ namespace Elastos {
 			static std::shared_ptr<spdlog::logger> _consoleLog;
 		};
 
-#define LOG_DEBUG(...) SPDLOG_DEBUG(Log::getLogger(), __VA_ARGS__)
+#define SPVLOG_DEBUG(...) SPDLOG_DEBUG(Log::getLogger(), __VA_ARGS__)
 
 	}
 }

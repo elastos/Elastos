@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "VerackMessage.h"
+#include <SDK/P2P/Peer.h>
+
 #include <float.h>
 #include <sys/time.h>
-#include "VerackMessage.h"
-#include "SDK/P2P/Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {

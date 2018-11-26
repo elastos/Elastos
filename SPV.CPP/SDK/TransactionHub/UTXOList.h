@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_UTXOSET_H__
 #define __ELASTOS_SDK_UTXOSET_H__
 
-#include <vector>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <Core/BRInt.h>
 
-#include "BRInt.h"
-#include "Plugin/Transaction/TransactionInput.h"
+#include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,6 +30,7 @@ namespace Elastos {
 
 			UInt256 hash;
 			uint32_t n;
+			uint64_t amount;
 		};
 
 		class UTXOList {

@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "BRInt.h"
 #include "Payload/PayloadRegisterIdentification.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 
 using namespace Elastos::ElaWallet;
 

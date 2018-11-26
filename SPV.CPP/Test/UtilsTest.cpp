@@ -4,11 +4,9 @@
 
 #define CATCH_CONFIG_MAIN
 
+#include <Core/BRInt.h>
+#include <SDK/Common/Utils.h>
 #include "catch.hpp"
-
-#include "CMemBlock.h"
-#include "Utils.h"
-#include "WalletTool.h"
 
 using namespace Elastos::ElaWallet;
 
@@ -191,14 +189,14 @@ TEST_CASE("uint168 string", "[Utils]") {
 }
 
 TEST_CASE("uint128 string", "[Utils]") {
-	CMBlock mbrand = WalletTool::GenerateSeed128();
-	UInt128 u128 = {0};
-	UInt128Get(&u128, (const void *) mbrand);
-
-	std::string strUI128 = Utils::UInt128ToString(u128);
-	UInt128 u128Recov = Utils::UInt128FromString(strUI128);
-
-	REQUIRE(1 == UInt128Eq(&u128Recov, &u128));
+//	CMBlock mbrand = WalletTool::GenerateSeed128();
+//	UInt128 u128 = {0};
+//	UInt128Get(&u128, (const void *) mbrand);
+//
+//	std::string strUI128 = Utils::UInt128ToString(u128);
+//	UInt128 u128Recov = Utils::UInt128FromString(strUI128);
+//
+//	REQUIRE(1 == UInt128Eq(&u128Recov, &u128));
 }
 
 TEST_CASE("AddressToUInt168 and UInt168ToAddress Test", "[Utils]") {

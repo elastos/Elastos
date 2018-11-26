@@ -10,7 +10,7 @@
 #include "DatabaseManager.h"
 #include "catch.hpp"
 #include "SpvService/BackgroundExecutor.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 #include "Log.h"
 #include "TestHelper.h"
 

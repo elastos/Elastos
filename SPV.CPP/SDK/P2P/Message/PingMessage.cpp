@@ -2,15 +2,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sys/time.h>
-#include <BRMerkleBlock.h>
-#include <SDK/Common/Utils.h>
-
-#include "BRArray.h"
-
-#include "SDK/P2P/Peer.h"
 #include "PingMessage.h"
-#include "SDK/P2P/PeerManager.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/P2P/Peer.h>
+#include <SDK/P2P/PeerManager.h>
+
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRArray.h>
+
+#include <sys/time.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,6 +21,8 @@ namespace Elastos {
 
 		}
 
+#define time_after(a,b)  ((long)(b) - (long)(a) < 0)
+
 		bool PingMessage::Accept(const CMBlock &msg) {
 			bool r = true;
 
@@ -28,29 +31,30 @@ namespace Elastos {
 				r = false;
 			} else {
 				_peer->Pinfo("got ping");
-				_peer->SendMessage(msg, MSG_PONG);
+				bool needRelayPing = false;
+				PeerManager *manager = _peer->getPeerManager();
+				CMBlock message(sizeof(uint64_t));
 
-				if (_peer->SentGetaddr() && time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
-					PeerManager *manager = _peer->getPeerManager();
-					bool haveTxPending = false, needRelayPing = false;
-
-					manager->Lock();
+				manager->Lock();
+				uint64_t height = manager->GetLastBlockHeight();
+				memcpy(message, &height, message.GetSize());
+				if (manager->getConnectStatus() == Peer::Connected &&
+					_peer->SentGetaddr() &&
+					time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
 					for (size_t i = manager->getPublishedTransaction().size(); i > 0; i--) {
 						if (manager->getPublishedTransaction()[i - 1].HasCallback()) {
 							_peer->Pinfo("publish pending tx hash = {}, do not disconnect",
 										 Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1]));
-							haveTxPending = true;
+							needRelayPing = true;
+							break;
 						}
 					}
-
-					if (manager->GetLastBlockHeight() >= *(uint64_t *)(uint8_t *)msg && !haveTxPending) {
-						needRelayPing = true;
-					}
-					manager->Unlock();
-
-					if (needRelayPing)
-						FireRelayedPingMsg();
 				}
+				manager->Unlock();
+
+				_peer->SendMessage(message, MSG_PONG);
+				if (needRelayPing)
+					FireRelayedPingMsg();
 			}
 
 			return r;

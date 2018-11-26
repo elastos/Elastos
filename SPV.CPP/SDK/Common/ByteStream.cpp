@@ -1,6 +1,12 @@
-#include "CMemBlock.h"
+// Copyright (c) 2012-2018 The Elastos Open Source Project
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "ByteStream.h"
-#include "BRAddress.h"
+
+#include <SDK/Common/CMemBlock.h>
+
+#include <Core/BRAddress.h>
 
 namespace Elastos {
 	namespace ElaWallet {

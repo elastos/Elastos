@@ -5,14 +5,14 @@
 #ifndef __ELASTOS_SDK_COINCONFIG_H__
 #define __ELASTOS_SDK_COINCONFIG_H__
 
-#include <map>
-#include <boost/filesystem.hpp>
+#include <SDK/Implement/SubWalletType.h>
+#include <SDK/Common/Mstream.h>
+#include <SDK/Wrapper/CheckPoint.h>
 
 #include <nlohmann/json.hpp>
 
-#include "SubWalletType.h"
-#include "Mstream.h"
-#include "CheckPoint.h"
+#include <map>
+#include <boost/filesystem.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,32 +2,35 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <float.h>
-#include <sys/time.h>
-#include <SDK/Common/Log.h>
-#include <arpa/inet.h>
-#include <boost/thread.hpp>
-#include <CMemBlock.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/P2P/Message/PingMessage.h>
-#include <SDK/P2P/Message/VersionMessage.h>
-#include <SDK/P2P/Message/VerackMessage.h>
-#include <SDK/P2P/Message/AddressMessage.h>
-#include <SDK/P2P/Message/InventoryMessage.h>
-#include <SDK/P2P/Message/GetDataMessage.h>
-#include <SDK/P2P/Message/NotFoundMessage.h>
-#include <SDK/P2P/Message/GetBlocksMessage.h>
-#include <SDK/P2P/Message/GetHeadersMessage.h>
-#include <SDK/P2P/Message/TransactionMessage.h>
-#include <SDK/P2P/Message/MerkleBlockMessage.h>
-#include <SDK/P2P/Message/MempoolMessage.h>
-#include <SDK/P2P/Message/PongMessage.h>
-#include <SDK/P2P/Message/BloomFilterMessage.h>
-#include <SDK/P2P/Message/GetAddressMessage.h>
-#include <SDK/P2P/Message/HeadersMessage.h>
-
 #include "Peer.h"
 #include "PeerManager.h"
+#include "Message/PingMessage.h"
+#include "Message/VersionMessage.h"
+#include "Message/VerackMessage.h"
+#include "Message/AddressMessage.h"
+#include "Message/InventoryMessage.h"
+#include "Message/GetDataMessage.h"
+#include "Message/NotFoundMessage.h"
+#include "Message/GetBlocksMessage.h"
+#include "Message/GetHeadersMessage.h"
+#include "Message/TransactionMessage.h"
+#include "Message/MerkleBlockMessage.h"
+#include "Message/MempoolMessage.h"
+#include "Message/PongMessage.h"
+#include "Message/BloomFilterMessage.h"
+#include "Message/GetAddressMessage.h"
+#include "Message/HeadersMessage.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Common/CMemBlock.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRCrypto.h>
+
+#include <arpa/inet.h>
+#include <float.h>
+#include <sys/time.h>
+#include <boost/thread.hpp>
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
@@ -246,7 +249,7 @@ namespace Elastos {
 		const std::string &Peer::getHost() const {
 			if (_host.empty()) {
 				char temp[INET6_ADDRSTRLEN];
-				if (isIPv4()) {
+				if (IsIPv4()) {
 					inet_ntop(AF_INET, &_info.Address.u32[3], temp, sizeof(temp));
 				} else inet_ntop(AF_INET6, &_info.Address, temp, sizeof(temp));
 
@@ -289,8 +292,8 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Peer::isIPv4() const {
-			return (_info.Address.u64[0] == 0 && _info.Address.u16[4] == 0 && _info.Address.u16[5] == 0xffff);
+		bool Peer::IsIPv4() const {
+			return _info.IsIPv4();
 		}
 
 		void Peer::peerThreadRoutine() {
@@ -640,7 +643,7 @@ namespace Elastos {
 						if (count < 0 || !err) err = errno;
 						r = 0;
 					}
-				} else if (err && domain == PF_INET6 && isIPv4()) {
+				} else if (err && domain == PF_INET6 && IsIPv4()) {
 					return openSocket(PF_INET, timeout, error); // fallback to IPv4
 				} else if (err) r = 0;
 

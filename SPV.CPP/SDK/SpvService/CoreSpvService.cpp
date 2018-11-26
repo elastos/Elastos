@@ -2,12 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-#include <SDK/Plugin/Transaction/Asset.h>
-
-#include "SDK/Common/Log.h"
 #include "CoreSpvService.h"
-#include "Account/SingleSubAccount.h"
+
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Account/SingleSubAccount.h>
+
+#include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -268,8 +269,8 @@ namespace Elastos {
 				PeerManager::Listener *listener,
 				Executor *executor,
 				Executor *reconnectExecutor,
-				const PluginTypes &pluginTypes) :
-				PeerManager::Listener(pluginTypes),
+				const PluginType &pluginType) :
+				PeerManager::Listener(pluginType),
 				_listener(listener),
 				_executor(executor),
 				_reconnectExecutor(reconnectExecutor) {

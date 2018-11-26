@@ -2,16 +2,19 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cstring>
-#include <Core/BRBIP32Sequence.h>
+#include "MasterPubKey.h"
+
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/ByteStream.h>
 
-#include "BRBIP39Mnemonic.h"
-#include "BRBIP32Sequence.h"
-#include "MasterPubKey.h"
-#include "Utils.h"
-#include "ByteStream.h"
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRBIP32Sequence.h>
+#include <Core/BRCrypto.h>
+#include <Core/BRBIP32Sequence.h>
+
+#include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {

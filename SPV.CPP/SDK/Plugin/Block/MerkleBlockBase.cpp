@@ -2,10 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "MerkleBlockBase.h"
+
+#include <Core/BRCrypto.h>
+
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Utils.h>
-#include <Core/BRCrypto.h>
-#include "MerkleBlockBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {

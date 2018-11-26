@@ -2,16 +2,18 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "TransactionOutput.h"
+
+#include <SDK/Base/Address.h>
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Crypto/Key.h>
+
+#include <Core/BRTransaction.h>
+
 #include <iostream>
 #include <cstring>
-#include <Core/BRTransaction.h>
-#include <SDK/Base/Address.h>
-#include <Plugin/Transaction/Asset.h>
-
-#include "TransactionOutput.h"
-#include "Utils.h"
-#include "Log.h"
-#include "SDK/Crypto/Key.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -33,7 +35,7 @@ namespace Elastos {
 		TransactionOutput::TransactionOutput(uint64_t a, const std::string &addr) :
 			_amount(a),
 			_outputLock(0) {
-			_assetId = Key::getSystemAssetId();
+			_assetId = Asset::GetELAAssetID();
 			Utils::UInt168FromAddress(_programHash, addr);
 		}
 

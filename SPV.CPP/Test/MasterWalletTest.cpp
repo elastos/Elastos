@@ -12,7 +12,7 @@
 #include "MainchainSubWallet.h"
 #include "SidechainSubWallet.h"
 #include "IdChainSubWallet.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 
 using namespace Elastos::ElaWallet;
 

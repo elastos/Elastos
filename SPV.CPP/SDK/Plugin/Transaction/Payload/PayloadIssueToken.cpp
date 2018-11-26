@@ -2,11 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cstring>
+#include "PayloadIssueToken.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include "PayloadIssueToken.h"
+#include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_PAYLOADREGISTERPRODUCER_H__
 #define __ELASTOS_SDK_PAYLOADREGISTERPRODUCER_H__
 
-#include "IPayload.h"
+#include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
 namespace Elastos {
 	namespace ElaWallet {

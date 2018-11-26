@@ -5,14 +5,15 @@
 #ifndef __ELASTOS_SDK_CORESPVSERVICE_H__
 #define __ELASTOS_SDK_CORESPVSERVICE_H__
 
-#include <boost/thread.hpp>
-
-#include "SDK/TransactionHub/TransactionHub.h"
 #include "Executor.h"
-#include "SDK/P2P/PeerManager.h"
-#include "ChainParams.h"
-#include "SDK/Crypto/MasterPubKey.h"
-#include "Account/ISubAccount.h"
+
+#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/P2P/PeerManager.h>
+#include <SDK/Wrapper/ChainParams.h>
+#include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/Account/ISubAccount.h>
+
+#include <boost/thread.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,7 +23,7 @@ namespace Elastos {
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginType &pluginTypes, const ChainParams &chainParams);
+			CoreSpvService(const PluginType &pluginType, const ChainParams &chainParams);
 
 			virtual ~CoreSpvService();
 
@@ -111,7 +112,7 @@ namespace Elastos {
 		class WrappedExceptionPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginType &pluginTypes);
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginType &pluginType);
 
 			virtual void syncStarted();
 
@@ -143,7 +144,7 @@ namespace Elastos {
 			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
 											   Executor *executor,
 											   Executor *reconnectExecutor,
-											   const PluginTypes &pluginTypes);
+											   const PluginType &pluginType);
 
 			virtual void syncStarted();
 

@@ -6,7 +6,7 @@
 
 #include "catch.hpp"
 
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 #include "SDK/Crypto/Key.h"
 
 using namespace Elastos::ElaWallet;

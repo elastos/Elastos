@@ -2,10 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cstring>
-
 #include "PayloadSideMining.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
+
+#include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {

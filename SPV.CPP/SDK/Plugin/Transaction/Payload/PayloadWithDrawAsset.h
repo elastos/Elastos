@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
 #define __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
 
-#include <Core/BRInt.h>
 #include "IPayload.h"
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

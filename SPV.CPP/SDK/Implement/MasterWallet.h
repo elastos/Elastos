@@ -5,21 +5,22 @@
 #ifndef __ELASTOS_SDK_MASTERWALLET_H__
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
+#include <SDK/KeyStore/CoinConfig.h>
+#include <SDK/KeyStore/Mnemonic.h>
+#include <SDK/KeyStore/KeyStore.h>
+#include <SDK/KeyStore/CoinInfo.h>
+#include <SDK/KeyStore/MasterWalletStore.h>
+#include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/IdAgent/IdAgentImpl.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+
+#include <Interface/IMasterWallet.h>
+#include <Interface/IIdAgent.h>
+
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <SDK/KeyStore/CoinConfig.h>
-
-#include "SDK/Crypto/MasterPubKey.h"
-#include "Interface/IMasterWallet.h"
-#include "Interface/IIdAgent.h"
-#include "SDK/KeyStore/Mnemonic.h"
-#include "KeyStore/KeyStore.h"
-#include "KeyStore/CoinInfo.h"
-#include "KeyStore/MasterWalletStore.h"
-#include "IdAgent/IdAgentImpl.h"
-#include "Plugin/Registry.h"
-#include "Plugin/Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {

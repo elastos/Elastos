@@ -5,10 +5,11 @@
 #ifndef __ELASTOS_SDK_IMERKLEBLOCK_H__
 #define __ELASTOS_SDK_IMERKLEBLOCK_H__
 
-#include <boost/shared_ptr.hpp>
-
-#include "BRInt.h"
 #include "ELAMessageSerializable.h"
+
+#include <Core/BRInt.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

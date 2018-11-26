@@ -5,11 +5,10 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
-#include <boost/shared_ptr.hpp>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Core/BRInt.h>
 
-#include "BRInt.h"
-#include "CMemBlock.h"
-#include "Plugin/Interface/ELAMessageSerializable.h"
+#include <boost/shared_ptr.hpp>
 
 #define TX_RECHARGE_OUTPUT_SIZE 65
 

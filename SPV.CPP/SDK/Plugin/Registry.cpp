@@ -2,13 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-
 #include "Registry.h"
 #include "ELAPlugin.h"
 #include "IDPlugin.h"
 #include "TokenPlugin.h"
+
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

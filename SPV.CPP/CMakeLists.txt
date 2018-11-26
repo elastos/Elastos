@@ -121,12 +121,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_TRACE_ON)
 endif()
 
-set(
-	OTHER_INC_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	CACHE INTERNAL "config files" FORCE
-)
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/Config.h
@@ -141,13 +135,11 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID} AND SPV_EXPORT_JNI)
 endif()
 
 include_directories(
-	${OTHER_INC_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1
+	${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1/include
+	${CMAKE_CURRENT_BINARY_DIR}
 	${ThirdParty_INC_DIRS}
-	${SPVCORE_INC_DIRS}
-	${SPVSDK_INC_DIRS}
-	${SPVJNI_INC_DIRS}
-	${INTERFACE_INC_DIRS}
-	${FRUIT_INC_DIRS}
 )
 
 set(SPVSDK_OBJECT_TARGET spvsdk_object)
@@ -157,12 +149,12 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(spvsdk $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()

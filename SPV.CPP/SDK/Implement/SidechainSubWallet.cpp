@@ -2,16 +2,19 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "SidechainSubWallet.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Checker/SidechainTransactionChecker.h>
+#include <SDK/Plugin/Transaction/Completer/SidechainTransactionCompleter.h>
+
+#include <Core/BRAddress.h>
+
 #include <vector>
 #include <map>
 #include <boost/scoped_ptr.hpp>
-#include <SDK/Common/Utils.h>
-
-#include "SidechainSubWallet.h"
-#include "Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h"
-#include "ParamChecker.h"
-#include "Plugin/Transaction/Checker/SidechainTransactionChecker.h"
-#include "Plugin/Transaction/Completer/SidechainTransactionCompleter.h"
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,9 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/Utils.h>
 #include "GetHeadersMessage.h"
-#include "P2P/Peer.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/P2P/Peer.h>
 
 namespace Elastos {
 	namespace ElaWallet {

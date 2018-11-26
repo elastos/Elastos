@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTER_H__
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
-#include <boost/shared_ptr.hpp>
+#include <SDK/Common/CMemBlock.h>
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
-#include "CMemBlock.h"
-#include "Wrapper.h"
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
+#include <boost/shared_ptr.hpp>
 
 #define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0005 // use 0.00005 for less data, 0.001 for good anonymity
 #define BLOOM_REDUCED_FALSEPOSITIVE_RATE 0.00005

@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
+#include "CheckPoint.h"
+#include <SDK/Common/Utils.h>
 #include <Core/BRChainParams.h>
 
-#include "Utils.h"
-#include "CheckPoint.h"
+#include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {

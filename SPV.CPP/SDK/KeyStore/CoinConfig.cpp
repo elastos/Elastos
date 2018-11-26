@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <fstream>
+#include "CoinConfig.h"
+
 #include <SDK/Common/ParamChecker.h>
 
-#include "CoinConfig.h"
+#include <fstream>
 
 namespace Elastos {
 	namespace ElaWallet {

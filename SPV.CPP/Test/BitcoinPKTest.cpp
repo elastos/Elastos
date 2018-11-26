@@ -8,7 +8,6 @@
 #include <catch.hpp>
 
 #include "SDK/KeyStore/Mnemonic.h"
-#include "WalletTool.h"
 
 using namespace Elastos::ElaWallet;
 

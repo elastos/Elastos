@@ -2,9 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sys/time.h>
 #include "MempoolMessage.h"
-#include "SDK/P2P/Peer.h"
+#include <SDK/P2P/Peer.h>
+
+#include <sys/time.h>
 
 namespace Elastos {
 	namespace ElaWallet {

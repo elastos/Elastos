@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_CHAINPARAMS_H__
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
-#include <string>
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/KeyStore/CoinConfig.h>
+
+#include <Core/BRChainParams.h>
+
 #include <boost/shared_ptr.hpp>
-
-#include "BRChainParams.h"
-
-#include "Wrapper.h"
-#include "KeyStore/CoinConfig.h"
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {

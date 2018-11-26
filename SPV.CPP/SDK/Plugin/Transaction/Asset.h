@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_SPVSDK_ASSET_H
 #define __ELASTOS_SDK_SPVSDK_ASSET_H
 
-#include "BRInt.h"
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

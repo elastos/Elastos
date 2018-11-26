@@ -6,7 +6,8 @@
 #define __ELASTOS_SDK_ELAWEBWALLETJSON_H__
 
 #include "BitcoreWalletClientJson.h"
-#include "Mstream.h"
+
+#include <SDK/Common/Mstream.h>
 
 namespace Elastos {
 	namespace ElaWallet {

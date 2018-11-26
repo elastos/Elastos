@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/Log.h>
 #include "PayloadRegisterAsset.h"
-#include "Utils.h"
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {

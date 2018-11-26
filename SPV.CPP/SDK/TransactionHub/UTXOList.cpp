@@ -3,8 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "UTXOList.h"
-#include "Plugin/Transaction/TransactionInput.h"
-#include "ParamChecker.h"
+
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Common/ParamChecker.h>
+
+#include <boost/bind.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -1,13 +1,11 @@
-//
-// Created by 延明智 on 2018/10/16.
-//
 // Copyright (c) 2012-2018 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "GetAddressMessage.h"
-#include "P2P/Peer.h"
-#include "P2P/PeerManager.h"
+
+#include <SDK/P2P/Peer.h>
+#include <SDK/P2P/PeerManager.h>
 
 namespace Elastos {
 	namespace ElaWallet {

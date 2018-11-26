@@ -2,11 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "PayloadRecord.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include "PayloadRecord.h"
-#include "BRAddress.h"
-#include "BRInt.h"
+
+#include <Core/BRAddress.h>
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

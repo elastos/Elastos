@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "PayloadWithDrawAsset.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include "PayloadWithDrawAsset.h"
-#include "BRInt.h"
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

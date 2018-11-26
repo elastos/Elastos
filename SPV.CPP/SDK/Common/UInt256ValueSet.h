@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_UINT256SET_H__
 #define __ELASTOS_SDK_UINT256SET_H__
 
+#include <Core/BRInt.h>
+
 #include <set>
 #include <map>
 #include <boost/function.hpp>
-
-#include "BRInt.h"
 
 namespace Elastos {
 	namespace ElaWallet {

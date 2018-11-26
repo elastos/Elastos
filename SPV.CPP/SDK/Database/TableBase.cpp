@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "TableBase.h"
-#include "Log.h"
+
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

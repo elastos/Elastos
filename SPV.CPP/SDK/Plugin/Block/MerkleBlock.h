@@ -5,15 +5,16 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCK_H__
 #define __ELASTOS_SDK_MERKLEBLOCK_H__
 
-#include <fruit/fruit.h>
-#include <boost/shared_ptr.hpp>
-#include <nlohmann/json.hpp>
-
-#include "Wrapper.h"
-#include "CMemBlock.h"
-#include "Plugin/Block/MerkleBlockBase.h"
+#include "MerkleBlockBase.h"
 #include "AuxPow.h"
 #include "ELAMerkleBlock.h"
+
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/Common/CMemBlock.h>
+
+#include <fruit/fruit.h>
+#include <nlohmann/json.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

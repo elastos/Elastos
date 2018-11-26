@@ -2,22 +2,25 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/filesystem.hpp>
+#include "MasterWallet.h"
+
 #include <SDK/Common/Utils.h>
-#include <Core/BRBase58.h>
-#include <Core/BRBIP39Mnemonic.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Common/ParamChecker.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Common/ByteStream.h>
 #include <SDK/Plugin/ELAPlugin.h>
 #include <SDK/Plugin/IDPlugin.h>
+#include <Interface/MasterWalletManager.h>
+#include <Config.h>
 
-#include "MasterWalletManager.h"
-#include "Log.h"
-#include "MasterWallet.h"
-#include "ParamChecker.h"
-#include "Config.h"
+#include <Core/BRBase58.h>
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRCrypto.h>
+
+#include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
 

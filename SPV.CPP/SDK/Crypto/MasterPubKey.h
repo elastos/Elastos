@@ -5,16 +5,15 @@
 #ifndef __ELASTOS_SDK_MASTERPUBKEY_H__
 #define __ELASTOS_SDK_MASTERPUBKEY_H__
 
+#include "Key.h"
+
+#include <SDK/Common/ByteStream.h>
+
+#include <Core/BRBIP32Sequence.h>
+
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
-
-#include "BRBIP32Sequence.h"
-#include "ByteStream.h"
-#include "Wrapper.h"
-#include "Key.h"
-#include "CMemBlock.h"
-#include "ByteStream.h"
 
 namespace Elastos {
 	namespace ElaWallet {

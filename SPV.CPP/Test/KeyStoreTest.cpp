@@ -7,8 +7,10 @@
 #include <fstream>
 #include <catch.hpp>
 #include <boost/filesystem.hpp>
+#include <ThirdParty/json/single_include/nlohmann/json.hpp>
+#include <SDK/Account/IAccount.h>
+#include <SDK/KeyStore/KeyStore.h>
 
-#include "KeyStore/KeyStore.h"
 
 using namespace Elastos::ElaWallet;
 

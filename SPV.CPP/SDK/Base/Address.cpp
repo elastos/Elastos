@@ -2,14 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <Core/BRAddress.h>
-#include <SDK/Common/ParamChecker.h>
-
-#include "BRBase58.h"
-#include "BRBech32.h"
-
 #include "Address.h"
-#include "Utils.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRBase58.h>
+#include <Core/BRBech32.h>
+#include <Core/BRAddress.h>
 
 #define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 

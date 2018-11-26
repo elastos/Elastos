@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_PAYLOADSIDEMINING_H
 
 #include "IPayload.h"
-#include "BRInt.h"
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

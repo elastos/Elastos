@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_AUXPOW_H__
 #define __ELASTOS_SDK_AUXPOW_H__
 
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRMerkleBlock.h>
+
 #include <vector>
-
-#include "BRInt.h"
-#include "BRTransaction.h"
-#include "BRMerkleBlock.h"
-
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {

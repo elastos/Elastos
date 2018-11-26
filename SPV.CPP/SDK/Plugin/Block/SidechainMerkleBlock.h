@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
-#include <fruit/fruit.h>
-
 #include "MerkleBlockBase.h"
-#include "IdAuxPow.h"
+#include <SDK/Plugin/Block/IdAuxPow.h>
+
+#include <fruit/fruit.h>
 
 namespace Elastos {
 	namespace ElaWallet {

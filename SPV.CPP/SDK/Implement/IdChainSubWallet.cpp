@@ -2,19 +2,19 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "SubWalletCallback.h"
+#include "IdChainSubWallet.h"
+#include "MasterWallet.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Completer/IdchainTransactionCompleter.h>
+#include <SDK/Plugin/Transaction/Checker/IdchainTransactionChecker.h>
+
 #include <set>
 #include <boost/scoped_ptr.hpp>
-#include <SDK/Common/ParamChecker.h>
-
-#include "Utils.h"
-#include "MasterWallet.h"
-#include "IdChainSubWallet.h"
-#include "Utils.h"
-#include "SubWalletCallback.h"
-#include "SDK/Common/Log.h"
-#include "SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h"
-#include "SDK/Plugin/Transaction/Completer/IdchainTransactionCompleter.h"
-#include "SDK/Plugin/Transaction/Checker/IdchainTransactionChecker.h"
 
 #define ID_REGISTER_BUFFER_COUNT 100
 

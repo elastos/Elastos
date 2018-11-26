@@ -2,15 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Transaction.h"
+#include "Program.h"
 
-#include <Core/BRAddress.h>
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Common/Log.h>
-#include "BRInt.h"
+#include <SDK/Common/Utils.h>
 
-#include "Program.h"
-#include "Utils.h"
-#include "Transaction.h"
+#include <Core/BRAddress.h>
+#include <Core/BRInt.h>
 
 #define SignatureScriptLength 65
 

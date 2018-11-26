@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "IDPlugin.h"
-#include "Plugin/Block/SidechainMerkleBlock.h"
+
+#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

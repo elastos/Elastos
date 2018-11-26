@@ -2,11 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sys/time.h>
-#include <cfloat>
+#include "VersionMessage.h"
+
 #include <Core/BRTransaction.h>
 
-#include "VersionMessage.h"
+#include <sys/time.h>
+#include <cfloat>
 
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013

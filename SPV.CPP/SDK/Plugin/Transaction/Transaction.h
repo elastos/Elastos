@@ -5,18 +5,17 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
-#include <boost/shared_ptr.hpp>
-
-#include "Wrapper.h"
-#include "CMemBlock.h"
-#include "TransactionOutput.h"
-#include "SDK/Crypto/Key.h"
-#include "WrapperList.h"
 #include "Program.h"
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
+#include "TransactionOutput.h"
 #include "Attribute.h"
-#include "Payload/IPayload.h"
 #include "TransactionInput.h"
+
+#include <SDK/Crypto/Key.h>
+#include <SDK/Wrapper/WrapperList.h>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -134,8 +133,8 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<TransactionHub> &wallet,
-											  uint32_t blockHeight);
+			nlohmann::json generateExtraTransactionInfo(const boost::shared_ptr<TransactionHub> &wallet,
+											  uint32_t lastBlockHeight);
 
 			uint8_t	getPayloadVersion() const;
 

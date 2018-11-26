@@ -2,22 +2,23 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-#include <stdlib.h>
+#include "ParamChecker.h"
+#include "Utils.h"
+#include "Log.h"
+#include "Base64.h"
+
+#include <SDK/Crypto/Crypto.h>
+
 #include <Core/BRCrypto.h>
-#include <algorithm>
-#include <iterator>
 #include <Core/BRBase58.h>
 #include <Core/BRAddress.h>
 #include <Core/BRBIP39Mnemonic.h>
 
-#include "assert.h"
-#include "Utils.h"
-#include "SDK/Crypto/Crypto.h"
-#include "Base64.h"
-#include "BRAddress.h"
-#include "Log.h"
-#include "ParamChecker.h"
+#include <sstream>
+#include <stdlib.h>
+#include <algorithm>
+#include <iterator>
+#include <assert.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -265,7 +266,7 @@ namespace Elastos {
 					wordList[i] = WordList[i].c_str();
 				}
 				size_t phraseLen = BRBIP39Encode(nullptr, 0, wordList, seed, seed.GetSize());
-				char phrase[phraseLen + 1] = {0};
+				char phrase[phraseLen + 1];
 				BRBIP39Encode(phrase, phraseLen, wordList, seed, seed.GetSize());
 				mnemonic = std::string(phrase);
 			}

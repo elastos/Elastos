@@ -6,7 +6,8 @@
 #define __ELASTOS_SDK_SIMPLEACCOUNT_H__
 
 #include "IAccount.h"
-#include "SDK/Common/Mstream.h"
+
+#include <SDK/Common/Mstream.h>
 
 namespace Elastos {
 	namespace ElaWallet {

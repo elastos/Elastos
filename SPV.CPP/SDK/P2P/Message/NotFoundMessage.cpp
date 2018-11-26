@@ -2,16 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cfloat>
-
-#include "BRInt.h"
-#include "BRArray.h"
-
 #include "NotFoundMessage.h"
-#include "Log.h"
-#include "Utils.h"
-#include "SDK/P2P/Peer.h"
 
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/P2P/Peer.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRArray.h>
+#include <Core/BRAddress.h>
+
+#include <cfloat>
 
 namespace Elastos {
 	namespace ElaWallet {

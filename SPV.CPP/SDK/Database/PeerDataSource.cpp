@@ -2,12 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
+#include "PeerDataSource.h"
+
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/CMemBlock.h>
 
-#include "CMemBlock.h"
-#include "PeerDataSource.h"
+#include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {

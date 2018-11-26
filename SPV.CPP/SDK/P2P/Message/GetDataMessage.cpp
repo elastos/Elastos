@@ -2,13 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BRArray.h"
-#include "SDK/P2P/Peer.h"
-
 #include "GetDataMessage.h"
-#include "Log.h"
-#include "Utils.h"
 #include "TransactionMessage.h"
+
+#include <SDK/P2P/Peer.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRArray.h>
 
 #define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
 

@@ -4,11 +4,12 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "Utils.h"
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Plugin/Interface/IMerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
+
 #include "catch.hpp"
-#include "Log.h"
-#include "SDK/Plugin/Block/MerkleBlock.h"
-#include "SDK/Plugin/Registry.h"
 #include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;

@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_BACKGROUNDEXECUTOR_H__
 #define __ELASTOS_SDK_BACKGROUNDEXECUTOR_H__
 
-#include <queue>
+#include "Executor.h"
+
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-
-#include "Executor.h"
+#include <queue>
 
 namespace Elastos {
 	namespace ElaWallet {

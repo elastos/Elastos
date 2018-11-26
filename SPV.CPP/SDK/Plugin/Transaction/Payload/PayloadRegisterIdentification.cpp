@@ -2,10 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "PayloadRegisterIdentification.h"
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
-#include "PayloadRegisterIdentification.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {

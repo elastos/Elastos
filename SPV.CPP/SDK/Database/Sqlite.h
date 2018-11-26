@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_SQLITE_H__
 #define __ELASTOS_SDK_SQLITE_H__
 
+#include <SDK/Common/CMemBlock.h>
+
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
-
-#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {

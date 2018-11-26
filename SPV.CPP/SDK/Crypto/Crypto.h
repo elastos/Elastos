@@ -6,9 +6,9 @@
 #ifndef __ELASTOS_SDK_AES_256_CCM_H__
 #define __ELASTOS_SDK_AES_256_CCM_H__
 
-#include <cstdint>
+#include <SDK/Common/CMemBlock.h>
 
-#include "CMemBlock.h"
+#include <cstdint>
 
 #define CIPHERTEXTMAXLENGTH 1024 * 3
 

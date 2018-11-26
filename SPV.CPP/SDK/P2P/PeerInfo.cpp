@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <stddef.h>
-
 #include "PeerInfo.h"
+
+#include <stddef.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -64,6 +64,10 @@ namespace Elastos {
 
 			// (((FNV_OFFSET xor address)*FNV_PRIME) xor port)*FNV_PRIME
 			return (size_t) ((((0x811C9dc5 ^ address) * 0x01000193) ^ port) * 0x01000193);
+		}
+
+		bool PeerInfo::IsIPv4() const {
+			return (Address.u64[0] == 0 && Address.u16[4] == 0 && Address.u16[5] == 0xffff);
 		}
 	}
 }

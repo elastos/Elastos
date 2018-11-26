@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_ELAMERKLEBLOCK_H__
 #define __ELASTOS_SDK_ELAMERKLEBLOCK_H__
 
-#include <Core/BRMerkleBlock.h>
-#include "BRMerkleBlock.h"
 #include "AuxPow.h"
+
+#include <Core/BRMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

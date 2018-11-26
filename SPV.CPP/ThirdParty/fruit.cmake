@@ -1,5 +1,5 @@
 
-set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "build shared library")
+set(BUILD_SHARED_LIBS OFF "build static fruit")
 set(FRUIT_TESTS_USE_PRECOMPILED_HEADERS OFF CACHE INTERNAL "Don't use pre-compiled headers")
 
 set(BOOST_DIR ${Boost_INCLUDE_DIRS} CACHE INTERNAL "boost dir")

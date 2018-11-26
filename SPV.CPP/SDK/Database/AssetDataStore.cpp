@@ -2,10 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ParamChecker.h>
-#include <Core/BRInt.h>
-#include <SDK/Common/Utils.h>
 #include "AssetDataStore.h"
+
+#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Utils.h>
+
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,17 +2,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <set>
-
-#include "secp256k1.h"
-#include <SDK/Common/Utils.h>
-#include <boost/bind.hpp>
-#include <SDK/Common/ByteStream.h>
-#include <BigIntegerLibrary.hh>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
 #include "MultiSignAccount.h"
 #include "AccountFactory.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
+
+#include <Core/BRInt.h>
+#include <Core/BRAddress.h>
+
+#include <BigIntegerLibrary.hh>
+#include <secp256k1.h>
+#include <set>
+#include <boost/bind.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

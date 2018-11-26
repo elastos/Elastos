@@ -5,13 +5,12 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 #define __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 
+#include "Sqlite.h"
+#include "TableBase.h"
+
+#include <Core/BRInt.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
-
-#include "BRInt.h"
-#include "Sqlite.h"
-#include "CMemBlock.h"
-#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {

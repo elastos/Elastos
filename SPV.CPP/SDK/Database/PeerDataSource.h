@@ -5,12 +5,13 @@
 #ifndef __ELASTOS_SDK_PEERDATASOURCE_H__
 #define __ELASTOS_SDK_PEERDATASOURCE_H__
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
-
-#include "BRInt.h"
 #include "Sqlite.h"
 #include "TableBase.h"
+
+#include <Core/BRInt.h>
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

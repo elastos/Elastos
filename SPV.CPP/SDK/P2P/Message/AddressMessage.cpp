@@ -2,12 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <arpa/inet.h>
-#include <SDK/Common/Log.h>
-
-#include "BRArray.h"
-#include "SDK/P2P/Peer.h"
 #include "AddressMessage.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/P2P/Peer.h>
+
+#include <Core/BRAddress.h>
+#include <Core/BRArray.h>
+
+#include <arpa/inet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -51,19 +54,19 @@ namespace Elastos {
 					PeerInfo p(address, port, timestamp, services);
 
 					char host[INET6_ADDRSTRLEN] = {0};
-					if (p->isIPv4())
-						inet_ntop(AF_INET, &p->getAddress().u32[3], host, sizeof(host));
+					if (p.IsIPv4())
+						inet_ntop(AF_INET, &p.Address.u32[3], host, sizeof(host));
 					else
-						inet_ntop(AF_INET6, &p->getAddress().u8[0], host, sizeof(host));
+						inet_ntop(AF_INET6, &p.Address.u8[0], host, sizeof(host));
 					_peer->Pdebug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
-							 i, host, p->getTimestamp(), p->getPort(), p->getServices());
+							 i, host, p.Timestamp, p.Port, p.Services);
 
-					if (!(p->getServices() & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
-					if (!p->isIPv4())
+					if (!(p.Services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+					if (!p.IsIPv4())
 						continue; // ignore IPv6 for now
-					if (p->isIPv4() &&
-						p->getAddress().u8[12] == 127 && p->getAddress().u8[13] == 0 &&
-						p->getAddress().u8[14] == 0 && p->getAddress().u8[15] == 1) {
+					if (p.IsIPv4() &&
+						p.Address.u8[12] == 127 && p.Address.u8[13] == 0 &&
+						p.Address.u8[14] == 0 && p.Address.u8[15] == 1) {
 						_peer->Pwarn("drop peers[{}]", i);
 						continue;
 					}

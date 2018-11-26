@@ -5,8 +5,9 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONPEERLIST_H__
 #define __ELASTOS_SDK_TRANSACTIONPEERLIST_H__
 
-#include "BRInt.h"
-#include "SDK/P2P/Peer.h"
+#include "Peer.h"
+
+#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,14 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "HeadersMessage.h"
+#include "GetBlocksMessage.h"
+#include "GetHeadersMessage.h"
+
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Common/Utils.h>
-#include "HeadersMessage.h"
-
-#include "SDK/P2P/Peer.h"
-#include "GetBlocksMessage.h"
-#include "SDK/P2P/PeerManager.h"
-#include "GetHeadersMessage.h"
+#include <SDK/P2P/Peer.h>
+#include <SDK/P2P/PeerManager.h>
+#include <Core/BRAddress.h>
 
 #define BLOCK_MAX_TIME_DRIFT      (2*60*60) // the furthest in the future a block is allowed to be timestamped
 

@@ -2,16 +2,18 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
-#include <stdlib.h>
-#include <Core/BRTransaction.h>
-#include <Core/BRMerkleBlock.h>
+#include "AuxPow.h"
+
+#include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 
-#include "BRMerkleBlock.h"
-#include "BRAddress.h"
-#include "Utils.h"
-#include "AuxPow.h"
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRAddress.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRMerkleBlock.h>
+
+#include <stdlib.h>
 
 namespace Elastos {
 	namespace ElaWallet {

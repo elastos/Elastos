@@ -2,12 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-#include <stdexcept>
-
 #include "ParamChecker.h"
 #include "CommonConfig.h"
-#include "BRBIP39Mnemonic.h"
+
+#include <Core/BRBIP39Mnemonic.h>
+
+#include <sstream>
+#include <stdexcept>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -2,13 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRChainParams.h>
-#include <BRMerkleBlock.h>
-#include <Core/BRChainParams.h>
+#include "ChainParams.h"
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
 
-#include "ChainParams.h"
+#include <Core/BRChainParams.h>
+#include <Core/BRMerkleBlock.h>
+#include <Core/BRChainParams.h>
 
 namespace Elastos {
 	namespace ElaWallet {

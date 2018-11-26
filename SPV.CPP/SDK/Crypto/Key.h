@@ -5,14 +5,13 @@
 #ifndef __ELASTOS_SDK_KEY_H__
 #define __ELASTOS_SDK_KEY_H__
 
+#include <SDK/Wrapper/Wrapper.h>
+#include <SDK/Common/CMemBlock.h>
+
+#include <Core/BRKey.h>
+
 #include <boost/shared_ptr.hpp>
-
-#include "openssl/obj_mac.h"
-
-#include "BRKey.h"
-#include "BRAddress.h"
-#include "Wrapper.h"
-#include "CMemBlock.h"
+#include <openssl/obj_mac.h>
 
 namespace Elastos {
 	namespace ElaWallet {

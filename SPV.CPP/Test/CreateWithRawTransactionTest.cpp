@@ -9,7 +9,7 @@
 #include "catch.hpp"
 
 #include "Transaction/Transaction.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 #include "Log.h"
 
 #include "MasterWalletManager.h"

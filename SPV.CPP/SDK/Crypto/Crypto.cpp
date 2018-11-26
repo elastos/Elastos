@@ -3,12 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <openssl/evp.h>
-#include <openssl/ssl.h>
-#include "Utils.h"
-
 #include "Crypto.h"
 
+#include <SDK/Common/Utils.h>
+
+#include <openssl/evp.h>
+#include <openssl/ssl.h>
 
 static int PLAINTEXTMAXLENGTH = CIPHERTEXTMAXLENGTH;
 

@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_ATTRIBUTE_H__
 #define __ELASTOS_SDK_ATTRIBUTE_H__
 
-#include <boost/shared_ptr.hpp>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <SDK/Common/CMemBlock.h>
 
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
-#include "CMemBlock.h"
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

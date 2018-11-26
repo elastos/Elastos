@@ -2,17 +2,18 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Mnemonic.h"
+
+#include <SDK/Common/ParamChecker.h>
+
+#include <Core/BRBIP39WordsEn.h>
+
 #include <fstream>
 #include <sstream>
-
-#include "BRBIP39WordsEn.h"
-
-#include "Mnemonic.h"
 
 #define MNEMONIC_PREFIX "mnemonic_"
 #define MNEMONIC_EXTENSION ".txt"
 #define DEFAULT_LANGUAGE "english"
-#include "SDK/Common/ParamChecker.h"
 
 namespace fs = boost::filesystem;
 

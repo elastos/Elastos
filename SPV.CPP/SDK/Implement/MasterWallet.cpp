@@ -2,28 +2,29 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <vector>
-#include <boost/filesystem.hpp>
+#include "IdChainSubWallet.h"
+#include "SidechainSubWallet.h"
+#include "MainchainSubWallet.h"
+#include "SubWallet.h"
+#include "MasterWallet.h"
+
+#include <SDK/Account/SubAccountGenerator.h>
+#include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
+#include <Config.h>
+
 #include <Core/BRKey.h>
 #include <Core/BRBIP32Sequence.h>
 #include <Core/BRChainParams.h>
-#include <SDK/Account/SubAccountGenerator.h>
+#include <Core/BRBase58.h>
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRCrypto.h>
 
-#include "BRBase58.h"
-#include "BRBIP39Mnemonic.h"
-#include "BRCrypto.h"
-
-#include "Utils.h"
-#include "SDK/Crypto/MasterPubKey.h"
-#include "MasterWallet.h"
-#include "SubWallet.h"
-#include "IdChainSubWallet.h"
-#include "MainchainSubWallet.h"
-#include "SidechainSubWallet.h"
-#include "Log.h"
-#include "Config.h"
-#include "ParamChecker.h"
-#include "Plugin/Transaction/Payload/PayloadRegisterIdentification.h"
+#include <vector>
+#include <boost/filesystem.hpp>
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -154,7 +155,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			CMemBlock seed128 = Utils::GenerateSeed128();
+			CMBlock seed128 = Utils::GenerateSeed128();
 			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
 			return Utils::GeneratePhraseFromSeed(seed128, mnemonic.words());
 		}

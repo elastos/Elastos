@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <cstring>
+#include "PayloadCoinBase.h"
 #include <SDK/Common/Utils.h>
 
-#include "PayloadCoinBase.h"
-#include "BRInt.h"
+#include <Core/BRInt.h>
+#include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {

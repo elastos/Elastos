@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
 #define __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
 
-#include <map>
-
 #include "IPayload.h"
+
+#include <map>
 
 namespace Elastos {
 	namespace ElaWallet {

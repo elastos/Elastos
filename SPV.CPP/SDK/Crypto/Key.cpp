@@ -2,24 +2,24 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <string.h>
-#include <secp256k1.h>
-#include <Core/BRKey.h>
-
-#include "BRBIP39Mnemonic.h"
-#include "BRBIP32Sequence.h"
-#include "BRBase58.h"
-#include "BRBIP38Key.h"
-#include "BRCrypto.h"
-#include "BRAddress.h"
-
-#include "SDK/Common/Utils.h"
-#include "Log.h"
 #include "Key.h"
-#include "ByteStream.h"
-#include "Plugin/Transaction/Transaction.h"
-#include "ParamChecker.h"
-#include "Utils.h"
+
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Common/ParamChecker.h>
+
+#include <Core/BRKey.h>
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRBIP32Sequence.h>
+#include <Core/BRBase58.h>
+#include <Core/BRBIP38Key.h>
+#include <Core/BRCrypto.h>
+#include <Core/BRAddress.h>
+
+#include <secp256k1.h>
+#include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {

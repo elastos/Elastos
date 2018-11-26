@@ -5,12 +5,13 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONINPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
-#include <string>
+#include <SDK/Common/CMemBlock.h>
+#include <SDK/Common/ByteStream.h>
+
+#include <Core/BRInt.h>
 #include <nlohmann/json.hpp>
 
-#include "BRInt.h"
-#include "CMemBlock.h"
-#include "ByteStream.h"
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {

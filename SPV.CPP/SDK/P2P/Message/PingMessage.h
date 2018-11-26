@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_PINGMESSAGE_H__
 #define __ELASTOS_SDK_PINGMESSAGE_H__
 
-#include <boost/function.hpp>
-
 #include "Message.h"
+
+#include <boost/function.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

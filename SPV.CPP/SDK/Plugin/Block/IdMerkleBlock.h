@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_IDMERKLEBLOCK_H__
 #define __ELASTOS_SDK_IDMERKLEBLOCK_H__
 
-#include "BRMerkleBlock.h"
-#include "IdAuxPow.h"
+#include <Core/BRMerkleBlock.h>
+#include <SDK/Plugin/Block/IdAuxPow.h>
 
 namespace Elastos {
 	namespace ElaWallet {

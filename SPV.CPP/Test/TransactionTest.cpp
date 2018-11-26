@@ -11,7 +11,7 @@
 #include "BRTransaction.h"
 #include "SDK/Base/Address.h"
 #include "Payload/PayloadCoinBase.h"
-#include "Utils.h"
+#include <SDK/Common/Utils.h>
 #include "Log.h"
 #include "TestHelper.h"
 
