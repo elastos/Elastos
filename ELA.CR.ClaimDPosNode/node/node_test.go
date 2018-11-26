@@ -35,7 +35,7 @@ func initLocalNode(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	err = Init(chainStore)
+	err = Init(chainStore, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}

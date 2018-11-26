@@ -72,13 +72,15 @@ func NewBlockchain(height uint32) *Blockchain {
 	}
 }
 
-func Init(store IChainStore) error {
+func Init(store IChainStore, versions HeightVersions) error {
+	DefaultLedger = new(Ledger)
+	DefaultLedger.HeightVersions = versions
+
 	genesisBlock, err := GetGenesisBlock()
 	if err != nil {
 		return errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
 	}
 
-	DefaultLedger = new(Ledger)
 	DefaultLedger.Blockchain = NewBlockchain(0)
 	DefaultLedger.Store = store
 	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
@@ -95,7 +97,6 @@ func Init(store IChainStore) error {
 	DefaultLedger.Store.InitProducerVotes()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(height)
-
 
 	return nil
 }
@@ -131,7 +132,24 @@ func GetGenesisBlock() (*Block, error) {
 		Programs:   []*Program{},
 	}
 
-	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
+	coinBase := &Transaction{
+		Version:        0,
+		TxType:         CoinBase,
+		PayloadVersion: PayloadCoinBaseVersion,
+		Payload:        &PayloadCoinBase{},
+		Inputs: []*Input{
+			{
+				Previous: OutPoint{
+					TxID:  EmptyHash,
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Attributes: []*Attribute{},
+		LockTime:   0,
+		Programs:   []*Program{},
+	}
 	coinBase.Outputs = []*Output{
 		{
 			AssetID:     elaCoin.Hash(),
@@ -162,6 +180,7 @@ func GetGenesisBlock() (*Block, error) {
 
 func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint32) *Transaction {
 	return &Transaction{
+		Version:        9,
 		TxType:         CoinBase,
 		PayloadVersion: PayloadCoinBaseVersion,
 		Payload:        coinBasePayload,

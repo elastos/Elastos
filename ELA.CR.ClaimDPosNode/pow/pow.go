@@ -13,6 +13,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
@@ -94,14 +95,18 @@ func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, minerAddr string
 	}
 	txn.Outputs = []*Output{
 		{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
-			Value:       0,
-			ProgramHash: FoundationAddress,
+			AssetID:       DefaultLedger.Blockchain.AssetID,
+			Value:         0,
+			ProgramHash:   FoundationAddress,
+			OutputType:    DefaultOutput,
+			OutputPayload: &outputpayload.DefaultOutput{},
 		},
 		{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
-			Value:       0,
-			ProgramHash: *minerProgramHash,
+			AssetID:       DefaultLedger.Blockchain.AssetID,
+			Value:         0,
+			ProgramHash:   *minerProgramHash,
+			OutputType:    DefaultOutput,
+			OutputPayload: &outputpayload.DefaultOutput{},
 		},
 	}
 
@@ -127,7 +132,7 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 	}
 
 	header := Header{
-		Version:    0,
+		Version:    1,
 		Previous:   *DefaultLedger.Blockchain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
@@ -418,9 +423,11 @@ func (pow *PowService) distributeDposReward(coinBaseTx *Transaction, reward comm
 	for _, v := range arbitratorsHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
-			Value:       individualBlockConfirmReward + individualProducerReward,
-			ProgramHash: *v,
+			AssetID:       DefaultLedger.Blockchain.AssetID,
+			Value:         individualBlockConfirmReward + individualProducerReward,
+			ProgramHash:   *v,
+			OutputType:    DefaultOutput,
+			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 
 		realDposReward += individualBlockConfirmReward + individualProducerReward
@@ -429,9 +436,11 @@ func (pow *PowService) distributeDposReward(coinBaseTx *Transaction, reward comm
 	for _, v := range candidatesHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
-			Value:       individualProducerReward,
-			ProgramHash: *v,
+			AssetID:       DefaultLedger.Blockchain.AssetID,
+			Value:         individualProducerReward,
+			ProgramHash:   *v,
+			OutputType:    DefaultOutput,
+			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 
 		realDposReward += individualBlockConfirmReward
