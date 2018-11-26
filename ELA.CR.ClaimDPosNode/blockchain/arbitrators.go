@@ -25,6 +25,8 @@ type ArbitratorsListener interface {
 type Arbitrators interface {
 	NewBlocksListener
 
+	StartUp() error
+
 	GetArbitrators() [][]byte
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
@@ -57,6 +59,23 @@ type arbitrators struct {
 
 	listener ArbitratorsListener
 	lock     sync.Mutex
+}
+
+func (a *arbitrators) StartUp() error {
+	block, err := DefaultLedger.GetBlockWithHeight(DefaultLedger.Blockchain.BlockHeight)
+	if err != nil {
+		return err
+	}
+
+	if err = a.updateNextArbitrators(block); err != nil {
+		return err
+	}
+
+	if err = a.changeCurrentArbitrators(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
@@ -209,7 +228,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 func (a *arbitrators) updateNextArbitrators(block *core.Block) error {
 
 	producers, err := DefaultLedger.HeightVersions.GetProducersDesc(block)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
