@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"errors"
+
 	. "github.com/elastos/Elastos.ELA/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -17,6 +18,9 @@ type NewBlocksListener interface {
 }
 
 type HeightVersions interface {
+	GetDefaultTxVersion(blockHeight uint32) byte
+	GetDefaultBlockVersion(blockHeight uint32) uint32
+
 	CheckOutputPayload(blockHeight uint32, tx *Transaction, output *Output) error
 	CheckOutputProgramHash(blockHeight uint32, tx *Transaction, programHash Uint168) error
 	CheckCoinbaseMinerReward(blockHeight uint32, tx *Transaction, totalReward Fixed64) error

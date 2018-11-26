@@ -18,14 +18,20 @@ func InitVersions() blockchain.HeightVersions {
 	return NewHeightVersions(
 		map[uint32]VersionInfo{
 			GenesisHeightVersion: {
+				0,
+				0,
 				map[byte]TxVersion{txV0.GetVersion(): txV0},
 				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
 			HeightVersion1: {
+				1,
+				0,
 				map[byte]TxVersion{txV1.GetVersion(): txV1},
 				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
 			HeightVersion2: {
+				9,
+				1,
 				map[byte]TxVersion{txVCurrent.GetVersion(): txVCurrent},
 				map[uint32]BlockVersion{blockVCurrent.GetVersion(): blockVCurrent},
 			},
