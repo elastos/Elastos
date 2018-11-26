@@ -441,7 +441,7 @@ func (pow *PowService) distributeDposReward(coinBaseTx *Transaction, reward comm
 	}
 
 	change := reward - realDposReward
-	if change > 0 {
+	if change < 0 {
 		return 0, errors.New("Real dpos reward more than reward limit.")
 	}
 	return change, nil

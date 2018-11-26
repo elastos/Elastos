@@ -103,8 +103,11 @@ func main() {
 	defer chainStore.Close()
 
 	err = blockchain.Init(chainStore)
-	initVersions()
 	if err != nil {
+		goto ERROR
+	}
+	initVersions()
+	if err = blockchain.DefaultLedger.Arbitrators.StartUp(); err != nil {
 		goto ERROR
 	}
 
