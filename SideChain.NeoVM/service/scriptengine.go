@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/elastos/Elastos.ELA.SideChain/database"
-
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"

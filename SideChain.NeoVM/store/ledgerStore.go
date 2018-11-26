@@ -52,11 +52,20 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 		}
 
 		if txn.TxType == side.Deploy {
-			c.PersistDeployTransaction(b, txn, batch)
+			err := c.PersistDeployTransaction(b, txn, batch)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
 		}
 
 		if txn.TxType == types.Invoke {
-			c.persisInvokeTransaction(b, txn, batch)
+			err := c.persisInvokeTransaction(b, txn, batch)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 		}
 	}
 	return nil

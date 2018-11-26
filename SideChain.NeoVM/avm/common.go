@@ -446,7 +446,7 @@ func PeekStackItem(e *ExecutionEngine) datatype.StackItem  {
 func PeekNInt(i int , e *ExecutionEngine) int {
 	x := PeekNBigInt(i, e)
 	n := int(x.Int64())
-	return n;
+	return n
 }
 
 func PeekNBigInt(i int, e *ExecutionEngine) *big.Int {
@@ -472,7 +472,7 @@ func Peek(e *ExecutionEngine) interface{}  {
 }
 
 func EvaluationStackCount(e *ExecutionEngine) int {
-	return e.evaluationStack.Count();
+	return e.evaluationStack.Count()
 }
 
 func Push(e *ExecutionEngine, element interface{})  {

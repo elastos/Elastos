@@ -125,6 +125,7 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		Description: payloadDeploy.Description,
 		ProgramHash: payloadDeploy.ProgramHash,
 	})
+	log.Info("deploy contract suc:", codeHash.String())
 	dbCache.Commit()
 	return nil
 }
@@ -145,8 +146,6 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 	}
 	dbCache := blockchain.NewDBCache(c)
 	stateMachine := service.NewStateMachine(dbCache, dbCache)
-	////stateMachine.StateReader.NotifyEvent.Subscribe(events.EventRunTimeNotify, c.onContractNotify)
-	////stateMachine.StateReader.LogEvent.Subscribe(events.EventRunTimeLog, onContractLog)
 	smartcontract, err := smartcontract.NewSmartContract(&smartcontract.Context{
 		Caller:         payloadInvoke.ProgramHash,
 		StateMachine:   *stateMachine,
@@ -163,18 +162,16 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 		Trigger:        avm.Application,
 	})
 	if err != nil {
-		//log.Error(err.Error(), tx.Hash())
 		//httpwebsocket.PushResult(tx.Hash(), int64(SmartCodeError), INVOKE_TRANSACTION, err)
 		fmt.Println(err.Error(), tx.Hash())
 	}
 
 	ret, err := smartcontract.InvokeContract()
 	if err != nil {
-		//log.Info("contract failed:", err)
 		//httpwebsocket.PushResult(tx.Hash(), int64(OutOfGas), INVOKE_TRANSACTION, ret)
 		return err
 	}
-	fmt.Println("InvokeContract ret=", ret)
+	log.Info("InvokeContract ret=",ret)
 	stateMachine.CloneCache.Commit()
 	dbCache.Commit()
 	//httpwebsocket.PushResult(tx.Hash(), int64(Success), INVOKE_TRANSACTION, ret)

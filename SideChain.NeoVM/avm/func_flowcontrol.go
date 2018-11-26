@@ -1,8 +1,6 @@
 package avm
 
 import (
-	"fmt"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
@@ -51,12 +49,12 @@ func opRet(e *ExecutionEngine) (VMState, error) {
 
 func opAppCall(e *ExecutionEngine) (VMState, error) {
 	if e.table == nil {
-		return FAULT, nil
+		return FAULT, errors.ErrTableIsNil
 	}
 	script_hash := e.context.OpReader.ReadBytes(20)
 	script := e.table.GetScript(script_hash)
 	if script == nil {
-		return FAULT, nil
+		return FAULT, errors.ErrNotFindScript
 	}
 	if e.opCode == TAILCALL {
 		e.invocationStack.Pop()
@@ -67,13 +65,13 @@ func opAppCall(e *ExecutionEngine) (VMState, error) {
 
 func opSysCall(e *ExecutionEngine) (VMState, error) {
 	if e.service == nil {
-		return FAULT, nil
+		return FAULT, errors.ErrServiceIsNil
 	}
 	success := e.service.Invoke(e.context.OpReader.ReadVarString(), e)
 	if success {
 		return NONE, nil
 	} else {
-		return FAULT, nil
+		return FAULT, errors.ErrNotSupportSysCall
 	}
 }
 
@@ -82,7 +80,7 @@ func opCallI(e *ExecutionEngine) (VMState, error) {
 	if err != nil {
 		return FAULT, err
 	}
-	pcount, err := e.context.OpReader.ReadByte();
+	pcount, err := e.context.OpReader.ReadByte()
 	if err != nil {
 		return FAULT, err
 	}
@@ -102,11 +100,11 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 	if e.table == nil {
 		return FAULT, nil
 	}
-	rvcount, err := e.context.OpReader.ReadByte();
+	_, err := e.context.OpReader.ReadByte()
 	if err != nil {
 		return FAULT ,err
 	}
-	pcount, err := e.context.OpReader.ReadByte();
+	pcount, err := e.context.OpReader.ReadByte()
 	if err != nil {
 		return FAULT, err
 	}
@@ -130,7 +128,6 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 	}
 
 	e.LoadScript(script, false)
-	fmt.Println("opCallE rvcount:", rvcount)
 
 	return NONE, nil
 }

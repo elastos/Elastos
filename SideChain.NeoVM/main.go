@@ -18,17 +18,21 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
 	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 )
 
 const (
@@ -214,6 +218,8 @@ func main() {
 		go printSyncState(ledgerStore.ChainStore, server)
 	}
 
+	events.Subscribe(handleRunTimeEvents)
+
 	<-interrupt.C
 }
 
@@ -343,5 +349,36 @@ func printSyncState(db *blockchain.ChainStore, server server.Server) {
 		}
 		buf.WriteString("]")
 		logger.Info(buf.String())
+	}
+}
+
+
+func handleRunTimeEvents(et *events.Event) {
+	if et.Type == event.ETRunTimeNotify {
+		notifyInfo(et.Data.(datatype.StackItem))
+	} else if et.Type == event.ETRunTimeLog {
+		data := et.Data.(datatype.StackItem)
+		avmlog.Info("onRunTimeLog:", string(data.GetByteArray()))
+	}
+}
+
+func notifyInfo(item datatype.StackItem)  {
+	switch item.(type) {
+	case *datatype.Boolean:
+		avmlog.Info("notifyInfo:", item.GetBoolean())
+	case *datatype.Integer:
+		avmlog.Info("notifyInfo:", item.GetBigInteger())
+	case *datatype.ByteArray:
+		avmlog.Info("notifyInfo:", common.BytesToHexString(item.GetByteArray()))
+	case *datatype.GeneralInterface:
+		interop := item.GetInterface()
+		buf := bytes.NewBuffer([]byte{})
+		interop.Serialize(buf)
+		avmlog.Info(common.BytesToHexString(buf.Bytes()))
+	case *datatype.Array:
+		items := item.GetArray()
+		for i := 0; i < len(items); i++ {
+			notifyInfo(items[i])
+		}
 	}
 }

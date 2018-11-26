@@ -5,13 +5,13 @@ import (
 	"errors"
 	"io"
 	"bytes"
-	"fmt"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 
 	st "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
@@ -20,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 )
 
 type StateReader struct {
@@ -129,13 +130,13 @@ func (s *StateReader) RuntimeGetTrigger(e *avm.ExecutionEngine) bool {
 
 func (s *StateReader) RuntimeNotify(e *avm.ExecutionEngine) bool {
 	item := avm.PopStackItem(e)
-	fmt.Println("runtimeNotify:",item)
+	events.Notify(event.ETRunTimeNotify, item)
 	return true
 }
 
 func (s *StateReader) RuntimeLog(e *avm.ExecutionEngine) bool {
 	data := avm.PopStackItem(e)
-	fmt.Println("runtimeLog:",data)
+	events.Notify(event.ETRunTimeLog, data)
 	return true
 }
 

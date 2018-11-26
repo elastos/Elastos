@@ -1,6 +1,9 @@
 package avm
 
-import "math/big"
+import (
+	"math/big"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
+)
 
 func opDupFromAltStack(e *ExecutionEngine) (VMState, error) {
 	e.evaluationStack.Push(e.altStack.Peek(0))
@@ -9,7 +12,7 @@ func opDupFromAltStack(e *ExecutionEngine) (VMState, error) {
 
 func opToAltStack(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	e.altStack.Push(e.evaluationStack.Pop())
 	return NONE, nil
@@ -22,11 +25,11 @@ func opFromAltStack(e *ExecutionEngine) (VMState, error) {
 
 func opXDrop(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	n := int(AssertStackItem(e.evaluationStack.Pop()).GetBigInteger().Int64())
 	if n < 0 {
-		return FAULT, nil
+		return FAULT, errors.ErrBadValue
 	}
 	e.evaluationStack.Remove(n)
 	return NONE, nil
@@ -34,11 +37,11 @@ func opXDrop(e *ExecutionEngine) (VMState, error) {
 
 func opXSwap(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	n := int(AssertStackItem(e.evaluationStack.Pop()).GetBigInteger().Int64())
 	if n <= 0 || n > e.evaluationStack.Count()-1 {
-		return FAULT, nil
+		return FAULT, errors.ErrBadValue
 	}
 	e.evaluationStack.Swap(0, n)
 	return NONE, nil
@@ -46,7 +49,7 @@ func opXSwap(e *ExecutionEngine) (VMState, error) {
 
 func opXTuck(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	n := int(AssertStackItem(e.evaluationStack.Pop()).GetBigInteger().Int64())
 	if n < 0 || n > e.evaluationStack.Count()-1 {
@@ -63,7 +66,7 @@ func opDepth(e *ExecutionEngine) (VMState, error) {
 
 func opDrop(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	e.evaluationStack.Pop()
 	return NONE, nil
@@ -71,7 +74,7 @@ func opDrop(e *ExecutionEngine) (VMState, error) {
 
 func opDup(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	e.evaluationStack.Push(e.evaluationStack.Peek(0))
 	return NONE, nil
@@ -79,7 +82,7 @@ func opDup(e *ExecutionEngine) (VMState, error) {
 
 func opNip(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := e.evaluationStack.Pop()
 	e.evaluationStack.Pop()
@@ -89,7 +92,7 @@ func opNip(e *ExecutionEngine) (VMState, error) {
 
 func opOver(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := e.evaluationStack.Pop()
 	x1 := e.evaluationStack.Peek(0)
@@ -100,14 +103,14 @@ func opOver(e *ExecutionEngine) (VMState, error) {
 
 func opPick(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	n := int(AssertStackItem(e.evaluationStack.Pop()).GetBigInteger().Int64())
 	if n < 0 {
-		return FAULT, nil
+		return FAULT, errors.ErrBadValue
 	}
 	if e.evaluationStack.Count() < n+1 {
-		return FAULT, nil
+		return FAULT, errors.ErrBadValue
 	}
 	e.evaluationStack.Push(e.evaluationStack.Peek(n))
 	return NONE, nil
@@ -115,7 +118,7 @@ func opPick(e *ExecutionEngine) (VMState, error) {
 
 func opRoll(e *ExecutionEngine) (VMState, error) {
 	n := PopInt(e)
-	if n == 0 { return NONE, nil }
+	if n == 0 { return NONE,  errors.ErrUnderStackLen }
 	inter := e.evaluationStack.Remove(n)
 	if inter == nil {
 		inter, _ = NewStackItem(big.NewInt(0))
@@ -126,7 +129,7 @@ func opRoll(e *ExecutionEngine) (VMState, error) {
 
 func opRot(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 3 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x3 := e.evaluationStack.Pop()
 	x2 := e.evaluationStack.Pop()
@@ -139,7 +142,7 @@ func opRot(e *ExecutionEngine) (VMState, error) {
 
 func opSwap(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := e.evaluationStack.Pop()
 	x1 := e.evaluationStack.Pop()
@@ -150,7 +153,7 @@ func opSwap(e *ExecutionEngine) (VMState, error) {
 
 func opTuck(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := e.evaluationStack.Pop()
 	x1 := e.evaluationStack.Pop()

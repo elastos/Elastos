@@ -1,5 +1,7 @@
 package avm
 
+import "github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
+
 func opCat(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
 		return FAULT, nil
@@ -31,9 +33,9 @@ func opSubStr(e *ExecutionEngine) (VMState, error) {
 	l1 := index + count
 	l2 := len(s)
 	if l1 > l2 {
-		return FAULT, nil
+		return FAULT, errors.ErrOverMaxArraySize
 	}
-	b := s[index : l2-l1+1]
+	b := s[index : l1]
 	err := pushData(e, b)
 	if err != nil {
 		return FAULT, err

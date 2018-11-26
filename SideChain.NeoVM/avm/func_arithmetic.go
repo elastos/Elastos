@@ -1,18 +1,22 @@
 package avm
 
-import "math/big"
+import (
+	"math/big"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
+)
 
 func opBigInt(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x); !ok {
+		return FAULT, err
 	}
 	result := BigIntOp(x, e.opCode)
-	if !checkBigInteger(result) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(result); !ok {
+		return FAULT, err
 	}
 	err := pushData(e, result)
 	if err != nil {
@@ -23,7 +27,7 @@ func opBigInt(e *ExecutionEngine) (VMState, error) {
 
 func opNot(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x := AssertStackItem(e.evaluationStack.Pop()).GetBoolean()
 	err := pushData(e, !x)
@@ -35,11 +39,11 @@ func opNot(e *ExecutionEngine) (VMState, error) {
 
 func opNz(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 1 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x); !ok {
+		return FAULT, err
 	}
 	err := pushData(e, BigIntComp(x, e.opCode))
 	if err != nil {
@@ -50,19 +54,19 @@ func opNz(e *ExecutionEngine) (VMState, error) {
 
 func opBigIntZip(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x2) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x2); !ok {
+		return FAULT, err
 	}
 	x1 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x1) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x1); !ok {
+		return FAULT, err
 	}
 	result := BigIntZip(x1, x2, e.opCode)
-	if !checkBigInteger(result) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(result); !ok {
+		return FAULT, err
 	}
 	err := pushData(e, result)
 	if err != nil {
@@ -71,8 +75,11 @@ func opBigIntZip(e *ExecutionEngine) (VMState, error) {
 	return NONE, nil
 }
 
-func checkBigInteger(value *big.Int) bool {
-	return len(value.Bytes()) < MAX_BIGINTEGER
+func checkBigInteger(value *big.Int) (bool, error) {
+	if len(value.Bytes()) < MAX_BIGINTEGER {
+		return true, nil
+	}
+	return false, errors.ErrOverBigIntegerSize
 }
 
 func opBoolZip(e *ExecutionEngine) (VMState, error) {
@@ -90,15 +97,15 @@ func opBoolZip(e *ExecutionEngine) (VMState, error) {
 
 func opBigIntComp(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 2 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x2) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x2); !ok {
+		return FAULT, err
 	}
 	x1 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x1) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x1); !ok {
+		return FAULT, err
 	}
 
 	err := pushData(e, BigIntMultiComp(x1, x2, e.opCode))
@@ -110,19 +117,19 @@ func opBigIntComp(e *ExecutionEngine) (VMState, error) {
 
 func opWithIn(e *ExecutionEngine) (VMState, error) {
 	if e.evaluationStack.Count() < 3 {
-		return FAULT, nil
+		return FAULT, errors.ErrUnderStackLen
 	}
 	b := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(b) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(b); !ok {
+		return FAULT, err
 	}
 	a := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(a) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(a); !ok {
+		return FAULT, err
 	}
 	x := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if !checkBigInteger(x) {
-		return FAULT, nil
+	if ok, err := checkBigInteger(x); !ok {
+		return FAULT, err
 	}
 	err := pushData(e, WithInOp(x, a, b))
 	if err != nil {

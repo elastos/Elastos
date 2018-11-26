@@ -5,12 +5,12 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+	sm "github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
-	"github.com/elastos/Elastos.ELA.SideChain/service"
+	ser "github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
@@ -18,6 +18,9 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 )
 
 const (
@@ -59,6 +62,8 @@ var (
 	rpcslog = backend.Logger("RPCS", cfg.LogLevel)
 	restlog = backend.Logger("REST", cfg.LogLevel)
 	eladlog = backend.Logger("ELAD", cfg.LogLevel)
+
+	avmlog  = backend.Logger("AVM", cfg.LogLevel)
 )
 
 // The default amount of logging is none.
@@ -66,13 +71,16 @@ func init() {
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
 	blockchain.UseLogger(bcdblog)
-	mempool.UseLogger(txmplog)
+	sm.UseLogger(txmplog)
 	netsync.UseLogger(synclog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	pow.UseLogger(minrlog)
 	spv.UseLogger(spvslog)
-	service.UseLogger(httplog)
+	ser.UseLogger(httplog)
 	jsonrpc.UseLogger(rpcslog)
 	restful.UseLogger(restlog)
+
+	avm.UseLogger(avmlog)
+	store.UseLogger(avmlog)
 }
