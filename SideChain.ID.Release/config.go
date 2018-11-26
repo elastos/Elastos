@@ -80,7 +80,6 @@ type appconfig struct {
 	MaxLogsFolderSize  int64    `ini:"logsfolderlimit" comment:"Maximum total size(MB) of log files can be reserved in logs folder (default 2GB)"`
 	MaxPerLogFileSize  int64    `ini:"logfilelimit" comment:"Maximum size of each log file in MB (default 20MB)"`
 	MonitorState       bool     `ini:"monitorstate" comment:"Print logs in 10 second interval to monitor node connections and sync status"`
-	dataDir            string
 }
 
 type spvconfig struct {
@@ -99,7 +98,6 @@ func loadNewConfig() (*appconfig, error) {
 		MaxPerLogFileSize: defaultMaxLogFileSize,
 		HttpRestPort:      30604,
 		HttpJsonPort:      30606,
-		dataDir:           defaultDataDir,
 	}
 	spvCfg := spvconfig{}
 
@@ -114,12 +112,10 @@ func loadNewConfig() (*appconfig, error) {
 	// while we're at it
 	if appCfg.TestNet {
 		numNets++
-		appCfg.dataDir = "./data_test"
 		activeNetParams = &params.TestNetParams
 	}
 	if appCfg.RegTest {
 		numNets++
-		appCfg.dataDir = "./data_regt"
 		activeNetParams = &params.RegNetParams
 	}
 	if numNets > 1 {
