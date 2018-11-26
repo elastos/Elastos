@@ -80,15 +80,15 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 	}
 	pool.AddToConfirmMap(confirm)
 
+	if err := pool.ConfirmBlock(confirm.Hash); err != nil {
+		return err
+	}
+
 	// notify arbiter new confirm received
 	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
 		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
 			v.OnConfirmReceived(confirm)
 		}
-	}
-
-	if err := pool.ConfirmBlock(confirm.Hash); err != nil {
-		return err
 	}
 
 	return nil
