@@ -20,6 +20,8 @@ type TxCheckMethod func(TxVersion) error
 type BlockCheckMethod func(BlockVersion) error
 
 type VersionInfo struct {
+	DefaultTxVersion        byte
+	DefaultBlockVersion     uint32
 	CompatibleTxVersions    map[byte]TxVersion
 	CompatibleBlockVersions map[uint32]BlockVersion
 }
@@ -27,6 +29,16 @@ type VersionInfo struct {
 type heightVersions struct {
 	versions      map[uint32]VersionInfo
 	sortedHeights []uint32
+}
+
+func (h *heightVersions) GetDefaultTxVersion(blockHeight uint32) byte {
+	heightKey := h.findLastAvailableHeightKey(blockHeight)
+	return h.versions[heightKey].DefaultTxVersion
+}
+
+func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
+	heightKey := h.findLastAvailableHeightKey(blockHeight)
+	return h.versions[heightKey].DefaultBlockVersion
 }
 
 func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *core.Transaction, output *core.Output) error {
@@ -90,11 +102,7 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun
 func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *core.Transaction) TxVersion {
 	// before HeightVersion2 tx version means tx type, use special get method instead
 	if blockHeight < HeightVersion2 {
-		if blockHeight < HeightVersion1 {
-			return info.CompatibleTxVersions[0]
-		} else {
-			return info.CompatibleTxVersions[1]
-		}
+		return info.CompatibleTxVersions[info.DefaultTxVersion]
 	}
 
 	v, ok := info.CompatibleTxVersions[byte(tx.Version)]

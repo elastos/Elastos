@@ -132,24 +132,7 @@ func GetGenesisBlock() (*Block, error) {
 		Programs:   []*Program{},
 	}
 
-	coinBase := &Transaction{
-		Version:        0,
-		TxType:         CoinBase,
-		PayloadVersion: PayloadCoinBaseVersion,
-		Payload:        &PayloadCoinBase{},
-		Inputs: []*Input{
-			{
-				Previous: OutPoint{
-					TxID:  EmptyHash,
-					Index: 0x0000,
-				},
-				Sequence: 0x00000000,
-			},
-		},
-		Attributes: []*Attribute{},
-		LockTime:   0,
-		Programs:   []*Program{},
-	}
+	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
 	coinBase.Outputs = []*Output{
 		{
 			AssetID:     elaCoin.Hash(),
@@ -180,7 +163,7 @@ func GetGenesisBlock() (*Block, error) {
 
 func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint32) *Transaction {
 	return &Transaction{
-		Version:        9,
+		Version:        TransactionVersion(DefaultLedger.HeightVersions.GetDefaultTxVersion(currentHeight)),
 		TxType:         CoinBase,
 		PayloadVersion: PayloadCoinBaseVersion,
 		Payload:        coinBasePayload,

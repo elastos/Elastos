@@ -2,9 +2,9 @@ package blockhistory
 
 import (
 	"errors"
+
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
-
 	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
