@@ -95,6 +95,8 @@ func Init(store IChainStore) error {
 	DefaultLedger.Store.InitProducerVotes()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(height)
+
+
 	return nil
 }
 
