@@ -185,17 +185,9 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 
 	blockReward := RewardAmountPerBlock
 	totalReward := totalTxFee + blockReward
-
-	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
-	rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
-	rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
-	var dposChange common.Fixed64
-	if dposChange, err = pow.distributeDposReward(msgBlock.Transactions[0], rewardDposArbiter); err != nil {
+	if err := DefaultLedger.HeightVersions.AssignCoinbaseTxRewards(msgBlock, totalReward); err != nil {
 		return nil, err
 	}
-	rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter + dposChange
-	msgBlock.Transactions[0].Outputs[0].Value = rewardCyberRepublic
-	msgBlock.Transactions[0].Outputs[1].Value = rewardMergeMiner
 
 	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {
@@ -405,50 +397,4 @@ out:
 	}
 
 	pow.wg.Done()
-}
-
-func (pow *PowService) distributeDposReward(coinBaseTx *Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
-	if uint32(len(arbitratorsHashes)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
-		return 0, errors.New("Current arbitrators count less than required arbitrators count.")
-	}
-	candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
-
-	totalBlockConfirmReward := float64(reward) * 0.25
-	totalTopProducersReward := float64(reward) * 0.75
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
-
-	realDposReward := common.Fixed64(0)
-	for _, v := range arbitratorsHashes {
-
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
-			AssetID:       DefaultLedger.Blockchain.AssetID,
-			Value:         individualBlockConfirmReward + individualProducerReward,
-			ProgramHash:   *v,
-			OutputType:    DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
-		})
-
-		realDposReward += individualBlockConfirmReward + individualProducerReward
-	}
-
-	for _, v := range candidatesHashes {
-
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &Output{
-			AssetID:       DefaultLedger.Blockchain.AssetID,
-			Value:         individualProducerReward,
-			ProgramHash:   *v,
-			OutputType:    DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
-		})
-
-		realDposReward += individualBlockConfirmReward
-	}
-
-	change := reward - realDposReward
-	if change < 0 {
-		return 0, errors.New("Real dpos reward more than reward limit.")
-	}
-	return change, nil
 }
