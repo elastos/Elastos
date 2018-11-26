@@ -271,15 +271,9 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 }
 
 func CheckOutputProgramHash(programHash Uint168) bool {
-	var empty = Uint168{}
 	prefix := programHash[0]
-	if prefix == PrefixStandard ||
-		prefix == PrefixMultisig ||
-		prefix == PrefixCrossChain ||
-		programHash == empty {
-		return true
-	}
-	return false
+	return prefix == PrefixStandard || prefix == PrefixMultisig || prefix == PrefixCrossChain
+
 }
 
 func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
