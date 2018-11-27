@@ -84,6 +84,21 @@ func (p *proposalDispatcher) ProcessVote(v core.DPosProposalVote, accept bool) {
 	log.Info("[ProcessVote] start")
 	defer log.Info("[ProcessVote] end")
 
+	if !blockchain.IsVoteValid(&v) {
+		log.Info("Invalid vote")
+		return
+	}
+
+	if p.alreadyExistVote(v) {
+		log.Info("Already has vote")
+		return
+	}
+
+	if anotherVote, legal := p.illegalMonitor.IsLegalVote(&v); !legal {
+		p.illegalMonitor.ProcessIllegalVote(&v, anotherVote)
+		return
+	}
+
 	if accept {
 		p.countAcceptedVote(v)
 	} else {
@@ -183,6 +198,7 @@ func (p *proposalDispatcher) CleanProposals() {
 	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
 
 	//todo clear pending proposals that are lower than current consensus height
+	p.illegalMonitor.Reset()
 }
 
 func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
@@ -204,6 +220,7 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 		return
 	}
 
+	p.illegalMonitor.AddProposal(d)
 	if anotherProposal, ok := p.illegalMonitor.IsLegalProposal(&d); !ok {
 		p.illegalMonitor.ProcessIllegalProposal(&d, anotherProposal)
 		return
@@ -369,7 +386,7 @@ func (p *proposalDispatcher) countAcceptedVote(v core.DPosProposalVote) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
-	if v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
+	if v.Accept {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes[v.Hash()] = v
 
@@ -384,7 +401,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
-	if !v.Accept && blockchain.IsVoteValid(&v) && !p.alreadyExistVote(v) {
+	if !v.Accept {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes[v.Hash()] = v
 
@@ -451,11 +468,7 @@ func (p *proposalDispatcher) setProcessingProposal(d core.DPosProposal) {
 
 	for _, v := range p.pendingVotes {
 		if v.ProposalHash.IsEqual(d.Hash()) {
-			if v.Accept {
-				p.countAcceptedVote(v)
-			} else {
-				p.countRejectedVote(v)
-			}
+			p.ProcessVote(v, v.Accept)
 		}
 	}
 	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
