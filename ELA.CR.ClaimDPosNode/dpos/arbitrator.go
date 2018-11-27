@@ -68,8 +68,12 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator() Arbitrator {
-	dposAccount := account.NewDposAccount()
+func NewArbitrator() (Arbitrator, error) {
+	dposAccount, err := account.NewDposAccount()
+	if err != nil {
+		log.Error("Init dpos account error")
+		return nil, err
+	}
 
 	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
 	pk := config.Parameters.GetArbiterID()
@@ -79,7 +83,7 @@ func NewArbitrator() Arbitrator {
 	network, err := NewDposNetwork(id, dposManager, dposAccount)
 	if err != nil {
 		log.Error("Init p2p network error")
-		return nil
+		return nil, err
 	}
 
 	eventMoniter := log.NewEventMoniter()
@@ -102,7 +106,7 @@ func NewArbitrator() Arbitrator {
 		network:        network,
 	}
 
-	return result
+	return result, nil
 }
 
 func init() {

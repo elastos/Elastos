@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/elastos/Elastos.ELA/dpos"
 	"os"
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
 	"github.com/elastos/Elastos.ELA/pow"
@@ -67,7 +67,7 @@ func main() {
 	var err error
 	var noder protocol.Noder
 	log.Info("Node version: ", config.Version)
-	log.Info("1. BlockChain init")
+	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
@@ -83,12 +83,23 @@ func main() {
 		goto ERROR
 	}
 
-	log.Info("2. Start the P2P networks")
+	if config.Parameters.EnableArbiter {
+		log.Info("Start the manager")
+		arbitrator, err := dpos.NewArbitrator()
+		if err != nil {
+			goto ERROR
+		}
+		arbitrator.Start()
+		blockchain.DefaultLedger.Blockchain.NewBlocksListeners = append(blockchain.DefaultLedger.Blockchain.NewBlocksListeners, arbitrator)
+		blockchain.DefaultLedger.Arbitrators.RegisterListener(arbitrator)
+	}
+
+	log.Info("Start the P2P networks")
 	noder = node.InitLocalNode()
 
 	servers.ServerNode = noder
 
-	log.Info("3. Start the RPC service")
+	log.Info("Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
 
 	noder.WaitForSyncFinish()
@@ -98,16 +109,8 @@ func main() {
 		go httpnodeinfo.StartServer()
 	}
 
-	log.Info("4. Start consensus")
+	log.Info("Start consensus")
 	startConsensus()
-
-	if config.Parameters.EnableArbiter {
-		log.Info("5. Start the manager")
-		arbitrator := dpos.NewArbitrator()
-		arbitrator.Start()
-		blockchain.DefaultLedger.Blockchain.NewBlocksListeners = append(blockchain.DefaultLedger.Blockchain.NewBlocksListeners, arbitrator)
-		blockchain.DefaultLedger.Arbitrators.RegisterListener(arbitrator)
-	}
 
 	select {}
 ERROR:

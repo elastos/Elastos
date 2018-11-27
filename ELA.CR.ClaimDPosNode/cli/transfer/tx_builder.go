@@ -17,10 +17,11 @@ import (
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/urfave/cli"
 )
 
@@ -151,7 +152,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 
 	// Check from address
-	password, err := clicom.GetPassword([]byte{}, false)
+	password, err := util.GetPassword([]byte{}, false)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +205,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		txOutputs = append(txOutputs, txOutput)
 	}
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", httputil.Params{
 		"addresses": []string{fromAddress},
 	})
 	if err != nil {
