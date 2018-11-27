@@ -44,7 +44,7 @@ namespace Elastos {
 				CoinConfig config;
 				config.ChainId = it.key();
 				config.Type = convertToSubWalletType(it.value()["Type"].get<std::string>());
-				config.Index = it.value()["CoinIndex"].get<uint32_t>();
+				config.Index = 0;//it.value()["CoinIndex"].get<uint32_t>();
 				config.MinFee = it.value()["MinFee"].get<uint64_t>();
 				config.BlockType = it.value()["PluginType"].get<std::string>();
 				config.NetType = it.value()["NetType"].get<std::string>();
