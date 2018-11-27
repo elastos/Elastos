@@ -32,18 +32,18 @@ namespace Elastos {
 			off += sizeof(uint32_t);
 
 			if (off + count * 36 > msg.GetSize()) {
-				_peer->Perror("malformed inv message, length is {}, should be {} for {} item(s)", msg.GetSize(),
-							  off + count * 36, count);
+				_peer->error("malformed inv message, length is {}, should be {} for {} item(s)", msg.GetSize(),
+							 off + count * 36, count);
 				return false;
 			} else if (count > MAX_GETDATA_HASHES) {
-				_peer->Perror("dropping inv message, {} is too many items, max is {}", count,
-							  MAX_GETDATA_HASHES);
+				_peer->error("dropping inv message, {} is too many items, max is {}", count,
+							 MAX_GETDATA_HASHES);
 				return false;
 			} else {
 				const uint8_t *transactions[count], *blocks[count];
 				size_t i, txCount = 0, blockCount = 0;
 
-				_peer->Pinfo("got inv with {} item(s)", count);
+				_peer->info("got inv with {} item(s)", count);
 
 				for (i = 0; i < count; i++) {
 					type = inv_type(UInt32GetLE(&msg[off]));
@@ -59,15 +59,15 @@ namespace Elastos {
 				}
 
 				if (txCount > 0 && !_peer->SentFilter() && !_peer->SentMempool() && !_peer->SentGetblocks()) {
-					_peer->Perror("got inv message before loading a filter");
+					_peer->error("got inv message before loading a filter");
 					return false;
 				} else if (txCount > 10000) { // sanity check
-					_peer->Perror("too many transactions, disconnecting");
+					_peer->error("too many transactions, disconnecting");
 					return false;
 				} else if (_peer->GetCurrentBlockHeight() > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
 						   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blockCount <
 						   _peer->GetLastBlock()) {
-					_peer->Perror("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
+					_peer->error("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					return false;
 				} else {
 					if (!_peer->SentFilter() && !_peer->SentGetblocks()) blockCount = 0;
@@ -106,7 +106,7 @@ namespace Elastos {
 						}
 					}
 
-					_peer->Pinfo("got inv with txCount={}, blockCount={}", txHashes.size(), blockCount);
+					_peer->info("got inv with txCount={}, blockCount={}", txHashes.size(), blockCount);
 					_peer->AddKnownTxHashes(txHashes);
 					if (txHashes.size() > 0 || blockCount > 0) {
 						GetDataParameter getDataParam(txHashes, blockHashes);
@@ -124,7 +124,7 @@ namespace Elastos {
 					}
 
 					if (txCount > 0 && !_peer->getMemPoolCallback().empty()) {
-						_peer->Pinfo("got initial mempool response");
+						_peer->info("got initial mempool response");
 						PingParameter pingParameter;
 						pingParameter.callback = _peer->getMemPoolCallback();
 						_peer->SendMessage(MSG_PING, pingParameter);
@@ -155,7 +155,7 @@ namespace Elastos {
 					stream.writeBytes(&_peer->KnownTxHashes()[knownCount + i], sizeof(UInt256));
 				}
 
-				_peer->Pinfo("sending inv tx count={} type={}", txCount, inv_tx);
+				_peer->info("sending inv tx count={} type={}", txCount, inv_tx);
 				SendMessage(stream.getBuffer(), Type());
 			}
 		}

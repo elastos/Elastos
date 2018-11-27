@@ -410,9 +410,9 @@ namespace Elastos {
 				_listener(listener) {
 		}
 
-		void WrappedExceptionTransactionHubListener::balanceChanged() {
+		void WrappedExceptionTransactionHubListener::balanceChanged(uint64_t balance) {
 			try {
-				_listener->balanceChanged();
+				_listener->balanceChanged(balance);
 			}
 			catch (std::exception ex) {
 				Log::error("Wallet callback (balanceChanged) error: {}", ex.what());
@@ -469,10 +469,10 @@ namespace Elastos {
 				_executor(executor) {
 		}
 
-		void WrappedExecutorTransactionHubListener::balanceChanged() {
-			_executor->execute(Runnable([this]() -> void {
+		void WrappedExecutorTransactionHubListener::balanceChanged(uint64_t balance) {
+			_executor->execute(Runnable([this, balance]() -> void {
 				try {
-					_listener->balanceChanged();
+					_listener->balanceChanged(balance);
 				}
 				catch (std::exception ex) {
 					Log::error("Wallet callback (balanceChanged) error: {}", ex.what());

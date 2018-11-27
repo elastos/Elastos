@@ -26,18 +26,18 @@ namespace Elastos {
 
 			bool r = true;
 			if (off == 0 || off + count * 30 > msg.GetSize()) {
-				_peer->Perror("malformed addr message, length is {}, should be {} for {} address(es)", msg.GetSize(),
-						   BRVarIntSize(count) + 30*count, count);
+				_peer->error("malformed addr message, length is {}, should be {} for {} address(es)", msg.GetSize(),
+							 BRVarIntSize(count) + 30 * count, count);
 				r = false;
 			} else if (count > 1000) {
-				_peer->Perror("dropping addr message, {} is too many addresses, max is 1000", count);
+				_peer->error("dropping addr message, {} is too many addresses, max is 1000", count);
 			} else if (_peer->SentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
 				std::vector<PeerInfo> peers;
 				peers.reserve(count);
 
 				time_t now = time(NULL);
 
-				_peer->Pinfo("got addr with {} address(es)", count);
+				_peer->info("got addr with {} address(es)", count);
 
 				for (size_t i = 0; i < count; i++) {
 					uint64_t timestamp = UInt64GetLE(&msg[off]);
@@ -53,13 +53,8 @@ namespace Elastos {
 					off += sizeof(uint64_t);
 					PeerInfo p(address, port, timestamp, services);
 
-					char host[INET6_ADDRSTRLEN] = {0};
-					if (p.IsIPv4())
-						inet_ntop(AF_INET, &p.Address.u32[3], host, sizeof(host));
-					else
-						inet_ntop(AF_INET6, &p.Address.u8[0], host, sizeof(host));
-					_peer->Pdebug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
-							 i, host, p.Timestamp, p.Port, p.Services);
+					_peer->debug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
+								 i, p.GetHost(), p.Timestamp, p.Port, p.Services);
 
 					if (!(p.Services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
 					if (!p.IsIPv4())
@@ -67,7 +62,7 @@ namespace Elastos {
 					if (p.IsIPv4() &&
 						p.Address.u8[12] == 127 && p.Address.u8[13] == 0 &&
 						p.Address.u8[14] == 0 && p.Address.u8[15] == 1) {
-						_peer->Pwarn("drop peers[{}]", i);
+						_peer->warn("drop peers[{}]", i);
 						continue;
 					}
 

@@ -204,10 +204,10 @@ namespace Elastos {
 			return std::max(transaction->calculateFee(feePerKb), _info.getMinFee());
 		}
 
-		void SubWallet::balanceChanged() {
+		void SubWallet::balanceChanged(uint64_t balance) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [](ISubWalletCallback *callback) {
-							  callback->OnBalanceChanged();
+						  [&balance](ISubWalletCallback *callback) {
+							  callback->OnBalanceChanged(balance);
 						  });
 		}
 
@@ -235,7 +235,7 @@ namespace Elastos {
 
 			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
 				_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
-			if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
+			if (_walletManager->getPeerManager()->SyncSucceeded()) {
 				Log::debug("onTxUpdated hash={} confirm={}", hash, confirm);
 				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 _confirmingTxs[hash]->toJson(), confirm);
@@ -359,19 +359,16 @@ namespace Elastos {
 		}
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
-			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
+			if (_walletManager->getPeerManager()->SyncSucceeded()) {
+				for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
+					uint32_t confirms = blockHeight >= it->second->getBlockHeight() ?
+										blockHeight - it->second->getBlockHeight() + 1 : 0;
 
-				double process = _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight);
-				if (process < 1.0)
-					continue;
-
-				uint32_t confirms = blockHeight >= it->second->getBlockHeight() ?
-									blockHeight - it->second->getBlockHeight() + 1 : 0;
-
-				if (confirms > 1) {
-					Log::debug("Tx hash={} confirms={}", it->first, confirms);
-					fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-												 it->second->toJson(), confirms);
+					if (confirms > 1) {
+						Log::debug("Tx hash={} confirms={}", it->first, confirms);
+						fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
+													 it->second->toJson(), confirms);
+					}
 				}
 			}
 

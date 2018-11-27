@@ -37,7 +37,7 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				virtual void balanceChanged() = 0;
+				virtual void balanceChanged(uint64_t balance) = 0;
 
 				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
@@ -160,7 +160,7 @@ namespace Elastos {
 
 			uint64_t WalletFeeForTx(const TransactionPtr &tx);
 
-			void balanceChanged();
+			void balanceChanged(uint64_t balance);
 
 			void txAdded(const TransactionPtr &tx);
 

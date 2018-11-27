@@ -27,14 +27,14 @@ namespace Elastos {
 			UInt256 txHash;
 
 			if (!tx->Deserialize(stream)) {
-				_peer->Perror("malformed tx message with length: {}", msg.GetSize());
+				_peer->error("malformed tx message with length: {}", msg.GetSize());
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
-				_peer->Perror("got tx message before loading filter");
+				_peer->error("got tx message before loading filter");
 				return false;
 			} else {
 				txHash = tx->getHash();
-				_peer->Pdebug("got tx: %s", Utils::UInt256ToString(txHash));
+				_peer->debug("got tx: %s", Utils::UInt256ToString(txHash));
 
 				FireRelayedTx(tx);
 
@@ -59,7 +59,7 @@ namespace Elastos {
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
 			CMBlock buf = stream.getBuffer();
-			_peer->Pinfo("sending tx: tx hash = %s", Utils::UInt256ToString(txParam.tx->getHash()));
+			_peer->info("sending tx: tx hash = %s", Utils::UInt256ToString(txParam.tx->getHash()));
 			SendMessage(stream.getBuffer(), Type());
 		}
 

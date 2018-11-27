@@ -250,8 +250,9 @@ namespace Elastos {
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 				// TODO heropan check here balanceChanged(_balance);
-				balanceChanged();
+				uint64_t balance = getBalance(transaction->GetAssetID());
 				txAdded(transaction);
+				balanceChanged(balance);
 			}
 
 			return r;
@@ -270,7 +271,8 @@ namespace Elastos {
 												notifyUser, recommendRescan);
 			}
 
-			balanceChanged();
+			uint64_t balance = getBalance(removedAssetID);
+			balanceChanged(balance);
 			txDeleted(removedTransactions, removedAssetID, notifyUser, recommendRescan);
 		}
 
@@ -286,7 +288,8 @@ namespace Elastos {
 			}
 
 			if (!hashes.empty()) txUpdated(hashes, _blockHeight, timestamp);
-			if (needsUpdate) balanceChanged();
+			// TODO fix balance later
+			if (needsUpdate) balanceChanged(0);
 		}
 
 		TransactionPtr TransactionHub::transactionForHash(const UInt256 &transactionHash) {
@@ -497,9 +500,10 @@ namespace Elastos {
 			});
 		}
 
-		void TransactionHub::balanceChanged() {
+		// TODO fix later
+		void TransactionHub::balanceChanged(uint64_t balance) {
 			if (!_listener.expired()) {
-				_listener.lock()->balanceChanged();
+				_listener.lock()->balanceChanged(balance);
 			}
 		}
 
@@ -605,7 +609,8 @@ namespace Elastos {
 
 			if (count > 0) {
 				txUpdated(hashes, TX_UNCONFIRMED, 0);
-				balanceChanged();
+				// TODO fix later
+				balanceChanged(0);
 			}
 		}
 

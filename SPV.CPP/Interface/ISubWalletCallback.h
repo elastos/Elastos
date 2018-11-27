@@ -46,7 +46,7 @@ namespace Elastos {
 			 */
 			virtual void OnBlockSyncStopped() = 0;
 
-			virtual void OnBalanceChanged() = 0;
+			virtual void OnBalanceChanged(uint64_t balance) = 0;
 
 		};
 

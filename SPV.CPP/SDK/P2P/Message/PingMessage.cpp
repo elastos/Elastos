@@ -27,10 +27,10 @@ namespace Elastos {
 			bool r = true;
 
 			if (sizeof(uint64_t) > msg.GetSize()) {
-				_peer->Pwarn("malformed ping message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
+				_peer->warn("malformed ping message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
 				r = false;
 			} else {
-				_peer->Pinfo("got ping");
+				_peer->info("got ping");
 				bool needRelayPing = false;
 				PeerManager *manager = _peer->getPeerManager();
 				CMBlock message(sizeof(uint64_t));
@@ -38,14 +38,15 @@ namespace Elastos {
 				manager->Lock();
 				uint64_t height = manager->GetLastBlockHeight();
 				memcpy(message, &height, message.GetSize());
-				if (manager->getConnectStatus() == Peer::Connected &&
-					_peer->SentGetaddr() &&
+				if (manager->getConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
 					time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
+
+					needRelayPing = true;
 					for (size_t i = manager->getPublishedTransaction().size(); i > 0; i--) {
 						if (manager->getPublishedTransaction()[i - 1].HasCallback()) {
-							_peer->Pinfo("publish pending tx hash = {}, do not disconnect",
-										 Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1]));
-							needRelayPing = true;
+							_peer->info("publish pending tx hash = {}, do not disconnect",
+										Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1]));
+							needRelayPing = false;
 							break;
 						}
 					}

@@ -26,11 +26,11 @@ namespace Elastos {
 			int r = 1;
 
 			if (off == 0 || off + 81*count > msg.GetSize()) {
-				_peer->Perror("malformed headers message, length is %zu, should be %zu for %zu header(s)", msg.GetSize(),
-						 BRVarIntSize(count) + 81*count, count);
+				_peer->error("malformed headers message, length is %zu, should be %zu for %zu header(s)", msg.GetSize(),
+							 BRVarIntSize(count) + 81 * count, count);
 				r = 0;
 			} else {
-				_peer->Pinfo("got %zu header(s)", count);
+				_peer->info("got %zu header(s)", count);
 
 				// To improve chain download performance, if this message contains 2000 headers then request the next 2000
 				// headers immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
@@ -72,18 +72,18 @@ namespace Elastos {
 						ByteStream stream(&msg[off + 81 + i], 81, false);
 
 						if (!block->Deserialize(stream)) {
-							_peer->Perror("merkle block deserialize");
+							_peer->error("merkle block deserialize");
 							return false;
 						}
 
 						if (! block->isValid((uint32_t)now)) {
-							_peer->Perror("Invalid block header: {}", Utils::UInt256ToString(block->getHash()));
+							_peer->error("Invalid block header: {}", Utils::UInt256ToString(block->getHash()));
 							return false;
 						}
 						FireRelayedBlock(block);
 					}
 				} else {
-					_peer->Perror("non-standard headers message, %zu is fewer header(s) than expected", count);
+					_peer->error("non-standard headers message, %zu is fewer header(s) than expected", count);
 					return false;
 				}
 			}

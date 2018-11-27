@@ -5,6 +5,8 @@
 #include "PeerInfo.h"
 
 #include <stddef.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -69,5 +71,17 @@ namespace Elastos {
 		bool PeerInfo::IsIPv4() const {
 			return (Address.u64[0] == 0 && Address.u16[4] == 0 && Address.u16[5] == 0xffff);
 		}
+
+		std::string PeerInfo::GetHost() const {
+			char temp[INET6_ADDRSTRLEN];
+			if (IsIPv4()) {
+				inet_ntop(AF_INET, &Address.u32[3], temp, sizeof(temp));
+			} else {
+				inet_ntop(AF_INET6, &Address, temp, sizeof(temp));
+			}
+
+			return std::string(temp);
+		}
+
 	}
 }

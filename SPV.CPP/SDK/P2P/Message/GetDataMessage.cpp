@@ -29,12 +29,12 @@ namespace Elastos {
 			off += sizeof(count);
 
 			if (off == 0 || off + 36 * count > msg.GetSize()) {
-				_peer->Perror("malformed getdata message, length is {}, should {} for {} item(s)",
-							  msg.GetSize(), sizeof(count) + 36 * count, count);
+				_peer->error("malformed getdata message, length is {}, should {} for {} item(s)",
+							 msg.GetSize(), sizeof(count) + 36 * count, count);
 				return false;
 			} else if (count > MAX_GETDATA_HASHES) {
-				_peer->Perror("dropping getdata message, {} is too many items, max is {}",
-							  count, MAX_GETDATA_HASHES);
+				_peer->error("dropping getdata message, {} is too many items, max is {}",
+							 count, MAX_GETDATA_HASHES);
 				return false;
 			} else {
 				struct inv_item {
@@ -45,7 +45,7 @@ namespace Elastos {
 
 				TransactionPtr tx;
 
-				_peer->Pinfo("got getdata with {} item(s)", count);
+				_peer->info("got getdata with {} item(s)", count);
 				for (size_t i = 0; i < count; i++) {
 					inv_type type = (inv_type) UInt32GetLE(&msg[off]);
 					UInt256 hash;
@@ -63,7 +63,7 @@ namespace Elastos {
 
 							// fall through
 						default:
-							_peer->Pinfo("not found with type = {}, hash = {}", type, Utils::UInt256ToString(hash, true));
+							_peer->info("not found with type = {}, hash = {}", type, Utils::UInt256ToString(hash, true));
 							notfound.push_back(*(struct inv_item *) &msg[off]);
 							break;
 					}
@@ -93,7 +93,7 @@ namespace Elastos {
 			uint32_t count = uint32_t(txCount + blockCount);
 
 			if (count > 1000) {
-				_peer->Pwarn("couldn't send getdata, {} is too many items, max is {}", count, 1000);
+				_peer->warn("couldn't send getdata, {} is too many items, max is {}", count, 1000);
 				count = 1000;
 			}
 

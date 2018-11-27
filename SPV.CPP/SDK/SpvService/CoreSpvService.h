@@ -175,7 +175,7 @@ namespace Elastos {
 		public:
 			WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener);
 
-			virtual void balanceChanged();
+			virtual void balanceChanged(uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
@@ -192,7 +192,7 @@ namespace Elastos {
 		public:
 			WrappedExecutorTransactionHubListener(TransactionHub::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged();
+			virtual void balanceChanged(uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

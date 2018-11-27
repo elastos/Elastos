@@ -29,24 +29,24 @@ namespace Elastos {
 			off += sizeof(uint32_t);
 
 			if (off == 0 || off + 36*count > msg.GetSize()) {
-				_peer->Perror("malformed notfound message, length is {}, should be {} for {} item(s)", msg.GetSize(),
-						 BRVarIntSize(count) + 36*count, count);
+				_peer->error("malformed notfound message, length is {}, should be {} for {} item(s)", msg.GetSize(),
+							 BRVarIntSize(count) + 36 * count, count);
 				return false;
 			} else if (count > MAX_GETDATA_HASHES) {
-				_peer->Pwarn("dropping notfound message, {} is too many items, max is {}", count, MAX_GETDATA_HASHES);
+				_peer->warn("dropping notfound message, {} is too many items, max is {}", count, MAX_GETDATA_HASHES);
 				return true;
 			} else {
 				inv_type type;
 				UInt256 hash;
 				std::vector<UInt256> txHashes, blockHashes;
 
-				_peer->Pinfo("got notfound with {} item(s)", count);
+				_peer->info("got notfound with {} item(s)", count);
 
 				for (size_t i = 0; i < count; i++) {
 					type = (inv_type)UInt32GetLE(&msg[off]);
 					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
 
-					_peer->Pinfo("not found type = {}, hash = {}", type, Utils::UInt256ToString(hash));
+					_peer->info("not found type = {}, hash = {}", type, Utils::UInt256ToString(hash));
 
 					switch (type) {
 						case inv_tx: txHashes.push_back(hash); break;

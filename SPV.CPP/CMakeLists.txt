@@ -13,7 +13,6 @@ macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 	option(${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}})
 endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
-option_with_default(SPV_EXPORT_JNI "SPV export java native interface for android" OFF)
 set(SPV_PLATFORM_ANDROID "Android" CACHE INTERNAL "SPV platform" FORCE)
 set(SPV_PLATFORM_IOS "IOS" CACHE INTERNAL "SPV platform" FORCE)
 
@@ -130,9 +129,6 @@ add_subdirectory(ThirdParty)
 add_subdirectory(Core)
 add_subdirectory(SDK)
 add_subdirectory(Interface)
-if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID} AND SPV_EXPORT_JNI)
-	add_subdirectory(Java)
-endif()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -146,7 +142,6 @@ set(SPVSDK_OBJECT_TARGET spvsdk_object)
 
 add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
-	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
 add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)

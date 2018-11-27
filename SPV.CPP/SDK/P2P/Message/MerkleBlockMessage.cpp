@@ -33,21 +33,21 @@ namespace Elastos {
 			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
 
 			if (block == nullptr) {
-				_peer->Perror("create merkle block pointer with type {} fail", manager->GetPluginType());
+				_peer->error("create merkle block pointer with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
 			if (!block->Deserialize(stream)) {
-				_peer->Pdebug("merkle block orignal data: {}", Utils::encodeHex(msg));
-				_peer->Perror("merkle block deserialize with type {} fail", manager->GetPluginType());
+				_peer->debug("merkle block orignal data: {}", Utils::encodeHex(msg));
+				_peer->error("merkle block deserialize with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
 			if (!block->isValid((uint32_t) time(nullptr))) {
-				_peer->Perror("invalid merkleblock: {}", Utils::UInt256ToString(block->getHash()));
+				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->getHash()));
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
-				_peer->Perror("got merkleblock message before loading a filter");
+				_peer->error("got merkleblock message before loading a filter");
 				return false;
 			} else {
 				std::vector<UInt256> txHashes = block->MerkleBlockTxHashes();

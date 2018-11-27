@@ -17,7 +17,7 @@ namespace Elastos {
 		}
 
 		bool BloomFilterMessage::Accept(const CMBlock &msg) {
-			_peer->Perror("dropping {} message", Type());
+			_peer->error("dropping {} message", Type());
 			return false;
 		}
 

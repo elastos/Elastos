@@ -113,6 +113,10 @@ namespace Elastos {
 
 			Peer::ConnectStatus getConnectStatus() const;
 
+			bool SyncSucceeded() const;
+
+			void SetSyncSucceeded(bool succeeded);
+
 			void setFixedPeer(UInt128 address, uint16_t port);
 
 			void setFixedPeers(const std::vector<PeerInfo> &peers);
@@ -258,6 +262,7 @@ namespace Elastos {
 		private:
 			typedef ElementSet<MerkleBlockPtr> BlockSet;
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
+			bool _syncSucceeded;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;

@@ -345,8 +345,13 @@ namespace Elastos {
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
 
+#if defined(__ANDROID__)
+			Log::setPattern("%v");
+#else
+			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %v");
+#endif
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
-			Log::critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 #ifndef BUILD_SHARED_LIBS
 			Log::info("Registering plugin ...");

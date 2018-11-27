@@ -58,7 +58,7 @@ namespace Elastos {
 			Asset FindAsset(const std::string &assetID) const;
 
 		public:
-			virtual void balanceChanged();
+			virtual void balanceChanged(uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 

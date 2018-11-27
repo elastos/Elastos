@@ -28,7 +28,7 @@
 #include <Core/BRCrypto.h>
 
 #include <arpa/inet.h>
-#include <float.h>
+#include <cfloat>
 #include <sys/time.h>
 #include <boost/thread.hpp>
 
@@ -37,7 +37,7 @@
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
-#define MESSAGE_TIMEOUT    10.0
+#define MESSAGE_TIMEOUT    60.0
 
 #define PTHREAD_STACK_SIZE  (512 * 1024)
 
@@ -148,10 +148,10 @@ namespace Elastos {
 				_status = Peer::Connecting;
 
 				if (0 && networkIsReachable()) { // delay until network is reachable
-					if (!_waitingForNetwork) Pinfo("waiting for network reachability");
+					if (!_waitingForNetwork) info("waiting for network reachability");
 					_waitingForNetwork = 1;
 				} else {
-					Pinfo("connecting");
+					info("connecting");
 					_waitingForNetwork = 0;
 					gettimeofday(&tv, NULL);
 					_disconnectTime = tv.tv_sec + (double) tv.tv_usec / 1000000 + CONNECT_TIMEOUT;
@@ -181,7 +181,7 @@ namespace Elastos {
 			if (socket >= 0) {
 				_socket = -1;
 				if (shutdown(socket, SHUT_RDWR) < 0) {
-					Perror("peer shutdown error: {}", FormatError(errno));
+					this->error("peer shutdown error: {}", FormatError(errno));
 				}
 				close(socket);
 			}
@@ -190,7 +190,7 @@ namespace Elastos {
 		// sends a bitcoin protocol message to peer
 		void Peer::SendMessage(const CMBlock &message, const std::string &type) {
 			if (message.GetSize() > MAX_MSG_LENGTH) {
-				Perror("failed to send {}, length {} is too long", type, message.GetSize());
+				this->error("failed to send {}, length {} is too long", type, message.GetSize());
 			} else {
 				uint8_t buf[HEADER_LENGTH + message.GetSize()], hash[32];
 				size_t off = 0;
@@ -225,7 +225,7 @@ namespace Elastos {
 				}
 
 				if (error) {
-					Perror("sending {} message {}", type, FormatError(error));
+					this->error("sending {} message {}", type, FormatError(error));
 					Disconnect();
 				}
 			}
@@ -248,12 +248,7 @@ namespace Elastos {
 
 		const std::string &Peer::getHost() const {
 			if (_host.empty()) {
-				char temp[INET6_ADDRSTRLEN];
-				if (IsIPv4()) {
-					inet_ntop(AF_INET, &_info.Address.u32[3], temp, sizeof(temp));
-				} else inet_ntop(AF_INET6, &_info.Address, temp, sizeof(temp));
-
-				_host = temp;
+				_host = _info.GetHost();
 			}
 
 			return _host;
@@ -334,7 +329,7 @@ namespace Elastos {
 						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
 
 						if (!error && time >= _mempoolTime) {
-							Pinfo("done waiting for mempool response");
+							info("done waiting for mempool response");
 							PingParameter pingParameter;
 							pingParameter.callback = _mempoolCallback;
 							SendMessage(MSG_PING, pingParameter);
@@ -351,9 +346,9 @@ namespace Elastos {
 					}
 
 					if (error) {
-						Perror("read socket error: {}", FormatError(error));
+						this->error("read header error: {}", FormatError(error));
 					} else if (header[15] != 0) { // verify header type field is NULL terminated
-						Perror("malformed message header: type not NULL terminated");
+						this->error("malformed message header: type not NULL terminated");
 						error = EPROTO;
 					} else if (len == HEADER_LENGTH) {
 						std::string type = (const char *) (&header[4]);
@@ -362,7 +357,7 @@ namespace Elastos {
 						UInt256 hash;
 
 						if (msgLen > MAX_MSG_LENGTH) { // check message length
-							Perror("error reading {}, message length {} is too long", type, msgLen);
+							this->error("error reading {}, message length {} is too long", type, msgLen);
 							error = EPROTO;
 						} else {
 							payload.Resize(size_t(msgLen));
@@ -392,14 +387,14 @@ namespace Elastos {
 							}
 
 							if (error) {
-								Perror("read socket error: {}", FormatError(error));
+								this->error("read message error: {}", FormatError(error));
 							} else if (len == msgLen) {
 								BRSHA256_2(&hash, payload, msgLen);
 
 								if (UInt32GetLE(&hash) != checksum) { // verify checksum
-									Perror("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
-										   " SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
-										   Utils::UInt256ToString(hash));
+									this->error("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
+												" SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
+												Utils::UInt256ToString(hash));
 									error = EPROTO;
 								} else if (!acceptMessage(payload, type)) error = EPROTO;
 							}
@@ -412,7 +407,7 @@ namespace Elastos {
 			_socket = -1;
 			_status = Peer::Disconnected;
 			if (socket >= 0) close(socket);
-			Pinfo("disconnected");
+			info("disconnected");
 
 			while (!_pongCallbackList.empty()) {
 				Peer::PeerCallback pongCallback = popPongCallback();
@@ -455,15 +450,15 @@ namespace Elastos {
 			bool r = false;
 
 			if (_currentBlock != nullptr && MSG_TX == type) { // if we receive a non-tx message, merkleblock is done
-				Perror("incomplete merkleblock {}, expected {} more tx, got {}",
-					   Utils::UInt256ToString(_currentBlock->getHash()),
-					   _currentBlockTxHashes.size(), type);
+				this->error("incomplete merkleblock {}, expected {} more tx, got {}",
+							Utils::UInt256ToString(_currentBlock->getHash()),
+							_currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
 				r = 0;
 			} else if (_messages.find(type) != _messages.end())
 				r = _messages[type]->Accept(msg);
-			else Perror("dropping {}, length {}, not implemented", type, msg.GetSize());
+			else this->error("dropping {}, length {}, not implemented", type, msg.GetSize());
 
 			return r;
 		}
@@ -647,18 +642,18 @@ namespace Elastos {
 					return openSocket(PF_INET, timeout, error); // fallback to IPv4
 				} else if (err) r = 0;
 
-				if (r) Pinfo("socket connected");
+				if (r) info("socket connected");
 				fcntl(_socket, F_SETFL, arg); // restore socket non-blocking status
 			}
 
-			if (!r && err) Perror("connect error: {}", FormatError(err));
+			if (!r && err) this->error("connect error: {}", FormatError(err));
 			if (error && err) *error = err;
 			return r;
 		}
 
 		void Peer::SendMessage(const std::string &msgType, const SendMessageParameter &parameter) {
 			if (_messages.find(msgType) == _messages.end()) {
-				Pwarn("sending unknown type message, message type: {}", msgType);
+				warn("sending unknown type message, message type: {}", msgType);
 				return;
 			}
 			_messages[msgType]->Send(parameter);

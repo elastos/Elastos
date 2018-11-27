@@ -57,7 +57,7 @@ namespace Elastos {
 					getPeerManager()->connect();
 				}
 				catch (std::exception ex) {
-					Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
+					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
 				}
 				catch (...) {
 					Log::error("Peer manager callback (blockHeightIncreased) error.");
@@ -83,7 +83,7 @@ namespace Elastos {
 			transaction->Serialize(byteStream);
 
 			Log::debug("publish tx {}", sendingTx.dump());
-			Log::trace("raw tx {}", Utils::encodeHex(byteStream.getBuffer()));
+			SPVLOG_DEBUG("raw tx {}", Utils::encodeHex(byteStream.getBuffer()));
 
 			if (getPeerManager()->getConnectStatus() != Peer::Connected) {
 				if (_reconnectTimer != nullptr)
@@ -104,10 +104,10 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged() {
+		void SpvService::balanceChanged(uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [](TransactionHub::Listener *listener) {
-							  listener->balanceChanged();
+						  [&balance](TransactionHub::Listener *listener) {
+							  listener->balanceChanged(balance);
 						  });
 		}
 
@@ -280,12 +280,13 @@ namespace Elastos {
 		}
 
 		void SpvService::syncIsInactive(uint32_t time) {
-			Log::getLogger()->info("time to disconnect");
+			Log::info("time to disconnect");
 
 			_peerManager->Lock();
 			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 			_peerManager->Unlock();
 
+			_executor.stopThread();
 			if (_peerManager->getConnectStatus() == Peer::Connected) {
 				_peerManager->disconnect();
 			}
@@ -422,9 +423,19 @@ namespace Elastos {
 			Log::info("reconnect {}s later...", time);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(time)));
+
+			_peerManager->Lock();
 			if (0 == _peerManager->GetPeers().size()) {
-				_peerManager->SetPeers(loadPeers());
+				std::vector<PeerInfo> peers = loadPeers();
+				Log::info("load {} peers", peers.size());
+				for (size_t i = 0; i < peers.size(); ++i) {
+					Log::debug("p[{}]: {}", i, peers[i].GetHost());
+				}
+
+				_peerManager->SetPeers(peers);
 			}
+			_peerManager->Unlock();
+
 			_reconnectTimer->async_wait(
 					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 			_reconnectService.restart();

@@ -15,7 +15,7 @@ namespace Elastos {
 		}
 
 		bool GetAddressMessage::Accept(const CMBlock &msg) {
-			_peer->Pinfo("got getaddr");
+			_peer->info("got getaddr");
 			_peer->SendMessage(MSG_ADDR, Message::DefaultParam);
 			return true;
 		}

@@ -255,74 +255,74 @@ namespace Elastos {
 			std::string FormatError(int errnum);
 
 			template<typename Arg1, typename... Args>
-			inline void Ptrace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void trace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::trace(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			inline void Pdebug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void debug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::debug(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			inline void Pinfo(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::info(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			inline void Pwarn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void warn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::warn(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			inline void Perror(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void error(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::error(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			inline void Pcritical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+			inline void critical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
 				Log::critical(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename T>
-			inline void Ptrace(const T &msg) {
+			inline void trace(const T &msg) {
 				Log::trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
-			inline void Pdebug(const T &msg) {
+			inline void debug(const T &msg) {
 				Log::debug("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
-			inline void Pinfo(const T &msg) {
+			inline void info(const T &msg) {
 				Log::info("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
-			inline void Pwarn(const T &msg) {
+			inline void warn(const T &msg) {
 				Log::warn("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
-			inline void Perror(const T &msg) {
+			inline void error(const T &msg) {
 				Log::error("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
-			inline void Pcritical(const T &msg) {
+			inline void critical(const T &msg) {
 				Log::critical("{}:{} {}", getHost(), GetPort(), msg);
 			}
 

@@ -8,6 +8,7 @@
 #include <Core/BRInt.h>
 
 #include <sys/types.h>
+#include <string>
 
 //#define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
 //#define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
@@ -43,6 +44,8 @@ namespace Elastos {
 			size_t GetHash() const;
 
 			bool IsIPv4() const;
+
+			std::string GetHost() const;
 		};
 
 	}

@@ -10,7 +10,7 @@ namespace Elastos {
 #if defined(__ANDROID__)
 		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::android_logger("Elastos", "spvsdk");
 #else
-		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::stdout_color_mt("console");
+		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::stdout_color_mt("spvsdk");
 #endif
 
 	}

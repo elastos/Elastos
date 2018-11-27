@@ -25,47 +25,47 @@ namespace Elastos {
 
 			uint32_t version = 0;
 			if (!stream.readUint32(version)) {
-				_peer->Perror("malformed version message, parse version fail");
+				_peer->error("malformed version message, parse version fail");
 				return false;
 			}
 			_peer->SetVersion(version);
 
 			uint64_t services = 0;
 			if (!stream.readUint64(services)) {
-				_peer->Perror("malformed version message, parse services fail");
+				_peer->error("malformed version message, parse services fail");
 				return false;
 			}
 			_peer->SetServices(services);
 
 			uint32_t timestamp = 0;
 			if (!stream.readUint32(timestamp)) {
-				_peer->Perror("malformed version message, parse timestamp fail");
+				_peer->error("malformed version message, parse timestamp fail");
 				return false;
 			}
 			_peer->SetTimestamp(timestamp);
 
 			uint16_t port = 0;
 			if (!stream.readUint16(port)) {
-				_peer->Perror("malformed version message, parse port fail");
+				_peer->error("malformed version message, parse port fail");
 				return false;
 			}
 			_peer->SetPort(port);
 
 			uint64_t nonce = 0;
 			if (!stream.readUint64(nonce)) {
-				_peer->Perror("malformed version message, parse nonce fail");
+				_peer->error("malformed version message, parse nonce fail");
 				return false;
 			}
 			_peer->SetNonce(nonce);
 
 			uint64_t height = 0;
 			if (!stream.readUint64(height)) {
-				_peer->Perror("malformed version message, parse height fail");
+				_peer->error("malformed version message, parse height fail");
 				return false;
 			}
 			_peer->SetLastBlock(uint32_t(height));
 
-			_peer->Pinfo("got version {}, services {}", _peer->GetVersion(), _peer->GetServices());
+			_peer->info("got version {}, services {}", _peer->GetVersion(), _peer->GetServices());
 			SendMessageParameter param;
 			_peer->SendMessage(MSG_VERACK, param);
 			return true;

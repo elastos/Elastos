@@ -16,7 +16,7 @@ namespace Elastos {
 		}
 
 		bool GetBlocksMessage::Accept(const CMBlock &msg) {
-			_peer->Perror("dropping {} message", Type());
+			_peer->error("dropping {} message", Type());
 			return false;
 		}
 
@@ -36,11 +36,12 @@ namespace Elastos {
 			msg.writeBytes(&getBlocksParameter.hashStop, sizeof(UInt256));
 
 			if (locatorsCount > 0) {
-				_peer->Pdebug("calling getblocks with {} locators: [{},{} {}]",
-						 locatorsCount,
-						 Utils::UInt256ToString(getBlocksParameter.locators[0]),
-						 (locatorsCount > 2 ? " ...," : ""),
-						 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1]) : ""));
+				_peer->debug("calling getblocks with {} locators: [{},{} {}]",
+							 locatorsCount,
+							 Utils::UInt256ToString(getBlocksParameter.locators[0]),
+							 (locatorsCount > 2 ? " ...," : ""),
+							 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1])
+												: ""));
 				SendMessage(msg.getBuffer(), Type());
 			}
 		}

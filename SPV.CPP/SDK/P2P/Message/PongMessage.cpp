@@ -23,10 +23,10 @@ namespace Elastos {
 			bool r = true;
 
 			if (sizeof(uint64_t) > msg.GetSize()) {
-				_peer->Pwarn("malformed pong message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
+				_peer->warn("malformed pong message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
 				r = false;
 			} else if (_peer->getPongCallbacks().empty()) {
-				_peer->Pwarn("got unexpected pong");
+				_peer->warn("got unexpected pong");
 				r = false;
 			} else {
 				if (_peer->GetStartTime() > 1) {
@@ -36,9 +36,9 @@ namespace Elastos {
 					// 50% low pass filter on current ping time
 					_peer->SetPingTime(_peer->GetPingTime() * 0.5 + pingTime * 0.5);
 					_peer->SetStartTime(0);
-					_peer->Pinfo("got pong in {}", pingTime);
+					_peer->info("got pong in {}", pingTime);
 				} else {
-					_peer->Pinfo("got pong");
+					_peer->info("got pong");
 				}
 
 				if (_peer->getPongCallbacks().size() > 0) {
