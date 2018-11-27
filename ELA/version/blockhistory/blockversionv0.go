@@ -43,7 +43,7 @@ func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (b *BlockVersionV0) DiscreteMiningBlock(block *core.Block) error {
+func (b *BlockVersionV0) AddBlock(block *core.Block) error {
 	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
 	if err != nil {
 		return err
@@ -54,6 +54,10 @@ func (b *BlockVersionV0) DiscreteMiningBlock(block *core.Block) error {
 	}
 
 	return nil
+}
+
+func (b *BlockVersionV0) AddBlockConfirm(block *core.BlockConfirm) (bool, error) {
+	return false, b.AddBlock(block.Block)
 }
 
 func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error {

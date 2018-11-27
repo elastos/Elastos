@@ -17,7 +17,8 @@ import (
 type BlockVersion interface {
 	GetVersion() uint32
 	GetProducersDesc() ([][]byte, error)
-	DiscreteMiningBlock(block *core.Block) error
+	AddBlock(block *core.Block) error
+	AddBlockConfirm(block *core.BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error
 }
 
@@ -45,7 +46,7 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func (b *BlockVersionMain) DiscreteMiningBlock(block *core.Block) error {
+func (b *BlockVersionMain) AddBlock(block *core.Block) error {
 	if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
 		BlockFlag: true,
 		Block:     block,
@@ -55,6 +56,16 @@ func (b *BlockVersionMain) DiscreteMiningBlock(block *core.Block) error {
 	}
 
 	return nil
+}
+
+func (b *BlockVersionMain) AddBlockConfirm(blockConfirm *core.BlockConfirm) (bool, error) {
+	isConfirmed, err := node.LocalNode.AppendBlock(blockConfirm)
+	if err != nil {
+		log.Error("[AppendBlock] err:", err.Error())
+		return false, err
+	}
+
+	return isConfirmed, nil
 }
 
 func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error {

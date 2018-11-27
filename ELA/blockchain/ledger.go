@@ -28,7 +28,8 @@ type HeightVersions interface {
 	CheckVoteProducerOutputs(blockHeight uint32, tx *Transaction, outputs []*Output, references map[*Input]*Output) error
 
 	GetProducersDesc(block *Block) ([][]byte, error)
-	DiscreteMiningBlock(block *Block) error
+	AddBlock(block *Block) error
+	AddBlockConfirm(block *BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *Block, totalReward Fixed64) error
 }
 
