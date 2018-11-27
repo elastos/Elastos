@@ -18,6 +18,7 @@ const (
 
 type TxCheckMethod func(TxVersion) error
 type BlockCheckMethod func(BlockVersion) error
+type BlockConfirmCheckMethod func(BlockVersion) (bool, error)
 
 type VersionInfo struct {
 	DefaultTxVersion        byte
@@ -77,14 +78,20 @@ func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 
 	v := h.findBlockVersion(&info, block)
 	if v == nil {
-		return nil, fmt.Errorf("Block height ", block.Height, "can not support block version ", block.Version)
+		return nil, fmt.Errorf("[GetProducersDesc] Block height %d can not support block version %d", block.Height, block.Version)
 	}
 	return v.GetProducersDesc()
 }
 
-func (h *heightVersions) DiscreteMiningBlock(block *core.Block) error {
+func (h *heightVersions) AddBlock(block *core.Block) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
-		return version.DiscreteMiningBlock(block)
+		return version.AddBlock(block)
+	})
+}
+
+func (h *heightVersions) AddBlockConfirm(blockConfirm *core.BlockConfirm) (bool, error) {
+	return h.checkBlockConfirm(blockConfirm, func(version BlockVersion) (bool, error) {
+		return version.AddBlockConfirm(blockConfirm)
 	})
 }
 
@@ -125,9 +132,23 @@ func (h *heightVersions) checkBlock(block *core.Block, blockFun BlockCheckMethod
 
 	v := h.findBlockVersion(&info, block)
 	if v == nil {
-		return fmt.Errorf("Block height ", block.Height, "can not support block version ", block.Version)
+		return fmt.Errorf("[checkBlock] Block height %d can not support block version %d", block.Height, block.Version)
 	}
 	return blockFun(v)
+}
+
+func (h *heightVersions) checkBlockConfirm(blockConfirm *core.BlockConfirm, blockConfirmFun BlockConfirmCheckMethod) (bool, error) {
+	if blockConfirm == nil || !blockConfirm.BlockFlag {
+		return false, fmt.Errorf("[checkBlockConfirm] received block confirm with nil block")
+	}
+	heightKey := h.findLastAvailableHeightKey(blockConfirm.Block.Height)
+	info := h.versions[heightKey]
+
+	v := h.findBlockVersion(&info, blockConfirm.Block)
+	if v == nil {
+		return false, fmt.Errorf("[checkBlockConfirm] Block height %d can not support block version %d", blockConfirm.Block.Height, blockConfirm.Block.Version)
+	}
+	return blockConfirmFun(v)
 }
 
 func (h *heightVersions) findBlockVersion(info *VersionInfo, block *core.Block) BlockVersion {
