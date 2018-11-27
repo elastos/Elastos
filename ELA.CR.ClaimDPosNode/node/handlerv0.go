@@ -215,12 +215,12 @@ func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
-	ok, err := LocalNode.AppendBlock(msgBlock)
+	isConfirmed, err := chain.DefaultLedger.HeightVersions.AddBlockConfirm(msgBlock)
 	if err != nil {
 		log.Debugf("Received invalid block %s", hash.String())
 		return fmt.Errorf("Receive invalid block %s, err: %s", hash.String(), err.Error())
 	}
-	if !ok {
+	if !isConfirmed {
 		log.Debugf("Received unconfirmed block %s", hash.String())
 	}
 
