@@ -18,7 +18,6 @@ build/
 /glide.lock
 vendor/*
 /did
-*.conf
 *.json
 *.bin
 *.db

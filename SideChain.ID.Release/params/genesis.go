@@ -31,13 +31,13 @@ var (
 	}
 
 	// The main chain asset ID
-	elaAssetId = elaAsset.Hash()
+	ElaAssetId = elaAsset.Hash()
 
 	// genesisHeader
 	genesisHeader = types.Header{
 		Version:    types.BlockVersion,
 		Previous:   EmptyHash,
-		MerkleRoot: elaAssetId,
+		MerkleRoot: ElaAssetId,
 		Timestamp:  uint32(time.Unix(time.Date(2018, time.June, 30,
 			12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
@@ -53,7 +53,7 @@ var (
 	}
 
 	// genesis block
-	genesisBlock = &types.Block{
+	GenesisBlock = &types.Block{
 		Header:       genesisHeader,
 		Transactions: []*types.Transaction{&elaAsset},
 	}
