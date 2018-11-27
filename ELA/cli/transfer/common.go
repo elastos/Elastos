@@ -54,7 +54,7 @@ func signTransaction(context *cli.Context, client *account.ClientImpl) error {
 	return nil
 }
 
-func sendTransaction(context *cli.Context) error {
+func SendTransaction(context *cli.Context) error {
 	content, err := getTransactionContent(context)
 	if err != nil {
 		return err

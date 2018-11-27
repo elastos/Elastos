@@ -1,9 +1,17 @@
 package api
 
 import (
+	"bytes"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"os"
 
-	"github.com/elastos/Elastos.ELA/account"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/yuin/gopher-lua"
@@ -22,7 +30,7 @@ func Loader(L *lua.LState) int {
 
 var exports = map[string]lua.LGFunction{
 	"hexStrReverse": hexReverse,
-	"sendRawTx":     sendTx,
+	"sendTx":        sendTx,
 	"getAssetID":    getAssetID,
 	"getUTXO":       getUTXO,
 }
@@ -37,31 +45,76 @@ func hexReverse(L *lua.LState) int {
 }
 
 func sendTx(L *lua.LState) int {
+	txn := checkTransaction(L, 1)
+
+	var buffer bytes.Buffer
+	err := txn.Serialize(&buffer)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	txHex := hex.EncodeToString(buffer.Bytes())
+
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "sendrawtransaction", util.Params{
+		"data": txHex,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	L.Push(lua.LString(result.(string)))
 
 	return 1
 }
 
 func getAssetID(L *lua.LState) int {
-	L.Push(lua.LString(account.SystemAssetID.String()))
+	L.Push(lua.LString("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0"))
 	return 1
 }
 
 func getUTXO(L *lua.LState) int {
+	from := L.ToString(1)
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+		"addresses": []string{from},
+	})
+	if err != nil {
+		return 0
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		return 0
+	}
+	var utxos []servers.UTXOInfo
+	err = json.Unmarshal(data, &utxos)
+
+	var availabelUtxos []servers.UTXOInfo
+	for _, utxo := range utxos {
+		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+			continue
+		}
+		availabelUtxos = append(availabelUtxos, utxo)
+	}
+
+	ud := L.NewUserData()
+	ud.Value = availabelUtxos
+	L.SetMetatable(ud, L.GetTypeMetatable(luaClientTypeName))
+	L.Push(ud)
+
 	return 1
 }
 
 func RegisterDataType(L *lua.LState) int {
-	//RegisterBalanceTxInputType(L)
 	RegisterClientType(L)
-	//RegisterTxAttributeType(L)
-	//RegisterUTXOTxInputType(L)
-	//RegisterTxOutputType(L)
-	//RegisterCoinBaseType(L)
-	//RegisterTransferAssetType(L)
-	//RegisterRegisterAssetType(L)
-	//RegisterRecordType(L)
-	//RegisterDeployCodeType(L)
-	//RegisterTransactionType(L)
+	RegisterAttributeType(L)
+	RegisterInputType(L)
+	RegisterOutputType(L)
+	RegisterDefaultOutputType(L)
+	RegisterVoteOutputType(L)
+	RegisterVoteContentType(L)
+	RegisterCoinBaseType(L)
+	RegisterTransferAssetType(L)
+	RegisterTransactionType(L)
 
 	return 0
 }
