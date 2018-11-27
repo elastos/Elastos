@@ -275,10 +275,6 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 		return errors.New("Requesting height greater than current processing height")
 	}
 
-	if p.processingProposal != nil {
-		status.ProcessingProposal = *p.processingProposal
-	}
-
 	status.AcceptVotes = make([]core.DPosProposalVote, 0, len(p.acceptVotes))
 	for _, v := range p.acceptVotes {
 		status.AcceptVotes = append(status.AcceptVotes, v)
@@ -303,8 +299,6 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 }
 
 func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
-	p.processingProposal = &status.ProcessingProposal
-
 	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote)
 	for _, v := range status.AcceptVotes {
 		p.acceptVotes[v.Hash()] = v
