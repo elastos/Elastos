@@ -49,11 +49,12 @@ type proposalDispatcher struct {
 	pendingProposals   map[common.Uint256]core.DPosProposal
 	pendingVotes       map[common.Uint256]core.DPosProposalVote
 
-	eventMonitor *log.EventMonitor
-	consensus    Consensus
-	network      DposNetwork
-	manager      DposManager
-	account      account.DposAccount
+	illegalMonitor *illegalBehaviorMonitor
+	eventMonitor   *log.EventMonitor
+	consensus      Consensus
+	network        DposNetwork
+	manager        DposManager
+	account        account.DposAccount
 }
 
 func (p *proposalDispatcher) OnAbnormalStateDetected() {
@@ -188,8 +189,23 @@ func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
+	if d.BlockHash.IsEqual(p.processingProposal.Hash()) {
+		log.Info("Already processing processing")
+		return
+	}
+
+	if _, ok := p.pendingProposals[d.Hash()]; ok {
+		log.Info("Already have proposal, wait for processing")
+		return
+	}
+
 	if !blockchain.IsProposalValid(&d) {
 		log.Warn("Invalid proposal.")
+		return
+	}
+
+	if anotherProposal, ok := p.illegalMonitor.IsLegalProposal(&d); !ok {
+		p.illegalMonitor.ProcessIllegalProposal(&d, anotherProposal)
 		return
 	}
 
@@ -458,6 +474,8 @@ func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network 
 		network:            network,
 		manager:            manager,
 		account:            dposAccount,
+		illegalMonitor:     &illegalBehaviorMonitor{},
 	}
+	p.illegalMonitor.dispatcher = p
 	return p
 }
