@@ -113,7 +113,6 @@ type ArbiterConfiguration struct {
 	MajorityCount    uint32 `json:"MajorityCount"`
 	ArbitratorsCount uint32 `json:"ArbitratorsCount"`
 	CandidatesCount  uint32 `json:"CandidatesCount"`
-	PrivateKey       string `json:"PrivateKey"`
 }
 
 type Seed struct {
@@ -171,7 +170,7 @@ func init() {
 func (config *Configuration) GetArbiterID() []byte {
 	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
 	if err != nil || len(publicKey) != 33 {
-		log.Fatalf("get arbiter public key erro %v", err)
+		log.Fatalf("get arbiter public key error %v", err)
 		os.Exit(1)
 	}
 

@@ -3,12 +3,13 @@ package api
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
-	"github.com/elastos/Elastos.ELA/log"
 	"os"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/yuin/gopher-lua"
 )
 
