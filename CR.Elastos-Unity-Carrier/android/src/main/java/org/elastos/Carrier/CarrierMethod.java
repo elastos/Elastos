@@ -270,9 +270,9 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         }
 
         RN_SESSION _rs = getByName(name).getRNSessionInstance();
-        _rs.start(friendId);
+        int streamId = _rs.start(friendId);
 
-        cb.invoke(null, ok);
+        cb.invoke(null, streamId);
     }
 
 

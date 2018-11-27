@@ -5,13 +5,14 @@ import org.elastos.carrier.FriendInfo;
 import org.elastos.carrier.session.*;
 import org.elastos.carrier.exceptions.ElastosException;
 
+import java.util.HashMap;
+
 
 public class RN_SESSION extends AbstractStreamHandler implements SessionRequestCompleteHandler {
 
     private Util util;
-    private Session _session;
-    private Stream _stream;
     private StreamState mState = StreamState.Closed;
+
 
     private Carrier _carrier;
 
@@ -37,79 +38,94 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         util = Util.singleton(null);
     }
 
-    public void close() {
+    public void close(String friendId) {
+
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
         util.log("[ close ]");
-        if (_session != null) {
-            _session.close();
-            _session = null;
-            _stream = null;
+        if(fss != null){
+            fss.close();
+
             mState  = StreamState.Closed;
         }
+
     }
 
     /*
     * start session
     * */
-    public void start(String friendId) {
+    public int start(String friendId) {
         util.log(String.format("[ RN_SESSION.create ] => %s", friendId));
 
-//        RN_FriendInfo info = null;
-//        try{
-//            FriendInfo friendInfo = _carrier.getFriend(friendId);
-//            info = new RN_FriendInfo(friendInfo);
-//        }catch(ElastosException e){
-//            util.error("get friend info " + e.getErrorCode());
-//        }
-//
-//        if (info == null || info.getConnection().value() != 0) {
+//        if (mState == StreamState.Initialized || mState == StreamState.TransportReady
+//                || mState == StreamState.Connecting) {
 //            return;
 //        }
+//        else if (mState == StreamState.Connected) {
+//
+//            return;
+//        }
+//        else {
+//
+//
+//        }
 
-        if (mState == StreamState.Initialized || mState == StreamState.TransportReady
-                || mState == StreamState.Connecting) {
-            return;
-        }
-        else if (mState == StreamState.Connected) {
+        mState = StreamState.Closed;
 
-            return;
-        }
-        else {
-            mState = StreamState.Closed;
+//            int sopt = Stream.PROPERTY_PLAIN | Stream.PROPERTY_RELIABLE;
+        int sopt = Stream.PROPERTY_RELIABLE;
+        int rs = addStreamWithType(friendId, StreamType.Text, sopt);
 
-            int sopt = Stream.PROPERTY_MULTIPLEXING
-                    | Stream.PROPERTY_PORT_FORWARDING
-                    | Stream.PROPERTY_RELIABLE;
-
-            try {
-                _session = _manager.newSession(friendId);
-                _session.addStream(StreamType.Application, sopt, this);
-            }
-            catch (ElastosException e) {
-                e.printStackTrace();
-
-                if (_session == null) {
-                    util.error(String.format("New session error (0x%x)", e.getErrorCode()));
-                }
-                else {
-                    util.error(String.format("Add stream error (0x%x)", e.getErrorCode()));
-                    _session.close();
-                    _session = null;
-                }
-            }
-        }
+        return rs;
     }
 
+    public int addStreamWithType(String friendId, StreamType type, int mode){
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        Session session = fss.getSession();
+        Stream stream = null;
+        try{
+
+            stream = session.addStream(type, mode, this);
+            fss.setStream(stream);
+        }catch(ElastosException e){
+            util.error(String.format("add stream error (0x%x)", e.getErrorCode()));
+            e.getStackTrace();
+        }
+
+
+
+        return stream.getStreamId();
+    }
+
+
+    public FriendSessionStream getFriendSessionByFriendId(String frinedId){
+        FriendSessionStream fss = FriendSessionStream.map.get(frinedId);
+        if(fss == null){
+            fss = new FriendSessionStream(frinedId);
+            try{
+                Session session = _manager.newSession(frinedId);
+                fss.setSession(session);
+            }catch(ElastosException e){
+                e.printStackTrace();
+
+                util.error(String.format("new session error (0x%x)", e.getErrorCode()));
+            }
+            FriendSessionStream.map.put(frinedId, fss);
+        }
+
+        return fss;
+    }
 
     @Override
     public void onCompletion(Session session, int status, String reason, String sdp) {
         util.log(String.format("[ onCompletion ] => status=%s, reason=%s, sdp=%s", status, reason, sdp));
         if (status != 0) {
             util.log(String.format("Session request completion with error (%d:%s", status, reason));
-            close();
+
             return;
         }
 
         try {
+            sessionRequestSdp = sdp;
             session.start(sdp);
             util.log("Session started success.");
         } catch (ElastosException e) {
@@ -118,8 +134,22 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
     }
 
     @Override
+    public void onStreamData(Stream stream, byte[] receivedData) {
+        util.log(String.format("[ onStreamData ] => data=%s", new String(receivedData)));
+    }
+
+    @Override
     public void onStateChanged(Stream stream, StreamState state) {
         util.log("onStateChanged : " + stream.getStreamId() + "  :  " + state);
+
+        FriendSessionStream fss = FriendSessionStream.getInstanceByStreamId(stream.getStreamId());
+        if(fss == null){
+            util.error(String.format("[FriendSessionStream.getInstanceByStreamId] => %s" + stream.getStreamId()));
+            return;
+        }
+
+        Session _session = fss.getSession();
+
         mState = state;
         switch (state) {
             case Initialized:
@@ -134,25 +164,26 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
             case TransportReady:
                 util.log("Stream to transport ready");
+
                 break;
 
             case Connected:
                 util.log("Stream to connected.");
-                _stream = stream;
+
 
                 break;
 
             case Deactivated:
                 util.log("Stream deactived");
-                close();
+                fss.close();
                 break;
             case Closed:
                 util.log("Stream closed");
-                close();
+                fss.close();
                 break;
             case Error:
                 util.log("Stream error");
-                close();
+                fss.close();
 
                 // TODO restart carrier
 

@@ -10,9 +10,7 @@
 		39859FCC219C515700DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC7219C515600DE141B /* CarrierPlugin.m */; };
 		39859FCE219C515700DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC9219C515600DE141B /* Carrier.m */; };
 		399BDD12219D37B200453AA7 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; };
-		399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		39F7626421A68E5F0019C968 /* ElastosCarrier.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39F7626321A68E5F0019C968 /* ElastosCarrier.h */; };
-		39F7628021A7AE110019C968 /* ElastosCarrier-Swift.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 39F7627F21A7AE100019C968 /* ElastosCarrier-Swift.h */; };
+		399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,8 +20,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				39F7628021A7AE110019C968 /* ElastosCarrier-Swift.h in CopyFiles */,
-				39F7626421A68E5F0019C968 /* ElastosCarrier.h in CopyFiles */,
 				399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -38,7 +34,6 @@
 		39859FCB219C515700DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
 		399BDD11219D37B200453AA7 /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 		39F7626321A68E5F0019C968 /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ElastosCarrier.h; path = ElastosCarrier.framework/Headers/ElastosCarrier.h; sourceTree = "<group>"; };
-		39F7627F21A7AE100019C968 /* ElastosCarrier-Swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ElastosCarrier-Swift.h"; path = "ElastosCarrier.framework/Headers/ElastosCarrier-Swift.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +51,6 @@
 		39859FB2219C512100DE141B = {
 			isa = PBXGroup;
 			children = (
-				39F7627F21A7AE100019C968 /* ElastosCarrier-Swift.h */,
 				39F7626321A68E5F0019C968 /* ElastosCarrier.h */,
 				39859FCA219C515600DE141B /* Carrier.h */,
 				39859FC9219C515600DE141B /* Carrier.m */,
@@ -272,7 +266,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"${SRCROOT}",
-					"${SRCROOT}/ElastosCarrier.framework",
+					"${SRCROOT}/ElastosCarrier.framework/Headers",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -293,7 +287,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"${SRCROOT}",
-					"${SRCROOT}/ElastosCarrier.framework",
+					"${SRCROOT}/ElastosCarrier.framework/Headers",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

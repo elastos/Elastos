@@ -103,7 +103,7 @@ class App extends Component{
         break;
       case 'addFriend':
         try{
-          rs = await this.carrier.addFriend('FFqmEuri4AQxD7w83pgLYwthSQhJ47XaAChyaARWnUji9rE86gUp', 'hello');
+          rs = await this.carrier.addFriend('DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc', 'hello');
           console.log(rs);
         }catch(e){
           this.setError(e);
@@ -118,7 +118,7 @@ class App extends Component{
         break;
       case 'getFriendInfo':
         try{
-          tmp = await this.carrier.getFriendInfo('7VBxbJPczHZZwLfs4NhtUvv66CxyhMaSsbakpS8wjccw');
+          tmp = await this.carrier.getFriendInfo('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
           rs = JSON.stringify(tmp);
         }catch(e){
           this.setError(e);
@@ -126,7 +126,7 @@ class App extends Component{
         break;
       case 'sendMessage':
         try{
-          rs = await this.carrier.sendMessage('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv', 'adsfsfdsf');
+          rs = await this.carrier.sendMessage('47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM', 'adsfsfdsf');
         }catch(e){
           this.setError(e);
         }
@@ -137,7 +137,7 @@ class App extends Component{
         break;
       case 'createSession':
         try{
-          rs = await this.carrier.createSession('84mpLLzDo57eJaL5EVuzVZJVQ19xZervcFcLrf3s2PCv');
+          rs = await this.carrier.createSession('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
         }catch(e){
           this.setError(e);
         }

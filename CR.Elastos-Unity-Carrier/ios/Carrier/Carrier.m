@@ -96,6 +96,7 @@
       
       [ELACarrier initializeInstanceWithOptions:options delegate:self error:&error];
       elaCarrier = [ELACarrier getInstance];
+      elaSessionManager = [ELACarrierSessionManager getInstance:[self getIntance] error:nil];
       _init = NO;
       if (elaCarrier == nil) {
         RCTLog(@"Create ELACarrier instance failed: %@", error);
@@ -141,35 +142,23 @@
   connectStatus = ELACarrierConnectionStatusDisconnected;
 }
 
--(ELACarrierSession *) createNewSession: (NSString *)name friendId:(NSString *)friendid{
-  elaSessionManager = [ELACarrierSessionManager getInstance:[self getIntance] error:nil];
-//  elaSessionManager = [ELACarrierSessionManager getInstance];
+
+-(ELACarrierSession *) newSession: (NSString *)name friendId:(NSString *)friendid{
+  
   NSError *error = nil;
   ELACarrierSession *session = [elaSessionManager newSessionTo:friendid error:&error];
   
   NSString *peer = [session getPeer];
   RCTLog(@"%@", peer);
-  ELACarrierStreamOptions options = ELACarrierStreamOptionMultiplexing | ELACarrierStreamOptionPortForwarding | ELACarrierStreamOptionReliable;
-  
+    
+  ELACarrierStreamOptions options = ELACarrierStreamOptionReliable;
+
 //  NSError *error = nil;
   if(_stream == nil){
     _stream = [session addStreamWithType:ELACarrierStreamTypeApplication options:options delegate:(id)self error:&error];
   }
   
-//  [session sendInviteRequestWithResponseHandler:
-//   ^(ELACarrierSession *session, NSInteger status, NSString *reason, NSString *sdp) {
-//     RCTLog(@"Invite request response, stream state: %zd", status);
-//
-//     if (status == 0) {
-//       NSError *error = nil;
-//       if (![session startWithRemoteSdp:sdp error:&error]) {
-//         RCTLog(@"Start session error: %@", error);
-//       }
-//     }
-//     else {
-//       RCTLog(@"Remote refused session invite: %d, sdp: %@", (int)status, reason);
-//     }
-//   } error:&error];
+  
   
   return session;
 }
@@ -188,6 +177,20 @@
   
   switch (newState) {
     case ELACarrierStreamStateInitialized:
+          [session sendInviteRequestWithResponseHandler:
+           ^(ELACarrierSession *session, NSInteger status, NSString *reason, NSString *sdp) {
+               RCTLog(@"Invite request response, stream state: %zd", status);
+               
+               if (status == 0) {
+                   NSError *error = nil;
+                   if (![session startWithRemoteSdp:sdp error:&error]) {
+                       RCTLog(@"Start session error: %@", error);
+                   }
+               }
+               else {
+                   RCTLog(@"Remote refused session invite: %d, sdp: %@", (int)status, reason);
+               }
+           } error:&error];
  
       break;
       

@@ -121,6 +121,11 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         param.putInt("status", status.value());
 
         sendEvent("onFriendConnection", param);
+
+//        if(status.value() == 0){
+//            getRNSessionInstance().start(friendId);
+//        }
+
     }
 
     @Override
@@ -212,22 +217,22 @@ public class RN_CARRIER extends AbstractCarrierHandler {
     }
 
 
-    public void sendEvent(String eventName, @Nullable Integer params){
+    public static void sendEvent(String eventName, @Nullable Integer params){
         WritableArray array = Arguments.createArray();
         array.pushInt(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable String params){
+    public static void sendEvent(String eventName, @Nullable String params){
         WritableArray array = Arguments.createArray();
         array.pushString(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable WritableMap params){
+    public static void sendEvent(String eventName, @Nullable WritableMap params){
         WritableArray array = Arguments.createArray();
         array.pushMap(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable WritableArray params){
+    public static void sendEvent(String eventName, @Nullable WritableArray params){
         WritableArray array = Arguments.createArray();
         array.pushArray(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
