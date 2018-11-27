@@ -1099,7 +1099,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.PublicKey = object.PublicKey
 		return obj
 	case *PayloadUpdateProducer:
-		obj := new(UpdateProducerInfo)
+		obj := &UpdateProducerInfo{
+			new(RegisterProducerInfo),
+		}
 		obj.PublicKey = object.PublicKey
 		obj.NickName = object.NickName
 		obj.Url = object.Url
