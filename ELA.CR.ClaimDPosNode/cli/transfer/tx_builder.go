@@ -150,6 +150,32 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		return nil, errors.New("[Wallet], Invalid transaction target")
 	}
 
+	// Check from address
+	password, err := clicom.GetPassword([]byte{}, false)
+	if err != nil {
+		return nil, err
+	}
+	client, err := account.Open(account.KeystoreFileName, password)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		return nil, err
+	}
+
+	if fromAddress != "" && fromAddress != acc.Address {
+		programHash, err := common.Uint168FromAddress(fromAddress)
+		if err != nil {
+			return nil, err
+		}
+		acc = client.GetAccountByProgramHash(*programHash)
+		if acc == nil {
+			return nil, errors.New(fromAddress + " is not local account")
+		}
+	}
+	fromAddress = acc.Address
+
 	// Check if from address is valid
 	spender, err := common.Uint168FromAddress(fromAddress)
 	if err != nil {
@@ -234,20 +260,6 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 	if totalOutputAmount > 0 {
 		return nil, errors.New("[Wallet], Available token is not enough")
-	}
-
-	password, err := clicom.GetPassword([]byte{}, false)
-	if err != nil {
-		return nil, err
-	}
-	client, err := account.Open(account.KeystoreFileName, password)
-	programHash, err := common.Uint168FromAddress(fromAddress)
-	if err != nil {
-		return nil, err
-	}
-	acc := client.GetAccountByProgramHash(*programHash)
-	if acc == nil {
-		return nil, errors.New(fromAddress + " is not local account")
 	}
 
 	return newTransaction(acc.RedeemScript, txInputs, txOutputs, core.TransferAsset), nil

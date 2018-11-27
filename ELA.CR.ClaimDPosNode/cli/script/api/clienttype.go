@@ -11,7 +11,6 @@ import (
 
 const luaClientTypeName = "client"
 
-// Registers my person type to given L.
 func RegisterClientType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaClientTypeName)
 	L.SetGlobal("client", mt)
@@ -48,6 +47,7 @@ func checkClient(L *lua.LState, idx int) *account.ClientImpl {
 		return v
 	}
 	L.ArgError(1, "Wallet expected")
+
 	return nil
 }
 
@@ -71,6 +71,7 @@ func getWalletAddr(L *lua.LState) int {
 	addr, _ := acc.ProgramHash.ToAddress()
 
 	L.Push(lua.LString(addr))
+
 	return 1
 }
 
@@ -79,5 +80,6 @@ func getWalletPubkey(L *lua.LState) int {
 	acc, _ := wallet.GetDefaultAccount()
 	pubkey, _ := acc.PublicKey.EncodePoint(true)
 	L.Push(lua.LString(hex.EncodeToString(pubkey)))
+
 	return 1
 }
