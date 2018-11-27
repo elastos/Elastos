@@ -66,7 +66,7 @@ func (h *DposNormalHandler) StartNewProposal(p core.DPosProposal) {
 
 func (h *DposNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
 	log.Info("[OnViewChanged] clean proposal")
-	h.proposalDispatcher.CleanProposals()
+	h.proposalDispatcher.CleanProposals(true)
 }
 
 func (h *DposNormalHandler) TryStartNewConsensus(b *core.Block) bool {
@@ -74,7 +74,7 @@ func (h *DposNormalHandler) TryStartNewConsensus(b *core.Block) bool {
 
 	if h.consensus.IsReady() {
 		log.Info("[Normal][OnBlockReceived] received first unsigned block, start consensus")
-		h.proposalDispatcher.CleanProposals()
+		h.proposalDispatcher.CleanProposals(false)
 		h.consensus.StartConsensus(b)
 		h.proposalDispatcher.TryStartSpeculatingProposal(b)
 		result = true

@@ -70,7 +70,7 @@ type DposManager interface {
 	GetPublicKey() string
 	GetBlockCache() *ConsensusBlockCache
 
-	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork)
+	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor)
 
 	Recover()
 
@@ -84,10 +84,11 @@ type dposManager struct {
 	publicKey  string
 	blockCache *ConsensusBlockCache
 
-	handler    DposHandlerSwitch
-	network    DposNetwork
-	dispatcher ProposalDispatcher
-	consensus  Consensus
+	handler        DposHandlerSwitch
+	network        DposNetwork
+	dispatcher     ProposalDispatcher
+	consensus      Consensus
+	illegalMonitor IllegalBehaviorMonitor
 }
 
 func NewManager(name string) DposManager {
@@ -100,11 +101,12 @@ func NewManager(name string) DposManager {
 	return m
 }
 
-func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork) {
+func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor) {
 	d.handler = handler
 	d.dispatcher = dispatcher
 	d.consensus = consensus
 	d.network = network
+	d.illegalMonitor = illegalMonitor
 	d.blockCache.Listener = d.dispatcher.(*proposalDispatcher)
 }
 
@@ -128,6 +130,11 @@ func (d *dposManager) Recover() {
 }
 
 func (d *dposManager) ProcessHigherBlock(b *core.Block) {
+	if !d.illegalMonitor.IsBlockValid(b) {
+		log.Info("[ProcessHigherBlock] received block do not contains illegal evidence, block hash: ", b.Hash())
+		return
+	}
+
 	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
 	d.network.BroadcastMessage(msg.NewInventory(b.Hash()))
 	d.handler.TryStartNewConsensus(b)
@@ -250,11 +257,11 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 }
 
 func (d *dposManager) OnIllegalProposalReceived(id peer.PID, proposals *core.DposIllegalProposals) {
-	//todo complete me
+	d.illegalMonitor.SetProposalEvidence(proposals)
 }
 
 func (d *dposManager) OnIllegalVotesReceived(id peer.PID, votes *core.DposIllegalVotes) {
-	//todo complete me
+	d.illegalMonitor.SetVoteEvidence(votes)
 }
 
 func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
@@ -266,7 +273,7 @@ func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
 }
 
 func (d *dposManager) changeHeight() {
-	if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil{
+	if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil {
 		log.Error("Error occurred with change height: ", err)
 		return
 	}

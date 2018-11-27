@@ -7,19 +7,81 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const WaitHeightTolerance = uint32(1)
+
+type IllegalBehaviorMonitor interface {
+	IsBlockValid(block *core.Block) bool
+
+	AddProposal(proposal core.DPosProposal)
+	Reset(changeView bool)
+
+	IsLegalProposal(p *core.DPosProposal) (*core.DPosProposal, bool)
+	ProcessIllegalProposal(first, second *core.DPosProposal)
+
+	ProcessIllegalVote(first, second *core.DPosProposalVote)
+	IsLegalVote(v *core.DPosProposalVote) (*core.DPosProposalVote, bool)
+
+	SetProposalEvidence(evidence *core.DposIllegalProposals)
+	SetVoteEvidence(evidence *core.DposIllegalVotes)
+}
+
 type illegalBehaviorMonitor struct {
 	dispatcher      *proposalDispatcher
 	cachedProposals map[common.Uint256]*core.DPosProposal
+
+	//todo consider multiple arbitrators have illegal evidence within same block
+	proposalEvidence *core.DposIllegalProposals
+	voteEvidence     *core.DposIllegalVotes
+}
+
+func (i *illegalBehaviorMonitor) SetProposalEvidence(evidence *core.DposIllegalProposals) {
+	i.proposalEvidence = evidence
+}
+
+func (i *illegalBehaviorMonitor) SetVoteEvidence(evidence *core.DposIllegalVotes) {
+	i.voteEvidence = evidence
+}
+
+func (i *illegalBehaviorMonitor) IsBlockValid(block *core.Block) bool {
+	if i.proposalEvidence != nil {
+		//for _ := range block.Transactions {
+		//todo check if transaction contains evidence
+		//}
+
+		if block.Height-i.proposalEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
+			return false
+		}
+	}
+
+	if i.voteEvidence != nil {
+		//for _ := range block.Transactions {
+		//todo check if transaction contains evidence
+		//}
+
+		if block.Height-i.voteEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (i *illegalBehaviorMonitor) AddProposal(proposal core.DPosProposal) {
 	i.cachedProposals[proposal.Hash()] = &proposal
 }
 
-func (i *illegalBehaviorMonitor) Reset() {
+func (i *illegalBehaviorMonitor) Reset(changeView bool) {
 	i.cachedProposals = make(map[common.Uint256]*core.DPosProposal)
 	for k, v := range i.dispatcher.pendingProposals {
 		i.cachedProposals[k] = &v
+	}
+
+	if !changeView && i.dispatcher.processingBlock != nil {
+		i.proposalEvidence = nil
+
+		if i.IsBlockValid(i.dispatcher.processingBlock) {
+			i.voteEvidence = nil
+		}
 	}
 }
 
@@ -52,6 +114,8 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *core.DPos
 		},
 	}
 
+	i.SetProposalEvidence(&evidences)
+
 	//todo send illegal proposal transaction
 
 	m := &msg.IllegalProposals{Proposals: evidences}
@@ -76,6 +140,8 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProp
 			BlockHeader: secondBlock.Header,
 		},
 	}
+
+	i.SetVoteEvidence(&evidences)
 
 	//todo send illegal vote transaction
 
