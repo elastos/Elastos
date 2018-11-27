@@ -19,8 +19,6 @@ type ConsensusStatus struct {
 	RejectedVotes    []core.DPosProposalVote
 	PendingProposals []core.DPosProposal
 	PendingVotes     []core.DPosProposalVote
-
-	MissingBlockConfirms []*core.BlockConfirm
 }
 
 func (s *ConsensusStatus) Serialize(w io.Writer) error {
@@ -71,15 +69,6 @@ func (s *ConsensusStatus) Serialize(w io.Writer) error {
 		return err
 	}
 	for _, v := range s.PendingProposals {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteVarUint(w, uint64(len(s.MissingBlockConfirms))); err != nil {
-		return err
-	}
-	for _, v := range s.MissingBlockConfirms {
 		if err := v.Serialize(w); err != nil {
 			return err
 		}
@@ -151,13 +140,6 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
-	}
-	s.MissingBlockConfirms = make([]*core.BlockConfirm, arrayLength)
-	for i := uint64(0); i < arrayLength; i++ {
-		s.MissingBlockConfirms[i] = &core.BlockConfirm{}
-		if err = s.MissingBlockConfirms[i].Deserialize(r); err != nil {
-			return err
-		}
 	}
 
 	return nil
