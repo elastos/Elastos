@@ -94,10 +94,10 @@ func NewArbitrator() (Arbitrator, error) {
 	dposHandlerSwitch := NewHandler(network, dposManager, eventMoniter)
 
 	consensus := NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher := NewDispatcher(consensus, eventMoniter, network, dposManager, dposAccount)
+	proposalDispatcher, illegalMonitor := NewDispatcherAndIllegalMonitor(consensus, eventMoniter, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
-	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network)
+	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor)
 	network.Initialize(proposalDispatcher)
 
 	result := &arbitrator{

@@ -41,7 +41,7 @@ func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
 		log.Info("[OnViewChanged] get block failed for proposal")
 	} else {
 		log.Info("[OnViewChanged] start proposal")
-		h.proposalDispatcher.CleanProposals()
+		h.proposalDispatcher.CleanProposals(true)
 		h.proposalDispatcher.StartProposal(b)
 	}
 }

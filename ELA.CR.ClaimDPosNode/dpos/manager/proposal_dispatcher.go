@@ -26,7 +26,7 @@ type ProposalDispatcher interface {
 
 	//proposal
 	StartProposal(b *core.Block)
-	CleanProposals()
+	CleanProposals(changeView bool)
 	FinishProposal()
 	TryStartSpeculatingProposal(b *core.Block)
 	ProcessProposal(d core.DPosProposal)
@@ -49,7 +49,7 @@ type proposalDispatcher struct {
 	pendingProposals   map[common.Uint256]core.DPosProposal
 	pendingVotes       map[common.Uint256]core.DPosProposalVote
 
-	illegalMonitor *illegalBehaviorMonitor
+	illegalMonitor IllegalBehaviorMonitor
 	eventMonitor   *log.EventMonitor
 	consensus      Consensus
 	network        DposNetwork
@@ -189,16 +189,17 @@ func (p *proposalDispatcher) FinishProposal() {
 	p.eventMonitor.OnProposalFinished(proposalEvent)
 }
 
-func (p *proposalDispatcher) CleanProposals() {
+func (p *proposalDispatcher) CleanProposals(changeView bool) {
 	log.Info("Clean proposals")
+
+	//todo clear pending proposals that are lower than current consensus height
+	p.illegalMonitor.Reset(changeView)
+
 	p.processingBlock = nil
 	p.processingProposal = nil
 	p.acceptVotes = make(map[common.Uint256]core.DPosProposalVote)
 	p.rejectedVotes = make(map[common.Uint256]core.DPosProposalVote)
 	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
-
-	//todo clear pending proposals that are lower than current consensus height
-	p.illegalMonitor.Reset()
 }
 
 func (p *proposalDispatcher) ProcessProposal(d core.DPosProposal) {
@@ -300,7 +301,7 @@ func (p *proposalDispatcher) FinishConsensus() {
 	c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
 	p.eventMonitor.OnConsensusFinished(c)
 	p.consensus.SetReady()
-	p.CleanProposals()
+	p.CleanProposals(false)
 }
 
 func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.ConsensusStatus) error {
@@ -406,7 +407,7 @@ func (p *proposalDispatcher) countRejectedVote(v core.DPosProposalVote) {
 		p.rejectedVotes[v.Hash()] = v
 
 		if blockchain.DefaultLedger.Arbitrators.HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
-			p.CleanProposals()
+			p.CleanProposals(true)
 			p.consensus.ChangeView()
 		}
 	}
@@ -474,7 +475,7 @@ func (p *proposalDispatcher) setProcessingProposal(d core.DPosProposal) {
 	p.pendingVotes = make(map[common.Uint256]core.DPosProposalVote)
 }
 
-func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) ProposalDispatcher {
+func NewDispatcherAndIllegalMonitor(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) (ProposalDispatcher, IllegalBehaviorMonitor) {
 	p := &proposalDispatcher{
 		processingBlock:    nil,
 		processingProposal: nil,
@@ -487,8 +488,13 @@ func NewDispatcher(consensus Consensus, eventMonitor *log.EventMonitor, network 
 		network:            network,
 		manager:            manager,
 		account:            dposAccount,
-		illegalMonitor:     &illegalBehaviorMonitor{},
 	}
-	p.illegalMonitor.dispatcher = p
-	return p
+	i := &illegalBehaviorMonitor{
+		dispatcher:       p,
+		cachedProposals:  make(map[common.Uint256]*core.DPosProposal),
+		proposalEvidence: nil,
+		voteEvidence:     nil,
+	}
+	p.illegalMonitor = i
+	return p, i
 }
