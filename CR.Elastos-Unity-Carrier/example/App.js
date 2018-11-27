@@ -5,7 +5,7 @@ import { Container, Header, Content, Footer, FooterTab, Button, Text } from 'nat
 
 import {Carrier} from 'react-native-elastos-carrier';
 
-
+const target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
 class App extends Component{
   constructor(){
     super();
@@ -15,6 +15,8 @@ class App extends Component{
     };
 
     this.carrier = null;
+
+
   }
   render() {
     return (
@@ -26,7 +28,7 @@ class App extends Component{
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
+          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
@@ -43,7 +45,7 @@ class App extends Component{
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
             <Text>acceptFriend</Text>
-          </Button>
+          </Button> */}
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getFriendInfo')}>
             <Text>getFriendInfo</Text>
           </Button>
@@ -55,6 +57,15 @@ class App extends Component{
           </Button> */}
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'createSession')}>
             <Text>createSession</Text>
+          </Button>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sessionRequest')}>
+            <Text>sessionRequest</Text>
+          </Button>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sessionReplyRequest')}>
+            <Text>sessionReplyRequest</Text>
+          </Button>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'writeStream')}>
+            <Text>writeStream</Text>
           </Button>
         </Content>
         
@@ -138,7 +149,7 @@ class App extends Component{
       case 'createSession':
         try{
           rs = await this.carrier.createSession(
-            '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy',
+            target,
             Carrier.config.STREAM_TYPE.TEXT,
             Carrier.config.STREAM_MODE.RELIABLE
           );
@@ -146,6 +157,28 @@ class App extends Component{
           this.setError(e);
         }
         
+        break;
+      case 'sessionRequest':
+        try{
+          rs = await this.carrier.sessionRequest(target);
+        }catch(e){
+          this.setError(e);
+        }
+        break;
+      case 'sessionReplyRequest':
+        try{
+          rs = await this.carrier.sessionReplyRequest(target, 0, null);
+        }catch(e){
+          this.setError(e);
+        }
+        break;
+      case 'writeStream':
+        try{
+          rs = await this.carrier.writeStream(target, 'sljfdslkfjdsj')
+        }catch(e){
+          this.setError(e);
+        }
+
         break;
     }
     if(rs || _.isString(rs)){
@@ -183,9 +216,7 @@ class App extends Component{
       onStreamData : (data)=>{
         this.setLog('carrier onStreamData : '+JSON.stringify(data));
 
-        this.carrier.writeStream(data.streamId, 'sldjfsldfjlsfdjslf').then((rs)=>{
-          console.log(111, rs.toString())
-        })
+        
       }
     });
     await this.carrier.start();
@@ -208,9 +239,11 @@ const styles = StyleSheet.create({
     },
     log : {
       backgroundColor: '#000',
-      color: 'green',
+      color: '#ff0',
       fontSize:14, 
-      width:"100%"
+      width:"100%",
+      height : 300,
+      overflow: 'scroll'
     },
     error : {
       marginTop: 10,

@@ -13,8 +13,12 @@ public class FriendSessionStream {
     private Session session;
     private Stream stream;
 
+    private StreamState state;
+
     public FriendSessionStream(String friendId){
         this.id = friendId;
+
+        this.state = StreamState.Closed;
     }
 
     public String getId(){
@@ -45,9 +49,17 @@ public class FriendSessionStream {
         // TODO
 
         this.session.close();
+        this.state = StreamState.Closed;
         FriendSessionStream.map.remove(this.id);
     }
 
+    public void setState(StreamState state){
+        this.state = state;
+    }
+
+    public StreamState getState() {
+        return this.state;
+    }
 
     // static method
     public static FriendSessionStream getInstanceByStreamId(int streamId){

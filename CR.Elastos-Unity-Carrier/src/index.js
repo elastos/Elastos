@@ -118,13 +118,21 @@ const Carrier = class {
   }
 
   createSession(friendId, streamType, streamMode){
-    return exec('createSession', this.id, friendId, streamType, streamMode,);
+    return exec('createSession', this.id, friendId, streamType, streamMode);
+  }
+
+  sessionRequest(friendId){
+    return exec('sessionRequest', this.id, friendId);
+  }
+
+  sessionReplyRequest(friendId, status, reason){
+    return exec('sessionReplyRequest', this.id, friendId, status, reason);
   }
 
   // addStreamWithType()
 
-  writeStream(streamId, data){
-    return exec('writeStream', this.id, streamId, data);
+  writeStream(streamIdOrFriendId, data){
+    return exec('writeStream', this.id, streamIdOrFriendId, data);
   }
   
 

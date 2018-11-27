@@ -14,7 +14,6 @@ import java.util.HashMap;
 public class RN_SESSION extends AbstractStreamHandler implements SessionRequestCompleteHandler {
 
     private Util util;
-    private StreamState mState = StreamState.Closed;
 
 
     private Carrier _carrier;
@@ -48,7 +47,6 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         if(fss != null){
             fss.close();
 
-            mState  = StreamState.Closed;
         }
 
     }
@@ -58,21 +56,6 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
     * */
     public int start(String friendId, int streamType, int streamMode) {
         util.log(String.format("[ RN_SESSION.create ] => %s", friendId));
-
-//        if (mState == StreamState.Initialized || mState == StreamState.TransportReady
-//                || mState == StreamState.Connecting) {
-//            return;
-//        }
-//        else if (mState == StreamState.Connected) {
-//
-//            return;
-//        }
-//        else {
-//
-//
-//        }
-
-        mState = StreamState.Closed;
 
 //        int sopt = Stream.PROPERTY_RELIABLE;
         int rs = addStreamWithType(friendId, StreamType.valueOf(streamType), streamMode);
@@ -133,6 +116,35 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
     }
 
+    public void sessionRequest(String friendId){
+        // TODO check session state
+        util.log(String.format("[ sessionRequest ] => %s", friendId));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Session session = fss.getSession();
+            session.request(this);
+            util.log("Session request sent.");
+        }catch(ElastosException e){
+            util.error("[ sessionRequest ]");
+        }
+    }
+
+    public void sessionReplyRequest(String friendId, int status, String reason){
+        // TODO check session state
+        util.log(String.format("[ sessionReplyRequest ] => %s, %s, %s", friendId, status, reason));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Session session = fss.getSession();
+            session.replyRequest(status, reason);
+            util.log("Session reply request.");
+
+            session.start(sessionRequestSdp);
+            util.log("Session started success.");
+        }catch(ElastosException e){
+            util.error("[ sessionReplyRequest ]");
+        }
+    }
+
     @Override
     public void onCompletion(Session session, int status, String reason, String sdp) {
         util.log(String.format("[ onCompletion ] => status=%s, reason=%s, sdp=%s", status, reason, sdp));
@@ -176,29 +188,20 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
             return;
         }
 
-        Session _session = fss.getSession();
 
-        mState = state;
+        fss.setState(state);
 
         WritableMap param = Arguments.createMap();
         param.putInt("streamId", stream.getStreamId());
         param.putString("friendId", fss.getId());
-        param.putString("state", state.toString());
+        param.putInt("state", state.value());
+
         RN_CARRIER.sendEvent("onStateChanged", param);
         switch (state) {
             case Initialized:
-                try{
-                    _session.request(this);
-                    util.log("Session request sent.");
-                }catch(ElastosException e){
-                    util.error("[ Session.request ]");
-                }
-
                 break;
-
             case TransportReady:
                 util.log("Stream to transport ready");
-
                 break;
 
             case Connected:

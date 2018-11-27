@@ -285,7 +285,31 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         cb.invoke(null, ok);
     }
 
+    @ReactMethod
+    public void writeStream(String name, String friendId, String data, Callback cb){
 
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        FriendSessionStream fss = _rs.getFriendSessionByFriendId(friendId);
+        _rs.writeToStream(fss.getStreamId(), data);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void sessionRequest(String name, String friendId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+
+        _rs.sessionRequest(friendId);
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void sessionReplyRequest(String name, String friendId, int status, String reason, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+
+        _rs.sessionReplyRequest(friendId, status, reason);
+        cb.invoke(null, ok);
+    }
 
 
 
