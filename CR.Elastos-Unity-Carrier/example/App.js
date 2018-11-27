@@ -137,7 +137,11 @@ class App extends Component{
         break;
       case 'createSession':
         try{
-          rs = await this.carrier.createSession('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
+          rs = await this.carrier.createSession(
+            '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy',
+            Carrier.config.STREAM_TYPE.TEXT,
+            Carrier.config.STREAM_MODE.RELIABLE
+          );
         }catch(e){
           this.setError(e);
         }
@@ -172,6 +176,16 @@ class App extends Component{
       },
       onFriendMessage : (data)=>{
         this.setLog('receive message from '+data.userId+' with ['+data.message+']');
+      },
+      onStateChanged : (data)=>{
+        this.setLog('carrier onStateChanged : '+JSON.stringify(data));
+      },
+      onStreamData : (data)=>{
+        this.setLog('carrier onStreamData : '+JSON.stringify(data));
+
+        this.carrier.writeStream(data.streamId, 'sldjfsldfjlsfdjslf').then((rs)=>{
+          console.log(111, rs.toString())
+        })
       }
     });
     await this.carrier.start();

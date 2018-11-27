@@ -10,16 +10,7 @@ const Listener = new NativeEventEmitter(NativeCarrier);
  * 
  */
 
-const STREAM_CB_NAMES = [
-  "onStateChanged",
-  "onStreamData",
-  "onChannelOpen",
-  "onChannelOpened",
-  "onChannelClose",
-  "onChannelData",
-  "onChannelPending",
-  "onChannelResume",
-];
+
 
 const exec = async (fnName, ...args)=>{
   return new Promise((resolve, reject)=>{
@@ -63,7 +54,7 @@ const Carrier = class {
         console.log(`callback [${name}] fired : `, args);
       }
     };
-    _.each(config.CARRIER_CB_NAMES, (name)=>{
+    _.each(_.concat(config.CARRIER_CB_NAMES, config.STREAM_CB_NAMES), (name)=>{
       const fn = callbacks[name] || def_fn(name);
       Listener.addListener(name, (data)=>{
         fn(...data);
@@ -126,12 +117,15 @@ const Carrier = class {
     return exec('clean', this.id);
   }
 
-  createSession(friendId){
-    return exec('createSession', this.id, friendId);
+  createSession(friendId, streamType, streamMode){
+    return exec('createSession', this.id, friendId, streamType, streamMode,);
   }
 
   // addStreamWithType()
 
+  writeStream(streamId, data){
+    return exec('writeStream', this.id, streamId, data);
+  }
   
 
   

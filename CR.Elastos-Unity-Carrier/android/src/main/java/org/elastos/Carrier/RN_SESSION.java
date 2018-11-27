@@ -1,5 +1,8 @@
 package org.elastos.Carrier;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+
 import org.elastos.carrier.Carrier;
 import org.elastos.carrier.FriendInfo;
 import org.elastos.carrier.session.*;
@@ -53,7 +56,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
     /*
     * start session
     * */
-    public int start(String friendId) {
+    public int start(String friendId, int streamType, int streamMode) {
         util.log(String.format("[ RN_SESSION.create ] => %s", friendId));
 
 //        if (mState == StreamState.Initialized || mState == StreamState.TransportReady
@@ -71,9 +74,8 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
         mState = StreamState.Closed;
 
-//            int sopt = Stream.PROPERTY_PLAIN | Stream.PROPERTY_RELIABLE;
-        int sopt = Stream.PROPERTY_RELIABLE;
-        int rs = addStreamWithType(friendId, StreamType.Text, sopt);
+//        int sopt = Stream.PROPERTY_RELIABLE;
+        int rs = addStreamWithType(friendId, StreamType.valueOf(streamType), streamMode);
 
         return rs;
     }
@@ -115,6 +117,22 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         return fss;
     }
 
+    public void writeToStream(int streamId, String data){
+        util.log(String.format("[ writeToStream ] => %s", data));
+        FriendSessionStream fss = FriendSessionStream.getInstanceByStreamId(streamId);
+
+        Stream stream = fss.getStream();
+        byte[] bindary = data.getBytes();
+
+        try{
+            stream.writeData(bindary);
+        }catch(ElastosException e){
+            e.getStackTrace();
+            util.error(String.format("writeToStream error => %s", e.getErrorCode()));
+        }
+
+    }
+
     @Override
     public void onCompletion(Session session, int status, String reason, String sdp) {
         util.log(String.format("[ onCompletion ] => status=%s, reason=%s, sdp=%s", status, reason, sdp));
@@ -136,11 +154,21 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
     @Override
     public void onStreamData(Stream stream, byte[] receivedData) {
         util.log(String.format("[ onStreamData ] => data=%s", new String(receivedData)));
+
+        FriendSessionStream fss = FriendSessionStream.getInstanceByStreamId(stream.getStreamId());
+
+        WritableMap param = Arguments.createMap();
+
+        param.putString("data", new String(receivedData));
+        param.putInt("streamId", stream.getStreamId());
+        param.putString("friendId", fss.getId());
+
+        RN_CARRIER.sendEvent("onStreamData", param);
     }
 
     @Override
     public void onStateChanged(Stream stream, StreamState state) {
-        util.log("onStateChanged : " + stream.getStreamId() + "  :  " + state);
+        util.log("onStateChanged : " + stream.getStreamId() + "  :  " + state.toString());
 
         FriendSessionStream fss = FriendSessionStream.getInstanceByStreamId(stream.getStreamId());
         if(fss == null){
@@ -151,6 +179,12 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         Session _session = fss.getSession();
 
         mState = state;
+
+        WritableMap param = Arguments.createMap();
+        param.putInt("streamId", stream.getStreamId());
+        param.putString("friendId", fss.getId());
+        param.putString("state", state.toString());
+        RN_CARRIER.sendEvent("onStateChanged", param);
         switch (state) {
             case Initialized:
                 try{

@@ -251,7 +251,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     }
 
     @ReactMethod
-    public void createSession(String name, String friendId, Callback cb){
+    public void createSession(String name, String friendId, int streamType, int streamMode, Callback cb){
         Carrier _carrier = getInstanceByName(name);
 
         RN_FriendInfo info = null;
@@ -270,11 +270,20 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         }
 
         RN_SESSION _rs = getByName(name).getRNSessionInstance();
-        int streamId = _rs.start(friendId);
+        int streamId = _rs.start(friendId, streamType, streamMode);
 
         cb.invoke(null, streamId);
     }
 
+
+    @ReactMethod
+    public void writeStream(String name, int streamId, String data, Callback cb){
+
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.writeToStream(streamId, data);
+
+        cb.invoke(null, ok);
+    }
 
 
 

@@ -23,6 +23,18 @@ export default {
       "onFriendInviteRequest", // TODO
       "onSessionRequest", // TODO
     ],
+
+    STREAM_CB_NAMES : [
+      "onStateChanged",
+      "onStreamData",
+      "onChannelOpen",
+      "onChannelOpened",
+      "onChannelClose",
+      "onChannelData",
+      "onChannelPending",
+      "onChannelResume",
+    ],
+
     CONNECTION_STATUS : {
       'CONNECTED' : 0,
       'DISCONNECTED' : 1
@@ -40,22 +52,14 @@ export default {
       'MESSAGE' : 4
     },
     STREAM_STATE : {
-      /** Raw stream. */
-      RAW: 0,
-      /** Initialized stream. */
-      INITIALIZED: 1,
-      /** The underlying transport is ready for the stream to start. */
-      TRANSPORT_READY: 2,
-      /** The stream is trying to connect the remote. */
-      CONNECTING: 3,
-      /** The stream connected with remove peer. */
-      CONNECTED: 4,
-      /** The stream is deactived. */
-      DEACTIVATED: 5,
-      /** The stream closed gracefully. */
-      CLOSED: 6,
-      /** The stream is on error, cannot to continue. */
-      ERROR: 7
+
+      Initialized: 1,
+      TransportReady: 2,
+      Connecting: 3,
+      Connected: 4,
+      Deactivated: 5,
+      Closed: 6,
+      Error: 7
     },
     STREAM_MODE : {
       /**
