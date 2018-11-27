@@ -14,6 +14,7 @@ type DposOnDutyHandler struct {
 
 func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
+	defer log.Info("[Onduty-ProcessAcceptVote] end")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal != nil && currentProposal.Hash().IsEqual(p.ProposalHash) && h.consensus.IsRunning() {

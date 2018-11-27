@@ -247,9 +247,10 @@ func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
 }
 
 func (h *HandlerV0) onConfirm(confirm *core.DPosProposalVoteSlot) error {
+	log.Info("[onConfirm] received from main chain p2p")
 	err := LocalNode.AppendConfirm(confirm)
 	if err != nil {
-		return fmt.Errorf("receive invalid confirm %s, err: %s", confirm.Hash, err.Error())
+		return fmt.Errorf("[onConfirm] receive invalid confirm %s, err: %s", confirm.Hash, err.Error())
 	}
 
 	return nil
