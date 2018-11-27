@@ -15,6 +15,8 @@ type DposNormalHandler struct {
 
 func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
+	defer log.Info("[Normal-ProcessAcceptVote] end")
+
 	if !h.consensus.IsRunning() {
 		return
 	}
@@ -52,7 +54,9 @@ func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p core.DPosPropos
 }
 
 func (h *DposNormalHandler) StartNewProposal(p core.DPosProposal) {
-	log.Info("[Normal][OnProposalReceived] received request sign")
+	log.Info("[Normal][StartNewProposal] start")
+	defer log.Info("[Normal][StartNewProposal] end")
+
 	if h.consensus.IsRunning() {
 		h.consensus.TryChangeView()
 	}
