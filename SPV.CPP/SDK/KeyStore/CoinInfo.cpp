@@ -41,11 +41,11 @@ namespace Elastos {
 		}
 
 		uint32_t CoinInfo::getIndex() const {
-			return _index;
+			return 0;//_index;
 		}
 
 		void CoinInfo::setIndex(uint32_t index) {
-			_index = index;
+			_index = 0;//index;
 		}
 
 		int CoinInfo::getUsedMaxAddressIndex() const {
@@ -87,7 +87,7 @@ namespace Elastos {
 		void to_json(nlohmann::json &j, const CoinInfo &p) {
 			j["ChainID"] = p._chainId;
 			j["EarliestPeerTime"] = p._earliestPeerTime;
-			j["Index"] = p._index;
+			j["Index"] = 0;//p._index;
 			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["SingleAddress"] = p._singleAddress;
 			j["WalletType"] = int(p.getWalletType());
@@ -103,7 +103,7 @@ namespace Elastos {
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
 			p._chainId = j["ChainID"].get<std::string>();
 			p._earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
-			p._index = j["Index"].get<int>();
+			p._index = 0;//j["Index"].get<int>();
 			p._usedMaxAddressIndex = j["UsedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["SingleAddress"].get<bool>();
 			p._walletType = (SubWalletType) j["WalletType"].get<int>();
