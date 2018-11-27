@@ -605,7 +605,8 @@ typedef struct ElaCallbacks {
      *      carrier     [in] A handle to the Carrier node instance.
      * @param
      *      info        [in] A pointer to ElaFriendInfo structure that
-     *                       representing a friend
+     *                       representing a friend(NULL indicates
+     *                       iteration finished).
      * @param
      *      context     [in] The application defined context data.
      *
@@ -1104,7 +1105,8 @@ bool ela_is_ready(ElaCarrier *carrier);
  *
  * @param
  *      info        [in] A pointer to ElaFriendInfo structure that
- *                       representing a friend
+ *                       representing a friend(NULL indicates
+ *                       iteration finished).
  * @param
  *      context     [in] The application defined context data.
  *
