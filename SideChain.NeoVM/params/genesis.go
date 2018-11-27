@@ -33,25 +33,6 @@ var (
 	// The main chain asset ID
 	elaAssetId = elaAsset.Hash()
 
-	addr1 = "EeVY3DD2rD199vdFHLtQpWwDJNMDDF35VF"
-	hash1, _ = Uint168FromAddress(addr1)
-	output = &types.Output{
-		AssetID: elaAssetId,
-		Value: 100000 * 100000000,
-		ProgramHash: *hash1,
-	}
-	coinBase = types.Transaction{
-		TxType:         types.CoinBase,
-		PayloadVersion: 0,
-		Payload: &types.PayloadCoinBase{},
-		Attributes: []*types.Attribute{},
-		Inputs:     []*types.Input{},
-		Outputs:    []*types.Output {output},
-		Programs:   []*types.Program{},
-	}
-
-
-
 	// genesisHeader
 	genesisHeader = types.Header{
 		Version:    types.BlockVersion,
@@ -71,10 +52,9 @@ var (
 		},
 	}
 
-
 	// genesis block
 	genesisBlock = &types.Block{
 		Header:       genesisHeader,
-		Transactions: []*types.Transaction{&elaAsset, &coinBase},
+		Transactions: []*types.Transaction{&elaAsset},
 	}
 )
