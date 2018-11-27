@@ -1,13 +1,16 @@
 package store
 
 import (
+	"time"
+
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 type EventRecord struct {
 	eventStore EventStore
 
-	currentConsensus uint64
+	currentConsensus   uint64
+	startConsensusTime time.Time
 }
 
 func (e *EventRecord) Initialize() {
@@ -53,6 +56,7 @@ func (e *EventRecord) OnViewStarted(view log.ViewEvent) {
 }
 
 func (e *EventRecord) OnConsensusStarted(cons log.ConsensusEvent) {
+	e.startConsensusTime = cons.StartTime
 	id, err := e.eventStore.AddConsensusEvent(cons)
 	if err != nil {
 		log.Error("[OnConsensusStarted], Add message failed:", err.Error())
@@ -62,6 +66,7 @@ func (e *EventRecord) OnConsensusStarted(cons log.ConsensusEvent) {
 }
 
 func (e *EventRecord) OnConsensusFinished(cons log.ConsensusEvent) {
+	log.Error("[OnConsensusFinished] time duration:", cons.EndTime.Sub(e.startConsensusTime).Seconds())
 	_, err := e.eventStore.UpdateConsensusEvent(cons)
 	if err != nil {
 		log.Error("[OnConsensusFinished], Add message failed:", err.Error())

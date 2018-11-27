@@ -28,8 +28,8 @@ func (pool *BlockPool) Init() {
 }
 
 func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error) {
-	log.Info("[AppendBlock] start")
-	defer log.Info("[AppendBlock] end")
+	log.Debugf("[AppendBlock] start")
+	defer log.Debugf("[AppendBlock] end")
 
 	// add block
 	block := blockConfirm.Block
@@ -55,7 +55,7 @@ func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error
 	// confirm block
 	isConfirmed := true
 	if err := pool.ConfirmBlock(hash); err != nil {
-		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String())
+		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String(),"err: ",err)
 		isConfirmed = false
 	}
 
@@ -97,6 +97,8 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 	log.Info("[ConfirmBlock] start")
 	defer log.Info("[ConfirmBlock] end")
+	log.Info("[ConfirmBlock] block hash:", hash)
+
 	block, exist := pool.GetBlock(hash)
 	if !exist {
 		return errors.New("there is no block in pool when confirming block")
@@ -110,6 +112,7 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 		return errors.New("block confirmation validate failed")
 	}
 
+	log.Info("[ConfirmBlock] block height:", block.Height)
 	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
 	if err != nil {
 		return errors.New("add block failed")
