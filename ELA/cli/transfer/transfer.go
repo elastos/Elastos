@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/util"
 
 	"github.com/urfave/cli"
 )
@@ -29,7 +30,7 @@ func transferAction(context *cli.Context) error {
 				os.Exit(701)
 			}
 		case "sign":
-			password, err := common.GetPassword([]byte(passwd), false)
+			password, err := util.GetPassword([]byte(passwd), false)
 			if err != nil {
 				return err
 			}

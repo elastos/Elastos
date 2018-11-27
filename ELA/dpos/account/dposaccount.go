@@ -1,10 +1,10 @@
 package account
 
 import (
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -15,19 +15,11 @@ type DposAccount interface {
 }
 
 type dposAccount struct {
-	keystore interface{} //todo key store place holder
-}
-
-func (a *dposAccount) derivePrivateKey() ([]byte, error) {
-	//fixme change getting private key from config to key store in future
-	return common.HexStringToBytes(config.Parameters.ArbiterConfiguration.PrivateKey)
+	account.Account
 }
 
 func (a *dposAccount) SignProposal(proposal *core.DPosProposal) ([]byte, error) {
-	privateKey, err := a.derivePrivateKey()
-	if err != nil {
-		return []byte{0}, err
-	}
+	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, proposal.Data())
 	if err != nil {
@@ -38,10 +30,7 @@ func (a *dposAccount) SignProposal(proposal *core.DPosProposal) ([]byte, error) 
 }
 
 func (a *dposAccount) SignVote(vote *core.DPosProposalVote) ([]byte, error) {
-	privateKey, err := a.derivePrivateKey()
-	if err != nil {
-		return []byte{0}, err
-	}
+	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, vote.Data())
 	if err != nil {
@@ -52,10 +41,7 @@ func (a *dposAccount) SignVote(vote *core.DPosProposalVote) ([]byte, error) {
 }
 
 func (a *dposAccount) SignPeerNonce(nonce []byte) (signature [64]byte) {
-	privateKey, err := a.derivePrivateKey()
-	if err != nil {
-		return signature
-	}
+	privateKey := a.PrivKey()
 
 	sign, err := crypto.Sign(privateKey, nonce)
 	if err != nil || len(signature) != 64 {
@@ -67,6 +53,19 @@ func (a *dposAccount) SignPeerNonce(nonce []byte) (signature [64]byte) {
 	return signature
 }
 
-func NewDposAccount() DposAccount {
-	return &dposAccount{}
+func NewDposAccount() (DposAccount, error) {
+	password, err := util.GetPassword([]byte{}, false)
+	if err != nil {
+		return nil, err
+	}
+	client, err := account.Open(account.KeystoreFileName, password)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		return nil, err
+	}
+
+	return &dposAccount{*acc}, nil
 }
