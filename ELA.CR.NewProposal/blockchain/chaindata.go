@@ -558,6 +558,9 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 		return errors.New("[PersistCancelProducer], Not found producer in mempool.")
 	}
 	info.Payload = payload.PayloadRegisterProducer
+	for _, t := range outputpayload.VoteTypes {
+		c.dirty[t] = true
+	}
 	return nil
 }
 
