@@ -42,7 +42,7 @@ func transferAction(context *cli.Context) error {
 				os.Exit(702)
 			}
 		case "send":
-			if err := sendTransaction(context); err != nil {
+			if err := SendTransaction(context); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(703)
 			}

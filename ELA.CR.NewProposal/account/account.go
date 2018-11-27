@@ -14,6 +14,7 @@ type Account struct {
 	PublicKey    *crypto.PublicKey
 	ProgramHash  common.Uint168
 	RedeemScript []byte
+	Address      string
 }
 
 func NewAccount() (*Account, error) {
@@ -26,12 +27,17 @@ func NewAccount() (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return nil, err
+	}
 
 	return &Account{
 		PrivateKey:   priKey,
 		PublicKey:    pubKey,
 		ProgramHash:  *programHash,
 		RedeemScript: signatureRedeemScript,
+		Address:      address,
 	}, nil
 }
 
@@ -51,11 +57,16 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return nil, err
+	}
 	return &Account{
 		PrivateKey:   privateKey,
 		PublicKey:    pubKey,
 		ProgramHash:  *programHash,
 		RedeemScript: signatureRedeemScript,
+		Address:      address,
 	}, nil
 }
 
