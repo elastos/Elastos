@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/elastos/Elastos.ELA/dpos"
 	"os"
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
 	"github.com/elastos/Elastos.ELA/pow"

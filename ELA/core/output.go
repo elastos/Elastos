@@ -63,7 +63,7 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 		return err
 	}
 
-	if txVersion >= TxVersionC0 {
+	if txVersion >= TxVersion09 {
 		if err := WriteUint8(w, byte(o.OutputType)); err != nil {
 			return err
 		}
@@ -94,7 +94,7 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 		return err
 	}
 
-	if txVersion >= TxVersionC0 {
+	if txVersion >= TxVersion09 {
 		outputType, err := ReadUint8(r)
 		if err != nil {
 			return err
