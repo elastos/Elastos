@@ -71,8 +71,8 @@ const (
 	XOR    = 0x86 // Boolean exclusive or between each bit in the inputs.
 	EQUAL  = 0x87 // Returns 1 if the inputs are exactly equal, 0 otherwise.
 	//EQUALVERIFY = 0x88 // Same as EQUAL, but runs VERIFY afterward.
-	//RESERVED1 = 0x89 // Transaction is invalid unless occuring in an unexecuted IF branch
-	//RESERVED2 = 0x8A // Transaction is invalid unless occuring in an unexecuted IF branch
+	//RESERVED1 = 0x89 // Transaction is invalid unless occurring in an unexecuted IF branch
+	//RESERVED2 = 0x8A // Transaction is invalid unless occurring in an unexecuted IF branch
 
 	// Arithmetic
 	// Note: Arithmetic inputs are limited to signed 32-bit integers, but may overflow their output.
