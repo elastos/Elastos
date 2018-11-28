@@ -1,7 +1,10 @@
 package core
 
 import (
+	"bytes"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ProposalEvidence struct {
@@ -12,6 +15,8 @@ type ProposalEvidence struct {
 type DposIllegalProposals struct {
 	Evidence        ProposalEvidence
 	CompareEvidence ProposalEvidence
+
+	hash *common.Uint256
 }
 
 func (d *ProposalEvidence) IsMatch() bool {
@@ -64,4 +69,14 @@ func (d *DposIllegalProposals) Deserialize(r io.Reader) error {
 	}
 
 	return nil
+}
+
+func (d *DposIllegalProposals) Hash() common.Uint256 {
+	if d.hash == nil {
+		buf := new(bytes.Buffer)
+		d.Serialize(buf)
+		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		d.hash = &hash
+	}
+	return *d.hash
 }

@@ -33,6 +33,9 @@ const (
 	RegisterProducer TransactionType = 0x09
 	CancelProducer   TransactionType = 0x0a
 	UpdateProducer   TransactionType = 0x0b
+
+	IllegalProposalEvidence TransactionType = 0x0c
+	IllegalVoteEvidence     TransactionType = 0x0d
 )
 
 func (self TransactionType) Name() string {
@@ -61,6 +64,10 @@ func (self TransactionType) Name() string {
 		return "CancelProducer"
 	case UpdateProducer:
 		return "UpdateProducer"
+	case IllegalProposalEvidence:
+		return "IllegalProposalEvidence"
+	case IllegalVoteEvidence:
+		return "IllegalVoteEvidence"
 	default:
 		return "Unknown"
 	}
@@ -295,6 +302,14 @@ func (tx *Transaction) Hash() Uint256 {
 		tx.hash = &hash
 	}
 	return *tx.hash
+}
+
+func (tx *Transaction) IsIllegalProposalTx() bool {
+	return tx.TxType == IllegalProposalEvidence
+}
+
+func (tx *Transaction) IsIllegalVoteTx() bool {
+	return tx.TxType == IllegalVoteEvidence
 }
 
 func (tx *Transaction) IsUpdateProducerTx() bool {
