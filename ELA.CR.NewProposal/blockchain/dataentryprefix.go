@@ -10,6 +10,9 @@ const (
 	DATATransaction DataEntryPrefix = 0x02
 	DATAConfirm     DataEntryPrefix = 0x03
 
+	// DPOS
+	DPOSDutyChangedCount DataEntryPrefix = 0x10
+
 	// INDEX
 	IXHeaderHashList DataEntryPrefix = 0x80
 	IXUnspent        DataEntryPrefix = 0x90
