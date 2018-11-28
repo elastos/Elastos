@@ -241,7 +241,7 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 }
 
 func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error) {
-	script, ok := param.String("code")
+	script, ok := param.String("script")
 	if !ok {
 		return nil, util.NewError(int(sideser.InvalidParams), "Invalid script: "+ script)
 	}
@@ -286,7 +286,7 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 		returnType = "Void"
 	}
 
-	script, ok := param.String("hex")
+	script, ok := param.String("scripthash")
 	if !ok {
 		return nil, util.NewError(int(sideser.InvalidParams), "Invalid hex: "+ script)
 	}

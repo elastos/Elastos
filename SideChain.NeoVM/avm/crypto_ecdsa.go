@@ -13,7 +13,7 @@ type CryptoECDsa struct {
 }
 
 func (c *CryptoECDsa) Hash168(data []byte) []byte {
-	temp, err := params.ToCodeHash(data)
+	temp, err := params.ToProgramHash(data)
 	if err != nil {
 		return nil
 	}

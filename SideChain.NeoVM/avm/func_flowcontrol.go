@@ -52,6 +52,7 @@ func opAppCall(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.ErrTableIsNil
 	}
 	script_hash := e.context.OpReader.ReadBytes(20)
+	script_hash = common.BytesReverse(script_hash)
 	script := e.table.GetScript(script_hash)
 	if script == nil {
 		return FAULT, errors.ErrNotFindScript

@@ -114,8 +114,14 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 	if err != nil {
 		return err
 	}
+
+	contract, err := c.GetContract(codeHash)
+	if err != nil && contract != nil {
+		return err
+	}
 	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
 	data := params.UInt168ToUInt160(codeHash)
+
 	dbCache.GetOrAdd(states.ST_Contract, string(data), &states.ContractState{
 		Code:        payloadDeploy.Code,
 		Name:        payloadDeploy.Name,

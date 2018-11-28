@@ -249,7 +249,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
 	s.RegisterAction("invokescript", service.InvokeScript, "code")
-	s.RegisterAction("invokefunction", service.InvokeFunction, "hex", "operation", "params")
+	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params")
 
 	return s
 }
