@@ -26,6 +26,7 @@ type HeightVersions interface {
 	CheckCoinbaseMinerReward(blockHeight uint32, tx *Transaction, totalReward Fixed64) error
 	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error
 	CheckVoteProducerOutputs(blockHeight uint32, tx *Transaction, outputs []*Output, references map[*Input]*Output) error
+	CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *Transaction) error
 
 	GetProducersDesc(block *Block) ([][]byte, error)
 	AddBlock(block *Block) error
