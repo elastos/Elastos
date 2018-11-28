@@ -90,3 +90,11 @@ func (d *DposIllegalVotes) Hash() common.Uint256 {
 	}
 	return *d.hash
 }
+
+func (d *DposIllegalVotes) GetBlockHeight() uint32 {
+	return d.Evidence.BlockHeader.Height
+}
+
+func (d *DposIllegalVotes) Type() IllegalDataType {
+	return IllegalVote
+}

@@ -80,3 +80,11 @@ func (d *DposIllegalProposals) Hash() common.Uint256 {
 	}
 	return *d.hash
 }
+
+func (d *DposIllegalProposals) GetBlockHeight() uint32 {
+	return d.Evidence.BlockHeader.Height
+}
+
+func (d *DposIllegalProposals) Type() IllegalDataType {
+	return IllegalProposal
+}
