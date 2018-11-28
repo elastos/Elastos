@@ -55,12 +55,12 @@ type node struct {
 	id                uint64        // The nodes's id
 	version           uint32        // The network protocol the node used
 	services          uint64        // The services the node supplied
-	relay             bool          // The relay capability of the node (merge into capbility flag)
+	relay             bool          // The relay capability of the node (merge into capability flag)
 	height            uint64        // The node latest block height
 	external          bool          // Indicate if this is an external node
 	txnCnt            uint64        // The transactions be transmit by this node
 	rxTxnCnt          uint64        // The transaction received by this node
-	link                            // The link status and infomation
+	link                            // The link status and information
 	neighbours                      // The neighbor node connect with currently node except itself
 	mempool.TxPool                  // Unconfirmed transaction pool
 	mempool.BlockPool               // Unconfirmed block pool

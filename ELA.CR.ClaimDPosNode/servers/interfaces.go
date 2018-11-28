@@ -1135,7 +1135,7 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 }
 
 func VerifyAndSendTx(txn *Transaction) ErrCode {
-	// if transaction is verified unsucessfully then will not put it into transaction pool
+	// if transaction is verified unsuccessfully then will not put it into transaction pool
 	if errCode := ServerNode.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")
 		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", errCode)

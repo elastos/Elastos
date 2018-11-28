@@ -67,13 +67,13 @@ func StartRPCServer() {
 	}
 }
 
-//this is the funciton that should be called in order to answer an rpc call
+//this is the function that should be called in order to answer an rpc call
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
 func Handle(w http.ResponseWriter, r *http.Request) {
 	//JSON RPC commands should be POSTs
 	if r.Method != "POST" {
 		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
-		http.Error(w, "JSON RPC procotol only allows POST method", http.StatusMethodNotAllowed)
+		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -104,10 +104,10 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestParams := request["params"]
-	//Json rpc 1.0 support positional parameters while json rpc 2.0 support named parameters.
+	// Json rpc 1.0 support positional parameters while json rpc 2.0 support named parameters.
 	// positional parameters: { "requestParams":[1, 2, 3....] }
 	// named parameters: { "requestParams":{ "a":1, "b":2, "c":3 } }
-	//Here we support both of them, because bitcion does so.
+	// Here we support both of them.
 	var params Params
 	switch requestParams := requestParams.(type) {
 	case nil:
