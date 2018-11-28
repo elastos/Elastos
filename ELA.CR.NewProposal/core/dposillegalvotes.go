@@ -1,6 +1,11 @@
 package core
 
-import "io"
+import (
+	"bytes"
+	"io"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+)
 
 type VoteEvidence struct {
 	Vote        DPosProposalVote
@@ -11,6 +16,8 @@ type VoteEvidence struct {
 type DposIllegalVotes struct {
 	Evidence        VoteEvidence
 	CompareEvidence VoteEvidence
+
+	hash *common.Uint256
 }
 
 func (d *VoteEvidence) IsMatch() bool {
@@ -72,4 +79,14 @@ func (d *DposIllegalVotes) Deserialize(r io.Reader) error {
 	}
 
 	return nil
+}
+
+func (d *DposIllegalVotes) Hash() common.Uint256 {
+	if d.hash == nil {
+		buf := new(bytes.Buffer)
+		d.Serialize(buf)
+		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		d.hash = &hash
+	}
+	return *d.hash
 }
