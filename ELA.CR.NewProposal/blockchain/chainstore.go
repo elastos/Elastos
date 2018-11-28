@@ -194,7 +194,7 @@ func (c *ChainStore) InitProducerVotes() error {
 }
 
 func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
-	prefix := []byte{byte(CFG_Version)}
+	prefix := []byte{byte(CFGVersion)}
 	version, err := c.Get(prefix)
 	if err != nil {
 		version = []byte{0x00}
@@ -237,7 +237,7 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 	//c.headerIndex[0] = hash
 
 	// Get Current Block
-	currentBlockPrefix := []byte{byte(SYS_CurrentBlock)}
+	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
 	data, err := c.Get(currentBlockPrefix)
 	if err != nil {
 		return 0, err
@@ -279,7 +279,7 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
-	prefix := []byte{byte(DATA_Transaction)}
+	prefix := []byte{byte(DATATransaction)}
 	_, err := c.Get(append(prefix, txhash.Bytes()...))
 	if err != nil {
 		return false
@@ -289,7 +289,7 @@ func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 }
 
 func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
-	prefix := []byte{byte(IX_SideChain_Tx)}
+	prefix := []byte{byte(IXSideChainTx)}
 	_, err := c.Get(append(prefix, sidechainTxHash.Bytes()...))
 	if err != nil {
 		return false
@@ -303,7 +303,7 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 		return false
 	}
 
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
 		txId := txn.Inputs[i].Previous.TxID
 		unspentValue, err := c.Get(append(unspentPrefix, txId.Bytes()...))
@@ -330,7 +330,7 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 
 func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	queryKey := new(bytes.Buffer)
-	queryKey.WriteByte(byte(DATA_BlockHash))
+	queryKey.WriteByte(byte(DATABlockHash))
 	err := WriteUint32(queryKey, height)
 
 	if err != nil {
@@ -384,7 +384,7 @@ func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
 func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	var h = new(Header)
 
-	prefix := []byte{byte(DATA_Header)}
+	prefix := []byte{byte(DATAHeader)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	//log.Debug( "Get Header Data: %x\n",  data )
 	if err != nil {
@@ -416,7 +416,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 	// generate key
 	assetKey := new(bytes.Buffer)
 	// add asset prefix.
-	assetKey.WriteByte(byte(ST_Info))
+	assetKey.WriteByte(byte(STInfo))
 	// contact asset id
 	if err := assetId.Serialize(assetKey); err != nil {
 		return err
@@ -431,7 +431,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 
 func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	asset := new(Asset)
-	prefix := []byte{byte(ST_Info)}
+	prefix := []byte{byte(STInfo)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
@@ -445,7 +445,7 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 }
 
 func (c *ChainStore) PersistSidechainTx(sidechainTxHash Uint256) {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
 	// PUT VALUE
@@ -453,7 +453,7 @@ func (c *ChainStore) PersistSidechainTx(sidechainTxHash Uint256) {
 }
 
 func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	data, err := c.Get(append(key, sidechainTxHash.Bytes()...))
 	if err != nil {
 		return ValueNone, err
@@ -557,7 +557,7 @@ func (c *ChainStore) GetProducerStatus(programHash Uint168) ProducerState {
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
-	key := append([]byte{byte(DATA_Transaction)}, txId.Bytes()...)
+	key := append([]byte{byte(DATATransaction)}, txId.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
 		return nil, 0, err
@@ -610,7 +610,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
-	key.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATATransaction))
 	// get transaction hash
 	hash := tx.Hash()
 	if err := hash.Serialize(key); err != nil {
@@ -635,7 +635,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
-	prefix := []byte{byte(DATA_Header)}
+	prefix := []byte{byte(DATAHeader)}
 	bHash, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
@@ -797,7 +797,7 @@ func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
 
 func (c *ChainStore) GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error) {
 	var confirm = new(DPosProposalVoteSlot)
-	prefix := []byte{byte(DATA_Confirm)}
+	prefix := []byte{byte(DATAConfirm)}
 	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
@@ -824,7 +824,7 @@ func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
 }
 
 func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspentValue, err := c.Get(append(unspentPrefix, txid.Bytes()...))
 
 	if err != nil {
@@ -864,7 +864,7 @@ func (c *ChainStore) GetHeight() uint32 {
 
 func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	var b = new(Block)
-	prefix := []byte{byte(DATA_Header)}
+	prefix := []byte{byte(DATAHeader)}
 	blockData, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return false
@@ -892,7 +892,7 @@ func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 }
 
 func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, assetid Uint256, height uint32) ([]*UTXO, error) {
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	prefix = append(prefix, programHash.Bytes()...)
 	prefix = append(prefix, assetid.Bytes()...)
 
@@ -928,7 +928,7 @@ func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, asset
 func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
 	unspents := make([]*UTXO, 0)
 
-	key := []byte{byte(IX_Unspent_UTXO)}
+	key := []byte{byte(IXUnspentUTXO)}
 	key = append(key, programHash.Bytes()...)
 	key = append(key, assetid.Bytes()...)
 	iter := c.NewIterator(key)
@@ -957,7 +957,7 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error) {
 	uxtoUnspents := make(map[Uint256][]*UTXO)
 
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	key := append(prefix, programHash.Bytes()...)
 	iter := c.NewIterator(key)
 	for iter.Next() {
@@ -994,7 +994,7 @@ func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint25
 }
 
 func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid Uint256, height uint32, unspents []*UTXO) error {
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	prefix = append(prefix, programHash.Bytes()...)
 	prefix = append(prefix, assetid.Bytes()...)
 	key := bytes.NewBuffer(prefix)
@@ -1022,7 +1022,7 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 	assets := make(map[Uint256]*Asset)
 
-	iter := c.NewIterator([]byte{byte(ST_Info)})
+	iter := c.NewIterator([]byte{byte(STInfo)})
 	for iter.Next() {
 		rk := bytes.NewReader(iter.Key())
 

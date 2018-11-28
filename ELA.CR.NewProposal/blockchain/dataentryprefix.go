@@ -5,27 +5,27 @@ type DataEntryPrefix byte
 
 const (
 	// DATA
-	DATA_BlockHash   DataEntryPrefix = 0x00
-	DATA_Header      DataEntryPrefix = 0x01
-	DATA_Transaction DataEntryPrefix = 0x02
-	DATA_Confirm     DataEntryPrefix = 0x03
+	DATABlockHash   DataEntryPrefix = 0x00
+	DATAHeader      DataEntryPrefix = 0x01
+	DATATransaction DataEntryPrefix = 0x02
+	DATAConfirm     DataEntryPrefix = 0x03
 
 	// INDEX
-	IX_HeaderHashList DataEntryPrefix = 0x80
-	IX_Unspent        DataEntryPrefix = 0x90
-	IX_Unspent_UTXO   DataEntryPrefix = 0x91
-	IX_SideChain_Tx   DataEntryPrefix = 0x92
+	IXHeaderHashList DataEntryPrefix = 0x80
+	IXUnspent        DataEntryPrefix = 0x90
+	IXUnspentUTXO    DataEntryPrefix = 0x91
+	IXSideChainTx    DataEntryPrefix = 0x92
 
 	// VOTE
-	VOTE_RegisterProducer DataEntryPrefix = 0xc1
+	VOTERegisterProducer DataEntryPrefix = 0xc1
 
 	// ASSET
-	ST_Info DataEntryPrefix = 0xc0
+	STInfo DataEntryPrefix = 0xc0
 
 	//SYSTEM
-	SYS_CurrentBlock      DataEntryPrefix = 0x40
-	SYS_CurrentBookKeeper DataEntryPrefix = 0x42
+	SYSCurrentBlock      DataEntryPrefix = 0x40
+	SYSCurrentBookKeeper DataEntryPrefix = 0x42
 
 	//CONFIG
-	CFG_Version DataEntryPrefix = 0xf0
+	CFGVersion DataEntryPrefix = 0xf0
 )

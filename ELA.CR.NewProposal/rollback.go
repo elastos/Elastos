@@ -21,7 +21,7 @@ func main() {
 	}
 	chain := blockchain.ChainStore{IStore: st}
 
-	data, _ := st.Get([]byte{byte(blockchain.SYS_CurrentBlock)})
+	data, _ := st.Get([]byte{byte(blockchain.SYSCurrentBlock)})
 	// we drop 0-32 bytes of data, because it is current block hash.
 	currentHeight, _ := common.ReadUint32(bytes.NewReader(data[32:]))
 
