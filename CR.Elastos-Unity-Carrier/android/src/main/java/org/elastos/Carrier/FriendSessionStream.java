@@ -14,11 +14,13 @@ public class FriendSessionStream {
     private Stream stream;
 
     private StreamState state;
+    private String sdp;
 
     public FriendSessionStream(String friendId){
         this.id = friendId;
 
         this.state = StreamState.Closed;
+        this.sdp = null;
     }
 
     public String getId(){
@@ -61,6 +63,13 @@ public class FriendSessionStream {
         return this.state;
     }
 
+    public void setSdp(String sdp){
+        this.sdp = sdp;
+    }
+    public String getSdp(){
+        return this.sdp;
+    }
+
     // static method
     public static FriendSessionStream getInstanceByStreamId(int streamId){
         FriendSessionStream rs = null;
@@ -74,5 +83,11 @@ public class FriendSessionStream {
         }
 
         return rs;
+    }
+
+    public static void closeAll(){
+        for(FriendSessionStream val : FriendSessionStream.map.values()){
+            val.close();
+        }
     }
 }

@@ -174,6 +174,14 @@
   
   _state = newState;
 
+  NSDictionary *param = @{
+    @"type" : @"stateDidChange",
+    @"data" : @{
+    
+      @"newStatus" : [NSNumber numberWithInt:newStatus]
+    }
+  };
+ _callback(carrier, param);
   
   switch (newState) {
     case ELACarrierStreamStateInitialized:

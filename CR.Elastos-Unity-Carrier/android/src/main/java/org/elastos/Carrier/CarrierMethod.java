@@ -310,6 +310,38 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         _rs.sessionReplyRequest(friendId, status, reason);
         cb.invoke(null, ok);
     }
+    @ReactMethod
+    public void removeStream(String name, String friendId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.removeStream(friendId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void addService(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void removeService(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void openPortFowarding(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void closePortForwarding(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
 
 
 

@@ -1,5 +1,7 @@
 package org.elastos.Carrier;
 
+import android.icu.util.Freezable;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
@@ -27,10 +29,17 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         try{
             _manager = Manager.getInstance(_carrier, new ManagerHandler(){
                 @Override
-                public void onSessionRequest(Carrier carrier, String s, String s1) {
-                    util.log(String.format("[ onSessionRequest ] => %s, %s", s, s1));
-                    sessionRequestSdp = s1;
+                public void onSessionRequest(Carrier carrier, String friendId, String sdp) {
+                    util.log(String.format("[ onSessionRequest ] => %s, %s", friendId, sdp));
+                    sessionRequestSdp = sdp;
 
+                    FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+                    fss.setSdp(sdp);
+
+                    WritableMap param = Arguments.createMap();
+                    param.putString("sdp", sdp);
+                    param.putString("friendId", friendId);
+                    RN_CARRIER.sendEvent("onSessionRequest", param);
                 }
             });
         }catch(ElastosException e){
@@ -50,6 +59,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         }
 
     }
+
 
     /*
     * start session
@@ -81,6 +91,18 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         return stream.getStreamId();
     }
 
+    public void removeStream(String friendId){
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Session session = fss.getSession();
+            Stream stream = fss.getStream();
+            session.removeStream(stream);
+            fss.close();
+        }catch(ElastosException e){
+            util.error(String.format("remove stream error (0x%x)", e.getErrorCode()));
+            e.getStackTrace();
+        }
+    }
 
     public FriendSessionStream getFriendSessionByFriendId(String frinedId){
         FriendSessionStream fss = FriendSessionStream.map.get(frinedId);
@@ -138,7 +160,8 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
             session.replyRequest(status, reason);
             util.log("Session reply request.");
 
-            session.start(sessionRequestSdp);
+            String sdp = fss.getSdp();
+            session.start(sdp);
             util.log("Session started success.");
         }catch(ElastosException e){
             util.error("[ sessionReplyRequest ]");
@@ -155,7 +178,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         }
 
         try {
-            sessionRequestSdp = sdp;
+//            sessionRequestSdp = sdp;
             session.start(sdp);
             util.log("Session started success.");
         } catch (ElastosException e) {
@@ -171,7 +194,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
         WritableMap param = Arguments.createMap();
 
-        param.putString("data", new String(receivedData));
+        param.putString("text", new String(receivedData));
         param.putInt("streamId", stream.getStreamId());
         param.putString("friendId", fss.getId());
 
@@ -212,15 +235,15 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
             case Deactivated:
                 util.log("Stream deactived");
-                fss.close();
+//                fss.close();
                 break;
             case Closed:
                 util.log("Stream closed");
-                fss.close();
+//                fss.close();
                 break;
             case Error:
                 util.log("Stream error");
-                fss.close();
+//                fss.close();
 
                 // TODO restart carrier
 

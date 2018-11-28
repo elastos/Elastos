@@ -134,6 +134,16 @@ const Carrier = class {
   writeStream(streamIdOrFriendId, data){
     return exec('writeStream', this.id, streamIdOrFriendId, data);
   }
+
+  removeStream(friendId){
+    return exec('removeStream', this.id, friendId);
+  }
+
+  // TODO
+  addService(){}
+  removeService(){}
+  openPortFowarding(){}
+  closePortForwarding(){}
   
 
   

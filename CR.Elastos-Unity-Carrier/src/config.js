@@ -21,18 +21,18 @@ export default {
       "onFriendRemoved",
       "onFriendMessage",
       "onFriendInviteRequest", // TODO
-      "onSessionRequest", // TODO
     ],
 
     STREAM_CB_NAMES : [
+      "onSessionRequest",
       "onStateChanged",
       "onStreamData",
-      "onChannelOpen",
-      "onChannelOpened",
-      "onChannelClose",
-      "onChannelData",
-      "onChannelPending",
-      "onChannelResume",
+      "onChannelOpen", // TODO
+      "onChannelOpened",  // TODO
+      "onChannelClose",  // TODO
+      "onChannelData",  // TODO
+      "onChannelPending",  // TODO
+      "onChannelResume",  // TODO
     ],
 
     CONNECTION_STATUS : {

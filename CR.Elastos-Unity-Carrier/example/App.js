@@ -174,7 +174,8 @@ class App extends Component{
         break;
       case 'writeStream':
         try{
-          rs = await this.carrier.writeStream(target, 'sljfdslkfjdsj')
+          const buf = new Buffer('hello word')
+          rs = await this.carrier.writeStream(target, buf.toString())
         }catch(e){
           this.setError(e);
         }
@@ -209,6 +210,9 @@ class App extends Component{
       },
       onFriendMessage : (data)=>{
         this.setLog('receive message from '+data.userId+' with ['+data.message+']');
+      },
+      onSessionRequest : (data)=>{
+        this.setLog('carrier onSessionRequest '+JSON.stringify(data));
       },
       onStateChanged : (data)=>{
         this.setLog('carrier onStateChanged : '+JSON.stringify(data));

@@ -38,7 +38,16 @@ RCT_EXPORT_MODULE();
            @"onFriendRemoved",
            @"onFriendMessage",
            @"onFriendInviteRequest",
-           @"onSessionRequest"
+           @"onSessionRequest",
+           
+           @"onStateChanged",
+           @"onStreamData",
+           @"onChannelOpen",
+           @"onChannelOpened",
+           @"onChannelClose",
+           @"onChannelData",
+           @"onChannelPending",
+           @"onChannelResume"
            ];
 }
 
