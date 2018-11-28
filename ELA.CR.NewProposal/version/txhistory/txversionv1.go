@@ -30,3 +30,7 @@ func (v *TxVersionV1) CheckCoinbaseArbitratorsReward(coinbase *core.Transaction,
 func (v *TxVersionV1) CheckVoteProducerOutputs(outputs []*core.Output, references map[*core.Input]*core.Output) error {
 	return nil
 }
+
+func (v *TxVersionV1) CheckTxHasNoProgramsAndAttributes(tx *core.Transaction) error {
+	return nil
+}

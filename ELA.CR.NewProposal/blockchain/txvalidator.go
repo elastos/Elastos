@@ -41,7 +41,7 @@ func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 		return ErrAssetPrecision
 	}
 
-	if err := CheckAttributeProgram(txn); err != nil {
+	if err := CheckAttributeProgram(blockHeight, txn); err != nil {
 		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
@@ -74,6 +74,24 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 
 	if txn.IsCoinBaseTx() {
 		return Success
+	}
+
+	if txn.IsIllegalProposalTx() {
+		if err := CheckIllegalProposalsTransaction(txn); err != nil {
+			log.Warn("[CheckIllegalProposalsTransaction],", err)
+			return ErrTransactionPayload
+		} else {
+			return Success
+		}
+	}
+
+	if txn.IsIllegalVoteTx() {
+		if err := CheckIllegalVotesTransaction(txn); err != nil {
+			log.Warn("[CheckIllegalVotesTransaction],", err)
+			return ErrTransactionPayload
+		} else {
+			return Success
+		}
 	}
 
 	if txn.IsSideChainPowTx() {
@@ -225,6 +243,12 @@ func CheckTransactionInput(txn *Transaction) error {
 
 		return nil
 	}
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() {
+		if len(txn.Inputs) != 0 {
+			return errors.New("illegal transactions must has no input")
+		}
+		return nil
+	}
 
 	if len(txn.Inputs) <= 0 {
 		return errors.New("transaction has no inputs")
@@ -274,6 +298,13 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		if err := DefaultLedger.HeightVersions.CheckCoinbaseMinerReward(blockHeight, txn, totalReward); err != nil {
 			return err
+		}
+
+		return nil
+	}
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() {
+		if len(txn.Outputs) != 0 {
+			return errors.New("Illegal transactions should have no output")
 		}
 
 		return nil
@@ -373,10 +404,10 @@ func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	return nil
 }
 
-func CheckAttributeProgram(tx *Transaction) error {
-	// Coinbase transaction do not check attribute and program
+func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
+	// Coinbase and illegal transactions do not check attribute and program
 	if tx.IsCoinBaseTx() {
-		return nil
+		return DefaultLedger.HeightVersions.CheckTxHasNoProgramsAndAttributes(blockHeight, tx)
 	}
 
 	// Check attributes
@@ -647,5 +678,81 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 }
 
 func CheckUpdateProducerTransaction(txn *Transaction) error {
+	return nil
+}
+
+func CheckIllegalProposalsTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*PayloadIllegalProposal)
+	if !ok {
+		return errors.New("Invalid payload.")
+	}
+
+	return checkDposIllegalProposals(&payload.DposIllegalProposals)
+}
+
+func CheckIllegalVotesTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*PayloadIllegalVote)
+	if !ok {
+		return errors.New("Invalid payload.")
+	}
+
+	return checkDposIllegalVotes(&payload.DposIllegalVotes)
+}
+
+func checkDposIllegalProposals(d *DposIllegalProposals) error {
+	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
+		return errors.New("proposal hash and block should match")
+	}
+
+	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+		return errors.New("should be in same height")
+	}
+
+	if d.Evidence.Proposal.Hash().IsEqual(d.CompareEvidence.Proposal.Hash()) {
+		return errors.New("proposals can not be same")
+	}
+
+	if d.Evidence.Proposal.Sponsor != d.CompareEvidence.Proposal.Sponsor {
+		return errors.New("should be same sponsor")
+	}
+
+	if d.Evidence.Proposal.ViewOffset != d.Evidence.Proposal.ViewOffset {
+		return errors.New("should in same view")
+	}
+
+	if !IsProposalValid(&d.Evidence.Proposal) || !IsProposalValid(&d.Evidence.Proposal) {
+		return errors.New("proposal should be valid")
+	}
+
+	return nil
+}
+
+func checkDposIllegalVotes(d *DposIllegalVotes) error {
+
+	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
+		return errors.New("vote, proposal and block should match")
+	}
+
+	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+		return errors.New("should be in same height")
+	}
+
+	if d.Evidence.Vote.Hash().IsEqual(d.CompareEvidence.Vote.Hash()) {
+		return errors.New("votes can not be same")
+	}
+
+	if d.Evidence.Vote.Signer != d.CompareEvidence.Vote.Signer {
+		return errors.New("should be same signer")
+	}
+
+	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
+		return errors.New("should in same view")
+	}
+
+	if !IsProposalValid(&d.Evidence.Proposal) || IsProposalValid(&d.CompareEvidence.Proposal) ||
+		!IsVoteValid(&d.Evidence.Vote) || IsVoteValid(&d.CompareEvidence.Vote) {
+		return errors.New("votes and related proposals should be valid")
+	}
+
 	return nil
 }
