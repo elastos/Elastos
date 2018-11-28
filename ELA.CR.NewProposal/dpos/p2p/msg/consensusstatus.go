@@ -129,9 +129,5 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 		}
 	}
 
-	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
-		return err
-	}
-
 	return nil
 }

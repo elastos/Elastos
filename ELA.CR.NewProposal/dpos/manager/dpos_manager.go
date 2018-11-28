@@ -119,6 +119,7 @@ func (d *dposManager) GetBlockCache() *ConsensusBlockCache {
 }
 
 func (d *dposManager) Recover() {
+	d.changeHeight()
 	for {
 		if peerID := d.network.GetActivePeer(); peerID != nil {
 			d.handler.RequestAbnormalRecovering()
