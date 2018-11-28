@@ -16,7 +16,7 @@ func (b *BlockChain) CalcCurrentDifficulty(currentBits uint32) string {
 
 func (b *BlockChain) CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (uint32, error) {
 	// Genesis block.
-	if (prevNode.Height == 0) || (b.chainParams.Name == "regnet") {
+	if prevNode.Height == 0 {
 		return uint32(b.chainParams.PowLimitBits), nil
 	}
 
