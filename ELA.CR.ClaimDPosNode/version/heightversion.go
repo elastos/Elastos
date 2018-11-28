@@ -183,12 +183,13 @@ func NewHeightVersions(versions map[uint32]VersionInfo) blockchain.HeightVersion
 		sortedHeights: []uint32{},
 	}
 
+	var sortedHeights sort.IntSlice
 	for k := range h.versions {
-		h.sortedHeights = append(h.sortedHeights, k)
+		sortedHeights = append(sortedHeights, int(k))
 	}
-	sort.Slice(h.sortedHeights, func(i, j int) bool {
-		return i < j
-	})
-
+	sortedHeights.Sort()
+	for _, height := range sortedHeights {
+		h.sortedHeights = append(h.sortedHeights, uint32(height))
+	}
 	return h
 }

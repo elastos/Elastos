@@ -42,7 +42,7 @@ type dposNetwork struct {
 	currentHeight      uint32
 	account            account.DposAccount
 	proposalDispatcher manager.ProposalDispatcher
-	directPeers        map[string]PeerItem
+	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
 
 	p2pServer    p2p.Server
@@ -102,8 +102,9 @@ func (n *dposNetwork) UpdateProducersInfo() {
 
 	for k, v := range connectionInfoMap {
 
+		log.Info("[UpdateProducersInfo] peer id:", v.PID, " addr:", v.Addr)
 		if _, ok := n.directPeers[k]; !ok {
-			n.directPeers[k] = PeerItem{
+			n.directPeers[k] = &PeerItem{
 				Address:     v,
 				NeedConnect: false,
 				Peer:        nil,
@@ -114,6 +115,7 @@ func (n *dposNetwork) UpdateProducersInfo() {
 }
 
 func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
+	result = make(map[string]p2p.PeerAddr)
 	producers := blockchain.DefaultLedger.Store.GetRegisteredProducers()
 	for _, v := range producers {
 		pk, err := common.HexStringToBytes(v.PublicKey)
@@ -136,21 +138,21 @@ func (n *dposNetwork) Stop() error {
 }
 
 func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
-
+	log.Info("[UpdatePeers] arbitrators:", arbitrators)
 	for _, v := range arbitrators {
 		pubKey := common.BytesToHexString(v)
 
 		n.peersLock.Lock()
 		ad, ok := n.directPeers[pubKey]
-		n.peersLock.Unlock()
 
 		if !ok {
 			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
+			n.peersLock.Unlock()
 			continue
 		}
-
 		ad.NeedConnect = true
 		ad.Sequence += uint32(len(arbitrators))
+		n.peersLock.Unlock()
 	}
 
 	return nil
@@ -196,6 +198,7 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 
 func (n *dposNetwork) GetActivePeer() *peer.PID {
 	peers := n.p2pServer.ConnectedPeers()
+	log.Info("[GetActivePeer] current connected peers:", len(peers))
 	if len(peers) == 0 {
 		return nil
 	}
@@ -342,13 +345,13 @@ func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
 		listener:            listener,
-		directPeers:         make(map[string]PeerItem),
+		directPeers:         make(map[string]*PeerItem),
 		messageQueue:        make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                make(chan bool),
 		changeViewChan:      make(chan bool),
 		blockReceivedChan:   make(chan blockItem, 10),                  //todo config handle capacity though config file
 		confirmReceivedChan: make(chan *core.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
-		currentHeight:       0,
+		currentHeight:       blockchain.DefaultLedger.Blockchain.GetBestHeight() - 1,
 		account:             dposAccount,
 	}
 
