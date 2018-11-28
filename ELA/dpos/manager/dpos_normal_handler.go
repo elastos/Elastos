@@ -76,7 +76,6 @@ func (h *DposNormalHandler) TryStartNewConsensus(b *core.Block) bool {
 		log.Info("[Normal][OnBlockReceived] received first unsigned block, start consensus")
 		h.proposalDispatcher.CleanProposals(false)
 		h.consensus.StartConsensus(b)
-		h.proposalDispatcher.TryStartSpeculatingProposal(b)
 		result = true
 	} else { //running
 		log.Info("[Normal][OnBlockReceived] received unsigned block, record block")

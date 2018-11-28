@@ -211,7 +211,7 @@ func (h *dposHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 }
 
 func (h *dposHandlerSwitch) RecoverAbnormal(status *msg2.ConsensusStatus) {
-	if h.isAbnormal == false {
+	if !h.isAbnormal {
 		return
 	}
 

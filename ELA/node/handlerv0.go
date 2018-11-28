@@ -217,7 +217,7 @@ func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
 
 	isConfirmed, err := chain.DefaultLedger.HeightVersions.AddBlockConfirm(msgBlock)
 	if err != nil {
-		log.Debugf("Received invalid block %s", hash.String())
+		log.Debugf("Received invalid block %s, err: %s", hash.String(), err.Error())
 		return fmt.Errorf("Receive invalid block %s, err: %s", hash.String(), err.Error())
 	}
 	if !isConfirmed {
