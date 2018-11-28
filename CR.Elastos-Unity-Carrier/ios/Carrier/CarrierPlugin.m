@@ -38,7 +38,16 @@ RCT_EXPORT_MODULE();
            @"onFriendRemoved",
            @"onFriendMessage",
            @"onFriendInviteRequest",
-           @"onSessionRequest"
+           @"onSessionRequest",
+           
+           @"onStateChanged",
+           @"onStreamData",
+           @"onChannelOpen",
+           @"onChannelOpened",
+           @"onChannelClose",
+           @"onChannelData",
+           @"onChannelPending",
+           @"onChannelResume"
            ];
 }
 
@@ -296,7 +305,7 @@ RCT_EXPORT_METHOD
 RCT_EXPORT_METHOD
 (createSession: (NSString *)cid :(NSString *)friendId :(RCTResponseSenderBlock)callback){
   Carrier *carrier = [self getCarrier:cid];
-  [carrier createNewSession:cid friendId:friendId];
+  [carrier newSession:cid friendId:friendId];
   
   callback(@[NULL_ERR, OK]);
 }

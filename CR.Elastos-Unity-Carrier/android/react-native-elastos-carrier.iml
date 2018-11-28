@@ -23,7 +23,7 @@
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
+  <component name="NewModuleRootManager">
     <output url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/classes/debug" />
     <output-test url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/classes/test/debug" />
     <exclude-output />
@@ -46,6 +46,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/generated/source/apt/test/debug" isTestSource="true" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/annotations" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/attr" />
+      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/blame" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/check-manifest" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/classes" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/extractedTypedefs" />
@@ -61,7 +62,6 @@
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packagedAssets" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/packaged_res" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/public_res" />
-      <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/publish-proguard" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/build/intermediates/shaders" />
@@ -196,38 +196,39 @@
     <content url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/src/testDebug/shaders">
       <sourceFolder url="file://$MODULE_DIR$/../example/node_modules/react-native-elastos-carrier/android/src/testDebug/shaders" isTestSource="true" />
     </content>
-    <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:fbcore-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:drawee-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:fresco-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.1.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-okhttp3-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.11.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-compat-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-okhttp3-1.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:drawee-1.9.0" level="project" />
     <orderEntry type="library" name="Gradle: com.parse.bolts:bolts-tasks:1.4.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:viewmodel-1.1.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp-urlconnection:3.11.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.core:common:1.0.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-media-compat-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:3.0.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:26.1.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.webkit:android-jsc-r174650" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:fresco-1.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:fbcore-1.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-v4-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-compat-26.1.0" level="project" />
     <orderEntry type="library" name="Gradle: org.elastos.carrier-release:@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.squareup.okio:okio:1.14.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.core:runtime-1.1.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.soloader:soloader-0.5.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.react:react-native-0.57.5" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.infer.annotation:infer-annotation:0.11.2@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:3.0.2@jar" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:livedata-core-1.1.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.core:common:1.1.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-base-1.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime-1.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fbui.textlayoutbuilder:textlayoutbuilder-1.0.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.soloader:soloader-0.3.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp-urlconnection:3.10.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.0.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fbui.textlayoutbuilder:staticlayout-proxy:1.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-base-1.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.react:react-native-0.56.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.facebook.fresco:imagepipeline-1.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime-1.0.0" level="project" />
+    <orderEntry type="library" name="Gradle: android-android-27" level="project" />
   </component>
 </module>

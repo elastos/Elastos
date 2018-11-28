@@ -22,7 +22,8 @@ import java.io.File;
 import java.util.Iterator;
 
 import org.elastos.carrier.*;
-import org.elastos.carrier.exceptions.CarrierException;
+import org.elastos.carrier.session.*;
+import org.elastos.carrier.exceptions.ElastosException;
 import org.json.JSONObject;
 
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -36,6 +37,9 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
     private HashMap<String, RN_CARRIER> ALL_MAP = new HashMap<String, RN_CARRIER>();
     private Util util;
+
+    private Session _session;
+    private Stream _stream;
 
 
     public CarrierMethod(ReactApplicationContext reactContext) {
@@ -94,7 +98,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
         try{
             cb.invoke(null, _carrier.getAddress());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getAddress] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -108,7 +112,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             RN_UserInfo info = new RN_UserInfo(_carrier.getSelfInfo());
             cb.invoke(null, info.toJS());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getSelfInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -124,7 +128,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             new_info.extendWithHashMap(map);
             _carrier.setSelfInfo(new_info);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[setSelfInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -137,7 +141,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.addFriend(address, msg);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[addFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -148,9 +152,10 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         Carrier _carrier = getInstanceByName(name);
 
         try{
-            _carrier.acceptFriend(userId);
+            // TODO acceptFriend
+            _carrier.AcceptFriend(userId);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[acceptFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -164,7 +169,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             FriendInfo f_info = _carrier.getFriend(friendId);
             RN_FriendInfo ff = new RN_FriendInfo(f_info);
             cb.invoke(null, ff.toJS());
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getFriendInfo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -175,9 +180,10 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         Carrier _carrier = getInstanceByName(name);
 
         try{
-            _carrier.labelFriend(friendId, label);
+            // TODO labelFriend
+            _carrier.LabelFriend(friendId, label);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[setLabel] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -198,7 +204,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             }
 
             cb.invoke(null, fl);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[getFriendList] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -211,7 +217,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.sendFriendMessage(userId, msg);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[sendFriendMessageTo] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -224,7 +230,7 @@ public class CarrierMethod extends ReactContextBaseJavaModule
         try{
             _carrier.removeFriend(userId);
             cb.invoke(null, ok);
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[removeFriend] "+e.toString());
             cb.invoke(e.toString(), null);
         }
@@ -244,7 +250,97 @@ public class CarrierMethod extends ReactContextBaseJavaModule
 
     }
 
+    @ReactMethod
+    public void createSession(String name, String friendId, int streamType, int streamMode, Callback cb){
+        Carrier _carrier = getInstanceByName(name);
 
+        RN_FriendInfo info = null;
+        try{
+            FriendInfo friendInfo = _carrier.getFriend(friendId);
+            info = new RN_FriendInfo(friendInfo);
+        }catch(ElastosException e){
+            util.error("get friend info " + e.getErrorCode());
+            cb.invoke(e.toString(), null);
+            return;
+        }
+
+        if (info.getConnection().value() != 0) {
+            cb.invoke(String.format("target %s is offline", friendId));
+            return;
+        }
+
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        int streamId = _rs.start(friendId, streamType, streamMode);
+
+        cb.invoke(null, streamId);
+    }
+
+
+    @ReactMethod
+    public void writeStream(String name, int streamId, String data, Callback cb){
+
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.writeToStream(streamId, data);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void writeStream(String name, String friendId, String data, Callback cb){
+
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        FriendSessionStream fss = _rs.getFriendSessionByFriendId(friendId);
+        _rs.writeToStream(fss.getStreamId(), data);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void sessionRequest(String name, String friendId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+
+        _rs.sessionRequest(friendId);
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void sessionReplyRequest(String name, String friendId, int status, String reason, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+
+        _rs.sessionReplyRequest(friendId, status, reason);
+        cb.invoke(null, ok);
+    }
+    @ReactMethod
+    public void removeStream(String name, String friendId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.removeStream(friendId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void addService(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void removeService(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void openPortFowarding(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
+
+    @ReactMethod
+    public void closePortForwarding(String name, Callback cb){
+        // TODO
+        cb.invoke(null, "coming soon");
+    }
 
 
 

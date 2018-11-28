@@ -13,8 +13,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import org.elastos.carrier.*;
 import org.elastos.carrier.Carrier;
-import org.elastos.carrier.exceptions.CarrierException;
-import org.elastos.carrier.session.Manager;
+import org.elastos.carrier.exceptions.*;
+import org.elastos.carrier.session.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,6 +30,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
 
     private Util util;
     private Carrier _carrier;
+    private RN_SESSION _rs;
 
     public RN_CARRIER(ReadableMap config) {
 
@@ -83,11 +84,13 @@ public class RN_CARRIER extends AbstractCarrierHandler {
             Carrier.initializeInstance(options, this);
             _carrier = Carrier.getInstance();
 
+            _rs = new RN_SESSION(_carrier);
+
             util.log(String.format("Address => %s", _carrier.getAddress()));
             util.log(String.format("UserID => %s", _carrier.getUserId()));
 
             util.log("carrier start success");
-        }catch(CarrierException e){
+        }catch(ElastosException e){
             util.error("[carrier init] "+e.toString());
         }
 
@@ -118,6 +121,11 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         param.putInt("status", status.value());
 
         sendEvent("onFriendConnection", param);
+
+//        if(status.value() == 0){
+//            getRNSessionInstance().start(friendId);
+//        }
+
     }
 
     @Override
@@ -183,7 +191,7 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         sendEvent("onFriendRequest", param);
     }
 
-    @Override
+//    @Override
     public void onFriendMessage(Carrier carrier, String from, byte[] msg){
         util.log(String.format("[ onFriendMessage ] : %s, %s", from, msg));
 
@@ -202,30 +210,37 @@ public class RN_CARRIER extends AbstractCarrierHandler {
     }
 
 
+
+
     public Carrier getCarrierInstance(){
         return _carrier;
     }
 
 
-    public void sendEvent(String eventName, @Nullable Integer params){
+    public static void sendEvent(String eventName, @Nullable Integer params){
         WritableArray array = Arguments.createArray();
         array.pushInt(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable String params){
+    public static void sendEvent(String eventName, @Nullable String params){
         WritableArray array = Arguments.createArray();
         array.pushString(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable WritableMap params){
+    public static void sendEvent(String eventName, @Nullable WritableMap params){
         WritableArray array = Arguments.createArray();
         array.pushMap(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
     }
-    public void sendEvent(String eventName, @Nullable WritableArray params){
+    public static void sendEvent(String eventName, @Nullable WritableArray params){
         WritableArray array = Arguments.createArray();
         array.pushArray(params);
         _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, array);
+    }
+
+
+    public RN_SESSION getRNSessionInstance(){
+        return _rs;
     }
 
 
