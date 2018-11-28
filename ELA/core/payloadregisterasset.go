@@ -26,7 +26,7 @@ func (a *PayloadRegisterAsset) Serialize(w io.Writer, version byte) error {
 	}
 	err = a.Amount.Serialize(w)
 	if err != nil {
-		return errors.New("[RegisterAsset], Ammount Serialize failed.")
+		return errors.New("[RegisterAsset], Amount Serialize failed.")
 	}
 	err = a.Controller.Serialize(w)
 	if err != nil {
@@ -45,13 +45,13 @@ func (a *PayloadRegisterAsset) Deserialize(r io.Reader, version byte) error {
 	//Value
 	err = a.Amount.Deserialize(r)
 	if err != nil {
-		return errors.New("[RegisterAsset], Ammount Deserialize failed.")
+		return errors.New("[RegisterAsset], Amount Deserialize failed.")
 	}
 
 	//Controller *Uint168
 	err = a.Controller.Deserialize(r)
 	if err != nil {
-		return errors.New("[RegisterAsset], Ammount Deserialize failed.")
+		return errors.New("[RegisterAsset], Amount Deserialize failed.")
 	}
 	return nil
 }

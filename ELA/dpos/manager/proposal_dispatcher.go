@@ -370,13 +370,13 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 func (p *proposalDispatcher) alreadyExistVote(v core.DPosProposalVote) bool {
 	_, ok := p.acceptVotes[v.Hash()]
 	if ok {
-		log.Info("[alreadyExistVote]: ", v.Signer, "aready in the AcceptVotes!")
+		log.Info("[alreadyExistVote]: ", v.Signer, "already in the AcceptVotes!")
 		return true
 	}
 
 	_, ok = p.rejectedVotes[v.Hash()]
 	if ok {
-		log.Info("[alreadyExistVote]: ", v.Signer, "aready in the RejectedVotes!")
+		log.Info("[alreadyExistVote]: ", v.Signer, "already in the RejectedVotes!")
 		return true
 	}
 
