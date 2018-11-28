@@ -310,30 +310,30 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 func GetInfo(param Params) map[string]interface{} {
 	_, count := ServerNode.GetConnectionCount()
 	RetVal := struct {
-		Version        int    `json:"version"`
-		Balance        int    `json:"balance"`
-		Blocks         uint64 `json:"blocks"`
-		Timeoffset     int    `json:"timeoffset"`
-		Connections    uint   `json:"connections"`
-		Testnet        bool   `json:"testnet"`
-		Keypoololdest  int    `json:"keypoololdest"`
-		Keypoolsize    int    `json:"keypoolsize"`
-		Unlocked_until int    `json:"unlocked_until"`
-		Paytxfee       int    `json:"paytxfee"`
-		Relayfee       int    `json:"relayfee"`
-		Errors         string `json:"errors"`
+		Version       int    `json:"version"`
+		Balance       int    `json:"balance"`
+		Blocks        uint64 `json:"blocks"`
+		Timeoffset    int    `json:"timeoffset"`
+		Connections   uint   `json:"connections"`
+		Testnet       bool   `json:"testnet"`
+		Keypoololdest int    `json:"keypoololdest"`
+		Keypoolsize   int    `json:"keypoolsize"`
+		UnlockedUntil int    `json:"unlocked_until"`
+		Paytxfee      int    `json:"paytxfee"`
+		Relayfee      int    `json:"relayfee"`
+		Errors        string `json:"errors"`
 	}{
-		Version:        config.Parameters.Version,
-		Balance:        0,
-		Blocks:         ServerNode.Height(),
-		Timeoffset:     0,
-		Connections:    count,
-		Keypoololdest:  0,
-		Keypoolsize:    0,
-		Unlocked_until: 0,
-		Paytxfee:       0,
-		Relayfee:       0,
-		Errors:         "Tobe written"}
+		Version:       config.Parameters.Version,
+		Balance:       0,
+		Blocks:        ServerNode.Height(),
+		Timeoffset:    0,
+		Connections:   count,
+		Keypoololdest: 0,
+		Keypoolsize:   0,
+		UnlockedUntil: 0,
+		Paytxfee:      0,
+		Relayfee:      0,
+		Errors:        "Tobe written"}
 	return ResponsePack(Success, &RetVal)
 }
 
@@ -923,8 +923,8 @@ type Producer struct {
 }
 
 type Producers struct {
-	Producers   []Producer `json:"producers"`
-	Total_votes string     `json:"total_votes"`
+	Producers  []Producer `json:"producers"`
+	TotalVotes string     `json:"total_votes"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -976,8 +976,8 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 
 	result := &Producers{
-		Producers:   resultPs,
-		Total_votes: totalVotes.String(),
+		Producers:  resultPs,
+		TotalVotes: totalVotes.String(),
 	}
 
 	return ResponsePack(Success, result)

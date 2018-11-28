@@ -12,11 +12,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-// key: DATA_Header || block hash
+// key: DATAHeader || block hash
 // value: sysfee(8bytes) || trimmed block
 func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Header))
+	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -37,7 +37,7 @@ func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 
 func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Header))
+	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -47,11 +47,11 @@ func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 	return nil
 }
 
-// key: DATA_BlockHash || height
+// key: DATABlockHash || height
 // value: block hash
 func (c *ChainStore) PersistBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_BlockHash))
+	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (c *ChainStore) PersistBlockHash(b *Block) error {
 
 func (c *ChainStore) RollbackBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_BlockHash))
+	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
@@ -77,11 +77,11 @@ func (c *ChainStore) RollbackBlockHash(b *Block) error {
 	return nil
 }
 
-// key: SYS_CurrentBlock
+// key: SYSCurrentBlock
 // value: current block hash || height
 func (c *ChainStore) PersistCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(SYS_CurrentBlock))
+	key.WriteByte(byte(SYSCurrentBlock))
 
 	value := new(bytes.Buffer)
 	hash := b.Hash()
@@ -98,7 +98,7 @@ func (c *ChainStore) PersistCurrentBlock(b *Block) error {
 
 func (c *ChainStore) RollbackCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(SYS_CurrentBlock))
+	key.WriteByte(byte(SYSCurrentBlock))
 
 	value := new(bytes.Buffer)
 	hash := b.Header.Previous
@@ -196,8 +196,8 @@ func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
 	}
 
 	// batch put the UTXOs
-	for programHash, programHash_value := range unspendUTXOs {
-		for assetId, unspents := range programHash_value {
+	for programHash, programHashValue := range unspendUTXOs {
+		for assetId, unspents := range programHashValue {
 			for height, unspent := range unspents {
 				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
 				if err != nil {
@@ -282,8 +282,8 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 		}
 	}
 
-	for programHash, programHash_value := range unspendUTXOs {
-		for assetId, unspents := range programHash_value {
+	for programHash, programHashValue := range unspendUTXOs {
+		for assetId, unspents := range programHashValue {
 			for height, unspent := range unspents {
 				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
 				if err != nil {
@@ -298,7 +298,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 }
 
 func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) error {
-	key := []byte{byte(VOTE_RegisterProducer)}
+	key := []byte{byte(VOTERegisterProducer)}
 	hBuf := new(bytes.Buffer)
 	height := c.GetHeight()
 	err := WriteUint32(hBuf, height)
@@ -375,7 +375,7 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 }
 
 func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error {
-	key := []byte{byte(VOTE_RegisterProducer)}
+	key := []byte{byte(VOTERegisterProducer)}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
@@ -499,7 +499,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 
 func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error {
 	// update producer in database
-	key := []byte{byte(VOTE_RegisterProducer)}
+	key := []byte{byte(VOTERegisterProducer)}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
@@ -648,7 +648,7 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 }
 
 func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
-	key := []byte{byte(VOTE_RegisterProducer)}
+	key := []byte{byte(VOTERegisterProducer)}
 	data, err := c.Get(key)
 	if err != nil {
 		return nil, err
@@ -793,7 +793,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATATransaction))
 	hash := txn.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -805,7 +805,7 @@ func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 
 func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(ST_Info))
+	key.WriteByte(byte(STInfo))
 	if err := assetId.Serialize(key); err != nil {
 		return err
 	}
@@ -815,7 +815,7 @@ func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 }
 
 func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
 	c.BatchDelete(key)
@@ -823,7 +823,7 @@ func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
 }
 
 func (c *ChainStore) PersistUnspend(b *Block) error {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
 		if txn.TxType == RegisterAsset {
@@ -861,7 +861,7 @@ func (c *ChainStore) PersistUnspend(b *Block) error {
 
 	for txhash, value := range unspents {
 		key := new(bytes.Buffer)
-		key.WriteByte(byte(IX_Unspent))
+		key.WriteByte(byte(IXUnspent))
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
@@ -876,7 +876,7 @@ func (c *ChainStore) PersistUnspend(b *Block) error {
 }
 
 func (c *ChainStore) RollbackUnspend(b *Block) error {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
 		if txn.TxType == RegisterAsset {
@@ -907,7 +907,7 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 
 	for txhash, value := range unspents {
 		key := new(bytes.Buffer)
-		key.WriteByte(byte(IX_Unspent))
+		key.WriteByte(byte(IXUnspent))
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
@@ -923,7 +923,7 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 
 func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Confirm))
+	key.WriteByte(byte(DATAConfirm))
 	if err := confirm.Hash.Serialize(key); err != nil {
 		return err
 	}
@@ -939,7 +939,7 @@ func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
 
 func (c *ChainStore) RollbackConfirm(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Confirm))
+	key.WriteByte(byte(DATAConfirm))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
