@@ -1,8 +1,12 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -44,9 +48,14 @@ func (i *illegalBehaviorMonitor) SetVoteEvidence(evidence *core.DposIllegalVotes
 
 func (i *illegalBehaviorMonitor) IsBlockValid(block *core.Block) bool {
 	if i.proposalEvidence != nil {
-		//for _ := range block.Transactions {
-		//todo check if transaction contains evidence
-		//}
+		for _, t := range block.Transactions {
+			if t.IsIllegalProposalTx() {
+				payload := t.Payload.(*core.PayloadIllegalProposal)
+				if payload.DposIllegalProposals.Hash().IsEqual(i.proposalEvidence.Hash()) {
+					return true
+				}
+			}
+		}
 
 		if block.Height-i.proposalEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
 			return false
@@ -54,9 +63,12 @@ func (i *illegalBehaviorMonitor) IsBlockValid(block *core.Block) bool {
 	}
 
 	if i.voteEvidence != nil {
-		//for _ := range block.Transactions {
-		//todo check if transaction contains evidence
-		//}
+		for _, t := range block.Transactions {
+			payload := t.Payload.(*core.PayloadIllegalVote)
+			if payload.DposIllegalVotes.Hash().IsEqual(i.voteEvidence.Hash()) {
+				return true
+			}
+		}
 
 		if block.Height-i.voteEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
 			return false
@@ -103,7 +115,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *core.DPos
 	firstBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(first.BlockHash)
 	secondBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(second.BlockHash)
 
-	evidences := core.DposIllegalProposals{
+	evidences := &core.DposIllegalProposals{
 		Evidence: core.ProposalEvidence{
 			Proposal:    *first,
 			BlockHeader: firstBlock.Header,
@@ -114,12 +126,43 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *core.DPos
 		},
 	}
 
-	i.SetProposalEvidence(&evidences)
+	i.SetProposalEvidence(evidences)
+	i.sendIllegalProposalTransaction(evidences)
 
-	//todo send illegal proposal transaction
-
-	m := &msg.IllegalProposals{Proposals: evidences}
+	m := &msg.IllegalProposals{Proposals: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
+}
+
+func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *core.DposIllegalProposals) {
+	transaction := &core.Transaction{
+		Version:        core.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		TxType:         core.IllegalProposalEvidence,
+		PayloadVersion: core.PayloadIllegalProposalVersion,
+		Payload:        &core.PayloadIllegalProposal{DposIllegalProposals: *evidences},
+		Attributes:     []*core.Attribute{},
+		LockTime:       0,
+		Programs:       []*program.Program{},
+	}
+
+	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
+		node.LocalNode.Relay(nil, transaction)
+	}
+}
+
+func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *core.DposIllegalVotes) {
+	transaction := &core.Transaction{
+		Version:        core.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		TxType:         core.IllegalVoteEvidence,
+		PayloadVersion: core.PayloadIllegalVoteVersion,
+		Payload:        &core.PayloadIllegalVote{DposIllegalVotes: *evidences},
+		Attributes:     []*core.Attribute{},
+		LockTime:       0,
+		Programs:       []*program.Program{},
+	}
+
+	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
+		node.LocalNode.Relay(nil, transaction)
+	}
 }
 
 func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProposalVote) {
@@ -128,7 +171,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProp
 	firstBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(firstProposal.BlockHash)
 	secondBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(secondProposal.BlockHash)
 
-	evidences := core.DposIllegalVotes{
+	evidences := &core.DposIllegalVotes{
 		Evidence: core.VoteEvidence{
 			Vote:        *first,
 			Proposal:    *firstProposal,
@@ -141,11 +184,10 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProp
 		},
 	}
 
-	i.SetVoteEvidence(&evidences)
+	i.SetVoteEvidence(evidences)
+	i.sendIllegalVoteTransaction(evidences)
 
-	//todo send illegal vote transaction
-
-	m := &msg.IllegalVotes{Votes: evidences}
+	m := &msg.IllegalVotes{Votes: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
 }
 
