@@ -36,6 +36,7 @@ const (
 
 	IllegalProposalEvidence TransactionType = 0x0c
 	IllegalVoteEvidence     TransactionType = 0x0d
+	IllegalBlockEvidence    TransactionType = 0x0e
 )
 
 func (self TransactionType) Name() string {

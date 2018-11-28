@@ -490,10 +490,9 @@ func NewDispatcherAndIllegalMonitor(consensus Consensus, eventMonitor *log.Event
 		account:            dposAccount,
 	}
 	i := &illegalBehaviorMonitor{
-		dispatcher:       p,
-		cachedProposals:  make(map[common.Uint256]*core.DPosProposal),
-		proposalEvidence: nil,
-		voteEvidence:     nil,
+		dispatcher:      p,
+		cachedProposals: make(map[common.Uint256]*core.DPosProposal),
+		evidenceCache:   evidenceCache{make(map[common.Uint256]core.DposIllegalData)},
 	}
 	p.illegalMonitor = i
 	return p, i

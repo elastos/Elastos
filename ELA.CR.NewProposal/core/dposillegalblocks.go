@@ -23,6 +23,7 @@ type BlockEvidence struct {
 
 type DposIllegalBlocks struct {
 	CoinType        CoinType
+	BlockHeight     uint32
 	Evidence        BlockEvidence
 	CompareEvidence BlockEvidence
 
@@ -59,7 +60,11 @@ func (b *BlockEvidence) BlockHash() common.Uint256 {
 
 func (d *DposIllegalBlocks) Serialize(w io.Writer) error {
 	if err := common.WriteUint32(w, uint32(d.CoinType)); err != nil {
-		return nil
+		return err
+	}
+
+	if err := common.WriteUint32(w, d.BlockHeight); err != nil {
+		return err
 	}
 
 	if err := d.Evidence.Serialize(w); err != nil {
@@ -81,6 +86,10 @@ func (d *DposIllegalBlocks) Deserialize(r io.Reader) error {
 	}
 	d.CoinType = CoinType(coinType)
 
+	if d.BlockHeight, err = common.ReadUint32(r); err != nil {
+		return err
+	}
+
 	if err = d.Evidence.Deserialize(r); err != nil {
 		return err
 	}
@@ -100,4 +109,12 @@ func (d *DposIllegalBlocks) Hash() common.Uint256 {
 		d.hash = &hash
 	}
 	return *d.hash
+}
+
+func (d *DposIllegalBlocks) GetBlockHeight() uint32 {
+	return d.BlockHeight
+}
+
+func (d *DposIllegalBlocks) Type() IllegalDataType {
+	return IllegalBlock
 }
