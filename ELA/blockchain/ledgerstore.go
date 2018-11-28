@@ -52,5 +52,9 @@ type IChainStore interface {
 	IsTxHashDuplicate(txhash Uint256) bool
 	IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool
 	IsBlockInStore(hash Uint256) bool
+
+	GetDposDutyChangedCount() uint32
+	PersistDposDutyChangedCount(count uint32) error
+
 	Close()
 }

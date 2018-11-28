@@ -187,6 +187,7 @@ func (a *arbitrators) onChainHeightIncreased(block *core.Block) {
 		}
 	} else {
 		a.dutyChangedCount++
+		DefaultLedger.Store.PersistDposDutyChangedCount(a.dutyChangedCount)
 	}
 }
 
@@ -221,6 +222,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	}
 
 	a.dutyChangedCount = 0
+	DefaultLedger.Store.PersistDposDutyChangedCount(a.dutyChangedCount)
 
 	return nil
 }
@@ -274,6 +276,7 @@ func NewArbitrators(arbitratorsConfig ArbitratorsConfig) Arbitrators {
 	}
 
 	return &arbitrators{
-		config: arbitratorsConfig,
+		config:           arbitratorsConfig,
+		dutyChangedCount: DefaultLedger.Store.GetDposDutyChangedCount(),
 	}
 }

@@ -372,6 +372,31 @@ func (c *ChainStore) GetCurrentBlockHash() Uint256 {
 	return hash
 }
 
+func (c *ChainStore) GetDposDutyChangedCount() uint32 {
+	key := []byte{byte(DPOSDutyChangedCount)}
+	data, err := c.Get(key)
+	if err != nil {
+		return 0
+	}
+
+	result, err := ReadUint32(bytes.NewReader(data))
+	if err != nil {
+		return 0
+	}
+
+	return result
+}
+
+func (c *ChainStore) PersistDposDutyChangedCount(count uint32) error {
+	key := []byte{byte(DPOSDutyChangedCount)}
+
+	value := new(bytes.Buffer)
+	WriteUint32(value, count)
+
+	c.BatchPut(key, value.Bytes())
+	return nil
+}
+
 func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
 
 	reply := make(chan bool)
