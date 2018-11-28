@@ -961,7 +961,7 @@ func ListProducers(param Params) map[string]interface{} {
 			Location: p.Location,
 			Active:   active,
 			Votes:    vote.String(),
-			IP:       p.IP,
+			IP:       p.Address,
 		}
 
 		ps = append(ps, producer)
@@ -1092,7 +1092,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.IP = object.IP
+		obj.Address = object.Address
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
@@ -1106,7 +1106,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.IP = object.IP
+		obj.Address = object.Address
 		return obj
 	}
 	return nil

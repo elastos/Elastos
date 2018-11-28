@@ -661,7 +661,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check ip
-	if payload.IP == "" {
+	if payload.Address == "" {
 		return errors.New("Invalid IP.")
 	}
 

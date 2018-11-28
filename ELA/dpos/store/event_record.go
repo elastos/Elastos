@@ -66,7 +66,7 @@ func (e *EventRecord) OnConsensusStarted(cons log.ConsensusEvent) {
 }
 
 func (e *EventRecord) OnConsensusFinished(cons log.ConsensusEvent) {
-	log.Error("[OnConsensusFinished] time duration:", cons.EndTime.Sub(e.startConsensusTime).Seconds())
+	log.Info("[OnConsensusFinished] time duration:", cons.EndTime.Sub(e.startConsensusTime).Seconds())
 	_, err := e.eventStore.UpdateConsensusEvent(cons)
 	if err != nil {
 		log.Error("[OnConsensusFinished], Add message failed:", err.Error())

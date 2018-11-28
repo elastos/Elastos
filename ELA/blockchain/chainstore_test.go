@@ -157,7 +157,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		NickName:  nickName1,
 		Url:       "http://www.test.com",
 		Location:  1,
-		IP:        "127.0.0.1",
+		Address:   "127.0.0.1",
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -168,7 +168,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
 		Location:  2,
-		IP:        "127.0.0.1",
+		Address:   "127.0.0.1",
 	}
 
 	// 2. Should have no producer in db
@@ -265,7 +265,7 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 			NickName:  nickName1,
 			Url:       "http://www.test.com",
 			Location:  2,
-			IP:        ip1,
+			Address:   ip1,
 		},
 	}
 
@@ -289,7 +289,7 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	if producers[0].NickName != nickName1 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if producers[0].IP != ip1 {
+	if producers[0].Address != ip1 {
 		t.Error("GetRegisteredProducers failed")
 	}
 }
@@ -351,7 +351,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
 		Location:  1,
-		IP:        "127.0.0.1",
+		Address:   "127.0.0.1",
 	}
 
 	// 2. Run RegisterProducer
