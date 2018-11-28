@@ -33,49 +33,19 @@ type illegalBehaviorMonitor struct {
 	dispatcher      *proposalDispatcher
 	cachedProposals map[common.Uint256]*core.DPosProposal
 
-	//todo consider multiple arbitrators have illegal evidence within same block
-	proposalEvidence *core.DposIllegalProposals
-	voteEvidence     *core.DposIllegalVotes
+	evidenceCache evidenceCache
 }
 
 func (i *illegalBehaviorMonitor) SetProposalEvidence(evidence *core.DposIllegalProposals) {
-	i.proposalEvidence = evidence
+	i.evidenceCache.AddEvidence(evidence)
 }
 
 func (i *illegalBehaviorMonitor) SetVoteEvidence(evidence *core.DposIllegalVotes) {
-	i.voteEvidence = evidence
+	i.evidenceCache.AddEvidence(evidence)
 }
 
 func (i *illegalBehaviorMonitor) IsBlockValid(block *core.Block) bool {
-	if i.proposalEvidence != nil {
-		for _, t := range block.Transactions {
-			if t.IsIllegalProposalTx() {
-				payload := t.Payload.(*core.PayloadIllegalProposal)
-				if payload.DposIllegalProposals.Hash().IsEqual(i.proposalEvidence.Hash()) {
-					return true
-				}
-			}
-		}
-
-		if block.Height-i.proposalEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
-			return false
-		}
-	}
-
-	if i.voteEvidence != nil {
-		for _, t := range block.Transactions {
-			payload := t.Payload.(*core.PayloadIllegalVote)
-			if payload.DposIllegalVotes.Hash().IsEqual(i.voteEvidence.Hash()) {
-				return true
-			}
-		}
-
-		if block.Height-i.voteEvidence.Evidence.BlockHeader.Height > WaitHeightTolerance {
-			return false
-		}
-	}
-
-	return true
+	return i.evidenceCache.IsBlockValid(block)
 }
 
 func (i *illegalBehaviorMonitor) AddProposal(proposal core.DPosProposal) {
@@ -89,11 +59,7 @@ func (i *illegalBehaviorMonitor) Reset(changeView bool) {
 	}
 
 	if !changeView && i.dispatcher.processingBlock != nil {
-		i.proposalEvidence = nil
-
-		if i.IsBlockValid(i.dispatcher.processingBlock) {
-			i.voteEvidence = nil
-		}
+		i.evidenceCache.Reset(i.dispatcher.processingBlock)
 	}
 }
 
