@@ -274,7 +274,7 @@ func newTransaction(redeemScript []byte, inputs []*core.Input, outputs []*core.O
 	var program = &pg.Program{redeemScript, nil}
 
 	return &core.Transaction{
-		Version:    core.TxVersionC0,
+		Version:    core.TxVersion09,
 		TxType:     txType,
 		Payload:    txPayload,
 		Attributes: attributes,

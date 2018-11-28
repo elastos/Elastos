@@ -38,7 +38,7 @@ func TestOutput_Serialize(t *testing.T) {
 	}
 
 	buf := new(bytes.Buffer)
-	if err := output.Serialize(buf, TxVersionC0); err != nil {
+	if err := output.Serialize(buf, TxVersion09); err != nil {
 		t.Error("output serialize failed")
 	}
 
@@ -54,12 +54,12 @@ func TestOutput_Deserialize(t *testing.T) {
 	outputBuf := bytes.NewBuffer(outputBytes)
 
 	var output Output
-	if err := output.Deserialize(outputBuf, TxVersionC0); err != nil {
+	if err := output.Deserialize(outputBuf, TxVersion09); err != nil {
 		t.Error("output deserialize failed")
 	}
 
 	buf := new(bytes.Buffer)
-	if err := output.Serialize(buf, TxVersionC0); err != nil {
+	if err := output.Serialize(buf, TxVersion09); err != nil {
 		t.Error("output serialize failed")
 	}
 
