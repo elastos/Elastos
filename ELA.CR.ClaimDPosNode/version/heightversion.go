@@ -72,6 +72,12 @@ func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *core.T
 	})
 }
 
+func (h *heightVersions) CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *core.Transaction) error {
+	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
+		return version.CheckTxHasNoProgramsAndAttributes(tx)
+	})
+}
+
 func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]

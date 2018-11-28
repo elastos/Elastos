@@ -18,6 +18,7 @@ type TxVersion interface {
 	CheckCoinbaseMinerReward(tx *core.Transaction, totalReward Fixed64) error
 	CheckCoinbaseArbitratorsReward(coinbase *core.Transaction, rewardInCoinbase Fixed64) error
 	CheckVoteProducerOutputs(outputs []*core.Output, references map[*core.Input]*core.Output) error
+	CheckTxHasNoProgramsAndAttributes(tx *core.Transaction) error
 }
 
 type TxVersionMain struct {
@@ -114,6 +115,18 @@ func (v *TxVersionMain) CheckVoteProducerOutputs(outputs []*core.Output, referen
 				return errors.New("Invalid vote output")
 			}
 		}
+	}
+
+	return nil
+}
+
+func (v *TxVersionMain) CheckTxHasNoProgramsAndAttributes(tx *core.Transaction) error {
+	if len(tx.Attributes) != 0 {
+		return errors.New("Transaction should have no attributes.")
+	}
+
+	if len(tx.Programs) != 0 {
+		return errors.New("Transaction should have no programs.")
 	}
 
 	return nil

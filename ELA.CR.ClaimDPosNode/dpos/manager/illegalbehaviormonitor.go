@@ -142,6 +142,9 @@ func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *core.
 		Attributes:     []*core.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
+		Outputs:        []*core.Output{},
+		Inputs:         []*core.Input{},
+		Fee:            0,
 	}
 
 	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
@@ -158,6 +161,9 @@ func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *core.Dpos
 		Attributes:     []*core.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
+		Outputs:        []*core.Output{},
+		Inputs:         []*core.Input{},
+		Fee:            0,
 	}
 
 	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
