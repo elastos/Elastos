@@ -471,7 +471,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 					return err
 				}
 			}
-			if tx.TxType == TransferAsset && tx.Version >= TxVersionC0 {
+			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
 				for _, output := range tx.Outputs {
 					if output.OutputType == VoteOutput {
 						if err = c.PersistVoteOutput(output); err != nil {
@@ -710,7 +710,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersionC0 {
+		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					if err := c.PersistVoteOutput(output); err != nil {
@@ -764,7 +764,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersionC0 {
+		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					if err := c.PersistCancelVoteOutput(output); err != nil {

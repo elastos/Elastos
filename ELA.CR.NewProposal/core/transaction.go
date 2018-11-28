@@ -77,7 +77,7 @@ type TransactionVersion byte
 
 const (
 	TxVersionDefault TransactionVersion = 0x00
-	TxVersionC0      TransactionVersion = 0x09
+	TxVersion09      TransactionVersion = 0x09
 )
 
 type Transaction struct {
@@ -132,7 +132,7 @@ func (tx *Transaction) Serialize(w io.Writer) error {
 // Serialize the Transaction data without contracts
 func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	// Version
-	if tx.Version >= TxVersionC0 {
+	if tx.Version >= TxVersion09 {
 		if _, err := w.Write([]byte{byte(tx.Version)}); err != nil {
 			return err
 		}
@@ -214,7 +214,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	if TransactionVersion(flagByte[0]) >= TxVersionC0 {
+	if TransactionVersion(flagByte[0]) >= TxVersion09 {
 		tx.Version = TransactionVersion(flagByte[0])
 		txType, err := ReadBytes(r, 1)
 		if err != nil {
