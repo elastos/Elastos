@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -230,26 +228,6 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 	var (
 		s = restful.NewServer(&restful.Config{ServePort: port})
 
-		restartServer = func(params util.Params) (interface{}, error) {
-			if err := s.Stop(); err != nil {
-				str := fmt.Sprintf("Stop HttpRESTful server failed, %s", err.Error())
-				restlog.Error(str)
-				return nil, errors.New(str)
-			}
-
-			done := make(chan error)
-			go func() {
-				done <- s.Start()
-			}()
-
-			select {
-			case err := <-done:
-				return nil, fmt.Errorf("Start HttpRESTful server failed, %s", err.Error())
-			case <-time.After(time.Millisecond * 100):
-			}
-			return nil, nil
-		}
-
 		sendRawTransaction = func(data []byte) (interface{}, error) {
 			var params = util.Params{}
 			if err := json.Unmarshal(data, &params); err != nil {
@@ -291,7 +269,6 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 	s.RegisterGetAction(ApiGetUTXOByAsset, service.GetUnspendsByAsset)
 	s.RegisterGetAction(ApiGetBalanceByAddr, service.GetBalanceByAddr)
 	s.RegisterGetAction(ApiGetBalanceByAsset, service.GetBalanceByAsset)
-	s.RegisterGetAction(ApiRestart, restartServer)
 
 	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
 
