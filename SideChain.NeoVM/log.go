@@ -21,6 +21,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 )
 
 const (
@@ -83,4 +84,5 @@ func init() {
 
 	avm.UseLogger(avmlog)
 	store.UseLogger(avmlog)
+	service.UseLogger(avmlog)
 }

@@ -2,10 +2,9 @@ package avm
 
 import (
 	"io"
-	
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/utils"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/utils"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
 
 type ExecutionContext struct {
@@ -38,7 +37,7 @@ func (ec *ExecutionContext) SetInstructionPointer(offset int) {
 
 func (ec* ExecutionContext) GetCodeHash() []byte {
 	if ec.CodeHash == nil {
-		hash, err := crypto.ToProgramHash(ec.Script)
+		hash, err := params.ToProgramHash(ec.Script)
 		if err != nil {
 			return nil
 		}

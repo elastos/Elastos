@@ -240,7 +240,8 @@ func (e *ExecutionEngine) ExecuteOp(opCode OpCode, context *ExecutionContext) (V
 		return FAULT, errors.ErrOverLimitStack
 	}
 
-	price := e.getPrice() * ratio
+	var elaRatio int64 = 10 //ten times smaller than neogas
+	price := e.getPrice() * ratio / elaRatio
 	e.gasConsumed += price
 	if e.gas < e.gasConsumed {
 		return FAULT, errors.ErrOutOfGas
@@ -343,7 +344,6 @@ func (e *ExecutionEngine) getPrice() int64 {
 		return 100
 	case CHECKMULTISIG:
 		if e.evaluationStack.Count() == 0 {
-
 			return 1
 		}
 		n := PeekBigInteger(e).Int64()
@@ -382,7 +382,7 @@ func (e *ExecutionEngine) getPriceForSysCall() int64 {
 	case "Neo.Blockchain.GetAccount":
 		return 100
 	case "Neo.Blockchain.RegisterValidator":
-		return 1000 * 100000000 / ratio;
+		return 1000 * 100000000 / ratio
 	case "Neo.Blockchain.GetValidators":
 		return 200
 	case "Neo.Blockchain.CreateAsset":
@@ -396,13 +396,13 @@ func (e *ExecutionEngine) getPriceForSysCall() int64 {
 	case "Neo.Transaction.GetReferences":
 		return 200
 	case "Neo.Asset.Create":
-		return 5000 * 100000000 / ratio;
+		return 5000 * 100000000 / ratio
 	case "Neo.Asset.Renew":
 		return PeekBigInteger(e).Int64() * 5000 * 100000000 / ratio
 	case "Neo.Storage.Get":
 		return 100
 	case "Neo.Storage.Put":
-		price := ((len(PeekNByteArray(1, e))+len(PeekNByteArray(2, e))-1)/1024 + 1) * 1000;
+		price := ((len(PeekNByteArray(1, e))+len(PeekNByteArray(2, e))-1)/1024 + 1) * 1000
 		return int64(price)
 	case "Neo.Storage.Delete":
 		return 100

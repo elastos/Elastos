@@ -86,9 +86,9 @@ func loadConfig() (*config, error) {
 		MaxLogsFolderSize: defaultLogFolderSize,
 		MaxPerLogFileSize: defaultMaxLogFileSize,
 		HttpInfoStart:     true,
-		HttpInfoPort:      30603,
-		HttpRestPort:      30604,
-		HttpJsonPort:      30606,
+		HttpInfoPort:      10603,
+		HttpRestPort:      10604,
+		HttpJsonPort:      10606,
 		dataDir:           defaultDataDir,
 		PrintSyncState:    true,
 	}

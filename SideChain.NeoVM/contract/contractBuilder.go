@@ -6,6 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
 
 //create a Single Singature contract for owner
@@ -19,11 +20,11 @@ func CreateSignatureContract(ownerPubKey *crypto.PublicKey) (*Contract, error) {
 	if err != nil {
 		return nil, errors.New(msg)
 	}
-	hash, err := crypto.ToProgramHash(temp)
+	hash, err := params.ToProgramHash(temp)
 	if err != nil {
 		return nil, errors.New(msg)
 	}
-	signatureReedScriptToCodeHash, err := crypto.ToProgramHash(signatureReedScript)
+	signatureReedScriptToCodeHash, err := params.ToProgramHash(signatureReedScript)
 	if err != nil {
 		return nil, errors.New(msg)
 	}

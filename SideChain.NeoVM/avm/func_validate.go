@@ -194,10 +194,10 @@ func validatorSetItem(e *ExecutionEngine) error {
 		size = len(dic.GetMap())
 	} else if _, ok := arrItem.(*datatype.ByteArray); ok {
 		index := key.GetBigInteger().Int64()
+		size = len(arrItem.GetByteArray())
 		if index >= int64(size) {
 			return errors.ErrOverMaxArraySize
 		}
-		size = len(arrItem.GetByteArray())
 		if size == 0 {
 			return errors.ErrBadValue
 		}

@@ -6,11 +6,12 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/storage"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
-
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/storage"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/enumerators"
 )
 
 type DBCache struct {
@@ -121,5 +122,6 @@ func (cache *DBCache) Suicide(codeHash common.Uint168) bool {
 func (cache *DBCache) FindInternal(prefix blockchain.EntryPrefix, keyPrefix string) database.Iterator {
 	k := make([]byte, 0)
 	k = append([]byte{byte(prefix)}, []byte(keyPrefix)...)
-	return cache.db.NewIterator(k)
+	iter := cache.db.NewIterator(k)
+	return enumerators.NewIterator(iter)
 }

@@ -1,5 +1,7 @@
 package avm
 
+import "github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
+
 type IGeneralService interface {
 	Register(method string, handler func(*ExecutionEngine) bool) bool
 	GetServiceMap() map[string]func(*ExecutionEngine) bool
@@ -39,13 +41,11 @@ func (i *GeneralService) GetServiceMap() map[string]func(*ExecutionEngine) bool 
 	return i.dictionary
 }
 
-func (is *GeneralService) Invoke(method string, engine *ExecutionEngine) bool {
+func (is *GeneralService) Invoke(method string, engine *ExecutionEngine) (bool, error) {
 	if v, ok := is.dictionary[method]; ok {
-		return v(engine)
-	} else {
-		log.Error("can't find method:", method)
+		return v(engine), nil
 	}
-	return false
+	return false, errors.ErrNotSupportSysCall
 }
 
 func (is *GeneralService) GetScriptContainer(engine *ExecutionEngine) bool {

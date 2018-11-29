@@ -90,10 +90,6 @@ func opSetItem(e *ExecutionEngine) (VMState, error) {
 	}
 	newItem := PopStackItem(e)
 	key := PopStackItem(e)
-	if _, ok := key.(*datatype.Array); ok {
-		return FAULT,  errors.New("evaluationStack error")
-	}
-
 	itemArr := PopStackItem(e)
 	if _, ok := itemArr.(*datatype.Array); ok {
 		index := key.GetBigInteger()

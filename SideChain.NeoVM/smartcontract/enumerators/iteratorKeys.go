@@ -1,6 +1,10 @@
 package enumerators
 
 import (
+	"io"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 )
 
@@ -26,6 +30,11 @@ func (iter *IteratorKeys) Dispose()  {
 	iter.iter.Release()
 }
 
-func (iter *IteratorKeys) Bytes() []byte {
-	return iter.iter.Key()
+func (iter *IteratorKeys) Serialize(w io.Writer) error {
+	common.WriteVarBytes(w, iter.Value())
+	return nil
+}
+func (iter *IteratorKeys) Deserialize(r io.Reader) error {
+	common.ReadVarBytes(r, common.MaxVarStringLength, "IteratorKeys Deserialize")
+	return nil
 }

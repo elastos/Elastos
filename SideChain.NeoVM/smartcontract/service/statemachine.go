@@ -142,13 +142,13 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 	if len(descByte) > avm.MAXContractDescript {
 		return false
 	}
-	funcCode := &nt.FunctionCode{
+	funcCode := nt.FunctionCode{
 		Code:           codeByte,
 		ParameterTypes: parameterList,
 		ReturnType:     contract.ContractParameterType(returnType),
 	}
-	contractState := states.ContractState{
-		Code:        funcCode,
+	contractState := &states.ContractState{
+		Code:        &funcCode,
 		Name:        common.BytesToHexString(nameByte),
 		Version:     common.BytesToHexString(versionByte),
 		Author:      common.BytesToHexString(authorByte),
@@ -157,8 +157,7 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 	}
 	codeHash := funcCode.CodeHash()
 	key := params.UInt168ToUInt160(&codeHash)
-
-	s.CloneCache.GetInnerCache().GetOrAdd(states.ST_Contract, string(key), &contractState)
+	s.CloneCache.GetInnerCache().GetOrAdd(states.ST_Contract, string(key), contractState)
 	avm.PushData(engine, contractState)
 	return true
 }
@@ -241,7 +240,7 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 			if data == nil {
 				return false
 			}
-			oldHash, err := crypto.ToProgramHash(data)
+			oldHash, err := params.ToProgramHash(data)
 			if err != nil {
 				return false
 			}
@@ -293,7 +292,7 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 	keyStr := string(params.UInt168ToUInt160(hash))
 	item, err := s.CloneCache.TryGet(states.ST_Contract, keyStr)
 	if err != nil || item == nil {
-		fmt.Println(err)
+		log.Error("ContractDestory:", err.Error())
 		return false
 	}
 	if !engine.IsTestMode() {

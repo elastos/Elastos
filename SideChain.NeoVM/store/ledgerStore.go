@@ -72,5 +72,12 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 }
 
 func (c *LedgerStore) GetUnspents(txid common.Uint256) ([]*side.Output, error) {
-	return c.GetUnspents(txid)
+	if ok, _ := c.ContainsUnspent(txid, 0); ok {
+		tx, _, err := c.GetTransaction(txid)
+		if err != nil {
+			return nil, err
+		}
+		return tx.Outputs, nil
+	}
+	return nil, errors.New("[GetUnspent] NOT ContainsUnspent.")
 }

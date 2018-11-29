@@ -21,6 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
 
 type StateReader struct {
@@ -290,7 +291,7 @@ func (s *StateReader) CheckWitnessPublicKey(engine *avm.ExecutionEngine, publicK
 	if err != nil {
 		return false, err
 	}
-	h, err := crypto.ToProgramHash(c)
+	h, err := params.ToProgramHash(c)
 	if err != nil {
 		return false, err
 	}
@@ -645,11 +646,12 @@ func (s *StateReader) BlockGetTransactions(e *avm.ExecutionEngine) bool {
 		return false
 	}
 	transactions := d.(*st.Block).Transactions
-	list := make([]datatype.GeneralInterface, 0)
+	list := make([]datatype.StackItem, 0)
 	for _, v := range transactions {
-		list = append(list, *datatype.NewGeneralInterface(v))
+		list = append(list, datatype.NewGeneralInterface(v))
 	}
-	avm.PushData(e, list)
+
+	avm.PushData(e, datatype.NewArray(list))
 	return true
 }
 
@@ -696,9 +698,9 @@ func (s *StateReader) TransactionGetAttributes(e *avm.ExecutionEngine) bool {
 		return false
 	}
 	attributes := d.(*st.Transaction).Attributes
-	list := make([]datatype.GeneralInterface, 0)
+	list := make([]datatype.StackItem, 0)
 	for _, v := range attributes {
-		list = append(list, *datatype.NewGeneralInterface(v))
+		list = append(list, datatype.NewGeneralInterface(v))
 	}
 	avm.PushData(e, list)
 	return true
@@ -914,8 +916,16 @@ func (s *StateReader) AssetGetAssetId(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, assetState.AssetId.Bytes())
+	switch d.(type) {
+	case *st.Asset:
+		asset := d.(*st.Asset)
+		avm.PushData(e, asset.Hash().Bytes())
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, assetState.AssetId.Bytes())
+	default:
+		return false
+	}
 	return true
 }
 
@@ -924,8 +934,17 @@ func (s *StateReader) AssetGetAssetType(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, int(assetState.AssetType))
+	switch d.(type) {
+	case *st.Asset:
+		asset := d.(*st.Asset)
+		avm.PushData(e, int(asset.AssetType))
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, int(assetState.AssetType))
+	default:
+		return false
+	}
+
 	return true
 }
 
@@ -934,8 +953,15 @@ func (s *StateReader) AssetGetAmount(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, assetState.Amount.IntValue())
+	switch d.(type) {
+	case *st.Asset:
+		avm.PushData(e, 0)
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, assetState.Amount.IntValue())
+	default:
+		return false
+	}
 	return true
 }
 
@@ -944,8 +970,17 @@ func (s *StateReader) AssetGetAvailable(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, assetState.Avaliable.IntValue())
+	switch d.(type) {
+	case *st.Asset:
+		//asset := d.(*st.Asset)
+		avm.PushData(e, 0)
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, assetState.Avaliable.IntValue())
+	default:
+		return false
+	}
+
 	return true
 }
 
@@ -954,8 +989,16 @@ func (s *StateReader) AssetGetPrecision(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, int(assetState.Precision))
+	switch d.(type) {
+	case *st.Asset:
+		asset := d.(*st.Asset)
+		avm.PushData(e, int(asset.Precision))
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, int(assetState.Precision))
+	default:
+		return false
+	}
 	return true
 }
 
@@ -964,12 +1007,21 @@ func (s *StateReader) AssetGetOwner(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	owner, err := assetState.Owner.EncodePoint(true)
-	if err != nil {
+	switch d.(type) {
+	case *st.Asset:
+		//asset := d.(*st.Asset)
+		avm.PushData(e, []byte{})
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		owner, err := assetState.Owner.EncodePoint(true)
+		if err != nil {
+			return false
+		}
+		avm.PushData(e, owner)
+	default:
 		return false
 	}
-	avm.PushData(e, owner)
+
 	return true
 }
 
@@ -978,8 +1030,16 @@ func (s *StateReader) AssetGetAdmin(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, assetState.Admin.Bytes())
+	switch d.(type) {
+	case *st.Asset:
+		//asset := d.(*st.Asset)
+		avm.PushData(e, []byte{})
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, assetState.Admin.Bytes())
+	default:
+		return false
+	}
 	return true
 }
 
@@ -988,8 +1048,16 @@ func (s *StateReader) AssetGetIssuer(e *avm.ExecutionEngine) bool {
 	if d == nil {
 		return false
 	}
-	assetState := d.(*states.AssetState)
-	avm.PushData(e, assetState.Issuer.Bytes())
+	switch d.(type) {
+	case *st.Asset:
+		//asset := d.(*st.Asset)
+		avm.PushData(e, []byte{})
+	case *states.AssetState:
+		assetState := d.(*states.AssetState)
+		avm.PushData(e, assetState.Issuer.Bytes())
+	default:
+		return false
+	}
 	return true
 }
 

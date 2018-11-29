@@ -68,12 +68,13 @@ func opSysCall(e *ExecutionEngine) (VMState, error) {
 	if e.service == nil {
 		return FAULT, errors.ErrServiceIsNil
 	}
-	success := e.service.Invoke(e.context.OpReader.ReadVarString(), e)
-	if success {
+	success, err := e.service.Invoke(e.context.OpReader.ReadVarString(), e)
+	if success && err == nil {
 		return NONE, nil
-	} else {
-		return FAULT, errors.ErrNotSupportSysCall
+	} else if err != nil {
+		return FAULT, err
 	}
+	return FAULT, nil
 }
 
 func opCallI(e *ExecutionEngine) (VMState, error) {
