@@ -25,8 +25,9 @@ type IllegalBehaviorMonitor interface {
 	ProcessIllegalVote(first, second *core.DPosProposalVote)
 	IsLegalVote(v *core.DPosProposalVote) (*core.DPosProposalVote, bool)
 
-	SetProposalEvidence(evidence *core.DposIllegalProposals)
-	SetVoteEvidence(evidence *core.DposIllegalVotes)
+	AddProposalEvidence(evidence *core.DposIllegalProposals)
+	AddVoteEvidence(evidence *core.DposIllegalVotes)
+	AddBlockEvidence(evidence *core.DposIllegalBlocks)
 }
 
 type illegalBehaviorMonitor struct {
@@ -36,11 +37,15 @@ type illegalBehaviorMonitor struct {
 	evidenceCache evidenceCache
 }
 
-func (i *illegalBehaviorMonitor) SetProposalEvidence(evidence *core.DposIllegalProposals) {
+func (i *illegalBehaviorMonitor) AddBlockEvidence(evidence *core.DposIllegalBlocks) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 
-func (i *illegalBehaviorMonitor) SetVoteEvidence(evidence *core.DposIllegalVotes) {
+func (i *illegalBehaviorMonitor) AddProposalEvidence(evidence *core.DposIllegalProposals) {
+	i.evidenceCache.AddEvidence(evidence)
+}
+
+func (i *illegalBehaviorMonitor) AddVoteEvidence(evidence *core.DposIllegalVotes) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 
@@ -92,7 +97,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *core.DPos
 		},
 	}
 
-	i.SetProposalEvidence(evidences)
+	i.AddProposalEvidence(evidences)
 	if i.dispatcher.consensus.IsOnDuty() {
 		i.sendIllegalProposalTransaction(evidences)
 	}
@@ -158,7 +163,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProp
 		},
 	}
 
-	i.SetVoteEvidence(evidences)
+	i.AddVoteEvidence(evidences)
 	if i.dispatcher.consensus.IsOnDuty() {
 		i.sendIllegalVoteTransaction(evidences)
 	}
