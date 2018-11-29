@@ -11,6 +11,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+	"github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -18,6 +19,7 @@ import (
 type Arbitrator interface {
 	blockchain.NewBlocksListener
 	blockchain.ArbitratorsListener
+	protocol.TxnPoolListener
 
 	Start()
 	Stop() error
@@ -44,6 +46,14 @@ func (a *arbitrator) Stop() error {
 	}
 
 	return nil
+}
+
+func (a *arbitrator) OnIllegalBlockTxnReceived(txn *core.Transaction) {
+	log.Info("[OnIllegalBlockTxnReceived] listener received block")
+	if txn.TxType == core.IllegalBlockEvidence {
+		payload := txn.Payload.(*core.PayloadIllegalBlock)
+		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+	}
 }
 
 func (a *arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
