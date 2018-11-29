@@ -506,12 +506,25 @@ func (s producerSorter) Less(i, j int) bool {
 	return ivalue > jvalue
 }
 
+func (c *ChainStore) GetIllegalProducers() map[string]struct{} {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	return c.getIllegalProducers()
+}
+
 func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	illProducers := c.getIllegalProducers()
+
 	result := make([]*PayloadRegisterProducer, 0)
+
 	for _, p := range c.producerVotes {
+		if _, ok := illProducers[p.Payload.PublicKey]; ok {
+			continue
+		}
 		result = append(result, p.Payload)
 	}
 
@@ -535,7 +548,11 @@ func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.Vot
 		sort.Sort(producerSorter(producersInfo))
 
 		producers := make([]*PayloadRegisterProducer, 0)
+		illProducers := c.getIllegalProducers()
 		for _, p := range producersInfo {
+			if _, ok := illProducers[p.Payload.PublicKey]; ok {
+				continue
+			}
 			producers = append(producers, p.Payload)
 		}
 
