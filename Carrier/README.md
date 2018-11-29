@@ -4,13 +4,48 @@ Elastos Carrier Native SDK
 |:-:|:-:|:-:|
 |[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)|[![CircleCI](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK.svg?style=svg)](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK)|[![Build status](https://ci.appveyor.com/api/projects/status/uqjjonmks6ujvi52?svg=true)](https://ci.appveyor.com/project/elastos/elastos-net-carrier-native-sdk)
 
-## Summary
+## Introduction
 
 Elastos Carrier is a decentralized and encrypted peer-to-peer (P2P) communication framework that routes network traffic between virtual machines and Decentralized Applications (DApps).
 
 The authentication process of peer nodes utilizes the Elastos Decentralized ID (DID) sidechain. （TODO）
 
-## Build from source
+## Table of Contents
+
+- [Elastos Carrier Native SDK](#elastos-carrier-native-sdk)
+	- [Introduction](#introduction)
+	- [Table of Contents](#table-of-contents)
+	- [Usage](#usage)
+- [Build on Ubuntu / Debian / Linux Host](#build-on-ubuntu--debian--linux-host)
+	- [1. Brief introduction](#1-brief-introduction)
+	- [2. Install Pre-Requirements](#2-install-pre-requirements)
+	- [3. Build to run on host (Ubuntu / Debian / Linux)](#3-build-to-run-on-host-ubuntu--debian--linux)
+	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests)
+	- [4. Cross-compilation for Android Platform](#4-cross-compilation-for-android-platform)
+	- [5. Cross-compilation for Raspberry Pi](#5-cross-compilation-for-raspberry-pi)
+- [Build on MacOS Host](#build-on-macos-host)
+	- [1. Brief introduction](#1-brief-introduction-1)
+	- [2. Install Pre-Requirements](#2-install-pre-requirements-1)
+	- [3. Build to run on host](#3-build-to-run-on-host)
+	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests-1)
+	- [4. Cross-compilation for Android Platform](#4-cross-compilation-for-android-platform-1)
+	- [5. Cross-compilation for iOS Platform](#5-cross-compilation-for-ios-platform)
+- [Build on Windows Host](#build-on-windows-host)
+	- [1. Brief introduction](#1-brief-introduction-2)
+	- [2. Set up Environment](#2-set-up-environment)
+	- [2. Build to run on host](#2-build-to-run-on-host)
+	- [3. Run Elashell or Elatests](#3-run-elashell-or-elatests)
+- [Build API Docs](#build-api-docs)
+  - [Build on Ubuntu / Debian / Linux Host](#build-on-ubuntu--debian--linux-host-1)
+	- [1. Install Pre-Requirements](#1-install-pre-requirements)
+	- [2. Build](#2-build)
+	- [3. View](#3-view)
+- [Contribution](#contribution)
+- [Acknowledgments](#acknowledgments)
+- [License](#license)
+
+
+## Usage
 
 **CMake** is used to build, test and package the Elastos Carrier project in an operating system as well as compiler-independent manner.
 
@@ -18,7 +53,7 @@ Certain knowledge of CMake is required.
 
 At the time of this writing, The compilation of sources works on **macOS**, **Linux** (Ubuntu, Debian etc.) and **Windows**, and provides the option to cross-compile for target systems of **iOS**, **Android** and **RaspberryPi**.
 
-### Ubuntu
+## Build on Ubuntu / Debian / Linux Host
 
 #### 1. Brief introduction
 
@@ -101,7 +136,7 @@ $ make dist
 ```
 
 ***
-**Run Elashell or Elatests**
+#### 4. Run Elashell or Elatests
 
 Elashell is a fully functional, lightweight shell program that processes commands and returns the output to the terminal.
 Through Elashell, users may connect to other carrier nodes and exchange messages.
@@ -256,7 +291,7 @@ $ make dist
 
 
 
-### macOS
+## Build on MacOS Host
 
 #### 1. Brief introduction
 
@@ -291,7 +326,7 @@ Download this repository using Git:
 $ git clone https://github.com/elastos/Elastos.NET.Carrier.Native.SDK
 ```
 
-#### 3. Build to Run on MacOS
+#### 3. Build to run on host
 
 To compile the project from source code for the target to run on MacOS, carry out the following steps:
 
@@ -347,8 +382,7 @@ Note: If "make dist" fails due to missing permissions, use "sudo make dist" inst
 $ make dist
 ```
 
-***
-**Run Elashell or Elatests**
+#### 4. Run Elashell or Elatests
 
 Elashell is a fully functional, lightweight shell program that processes commands and returns the output to the terminal.
 Through Elashell, users may connect to other carrier nodes and exchange messages.
@@ -506,7 +540,7 @@ $ make dist
 ```
 
 
-### Windows
+## Build on Windows Host
 
 #### 1. Brief introduction
 
@@ -531,24 +565,27 @@ In the menu, go to "Tools >> Get Tools and Features", it will open the Visual St
 Make sure 'Desktop development with C++' Workload is installed.
 
 On the right side, make sure in the 'Installation details' all of the following are installed:
-"Windows 8.1 SDK and UCRT SDK" <- might have to be selected additionally
-"Windows 10 SDK (10.0.17134.0)" <- might have to be selected additionally
-"VC++ 2017 version 15.9 ... tools"
-"C++ Profiling tools"
-"Visual C++ tools for CMake"
-"Visual C++ ATL for x86 and x64"
+"Windows 8.1 SDK and UCRT SDK" <- might have to be selected additionally <br/>
+"Windows 10 SDK (10.0.17134.0)" <- might have to be selected additionally <br/>
+"VC++ 2017 version 15.9 ... tools" <br/>
+"C++ Profiling tools" <br/>
+"Visual C++ tools for CMake" <br/>
+"Visual C++ ATL for x86 and x64" <br/>
 Additional tools are optional, some additional ones are installed by default with the Workload.
 
 After modifications, restarting of Visual Studio might be required.
 
-To build for a 32-bit target , select `x86 Native Tools Command Console` to run building commands, otherwise, select `x64 Native Tools Command Console` for a 64-bit target.
 
-#### 2. Build
+#### 2. Build to run on host
 
 To compile the project from source code for the target to run on Windows, carry out the following steps:
 
 In Visual Studio, open Visual Studio Command Prompt from the menu "Tools >> Visual Studio Command Prompt"
 It will open a new terminal window.
+
+***
+Note: To build for a 32-bit target , select `x86 Native Tools Command Console` to run building commands, otherwise, select `x64 Native Tools Command Console` for a 64-bit target.
+***
 
 Navigate to the previously downloaded folder that contains the source code of the Carrier project.
 
@@ -573,29 +610,25 @@ $ cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=outputs ..\..
 ```
 
 
-Build the program: <br/>
-Note: If "make" fails due to missing permissions, use "sudo make" instead.
+Build the program:
 ```shell
 $ nmake
 ```
 
 
 
-Install the program: <br/>
-Note: If "make install" fails due to missing permissions, use "sudo make install" instead.
+Install the program:
 ```shell
 $ nmake install
 ```
 
 
-Create distribution package: <br/>
-Note: If "make dist" fails due to missing permissions, use "sudo make dist" instead.
+Create distribution package:
 ```
 $ nmake dist
 ```
 
-***
-**Run Elashell or Elatests**
+#### 3. Run Elashell or Elatests
 
 Elashell is a fully functional, lightweight shell program that processes commands and returns the output to the terminal.
 Through Elashell, users may connect to other carrier nodes and exchange messages.
@@ -626,11 +659,11 @@ $ elatests --config=YOUR-DISTRIBUTION-PACKAGE-PATH\etc\carrier\tests.conf
 
 
 
-## Build API Docs
+## Build API Documentation
 
 Currently, the API documentation can only be built on **Linux** hosts. MacOS has a bug issue with python, which would cause build process failure.
 
-### Ubuntu
+## Build on Ubuntu / Debian / Linux Host
 
 #### 1. Install Pre-Requirements
 
@@ -656,8 +689,9 @@ Note: If "make" fails due to missing permissions, use "sudo make" instead.
 $ cmake -DENABLE_DOCS=ON ../..
 $ make
 ```
-
+#### 3. View
 The generated API documentation will be created in the new **/docs** directory on the same directory level.
+
 Change to the docs folder:
 ```shell
 cd docs/html
