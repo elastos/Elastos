@@ -12,6 +12,7 @@ const (
 
 	// DPOS
 	DPOSDutyChangedCount DataEntryPrefix = 0x10
+	DPOSIllegalProducer  DataEntryPrefix = 0x11
 
 	// INDEX
 	IXHeaderHashList DataEntryPrefix = 0x80

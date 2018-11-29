@@ -37,6 +37,7 @@ type IChainStore interface {
 	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
 	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
 	GetProducerStatus(programHash Uint168) ProducerState
+	GetIllegalProducers() map[string]struct{}
 
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
