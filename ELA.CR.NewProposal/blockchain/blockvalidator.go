@@ -12,7 +12,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (

@@ -16,7 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (

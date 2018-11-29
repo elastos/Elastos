@@ -2,7 +2,7 @@ package peer_test
 
 import (
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"net"
 	"time"
 
