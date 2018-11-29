@@ -13,11 +13,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/common/password"
 	"github.com/elastos/Elastos.ELA/core"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
 	"github.com/elastos/Elastos.ELA/servers"
-	"github.com/elastos/Elastos.ELA/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
@@ -152,7 +152,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 
 	// Check from address
-	password, err := util.GetPassword([]byte{}, false)
+	password, err := password.GetPassword()
 	if err != nil {
 		return nil, err
 	}

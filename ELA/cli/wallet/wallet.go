@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/util"
+	pwd "github.com/elastos/Elastos.ELA/common/password"
 
 	"github.com/urfave/cli"
 )
@@ -28,9 +28,11 @@ func getConfirmedPassword(passwd string) []byte {
 
 func createWallet(name string, password []byte) error {
 	var err error
-	password, err = util.GetPassword(password, true)
-	if err != nil {
-		return err
+	if password == nil {
+		password, err = pwd.GetConfirmedPassword()
+		if err != nil {
+			return err
+		}
 	}
 
 	client, err := account.Create(name, password)
@@ -61,7 +63,7 @@ func walletAction(context *cli.Context) error {
 
 	// show account info
 	if context.Bool("account") {
-		password, err := util.GetPassword([]byte(passwd), false)
+		password, err := pwd.GetPassword()
 		if err != nil {
 			return err
 		}

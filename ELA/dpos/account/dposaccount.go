@@ -2,8 +2,8 @@ package account
 
 import (
 	"github.com/elastos/Elastos.ELA/account"
+	"github.com/elastos/Elastos.ELA/common/password"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/util"
 
 	"github.com/elastos/Elastos.ELA/crypto"
 )
@@ -54,7 +54,7 @@ func (a *dposAccount) SignPeerNonce(nonce []byte) (signature [64]byte) {
 }
 
 func NewDposAccount() (DposAccount, error) {
-	password, err := util.GetPassword([]byte{}, false)
+	password, err := password.GetPassword()
 	if err != nil {
 		return nil, err
 	}
