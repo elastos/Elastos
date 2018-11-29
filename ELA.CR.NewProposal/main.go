@@ -66,6 +66,7 @@ func main() {
 	//var blockChain *ledger.Blockchain
 	var err error
 	var noder protocol.Noder
+	var arbitrator dpos.Arbitrator
 	log.Info("Node version: ", config.Version)
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
@@ -85,7 +86,7 @@ func main() {
 
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
-		arbitrator, err := dpos.NewArbitrator()
+		arbitrator, err = dpos.NewArbitrator()
 		if err != nil {
 			goto ERROR
 		}
@@ -98,6 +99,7 @@ func main() {
 	noder = node.InitLocalNode()
 
 	servers.ServerNode = noder
+	servers.ServerNode.RegisterTxPoolListener(arbitrator)
 
 	log.Info("Start the RPC service")
 	go httpjsonrpc.StartRPCServer()

@@ -49,9 +49,10 @@ type dposNetwork struct {
 	messageQueue chan *messageItem
 	quit         chan bool
 
-	changeViewChan      chan bool
-	blockReceivedChan   chan blockItem
-	confirmReceivedChan chan *core.DPosProposalVoteSlot
+	changeViewChan        chan bool
+	blockReceivedChan     chan blockItem
+	confirmReceivedChan   chan *core.DPosProposalVoteSlot
+	illegalBlocksEvidence chan *core.DposIllegalBlocks
 }
 
 func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) {
@@ -76,6 +77,8 @@ func (n *dposNetwork) Start() {
 				n.blockReceived(blockItem.Block, blockItem.Confirmed)
 			case confirm := <-n.confirmReceivedChan:
 				n.confirmReceived(confirm)
+			case evidence := <-n.illegalBlocksEvidence:
+				n.illegalBlocksReceived(evidence)
 			case <-n.quit:
 				break out
 			}
@@ -219,6 +222,10 @@ func (n *dposNetwork) PostBlockReceivedTask(b *core.Block, confirmed bool) {
 	n.blockReceivedChan <- blockItem{b, confirmed}
 }
 
+func (n *dposNetwork) PostIllegalBlocksTask(i *core.DposIllegalBlocks) {
+	n.illegalBlocksEvidence <- i
+}
+
 func (n *dposNetwork) PostConfirmReceivedTask(p *core.DPosProposalVoteSlot) {
 	n.confirmReceivedChan <- p
 }
@@ -336,6 +343,10 @@ func (n *dposNetwork) blockReceived(b *core.Block, confirmed bool) {
 
 func (n *dposNetwork) confirmReceived(p *core.DPosProposalVoteSlot) {
 	n.listener.OnConfirmReceived(p)
+}
+
+func (n *dposNetwork) illegalBlocksReceived(i *core.DposIllegalBlocks) {
+	n.listener.OnIllegalBlocksReceived(i)
 }
 
 func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {

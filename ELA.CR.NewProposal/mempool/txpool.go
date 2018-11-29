@@ -13,6 +13,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 type TxPool struct {
@@ -22,6 +23,7 @@ type TxPool struct {
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
+	Listener        protocol.TxnPoolListener
 }
 
 func (pool *TxPool) Init() {
@@ -68,6 +70,11 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 		log.Debugf("Transaction duplicate %s", txn.Hash().String())
 		return ErrTransactionDuplicate
 	}
+
+	if pool.Listener != nil && txn.IsIllegalBlockTx() {
+		pool.Listener.OnIllegalBlockTxnReceived(txn)
+	}
+
 	return Success
 }
 

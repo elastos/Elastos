@@ -470,3 +470,11 @@ func (node *node) SetStopHash(hash Uint256) {
 func (node *node) GetStopHash() Uint256 {
 	return node.StopHash
 }
+
+func (node *node) RegisterTxPoolListener(listener protocol.TxnPoolListener) {
+	node.TxPool.Listener = listener
+}
+
+func (node *node) UnregisterTxPoolListener(listener protocol.TxnPoolListener) {
+	node.TxPool.Listener = nil
+}
