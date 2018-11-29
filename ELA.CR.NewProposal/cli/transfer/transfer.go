@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/util"
+	"github.com/elastos/Elastos.ELA/common/password"
 
 	"github.com/urfave/cli"
 )
@@ -19,7 +19,6 @@ func transferAction(context *cli.Context) error {
 
 	// wallet name is keystore.dat by default
 	name := context.String("name")
-	passwd := context.String("password")
 
 	// transaction actions
 	if param := context.String("transaction"); param != "" {
@@ -30,7 +29,7 @@ func transferAction(context *cli.Context) error {
 				os.Exit(701)
 			}
 		case "sign":
-			password, err := util.GetPassword([]byte(passwd), false)
+			password, err := password.GetPassword()
 			if err != nil {
 				return err
 			}
@@ -104,10 +103,6 @@ func NewCommand() *cli.Command {
 				Name:  "name, n",
 				Usage: "wallet name",
 				Value: account.KeystoreFileName,
-			},
-			cli.StringFlag{
-				Name:  "password, p",
-				Usage: "wallet password",
 			},
 		},
 		Action: transferAction,
