@@ -94,6 +94,13 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		}
 	}
 
+	if txn.IsIllegalBlockTx() {
+		if err := CheckIllegalBlocksTransaction(txn); err != nil {
+			log.Warn("[CheckIllegalBlocksTransaction],", err)
+			return ErrTransactionPayload
+		}
+	}
+
 	if txn.IsSideChainPowTx() {
 		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
@@ -243,7 +250,7 @@ func CheckTransactionInput(txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() {
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("illegal transactions must has no input")
 		}
@@ -302,7 +309,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() {
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -408,6 +415,22 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 	// Coinbase and illegal transactions do not check attribute and program
 	if tx.IsCoinBaseTx() {
 		return DefaultLedger.HeightVersions.CheckTxHasNoProgramsAndAttributes(blockHeight, tx)
+	}
+
+	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() {
+		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
+			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
+		}
+		return nil
+	}
+
+	if tx.IsIllegalBlockTx() {
+		if len(tx.Programs) != 1 {
+			return errors.New("illegal block transactions should have one and only one program")
+		}
+		if len(tx.Attributes) != 0 {
+			return errors.New("illegal block transactions should have no programs")
+		}
 	}
 
 	// Check attributes
@@ -699,6 +722,15 @@ func CheckIllegalVotesTransaction(txn *Transaction) error {
 	return checkDposIllegalVotes(&payload.DposIllegalVotes)
 }
 
+func CheckIllegalBlocksTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*PayloadIllegalBlock)
+	if !ok {
+		return errors.New("Invalid payload.")
+	}
+
+	return checkDposIllegalBlocks(&payload.DposIllegalBlocks)
+}
+
 func checkDposIllegalProposals(d *DposIllegalProposals) error {
 	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
 		return errors.New("proposal hash and block should match")
@@ -752,6 +784,38 @@ func checkDposIllegalVotes(d *DposIllegalVotes) error {
 	if !IsProposalValid(&d.Evidence.Proposal) || IsProposalValid(&d.CompareEvidence.Proposal) ||
 		!IsVoteValid(&d.Evidence.Vote) || IsVoteValid(&d.CompareEvidence.Vote) {
 		return errors.New("votes and related proposals should be valid")
+	}
+
+	return nil
+}
+
+func checkDposIllegalBlocks(d *DposIllegalBlocks) error {
+
+	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
+		return errors.New("blocks can not be same")
+	}
+
+	if d.CoinType == ELACoin {
+		header := Header{}
+		compareHeader := Header{}
+
+		data := new(bytes.Buffer)
+		data.Write(d.Evidence.Block)
+		if err := header.Deserialize(data); err != nil {
+			return err
+		}
+
+		data = new(bytes.Buffer)
+		data.Write(d.CompareEvidence.Block)
+		if err := compareHeader.Deserialize(data); err != nil {
+			return err
+		}
+
+		if header.Height != d.BlockHeight || compareHeader.Height != d.BlockHeight {
+			return errors.New("block data is illegal")
+		}
+
+		//todo check header content
 	}
 
 	return nil

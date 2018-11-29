@@ -51,6 +51,8 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadIllegalProposal)
 	case IllegalVoteEvidence:
 		p = new(PayloadIllegalVote)
+	case IllegalBlockEvidence:
+		p = new(PayloadIllegalBlock)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}
