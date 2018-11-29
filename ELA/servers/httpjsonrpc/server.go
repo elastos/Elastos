@@ -173,7 +173,7 @@ func convertParams(method string, params []interface{}) Params {
 	case "getarbitratorgroupbyheight":
 		return FromArray(params, "height")
 	case "togglemining":
-		return FromArray(params, "mine")
+		return FromArray(params, "mining")
 	case "discretemining":
 		return FromArray(params, "count")
 	case "sendrawtransaction":
