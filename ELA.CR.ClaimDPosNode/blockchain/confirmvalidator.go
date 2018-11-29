@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 func CheckConfirm(confirm *core.DPosProposalVoteSlot) error {

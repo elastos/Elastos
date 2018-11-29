@@ -3,7 +3,7 @@ package p2p
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"testing"
 	"time"
 

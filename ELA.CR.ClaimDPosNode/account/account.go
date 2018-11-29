@@ -6,7 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type Account struct {

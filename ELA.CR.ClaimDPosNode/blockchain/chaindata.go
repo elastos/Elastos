@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 // key: DATAHeader || block hash

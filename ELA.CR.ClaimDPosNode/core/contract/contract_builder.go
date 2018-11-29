@@ -6,7 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/vm"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 func CreateSignatureRedeemScript(pubkey *crypto.PublicKey) ([]byte, error) {
