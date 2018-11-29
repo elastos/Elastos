@@ -69,6 +69,8 @@ func (self TransactionType) Name() string {
 		return "IllegalProposalEvidence"
 	case IllegalVoteEvidence:
 		return "IllegalVoteEvidence"
+	case IllegalBlockEvidence:
+		return "IllegalBlockEvidence"
 	default:
 		return "Unknown"
 	}
@@ -311,6 +313,10 @@ func (tx *Transaction) IsIllegalProposalTx() bool {
 
 func (tx *Transaction) IsIllegalVoteTx() bool {
 	return tx.TxType == IllegalVoteEvidence
+}
+
+func (tx *Transaction) IsIllegalBlockTx() bool {
+	return tx.TxType == IllegalBlockEvidence
 }
 
 func (tx *Transaction) IsUpdateProducerTx() bool {

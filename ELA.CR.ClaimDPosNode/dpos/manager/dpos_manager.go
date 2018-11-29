@@ -258,11 +258,11 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 }
 
 func (d *dposManager) OnIllegalProposalReceived(id peer.PID, proposals *core.DposIllegalProposals) {
-	d.illegalMonitor.SetProposalEvidence(proposals)
+	d.illegalMonitor.AddProposalEvidence(proposals)
 }
 
 func (d *dposManager) OnIllegalVotesReceived(id peer.PID, votes *core.DposIllegalVotes) {
-	d.illegalMonitor.SetVoteEvidence(votes)
+	d.illegalMonitor.AddVoteEvidence(votes)
 }
 
 func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
