@@ -425,9 +425,9 @@ bool onChannelDataCallback(ElaSession* ws, int stream, int channel,
     }
     (*env)->SetByteArrayRegion(env, jdata, 0, (jsize)len, data);
 
-    if (!callVoidMethod(env, cc->clazz, cc->handler, "onChannelData",
-                        "("_S("Stream;I[B)Z"),
-                        &jresult, cc->object, channel, jdata)) {
+    if (!callBooleanMethod(env, cc->clazz, cc->handler, "onChannelData",
+                           "("_S("Stream;I[B)Z"),
+                           &jresult, cc->object, channel, jdata)) {
 
         logE("Call java callback 'boolean onChannelData(Stream, int, byte[])' error");
     }
