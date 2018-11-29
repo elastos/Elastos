@@ -5,7 +5,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type DposAccount interface {
