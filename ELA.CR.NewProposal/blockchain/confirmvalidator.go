@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"

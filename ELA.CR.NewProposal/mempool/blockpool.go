@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/common/log"
 )
 
 type BlockPool struct {
@@ -55,7 +55,7 @@ func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error
 	// confirm block
 	isConfirmed := true
 	if err := pool.ConfirmBlock(hash); err != nil {
-		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String(),"err: ",err)
+		log.Debug("[AppendBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
 		isConfirmed = false
 	}
 

@@ -5,7 +5,7 @@
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"math"
 	"sort"
 	"sync"

@@ -12,10 +12,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/events/signalset"
-	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/vm"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"

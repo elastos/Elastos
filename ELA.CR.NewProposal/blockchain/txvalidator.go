@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/crypto"

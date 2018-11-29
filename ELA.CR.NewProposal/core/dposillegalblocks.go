@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
