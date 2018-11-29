@@ -1,10 +1,10 @@
 package log
 
 import (
+	elaLog "github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	elaLog "github.com/elastos/Elastos.ELA/log"
 )
 
 const (
