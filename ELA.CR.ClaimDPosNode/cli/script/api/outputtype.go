@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
-	"github.com/elastos/Elastos.ELA/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/yuin/gopher-lua"
