@@ -451,11 +451,11 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 	height := DefaultLedger.Blockchain.GetBestHeight()
 	for i := uint32(0); i <= height; i++ {
-		hash, err := DefaultLedger.Store.GetBlockHash(height)
+		hash, err := c.GetBlockHash(height)
 		if err != nil {
 			return err
 		}
-		block, err := DefaultLedger.Store.GetBlock(hash)
+		block, err := c.GetBlock(hash)
 		if err != nil {
 			return err
 		}
@@ -480,7 +480,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 					}
 				}
 				for _, input := range tx.Inputs {
-					transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+					transaction, _, err := c.GetTransaction(input.Previous.TxID)
 					if err != nil {
 						return err
 					}
@@ -705,8 +705,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			}
 		}
 		if txn.TxType == UpdateProducer {
-			err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer))
-			if err != nil {
+			if err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
 				return err
 			}
 		}
@@ -719,7 +718,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				}
 			}
 			for _, input := range txn.Inputs {
-				transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+				transaction, _, err := c.GetTransaction(input.Previous.TxID)
 				if err != nil {
 					return err
 				}
@@ -729,6 +728,16 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 						return err
 					}
 				}
+			}
+		}
+		if txn.TxType == IllegalProposalEvidence {
+			if err := c.PersistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == IllegalVoteEvidence {
+			if err := c.PersistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
+				return err
 			}
 		}
 	}
@@ -773,7 +782,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				}
 			}
 			for _, input := range txn.Inputs {
-				transaction, _, err := DefaultLedger.Store.GetTransaction(input.Previous.TxID)
+				transaction, _, err := c.GetTransaction(input.Previous.TxID)
 				if err != nil {
 					return err
 				}
@@ -947,6 +956,74 @@ func (c *ChainStore) RollbackConfirm(b *Block) error {
 
 	c.BatchDelete(key.Bytes())
 	return nil
+}
+
+func (c *ChainStore) PersistIllegalProposal(payload *PayloadIllegalProposal) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DPOSIllegalProducer))
+
+	producers := c.getIllegalProducers()
+	producers[payload.Evidence.Proposal.Sponsor] = struct{}{}
+
+	value := new(bytes.Buffer)
+	if err := WriteUint64(value, uint64(len(producers))); err != nil {
+		return err
+	}
+
+	for k, _ := range producers {
+		if err := WriteVarString(value, k); err != nil {
+			return err
+		}
+	}
+
+	c.BatchPut(key.Bytes(), value.Bytes())
+	return nil
+}
+
+func (c *ChainStore) PersistIllegalVote(payload *PayloadIllegalVote) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DPOSIllegalProducer))
+
+	producers := c.getIllegalProducers()
+	producers[payload.Evidence.Vote.Signer] = struct{}{}
+
+	value := new(bytes.Buffer)
+	if err := WriteUint64(value, uint64(len(producers))); err != nil {
+		return err
+	}
+
+	for k, _ := range producers {
+		if err := WriteVarString(value, k); err != nil {
+			return err
+		}
+	}
+
+	c.BatchPut(key.Bytes(), value.Bytes())
+	return nil
+}
+
+func (c *ChainStore) getIllegalProducers() map[string]struct{} {
+	result := make(map[string]struct{})
+	key := []byte{byte(DPOSIllegalProducer)}
+	data, err := c.Get(key)
+	if err != nil {
+		return result
+	}
+	r := bytes.NewReader(data)
+	count, err := ReadUint64(r)
+	if err != nil {
+		return result
+	}
+
+	for i := uint64(0); i < count; i++ {
+		p, err := ReadVarString(r)
+		if err != nil {
+			return result
+		}
+		result[p] = struct{}{}
+	}
+
+	return result
 }
 
 func GetUint16Array(source []byte) ([]uint16, error) {

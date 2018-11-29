@@ -31,7 +31,10 @@ func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVo
 
 func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
 	log.Info("[Normal-ProcessRejectVote] start")
+	defer log.Info("[Normal-ProcessRejectVote] end")
+
 	if !h.consensus.IsRunning() {
+		log.Info("[Normal-ProcessRejectVote] consensus is not running")
 		return
 	}
 
