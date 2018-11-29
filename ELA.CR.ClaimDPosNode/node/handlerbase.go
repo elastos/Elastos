@@ -192,14 +192,22 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		addrs = LocalNode.RandSelectAddresses()
 	}
 
-	for i, addr := range addrs {
-		if h.node.NetAddress().String() == addr.String() {
-			// do not send client's address to the client itself
-			addrs = append(addrs[:i], addrs[i+1:]...)
+	repeatNum := 0
+	var uniqueAddrs []*p2p.NetAddress
+	for _, addr := range addrs {
+		// do not send client's address to the client itself
+		if h.node.NetAddress().String() != addr.String() {
+			uniqueAddrs = append(uniqueAddrs, addr)
+		} else {
+			repeatNum ++
+			if repeatNum > 1 {
+				log.Warn("more than one repeat:", repeatNum," ", repeatNum, " ", addr.String())
+			}
+
 		}
 	}
 
-	if len(addrs) > 0 {
+	if len(uniqueAddrs) > 0 {
 		h.node.SendMessage(msg.NewAddr(addrs))
 	}
 }
