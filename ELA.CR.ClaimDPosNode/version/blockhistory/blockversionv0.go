@@ -26,6 +26,15 @@ func (b *BlockVersionV0) GetVersion() uint32 {
 	return 0
 }
 
+func (b *BlockVersionV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
+	arbitrators := blockchain.DefaultLedger.Arbitrators.GetArbitrators()
+	height := blockchain.DefaultLedger.Store.GetHeight()
+	index := (height + offset) % uint32(len(arbitrators))
+	arbitrator := arbitrators[index]
+
+	return arbitrator
+}
+
 func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *core.Block) error {
 	return nil
 }

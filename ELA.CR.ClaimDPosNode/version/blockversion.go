@@ -22,6 +22,7 @@ type BlockVersion interface {
 	AddBlockConfirm(block *core.BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error
 	CheckConfirmedBlockOnFork(block *core.Block) error
+	GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte
 }
 
 type BlockVersionMain struct {
@@ -29,6 +30,14 @@ type BlockVersionMain struct {
 
 func (b *BlockVersionMain) GetVersion() uint32 {
 	return 1
+}
+
+func (b *BlockVersionMain) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
+	arbitrators := blockchain.DefaultLedger.Arbitrators.GetArbitrators()
+	index := (dutyChangedCount + offset) % uint32(len(arbitrators))
+	arbitrator := arbitrators[index]
+
+	return arbitrator
 }
 
 func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {

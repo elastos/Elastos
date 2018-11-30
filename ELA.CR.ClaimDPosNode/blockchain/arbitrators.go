@@ -156,12 +156,7 @@ func (a *arbitrators) GetOnDutyArbitrator() []byte {
 }
 
 func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	arbitrators := a.GetArbitrators()
-	height := DefaultLedger.Store.GetHeight()
-	index := (height + offset) % uint32(len(arbitrators))
-	arbitrator := arbitrators[index]
-
-	return arbitrator
+	return DefaultLedger.HeightVersions.GetNextOnDutyArbitrator(DefaultLedger.Blockchain.BlockHeight, a.dutyChangedCount, offset)
 }
 
 func (a *arbitrators) HasArbitersMajorityCount(num uint32) bool {
