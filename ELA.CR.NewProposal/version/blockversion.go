@@ -1,6 +1,7 @@
 package version
 
 import (
+	"bytes"
 	"errors"
 	"math"
 
@@ -20,6 +21,7 @@ type BlockVersion interface {
 	AddBlock(block *core.Block) error
 	AddBlockConfirm(block *core.BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error
+	CheckConfirmedBlockOnFork(block *core.Block) error
 }
 
 type BlockVersionMain struct {
@@ -27,6 +29,78 @@ type BlockVersionMain struct {
 
 func (b *BlockVersionMain) GetVersion() uint32 {
 	return 1
+}
+
+func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
+	anotherBlock, err := blockchain.DefaultLedger.GetBlockWithHeight(block.Height)
+	if err != nil {
+		return err
+	}
+
+	if block.Hash().IsEqual(anotherBlock.Hash()) {
+		return nil
+	}
+
+	evidence, err := b.generateBlockEvidence(block)
+	if err != nil {
+		return err
+	}
+
+	compareEvidence, err := b.generateBlockEvidence(anotherBlock)
+	if err != nil {
+		return err
+	}
+
+	illegalBlocks := &core.PayloadIllegalBlock{
+		DposIllegalBlocks: core.DposIllegalBlocks{
+			CoinType:        core.ELACoin,
+			BlockHeight:     block.Height,
+			Evidence:        *evidence,
+			CompareEvidence: *compareEvidence,
+		},
+	}
+	if err = blockchain.DefaultLedger.Store.PersistIllegalBlock(illegalBlocks, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *BlockVersionMain) generateBlockEvidence(block *core.Block) (*core.BlockEvidence, error) {
+	headerBuf := new(bytes.Buffer)
+	if err := block.Header.Serialize(headerBuf); err != nil {
+		return nil, err
+	}
+
+	confirm, err := blockchain.DefaultLedger.Store.GetConfirm(block.Hash())
+	if err != nil {
+		return nil, err
+	}
+	confirmBuf := new(bytes.Buffer)
+	if err = confirm.Serialize(confirmBuf); err != nil {
+		return nil, err
+	}
+	confirmSigners, err := b.getConfirmSigners(confirm)
+	if err != nil {
+		return nil, err
+	}
+
+	return &core.BlockEvidence{
+		Block:        headerBuf.Bytes(),
+		BlockConfirm: confirmBuf.Bytes(),
+		Signers:      confirmSigners,
+	}, nil
+}
+
+func (b *BlockVersionMain) getConfirmSigners(confirm *core.DPosProposalVoteSlot) ([][]byte, error) {
+	result := make([][]byte, 0)
+	for _, v := range confirm.Votes {
+		data, err := common.HexStringToBytes(v.Signer)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, data)
+	}
+	return result, nil
 }
 
 func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {

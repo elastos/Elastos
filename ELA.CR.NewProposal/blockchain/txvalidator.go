@@ -815,7 +815,7 @@ func checkDposIllegalBlocks(d *DposIllegalBlocks) error {
 			return errors.New("block data is illegal")
 		}
 
-		//todo check header content
+		//todo check block confirm and signers
 	}
 
 	return nil

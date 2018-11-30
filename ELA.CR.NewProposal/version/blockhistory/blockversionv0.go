@@ -26,6 +26,10 @@ func (b *BlockVersionV0) GetVersion() uint32 {
 	return 0
 }
 
+func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *core.Block) error {
+	return nil
+}
+
 func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	if len(originalArbitrators) == 0 {
 		return nil, errors.New("arbiters not configured")
