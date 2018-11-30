@@ -103,7 +103,7 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
           reason ? reason : "null");
 
     if (status != 0) {
-        assert(0 && "test client should confirm session request.\n");
+        vlogE("test client should confirm session request.\n");
         goto cleanup;
     }
 
