@@ -8,20 +8,20 @@
 
 #import "Carrier.h"
 #import <React/RCTLog.h>
+#import "RN_SESSION.h"
 
-
+NSString * const NSCustomErrorDomain = @"PLUGIN-ERROR";
 
 @interface Carrier () <ELACarrierDelegate>{
   BOOL _init;
   ELACarrierConnectionStatus connectStatus;
   ELACarrier *elaCarrier;
   
-  ELACarrierSessionManager *elaSessionManager;
-  ELACarrierStream *_stream;
-  ELACarrierStreamState _state;
   
   dispatch_queue_t managerCarrierQueue;
   CarrierSendEvent _callback;
+  
+  RN_SESSION *_rn_session;
 }
 @end
 
@@ -31,6 +31,11 @@
   return elaCarrier;
 }
 
+-(RN_SESSION *) getRNSessionInstance{
+  return _rn_session;
+}
+
+
 //-(ELACarrierSession *) getSessionInstance{
 //  return _session;
 //}
@@ -38,10 +43,9 @@
 - (instancetype)init {
   if (self = [super init]) {
     _init = NO;
-    _state = 0;
     connectStatus = ELACarrierConnectionStatusDisconnected;
     managerCarrierQueue = dispatch_queue_create("managerCarrierQueue", NULL);
-    [ELACarrier setLogLevel: ELACarrierLogLevelDebug];
+    [ELACarrier setLogLevel:ELACarrierLogLevelDebug];
     
   }
   return self;
@@ -96,7 +100,9 @@
       
       [ELACarrier initializeInstanceWithOptions:options delegate:self error:&error];
       elaCarrier = [ELACarrier getInstance];
-      elaSessionManager = [ELACarrierSessionManager getInstance:[self getIntance] error:nil];
+      
+      
+      
       _init = NO;
       if (elaCarrier == nil) {
         RCTLog(@"Create ELACarrier instance failed: %@", error);
@@ -110,7 +116,9 @@
     
     _init = [elaCarrier startWithIterateInterval:1000 error:&error];
     if (_init) {
+      [self setCallback:sendEvent];
       _callback = sendEvent;
+      _rn_session = [[RN_SESSION alloc] initWithCarrier:(id)self];
     }
     else {
       RCTLog(@"Start ELACarrier instance failed: %@", error);
@@ -142,80 +150,6 @@
   connectStatus = ELACarrierConnectionStatusDisconnected;
 }
 
-
--(ELACarrierSession *) newSession: (NSString *)name friendId:(NSString *)friendid{
-  
-  NSError *error = nil;
-  ELACarrierSession *session = [elaSessionManager newSessionTo:friendid error:&error];
-  
-  NSString *peer = [session getPeer];
-  RCTLog(@"%@", peer);
-    
-  ELACarrierStreamOptions options = ELACarrierStreamOptionReliable;
-
-//  NSError *error = nil;
-  if(_stream == nil){
-    _stream = [session addStreamWithType:ELACarrierStreamTypeApplication options:options delegate:(id)self error:&error];
-  }
-  
-  
-  
-  return session;
-}
-
-
-#pragma mark - ELACarrierStreamDelegate
--(void) carrierStream:(ELACarrierStream *)stream stateDidChange:(enum ELACarrierStreamState)newState{
-  RCTLog(@"Stream state: %d", (int)newState);
-  
-  if (stream != _stream || _state < 0) {
-    return;
-  }
-  
-  _state = newState;
-
-  NSDictionary *param = @{
-    @"type" : @"stateDidChange",
-    @"data" : @{
-    
-      @"newStatus" : [NSNumber numberWithInt:newStatus]
-    }
-  };
- _callback(carrier, param);
-  
-  switch (newState) {
-    case ELACarrierStreamStateInitialized:
-          [session sendInviteRequestWithResponseHandler:
-           ^(ELACarrierSession *session, NSInteger status, NSString *reason, NSString *sdp) {
-               RCTLog(@"Invite request response, stream state: %zd", status);
-               
-               if (status == 0) {
-                   NSError *error = nil;
-                   if (![session startWithRemoteSdp:sdp error:&error]) {
-                       RCTLog(@"Start session error: %@", error);
-                   }
-               }
-               else {
-                   RCTLog(@"Remote refused session invite: %d, sdp: %@", (int)status, reason);
-               }
-           } error:&error];
- 
-      break;
-      
-    case ELACarrierStreamStateConnected:
-
-      break;
-      
-    case ELACarrierStreamStateDeactivated:
-    case ELACarrierStreamStateClosed:
-    case ELACarrierStreamStateError:
-     
-      break;
-      
-    default:
-      break;
-  }
-}
 
 #pragma mark - ELACarrierDelegate
 -(void) carrier:(ELACarrier *)carrier connectionStatusDidChange:(enum ELACarrierConnectionStatus)newStatus{

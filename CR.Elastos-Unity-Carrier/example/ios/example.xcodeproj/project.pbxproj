@@ -36,9 +36,8 @@
 		2D16E6881FA4F8E400B85C8A /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D16E6891FA4F8E400B85C8A /* libReact.a */; };
 		2DCD954D1E0B4F2C00145EB5 /* exampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* exampleTests.m */; };
 		2DF0FFEE2056DD460020B375 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAD3EA31DF850E9000B6D8A /* libReact.a */; };
-		39F762CF21ACE2090019C968 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39F762CE21ACE2090019C968 /* ElastosCarrier.framework */; };
+		3950316B21B1065000101E8A /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3950316A21B1065000101E8A /* ElastosCarrier.framework */; };
 		4A054F0DFB4B49A7AAD5B5D8 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 306E361C7D3041A99404A1FC /* MaterialIcons.ttf */; };
-		73742FD9534148199DBD96A4 /* libCarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF18C7C13B4C75B37650AE /* libCarrier.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		95BBE211A11543378CFAABB9 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6100D298D4EF4BC4803379F2 /* Zocial.ttf */; };
 		9780D307EDAD4CB2B3A88C40 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 24F2AC216E8C4E04BE797850 /* Octicons.ttf */; };
@@ -366,8 +365,7 @@
 		2D02E4901E0B4A5D006451C7 /* example-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "example-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		306E361C7D3041A99404A1FC /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/native-base/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		394AA3BF21A3ED7700987B5A /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ElastosCarrier.framework; path = "../node_modules/react-native-elastos-carrier/ios/Carrier/ElastosCarrier.framework"; sourceTree = "<group>"; };
-		39F762CE21ACE2090019C968 /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ElastosCarrier.framework; path = ../../ios/Carrier/ElastosCarrier.framework; sourceTree = "<group>"; };
+		3950316A21B1065000101E8A /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ElastosCarrier.framework; path = ../../ios/Carrier/ElastosCarrier.framework; sourceTree = "<group>"; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
 		6100D298D4EF4BC4803379F2 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/native-base/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		6CB19B9CCCF04D84B0BCD892 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/native-base/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
@@ -380,7 +378,6 @@
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		B500FE397F1646459B82A8D4 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/native-base/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		C9633B29DE454D7E90FFC3FC /* Roboto_medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Roboto_medium.ttf; path = "../node_modules/native-base/Fonts/Roboto_medium.ttf"; sourceTree = "<group>"; };
-		EBFF18C7C13B4C75B37650AE /* libCarrier.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libCarrier.a; sourceTree = "<group>"; };
 		FBCD7ED8565D4156AC096FBE /* Carrier.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = Carrier.xcodeproj; path = "../node_modules/react-native-elastos-carrier/ios/Carrier/Carrier.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -397,7 +394,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39F762CF21ACE2090019C968 /* ElastosCarrier.framework in Frameworks */,
+				3950316B21B1065000101E8A /* ElastosCarrier.framework in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				11D1A2F320CAFA9E000508D9 /* libRCTAnimation.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
@@ -410,7 +407,6 @@
 				832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */,
 				00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */,
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
-				73742FD9534148199DBD96A4 /* libCarrier.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,8 +555,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				394AA3BF21A3ED7700987B5A /* ElastosCarrier.framework */,
-				39F762CE21ACE2090019C968 /* ElastosCarrier.framework */,
+				3950316A21B1065000101E8A /* ElastosCarrier.framework */,
 				2D16E6891FA4F8E400B85C8A /* libReact.a */,
 			);
 			name = Frameworks;
@@ -569,7 +564,6 @@
 		394AA31C21A3DC0C00987B5A /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				EBFF18C7C13B4C75B37650AE /* libCarrier.a */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -1331,10 +1325,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../node_modules/react-native-elastos-carrier/ios/**",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -1354,10 +1346,8 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../node_modules/react-native-elastos-carrier/ios/**",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (

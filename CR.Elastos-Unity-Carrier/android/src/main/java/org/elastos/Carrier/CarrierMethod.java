@@ -319,6 +319,14 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     }
 
     @ReactMethod
+    public void closeSession(String name, String friendId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.close(friendId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
     public void addService(String name, Callback cb){
         // TODO
         cb.invoke(null, "coming soon");

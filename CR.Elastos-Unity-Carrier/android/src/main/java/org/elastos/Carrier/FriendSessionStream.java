@@ -1,5 +1,6 @@
 package org.elastos.Carrier;
 
+import org.elastos.carrier.exceptions.ElastosException;
 import org.elastos.carrier.session.*;
 
 import java.util.HashMap;
@@ -51,6 +52,12 @@ public class FriendSessionStream {
         // TODO
 
         this.session.close();
+        try{
+            this.session.removeStream(this.stream);
+        }catch(ElastosException e){
+            e.getStackTrace();
+        }
+
         this.state = StreamState.Closed;
         FriendSessionStream.map.remove(this.id);
     }

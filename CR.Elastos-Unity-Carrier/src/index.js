@@ -139,6 +139,10 @@ const Carrier = class {
     return exec('removeStream', this.id, friendId);
   }
 
+  closeSession(friendId){
+    return exec('closeSession', this.id, friendId);
+  }
+
   // TODO
   addService(){}
   removeService(){}

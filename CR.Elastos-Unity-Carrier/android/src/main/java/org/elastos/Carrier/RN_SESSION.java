@@ -104,19 +104,19 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         }
     }
 
-    public FriendSessionStream getFriendSessionByFriendId(String frinedId){
-        FriendSessionStream fss = FriendSessionStream.map.get(frinedId);
+    public FriendSessionStream getFriendSessionByFriendId(String friendId){
+        FriendSessionStream fss = FriendSessionStream.map.get(friendId);
         if(fss == null){
-            fss = new FriendSessionStream(frinedId);
+            fss = new FriendSessionStream(friendId);
             try{
-                Session session = _manager.newSession(frinedId);
+                Session session = _manager.newSession(friendId);
                 fss.setSession(session);
             }catch(ElastosException e){
                 e.printStackTrace();
 
                 util.error(String.format("new session error (0x%x)", e.getErrorCode()));
             }
-            FriendSessionStream.map.put(frinedId, fss);
+            FriendSessionStream.map.put(friendId, fss);
         }
 
         return fss;
@@ -137,6 +137,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         }
 
     }
+
 
     public void sessionRequest(String friendId){
         // TODO check session state
