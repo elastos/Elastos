@@ -7,9 +7,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/contract"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type ArbitratorsConfig struct {
@@ -210,7 +210,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 
 	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
 	for index, v := range a.currentArbitrators {
-		hash, err := crypto.PublicKeyToStandardProgramHash(v)
+		hash, err := contract.PublicKeyToStandardProgramHash(v)
 		if err != nil {
 			return err
 		}
@@ -219,7 +219,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 
 	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
 	for index, v := range a.currentCandidates {
-		hash, err := crypto.PublicKeyToStandardProgramHash(v)
+		hash, err := contract.PublicKeyToStandardProgramHash(v)
 		if err != nil {
 			return err
 		}

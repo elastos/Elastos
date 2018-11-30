@@ -2,11 +2,8 @@ package crypto
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"errors"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"golang.org/x/crypto/ripemd160"
 )
 
 const (
@@ -23,37 +20,35 @@ const (
 	MinMultiSignCodeLength = 71
 )
 
-func ToProgramHash(code []byte) (*Uint168, error) {
-	if len(code) < 1 {
-		return nil, errors.New("[ToProgramHash] failed, empty program code")
-	}
-
-	sum168 := func(prefix byte, code []byte) []byte {
-		hash := sha256.Sum256(code)
-		md160 := ripemd160.New()
-		md160.Write(hash[:])
-		return md160.Sum([]byte{prefix})
-	}
-
-	switch code[len(code)-1] {
-	case STANDARD:
-		if len(code) != PublicKeyScriptLength {
-			return nil, errors.New("[ToProgramHash] error, not a valid checksig script")
-		}
-		return Uint168FromBytes(sum168(PrefixStandard, code))
-	case MULTISIG:
-		if len(code) < MinMultiSignCodeLength || (len(code)-3)%(PublicKeyScriptLength-1) != 0 {
-			return nil, errors.New("[ToProgramHash] error, not a valid multisig script")
-		}
-		return Uint168FromBytes(sum168(PrefixMultisig, code))
-	case CROSSCHAIN:
-		return Uint168FromBytes(sum168(PrefixCrossChain, code))
-	case REGISTERID:
-		return Uint168FromBytes(sum168(PrefixRegisterId, code))
-	default:
-		return nil, errors.New("[ToProgramHash] error, unknown script type")
-	}
-}
+//func ToProgramHash(code []byte) (*Uint168, error) {
+//	if len(code) < 1 {
+//		return nil, errors.New("[ToProgramHash] failed, empty program code")
+//	}
+//
+//	sum168 := func(prefix byte, code []byte) []byte {
+//		hash := sha256.Sum256(code)
+//		md160 := ripemd160.New()
+//		md160.Write(hash[:])
+//		return md160.Sum([]byte{prefix})
+//	}
+//
+//	switch code[len(code)-1] {
+//	case STANDARD:
+//		if len(code) != PublicKeyScriptLength {
+//			return nil, errors.New("[ToProgramHash] error, not a valid checksig script")
+//		}
+//		return Uint168FromBytes(sum168(PrefixStandard, code))
+//	case MULTISIG:
+//		if len(code) < MinMultiSignCodeLength || (len(code)-3)%(PublicKeyScriptLength-1) != 0 {
+//			return nil, errors.New("[ToProgramHash] error, not a valid multisig script")
+//		}
+//		return Uint168FromBytes(sum168(PrefixMultisig, code))
+//	case CROSSCHAIN:
+//		return Uint168FromBytes(sum168(PrefixCrossChain, code))
+//	default:
+//		return nil, errors.New("[ToProgramHash] error, unknown script type")
+//	}
+//}
 
 func CreateStandardRedeemScript(publicKey *PublicKey) ([]byte, error) {
 	content, err := publicKey.EncodePoint(true)
@@ -146,50 +141,6 @@ func GetScriptType(script []byte) (byte, error) {
 	return script[len(script)-1], nil
 }
 
-func GetSigner(code []byte) (*Uint168, error) {
-	if len(code) != PublicKeyScriptLength || code[len(code)-1] != STANDARD {
-		return nil, errors.New("not a valid standard transaction code, length not match")
-	}
-	// remove last byte STANDARD
-	code = code[:len(code)-1]
-	script := make([]byte, PublicKeyScriptLength)
-	copy(script, code[:PublicKeyScriptLength])
-
-	return ToProgramHash(script)
-}
-
-func GetCrossChainSigners(code []byte) ([]*Uint168, error) {
-	scripts, err := ParseCrossChainScript(code)
-	if err != nil {
-		return nil, err
-	}
-
-	var signers []*Uint168
-	for _, script := range scripts {
-		script = append(script, STANDARD)
-		hash, _ := ToProgramHash(script)
-		signers = append(signers, hash)
-	}
-
-	return signers, nil
-}
-
-func GetSigners(code []byte) ([]*Uint168, error) {
-	scripts, err := ParseMultisigScript(code)
-	if err != nil {
-		return nil, err
-	}
-
-	var signers []*Uint168
-	for _, script := range scripts {
-		script = append(script, STANDARD)
-		hash, _ := ToProgramHash(script)
-		signers = append(signers, hash)
-	}
-
-	return signers, nil
-}
-
 func GetM(code []byte) (uint, error) {
 	scriptType, err := GetScriptType(code)
 	if err != nil {
@@ -250,18 +201,4 @@ func AppendSignature(signerIndex int, signature, data, code, param []byte) ([]by
 	// Append new signature
 	param = append(param, byte(len(signature)))
 	return append(param, signature...), nil
-}
-
-func PublicKeyToStandardProgramHash(pubKey []byte) (*Uint168, error) {
-	public, err := DecodePoint(pubKey)
-	if err != nil {
-		return nil, err
-	}
-
-	redeemScript, err := CreateStandardRedeemScript(public)
-	if err != nil {
-		return nil, err
-	}
-
-	return ToProgramHash(redeemScript)
 }

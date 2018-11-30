@@ -2,9 +2,9 @@ package program
 
 import (
 	"bytes"
-	"encoding/binary"
 	"math/big"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
@@ -56,12 +56,12 @@ func (pb *Builder) PushData(data []byte) {
 		pb.buffer.Write(data[:])
 	} else if len(data) < 0x10000 {
 		pb.AddOp(vm.PUSHDATA2)
-		dataByte := IntToBytes(len(data))
+		dataByte := common.IntToBytes(len(data))
 		pb.buffer.Write(dataByte[0:2])
 		pb.buffer.Write(data[:])
 	} else {
 		pb.AddOp(vm.PUSHDATA4)
-		dataByte := IntToBytes(len(data))
+		dataByte := common.IntToBytes(len(data))
 		pb.buffer.Write(dataByte[0:4])
 		pb.buffer.Write(data[:])
 	}
@@ -69,18 +69,4 @@ func (pb *Builder) PushData(data []byte) {
 
 func (pb *Builder) ToArray() []byte {
 	return pb.buffer.Bytes()
-}
-
-func IntToBytes(n int) []byte {
-	tmp := int32(n)
-	bytesBuffer := bytes.NewBuffer([]byte{})
-	binary.Write(bytesBuffer, binary.LittleEndian, tmp)
-	return bytesBuffer.Bytes()
-}
-
-func BytesToInt16(b []byte) int16 {
-	bytesBuffer := bytes.NewBuffer(b)
-	var tmp int16
-	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return int16(tmp)
 }
