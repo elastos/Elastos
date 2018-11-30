@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"errors"
-
 	. "github.com/elastos/Elastos.ELA/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -33,6 +32,7 @@ type HeightVersions interface {
 	AddBlockConfirm(block *BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *Block, totalReward Fixed64) error
 	CheckConfirmedBlockOnFork(block *Block) error
+	GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte
 }
 
 // Ledger - the struct for ledger
