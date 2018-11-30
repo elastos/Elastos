@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		39859FCC219C515700DE141B /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC7219C515600DE141B /* CarrierPlugin.m */; };
-		39859FCE219C515700DE141B /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 39859FC9219C515600DE141B /* Carrier.m */; };
-		399BDD12219D37B200453AA7 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; };
-		399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 399BDD11219D37B200453AA7 /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3950313F21B1046600101E8A /* Carrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 3950313721B1046500101E8A /* Carrier.m */; };
+		3950314021B1046600101E8A /* RN_SESSION.m in Sources */ = {isa = PBXBuildFile; fileRef = 3950313921B1046500101E8A /* RN_SESSION.m */; };
+		3950314121B1046600101E8A /* CarrierPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 3950313C21B1046600101E8A /* CarrierPlugin.m */; };
+		3950314221B1046600101E8A /* FriendSessionStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 3950313E21B1046600101E8A /* FriendSessionStream.m */; };
+		395031E021B10E6300101E8A /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 395031DF21B10E6200101E8A /* ElastosCarrier.framework */; };
+		395031E121B10E6600101E8A /* ElastosCarrier.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 395031DF21B10E6200101E8A /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -20,19 +22,23 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				399BDD13219D37B900453AA7 /* ElastosCarrier.framework in CopyFiles */,
+				395031E121B10E6600101E8A /* ElastosCarrier.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3950313721B1046500101E8A /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
+		3950313821B1046500101E8A /* FriendSessionStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FriendSessionStream.h; sourceTree = "<group>"; };
+		3950313921B1046500101E8A /* RN_SESSION.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RN_SESSION.m; sourceTree = "<group>"; };
+		3950313A21B1046500101E8A /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
+		3950313B21B1046500101E8A /* RN_SESSION.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RN_SESSION.h; sourceTree = "<group>"; };
+		3950313C21B1046600101E8A /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
+		3950313D21B1046600101E8A /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
+		3950313E21B1046600101E8A /* FriendSessionStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FriendSessionStream.m; sourceTree = "<group>"; };
+		395031DF21B10E6200101E8A /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 		39859FBB219C512100DE141B /* libCarrier.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCarrier.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		39859FC7219C515600DE141B /* CarrierPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CarrierPlugin.m; sourceTree = "<group>"; };
-		39859FC9219C515600DE141B /* Carrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Carrier.m; sourceTree = "<group>"; };
-		39859FCA219C515600DE141B /* Carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Carrier.h; sourceTree = "<group>"; };
-		39859FCB219C515700DE141B /* CarrierPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CarrierPlugin.h; sourceTree = "<group>"; };
-		399BDD11219D37B200453AA7 /* ElastosCarrier.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ElastosCarrier.framework; sourceTree = "<group>"; };
 		39F7626321A68E5F0019C968 /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ElastosCarrier.h; path = ElastosCarrier.framework/Headers/ElastosCarrier.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -41,7 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				399BDD12219D37B200453AA7 /* ElastosCarrier.framework in Frameworks */,
+				395031E021B10E6300101E8A /* ElastosCarrier.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,11 +57,15 @@
 		39859FB2219C512100DE141B = {
 			isa = PBXGroup;
 			children = (
+				3950313A21B1046500101E8A /* Carrier.h */,
+				3950313721B1046500101E8A /* Carrier.m */,
+				3950313D21B1046600101E8A /* CarrierPlugin.h */,
+				3950313C21B1046600101E8A /* CarrierPlugin.m */,
+				3950313821B1046500101E8A /* FriendSessionStream.h */,
+				3950313E21B1046600101E8A /* FriendSessionStream.m */,
+				3950313B21B1046500101E8A /* RN_SESSION.h */,
+				3950313921B1046500101E8A /* RN_SESSION.m */,
 				39F7626321A68E5F0019C968 /* ElastosCarrier.h */,
-				39859FCA219C515600DE141B /* Carrier.h */,
-				39859FC9219C515600DE141B /* Carrier.m */,
-				39859FCB219C515700DE141B /* CarrierPlugin.h */,
-				39859FC7219C515600DE141B /* CarrierPlugin.m */,
 				39859FBC219C512100DE141B /* Products */,
 				399BDD0F219D378800453AA7 /* Frameworks */,
 			);
@@ -72,7 +82,7 @@
 		399BDD0F219D378800453AA7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				399BDD11219D37B200453AA7 /* ElastosCarrier.framework */,
+				395031DF21B10E6200101E8A /* ElastosCarrier.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -133,8 +143,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39859FCE219C515700DE141B /* Carrier.m in Sources */,
-				39859FCC219C515700DE141B /* CarrierPlugin.m in Sources */,
+				3950314221B1046600101E8A /* FriendSessionStream.m in Sources */,
+				3950314121B1046600101E8A /* CarrierPlugin.m in Sources */,
+				3950314021B1046600101E8A /* RN_SESSION.m in Sources */,
+				3950313F21B1046600101E8A /* Carrier.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,7 +284,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = arm64;
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Debug;
 		};
@@ -293,7 +305,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = arm64;
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Release;
 		};

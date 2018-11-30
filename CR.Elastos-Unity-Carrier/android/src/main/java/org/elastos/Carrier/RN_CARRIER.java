@@ -191,13 +191,13 @@ public class RN_CARRIER extends AbstractCarrierHandler {
         sendEvent("onFriendRequest", param);
     }
 
-//    @Override
-    public void onFriendMessage(Carrier carrier, String from, byte[] msg){
+    @Override
+    public void onFriendMessage(Carrier carrier, String from, String msg){
         util.log(String.format("[ onFriendMessage ] : %s, %s", from, msg));
 
         WritableMap param = Arguments.createMap();
         param.putString("userId", from);
-        param.putString("message", new String(msg));
+        param.putString("message", msg);
 
         sendEvent("onFriendMessage", param);
     }

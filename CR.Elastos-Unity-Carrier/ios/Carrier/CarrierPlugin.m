@@ -9,6 +9,8 @@
 #import "CarrierPlugin.h"
 #import <React/RCTLog.h>
 #import "Carrier.h"
+#import "RN_SESSION.h"
+
 
 #define NULL_ERR [NSNull null]
 
@@ -39,14 +41,13 @@ RCT_EXPORT_MODULE();
            @"onFriendMessage",
            @"onFriendInviteRequest",
            @"onSessionRequest",
-           
            @"onStateChanged",
            @"onStreamData",
-           @"onChannelOpen",
-           @"onChannelOpened",
-           @"onChannelClose",
-           @"onChannelData",
-           @"onChannelPending",
+           @"onChannelOpen", // TODO
+           @"onChannelOpened",  // TODO
+           @"onChannelClose",  // TODO
+           @"onChannelData",  // TODO
+           @"onChannelPending",  // TODO
            @"onChannelResume"
            ];
 }
@@ -303,12 +304,96 @@ RCT_EXPORT_METHOD
 }
 
 RCT_EXPORT_METHOD
-(createSession: (NSString *)cid :(NSString *)friendId :(RCTResponseSenderBlock)callback){
+(createSession: (NSString *)cid :(NSString *)friendId :(int)streamType :(int)streamMode :(RCTResponseSenderBlock)callback){
   Carrier *carrier = [self getCarrier:cid];
-  [carrier newSession:cid friendId:friendId];
+  RN_SESSION *_rn = [carrier getRNSessionInstance];
   
-  callback(@[NULL_ERR, OK]);
+  NSError *error = nil;
+  int streamId = [_rn start:friendId streamType:streamType streamMode:streamMode error:&error];
+  
+  if(error){
+    callback(@[[self create_error:error]]);
+  }
+  else{
+    callback(@[NULL_ERR, [NSNumber numberWithInt:streamId]]);
+  }
 }
+
+RCT_EXPORT_METHOD
+(sessionRequest: (NSString *)cid :(NSString *)friendId :(RCTResponseSenderBlock)callback){
+  Carrier *carrier = [self getCarrier:cid];
+  RN_SESSION *_rn = [carrier getRNSessionInstance];
+  
+  NSError *error = nil;
+  [_rn sessionRequest:friendId error:&error];
+  if(error){
+    callback(@[[self create_error:error]]);
+  }
+  else{
+    callback(@[NULL_ERR, OK]);
+  }
+}
+
+RCT_EXPORT_METHOD
+(sessionReplyRequest: (NSString *)cid :(NSString *)friendId :(int)status :(NSString *)reason :(RCTResponseSenderBlock)callback){
+  Carrier *carrier = [self getCarrier:cid];
+  RN_SESSION *_rn = [carrier getRNSessionInstance];
+  
+  NSError *error = nil;
+  [_rn sessionReplyRequest:friendId status:status reason:reason error:&error];
+  if(error){
+    callback(@[[self create_error:error]]);
+  }
+  else{
+    callback(@[NULL_ERR, OK]);
+  }
+}
+
+RCT_EXPORT_METHOD
+(writeStream: (NSString *)cid :(id)streamIdOrFriendId :(NSString *)data :(RCTResponseSenderBlock)callback){
+  Carrier *carrier = [self getCarrier:cid];
+  RN_SESSION *_rn = [carrier getRNSessionInstance];
+  FriendSessionStream *fss = nil;
+  
+  if([streamIdOrFriendId isKindOfClass:[NSString class]]){
+    fss = [FriendSessionStream getInstanceByFriendId:(NSString *)streamIdOrFriendId];
+  }
+//  else if([streamIdOrFriendId isKindOfClass:[NSNumber class]]){
+  else{
+    fss = [FriendSessionStream getInstanceByStreamId:[streamIdOrFriendId intValue]];
+  }
+  
+  if(fss == nil){
+    callback(@[@"invlide stream or friend id"]);
+    return;
+  }
+  
+  NSError *error = nil;
+  [_rn writeToStream:fss.stream data:data error:&error];
+  if(error){
+    callback(@[[self create_error:error]]);
+  }
+  else{
+    callback(@[NULL_ERR, OK]);
+  }
+}
+
+RCT_EXPORT_METHOD
+(closeSession: (NSString *)cid :(NSString *)friendId :(RCTResponseSenderBlock)callback){
+  Carrier *carrier = [self getCarrier:cid];
+  RN_SESSION *_rn = [carrier getRNSessionInstance];
+  
+  NSError *error = nil;
+  [_rn close:friendId error:&error];
+  
+  if(error){
+    callback(@[[self create_error:error]]);
+  }
+  else{
+    callback(@[NULL_ERR, OK]);
+  }
+}
+
 
 -(CarrierSendEvent) carrierCallback : (NSDictionary *)config{
   __weak __typeof(self) weakSelf = self;
@@ -347,6 +432,16 @@ RCT_EXPORT_METHOD
     }
     else if([type isEqualToString:@"didReceiveFriendRequestFromUser"]){
       [weakSelf didReceiveFriendRequestFromUser:data];
+    }
+    
+    else if([type isEqualToString:@"onStateChanged"]){
+      [weakSelf onStateChanged:data];
+    }
+    else if([type isEqualToString:@"onSessionRequest"]){
+      [weakSelf onSessionRequest:data];
+    }
+    else if([type isEqualToString:@"onStreamData"]){
+      [weakSelf onStreamData:data];
     }
 
   };
@@ -400,7 +495,15 @@ RCT_EXPORT_METHOD
                          };
   [self sendEventWithName:@"onFriendRequest" body:@[body]];
 }
-
+-(void) onStateChanged: (NSDictionary *)param{
+  [self sendEventWithName:@"onStateChanged" body:@[param]];
+}
+-(void) onSessionRequest: (NSDictionary *)param{
+  [self sendEventWithName:@"onSessionRequest" body:@[param]];
+}
+-(void) onStreamData: (NSDictionary *)param{
+  [self sendEventWithName:@"onStreamData" body:@[param]];
+}
 
 -(NSString *) create_error: (id)error{
   if([error isKindOfClass:[NSString class]]){

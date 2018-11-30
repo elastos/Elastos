@@ -1,11 +1,22 @@
 import React, {Component} from 'react';
 
-import {AppRegistry, StyleSheet, View, Image, ActionSheetIOS, NativeModules, AlertIOS} from 'react-native';
-import { Container, Header, Content, Footer, FooterTab, Button, Text } from 'native-base';
+import {AppRegistry, StyleSheet, View, Image, ActionSheetIOS, NativeModules, AlertIOS, Platform} from 'react-native';
+import {Root, Toast, Container, Header, Content, Footer, FooterTab, Button, Text } from 'native-base';
 
 import {Carrier} from 'react-native-elastos-carrier';
 
-const target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
+
+let targetAddress = 'DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc';
+let target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
+if(Platform.OS === 'ios'){
+  targetAddress = '7qMfNokEqAubtDiQ59i5iDyMfnnZ7V7AMGeVhwrC6cUHrWZYy2gd';
+  target = '47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM';
+}
+if(Platform.OS === 'android'){
+  targetAddress ='FFqmEuri4AQxD7w83pgLYwthSQhJ47XaAChyaARWnUji9rE86gUp';
+  target = '7VBxbJPczHZZwLfs4NhtUvv66CxyhMaSsbakpS8wjccw';
+}
+
 class App extends Component{
   constructor(){
     super();
@@ -20,15 +31,17 @@ class App extends Component{
   }
   render() {
     return (
+      <Root>
       <Container style={styles.container}>
         <Text style={styles.log}>{this.state.log.join('\n')}</Text>
-        <Text style={styles.error}>{this.state.error}</Text>
+        {/* <Text style={styles.error}>{this.state.error}</Text> */}
+        
 
         <Content>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
@@ -45,14 +58,14 @@ class App extends Component{
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
             <Text>acceptFriend</Text>
-          </Button> */}
+          </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getFriendInfo')}>
             <Text>getFriendInfo</Text>
           </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sendMessage')}>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sendMessage')}>
             <Text>sendMessage</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'close')}>
+          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'close')}>
             <Text>close</Text>
           </Button> */}
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'createSession')}>
@@ -67,10 +80,14 @@ class App extends Component{
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'writeStream')}>
             <Text>writeStream</Text>
           </Button>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'closeSession')}>
+            <Text>closeSession</Text>
+          </Button>
         </Content>
         
         
       </Container>
+      </Root>
     );
   }
 
@@ -90,8 +107,8 @@ class App extends Component{
         rs = await Carrier.getVersion();
         break;
       case 'isValidAddress':
-        tmp = await this.openPrompt('Enter an address');
-        rs = await Carrier.isValidAddress(tmp);
+        // tmp = await this.openPrompt('Enter an address');
+        rs = await Carrier.isValidAddress(targetAddress);
         rs = tmp + ' is a valid address => '+rs.toString();
         break;
       case 'getAddress':
@@ -114,7 +131,7 @@ class App extends Component{
         break;
       case 'addFriend':
         try{
-          rs = await this.carrier.addFriend('DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc', 'hello');
+          rs = await this.carrier.addFriend(target, 'hello');
           console.log(rs);
         }catch(e){
           this.setError(e);
@@ -122,14 +139,14 @@ class App extends Component{
         break;
       case 'acceptFriend':
         try{
-          rs = await this.carrier.acceptFriend('47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM');
+          rs = await this.carrier.acceptFriend(target);
         }catch(e){
           this.setError(e);
         }
         break;
       case 'getFriendInfo':
         try{
-          tmp = await this.carrier.getFriendInfo('6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy');
+          tmp = await this.carrier.getFriendInfo(target);
           rs = JSON.stringify(tmp);
         }catch(e){
           this.setError(e);
@@ -137,7 +154,7 @@ class App extends Component{
         break;
       case 'sendMessage':
         try{
-          rs = await this.carrier.sendMessage('47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM', 'adsfsfdsf');
+          rs = await this.carrier.sendMessage(target, 'adsfsfdsf');
         }catch(e){
           this.setError(e);
         }
@@ -174,12 +191,19 @@ class App extends Component{
         break;
       case 'writeStream':
         try{
-          const buf = new Buffer('hello word')
-          rs = await this.carrier.writeStream(target, buf.toString())
+          // const buf = new Buffer('hello word')
+          rs = await this.carrier.writeStream(target, 'sljfdlsjflsj');
         }catch(e){
           this.setError(e);
         }
 
+        break;
+      case 'closeSession':
+        try{
+          rs = await this.carrier.closeSession(target);
+        }catch(e){
+          this.setError(e);
+        }
         break;
     }
     if(rs || _.isString(rs)){
@@ -194,10 +218,17 @@ class App extends Component{
     this.setState({log : mlog});
   }
   setError(error){
-    this.setState({error});
+    // this.setState({error});
+    Toast.show({
+      text : error,
+      type : 'danger'
+    })
   }
 
   async componentDidMount(){
+    this.setLog('Address : '+targetAddress);
+    this.setLog('userid : '+target);
+
     this.carrier = new Carrier('carrier_demo', {
       onReady : ()=>{
         this.setLog('carrier is ready');

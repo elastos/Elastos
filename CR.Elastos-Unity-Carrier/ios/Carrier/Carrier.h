@@ -7,23 +7,24 @@
 //
 #import <Foundation/Foundation.h>
 #import <ElastosCarrier/ElastosCarrier.h>
-//#import "ElastosCarrier.h";
 
-#import <UIKit/UIKit.h>
+//#import "RN_SESSION.h"
 
-//! Project version number for Carrier.
-FOUNDATION_EXPORT double CarrierVersionNumber;
+FOUNDATION_EXPORT NSErrorDomain const NSCustomErrorDomain;
 
-//! Project version string for Carrier.
-FOUNDATION_EXPORT const unsigned char CarrierVersionString[];
-
+@class RN_SESSION;
 @interface Carrier : NSObject
 
 typedef void (^CarrierSendEvent)(ELACarrier *carrier, NSDictionary *param);
 
+@property(copy) CarrierSendEvent callback;
+
 -(void) start:(NSDictionary *)config sendEvent:(CarrierSendEvent)sendEvent completion:(void (^)(NSError *error))completion;
 -(ELACarrier *) getIntance;
--(ELACarrierSession *) newSession: (NSString *)name friendId:(NSString *)friendId;
+-(RN_SESSION *) getRNSessionInstance;
+
+
 -(void) clean: (NSString *)name;
 -(void) close;
+
 @end
