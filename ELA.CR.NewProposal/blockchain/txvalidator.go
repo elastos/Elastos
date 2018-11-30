@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/errors"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/crypto"
+	. "github.com/elastos/Elastos.ELA/errors"
 )
 
 const (
@@ -451,7 +452,7 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		if program.Parameter == nil {
 			return fmt.Errorf("invalid program parameter nil")
 		}
-		_, err := ToProgramHash(program.Code)
+		_, err := contract.PublicKeyToStandardProgramHash(program.Code)
 		if err != nil {
 			return fmt.Errorf("invalid program code %x", program.Code)
 		}
@@ -460,7 +461,7 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 }
 
 func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
-	hashes, err := GetTxProgramHashes(tx, references)
+	programHashes, err := GetTxProgramHashes(tx, references)
 	if err != nil {
 		return err
 	}
@@ -468,11 +469,11 @@ func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) e
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
 
-	// Sort first
-	SortProgramHashes(hashes)
+	// sort the program hashes of owner and programs of the transaction
+	common.SortProgramHashByCodeHash(programHashes)
 	SortPrograms(tx.Programs)
 
-	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
+	return RunPrograms(buf.Bytes(), programHashes, tx.Programs)
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {
@@ -643,7 +644,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := ToProgramHash(program.Code)
+		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code)
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
@@ -680,7 +681,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := ToProgramHash(program.Code)
+		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code)
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
