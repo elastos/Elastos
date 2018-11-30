@@ -100,7 +100,7 @@ func (s *StateMachine) CreateAsset(engine *avm.ExecutionEngine) bool {
 		Admin:      *admin,
 		Issuer:     *issue,
 		Owner:      owner,
-		Expiration: blockchain.DefaultChain.GetBestHeight() + 1 + 2000000,
+		Expiration: blockchain.DefaultChain.BestChain.Height + 1 + 2000000,
 		IsFrozen:   false,
 	}
 	s.CloneCache.GetInnerCache().GetWriteSet().Add(states.ST_AssetState, string(assetID.Bytes()), assetState)
@@ -264,7 +264,7 @@ func (s *StateMachine) AssetRenew(engine *avm.ExecutionEngine) bool {
 	data := avm.PopInteropInterface(engine)
 	years := avm.PopInt(engine)
 	at := data.(*states.AssetState)
-	height := blockchain.DefaultChain.GetBestHeight() + 1
+	height := blockchain.DefaultChain.BestChain.Height + 1
 	b := new(bytes.Buffer)
 	at.AssetId.Serialize(b)
 	state, err := s.CloneCache.TryGet(states.ST_AssetState, b.String())
@@ -276,7 +276,12 @@ func (s *StateMachine) AssetRenew(engine *avm.ExecutionEngine) bool {
 	if assetState.Expiration < height {
 		assetState.Expiration = height
 	}
+	expiration := assetState.Expiration
 	assetState.Expiration += uint32(years) * 2000000
+	if assetState.Expiration - expiration !=  uint32(years) * 2000000 {
+		assetState.Expiration = math.MaxInt32
+	}
+	avm.PushData(engine, assetState)
 	return true
 }
 
