@@ -113,6 +113,13 @@ func (h *heightVersions) AssignCoinbaseTxRewards(block *core.Block, totalReward 
 	})
 }
 
+func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte {
+	heightKey := h.findLastAvailableHeightKey(blockHeight)
+	info := h.versions[heightKey]
+
+	return info.CompatibleBlockVersions[info.DefaultBlockVersion].GetNextOnDutyArbitrator(dutyChangedCount, offset)
+}
+
 func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun TxCheckMethod) error {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
