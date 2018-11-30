@@ -197,6 +197,9 @@ func (b *Blockchain) AddBlock(block *Block) (bool, bool, error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	if err := DefaultLedger.HeightVersions.CheckConfirmedBlockOnFork(block); err != nil {
+		return false, false, err
+	}
 	inMainChain, isOrphan, err := b.ProcessBlock(block)
 	if err != nil {
 		return false, false, err

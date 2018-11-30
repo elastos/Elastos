@@ -26,6 +26,7 @@ type Arbitrators interface {
 	NewBlocksListener
 
 	StartUp() error
+	ForceChange() error
 
 	GetArbitrators() [][]byte
 	GetCandidates() [][]byte
@@ -62,6 +63,11 @@ type arbitrators struct {
 }
 
 func (a *arbitrators) StartUp() error {
+	//todo load persisted current and next arbitrators, initialize currentArbitratorsProgramHashes and currentCandidatesProgramHashes
+	return nil
+}
+
+func (a *arbitrators) ForceChange() error {
 	block, err := DefaultLedger.GetBlockWithHeight(DefaultLedger.Blockchain.BlockHeight)
 	if err != nil {
 		return err
@@ -73,6 +79,10 @@ func (a *arbitrators) StartUp() error {
 
 	if err = a.changeCurrentArbitrators(); err != nil {
 		return err
+	}
+
+	if a.listener != nil {
+		a.listener.OnNewElection()
 	}
 
 	return nil
