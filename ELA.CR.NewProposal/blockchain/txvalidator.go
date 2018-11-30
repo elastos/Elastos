@@ -728,7 +728,7 @@ func CheckIllegalBlocksTransaction(txn *Transaction) error {
 		return errors.New("Invalid payload.")
 	}
 
-	return checkDposIllegalBlocks(&payload.DposIllegalBlocks)
+	return CheckDposIllegalBlocks(&payload.DposIllegalBlocks)
 }
 
 func checkDposIllegalProposals(d *DposIllegalProposals) error {
@@ -789,34 +789,140 @@ func checkDposIllegalVotes(d *DposIllegalVotes) error {
 	return nil
 }
 
-func checkDposIllegalBlocks(d *DposIllegalBlocks) error {
+func CheckDposIllegalBlocks(d *DposIllegalBlocks) error {
 
 	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
 		return errors.New("blocks can not be same")
 	}
 
 	if d.CoinType == ELACoin {
-		header := Header{}
-		compareHeader := Header{}
+		var err error
+		var header, compareHeader *Header
+		var confirm, compareConfirm *DPosProposalVoteSlot
 
-		data := new(bytes.Buffer)
-		data.Write(d.Evidence.Block)
-		if err := header.Deserialize(data); err != nil {
+		if header, compareHeader, err = checkDposElaIllegalBlockHeaders(d); err != nil {
 			return err
 		}
 
-		data = new(bytes.Buffer)
-		data.Write(d.CompareEvidence.Block)
-		if err := compareHeader.Deserialize(data); err != nil {
+		if confirm, compareConfirm, err = checkDposElaIllegalBlockConfirms(d, header, compareHeader); err != nil {
 			return err
 		}
 
-		if header.Height != d.BlockHeight || compareHeader.Height != d.BlockHeight {
-			return errors.New("block data is illegal")
+		if err := checkDposElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
+			return err
 		}
-
-		//todo check block confirm and signers
 	}
 
 	return nil
+}
+
+func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposalVoteSlot, compareConfirm *DPosProposalVoteSlot) error {
+	signers := d.Evidence.Signers
+	compareSigners := d.CompareEvidence.Signers
+
+	if uint32(len(signers)) < config.Parameters.ArbiterConfiguration.MajorityCount ||
+		uint32(len(compareSigners)) < config.Parameters.ArbiterConfiguration.MajorityCount {
+		return errors.New("Signers count less than dpos required majority count")
+	}
+
+	arbitratorsSet := make(map[string]interface{})
+	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
+		arbitratorsSet[BytesToHexString(v)] = nil
+	}
+
+	for _, v := range signers {
+		if _, ok := arbitratorsSet[BytesToHexString(v)]; !ok {
+			return errors.New("Invalid signers within evidence.")
+		}
+	}
+
+	for _, v := range compareSigners {
+		if _, ok := arbitratorsSet[BytesToHexString(v)]; !ok {
+			return errors.New("Invalid signers within evidence.")
+		}
+	}
+
+	confirmSigners := getConfirmSigners(confirm)
+	for _, v := range signers {
+		if _, ok := confirmSigners[BytesToHexString(v)]; !ok {
+			return errors.New("Signers and confirm votes do not match.")
+		}
+	}
+
+	compareConfirmSigners := getConfirmSigners(compareConfirm)
+	for _, v := range signers {
+		if _, ok := compareConfirmSigners[BytesToHexString(v)]; !ok {
+			return errors.New("Signers and confirm votes do not match.")
+		}
+	}
+
+	return nil
+}
+
+func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, compareHeader *Header) (*DPosProposalVoteSlot, *DPosProposalVoteSlot, error) {
+	confirm := &DPosProposalVoteSlot{}
+	compareConfirm := &DPosProposalVoteSlot{}
+
+	data := new(bytes.Buffer)
+	data.Write(d.Evidence.BlockConfirm)
+	if err := confirm.Deserialize(data); err != nil {
+		return nil, nil, err
+	}
+
+	data = new(bytes.Buffer)
+	data.Write(d.CompareEvidence.BlockConfirm)
+	if err := compareConfirm.Deserialize(data); err != nil {
+		return nil, nil, err
+	}
+
+	if err := CheckConfirm(confirm); err != nil {
+		return nil, nil, err
+	}
+
+	if err := CheckConfirm(compareConfirm); err != nil {
+		return nil, nil, err
+	}
+
+	if !confirm.Hash.IsEqual(header.Hash()) {
+		return nil, nil, errors.New("block and related confirm do not match")
+	}
+
+	if !compareConfirm.Hash.IsEqual(compareHeader.Hash()) {
+		return nil, nil, errors.New("block and related confirm do not match")
+	}
+
+	return confirm, compareConfirm, nil
+}
+
+func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, error) {
+	header := &Header{}
+	compareHeader := &Header{}
+
+	data := new(bytes.Buffer)
+	data.Write(d.Evidence.Block)
+	if err := header.Deserialize(data); err != nil {
+		return nil, nil, err
+	}
+
+	data = new(bytes.Buffer)
+	data.Write(d.CompareEvidence.Block)
+	if err := compareHeader.Deserialize(data); err != nil {
+		return nil, nil, err
+	}
+
+	if header.Height != d.BlockHeight || compareHeader.Height != d.BlockHeight {
+		return nil, nil, errors.New("block data is illegal")
+	}
+
+	//todo check header content
+
+	return header, compareHeader, nil
+}
+
+func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
+	result := make(map[string]interface{})
+	for _, v := range confirm.Votes {
+		result[v.Signer] = nil
+	}
+	return result
 }
