@@ -47,12 +47,12 @@ type ClientImpl struct {
 	FileStore
 }
 
-func Create(path string, password []byte) (*ClientImpl, error) {
+func Create(path string, password []byte, accountType string) (*ClientImpl, error) {
 	client := NewClient(path, password, true)
 	if client == nil {
 		return nil, errors.New("client nil")
 	}
-	account, err := client.CreateAccount()
+	account, err := client.CreateAccount(accountType)
 	if err != nil {
 		return nil, err
 	}
@@ -267,8 +267,8 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 }
 
 // CreateAccount create a new Account then save it
-func (cl *ClientImpl) CreateAccount() (*Account, error) {
-	account, err := NewAccount()
+func (cl *ClientImpl) CreateAccount(accountType string) (*Account, error) {
+	account, err := NewAccount(accountType)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func (cl *ClientImpl) verifyPasswordKey(passwordKey []byte) bool {
 	return true
 }
 
-func (client *ClientImpl) ProcessSignals() {
+func (cl *ClientImpl) ProcessSignals() {
 	clientSignalHandler := func(signal os.Signal, v interface{}) {
 		switch signal {
 		case syscall.SIGINT:
@@ -396,7 +396,7 @@ func (client *ClientImpl) ProcessSignals() {
 			log.Info("Caught termination signal, program exits.")
 		}
 		// hold the mutex lock to prevent any wallet db changes
-		client.FileStore.Lock()
+		cl.FileStore.Lock()
 		os.Exit(0)
 	}
 	signalSet := signalset.New()

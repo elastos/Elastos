@@ -17,13 +17,33 @@ type Account struct {
 	Address     string
 }
 
-func NewAccount() (*Account, error) {
+func NewAccount(accountType string) (*Account, error) {
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
-	if err != nil {
-		return nil, err
+
+	var err error
+	var ct *contract.Contract
+	switch accountType {
+	case "standard":
+		ct, err = contract.CreateStandardContractByPubKey(pubKey)
+		if err != nil {
+			return nil, err
+		}
+	case "multisig":
+		//ct, err := contract.CreateMultiSigContractByPubKey(pubKey)
+		//if err != nil {
+		//	return nil, err
+		//}
+	case "sidechian":
+	case "pledge":
+		ct, err = contract.CreatePledgeContractByPubKey(pubKey)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("account type not found")
 	}
-	programHash, err := signatureContract.ToProgramHash()
+
+	programHash, err := ct.ToProgramHash()
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +56,7 @@ func NewAccount() (*Account, error) {
 		PrivateKey:  priKey,
 		PublicKey:   pubKey,
 		ProgramHash: *programHash,
-		Contract:    *signatureContract,
+		Contract:    *ct,
 		Address:     address,
 	}, nil
 }

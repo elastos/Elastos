@@ -27,7 +27,7 @@ func newClient(L *lua.LState) int {
 	create := L.ToBool(3)
 	var wallet *account.ClientImpl
 	if create {
-		wallet, _ = account.Create(name, []byte(pwd))
+		wallet, _ = account.Create(name, []byte(pwd), "standard")
 	} else {
 		wallet, _ = account.Open(name, []byte(pwd))
 	}

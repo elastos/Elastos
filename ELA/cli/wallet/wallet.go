@@ -26,7 +26,7 @@ func getConfirmedPassword(passwd string) []byte {
 	return tmp
 }
 
-func createWallet(name string, password []byte) error {
+func createWallet(name string, password []byte, accountType string) error {
 	var err error
 	if password == nil {
 		password, err = pwd.GetConfirmedPassword()
@@ -35,7 +35,7 @@ func createWallet(name string, password []byte) error {
 		}
 	}
 
-	client, err := account.Create(name, password)
+	client, err := account.Create(name, password, accountType)
 	if err != nil {
 		return err
 	}
@@ -53,8 +53,17 @@ func walletAction(context *cli.Context) error {
 	passwd := context.String("password")
 
 	// create wallet
-	if context.Bool("create") {
-		if err := createWallet(name, []byte(passwd)); err != nil {
+	if accType := context.String("create"); accType != "" {
+		switch accType {
+		case "standard":
+		case "multisig":
+		case "sidechain":
+		case "pledge":
+		default:
+			fmt.Println("error: account type not found")
+			cli.ShowCommandHelpAndExit(context, "create", 1)
+		}
+		if err := createWallet(name, []byte(passwd), accType); err != nil {
 			fmt.Println("error: create wallet failed,", err)
 			cli.ShowCommandHelpAndExit(context, "create", 1)
 		}
@@ -95,9 +104,10 @@ func NewCommand() *cli.Command {
 		Description: "With ela-cli wallet, you could control your asset.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			cli.StringFlag{
 				Name:  "create, c",
-				Usage: "create wallet",
+				Usage: "use [standard, multisig, sidechain, pledge] to create wallet",
+				Value: "standard",
 			},
 			cli.BoolFlag{
 				Name:  "list, l",
