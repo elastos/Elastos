@@ -35,11 +35,11 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const CMBlock &GetEncryptedKey() const;
+			virtual const std::string &GetEncryptedKey() const;
 
-			virtual const CMBlock &GetEncryptedMnemonic() const;
+			virtual const std::string &GetEncryptedMnemonic() const;
 
-			virtual const CMBlock &GetEncryptedPhrasePassword() const;
+			virtual const std::string &GetEncryptedPhrasePassword() const;
 
 			virtual const std::string &GetPublicKey() const;
 
@@ -62,8 +62,9 @@ namespace Elastos {
 
 		private:
 
+			std::string _emptyString;
 			std::string _publicKey;
-			CMBlock _encryptedKey;
+			std::string _encryptedKey; // encode with base64
 		};
 
 	}

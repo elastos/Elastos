@@ -1,116 +1,123 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+   base64.cpp and base64.h
 
-#include <assert.h>
-#include <string.h>
-#include <vector>
+   base64 encoding and decoding with C++.
+
+   Version: 1.01.00
+
+   Copyright (C) 2004-2017 René Nyffenegger
+
+   This source code is provided 'as-is', without any express or implied
+   warranty. In no event will the author be held liable for any damages
+   arising from the use of this software.
+
+   Permission is granted to anyone to use this software for any purpose,
+   including commercial applications, and to alter it and redistribute it
+   freely, subject to the following restrictions:
+
+   1. The origin of this source code must not be misrepresented; you must not
+      claim that you wrote the original source code. If you use this source code
+      in a product, an acknowledgment in the product documentation would be
+      appreciated but is not required.
+
+   2. Altered source versions must be plainly marked as such, and must not be
+      misrepresented as being the original source code.
+
+   3. This notice may not be removed or altered from any source distribution.
+
+   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+
+*/
 
 #include "Base64.h"
 
+#include <SDK/Wrapper/ByteStream.h>
+
 namespace Elastos {
 	namespace ElaWallet {
-		static std::string _Encode(const unsigned char *Data, size_t DataByte) {
-			//Encodeing table
-			static const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-			//return value
-			std::string strEncode;
-			unsigned char Tmp[4] = {0};
-			size_t LineLength = 0;
-			for (size_t i = 0; i < (size_t) (DataByte / 3); i++) {
-				Tmp[1] = *Data++;
-				Tmp[2] = *Data++;
-				Tmp[3] = *Data++;
-				strEncode += EncodeTable[Tmp[1] >> 2];
-				strEncode += EncodeTable[((Tmp[1] << 4) | (Tmp[2] >> 4)) & 0x3F];
-				strEncode += EncodeTable[((Tmp[2] << 2) | (Tmp[3] >> 6)) & 0x3F];
-				strEncode += EncodeTable[Tmp[3] & 0x3F];
-				if (LineLength += 4, LineLength == 76) {
-					strEncode += "\r\n";
-					LineLength = 0;
-				}
-			}
-			//Encode surplus
-			size_t Mod = DataByte % 3;
-			if (Mod == 1) {
-				Tmp[1] = *Data++;
-				strEncode += EncodeTable[(Tmp[1] & 0xFC) >> 2];
-				strEncode += EncodeTable[((Tmp[1] & 0x03) << 4)];
-				strEncode += "==";
-			} else if (Mod == 2) {
-				Tmp[1] = *Data++;
-				Tmp[2] = *Data++;
-				strEncode += EncodeTable[(Tmp[1] & 0xFC) >> 2];
-				strEncode += EncodeTable[((Tmp[1] & 0x03) << 4) | ((Tmp[2] & 0xF0) >> 4)];
-				strEncode += EncodeTable[((Tmp[2] & 0x0F) << 2)];
-				strEncode += "=";
-			}
 
-			return strEncode;
-		}
+		static const std::string base64_chars =
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz"
+			"0123456789+/";
 
-		static std::string _Decode(const char *Data, size_t DataByte, size_t &OutByte) {
-			//Decoding table
-			static const char DecodeTable[] =
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					62, // '+'
-					0, 0, 0,
-					63, // '/'
-					52, 53, 54, 55, 56, 57, 58, 59, 60, 61, // '0'-'9'
-					0, 0, 0, 0, 0, 0, 0,
-					0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-					13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, // 'A'-'Z'
-					0, 0, 0, 0, 0, 0,
-					26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-					39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, // 'a'-'z'
-				};
-			//return value
-			std::string strDecode;
-			size_t nValue;
-			size_t i = 0;
-			while (i < DataByte) {
-				if (*Data != '\r' && *Data != '\n') {
-					nValue = DecodeTable[*Data++] << 18;
-					nValue += DecodeTable[*Data++] << 12;
-					strDecode += (nValue & 0x00FF0000) >> 16;
-					OutByte++;
-					if (*Data != '=') {
-						nValue += DecodeTable[*Data++] << 6;
-						strDecode += (nValue & 0x0000FF00) >> 8;
-						OutByte++;
-						if (*Data != '=') {
-							nValue += DecodeTable[*Data++];
-							strDecode += nValue & 0x000000FF;
-							OutByte++;
-						}
-					}
-					i += 4;
-				} else// \r\n
-				{
-					Data++;
-					i++;
+		std::string Base64::Encode(const CMBlock &input) {
+			std::string ret;
+			int i = 0;
+			int j = 0;
+			unsigned char char_array_3[3];
+			unsigned char char_array_4[4];
+			size_t in_len = input.GetSize();
+			unsigned char *bytes_to_encode = (unsigned char *)input;
+
+			while (in_len--) {
+				char_array_3[i++] = *(bytes_to_encode++);
+				if (i == 3) {
+					char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+					char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+					char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+					char_array_4[3] = char_array_3[2] & 0x3f;
+
+					for(i = 0; (i <4) ; i++)
+						ret += base64_chars[char_array_4[i]];
+					i = 0;
 				}
 			}
 
-			return strDecode;
-		}
+			if (i)
+			{
+				for(j = i; j < 3; j++)
+					char_array_3[j] = '\0';
 
-		std::vector<unsigned char> Base64::toBits(const std::string &base64Str) {
-			std::string dec;
-			size_t OutByte;
+				char_array_4[0] = ( char_array_3[0] & 0xfc) >> 2;
+				char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+				char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
 
-			dec = _Decode(base64Str.c_str(), base64Str.size(), OutByte);
-			std::vector<unsigned char> ret;
-			ret.resize(dec.size());
-			memcpy(ret.data(), dec.c_str(), dec.size());
+				for (j = 0; (j < i + 1); j++)
+					ret += base64_chars[char_array_4[j]];
 
+				while((i++ < 3))
+					ret += '=';
+
+			}
 			return ret;
 		}
 
-		std::string Base64::fromBits(const unsigned char *bitArray, size_t length) {
-			return _Encode(bitArray, length);
+		CMBlock Base64::Decode(const std::string &encoded_string) {
+			int in_len = encoded_string.size();
+			int i = 0;
+			int j = 0;
+			int in_ = 0;
+			unsigned char char_array_4[4], char_array_3[3];
+			ByteStream stream;
+
+			while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+				char_array_4[i++] = encoded_string[in_]; in_++;
+				if (i ==4) {
+					for (i = 0; i <4; i++)
+						char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+					char_array_3[0] = ( char_array_4[0] << 2       ) + ((char_array_4[1] & 0x30) >> 4);
+					char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+					char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+
+					stream.writeBytes(char_array_3, 3);
+					i = 0;
+				}
+			}
+
+			if (i) {
+				for (j = 0; j < i; j++)
+					char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+				char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+				char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+
+				stream.writeBytes(char_array_3, i - 1);
+			}
+
+			return stream.getBuffer();
 		}
+
 	}
 }

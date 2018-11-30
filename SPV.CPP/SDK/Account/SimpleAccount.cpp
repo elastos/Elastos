@@ -2,16 +2,18 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "SimpleAccount.h"
+
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
-#include "SimpleAccount.h"
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		SimpleAccount::SimpleAccount(const std::string &privKey, const std::string &payPassword) {
 			CMBlock keyData = Utils::decodeHex(privKey);
-			_encryptedKey = Utils::encrypt(keyData, payPassword);
+			Utils::Encrypt(_encryptedKey, keyData, payPassword);
 
 			Key key;
 			UInt256 secret;
@@ -28,8 +30,8 @@ namespace Elastos {
 		}
 
 		Key SimpleAccount::DeriveKey(const std::string &payPassword) {
-			CMBlock keyData = Utils::decrypt(GetEncryptedKey(), payPassword);
-			ParamChecker::checkDecryptedData(keyData);
+			CMBlock keyData;
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(keyData, GetEncryptedKey(), payPassword));
 
 			Key key;
 			UInt256 secret;
@@ -51,10 +53,10 @@ namespace Elastos {
 		void SimpleAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
 			ParamChecker::checkPassword(newPassword, "New");
 
-			CMBlock key = Utils::decrypt(GetEncryptedKey(), oldPassword);
-			ParamChecker::checkDecryptedData(key);
+			CMBlock key;
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(key, GetEncryptedKey(), oldPassword));
 
-			_encryptedKey = Utils::encrypt(key, newPassword);
+			Utils::Encrypt(_encryptedKey, key, newPassword);
 
 			memset(key, 0, key.GetSize());
 		}
@@ -69,20 +71,20 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
-		const CMBlock &SimpleAccount::GetEncryptedKey() const {
+		const std::string &SimpleAccount::GetEncryptedKey() const {
 			return _encryptedKey;
 		}
 
-		const CMBlock &SimpleAccount::GetEncryptedMnemonic() const {
+		const std::string &SimpleAccount::GetEncryptedMnemonic() const {
 			ParamChecker::checkCondition(true, Error::WrongAccountType,
 										 "Simple account can not get mnemonic");
-			return CMBlock();
+			return _emptyString;
 		}
 
-		const CMBlock &SimpleAccount::GetEncryptedPhrasePassword() const {
+		const std::string &SimpleAccount::GetEncryptedPhrasePassword() const {
 			ParamChecker::checkCondition(true, Error::WrongAccountType,
 										 "Simple account can not get phrase password");
-			return CMBlock();
+			return _emptyString;
 		}
 
 		const std::string &SimpleAccount::GetPublicKey() const {
@@ -101,12 +103,12 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {
-			j["Key"] = Utils::encodeHex(p.GetEncryptedKey());
+			j["Key"] = p.GetEncryptedKey();
 			j["PublicKey"] = p.GetPublicKey();
 		}
 
 		void from_json(const nlohmann::json &j, SimpleAccount &p) {
-			p._encryptedKey = Utils::decodeHex(j["Key"].get<std::string>());
+			p._encryptedKey = j["Key"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();
 		}
 

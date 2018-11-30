@@ -39,36 +39,24 @@ namespace Elastos {
 			nlohmann::json j;
 			i >> j;
 
-			return open(j, password);
+			return Import(j, password);
 		}
 
-		bool KeyStore::open(const nlohmann::json &json, const std::string &password) {
-			SjclFile sjclFile;
-			json >> sjclFile;
+		bool KeyStore::Import(const nlohmann::json &json, const std::string &passwd) {
+			SjclFile sjcl;
+			json >> sjcl;
 
-			if (sjclFile.getMode() != "ccm") {
+			if (sjcl.getMode() != "ccm") {
+				ParamChecker::checkCondition(true, Error::KeyStore, "Keystore is not ccm mode");
 				return false;
 			}
 
-			std::vector<unsigned char> ct = Base64::toBits(sjclFile.getCt());
-			std::vector<unsigned char> salt = Base64::toBits(sjclFile.getSalt());
-			std::vector<unsigned char> iv = Base64::toBits(sjclFile.getIv());
-			std::vector<unsigned char> adata = Base64::toBits(sjclFile.getAdata());
-			uint32_t ks = sjclFile.getKs();
-			CMBlock plaintext;
-			plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(), (unsigned char *) password.c_str(), password.size(),
-											 salt.data(), salt.size(), iv.data(), iv.size(), 128 == ks ? true : false,
-											 adata.data(), adata.size());
-			if (false == plaintext)
-				return false;
+			CMBlock plainText;
+			ParamChecker::CheckDecrypt(!AES_256_CCM::Decrypt(plainText, sjcl.getCt(), passwd, sjcl.getSalt(), sjcl.getIv(),
+															 sjcl.getAdata(), sjcl.getKs() == 128 ? true : false));
 
-			nlohmann::json walletJson;
-			std::stringstream ss;
-			unsigned char mb[plaintext.GetSize()];
-			memcpy(mb, plaintext, plaintext.GetSize());
-			ss << mb;
-			ss >> walletJson;
-
+			std::string plainString(plainText, plainText.GetSize());
+			nlohmann::json walletJson = nlohmann::json::parse(plainString);
 			walletJson >> _walletJson;
 
 			return true;
@@ -76,7 +64,8 @@ namespace Elastos {
 
 		bool KeyStore::save(const boost::filesystem::path &path, const std::string &password) {
 			nlohmann::json json;
-			save(json, password);
+
+			Export(json, password);
 
 			std::ofstream outfile(path.string());
 			outfile << json;
@@ -84,40 +73,34 @@ namespace Elastos {
 			return true;
 		}
 
-		bool KeyStore::save(nlohmann::json &json, const std::string &password) {
+		bool KeyStore::Export(nlohmann::json &json, const std::string &passwd) {
 
-			std::string str_ss;
-			nlohmann::json walletJson;
-			walletJson << _walletJson;
-			std::stringstream ss;
-			ss << walletJson;
-			str_ss = ss.str();
+			std::string ctBase64;
 
-			CMemBlock<unsigned char> salt, iv;
-			AES_256_CCM::GenerateSaltAndIV(salt, iv);
-			CMBlock ciphertext;
-			bool bAes128 = false;
-			ciphertext = AES_256_CCM::encrypt((unsigned char *) str_ss.c_str(), str_ss.size(),
-											  (unsigned char *) password.c_str(), password.size(), salt, salt.GetSize(),
-											  iv, iv.GetSize(), bAes128);
-			if (false == ciphertext)
-				return false;
-			std::string salt_base64 = Base64::fromBits(salt, salt.GetSize());
-			std::string iv_base64 = Base64::fromBits(iv, iv.GetSize());
-			std::string ct_base64 = Base64::fromBits(ciphertext, ciphertext.GetSize());
+			nlohmann::json plainJson;
+			plainJson << _walletJson;
 
-			SjclFile sjclFile;
-			sjclFile.setIv(iv_base64);
-			sjclFile.setV(1);
-			sjclFile.setIter(10000);
-			sjclFile.setKs(!bAes128 ? uint32_t(256) : uint32_t(128));
-			sjclFile.setTs(64);
-			sjclFile.setMode("ccm");
-			sjclFile.setAdata("");
-			sjclFile.setCipher("aes");
-			sjclFile.setSalt(salt_base64);
-			sjclFile.setCt(ct_base64);
-			json << sjclFile;
+			std::string plainString = plainJson.dump();
+			std::string saltBase64, ivBase64;
+			AES_256_CCM::GenerateSaltAndIV(saltBase64, ivBase64);
+			std::string adataBase64 = "";
+			bool AES128 = false;
+			AES_256_CCM::Encrypt(ctBase64, plainString, passwd, saltBase64, ivBase64, adataBase64, AES128);
+
+			SjclFile sjcl;
+			sjcl.setIv(ivBase64);
+			sjcl.setV(1);
+			sjcl.setIter(10000);
+			sjcl.setKs(AES128 ? 128 : 256);
+			sjcl.setTs(64);
+			sjcl.setMode("ccm");
+			sjcl.setAdata(adataBase64);
+			sjcl.setCipher("aes");
+			sjcl.setSalt(saltBase64);
+			sjcl.setCt(ctBase64);
+
+			json << sjcl;
+
 			return true;
 		}
 
@@ -173,20 +156,22 @@ namespace Elastos {
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(account);
 			if (standardAccount == nullptr) return;
 
-			CMBlock mnemonicData = Utils::decrypt(standardAccount->GetEncryptedMnemonic(), payPassword);
-			ParamChecker::checkDecryptedData(mnemonicData);
-			_walletJson.setMnemonic(Utils::convertToString(mnemonicData));
+			std::string phrase;
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrase, standardAccount->GetEncryptedMnemonic(), payPassword));
+			_walletJson.setMnemonic(phrase);
 			_walletJson.setLanguage(standardAccount->GetLanguage());
-			CMBlock phrasePass = Utils::decrypt(standardAccount->GetEncryptedPhrasePassword(), payPassword);
-			_walletJson.setPhrasePassword(Utils::convertToString(phrasePass));
+			std::string phrasePasswd;
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, standardAccount->GetEncryptedPhrasePassword(),
+													   payPassword));
+			_walletJson.setPhrasePassword(phrasePasswd);
 		}
 
 		void KeyStore::initSimpleAccount(IAccount *account, const std::string &payPassword) {
 			SimpleAccount *simpleAccount = dynamic_cast<SimpleAccount *>(account);
 			if (simpleAccount == nullptr) return;
 
-			CMBlock privKey = Utils::decrypt(simpleAccount->GetEncryptedKey(), payPassword);
-			ParamChecker::checkDecryptedData(privKey);
+			CMBlock privKey;
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(privKey, simpleAccount->GetEncryptedKey(), payPassword));
 			_walletJson.setPrivateKey(Utils::encodeHex(privKey));
 		}
 

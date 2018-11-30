@@ -10,12 +10,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 		class WalletTool {
-		private:
-			static CMBlock GetRandom(size_t bits);
 
 		public:
-			static CMBlock GenerateSeed128();
-
 			static CMemBlock<char>
 			GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList);
 

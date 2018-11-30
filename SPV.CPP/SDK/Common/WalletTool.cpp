@@ -14,19 +14,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		CMBlock WalletTool::GetRandom(size_t bits) {
-			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
-			CMBlock out(bytes);
-			for (size_t i = 0; i < bytes; i++) {
-				out[i] = Utils::getRandomByte();
-			}
-			return out;
-		}
-
-		CMBlock WalletTool::GenerateSeed128() {
-			return GetRandom(128);
-		}
-		
 		CMemBlock<char>
 		WalletTool::GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList) {
 			CMemBlock<char> out;
