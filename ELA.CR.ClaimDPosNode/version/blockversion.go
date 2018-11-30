@@ -59,6 +59,11 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
 			CompareEvidence: *compareEvidence,
 		},
 	}
+
+	if err := blockchain.CheckDposIllegalBlocks(&illegalBlocks.DposIllegalBlocks); err != nil {
+		return err
+	}
+
 	if err = blockchain.DefaultLedger.Store.PersistIllegalBlock(illegalBlocks, true); err != nil {
 		return err
 	}
