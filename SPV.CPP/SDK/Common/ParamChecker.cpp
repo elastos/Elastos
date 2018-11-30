@@ -75,12 +75,8 @@ namespace Elastos {
 			checkCondition(argument.empty(), Error::InvalidArgument, msg + " is empty", Exception::InvalidArgument);
 		}
 
-		void ParamChecker::checkDecryptedData(const std::string &data) {
-			checkCondition(data.empty(), Error::WrongPasswd, "Wrong password");
-		}
-
-		void ParamChecker::checkDecryptedData(const CMBlock &data) {
-			checkCondition(data.GetSize() == 0, Error::WrongPasswd, "Wrong password");
+		void ParamChecker::CheckDecrypt(bool condition) {
+			checkCondition(condition, Error::WrongPasswd, "Wrong password");
 		}
 
 		void ParamChecker::checkJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg) {

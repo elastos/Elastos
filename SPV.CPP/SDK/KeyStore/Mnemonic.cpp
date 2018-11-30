@@ -6,6 +6,7 @@
 
 #include <SDK/Common/ParamChecker.h>
 
+#include <Core/BRInt.h>
 #include <Core/BRBIP39WordsEn.h>
 
 #include <fstream>
@@ -29,12 +30,6 @@ namespace Elastos {
 		Mnemonic::Mnemonic(const boost::filesystem::path &rootPath) :
 			_language(DEFAULT_LANGUAGE),
 			_i18nPath(rootPath) {
-			LoadLanguage(DEFAULT_LANGUAGE);
-		}
-
-		Mnemonic::Mnemonic(const fs::path &rootPath, const std::string &phrase) :
-			_i18nPath(rootPath) {
-			ParamChecker::checkCondition(!DetectLanguageLoad(phrase), Error::Mnemonic, "Invalid mnemonic words");
 		}
 
 		void Mnemonic::LoadPath(const boost::filesystem::path &filePath) {
@@ -52,23 +47,27 @@ namespace Elastos {
 										 ", expected " + std::to_string(BIP39_WORDLIST_COUNT));
 		}
 
-		bool Mnemonic::IsPhraseValid(const std::string &phrase) {
+		std::string Mnemonic::PhraseCheck(const std::string &phrase) {
 			const char *wordList[BIP39_WORDLIST_COUNT];
 			for (size_t i = 0; i < BIP39_WORDLIST_COUNT; ++i) {
 				wordList[i] = _words[i].c_str();
 			}
 
-			if (BRBIP39PhraseIsValid(wordList, phrase.c_str())) {
-				return true;
+			UInt128 entropy = UINT128_ZERO;
+			size_t entropyLen = BRBIP39Decode(entropy.u8, sizeof(entropy), wordList, phrase.c_str());
+			if (entropyLen > 0) {
+				char standardPhrase[BRBIP39Encode(NULL, 0, wordList, entropy.u8, sizeof(entropy))];
+				BRBIP39Encode(standardPhrase, sizeof(standardPhrase), wordList, entropy.u8, sizeof(entropy));
+				return std::string(standardPhrase);
 			}
-
-			return false;
+			return std::string();
 		}
 
 
-		bool Mnemonic::DetectLanguageLoad(const std::string &phrase) {
+		bool Mnemonic::PhraseIsValid(const std::string &phrase, std::string &standardPhrase) {
 			LoadLanguage(DEFAULT_LANGUAGE);
-			if (IsPhraseValid(phrase)) {
+			standardPhrase = PhraseCheck(phrase);
+			if (!standardPhrase.empty()) {
 				return true;
 			}
 
@@ -84,7 +83,8 @@ namespace Elastos {
 					ParamChecker::checkCondition(language.empty(), Error::Mnemonic,
 												 "load mnemonic: " + filePath.string() + " filename invalid");
 					LoadLanguage(language);
-					if (IsPhraseValid(phrase)) {
+					standardPhrase = PhraseCheck(phrase);
+					if (!standardPhrase.empty()) {
 						return true;
 					}
 				}

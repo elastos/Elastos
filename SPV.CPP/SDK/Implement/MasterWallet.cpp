@@ -155,9 +155,23 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			CMBlock seed128 = Utils::GenerateSeed128();
+			UInt128 entropy;
 			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
-			return Utils::GeneratePhraseFromSeed(seed128, mnemonic.words());
+
+			for (size_t i = 0; i < sizeof(entropy); ++i) {
+				entropy.u8[i] = Utils::getRandomByte();
+			}
+			const std::vector<std::string> &words = mnemonic.words();
+			const char *wordList[words.size()];
+			for (size_t i = 0; i < words.size(); i++) {
+				wordList[i] = words[i].c_str();
+			}
+			size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, entropy.u8, sizeof(entropy));
+
+			char phrase[phraselen];
+			BRBIP39Encode(phrase, phraselen, wordList, entropy.u8, sizeof(entropy));
+
+			return std::string(phrase, phraselen);
 		}
 
 		void MasterWallet::ClearLocal() {
@@ -293,7 +307,7 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(payPassword, "Pay");
 
 			KeyStore keyStore(_rootPath);
-			ParamChecker::checkCondition(!keyStore.open(keystoreContent, backupPassword), Error::WrongPasswd,
+			ParamChecker::checkCondition(!keyStore.Import(keystoreContent, backupPassword), Error::WrongPasswd,
 										 "Wrong backup password");
 
 			if (keyStore.isOld()) {
@@ -302,7 +316,6 @@ namespace Elastos {
 			}
 
 			initFromKeyStore(keyStore, payPassword);
-			initSubWalletsPubKeyMap(payPassword);
 		}
 
 		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
@@ -321,18 +334,14 @@ namespace Elastos {
 			restoreKeyStore(keyStore, payPassword);
 
 			nlohmann::json result;
-			ParamChecker::checkCondition(!keyStore.save(result, backupPassword), Error::KeyStore, "Export key error.");
+			ParamChecker::checkCondition(!keyStore.Export(result, backupPassword), Error::KeyStore, "Export key error.");
 
 			return result;
 		}
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
-			CMBlock encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
-			CMBlock phrase = Utils::decrypt(encryptedMnemonic, payPassword);
-			if (phrase.GetSize() == 0) {
-				return false;
-			}
-			mnemonic = std::string((const char *)(uint8_t *)phrase, phrase.GetSize());
+			std::string encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
+			ParamChecker::CheckDecrypt(!Utils::Decrypt(mnemonic, encryptedMnemonic, payPassword));
 			return true;
 		}
 
@@ -537,6 +546,7 @@ namespace Elastos {
 
 			_localStore.Reset(account);
 			_localStore.IsSingleAddress() = keyStore.json().getIsSingleAddress();
+			initSubWalletsPubKeyMap(payPassword);
 			initSubWallets(keyStore.json().getCoinInfoList());
 		}
 

@@ -281,20 +281,24 @@ public:
 		return nullptr != pValue ? *pValue->data : (*this)[0];
 	}
 
-	operator T *() const {
-		return nullptr != pValue ? pValue->data : 0;
+	template <class Type>
+	operator Type *() const {
+		return (Type *) (nullptr != pValue ? pValue->data : 0);
 	}
 
-	operator T *() {
-		return nullptr != pValue ? pValue->data : 0;
+	template <class Type>
+	operator Type *() {
+		return (Type *) (nullptr != pValue ? pValue->data : 0);
 	}
 
-	operator const T *() const {
-		return nullptr != pValue ? pValue->data : 0;
+	template <class Type>
+	operator const Type *() const {
+		return (const Type *) (nullptr != pValue ? pValue->data : 0);
 	}
 
-	operator const T *() {
-		return nullptr != pValue ? pValue->data : 0;
+	template <class Type>
+	operator const Type *() {
+		return (const Type *) (nullptr != pValue ? pValue->data : 0);
 	}
 
 	T **operator&() const {

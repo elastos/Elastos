@@ -13,8 +13,6 @@
 #include <Core/BRTransaction.h>
 #include <Core/BRAddress.h>
 
-#define DEFAULT_FEE_PER_KB 10000
-
 namespace Elastos {
 	namespace ElaWallet {
 

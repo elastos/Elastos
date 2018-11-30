@@ -41,18 +41,13 @@ namespace Elastos {
 				return dice();
 			}
 
-			static CMBlock
-			encrypt(const CMBlock &data, const std::string &password);
+			static bool Encrypt(std::string &ctBase64, const std::string &data, const std::string &passwd);
 
-			static CMBlock
-			decrypt(const CMBlock &encryptedData, const std::string &password);
+			static bool Decrypt(std::string &data, const std::string &ctBase64, const std::string &passwd);
 
-			static CMBlock
-			encrypt(const CMBlock &data, const std::string &password, CMBlock &salt, CMBlock &iv, bool bAes128 = false);
+			static bool Encrypt(std::string &ctBase64, const CMBlock &data, const std::string &passwd);
 
-			static CMBlock
-			decrypt(const CMBlock &encryptedData, const std::string &password, CMBlock &salt, CMBlock &iv,
-					bool bAes128 = false);
+			static bool Decrypt(CMBlock &data, const std::string &ctBase64, const std::string &passwd);
 
 			static std::string encodeHex(const CMBlock &in);
 
@@ -82,11 +77,6 @@ namespace Elastos {
 			static UInt168 codeToProgramHash(const std::string &redeemScript);
 
 			static UInt168 codeToProgramHash(const CMBlock &redeemScript);
-
-			static CMBlock GenerateSeed128();
-
-			static std::string
-			GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList);
 
 			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
 

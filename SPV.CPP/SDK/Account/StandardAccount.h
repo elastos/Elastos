@@ -43,11 +43,11 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const CMBlock &GetEncryptedKey() const;
+			virtual const std::string &GetEncryptedKey() const;
 
-			virtual const CMBlock &GetEncryptedMnemonic() const;
+			virtual const std::string &GetEncryptedMnemonic() const;
 
-			virtual const CMBlock &GetEncryptedPhrasePassword() const;
+			virtual const std::string &GetEncryptedPhrasePassword() const;
 
 			virtual const std::string &GetPublicKey() const;
 
@@ -71,9 +71,9 @@ namespace Elastos {
 			FROM_JSON(StandardAccount);
 
 		private:
-			CMBlock _encryptedKey;
-			CMBlock _encryptedMnemonic;
-			CMBlock _encryptedPhrasePass;
+			std::string _encryptedKey;
+			std::string _encryptedMnemonic;
+			std::string _encryptedPhrasePass;
 			std::string _publicKey;
 			MasterPubKey _masterIDPubKey;
 			std::string _language;

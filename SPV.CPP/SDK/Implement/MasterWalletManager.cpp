@@ -67,10 +67,13 @@ namespace Elastos {
 		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			Mnemonic mnemonic(boost::filesystem::path(_rootPath), phrase);
+			Mnemonic mnemonic = Mnemonic(boost::filesystem::path(_rootPath));
+			std::string standardPhrase;
+			ParamChecker::checkCondition(!mnemonic.PhraseIsValid(phrase, standardPhrase),
+										 Error::Mnemonic, "Invalid mnemonic words");
 
 			UInt512 seed;
-			BRBIP39DeriveKey(&seed, phrase.c_str(), phrasePassword.c_str());
+			BRBIP39DeriveKey(&seed, standardPhrase.c_str(), phrasePassword.c_str());
 			BRKey masterKey;
 			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
 
@@ -79,6 +82,7 @@ namespace Elastos {
 
 			var_clean(&seed);
 			var_clean(&masterKey);
+			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 
 			return Utils::encodeHex(key.getPubkey());
 		}
@@ -350,6 +354,7 @@ namespace Elastos {
 #else
 			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %v");
 #endif
+
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 

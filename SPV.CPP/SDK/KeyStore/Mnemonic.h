@@ -15,8 +15,6 @@ namespace Elastos {
 		public:
 			Mnemonic(const std::string &language, const boost::filesystem::path &path);
 
-			Mnemonic(const boost::filesystem::path &path, const std::string &phrase);
-
 			Mnemonic(const boost::filesystem::path &path);
 
 			const std::vector<std::string> &words() const;
@@ -25,12 +23,12 @@ namespace Elastos {
 
 			const std::string &GetLanguage() const;
 
+			bool PhraseIsValid(const std::string &phrase, std::string &standardPhrase);
+
 		private:
 			void LoadPath(const boost::filesystem::path &filePath);
 
-			bool DetectLanguageLoad(const std::string &phrase);
-
-			bool IsPhraseValid(const std::string &phrase);
+			std::string PhraseCheck(const std::string &phrase);
 
 		private:
 			std::string _language;
