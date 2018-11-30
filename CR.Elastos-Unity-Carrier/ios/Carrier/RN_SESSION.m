@@ -121,9 +121,11 @@
                       error: (NSError *__autoreleasing  _Nullable * _Nullable)error
 {
   FriendSessionStream *fss = [self getFriendSessionByFriendId:friendId];
-  [fss.session replyInviteRequestWithStatus:(NSInteger)status reason:reason error:error];
+  BOOL flag = [fss.session replyInviteRequestWithStatus:(NSInteger)status reason:reason error:error];
   
-  [fss.session startWithRemoteSdp:fss.sdp error:error];
+    if(flag){
+        [fss.session startWithRemoteSdp:fss.sdp error:error];
+    }
 }
 
 -(NSNumber *) writeToStream: (ELACarrierStream *)stream

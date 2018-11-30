@@ -51,7 +51,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
     public void close(String friendId) {
 
-        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        FriendSessionStream fss = FriendSessionStream.map.get(friendId);
         util.log("[ close ]");
         if(fss != null){
             fss.close();
@@ -208,7 +208,7 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
 
         FriendSessionStream fss = FriendSessionStream.getInstanceByStreamId(stream.getStreamId());
         if(fss == null){
-            util.error(String.format("[FriendSessionStream.getInstanceByStreamId] => %s" + stream.getStreamId()));
+//            util.error(String.format("[FriendSessionStream.getInstanceByStreamId] => %d" + stream.getStreamId()));
             return;
         }
 

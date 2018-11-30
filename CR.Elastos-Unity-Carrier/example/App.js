@@ -1,16 +1,20 @@
 import React, {Component} from 'react';
 
-import {AppRegistry, StyleSheet, View, Image, ActionSheetIOS, NativeModules, AlertIOS} from 'react-native';
+import {AppRegistry, StyleSheet, View, Image, ActionSheetIOS, NativeModules, AlertIOS, Platform} from 'react-native';
 import {Root, Toast, Container, Header, Content, Footer, FooterTab, Button, Text } from 'native-base';
 
 import {Carrier} from 'react-native-elastos-carrier';
 
-let targetAddress = '';
-let target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
 
+let targetAddress = 'DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc';
+let target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
+if(Platform.OS === 'ios'){
+  targetAddress = '7qMfNokEqAubtDiQ59i5iDyMfnnZ7V7AMGeVhwrC6cUHrWZYy2gd';
+  target = '47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM';
+}
 if(Platform.OS === 'android'){
-  targetAddress ='';
-  target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
+  targetAddress ='FFqmEuri4AQxD7w83pgLYwthSQhJ47XaAChyaARWnUji9rE86gUp';
+  target = '7VBxbJPczHZZwLfs4NhtUvv66CxyhMaSsbakpS8wjccw';
 }
 
 class App extends Component{
@@ -37,7 +41,7 @@ class App extends Component{
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
@@ -54,14 +58,14 @@ class App extends Component{
           </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
             <Text>acceptFriend</Text>
-          </Button> */}
+          </Button>
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getFriendInfo')}>
             <Text>getFriendInfo</Text>
           </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sendMessage')}>
+          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sendMessage')}>
             <Text>sendMessage</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'close')}>
+          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'close')}>
             <Text>close</Text>
           </Button> */}
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'createSession')}>

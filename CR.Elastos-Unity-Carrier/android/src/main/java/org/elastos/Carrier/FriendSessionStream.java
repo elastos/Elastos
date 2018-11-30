@@ -51,9 +51,9 @@ public class FriendSessionStream {
     public void close(){
         // TODO
 
-        this.session.close();
         try{
             this.session.removeStream(this.stream);
+            this.session.close();
         }catch(ElastosException e){
             e.getStackTrace();
         }
