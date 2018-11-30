@@ -53,17 +53,17 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
-		const CMBlock &MultiSignAccount::GetEncryptedKey() const {
+		const std::string &MultiSignAccount::GetEncryptedKey() const {
 			checkSigners();
 			return _me->GetEncryptedKey();
 		}
 
-		const CMBlock &MultiSignAccount::GetEncryptedMnemonic() const {
+		const std::string &MultiSignAccount::GetEncryptedMnemonic() const {
 			checkSigners();
 			return _me->GetEncryptedMnemonic();
 		}
 
-		const CMBlock &MultiSignAccount::GetEncryptedPhrasePassword() const {
+		const std::string &MultiSignAccount::GetEncryptedPhrasePassword() const {
 			checkSigners();
 			return _me->GetEncryptedPhrasePassword();
 		}

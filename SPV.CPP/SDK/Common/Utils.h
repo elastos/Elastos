@@ -40,18 +40,13 @@ namespace Elastos {
 				return dice();
 			}
 
-			static CMBlock
-			encrypt(const CMBlock &data, const std::string &password);
+			static bool Encrypt(std::string &ctBase64, const std::string &data, const std::string &passwd);
 
-			static CMBlock
-			decrypt(const CMBlock &encryptedData, const std::string &password);
+			static bool Decrypt(std::string &data, const std::string &ctBase64, const std::string &passwd);
 
-			static CMBlock
-			encrypt(const CMBlock &data, const std::string &password, CMBlock &salt, CMBlock &iv, bool bAes128 = false);
+			static bool Encrypt(std::string &ctBase64, const CMBlock &data, const std::string &passwd);
 
-			static CMBlock
-			decrypt(const CMBlock &encryptedData, const std::string &password, CMBlock &salt, CMBlock &iv,
-					bool bAes128 = false);
+			static bool Decrypt(CMBlock &data, const std::string &ctBase64, const std::string &passwd);
 
 			static std::string encodeHex(const CMBlock &in);
 

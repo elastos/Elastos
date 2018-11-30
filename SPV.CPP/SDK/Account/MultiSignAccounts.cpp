@@ -66,17 +66,17 @@ namespace Elastos {
 
 		}
 
-		const CMBlock &MultiSignAccounts::GetEncryptedKey() const {
+		const std::string &MultiSignAccounts::GetEncryptedKey() const {
 			checkCurrentAccount();
 			return _currentAccount->GetEncryptedKey();
 		}
 
-		const CMBlock &MultiSignAccounts::GetEncryptedMnemonic() const {
+		const std::string &MultiSignAccounts::GetEncryptedMnemonic() const {
 			checkCurrentAccount();
 			return _currentAccount->GetEncryptedMnemonic();
 		}
 
-		const CMBlock &MultiSignAccounts::GetEncryptedPhrasePassword() const {
+		const std::string &MultiSignAccounts::GetEncryptedPhrasePassword() const {
 			checkCurrentAccount();
 			return _currentAccount->GetEncryptedPhrasePassword();
 		}

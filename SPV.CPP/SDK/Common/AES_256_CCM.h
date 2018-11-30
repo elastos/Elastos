@@ -20,17 +20,35 @@ namespace Elastos {
 		public:
 			static bool Init();
 
-			static bool GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv);
+			static void GenerateSaltAndIV(std::string &saltBase64, std::string &ivBase64);
 
-			static CMBlock
-			encrypt(unsigned char *plainText, size_t szPlainText, unsigned char *password, size_t szPassword,
-					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
-					unsigned char *aad = nullptr, size_t szAad = 0);
+			static bool Encrypt(std::string &ctBase64, const std::string &plainText, const std::string &passwd,
+								const std::string &saltBase64, const std::string &ivBase64,
+								const std::string &adataBase64, bool AES128 = false);
 
-			static CMBlock
-			decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
-					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
-					unsigned char *aad = nullptr, size_t szAad = 0);
+			static bool Encrypt(std::string &ctBase64, const CMBlock &plainText, const std::string &passwd,
+								const std::string &saltBase64, const std::string &ivBase64,
+								const std::string &adataBase64, bool AES128 = false);
+
+
+			static bool Decrypt(std::string &plainText, const std::string &ctBase64, const std::string &passwd,
+								const std::string &saltBase64, const std::string &ivBase64,
+								const std::string &adataBase64, bool AES128 = false);
+
+			static bool Decrypt(CMBlock &plainText, const std::string &ctBase64, const std::string &passwd,
+								const std::string &saltBase64, const std::string &ivBase64,
+								const std::string &adataBase64, bool AES128 = false);
+
+//		private:
+			static std::string Base64Encode(const CMBlock &buffer);
+
+			static size_t CalcDecodeLength(const std::string &b64input);
+			static CMBlock Base64Decode(const std::string &base64Message);
+
+			static bool EncryptCCM(CMBlock &ct, CMBlock &tag, const CMBlock &plainText, const CMBlock &adata,
+								   const CMBlock &key, const CMBlock &iv, bool AES128);
+			static bool DecryptCCM(CMBlock &plainText, const CMBlock &ct, const CMBlock &tag, const CMBlock &adata,
+								   const CMBlock &key, const CMBlock &iv, bool AES128);
 		};
 	}
 }

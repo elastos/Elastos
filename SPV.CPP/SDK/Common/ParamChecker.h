@@ -49,6 +49,8 @@ namespace Elastos {
 				SignType,
 				Address,
 				Sign,
+				Encrypt,
+				Decrypt,
 				Other,
 			} Code;
 		}
@@ -79,9 +81,7 @@ namespace Elastos {
 
 			static void checkArgumentNotEmpty(const std::string &argument, const std::string &msg);
 
-			static void checkDecryptedData(const std::string &data);
-
-			static void checkDecryptedData(const CMBlock &data);
+			static void CheckDecrypt(bool condition);
 
 			static void checkJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg);
 

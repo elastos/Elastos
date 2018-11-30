@@ -58,6 +58,10 @@ namespace Elastos {
 				_consoleLog->log(lvl, msg);
 			}
 
+			static void setPattern(const std::string &fmt) {
+				_consoleLog->set_pattern(fmt);
+			}
+
 			static const std::shared_ptr<spdlog::logger>& getLogger();
 
 		private:
