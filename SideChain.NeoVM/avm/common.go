@@ -342,6 +342,8 @@ func NewStackItem(data interface{}) (datatype.StackItem, error) {
 	switch data.(type) {
 	case int8, int16, int32, int64, int, uint8, uint16, uint32, uint64, *big.Int, big.Int:
 		stackItem = datatype.NewInteger(ToBigInt(data))
+	case string:
+		stackItem = datatype.NewByteArray([]byte(data.(string)))
 	case bool:
 		stackItem = datatype.NewBoolean(data.(bool))
 	case []byte:

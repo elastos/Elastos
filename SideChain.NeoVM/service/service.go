@@ -299,6 +299,7 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 		codeHash = &Uint168{}
 	}
 	codeHashBytes = params.UInt168ToUInt160(codeHash)
+	codeHashBytes = BytesReverse(codeHashBytes)
 	paramBuilder.EmitPushCall(codeHashBytes)
 	engine := RunScript(paramBuilder.Bytes())
 	var ret map[string]interface{}

@@ -122,6 +122,19 @@ func (cache *DBCache) Suicide(codeHash common.Uint168) bool {
 func (cache *DBCache) FindInternal(prefix blockchain.EntryPrefix, keyPrefix string) database.Iterator {
 	k := make([]byte, 0)
 	k = append([]byte{byte(prefix)}, []byte(keyPrefix)...)
+	count := len(k)
+	iteratorList := enumerators.NewListIterator()
+	for key, v := range cache.RWSet.WriteSet {
+		kvalue := key[0 : count - 1]
+		if kvalue == keyPrefix {
+			ky := append([]byte{byte(prefix)}, []byte(key)...)
+			iteratorList.Add(ky, v.Item)
+		}
+	}
+	if iteratorList.HashNext() {
+		return iteratorList
+	}
+
 	iter := cache.db.NewIterator(k)
 	return enumerators.NewIterator(iter)
 }
