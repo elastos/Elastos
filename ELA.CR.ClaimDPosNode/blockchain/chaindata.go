@@ -740,6 +740,11 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
+		if txn.TxType == IllegalBlockEvidence {
+			if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock), false); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -958,47 +963,70 @@ func (c *ChainStore) RollbackConfirm(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistIllegalProposal(payload *PayloadIllegalProposal) error {
-	key := new(bytes.Buffer)
-	key.WriteByte(byte(DPOSIllegalProducer))
+func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock, forceChange bool) error {
+	if err := c.persistIllegalPayload(func() []string {
+		signers := make(map[string]interface{})
+		for _, v := range illegalBlocks.Evidence.Signers {
+			signers[BytesToHexString(v)] = nil
+		}
 
-	producers := c.getIllegalProducers()
-	producers[payload.Evidence.Proposal.Sponsor] = struct{}{}
+		result := make([]string, 0)
+		for _, v := range illegalBlocks.CompareEvidence.Signers {
+			compareSigner := BytesToHexString(v)
+			if _, ok := signers[compareSigner]; ok {
+				result = append(result, compareSigner)
+			}
+		}
 
-	value := new(bytes.Buffer)
-	if err := WriteUint64(value, uint64(len(producers))); err != nil {
+		return result
+	}); err != nil {
 		return err
 	}
 
-	for k, _ := range producers {
-		if err := WriteVarString(value, k); err != nil {
+	if illegalBlocks.CoinType == ELACoin && forceChange {
+		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
 			return err
 		}
 	}
-
-	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
+func (c *ChainStore) PersistIllegalProposal(payload *PayloadIllegalProposal) error {
+	return c.persistIllegalPayload(func() []string {
+		return []string{payload.Evidence.Proposal.Sponsor}
+	})
+}
+
 func (c *ChainStore) PersistIllegalVote(payload *PayloadIllegalVote) error {
+	return c.persistIllegalPayload(func() []string {
+		return []string{payload.Evidence.Vote.Signer}
+	})
+}
+
+func (c *ChainStore) persistIllegalPayload(getIllegalProducersFun func() []string) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DPOSIllegalProducer))
 
 	producers := c.getIllegalProducers()
-	producers[payload.Evidence.Vote.Signer] = struct{}{}
+
+	newProducers := getIllegalProducersFun()
+	for _, v := range newProducers {
+		producers[v] = struct{}{}
+	}
 
 	value := new(bytes.Buffer)
 	if err := WriteUint64(value, uint64(len(producers))); err != nil {
 		return err
 	}
 
-	for k, _ := range producers {
+	for k := range producers {
 		if err := WriteVarString(value, k); err != nil {
 			return err
 		}
 	}
 
 	c.BatchPut(key.Bytes(), value.Bytes())
+	c.dirty[outputpayload.Delegate] = true
 	return nil
 }
 

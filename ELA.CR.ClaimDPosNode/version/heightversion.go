@@ -89,6 +89,12 @@ func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 	return v.GetProducersDesc()
 }
 
+func (h *heightVersions) CheckConfirmedBlockOnFork(block *core.Block) error {
+	return h.checkBlock(block, func(version BlockVersion) error {
+		return version.CheckConfirmedBlockOnFork(block)
+	})
+}
+
 func (h *heightVersions) AddBlock(block *core.Block) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
 		return version.AddBlock(block)

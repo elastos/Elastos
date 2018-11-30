@@ -32,6 +32,7 @@ type HeightVersions interface {
 	AddBlock(block *Block) error
 	AddBlockConfirm(block *BlockConfirm) (bool, error)
 	AssignCoinbaseTxRewards(block *Block, totalReward Fixed64) error
+	CheckConfirmedBlockOnFork(block *Block) error
 }
 
 // Ledger - the struct for ledger

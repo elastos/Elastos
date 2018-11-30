@@ -11,12 +11,13 @@ import (
 )
 
 type CoinType uint32
-type BlockData []byte
 
 const ELACoin = CoinType(0)
 
 type BlockEvidence struct {
-	Block BlockData
+	Block        []byte
+	BlockConfirm []byte
+	Signers      [][]byte
 
 	hash *common.Uint256
 }
