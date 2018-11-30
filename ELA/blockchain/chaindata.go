@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 // key: DATAHeader || block hash
@@ -1086,7 +1086,7 @@ func PublicKeyToProgramHash(publicKey string) (*Uint168, error) {
 	if err != nil {
 		return nil, errors.New("[getProgramHash] public key to bytes")
 	}
-	programHash, err := crypto.PublicKeyToStandardProgramHash(pkBytes)
+	programHash, err := contract.PublicKeyToStandardProgramHash(pkBytes)
 	if err != nil {
 		return nil, errors.New("[getProgramHash] public key to program hash failed")
 	}

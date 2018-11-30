@@ -7,44 +7,43 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/crypto"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
-	if len(hashes) != len(programs) {
+func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) error {
+	if len(programHashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
 	for i, program := range programs {
-		programHash, err := crypto.ToProgramHash(program.Code)
+		codeHash, err := common.ToCodeHash(program.Code)
 		if err != nil {
 			return err
 		}
 
-		signType, err := crypto.GetScriptType(program.Code)
-		if err != nil {
-			return err
-		}
+		programHash := programHashes[i]
+		ownerHash := common.Uint160ParseFromUint168(programHash)
 
-		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
+		if !ownerHash.IsEqual(codeHash) && programHash[0] != PrefixCrossChain {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 
-		if signType == common.STANDARD {
+		if programHash[0] == PrefixStandard {
 			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}
 
-		} else if signType == common.MULTISIG {
+		} else if programHash[0] == PrefixMultisig {
 			if err = checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
 
-		} else if signType == common.CROSSCHAIN {
+		} else if programHash[0] == PrefixCrossChain {
 			if err = checkCrossChainSignatures(*program, data); err != nil {
 				return err
 			}
@@ -57,12 +56,12 @@ func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) erro
 	return nil
 }
 
-func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]common.Uint168, error) {
+func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
-	hashes := make([]common.Uint168, 0)
-	uniqueHashes := make([]common.Uint168, 0)
+	hashes := make([]Uint168, 0)
+	uniqueHashes := make([]Uint168, 0)
 	// add inputUTXO's transaction
 	for _, output := range references {
 		programHash := output.ProgramHash
@@ -70,7 +69,7 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]commo
 	}
 	for _, attribute := range tx.Attributes {
 		if attribute.Usage == Script {
-			dataHash, err := common.Uint168FromBytes(attribute.Data)
+			dataHash, err := Uint168FromBytes(attribute.Data)
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
 			}
@@ -79,7 +78,7 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]commo
 	}
 
 	//remove dupilicated hashes
-	unique := make(map[common.Uint168]bool)
+	unique := make(map[Uint168]bool)
 	for _, v := range hashes {
 		unique[v] = true
 	}
@@ -154,7 +153,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 		return errors.New("invalid signatures, too many signatures")
 	}
 
-	var verified = make(map[common.Uint256]struct{})
+	var verified = make(map[Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
 		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
@@ -220,13 +219,13 @@ type byHash []*Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, err := crypto.ToProgramHash(p[i].Code)
+	hashi, err := common.ToCodeHash(p[i].Code)
 	if err != nil {
 		panic(p[i].Code)
 	}
-	hashj, err := crypto.ToProgramHash(p[j].Code)
+	hashj, err := common.ToCodeHash(p[j].Code)
 	if err != nil {
 		panic(p[j].Code)
 	}
-	return hashi.Compare(*hashj) < 0
+	return hashi.Compare(hashj) < 0
 }

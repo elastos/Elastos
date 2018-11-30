@@ -152,7 +152,7 @@ func transactionSign(L *lua.LState) int {
 	}
 
 	program := pg.Program{
-		Code:      acc.RedeemScript,
+		Code:      acc.Contract.RedeemScript,
 		Parameter: []byte{},
 	}
 	txn.Programs = []*pg.Program{

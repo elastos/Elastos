@@ -100,8 +100,11 @@ func (cl *ClientImpl) Sign(txn *core.Transaction) (*core.Transaction, error) {
 
 func (cl *ClientImpl) signStandardTransaction(txn *core.Transaction) (*core.Transaction, error) {
 	code := txn.Programs[0].Code
-	// Get signer
-	programHash, err := crypto.GetSigner(code)
+
+	programHash, err := GetSigner(code)
+	if err != nil {
+		return nil, err
+	}
 
 	acct := cl.GetAccountByProgramHash(*programHash)
 	if acct == nil {
@@ -127,7 +130,7 @@ func (cl *ClientImpl) signMultiSignTransaction(txn *core.Transaction) (*core.Tra
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
-	programHashes, err := crypto.GetSigners(code)
+	programHashes, err := GetSigners(code)
 	if err != nil {
 		return nil, err
 	}
@@ -165,11 +168,11 @@ func (cl *ClientImpl) GetDefaultAccount() (*Account, error) {
 }
 
 func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
-	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(pubKey)
+	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
 	if err != nil {
-		return nil, errors.New("CreateSignatureRedeemScript failed")
+		return nil, errors.New("CreateStandardContractByPubKey failed")
 	}
-	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
+	programHash, err := signatureContract.ToProgramHash()
 	if err != nil {
 		return nil, errors.New("ToCodeHash failed")
 	}

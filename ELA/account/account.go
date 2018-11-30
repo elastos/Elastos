@@ -10,20 +10,20 @@ import (
 )
 
 type Account struct {
-	PrivateKey   []byte
-	PublicKey    *crypto.PublicKey
-	ProgramHash  common.Uint168
-	RedeemScript []byte
-	Address      string
+	PrivateKey  []byte
+	PublicKey   *crypto.PublicKey
+	ProgramHash common.Uint168
+	Contract    contract.Contract
+	Address     string
 }
 
 func NewAccount() (*Account, error) {
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
-	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(pubKey)
+	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
 	if err != nil {
 		return nil, err
 	}
-	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
+	programHash, err := signatureContract.ToProgramHash()
 	if err != nil {
 		return nil, err
 	}
@@ -33,11 +33,11 @@ func NewAccount() (*Account, error) {
 	}
 
 	return &Account{
-		PrivateKey:   priKey,
-		PublicKey:    pubKey,
-		ProgramHash:  *programHash,
-		RedeemScript: signatureRedeemScript,
-		Address:      address,
+		PrivateKey:  priKey,
+		PublicKey:   pubKey,
+		ProgramHash: *programHash,
+		Contract:    *signatureContract,
+		Address:     address,
 	}, nil
 }
 
@@ -49,11 +49,11 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 	}
 
 	pubKey := crypto.NewPubKey(privateKey)
-	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(pubKey)
+	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
 	if err != nil {
 		return nil, err
 	}
-	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
+	programHash, err := signatureContract.ToProgramHash()
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +62,11 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 		return nil, err
 	}
 	return &Account{
-		PrivateKey:   privateKey,
-		PublicKey:    pubKey,
-		ProgramHash:  *programHash,
-		RedeemScript: signatureRedeemScript,
-		Address:      address,
+		PrivateKey:  privateKey,
+		PublicKey:   pubKey,
+		ProgramHash: *programHash,
+		Contract:    *signatureContract,
+		Address:     address,
 	}, nil
 }
 
