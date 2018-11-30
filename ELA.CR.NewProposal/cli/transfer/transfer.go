@@ -26,7 +26,7 @@ func transferAction(context *cli.Context) error {
 		case "create":
 			if err := createTransaction(context); err != nil {
 				fmt.Println("error:", err)
-				os.Exit(701)
+				os.Exit(1)
 			}
 		case "sign":
 			password, err := password.GetPassword()
@@ -39,15 +39,15 @@ func transferAction(context *cli.Context) error {
 			}
 			if err := signTransaction(context, client); err != nil {
 				fmt.Println("error:", err)
-				os.Exit(702)
+				os.Exit(1)
 			}
 		case "send":
 			if err := SendTransaction(context); err != nil {
 				fmt.Println("error:", err)
-				os.Exit(703)
+				os.Exit(1)
 			}
 		default:
-			cli.ShowCommandHelpAndExit(context, "transaction", 700)
+			cli.ShowCommandHelpAndExit(context, "transaction", 1)
 		}
 	}
 

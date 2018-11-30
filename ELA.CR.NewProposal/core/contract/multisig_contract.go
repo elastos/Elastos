@@ -7,8 +7,6 @@ import (
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func CreateMultiSigContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Contract, error) {
@@ -35,13 +33,13 @@ func CreateMultiSigContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Contra
 
 	return &Contract{
 		RedeemScript: sb.ToArray(),
-		HashPrefix:   common.PrefixMultisig,
+		HashPrefix:   PrefixMultisig,
 	}, nil
 }
 
 func CreateMultiSigContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
 		RedeemScript: code,
-		HashPrefix:   common.PrefixMultisig,
+		HashPrefix:   PrefixMultisig,
 	}, nil
 }

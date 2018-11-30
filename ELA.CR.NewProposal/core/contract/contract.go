@@ -20,6 +20,13 @@ const (
 	Custom
 )
 
+const (
+	PrefixStandard   = 0x21
+	PrefixMultisig   = 0x12
+	PrefixCrossChain = 0x4B
+	PrefixPledge     = 0x55
+)
+
 // Contract include the redeem script and hash prefix
 type Contract struct {
 	RedeemScript []byte
