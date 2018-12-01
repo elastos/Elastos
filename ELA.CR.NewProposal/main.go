@@ -100,6 +100,7 @@ func main() {
 
 	servers.ServerNode = noder
 	servers.ServerNode.RegisterTxPoolListener(arbitrator)
+	servers.ServerNode.RegisterTxPoolListener(chainStore)
 
 	log.Info("Start the RPC service")
 	go httpjsonrpc.StartRPCServer()

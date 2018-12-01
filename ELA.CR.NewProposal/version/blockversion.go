@@ -9,7 +9,9 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	errors2 "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/node"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -73,9 +75,22 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
 		return err
 	}
 
-	if err = blockchain.DefaultLedger.Store.PersistIllegalBlock(illegalBlocks, true); err != nil {
-		return err
+	txn := &core.Transaction{
+		Version:        core.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(block.Height)),
+		TxType:         core.IllegalBlockEvidence,
+		PayloadVersion: core.PayloadIllegalBlockVersion,
+		Payload:        illegalBlocks,
+		Attributes:     []*core.Attribute{},
+		LockTime:       0,
+		Programs:       []*program.Program{},
+		Outputs:        []*core.Output{},
+		Inputs:         []*core.Input{},
+		Fee:            0,
 	}
+	if code := node.LocalNode.AppendToTxnPool(txn); code == errors2.Success {
+		node.LocalNode.AppendToTxnPool(txn)
+	}
+
 	return nil
 }
 
