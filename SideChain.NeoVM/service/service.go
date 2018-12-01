@@ -431,6 +431,8 @@ func (s *HttpServiceExtend) GetOpPrice(param util.Params) (interface{}, error) {
 		}
 		paramBuilder.EmitPushInteger(num)
 		paramBuilder.Emit(avm.CHECKMULTISIG)
+	} else {
+		paramBuilder.Emit(opcode)
 	}
 	engine := RunGetPriceScript(paramBuilder.Bytes())
 	ret["state"] = engine.GetState()
