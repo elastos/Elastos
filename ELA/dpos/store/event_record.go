@@ -32,6 +32,8 @@ func (e *EventRecord) OnProposalArrived(prop log.ProposalEvent) {
 }
 
 func (e *EventRecord) OnProposalFinished(prop log.ProposalEvent) {
+	log.Info("[OnProposalFinished] start")
+	defer log.Info("[OnProposalFinished] end")
 	_, err := e.eventStore.UpdateProposalEvent(prop)
 	if err != nil {
 		log.Error("[OnProposalFinished], Add message failed:", err.Error())

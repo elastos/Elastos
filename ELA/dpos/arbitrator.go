@@ -68,8 +68,8 @@ func (a *arbitrator) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *arbitrator) OnNewElection() {
-	a.network.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetNextArbitrators())
+func (a *arbitrator) OnNewElection(arbiters [][]byte) {
+	a.network.UpdatePeers(arbiters)
 }
 
 func (a *arbitrator) changeViewLoop() {
