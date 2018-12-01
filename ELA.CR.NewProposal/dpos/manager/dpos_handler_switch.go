@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -15,14 +15,14 @@ import (
 )
 
 type DposEventConditionHandler interface {
-	TryStartNewConsensus(b *core.Block) bool
+	TryStartNewConsensus(b *types.Block) bool
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p core.DPosProposal)
+	StartNewProposal(p types.DPosProposal)
 
-	ProcessAcceptVote(id peer.PID, p core.DPosProposalVote)
-	ProcessRejectVote(id peer.PID, p core.DPosProposalVote)
+	ProcessAcceptVote(id peer.PID, p types.DPosProposalVote)
+	ProcessRejectVote(id peer.PID, p types.DPosProposalVote)
 }
 
 type DposHandlerSwitch interface {
@@ -97,7 +97,7 @@ func (h *dposHandlerSwitch) FinishConsensus() {
 	h.proposalDispatcher.FinishConsensus()
 }
 
-func (h *dposHandlerSwitch) StartNewProposal(p core.DPosProposal) {
+func (h *dposHandlerSwitch) StartNewProposal(p types.DPosProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	rawData := new(bytes.Buffer)
@@ -124,7 +124,7 @@ func (h *dposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.eventMonitor.OnViewStarted(viewEvent)
 }
 
-func (h *dposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
+func (h *dposHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 	if _, ok := h.manager.GetBlockCache().TryGetValue(b.Hash()); ok {
 		log.Info("[TryStartNewConsensus] failed, already have the block")
 		return false
@@ -144,7 +144,7 @@ func (h *dposHandlerSwitch) TryStartNewConsensus(b *core.Block) bool {
 	return false
 }
 
-func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
+func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
 	h.currentHandler.ProcessAcceptVote(id, p)
 
 	rawData := new(bytes.Buffer)
@@ -153,7 +153,7 @@ func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p core.DPosProposalVo
 	h.eventMonitor.OnVoteArrived(voteEvent)
 }
 
-func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
+func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
 	h.currentHandler.ProcessRejectVote(id, p)
 
 	rawData := new(bytes.Buffer)
@@ -177,7 +177,7 @@ func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, end
 	}
 
 	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
-		blockConfirms = append(blockConfirms, &core.BlockConfirm{
+		blockConfirms = append(blockConfirms, &types.BlockConfirm{
 			BlockFlag: true,
 			Block:     currentBlock,
 		})

@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -26,7 +26,7 @@ func RegisterCoinBaseType(L *lua.LState) {
 // Constructor
 func newCoinBase(L *lua.LState) int {
 	data, _ := hex.DecodeString(L.ToString(1))
-	cb := &core.PayloadCoinBase{
+	cb := &payload.PayloadCoinBase{
 		CoinbaseData: data,
 	}
 	ud := L.NewUserData()
@@ -39,9 +39,9 @@ func newCoinBase(L *lua.LState) int {
 
 // Checks whether the first lua argument is a *LUserData with *PayloadCoinBase and
 // returns this *PayloadCoinBase.
-func checkCoinBase(L *lua.LState, idx int) *core.PayloadCoinBase {
+func checkCoinBase(L *lua.LState, idx int) *payload.PayloadCoinBase {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*core.PayloadCoinBase); ok {
+	if v, ok := ud.Value.(*payload.PayloadCoinBase); ok {
 		return v
 	}
 	L.ArgError(1, "PayloadCoinBase expected")
@@ -72,7 +72,7 @@ func RegisterTransferAssetType(L *lua.LState) {
 
 // Constructor
 func newTransferAsset(L *lua.LState) int {
-	ta := &core.PayloadTransferAsset{}
+	ta := &payload.PayloadTransferAsset{}
 	ud := L.NewUserData()
 	ud.Value = ta
 	L.SetMetatable(ud, L.GetTypeMetatable(luaTransferAssetTypeName))
@@ -83,9 +83,9 @@ func newTransferAsset(L *lua.LState) int {
 
 // Checks whether the first lua argument is a *LUserData with *PayloadTransferAsset and
 // returns this *PayloadTransferAsset.
-func checkTransferAsset(L *lua.LState, idx int) *core.PayloadTransferAsset {
+func checkTransferAsset(L *lua.LState, idx int) *payload.PayloadTransferAsset {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*core.PayloadTransferAsset); ok {
+	if v, ok := ud.Value.(*payload.PayloadTransferAsset); ok {
 		return v
 	}
 	L.ArgError(1, "PayloadTransferAsset expected")

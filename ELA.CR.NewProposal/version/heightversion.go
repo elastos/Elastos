@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -42,43 +42,43 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	return h.versions[heightKey].DefaultBlockVersion
 }
 
-func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *core.Transaction, output *core.Output) error {
+func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
 	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputPayload(output)
 	})
 }
 
-func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *core.Transaction, programHash Uint168) error {
+func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash Uint168) error {
 	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputProgramHash(programHash)
 	})
 }
 
-func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *core.Transaction, totalReward Fixed64) error {
+func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseMinerReward(tx, totalReward)
 	})
 }
 
-func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *core.Transaction, rewardInCoinbase Fixed64) error {
+func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
 	})
 }
 
-func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *core.Transaction, outputs []*core.Output, references map[*core.Input]*core.Output) error {
+func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output, references map[*types.Input]*types.Output) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckVoteProducerOutputs(outputs, references)
 	})
 }
 
-func (h *heightVersions) CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *core.Transaction) error {
+func (h *heightVersions) CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *types.Transaction) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckTxHasNoProgramsAndAttributes(tx)
 	})
 }
 
-func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
+func (h *heightVersions) GetProducersDesc(block *types.Block) ([][]byte, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
@@ -89,25 +89,25 @@ func (h *heightVersions) GetProducersDesc(block *core.Block) ([][]byte, error) {
 	return v.GetProducersDesc()
 }
 
-func (h *heightVersions) CheckConfirmedBlockOnFork(block *core.Block) error {
+func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
 		return version.CheckConfirmedBlockOnFork(block)
 	})
 }
 
-func (h *heightVersions) AddBlock(block *core.Block) error {
+func (h *heightVersions) AddBlock(block *types.Block) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
 		return version.AddBlock(block)
 	})
 }
 
-func (h *heightVersions) AddBlockConfirm(blockConfirm *core.BlockConfirm) (bool, error) {
+func (h *heightVersions) AddBlockConfirm(blockConfirm *types.BlockConfirm) (bool, error) {
 	return h.checkBlockConfirm(blockConfirm, func(version BlockVersion) (bool, error) {
 		return version.AddBlockConfirm(blockConfirm)
 	})
 }
 
-func (h *heightVersions) AssignCoinbaseTxRewards(block *core.Block, totalReward Fixed64) error {
+func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward Fixed64) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
 		return version.AssignCoinbaseTxRewards(block, totalReward)
 	})
@@ -120,7 +120,7 @@ func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, 
 	return info.CompatibleBlockVersions[info.DefaultBlockVersion].GetNextOnDutyArbitrator(dutyChangedCount, offset)
 }
 
-func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun TxCheckMethod) error {
+func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
@@ -131,7 +131,7 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *core.Transaction, txFun
 	return txFun(v)
 }
 
-func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *core.Transaction) TxVersion {
+func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction) TxVersion {
 	// before HeightVersion2 tx version means tx type, use special get method instead
 	if blockHeight < HeightVersion2 {
 		return info.CompatibleTxVersions[info.DefaultTxVersion]
@@ -145,7 +145,7 @@ func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx
 	}
 }
 
-func (h *heightVersions) checkBlock(block *core.Block, blockFun BlockCheckMethod) error {
+func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMethod) error {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
@@ -156,7 +156,7 @@ func (h *heightVersions) checkBlock(block *core.Block, blockFun BlockCheckMethod
 	return blockFun(v)
 }
 
-func (h *heightVersions) checkBlockConfirm(blockConfirm *core.BlockConfirm, blockConfirmFun BlockConfirmCheckMethod) (bool, error) {
+func (h *heightVersions) checkBlockConfirm(blockConfirm *types.BlockConfirm, blockConfirmFun BlockConfirmCheckMethod) (bool, error) {
 	if blockConfirm == nil || !blockConfirm.BlockFlag {
 		return false, fmt.Errorf("[checkBlockConfirm] received block confirm with nil block")
 	}
@@ -170,7 +170,7 @@ func (h *heightVersions) checkBlockConfirm(blockConfirm *core.BlockConfirm, bloc
 	return blockConfirmFun(v)
 }
 
-func (h *heightVersions) findBlockVersion(info *VersionInfo, block *core.Block) BlockVersion {
+func (h *heightVersions) findBlockVersion(info *VersionInfo, block *types.Block) BlockVersion {
 	v, ok := info.CompatibleBlockVersions[block.Version]
 	if !ok {
 		return nil

@@ -1,7 +1,7 @@
 package txhistory
 
 import (
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -15,7 +15,7 @@ func (v *TxVersionV0) GetVersion() byte {
 	return 0
 }
 
-func (v *TxVersionV0) CheckOutputPayload(output *core.Output) error {
+func (v *TxVersionV0) CheckOutputPayload(output *types.Output) error {
 	return nil
 }
 
@@ -23,18 +23,18 @@ func (v *TxVersionV0) CheckOutputProgramHash(programHash Uint168) error {
 	return nil
 }
 
-func (v *TxVersionV0) CheckCoinbaseMinerReward(tx *core.Transaction, totalReward Fixed64) error {
+func (v *TxVersionV0) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward Fixed64) error {
 	return nil
 }
 
-func (v *TxVersionV0) CheckCoinbaseArbitratorsReward(coinbase *core.Transaction, rewardInCoinbase Fixed64) error {
+func (v *TxVersionV0) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase Fixed64) error {
 	return nil
 }
 
-func (v *TxVersionV0) CheckVoteProducerOutputs(outputs []*core.Output, references map[*core.Input]*core.Output) error {
+func (v *TxVersionV0) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
 	return nil
 }
 
-func (v *TxVersionV0) CheckTxHasNoProgramsAndAttributes(tx *core.Transaction) error {
+func (v *TxVersionV0) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
 	return nil
 }

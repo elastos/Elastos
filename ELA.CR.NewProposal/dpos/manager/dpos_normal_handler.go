@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -13,7 +13,7 @@ type DposNormalHandler struct {
 	*dposHandlerSwitch
 }
 
-func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	defer log.Info("[Normal-ProcessAcceptVote] end")
 
@@ -29,7 +29,7 @@ func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVo
 	}
 }
 
-func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
+func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Normal-ProcessRejectVote] start")
 	defer log.Info("[Normal-ProcessRejectVote] end")
 
@@ -46,7 +46,7 @@ func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVo
 	}
 }
 
-func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p core.DPosProposalVote) (common.Uint256, bool) {
+func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p types.DPosProposalVote) (common.Uint256, bool) {
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal == nil {
 		requestProposal := &msg.RequestProposal{ProposalHash: p.ProposalHash}
@@ -56,7 +56,7 @@ func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p core.DPosPropos
 	return currentProposal.Hash(), true
 }
 
-func (h *DposNormalHandler) StartNewProposal(p core.DPosProposal) {
+func (h *DposNormalHandler) StartNewProposal(p types.DPosProposal) {
 	log.Info("[Normal][StartNewProposal] start")
 	defer log.Info("[Normal][StartNewProposal] end")
 
@@ -72,7 +72,7 @@ func (h *DposNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
 	h.proposalDispatcher.CleanProposals(true)
 }
 
-func (h *DposNormalHandler) TryStartNewConsensus(b *core.Block) bool {
+func (h *DposNormalHandler) TryStartNewConsensus(b *types.Block) bool {
 	result := false
 
 	if h.consensus.IsReady() {

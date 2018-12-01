@@ -7,7 +7,7 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 )
 
 var testChainStore *ChainStore

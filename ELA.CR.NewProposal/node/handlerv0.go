@@ -5,7 +5,7 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -46,10 +46,10 @@ func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error
 		message = &v0.GetData{}
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.BlockConfirm{})
+		message = msg.NewBlock(&types.BlockConfirm{})
 
 	case p2p.CmdTx:
-		message = msg.NewTx(&core.Transaction{})
+		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdNotFound:
 		message = &v0.NotFound{}
@@ -75,7 +75,7 @@ func (h *HandlerV0) HandleMessage(message p2p.Message) {
 		h.onGetData(message)
 
 	case *msg.Block:
-		blockConfirm, ok := message.Serializable.(*core.BlockConfirm)
+		blockConfirm, ok := message.Serializable.(*types.BlockConfirm)
 		if !ok {
 			return
 		}
@@ -168,14 +168,14 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		return err
 	}
 
-	var confirm *core.DPosProposalVoteSlot
+	var confirm *types.DPosProposalVoteSlot
 	confirm, err = chain.DefaultLedger.Store.GetConfirm(hash)
 	if err != nil {
 		var ok bool
 		confirm, ok = LocalNode.GetConfirm(hash)
 		if !ok {
 			log.Debugf("Can't get confirm from hash %s, only send block", hash)
-			node.SendMessage(msg.NewBlock(&core.BlockConfirm{
+			node.SendMessage(msg.NewBlock(&types.BlockConfirm{
 				BlockFlag: true,
 				Block:     block,
 			}))
@@ -184,7 +184,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 	}
 
 	log.Debugf("send block and confirm: %s", hash)
-	node.SendMessage(msg.NewBlock(&core.BlockConfirm{
+	node.SendMessage(msg.NewBlock(&types.BlockConfirm{
 		BlockFlag:   true,
 		Block:       block,
 		ConfirmFlag: true,
@@ -194,7 +194,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 	return nil
 }
 
-func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
+func (h *HandlerV0) onBlock(msgBlock *types.BlockConfirm) error {
 	node := h.base.node
 	hash := msgBlock.Block.Hash()
 	log.Debug("[onblock] handlerV0 received block:", hash.String())
@@ -246,7 +246,7 @@ func (h *HandlerV0) onBlock(msgBlock *core.BlockConfirm) error {
 	return nil
 }
 
-func (h *HandlerV0) onConfirm(confirm *core.DPosProposalVoteSlot) error {
+func (h *HandlerV0) onConfirm(confirm *types.DPosProposalVoteSlot) error {
 	log.Info("[onConfirm] received from main chain p2p")
 	err := LocalNode.AppendConfirm(confirm)
 	if err != nil {
@@ -258,7 +258,7 @@ func (h *HandlerV0) onConfirm(confirm *core.DPosProposalVoteSlot) error {
 
 func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
 	node := h.base.node
-	tx := msgTx.Serializable.(*core.Transaction)
+	tx := msgTx.Serializable.(*types.Transaction)
 
 	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
 		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
