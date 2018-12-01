@@ -21,6 +21,9 @@ namespace Elastos {
 
 			bool open(const boost::filesystem::path &path, const std::string &password);
 
+			// to support old web keystore temporary
+			bool Import(const nlohmann::json &json, const std::string &passwd, const std::string &phrasePasswd);
+
 			bool Import(const nlohmann::json &json, const std::string &password);
 
 			bool save(const boost::filesystem::path &path, const std::string &password);
@@ -28,6 +31,8 @@ namespace Elastos {
 			bool Export(nlohmann::json &json, const std::string &password);
 
 			bool isOld();
+
+			bool HasPhrasePassword() const;
 
 			const ElaNewWalletJson &json() const;
 

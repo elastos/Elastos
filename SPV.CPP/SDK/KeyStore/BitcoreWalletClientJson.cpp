@@ -36,6 +36,14 @@ namespace Elastos {
 			_mnemonic = mnemonic;
 		}
 
+		bool BitcoreWalletClientJson::HasPhrasePassword() const {
+			return _mnemonicHasPassphrase;
+		}
+
+		void BitcoreWalletClientJson::SetHasPhrasePassword(bool has) {
+			_mnemonicHasPassphrase = has;
+		}
+
 		nlohmann::json &operator<<(nlohmann::json &j, const BitcoreWalletClientJson::PubKeyItem &p) {
 			to_json(j, p);
 
@@ -101,7 +109,7 @@ namespace Elastos {
 		void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p) {
 			p._coin = j["coin"].get<std::string>();
 			p._network = j["network"].get<std::string>();
-			p._xPrivKey = j["xPrivKey"].get<std::string>();
+			p._xPrivKey =  j.find("xPrivKey") != j.end() ? j["xPrivKey"].get<std::string>() : "";
 			p._xPubKey = j["xPubKey"].get<std::string>();
 			p._requestPrivKey = j["requestPrivKey"].get<std::string>();
 			p._requestPubKey = j["requestPubKey"].get<std::string>();
@@ -115,7 +123,7 @@ namespace Elastos {
 			p._personalEncryptingKey = j["personalEncryptingKey"].get<std::string>();
 			p._sharedEncryptingKey = j["sharedEncryptingKey"].get<std::string>();
 			p._copayerName = j["copayerName"].get<std::string>();
-			p._mnemonic = j["mnemonic"].get<std::string>();
+			p._mnemonic = j.find("mnemonic") != j.end() ? j["mnemonic"].get<std::string>() : "";
 			p._entropySource = j["entropySource"].get<std::string>();
 			p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();
 			p._derivationStrategy = j["derivationStrategy"].get<std::string>();
