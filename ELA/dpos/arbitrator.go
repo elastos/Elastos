@@ -52,7 +52,9 @@ func (a *arbitrator) OnIllegalBlockTxnReceived(txn *core.Transaction) {
 	log.Info("[OnIllegalBlockTxnReceived] listener received block")
 	if txn.TxType == core.IllegalBlockEvidence {
 		payload := txn.Payload.(*core.PayloadIllegalBlock)
-		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+		if payload.CoinType != core.ELACoin {
+			a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+		}
 	}
 }
 
