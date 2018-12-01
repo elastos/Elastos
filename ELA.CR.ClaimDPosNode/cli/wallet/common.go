@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elaio/gopass"
@@ -112,7 +112,7 @@ func ShowAccountBalance(name string) error {
 				return err
 			}
 
-			if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+			if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 				lockedAmount += *amount
 				continue
 			}

@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
@@ -12,7 +12,7 @@ type DposOnDutyHandler struct {
 	*dposHandlerSwitch
 }
 
-func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 	defer log.Info("[Onduty-ProcessAcceptVote] end")
 
@@ -23,7 +23,7 @@ func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p core.DPosProposalVo
 	}
 }
 
-func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVote) {
+func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Onduty-ProcessRejectVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
@@ -32,7 +32,7 @@ func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p core.DPosProposalVo
 	}
 }
 
-func (h *DposOnDutyHandler) StartNewProposal(p core.DPosProposal) {
+func (h *DposOnDutyHandler) StartNewProposal(p types.DPosProposal) {
 }
 
 func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
@@ -46,7 +46,7 @@ func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
 	}
 }
 
-func (h *DposOnDutyHandler) TryStartNewConsensus(b *core.Block) bool {
+func (h *DposOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 	result := false
 
 	if h.consensus.IsReady() {

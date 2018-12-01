@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/contract"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )

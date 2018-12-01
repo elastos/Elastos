@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/vm"
 
@@ -23,7 +23,7 @@ import (
 )
 
 type Client interface {
-	Sign(txn *core.Transaction) error
+	Sign(txn *types.Transaction) error
 
 	ContainsAccount(pubKey *crypto.PublicKey) bool
 	CreateAccount() (*Account, error)
@@ -74,7 +74,7 @@ func Open(path string, password []byte) (*ClientImpl, error) {
 	return client, nil
 }
 
-func (cl *ClientImpl) Sign(txn *core.Transaction) (*core.Transaction, error) {
+func (cl *ClientImpl) Sign(txn *types.Transaction) (*types.Transaction, error) {
 	// Get sign type
 	signType, err := crypto.GetScriptType(txn.Programs[0].Code)
 	if err != nil {
@@ -98,7 +98,7 @@ func (cl *ClientImpl) Sign(txn *core.Transaction) (*core.Transaction, error) {
 	return txn, nil
 }
 
-func (cl *ClientImpl) signStandardTransaction(txn *core.Transaction) (*core.Transaction, error) {
+func (cl *ClientImpl) signStandardTransaction(txn *types.Transaction) (*types.Transaction, error) {
 	code := txn.Programs[0].Code
 
 	programHash, err := GetSigner(code)
@@ -126,7 +126,7 @@ func (cl *ClientImpl) signStandardTransaction(txn *core.Transaction) (*core.Tran
 	return txn, nil
 }
 
-func (cl *ClientImpl) signMultiSignTransaction(txn *core.Transaction) (*core.Transaction, error) {
+func (cl *ClientImpl) signMultiSignTransaction(txn *types.Transaction) (*types.Transaction, error) {
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
@@ -414,7 +414,7 @@ func (cl *ClientImpl) ProcessSignals() {
 	}
 }
 
-func SignBySigner(txn *core.Transaction, acc *Account) ([]byte, error) {
+func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
 	log.Debug()
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)

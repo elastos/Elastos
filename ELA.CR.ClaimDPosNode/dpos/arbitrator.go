@@ -5,7 +5,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
@@ -48,22 +48,22 @@ func (a *arbitrator) Stop() error {
 	return nil
 }
 
-func (a *arbitrator) OnIllegalBlockTxnReceived(txn *core.Transaction) {
+func (a *arbitrator) OnIllegalBlockTxnReceived(txn *types.Transaction) {
 	log.Info("[OnIllegalBlockTxnReceived] listener received block")
-	if txn.TxType == core.IllegalBlockEvidence {
-		payload := txn.Payload.(*core.PayloadIllegalBlock)
-		if payload.CoinType != core.ELACoin {
+	if txn.TxType == types.IllegalBlockEvidence {
+		payload := txn.Payload.(*types.PayloadIllegalBlock)
+		if payload.CoinType != types.ELACoin {
 			a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
 		}
 	}
 }
 
-func (a *arbitrator) OnBlockReceived(b *core.Block, confirmed bool) {
+func (a *arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
-func (a *arbitrator) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+func (a *arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }

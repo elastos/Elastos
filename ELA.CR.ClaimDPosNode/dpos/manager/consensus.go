@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 
@@ -30,8 +30,8 @@ type Consensus interface {
 	IsArbitratorOnDuty(arbitrator string) bool
 	GetOnDutyArbitrator() string
 
-	StartConsensus(b *core.Block)
-	ProcessBlock(b *core.Block)
+	StartConsensus(b *types.Block)
+	ProcessBlock(b *types.Block)
 
 	ChangeView()
 	TryChangeView() bool
@@ -92,7 +92,7 @@ func (c *consensus) GetOnDutyArbitrator() string {
 	return common.BytesToHexString(a)
 }
 
-func (c *consensus) StartConsensus(b *core.Block) {
+func (c *consensus) StartConsensus(b *types.Block) {
 	log.Info("[StartConsensus] consensus start")
 	defer log.Info("[StartConsensus] consensus end")
 
@@ -109,7 +109,7 @@ func (c *consensus) GetViewOffset() uint32 {
 	return c.viewOffset
 }
 
-func (c *consensus) ProcessBlock(b *core.Block) {
+func (c *consensus) ProcessBlock(b *types.Block) {
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
 }
 

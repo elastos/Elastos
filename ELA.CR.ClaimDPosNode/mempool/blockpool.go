@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -15,19 +15,19 @@ import (
 type BlockPool struct {
 	sync.RWMutex
 	blockCnt   uint64
-	blockMap   map[common.Uint256]*core.Block
-	confirmMap map[common.Uint256]*core.DPosProposalVoteSlot
+	blockMap   map[common.Uint256]*types.Block
+	confirmMap map[common.Uint256]*types.DPosProposalVoteSlot
 }
 
 func (pool *BlockPool) Init() {
 	pool.Lock()
 	defer pool.Unlock()
 
-	pool.blockMap = make(map[common.Uint256]*core.Block)
-	pool.confirmMap = make(map[common.Uint256]*core.DPosProposalVoteSlot)
+	pool.blockMap = make(map[common.Uint256]*types.Block)
+	pool.confirmMap = make(map[common.Uint256]*types.DPosProposalVoteSlot)
 }
 
-func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error) {
+func (pool *BlockPool) AppendBlock(blockConfirm *types.BlockConfirm) (bool, error) {
 	log.Debugf("[AppendBlock] start")
 	defer log.Debugf("[AppendBlock] end")
 
@@ -69,7 +69,11 @@ func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error
 	return isConfirmed, nil
 }
 
-func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
+func (pool *BlockPool) AppendConfirm(confirm *types.DPosProposalVoteSlot) error {
+	if _, exist := pool.GetConfirm(confirm.Hash); exist {
+		return errors.New("duplicate confirm in pool")
+	}
+
 	// verify confirmation
 	if err := blockchain.CheckConfirm(confirm); err != nil {
 		return err
@@ -132,14 +136,14 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 	return nil
 }
 
-func (pool *BlockPool) AddToBlockMap(block *core.Block) {
+func (pool *BlockPool) AddToBlockMap(block *types.Block) {
 	pool.Lock()
 	defer pool.Unlock()
 
 	pool.blockMap[block.Hash()] = block
 }
 
-func (pool *BlockPool) GetBlock(hash common.Uint256) (*core.Block, bool) {
+func (pool *BlockPool) GetBlock(hash common.Uint256) (*types.Block, bool) {
 	pool.RLock()
 	defer pool.RUnlock()
 
@@ -147,16 +151,16 @@ func (pool *BlockPool) GetBlock(hash common.Uint256) (*core.Block, bool) {
 	return block, ok
 }
 
-func (pool *BlockPool) AddToConfirmMap(confirm *core.DPosProposalVoteSlot) {
+func (pool *BlockPool) AddToConfirmMap(confirm *types.DPosProposalVoteSlot) {
 	pool.Lock()
 	defer pool.Unlock()
 
 	pool.confirmMap[confirm.Hash] = confirm
 }
 
-func (pool *BlockPool) GetConfirm(hash common.Uint256) (*core.DPosProposalVoteSlot, bool) {
-	pool.RLock()
-	defer pool.RUnlock()
+func (pool *BlockPool) GetConfirm(hash common.Uint256) (*types.DPosProposalVoteSlot, bool) {
+	pool.Lock()
+	defer pool.Unlock()
 
 	confirm, ok := pool.confirmMap[hash]
 	return confirm, ok

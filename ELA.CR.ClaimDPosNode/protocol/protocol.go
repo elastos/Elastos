@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -57,7 +57,7 @@ func (s State) String() string {
 }
 
 type TxnPoolListener interface {
-	OnIllegalBlockTxnReceived(txn *core.Transaction)
+	OnIllegalBlockTxnReceived(txn *types.Transaction)
 }
 
 // Handler is the P2P message handler interface.
@@ -89,8 +89,8 @@ type Noder interface {
 	AddToHandshakeQueue(addr string, node Noder)
 	RemoveFromHandshakeQueue(node Noder)
 	GetConnectionCount() (uint, uint)
-	GetTransactionPool(bool) map[common.Uint256]*core.Transaction
-	AppendToTxnPool(*core.Transaction) errors.ErrCode
+	GetTransactionPool(bool) map[common.Uint256]*types.Transaction
+	AppendToTxnPool(*types.Transaction) errors.ErrCode
 	RegisterTxPoolListener(listener TxnPoolListener)
 	UnregisterTxPoolListener(listener TxnPoolListener)
 	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
@@ -105,7 +105,7 @@ type Noder interface {
 	BloomFilter() *bloom.Filter
 	SendMessage(msg p2p.Message)
 	NodeEstablished(uid uint64) bool
-	GetTransaction(hash common.Uint256) *core.Transaction
+	GetTransaction(hash common.Uint256) *types.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
@@ -114,9 +114,9 @@ type Noder interface {
 	GetNeighbourAddresses() []*p2p.NetAddress
 
 	WaitForSyncFinish()
-	CleanSubmittedTransactions(block *core.Block) error
-	MaybeAcceptTransaction(txn *core.Transaction) error
-	RemoveTransaction(txn *core.Transaction)
+	CleanSubmittedTransactions(block *types.Block) error
+	MaybeAcceptTransaction(txn *types.Transaction) error
+	RemoveTransaction(txn *types.Transaction)
 
 	SetHeight(height uint64)
 	Relay(Noder, interface{}) error

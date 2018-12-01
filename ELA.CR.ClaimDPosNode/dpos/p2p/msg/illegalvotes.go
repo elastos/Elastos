@@ -3,13 +3,13 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 const MaxIllegalVoteSize = 1000000
 
 type IllegalVotes struct {
-	Votes core.DposIllegalVotes
+	Votes types.DposIllegalVotes
 }
 
 func (msg *IllegalVotes) CMD() string {

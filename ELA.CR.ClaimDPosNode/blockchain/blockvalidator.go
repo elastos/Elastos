@@ -8,7 +8,8 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common/config"
-	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"

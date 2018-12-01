@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -33,31 +33,31 @@ type DposNetwork interface {
 type StatusSyncEventListener interface {
 	OnPing(id peer.PID, height uint32)
 	OnPong(id peer.PID, height uint32)
-	OnBlock(id peer.PID, block *core.Block)
+	OnBlock(id peer.PID, block *types.Block)
 	OnInv(id peer.PID, blockHash common.Uint256)
 	OnGetBlock(id peer.PID, blockHash common.Uint256)
 	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(id peer.PID, blockConfirms []*core.BlockConfirm)
+	OnResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm)
 	OnRequestConsensus(id peer.PID, height uint32)
 	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 	OnRequestProposal(id peer.PID, hash common.Uint256)
-	OnIllegalProposalReceived(id peer.PID, proposals *core.DposIllegalProposals)
-	OnIllegalVotesReceived(id peer.PID, votes *core.DposIllegalVotes)
+	OnIllegalProposalReceived(id peer.PID, proposals *types.DposIllegalProposals)
+	OnIllegalVotesReceived(id peer.PID, votes *types.DposIllegalVotes)
 }
 
 type NetworkEventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(id peer.PID, p core.DPosProposal)
-	OnVoteReceived(id peer.PID, p core.DPosProposalVote)
-	OnVoteRejected(id peer.PID, p core.DPosProposalVote)
+	OnProposalReceived(id peer.PID, p types.DPosProposal)
+	OnVoteReceived(id peer.PID, p types.DPosProposalVote)
+	OnVoteRejected(id peer.PID, p types.DPosProposalVote)
 
 	OnChangeView()
 	OnBadNetwork()
 
-	OnBlockReceived(b *core.Block, confirmed bool)
-	OnConfirmReceived(p *core.DPosProposalVoteSlot)
-	OnIllegalBlocksReceived(i *core.DposIllegalBlocks)
+	OnBlockReceived(b *types.Block, confirmed bool)
+	OnConfirmReceived(p *types.DPosProposalVoteSlot)
+	OnIllegalBlocksReceived(i *types.DposIllegalBlocks)
 }
 
 type AbnormalRecovering interface {
@@ -75,7 +75,7 @@ type DposManager interface {
 
 	Recover()
 
-	ProcessHigherBlock(b *core.Block)
+	ProcessHigherBlock(b *types.Block)
 	ConfirmBlock()
 
 	ChangeConsensus(onDuty bool)
@@ -131,7 +131,7 @@ func (d *dposManager) Recover() {
 	}
 }
 
-func (d *dposManager) ProcessHigherBlock(b *core.Block) {
+func (d *dposManager) ProcessHigherBlock(b *types.Block) {
 	if !d.illegalMonitor.IsBlockValid(b) {
 		log.Info("[ProcessHigherBlock] received block do not contains illegal evidence, block hash: ", b.Hash())
 		return
@@ -150,21 +150,21 @@ func (d *dposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *dposManager) OnProposalReceived(id peer.PID, p core.DPosProposal) {
-	log.Info("[OnProposalReceived] start")
+func (d *dposManager) OnProposalReceived(id peer.PID, p types.DPosProposal) {
+	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *dposManager) OnVoteReceived(id peer.PID, p core.DPosProposalVote) {
-	log.Info("[OnVoteReceived] start")
+func (d *dposManager) OnVoteReceived(id peer.PID, p types.DPosProposalVote) {
+	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(id, p)
 }
 
-func (d *dposManager) OnVoteRejected(id peer.PID, p core.DPosProposalVote) {
-	log.Info("[OnVoteRejected] start")
+func (d *dposManager) OnVoteRejected(id peer.PID, p types.DPosProposalVote) {
+	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)
 }
@@ -177,9 +177,10 @@ func (d *dposManager) OnPong(id peer.PID, height uint32) {
 	d.processHeartBeat(id, height)
 }
 
-func (d *dposManager) OnBlock(id peer.PID, block *core.Block) {
+func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
+	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-		if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
+		if _, err := node.LocalNode.AppendBlock(&types.BlockConfirm{
 			BlockFlag: true,
 			Block:     block,
 		}); err != nil {
@@ -205,7 +206,7 @@ func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight 
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*core.BlockConfirm) {
+func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
@@ -231,7 +232,7 @@ func (d *dposManager) OnChangeView() {
 	d.consensus.TryChangeView()
 }
 
-func (d *dposManager) OnBlockReceived(b *core.Block, confirmed bool) {
+func (d *dposManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
@@ -249,7 +250,8 @@ func (d *dposManager) OnBlockReceived(b *core.Block, confirmed bool) {
 	}
 }
 
-func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+func (d *dposManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+
 	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
 	defer log.Info("[OnConfirmReceived] end")
 
@@ -257,15 +259,15 @@ func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
 	d.changeHeight()
 }
 
-func (d *dposManager) OnIllegalProposalReceived(id peer.PID, proposals *core.DposIllegalProposals) {
+func (d *dposManager) OnIllegalProposalReceived(id peer.PID, proposals *types.DposIllegalProposals) {
 	d.illegalMonitor.AddProposalEvidence(proposals)
 }
 
-func (d *dposManager) OnIllegalVotesReceived(id peer.PID, votes *core.DposIllegalVotes) {
+func (d *dposManager) OnIllegalVotesReceived(id peer.PID, votes *types.DposIllegalVotes) {
 	d.illegalMonitor.AddVoteEvidence(votes)
 }
 
-func (d *dposManager) OnIllegalBlocksReceived(i *core.DposIllegalBlocks) {
+func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
 	d.illegalMonitor.AddBlockEvidence(i)
 }
 
@@ -313,7 +315,7 @@ func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
 	return false
 }
 
-func getBlock(blockHash common.Uint256) (*core.Block, error) {
+func getBlock(blockHash common.Uint256) (*types.Block, error) {
 	block, have := node.LocalNode.GetBlock(blockHash)
 	if have {
 		return block, nil

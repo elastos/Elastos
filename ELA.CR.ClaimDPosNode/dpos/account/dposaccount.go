@@ -3,14 +3,14 @@ package account
 import (
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common/password"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type DposAccount interface {
-	SignProposal(proposal *core.DPosProposal) ([]byte, error)
-	SignVote(vote *core.DPosProposalVote) ([]byte, error)
+	SignProposal(proposal *types.DPosProposal) ([]byte, error)
+	SignVote(vote *types.DPosProposalVote) ([]byte, error)
 	SignPeerNonce(nonce []byte) (signature [64]byte)
 }
 
@@ -18,7 +18,7 @@ type dposAccount struct {
 	account.Account
 }
 
-func (a *dposAccount) SignProposal(proposal *core.DPosProposal) ([]byte, error) {
+func (a *dposAccount) SignProposal(proposal *types.DPosProposal) ([]byte, error) {
 	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, proposal.Data())
@@ -29,7 +29,7 @@ func (a *dposAccount) SignProposal(proposal *core.DPosProposal) ([]byte, error) 
 	return signature, nil
 }
 
-func (a *dposAccount) SignVote(vote *core.DPosProposalVote) ([]byte, error) {
+func (a *dposAccount) SignVote(vote *types.DPosProposalVote) ([]byte, error) {
 	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, vote.Data())

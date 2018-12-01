@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -17,7 +17,7 @@ type MerkleBranch struct {
 
 func GetTxMerkleBranch(msg msg.MerkleBlock, txId *common.Uint256) (*MerkleBranch, error) {
 	mNodes := &merkleNodes{
-		root:     msg.Header.(*core.Header).MerkleRoot,
+		root:     msg.Header.(*types.Header).MerkleRoot,
 		numTxs:   msg.Transactions,
 		allNodes: make(map[uint32]merkleNode),
 	}

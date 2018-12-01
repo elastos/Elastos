@@ -8,8 +8,9 @@ import (
 	"os"
 
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/core"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -40,31 +41,31 @@ func RegisterTransactionType(L *lua.LState) {
 //	LockTime       uint32
 func newTransaction(L *lua.LState) int {
 	version := L.ToInt(1)
-	txType := core.TransactionType(L.ToInt(2))
+	txType := types.TransactionType(L.ToInt(2))
 	payloadVersion := byte(L.ToInt(3))
 	ud := L.CheckUserData(4)
 	lockTime := uint32(L.ToInt(5))
 
-	var pload core.Payload
+	var pload types.Payload
 	switch ud.Value.(type) {
-	case *core.PayloadCoinBase:
-		pload, _ = ud.Value.(*core.PayloadCoinBase)
-	case *core.PayloadRegisterAsset:
-		pload, _ = ud.Value.(*core.PayloadRegisterAsset)
-	case *core.PayloadTransferAsset:
-		pload, _ = ud.Value.(*core.PayloadTransferAsset)
-	case *core.PayloadRecord:
-		pload, _ = ud.Value.(*core.PayloadRecord)
+	case *payload.PayloadCoinBase:
+		pload, _ = ud.Value.(*payload.PayloadCoinBase)
+	case *payload.PayloadRegisterAsset:
+		pload, _ = ud.Value.(*payload.PayloadRegisterAsset)
+	case *payload.PayloadTransferAsset:
+		pload, _ = ud.Value.(*payload.PayloadTransferAsset)
+	case *payload.PayloadRecord:
+		pload, _ = ud.Value.(*payload.PayloadRecord)
 	}
 
-	txn := &core.Transaction{
-		Version:        core.TransactionVersion(version),
+	txn := &types.Transaction{
+		Version:        types.TransactionVersion(version),
 		TxType:         txType,
 		PayloadVersion: payloadVersion,
 		Payload:        pload,
-		Attributes:     []*core.Attribute{},
-		Inputs:         []*core.Input{},
-		Outputs:        []*core.Output{},
+		Attributes:     []*types.Attribute{},
+		Inputs:         []*types.Input{},
+		Outputs:        []*types.Output{},
 		LockTime:       lockTime,
 	}
 	udn := L.NewUserData()
@@ -76,9 +77,9 @@ func newTransaction(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Transaction and returns this *Transaction.
-func checkTransaction(L *lua.LState, idx int) *core.Transaction {
+func checkTransaction(L *lua.LState, idx int) *types.Transaction {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*core.Transaction); ok {
+	if v, ok := ud.Value.(*types.Transaction); ok {
 		return v
 	}
 	L.ArgError(1, "Transaction expected")
@@ -211,7 +212,7 @@ func transactionAppendEnough(L *lua.LState) int {
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
@@ -220,12 +221,12 @@ func transactionAppendEnough(L *lua.LState) int {
 	//totalAmount := common.Fixed64(0)
 	var charge int64
 	// Create transaction inputs
-	var txInputs []*core.Input // The inputs in transaction
+	var txInputs []*types.Input // The inputs in transaction
 	for _, utxo := range availabelUtxos {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
 		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
-		input := &core.Input{
-			Previous: core.OutPoint{
+		input := &types.Input{
+			Previous: types.OutPoint{
 				TxID:  *txID,
 				Index: uint16(utxo.VOut),
 			},

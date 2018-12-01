@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/yuin/gopher-lua"
@@ -48,7 +48,7 @@ func newTxOutput(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	var outputPayload core.OutputPayload
+	var outputPayload types.OutputPayload
 	switch outputPayloadData.Value.(type) {
 	case *outputpayload.DefaultOutput:
 		payload, ok := outputPayloadData.Value.(*outputpayload.DefaultOutput)
@@ -64,12 +64,12 @@ func newTxOutput(L *lua.LState) int {
 		outputPayload = payload
 	}
 
-	output := &core.Output{
+	output := &types.Output{
 		AssetID:       assetID,
 		Value:         common.Fixed64(value),
 		OutputLock:    0,
 		ProgramHash:   *programHash,
-		OutputType:    core.OutputType(outputType),
+		OutputType:    types.OutputType(outputType),
 		OutputPayload: outputPayload,
 	}
 
@@ -82,9 +82,9 @@ func newTxOutput(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Output and returns this *Output.
-func checkTxOutput(L *lua.LState, idx int) *core.Output {
+func checkTxOutput(L *lua.LState, idx int) *types.Output {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*core.Output); ok {
+	if v, ok := ud.Value.(*types.Output); ok {
 		return v
 	}
 	L.ArgError(1, "Output expected")
