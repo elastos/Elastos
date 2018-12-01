@@ -60,6 +60,8 @@ func (auxpool *auxBlockPool) GetBlock(hash common.Uint256) (*Block, bool) {
 }
 
 type PowService struct {
+	NewBlocksListener
+
 	PayToAddr      string
 	Started        bool
 	discreteMining bool
@@ -71,6 +73,10 @@ type PowService struct {
 
 	wg   sync.WaitGroup
 	quit chan struct{}
+	wait chan bool
+
+	lastBlock *Block
+	lastNode  *BlockNode
 }
 
 func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, minerAddr string) (*Transaction, error) {
@@ -124,8 +130,8 @@ func (s byFeeDesc) Len() int           { return len(s) }
 func (s byFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
-func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
-	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
+func (pow *PowService) GenerateBlock(minerAddr string, bestChain *BlockNode) (*Block, error) {
+	nextBlockHeight := bestChain.Height + 1
 	coinBaseTx, err := pow.CreateCoinbaseTx(nextBlockHeight, minerAddr)
 	if err != nil {
 		return nil, err
@@ -133,7 +139,7 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 
 	header := Header{
 		Version:    DefaultLedger.HeightVersions.GetDefaultBlockVersion(nextBlockHeight),
-		Previous:   *DefaultLedger.Blockchain.BestChain.Hash,
+		Previous:   *bestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
 		Bits:       config.Parameters.ChainParam.PowLimitBits,
@@ -196,7 +202,7 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 	txRoot, _ := crypto.ComputeRoot(txHash)
 	msgBlock.Header.MerkleRoot = txRoot
 
-	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultLedger.Blockchain.BestChain, time.Now())
+	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(bestChain, time.Now())
 	log.Info("difficulty: ", msgBlock.Header.Bits)
 
 	return msgBlock, err
@@ -221,7 +227,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	for {
 		log.Debug("<================Discrete Mining==============>\n")
 
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, DefaultLedger.Blockchain.BestChain)
 		if err != nil {
 			log.Debug("generage block err", err)
 			continue
@@ -297,8 +303,10 @@ func (pow *PowService) Start() {
 	}
 
 	pow.quit = make(chan struct{})
+	pow.wait = make(chan bool, 1)
 	pow.wg.Add(1)
 	pow.Started = true
+	pow.wait <- true
 
 	go pow.cpuMining()
 }
@@ -313,6 +321,7 @@ func (pow *PowService) Halt() {
 	}
 
 	close(pow.quit)
+	close(pow.wait)
 	pow.wg.Wait()
 	pow.Started = false
 }
@@ -343,18 +352,42 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 }
 
 func NewPowService() *PowService {
+	block, _ := DefaultLedger.Store.GetBlock(*DefaultLedger.Blockchain.BestChain.Hash)
 	pow := &PowService{
 		PayToAddr:      config.Parameters.PowConfiguration.PayToAddr,
 		Started:        false,
 		discreteMining: false,
 		AuxBlockPool:   auxBlockPool{mapNewBlock: make(map[common.Uint256]*Block)},
+		lastBlock:      block,
+		lastNode:       DefaultLedger.Blockchain.BestChain,
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
 	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
 
+	DefaultLedger.Blockchain.NewBlocksListeners = append(DefaultLedger.Blockchain.NewBlocksListeners, pow)
+
 	log.Debug("pow Service Init succeed")
 	return pow
+}
+
+func (pow *PowService) OnBlockReceived(b *Block, confirmed bool) {}
+
+func (pow *PowService) OnConfirmReceived(p *DPosProposalVoteSlot) {
+	block, err := DefaultLedger.Store.GetBlock(p.Hash)
+	if err != nil {
+		return
+	}
+
+	if block.Height == pow.lastBlock.Height {
+		if p.Hash.IsEqual(block.Hash()) {
+			pow.wait <- true
+		} else {
+			pow.wait <- false
+			pow.lastBlock = block
+			pow.lastNode = DefaultLedger.Blockchain.BestChain
+		}
+	}
 }
 
 func (pow *PowService) cpuMining() {
@@ -368,9 +401,8 @@ out:
 			// Non-blocking select to fall through
 		}
 		log.Debug("<================Packing Block==============>")
-		//time.Sleep(15 * time.Second)
 
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, pow.lastNode)
 		if err != nil {
 			log.Debug("generage block err", err)
 			continue
@@ -380,7 +412,13 @@ out:
 		if pow.SolveBlock(msgBlock) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+			if msgBlock.Header.Height == pow.lastNode.Height+1 {
+
+				if !<-pow.wait {
+					continue
+				}
+
+				time.Sleep(time.Second * 1)
 
 				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
 					log.Debug(err)
@@ -388,6 +426,16 @@ out:
 				}
 
 				pow.BroadcastBlock(msgBlock)
+				hash := msgBlock.Hash()
+				node := NewBlockNode(&msgBlock.Header, &hash)
+				node.InMainChain = true
+				prevHash := &msgBlock.Previous
+				if parentNode, ok := DefaultLedger.Blockchain.LookupNodeInIndex(prevHash); ok {
+					node.WorkSum = node.WorkSum.Add(parentNode.WorkSum, node.WorkSum)
+					node.Parent = parentNode
+				}
+				pow.lastBlock = msgBlock
+				pow.lastNode = node
 			}
 		}
 
