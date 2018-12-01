@@ -472,9 +472,9 @@ func (node *node) GetStopHash() Uint256 {
 }
 
 func (node *node) RegisterTxPoolListener(listener protocol.TxnPoolListener) {
-	node.TxPool.Listener = listener
+	node.TxPool.Listeners[listener] = nil
 }
 
 func (node *node) UnregisterTxPoolListener(listener protocol.TxnPoolListener) {
-	node.TxPool.Listener = nil
+	delete(node.TxPool.Listeners, listener)
 }

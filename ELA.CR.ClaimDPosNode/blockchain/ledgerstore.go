@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core/outputpayload"
@@ -9,6 +10,8 @@ import (
 
 // IChainStore provides func with store package.
 type IChainStore interface {
+	protocol.TxnPoolListener
+
 	InitWithGenesisBlock(genesisblock *Block) (uint32, error)
 	InitProducerVotes() error
 
@@ -38,8 +41,6 @@ type IChainStore interface {
 	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
 	GetProducerStatus(programHash Uint168) ProducerState
 	GetIllegalProducers() map[string]struct{}
-	PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock, forceChange bool) error
-
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 

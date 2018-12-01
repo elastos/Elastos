@@ -23,7 +23,7 @@ type TxPool struct {
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	Listener        protocol.TxnPoolListener
+	Listeners       map[protocol.TxnPoolListener]interface{}
 }
 
 func (pool *TxPool) Init() {
@@ -34,6 +34,7 @@ func (pool *TxPool) Init() {
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
 	pool.sidechainTxList = make(map[Uint256]*Transaction)
+	pool.Listeners = make(map[protocol.TxnPoolListener]interface{})
 }
 
 //append transaction to txnpool when check ok.
@@ -71,8 +72,10 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 		return ErrTransactionDuplicate
 	}
 
-	if pool.Listener != nil && txn.IsIllegalBlockTx() {
-		pool.Listener.OnIllegalBlockTxnReceived(txn)
+	if pool.Listeners != nil && txn.IsIllegalBlockTx() {
+		for k := range pool.Listeners {
+			k.OnIllegalBlockTxnReceived(txn)
+		}
 	}
 
 	return Success

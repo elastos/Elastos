@@ -1083,3 +1083,9 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 
 	return assets
 }
+
+func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
+	if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock), true); err != nil {
+		log.Error("Persist illegal block tx error: ", err)
+	}
+}
