@@ -98,9 +98,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *core.DPos
 	}
 
 	i.AddProposalEvidence(evidences)
-	if i.dispatcher.consensus.IsOnDuty() {
-		i.sendIllegalProposalTransaction(evidences)
-	}
+	i.sendIllegalProposalTransaction(evidences)
 
 	m := &msg.IllegalProposals{Proposals: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
@@ -164,9 +162,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *core.DPosProp
 	}
 
 	i.AddVoteEvidence(evidences)
-	if i.dispatcher.consensus.IsOnDuty() {
-		i.sendIllegalVoteTransaction(evidences)
-	}
+	i.sendIllegalVoteTransaction(evidences)
 
 	m := &msg.IllegalVotes{Votes: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
