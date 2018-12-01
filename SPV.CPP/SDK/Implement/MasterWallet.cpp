@@ -77,6 +77,29 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &keystoreContent,
 								   const std::string &backupPassword,
+								   const std::string &phrasePassword,
+								   const std::string &payPassword,
+								   const std::string &rootPath,
+								   bool p2pEnable,
+								   MasterWalletInitFrom from) :
+			_id(id),
+			_rootPath(rootPath),
+			_p2pEnable(p2pEnable),
+			_initFrom(from),
+			_localStore(rootPath) {
+
+			ParamChecker::checkArgumentNotEmpty(id, "Master wallet id");
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPasswordWithNullLegal(payPassword, "Pay");
+			ParamChecker::checkArgumentNotEmpty(rootPath, "Root path");
+
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
+			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
+		}
+
+		MasterWallet::MasterWallet(const std::string &id,
+								   const nlohmann::json &keystoreContent,
+								   const std::string &backupPassword,
 								   const std::string &payPassword,
 								   const std::string &rootPath,
 								   bool p2pEnable,
@@ -302,6 +325,28 @@ namespace Elastos {
 			return _localStore.Account()->GetPublicKey();
 		}
 
+		// to support old web keystore
+		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
+											  const std::string &payPassword, const std::string &phrasePassword) {
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPasswordWithNullLegal(payPassword, "Pay");
+
+			KeyStore keyStore(_rootPath);
+
+			ParamChecker::checkCondition(!keyStore.Import(keystoreContent, backupPassword, phrasePassword),
+										 Error::WrongPasswd, "Wrong backup password");
+
+			ParamChecker::checkCondition(!keyStore.isOld(), Error::KeyStore,
+										 "This interface use for support old keystore");
+			ParamChecker::checkCondition(!keyStore.HasPhrasePassword(), Error::KeyStore,
+										 "This keystore should has phrase password");
+
+			Log::getLogger()->info("Import from old keystore");
+			_initFrom = ImportFromOldKeyStore;
+
+			initFromKeyStore(keyStore, payPassword);
+		}
+
 		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
 											  const std::string &payPassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
@@ -312,6 +357,9 @@ namespace Elastos {
 										 "Wrong backup password");
 
 			if (keyStore.isOld()) {
+				if (keyStore.HasPhrasePassword()) {
+					ParamChecker::checkCondition(true, Error::KeyStoreNeedPhrasePassword, "Old keystore need Phrase password");
+				}
 				Log::getLogger()->info("Import from old keystore");
 				_initFrom = ImportFromOldKeyStore;
 			}

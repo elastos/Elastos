@@ -140,6 +140,16 @@ namespace Elastos {
 					const std::string &id,
 					const nlohmann::json &keystoreContent,
 					const std::string &backupPassword,
+					const std::string &phrasePassword,
+					const std::string &payPassword,
+					const std::string &rootPath,
+					bool p2pEnable,
+					MasterWalletInitFrom from);
+
+			MasterWallet(
+					const std::string &id,
+					const nlohmann::json &keystoreContent,
+					const std::string &backupPassword,
 					const std::string &payPassword,
 					const std::string &rootPath,
 					bool p2pEnable,
@@ -173,6 +183,12 @@ namespace Elastos {
 					bool p2pEnable,
 					const std::string &rootPath,
 					MasterWalletInitFrom from);
+
+			// to support old web keystore
+			void importFromKeyStore(const nlohmann::json &keystoreContent,
+									const std::string &backupPassword,
+									const std::string &payPassword,
+									const std::string &phrasePassword);
 
 			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
