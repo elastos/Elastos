@@ -145,6 +145,16 @@ namespace Elastos {
 			virtual void DestroyWallet(
 					const std::string &masterWalletId);
 
+			/*
+			 * To support old web keystore
+			 */
+			virtual IMasterWallet *ImportWalletWithKeystore(
+				const std::string &masterWalletId,
+				const nlohmann::json &keystoreContent,
+				const std::string &backupPassword,
+				const std::string &payPassword,
+				const std::string &phrasePassword);
+
 			/**
 			 * Import master wallet by key store file.
 			 * @param masterWalletId is the unique identification of a master wallet object.

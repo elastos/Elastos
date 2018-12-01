@@ -51,6 +51,7 @@ namespace Elastos {
 				Sign,
 				Encrypt,
 				Decrypt,
+				KeyStoreNeedPhrasePassword,
 				Other,
 			} Code;
 		}

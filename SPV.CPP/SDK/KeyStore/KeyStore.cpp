@@ -43,6 +43,16 @@ namespace Elastos {
 			return Import(j, password);
 		}
 
+		bool KeyStore::Import(const nlohmann::json &json, const std::string &passwd, const std::string &phrasePasswd) {
+			bool r = Import(json, passwd);
+
+			if (r) {
+				_walletJson.setPhrasePassword(phrasePasswd);
+			}
+
+			return r;
+		}
+
 		bool KeyStore::Import(const nlohmann::json &json, const std::string &passwd) {
 			SjclFile sjcl;
 			json >> sjcl;
@@ -120,6 +130,10 @@ namespace Elastos {
 			return false;
 		}
 
+		bool KeyStore::HasPhrasePassword() const {
+			return _walletJson.HasPhrasePassword();
+		}
+
 		IAccount *
 		KeyStore::createAccountFromJson(const std::string &payPassword) const {
 			if (_walletJson.getType() == "Standard" || _walletJson.getType().empty())
@@ -165,6 +179,11 @@ namespace Elastos {
 			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, standardAccount->GetEncryptedPhrasePassword(),
 													   payPassword));
 			_walletJson.setPhrasePassword(phrasePasswd);
+			if (phrasePasswd.empty()) {
+				_walletJson.SetHasPhrasePassword(false);
+			} else {
+				_walletJson.SetHasPhrasePassword(true);
+			}
 		}
 
 		void KeyStore::initSimpleAccount(IAccount *account, const std::string &payPassword) {

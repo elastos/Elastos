@@ -35,9 +35,16 @@ namespace Elastos {
 
 		public:
 			const std::string &getEncryptedEntropySource() const;
+
 			void setEncryptedEntropySource(const std::string &entropy);
+
 			const std::string &getMnemonic() const;
+
 			void setMnemonic(const std::string mnemonic);
+
+			bool HasPhrasePassword() const;
+
+			void SetHasPhrasePassword(bool has);
 
 		private:
 			JSON_SM_LS(BitcoreWalletClientJson);
