@@ -70,15 +70,18 @@ func (pool *BlockPool) AppendBlock(blockConfirm *core.BlockConfirm) (bool, error
 }
 
 func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
-	if _, exist := pool.GetConfirm(confirm.Hash); exist {
-		return errors.New("duplicate confirm in pool")
-	}
-
 	// verify confirmation
 	if err := blockchain.CheckConfirm(confirm); err != nil {
 		return err
 	}
-	pool.AddToConfirmMap(confirm)
+
+	pool.Lock()
+	if _, exist := pool.confirmMap[confirm.Hash]; exist {
+		pool.Unlock()
+		return errors.New("duplicate confirm in pool")
+	}
+	pool.confirmMap[confirm.Hash] = confirm
+	pool.Unlock()
 
 	if err := pool.ConfirmBlock(confirm.Hash); err != nil {
 		return err
@@ -95,8 +98,6 @@ func (pool *BlockPool) AppendConfirm(confirm *core.DPosProposalVoteSlot) error {
 }
 
 func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
-	log.Info("[ConfirmBlock] start")
-	defer log.Info("[ConfirmBlock] end")
 	log.Info("[ConfirmBlock] block hash:", hash)
 
 	block, exist := pool.GetBlock(hash)
@@ -113,16 +114,18 @@ func (pool *BlockPool) ConfirmBlock(hash common.Uint256) error {
 	}
 
 	log.Info("[ConfirmBlock] block height:", block.Height)
-	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
-	if err != nil {
-		return errors.New("add block failed")
+	if !blockchain.DefaultLedger.Blockchain.BlockExists(&hash) {
+		inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
+		if err != nil {
+			return errors.New("add block failed," + err.Error())
+		}
+
+		if isOrphan || !inMainChain {
+			return errors.New("add orphan block")
+		}
 	}
 
-	if isOrphan || !inMainChain {
-		return errors.New("add orphan block")
-	}
-
-	err = blockchain.DefaultLedger.Blockchain.AddConfirm(confirm)
+	err := blockchain.DefaultLedger.Blockchain.AddConfirm(confirm)
 	if err != nil {
 		return errors.New("add confirm failed")
 	}
@@ -152,8 +155,8 @@ func (pool *BlockPool) AddToConfirmMap(confirm *core.DPosProposalVoteSlot) {
 }
 
 func (pool *BlockPool) GetConfirm(hash common.Uint256) (*core.DPosProposalVoteSlot, bool) {
-	pool.Lock()
-	defer pool.Unlock()
+	pool.RLock()
+	defer pool.RUnlock()
 
 	confirm, ok := pool.confirmMap[hash]
 	return confirm, ok
