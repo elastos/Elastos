@@ -43,21 +43,21 @@ const (
 
 	// Stack
 	DUPFROMALTSTACK = 0x6A
-	TOALTSTACK   = 0x6B // Puts the input onto the top of the alt stack. Removes it from the main stack.
-	FROMALTSTACK = 0x6C // Puts the input onto the top of the main stack. Removes it from the alt stack.
-	XDROP        = 0x6D
-	XSWAP        = 0x72
-	XTUCK        = 0x73
-	DEPTH        = 0x74 // Puts the number of stack items onto the stack.
-	DROP         = 0x75 // Removes the top stack item.
-	DUP          = 0x76 // Duplicates the top stack item.
-	NIP          = 0x77 // Removes the second-to-top stack item.
-	OVER         = 0x78 // Copies the second-to-top stack item to the top.
-	PICK         = 0x79 // The item n back in the stack is copied to the top.
-	ROLL         = 0x7A // The item n back in the stack is moved to the top.
-	ROT          = 0x7B // The top three items on the stack are rotated to the left.
-	SWAP         = 0x7C // The top two items on the stack are swapped.
-	TUCK         = 0x7D // The item at the top of the stack is copied and inserted before the second-to-top item.
+	TOALTSTACK      = 0x6B // Puts the input onto the top of the alt stack. Removes it from the main stack.
+	FROMALTSTACK    = 0x6C // Puts the input onto the top of the main stack. Removes it from the alt stack.
+	XDROP           = 0x6D
+	XSWAP           = 0x72
+	XTUCK           = 0x73
+	DEPTH           = 0x74 // Puts the number of stack items onto the stack.
+	DROP            = 0x75 // Removes the top stack item.
+	DUP             = 0x76 // Duplicates the top stack item.
+	NIP             = 0x77 // Removes the second-to-top stack item.
+	OVER            = 0x78 // Copies the second-to-top stack item to the top.
+	PICK            = 0x79 // The item n back in the stack is copied to the top.
+	ROLL            = 0x7A // The item n back in the stack is moved to the top.
+	ROT             = 0x7B // The top three items on the stack are rotated to the left.
+	SWAP            = 0x7C // The top two items on the stack are swapped.
+	TUCK            = 0x7D // The item at the top of the stack is copied and inserted before the second-to-top item.
 
 	// Splice
 	CAT    = 0x7E // Concatenates two strings.
@@ -126,19 +126,24 @@ const (
 	NEWSTRUCT = 0xC6
 
 	// Map
-	NEWMAP    = 0xC7
-	APPEND    = 0xC8
-	REVERSE   = 0xC9
-	REMOVE    = 0xCA
-	HASKEY    = 0xCB
-	KEYS      = 0xCC
-	VALUES    = 0xCD
+	NEWMAP  = 0xC7
+	APPEND  = 0xC8
+	REVERSE = 0xC9
+	REMOVE  = 0xCA
+	HASKEY  = 0xCB
+	KEYS    = 0xCC
+	VALUES  = 0xCD
 
 	//Stack isolation
-	CALL_I    = 0xE0
-	CALL_E 	  = 0xE1
-	CALL_ED   = 0xE2
-	CALL_ET   = 0xE3
-	CALL_EDT  = 0xE4
+	CALL_I   = 0xE0
+	CALL_E   = 0xE1
+	CALL_ED  = 0xE2
+	CALL_ET  = 0xE3
+	CALL_EDT = 0xE4
 
+	//Exceptions
+	//Halts the execution of the vm by setting VMState.FAULT.
+	THROW      = 0xF0
+	//Removes top stack item n, and halts the execution of the vm by setting VMState.FAULT only if n is False
+	THROWIFNOT = 0xF1
 )

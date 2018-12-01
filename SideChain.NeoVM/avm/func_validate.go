@@ -147,10 +147,10 @@ func validatePickItem(e *ExecutionEngine) error {
 		size = len(dic.GetMap())
 	} else if _, ok := item.(*datatype.ByteArray); ok {
 		index := key.GetBigInteger().Int64()
+		size = len(item.GetByteArray())
 		if index >= int64(size) {
 			return errors.ErrOverMaxArraySize
 		}
-		size = len(item.GetByteArray())
 		if size == 0 {
 			return errors.ErrBadValue
 		}

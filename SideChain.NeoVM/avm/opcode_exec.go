@@ -140,6 +140,9 @@ var (
 		//Map
 		NEWMAP: {NEWMAP, "NEWMAP", opNewMap, nil},
 		APPEND: {APPEND, "APPEND", opAppend, validateAppend},
+
+		THROW: {THROW, "THROW", OpThrow, nil},
+		THROWIFNOT: {THROWIFNOT, "THROWIFNOT", OpThowIfNot, nil},
 	}
 )
 

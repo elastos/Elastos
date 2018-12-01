@@ -107,14 +107,14 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 	}
 	_, err := e.context.OpReader.ReadByte()
 	if err != nil {
-		return FAULT ,err
+		return FAULT, err
 	}
 	pcount, err := e.context.OpReader.ReadByte()
 	if err != nil {
 		return FAULT, err
 	}
 	if (e.evaluationStack.Count() < int(pcount)) {
-		return FAULT ,err
+		return FAULT, err
 	}
 	var script_hash []byte
 	if (e.opCode == CALL_ED || e.opCode == CALL_EDT) {
@@ -126,7 +126,7 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 
 	script := e.table.GetScript(script_hash)
 	if script == nil {
-		return FAULT ,err
+		return FAULT, err
 	}
 	if (e.opCode == CALL_ET || e.opCode == CALL_EDT) {
 		e.invocationStack.Pop()
@@ -134,5 +134,20 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 
 	e.LoadScript(script, false)
 
+	return NONE, nil
+}
+
+func OpThrow(e *ExecutionEngine) (VMState, error) {
+	e.state |= FAULT
+	log.Error("an exception occured on VM!")
+	return NONE, nil
+}
+
+func OpThowIfNot(e *ExecutionEngine) (VMState, error) {
+	data := PopBoolean(e)
+	if data == false {
+		log.Error("an exception occured on VM!")
+		e.state |= FAULT
+	}
 	return NONE, nil
 }
