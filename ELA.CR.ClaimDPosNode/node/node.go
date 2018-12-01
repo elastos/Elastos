@@ -342,7 +342,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					inv := msg.NewInventory()
 					txID := message.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txID))
-					nbr.SendMessage(inv)
+					go nbr.SendMessage(inv)
 					continue
 				}
 
@@ -356,7 +356,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					inv := msg.NewInventory()
 					blockHash := message.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
-					nbr.SendMessage(inv)
+					go nbr.SendMessage(inv)
 					continue
 				}
 
