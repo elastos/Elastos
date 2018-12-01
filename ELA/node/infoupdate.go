@@ -142,7 +142,9 @@ out:
 		case <-pingTicker.C:
 
 			// send ping message to node
+			log.Debug("new ping begin")
 			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
+			log.Debug("new ping end")
 
 		case <-node.quit:
 			break out

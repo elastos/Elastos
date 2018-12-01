@@ -21,7 +21,7 @@ import (
 
 const (
 	// idleTimeout is the duration of inactivity before we time out a peer.
-	idleTimeout = 5 * time.Minute
+	idleTimeout = 40 * time.Second
 )
 
 type link struct {
