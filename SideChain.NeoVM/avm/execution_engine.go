@@ -169,6 +169,13 @@ func (e *ExecutionEngine) LoadScript(script []byte, pushOnly bool) *ExecutionCon
 	return content
 }
 
+func (e *ExecutionEngine) LoadPriceOnlyScript(script []byte) *ExecutionContext {
+	content := NewExecutionContext(script, false, nil)
+	content.GetPriceOnly = true
+	e.invocationStack.Push(content)
+	return content
+}
+
 func (e *ExecutionEngine) Execute() error {
 	e.state = e.state & (^BREAK)
 	for {
@@ -242,8 +249,11 @@ func (e *ExecutionEngine) ExecuteOp(opCode OpCode, context *ExecutionContext) (V
 
 	var elaRatio int64 = 10 //ten times smaller than neogas
 	price := e.getPrice() * ratio / elaRatio
+	if price < 0 {
+		return FAULT, errors.ErrNumericOverFlow
+	}
 	e.gasConsumed += price
-	if e.gas < e.gasConsumed {
+	if e.gas < e.gasConsumed && !e.IsTestMode() {
 		return FAULT, errors.ErrOutOfGas
 	}
 

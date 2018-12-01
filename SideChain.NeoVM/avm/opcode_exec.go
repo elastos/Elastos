@@ -1,5 +1,7 @@
 package avm
 
+import "errors"
+
 type OpExec struct {
 	Opcode    OpCode
 	Name      string
@@ -140,3 +142,12 @@ var (
 		APPEND: {APPEND, "APPEND", opAppend, validateAppend},
 	}
 )
+
+func GetOPCodeByName(name string) (OpCode, error) {
+	for _, opexec := range OpExecList {
+		if opexec.Name == name {
+			return opexec.Opcode, nil
+		}
+	}
+	return NOP, errors.New("error opcode name")
+}

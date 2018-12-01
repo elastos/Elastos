@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"fmt"
 )
 
 type ParamsBuilder struct {
@@ -94,7 +93,7 @@ func (p *ParamsBuilder) EmitSysCall(api string, args...interface{}) {
 		case *common.Uint168:
 			p.EmitPushByteArray(v.Bytes())
 		default:
-			fmt.Println(i, v)
+			log.Error("EmitSysCall error:", i, v)
 			continue
 		}
 	}

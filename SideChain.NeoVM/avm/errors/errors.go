@@ -22,4 +22,5 @@ var (
 	ErrNotFindScript      = errors.New("can not find script")
 	ErrServiceIsNil       = errors.New("service is nil")
 	ErrNotSupportSysCall  = errors.New("does not support the sysCall")
+	ErrNumericOverFlow    = errors.New("the number is over flow")
 )

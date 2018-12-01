@@ -14,6 +14,20 @@ var Store database.Database
 var Table interfaces.IScriptTable
 
 func RunScript(script []byte) *avm.ExecutionEngine {
+	e := NewEngine()
+	e.LoadScript(script, false)
+	e.Execute()
+	return e
+}
+
+func RunGetPriceScript(script []byte) *avm.ExecutionEngine {
+	e := NewEngine()
+	e.LoadPriceOnlyScript(script)
+	e.Execute()
+	return e
+}
+
+func NewEngine() *avm.ExecutionEngine {
 	container := types.Transaction{Inputs:[]*types.Input{}, Outputs:[]*types.Output{}}
 	dbCache := blockchain.NewDBCache(Store)
 	stateMachine := service.NewStateMachine(dbCache, dbCache)
@@ -27,7 +41,5 @@ func RunScript(script []byte) *avm.ExecutionEngine {
 		avm.Application,
 		true,
 	)
-	e.LoadScript(script, false)
-	e.Execute()
 	return e
 }

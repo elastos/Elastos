@@ -250,7 +250,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
 	s.RegisterAction("invokescript", service.InvokeScript, "code")
 	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params")
-
+	s.RegisterAction("getOpPrice", service.GetOpPrice, "op", "args")
 	return s
 }
 

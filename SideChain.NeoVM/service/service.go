@@ -387,6 +387,58 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 	return ""
 }
 
+func (s *HttpServiceExtend) GetOpPrice(param util.Params) (interface{}, error) {
+	var ret map[string]interface{}
+	ret = make(map[string]interface{})
+
+	op, ok := param.String("op")
+	if !ok {
+		return ret, util.NewError(int(sideser.InvalidParams), "Invalid script: "+ op)
+	}
+	isSysCall := false
+	opcode, err := avm.GetOPCodeByName(op)
+	if err != nil && len(op) > 1 {
+		isSysCall = true
+	} else if err != nil {
+		return ret, err
+	}
+
+	buffer := new(bytes.Buffer)
+	paramBuilder := avm.NewParamsBuider(buffer)
+
+	if isSysCall {
+		args := param["args"]
+		if op == "Neo.Storage.Put" {
+			list, ok := ArrayString(args)
+			if !ok || len(list) < 2 {
+				return ret, errors.New("Invalid SysCall args")
+			}
+			paramBuilder.EmitSysCall(op, "", list[0], list[1])
+
+		} else if op == "Neo.Asset.Renew" {
+			num, ok := param.Int64("args")
+			if !ok {
+				return ret, errors.New("Invalid CHECKMULTISIG args")
+			}
+			paramBuilder.EmitSysCall(op, num)
+		} else {
+			paramBuilder.EmitSysCall(op)
+		}
+	} else if opcode == avm.CHECKMULTISIG {
+		num, ok := param.Int64("args")
+		if !ok {
+			return ret, errors.New("Invalid CHECKMULTISIG args")
+		}
+		paramBuilder.EmitPushInteger(num)
+		paramBuilder.Emit(avm.CHECKMULTISIG)
+	}
+	engine := RunGetPriceScript(paramBuilder.Bytes())
+	ret["state"] = engine.GetState()
+	ret["gas_consumed"] = engine.GetGasConsumed()
+
+	return ret, nil
+}
+
 func ArrayString(value interface{}) ([]string, bool) {
 	switch v := value.(type) {
 	case []interface{}:

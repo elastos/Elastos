@@ -55,6 +55,7 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 			err := c.PersistDeployTransaction(b, txn, batch)
 			if err != nil {
 				log.Error(err.Error())
+				//return err will effect manual mining
 				return nil
 			}
 
@@ -64,6 +65,7 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 			err := c.persisInvokeTransaction(b, txn, batch)
 			if err != nil {
 				log.Error(err.Error())
+				//return err will effect manual mining
 				return nil
 			}
 		}

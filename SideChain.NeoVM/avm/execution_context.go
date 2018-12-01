@@ -14,6 +14,7 @@ type ExecutionContext struct {
 	BreakPoints        []uint
 	InstructionPointer int
 	CodeHash           []byte
+	GetPriceOnly       bool
 }
 
 func NewExecutionContext(script []byte, pushOnly bool, breakPoints []uint) *ExecutionContext {
@@ -23,6 +24,7 @@ func NewExecutionContext(script []byte, pushOnly bool, breakPoints []uint) *Exec
 	executionContext.PushOnly = pushOnly
 	executionContext.BreakPoints = breakPoints
 	executionContext.InstructionPointer = executionContext.OpReader.Position()
+	executionContext.GetPriceOnly = false
 	return &executionContext
 }
 
@@ -35,7 +37,7 @@ func (ec *ExecutionContext) SetInstructionPointer(offset int) {
 	ec.OpReader.Seek(int64(offset), io.SeekStart)
 }
 
-func (ec* ExecutionContext) GetCodeHash() []byte {
+func (ec *ExecutionContext) GetCodeHash() []byte {
 	if ec.CodeHash == nil {
 		hash, err := params.ToProgramHash(ec.Script)
 		if err != nil {
