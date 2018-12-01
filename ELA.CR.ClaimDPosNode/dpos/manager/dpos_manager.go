@@ -151,19 +151,20 @@ func (d *dposManager) ChangeConsensus(onDuty bool) {
 }
 
 func (d *dposManager) OnProposalReceived(id peer.PID, p core.DPosProposal) {
-	log.Info("[OnProposalReceived] started")
+	log.Info("[OnProposalReceived] start")
 	defer log.Info("[OnProposalReceived] end")
+
 	d.handler.StartNewProposal(p)
 }
 
 func (d *dposManager) OnVoteReceived(id peer.PID, p core.DPosProposalVote) {
-	log.Info("[OnVoteReceived] started")
+	log.Info("[OnVoteReceived] start")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(id, p)
 }
 
 func (d *dposManager) OnVoteRejected(id peer.PID, p core.DPosProposalVote) {
-	log.Info("[OnVoteRejected] started")
+	log.Info("[OnVoteRejected] start")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)
 }
@@ -177,13 +178,12 @@ func (d *dposManager) OnPong(id peer.PID, height uint32) {
 }
 
 func (d *dposManager) OnBlock(id peer.PID, block *core.Block) {
-	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
 		if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
 			BlockFlag: true,
 			Block:     block,
 		}); err != nil {
-			log.Error("[AppendBlock] err:", err.Error())
+			log.Error("[OnBlock] err: ", err.Error())
 		}
 	}
 }
@@ -250,7 +250,6 @@ func (d *dposManager) OnBlockReceived(b *core.Block, confirmed bool) {
 }
 
 func (d *dposManager) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
-
 	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
 	defer log.Info("[OnConfirmReceived] end")
 
