@@ -4,14 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-func CheckConfirm(confirm *core.DPosProposalVoteSlot) error {
+func CheckConfirm(confirm *DPosProposalVoteSlot) error {
 	if !IsProposalValid(&confirm.Proposal) {
 		return errors.New("[onConfirm] confirm contain invalid proposal")
 	}
@@ -33,7 +32,7 @@ func CheckConfirm(confirm *core.DPosProposalVoteSlot) error {
 	return nil
 }
 
-func CheckBlockWithConfirmation(block *core.Block, confirm *core.DPosProposalVoteSlot) error {
+func CheckBlockWithConfirmation(block *Block, confirm *DPosProposalVoteSlot) error {
 	if block.Hash() != confirm.Hash {
 		return errors.New("block confirmation validate failed")
 	}
@@ -44,7 +43,7 @@ func CheckBlockWithConfirmation(block *core.Block, confirm *core.DPosProposalVot
 	return nil
 }
 
-func IsProposalValid(proposal *core.DPosProposal) bool {
+func IsProposalValid(proposal *DPosProposal) bool {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		pubStr := common.BytesToHexString(a)
@@ -72,7 +71,7 @@ func IsProposalValid(proposal *core.DPosProposal) bool {
 	return true
 }
 
-func IsVoteValid(vote *core.DPosProposalVote) bool {
+func IsVoteValid(vote *DPosProposalVote) bool {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		pubStr := common.BytesToHexString(a)

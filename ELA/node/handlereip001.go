@@ -4,7 +4,7 @@ import (
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -47,10 +47,10 @@ func (h *HandlerEIP001) MakeEmptyMessage(cmd string) (message p2p.Message, err e
 		message = &msg.GetData{}
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.Block{})
+		message = msg.NewBlock(&types.Block{})
 
 	case p2p.CmdTx:
-		message = msg.NewTx(&core.Transaction{})
+		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdNotFound:
 		message = &msg.NotFound{}
@@ -268,7 +268,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) {
 
 func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
 	node := h.base.node
-	block := msgBlock.Serializable.(*core.Block)
+	block := msgBlock.Serializable.(*types.Block)
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
@@ -311,7 +311,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
 
 func (h *HandlerEIP001) onTx(msgTx *msg.Tx) {
 	node := h.base.node
-	tx := msgTx.Serializable.(*core.Transaction)
+	tx := msgTx.Serializable.(*types.Transaction)
 
 	if !LocalNode.IsNeighborNode(node.ID()) {
 		log.Warn("received transaction message from unknown peer")

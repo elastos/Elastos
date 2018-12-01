@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -35,7 +35,7 @@ func (b *BlockVersionV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32
 	return arbitrator
 }
 
-func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *core.Block) error {
+func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
@@ -56,7 +56,7 @@ func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (b *BlockVersionV0) AddBlock(block *core.Block) error {
+func (b *BlockVersionV0) AddBlock(block *types.Block) error {
 	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
 	if err != nil {
 		return err
@@ -69,18 +69,18 @@ func (b *BlockVersionV0) AddBlock(block *core.Block) error {
 	return nil
 }
 
-func (b *BlockVersionV0) AddBlockConfirm(block *core.BlockConfirm) (bool, error) {
+func (b *BlockVersionV0) AddBlockConfirm(block *types.BlockConfirm) (bool, error) {
 	return false, b.AddBlock(block.Block)
 }
 
-func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error {
+func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
 	rewardCyberRepublic := common.Fixed64(float64(totalReward) * 0.3)
 	rewardMergeMiner := common.Fixed64(float64(totalReward) * 0.35)
 	rewardDposArbiter := common.Fixed64(totalReward) - rewardCyberRepublic - rewardMergeMiner
 	block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
 	block.Transactions[0].Outputs[1].Value = rewardMergeMiner
-	block.Transactions[0].Outputs = append(block.Transactions[0].Outputs, &core.Output{
+	block.Transactions[0].Outputs = append(block.Transactions[0].Outputs, &types.Output{
 		AssetID:     blockchain.DefaultLedger.Blockchain.AssetID,
 		Value:       rewardDposArbiter,
 		ProgramHash: blockchain.FoundationAddress,

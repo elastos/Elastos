@@ -8,9 +8,9 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	errors2 "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/node"
 
@@ -20,10 +20,10 @@ import (
 type BlockVersion interface {
 	GetVersion() uint32
 	GetProducersDesc() ([][]byte, error)
-	AddBlock(block *core.Block) error
-	AddBlockConfirm(block *core.BlockConfirm) (bool, error)
-	AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error
-	CheckConfirmedBlockOnFork(block *core.Block) error
+	AddBlock(block *types.Block) error
+	AddBlockConfirm(block *types.BlockConfirm) (bool, error)
+	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error
+	CheckConfirmedBlockOnFork(block *types.Block) error
 	GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte
 }
 
@@ -42,7 +42,7 @@ func (b *BlockVersionMain) GetNextOnDutyArbitrator(dutyChangedCount, offset uint
 	return arbitrator
 }
 
-func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
+func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
 	anotherBlock, err := blockchain.DefaultLedger.GetBlockWithHeight(block.Height)
 	if err != nil {
 		return err
@@ -62,9 +62,9 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
 		return err
 	}
 
-	illegalBlocks := &core.PayloadIllegalBlock{
-		DposIllegalBlocks: core.DposIllegalBlocks{
-			CoinType:        core.ELACoin,
+	illegalBlocks := &types.PayloadIllegalBlock{
+		DposIllegalBlocks: types.DposIllegalBlocks{
+			CoinType:        types.ELACoin,
 			BlockHeight:     block.Height,
 			Evidence:        *evidence,
 			CompareEvidence: *compareEvidence,
@@ -75,16 +75,16 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
 		return err
 	}
 
-	txn := &core.Transaction{
-		Version:        core.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(block.Height)),
-		TxType:         core.IllegalBlockEvidence,
-		PayloadVersion: core.PayloadIllegalBlockVersion,
+	txn := &types.Transaction{
+		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(block.Height)),
+		TxType:         types.IllegalBlockEvidence,
+		PayloadVersion: types.PayloadIllegalBlockVersion,
 		Payload:        illegalBlocks,
-		Attributes:     []*core.Attribute{},
+		Attributes:     []*types.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
-		Outputs:        []*core.Output{},
-		Inputs:         []*core.Input{},
+		Outputs:        []*types.Output{},
+		Inputs:         []*types.Input{},
 		Fee:            0,
 	}
 	if code := node.LocalNode.AppendToTxnPool(txn); code == errors2.Success {
@@ -94,7 +94,7 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *core.Block) error {
 	return nil
 }
 
-func (b *BlockVersionMain) generateBlockEvidence(block *core.Block) (*core.BlockEvidence, error) {
+func (b *BlockVersionMain) generateBlockEvidence(block *types.Block) (*types.BlockEvidence, error) {
 	headerBuf := new(bytes.Buffer)
 	if err := block.Header.Serialize(headerBuf); err != nil {
 		return nil, err
@@ -113,14 +113,14 @@ func (b *BlockVersionMain) generateBlockEvidence(block *core.Block) (*core.Block
 		return nil, err
 	}
 
-	return &core.BlockEvidence{
+	return &types.BlockEvidence{
 		Block:        headerBuf.Bytes(),
 		BlockConfirm: confirmBuf.Bytes(),
 		Signers:      confirmSigners,
 	}, nil
 }
 
-func (b *BlockVersionMain) getConfirmSigners(confirm *core.DPosProposalVoteSlot) ([][]byte, error) {
+func (b *BlockVersionMain) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([][]byte, error) {
 	result := make([][]byte, 0)
 	for _, v := range confirm.Votes {
 		data, err := common.HexStringToBytes(v.Signer)
@@ -149,8 +149,8 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func (b *BlockVersionMain) AddBlock(block *core.Block) error {
-	if _, err := node.LocalNode.AppendBlock(&core.BlockConfirm{
+func (b *BlockVersionMain) AddBlock(block *types.Block) error {
+	if _, err := node.LocalNode.AppendBlock(&types.BlockConfirm{
 		BlockFlag: true,
 		Block:     block,
 	}); err != nil {
@@ -161,7 +161,7 @@ func (b *BlockVersionMain) AddBlock(block *core.Block) error {
 	return nil
 }
 
-func (b *BlockVersionMain) AddBlockConfirm(blockConfirm *core.BlockConfirm) (bool, error) {
+func (b *BlockVersionMain) AddBlockConfirm(blockConfirm *types.BlockConfirm) (bool, error) {
 	isConfirmed, err := node.LocalNode.AppendBlock(blockConfirm)
 	if err != nil {
 		log.Error("[AddBlockConfirm] err:", err.Error())
@@ -171,7 +171,7 @@ func (b *BlockVersionMain) AddBlockConfirm(blockConfirm *core.BlockConfirm) (boo
 	return isConfirmed, nil
 }
 
-func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *core.Block, totalReward common.Fixed64) error {
+func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
 	rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
 
@@ -186,7 +186,7 @@ func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *core.Block, totalRewar
 	return nil
 }
 
-func (b *BlockVersionMain) distributeDposReward(coinBaseTx *core.Transaction, reward common.Fixed64) (common.Fixed64, error) {
+func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
 	arbitratorsHashes := blockchain.DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
 	if uint32(len(arbitratorsHashes)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
 		return 0, errors.New("Current arbitrators count less than required arbitrators count.")
@@ -201,11 +201,11 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *core.Transaction, re
 	realDposReward := common.Fixed64(0)
 	for _, v := range arbitratorsHashes {
 
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &core.Output{
+		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:       blockchain.DefaultLedger.Blockchain.AssetID,
 			Value:         individualBlockConfirmReward + individualProducerReward,
 			ProgramHash:   *v,
-			OutputType:    core.DefaultOutput,
+			OutputType:    types.DefaultOutput,
 			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 
@@ -214,11 +214,11 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *core.Transaction, re
 
 	for _, v := range candidatesHashes {
 
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &core.Output{
+		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:       blockchain.DefaultLedger.Blockchain.AssetID,
 			Value:         individualProducerReward,
 			ProgramHash:   *v,
-			OutputType:    core.DefaultOutput,
+			OutputType:    types.DefaultOutput,
 			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
@@ -28,7 +28,7 @@ type PeerItem struct {
 }
 
 type blockItem struct {
-	Block     *core.Block
+	Block     *types.Block
 	Confirmed bool
 }
 
@@ -51,8 +51,8 @@ type dposNetwork struct {
 
 	changeViewChan        chan bool
 	blockReceivedChan     chan blockItem
-	confirmReceivedChan   chan *core.DPosProposalVoteSlot
-	illegalBlocksEvidence chan *core.DposIllegalBlocks
+	confirmReceivedChan   chan *types.DPosProposalVoteSlot
+	illegalBlocksEvidence chan *types.DposIllegalBlocks
 }
 
 func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) {
@@ -224,15 +224,15 @@ func (n *dposNetwork) PostChangeViewTask() {
 	n.changeViewChan <- true
 }
 
-func (n *dposNetwork) PostBlockReceivedTask(b *core.Block, confirmed bool) {
+func (n *dposNetwork) PostBlockReceivedTask(b *types.Block, confirmed bool) {
 	n.blockReceivedChan <- blockItem{b, confirmed}
 }
 
-func (n *dposNetwork) PostIllegalBlocksTask(i *core.DposIllegalBlocks) {
+func (n *dposNetwork) PostIllegalBlocksTask(i *types.DposIllegalBlocks) {
 	n.illegalBlocksEvidence <- i
 }
 
-func (n *dposNetwork) PostConfirmReceivedTask(p *core.DPosProposalVoteSlot) {
+func (n *dposNetwork) PostConfirmReceivedTask(p *types.DPosProposalVoteSlot) {
 	n.confirmReceivedChan <- p
 }
 
@@ -287,7 +287,7 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 	case utip2p.CmdBlock:
 		msgBlock, processed := m.(*utimsg.Block)
 		if processed {
-			if block, ok := msgBlock.Serializable.(*core.Block); ok {
+			if block, ok := msgBlock.Serializable.(*types.Block); ok {
 				n.listener.OnBlock(msgItem.ID, block)
 			}
 		}
@@ -343,15 +343,15 @@ func (n *dposNetwork) changeView() {
 	n.listener.OnChangeView()
 }
 
-func (n *dposNetwork) blockReceived(b *core.Block, confirmed bool) {
+func (n *dposNetwork) blockReceived(b *types.Block, confirmed bool) {
 	n.listener.OnBlockReceived(b, confirmed)
 }
 
-func (n *dposNetwork) confirmReceived(p *core.DPosProposalVoteSlot) {
+func (n *dposNetwork) confirmReceived(p *types.DPosProposalVoteSlot) {
 	n.listener.OnConfirmReceived(p)
 }
 
-func (n *dposNetwork) illegalBlocksReceived(i *core.DposIllegalBlocks) {
+func (n *dposNetwork) illegalBlocksReceived(i *types.DposIllegalBlocks) {
 	n.listener.OnIllegalBlocksReceived(i)
 }
 
@@ -366,8 +366,8 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 		messageQueue:        make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                make(chan bool),
 		changeViewChan:      make(chan bool),
-		blockReceivedChan:   make(chan blockItem, 10),                  //todo config handle capacity though config file
-		confirmReceivedChan: make(chan *core.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
+		blockReceivedChan:   make(chan blockItem, 10),                   //todo config handle capacity though config file
+		confirmReceivedChan: make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
 		currentHeight:       blockchain.DefaultLedger.Blockchain.GetBestHeight() - 1,
 		account:             dposAccount,
 	}
@@ -398,7 +398,7 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
 	switch cmd {
 	case utip2p.CmdBlock:
-		message = utimsg.NewBlock(&core.Block{})
+		message = utimsg.NewBlock(&types.Block{})
 	case msg.CmdAcceptVote:
 		message = &msg.Vote{Command: msg.CmdAcceptVote}
 	case msg.CmdReceivedProposal:

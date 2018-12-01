@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/yuin/gopher-lua"
@@ -30,8 +30,8 @@ func newInput(L *lua.LState) int {
 	referIDSlice = common.BytesReverse(referIDSlice)
 	var referID common.Uint256
 	copy(referID[:], referIDSlice[0:32])
-	input := &core.Input{
-		Previous: core.OutPoint{
+	input := &types.Input{
+		Previous: types.OutPoint{
 			TxID:  referID,
 			Index: uint16(referIdx),
 		},
@@ -46,9 +46,9 @@ func newInput(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Input and returns this *Input.
-func checkInput(L *lua.LState, idx int) *core.Input {
+func checkInput(L *lua.LState, idx int) *types.Input {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*core.Input); ok {
+	if v, ok := ud.Value.(*types.Input); ok {
 		return v
 	}
 	L.ArgError(1, "Input expected")

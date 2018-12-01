@@ -134,8 +134,8 @@ func (c *Contract) GetType() ContractType {
 	return Custom
 }
 
-func (contract *Contract) ToProgramHash() (*utilcom.Uint168, error) {
-	code := contract.RedeemScript
+func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
+	code := c.RedeemScript
 	if len(code) < 1 {
 		return nil, errors.New("[ToProgramHash] failed, empty program code")
 	}
@@ -158,7 +158,7 @@ func (contract *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
 	md160.Write(hash[:])
-	programBytes := md160.Sum([]byte{contract.HashPrefix})
+	programBytes := md160.Sum([]byte{c.HashPrefix})
 
 	return utilcom.Uint168FromBytes(programBytes)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -14,9 +15,9 @@ import (
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/common/password"
-	"github.com/elastos/Elastos.ELA/core"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
-	"github.com/elastos/Elastos.ELA/core/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -58,7 +59,7 @@ func createTransaction(c *cli.Context) error {
 		return errors.New("invalid transaction amount")
 	}
 
-	var txn *core.Transaction
+	var txn *types.Transaction
 	var to string
 	standard := c.String("to")
 	deposit := c.String("deposit")
@@ -129,23 +130,23 @@ func getTransactionContent(context *cli.Context) (string, error) {
 	return content, nil
 }
 
-func CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error) {
+func CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*types.Transaction, error) {
 	return CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
 }
 
-func CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error) {
+func CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*types.Transaction, error) {
 	return CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
 }
 
-func CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*core.Transaction, error) {
+func CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*types.Transaction, error) {
 	return CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
 }
 
-func CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
+func CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
 	return createTransaction_(fromAddress, fee, lockedUntil, outputs...)
 }
 
-func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
+func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
 	// Check if output is valid
 	if len(outputs) == 0 {
 		return nil, errors.New("[Wallet], Invalid transaction target")
@@ -184,7 +185,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 	// Create transaction outputs
 	var totalOutputAmount = common.Fixed64(0) // The total amount will be spend
-	var txOutputs []*core.Output              // The outputs in transaction
+	var txOutputs []*types.Output             // The outputs in transaction
 	totalOutputAmount += *fee                 // Add transaction fee
 
 	for _, output := range outputs {
@@ -193,12 +194,12 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 			return nil, errors.New(fmt.Sprint("[Wallet], Invalid receiver address: ", output.Address, ", error: ", err))
 		}
 
-		txOutput := &core.Output{
+		txOutput := &types.Output{
 			AssetID:       *account.SystemAssetID,
 			ProgramHash:   *receiver,
 			Value:         *output.Amount,
 			OutputLock:    lockedUntil,
-			OutputType:    core.DefaultOutput,
+			OutputType:    types.DefaultOutput,
 			OutputPayload: &outputpayload.DefaultOutput{},
 		}
 		totalOutputAmount += *output.Amount
@@ -220,19 +221,19 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
 	}
 
 	// Create transaction inputs
-	var txInputs []*core.Input // The inputs in transaction
+	var txInputs []*types.Input // The inputs in transaction
 	for _, utxo := range availabelUtxos {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
 		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
-		input := &core.Input{
-			Previous: core.OutPoint{
+		input := &types.Input{
+			Previous: types.OutPoint{
 				TxID:  *txID,
 				Index: uint16(utxo.VOut),
 			},
@@ -246,12 +247,12 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 			totalOutputAmount = 0
 			break
 		} else if *amount > totalOutputAmount {
-			change := &core.Output{
+			change := &types.Output{
 				AssetID:       *account.SystemAssetID,
 				Value:         *amount - totalOutputAmount,
 				OutputLock:    uint32(0),
 				ProgramHash:   *spender,
-				OutputType:    core.DefaultOutput,
+				OutputType:    types.DefaultOutput,
 				OutputPayload: &outputpayload.DefaultOutput{},
 			}
 			txOutputs = append(txOutputs, change)
@@ -263,18 +264,18 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		return nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	return newTransaction(acc.Contract.RedeemScript, txInputs, txOutputs, core.TransferAsset), nil
+	return newTransaction(acc.Contract.RedeemScript, txInputs, txOutputs, types.TransferAsset), nil
 }
 
-func newTransaction(redeemScript []byte, inputs []*core.Input, outputs []*core.Output, txType core.TransactionType) *core.Transaction {
-	txPayload := &core.PayloadTransferAsset{}
-	txAttr := core.NewAttribute(core.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
-	attributes := make([]*core.Attribute, 0)
+func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TransactionType) *types.Transaction {
+	txPayload := &payload.PayloadTransferAsset{}
+	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	attributes := make([]*types.Attribute, 0)
 	attributes = append(attributes, &txAttr)
 	var program = &pg.Program{redeemScript, nil}
 
-	return &core.Transaction{
-		Version:    core.TxVersion09,
+	return &types.Transaction{
+		Version:    types.TxVersion09,
 		TxType:     txType,
 		Payload:    txPayload,
 		Attributes: attributes,

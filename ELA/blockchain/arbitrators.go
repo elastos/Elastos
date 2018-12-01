@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -88,7 +88,7 @@ func (a *arbitrators) ForceChange() error {
 	return nil
 }
 
-func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
+func (a *arbitrators) OnBlockReceived(b *types.Block, confirmed bool) {
 	if confirmed {
 		a.lock.Lock()
 		a.onChainHeightIncreased(b)
@@ -96,7 +96,7 @@ func (a *arbitrators) OnBlockReceived(b *core.Block, confirmed bool) {
 	}
 }
 
-func (a *arbitrators) OnConfirmReceived(p *core.DPosProposalVoteSlot) {
+func (a *arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	block, err := DefaultLedger.GetBlockWithHash(p.Hash)
 	if err != nil {
 		log.Error("Error occurred when changing arbitrators, details: ", err)
@@ -175,7 +175,7 @@ func (a *arbitrators) UnregisterListener(listener ArbitratorsListener) {
 	a.listener = nil
 }
 
-func (a *arbitrators) onChainHeightIncreased(block *core.Block) {
+func (a *arbitrators) onChainHeightIncreased(block *types.Block) {
 	if a.isNewElection() {
 		if err := a.changeCurrentArbitrators(); err != nil {
 			log.Error("Change current arbitrators error: ", err)
@@ -232,7 +232,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	return nil
 }
 
-func (a *arbitrators) updateNextArbitrators(block *core.Block) error {
+func (a *arbitrators) updateNextArbitrators(block *types.Block) error {
 
 	producers, err := DefaultLedger.HeightVersions.GetProducersDesc(block)
 	if err != nil {

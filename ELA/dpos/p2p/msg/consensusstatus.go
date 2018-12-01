@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -14,10 +14,10 @@ type ConsensusStatus struct {
 	ViewOffset      uint32
 	ViewStartTime   time.Time
 
-	AcceptVotes      []core.DPosProposalVote
-	RejectedVotes    []core.DPosProposalVote
-	PendingProposals []core.DPosProposal
-	PendingVotes     []core.DPosProposalVote
+	AcceptVotes      []types.DPosProposalVote
+	RejectedVotes    []types.DPosProposalVote
+	PendingProposals []types.DPosProposal
+	PendingVotes     []types.DPosProposalVote
 }
 
 func (s *ConsensusStatus) Serialize(w io.Writer) error {
@@ -92,7 +92,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return nil
 	}
-	s.AcceptVotes = make([]core.DPosProposalVote, arrayLength)
+	s.AcceptVotes = make([]types.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.AcceptVotes[i].Deserialize(r); err != nil {
 			return err
@@ -102,7 +102,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.RejectedVotes = make([]core.DPosProposalVote, arrayLength)
+	s.RejectedVotes = make([]types.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.RejectedVotes[i].Deserialize(r); err != nil {
 			return err
@@ -112,7 +112,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingProposals = make([]core.DPosProposal, arrayLength)
+	s.PendingProposals = make([]types.DPosProposal, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
@@ -122,7 +122,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingVotes = make([]core.DPosProposalVote, arrayLength)
+	s.PendingVotes = make([]types.DPosProposalVote, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err

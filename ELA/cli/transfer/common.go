@@ -9,7 +9,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
@@ -28,7 +28,7 @@ func signTransaction(context *cli.Context, client *account.ClientImpl) error {
 		return errors.New("decode transaction content failed")
 	}
 
-	var txn core.Transaction
+	var txn types.Transaction
 	err = txn.Deserialize(bytes.NewReader(rawData))
 	if err != nil {
 		return errors.New("deserialize transaction failed")
@@ -70,7 +70,7 @@ func SendTransaction(context *cli.Context) error {
 	return nil
 }
 
-func output(haveSign, needSign int, txn *core.Transaction) error {
+func output(haveSign, needSign int, txn *types.Transaction) error {
 	// Serialise transaction content
 	buf := new(bytes.Buffer)
 	err := txn.Serialize(buf)
@@ -104,7 +104,7 @@ func output(haveSign, needSign int, txn *core.Transaction) error {
 		return err
 	}
 
-	var tx core.Transaction
+	var tx types.Transaction
 	txBytes, _ := hex.DecodeString(content)
 	tx.Deserialize(bytes.NewReader(txBytes))
 

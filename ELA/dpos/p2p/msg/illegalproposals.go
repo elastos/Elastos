@@ -3,13 +3,13 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 const MaxIllegalProposalSize = 1000000
 
 type IllegalProposals struct {
-	Proposals core.DposIllegalProposals
+	Proposals types.DposIllegalProposals
 }
 
 func (msg *IllegalProposals) CMD() string {

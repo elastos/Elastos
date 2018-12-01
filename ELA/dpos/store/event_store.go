@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -145,7 +145,7 @@ func (s *EventStore) createVoteEventTable() error {
 }
 
 func (s *EventStore) AddVoteEvent(event VoteEvent) (uint64, error) {
-	vote := &core.DPosProposalVote{}
+	vote := &types.DPosProposalVote{}
 	err := vote.Deserialize(bytes.NewReader(event.RawData))
 	if err != nil {
 		return 0, err

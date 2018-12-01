@@ -10,7 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -90,7 +90,7 @@ func getUTXO(L *lua.LState) int {
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if core.TransactionType(utxo.TxType) == core.CoinBase && utxo.Confirmations < 100 {
+		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)

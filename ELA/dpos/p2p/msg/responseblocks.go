@@ -3,7 +3,7 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -13,7 +13,7 @@ const DefaultResponseBlocksMessageDataSize = 8000000 * 10
 
 type ResponseBlocks struct {
 	Command       string
-	BlockConfirms []*core.BlockConfirm
+	BlockConfirms []*types.BlockConfirm
 }
 
 func (m *ResponseBlocks) CMD() string {
@@ -44,9 +44,9 @@ func (m *ResponseBlocks) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	m.BlockConfirms = make([]*core.BlockConfirm, 0)
+	m.BlockConfirms = make([]*types.BlockConfirm, 0)
 	for i := uint64(0); i < blockConfirmCount; i++ {
-		blockConfirm := &core.BlockConfirm{}
+		blockConfirm := &types.BlockConfirm{}
 		if err = blockConfirm.Deserialize(r); err != nil {
 			return err
 		}
