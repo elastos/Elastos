@@ -265,7 +265,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 		}
 
 		// Create new block with nonce = 0
-		auxBlock, err := LocalPow.GenerateBlock(config.Parameters.PowConfiguration.PayToAddr)
+		auxBlock, err := LocalPow.GenerateBlock(config.Parameters.PowConfiguration.PayToAddr, chain.DefaultLedger.Blockchain.BestChain)
 		if nil != err {
 			return ResponsePack(InternalError, "generate block failed")
 		}

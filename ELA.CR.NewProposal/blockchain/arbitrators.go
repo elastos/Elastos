@@ -82,7 +82,7 @@ func (a *arbitrators) ForceChange() error {
 	}
 
 	if a.listener != nil {
-		a.listener.OnNewElection()
+		a.listener.OnNewElection(a.nextArbitrators)
 	}
 
 	return nil
