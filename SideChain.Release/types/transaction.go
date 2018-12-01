@@ -187,7 +187,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 
 	err = tx.Payload.Deserialize(r, tx.PayloadVersion)
 	if err != nil {
-		return errors.New("Payload Parse error")
+		return errors.New("payload parse error:" + err.Error())
 	}
 	//attributes
 	Len, err := ReadVarUint(r, 0)

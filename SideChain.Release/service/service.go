@@ -307,11 +307,11 @@ func (s *HttpService) SendRawTransaction(param util.Params) (interface{}, error)
 
 	bys, err := common.HexStringToBytes(str)
 	if err != nil {
-		return nil, util.NewError(int(InvalidParams), "hex string to bytes error")
+		return nil, util.NewError(int(InvalidParams), "hex string to bytes error:"+err.Error())
 	}
 	var txn types.Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
-		return nil, util.NewError(int(InvalidTransaction), "transaction deserialize error")
+		return nil, util.NewError(int(InvalidTransaction), "transaction deserialize error:"+err.Error())
 	}
 
 	if err := s.verifyAndSendTx(&txn); err != nil {
