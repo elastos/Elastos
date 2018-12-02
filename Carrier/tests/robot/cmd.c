@@ -25,7 +25,8 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <assert.h>
+#include <inttypes.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -821,8 +822,11 @@ static void *client_thread_entry(void *argv)
 {
     PortForwardingContxt *ctxt = (PortForwardingContxt *)argv;
     SOCKET sockfd;
+    struct timeval start_stamp;
+    struct timeval end_stamp;
     ssize_t rc;
-    int i;
+    int i, duration;
+    float speed;
     char data[1024];
 
     memset(data, 'D', sizeof(data));
@@ -838,6 +842,7 @@ static void *client_thread_entry(void *argv)
     usleep(500);
 
     vlogI("client begin to send data:");
+    gettimeofday(&start_stamp, NULL);
 
     for (i = 0; i < ctxt->sent_count; i++) {
         int left = sizeof(data);
@@ -858,8 +863,14 @@ static void *client_thread_entry(void *argv)
         vlogD(".");
     }
 
-    vlogI("finished sending %d Kbytes data", ctxt->sent_count);
-    vlogI("client send data in success");
+    gettimeofday(&end_stamp, NULL);
+    duration = (int)((end_stamp.tv_sec - start_stamp.tv_sec) * 1000000 +
+                             (end_stamp.tv_usec - start_stamp.tv_usec)) / 1000;
+    duration = (duration == 0)  ? 1 : duration;
+    speed = (float)(ctxt->sent_count * 1000) / duration;
+
+    vlogI("finished sending %" PRIu64 " Kbytes in %d.%03d seconds. %.2f KB/s\n",
+           ctxt->sent_count, (int)(duration / 1000), (int)(duration % 1000), speed);
 
     socket_close(sockfd);
     ctxt->return_val = 0;
@@ -872,7 +883,10 @@ static void *server_thread_entry(void *argv)
     PortForwardingContxt *ctxt = (PortForwardingContxt *)argv;
     SOCKET sockfd;
     SOCKET data_sockfd;
-    int rc;
+    struct timeval start_stamp;
+    struct timeval end_stamp;
+    int rc, duration;
+    float speed;
     char data[1025];
 
     ctxt->return_val = -1;
@@ -908,6 +922,7 @@ static void *server_thread_entry(void *argv)
 
         rc = (int)recv(data_sockfd, data, sizeof(data) - 1, 0);
         if (rc > 0) {
+            if (0 == ctxt->recv_count) gettimeofday(&start_stamp, NULL);
             ctxt->recv_count += rc;
             vlogD("%s", data);
         }
@@ -915,8 +930,16 @@ static void *server_thread_entry(void *argv)
 
     if (rc == 0) {
         ctxt->recv_count /= 1024;
-        vlogI("finished receiving %d Kbytes data, closed by remote peer.",
-              ctxt->recv_count);
+
+        gettimeofday(&end_stamp, NULL);
+        duration = (int)((end_stamp.tv_sec - start_stamp.tv_sec) * 1000000 +
+                                 (end_stamp.tv_usec - start_stamp.tv_usec)) / 1000;
+        duration = (duration == 0)  ? 1 : duration;
+        speed = (float)(ctxt->recv_count * 1000) / duration;
+
+        vlogI("finished receiving %" PRIu64 " Kbytes in %d.%03d seconds. %.2f KB/s\n",
+               ctxt->recv_count, (int)(duration / 1000), (int)(duration % 1000), speed);
+
     } else if (rc < 0)
         vlogE("receiving error(%d)", errno);
     else

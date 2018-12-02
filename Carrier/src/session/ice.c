@@ -1132,7 +1132,7 @@ ssize_t ice_handler_write(StreamHandler *base, FlexBuffer *buf)
 
     rc = ice_handler_write_packet(handler, 1, packet);
     if (rc != 0) {
-        vlogE("Stream: %d ICE handler write date error %d.",
+        vlogE("Stream: %d ICE handler write data error 0x%x.",
               base->stream->id, rc);
         return rc;
     }

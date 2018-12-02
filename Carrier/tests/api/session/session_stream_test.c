@@ -274,8 +274,7 @@ static void *bulk_write_routine(void *arg)
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
     speed = (((float)(extra->packet_size * extra->packet_count) / duration) * 1000) / 1024;
 
-    vlogD("Finished writing");
-    vlogD("Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
+    vlogI("Total %" PRIu64 " bytes in %d.%d seconds. %.2f KB/s",
           (uint64_t)(extra->packet_size * extra->packet_count),
           (int)(duration / 1000), (int)(duration % 1000), speed);
 
