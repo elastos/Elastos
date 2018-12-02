@@ -32,12 +32,13 @@ namespace Elastos {
 			_subAccount = subAccount;
 			_earliestPeerTime = earliestPeerTime;
 			_reconnectSeconds = reconnectSeconds;
-		}
 
-		const WalletPtr &CoreSpvService::getWallet() {
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(new TransactionHub(loadAssets(), loadTransactions(), _subAccount, createWalletListener()));
 			}
+		}
+
+		const WalletPtr &CoreSpvService::getWallet() {
 			return _wallet;
 		}
 

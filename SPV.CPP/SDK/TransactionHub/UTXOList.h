@@ -14,10 +14,12 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct UTXO {
-			UTXO() : hash(UINT256_ZERO), n(0) {}
+			UTXO() : hash(UINT256_ZERO), n(0), amount(0), confirms(0) {}
 
-			UTXO(const UInt256 &h, uint32_t i) :
-					n(i) {
+			UTXO(const UInt256 &h, uint32_t i, uint64_t a, uint32_t c) :
+					n(i),
+					amount(a),
+					confirms(c) {
 				memcpy(hash.u8, h.u8, sizeof(h));
 			}
 
@@ -31,6 +33,7 @@ namespace Elastos {
 			UInt256 hash;
 			uint32_t n;
 			uint64_t amount;
+			uint32_t confirms;
 		};
 
 		class UTXOList {
@@ -45,9 +48,9 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs() const;
 
-			void AddByTxInput(const TransactionInput &input);
+			void AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms);
 
-			void AddUTXO(const UInt256 &hash, uint32_t index);
+			void AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms);
 
 			void RemoveAt(size_t index);
 

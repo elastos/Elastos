@@ -166,7 +166,7 @@ namespace Elastos {
 
 				// add inputs to spent output set
 				for (j = 0; j < tx->getInputs().size(); j++) {
-					_spentOutputs.AddByTxInput(tx->getInputs()[j]);
+					_spentOutputs.AddByTxInput(tx->getInputs()[j], 0, 0);
 				}
 
 				// check if tx is pending
@@ -209,7 +209,9 @@ namespace Elastos {
 						if (!tx->getOutputs()[j].getAddress().empty()) {
 
 							if (_subAccount->ContainsAddress(tx->getOutputs()[j].getAddress())) {
-								_utxos.AddUTXO(tx->getHash(), (uint32_t) j);
+								uint32_t confirms = tx->getBlockHeight() >= blockHeight ?
+									tx->getBlockHeight() - blockHeight + 1 : 0;
+								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, tx->getOutputs()[j].getAmount(), confirms);
 								balance += tx->getOutputs()[j].getAmount();
 							}
 						}
@@ -274,6 +276,12 @@ namespace Elastos {
 				if (!tx || _utxos[i].n >= tx->getOutputs().size()) continue;
 				if (filter && !fromAddress.empty() &&
 					!filter(fromAddress, tx->getOutputs()[_utxos[i].n].getAddress())) {
+					continue;
+				}
+
+				if (_utxos[i].confirms < 2) {
+					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
+							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
 					continue;
 				}
 
