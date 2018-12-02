@@ -1357,6 +1357,10 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
         }
     }
 
+    pthread_mutex_lock(&manager->wallet->lock);
+    manager->wallet->lastBlockHeight = manager->lastBlock->height;
+    pthread_mutex_unlock(&manager->wallet->lock);
+
     if (txHashes != _txHashes) free(txHashes);
 
     if (block && block->height != BLOCK_UNKNOWN_HEIGHT) {

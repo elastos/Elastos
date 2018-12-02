@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <time.h>
+#include <Core/BRMerkleBlock.h>
 
 #include "Core/BRArray.h"
 
@@ -88,6 +89,9 @@ namespace Elastos {
 			array_new(manager->Raw.publishedTxHashes, 10);
 			pthread_mutex_init(&manager->Raw.lock, NULL);
 			manager->Raw.threadCleanup = _dummyThreadCleanup;
+
+			manager->Raw.wallet->lastBlockHeight = manager->Raw.lastBlock->height;
+
 			return manager;
 		}
 
