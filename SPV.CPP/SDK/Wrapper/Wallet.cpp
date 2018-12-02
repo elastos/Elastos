@@ -58,6 +58,7 @@ namespace Elastos {
 			array_new(wallet->Raw.utxos, 100);
 			array_new(wallet->Raw.transactions, txCount + 100);
 			wallet->Raw.feePerKb = DEFAULT_FEE_PER_KB;
+			wallet->Raw.lastBlockHeight = 0;
 			wallet->Raw.WalletUnusedAddrs = WalletUnusedAddrs;
 			wallet->Raw.WalletAllAddrs = WalletAllAddrs;
 			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
@@ -415,6 +416,12 @@ namespace Elastos {
 				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
 				if (!tx || o->n >= tx->outputs.size()) continue;
 				if (filter && !fromAddress.empty() && !filter(fromAddress, tx->outputs[o->n]->getAddress())) {
+					continue;
+				}
+
+				if (tx->raw.blockHeight >= wallet->lastBlockHeight) {
+					Log::getLogger()->warn("utxo: '{}' n: '{}', confirming, can't spend for now, tx height = {}, wallet block height = {}",
+										   Utils::UInt256ToString(tx->raw.txHash, true), o->n, tx->raw.blockHeight, wallet->lastBlockHeight);
 					continue;
 				}
 

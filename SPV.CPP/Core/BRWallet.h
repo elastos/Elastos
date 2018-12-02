@@ -62,7 +62,7 @@ typedef struct BRWalletStruct BRWallet;
 
 typedef struct BRWalletStruct {
     uint64_t balance, totalSent, totalReceived, feePerKb, *balanceHist;
-    uint32_t blockHeight;
+    uint32_t blockHeight, lastBlockHeight;
     BRUTXO *utxos;
     BRTransaction **transactions;
     BRMasterPubKey masterPubKey;

@@ -373,7 +373,7 @@ namespace Elastos {
 #endif
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
-			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+			Log::getLogger()->info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 #ifndef BUILD_SHARED_LIBS
 			Log::getLogger()->info("Registering plugin ...");
