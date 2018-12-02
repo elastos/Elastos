@@ -221,13 +221,13 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 		OUTPUT ${SPVSDK_OUTPUT_DIR}/libspvsdk.a
 		COMMAND ${COMPOSE_COMMAND}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		DEPENDS ${COMBIN_STATIC_SCRIPT}
+		DEPENDS spvsdk
 	)
 
-	add_custom_target(spvsdk_combin_static DEPENDS ${SPVSDK_OUTPUT_DIR}/libspvsdk.a)
+	add_custom_target(spvsdk_combin_static ALL DEPENDS ${SPVSDK_OUTPUT_DIR}/libspvsdk.a)
 	add_library(spvsdk_static_uber STATIC IMPORTED GLOBAL)
 	set_target_properties(spvsdk_static_uber PROPERTIES IMPORTED_LOCATION ${SPVSDK_OUTPUT_DIR}/libspvsdk.a)
-	add_dependencies(spvsdk_static_uber spvsdk spvsdk_combin_static)
+	add_dependencies(spvsdk_static_uber spvsdk_combin_static)
 endif()
 
 file(GLOB INSTALL_HEADER_FILES "Interface/*.h")
