@@ -80,6 +80,7 @@ type Noder interface {
 	SetState(state State)
 	State() State
 	IsRelay() bool
+	IsCurrent() bool
 	AddNeighborNode(Noder)
 	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64
