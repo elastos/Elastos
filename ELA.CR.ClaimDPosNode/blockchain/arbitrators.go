@@ -160,11 +160,11 @@ func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 }
 
 func (a *arbitrators) HasArbitersMajorityCount(num uint32) bool {
-	return num >= a.config.MajorityCount
+	return num > a.config.MajorityCount
 }
 
 func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
-	return num > a.config.ArbitratorsCount-a.config.MajorityCount
+	return num >= a.config.ArbitratorsCount-a.config.MajorityCount
 }
 
 func (a *arbitrators) RegisterListener(listener ArbitratorsListener) {
