@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 
-	"github.com/elaio/gopass"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
@@ -29,31 +28,6 @@ func FormatOutput(o []byte) error {
 	_, err = out.WriteTo(os.Stdout)
 
 	return err
-}
-
-// GetConfirmedPassword gets double confirmed password from user input
-func GetConfirmedPassword() ([]byte, error) {
-	fmt.Printf("Password:")
-	first, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Printf("Re-enter Password:")
-	second, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, err
-	}
-	if len(first) != len(second) {
-		fmt.Println("Unmatched Password")
-		os.Exit(1)
-	}
-	for i, v := range first {
-		if v != second[i] {
-			fmt.Println("Unmatched Password")
-			os.Exit(1)
-		}
-	}
-	return first, nil
 }
 
 func ShowAccountInfo(client *account.ClientImpl) error {

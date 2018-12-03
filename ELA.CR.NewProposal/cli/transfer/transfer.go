@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/common/password"
+	"github.com/elastos/Elastos.ELA/cli/password"
 
 	"github.com/urfave/cli"
 )

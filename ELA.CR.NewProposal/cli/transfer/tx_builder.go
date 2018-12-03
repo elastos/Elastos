@@ -14,7 +14,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/common/password"
+	"github.com/elastos/Elastos.ELA/cli/password"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
