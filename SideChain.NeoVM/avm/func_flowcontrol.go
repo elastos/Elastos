@@ -139,14 +139,14 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 
 func OpThrow(e *ExecutionEngine) (VMState, error) {
 	e.state |= FAULT
-	log.Error("an exception occured on VM!")
+	log.Error("contract throw an exception!")
 	return NONE, nil
 }
 
 func OpThowIfNot(e *ExecutionEngine) (VMState, error) {
 	data := PopBoolean(e)
 	if data == false {
-		log.Error("an exception occured on VM!")
+		log.Error("contract throw an exception!")
 		e.state |= FAULT
 	}
 	return NONE, nil

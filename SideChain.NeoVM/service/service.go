@@ -247,7 +247,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 	}
 	code, err := HexStringToBytes(script)
 	if err != nil {
-		return nil, util.NewError(int(sideser.InvalidParams), "")
+		return nil, util.NewError(int(sideser.InvalidParams), "script is error hexString")
 	}
 
 	returntype, ok:= param.String("returnType")
@@ -259,6 +259,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 	ret["state"] = engine.GetState()
+	ret["descript"] = GetDescByVMState(engine.GetState())
 	ret["gas_consumed"] = engine.GetGasConsumed()
 	if engine.GetEvaluationStack().Count() > 0 {
 		ret["result"] = getResult(avm.PopStackItem(engine), returntype)
@@ -272,7 +273,13 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	paramBuilder := avm.NewParamsBuider(buffer)
 
 	args, ok := param["params"]
-	paraseJsonToBytes(args.([]interface{}), paramBuilder)
+	argsData := args.([]interface{})
+	if ok && argsData != nil {
+		count := len(argsData)
+		for i := count - 1; i >= 0; i-- {
+			paraseJsonToBytes(argsData[i].(map[string]interface{}), paramBuilder)
+		}
+	}
 
 	if !ok {
 		return nil, util.NewError(int(sideser.InvalidParams), "Invalid params: "+ args.(string))
@@ -305,6 +312,7 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 	ret["state"] = engine.GetState()
+	ret["descript"] = GetDescByVMState(engine.GetState())
 	ret["gas_consumed"] = engine.GetGasConsumed()
 	if engine.GetEvaluationStack().Count() > 0 {
 		ret["result"] = getResult(avm.PopStackItem(engine), returnType)
@@ -312,10 +320,7 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	return ret, nil
 }
 
-func paraseJsonToBytes(data []interface{}, builder *avm.ParamsBuilder) error {
-
-	for i := len(data) - 1; i >= 0; i -- {
-		item := data[i].(map[string]interface{})
+func paraseJsonToBytes(item map[string]interface{} , builder *avm.ParamsBuilder) error {
 		value := item["value"]
 		if item["type"] == "Boolean" {
 			builder.EmitPushBool(value.(bool))
@@ -343,16 +348,32 @@ func paraseJsonToBytes(data []interface{}, builder *avm.ParamsBuilder) error {
 			builder.EmitPushByteArray(paramBytes)
 		} else if item["type"] == "Array" {
 			count := len(value.([]interface{}))
-			paraseJsonToBytes(value.([]interface{}), builder)
+			for i := count - 1; i >= 0 ; i-- {
+				list := value.([]interface{})
+				paraseJsonToBytes(list[i].(map[string]interface{}), builder)
+			}
+
 			builder.EmitPushInteger(int64(count))
 			builder.Emit(avm.PACK)
 		}
-	}
 	return nil
 }
 
-func getResult(item datatype.StackItem, returnType string) interface{} {
+func GetDescByVMState(state avm.VMState) string {
+	switch state {
+	case avm.FAULT:
+		return "contract execution failed。"
+	case avm.HALT:
+		return "contract execution finished。"
+	case avm.BREAK:
+		return "contract has breaked。"
+	case avm.NONE:
+		return "contract execution suc。"
+	}
+	return "unknown state。"
+}
 
+func getResult(item datatype.StackItem, returnType string) interface{} {
 	if returnType == "String" {
 		return string(item.GetByteArray())
 	} else if returnType == "Integer" {
@@ -435,9 +456,7 @@ func (s *HttpServiceExtend) GetOpPrice(param util.Params) (interface{}, error) {
 		paramBuilder.Emit(opcode)
 	}
 	engine := RunGetPriceScript(paramBuilder.Bytes())
-	ret["state"] = engine.GetState()
 	ret["gas_consumed"] = engine.GetGasConsumed()
-
 	return ret, nil
 }
 

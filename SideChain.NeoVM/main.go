@@ -248,8 +248,8 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
-	s.RegisterAction("invokescript", service.InvokeScript, "code")
-	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params")
+	s.RegisterAction("invokescript", service.InvokeScript, "script", "returnType")
+	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params", "returnType")
 	s.RegisterAction("getOpPrice", service.GetOpPrice, "op", "args")
 	return s
 }
@@ -377,6 +377,14 @@ func notifyInfo(item datatype.StackItem)  {
 		avmlog.Info(common.BytesToHexString(buf.Bytes()))
 	case *datatype.Array:
 		items := item.GetArray()
+		if len(items) == 4 && string(items[0].GetByteArray()) == "transfer" {
+			str := string(items[0].GetByteArray()) + ":\n from:"
+			str += common.BytesToHexString(items[1].GetByteArray()) + " to:"
+			str += common.BytesToHexString(items[2].GetByteArray()) + " value:"
+			str += items[3].GetBigInteger().String()
+			avmlog.Info("notifyInfo:", str)
+			return
+		}
 		for i := 0; i < len(items); i++ {
 			notifyInfo(items[i])
 		}
