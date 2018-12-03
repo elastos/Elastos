@@ -27,6 +27,7 @@
 #include "BRInt.h"
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 // returns number of bytes written to phrase including NULL terminator, or phraseLen needed if phrase is NULL
 size_t BRBIP39Encode(char *phrase, size_t phraseLen, const char *wordList[], const uint8_t *data, size_t dataLen)
@@ -64,24 +65,23 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
 {
     uint32_t x, y, count = 0, idx[24], i;
     uint8_t b = 0, hash[32];
-    const char *word = phrase;
+    char *dupPhrase = strdup(phrase), *word, *saveptr;
+    const char *delim = " \n\t";
     size_t r = 0;
 
     assert(wordList != NULL);
     assert(phrase != NULL);
-    
-    while (word && *word && count < 24) {
+
+    for (word = strtok_r(dupPhrase, delim, &saveptr); word; word = strtok_r(NULL, delim, &saveptr)) {
         for (i = 0, idx[count] = INT32_MAX; i < BIP39_WORDLIST_COUNT; i++) { // not fast, but simple and correct
             if (strncmp(word, wordList[i], strlen(wordList[i])) != 0 ||
                 (word[strlen(wordList[i])] != ' ' && word[strlen(wordList[i])] != '\0')) continue;
             idx[count] = i;
             break;
         }
-        
+
         if (idx[count] == INT32_MAX) break; // phrase contains unknown word
         count++;
-        word = strchr(word, ' ');
-        if (word) word++;
     }
 
     if ((count % 3) == 0 && (! word || *word == '\0')) { // check that phrase has correct number of words
@@ -104,6 +104,7 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
         mem_clean(buf, sizeof(buf));
     }
 
+    free(dupPhrase);
     var_clean(&b);
     var_clean(&x, &y);
     mem_clean(idx, sizeof(idx));
