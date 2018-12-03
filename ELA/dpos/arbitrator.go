@@ -80,8 +80,8 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator() (Arbitrator, error) {
-	dposAccount, err := account.NewDposAccount()
+func NewArbitrator(password []byte) (Arbitrator, error) {
+	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
 		log.Error("Init dpos account error")
 		return nil, err
