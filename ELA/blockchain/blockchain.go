@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
@@ -17,6 +16,8 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/events"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -201,6 +202,7 @@ func (b *Blockchain) AddBlock(block *Block) (bool, bool, error) {
 	if err != nil {
 		return false, false, err
 	}
+
 	if !inMainChain && !isOrphan {
 		if err := DefaultLedger.HeightVersions.CheckConfirmedBlockOnFork(block); err != nil {
 			return false, false, err

@@ -43,6 +43,10 @@ func (b *BlockVersionMain) GetNextOnDutyArbitrator(dutyChangedCount, offset uint
 }
 
 func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
+	if !node.LocalNode.IsCurrent() {
+		return nil
+	}
+
 	anotherBlock, err := blockchain.DefaultLedger.GetBlockWithHeight(block.Height)
 	if err != nil {
 		return err
