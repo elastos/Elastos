@@ -17,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -24,11 +25,13 @@ const (
 )
 
 type Config struct {
-	Server      server.IServer
-	Chain       *blockchain.BlockChain
-	TxMemPool   *mempool.TxPool
-	PowService  *pow.Service
-	SetLogLevel func(level elalog.Level)
+	Server         server.IServer
+	Chain          *blockchain.BlockChain
+	Store          *blockchain.ChainStore
+	GenesisAddress string
+	TxMemPool      *mempool.TxPool
+	PowService     *pow.Service
+	SetLogLevel    func(level elalog.Level)
 
 	GetBlockInfo                func(cfg *Config, block *types.Block, verbose bool) BlockInfo
 	GetTransactionInfo          func(cfg *Config, header *types.Header, tx *types.Transaction) *TransactionInfo
@@ -144,7 +147,7 @@ func (s *HttpService) SubmitAuxBlock(param util.Params) (interface{}, error) {
 	err := s.cfg.PowService.SubmitAuxBlock(blockHash, sideAuxData)
 	if err != nil {
 		log.Warn(err)
-		return nil, util.NewError(int(InvalidParams), "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
+		return nil, util.NewError(int(InvalidParams), err.Error())
 	}
 
 	return blockHash, nil
@@ -274,29 +277,116 @@ func (s *HttpService) GetBlockByHash(param util.Params) (interface{}, error) {
 	return s.getBlock(hash, verbosity)
 }
 
-func (s *HttpService) SendTransactionInfo(param util.Params) (interface{}, error) {
-	info, ok := param["info"]
+func (s *HttpService) SendRechargeToSideChainTxByHash(param util.Params) (interface{}, error) {
+	txid, ok := param.String("txid")
 	if !ok {
-		return nil, util.NewError(int(InvalidParams), "info not found")
+		return nil, util.NewError(int(InvalidParams), "txid not found")
 	}
 
-	txInfo := new(TransactionInfo)
-	txInfo.Payload = new(RechargeToSideChainInfoV1)
-	err := Unmarshal(&info, txInfo)
+	txBytes, err := common.HexStringToBytes(txid)
 	if err != nil {
-		return nil, util.NewError(int(InvalidParams), "info type error")
+		return nil, util.NewError(int(InvalidParams), "invalid txid")
 	}
 
-	txn, err := s.cfg.GetTransaction(s.cfg, txInfo)
+	hash, err := common.Uint256FromBytes(txBytes)
 	if err != nil {
-		return nil, newError(InvalidParams)
+		return nil, util.NewError(int(InvalidParams), "invalid tx hash")
 	}
-	var hash common.Uint256
-	hash = txn.Hash()
-	if err := s.verifyAndSendTx(txn); err != nil {
+
+	tx, err := s.cfg.Store.GetSpvMainchainTx(hash)
+	if err != nil {
+		return nil, util.NewError(int(InvalidParams), "invalid tx hash")
+	}
+
+	depositTx, err := createRechargeToSideChainTransaction(tx, s.cfg.GenesisAddress)
+	if err != nil {
+		return nil, util.NewError(int(InvalidParams), "invalid deposit transaction")
+	}
+
+	if err := s.verifyAndSendTx(depositTx); err != nil {
 		return nil, util.NewError(int(InvalidTransaction), err.Error())
 	}
-	return hash.String(), nil
+	return depositTx.Hash().String(), nil
+}
+
+func createRechargeToSideChainTransaction(tx *core.Transaction, genesisAddress string) (*types.Transaction, error) {
+	rechargeInfo, err := parseRechargeToSideChainTransactionInfo(tx, genesisAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	return createRechargeToSideChainTransactionByInfo(rechargeInfo)
+}
+
+type RechargeToSideChainAsset struct {
+	TargetAddress    string
+	Amount           *common.Fixed64
+	CrossChainAmount *common.Fixed64
+}
+
+type RechargeToSideChainInfo struct {
+	MainChainTransactionHash *common.Uint256
+	DepositAssets            []*RechargeToSideChainAsset
+}
+
+func parseRechargeToSideChainTransactionInfo(txn *core.Transaction, genesisAddress string) (*RechargeToSideChainInfo, error) {
+	result := new(RechargeToSideChainInfo)
+	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
+	if !ok {
+		return nil, errors.New("Invalid payload")
+	}
+	if len(txn.Outputs) == 0 {
+		return nil, errors.New("Invalid TransferCrossChainAsset payload, outputs is null")
+	}
+	programHash, err := common.Uint168FromAddress(genesisAddress)
+	if err != nil {
+		return nil, errors.New("Invalid genesis address")
+	}
+	hash := txn.Hash()
+	result.MainChainTransactionHash = &hash
+	result.DepositAssets = make([]*RechargeToSideChainAsset, 0)
+	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
+		if txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash.IsEqual(*programHash) {
+			result.DepositAssets = append(result.DepositAssets, &RechargeToSideChainAsset{
+				TargetAddress:    payloadObj.CrossChainAddresses[i],
+				Amount:           &txn.Outputs[payloadObj.OutputIndexes[i]].Value,
+				CrossChainAmount: &payloadObj.CrossChainAmounts[i],
+			})
+		}
+	}
+	return result, nil
+}
+
+func createRechargeToSideChainTransactionByInfo(txInfo *RechargeToSideChainInfo) (*types.Transaction, error) {
+	// create payload
+	payload := new(types.PayloadRechargeToSideChain)
+	payload.MainChainTransactionHash = *txInfo.MainChainTransactionHash
+
+	var txOutputs []*types.Output
+	for _, output := range txInfo.DepositAssets {
+		asset := types.GetSystemAssetId()
+		assetId := &asset
+
+		programHash, err := common.Uint168FromAddress(output.TargetAddress)
+		if err != nil {
+			return nil, err
+		}
+		output := &types.Output{
+			AssetID:     *assetId,
+			Value:       *output.CrossChainAmount,
+			OutputLock:  0,
+			ProgramHash: *programHash,
+		}
+		txOutputs = append(txOutputs, output)
+	}
+
+	txTransaction := &types.Transaction{
+		TxType:         types.RechargeToSideChain,
+		PayloadVersion: types.RechargeToSideChainPayloadVersion1,
+		Payload:        payload,
+		Outputs:        txOutputs,
+	}
+	return txTransaction, nil
 }
 
 func (s *HttpService) SendRawTransaction(param util.Params) (interface{}, error) {
@@ -657,30 +747,58 @@ func (s *HttpService) GetExistDepositTransactions(param util.Params) (interface{
 	return resultTxHashes, nil
 }
 
-func (s *HttpService) getBlockTransactionsDetail(block *types.Block, filter func(*types.Transaction) bool) interface{} {
-	var trans []*TransactionInfo
+func (s *HttpService) getBlockTransactionsDetail(block *types.Block, filter func(*types.Transaction) bool) []*types.Transaction {
+	var trans []*types.Transaction
 	for _, tx := range block.Transactions {
 		if !filter(tx) {
 			continue
 		}
+		trans = append(trans, tx)
+	}
 
-		trans = append(trans, s.cfg.GetTransactionInfo(s.cfg, &block.Header, tx))
-	}
-	hash := block.Hash()
-	type BlockTransactions struct {
-		Hash         string
-		Height       uint32
-		Transactions []*TransactionInfo
-	}
-	b := BlockTransactions{
-		Hash:         hash.String(),
-		Height:       block.Height,
-		Transactions: trans,
-	}
-	return b
+	return trans
 }
 
-func (s *HttpService) GetDestroyedTransactionsByHeight(param util.Params) (interface{}, error) {
+func (s *HttpService) getWithdrawTxsInfo(txs []*types.Transaction) interface{} {
+	var trans []*WithdrawTxInfo
+	for _, tx := range txs {
+		payload, ok := tx.Payload.(*types.PayloadTransferCrossChainAsset)
+		if !ok {
+			continue
+		}
+
+		var txOuputsInfo []*WithdrawOutputInfo
+		for i := 0; i < len(payload.CrossChainAmounts); i++ {
+			txOuputsInfo = append(txOuputsInfo, &WithdrawOutputInfo{
+				CrossChainAddress: payload.CrossChainAddresses[i],
+				CrossChainAmount:  payload.CrossChainAmounts[i].String(),
+				OutputAmount:      tx.Outputs[payload.OutputIndexes[i]].Value.String(),
+			})
+		}
+
+		txWithdraw := &WithdrawTxInfo{
+			TxID:             ToReversedString(tx.Hash()),
+			CrossChainAssets: txOuputsInfo,
+		}
+
+		trans = append(trans, txWithdraw)
+	}
+
+	return trans
+}
+
+type WithdrawOutputInfo struct {
+	CrossChainAddress string `json:"crosschainaddress"`
+	CrossChainAmount  string `json:"crosschainamount"`
+	OutputAmount      string `json:"outputamount"`
+}
+
+type WithdrawTxInfo struct {
+	TxID             string                `json:"txid"`
+	CrossChainAssets []*WithdrawOutputInfo `json:"crosschainassets"`
+}
+
+func (s *HttpService) GetWithdrawTransactionsByHeight(param util.Params) (interface{}, error) {
 	height, ok := param.Uint("height")
 	if !ok {
 		return nil, util.NewError(int(InvalidParams), "height parameter should be a positive integer")
@@ -697,7 +815,7 @@ func (s *HttpService) GetDestroyedTransactionsByHeight(param util.Params) (inter
 	}
 
 	destroyHash := common.Uint168{}
-	return s.getBlockTransactionsDetail(block, func(tran *types.Transaction) bool {
+	txs := s.getBlockTransactionsDetail(block, func(tran *types.Transaction) bool {
 		_, ok := tran.Payload.(*types.PayloadTransferCrossChainAsset)
 		if !ok {
 			return false
@@ -708,10 +826,11 @@ func (s *HttpService) GetDestroyedTransactionsByHeight(param util.Params) (inter
 			}
 		}
 		return false
-	}), nil
+	})
+	return s.getWithdrawTxsInfo(txs), nil
 }
 
-func (s *HttpService) GetTransactionInfoByHash(param util.Params) (interface{}, error) {
+func (s *HttpService) GetWithdrawTransactionByHash(param util.Params) (interface{}, error) {
 	str, ok := param.String("txid")
 	if !ok {
 		return nil, util.NewError(int(InvalidParams), "txid not found")
@@ -725,19 +844,30 @@ func (s *HttpService) GetTransactionInfoByHash(param util.Params) (interface{}, 
 	if err != nil {
 		return nil, util.NewError(int(InvalidTransaction), "txid deserialize failed")
 	}
-	tx, height, err := s.cfg.Chain.GetTransaction(hash)
+	tx, _, err := s.cfg.Chain.GetTransaction(hash)
 	if err != nil {
 		return nil, util.NewError(int(UnknownTransaction), "get tx by txid failed")
 	}
-	bHash, err := s.cfg.Chain.GetBlockHash(height)
-	if err != nil {
-		return nil, util.NewError(int(UnknownTransaction), "get block by height failed")
+	payload, ok := tx.Payload.(*types.PayloadTransferCrossChainAsset)
+	if !ok {
+		return nil, util.NewError(int(UnknownTransaction), "get tx by txid failed")
 	}
-	header, err := s.cfg.Chain.GetHeader(bHash)
-	if err != nil {
-		return nil, util.NewError(int(UnknownTransaction), "get header by block hash failed")
+
+	var txOuputsInfo []*WithdrawOutputInfo
+	for i := 0; i < len(payload.CrossChainAmounts); i++ {
+		txOuputsInfo = append(txOuputsInfo, &WithdrawOutputInfo{
+			CrossChainAddress: payload.CrossChainAddresses[i],
+			CrossChainAmount:  payload.CrossChainAmounts[i].String(),
+			OutputAmount:      tx.Outputs[payload.OutputIndexes[i]].Value.String(),
+		})
 	}
-	return s.cfg.GetTransactionInfo(s.cfg, header, tx), nil
+
+	txWithdraw := WithdrawTxInfo{
+		TxID:             ToReversedString(tx.Hash()),
+		CrossChainAssets: txOuputsInfo,
+	}
+
+	return txWithdraw, nil
 }
 
 func Unmarshal(result interface{}, target interface{}) error {
