@@ -59,8 +59,6 @@ type IChainStore interface {
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 
-	RemoveHeaderListElement(hash Uint256)
-
 	GetUnspent(txid Uint256, index uint16) (*Output, error)
 	ContainsUnspent(txid Uint256, index uint16) (bool, error)
 	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error)

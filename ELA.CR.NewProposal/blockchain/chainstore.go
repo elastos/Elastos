@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"bytes"
-	"container/list"
 	"errors"
 	"sync"
 	"time"
@@ -87,13 +86,9 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
-	mu          sync.RWMutex // guard the following var
-	headerIndex map[uint32]Uint256
-	headerCache map[Uint256]*Header
-	headerIdx   *list.List
+	mu sync.RWMutex // guard the following var
 
 	currentBlockHeight uint32
-	storedHeaderCount  uint32
 
 	producerVotes    map[Uint168]*ProducerInfo
 	dirty            map[outputpayload.VoteType]bool
@@ -108,11 +103,7 @@ func NewChainStore(filePath string) (IChainStore, error) {
 
 	store := &ChainStore{
 		IStore:             st,
-		headerIndex:        map[uint32]Uint256{},
-		headerCache:        map[Uint256]*Header{},
-		headerIdx:          list.New(),
 		currentBlockHeight: 0,
-		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
 		producerVotes:      make(map[Uint168]*ProducerInfo, 0),
@@ -178,20 +169,6 @@ func (c *ChainStore) loop() {
 		case closed := <-c.quit:
 			closed <- true
 			return
-		}
-	}
-}
-
-// can only be invoked by backend write goroutine
-func (c *ChainStore) clearCache(b *Block) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(b.Hash()) {
-			c.headerIdx.Remove(e)
 		}
 	}
 }
@@ -393,20 +370,6 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	}
 
 	return *blockHash256, nil
-}
-
-func (c *ChainStore) getHeaderWithCache(hash Uint256) *Header {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		eh := n.Hash()
-		if eh.IsEqual(hash) {
-			return &n
-		}
-	}
-
-	h, _ := c.GetHeader(hash)
-
-	return h
 }
 
 func (c *ChainStore) GetCurrentBlockHash() Uint256 {
@@ -662,22 +625,6 @@ func (c *ChainStore) persist(b *Block) error {
 	return c.BatchCommit()
 }
 
-// can only be invoked by backend write goroutine
-func (c *ChainStore) addHeader(header *Header) {
-
-	log.Debugf("addHeader(), Height=%d", header.Height)
-
-	hash := header.Hash()
-
-	c.mu.Lock()
-	c.headerCache[header.Hash()] = header
-	c.headerIndex[header.Height] = hash
-	c.headerIdx.PushBack(*header)
-	c.mu.Unlock()
-
-	log.Debug("[addHeader]: finish, header height:", header.Height)
-}
-
 func (c *ChainStore) SaveBlock(b *Block) error {
 	log.Debug("SaveBlock()")
 
@@ -713,7 +660,6 @@ func (c *ChainStore) handlePersistBlockTask(b *Block) {
 	}
 
 	c.persistBlock(b)
-	c.clearCache(b)
 }
 
 func (c *ChainStore) handlePersistConfirmTask(confirm *DPosProposalVoteSlot) {
@@ -795,16 +741,6 @@ func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func (c *ChainStore) RemoveHeaderListElement(hash Uint256) {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(hash) {
-			c.headerIdx.Remove(e)
-		}
-	}
 }
 
 func (c *ChainStore) GetHeight() uint32 {
