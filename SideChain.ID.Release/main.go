@@ -161,6 +161,8 @@ func main() {
 	service := sv.NewHttpService(&service.Config{
 		Server:                      server,
 		Chain:                       chain,
+		Store:                       idChainStore.ChainStore,
+		GenesisAddress:              genesisAddress,
 		TxMemPool:                   txPool,
 		PowService:                  powService,
 		SetLogLevel:                 setLogLevel,
@@ -207,14 +209,14 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
 	s.RegisterAction("getnodestate", service.GetNodeState)
-	s.RegisterAction("sendtransactioninfo", service.SendTransactionInfo)
+	s.RegisterAction("sendrechargetransaction", service.SendRechargeToSideChainTxByHash)
 	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getbestblockhash", service.GetBestBlockHash)
 	s.RegisterAction("getblockcount", service.GetBlockCount)
 	s.RegisterAction("getblockbyheight", service.GetBlockByHeight, "height")
-	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight, "height")
+	s.RegisterAction("getwithdrawtransactionsbyheight", service.GetWithdrawTransactionsByHeight, "height")
 	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
-	s.RegisterAction("gettransactioninfo", service.GetTransactionInfoByHash)
+	s.RegisterAction("getwithdrawtransaction", service.GetWithdrawTransactionByHash, "txid")
 	s.RegisterAction("submitsideauxblock", service.SubmitAuxBlock, "blockhash", "auxpow")
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
