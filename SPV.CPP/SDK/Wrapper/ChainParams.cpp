@@ -45,10 +45,17 @@ namespace Elastos {
 			{ 215712,  uint256("7f7c3410c951c2b6b1d040d83495c832eac37a14a74ac7766b931ccb08582c0b"), 1538570196, 407771639 },
 		};
 		const char *MainChainMainNetDNSSeeds[] = {
+			"node-mainnet-002.elastos.org",
+			"node-mainnet-006.elastos.org",
+			"node-mainnet-014.elastos.org",
+			"node-mainnet-016.elastos.org",
+			"node-mainnet-021.elastos.org",
 			"node-mainnet-003.elastos.org",
-			"node-mainnet-008.elastos.org",
+			"node-mainnet-007.elastos.org",
 			"node-mainnet-015.elastos.org",
-			"node-mainnet-018.elastos.org",
+			"node-mainnet-017.elastos.org",
+			"node-mainnet-022.elastos.org",
+			"node-mainnet-004.elastos.org",
 			"node-mainnet-023.elastos.org",
 			NULL
 		};
