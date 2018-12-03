@@ -12,7 +12,7 @@ import:
 - package: github.com/mattn/go-sqlite3
 - package: github.com/pborman/uuid
 - package: github.com/urfave/cli
-- package: github.com/elaio/gopass
+- package: github.com/howeyc/gopass
 - package: github.com/itchyny/base58-go
 - package: github.com/stretchr/testify
   subpackages:

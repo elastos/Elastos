@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/common"
-	pwd "github.com/elastos/Elastos.ELA/common/password"
+	pwd "github.com/elastos/Elastos.ELA/cli/password"
 
 	"github.com/urfave/cli"
 )
@@ -17,7 +17,7 @@ func getConfirmedPassword(passwd string) []byte {
 	if passwd != "" {
 		tmp = []byte(passwd)
 	} else {
-		tmp, err = GetConfirmedPassword()
+		tmp, err = pwd.GetConfirmedPassword()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
