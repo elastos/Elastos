@@ -284,7 +284,6 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
 
 	// Update sync timer
 	LocalNode.syncTimer.update()
-	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
 	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)

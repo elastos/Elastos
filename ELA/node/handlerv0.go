@@ -212,7 +212,6 @@ func (h *HandlerV0) onBlock(msgBlock *types.BlockConfirm) error {
 
 	// Update sync timer
 	LocalNode.syncTimer.update()
-	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
 	isConfirmed, err := chain.DefaultLedger.HeightVersions.AddBlockConfirm(msgBlock)

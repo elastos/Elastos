@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"container/list"
 	"testing"
 
 	ela "github.com/elastos/Elastos.ELA/core"
@@ -24,11 +23,7 @@ func NewTestChainStore() (*ChainStore, error) {
 
 	store := &ChainStore{
 		IStore:             st,
-		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*types.Header{},
-		headerIdx:          list.New(),
 		currentBlockHeight: 0,
-		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
 		producerVotes:      make(map[common.Uint168]*ProducerInfo, 0),
