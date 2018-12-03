@@ -60,7 +60,7 @@ func (t *syncTimer) stop() {
 }
 
 func (node *node) SyncBlocks() {
-	needSync := node.needSync()
+	needSync := !node.IsCurrent()
 	log.Info("needSync: ", needSync)
 	log.Info("BlockHeight = ", chain.DefaultLedger.Blockchain.BlockHeight)
 	chain.DefaultLedger.Blockchain.DumpState()
