@@ -11,8 +11,11 @@ import org.elastos.carrier.common.TestHelper;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -29,6 +32,9 @@ public class FriendAddTest {
 	private static TestHandler handler = new TestHandler(context);
 	private static RobotConnector robot;
 	private static Carrier carrier;
+
+	@Rule
+	public Timeout globalTimeout = Timeout.seconds(300);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -229,5 +235,10 @@ public class FriendAddTest {
 		if (isConnectToRobot) {
 			robot.disconnect();
 		}
+	}
+
+	@Before
+	public void setUpCase() {
+		robot.clearSocketBuffer();
 	}
 }

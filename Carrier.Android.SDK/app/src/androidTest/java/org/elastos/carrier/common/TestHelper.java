@@ -30,9 +30,9 @@ public class TestHelper {
 			}
 
 			String[] args = robot.readAck();
-			assertEquals(args.length, 2);
-			assertEquals(args[0], "fadd");
-			assertEquals(args[1], "succeeded");
+			assertEquals(2, args.length);
+			assertEquals("fadd", args[0]);
+			assertEquals("succeeded", args[1]);
 
 			TestContext.Bundle bundle = context.getExtra();
 			if (!bundle.getRobotOnline()) {
@@ -69,9 +69,9 @@ public class TestHelper {
 
 			// wait for completion of robot "fremove" command.
 			String[] args = robot.readAck();
-			assertEquals(args.length, 2);
-			assertEquals(args[0], "fremove");
-			assertEquals(args[1], "succeeded");
+			assertEquals(2, args.length);
+			assertEquals("fremove", args[0]);
+			assertEquals("succeeded", args[1]);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();

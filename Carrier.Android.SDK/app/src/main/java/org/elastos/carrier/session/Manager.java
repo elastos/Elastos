@@ -30,7 +30,7 @@ import org.elastos.carrier.exceptions.CarrierException;
  * The class representing Carrier session manager.
  */
 public class Manager {
-	private static final String TAG = "SessionMgr";
+	private static final String TAG = "CarrierManager";
 
 	private static Manager sessionMgr;
 

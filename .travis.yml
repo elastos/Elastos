@@ -27,7 +27,7 @@ matrix:
       components:
         - tools
         - platform-tools
-        - build-tools-28.0.3
+        - build-tools-26.0.1
         - android-24
         - sys-img-armeabi-v7a-android-24
     env: ANDROID_ABI=armeabi-v7a API_LEVEL=android-24
@@ -42,40 +42,64 @@ install:
   - wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
   - unzip -q android-ndk-r16b-linux-x86_64.zip
   - export ANDROID_NDK_HOME=/tmp/android-ndk-r16b
-  - curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/tag/internal-test | grep -E "/elastos.*android.*gz|/elastos.*linux.*gz" -o >packages.txt
-  - sed -i 's/^/https:\/\/github.com/g' packages.txt
-  - wget -i packages.txt
-  - cd $TRAVIS_BUILD_DIR/app/native-dist/libs && mkdir x86 && mkdir x86_64 && mkdir arm64-v8a && mkdir armeabi-v7a
-  - tar -zxf /tmp/*-android_x86-*.tar.gz -C x86/ lib --strip-components 1
-  - tar -zxf /tmp/*-android_x86_64-*.tar.gz -C x86_64/ lib --strip-components 1
-  - tar -zxf /tmp/*-android_arm64-*.tar.gz -C arm64-v8a/ lib --strip-components 1
-  - tar -zxf /tmp/*-android_armv7a-*.tar.gz -C armeabi-v7a/ lib --strip-components 1
-  - cd /tmp && mkdir carrier && cd carrier
-  - ls /tmp/*-linux_x64* | xargs -n1 tar -zxf
   - cd $TRAVIS_BUILD_DIR
+  - .script/download_libs.sh 1
 
 before_script:
   - export HOST_IP=`ifconfig eth0 | grep 'inet addr' | awk '{ print $2}' | awk  -F"[:]" '{ print $2}'`
   - echo $HOST_IP
   - sed -i 's/192.168.0.107/'${HOST_IP}'/g' app/src/androidTest/java/org/elastos/carrier/robot/Robot.java
-  # - cat app/src/androidTest/java/org/elastos/carrier/robot/Robot.java
+  - cat app/src/androidTest/java/org/elastos/carrier/robot/Robot.java
   - sed -i 's/127.0.0.1/'${HOST_IP}'/g' /tmp/carrier/etc/carrier/tests.conf
-  # - sed -i 's/loglevel = 4/loglevel = 5/g' /tmp/carrier/etc/carrier/tests.conf
   - cat /tmp/carrier/etc/carrier/tests.conf
   - export LD_LIBRARY_PATH=/tmp/carrier/lib/
-  - /tmp/carrier/bin/elatests --robot -c /tmp/carrier/etc/carrier/tests.conf &
 
 script:
   - touch ~/.android/repositories.cfg
   - gradle init
   - gradle wrapper
-  - gradle lint && gradle assembleRelease
+  - gradle lint
   - android-wait-for-emulator
-  - gradle installDebugAndroidTest
-  - adb shell logcat | grep -E "Test|Debug|libc|RobotConnector" | tee logcat.log &
+  - x=1
+  - while [[ $x -le 3 ]]; do
+      ret=`gradle installDebugAndroidTest`;
+      echo $ret;
+      ret=`adb shell pm list packages -e | grep elastos`;
+      if [[ "$ret" != "" ]]; then
+        return 0;
+      fi;
+      x=$(( $x + 1 ));
+    done
+  - adb shell logcat -c
+  - adb shell logcat -v time | grep -E "Test|Debug|RobotConnector|Carrier" &
+  - /tmp/carrier/bin/elatests --robot -c /tmp/carrier/etc/carrier/tests.conf &
   - adb shell am instrument -w -r -e debug false -e class 'org.elastos.carrier.RootTestsuite' org.elastos.carrier.test/android.support.test.runner.AndroidJUnitRunner | tee test.log
-  - export RET=`tail -10 test.log | grep 'INSTRUMENTATION_CODE' | awk '{ print $2}'`
-  - return $RET
+  - tail -10 test.log
+  - export RUN_OK=`tail -10 test.log | grep 'OK ('`
+  - if [[ "$RUN_OK" == "" ]]; then
+      eval $(tail -10 test.log | grep "Failures" | awk -F "[,:]" '{gsub(/ /,"",$2);gsub(/[ \t\r\n]/,"",$4);print "TotalCase="$2;print "Failures="$4}');
+      echo "AllCase="${TotalCase}"++-------++";
+      echo "Fail="${Failures}"++--------++";
+      if [[ "${Failures}" == "" ]]; then
+        echo "test interrupted";
+        export TEST_INTERRUPT=TRUE;
+        return -1;
+      fi;
+      echo "--"${Failures}"--";
+      if [[ "${Failures}" -ge 3 ]]; then
+        echo "too much Failures";
+        return $Failures;
+      else
+        if [[ "$TotalCase" -le 3 ]]; then
+          echo "TestCase do not run, pls check it!";
+          return -1;
+        fi;
+        echo "warning! pls check the failed case!";
+      fi
+    fi
 
 after_failure:
-  - cat logcat.log
+  - if [[ "$TEST_INTERRUPT" != "" ]]; then
+      echo "show logcat!";
+      adb shell logcat -v time -d;
+    fi

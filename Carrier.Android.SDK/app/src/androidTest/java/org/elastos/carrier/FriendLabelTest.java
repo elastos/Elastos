@@ -81,7 +81,7 @@ public class FriendLabelTest {
 			String label = "test_robot";
 			carrier.labelFriend(robot.getNodeid(), label);
 			FriendInfo info = carrier.getFriend(robot.getNodeid());
-			assertEquals(info.getLabel(), label);
+			assertEquals(label, info.getLabel());
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
@@ -103,7 +103,7 @@ public class FriendLabelTest {
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x8100000A);
+			assertEquals(0x8100000A, e.getErrorCode());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -119,7 +119,7 @@ public class FriendLabelTest {
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x8100000A);
+			assertEquals(0x8100000A, e.getErrorCode());
 		}
 		catch (Exception e) {
 			e.printStackTrace();

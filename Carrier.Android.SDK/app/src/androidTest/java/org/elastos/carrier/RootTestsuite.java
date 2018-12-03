@@ -39,14 +39,28 @@ import static org.junit.Assert.fail;
 public class RootTestsuite {
 	private static String TAG = "RootTestsuite";
 	private static RobotConnector robot;
+	private static int ConnectRetryTimes = 3;
 
 	@BeforeClass
 	public static void setup() {
 		Log.d(TAG, "Carrier [setup]");
 		robot = RobotConnector.getInstance();
-		if (!robot.connectToRobot()) {
-			android.util.Log.e(TAG, "Connection to robot failed, abort this test");
-			fail();
+		int retryTimes = 0;
+		while (true) {
+			if (!robot.connectToRobot()) {
+				if (++retryTimes >= ConnectRetryTimes) {
+					Log.e(TAG, "Connection to robot failed, abort this test");
+					fail();
+				}
+				Log.d(TAG, "connectToRobot failed, retry " + retryTimes);
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+			else break;
 		}
 	}
 

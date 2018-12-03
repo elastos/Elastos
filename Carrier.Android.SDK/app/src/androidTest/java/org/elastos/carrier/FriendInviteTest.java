@@ -9,8 +9,11 @@ import org.elastos.carrier.common.TestHelper;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -29,6 +32,9 @@ public class FriendInviteTest {
 	private static final TestHandler handler = new TestHandler(context);
 	private static RobotConnector robot;
 	private static Carrier carrier;
+
+	@Rule
+	public Timeout globalTimeout = Timeout.seconds(300);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -127,8 +133,8 @@ public class FriendInviteTest {
 			if (args == null || args.length != 2) {
 				fail();
 			}
-			assertEquals(args[0], "data");
-			assertEquals(args[1], hello);
+			assertEquals("data", args[0]);
+			assertEquals(hello, args[1]);
 
 			String invite_rsp_data = "invitation-confirmed";
 			assertTrue(robot.writeCmd(String.format("freplyinvite %s confirm %s", carrier.getUserId(),
@@ -139,10 +145,10 @@ public class FriendInviteTest {
 
 			TestContext.Bundle bundle = context.getExtra();
 			LocalData localData = (LocalData) bundle.getExtraData();
-			assertEquals(bundle.getFrom(), robot.getNodeid());
-			assertEquals(localData.status, 0);
+			assertEquals(robot.getNodeid(), bundle.getFrom());
+			assertEquals(0, localData.status);
 			assertTrue(localData.reason == null || localData.reason.isEmpty());
-			assertEquals(localData.data, invite_rsp_data);
+			assertEquals(invite_rsp_data, localData.data);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
@@ -166,8 +172,8 @@ public class FriendInviteTest {
 			if (args == null || args.length != 2) {
 				fail();
 			}
-			assertEquals(args[0], "data");
-			assertEquals(args[1], hello);
+			assertEquals("data", args[0]);
+			assertEquals(hello, args[1]);
 
 			String reason = "unknown-error";
 			assertTrue(robot.writeCmd(String.format("freplyinvite %s refuse %s", carrier.getUserId(),
@@ -178,9 +184,9 @@ public class FriendInviteTest {
 
 			TestContext.Bundle bundle = context.getExtra();
 			LocalData localData = (LocalData) bundle.getExtraData();
-			assertEquals(bundle.getFrom(), robot.getNodeid());
+			assertEquals(robot.getNodeid(), bundle.getFrom());
 			assertTrue(localData.status != 0);
-			assertEquals(localData.reason, reason);
+			assertEquals(reason, localData.reason);
 			assertTrue(localData.data == null || localData.data.isEmpty());
 		}
 		catch (CarrierException e) {
@@ -204,7 +210,7 @@ public class FriendInviteTest {
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x8100000A);
+			assertEquals(0x8100000A, e.getErrorCode());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -224,7 +230,7 @@ public class FriendInviteTest {
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();
-			assertEquals(e.getErrorCode(), 0x8100000A);
+			assertEquals(0x8100000A, e.getErrorCode());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -266,5 +272,10 @@ public class FriendInviteTest {
 		if (isConnectToRobot) {
 			robot.disconnect();
 		}
+	}
+
+	@Before
+	public void setUpCase() {
+		robot.clearSocketBuffer();
 	}
 }

@@ -15,8 +15,11 @@ import org.elastos.carrier.common.TestHelper.ITestChannelExecutor;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -38,6 +41,9 @@ public class RequestReplyTest {
 	private static final TestStreamHandler streamHandler = new TestStreamHandler();
 	private static Session session;
 	private static Stream stream;
+
+	@Rule
+	public Timeout globalTimeout = Timeout.seconds(300);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -451,4 +457,9 @@ public class RequestReplyTest {
 			robot.disconnect();
 		}
 	}
+
+    @Before
+    public void setUpCase() {
+        robot.clearSocketBuffer();
+    }
 }

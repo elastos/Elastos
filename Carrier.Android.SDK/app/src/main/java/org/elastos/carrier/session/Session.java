@@ -51,6 +51,7 @@ public class Session {
 	private Session(String to) {
 		this.to = to;
 		this.didClose = false;
+		Log.d(TAG, "Session identityHashCode:" + System.identityHashCode(this));
 	}
 
 	@Override
@@ -67,6 +68,7 @@ public class Session {
 		if (!didClose) {
 
 			Log.d(TAG, "Closing session with " + to + " ...");
+			Log.d(TAG, "close identityHashCode:" + System.identityHashCode(this));
 
 			session_close();
 			didClose = true;

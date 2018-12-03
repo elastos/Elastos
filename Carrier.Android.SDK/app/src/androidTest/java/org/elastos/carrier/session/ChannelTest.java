@@ -15,8 +15,11 @@ import org.elastos.carrier.common.TestHelper.ITestChannelExecutor;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.util.Random;
@@ -41,6 +44,9 @@ public class ChannelTest {
 	private static Stream stream;
 	private static final TestSessionRequestCompleteHandler completeHandler
 				= new TestSessionRequestCompleteHandler();
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(300);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -253,7 +259,7 @@ public class ChannelTest {
 
 	private static void doBulkChannelWrite()
 	{
-		final int max_data_sz = 1024*1024*100;
+		final int max_data_sz = 1024*1024*10;
 		final int min_data_sz = 1024*1024;
 		final int max_pkt_sz  = 1900;
 		final int min_pkt_sz  = 1024;
@@ -293,7 +299,6 @@ public class ChannelTest {
 					}
 				}
 				long end = System.currentTimeMillis();
-
 				duration = end - start;
 				speed = (((float)(pkt_sz * pkt_count) / duration) * 1000) / 1024;
 
@@ -366,7 +371,7 @@ public class ChannelTest {
 	}
 
 	private void doBulkMultipleChannelsWrite() {
-		final int max_data_sz = 1024*1024*100;
+		final int max_data_sz = 1024*1024*50;
 		final int min_data_sz = 1024*128;
 		final int max_pkt_sz  = 1900;
 		final int min_pkt_sz  = 1024;
@@ -398,7 +403,7 @@ public class ChannelTest {
 							data.mChannelIDCount = 0;
 							return;
 						} else {
-							Log.d(TAG, String.format("Open channel [%d] succeeded (id:%d)", i, data.mChannelIDs[i]));
+							// Log.d(TAG, String.format("Open channel [%d] succeeded (id:%d)", i, data.mChannelIDs[i]));
 							synchronized (streamHandler) {
 								streamHandler.wait(1000);
 							}
@@ -414,18 +419,15 @@ public class ChannelTest {
 					for (int p = 0; p < pkt_sz; p++) {
 						packet[p] = 'D';
 					}
+					byte[] packetBytes = TestHelper.getBytes(packet);
 
 					Log.d(TAG,"Open new 128 channels successfully.");
 					Log.d(TAG,"Begin to write data.....");
 
 					long start = System.currentTimeMillis();
-
-					byte[] packetBytes;
 					for (i = 0; i < MAX_CHANNEL_COUNT / 2; i++) {
 						int rc;
-
 						for (j = 0; j < pkt_count; j++) {
-							packetBytes = TestHelper.getBytes(packet);
 							rc = writeDataToChannel(stream, data.mChannelIDs[i], packetBytes, packetBytes.length);
 							if (rc < 0) {
 								for (i = 0; i < MAX_CHANNEL_COUNT; i++) {
@@ -438,7 +440,6 @@ public class ChannelTest {
 
 					for (j = 0; j < pkt_count; j++) {
 						for (i = MAX_CHANNEL_COUNT / 2; i < MAX_CHANNEL_COUNT; i++) {
-							packetBytes = TestHelper.getBytes(packet);
 							int rc = writeDataToChannel(stream, data.mChannelIDs[i], packetBytes, packetBytes.length);
 							if (rc < 0) {
 								for (i = 0; i < MAX_CHANNEL_COUNT; i++) {
@@ -450,7 +451,6 @@ public class ChannelTest {
 					}
 
 					long end = System.currentTimeMillis();
-
 					duration = end - start;
 
 					Log.d(TAG, String.format("Finish! Total 128 channel write data bytes in %d.%d seconds.",
@@ -715,5 +715,10 @@ public class ChannelTest {
 		if (isConnectToRobot) {
 			robot.disconnect();
 		}
+	}
+
+	@Before
+	public void setUpCase() {
+		robot.clearSocketBuffer();
 	}
 }
