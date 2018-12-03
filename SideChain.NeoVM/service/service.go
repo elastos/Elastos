@@ -273,16 +273,14 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	paramBuilder := avm.NewParamsBuider(buffer)
 
 	args, ok := param["params"]
-	argsData := args.([]interface{})
-	if ok && argsData != nil {
-		count := len(argsData)
-		for i := count - 1; i >= 0; i-- {
-			paraseJsonToBytes(argsData[i].(map[string]interface{}), paramBuilder)
+	if ok {
+		argsData := args.([]interface{})
+		if argsData != nil {
+			count := len(argsData)
+			for i := count - 1; i >= 0; i-- {
+				paraseJsonToBytes(argsData[i].(map[string]interface{}), paramBuilder)
+			}
 		}
-	}
-
-	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "Invalid params: "+ args.(string))
 	}
 	operation, ok := param.String("operation")
 	if ok && operation != "" {
