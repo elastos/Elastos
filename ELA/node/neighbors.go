@@ -1,8 +1,8 @@
 package node
 
 import (
-	"sync"
 	"sort"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -40,7 +40,7 @@ func (ns *neighbours) IsNeighborAddr(addr string) bool {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			if n.NetAddress().String() == addr {
 				return true
 			}
@@ -54,7 +54,7 @@ func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 	defer ns.Unlock()
 	for _, node := range ns.List {
 		// Skip unestablished nodes
-		if node.State() != p2p.ESTABLISH {
+		if node.State() != protocol.ESTABLISHED {
 			continue
 		}
 
@@ -79,20 +79,20 @@ func (ns *neighbours) NodeEstablished(id uint64) bool {
 		return false
 	}
 
-	if node.State() != p2p.ESTABLISH {
+	if node.State() != protocol.ESTABLISHED {
 		return false
 	}
 
 	return true
 }
 
-func (ns *neighbours) GetNeighbourAddresses() []p2p.NetAddress {
+func (ns *neighbours) GetNeighbourAddresses() []*p2p.NetAddress {
 	ns.Lock()
 	defer ns.Unlock()
 
-	var addrs []p2p.NetAddress
+	var addrs []*p2p.NetAddress
 	for _, n := range ns.List {
-		if n.State() != p2p.ESTABLISH {
+		if n.State() != protocol.ESTABLISHED {
 			continue
 		}
 		addrs = append(addrs, n.NetAddress())
@@ -101,18 +101,21 @@ func (ns *neighbours) GetNeighbourAddresses() []p2p.NetAddress {
 	return addrs
 }
 
-func (ns *neighbours) GetNeighborHeights() []uint64 {
+func (ns *neighbours) GetInternalNeighborAddressAndHeights() ([]string, []uint64) {
 	neighbors := ns.GetNeighborNodes()
 
 	heights := make([]uint64, 0, len(neighbors))
+	addresses := make([]string, 0, len(neighbors))
 	for _, n := range neighbors {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED && !n.IsExternal() {
 			height := n.Height()
+			address := n.Addr()
 			heights = append(heights, height)
+			addresses = append(addresses, address)
 		}
 	}
 
-	return heights
+	return addresses, heights
 }
 
 func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
@@ -121,14 +124,16 @@ func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
 
 	nodes := make([]protocol.Noder, 0, len(ns.List))
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			node := n
 			nodes = append(nodes, node)
 		}
 	}
 
 	// Sort by node id before return
-	sort.Sort(nodeById(nodes))
+	sort.Slice(nodes, func(i, j int) bool {
+		return nodes[i].ID() < nodes[j].ID()
+	})
 
 	return nodes
 }
@@ -138,11 +143,11 @@ func (ns *neighbours) GetNeighbourCount() uint {
 	return count
 }
 
-func (ns *neighbours) GetANeighbourRandomly() protocol.Noder {
+func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED && n.IsExternal() {
 			return n
 		}
 	}
@@ -174,7 +179,7 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 	var best protocol.Noder
 	for _, nbr := range ns.List {
 		// Do not let external node become sync node
-		if nbr.State() != p2p.ESTABLISH || nbr.IsExternal() {
+		if nbr.State() != protocol.ESTABLISHED || nbr.IsExternal() {
 			continue
 		}
 
@@ -190,9 +195,3 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 
 	return best
 }
-
-type nodeById []protocol.Noder
-
-func (ns nodeById) Len() int           { return len(ns) }
-func (ns nodeById) Less(i, j int) bool { return ns[i].ID() < ns[j].ID() }
-func (ns nodeById) Swap(i, j int)      { ns[i], ns[j] = ns[j], ns[i] }

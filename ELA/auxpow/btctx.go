@@ -2,15 +2,19 @@ package auxpow
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/binary"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+)
+
+const (
+	// MaxScriptSize is the maximum allowed length of a raw script.
+	MaxScriptSize = 10000
 )
 
 type BtcOutPoint struct {
-	Hash  Uint256
+	Hash  common.Uint256
 	Index uint32
 }
 
@@ -67,7 +71,8 @@ func BtcReadTxIn(r io.Reader, ti *BtcTxIn) error {
 	}
 	ti.PreviousOutPoint = op
 
-	ti.SignatureScript, err = ReadVarBytes(r)
+	ti.SignatureScript, err = common.ReadVarBytes(r, MaxScriptSize,
+		"transaction input signature script")
 	if err != nil {
 		return err
 	}
@@ -88,7 +93,7 @@ func BtcWriteTxIn(w io.Writer, ti *BtcTxIn) error {
 		return err
 	}
 
-	err = WriteVarBytes(w, ti.SignatureScript)
+	err = common.WriteVarBytes(w, ti.SignatureScript)
 	if err != nil {
 		return err
 	}
@@ -107,7 +112,8 @@ func BtcReadTxOut(r io.Reader, to *BtcTxOut) error {
 	}
 	to.Value = int64(binary.LittleEndian.Uint64(buf[:]))
 
-	to.PkScript, err = ReadVarBytes(r)
+	to.PkScript, err = common.ReadVarBytes(r, MaxScriptSize,
+		"transaction output public key script")
 	return err
 }
 
@@ -119,7 +125,7 @@ func BtcWriteTxOut(w io.Writer, to *BtcTxOut) error {
 		return err
 	}
 
-	err = WriteVarBytes(w, to.PkScript)
+	err = common.WriteVarBytes(w, to.PkScript)
 	return err
 }
 
@@ -131,7 +137,7 @@ func (tx *BtcTx) Serialize(w io.Writer) error {
 		return err
 	}
 	count := uint64(len(tx.TxIn))
-	err = WriteVarUint(w, count)
+	err = common.WriteVarUint(w, count)
 	if err != nil {
 		return err
 	}
@@ -143,7 +149,7 @@ func (tx *BtcTx) Serialize(w io.Writer) error {
 	}
 
 	count = uint64(len(tx.TxOut))
-	err = WriteVarUint(w, count)
+	err = common.WriteVarUint(w, count)
 	if err != nil {
 		return err
 	}
@@ -167,7 +173,7 @@ func (tx *BtcTx) Deserialize(r io.Reader) error {
 	}
 	tx.Version = int32(binary.LittleEndian.Uint32(buf[:]))
 
-	count, err := ReadVarUint(r, 0)
+	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -182,7 +188,7 @@ func (tx *BtcTx) Deserialize(r io.Reader) error {
 		tx.TxIn = append(tx.TxIn, &txIn)
 	}
 
-	count, err = ReadVarUint(r, 0)
+	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -206,11 +212,10 @@ func (tx *BtcTx) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (tx *BtcTx) Hash() Uint256 {
-	b_buf := new(bytes.Buffer)
-	tx.Serialize(b_buf)
-	temp := sha256.Sum256(b_buf.Bytes())
-	return Uint256(sha256.Sum256(temp[:]))
+func (tx *BtcTx) Hash() common.Uint256 {
+	buf := new(bytes.Buffer)
+	tx.Serialize(buf)
+	return common.Sha256D(buf.Bytes())
 }
 
 func NewBtcTx(txIn []*BtcTxIn, txOut []*BtcTxOut) *BtcTx {
