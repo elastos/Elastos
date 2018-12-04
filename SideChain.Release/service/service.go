@@ -296,11 +296,11 @@ func (s *HttpService) SendRechargeToSideChainTxByHash(param util.Params) (interf
 
 	depositTx, err := createRechargeToSideChainTransaction(tx, s.cfg.GenesisAddress)
 	if err != nil {
-		return nil, util.NewError(int(InvalidParams), "invalid deposit transaction")
+		return nil, util.NewError(int(InvalidParams), "create recharge tx failed")
 	}
 
 	if err := s.verifyAndSendTx(depositTx); err != nil {
-		return nil, util.NewError(int(InvalidTransaction), err.Error())
+		return nil, ruleError(err)
 	}
 	return depositTx.Hash().String(), nil
 }
@@ -401,7 +401,7 @@ func (s *HttpService) SendRawTransaction(param util.Params) (interface{}, error)
 	}
 
 	if err := s.verifyAndSendTx(&txn); err != nil {
-		return nil, util.NewError(int(InvalidTransaction), err.Error())
+		return nil, ruleError(err)
 	}
 
 	return ToReversedString(txn.Hash()), nil
@@ -1237,4 +1237,12 @@ func GetPayload(pInfo PayloadInfo) (types.Payload, error) {
 	}
 
 	return nil, errors.New("Invalid payload type.")
+}
+
+func ruleError(err error) error {
+	ruleErr, ok := err.(*mempool.RuleError)
+	if ok {
+		return util.NewError(int(ruleErr.ErrorCode), ruleErr.Error())
+	}
+	return util.NewError(int(InvalidTransaction), err.Error())
 }
