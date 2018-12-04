@@ -2,15 +2,29 @@ package blockchain
 
 import (
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 )
+
+// IChainStoreDpos provides func for dpos
+type IChainStoreDpos interface {
+	GetRegisteredProducers() []*PayloadRegisterProducer
+	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
+	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
+	GetProducerStatus(programHash Uint168) ProducerState
+
+	GetIllegalProducers() map[string]struct{}
+
+	GetDposDutyChangedCount() uint32
+	PersistDposDutyChangedCount(count uint32) error
+}
 
 // IChainStore provides func with store package.
 type IChainStore interface {
+	IChainStoreDpos
 	protocol.TxnPoolListener
 
 	InitWithGenesisBlock(genesisblock *Block) (uint32, error)
@@ -37,11 +51,6 @@ type IChainStore interface {
 	PersistSidechainTx(sidechainTxHash Uint256)
 	GetSidechainTx(sidechainTxHash Uint256) (byte, error)
 
-	GetRegisteredProducers() []*PayloadRegisterProducer
-	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
-	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
-	GetProducerStatus(programHash Uint168) ProducerState
-	GetIllegalProducers() map[string]struct{}
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 
@@ -56,9 +65,6 @@ type IChainStore interface {
 	IsTxHashDuplicate(txhash Uint256) bool
 	IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool
 	IsBlockInStore(hash Uint256) bool
-
-	GetDposDutyChangedCount() uint32
-	PersistDposDutyChangedCount(count uint32) error
 
 	Close()
 }
