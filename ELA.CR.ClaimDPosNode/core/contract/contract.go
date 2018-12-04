@@ -4,20 +4,11 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
 
 	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 	"golang.org/x/crypto/ripemd160"
-)
-
-type ContractType byte
-
-const (
-	Signature ContractType = iota
-	MultiSig
-	Custom
 )
 
 const (
@@ -31,107 +22,6 @@ const (
 type Contract struct {
 	RedeemScript []byte
 	HashPrefix   byte
-}
-
-func (c *Contract) IsStandard() bool {
-	if len(c.RedeemScript) != 35 {
-		return false
-	}
-	if c.RedeemScript[0] != 33 || c.RedeemScript[34] != byte(vm.CHECKSIG) {
-		return false
-	}
-	return true
-}
-
-func (c *Contract) IsMultiSig() bool {
-	var m int16 = 0
-	var n int16 = 0
-	i := 0
-
-	if len(c.RedeemScript) < 37 {
-		return false
-	}
-	if c.RedeemScript[i] > byte(vm.PUSH16) {
-		return false
-	}
-	if c.RedeemScript[i] < byte(vm.PUSH1) && c.RedeemScript[i] != 1 && c.RedeemScript[i] != 2 {
-		return false
-	}
-
-	switch c.RedeemScript[i] {
-	case 1:
-		i++
-		m = int16(c.RedeemScript[i])
-		i++
-		break
-	case 2:
-		i++
-		m = common.BytesToInt16(c.RedeemScript[i:])
-		i += 2
-		break
-	default:
-		m = int16(c.RedeemScript[i]) - 80
-		i++
-		break
-	}
-
-	if m < 1 || m > 1024 {
-		return false
-	}
-
-	for c.RedeemScript[i] == 33 {
-		i += 34
-		if len(c.RedeemScript) <= i {
-			return false
-		}
-		n++
-	}
-	if n < m || n > 1024 {
-		return false
-	}
-
-	switch c.RedeemScript[i] {
-	case 1:
-		i++
-		if n != int16(c.RedeemScript[i]) {
-			return false
-		}
-		i++
-		break
-	case 2:
-		i++
-		if n != common.BytesToInt16(c.RedeemScript[i:]) {
-			return false
-		}
-		i += 2
-		break
-	default:
-		if n != (int16(c.RedeemScript[i]) - 80) {
-			return false
-		}
-		i++
-		break
-	}
-
-	if c.RedeemScript[i] != byte(vm.CHECKMULTISIG) {
-		return false
-	}
-	i++
-	if len(c.RedeemScript) != i {
-		return false
-	}
-
-	return true
-}
-
-func (c *Contract) GetType() ContractType {
-	if c.IsStandard() {
-		return Signature
-	}
-	if c.IsMultiSig() {
-		return MultiSig
-	}
-	return Custom
 }
 
 func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
