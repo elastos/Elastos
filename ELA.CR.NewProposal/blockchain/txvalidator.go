@@ -455,7 +455,7 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 			return fmt.Errorf("invalid program parameter nil")
 		}
 
-		switch contract.GetType(program.Code) {
+		switch contract.GetCodeType(program.Code) {
 		case contract.Signature:
 			_, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
 			if err != nil {
