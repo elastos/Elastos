@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
-	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -373,31 +371,6 @@ func (c *ChainStore) GetCurrentBlockHash() Uint256 {
 	return hash
 }
 
-func (c *ChainStore) GetDposDutyChangedCount() uint32 {
-	key := []byte{byte(DPOSDutyChangedCount)}
-	data, err := c.Get(key)
-	if err != nil {
-		return 0
-	}
-
-	result, err := ReadUint32(bytes.NewReader(data))
-	if err != nil {
-		return 0
-	}
-
-	return result
-}
-
-func (c *ChainStore) PersistDposDutyChangedCount(count uint32) error {
-	key := []byte{byte(DPOSDutyChangedCount)}
-
-	value := new(bytes.Buffer)
-	WriteUint32(value, count)
-
-	c.BatchPut(key, value.Bytes())
-	return nil
-}
-
 func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
 
 	reply := make(chan bool)
@@ -486,117 +459,6 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	}
 
 	return data[0], nil
-}
-
-type producerSorter []*ProducerInfo
-
-func (s producerSorter) Len() int {
-	return len(s)
-}
-
-func (s producerSorter) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s producerSorter) Less(i, j int) bool {
-	ivalue, _ := s[i].Vote[currentVoteType]
-	jvalue, _ := s[j].Vote[currentVoteType]
-	if ivalue == jvalue {
-		return strings.Compare(s[i].Payload.PublicKey, s[j].Payload.PublicKey) > 0
-	}
-	return ivalue > jvalue
-}
-
-func (c *ChainStore) GetIllegalProducers() map[string]struct{} {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	return c.getIllegalProducers()
-}
-
-func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	illProducers := c.getIllegalProducers()
-
-	result := make([]*PayloadRegisterProducer, 0)
-
-	for _, p := range c.producerVotes {
-		if _, ok := illProducers[p.Payload.PublicKey]; ok {
-			continue
-		}
-		result = append(result, p.Payload)
-	}
-
-	return result
-}
-
-func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if dirty, ok := c.dirty[voteType]; ok && dirty {
-		producersInfo := make([]*ProducerInfo, 0)
-		for _, v := range c.producerVotes {
-			producersInfo = append(producersInfo, v)
-		}
-		if len(producersInfo) == 0 {
-			return nil, errors.New("[GetRegisteredProducers] not found producer")
-		}
-
-		currentVoteType = voteType
-		sort.Sort(producerSorter(producersInfo))
-
-		producers := make([]*PayloadRegisterProducer, 0)
-		illProducers := c.getIllegalProducers()
-		for _, p := range producersInfo {
-			if _, ok := illProducers[p.Payload.PublicKey]; ok {
-				continue
-			}
-			producers = append(producers, p.Payload)
-		}
-
-		c.orderedProducers[voteType] = producers
-		c.dirty[voteType] = false
-	}
-
-	if result, ok := c.orderedProducers[voteType]; ok {
-		return result, nil
-	}
-
-	return nil, errors.New("[GetRegisteredProducers] not found vote")
-}
-
-func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64 {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	info, ok := c.producerVotes[programHash]
-	if !ok {
-		return Fixed64(0)
-	}
-
-	vote, ok := info.Vote[voteType]
-	if !ok {
-		return Fixed64(0)
-	}
-
-	return vote
-}
-
-func (c *ChainStore) GetProducerStatus(programHash Uint168) ProducerState {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if p, ok := c.producerVotes[programHash]; ok {
-		if c.currentBlockHeight-p.RegHeight >= 6 {
-			return ProducerRegistered
-		} else {
-			return ProducerRegistering
-		}
-	}
-	return ProducerUnRegistered
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
