@@ -15,102 +15,81 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg/v0"
 )
 
+var _ protocol.Handler = (*HandlerV0)(nil)
+
 type HandlerV0 struct {
-	HandlerBase
+	base            HandlerBase
 	duplicateBlocks int
 }
 
 func NewHandlerV0(node protocol.Noder) *HandlerV0 {
-	return &HandlerV0{HandlerBase: HandlerBase{node: node}}
+	return &HandlerV0{base: HandlerBase{node: node}}
 }
 
 // After message header decoded, this method will be
 // called to create the message instance with the CMD
 // which is the message type of the received message
-func (h *HandlerV0) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Nothing to do if node already disconnected
-	if h.node.State() == p2p.INACTIVITY {
-		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
-	}
+func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	// Filter messages through open port message filter
-	if err = h.FilterMessage(cmd); err != nil {
+	if err = h.base.FilterMessage(cmd); err != nil {
 		return message, err
 	}
-	// Update node last active time
-	h.node.UpdateLastActive()
 
 	switch cmd {
-	case p2p.CmdPing:
-		message = new(msg.Ping)
-	case p2p.CmdPong:
-		message = new(msg.Pong)
 	case p2p.CmdGetBlocks:
-		message = new(msg.GetBlocks)
+		message = &msg.GetBlocks{}
+
 	case p2p.CmdInv:
-		message = new(v0.Inv)
+		message = &v0.Inv{}
+
 	case p2p.CmdGetData:
-		message = new(v0.GetData)
+		message = &v0.GetData{}
+
 	case p2p.CmdBlock:
-		message = msg.NewBlock(new(core.Block))
+		message = msg.NewBlock(&core.Block{})
+
 	case p2p.CmdTx:
-		message = msg.NewTx(new(core.Transaction))
+		message = msg.NewTx(&core.Transaction{})
+
 	case p2p.CmdNotFound:
-		message = new(v0.NotFound)
+		message = &v0.NotFound{}
+
 	default:
-		message, err = h.HandlerBase.OnMakeMessage(cmd)
+		message, err = h.base.MakeEmptyMessage(cmd)
 	}
 
 	return message, err
 }
 
-func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
-	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
-	if err := h.HandleMessage(message); err != nil {
-		log.Error("Handle message error: " + err.Error())
-	}
-	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
-}
-
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
-func (h *HandlerV0) HandleMessage(message p2p.Message) error {
-	var err error
+func (h *HandlerV0) HandleMessage(message p2p.Message) {
 	switch message := message.(type) {
-	case *msg.Ping:
-		err = h.onPing(message)
-	case *msg.Pong:
-		err = h.onPong(message)
 	case *msg.GetBlocks:
-		err = h.onGetBlocks(message)
+		h.onGetBlocks(message)
+
 	case *v0.Inv:
-		err = h.onInv(message)
+		h.onInv(message)
+
 	case *v0.GetData:
-		err = h.onGetData(message)
+		h.onGetData(message)
+
 	case *msg.Block:
-		err = h.onBlock(message)
+		h.onBlock(message)
+
 	case *msg.Tx:
-		err = h.onTx(message)
+		h.onTx(message)
+
 	case *v0.NotFound:
-		err = h.onNotFound(message)
+		h.onNotFound(message)
+
 	default:
-		h.HandlerBase.OnMessageDecoded(message)
+		h.base.HandleMessage(message)
 	}
-	return err
-}
-
-func (h *HandlerV0) onPing(ping *msg.Ping) error {
-	h.node.SetHeight(ping.Nonce)
-	h.node.Send(msg.NewPong(chain.DefaultLedger.Store.GetHeight()))
-	return nil
-}
-
-func (h *HandlerV0) onPong(pong *msg.Pong) error {
-	h.node.SetHeight(pong.Nonce)
-	return nil
 }
 
 func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
-	node := h.node
+	node := h.base.node
 	LocalNode.AcqSyncBlkReqSem()
 	defer LocalNode.RelSyncBlkReqSem()
 
@@ -121,13 +100,13 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 	}
 
 	if len(hashes) > 0 {
-		node.Send(v0.NewInv(hashes))
+		node.SendMessage(v0.NewInv(hashes))
 	}
 	return nil
 }
 
 func (h *HandlerV0) onInv(inv *v0.Inv) error {
-	node := h.node
+	node := h.base.node
 	log.Debugf("[OnInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
 
 	if node.IsExternal() {
@@ -144,7 +123,7 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 			(!chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) || !LocalNode.IsRequestedBlock(*hash)) {
 
 			LocalNode.AddRequestedBlock(*hash)
-			node.Send(v0.NewGetData(*hash))
+			node.SendMessage(v0.NewGetData(*hash))
 		}
 
 		// Request fork chain
@@ -169,34 +148,34 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 }
 
 func (h *HandlerV0) onGetData(req *v0.GetData) error {
-	node := h.node
+	node := h.base.node
 	hash := req.Hash
 
 	block, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
 		log.Debugf("Can't get block from hash %s, send not found message", hash)
-		node.Send(v0.NewNotFound(hash))
+		node.SendMessage(v0.NewNotFound(hash))
 		return err
 	}
 
-	node.Send(msg.NewBlock(block))
+	node.SendMessage(msg.NewBlock(block))
 
 	return nil
 }
 
 func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
-	node := h.node
-	block := msgBlock.Block.(*core.Block)
+	node := h.base.node
+	block := msgBlock.Serializable.(*core.Block)
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
-		log.Trace("received block message from unknown peer")
+		log.Debug("received block message from unknown peer")
 		return fmt.Errorf("received block message from unknown peer")
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
 		h.duplicateBlocks++
-		log.Trace("Receive ", h.duplicateBlocks, " duplicated block.")
+		log.Debug("Receive ", h.duplicateBlocks, " duplicated block.")
 		return fmt.Errorf("received duplicated block")
 	}
 
@@ -227,8 +206,8 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 }
 
 func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
-	node := h.node
-	tx := msgTx.Transaction.(*core.Transaction)
+	node := h.base.node
+	tx := msgTx.Serializable.(*core.Transaction)
 
 	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
 		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {

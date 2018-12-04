@@ -62,8 +62,8 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		}
 	}
 
-	idx := uint32(ap.ParMerkleIndex)
-	err = common.WriteUint32(w, idx)
+	index := uint32(ap.ParMerkleIndex)
+	err = common.WriteUint32(w, index)
 	if err != nil {
 		return err
 	}
@@ -81,8 +81,8 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		}
 	}
 
-	idx = uint32(ap.AuxMerkleIndex)
-	err = common.WriteUint32(w, idx)
+	index = uint32(ap.AuxMerkleIndex)
+	err = common.WriteUint32(w, index)
 	if err != nil {
 		return err
 	}
@@ -111,42 +111,42 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	ap.ParCoinBaseMerkle = make([]common.Uint256, count)
+	ap.ParCoinBaseMerkle = make([]common.Uint256, 0)
 	for i := uint64(0); i < count; i++ {
-		temp := common.Uint256{}
-		err = temp.Deserialize(r)
+		var hash common.Uint256
+		err = hash.Deserialize(r)
 		if err != nil {
 			return err
 		}
-		ap.ParCoinBaseMerkle[i] = temp
+		ap.ParCoinBaseMerkle = append(ap.ParCoinBaseMerkle, hash)
 	}
 
-	temp, err := common.ReadUint32(r)
+	index, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	ap.ParMerkleIndex = int(temp)
+	ap.ParMerkleIndex = int(index)
 
 	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	ap.AuxMerkleBranch = make([]common.Uint256, count)
+	ap.AuxMerkleBranch = make([]common.Uint256, 0)
 	for i := uint64(0); i < count; i++ {
-		temp := common.Uint256{}
-		err = temp.Deserialize(r)
+		var hash common.Uint256
+		err = hash.Deserialize(r)
 		if err != nil {
 			return err
 		}
-		ap.AuxMerkleBranch[i] = temp
+		ap.AuxMerkleBranch = append(ap.AuxMerkleBranch, hash)
 	}
 
-	temp, err = common.ReadUint32(r)
+	index, err = common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	ap.AuxMerkleIndex = int(temp)
+	ap.AuxMerkleIndex = int(index)
 
 	err = ap.ParBlockHeader.Deserialize(r)
 	if err != nil {
@@ -156,7 +156,7 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
+func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainID int) bool {
 	if GetMerkleRoot(ap.ParCoinbaseTx.Hash(), ap.ParCoinBaseMerkle, ap.ParMerkleIndex) != ap.ParBlockHeader.MerkleRoot {
 		return false
 	}
@@ -201,7 +201,7 @@ func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 	}
 
 	nonce := binary.LittleEndian.Uint32(script[rootHashIndex/2+4 : rootHashIndex/2+8])
-	if ap.AuxMerkleIndex != GetExpectedIndex(nonce, chainId, merkleHeight) {
+	if ap.AuxMerkleIndex != GetExpectedIndex(nonce, chainID, merkleHeight) {
 		return false
 	}
 
@@ -228,10 +228,10 @@ func GetMerkleRoot(hash common.Uint256, merkleBranch []common.Uint256, index int
 	return hash
 }
 
-func GetExpectedIndex(nonce uint32, chainId, h int) int {
+func GetExpectedIndex(nonce uint32, chainID, h int) int {
 	rand := nonce
 	rand = rand*1103515245 + 12345
-	rand += uint32(chainId)
+	rand += uint32(chainID)
 	rand = rand*1103515245 + 12345
 
 	return int(rand % (1 << uint32(h)))

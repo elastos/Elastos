@@ -19,7 +19,7 @@ type IChainStore interface {
 
 	RollbackBlock(hash Uint256) error
 
-	GetTransaction(txId Uint256) (*Transaction, uint32, error)
+	GetTransaction(txID Uint256) (*Transaction, uint32, error)
 	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 
 	PersistAsset(assetid Uint256, asset Asset) error
@@ -33,8 +33,8 @@ type IChainStore interface {
 
 	RemoveHeaderListElement(hash Uint256)
 
-	GetUnspent(txid Uint256, index uint16) (*Output, error)
-	ContainsUnspent(txid Uint256, index uint16) (bool, error)
+	GetUnspent(txID Uint256, index uint16) (*Output, error)
+	ContainsUnspent(txID Uint256, index uint16) (bool, error)
 	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error)
 	GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error)
 	GetAssets() map[Uint256]*Asset

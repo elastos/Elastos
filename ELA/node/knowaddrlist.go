@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
@@ -22,15 +23,14 @@ const (
 )
 
 type KnownAddress struct {
-	srcAddr        p2p.NetAddress
+	srcAddr        *p2p.NetAddress
 	lastattempt    time.Time
-	lastDisconnect time.Time
 	attempts       int
 }
 
 type KnownAddressList struct {
 	sync.RWMutex
-	List      map[uint64]*KnownAddress
+	List      map[string]*KnownAddress
 	addrCount uint64
 }
 
@@ -45,11 +45,6 @@ func (ka *KnownAddress) increaseAttempts() {
 func (ka *KnownAddress) updateLastAttempt() {
 	// set last tried time to now
 	ka.lastattempt = time.Now()
-}
-
-func (ka *KnownAddress) updateLastDisconnect() {
-	// set last disconnect time to now
-	ka.lastDisconnect = time.Now()
 }
 
 // chance returns the selection probability for a known address.  The priority
@@ -93,7 +88,7 @@ func (ka *KnownAddress) isBad() bool {
 	//}
 
 	// Over a month old?
-	if ka.srcAddr.Time < (time.Now().Add(-1 * numMissingDays * time.Hour * 24)).UnixNano() {
+	if ka.srcAddr.Timestamp.Before(time.Now().Add(-1 * numMissingDays * time.Hour * 24)) {
 		return true
 	}
 
@@ -110,20 +105,12 @@ func (ka *KnownAddress) isBad() bool {
 	return false
 }
 
-func (ka *KnownAddress) SaveAddr(na p2p.NetAddress) {
-	ka.srcAddr.Time = na.Time
-	ka.srcAddr.Services = na.Services
-	ka.srcAddr.IP = na.IP
-	ka.srcAddr.Port = na.Port
-	ka.srcAddr.ID = na.ID
+func (ka *KnownAddress) SaveAddr(na *p2p.NetAddress) {
+	ka.srcAddr = na
 }
 
-func (ka *KnownAddress) NetAddress() p2p.NetAddress {
+func (ka *KnownAddress) NetAddress() *p2p.NetAddress {
 	return ka.srcAddr
-}
-
-func (ka *KnownAddress) GetID() uint64 {
-	return ka.srcAddr.ID
 }
 
 func (al *KnownAddressList) NeedMoreAddresses() bool {
@@ -133,49 +120,35 @@ func (al *KnownAddressList) NeedMoreAddresses() bool {
 	return al.addrCount < needAddressThreshold
 }
 
-func (al *KnownAddressList) AddressExisted(uid uint64) bool {
-	_, ok := al.List[uid]
-	return ok
-}
-
-func (al *KnownAddressList) UpdateAddress(id uint64, na p2p.NetAddress) {
-	kaold := al.List[id]
-	if (na.Time > kaold.srcAddr.Time) ||
-		(kaold.srcAddr.Services&na.Services) !=
-			na.Services {
+func (al *KnownAddressList) UpdateAddress(na *p2p.NetAddress) {
+	kaold := al.List[na.String()]
+	if na.Timestamp.After(kaold.srcAddr.Timestamp) ||
+		(kaold.srcAddr.Services&na.Services) != na.Services {
 		kaold.SaveAddr(na)
 	}
 }
 
-func (al *KnownAddressList) UpdateLastDisconn(id uint64) {
-	ka := al.List[id]
-	ka.updateLastDisconnect()
-}
-
-func (al *KnownAddressList) AddKnownAddress(na p2p.NetAddress) {
+func (al *KnownAddressList) AddKnownAddress(na *p2p.NetAddress) {
+	if na.IP == nil {
+		log.Error("net address ip is nil, return.")
+		return
+	} else if na.IP.To4() == nil {
+		log.Error("net address ip to4 is nil, return. IP:", na.IP)
+		return
+	}
 	al.Lock()
 	defer al.Unlock()
 
-	ka := new(KnownAddress)
+	addr := na.String()
+
+	ka := &KnownAddress{}
 	ka.SaveAddr(na)
-	if al.AddressExisted(ka.GetID()) {
-		al.UpdateAddress(ka.GetID(), na)
+	if _, ok := al.List[addr]; ok {
+		al.UpdateAddress(na)
 	} else {
-		al.List[ka.GetID()] = ka
+		al.List[addr] = ka
 		al.addrCount++
 	}
-}
-
-func (al *KnownAddressList) DelAddressFromList(id uint64) bool {
-	al.Lock()
-	defer al.Unlock()
-
-	_, ok := al.List[id]
-	if ok == false {
-		return false
-	}
-	delete(al.List, id)
-	return true
 }
 
 func (al *KnownAddressList) GetAddressCnt() uint64 {
@@ -188,17 +161,17 @@ func (al *KnownAddressList) GetAddressCnt() uint64 {
 }
 
 func (al *KnownAddressList) init() {
-	al.List = make(map[uint64]*KnownAddress)
+	al.List = make(map[string]*KnownAddress)
 }
 
-func (al *KnownAddressList) RandGetAddresses() []p2p.NetAddress {
+func (al *KnownAddressList) RandGetAddresses() []*p2p.NetAddress {
 	al.RLock()
 	defer al.RUnlock()
 
 	neighbors := LocalNode.GetNeighbourCount()
-	addrs := make([]p2p.NetAddress, 0, MaxOutBoundCount)
-	for id, addr := range al.List {
-		if LocalNode.IsNeighborNode(id) || addr.isBad() {
+	addrs := make([]*p2p.NetAddress, 0, MaxOutBoundCount)
+	for _, addr := range al.List {
+		if addr.isBad() {
 			continue
 		}
 
@@ -214,11 +187,11 @@ func (al *KnownAddressList) RandGetAddresses() []p2p.NetAddress {
 	return addrs
 }
 
-func (al *KnownAddressList) RandSelectAddresses() []p2p.NetAddress {
+func (al *KnownAddressList) RandSelectAddresses() []*p2p.NetAddress {
 	al.RLock()
 	defer al.RUnlock()
 
-	addrs := make([]p2p.NetAddress, 0, MaxOutBoundCount)
+	addrs := make([]*p2p.NetAddress, 0, MaxOutBoundCount)
 	for _, ka := range al.List {
 		addrs = append(addrs, ka.srcAddr)
 

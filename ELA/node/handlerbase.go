@@ -2,12 +2,10 @@ package node
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -15,6 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
+
+var _ protocol.Handler = (*HandlerBase)(nil)
 
 type HandlerBase struct {
 	node protocol.Noder
@@ -25,40 +25,29 @@ func NewHandlerBase(node protocol.Noder) *HandlerBase {
 	return &HandlerBase{node: node}
 }
 
-// When something wrong on read or decode message
-// this method will callback the error
-func (h *HandlerBase) OnError(err error) {
-	switch err {
-	case p2p.ErrInvalidHeader,
-		p2p.ErrUnmatchedMagic,
-		p2p.ErrMsgSizeExceeded:
-		log.Error(err)
-		h.node.CloseConn()
-	case p2p.ErrDisconnected:
-		LocalNode.Events().Notify(events.EventNodeDisconnect, h.node.ID())
-	default:
-		log.Error(err)
-	}
-}
-
 // After message header decoded, this method will be
 // called to create the message instance with the CMD
 // which is the message type of the received message
-func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Nothing to do if node already disconnected
-	if h.node.State() == p2p.INACTIVITY {
-		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
-	}
-
+func (h *HandlerBase) MakeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	switch cmd {
 	case p2p.CmdVersion:
-		message = new(msg.Version)
+		message = &msg.Version{}
+
 	case p2p.CmdVerAck:
-		message = new(msg.VerAck)
+		message = &msg.VerAck{}
+
 	case p2p.CmdGetAddr:
-		message = new(msg.GetAddr)
+		message = &msg.GetAddr{}
+
 	case p2p.CmdAddr:
-		message = new(msg.Addr)
+		message = &msg.Addr{}
+
+	case p2p.CmdPing:
+		message = &msg.Ping{}
+
+	case p2p.CmdPong:
+		message = &msg.Pong{}
+
 	default:
 		err = errors.New("unknown message type")
 	}
@@ -66,69 +55,67 @@ func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error)
 	return message, err
 }
 
-// After message has been successful decoded, this method
-// will be called to pass the decoded message instance
-func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
-	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
-	if err := h.HandleMessage(message); err != nil {
-		log.Error("Handle message error: " + err.Error())
-	}
-	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
-}
-
-func (h *HandlerBase) HandleMessage(message p2p.Message) error {
-	var err error
-	switch message := message.(type) {
+func (h *HandlerBase) HandleMessage(message p2p.Message) {
+	switch m := message.(type) {
 	case *msg.Version:
-		err = h.onVersion(message)
+		h.onVersion(m)
+
 	case *msg.VerAck:
-		err = h.onVerAck(message)
+		h.onVerAck(m)
+
 	case *msg.GetAddr:
-		err = h.onGetAddr(message)
+		h.onGetAddr(m)
+
 	case *msg.Addr:
-		err = h.onAddr(message)
+		h.onAddr(m)
+
+	case *msg.Ping:
+		h.onPing(m)
+
+	case *msg.Pong:
+		h.onPong(m)
+
 	default:
-		err = errors.New("unknown message type")
+		log.Warnf("unknown handled message %s", m.CMD())
 	}
-	return err
 }
 
-func (h *HandlerBase) onVersion(version *msg.Version) error {
+func (h *HandlerBase) onVersion(version *msg.Version) {
 	node := h.node
 	// Exclude the node itself
 	if version.Nonce == LocalNode.ID() {
 		log.Warn("The node handshake with itself")
-		node.CloseConn()
-		return errors.New("The node handshake with itself")
+		node.Disconnect()
+		return
 	}
 
-	if node.State() != p2p.INIT && node.State() != p2p.HAND {
+	if node.State() != protocol.INIT && node.State() != protocol.HAND {
 		log.Warn("unknown status to receive version")
-		return errors.New("unknown status to receive version")
+		node.Disconnect()
+		return
 	}
 
-	// Obsolete node
-	n, ret := LocalNode.DelNeighborNode(version.Nonce)
-	if ret == true {
-		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
-		// Close the connection and release the node soure
-		n.SetState(p2p.INACTIVITY)
-		n.CloseConn()
-	}
+	//// Obsolete node
+	//n, ret := LocalNode.DelNeighborNode(version.Nonce)
+	//if ret == true {
+	//	log.Info(fmt.Sprintf("Node %s reconnect", n))
+	//	// Close the connection and release the node soure
+	//	n.Disconnect()
+	//}
 
-	node.UpdateInfo(time.Now(), version.Version, version.Services,
-		version.Port, version.Nonce, version.Relay, version.Height)
+	node.UpdateInfo(time.Unix(int64(version.TimeStamp), 0), version.Version,
+		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
-		node.UpdateMsgHelper(NewHandlerV0(node))
+		node.UpdateHandler(NewHandlerV0(node))
 	} else {
-		node.UpdateMsgHelper(NewHandlerEIP001(node))
+		node.UpdateHandler(NewHandlerEIP001(node))
 	}
 
 	var message p2p.Message
-	if node.State() == p2p.INIT {
-		node.SetState(p2p.HANDSHAKE)
+	if node.State() == protocol.INIT {
+		node.SetState(protocol.HANDSHAKE)
 		version := NewVersion(LocalNode)
 		// External node connect with open port
 		if node.IsExternal() {
@@ -137,31 +124,30 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 			version.Port = config.Parameters.NodePort
 		}
 		message = version
-	} else if node.State() == p2p.HAND {
-		node.SetState(p2p.HANDSHAKED)
-		message = new(msg.VerAck)
+	} else if node.State() == protocol.HAND {
+		node.SetState(protocol.HANDSHAKED)
+		message = &msg.VerAck{}
 	}
-	node.Send(message)
-
-	return nil
+	node.SendMessage(message)
 }
 
-func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
+func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 	node := h.node
-	if node.State() != p2p.HANDSHAKE && node.State() != p2p.HANDSHAKED {
+	if node.State() != protocol.HANDSHAKE && node.State() != protocol.HANDSHAKED {
 		log.Warn("unknown status to received verack")
-		return errors.New("unknown status to received verack")
+		node.Disconnect()
+		return
 	}
 
-	if node.State() == p2p.HANDSHAKE {
-		node.Send(verAck)
+	if node.State() == protocol.HANDSHAKE {
+		node.SendMessage(verAck)
 	}
 
-	node.SetState(p2p.ESTABLISH)
+	node.SetState(protocol.ESTABLISHED)
 
 	// Finish handshake
 	LocalNode.RemoveFromHandshakeQueue(node)
-	LocalNode.RemoveFromConnectingList(node.NetAddress().String())
+	LocalNode.RemoveFromConnectingList(node.Addr())
 
 	// Add node to neighbor list
 	LocalNode.AddNeighborNode(node)
@@ -176,66 +162,82 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	if LocalNode.NeedMoreAddresses() {
 		node.RequireNeighbourList()
 	}
-
-	// Start heartbeat
-	go node.Heartbeat()
-
-	return nil
 }
 
-func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
-	var addrs []p2p.NetAddress
+func (h *HandlerBase) onPing(ping *msg.Ping) {
+	log.Debug("onPing")
+	h.node.SetHeight(ping.Nonce)
+	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Store.GetHeight())))
+}
+
+func (h *HandlerBase) onPong(pong *msg.Pong) {
+	log.Debug("onPong")
+	h.node.SetHeight(pong.Nonce)
+}
+
+func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
+	var addrs []*p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.OpenService == protocol.OpenService {
-				addr.Port = config.Parameters.NodeOpenPort
-				addrs = append(addrs, addr)
+				addrs = append(addrs,
+					&p2p.NetAddress{
+						addr.Timestamp,
+						addr.Services,
+						addr.IP,
+						config.Parameters.NodeOpenPort,
+				})
 			}
 		}
 	} else {
 		addrs = LocalNode.RandSelectAddresses()
 	}
 
-	h.node.Send(msg.NewAddr(addrs))
-	return nil
+	repeatNum := 0
+	var uniqueAddrs []*p2p.NetAddress
+	for _, addr := range addrs {
+		// do not send client's address to the client itself
+		if h.node.NetAddress().String() != addr.String() {
+			uniqueAddrs = append(uniqueAddrs, addr)
+		} else {
+			repeatNum ++
+			if repeatNum > 1 {
+				log.Warn("more than one repeat:", repeatNum," ", repeatNum, " ", addr.String())
+			}
+
+		}
+	}
+
+	if len(uniqueAddrs) > 0 {
+		h.node.SendMessage(msg.NewAddr(addrs))
+	}
 }
 
-func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
+func (h *HandlerBase) onAddr(msgAddr *msg.Addr) {
+	if h.node.IsExternal() {
+		// we don't accept address list from a external node/spv...etc.
+		return
+	}
 	for _, addr := range msgAddr.AddrList {
-		if addr.ID == LocalNode.ID() {
-			continue
-		}
-
-		if LocalNode.NodeEstablished(addr.ID) {
-			continue
-		}
-
 		if addr.Port == 0 {
 			continue
 		}
-
 		//save the node address in address list
 		LocalNode.AddKnownAddress(addr)
 	}
-	return nil
 }
 
 func NewVersion(node protocol.Noder) *msg.Version {
-	msg := new(msg.Version)
-	msg.Version = node.Version()
-	msg.Services = node.Services()
-	msg.TimeStamp = uint32(time.Now().UTC().UnixNano())
-	msg.Port = node.Port()
-	msg.Nonce = node.ID()
-	msg.Height = uint64(chain.DefaultLedger.GetLocalBlockChainHeight())
-	if node.IsRelay() {
-		msg.Relay = 1
-	} else {
-		msg.Relay = 0
+	return &msg.Version{
+		Version:   node.Version(),
+		Services:  node.Services(),
+		TimeStamp: uint32(time.Now().Unix()),
+		Port:      node.Port(),
+		Nonce:     node.ID(),
+		Height:    uint64(chain.DefaultLedger.GetLocalBlockChainHeight()),
+		Relay:     node.IsRelay(),
 	}
-
-	return msg
 }
 
 func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop common.Uint256) {
@@ -245,7 +247,7 @@ func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop comm
 
 	LocalNode.SetStartHash(*locator[0])
 	LocalNode.SetStopHash(hashStop)
-	node.Send(msg.NewGetBlocks(locator, hashStop))
+	node.SendMessage(msg.NewGetBlocks(locator, hashStop))
 }
 
 func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256, maxBlockHashes uint32) ([]*common.Uint256, error) {
