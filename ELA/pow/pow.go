@@ -80,7 +80,7 @@ type PowService struct {
 	lastNode  *BlockNode
 }
 
-func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, minerAddr string) (*Transaction, error) {
+func CreateCoinbaseTx(minerAddr string) (*Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(minerAddr)
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
 func (pow *PowService) GenerateBlock(minerAddr string, bestChain *BlockNode) (*Block, error) {
 	nextBlockHeight := bestChain.Height + 1
-	coinBaseTx, err := pow.CreateCoinbaseTx(nextBlockHeight, minerAddr)
+	coinBaseTx, err := CreateCoinbaseTx(minerAddr)
 	if err != nil {
 		return nil, err
 	}
