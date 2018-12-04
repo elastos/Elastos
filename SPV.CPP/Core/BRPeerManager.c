@@ -31,6 +31,7 @@
 #include "BRMerkleBlock.h"
 #include "BRPeer.h"
 #include "BRChainParams.h"
+#include "BRTransaction.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -753,14 +754,22 @@ static void _peerConnected(void *info)
             BRPeerDisconnect(manager->downloadPeer);
         }
 
+        int havePendingTx = 0;
+        for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+            if (manager->publishedTx[i - 1].callback != NULL) {
+                havePendingTx++;
+            }
+        }
+
         manager->downloadPeer = peer;
         manager->syncSucceeded = 0;
         manager->isConnected = 1;
         manager->estimatedHeight = BRPeerLastBlock(peer);
-        BRPeerSendGetAddrMessage(peer); // request a list of other bitcoin peers
         manager->loadBloomFilter(manager, peer);
 		BRPeerSetCurrentBlockHeight(peer, manager->lastBlock->height);
         _BRPeerManagerPublishPendingTx(manager, peer);
+        if (havePendingTx == 0)
+            BRPeerSendGetAddrMessage(peer); // request a list of other bitcoin peers
 
         if (manager->lastBlock->height < BRPeerLastBlock(peer)) { // start blockchain sync
             UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
@@ -793,6 +802,7 @@ static void _peerDisconnected(void *info, int error)
     BRTxPeerList *peerList;
     int willSave = 0, willReconnect = 0, txError = 0;
     size_t txCount = 0;
+    int reconnectSeconds = 60;
 
     //free(info);
     pthread_mutex_lock(&manager->lock);
@@ -847,8 +857,8 @@ static void _peerDisconnected(void *info, int error)
             if (manager->publishedTx[i - 1].callback == NULL) continue;
             peer_log(peer, "transaction canceled: %s", strerror(txError));
             pubTx[txCount++] = manager->publishedTx[i - 1];
-            manager->publishedTx[i - 1].callback = NULL;
-            manager->publishedTx[i - 1].info = NULL;
+//            manager->publishedTx[i - 1].callback = NULL;
+//            manager->publishedTx[i - 1].info = NULL;
         }
     }
 
@@ -859,10 +869,22 @@ static void _peerDisconnected(void *info, int error)
         break;
     }
 
+    int havePendingTx = 0;
+    for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+        if (manager->publishedTx[i - 1].callback != NULL) {
+            havePendingTx++;
+        }
+    }
+
     if (manager->reconnectTaskCount == 0 && (!manager->isConnected || array_count(manager->connectedPeers) == 0))
         willReconnect = 1;
     else
         willReconnect = 0;
+
+    if (havePendingTx > 0) {
+        reconnectSeconds = 3;
+        willReconnect = 1;
+    }
 
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
@@ -873,7 +895,7 @@ static void _peerDisconnected(void *info, int error)
 
     //if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect && manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
+    if (willReconnect && manager->syncIsInactivate) manager->syncIsInactivate(manager->info, reconnectSeconds);
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 
@@ -1153,7 +1175,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 static void _peerRelayedPingMsg(void *info)
 {
 	BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
-	manager->syncIsInactivate(manager->info, manager->reconnectSeconds);
+	if (manager->syncIsInactivate) manager->syncIsInactivate(manager->info, manager->reconnectSeconds);
 }
 
 static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
@@ -1445,8 +1467,8 @@ static BRTransaction *_peerRequestedTx(void *info, UInt256 txHash)
     for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
         if (UInt256Eq(&manager->publishedTxHashes[i - 1], &txHash)) {
             pubTx = manager->publishedTx[i - 1];
-            manager->publishedTx[i - 1].callback = NULL;
-            manager->publishedTx[i - 1].info = NULL;
+//            manager->publishedTx[i - 1].callback = NULL;
+//            manager->publishedTx[i - 1].info = NULL;
         }
         else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
     }

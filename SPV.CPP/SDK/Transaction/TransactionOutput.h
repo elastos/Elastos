@@ -31,7 +31,7 @@ namespace Elastos {
 			TransactionOutput(const TransactionOutput &output);
 
 			TransactionOutput(const std::string &toAddress, uint64_t amount,
-							  const UInt256 &assetID, uint32_t outputLock);
+							  const UInt256 &assetID);
 
 			~TransactionOutput();
 

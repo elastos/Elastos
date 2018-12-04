@@ -68,10 +68,12 @@ namespace Elastos {
 				_reconnectTimer = nullptr;
 			}
 
+			getPeerManager()->DisableReconnectCallback();
+			getPeerManager()->disconnect();
+
 			_executor.stopThread();
 			_reconnectExecutor.stopThread();
 
-			getPeerManager()->disconnect();
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(

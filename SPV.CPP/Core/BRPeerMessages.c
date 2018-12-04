@@ -786,15 +786,12 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		UInt64SetLE(buf, manager->lastBlock->height);
 		if (manager->isConnected && manager->syncSucceeded &&
 			time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
-			int haveTxPending = 0;
+			needRelayPing = 1;
 			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
 				if (manager->publishedTx[i - 1].callback != NULL) {
-					haveTxPending++;
+					needRelayPing = 0;
+					break;
 				}
-			}
-
-			if (!haveTxPending) {
-				needRelayPing = 1;
 			}
 		}
 		pthread_mutex_unlock(&manager->lock);

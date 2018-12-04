@@ -399,7 +399,7 @@ namespace Elastos {
 				ELATxOutput *ELAOutput = (ELATxOutput *)&outputs[i];
 
 				transaction->outputs.push_back(new TransactionOutput(ELAOutput->raw.address, ELAOutput->raw.amount,
-																	 ELAOutput->assetId, ELAOutput->outputLock));
+																	 ELAOutput->assetId));
 				amount += outputs[i].amount;
 			}
 
@@ -507,7 +507,7 @@ namespace Elastos {
 
 				UInt256 assetID = transaction->outputs[0]->getAssetId();
 
-				TransactionOutput *output = new TransactionOutput(addr.s, balance - (amount + feeAmount), assetID, 0);
+				TransactionOutput *output = new TransactionOutput(addr.s, balance - (amount + feeAmount), assetID);
 
 				transaction->outputs.push_back(output);
 			}
@@ -531,7 +531,7 @@ namespace Elastos {
 										 "Invalid receiver address " + toAddress);
 
 			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput(
-				toAddress, amount, Key::getSystemAssetId(), 0));
+				toAddress, amount, Key::getSystemAssetId()));
 
 			BRTxOutput outputs[1];
 			outputs[0] = *output->getRaw();
