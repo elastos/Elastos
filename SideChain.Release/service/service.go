@@ -1240,7 +1240,7 @@ func GetPayload(pInfo PayloadInfo) (types.Payload, error) {
 }
 
 func ruleError(err error) error {
-	ruleErr, ok := err.(*mempool.RuleError)
+	ruleErr, ok := err.(mempool.RuleError)
 	if ok {
 		return util.NewError(int(ruleErr.ErrorCode), ruleErr.Error())
 	}
