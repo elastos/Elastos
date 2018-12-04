@@ -61,7 +61,7 @@ func NewAccount(accountType string) (*Account, error) {
 	}, nil
 }
 
-func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
+func NewAccountWithPrivateKey(privateKey []byte, prefixType contract.PrefixType) (*Account, error) {
 	privKeyLen := len(privateKey)
 
 	if privKeyLen != 32 && privKeyLen != 96 && privKeyLen != 104 {
@@ -69,11 +69,29 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 	}
 
 	pubKey := crypto.NewPubKey(privateKey)
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
-	if err != nil {
-		return nil, err
+	var ct *contract.Contract
+	var err error
+	switch prefixType {
+	case contract.PrefixStandard:
+		ct, err = contract.CreateStandardContractByPubKey(pubKey)
+		if err != nil {
+			return nil, err
+		}
+	case contract.PrefixMultiSig:
+		// TODO: implement multi signature
+		return nil, errors.New("multi signature need to be implemented")
+	case contract.PrefixCrossChain:
+		// TODO: implement cross chain
+		return nil, errors.New("cross chain need to be implemented")
+	case contract.PrefixPledge:
+		ct, err = contract.CreatePledgeContractByPubKey(pubKey)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("undefined contract prefix type")
 	}
-	programHash, err := signatureContract.ToProgramHash()
+	programHash, err := ct.ToProgramHash()
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +103,7 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 		PrivateKey:  privateKey,
 		PublicKey:   pubKey,
 		ProgramHash: *programHash,
-		Contract:    *signatureContract,
+		Contract:    *ct,
 		Address:     address,
 	}, nil
 }

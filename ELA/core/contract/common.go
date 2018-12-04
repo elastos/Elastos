@@ -3,6 +3,8 @@ package contract
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/vm"
+
+	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ContractType byte
@@ -104,7 +106,7 @@ func IsMultiSig(code []byte) bool {
 	return true
 }
 
-func GetType(code []byte) ContractType {
+func GetCodeType(code []byte) ContractType {
 	if IsStandard(code) {
 		return Signature
 	}
@@ -112,4 +114,9 @@ func GetType(code []byte) ContractType {
 		return MultiSig
 	}
 	return Custom
+}
+
+func GetPrefixType(programHash utilcom.Uint168) PrefixType {
+	prefixType := PrefixType(programHash[0])
+	return PrefixType(prefixType)
 }

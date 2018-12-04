@@ -11,17 +11,19 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
+type PrefixType byte
+
 const (
-	PrefixStandard   = 0x21
-	PrefixMultisig   = 0x12
-	PrefixCrossChain = 0x4B
-	PrefixPledge     = 0x55
+	PrefixStandard   PrefixType = 0x21
+	PrefixMultiSig   PrefixType = 0x12
+	PrefixCrossChain PrefixType = 0x4B
+	PrefixPledge     PrefixType = 0x55
 )
 
 // Contract include the redeem script and hash prefix
 type Contract struct {
 	RedeemScript []byte
-	HashPrefix   byte
+	HashPrefix   PrefixType
 }
 
 func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
@@ -48,7 +50,7 @@ func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
 	md160.Write(hash[:])
-	programBytes := md160.Sum([]byte{c.HashPrefix})
+	programBytes := md160.Sum([]byte{byte(c.HashPrefix)})
 
 	return utilcom.Uint168FromBytes(programBytes)
 }

@@ -323,9 +323,9 @@ func (cl *ClientImpl) LoadAccounts() error {
 		return err
 	}
 	for _, a := range storeAddresses {
+		p, _ := common.HexStringToBytes(a.ProgramHash)
+		acc, _ := common.Uint168FromBytes(p)
 		if a.Type == MAINACCOUNT {
-			p, _ := common.HexStringToBytes(a.ProgramHash)
-			acc, _ := common.Uint168FromBytes(p)
 			cl.mainAccount = *acc
 		}
 		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
@@ -335,7 +335,8 @@ func (cl *ClientImpl) LoadAccounts() error {
 			continue
 		}
 		privateKey := keyPair[64:96]
-		ac, err := NewAccountWithPrivateKey(privateKey)
+		prefixType := contract.GetPrefixType(*acc)
+		ac, err := NewAccountWithPrivateKey(privateKey, prefixType)
 		accounts[ac.ProgramHash] = ac
 	}
 
