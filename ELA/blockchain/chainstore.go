@@ -226,8 +226,8 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
-		txId := txn.Inputs[i].Previous.TxID
-		unspentValue, err := c.Get(append(unspentPrefix, txId.Bytes()...))
+		txID := txn.Inputs[i].Previous.TxID
+		unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
 		if err != nil {
 			return true
 		}
@@ -329,7 +329,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
+func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
@@ -339,7 +339,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 	// add asset prefix.
 	assetKey.WriteByte(byte(ST_Info))
 	// contact asset id
-	if err := assetId.Serialize(assetKey); err != nil {
+	if err := assetID.Serialize(assetKey); err != nil {
 		return err
 	}
 
@@ -383,8 +383,8 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	return data[0], nil
 }
 
-func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
-	key := append([]byte{byte(DATA_Transaction)}, txId.Bytes()...)
+func (c *ChainStore) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
+	key := append([]byte{byte(DATA_Transaction)}, txID.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
 		return nil, 0, err
@@ -408,19 +408,27 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	if tx.TxType == RegisterAsset {
 		return nil, nil
 	}
+	txOutputsCache := make(map[Uint256][]*Output)
 	//UTXO input /  Outputs
 	reference := make(map[*Input]*Output)
 	// Key index，v UTXOInput
-	for _, utxo := range tx.Inputs {
-		transaction, _, err := c.GetTransaction(utxo.Previous.TxID)
-		if err != nil {
-			return nil, errors.New("GetTxReference failed, previous transaction not found")
+	for _, input := range tx.Inputs {
+		txID := input.Previous.TxID
+		index := input.Previous.Index
+		if outputs, ok := txOutputsCache[txID]; ok {
+			reference[input] = outputs[index]
+		} else {
+			transaction, _, err := c.GetTransaction(txID)
+
+			if err != nil {
+				return nil, errors.New("GetTxReference failed, previous transaction not found")
+			}
+			if int(index) >= len(transaction.Outputs) {
+				return nil, errors.New("GetTxReference failed, refIdx out of range.")
+			}
+			reference[input] = transaction.Outputs[index]
+			txOutputsCache[txID] = transaction.Outputs
 		}
-		index := utxo.Previous.Index
-		if int(index) >= len(transaction.Outputs) {
-			return nil, errors.New("GetTxReference failed, refIdx out of range.")
-		}
-		reference[utxo] = transaction.Outputs[index]
 	}
 	return reference, nil
 }
@@ -583,13 +591,12 @@ func (c *ChainStore) persistBlock(block *Block) {
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
-
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
 }
 
-func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
-	if ok, _ := c.ContainsUnspent(txid, index); ok {
-		tx, _, err := c.GetTransaction(txid)
+func (c *ChainStore) GetUnspent(txID Uint256, index uint16) (*Output, error) {
+	if ok, _ := c.ContainsUnspent(txID, index); ok {
+		tx, _, err := c.GetTransaction(txID)
 		if err != nil {
 			return nil, err
 		}
@@ -600,9 +607,9 @@ func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
 	return nil, errors.New("[GetUnspent] NOT ContainsUnspent.")
 }
 
-func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
+func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 	unspentPrefix := []byte{byte(IX_Unspent)}
-	unspentValue, err := c.Get(append(unspentPrefix, txid.Bytes()...))
+	unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
 
 	if err != nil {
 		return false, err
@@ -807,7 +814,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		_, _ = ReadBytes(rk, 1)
 		var assetid Uint256
 		assetid.Deserialize(rk)
-		log.Tracef("[GetAssets] assetid: %x", assetid.Bytes())
+		log.Debugf("[GetAssets] assetid: %x", assetid.Bytes())
 
 		asset := new(Asset)
 		r := bytes.NewReader(iter.Value())

@@ -25,7 +25,7 @@ func initLocalNode(t *testing.T) {
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
 	)
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
+	foundation, err := common.Uint168FromAddress("8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -49,22 +49,20 @@ func newTestNode(t *testing.T, port uint16) ( protocol.Noder, protocol.Noder) {
 	if err != nil {
 		t.FailNow()
 	}
-	this := NewNode(config.Parameters.Magic, conn)
+	this := NewNode(conn, false)
 	rand.Read(buf)
 	this.id = binary.BigEndian.Uint64(buf)
-	this.addr, err = parseIPaddr(conn.RemoteAddr().String())
 
 	log.Infof("Local node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network())
-	this.Read()
 
 	that := <-LocalNode.handshakeQueue.capChan
 	LocalNode.handshakeQueue.capChan <- that
 	LocalNode.RemoveFromHandshakeQueue(that)
 
-	this.SetState(p2p.ESTABLISH)
-	that.SetState(p2p.ESTABLISH)
+	this.SetState(protocol.ESTABLISHED)
+	that.SetState(protocol.ESTABLISHED)
 
 	return this, that
 }
@@ -116,17 +114,17 @@ func TestMessages(t *testing.T) {
 	allMsgTypes := append(openMsgTypes, innerMsgTypes...)
 
 	this, that := newTestNode(t, config.Parameters.NodeOpenPort)
-	this.UpdateMsgHelper(NewHandlerEIP001(this))
-	that.UpdateMsgHelper(NewHandlerEIP001(that))
+	this.UpdateHandler(NewHandlerEIP001(this))
+	that.UpdateHandler(NewHandlerEIP001(that))
 	for _, cmd := range openMsgTypes {
-		this.(*node).Write(newMessage(cmd))
+		this.(*node).SendMessage(newMessage(cmd))
 	}
 
 	this, that = newTestNode(t, config.Parameters.NodePort)
-	this.UpdateMsgHelper(NewHandlerEIP001(this))
-	that.UpdateMsgHelper(NewHandlerEIP001(that))
+	this.UpdateHandler(NewHandlerEIP001(this))
+	that.UpdateHandler(NewHandlerEIP001(that))
 	for _, cmd := range allMsgTypes {
-		this.(*node).Write(newMessage(cmd))
+		this.(*node).SendMessage(newMessage(cmd))
 	}
 }
 

@@ -15,7 +15,7 @@ type MerkleBranch struct {
 	Index    int
 }
 
-func GetTxMerkleBranch(msg msg.MerkleBlock, txId *common.Uint256) (*MerkleBranch, error) {
+func GetTxMerkleBranch(msg msg.MerkleBlock, txID *common.Uint256) (*MerkleBranch, error) {
 	mNodes := &merkleNodes{
 		root:     msg.Header.(*core.Header).MerkleRoot,
 		numTxs:   msg.Transactions,
@@ -25,7 +25,7 @@ func GetTxMerkleBranch(msg msg.MerkleBlock, txId *common.Uint256) (*MerkleBranch
 	mNodes.SetHashes(msg.Hashes)
 	mNodes.SetBits(msg.Flags)
 
-	return mNodes.GetMerkleBranch(txId)
+	return mNodes.GetMerkleBranch(txID)
 }
 
 type merkleNodes struct {
@@ -38,13 +38,13 @@ type merkleNodes struct {
 	allNodes map[uint32]merkleNode
 }
 
-func (m *merkleNodes) GetMerkleBranch(txId *common.Uint256) (mb *MerkleBranch, err error) {
+func (m *merkleNodes) GetMerkleBranch(txID *common.Uint256) (mb *MerkleBranch, err error) {
 	m.allNodes, err = m.getNodes()
 	if err != nil {
 		return nil, err
 	}
 
-	m.calcTxIndex(txId)
+	m.calcTxIndex(txID)
 	m.calcBranchRoute()
 
 	mb = new(MerkleBranch)
@@ -172,13 +172,13 @@ func (m merkleNodes) getNodes() (map[uint32]merkleNode, error) {
 	return nil, fmt.Errorf("ran out of things to do?")
 }
 
-func (m *merkleNodes) calcTxIndex(txId *common.Uint256) error {
+func (m *merkleNodes) calcTxIndex(txID *common.Uint256) error {
 	width := m.calcTreeWidth(0)
 	for _, node := range m.allNodes {
 		if node.p > width {
 			continue
 		}
-		if *node.h == *txId {
+		if *node.h == *txID {
 			m.txIndex = node.p
 			return nil
 		}
