@@ -26,16 +26,17 @@ func getConfirmedPassword(passwd string) []byte {
 	return tmp
 }
 
-func createWallet(name string, password []byte, accountType string) error {
+func createWallet(name string, password string, accountType string) error {
 	var err error
-	if password == nil {
-		password, err = pwd.GetConfirmedPassword()
+	var passwd []byte
+	if password == "" {
+		passwd, err = pwd.GetConfirmedPassword()
 		if err != nil {
 			return err
 		}
 	}
 
-	client, err := account.Create(name, password, accountType)
+	client, err := account.Create(name, passwd, accountType)
 	if err != nil {
 		return err
 	}
@@ -53,25 +54,32 @@ func walletAction(context *cli.Context) error {
 	passwd := context.String("password")
 
 	// create wallet
-	if accType := context.String("create"); accType != "" {
-		switch accType {
-		case "standard":
-		case "multisig":
-		case "sidechain":
-		case "pledge":
-		default:
-			fmt.Println("error: account type not found")
-			cli.ShowCommandHelpAndExit(context, "create", 1)
+	if context.Bool("create") {
+		// show account info
+		if accType := context.String("type"); accType != "" {
+			switch accType {
+			case "standard":
+			case "multisig":
+			case "sidechain":
+			case "pledge":
+			default:
+				fmt.Println("error: account type not found")
+				cli.ShowCommandHelpAndExit(context, "create", 1)
+			}
+			if err := createWallet(name, passwd, accType); err != nil {
+				fmt.Println("error: create wallet failed,", err)
+				cli.ShowCommandHelpAndExit(context, "create", 1)
+			}
+			return nil
 		}
-		if err := createWallet(name, []byte(passwd), accType); err != nil {
-			fmt.Println("error: create wallet failed,", err)
-			cli.ShowCommandHelpAndExit(context, "create", 1)
-		}
-		return nil
+
 	}
 
-	// show account info
 	if context.Bool("account") {
+		if exist := common.FileExisted(name); !exist {
+			fmt.Println(fmt.Sprintf("error: %s is not found.", name))
+			cli.ShowCommandHelpAndExit(context, "account", 1)
+		}
 		password, err := pwd.GetPassword()
 		if err != nil {
 			return err
@@ -82,15 +90,19 @@ func walletAction(context *cli.Context) error {
 		}
 		if err := ShowAccountInfo(client); err != nil {
 			fmt.Println("error: show account info failed,", err)
-			cli.ShowCommandHelpAndExit(context, "account", 3)
+			cli.ShowCommandHelpAndExit(context, "account", 1)
 		}
 	}
 
 	// list accounts information
 	if context.Bool("list") {
+		if exist := common.FileExisted(name); !exist {
+			fmt.Println(fmt.Sprintf("error: %s is not found.", name))
+			cli.ShowCommandHelpAndExit(context, "account", 1)
+		}
 		if err := ShowAccountBalance(name); err != nil {
 			fmt.Println("error: list accounts information failed,", err)
-			cli.ShowCommandHelpAndExit(context, "list", 6)
+			cli.ShowCommandHelpAndExit(context, "list", 1)
 		}
 	}
 
@@ -104,9 +116,13 @@ func NewCommand() *cli.Command {
 		Description: "With ela-cli wallet, you could control your asset.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			cli.BoolFlag{
 				Name:  "create, c",
-				Usage: "use [standard, multisig, sidechain, pledge] to create wallet",
+				Usage: "create wallet",
+			},
+			cli.StringFlag{
+				Name:  "type, t",
+				Usage: "use [standard, multisig, sidechain, pledge] to indicate account type",
 				Value: "standard",
 			},
 			cli.BoolFlag{
