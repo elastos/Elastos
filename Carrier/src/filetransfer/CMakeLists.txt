@@ -34,6 +34,11 @@ if(HAVE_ENDIAN_H)
     add_definitions(-DHAVE_ENDIAN_H=1)
 endif()
 
+check_include_file(arpa/inet.h, HAVE_ARPA_INET_H)
+if (HAVE_ARPA_INET_H)
+    add_definitions(-DHAVE_ARPA_INET_H=1)
+endif()
+
 set(SRC
     filetransfer.c
     easyfile.c)

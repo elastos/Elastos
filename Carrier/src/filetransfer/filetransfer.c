@@ -39,6 +39,9 @@
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
 #endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
 #ifndef ntohll
@@ -444,7 +447,7 @@ static bool stream_channel_open(ElaSession *ws, int stream, int channel,
         return false;
     }
 
-    vlogD(TAG "receiver received channe open event to transfer file "
+    vlogD(TAG "receiver received channel open event to transfer file "
           "[%s:%s:%llu] over new channel %d.", fti.filename, fti.fileid,
           _LLUV(fti.size), channel);
 
@@ -529,12 +532,6 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
     assert(ft->stream  == stream);
     assert(ft->state   == FileTransferConnection_connected);
 
-    if (ft->sender_receiver == SENDER && len != sizeof(uint64_t)) {
-        vlogE(TAG "sender received invalid pull request data over channel %d "
-              "with length:%z, dropping.", channel, len);
-        return false;
-    }
-
     item = get_fileinfo_channel(ft, channel);
     if (!item) {
         vlogE(TAG "no transfer file using channel %d found, dropping "
@@ -557,7 +554,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             packet_pull_t *pull_data = (packet_pull_t *)packet;
 
             pull_data->offset = (uint64_t)ntohll(pull_data->offset);
-            vlogT(TAG "sender received pull request data over channel with "
+            vlogD(TAG "sender received pull request data over channel with "
                   "requested offset: %llu.", channel, pull_data->offset);
 
             item->state = FileTransferState_transfering;
@@ -565,7 +562,8 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             if (ft->callbacks.pull)
                 ft->callbacks.pull(ft, fileid, pull_data->offset, ft->callbacks_context);
 
-        }   return false;
+            break;
+        }
 
         case PACKET_CANCEL: {
             packet_cancel_t *cancel_data = (packet_cancel_t *)packet;
@@ -578,9 +576,12 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             if (ft->callbacks.cancel)
                 ft->callbacks.cancel(ft, fileid, cancel_data->status,
                                     cancel_data->reason, ft->callbacks_context);
-        }   break;
+
+            return false; // close this channel.
+        }
 
         default:
+            assert(0);
             vlogE(TAG, "sender received invalid pull data with type %hu "
                   "over channel %s, dropping.", packet->type, channel);
             return false;
@@ -602,7 +603,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             bool rc;
 
             rc = ft->callbacks.data(ft, fileid, data, len, ft->callbacks_context);
-            if (rc) { // Tell filetransfering is finished.
+            if (!rc) { // Tell filetransfering is finished.
                 vlogW(TAG "file transferring finished over channel %d, ",
                        "closing channel.", channel);
                 return false;

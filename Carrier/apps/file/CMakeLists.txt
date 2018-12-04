@@ -8,6 +8,17 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
     add_definitions(-DHAVE_UNISTD_H=1)
 endif()
+
+check_include_file(process.h HAVE_PROCESS_H)
+if(HAVE_PROCESS_H)
+    add_definitions(-DHAVE_PROCESS_H=1)
+endif()
+
+check_include_file(winsock2.h HAVE_WINSOCK2_H)
+if(HAVE_WINSOCK2_H)
+    add_definitions(-DHAVE_WINSOCK2_H=1)
+endif()
+
 check_include_file(sys/resource.h HAVE_SYS_RESOURCE_H)
 if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
@@ -83,7 +94,9 @@ if(WIN32)
         ${LIBS}
         pthread
         pdcurses
-        libconfig.lib)
+        Ws2_32
+        libconfig.lib
+        Shlwapi)
 else()
     set(LIBS
         ${LIBS}
