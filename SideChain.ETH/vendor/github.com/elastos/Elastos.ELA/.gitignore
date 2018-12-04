@@ -1,0 +1,14 @@
+*.patch
+.idea/
+.DS_Store
+*.orig
+*.rej
+*.json
+/glide.lock
+/vendor/*
+Chain/
+Chain_UnitTest/
+Logs/
+/ela
+/ela-cli
+*.db

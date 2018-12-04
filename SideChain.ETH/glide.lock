@@ -1,0 +1,316 @@
+hash: e648753bffef07f3a6e76bb75ad32816e403aea65e2361f8d7ac4a1da5227b3f
+updated: 2018-11-15T04:36:20.506055+08:00
+imports:
+- name: bazil.org/fuse
+  version: 65cc252bf6691cb3c7014bcb2c8dc29de91e3a7e
+  subpackages:
+  - fs
+  - fuseutil
+- name: github.com/AlexpanXX/fsnotify
+  version: 7824671dc7bf1d6925c956976fa0b80ac25dbe32
+- name: github.com/aristanetworks/goarista
+  version: 5faa74ffbed7096292069fdcd0eae96146a3158a
+  subpackages:
+  - monotime
+- name: github.com/Azure/azure-pipeline-go
+  version: b8e3409182fd52e74f7d7bdfbff5833591b3b655
+  subpackages:
+  - pipeline
+- name: github.com/Azure/azure-storage-blob-go
+  version: bb46532f68b79e9e1baca8fb19a382ef5d40ed33
+  subpackages:
+  - 2018-03-28/azblob
+- name: github.com/boltdb/bolt
+  version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
+- name: github.com/btcsuite/btcd
+  version: 67e573d211ace594f1366b4ce9d39726c4b19bd0
+  subpackages:
+  - btcec
+- name: github.com/cevaris/ordered_map
+  version: 0efaee1733e3399a3cb88fc7d2ce340bf2e863d7
+- name: github.com/codahale/hdrhistogram
+  version: 3a0bb77429bd3a61596f5e8a3172445844342120
+- name: github.com/davecgh/go-spew
+  version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
+  subpackages:
+  - spew
+- name: github.com/deckarep/golang-set
+  version: cbaa98ba5575e67703b32b4b19f73c91f3c4159e
+- name: github.com/docker/docker
+  version: 90d35abf7b3535c1c319c872900fbd76374e521c
+  subpackages:
+  - pkg/reexec
+- name: github.com/edsrzf/mmap-go
+  version: 0bce6a6887123b67a60366d2c9fe2dfb74289d2e
+- name: github.com/elastic/gosigar
+  version: 237dff72b4ba95da2cd985f96a9c0ede4aefc760
+  subpackages:
+  - sys/windows
+- name: github.com/elastos/Elastos.ELA
+  version: 19abff85035bef11e609a3829feb0a2710b9ba7c
+  subpackages:
+  - auxpow
+  - bloom
+  - core
+- name: github.com/elastos/Elastos.ELA.SideChain
+  version: f203469fda0fd8f9e28b66168f6d9275e0dc5f15
+  subpackages:
+  - auxpow
+  - config
+  - core
+  - log
+  - vm/interfaces
+- name: github.com/elastos/Elastos.ELA.SPV
+  version: 3ac938157b0ac94c52c11f33b8c72579bf7741cb
+  subpackages:
+  - interface
+  - interface/db
+  - log
+  - net
+  - sdk
+  - spvwallet
+  - spvwallet/config
+  - spvwallet/db
+  - spvwallet/rpc
+  - store
+- name: github.com/elastos/Elastos.ELA.Utility
+  version: c1ff96fcd4b8e526ca59f72a114e9f27fc222ec2
+  subpackages:
+  - common
+  - crypto
+  - p2p
+  - p2p/msg
+- name: github.com/fatih/color
+  version: 5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4
+- name: github.com/fjl/memsize
+  version: 2a09253e352a56f419bd88effab0483f52da4c7d
+  subpackages:
+  - memsizeui
+- name: github.com/gizak/termui
+  version: bf53c5cbea3f372f745e1d8e4660e29f73d41517
+- name: github.com/go-ole/go-ole
+  version: 7a0fa49edf48165190530c675167e2f319a05268
+  subpackages:
+  - oleutil
+- name: github.com/go-stack/stack
+  version: 2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a
+- name: github.com/golang/crypto
+  version: 3d3f9f413869b949e48070b5bc593aa22cc2b8f2
+- name: github.com/golang/protobuf
+  version: aa810b61a9c79d51363740d207bb46cf8e620ed5
+  subpackages:
+  - proto
+  - protoc-gen-go/descriptor
+- name: github.com/golang/snappy
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+- name: github.com/golang/sys
+  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
+- name: github.com/google/uuid
+  version: 9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8
+- name: github.com/gorilla/websocket
+  version: 483fb8d7c32fcb4b5636cd293a92e3935932e2f4
+- name: github.com/hashicorp/golang-lru
+  version: 20f1fb78b0740ba8c3cb143a61e86ba5c8669768
+  subpackages:
+  - simplelru
+- name: github.com/huin/goupnp
+  version: 656e61dfadd241c7cbdd22a023fa81ecb6860ea8
+  subpackages:
+  - dcps/internetgateway1
+  - dcps/internetgateway2
+  - httpu
+  - scpd
+  - soap
+  - ssdp
+- name: github.com/influxdata/influxdb
+  version: a2ba6e7654fb078f8a3f5add1f8d935df38161bd
+  subpackages:
+  - client
+  - models
+  - pkg/escape
+- name: github.com/itchyny/base58-go
+  version: 56d50cf40874c738595ef72ee2445a4de104d27d
+- name: github.com/jackpal/go-nat-pmp
+  version: c9cfead9f2a36ddf3daa40ba269aa7f4bbba6b62
+- name: github.com/julienschmidt/httprouter
+  version: 348b672cd90d8190f8240323e372ecd1e66b59dc
+- name: github.com/karalabe/hid
+  version: 2b4488a37358b7283de4f9622553e85ebbe73125
+- name: github.com/maruel/panicparse
+  version: f20d4c4d746f810c9110e21928d4135e1f2a3efa
+  subpackages:
+  - stack
+- name: github.com/mattn/go-colorable
+  version: 167de6bfdfba052fa6b2d3664c8f5272e23c9072
+- name: github.com/mattn/go-isatty
+  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
+- name: github.com/mattn/go-runewidth
+  version: b20a3daf6a39840c202fd42cc23d53607162b045
+- name: github.com/mattn/go-sqlite3
+  version: c7c4067b79cc51e6dfdcef5c702e74b1e0fa7c75
+- name: github.com/mitchellh/go-wordwrap
+  version: 9e67c67572bc5dd02aef930e2b0ae3c02a4b5a5c
+- name: github.com/mohae/deepcopy
+  version: c48cc78d482608239f6c4c92a4abd87eb8761c90
+- name: github.com/naoina/go-stringutil
+  version: 6b638e95a32d0c1131db0e7fe83775cbea4a0d0b
+- name: github.com/naoina/toml
+  version: e6f5723bf2a66af014955e0888881314cf294129
+  subpackages:
+  - ast
+- name: github.com/nsf/termbox-go
+  version: 60ab7e3d12ed91bc1b2486559c4b3a6b62297577
+- name: github.com/olekukonko/tablewriter
+  version: e6d60cf7ba1f42d86d54cdf5508611c4aafb3970
+- name: github.com/opentracing/opentracing-go
+  version: 328fceb7548c744337cd010914152b74eaf4c4ab
+  subpackages:
+  - ext
+  - log
+- name: github.com/pborman/uuid
+  version: adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1
+- name: github.com/peterh/liner
+  version: 5a0dfa99e2aa1d433a9642e863da51402e609376
+- name: github.com/pkg/errors
+  version: 059132a15dd08d6704c67711dae0cf35ab991756
+- name: github.com/prometheus/prometheus
+  version: 85f23d82a045d103ea7f3c89a91fba4a93e6367a
+  subpackages:
+  - util/flock
+- name: github.com/rjeczalik/notify
+  version: 69d839f37b13a8cb7a78366f7633a4071cb43be7
+- name: github.com/robertkrimen/otto
+  version: 15f95af6e78dcd2030d8195a138bd88d4f403546
+  subpackages:
+  - ast
+  - dbg
+  - file
+  - parser
+  - registry
+  - token
+- name: github.com/rs/cors
+  version: 9a47f48565a795472d43519dd49aac781f3034fb
+- name: github.com/StackExchange/wmi
+  version: b12b22c5341f0c26d88c4d66176330500e84db68
+- name: github.com/syndtr/goleveldb
+  version: 6b91fda63f2e36186f1c9d0e48578defb69c5d43
+  subpackages:
+  - leveldb
+  - leveldb/cache
+  - leveldb/comparer
+  - leveldb/errors
+  - leveldb/filter
+  - leveldb/iterator
+  - leveldb/journal
+  - leveldb/memdb
+  - leveldb/opt
+  - leveldb/storage
+  - leveldb/table
+  - leveldb/util
+- name: github.com/uber/jaeger-client-go
+  version: 1a782e2da844727691fef1757c72eb190c2909f0
+  subpackages:
+  - config
+  - internal/baggage
+  - internal/baggage/remote
+  - internal/spanlog
+  - internal/throttler
+  - internal/throttler/remote
+  - log
+  - rpcmetrics
+  - thrift
+  - thrift-gen/agent
+  - thrift-gen/baggage
+  - thrift-gen/jaeger
+  - thrift-gen/sampling
+  - thrift-gen/zipkincore
+  - transport
+  - utils
+- name: github.com/uber/jaeger-lib
+  version: ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5
+  subpackages:
+  - metrics
+- name: golang.org/x/crypto
+  version: c3a3ad6d03f7a915c0f7e194b7152974bb73d287
+  subpackages:
+  - cast5
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - internal/chacha20
+  - openpgp
+  - openpgp/armor
+  - openpgp/elgamal
+  - openpgp/errors
+  - openpgp/packet
+  - openpgp/s2k
+  - pbkdf2
+  - poly1305
+  - ripemd160
+  - scrypt
+  - ssh
+  - ssh/terminal
+- name: golang.org/x/net
+  version: 92b859f39abd2d91a854c9f9c4621b2f5054a92d
+  subpackages:
+  - context
+  - html
+  - html/atom
+  - html/charset
+  - websocket
+- name: golang.org/x/sync
+  version: 42b317875d0fa942474b76e1b46a6060d720ae6e
+  subpackages:
+  - syncmap
+- name: golang.org/x/sys
+  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
+  subpackages:
+  - cpu
+  - unix
+  - windows
+- name: golang.org/x/text
+  version: f21a4dfb5e38f5895301dc265a8def02365cc3d0
+  subpackages:
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform
+- name: gopkg.in/natefinch/npipe.v2
+  version: c1b8fa8bdccecb0b8db834ee0b92fdbcfa606dd6
+- name: gopkg.in/olebedev/go-duktape.v3
+  version: d53328019b21fe1987c97f368f98c072c8f44455
+- name: gopkg.in/sourcemap.v1
+  version: 6e83acea0053641eff084973fee085f0c193c61a
+  subpackages:
+  - base64vlq
+- name: gopkg.in/urfave/cli.v1
+  version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
+testImports:
+- name: github.com/cespare/cp
+  version: 118c73cfdf4dfc44f5cd1efa4ee578ebea52767f
+- name: github.com/kr/pretty
+  version: 73f6ac0b30a98e433b289500d779f50c1a6f0712
+- name: github.com/kr/text
+  version: e2ffdb16a802fe2bb95e2e35ff34f0e53aeef34f
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  subpackages:
+  - assert
+  - require
+- name: gopkg.in/check.v1
+  version: 788fd78401277ebd861206a03c884797c6ec5541
