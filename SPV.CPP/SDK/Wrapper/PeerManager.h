@@ -94,6 +94,8 @@ namespace Elastos {
 			*/
 			void disconnect();
 
+			void DisableReconnectCallback();
+
 			void rescan();
 
 			uint32_t getSyncStartHeight() const;

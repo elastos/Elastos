@@ -204,6 +204,12 @@ namespace Elastos {
 			BRPeerManagerDisconnect((BRPeerManager *) _manager);
 		}
 
+		void PeerManager::DisableReconnectCallback() {
+			pthread_mutex_lock(&_manager->Raw.lock);
+			_manager->Raw.syncIsInactivate = NULL;
+			pthread_mutex_unlock(&_manager->Raw.lock);
+		}
+
 		void PeerManager::rescan() {
 			BRPeerManagerRescan((BRPeerManager *) _manager);
 		}

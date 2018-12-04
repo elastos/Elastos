@@ -7,6 +7,7 @@
 #include <SDK/Common/Log.h>
 #include <Core/BRTransaction.h>
 #include <SDK/Common/ParamChecker.h>
+#include <Core/BRAddress.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
@@ -238,7 +239,7 @@ namespace Elastos {
 		bool Transaction::transactionSign(int forkId, const WrapperList<Key, BRKey> keys) {
 			const int SIGHASH_ALL = 0x01; // default, sign all of the outputs
 			size_t i, j, keysCount = keys.size();
-			BRAddress addrs[keysCount], address;
+			BRAddress addrs[keysCount];
 
 			ParamChecker::checkCondition(keysCount <= 0, Error::Transaction,
 										 "Transaction sign key not found");
@@ -255,13 +256,10 @@ namespace Elastos {
 			size_t size = _transaction->raw.inCount;
 			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
-
-				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
-				j = 0;
-				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
+				for (j = 0; j < keysCount && !BRAddressEq(&addrs[j], &input->address); j++);
 				if (j >= keysCount) continue;
 				Program *program = nullptr;
-				Address tempAddr(address.s);
+				Address tempAddr(input->address);
 				int signType = tempAddr.getSignType();
 				std::string redeemScript = keys[j].keyToRedeemScript(signType);
 				CMBlock code = Utils::decodeHex(redeemScript);

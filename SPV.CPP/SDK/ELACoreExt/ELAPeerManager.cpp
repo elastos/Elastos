@@ -4,6 +4,7 @@
 
 #include <time.h>
 #include <Core/BRMerkleBlock.h>
+#include <SDK/Common/Log.h>
 
 #include "Core/BRArray.h"
 

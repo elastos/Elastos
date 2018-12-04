@@ -222,7 +222,7 @@ namespace Elastos {
 		}
 
 		bool ELATransactionIsSign(const ELATransaction *tx) {
-			if (tx->type == ELATransaction::Type::TransferAsset) {
+			if (tx->type == ELATransaction::Type::TransferAsset || tx->type == ELATransaction::Type::TransferCrossChainAsset) {
 				size_t len = tx->programs.size();
 				if (len <= 0) {
 					return false;

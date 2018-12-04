@@ -40,7 +40,7 @@ namespace Elastos {
 		}
 
 		TransactionOutput::TransactionOutput(const std::string &toAddress, uint64_t amount,
-											 const UInt256 &assetID, uint32_t outputLock) {
+											 const UInt256 &assetID) {
 			_output = ELATxOutputNew();
 
 			_output->raw.amount = amount;
@@ -53,7 +53,7 @@ namespace Elastos {
 			_output->raw.address[addressSize - 1] = 0;
 
 			_output->assetId = assetID;
-			_output->outputLock = outputLock;
+			_output->outputLock = 0;
 		}
 
 		TransactionOutput::~TransactionOutput() {
