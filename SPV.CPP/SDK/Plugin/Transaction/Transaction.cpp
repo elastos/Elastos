@@ -228,7 +228,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::isSigned() const {
-			if (_type == Type::TransferAsset) {
+			if (_type == Type::TransferAsset || _type == Type::TransferCrossChainAsset) {
 				if (_programs.size() <= 0) {
 					return false;
 				}
@@ -238,7 +238,6 @@ namespace Elastos {
 					}
 				}
 			} else if (_type == Type::IssueToken) {
-				// TODO verify merkle proof
 				return true;
 			} else if (_type == Type::CoinBase) {
 				return true;
@@ -271,8 +270,7 @@ namespace Elastos {
 				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
 				address = tx->getOutputs()[_inputs[i].getIndex()].getAddress();
 
-				j = 0;
-				while (j < keysCount && !addrs[j].IsEqual(address)) j++;
+				for (j = 0; j < keysCount && !addrs[j].IsEqual(address); j++);
 				if (j >= keysCount) continue;
 				int signType = address.getSignType();
 				std::string redeemScript = keys[j].keyToRedeemScript(signType);
@@ -283,7 +281,6 @@ namespace Elastos {
 					Program newProgram;
 					newProgram.setCode(code);
 					_programs.push_back(newProgram);
-
 				}
 
 				CMBlock signData = keys[j].compactSign(GetShaData());

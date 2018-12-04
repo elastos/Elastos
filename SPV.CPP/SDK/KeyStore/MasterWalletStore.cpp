@@ -39,6 +39,7 @@ namespace Elastos {
 			j << *this;
 			std::ofstream o(path.string());
 			o << j;
+			o.flush();
 		}
 
 		const std::vector<CoinInfo> &MasterWalletStore::GetSubWalletInfoList() const {

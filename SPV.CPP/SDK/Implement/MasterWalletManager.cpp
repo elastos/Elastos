@@ -186,7 +186,8 @@ namespace Elastos {
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
-				result.push_back(GetWallet(it->first));
+				if (GetWallet(it->first))
+					result.push_back(GetWallet(it->first));
 			}
 			return result;
 		};
@@ -203,8 +204,6 @@ namespace Elastos {
 
 			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
 			if (saveMaster) {
-				masterWalletInner->Save();
-
 				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
@@ -401,7 +400,8 @@ namespace Elastos {
 				std::string masterWalletId = temp.filename().string();
 				temp /= MASTER_WALLET_STORE_FILE;
 				if (exists(temp)) {
-					_masterWalletMap[masterWalletId] = GetWallet(masterWalletId);
+					if (GetWallet(masterWalletId))
+						_masterWalletMap[masterWalletId] = GetWallet(masterWalletId);
 				}
 				++it;
 			}
@@ -427,9 +427,16 @@ namespace Elastos {
 			path masterWalletStoreFile = _rootPath;
 			masterWalletStoreFile /= masterWalletId;
 			masterWalletStoreFile /= MASTER_WALLET_STORE_FILE;
+			MasterWallet *masterWallet = nullptr;
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable,
-														  ImportFromLocalStore);
+			try {
+				masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable,
+												ImportFromLocalStore);
+			} catch (nlohmann::json::exception &e) {
+				Log::getLogger()->error("new master wallet {} error", masterWalletId);
+				return nullptr;
+			}
+
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;

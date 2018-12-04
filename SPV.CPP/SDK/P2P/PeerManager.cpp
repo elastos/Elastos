@@ -119,7 +119,9 @@ namespace Elastos {
 				_averageTxPerBlock(1400),
 				_maxConnectCount(PEER_MAX_CONNECTIONS),
 				_reconnectTaskCount(0),
-				_chainParams(params) {
+				_chainParams(params),
+				_syncSucceeded(false),
+				_enableReconnect(true) {
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
@@ -196,11 +198,31 @@ namespace Elastos {
 		}
 
 		bool PeerManager::SyncSucceeded() const {
-			return _syncSucceeded;
+			lock.lock();
+			bool status = _syncSucceeded;
+			lock.unlock();
+
+			return status;
 		}
 
 		void PeerManager::SetSyncSucceeded(bool succeeded) {
+			lock.lock();
 			_syncSucceeded = succeeded;
+			lock.unlock();
+		}
+
+		bool PeerManager::IsReconnectEnable() const {
+			lock.lock();
+			bool status = _enableReconnect;
+			lock.unlock();
+
+			return status;
+		}
+
+		void PeerManager::SetReconnectEnableStatus(bool status) {
+			lock.lock();
+			_enableReconnect = status;
+			lock.unlock();
 		}
 
 		void PeerManager::connect() {
@@ -814,15 +836,25 @@ namespace Elastos {
 					_downloadPeer->Disconnect();
 				}
 
+				bool havePendingTx = false;
+				for (size_t i = 0; i < _publishedTx.size(); ++i) {
+					if (_publishedTx[i].HasCallback()) {
+						havePendingTx = true;
+						break;
+					}
+				}
+
 				_downloadPeer = peer;
 				_syncSucceeded = false;
 				_keepAliveTimestamp = time(nullptr);
 				_isConnected = 1;
 				_estimatedHeight = peer->GetLastBlock();
-				peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				loadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->getHeight());
 				publishPendingTx(peer);
+				if (!havePendingTx) {
+					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
+				}
 
 				if (_lastBlock->getHeight() < peer->GetLastBlock()) { // start blockchain sync
 
@@ -848,6 +880,7 @@ namespace Elastos {
 			int willSave = 0, willReconnect = 0, txError = 0;
 			TransactionPeerList *peerList;
 			std::vector<PublishedTransaction> pubTx;
+			int reconnectSeconds = 60;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -902,7 +935,7 @@ namespace Elastos {
 						if (!_publishedTx[i - 1].HasCallback()) continue;
 						peer->error("transaction canceled: {}", strerror(txError));
 						pubTx.push_back(_publishedTx[i - 1]);
-						_publishedTx[i - 1].ResetCallback();
+//						_publishedTx[i - 1].ResetCallback();
 					}
 				}
 
@@ -913,10 +946,23 @@ namespace Elastos {
 					break;
 				}
 
+				bool havePendingTx = false;
+				for (size_t i = 0; i < _publishedTx.size(); ++i) {
+					if (_publishedTx[i].HasCallback()) {
+						havePendingTx = true;
+						break;
+					}
+				}
+
 				if (_reconnectTaskCount == 0 && (!_isConnected || _connectedPeers.empty())) {
 					willReconnect = 1;
 				} else {
 					willReconnect = 0;
+				}
+
+				if (havePendingTx) {
+					reconnectSeconds = 3;
+					willReconnect = 1;
 				}
 			}
 
@@ -926,7 +972,7 @@ namespace Elastos {
 
 			//if (willSave) fireSavePeers(true, {});
 			if (willSave) fireSyncStopped(error);
-			if (willReconnect) fireSyncIsInactive(60);
+			if (willReconnect && _enableReconnect) fireSyncIsInactive(reconnectSeconds);
 			fireTxStatusUpdate();
 		}
 
@@ -1086,7 +1132,7 @@ namespace Elastos {
 					if (UInt256Eq(&(_publishedTxHashes[i - 1]), &txHash)) {
 						if (!tx) tx = _publishedTx[i - 1].GetTransaction();
 						pubTx = _publishedTx[i - 1];
-						pubTx.ResetCallback();
+						_publishedTx[i - 1].ResetCallback();
 						relayCount = addPeerToList(peer, txHash, _txRelays);
 					} else if (_publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
 				}
@@ -1424,7 +1470,7 @@ namespace Elastos {
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
 					if (UInt256Eq(&_publishedTxHashes[i - 1], &txHash)) {
 						pubTx = _publishedTx[i - 1];
-						_publishedTx[i - 1].ResetCallback();
+//						_publishedTx[i - 1].ResetCallback();
 					} else if (_publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
 				}
 

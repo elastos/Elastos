@@ -52,6 +52,7 @@ namespace Elastos {
 		}
 
 		void SpvService::start() {
+			getPeerManager()->SetReconnectEnableStatus(true);
 			_reconnectExecutor.execute(Runnable([this]() -> void {
 				try {
 					getPeerManager()->connect();
@@ -71,10 +72,11 @@ namespace Elastos {
 				_reconnectTimer = nullptr;
 			}
 
+			getPeerManager()->SetReconnectEnableStatus(false);
+			getPeerManager()->disconnect();
+
 			_executor.stopThread();
 			_reconnectExecutor.stopThread();
-
-			getPeerManager()->disconnect();
 		}
 
 		void SpvService::publishTransaction(const TransactionPtr &transaction) {

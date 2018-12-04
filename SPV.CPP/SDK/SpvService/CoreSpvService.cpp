@@ -382,7 +382,8 @@ namespace Elastos {
 		void WrappedExecutorPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
 			_executor->execute(Runnable([this, blockHeight]() -> void {
 				try {
-					_listener->blockHeightIncreased(blockHeight);
+					if (_listener)
+						_listener->blockHeightIncreased(blockHeight);
 				}
 				catch (std::exception ex) {
 					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());

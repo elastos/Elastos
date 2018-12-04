@@ -326,7 +326,7 @@ namespace Elastos {
 
 						gettimeofday(&tv, NULL);
 						time = tv.tv_sec + (double) tv.tv_usec / 1000000;
-						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
+//						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
 
 						if (!error && time >= _mempoolTime) {
 							info("done waiting for mempool response");
