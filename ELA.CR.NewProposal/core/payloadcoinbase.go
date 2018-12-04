@@ -21,7 +21,8 @@ func (a *PayloadCoinBase) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadCoinBase) Deserialize(r io.Reader, version byte) error {
-	temp, err := ReadVarBytes(r)
+	temp, err := ReadVarBytes(r, MaxPayloadDataSize,
+		"payload coinbase data")
 	a.CoinbaseData = temp
 	return err
 }

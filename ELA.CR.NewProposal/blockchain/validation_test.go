@@ -358,11 +358,11 @@ func randomInputs() []*core.Input {
 	num := math.Intn(100) + 1
 	inputs := make([]*core.Input, 0, num)
 	for i := 0; i < num; i++ {
-		var txId common.Uint256
-		rand.Read(txId[:])
+		var txID common.Uint256
+		rand.Read(txID[:])
 		index := math.Intn(100)
 		inputs = append(inputs, &core.Input{
-			Previous: *core.NewOutPoint(txId, uint16(index)),
+			Previous: *core.NewOutPoint(txID, uint16(index)),
 		})
 	}
 	return inputs
