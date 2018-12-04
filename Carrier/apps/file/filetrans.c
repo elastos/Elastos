@@ -109,10 +109,14 @@ static void console(const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
+    vfprintf(stdout, fmt, ap);
     va_end(ap);
+    fprintf(stdout, "\n");
+}
 
-    fprintf(stdout, "%s\n", buf);
+static void console_prompt(void)
+{
+    fprintf(stdout, "# ");
     fflush(stdout);
 }
 
@@ -676,8 +680,19 @@ static void cancel_file(filectx_t *fctx, int argc, char *argv[])
         console("Error: cancel %s failed (0x%x)", argv[1], ela_get_error());
 }
 
-static void help(filectx_t *fctx, int argc, char *argv[]);
+static void system_cmd(filectx_t *fctxt, int argc, char *argv[])
+{
+    char buf[1024] = {0};
+    int off = 0;
+    int i = 0;
 
+    for (i = 0; i < argc; i++)
+        off += sprintf(buf + off, "%s ", argv[i]);
+
+    system(buf);
+}
+
+static void help(filectx_t *fctx, int argc, char *argv[]);
 struct command {
     const char *name;
     void (*cmd_cb)(filectx_t *, int argc, char *argv[]);
@@ -692,6 +707,9 @@ struct command {
     { "unbind",     unbind_transfer,    "unbind"                },
     { "send",       send_file,          "send file"             },
     { "cancel",     cancel_file,        "cancel"                },
+    { "ls",         system_cmd,         "ls"                    },
+    { "mkdir",      system_cmd,         "mkdir folder"          },
+    { "mv",         system_cmd,         "mv source target"      },
     { NULL, NULL, NULL}
 };
 
@@ -734,9 +752,7 @@ char* read_cmd(void)
 
     if (isprint(ch)) {
         cmd_line[cmd_len++] = ch;
-    }
-    else if (ch == 10 || ch == 13) {
-
+    } else if (ch == 10 || ch == 13) {
         cmd_line[cmd_len] = 0;
         // Trim trailing spaces;
         for (p = cmd_line + cmd_len -1; p > cmd_line && isspace(*p); p--);
@@ -748,7 +764,12 @@ char* read_cmd(void)
         cmd_len = 0;
         if (strlen(p) > 0)
             return p;
+        else
+            console_prompt();
+    } else if (ch == 15) {
+        console("$");
     } else {
+        console("ch = %d", ch);
         // ignored;
     }
     return NULL;
@@ -770,7 +791,6 @@ static void do_cmd(filectx_t *fctx, char *line)
                 args[count] = p;
                 count++;
             }
-
             word = 1;
         }
     }
@@ -796,8 +816,10 @@ static void idle_callback(ElaCarrier *w, void *context)
     char *cmd;
 
     cmd = read_cmd();
-    if (cmd)
+    if (cmd) {
         do_cmd(fctx, cmd);
+        console_prompt();
+    }
 }
 
 static void connection_callback(ElaCarrier *w, ElaConnectionStatus status,
@@ -1066,6 +1088,7 @@ int main(int argc, char *argv[])
 
     console("userid : %s", ela_get_userid(w, addr, sizeof(addr)));
     console("address: %s", ela_get_address(w, addr, sizeof(addr)));
+    console_prompt();
 
     rc = ela_filetransfer_init(w, transfer_connect_callback, &fctx);
     if (rc < 0) {
