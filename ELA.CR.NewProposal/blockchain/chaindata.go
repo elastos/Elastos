@@ -143,7 +143,7 @@ func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
 			}
 
 			u := UTXO{
-				TxId:  txn.Hash(),
+				TxID:  txn.Hash(),
 				Index: uint32(index),
 				Value: value,
 			}
@@ -172,14 +172,14 @@ func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
 					unspendUTXOs[programHash][assetID][height], err = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
 
 					if err != nil {
-						return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetId:%v height:%v has no unspent UTXO.", programHash, assetID, height))
+						return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetID:%v height:%v has no unspent UTXO.", programHash, assetID, height))
 					}
 				}
 
 				flag := false
 				listnum := len(unspendUTXOs[programHash][assetID][height])
 				for i := 0; i < listnum; i++ {
-					if unspendUTXOs[programHash][assetID][height][i].TxId.IsEqual(referTxn.Hash()) && unspendUTXOs[programHash][assetID][height][i].Index == uint32(index) {
+					if unspendUTXOs[programHash][assetID][height][i].TxID.IsEqual(referTxn.Hash()) && unspendUTXOs[programHash][assetID][height][i].Index == uint32(index) {
 						unspendUTXOs[programHash][assetID][height][i] = unspendUTXOs[programHash][assetID][height][listnum-1]
 						unspendUTXOs[programHash][assetID][height] = unspendUTXOs[programHash][assetID][height][:listnum-1]
 						flag = true
@@ -195,9 +195,9 @@ func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
 
 	// batch put the UTXOs
 	for programHash, programHash_value := range unspendUTXOs {
-		for assetId, unspents := range programHash_value {
+		for assetID, unspents := range programHash_value {
 			for height, unspent := range unspents {
-				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
+				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, unspent)
 				if err != nil {
 					return err
 				}
@@ -230,17 +230,17 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 				var err error
 				unspendUTXOs[programHash][assetID][height], err = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
 				if err != nil {
-					return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetId:%v has no unspent UTXO.", programHash, assetID))
+					return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetID:%v has no unspent UTXO.", programHash, assetID))
 				}
 			}
 			u := UTXO{
-				TxId:  txn.Hash(),
+				TxID:  txn.Hash(),
 				Index: uint32(index),
 				Value: value,
 			}
 			var position int
 			for i, unspend := range unspendUTXOs[programHash][assetID][height] {
-				if unspend.TxId == u.TxId && unspend.Index == u.Index {
+				if unspend.TxID == u.TxID && unspend.Index == u.Index {
 					position = i
 					break
 				}
@@ -271,7 +271,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 					}
 				}
 				u := UTXO{
-					TxId:  referTxn.Hash(),
+					TxID:  referTxn.Hash(),
 					Index: uint32(index),
 					Value: referTxnOutput.Value,
 				}
@@ -281,9 +281,9 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 	}
 
 	for programHash, programHash_value := range unspendUTXOs {
-		for assetId, unspents := range programHash_value {
+		for assetID, unspents := range programHash_value {
 			for height, unspent := range unspents {
-				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
+				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, unspent)
 				if err != nil {
 					return err
 				}
@@ -352,10 +352,10 @@ func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackAsset(assetId Uint256) error {
+func (c *ChainStore) RollbackAsset(assetID Uint256) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(ST_Info))
-	if err := assetId.Serialize(key); err != nil {
+	if err := assetID.Serialize(key); err != nil {
 		return err
 	}
 

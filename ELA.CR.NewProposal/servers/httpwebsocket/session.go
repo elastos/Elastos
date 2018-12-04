@@ -12,12 +12,12 @@ type Session struct {
 	sync.Mutex
 	Connection *websocket.Conn
 	LastActive int64
-	SessionId  string
+	SessionID  string
 }
 
 type SessionList struct {
 	sync.RWMutex
-	OnlineList map[string]*Session //key is SessionId
+	OnlineList map[string]*Session //key is SessionID
 }
 
 const SessionTimeOut int64 = 120
@@ -42,9 +42,9 @@ func (s *Session) SessionTimeoverCheck() bool {
 }
 
 func (sl *SessionList) CloseSession(session *Session) {
-	delete(sl.OnlineList, session.SessionId)
+	delete(sl.OnlineList, session.SessionID)
 	session.Connection.Close()
-	session.SessionId = ""
+	session.SessionID = ""
 }
 
 func (sl *SessionList) ForEachSession(visit func(*Session)) {

@@ -1,4 +1,6 @@
-# Elastos.ELA [![Build Status](https://travis-ci.org/elastos/Elastos.ELA.svg?branch=master)](https://travis-ci.org/elastos/Elastos.ELA)
+Elastos.ELA
+===========
+[![Build Status](https://travis-ci.org/elastos/Elastos.ELA.svg?branch=master)](https://travis-ci.org/elastos/Elastos.ELA) [![Go Report Card](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)
 
 ## Summary
 
@@ -209,4 +211,4 @@ In the above instruction, we use default configuration file `config.json` in the
 
 If you want to learn the API of Elastos.ELA, please refer to the following:
 
-- [Elastos_Wallet_Node_API](docs/Elastos_Wallet_Node_API_CN.md)
+- [Restful_API](docs/Restful_API.md)
