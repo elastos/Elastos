@@ -13,18 +13,18 @@ import (
 var Store database.Database
 var Table interfaces.IScriptTable
 
-func RunScript(script []byte) *avm.ExecutionEngine {
+func RunScript(script []byte) (*avm.ExecutionEngine, error) {
 	e := NewEngine()
 	e.LoadScript(script, false)
-	e.Execute()
-	return e
+	err := e.Execute()
+	return e, err
 }
 
-func RunGetPriceScript(script []byte) *avm.ExecutionEngine {
+func RunGetPriceScript(script []byte) (*avm.ExecutionEngine, error) {
 	e := NewEngine()
 	e.LoadPriceOnlyScript(script)
-	e.Execute()
-	return e
+	err := e.Execute()
+	return e, err
 }
 
 func NewEngine() *avm.ExecutionEngine {

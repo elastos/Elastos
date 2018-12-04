@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	vmerr "github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
 )
 
 type HttpServiceExtend struct {
@@ -84,13 +85,7 @@ func GetTransactionInfo(cfg *sideser.Config, header *side.Header, tx *side.Trans
 	for i, v := range tx.Outputs {
 		outputs[i].Value = v.Value.String()
 		outputs[i].Index = uint32(i)
-		var address string
-		destroyHash := Uint168{}
-		if v.ProgramHash == destroyHash {
-			address = sideser.DestroyAddress
-		} else {
-			address, _ = v.ProgramHash.ToAddress()
-		}
+		address, _ := v.ProgramHash.ToAddress()
 		outputs[i].Address = address
 		outputs[i].AssetID = sideser.ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
@@ -255,12 +250,16 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 		returntype = "Void"
 	}
 
-	engine := RunScript(code)
+	engine, err := RunScript(code)
+	if err != nil {
+		return false, nil
+	}
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 	ret["state"] = engine.GetState()
 	ret["descript"] = GetDescByVMState(engine.GetState())
-	ret["gas_consumed"] = engine.GetGasConsumed()
+	value := Fixed64(engine.GetGasConsumed())
+	ret["gas_consumed"] = value.String()
 	if engine.GetEvaluationStack().Count() > 0 {
 		ret["result"] = getResult(avm.PopStackItem(engine), returntype)
 	}
@@ -306,12 +305,16 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	codeHashBytes = params.UInt168ToUInt160(codeHash)
 	codeHashBytes = BytesReverse(codeHashBytes)
 	paramBuilder.EmitPushCall(codeHashBytes)
-	engine := RunScript(paramBuilder.Bytes())
+	engine, err := RunScript(paramBuilder.Bytes())
+	if err != nil {
+		return false, nil
+	}
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 	ret["state"] = engine.GetState()
 	ret["descript"] = GetDescByVMState(engine.GetState())
-	ret["gas_consumed"] = engine.GetGasConsumed()
+	value := Fixed64(engine.GetGasConsumed())
+	ret["gas_consumed"] = value.String()
 	if engine.GetEvaluationStack().Count() > 0 {
 		ret["result"] = getResult(avm.PopStackItem(engine), returnType)
 	}
@@ -453,8 +456,12 @@ func (s *HttpServiceExtend) GetOpPrice(param util.Params) (interface{}, error) {
 	} else {
 		paramBuilder.Emit(opcode)
 	}
-	engine := RunGetPriceScript(paramBuilder.Bytes())
-	ret["gas_consumed"] = engine.GetGasConsumed()
+	engine, err := RunGetPriceScript(paramBuilder.Bytes())
+	if err == vmerr.ErrNotSupportSysCall {
+		return false, err
+	}
+	value := Fixed64(engine.GetGasConsumed())
+	ret["gas_consumed"] = value.String()
 	return ret, nil
 }
 

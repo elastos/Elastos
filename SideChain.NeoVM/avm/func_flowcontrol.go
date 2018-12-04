@@ -68,13 +68,15 @@ func opSysCall(e *ExecutionEngine) (VMState, error) {
 	if e.service == nil {
 		return FAULT, errors.ErrServiceIsNil
 	}
-	if e.context.GetPriceOnly {
-		return NONE, nil
-	}
 	success, err := e.service.Invoke(e.context.OpReader.ReadVarString(), e)
 	if success && err == nil {
 		return NONE, nil
+	} else if err ==  errors.ErrNotSupportSysCall {
+		return FAULT, err
 	} else if err != nil {
+		if e.context.GetPriceOnly {
+			return NONE, nil
+		}
 		return FAULT, err
 	}
 	return FAULT, nil
