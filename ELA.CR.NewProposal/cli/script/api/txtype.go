@@ -187,7 +187,7 @@ func transactionDeserialize(L *lua.LState) int {
 
 	txn.Deserialize(bytes.NewReader(txSlice))
 
-	return 1
+	return 0
 }
 
 func transactionAppendEnough(L *lua.LState) int {
