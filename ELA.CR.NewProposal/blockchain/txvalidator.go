@@ -4,17 +4,18 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -453,10 +454,20 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		if program.Parameter == nil {
 			return fmt.Errorf("invalid program parameter nil")
 		}
-		_, err := contract.PublicKeyToStandardProgramHash(program.Code)
-		if err != nil {
-			return fmt.Errorf("invalid program code %x", program.Code)
+
+		switch contract.GetType(program.Code) {
+		case contract.Signature:
+			_, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
+			if err != nil {
+				return fmt.Errorf("invalid standard program code %x", program.Code)
+			}
+		case contract.MultiSig:
+			// TODO: implement the multi signature code checking
+			return fmt.Errorf("invalid multi signature program code, %x", program.Code)
+		default:
+			return fmt.Errorf("invalid program code type, %x", program.Code)
 		}
+
 	}
 	return nil
 }
