@@ -7,18 +7,26 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const (
+	// MaxProgramCodeSize is the maximum allowed length of program code.
+	MaxProgramCodeSize = 10000
+
+	// MaxProgramParamSize is the maximum allowed length of program parameter.
+	MaxProgramParamSize = MaxProgramCodeSize * 2
+)
+
 type Program struct {
-	//the contract program code,which will be run on VM or specific envrionment
+	//the contract program code,which will be run on VM or specific environment
 	Code []byte
 
 	//the program code's parameter
 	Parameter []byte
 }
 
-func (self Program) String() string {
+func (p Program) String() string {
 	return "Program: {\n\t\t" +
-		"Code: " + BytesToHexString(self.Code) + "\n\t\t" +
-		"Parameter: " + BytesToHexString(self.Parameter) + "\n\t\t" +
+		"Code: " + BytesToHexString(p.Code) + "\n\t\t" +
+		"Parameter: " + BytesToHexString(p.Parameter) + "\n\t\t" +
 		"}"
 }
 
@@ -37,13 +45,15 @@ func (p *Program) Serialize(w io.Writer) error {
 
 //Deserialize the Program
 func (p *Program) Deserialize(w io.Reader) error {
-	parameter, err := ReadVarBytes(w)
+	parameter, err := ReadVarBytes(w, MaxProgramParamSize,
+		"program parameter")
 	if err != nil {
 		return errors.New("Execute Program Deserialize Parameter failed.")
 	}
 	p.Parameter = parameter
 
-	code, err := ReadVarBytes(w)
+	code, err := ReadVarBytes(w, MaxProgramCodeSize,
+		"program code")
 	if err != nil {
 		return errors.New("Execute Program Deserialize Code failed.")
 	}
