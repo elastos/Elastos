@@ -1,28 +1,38 @@
 package node
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/binary"
 	"errors"
-	"fmt"
+	"math/rand"
 	"net"
-	"runtime"
-	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
 	. "github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+)
+
+const (
+	// dialTimeout is the time limit to finish dialing to an address.
+	dialTimeout = 10 * time.Second
+
+	// stateMonitorInterval is the interval to monitor connection and syncing state.
+	stateMonitorInterval = 10 * time.Second
+
+	// pingInterval is the interval of time to wait in between sending ping
+	// messages.
+	pingInterval = 30 * time.Second
+
+	// syncBlockTimeout is the time limit to trigger restart sync block.
+	syncBlockTimeout = 30 * time.Second
 )
 
 var LocalNode *node
@@ -38,33 +48,30 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState          // node state
-	id       uint64        // The nodes's id
-	version  uint32        // The network protocol the node used
-	services uint64        // The services the node supplied
-	relay    bool          // The relay capability of the node (merge into capbility flag)
-	height   uint64        // The node latest block height
-	external bool          // Indicate if this is an external node
-	txnCnt   uint64        // The transactions be transmit by this node
-	rxTxnCnt uint64        // The transaction received by this node
-	link                   // The link status and infomation
-	neighbours             // The neighbor node connect with currently node except itself
-	events   *events.Event // The event queue to notice notice other modules
-	chain.TxPool           // Unconfirmed transaction pool
-	idCache                // The buffer to store the id of the items which already be processed
-	filter   *bloom.Filter // The bloom filter of a spv node
+	state     int32         // node state
+	timestamp time.Time     // The timestamp of node
+	id        uint64        // The nodes's id
+	version   uint32        // The network protocol the node used
+	services  uint64        // The services the node supplied
+	relay     bool          // The relay capability of the node (merge into capbility flag)
+	height    uint64        // The node latest block height
+	external  bool          // Indicate if this is an external node
+	txnCnt    uint64        // The transactions be transmit by this node
+	rxTxnCnt  uint64        // The transaction received by this node
+	link                    // The link status and infomation
+	neighbours              // The neighbor node connect with currently node except itself
+	chain.TxPool            // Unconfirmed transaction pool
+	idCache                 // The buffer to store the id of the items which already be processed
+	filter    *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
-	syncFlag                 uint8
-	flagLock                 sync.RWMutex
-	cachelock                sync.RWMutex
-	requestedBlockLock       sync.RWMutex
-	nodeDisconnectSubscriber events.Subscriber
+	syncFlag           uint8
+	flagLock           sync.RWMutex
+	requestedBlockLock sync.RWMutex
 	ConnectingNodes
 	KnownAddressList
 	DefaultMaxPeers    uint
-	headerFirstMode    bool
 	RequestedBlockList map[Uint256]time.Time
 	syncTimer          *syncTimer
 	SyncBlkReqSem      Semaphore
@@ -97,60 +104,81 @@ func (cn *ConnectingNodes) del(addr string) {
 	delete(cn.List, addr)
 }
 
-func NewNode(magic uint32, conn net.Conn) *node {
-	node := new(node)
-	node.conn = conn
-	node.filter = bloom.LoadFilter(nil)
-	node.MsgHelper = p2p.NewMsgHelper(magic, uint32(Parameters.MaxBlockSize), conn, NewHandlerBase(node))
-	runtime.SetFinalizer(node, rmNode)
-	return node
+func NewNode(conn net.Conn, inbound bool) *node {
+	log.Debugf("new connection %s <-> %s with %s",
+		conn.LocalAddr(), conn.RemoteAddr(), conn.RemoteAddr().Network())
+
+	addr := conn.RemoteAddr().String()
+	ip, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Error("node init err:", err)
+	}
+	n := node{
+		link: link{
+			magic:     Parameters.Magic,
+			addr:      addr,
+			ip:        net.ParseIP(ip),
+			conn:      conn,
+			inbound:   inbound,
+			sendQueue: make(chan p2p.Message, 1),
+			quit:      make(chan struct{}),
+		},
+		filter: bloom.LoadFilter(nil),
+	}
+
+	n.handler = NewHandlerBase(&n)
+	n.start(inbound)
+
+	return &n
 }
 
 func InitLocalNode() protocol.Noder {
-	LocalNode = NewNode(Parameters.Magic, nil)
-	LocalNode.version = protocol.ProtocolVersion
-
-	LocalNode.SyncBlkReqSem = MakeSemaphore(protocol.MaxSyncHdrReq)
-
-	LocalNode.link.port = Parameters.NodePort
-	if Parameters.OpenService {
-		LocalNode.services += protocol.OpenService
+	LocalNode = &node{
+		id:                 rand.New(rand.NewSource(time.Now().Unix())).Uint64(),
+		version:            protocol.ProtocolVersion,
+		relay:              true,
+		SyncBlkReqSem:      MakeSemaphore(protocol.MaxSyncHdrReq),
+		RequestedBlockList: make(map[Uint256]time.Time),
+		syncTimer:          newSyncTimer(stopSyncing),
+		height:             uint64(chain.DefaultLedger.Blockchain.GetBestHeight()),
+		link: link{
+			magic: Parameters.Magic,
+			port:  Parameters.NodePort,
+		},
 	}
-	LocalNode.relay = true
-	idHash := sha256.Sum256([]byte(strconv.Itoa(int(time.Now().UnixNano()))))
-	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
-	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
+	if Parameters.OpenService {
+		LocalNode.services |= protocol.OpenService
+	}
+
 	LocalNode.neighbours.init()
 	LocalNode.ConnectingNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
-	LocalNode.events = events.NewEvent()
 	LocalNode.idCache.init()
-	LocalNode.nodeDisconnectSubscriber = LocalNode.Events().Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
-	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
 	LocalNode.handshakeQueue.init()
-	LocalNode.syncTimer = newSyncTimer(LocalNode.stopSyncing)
 	LocalNode.initConnection()
-	go LocalNode.Start()
+
+	go func() {
+		LocalNode.ConnectNodes()
+		LocalNode.waitForNeighbourConnections()
+
+		ticker := time.NewTicker(stateMonitorInterval)
+		for {
+			go LocalNode.ConnectNodes()
+			go LocalNode.SyncBlocks()
+			<-ticker.C
+		}
+	}()
+
 	go monitorNodeState()
 	return LocalNode
 }
 
-func (node *node) Start() {
-	node.ConnectNodes()
-	node.waitForNeighbourConnections()
-
-	ticker := time.NewTicker(time.Second * protocol.HeartbeatDuration)
-	for {
-		go node.ConnectNodes()
-		go node.SyncBlocks()
-		<-ticker.C
+func DisconnectNode(id uint64) {
+	if n, ok := LocalNode.DelNeighborNode(id); ok {
+		n.Disconnect()
 	}
-}
-
-func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
-	node.MsgHelper.Update(handler)
 }
 
 func (node *node) AddToConnectingList(addr string) bool {
@@ -162,31 +190,27 @@ func (node *node) RemoveFromConnectingList(addr string) {
 }
 
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
-	port uint16, nonce uint64, relay uint8, height uint64) {
+	port uint16, nonce uint64, relay bool, height uint64) {
 
-	node.lastActive = t
+	node.timestamp = t
 	node.id = nonce
 	node.version = version
 	node.services = services
 	node.port = port
-	if relay == 0 {
-		node.relay = false
-	} else {
-		node.relay = true
-	}
+	node.relay = relay
 	node.height = uint64(height)
 }
 
-func (node *node) NodeDisconnect(v interface{}) {
-	if n, ok := node.DelNeighborNode(v.(uint64)); ok {
-		log.Debugf("Node [0x%x] disconnected", n.ID())
-		n.SetState(p2p.INACTIVITY)
-		n.GetConn().Close()
-	}
+func (node *node) State() protocol.State {
+	return protocol.State(atomic.LoadInt32(&node.state))
 }
 
-func rmNode(node *node) {
-	log.Debug(fmt.Sprintf("Remove unused/deuplicate node: 0x%0x", node.id))
+func (node *node) SetState(state protocol.State) {
+	atomic.StoreInt32(&node.state, int32(state))
+}
+
+func (node *node) TimeStamp() time.Time {
+	return node.timestamp
 }
 
 func (node *node) ID() uint64 {
@@ -249,25 +273,8 @@ func (node *node) Addr() string {
 	return node.addr
 }
 
-func (node *node) Addr16() ([16]byte, error) {
-	var result [16]byte
-	ip := net.ParseIP(node.addr).To16()
-	if ip == nil {
-		log.Error("Parse IP address error\n")
-		return result, errors.New("Parse IP address error")
-	}
-
-	copy(result[:], ip[:16])
-	return result, nil
-}
-
-func (node *node) GetTime() int64 {
-	t := time.Now()
-	return t.UnixNano()
-}
-
-func (node *node) Events() *events.Event {
-	return node.events
+func (node *node) IP() net.IP {
+	return node.ip
 }
 
 func (node *node) WaitForSyncFinish() {
@@ -275,12 +282,13 @@ func (node *node) WaitForSyncFinish() {
 		return
 	}
 	for {
-		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
+		log.Debug("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
 		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
-		heights := node.GetNeighborHeights()
-		log.Trace("others height is ", heights)
+		addresses, heights := node.GetInternalNeighborAddressAndHeights()
+		log.Debug("others height is (internal only) ", heights)
+		log.Debug("others address is (internal only) ", addresses)
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0 {
 			LocalNode.SetSyncHeaders(false)
@@ -332,14 +340,14 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				log.Debug("Relay transaction message")
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
 					inv := msg.NewInventory()
-					txId := message.Hash()
-					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
-					nbr.Send(inv)
+					txID := message.Hash()
+					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txID))
+					go nbr.SendMessage(inv)
 					continue
 				}
 
 				if nbr.IsRelay() {
-					nbr.Send(msg.NewTx(message))
+					nbr.SendMessage(msg.NewTx(message))
 					node.txnCnt++
 				}
 			case *Block:
@@ -348,12 +356,12 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					inv := msg.NewInventory()
 					blockHash := message.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
-					nbr.Send(inv)
+					go nbr.SendMessage(inv)
 					continue
 				}
 
 				if nbr.IsRelay() {
-					nbr.Send(msg.NewBlock(message))
+					nbr.SendMessage(msg.NewBlock(message))
 				}
 			default:
 				log.Warn("unknown relay message type")
@@ -365,7 +373,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 	return nil
 }
 
-func (node node) IsSyncHeaders() bool {
+func (node *node) IsSyncHeaders() bool {
 	node.flagLock.RLock()
 	defer node.flagLock.RUnlock()
 	if (node.syncFlag & 0x01) == 0x01 {
@@ -386,8 +394,9 @@ func (node *node) SetSyncHeaders(b bool) {
 }
 
 func (node *node) needSync() bool {
-	heights := node.GetNeighborHeights()
-	log.Info("nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	addresses, heights := node.GetInternalNeighborAddressAndHeights()
+	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	log.Info("internal nbr address ", addresses)
 	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) < 0
 }
 
