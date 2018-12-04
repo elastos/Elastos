@@ -20,10 +20,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-const (
-	DestroyAddress = "0000000000000000000000000000000000"
-)
-
 type Config struct {
 	Server         server.IServer
 	Chain          *blockchain.BlockChain
@@ -952,13 +948,7 @@ func GetTransactionInfo(cfg *Config, header *types.Header, tx *types.Transaction
 	for i, v := range tx.Outputs {
 		outputs[i].Value = v.Value.String()
 		outputs[i].Index = uint32(i)
-		var address string
-		destroyHash := common.Uint168{}
-		if v.ProgramHash == destroyHash {
-			address = DestroyAddress
-		} else {
-			address, _ = v.ProgramHash.ToAddress()
-		}
+		address, _ := v.ProgramHash.ToAddress()
 		outputs[i].Address = address
 		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
