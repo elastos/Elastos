@@ -15,8 +15,9 @@ func (b *BlockChain) CalcCurrentDifficulty(currentBits uint32) string {
 }
 
 func (b *BlockChain) CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (uint32, error) {
-	// Genesis block.
-	if prevNode.Height == 0 {
+	// 1. Genesis block.
+	// 2. when we want to generate block instantly, don't change difficulty
+	if (prevNode.Height == 0) || (b.chainParams.PowLimitBits == 0x207fffff) {
 		return uint32(b.chainParams.PowLimitBits), nil
 	}
 
