@@ -1005,6 +1005,9 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	}
 
 	//log.Debugf("Accepted block %v", blockHash)
+	if inMainChain {
+		log.Info("current height -> ", block.Height)
+	}
 
 	return inMainChain, false, nil
 }
