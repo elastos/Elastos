@@ -62,20 +62,20 @@ func run(txs uint32) {
 		merkleBlock.Flags[i/8] |= mBlock.Bits[i] << (i % 8)
 	}
 
-	txIds, err := CheckMerkleBlock(merkleBlock)
+	txIDs, err := CheckMerkleBlock(merkleBlock)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(0)
 	}
 
-	for i := range txIds {
-		mb, err := GetTxMerkleBranch(merkleBlock, txIds[i])
+	for i := range txIDs {
+		mb, err := GetTxMerkleBranch(merkleBlock, txIDs[i])
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(0)
 		}
 
-		calcRoot := auxpow.GetMerkleRoot(*txIds[i], mb.Branches, mb.Index)
+		calcRoot := auxpow.GetMerkleRoot(*txIDs[i], mb.Branches, mb.Index)
 		if merkleRoot == calcRoot {
 		} else {
 			fmt.Println("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())

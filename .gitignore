@@ -12,3 +12,4 @@ Logs/
 /ela
 /ela-cli
 *.db
+rollback
