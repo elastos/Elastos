@@ -18,8 +18,10 @@ type IChainStoreDpos interface {
 
 	GetIllegalProducers() map[string]struct{}
 
-	GetDposDutyChangedCount() uint32
-	PersistDposDutyChangedCount(count uint32) error
+	GetArbitrators(a *arbitrators) error
+	SaveDposDutyChangedCount(count uint32)
+	SaveCurrentArbitrators(a *arbitrators)
+	SaveNextArbitrators(a *arbitrators)
 }
 
 // IChainStore provides func with store package.

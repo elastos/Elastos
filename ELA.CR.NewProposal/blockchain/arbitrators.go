@@ -63,7 +63,16 @@ type arbitrators struct {
 }
 
 func (a *arbitrators) StartUp() error {
-	//todo load persisted current and next arbitrators, initialize currentArbitratorsProgramHashes and currentCandidatesProgramHashes
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	if err := DefaultLedger.Store.GetArbitrators(a); err != nil {
+		return err
+	}
+	if err := a.updateArbitratorsProgramHashes(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -192,7 +201,7 @@ func (a *arbitrators) onChainHeightIncreased(block *types.Block) {
 		}
 	} else {
 		a.dutyChangedCount++
-		DefaultLedger.Store.PersistDposDutyChangedCount(a.dutyChangedCount)
+		DefaultLedger.Store.SaveDposDutyChangedCount(a.dutyChangedCount)
 	}
 }
 
@@ -204,36 +213,23 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
 	a.currentCandidates = a.nextCandidates
 
+	DefaultLedger.Store.SaveCurrentArbitrators(a)
+
 	if err := a.sortArbitrators(); err != nil {
 		return err
 	}
 
-	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
-	for index, v := range a.currentArbitrators {
-		hash, err := contract.PublicKeyToStandardProgramHash(v)
-		if err != nil {
-			return err
-		}
-		a.currentArbitratorsProgramHashes[index] = hash
-	}
-
-	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
-	for index, v := range a.currentCandidates {
-		hash, err := contract.PublicKeyToStandardProgramHash(v)
-		if err != nil {
-			return err
-		}
-		a.currentCandidatesProgramHashes[index] = hash
+	if err := a.updateArbitratorsProgramHashes(); err != nil {
+		return err
 	}
 
 	a.dutyChangedCount = 0
-	DefaultLedger.Store.PersistDposDutyChangedCount(a.dutyChangedCount)
+	DefaultLedger.Store.SaveDposDutyChangedCount(a.dutyChangedCount)
 
 	return nil
 }
 
 func (a *arbitrators) updateNextArbitrators(block *types.Block) error {
-
 	producers, err := DefaultLedger.HeightVersions.GetProducersDesc(block)
 	if err != nil {
 		return err
@@ -251,6 +247,7 @@ func (a *arbitrators) updateNextArbitrators(block *types.Block) error {
 		a.nextCandidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
 	}
 
+	DefaultLedger.Store.SaveNextArbitrators(a)
 	return nil
 }
 
@@ -274,6 +271,28 @@ func (a *arbitrators) sortArbitrators() error {
 	return nil
 }
 
+func (a *arbitrators) updateArbitratorsProgramHashes() error {
+	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
+	for index, v := range a.currentArbitrators {
+		hash, err := contract.PublicKeyToStandardProgramHash(v)
+		if err != nil {
+			return err
+		}
+		a.currentArbitratorsProgramHashes[index] = hash
+	}
+
+	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
+	for index, v := range a.currentCandidates {
+		hash, err := contract.PublicKeyToStandardProgramHash(v)
+		if err != nil {
+			return err
+		}
+		a.currentCandidatesProgramHashes[index] = hash
+	}
+
+	return nil
+}
+
 func NewArbitrators(arbitratorsConfig ArbitratorsConfig) Arbitrators {
 	if arbitratorsConfig.MajorityCount > arbitratorsConfig.ArbitratorsCount {
 		log.Error("Majority count should less or equal than arbitrators count.")
@@ -281,7 +300,6 @@ func NewArbitrators(arbitratorsConfig ArbitratorsConfig) Arbitrators {
 	}
 
 	return &arbitrators{
-		config:           arbitratorsConfig,
-		dutyChangedCount: DefaultLedger.Store.GetDposDutyChangedCount(),
+		config: arbitratorsConfig,
 	}
 }

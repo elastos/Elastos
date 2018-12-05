@@ -54,6 +54,21 @@ type persistConfirmTask struct {
 	reply   chan bool
 }
 
+type persistDutyChangedCountTask struct {
+	count uint32
+	reply chan bool
+}
+
+type persistCurrentArbitratorsTask struct {
+	arbiters *arbitrators
+	reply    chan bool
+}
+
+type persistNextArbitratorsTask struct {
+	arbiters *arbitrators
+	reply    chan bool
+}
+
 type ChainStore struct {
 	IStore
 
@@ -126,6 +141,21 @@ func (c *ChainStore) loop() {
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block rollback exetime: %g", tcall)
+			case *persistDutyChangedCountTask:
+				c.handlePersistDposDutyChangedCount(task.count)
+				task.reply <- true
+				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
+				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
+			case *persistCurrentArbitratorsTask:
+				c.handlePersistCurrentArbiters(task.arbiters)
+				task.reply <- true
+				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
+				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
+			case *persistNextArbitratorsTask:
+				c.handlePersistNextArbiters(task.arbiters)
+				task.reply <- true
+				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
+				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
 			}
 
 		case closed := <-c.quit:
@@ -642,7 +672,7 @@ func (c *ChainStore) SaveBlock(b *Block) error {
 }
 
 func (c *ChainStore) SaveConfirm(confirm *DPosProposalVoteSlot) error {
-	log.Debug("SaveBlock()")
+	log.Debug("SaveConfirm()")
 
 	reply := make(chan bool)
 	c.taskCh <- &persistConfirmTask{confirm: confirm, reply: reply}
