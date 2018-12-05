@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"bytes"
 	"errors"
 	"sort"
 	"strings"
@@ -10,6 +9,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 )
 
 type producerSorter []*ProducerInfo
@@ -123,27 +123,85 @@ func (c *ChainStore) GetIllegalProducers() map[string]struct{} {
 	return c.getIllegalProducers()
 }
 
-func (c *ChainStore) GetDposDutyChangedCount() uint32 {
-	key := []byte{byte(DPOSDutyChangedCount)}
-	data, err := c.Get(key)
-	if err != nil {
-		return 0
+func (c *ChainStore) GetArbitrators(a *arbitrators) error {
+	var err error
+	if a.dutyChangedCount, err = c.getDposDutyChangedCount(); err != nil {
+		return err
 	}
 
-	result, err := ReadUint32(bytes.NewReader(data))
-	if err != nil {
-		return 0
+	if a.currentArbitrators, err = c.getCurrentArbitrators(); err != nil {
+		return err
 	}
 
-	return result
+	if a.currentCandidates, err = c.getCurrentCandidates(); err != nil {
+		return err
+	}
+
+	if a.nextArbitrators, err = c.getNextArbitrators(); err != nil {
+		return err
+	}
+
+	if a.nextCandidates, err = c.getNextCandidates(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (c *ChainStore) PersistDposDutyChangedCount(count uint32) error {
-	key := []byte{byte(DPOSDutyChangedCount)}
+func (c *ChainStore) SaveDposDutyChangedCount(count uint32) {
+	log.Debug("SaveDposDutyChangedCount()")
 
-	value := new(bytes.Buffer)
-	WriteUint32(value, count)
+	reply := make(chan bool)
+	c.taskCh <- &persistDutyChangedCountTask{count: count, reply: reply}
+	<-reply
+}
 
-	c.BatchPut(key, value.Bytes())
-	return nil
+func (c *ChainStore) SaveCurrentArbitrators(a *arbitrators) {
+	log.Debug("SaveCurrentArbitrators()")
+
+	reply := make(chan bool)
+	c.taskCh <- &persistCurrentArbitratorsTask{arbiters: a, reply: reply}
+	<-reply
+}
+
+func (c *ChainStore) SaveNextArbitrators(a *arbitrators) {
+	log.Debug("SaveNextArbitrators()")
+
+	reply := make(chan bool)
+	c.taskCh <- &persistNextArbitratorsTask{arbiters: a, reply: reply}
+	<-reply
+}
+
+func (c *ChainStore) handlePersistDposDutyChangedCount(count uint32) {
+	c.NewBatch()
+	if err := c.persistDposDutyChangedCount(count); err != nil {
+		log.Fatal("[persistDposDutyChangedCount]: error to persist dpos duty changed count:", err.Error())
+		return
+	}
+	c.BatchCommit()
+}
+
+func (c *ChainStore) handlePersistCurrentArbiters(a *arbitrators) {
+	c.NewBatch()
+	if err := c.persistCurrentArbitrators(a.currentArbitrators); err != nil {
+		log.Fatal("[persistCurrentArbitrators]: error to persist current arbiters:", err.Error())
+		return
+	}
+	if err := c.persistCurrentCandidates(a.currentCandidates); err != nil {
+		log.Fatal("[persistCurrentCandidates]: error to persist current candidates:", err.Error())
+		return
+	}
+	c.BatchCommit()
+}
+
+func (c *ChainStore) handlePersistNextArbiters(a *arbitrators) {
+	c.NewBatch()
+	if err := c.persistNextArbitrators(a.nextArbitrators); err != nil {
+		log.Fatal("[persistNextArbitrators]: error to persist current arbiters:", err.Error())
+		return
+	}
+	if err := c.persistNextCandidates(a.nextCandidates); err != nil {
+		log.Fatal("[persistNextCandidates]: error to persist current candidates:", err.Error())
+		return
+	}
+	c.BatchCommit()
 }

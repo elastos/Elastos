@@ -12,7 +12,7 @@ import (
 )
 
 func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) error {
-	key := []byte{byte(VOTERegisterProducer)}
+	key := []byte{byte(DPOSVoteProducer)}
 	hBuf := new(bytes.Buffer)
 	height := c.GetHeight()
 	err := WriteUint32(hBuf, height)
@@ -89,7 +89,7 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 }
 
 func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error {
-	key := []byte{byte(VOTERegisterProducer)}
+	key := []byte{byte(DPOSVoteProducer)}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
@@ -213,7 +213,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 
 func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error {
 	// update producer in database
-	key := []byte{byte(VOTERegisterProducer)}
+	key := []byte{byte(DPOSVoteProducer)}
 	producerBytes, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
@@ -362,7 +362,7 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 }
 
 func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
-	key := []byte{byte(VOTERegisterProducer)}
+	key := []byte{byte(DPOSVoteProducer)}
 	data, err := c.Get(key)
 	if err != nil {
 		return nil, err
@@ -478,4 +478,158 @@ func (c *ChainStore) getIllegalProducers() map[string]struct{} {
 	}
 
 	return result
+}
+
+func (c *ChainStore) getDposDutyChangedCount() (uint32, error) {
+	key := []byte{byte(DPOSDutyChangedCount)}
+	data, err := c.Get(key)
+	if err == nil {
+		result, err := ReadUint32(bytes.NewReader(data))
+		if err != nil {
+			return 0, err
+		}
+		return result, nil
+	}
+
+	return 0, nil
+}
+
+func (c *ChainStore) getCurrentArbitrators() ([][]byte, error) {
+	var currentArbitrators [][]byte
+	key := []byte{byte(DPOSCurrentArbitrators)}
+	data, err := c.Get(key)
+	if err == nil {
+
+		r := bytes.NewReader(data)
+		count, err := ReadVarUint(r, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := uint64(0); i < count; i++ {
+			arbiter, err := ReadVarBytes(r, 33, "arbiter")
+			if err != nil {
+				return nil, err
+			}
+			currentArbitrators = append(currentArbitrators, arbiter)
+		}
+	}
+
+	return currentArbitrators, nil
+}
+
+func (c *ChainStore) getCurrentCandidates() ([][]byte, error) {
+	var currentCandidates [][]byte
+	key := []byte{byte(DPOSCurrentCandidates)}
+	data, err := c.Get(key)
+	if err == nil {
+
+		r := bytes.NewReader(data)
+		count, err := ReadVarUint(r, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := uint64(0); i < count; i++ {
+			candidate, err := ReadVarBytes(r, 33, "candidate")
+			if err != nil {
+				return nil, err
+			}
+			currentCandidates = append(currentCandidates, candidate)
+		}
+	}
+
+	return currentCandidates, nil
+}
+
+func (c *ChainStore) getNextArbitrators() ([][]byte, error) {
+	var nextArbitrators [][]byte
+	key := []byte{byte(DPOSNextArbitrators)}
+	data, err := c.Get(key)
+	if err == nil {
+
+		r := bytes.NewReader(data)
+		count, err := ReadVarUint(r, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := uint64(0); i < count; i++ {
+			arbiter, err := ReadVarBytes(r, 33, "arbiter")
+			if err != nil {
+				return nil, err
+			}
+			nextArbitrators = append(nextArbitrators, arbiter)
+		}
+	}
+	return nextArbitrators, nil
+}
+
+func (c *ChainStore) getNextCandidates() ([][]byte, error) {
+	var nextCandidates [][]byte
+	key := []byte{byte(DPOSNextCandidates)}
+	data, err := c.Get(key)
+	if err == nil {
+
+		r := bytes.NewReader(data)
+		count, err := ReadVarUint(r, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := uint64(0); i < count; i++ {
+			candidate, err := ReadVarBytes(r, 33, "candidate")
+			if err != nil {
+				return nil, err
+			}
+			nextCandidates = append(nextCandidates, candidate)
+		}
+	}
+
+	return nextCandidates, nil
+}
+
+func (c *ChainStore) persistDposDutyChangedCount(count uint32) error {
+	key := []byte{byte(DPOSDutyChangedCount)}
+
+	value := new(bytes.Buffer)
+	WriteUint32(value, count)
+
+	c.BatchPut(key, value.Bytes())
+	return nil
+}
+
+func (c *ChainStore) persistCurrentArbitrators(arbiters [][]byte) error {
+	return c.persistBytesArray(arbiters, DPOSCurrentArbitrators)
+}
+
+func (c *ChainStore) persistCurrentCandidates(candidates [][]byte) error {
+	return c.persistBytesArray(candidates, DPOSCurrentCandidates)
+}
+
+func (c *ChainStore) persistNextArbitrators(arbiters [][]byte) error {
+	return c.persistBytesArray(arbiters, DPOSNextArbitrators)
+}
+
+func (c *ChainStore) persistNextCandidates(candidates [][]byte) error {
+	return c.persistBytesArray(candidates, DPOSNextCandidates)
+}
+
+func (c *ChainStore) persistBytesArray(bytesArray [][]byte, prefix DataEntryPrefix) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(prefix))
+
+	value := new(bytes.Buffer)
+	if err := WriteUint64(value, uint64(len(bytesArray))); err != nil {
+		return err
+	}
+
+	for _, b := range bytesArray {
+		if err := WriteVarBytes(value, b); err != nil {
+			return err
+		}
+	}
+
+	c.BatchPut(key.Bytes(), value.Bytes())
+	return nil
 }
