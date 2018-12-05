@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA.SideChain/database"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -14,7 +15,7 @@ var mainchainTxHash common.Uint256
 
 func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
-	levelDB, err := NewLevelDB("Chain_UnitTest")
+	levelDB, err := database.NewLevelDB("Chain_UnitTest")
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +64,11 @@ func TestChainStore_PersisMainchainTx(t *testing.T) {
 	}
 
 	// 2. Run PersistMainchainTx
-	testChainStore.PersistMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	testChainStore.PersistMainchainTx(batch, mainchainTxHash)
 
 	// Need batch commit here because PersistMainchainTx use BatchPut
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify PersistMainchainTx
 	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
@@ -93,13 +95,14 @@ func TestChainStore_RollbackMainchainTx(t *testing.T) {
 	}
 
 	// 2. Run Rollback
-	err = testChainStore.RollbackMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	err = testChainStore.RollbackMainchainTx(batch, mainchainTxHash)
 	if err != nil {
 		t.Error("Rollback the mainchain Tx failed")
 	}
 
 	// Need batch commit here because RollbackMainchainTx use BatchDelete
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify RollbackMainchainTx
 	_, err = testChainStore.GetMainchainTx(mainchainTxHash)
@@ -120,10 +123,11 @@ func TestChainStore_IsMainchainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 2. Persist the mainchain Tx hash
-	testChainStore.PersistMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	testChainStore.PersistMainchainTx(batch, mainchainTxHash)
 
 	// Need batch commit here because PersistMainchainTx use BatchPut
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify PersistMainchainTx
 	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
@@ -147,11 +151,12 @@ func TestChainStoreDone(t *testing.T) {
 		return
 	}
 
-	err := testChainStore.RollbackMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	err := testChainStore.RollbackMainchainTx(batch, mainchainTxHash)
 	if err != nil {
 		t.Error("Rollback the mainchain Tx failed")
 	}
 
-	testChainStore.BatchCommit()
+	batch.Commit()
 	testChainStore.Close()
 }
