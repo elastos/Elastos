@@ -48,21 +48,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	state     int32         // node state
-	timestamp time.Time     // The timestamp of node
-	id        uint64        // The nodes's id
-	version   uint32        // The network protocol the node used
-	services  uint64        // The services the node supplied
-	relay     bool          // The relay capability of the node (merge into capbility flag)
-	height    uint64        // The node latest block height
-	external  bool          // Indicate if this is an external node
-	txnCnt    uint64        // The transactions be transmit by this node
-	rxTxnCnt  uint64        // The transaction received by this node
-	link                    // The link status and infomation
-	neighbours              // The neighbor node connect with currently node except itself
-	chain.TxPool            // Unconfirmed transaction pool
-	idCache                 // The buffer to store the id of the items which already be processed
-	filter    *bloom.Filter // The bloom filter of a spv node
+	state      int32         // node state
+	lastActive time.Time     // The lastActive of node
+	id         uint64        // The nodes's id
+	version    uint32        // The network protocol the node used
+	services   uint64        // The services the node supplied
+	relay      bool          // The relay capability of the node (merge into capbility flag)
+	height     uint64        // The node latest block height
+	external   bool          // Indicate if this is an external node
+	txnCnt     uint64        // The transactions be transmit by this node
+	rxTxnCnt   uint64        // The transaction received by this node
+	link                     // The link status and infomation
+	neighbours               // The neighbor node connect with currently node except itself
+	chain.TxPool             // Unconfirmed transaction pool
+	idCache                  // The buffer to store the id of the items which already be processed
+	filter     *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -171,8 +171,23 @@ func InitLocalNode() protocol.Noder {
 		}
 	}()
 
+	go LocalNode.nodeHeartBeat()
 	go monitorNodeState()
 	return LocalNode
+}
+
+func (node *node) nodeHeartBeat() {
+	ticker := time.NewTicker(pingInterval)
+	for {
+		log.Info("node heart beat")
+		for _, peer := range node.GetNeighborNodes() {
+			if time.Now().Sub(peer.GetLastActive()) > 10 * time.Minute {
+				log.Warn("does not get pong message for 10 minutes.")
+				peer.Disconnect()
+			}
+		}
+		<-ticker.C
+	}
 }
 
 func DisconnectNode(id uint64) {
@@ -192,7 +207,7 @@ func (node *node) RemoveFromConnectingList(addr string) {
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	port uint16, nonce uint64, relay bool, height uint64) {
 
-	node.timestamp = t
+	node.lastActive = t
 	node.id = nonce
 	node.version = version
 	node.services = services
@@ -207,10 +222,6 @@ func (node *node) State() protocol.State {
 
 func (node *node) SetState(state protocol.State) {
 	atomic.StoreInt32(&node.state, int32(state))
-}
-
-func (node *node) TimeStamp() time.Time {
-	return node.timestamp
 }
 
 func (node *node) ID() uint64 {
@@ -267,6 +278,14 @@ func (node *node) Height() uint64 {
 
 func (node *node) SetHeight(height uint64) {
 	node.height = height
+}
+
+func (node *node) SetLastActive(now time.Time) {
+	node.lastActive = now
+}
+
+func (node *node) GetLastActive() time.Time {
+	return node.lastActive
 }
 
 func (node *node) Addr() string {
