@@ -499,7 +499,7 @@ namespace Elastos {
 			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
 				ELATransactionFree(transaction);
 				transaction = nullptr;
-				ParamChecker::checkCondition(balance < amount + feeAmount, Error::CreateTransaction,
+				ParamChecker::checkCondition(balance < amount + feeAmount, Error::BalanceNotEnough,
 											 "Available token is not enough");
 				ParamChecker::checkCondition(outCount < 1, Error::CreateTransaction, "Output count is not enough");
 			} else if (transaction && balance - (amount + feeAmount) > 0) { // add change output

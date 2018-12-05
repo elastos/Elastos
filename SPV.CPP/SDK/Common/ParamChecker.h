@@ -49,9 +49,8 @@ namespace Elastos {
 				SignType,
 				Address,
 				Sign,
-				Encrypt,
-				Decrypt,
 				KeyStoreNeedPhrasePassword,
+				BalanceNotEnough,
 				Other,
 			} Code;
 		}
