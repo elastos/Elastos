@@ -18,6 +18,7 @@ type view struct {
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
+	arbitrators   blockchain.Arbitrators
 
 	listener ViewListener
 }
@@ -45,7 +46,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	log.Info("[ChangeView] current view offset:", *viewOffset)
 
 	if offset > 0 {
-		currentArbiter := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(*viewOffset)
+		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
 		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
 		log.Info("current onduty arbiter:", currentArbiter)

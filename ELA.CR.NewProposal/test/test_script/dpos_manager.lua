@@ -1,5 +1,6 @@
 network = dpos_network.new()
-manager = dpos_manager.new(network)
+ars = arbitrators.new()
+manager = dpos_manager.new(network, ars)
 
 if (manager ~= nil)
 then

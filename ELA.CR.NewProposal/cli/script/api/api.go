@@ -122,6 +122,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterHeaderType(L)
 	RegisterDposNetworkType(L)
 	RegisterDposManagerType(L)
+	RegisterArbitratorsType(L)
 
 	return 0
 }

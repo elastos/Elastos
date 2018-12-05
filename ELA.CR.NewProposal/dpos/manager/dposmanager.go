@@ -70,6 +70,7 @@ type DposManager interface {
 
 	GetPublicKey() string
 	GetBlockCache() *ConsensusBlockCache
+	GetArbitrators() blockchain.Arbitrators
 
 	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor)
 
@@ -90,12 +91,14 @@ type dposManager struct {
 	dispatcher     ProposalDispatcher
 	consensus      Consensus
 	illegalMonitor IllegalBehaviorMonitor
+	arbitrators    blockchain.Arbitrators
 }
 
-func NewManager(name string) DposManager {
+func NewManager(name string, arbitrators blockchain.Arbitrators) DposManager {
 	m := &dposManager{
-		publicKey:  name,
-		blockCache: &ConsensusBlockCache{},
+		publicKey:   name,
+		blockCache:  &ConsensusBlockCache{},
+		arbitrators: arbitrators,
 	}
 	m.blockCache.Reset()
 
@@ -117,6 +120,10 @@ func (d *dposManager) GetPublicKey() string {
 
 func (d *dposManager) GetBlockCache() *ConsensusBlockCache {
 	return d.blockCache
+}
+
+func (d *dposManager) GetArbitrators() blockchain.Arbitrators {
+	return d.arbitrators
 }
 
 func (d *dposManager) Recover() {
@@ -285,7 +292,7 @@ func (d *dposManager) changeHeight() {
 		return
 	}
 
-	currentArbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+	currentArbiter := d.arbitrators.GetOnDutyArbitrator()
 	onDuty := d.publicKey == common.BytesToHexString(currentArbiter)
 
 	if onDuty {
