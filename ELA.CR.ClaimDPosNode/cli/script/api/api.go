@@ -120,6 +120,8 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterConfirmType(L)
 	RegisterBlockType(L)
 	RegisterHeaderType(L)
+	RegisterDposNetworkType(L)
+	RegisterDposManagerType(L)
 
 	return 0
 }
