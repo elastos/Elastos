@@ -54,9 +54,6 @@ func NewEventMoniter() *EventMonitor {
 		listeners: make([]EventListener, 0),
 	}
 
-	eventLogs := &EventLogs{}
-	e.RegisterListener(eventLogs)
-
 	return e
 }
 
