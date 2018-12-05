@@ -19,7 +19,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
@@ -136,7 +135,6 @@ func (s *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				if isOrphan || !inMainChain {
 					continue
 				}
-				s.BroadcastBlock(msgBlock)
 				h := msgBlock.Hash()
 				blockHashes[i] = &h
 				i++
@@ -218,7 +216,6 @@ func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
 	if isOrphan || !inMainChain {
 		return fmt.Errorf("aux block can not be accepted")
 	}
-	s.BroadcastBlock(msgBlock)
 
 	s.msgBlocks = make(map[string]*types.Block)
 
@@ -256,10 +253,6 @@ func (s *Service) SolveBlock(msgBlock *types.Block, ticker *time.Ticker) bool {
 	}
 
 	return false
-}
-
-func (s *Service) BroadcastBlock(block *types.Block) {
-	s.cfg.Server.BroadcastMessage(msg.NewBlock(block))
 }
 
 func (s *Service) Start() {
@@ -323,10 +316,8 @@ out:
 				if isOrphan || !inMainChain {
 					continue
 				}
-				s.BroadcastBlock(msgBlock)
 			}
 		}
-
 	}
 
 	s.wg.Done()

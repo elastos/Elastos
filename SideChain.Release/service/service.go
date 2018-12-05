@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
+	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
@@ -17,12 +19,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Config struct {
-	Server         server.IServer
+	Server         server.Server
 	Chain          *blockchain.BlockChain
 	Store          *blockchain.ChainStore
 	GenesisAddress string
@@ -889,7 +890,9 @@ func (s *HttpService) verifyAndSendTx(tx *types.Transaction) error {
 		}
 		return err
 	}
-	s.cfg.Server.BroadcastMessage(msg.NewTx(tx))
+	hash := tx.Hash()
+	iv := msg.NewInvVect(msg.InvTypeTx, &hash)
+	s.cfg.Server.RelayInventory(iv, tx)
 	return nil
 }
 
