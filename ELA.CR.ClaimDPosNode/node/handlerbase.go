@@ -103,7 +103,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) {
 	//	n.Disconnect()
 	//}
 
-	node.UpdateInfo(time.Unix(int64(version.TimeStamp), 0), version.Version,
+	node.UpdateInfo(time.Now(), version.Version,
 		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
 
 	// Update message handler according to the protocol version
@@ -173,6 +173,7 @@ func (h *HandlerBase) onPing(ping *msg.Ping) {
 func (h *HandlerBase) onPong(pong *msg.Pong) {
 	log.Debug("onPong")
 	h.node.SetHeight(pong.Nonce)
+	h.node.SetLastActive(time.Now())
 }
 
 func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
@@ -187,7 +188,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 						addr.Services,
 						addr.IP,
 						config.Parameters.NodeOpenPort,
-				})
+					})
 			}
 		}
 	} else {
@@ -203,7 +204,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		} else {
 			repeatNum ++
 			if repeatNum > 1 {
-				log.Warn("more than one repeat:", repeatNum," ", repeatNum, " ", addr.String())
+				log.Warn("more than one repeat:", repeatNum, " ", repeatNum, " ", addr.String())
 			}
 
 		}

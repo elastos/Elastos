@@ -113,6 +113,8 @@ type Noder interface {
 	RemoveTransaction(txn *core.Transaction)
 
 	SetHeight(height uint64)
+	SetLastActive(now time.Time)
+	GetLastActive() time.Time
 	Relay(Noder, interface{}) error
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
