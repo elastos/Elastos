@@ -5,7 +5,7 @@ const common = require("./common");
 module.exports = async function(json_data, res) {
     try {
         console.log("Mainchain Transaction Received: ");
-        let mctxhash = json_data["params"]["info"]["payload"]["mainchaintxhash"];
+        let mctxhash = json_data["params"]["txid"];
         if (mctxhash.indexOf("0x") !== 0) mctxhash = "0x" + mctxhash;
         console.log(mctxhash);
         console.log("============================================================");
