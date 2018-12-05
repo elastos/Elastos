@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 // EntryPrefix
@@ -26,13 +25,12 @@ const (
 	DATA_Transaction EntryPrefix = 0x02
 
 	// INDEX
-	IX_HeaderHashList   EntryPrefix = 0x80
-	IX_Unspent          EntryPrefix = 0x90
-	IX_Unspent_UTXO     EntryPrefix = 0x91
-	IX_SideChain_Tx     EntryPrefix = 0x92
-	IX_MainChain_Tx     EntryPrefix = 0x93
-	IX_Identification   EntryPrefix = 0x94
-	IX_SPV_MainChain_tx EntryPrefix = 0x95
+	IX_HeaderHashList EntryPrefix = 0x80
+	IX_Unspent        EntryPrefix = 0x90
+	IX_Unspent_UTXO   EntryPrefix = 0x91
+	IX_SideChain_Tx   EntryPrefix = 0x92
+	IX_MainChain_Tx   EntryPrefix = 0x93
+	IX_Identification EntryPrefix = 0x94
 
 	// ASSET
 	ST_Info EntryPrefix = 0xc0
@@ -402,42 +400,6 @@ func (s *ChainStore) GetAsset(hash Uint256) (*types.Asset, error) {
 	asset.Deserialize(bytes.NewReader(data))
 
 	return asset, nil
-}
-
-func (c *ChainStore) PersistSpvMainchainTx(batch database.Batch, tx *ela.Transaction) error {
-	// generate key with DATA_Transaction prefix
-	key := new(bytes.Buffer)
-	// add transaction header prefix.
-	key.WriteByte(byte(IX_SPV_MainChain_tx))
-	// get transaction hash
-	hash := tx.Hash()
-	if err := hash.Serialize(key); err != nil {
-		return err
-	}
-	log.Debugf("transaction header + hash: %x", key)
-	// generate value
-	value := new(bytes.Buffer)
-	if err := tx.Serialize(value); err != nil {
-		return err
-	}
-	log.Debugf("transaction tx data: %x", value)
-	// put value
-	batch.Put(key.Bytes(), value.Bytes())
-	return nil
-}
-
-func (c *ChainStore) GetSpvMainchainTx(txId *Uint256) (*ela.Transaction, error) {
-	key := append([]byte{byte(IX_SPV_MainChain_tx)}, txId.Bytes()...)
-	value, err := c.Get(key)
-	if err != nil {
-		return nil, err
-	}
-	var txn ela.Transaction
-	r := bytes.NewReader(value)
-	if err := txn.Deserialize(r); err != nil {
-		return nil, err
-	}
-	return &txn, nil
 }
 
 func (s *ChainStore) PersistMainchainTx(batch database.Batch, mainchainTxHash Uint256) {

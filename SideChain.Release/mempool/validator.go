@@ -462,7 +462,7 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		}
 	} else if txn.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
 		var err error
-		mainChainTransaction, err = v.db.GetSpvMainchainTx(&payloadRecharge.MainChainTransactionHash)
+		mainChainTransaction, err = v.spvService.GetTransaction(&payloadRecharge.MainChainTransactionHash)
 		if err != nil {
 			str := fmt.Sprint("[checkRechargeToSideChainTransaction] Get RechargeToSideChain transaction failed")
 			return ruleError(ErrRechargeToSideChain, str)

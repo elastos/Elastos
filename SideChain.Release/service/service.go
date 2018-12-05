@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
@@ -27,6 +28,7 @@ type Config struct {
 	GenesisAddress string
 	TxMemPool      *mempool.TxPool
 	PowService     *pow.Service
+	SpvService     *spv.Service
 	SetLogLevel    func(level elalog.Level)
 
 	GetBlockInfo                func(cfg *Config, block *types.Block, verbose bool) BlockInfo
@@ -289,7 +291,7 @@ func (s *HttpService) SendRechargeToSideChainTxByHash(param util.Params) (interf
 		return nil, util.NewError(int(InvalidParams), "invalid tx hash")
 	}
 
-	tx, err := s.cfg.Store.GetSpvMainchainTx(hash)
+	tx, err := s.cfg.SpvService.GetTransaction(hash)
 	if err != nil {
 		return nil, util.NewError(int(InvalidParams), "invalid tx hash")
 	}
