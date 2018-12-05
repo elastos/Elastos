@@ -4,7 +4,7 @@ const express = require("express");
 
 const common = require("./common");
 const getBlkNum = require("./getblknum");
-const sendTxInfo = require("./sendtxinfo");
+const sendrechargetransaction = require("./sendrechargetransaction");
 const getTxInfo = require("./gettxinfo");
 const getBlkLogs = require("./getblklogs");
 const getExistTxs = require("./getexisttxs");
@@ -23,8 +23,8 @@ app.post("/json_rpc", async function(req, res) {
             await getBlkNum(res);
             return;
         }
-        if (json_data["method"] === "sendtransactioninfo") {
-            await sendTxInfo(json_data, res);
+        if (json_data["method"] === "sendrechargetransaction") {
+            await sendrechargetransaction(json_data, res);
             return;
         }
         if (json_data["method"] === "getwithdrawtransaction") {
