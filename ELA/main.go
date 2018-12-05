@@ -95,7 +95,7 @@ func main() {
 		if err != nil {
 			goto ERROR
 		}
-		arbitrator, err = dpos.NewArbitrator(pwd)
+		arbitrator, err = dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{EnableEventLog: true, EnableEventRecord: true})
 		if err != nil {
 			goto ERROR
 		}

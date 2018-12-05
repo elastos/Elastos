@@ -16,6 +16,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+type ArbitratorConfig struct {
+	EnableEventLog    bool
+	EnableEventRecord bool
+}
+
 type Arbitrator interface {
 	blockchain.NewBlocksListener
 	blockchain.ArbitratorsListener
@@ -80,7 +85,7 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte) (Arbitrator, error) {
+func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, error) {
 	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
 		log.Error("Init dpos account error")
@@ -98,15 +103,23 @@ func NewArbitrator(password []byte) (Arbitrator, error) {
 		return nil, err
 	}
 
-	eventMoniter := log.NewEventMoniter()
-	eventRecorder := &store.EventRecord{}
-	eventRecorder.Initialize()
-	eventMoniter.RegisterListener(eventRecorder)
+	eventMonitor := log.NewEventMoniter()
 
-	dposHandlerSwitch := NewHandler(network, dposManager, eventMoniter)
+	if arConfig.EnableEventLog {
+		eventLogs := &log.EventLogs{}
+		eventMonitor.RegisterListener(eventLogs)
+	}
+
+	if arConfig.EnableEventRecord {
+		eventRecorder := &store.EventRecord{}
+		eventRecorder.Initialize()
+		eventMonitor.RegisterListener(eventRecorder)
+	}
+
+	dposHandlerSwitch := NewHandler(network, dposManager, eventMonitor)
 
 	consensus := NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher, illegalMonitor := NewDispatcherAndIllegalMonitor(consensus, eventMoniter, network, dposManager, dposAccount)
+	proposalDispatcher, illegalMonitor := NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor)
