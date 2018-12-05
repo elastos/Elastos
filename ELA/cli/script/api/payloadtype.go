@@ -12,6 +12,7 @@ import (
 const (
 	luaCoinBaseTypeName      = "coinbase"
 	luaTransferAssetTypeName = "transferasset"
+	luaRegisterProducerName  = "registerproducer"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -99,6 +100,62 @@ var transferassetMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func transferassetGet(L *lua.LState) int {
 	p := checkTransferAsset(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+// Registers my person type to given L.
+func RegisterRegisterProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaRegisterProducerName)
+	L.SetGlobal("registerproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newRegisterProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), registerProducerMethods))
+}
+
+// Constructor
+func newRegisterProducer(L *lua.LState) int {
+	publicKey := L.ToString(1)
+	nickName := L.ToString(2)
+	url := L.ToString(3)
+	location := L.ToInt64(4)
+	address := L.ToString(5)
+
+	registerProducer := &payload.PayloadRegisterProducer{
+		PublicKey: publicKey,
+		NickName:  nickName,
+		Url:       url,
+		Location:  uint64(location),
+		Address:   address,
+	}
+	ud := L.NewUserData()
+	ud.Value = registerProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaRegisterProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+// Checks whether the first lua argument is a *LUserData with *PayloadRegisterProducer and
+// returns this *PayloadRegisterProducer.
+func checkRegisterProducer(L *lua.LState, idx int) *payload.PayloadRegisterProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.PayloadRegisterProducer); ok {
+		return v
+	}
+	L.ArgError(1, "PayloadRegisterProducer expected")
+	return nil
+}
+
+var registerProducerMethods = map[string]lua.LGFunction{
+	"get": registerProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func registerProducerGet(L *lua.LState) int {
+	p := checkRegisterProducer(L, 1)
 	fmt.Println(p)
 
 	return 0

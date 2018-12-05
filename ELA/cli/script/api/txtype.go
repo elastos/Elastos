@@ -56,6 +56,15 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.PayloadTransferAsset)
 	case *payload.PayloadRecord:
 		pload, _ = ud.Value.(*payload.PayloadRecord)
+	case *payload.PayloadRegisterProducer:
+		pload, _ = ud.Value.(*payload.PayloadRegisterProducer)
+	case *payload.PayloadCancelProducer:
+		pload, _ = ud.Value.(*payload.PayloadCancelProducer)
+	case *payload.PayloadUpdateProducer:
+		pload, _ = ud.Value.(*payload.PayloadUpdateProducer)
+	default:
+		fmt.Println("error: undefined payload type")
+		os.Exit(1)
 	}
 
 	txn := &types.Transaction{
