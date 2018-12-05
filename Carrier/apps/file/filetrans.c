@@ -56,6 +56,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <posix_helper.h>
+#include <conio.h>
 #endif
 
 #include <vlog.h>
@@ -93,6 +94,7 @@ struct filentry {
     uint64_t filesz;
     uint64_t sentsz;
     uint64_t offset;
+    int percent;
 
     pthread_mutex_t lock;
     pthread_cond_t  cond;
@@ -117,6 +119,15 @@ static void console(const char *fmt, ...)
     vfprintf(stdout, fmt, ap);
     va_end(ap);
     fprintf(stdout, "\n");
+}
+
+static void console_nonl(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vfprintf(stdout, fmt, ap);
+    va_end(ap);
 }
 
 static void console_prompt(void)
@@ -150,14 +161,17 @@ static void transfer_state_changed_cb(ElaFileTransfer *ft,
         console("filetransfer is disconnected to %s.", fctx->friendid);
 
         if (fctx->ft) {
-            ela_filetransfer_close(fctx->ft);
+            ElaFileTransfer *ft = fctx->ft;
+
             fctx->ft = NULL;
+            ela_filetransfer_close(ft);
         }
         break;
 
     case FileTransferConnection_initialized:
     default:
         assert(0);
+        break;
     }
 }
 
@@ -186,7 +200,7 @@ static void transfer_file_cb(ElaFileTransfer *ft, const char *filename,
 
     if (st.st_size >= size) {
         console("file %s already exists.", filename);
-        errno = EINVAL;
+        errno = 0;
         goto cancel_transfer;
     }
 
@@ -207,6 +221,7 @@ static void transfer_file_cb(ElaFileTransfer *ft, const char *filename,
     entry->ft = fctx->ft;
     entry->filesz = size;
     entry->sentsz = st.st_size;
+    entry->percent = (int)(entry->sentsz * 100 / entry->filesz);
     entry->fp = fp;
 
     console("send pull %s request (offset:%llu).", fileid, (uint64_t)st.st_size);
@@ -257,6 +272,7 @@ static void *send_file_routine(void *args)
     pthread_mutex_lock(&entry->lock);
     while(!entry->stopped) {
         ssize_t bytes;
+        int percent;
 
         while (entry->pending)
             pthread_cond_wait(&entry->cond, &entry->lock);
@@ -265,9 +281,10 @@ static void *send_file_routine(void *args)
         bytes = fread(buf, 1, sizeof(buf), fp);
         if (!bytes) {
             if (feof(fp))
-                console("file [%s] transmitted.", entry->fileid);
+                console("\nfile [%s] transmitted with total size: %llu",
+                        entry->fileid, entry->filesz);
             else
-                console("file [%s] read error (%d).", entry->fileid, ferror(fp));
+                console("\nfile [%s] read error (%d).", entry->fileid, ferror(fp));
 
             goto cancel_transfer;
         }
@@ -276,6 +293,13 @@ static void *send_file_routine(void *args)
         if (rc < 0)  {
             console("sending file %s error (0x%x).", entry->fileid, ela_get_error());
             goto cancel_transfer;
+        }
+
+        entry->sentsz += bytes;
+        percent = (int)(entry->sentsz * 100 / (double)entry->filesz);
+        if (percent > entry->percent ) {
+            console_nonl("\rsent percent complete: %d%%", percent);
+            entry->percent = percent;
         }
 
         pthread_mutex_lock(&entry->lock);
@@ -322,16 +346,18 @@ static void transfer_pull_cb(ElaFileTransfer *ft, const char *fileid,
     filentry_t *entry;
     pthread_t thread;
 
-    console("received pull request to %s with offset: %llu.", fileid, offset);
-
     entry = ela_filetransfer_get_userdata(ft, fileid);
     if (!entry)
         return;
 
+    console("received pull request to %s with offset: %llu.", fileid, offset);
     if (entry->filesz <= offset) {
         console("Error: invalid offset %llu.", offset);
         return;
     }
+
+    entry->sentsz = offset;
+    entry->percent = (int)(entry->sentsz * 100 / entry->filesz);
 
     pthread_create(&thread, NULL, send_file_routine, entry);
     pthread_detach(thread);
@@ -366,13 +392,18 @@ static bool transfer_data_cb(ElaFileTransfer *ft, const char *fileid,
         char filename[ELA_MAX_FILE_NAME_LEN + 1] = {0};
 
         ela_filetransfer_get_filename(ft, fileid, filename, sizeof(filename));
-        console("file %s received.", fileid);
+        console("\nfile %s received with total size: %llu", fileid, entry->sentsz);
 
         ela_filetransfer_set_userdata(ft, fileid, NULL);
         fclose(entry->fp);
         deref(entry);
         return false;
     } else {
+        int percent = (int)(entry->sentsz * 100 / (double)entry->filesz);
+        if (percent > entry->percent ) {
+            console_nonl("\rreceived percent complete: %d%%", percent);
+            entry->percent = percent;
+        }
         return true;
     }
 
@@ -424,21 +455,31 @@ static void transfer_cancel_cb(ElaFileTransfer *ft, const char *fileid,
 
 static bool get_friends_callback(const ElaFriendInfo *friend_info, void *context)
 {
-    if (friend_info && friend_info->status == ElaConnectionStatus_Connected)
+    int *count = (int *)context;
+
+    if (friend_info && friend_info->status == ElaConnectionStatus_Connected) {
         console("  %-46s %s", friend_info->user_info.userid, friend_info->label);
+        *count += 1;
+    }
 
     return true;
 }
 
 static void friends(filectx_t *fctx, int argc, char *argv[])
 {
+    int count = 0;
+
     if (argc != 1) {
         console("Error: invalid command syntax");
         return;
     }
 
-    console("friends list:");
-    ela_get_friends(fctx->carrier, get_friends_callback, NULL);
+    console("online friends list:");
+    ela_get_friends(fctx->carrier, get_friends_callback, &count);
+    if (count > 0)
+        console("total %d.", count);
+    else
+        console("N/A");
 }
 
 static void address(filectx_t *fctx, int argc, char *argv[])
@@ -603,6 +644,8 @@ static void accept_transfer(filectx_t *fctx, int argc, char *argv[])
 
 static void unbind_transfer(filectx_t *fctx, int argc, char *argv[])
 {
+    ElaFileTransfer *ft = fctx->ft;
+
     if (argc != 1) {
         console("Error: invalid command syntax");
         return;
@@ -613,9 +656,12 @@ static void unbind_transfer(filectx_t *fctx, int argc, char *argv[])
         return;
     }
 
-    ela_filetransfer_close(fctx->ft);
-    memset(fctx, 0, sizeof(*fctx));
+    //TODO: how to remove all transfer entries.
+
     fctx->ft = NULL;
+
+    ela_filetransfer_close(ft);
+    memset(fctx, 0, sizeof(*fctx)); //TODO: need to memset all.
 }
 
 static void send_file(filectx_t *fctx, int argc, char *argv[])
@@ -663,6 +709,8 @@ static void send_file(filectx_t *fctx, int argc, char *argv[])
     entry->ft = fctx->ft;
     entry->filesz = st.st_size;
     entry->offset = 0;
+    entry->sentsz = 0;
+    entry->percent = 0;
 
     pthread_mutex_init(&entry->lock, 0);
     pthread_cond_init(&entry->cond, 0);
@@ -730,9 +778,22 @@ static struct command {
     { "unbind",     unbind_transfer,    "unbind"                },
     { "send",       send_file,          "send file"             },
     { "cancel",     cancel_file,        "cancel"                },
-    { "ls",         system_cmd,         "ls"                    },
     { "mkdir",      system_cmd,         "mkdir folder"          },
+#if defined(_WIN32) || defined(_WIN64)
+    { "dir",        system_cmd,         "dir"                   },
+    { "copy",       system_cmd,         "copy"                  },
+    { "del",        system_cmd,         "del"                   },
+    { "cls",        system_cmd,         "cls"                   },
+#else
+    { "ls",         system_cmd,         "ls"                    },
+    { "cp",         system_cmd,         "cp source target"      },
     { "mv",         system_cmd,         "mv source target"      },
+    { "rm",         system_cmd,         "rm target"             },
+    { "cat",        system_cmd,         "cat file"              },
+    { "ps",         system_cmd,         "ps"                    },
+    { "pwd",        system_cmd,         "pwd"                   },
+    { "clear",      system_cmd,         "clear"                 },
+#endif
     { "exit",       exit_app,           "exit"                  },
     { NULL, NULL, NULL}
 };
@@ -770,6 +831,11 @@ char* read_cmd(void)
     static int  cmd_len = 0;
     static char cmd_line[1024];
 
+#if defined(_WIN32) || defined(_WIN64)
+    if (!_kbhit())
+        return NULL;
+#endif
+
     ch = fgetc(stdin);
     if (ch == EOF)
         return NULL;
@@ -790,10 +856,7 @@ char* read_cmd(void)
             return p;
         else
             console_prompt();
-    } else if (ch == 15) {
-        console("$");
     } else {
-        console("ch = %d", ch);
         // ignored;
     }
     return NULL;
@@ -824,13 +887,11 @@ static void do_cmd(filectx_t *fctx, char *line)
 
         for (p = commands; p->name; p++) {
             if (strcmp(args[0], p->name) == 0) {
-                vlogD("execute command %s\n", args[0]);
                 p->cmd_cb(fctx, count, args);
                 return;
             }
         }
         console("unknown command: %s", args[0]);
-        vlogD("unknown command: %s\n", args[0]);
     }
 }
 
@@ -964,24 +1025,6 @@ void signal_handler(int signum)
     exit(-1);
 }
 
-static int set_non_block(int fd)
-{
-    int rc;
-
-#if defined(_WIN32) || defined(_WIN64)
-    u_long mode = 1;
-    rc = ioctlsocket(fd, FIONBIO, &mode);
-    if (rc != NO_ERROR)
-        return -1;
-    return 0;
-#else
-    rc = fcntl(fd, F_SETFL, O_NONBLOCK);
-    if (rc == -1)
-        return -1;
-    return 0;
-#endif
-}
-
 int main(int argc, char *argv[])
 {
     filectx_t fctx;
@@ -1057,7 +1100,7 @@ int main(int argc, char *argv[])
     }
 
     if (!*fctx.default_path)
-        sprintf(fctx.default_path, "%s/.elastore", getenv("HOME"));
+        sprintf(fctx.default_path, "%s/.elafile", getenv("HOME"));
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -1086,11 +1129,14 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    rc = set_non_block(0);
-    if (rc < 0) {
-        fprintf(stderr, "set stdin NON-BLOCKING failed.\n");
-        return -1;
-    }
+#if !defined(_WIN32) && !defined(_WIN64)
+    rc = fcntl(0, F_SETFL, O_NONBLOCK);
+     if (rc < 0) {
+         fprintf(stderr, "set stdin NON-BLOCKING failed.\n");
+         return -1;
+     }
+#endif
+
     ela_log_init(cfg->loglevel, cfg->logfile, logging);
 
     opts.udp_enabled = cfg->udp_enabled;

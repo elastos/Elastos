@@ -549,6 +549,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
         }
 
         packet->type = ntohs(packet->type);
+
         switch(packet->type) {
         case PACKET_PULL: {
             packet_pull_t *pull_data = (packet_pull_t *)packet;
@@ -569,6 +570,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             packet_cancel_t *cancel_data = (packet_cancel_t *)packet;
 
             cancel_data->status = ntohl(cancel_data->status);
+
             vlogD(TAG "sender received cancel transfer over channel with "
                   "status %d and reason:%s.",
                   channel, cancel_data->status, cancel_data->reason);
@@ -581,7 +583,6 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
         }
 
         default:
-            assert(0);
             vlogE(TAG, "sender received invalid pull data with type %hu "
                   "over channel %s, dropping.", packet->type, channel);
             return false;
@@ -1285,8 +1286,8 @@ int ela_filetransfer_cancel(ElaFileTransfer *ft, const char *fileid,
     assert(item->channel > 0);
 
     cancel_data = (packet_cancel_t *)alloca(sizeof(cancel_data) + strlen(reason));
-    cancel_data->type = ntohs(PACKET_CANCEL);
-    cancel_data->status = ntohl(status);
+    cancel_data->type = htons(PACKET_CANCEL);
+    cancel_data->status = htonl(status);
     strcpy(cancel_data->reason, reason);
 
     rc = ela_stream_write_channel(ft->session, ft->stream, item->channel,
