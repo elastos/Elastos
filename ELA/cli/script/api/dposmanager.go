@@ -20,9 +20,6 @@ import (
 const (
 	luaDposManagerTypeName = "dpos_manager"
 
-	luaDposManagerPublicKey  = "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
-	luaDposManagerPrivateKey = "e372ca1032257bb4be1ac99c4861ec542fd55c25c37f5f58ba8b177850b3fdeb"
-
 	luaConsensusIsOnDutyName  = "IsOnDuty"
 	luaConsensusIsReadyName   = "IsReady"
 	luaConsensusIsRunningName = "IsRunning"
@@ -40,18 +37,19 @@ func RegisterDposManagerType(L *lua.LState) {
 // Constructor
 func newDposManager(L *lua.LState) int {
 	n := checkDposNetwork(L, 1)
+	a := checkArbitrators(L, 2)
 	if n == nil {
 		fmt.Println("Network nil, create manager error.")
 		return 0
 	}
 
-	dposManager := NewManager(luaDposManagerPublicKey)
+	dposManager := NewManager(arbitratorsPublicKeys[0], a)
 	mockManager := &manager{
 		DposManager: dposManager,
 	}
 
-	priKey, _ := common.HexStringToBytes(luaDposManagerPrivateKey)
-	pub, _ := common.HexStringToBytes(luaDposManagerPublicKey)
+	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[0])
+	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[0])
 	pubKey, _ := crypto.DecodePoint(pub)
 	mockManager.Account = account.NewDposAccountFromExisting(&account2.Account{
 		PrivateKey: priKey,
