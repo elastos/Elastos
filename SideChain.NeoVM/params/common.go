@@ -3,6 +3,9 @@ package params
 import (
 	"errors"
 	"crypto/sha256"
+	"bytes"
+	"encoding/binary"
+
 	"golang.org/x/crypto/ripemd160"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -41,4 +44,17 @@ func ToProgramHash(code []byte) (*common.Uint168, error){
 		hash, err = ToCodeHash(code)
 	}
 	return hash, err
+}
+
+func IntToBytes(n int64) []byte {
+	buffer := bytes.NewBuffer([]byte{})
+	binary.Write(buffer, binary.BigEndian, n)
+	return buffer.Bytes()
+}
+
+func BytesToInt(b []byte) int64 {
+	buffer := bytes.NewBuffer(b)
+	var n int64
+	binary.Read(buffer, binary.BigEndian, &n)
+	return n
 }
