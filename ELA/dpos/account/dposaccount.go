@@ -14,7 +14,7 @@ type DposAccount interface {
 }
 
 type dposAccount struct {
-	account.Account
+	*account.Account
 }
 
 func (a *dposAccount) SignProposal(proposal *types.DPosProposal) ([]byte, error) {
@@ -62,5 +62,9 @@ func NewDposAccount(password []byte) (DposAccount, error) {
 		return nil, err
 	}
 
-	return &dposAccount{*acc}, nil
+	return &dposAccount{acc}, nil
+}
+
+func NewDposAccountFromExisting(a *account.Account) DposAccount {
+	return &dposAccount{a}
 }
