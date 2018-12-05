@@ -24,6 +24,7 @@ const (
 	RechargeToSideChain     TxType = 0x06
 	WithdrawFromSideChain   TxType = 0x07
 	TransferCrossChainAsset TxType = 0x08
+	Invoke                  TxType = 0x09
 
 	InvalidTransactionSize = -1
 )
@@ -38,6 +39,7 @@ var ttStrings = map[TxType]string{
 	RechargeToSideChain:     "RechargeToSideChain",
 	WithdrawFromSideChain:   "WithdrawFromSideChain",
 	TransferCrossChainAsset: "TransferCrossChainAsset",
+	Invoke:                  "Invoke",
 }
 
 func (tt TxType) String() string {
