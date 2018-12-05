@@ -92,7 +92,7 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 		return nil, err
 	}
 
-	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name)
+	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name, blockchain.DefaultLedger.Arbitrators)
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)

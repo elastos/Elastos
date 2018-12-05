@@ -3,7 +3,6 @@ package manager
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
@@ -51,7 +50,7 @@ func NewConsensus(manager DposManager, tolerance time.Duration, viewListener Vie
 		consensusStatus: consensusReady,
 		viewOffset:      0,
 		manager:         manager,
-		currentView:     view{signTolerance: tolerance, listener: viewListener},
+		currentView:     view{signTolerance: tolerance, listener: viewListener, arbitrators: manager.GetArbitrators()},
 	}
 
 	return c
@@ -88,7 +87,7 @@ func (c *consensus) IsArbitratorOnDuty(arbitrator string) bool {
 }
 
 func (c *consensus) GetOnDutyArbitrator() string {
-	a := blockchain.DefaultLedger.Arbitrators.GetNextOnDutyArbitrator(c.viewOffset)
+	a := c.manager.GetArbitrators().GetNextOnDutyArbitrator(c.viewOffset)
 	return common.BytesToHexString(a)
 }
 
