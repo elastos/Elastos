@@ -656,7 +656,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code)
+		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
@@ -693,7 +693,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code)
+		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}

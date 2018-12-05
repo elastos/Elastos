@@ -112,6 +112,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterDefaultOutputType(L)
 	RegisterVoteOutputType(L)
 	RegisterVoteContentType(L)
+	RegisterTransactionType(L)
 	RegisterCoinBaseType(L)
 	RegisterTransferAssetType(L)
 	RegisterTransactionType(L)
@@ -123,6 +124,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterDposNetworkType(L)
 	RegisterDposManagerType(L)
 	RegisterArbitratorsType(L)
+	RegisterRegisterProducerType(L)
 
 	return 0
 }
