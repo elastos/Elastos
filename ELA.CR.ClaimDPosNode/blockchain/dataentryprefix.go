@@ -11,17 +11,19 @@ const (
 	DATAConfirm     DataEntryPrefix = 0x03
 
 	// DPOS
-	DPOSDutyChangedCount DataEntryPrefix = 0x10
-	DPOSIllegalProducer  DataEntryPrefix = 0x11
+	DPOSVoteProducer       DataEntryPrefix = 0xc1
+	DPOSIllegalProducer    DataEntryPrefix = 0x10
+	DPOSDutyChangedCount   DataEntryPrefix = 0x11
+	DPOSCurrentArbitrators DataEntryPrefix = 0x12
+	DPOSCurrentCandidates  DataEntryPrefix = 0x13
+	DPOSNextArbitrators    DataEntryPrefix = 0x14
+	DPOSNextCandidates     DataEntryPrefix = 0x15
 
 	// INDEX
 	IXHeaderHashList DataEntryPrefix = 0x80
 	IXUnspent        DataEntryPrefix = 0x90
 	IXUnspentUTXO    DataEntryPrefix = 0x91
 	IXSideChainTx    DataEntryPrefix = 0x92
-
-	// VOTE
-	VOTERegisterProducer DataEntryPrefix = 0xc1
 
 	// ASSET
 	STInfo DataEntryPrefix = 0xc0

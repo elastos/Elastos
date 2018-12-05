@@ -7,7 +7,9 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 var testChainStore *ChainStore
@@ -23,7 +25,7 @@ func NewTestChainStore() (*ChainStore, error) {
 	store := &ChainStore{
 		IStore:             st,
 		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*ela.Header{},
+		headerCache:        map[common.Uint256]*types.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
@@ -152,7 +154,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	publicKey1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	nickName1 := "nickname 1"
-	payload1 := &ela.PayloadRegisterProducer{
+	payload1 := &payload.PayloadRegisterProducer{
 		PublicKey: publicKey1,
 		NickName:  nickName1,
 		Url:       "http://www.test.com",
@@ -163,7 +165,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
 	publicKey2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	nickName2 := "nickname 2"
-	payload2 := &ela.PayloadRegisterProducer{
+	payload2 := &payload.PayloadRegisterProducer{
 		PublicKey: publicKey2,
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
@@ -219,7 +221,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	// 1.Prepare data
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	publicKey1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
-	payload1 := &ela.PayloadCancelProducer{
+	payload1 := &payload.PayloadCancelProducer{
 		PublicKey: publicKey1,
 	}
 
@@ -259,8 +261,8 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	publicKey2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	nickName1 := "nickname 1"
 	ip1 := "168.192.1.1"
-	payload1 := &ela.PayloadUpdateProducer{
-		PayloadRegisterProducer: &ela.PayloadRegisterProducer{
+	payload1 := &payload.PayloadUpdateProducer{
+		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
 			PublicKey: publicKey2,
 			NickName:  nickName1,
 			Url:       "http://www.test.com",
@@ -303,12 +305,12 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	addr1 := "EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD"
 	programHash1, _ := common.Uint168FromAddress(addr1)
 	stake1 := common.Fixed64(110000000)
-	output := &ela.Output{
+	output := &types.Output{
 		AssetID:     common.Uint256{},
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  ela.VoteOutput,
+		OutputType:  types.VoteOutput,
 		OutputPayload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
@@ -323,12 +325,12 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 	addr2 := "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
 	programHash2, _ := common.Uint168FromAddress(addr2)
-	output2 := &ela.Output{
+	output2 := &types.Output{
 		AssetID:     common.Uint256{},
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  ela.VoteOutput,
+		OutputType:  types.VoteOutput,
 		OutputPayload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
@@ -346,7 +348,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	publicKey2 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	nickName2 := "nickname 2"
-	payload2 := &ela.PayloadRegisterProducer{
+	payload2 := &payload.PayloadRegisterProducer{
 		PublicKey: publicKey2,
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
@@ -414,12 +416,12 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	addr1 := "EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD"
 	programHash1, _ := common.Uint168FromAddress(addr1)
 	stake1 := common.Fixed64(110000000)
-	output := &ela.Output{
+	output := &types.Output{
 		AssetID:     common.Uint256{},
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  ela.VoteOutput,
+		OutputType:  types.VoteOutput,
 		OutputPayload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
@@ -434,12 +436,12 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 	addr2 := "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
 	programHash2, _ := common.Uint168FromAddress(addr2)
-	output2 := &ela.Output{
+	output2 := &types.Output{
 		AssetID:     common.Uint256{},
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  ela.VoteOutput,
+		OutputType:  types.VoteOutput,
 		OutputPayload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
