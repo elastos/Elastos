@@ -5,20 +5,11 @@ import (
 )
 
 func init() {
-
-	txTypeStr := types.TxTypeStr
-	types.TxTypeStr = func(txType types.TxType) string {
-		if txType == Invoke {
-			return "Invoke"
-		}
-		return txTypeStr(txType)
-	}
-
 	getPayloadByTxType := types.GetPayloadByTxType
 	types.GetPayloadByTxType = func(txType types.TxType) (types.Payload, error) {
 		if txType == types.Deploy {
 			return &PayloadDeploy{}, nil
-		} else if txType == Invoke {
+		} else if txType == types.Invoke {
 			return &PayloadInvoke{}, nil
 		}
 		return getPayloadByTxType(txType)

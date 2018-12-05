@@ -777,7 +777,7 @@ func (s *StateReader) InvocationTransactionGetScript(e *avm.ExecutionEngine) boo
 		return false
 	}
 	txtype := d.(*st.Transaction).TxType
-	if txtype != types.Invoke{
+	if txtype != st.Invoke{
 		return false
 	}
 	payload := d.(*st.Transaction).Payload

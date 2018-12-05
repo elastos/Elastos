@@ -60,7 +60,7 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*sideser.TransactionInfo, 
 		assetInfo = &sideser.TransferCrossChainAssetInfo{}
 	case side.Deploy:
 		assetInfo = &DeployInfo{}
-	case types.Invoke:
+	case side.Invoke:
 		assetInfo = &InvokeInfo{}
 	default:
 		return nil, errors.New("GetBlockTransactions: Unknown payload type")

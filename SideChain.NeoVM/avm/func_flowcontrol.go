@@ -74,9 +74,6 @@ func opSysCall(e *ExecutionEngine) (VMState, error) {
 	} else if err ==  errors.ErrNotSupportSysCall {
 		return FAULT, err
 	} else if err != nil {
-		if e.context.GetPriceOnly {
-			return NONE, nil
-		}
 		return FAULT, err
 	}
 	return FAULT, nil

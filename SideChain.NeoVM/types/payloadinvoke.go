@@ -6,12 +6,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
-	"github.com/elastos/Elastos.ELA.SideChain/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
-
-const Invoke types.TxType = 0x0A
 
 
 type PayloadInvoke struct {

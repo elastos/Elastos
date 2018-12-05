@@ -7,7 +7,6 @@ import (
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -61,7 +60,7 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 
 		}
 
-		if txn.TxType == types.Invoke {
+		if txn.TxType == side.Invoke {
 			err := c.persisInvokeTransaction(b, txn, batch)
 			if err != nil {
 				log.Error(err.Error())

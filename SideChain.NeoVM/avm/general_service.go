@@ -43,6 +43,9 @@ func (i *GeneralService) GetServiceMap() map[string]func(*ExecutionEngine) bool 
 
 func (is *GeneralService) Invoke(method string, engine *ExecutionEngine) (bool, error) {
 	if v, ok := is.dictionary[method]; ok {
+		if engine.context.GetPriceOnly {
+			return true, nil
+		}
 		return v(engine), nil
 	}
 	return false, errors.ErrNotSupportSysCall
