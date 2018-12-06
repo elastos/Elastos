@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -48,7 +50,7 @@ func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) e
 		if p.NickName == payload.NickName {
 			return errors.New("duplicated nickname")
 		}
-		if p.PublicKey == payload.PublicKey {
+		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			return errors.New("duplicated public key")
 		}
 	}
@@ -70,7 +72,7 @@ func (c *ChainStore) RollbackRegisterProducer(payload *PayloadRegisterProducer) 
 }
 
 func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight uint32) error {
-	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("[recordProducer]" + err.Error())
 	}
@@ -112,7 +114,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 		if err != nil {
 			return err
 		}
-		if p.PublicKey != payload.PublicKey {
+		if !bytes.Equal(p.PublicKey, payload.PublicKey) {
 			buf := new(bytes.Buffer)
 			err := WriteUint32(buf, h)
 			if err != nil {
@@ -133,7 +135,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 
 	c.BatchPut(key, newProducerBytes)
 
-	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("[PersistCancelProducer]" + err.Error())
 	}
@@ -236,7 +238,7 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 			return err
 		}
 		var pld Payload
-		if p.PublicKey == payload.PublicKey {
+		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			pld = payload
 		} else {
 			pld = &p
@@ -259,7 +261,7 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 
 	c.BatchPut(key, newProducerBytes)
 
-	programHash, err := PublicKeyToProgramHash(payload.PublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("[PersistCancelProducer]" + err.Error())
 	}
@@ -507,7 +509,7 @@ func (c *ChainStore) getCurrentArbitrators() ([][]byte, error) {
 		}
 
 		for i := uint64(0); i < count; i++ {
-			arbiter, err := ReadVarBytes(r, 33, "arbiter")
+			arbiter, err := ReadVarBytes(r, crypto.NegativeBigLength, "arbiter")
 			if err != nil {
 				return nil, err
 			}
@@ -531,7 +533,7 @@ func (c *ChainStore) getCurrentCandidates() ([][]byte, error) {
 		}
 
 		for i := uint64(0); i < count; i++ {
-			candidate, err := ReadVarBytes(r, 33, "candidate")
+			candidate, err := ReadVarBytes(r, crypto.NegativeBigLength, "candidate")
 			if err != nil {
 				return nil, err
 			}
@@ -555,7 +557,7 @@ func (c *ChainStore) getNextArbitrators() ([][]byte, error) {
 		}
 
 		for i := uint64(0); i < count; i++ {
-			arbiter, err := ReadVarBytes(r, 33, "arbiter")
+			arbiter, err := ReadVarBytes(r, crypto.NegativeBigLength, "arbiter")
 			if err != nil {
 				return nil, err
 			}
@@ -578,7 +580,7 @@ func (c *ChainStore) getNextCandidates() ([][]byte, error) {
 		}
 
 		for i := uint64(0); i < count; i++ {
-			candidate, err := ReadVarBytes(r, 33, "candidate")
+			candidate, err := ReadVarBytes(r, crypto.NegativeBigLength, "candidate")
 			if err != nil {
 				return nil, err
 			}

@@ -5,11 +5,13 @@ import (
 	"errors"
 	"io"
 
+	"github.com/elastos/Elastos.ELA/crypto"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type PayloadCancelProducer struct {
-	PublicKey string
+	PublicKey []byte
 }
 
 func (a *PayloadCancelProducer) Data(version byte) []byte {
@@ -21,7 +23,7 @@ func (a *PayloadCancelProducer) Data(version byte) []byte {
 }
 
 func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
-	err := WriteVarString(w, a.PublicKey)
+	err := WriteVarBytes(w, a.PublicKey)
 	if err != nil {
 		return errors.New("[PayloadCancelProducer], Serialize failed.")
 	}
@@ -29,7 +31,7 @@ func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadCancelProducer) Deserialize(r io.Reader, version byte) error {
-	pk, err := ReadVarString(r)
+	pk, err := ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return errors.New("[PayloadCancelProducer], Deserialize failed.")
 	}

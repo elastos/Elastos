@@ -12,6 +12,7 @@ import (
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -941,7 +942,7 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 	var ps []Producer
 	for _, p := range producers {
-		programHash, err := chain.PublicKeyToProgramHash(p.PublicKey)
+		programHash, err := contract.PublicKeyToPledgeProgramHash(p.PublicKey)
 		if err != nil {
 			return ResponsePack(Error, "invalid public key")
 		}
@@ -1089,7 +1090,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadRecord:
 	case *PayloadRegisterProducer:
 		obj := new(RegisterProducerInfo)
-		obj.PublicKey = object.PublicKey
+		obj.PublicKey = BytesToHexString(object.PublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
@@ -1097,13 +1098,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
-		obj.PublicKey = object.PublicKey
+		obj.PublicKey = BytesToHexString(object.PublicKey)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
 			new(RegisterProducerInfo),
 		}
-		obj.PublicKey = object.PublicKey
+		obj.PublicKey = BytesToHexString(object.PublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
