@@ -46,7 +46,7 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore()
+	chainStore, err := NewChainStore("TestChain")
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -7,13 +7,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
+	log2 "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/version/verconfig"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -33,6 +37,9 @@ var exports = map[string]lua.LGFunction{
 	"sendTx":        sendTx,
 	"getAssetID":    getAssetID,
 	"getUTXO":       getUTXO,
+	"init_ledger":   initLedger,
+	"close_store":   closeStore,
+	"clear_store":   clearStore,
 }
 
 func hexReverse(L *lua.LState) int {
@@ -102,6 +109,35 @@ func getUTXO(L *lua.LState) int {
 	L.Push(ud)
 
 	return 1
+}
+
+func initLedger(L *lua.LState) int {
+	log.Init(3, 0, 0, )
+	log2.Init(3, 0, 0, )
+
+	versions := verconfig.InitVersions()
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox")
+	if err != nil {
+		fmt.Printf("Init chain store error: ", err, "\n")
+	}
+
+	err = blockchain.Init(chainStore, versions)
+	if err != nil {
+		fmt.Printf("Init block chain error: ", err, "\n")
+	}
+
+	return 1
+}
+
+func closeStore(L *lua.LState) int {
+	blockchain.DefaultLedger.Store.Close()
+
+	return 0
+}
+
+func clearStore(L *lua.LState) int {
+	os.RemoveAll("Chain_WhiteBox/")
+	return 0
 }
 
 func RegisterDataType(L *lua.LState) int {

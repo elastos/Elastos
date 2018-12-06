@@ -12,7 +12,7 @@ import (
 
 const (
 	luaBlockTypeName = "block"
-	MinerAddress     = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	minerAddress     = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 )
 
 func RegisterBlockType(L *lua.LState) {
@@ -27,7 +27,7 @@ func RegisterBlockType(L *lua.LState) {
 // Constructor
 func newBlock(L *lua.LState) int {
 
-	tx, _ := pow.CreateCoinbaseTx(MinerAddress)
+	tx, _ := pow.CreateCoinbaseTx(minerAddress)
 	block := &types.Block{
 		Transactions: []*types.Transaction{tx},
 	}
@@ -51,10 +51,10 @@ func checkBlock(L *lua.LState, idx int) *types.Block {
 }
 
 var blockMethods = map[string]lua.LGFunction{
-	"hash":      blockHash,
+	"hash":       blockHash,
 	"set_header": blockSetHeader,
 	"append_tx":  blockAppendTx,
-	"update":    blockUpdate,
+	"update":     blockUpdate,
 }
 
 func blockHash(L *lua.LState) int {

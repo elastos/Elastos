@@ -75,7 +75,7 @@ func main() {
 	log.Info("Node version: ", config.Version)
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
-	chainStore, err := blockchain.NewChainStore()
+	chainStore, err := blockchain.NewChainStore("Chain")
 	if err != nil {
 		goto ERROR
 	}
