@@ -18,6 +18,10 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const (
+	MinPledgeAmount = 5000
+)
+
 // CheckTransactionSanity verifys received single transaction
 func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 	if err := CheckTransactionSize(txn); err != nil {
@@ -671,6 +675,17 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	// check ip
 	if payload.Address == "" {
 		return errors.New("Invalid IP.")
+	}
+
+	// check the pledge coin
+	isPledged := false
+	for _, output := range txn.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge && output.Value > MinPledgeAmount {
+			isPledged = true
+		}
+	}
+	if !isPledged {
+		return errors.New("the pledge coin is insufficient")
 	}
 
 	return nil
