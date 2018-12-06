@@ -1,10 +1,8 @@
 package api
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core/types"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/cli/script/api/mock"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -47,7 +45,7 @@ func newArbitrators(L *lua.LState) int {
 		arbitersByte = append(arbitersByte, arbiterByte)
 	}
 
-	a := &arbitrators{arbitersByte, 0}
+	a := mock.NewArbitratorsMock(arbitersByte, 0, MajorityCount)
 
 	ud := L.NewUserData()
 	ud.Value = a
@@ -58,9 +56,9 @@ func newArbitrators(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Attribute and returns this *Attribute.
-func checkArbitrators(L *lua.LState, idx int) *arbitrators {
+func checkArbitrators(L *lua.LState, idx int) mock.ArbitratorsMock {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*arbitrators); ok {
+	if v, ok := ud.Value.(mock.ArbitratorsMock); ok {
 		return v
 	}
 	L.ArgError(1, "arbitrators expected")
@@ -74,87 +72,14 @@ var arbitratorsMethods = map[string]lua.LGFunction{
 
 func arbitratorsGetDutyIndex(L *lua.LState) int {
 	a := checkArbitrators(L, 1)
-	L.Push(lua.LNumber(a.dutyChangedCount))
+	L.Push(lua.LNumber(a.GetDutyChangeCount()))
 
 	return 1
 }
 
 func arbitratorsSetDutyIndex(L *lua.LState) int {
 	a := checkArbitrators(L, 1)
-	a.dutyChangedCount = uint32(L.ToInt(2))
+	a.SetDutyChangeCount(uint32(L.ToInt(2)))
 
 	return 0
-}
-
-//mock object of arbitrators
-type arbitrators struct {
-	currentArbitrators [][]byte
-	dutyChangedCount   uint32
-}
-
-func (a *arbitrators) OnBlockReceived(b *types.Block, confirmed bool) {
-	panic("implement me")
-}
-
-func (a *arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
-	panic("implement me")
-}
-
-func (a *arbitrators) StartUp() error {
-	panic("implement me")
-}
-
-func (a *arbitrators) ForceChange() error {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetArbitrators() [][]byte {
-	return a.currentArbitrators
-}
-
-func (a *arbitrators) GetCandidates() [][]byte {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetNextArbitrators() [][]byte {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetNextCandidates() [][]byte {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
-	panic("implement me")
-}
-
-func (a *arbitrators) GetOnDutyArbitrator() []byte {
-	return a.GetNextOnDutyArbitrator(0)
-}
-
-func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	index := (a.dutyChangedCount + offset) % uint32(len(a.currentArbitrators))
-	return a.currentArbitrators[index]
-}
-
-func (a *arbitrators) HasArbitersMajorityCount(num uint32) bool {
-	//note "num > MajorityCount" in real logic
-	return num >= MajorityCount
-}
-
-func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
-	//note "num >= uint32(len(arbitratorsPublicKeys))-MajorityCount" in real logic
-	return num > uint32(len(arbitratorsPublicKeys))-MajorityCount
-}
-
-func (a *arbitrators) RegisterListener(listener blockchain.ArbitratorsListener) {
-	panic("implement me")
-}
-
-func (a *arbitrators) UnregisterListener(listener blockchain.ArbitratorsListener) {
-	panic("implement me")
 }
