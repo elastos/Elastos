@@ -22,6 +22,9 @@ type IChainStoreDpos interface {
 	SaveDposDutyChangedCount(count uint32)
 	SaveCurrentArbitrators(a *arbitrators)
 	SaveNextArbitrators(a *arbitrators)
+
+	GetDirectPeers() ([]*DirectPeers, error)
+	SaveDirectPeers(peers []*DirectPeers)
 }
 
 // IChainStore provides func with store package.

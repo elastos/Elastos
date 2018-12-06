@@ -633,3 +633,31 @@ func (c *ChainStore) persistBytesArray(bytesArray [][]byte, prefix DataEntryPref
 	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
+
+func (c *ChainStore) persistDirectPeers(peers []*DirectPeers) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DPOSDirectPeers))
+
+	value := new(bytes.Buffer)
+
+	if err := WriteVarUint(value, uint64(len(peers))); err != nil {
+		return err
+	}
+
+	for _, p := range peers {
+		if err := WriteVarBytes(value, p.PublicKey); err != nil {
+			return err
+		}
+
+		if err := WriteVarString(value, p.Address); err != nil {
+			return err
+		}
+
+		if err := WriteUint32(value, p.Sequence); err != nil {
+			return err
+		}
+	}
+
+	c.BatchPut(key.Bytes(), value.Bytes())
+	return nil
+}

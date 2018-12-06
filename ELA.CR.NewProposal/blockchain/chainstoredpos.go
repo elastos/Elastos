@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 
+	"bytes"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 )
@@ -147,6 +148,47 @@ func (c *ChainStore) GetArbitrators(a *arbitrators) error {
 	return nil
 }
 
+func (c *ChainStore) GetDirectPeers() ([]*DirectPeers, error) {
+	key := []byte{byte(DPOSDirectPeers)}
+	data, err := c.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var peers []*DirectPeers
+	r := bytes.NewReader(data)
+
+	count, err := ReadVarUint(r, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := uint64(0); i < count; i++ {
+		publicKey, err := ReadVarBytes(r, 33, "public key")
+		if err != nil {
+			return nil, err
+		}
+
+		address, err := ReadVarString(r)
+		if err != nil {
+			return nil, err
+		}
+
+		sequence, err := ReadUint32(r)
+		if err != nil {
+			return nil, err
+		}
+
+		peers = append(peers, &DirectPeers{
+			PublicKey: publicKey,
+			Address:   address,
+			Sequence:  sequence,
+		})
+	}
+
+	return peers, nil
+}
+
 func (c *ChainStore) SaveDposDutyChangedCount(count uint32) {
 	log.Debug("SaveDposDutyChangedCount()")
 
@@ -168,6 +210,14 @@ func (c *ChainStore) SaveNextArbitrators(a *arbitrators) {
 
 	reply := make(chan bool)
 	c.taskCh <- &persistNextArbitratorsTask{arbiters: a, reply: reply}
+	<-reply
+}
+
+func (c *ChainStore) SaveDirectPeers(peers []*DirectPeers) {
+	log.Debug("SaveDirectPeers()")
+
+	reply := make(chan bool)
+	c.taskCh <- &persistDirectPeersTask{peers: peers, reply: reply}
 	<-reply
 }
 
@@ -201,6 +251,15 @@ func (c *ChainStore) handlePersistNextArbiters(a *arbitrators) {
 	}
 	if err := c.persistNextCandidates(a.nextCandidates); err != nil {
 		log.Fatal("[persistNextCandidates]: error to persist current candidates:", err.Error())
+		return
+	}
+	c.BatchCommit()
+}
+
+func (c *ChainStore) handlePersistDirectPeers(p []*DirectPeers) {
+	c.NewBatch()
+	if err := c.persistDirectPeers(p); err != nil {
+		log.Fatal("[persistDirectPeers]: error to persist direct peers:", err.Error())
 		return
 	}
 	c.BatchCommit()
