@@ -248,9 +248,9 @@ namespace Elastos {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
-			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
-				_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
-			if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
+			uint32_t confirm = blockHeight != TX_UNCONFIRMED && blockHeight >= _confirmingTxs[hash]->getBlockHeight() ?
+							   blockHeight - _confirmingTxs[hash]->getBlockHeight() + 1 : 0;
+			if (_walletManager->getPeerManager()->getRaw()->syncSucceeded) {
 				Log::getLogger()->debug("onTxUpdated: hash = {}, confirm = {}", hash, confirm);
 				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 _confirmingTxs[hash]->toJson(), confirm);
@@ -377,19 +377,17 @@ namespace Elastos {
 		}
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
-			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
+			if (_walletManager->getPeerManager()->getRaw()->syncSucceeded) {
+				for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
 
-				double process = _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight);
-				if (process < 1.0)
-					continue;
+					uint32_t confirms = blockHeight != TX_UNCONFIRMED && blockHeight >= it->second->getBlockHeight() ?
+										blockHeight - it->second->getBlockHeight() + 1 : 0;
 
-				uint32_t confirms = blockHeight >= it->second->getBlockHeight() ?
-									blockHeight - it->second->getBlockHeight() + 1 : 0;
-
-				if (confirms > 1) {
-					Log::getLogger()->debug("Tx height increased: hash = {}, confirms = {}", it->first, confirms);
-					fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-												 it->second->toJson(), confirms);
+					if (confirms > 1) {
+						Log::getLogger()->debug("Tx height increased: hash = {}, confirms = {}", it->first, confirms);
+						fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
+													 it->second->toJson(), confirms);
+					}
 				}
 			}
 
