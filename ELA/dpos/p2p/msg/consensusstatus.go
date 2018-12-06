@@ -92,41 +92,49 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return nil
 	}
-	s.AcceptVotes = make([]types.DPosProposalVote, arrayLength)
+	s.AcceptVotes = make([]types.DPosProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
-		if err = s.AcceptVotes[i].Deserialize(r); err != nil {
+		var acceptVote types.DPosProposalVote
+		if err = acceptVote.Deserialize(r); err != nil {
 			return err
 		}
+		s.AcceptVotes = append(s.AcceptVotes, acceptVote)
 	}
 
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.RejectedVotes = make([]types.DPosProposalVote, arrayLength)
+	s.RejectedVotes = make([]types.DPosProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
+		var rejectVote types.DPosProposalVote
 		if err = s.RejectedVotes[i].Deserialize(r); err != nil {
 			return err
 		}
+		s.RejectedVotes = append(s.RejectedVotes, rejectVote)
 	}
 
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingProposals = make([]types.DPosProposal, arrayLength)
+	s.PendingProposals = make([]types.DPosProposal, 0)
 	for i := uint64(0); i < arrayLength; i++ {
+		var proposal types.DPosProposal
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
 		}
+		s.PendingProposals = append(s.PendingProposals, proposal)
 	}
 
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.PendingVotes = make([]types.DPosProposalVote, arrayLength)
+	s.PendingVotes = make([]types.DPosProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
+		var pendingVote types.DPosProposalVote
 		if err = s.PendingProposals[i].Deserialize(r); err != nil {
 			return err
 		}
+		s.PendingVotes = append(s.PendingVotes, pendingVote)
 	}
 
 	return nil
