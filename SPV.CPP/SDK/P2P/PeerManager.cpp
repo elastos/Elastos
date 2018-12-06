@@ -1409,7 +1409,8 @@ namespace Elastos {
 
 				for (i = 0, b = block; b && i < saveCount; i++) {
 					assert(b->getHeight() != BLOCK_UNKNOWN_HEIGHT); // verify all blocks to be saved are in the chain
-					saveBlocks.push_back(b);
+					if (_blocks.Get(b->getPrevBlockHash()))
+						saveBlocks.push_back(b);
 					b = _blocks.Get(b->getPrevBlockHash());
 				}
 
