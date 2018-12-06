@@ -997,7 +997,6 @@ int ela_session_add_stream(ElaSession *ws, ElaStreamType type,
             return -1;
         }
         handler_connect(prev, handler);
-        prev = handler;
     }
 
     s->le.data = s;
@@ -1388,7 +1387,7 @@ int ela_session_add_service(ElaSession *ws, const char *service,
     svc->name = p;
 
     p += (service_len + 1);
-    strcpy(p, host);
+    strcpy(p, host);  //TODO: check overflow.
     svc->host = p;
 
     p += (host_len + 1);

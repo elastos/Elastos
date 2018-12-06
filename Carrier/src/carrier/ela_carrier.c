@@ -1312,7 +1312,7 @@ void notify_friend_description_cb(uint32_t friend_number, const uint8_t *desc,
     ElaCarrier *w = (ElaCarrier *)context;
     FriendInfo *fi;
     ElaUserInfo *ui;
-    bool changed;
+    bool changed = false;
 
     assert(friend_number != UINT32_MAX);
     assert(desc);
@@ -2913,7 +2913,6 @@ int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
     ElaCP *cp;
     int rc;
     int64_t tid;
-    int count = 0;
     int index = 0;
     int bundle_len = bundle ? strlen(bundle) : 0;
     char *pos = (char *)data;
@@ -2963,7 +2962,6 @@ int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
     }
 
     tid = generate_tid();
-    count = (len + INVITE_DATA_UNIT - 1) / INVITE_DATA_UNIT;
 
     do {
         uint8_t *_data;
@@ -3053,7 +3051,6 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to, const char *bundle,
     char *addr, *userid, *ext_name;
     uint32_t friend_number;
     int64_t tid;
-    int count = 0;
     int index = 0;
     int bundle_len = bundle ? strlen(bundle) : 0;
     int reason_len = reason ? strlen(reason) : 0;
@@ -3120,8 +3117,6 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to, const char *bundle,
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NO_MATCHED_REQUEST));
         return -1;
     }
-
-    count = (len + INVITE_DATA_UNIT - 1) / INVITE_DATA_UNIT;
 
     do {
         uint8_t *_data;
