@@ -13,7 +13,7 @@ const app = express();
 
 app.use(express.json());
 
-app.post("/json_rpc", async function(req, res) {
+app.post("/", async function(req, res) {
     try {
         let json_data = req.body;
         console.log("JSON Data Received: ");
