@@ -666,6 +666,9 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		case *msg.Reject:
 			listeners.OnReject(p, m)
 
+		case *msg.VerAck, *msg.GetAddr, *msg.Addr, *msg.Ping, *msg.Pong:
+		//	Basic messages have been handled, ignore them.
+
 		default:
 			log.Debugf("Received unhandled message of type %v "+
 				"from %v", m.CMD(), p)
