@@ -110,7 +110,6 @@ func main() {
 		SeedList:       activeNetParams.SpvParams.SeedList,
 		Foundation:     activeNetParams.SpvParams.Foundation,
 		GenesisAddress: genesisAddress,
-		TxStore:        spv.NewTxStore(chainStore),
 	}
 	spvService, err := spv.NewService(&serviceCfg)
 	if err != nil {
@@ -189,8 +188,11 @@ func main() {
 	service := sv.NewHttpService(&service.Config{
 		Server:                      server,
 		Chain:                       chain.BlockChain,
+		Store:                       ledgerStore.ChainStore,
+		GenesisAddress:              genesisAddress,
 		TxMemPool:                   txPool,
 		PowService:                  powService,
+		SpvService:                  spvService,
 		GetBlockInfo:                service.GetBlockInfo,
 		GetTransactionInfo:          sv.GetTransactionInfo,
 		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
