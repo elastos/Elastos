@@ -33,7 +33,13 @@ const (
 	IX_Identification EntryPrefix = 0x94
 
 	// ASSET
-	ST_Info EntryPrefix = 0xc0
+	ST_Info       EntryPrefix = 0xc0
+
+	//NEOVM
+	ST_Contract   EntryPrefix = 0xc1
+	ST_Storage    EntryPrefix = 0xc2
+	ST_Account    EntryPrefix = 0xc3
+	ST_AssetState EntryPrefix = 0xc4
 
 	//SYSTEM
 	SYS_CurrentBlock      EntryPrefix = 0x40
