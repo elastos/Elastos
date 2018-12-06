@@ -69,6 +69,17 @@ type persistNextArbitratorsTask struct {
 	reply    chan bool
 }
 
+type DirectPeers struct {
+	PublicKey []byte
+	Address   string
+	Sequence  uint32
+}
+
+type persistDirectPeersTask struct {
+	peers []*DirectPeers
+	reply chan bool
+}
+
 type ChainStore struct {
 	IStore
 
@@ -150,12 +161,17 @@ func (c *ChainStore) loop() {
 				c.handlePersistCurrentArbiters(task.arbiters)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
+				log.Debugf("handle persist current arbiters exetime: %g", tcall)
 			case *persistNextArbitratorsTask:
 				c.handlePersistNextArbiters(task.arbiters)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
+				log.Debugf("handle persist next arbiters exetime: %g", tcall)
+			case *persistDirectPeersTask:
+				c.handlePersistDirectPeers(task.peers)
+				task.reply <- true
+				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
+				log.Debugf("handle persist current arbiters exetime: %g", tcall)
 			}
 
 		case closed := <-c.quit:

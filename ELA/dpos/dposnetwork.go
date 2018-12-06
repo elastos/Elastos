@@ -57,6 +57,21 @@ type dposNetwork struct {
 
 func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) {
 	n.proposalDispatcher = proposalDispatcher
+	if peers, err := blockchain.DefaultLedger.Store.GetDirectPeers(); err == nil {
+		for _, p := range peers {
+			pid := peer.PID{}
+			copy(pid[:], p.PublicKey)
+			n.directPeers[common.BytesToHexString(p.PublicKey)] = &PeerItem{
+				Address: p2p.PeerAddr{
+					PID:  pid,
+					Addr: p.Address,
+				},
+				NeedConnect: true,
+				Peer:        nil,
+				Sequence:    p.Sequence,
+			}
+		}
+	}
 }
 
 func (n *dposNetwork) Start() {
@@ -104,7 +119,6 @@ func (n *dposNetwork) UpdateProducersInfo() {
 	}
 
 	for k, v := range connectionInfoMap {
-
 		log.Info("[UpdateProducersInfo] peer id:", v.PID, " addr:", v.Addr)
 		if _, ok := n.directPeers[k]; !ok {
 			n.directPeers[k] = &PeerItem{
@@ -115,6 +129,10 @@ func (n *dposNetwork) UpdateProducersInfo() {
 			}
 		}
 	}
+
+	n.peersLock.Lock()
+	defer n.peersLock.Unlock()
+	n.saveDirectPeers()
 }
 
 func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
@@ -147,7 +165,6 @@ func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
 
 		n.peersLock.Lock()
 		ad, ok := n.directPeers[pubKey]
-
 		if !ok {
 			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
 			n.peersLock.Unlock()
@@ -157,6 +174,7 @@ func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
 		ad.Sequence += uint32(len(arbitrators))
 		n.peersLock.Unlock()
 	}
+	n.saveDirectPeers()
 
 	return nil
 }
@@ -337,6 +355,25 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 			n.listener.OnIllegalVotesReceived(msgItem.ID, &msgIllegalVotes.Votes)
 		}
 	}
+}
+
+func (n *dposNetwork) saveDirectPeers() {
+	var peers []*blockchain.DirectPeers
+	for k, v := range n.directPeers {
+		if !v.NeedConnect {
+			continue
+		}
+		pk, err := common.HexStringToBytes(k)
+		if err != nil {
+			continue
+		}
+		peers = append(peers, &blockchain.DirectPeers{
+			PublicKey: pk,
+			Address:   v.Address.Addr,
+			Sequence:  v.Sequence,
+		})
+	}
+	blockchain.DefaultLedger.Store.SaveDirectPeers(peers)
 }
 
 func (n *dposNetwork) changeView() {
