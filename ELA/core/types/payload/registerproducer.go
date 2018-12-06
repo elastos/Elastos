@@ -6,12 +6,13 @@ import (
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const PayloadRegisterProducerVersion byte = 0x00
 
 type PayloadRegisterProducer struct {
-	PublicKey string
+	PublicKey []byte
 	NickName  string
 	Url       string
 	Location  uint64
@@ -27,7 +28,7 @@ func (a *PayloadRegisterProducer) Data(version byte) []byte {
 }
 
 func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
-	err := WriteVarString(w, a.PublicKey)
+	err := WriteVarBytes(w, a.PublicKey)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], PublicKey serialize failed.")
 	}
@@ -55,7 +56,7 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
-	publicKey, err := ReadVarString(r)
+	publicKey, err := ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], PublicKey deserialize failed.")
 	}

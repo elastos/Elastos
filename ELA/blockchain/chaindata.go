@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 
@@ -610,17 +609,4 @@ func ToByteArray(source []uint16) []byte {
 	}
 
 	return dst
-}
-
-func PublicKeyToProgramHash(publicKey string) (*Uint168, error) {
-	pkBytes, err := HexStringToBytes(publicKey)
-	if err != nil {
-		return nil, errors.New("[getProgramHash] public key to bytes")
-	}
-	programHash, err := contract.PublicKeyToStandardProgramHash(pkBytes)
-	if err != nil {
-		return nil, errors.New("[getProgramHash] public key to program hash failed")
-	}
-
-	return programHash, nil
 }

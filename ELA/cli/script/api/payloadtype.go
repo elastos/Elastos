@@ -124,7 +124,7 @@ func newRegisterProducer(L *lua.LState) int {
 	address := L.ToString(5)
 
 	registerProducer := &payload.PayloadRegisterProducer{
-		PublicKey: publicKey,
+		PublicKey: []byte(publicKey),
 		NickName:  nickName,
 		Url:       url,
 		Location:  uint64(location),
