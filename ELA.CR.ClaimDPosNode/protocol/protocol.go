@@ -16,7 +16,7 @@ import (
 
 const (
 	ProtocolVersion    = 0
-	HandshakeTimeout   = 2
+	HandshakeTimeout   = 8
 	MinConnectionCount = 3
 	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount   = 8
