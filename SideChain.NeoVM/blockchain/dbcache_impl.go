@@ -2,9 +2,6 @@ package blockchain
 
 import (
 	"bytes"
-	"math/big"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
@@ -97,26 +94,8 @@ func (cache *DBCache) GetWriteSet() *storage.RWSet {
 	return cache.RWSet
 }
 
-func (cache *DBCache) GetBalance(hash common.Uint168) *big.Int {
-	return big.NewInt(100)
-}
-
-func (cache *DBCache) GetCodeSize(hash common.Uint168) int {
-	return 0
-}
-
-func (cache *DBCache) AddBalance(hash common.Uint168, int2 *big.Int) {
-
-}
-
 func (cache *DBCache) GetChainStoreDb() database.Database {
 	return cache.db
-}
-
-func (cache *DBCache) Suicide(codeHash common.Uint168) bool {
-	skey := storage.KeyToStr(&codeHash)
-	cache.RWSet.Delete(skey)
-	return true
 }
 
 func (cache *DBCache) FindInternal(prefix blockchain.EntryPrefix, keyPrefix string) database.Iterator {

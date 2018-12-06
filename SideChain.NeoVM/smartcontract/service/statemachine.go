@@ -376,7 +376,7 @@ func (s *StateMachine) StorageDelete(engine *avm.ExecutionEngine) bool {
 	}
 	key := avm.PopByteArray(engine)
 	storageKey := states.NewStorageKey(context.codeHash, key)
-	s.CloneCache.GetInnerCache().GetWriteSet().Delete(storage.KeyToStr(storageKey))
+	s.CloneCache.GetInnerCache().GetWriteSet().Delete(states.ST_Storage, storage.KeyToStr(storageKey))
 	return true
 }
 
