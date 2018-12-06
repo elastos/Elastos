@@ -35,7 +35,8 @@ fee = 100000
 txoutputpayload = defaultoutput.new()
 
 -- output
-txoutput = output.new(assetID, charge - fee, addr, 0, txoutputpayload)
+pledgeAddress = "bMMAtD3QyhzKQTEYiAZFPofVnJxgbmmfPm"
+txoutput = output.new(assetID, charge - fee, pledgeAddress, 0, txoutputpayload)
 tx:appendtxout(txoutput)
 -- print(txoutput:get())
 
