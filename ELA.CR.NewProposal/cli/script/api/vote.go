@@ -23,16 +23,14 @@ func newVote(L *lua.LState) int {
 	proposalHash := L.ToString(1)
 	signer := L.ToString(2)
 	accept := L.ToBool(3)
-	sign := L.ToString(4)
 
 	hash, _ := common.Uint256FromHexString(proposalHash)
-	signData, _ := common.HexStringToBytes(sign)
 
 	proposal := &types.DPosProposalVote{
 		ProposalHash: *hash,
 		Signer:       signer,
 		Accept:       accept,
-		Sign:         signData,
+		Sign:         nil,
 	}
 	ud := L.NewUserData()
 	ud.Value = proposal

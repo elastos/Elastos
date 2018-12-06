@@ -23,16 +23,14 @@ func newProposal(L *lua.LState) int {
 	sponsor := L.ToString(1)
 	blockHash := L.ToString(2)
 	offset := uint32(L.ToInt(3))
-	sign := L.ToString(4)
 
 	hash, _ := common.Uint256FromHexString(blockHash)
-	signData, _ := common.HexStringToBytes(sign)
 
 	proposal := &types.DPosProposal{
 		Sponsor:    sponsor,
 		BlockHash:  *hash,
 		ViewOffset: offset,
-		Sign:       signData,
+		Sign:       nil,
 	}
 	ud := L.NewUserData()
 	ud.Value = proposal

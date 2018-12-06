@@ -100,8 +100,8 @@ type ChainStore struct {
 	orderedProducers map[outputpayload.VoteType][]*PayloadRegisterProducer
 }
 
-func NewChainStore() (IChainStore, error) {
-	st, err := NewLevelDB("Chain")
+func NewChainStore(filePath string) (IChainStore, error) {
+	st, err := NewLevelDB(filePath)
 	if err != nil {
 		return nil, err
 	}

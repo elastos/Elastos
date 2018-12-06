@@ -37,19 +37,24 @@ func RegisterDposManagerType(L *lua.LState) {
 // Constructor
 func newDposManager(L *lua.LState) int {
 	n := checkDposNetwork(L, 1)
-	a := checkArbitrators(L, 2)
 	if n == nil {
 		fmt.Println("Network nil, create manager error.")
 		return 0
 	}
+	a := checkArbitrators(L, 2)
+	index := uint32(L.ToInt(3))
+	if index >= 5 {
+		L.ArgError(1, "Index invalid.")
+		return 0
+	}
 
-	dposManager := NewManager(arbitratorsPublicKeys[0], a)
+	dposManager := NewManager(arbitratorsPublicKeys[index], a)
 	mockManager := &manager{
 		DposManager: dposManager,
 	}
 
-	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[0])
-	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[0])
+	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[index])
+	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
 	pubKey, _ := crypto.DecodePoint(pub)
 	mockManager.Account = account.NewDposAccountFromExisting(&account2.Account{
 		PrivateKey: priKey,
@@ -67,7 +72,7 @@ func newDposManager(L *lua.LState) int {
 
 	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor)
 	n.Initialize(mockManager.Dispatcher)
-	n.listener = dposManager
+	n.SetListener(dposManager)
 
 	ud := L.NewUserData()
 	ud.Value = mockManager
@@ -88,11 +93,22 @@ func checkDposManager(L *lua.LState, idx int) *manager {
 }
 
 var dposManagerMethods = map[string]lua.LGFunction{
+	"public_key":     dposManagerPublicKey,
 	"dump_consensus": dposManagerDumpConsensus,
 
-	"check_on_duty":        dposManagerCheckOnDuty,
-	"check_status_ready":   dposManagerCheckStatusReady,
-	"check_status_running": dposManagerCheckStatusRunning,
+	"is_on_duty":        dposManagerCheckOnDuty,
+	"is_status_ready":   dposManagerCheckStatusReady,
+	"is_status_running": dposManagerCheckStatusRunning,
+
+	"sign_proposal": dposManagerSignProposal,
+	"sign_vote":     dposManagerSignVote,
+}
+
+func dposManagerPublicKey(L *lua.LState) int {
+	m := checkDposManager(L, 1)
+	L.Push(lua.LString(m.GetPublicKey()))
+
+	return 1
 }
 
 func dposManagerDumpConsensus(L *lua.LState) int {
@@ -125,6 +141,34 @@ func dposManagerCheckStatusReady(L *lua.LState) int {
 func dposManagerCheckStatusRunning(L *lua.LState) int {
 	m := checkDposManager(L, 1)
 	L.Push(lua.LBool(m.Consensus.IsRunning()))
+	return 1
+}
+
+func dposManagerSignProposal(L *lua.LState) int {
+	m := checkDposManager(L, 1)
+	p := checkProposal(L, 2)
+
+	result := false
+	if sign, err := m.Account.SignProposal(p); err == nil {
+		p.Sign = sign
+		result = true
+	}
+	L.Push(lua.LBool(result))
+
+	return 1
+}
+
+func dposManagerSignVote(L *lua.LState) int {
+	m := checkDposManager(L, 1)
+	v := checkVote(L, 2)
+
+	result := false
+	if sign, err := m.Account.SignVote(v); err == nil {
+		v.Sign = sign
+		result = true
+	}
+	L.Push(lua.LBool(result))
+
 	return 1
 }
 

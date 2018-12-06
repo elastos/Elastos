@@ -1,6 +1,7 @@
 package api
 
 import (
+	"math/rand"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -36,7 +37,7 @@ func newHeader(L *lua.LState) int {
 		Timestamp:  uint32(time.Now().Unix()),
 		Bits:       config.Parameters.ChainParam.PowLimitBits,
 		Height:     height,
-		Nonce:      0,
+		Nonce:      rand.Uint32(),
 	}
 
 	ud := L.NewUserData()
