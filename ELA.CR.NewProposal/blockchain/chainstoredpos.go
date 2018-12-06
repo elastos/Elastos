@@ -1,16 +1,16 @@
 package blockchain
 
 import (
+	"bytes"
 	"errors"
 	"sort"
-	"strings"
 
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
-	"bytes"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/common/log"
 )
 
 type producerSorter []*ProducerInfo
@@ -27,7 +27,7 @@ func (s producerSorter) Less(i, j int) bool {
 	ivalue, _ := s[i].Vote[currentVoteType]
 	jvalue, _ := s[j].Vote[currentVoteType]
 	if ivalue == jvalue {
-		return strings.Compare(s[i].Payload.PublicKey, s[j].Payload.PublicKey) > 0
+		return bytes.Compare(s[i].Payload.PublicKey, s[j].Payload.PublicKey) > 0
 	}
 	return ivalue > jvalue
 }
@@ -41,7 +41,7 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	result := make([]*PayloadRegisterProducer, 0)
 
 	for _, p := range c.producerVotes {
-		if _, ok := illProducers[p.Payload.PublicKey]; ok {
+		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
 			continue
 		}
 		result = append(result, p.Payload)
@@ -69,7 +69,7 @@ func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.Vot
 		producers := make([]*PayloadRegisterProducer, 0)
 		illProducers := c.getIllegalProducers()
 		for _, p := range producersInfo {
-			if _, ok := illProducers[p.Payload.PublicKey]; ok {
+			if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
 				continue
 			}
 			producers = append(producers, p.Payload)
@@ -164,7 +164,7 @@ func (c *ChainStore) GetDirectPeers() ([]*DirectPeers, error) {
 	}
 
 	for i := uint64(0); i < count; i++ {
-		publicKey, err := ReadVarBytes(r, 33, "public key")
+		publicKey, err := ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 		if err != nil {
 			return nil, err
 		}

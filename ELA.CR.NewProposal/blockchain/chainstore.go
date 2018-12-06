@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -217,7 +218,7 @@ func (c *ChainStore) InitProducerVotes() error {
 			return err
 		}
 
-		programHash, err := PublicKeyToProgramHash(p.PublicKey)
+		programHash, err := contract.PublicKeyToPledgeProgramHash(p.PublicKey)
 		if err != nil {
 			return errors.New("[InitProducerVotes]" + err.Error())
 		}

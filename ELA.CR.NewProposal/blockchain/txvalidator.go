@@ -18,10 +18,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const (
-	MaxVoteProducersPerTransaction = 50
-)
-
 // CheckTransactionSanity verifys received single transaction
 func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 	if err := CheckTransactionSize(txn); err != nil {
@@ -454,7 +450,6 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		if program.Parameter == nil {
 			return fmt.Errorf("invalid program parameter nil")
 		}
-
 		switch contract.GetCodeType(program.Code) {
 		case contract.Signature:
 			_, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
@@ -639,7 +634,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hash, err := PublicKeyToProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToPledgeProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
@@ -647,7 +642,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid nick name.")
 	}
 	for _, p := range producers {
-		if p.PublicKey == payload.PublicKey {
+		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			return errors.New("Duplicated public key.")
 		}
 		if p.NickName == payload.NickName {
@@ -687,7 +682,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid payload.")
 	}
 	// check public key
-	hash, err := PublicKeyToProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
@@ -706,7 +701,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 	}
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	for _, p := range producers {
-		if p.PublicKey == payload.PublicKey {
+		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			return nil
 		}
 	}

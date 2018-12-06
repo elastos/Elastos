@@ -144,11 +144,7 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 
 	result := make([][]byte, 0)
 	for i := uint32(0); i < uint32(len(producersInfo)); i++ {
-		arbiterByte, err := common.HexStringToBytes(producersInfo[i].PublicKey)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, arbiterByte)
+		result = append(result, producersInfo[i].PublicKey)
 	}
 	return result, nil
 }
