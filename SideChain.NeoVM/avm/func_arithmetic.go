@@ -76,7 +76,7 @@ func opBigIntZip(e *ExecutionEngine) (VMState, error) {
 }
 
 func checkBigInteger(value *big.Int) (bool, error) {
-	if len(value.Bytes()) < MAX_BIGINTEGER {
+	if len(value.Bytes()) <= MAX_BIGINTEGER {
 		return true, nil
 	}
 	return false, errors.ErrOverBigIntegerSize

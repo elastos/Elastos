@@ -3,10 +3,8 @@ package datatype
 import (
 	"math/big"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ByteArray struct {
@@ -44,7 +42,6 @@ func (ba *ByteArray) GetBigInteger() *big.Int {
 	if count == 0 {
 		return bi.SetInt64(0)
 	}
-
 	tempBytes := make([]byte, count)
 	copy(tempBytes, ba.value)
 
@@ -56,9 +53,8 @@ func (ba *ByteArray) GetBigInteger() *big.Int {
 	for i := 0; i < 8 - count; i++ {
 		tempBytes = append(tempBytes, addData)
 	}
-
-	data := params.BytesToInt(common.BytesReverse(tempBytes))
-	return bi.SetInt64(data)
+	bi.SetBytes(common.BytesReverse(tempBytes))
+	return &bi
 }
 
 func (ba *ByteArray) GetBoolean() bool {

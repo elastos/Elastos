@@ -20,7 +20,7 @@ func getPushData(e *ExecutionEngine) (interface{}, error) {
 	}
 	switch e.opCode {
 	case PUSH0:
-		data = []byte{0}
+		data = []byte{}
 	case PUSHDATA1:
 		d, _ := e.context.OpReader.ReadByte()
 		data = e.context.OpReader.ReadBytes(int(d))

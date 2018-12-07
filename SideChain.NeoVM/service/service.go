@@ -251,9 +251,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 	}
 
 	engine, err := RunScript(code)
-	if err != nil {
-		return false, nil
-	}
+
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 	ret["state"] = engine.GetState()
@@ -264,7 +262,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 		ret["result"] = getResult(avm.PopStackItem(engine), returntype)
 	}
 
-	return ret, nil
+	return ret, err
 }
 
 func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, error) {

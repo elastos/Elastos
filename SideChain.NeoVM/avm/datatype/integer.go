@@ -29,7 +29,9 @@ func (i *Integer) Equals(other StackItem) bool{
 }
 
 func (i *Integer) GetBigInteger() *big.Int {
-	return i.value
+	v := new(big.Int)
+	v.Set(i.value)
+	return v
 }
 
 

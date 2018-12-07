@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	// ASSET
 	ST_Contract   blockchain.EntryPrefix = 0xc2
 	ST_Storage    blockchain.EntryPrefix = 0xc3
 	ST_Account    blockchain.EntryPrefix = 0xc4
