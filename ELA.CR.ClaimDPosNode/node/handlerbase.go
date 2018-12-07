@@ -167,6 +167,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 func (h *HandlerBase) onPing(ping *msg.Ping) {
 	log.Debug("onPing")
 	h.node.SetHeight(ping.Nonce)
+	h.node.SetLastActive(time.Now())
 	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Store.GetHeight())))
 }
 
