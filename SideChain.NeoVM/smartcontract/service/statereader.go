@@ -197,11 +197,13 @@ func (s *StateReader) DerializeStackItem(r io.Reader) (datatype.StackItem, error
 		}
 		return datatype.NewBoolean(bytes), nil
 	case datatype.TYPE_Integer:
-		data, err := common.ReadUint64(r)
+		bytes, err := common.ReadVarBytes(r, avm.MAX_BIGINTEGER, "StateReader DerializeStackItem TYPE_Integer")
 		if err != nil {
 			return nil, err
 		}
-		return datatype.NewInteger(big.NewInt(int64(data))), nil
+		bint := new(big.Int)
+		bint.SetBytes(bytes)
+		return datatype.NewInteger(bint), nil
 	case datatype.TYPE_Array, datatype.TYPE_Struct:
 		len, err := common.ReadVarUint(r, 0x00)
 		if err != nil {
@@ -244,7 +246,7 @@ func (s *StateReader) SerializeStackItem(item datatype.StackItem, w io.Writer) {
 		w.Write(item.GetByteArray())
 	case *datatype.Integer:
 		w.Write([]byte{byte(datatype.TYPE_Integer)})
-		common.WriteUint64(w, item.GetBigInteger().Uint64())
+		common.WriteVarBytes(w, item.GetBigInteger().Bytes())
 	case *datatype.ByteArray:
 		w.Write([]byte{byte(datatype.TYPE_ByteArray)})
 		common.WriteVarBytes(w, item.GetByteArray())
