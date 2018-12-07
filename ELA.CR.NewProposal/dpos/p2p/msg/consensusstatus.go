@@ -63,7 +63,7 @@ func (s *ConsensusStatus) Serialize(w io.Writer) error {
 	if err := common.WriteVarUint(w, uint64(len(s.PendingVotes))); err != nil {
 		return err
 	}
-	for _, v := range s.PendingProposals {
+	for _, v := range s.PendingVotes {
 		if err := v.Serialize(w); err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	s.PendingVotes = make([]types.DPosProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
 		var pendingVote types.DPosProposalVote
-		if err = s.PendingProposals[i].Deserialize(r); err != nil {
+		if err = s.PendingVotes[i].Deserialize(r); err != nil {
 			return err
 		}
 		s.PendingVotes = append(s.PendingVotes, pendingVote)
