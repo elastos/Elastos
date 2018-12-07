@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
 
@@ -35,15 +36,15 @@ func GetSigner(code []byte) (*Uint168, error) {
 	return contract.ToProgramHash()
 }
 
-func GetSigners(code []byte) ([]*Uint168, error) {
+func GetSigners(code []byte) ([]*common.Uint160, error) {
 	publicKeys, err := crypto.ParseMultisigScript(code)
 	if err != nil {
 		return nil, err
 	}
 
-	var signers []*Uint168
+	var signers []*common.Uint160
 	for _, publicKey := range publicKeys {
-		hash, err := contract.PublicKeyToStandardProgramHash(publicKey)
+		hash, err := contract.PublicKeyToStandardCodeHash(publicKey)
 		if err != nil {
 			return nil, err
 		}

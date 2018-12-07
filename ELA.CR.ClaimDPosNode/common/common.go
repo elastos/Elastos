@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
-func ToCodeHash(code []byte) (Uint160, error) {
+func ToCodeHash(code []byte) (*Uint160, error) {
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
 	md160.Write(hash[:])
@@ -17,9 +17,9 @@ func ToCodeHash(code []byte) (Uint160, error) {
 
 	codeHash, err := Uint160ParseFromBytes(codeHashBytes)
 	if err != nil {
-		return Uint160{}, errors.New("[Common] , ToCodeHash err.")
+		return nil, errors.New("[Common] , ToCodeHash err.")
 	}
-	return codeHash, nil
+	return &codeHash, nil
 }
 
 func BytesReverse(u []byte) []byte {

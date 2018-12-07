@@ -168,10 +168,17 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
+
 	if err := CheckDestructionAddress(references); err != nil {
 		log.Warn("[CheckDestructionAddress], ", err)
 		return ErrInvalidInput
 	}
+
+	if err := CheckTransactionPledgeUTXO(txn, references); err != nil {
+		log.Warn("[CheckTransactionPledgeUTXO],", err)
+		return ErrInvalidInput
+	}
+
 	if err := CheckTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
@@ -188,6 +195,7 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 			return ErrInvalidOutput
 		}
 	}
+
 	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references); err != nil {
 		log.Warn("[CheckVoteProducerOutputs],", err)
 		return ErrInvalidOutput
@@ -366,6 +374,22 @@ func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) e
 	return nil
 }
 
+func CheckTransactionPledgeUTXO(txn *Transaction, references map[*Input]*Output) error {
+	for _, output := range references {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge {
+			if !txn.IsReturnPledgeCoin() {
+				return errors.New("only ReturnPledgeCoin transaction can use the pledge utxo")
+			}
+		} else {
+			if txn.IsReturnPledgeCoin() {
+				return errors.New("the ReturnPledgeCoin can only use the pledge utxo")
+			}
+		}
+	}
+
+	return nil
+}
+
 func CheckTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
@@ -509,6 +533,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadRegisterProducer:
 	case *PayloadCancelProducer:
 	case *PayloadUpdateProducer:
+	case *PayloadReturnPledgeCoin:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}

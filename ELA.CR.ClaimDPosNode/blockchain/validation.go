@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -29,11 +30,12 @@ func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) erro
 		programHash := programHashes[i]
 		ownerHash := common.Uint160ParseFromUint168(programHash)
 
-		if !ownerHash.IsEqual(codeHash) && programHash[0] != PrefixCrossChain {
+		if !ownerHash.IsEqual(*codeHash) && programHash[0] != PrefixCrossChain {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 
-		if programHash[0] == PrefixStandard {
+		prefixType := contract.PrefixType(programHash[0])
+		if prefixType == contract.PrefixStandard || prefixType == contract.PrefixPledge {
 			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}
@@ -227,5 +229,5 @@ func (p byHash) Less(i, j int) bool {
 	if err != nil {
 		panic(p[j].Code)
 	}
-	return hashi.Compare(hashj) < 0
+	return hashi.Compare(*hashj) < 0
 }

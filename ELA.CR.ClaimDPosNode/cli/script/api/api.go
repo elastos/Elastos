@@ -157,6 +157,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterCoinBaseType(L)
 	RegisterTransferAssetType(L)
 	RegisterTransactionType(L)
+	RegisterReturnPledgeCoinType(L)
 	RegisterProposalType(L)
 	RegisterVoteType(L)
 	RegisterConfirmType(L)
