@@ -1,18 +1,19 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/mempool"
+	"github.com/elastos/Elastos.ELA/protocol"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
+	utimsg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"github.com/elastos/Elastos.ELA/node"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
-	utimsg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type DposNetwork interface {
@@ -72,7 +73,7 @@ type DposManager interface {
 	GetBlockCache() *ConsensusBlockCache
 	GetArbitrators() blockchain.Arbitrators
 
-	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor)
+	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool, txPool *mempool.TxPool, node protocol.Noder)
 
 	Recover()
 
@@ -80,6 +81,10 @@ type DposManager interface {
 	ConfirmBlock()
 
 	ChangeConsensus(onDuty bool)
+
+	AppendConfirm(confirm *types.DPosProposalVoteSlot) error
+	AppendToTxnPool(txn *types.Transaction) errors.ErrCode
+	Relay(from protocol.Noder, message interface{}) error
 }
 
 type dposManager struct {
@@ -91,7 +96,15 @@ type dposManager struct {
 	dispatcher     ProposalDispatcher
 	consensus      Consensus
 	illegalMonitor IllegalBehaviorMonitor
-	arbitrators    blockchain.Arbitrators
+
+	arbitrators blockchain.Arbitrators
+	blockPool   *mempool.BlockPool
+	txPool      *mempool.TxPool
+	node        protocol.Noder
+}
+
+func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) error {
+	return d.blockPool.AppendConfirm(confirm)
 }
 
 func NewManager(name string, arbitrators blockchain.Arbitrators) DposManager {
@@ -105,13 +118,24 @@ func NewManager(name string, arbitrators blockchain.Arbitrators) DposManager {
 	return m
 }
 
-func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor) {
+func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool, txPool *mempool.TxPool, node protocol.Noder) {
 	d.handler = handler
 	d.dispatcher = dispatcher
 	d.consensus = consensus
 	d.network = network
 	d.illegalMonitor = illegalMonitor
 	d.blockCache.Listener = d.dispatcher.(*proposalDispatcher)
+	d.blockPool = blockPool
+	d.txPool = txPool
+	d.node = node
+}
+
+func (d *dposManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
+	return d.txPool.AppendToTxnPool(txn)
+}
+
+func (d *dposManager) Relay(from protocol.Noder, message interface{}) error {
+	return d.node.Relay(from, message)
 }
 
 func (d *dposManager) GetPublicKey() string {
@@ -187,7 +211,7 @@ func (d *dposManager) OnPong(id peer.PID, height uint32) {
 func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-		if _, err := node.LocalNode.AppendBlock(&types.BlockConfirm{
+		if _, err := d.blockPool.AppendBlock(&types.BlockConfirm{
 			BlockFlag: true,
 			Block:     block,
 		}); err != nil {
@@ -197,14 +221,14 @@ func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
 }
 
 func (d *dposManager) OnInv(id peer.PID, blockHash common.Uint256) {
-	if _, err := getBlock(blockHash); err != nil {
+	if _, err := d.getBlock(blockHash); err != nil {
 		log.Info("[ProcessInv] send getblock:", blockHash.String())
 		d.network.SendMessageToPeer(id, msg.NewGetBlock(blockHash))
 	}
 }
 
 func (d *dposManager) OnGetBlock(id peer.PID, blockHash common.Uint256) {
-	if block, err := getBlock(blockHash); err == nil {
+	if block, err := d.getBlock(blockHash); err == nil {
 		d.network.SendMessageToPeer(id, utimsg.NewBlock(block))
 	}
 }
@@ -322,8 +346,8 @@ func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
 	return false
 }
 
-func getBlock(blockHash common.Uint256) (*types.Block, error) {
-	block, have := node.LocalNode.GetBlock(blockHash)
+func (d *dposManager) getBlock(blockHash common.Uint256) (*types.Block, error) {
+	block, have := d.blockPool.GetBlock(blockHash)
 	if have {
 		return block, nil
 	}

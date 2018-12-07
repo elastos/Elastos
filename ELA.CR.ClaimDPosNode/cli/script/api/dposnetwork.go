@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-
 	. "github.com/elastos/Elastos.ELA/cli/script/api/mock"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -55,6 +54,15 @@ var networkMethods = map[string]lua.LGFunction{
 
 	"check_last_msg": networkCheckLastMsg,
 	"check_last_pid": networkCheckLastPid,
+	"dump_msg":       networkDumpMessage,
+}
+
+func networkDumpMessage(L *lua.LState) int {
+	n := checkDposNetwork(L, 1)
+	m := n.DumpMessages(0)
+	L.Push(lua.LString(m))
+
+	return 1
 }
 
 func networkPushBlock(L *lua.LState) int {
@@ -111,8 +119,7 @@ func networkCheckLastMsg(L *lua.LState) int {
 				proposal := checkProposal(L, 3)
 				result = proposalMsg.Proposal.Hash().IsEqual(proposal.Hash())
 			}
-		case msg.CmdAcceptVote:
-		case msg.CmdRejectVote:
+		case msg.CmdAcceptVote, msg.CmdRejectVote:
 			if voteMsg, ok := n.GetLastMessage().(*msg.Vote); ok {
 				vote := checkVote(L, 3)
 				result = voteMsg.Vote.Hash().IsEqual(vote.Hash())

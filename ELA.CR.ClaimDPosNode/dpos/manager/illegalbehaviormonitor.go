@@ -1,14 +1,12 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/node"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const WaitHeightTolerance = uint32(1)
@@ -35,6 +33,7 @@ type illegalBehaviorMonitor struct {
 	cachedProposals map[common.Uint256]*types.DPosProposal
 
 	evidenceCache evidenceCache
+	manager       DposManager
 }
 
 func (i *illegalBehaviorMonitor) AddBlockEvidence(evidence *types.DposIllegalBlocks) {
@@ -118,8 +117,8 @@ func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types
 		Fee:            0,
 	}
 
-	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
-		node.LocalNode.Relay(nil, transaction)
+	if code := i.manager.AppendToTxnPool(transaction); code == errors.Success {
+		i.manager.Relay(nil, transaction)
 	}
 }
 
@@ -137,8 +136,8 @@ func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.Dpo
 		Fee:            0,
 	}
 
-	if code := node.LocalNode.AppendToTxnPool(transaction); code == errors.Success {
-		node.LocalNode.Relay(nil, transaction)
+	if code := i.manager.AppendToTxnPool(transaction); code == errors.Success {
+		i.manager.Relay(nil, transaction)
 	}
 }
 

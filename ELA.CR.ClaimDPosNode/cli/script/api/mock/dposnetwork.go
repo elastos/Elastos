@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"fmt"
+
 	"github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
@@ -37,25 +39,49 @@ type NetworkMock interface {
 
 	GetLastMessage() p2p.Message
 	GetLastPID() *peer.PID
+	DumpMessages(level uint32) string
 }
 
 func NewNetworkMock() NetworkMock {
-	return &network{}
+	return &network{messageList: make([]messageItem, 0)}
+}
+
+type messageItem struct {
+	ID      *peer.PID
+	Message p2p.Message
 }
 
 //mock object of dposNetwork
 type network struct {
 	listener    NetworkEventListener
-	lastMessage p2p.Message
-	lastPID     *peer.PID
+	messageList []messageItem
+}
+
+func (n *network) DumpMessages(level uint32) string {
+	result := ""
+
+	switch level {
+	case 0:
+		for _, v := range n.messageList {
+			result += fmt.Sprintln("[message] type=" + v.Message.CMD())
+		}
+	}
+
+	return result
 }
 
 func (n *network) GetLastMessage() p2p.Message {
-	return n.lastMessage
+	if len(n.messageList) == 0 {
+		return nil
+	}
+	return n.messageList[len(n.messageList)-1].Message
 }
 
 func (n *network) GetLastPID() *peer.PID {
-	return n.lastPID
+	if len(n.messageList) == 0 {
+		return nil
+	}
+	return n.messageList[len(n.messageList)-1].ID
 }
 
 func (n *network) SetListener(listener NetworkEventListener) {
@@ -75,14 +101,12 @@ func (n *network) Stop() error {
 }
 
 func (n *network) SendMessageToPeer(id peer.PID, msg p2p.Message) error {
-	n.lastMessage = msg
-	n.lastPID = &id
+	n.messageList = append(n.messageList, messageItem{ID: &id, Message: msg})
 	return nil
 }
 
 func (n *network) BroadcastMessage(msg p2p.Message) {
-	n.lastMessage = msg
-	n.lastPID = nil
+	n.messageList = append(n.messageList, messageItem{ID: nil, Message: msg})
 }
 
 func (n *network) UpdatePeers(arbitrators [][]byte) error {

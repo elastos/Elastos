@@ -5,14 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-	"github.com/elastos/Elastos.ELA/node"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ProposalDispatcher interface {
@@ -269,11 +267,11 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	node.LocalNode.Relay(nil, &types.BlockConfirm{
+	p.manager.Relay(nil, &types.BlockConfirm{
 		ConfirmFlag: true,
 		Confirm:     currentVoteSlot,
 	})
-	if err := node.LocalNode.AppendConfirm(currentVoteSlot); err != nil {
+	if err := p.manager.AppendConfirm(currentVoteSlot); err != nil {
 		log.Error("[AppendConfirm] err:", err.Error())
 		return false
 	}
@@ -495,6 +493,7 @@ func NewDispatcherAndIllegalMonitor(consensus Consensus, eventMonitor *log.Event
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*types.DPosProposal),
 		evidenceCache:   evidenceCache{make(map[common.Uint256]types.DposIllegalData)},
+		manager:         manager,
 	}
 	p.illegalMonitor = i
 	return p, i

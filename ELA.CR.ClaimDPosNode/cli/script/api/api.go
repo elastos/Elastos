@@ -112,8 +112,11 @@ func getUTXO(L *lua.LState) int {
 }
 
 func initLedger(L *lua.LState) int {
-	log.Init(3, 0, 0, )
-	log2.Init(3, 0, 0, )
+	logLevel := uint8(L.ToInt(1))
+	arbitrators := checkArbitrators(L, 2)
+
+	log.Init(logLevel, 0, 0, )
+	log2.Init(logLevel, 0, 0, )
 
 	versions := verconfig.InitVersions()
 	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox")
@@ -125,6 +128,8 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init block chain error: ", err, "\n")
 	}
+
+	blockchain.DefaultLedger.Arbitrators = arbitrators
 
 	return 1
 }
