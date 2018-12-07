@@ -3,11 +3,12 @@ package contract
 import (
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func CreateStandardContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
@@ -20,19 +21,19 @@ func CreateStandardContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error)
 	sb.AddOp(vm.CHECKSIG)
 
 	return &Contract{
-		RedeemScript: sb.ToArray(),
-		HashPrefix:   PrefixStandard,
+		Code:       sb.ToArray(),
+		HashPrefix: PrefixStandard,
 	}, nil
 }
 
 func CreateStandardContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
-		RedeemScript: code,
-		HashPrefix:   PrefixStandard,
+		Code:       code,
+		HashPrefix: PrefixStandard,
 	}, nil
 }
 
-func PublicKeyToStandardProgramHash(pubKey []byte) (*common.Uint168, error) {
+func PublicKeyToStandardProgramHash(pubKey []byte) (*utilcom.Uint168, error) {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
 		return nil, err
@@ -44,4 +45,18 @@ func PublicKeyToStandardProgramHash(pubKey []byte) (*common.Uint168, error) {
 	}
 
 	return contract.ToProgramHash()
+}
+
+func PublicKeyToStandardCodeHash(pubKey []byte) (*common.Uint160, error) {
+	publicKey, err := crypto.DecodePoint(pubKey)
+	if err != nil {
+		return nil, err
+	}
+
+	contract, err := CreateStandardContractByPubKey(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return contract.ToCodeHash()
 }

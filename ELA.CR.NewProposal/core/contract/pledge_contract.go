@@ -20,15 +20,15 @@ func CreatePledgeContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
 	sb.AddOp(vm.CHECKSIG)
 
 	return &Contract{
-		RedeemScript: sb.ToArray(),
-		HashPrefix:   PrefixPledge,
+		Code:       sb.ToArray(),
+		HashPrefix: PrefixPledge,
 	}, nil
 }
 
 func CreatePledgeContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
-		RedeemScript: code,
-		HashPrefix:   PrefixPledge,
+		Code:       code,
+		HashPrefix: PrefixPledge,
 	}, nil
 }
 

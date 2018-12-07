@@ -7,6 +7,9 @@ all:
 	go build $(BUILD_ELA_PAR) -o ela main.go
 	go build $(BUILD_ELACLI_PAR) ela-cli.go
 
+client:
+	go build $(BUILD_ELACLI_PAR) ela-cli.go
+
 format:
 	go fmt ./*
 
