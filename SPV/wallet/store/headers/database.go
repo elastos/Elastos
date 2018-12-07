@@ -3,7 +3,6 @@ package headers
 import (
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/database"
@@ -96,12 +95,6 @@ func (d *Database) Put(header *util.Header, newTip bool) error {
 }
 
 func (d *Database) GetPrevious(header *util.Header) (*util.Header, error) {
-	if header.Height == 0 {
-		return nil, fmt.Errorf("no more previous header")
-	}
-	if header.Height == 1 {
-		return &util.Header{TotalWork: new(big.Int)}, nil
-	}
 	hash := header.Previous()
 	return d.Get(&hash)
 }
