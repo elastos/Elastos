@@ -62,6 +62,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.PayloadCancelProducer)
 	case *payload.PayloadUpdateProducer:
 		pload, _ = ud.Value.(*payload.PayloadUpdateProducer)
+	case *payload.PayloadReturnPledgeCoin:
+		pload, _ = ud.Value.(*payload.PayloadReturnPledgeCoin)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
@@ -162,7 +164,7 @@ func transactionSign(L *lua.LState) int {
 	}
 
 	program := pg.Program{
-		Code:      acc.Contract.RedeemScript,
+		Code:      acc.Contract.Code,
 		Parameter: []byte{},
 	}
 	txn.Programs = []*pg.Program{

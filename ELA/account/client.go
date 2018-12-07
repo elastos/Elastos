@@ -12,13 +12,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/vm"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
@@ -27,10 +28,10 @@ type Client interface {
 
 	ContainsAccount(pubKey *crypto.PublicKey) bool
 	CreateAccount() (*Account, error)
-	DeleteAccount(programHash common.Uint168) error
+	DeleteAccount(programHash utilcom.Uint168) error
 	GetAccount(pubKey *crypto.PublicKey) (*Account, error)
 	GetDefaultAccount() (*Account, error)
-	GetAccountByProgramHash(programHash common.Uint168) *Account
+	GetAccountByProgramHash(programHash utilcom.Uint168) *Account
 	GetAccounts() []*Account
 }
 
@@ -41,8 +42,8 @@ type ClientImpl struct {
 	iv        []byte
 	masterKey []byte
 
-	mainAccount common.Uint168
-	accounts    map[common.Uint168]*Account
+	mainAccount common.Uint160
+	accounts    map[common.Uint160]*Account
 
 	FileStore
 }
@@ -57,7 +58,7 @@ func Create(path string, password []byte, accountType string) (*ClientImpl, erro
 		return nil, err
 	}
 
-	client.mainAccount = account.ProgramHash
+	client.mainAccount = common.Uint160ParseFromUint168(account.ProgramHash)
 
 	return client, nil
 }
@@ -100,13 +101,11 @@ func (cl *ClientImpl) Sign(txn *types.Transaction) (*types.Transaction, error) {
 
 func (cl *ClientImpl) signStandardTransaction(txn *types.Transaction) (*types.Transaction, error) {
 	code := txn.Programs[0].Code
-
-	programHash, err := GetSigner(code)
+	codeHash, err := common.ToCodeHash(code)
 	if err != nil {
 		return nil, err
 	}
-
-	acct := cl.GetAccountByProgramHash(*programHash)
+	acct := cl.GetAccountByCodeHash(*codeHash)
 	if acct == nil {
 		return nil, errors.New("no available account in wallet to do single-sign")
 	}
@@ -137,7 +136,7 @@ func (cl *ClientImpl) signMultiSignTransaction(txn *types.Transaction) (*types.T
 	var signerIndex = -1
 	var acc *Account
 	for i, hash := range programHashes {
-		acc := cl.GetAccountByProgramHash(*hash)
+		acc := cl.GetAccountByCodeHash(*hash)
 		if acc != nil {
 			signerIndex = i
 			break
@@ -164,7 +163,7 @@ func (cl *ClientImpl) signMultiSignTransaction(txn *types.Transaction) (*types.T
 }
 
 func (cl *ClientImpl) GetDefaultAccount() (*Account, error) {
-	return cl.GetAccountByProgramHash(cl.mainAccount), nil
+	return cl.GetAccountByCodeHash(cl.mainAccount), nil
 }
 
 func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
@@ -172,17 +171,17 @@ func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
 	if err != nil {
 		return nil, errors.New("CreateStandardContractByPubKey failed")
 	}
-	programHash, err := signatureContract.ToProgramHash()
+	codeHash, err := signatureContract.ToCodeHash()
 	if err != nil {
 		return nil, errors.New("ToCodeHash failed")
 	}
-	return cl.GetAccountByProgramHash(*programHash), nil
+	return cl.GetAccountByCodeHash(*codeHash), nil
 }
 
-func (cl *ClientImpl) GetAccountByProgramHash(programHash common.Uint168) *Account {
+func (cl *ClientImpl) GetAccountByCodeHash(codeHash common.Uint160) *Account {
 	cl.mu.Lock()
 	defer cl.mu.Unlock()
-	if account, ok := cl.accounts[programHash]; ok {
+	if account, ok := cl.accounts[codeHash]; ok {
 		return account
 	}
 	return nil
@@ -191,7 +190,7 @@ func (cl *ClientImpl) GetAccountByProgramHash(programHash common.Uint168) *Accou
 func NewClient(path string, password []byte, create bool) *ClientImpl {
 	client := &ClientImpl{
 		path:      path,
-		accounts:  map[common.Uint168]*Account{},
+		accounts:  map[common.Uint160]*Account{},
 		FileStore: FileStore{path: path},
 	}
 
@@ -261,7 +260,7 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 			return nil
 		}
 	}
-	common.ClearBytes(passwordKey)
+	utilcom.ClearBytes(passwordKey)
 
 	return client
 }
@@ -285,8 +284,11 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	defer cl.mu.Unlock()
 
 	// save Account to memory
-	programHash := ac.ProgramHash
-	cl.accounts[programHash] = ac
+	codeHash, err := ac.Contract.ToCodeHash()
+	if err != nil {
+		return err
+	}
+	cl.accounts[*codeHash] = ac
 
 	decryptedPrivateKey := make([]byte, 96)
 	temp, err := ac.PublicKey.EncodePoint(false)
@@ -303,10 +305,10 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	if err != nil {
 		return err
 	}
-	common.ClearBytes(decryptedPrivateKey)
+	utilcom.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
-	err = cl.SaveAccountData(programHash.Bytes(), encryptedPrivateKey)
+	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), encryptedPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -316,19 +318,20 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 
 // LoadAccounts loads all accounts from db to memory
 func (cl *ClientImpl) LoadAccounts() error {
-	accounts := map[common.Uint168]*Account{}
+	accounts := map[common.Uint160]*Account{}
 
 	storeAddresses, err := cl.LoadAccountData()
 	if err != nil {
 		return err
 	}
 	for _, a := range storeAddresses {
-		p, _ := common.HexStringToBytes(a.ProgramHash)
-		acc, _ := common.Uint168FromBytes(p)
+		p, _ := utilcom.HexStringToBytes(a.ProgramHash)
+		acc, _ := utilcom.Uint168FromBytes(p)
+		codeHash := common.Uint160ParseFromUint168(*acc)
 		if a.Type == MAINACCOUNT {
-			cl.mainAccount = *acc
+			cl.mainAccount = codeHash
 		}
-		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+		encryptedKeyPair, _ := utilcom.HexStringToBytes(a.PrivateKeyEncrypted)
 		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
 		if err != nil {
 			log.Error(err)
@@ -337,7 +340,10 @@ func (cl *ClientImpl) LoadAccounts() error {
 		privateKey := keyPair[64:96]
 		prefixType := contract.GetPrefixType(*acc)
 		ac, err := NewAccountWithPrivateKey(privateKey, prefixType)
-		accounts[ac.ProgramHash] = ac
+		if err != nil {
+			return err
+		}
+		accounts[codeHash] = ac
 	}
 
 	cl.accounts = accounts

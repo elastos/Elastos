@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
 
@@ -22,12 +23,12 @@ const (
 
 // Contract include the redeem script and hash prefix
 type Contract struct {
-	RedeemScript []byte
-	HashPrefix   PrefixType
+	Code       []byte
+	HashPrefix PrefixType
 }
 
 func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
-	code := c.RedeemScript
+	code := c.Code
 	if len(code) < 1 {
 		return nil, errors.New("[ToProgramHash] failed, empty program code")
 	}
@@ -53,4 +54,8 @@ func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 	programBytes := md160.Sum([]byte{byte(c.HashPrefix)})
 
 	return utilcom.Uint168FromBytes(programBytes)
+}
+
+func (c *Contract) ToCodeHash() (*common.Uint160, error) {
+	return common.ToCodeHash(c.Code)
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -15,12 +14,14 @@ import (
 	"github.com/elastos/Elastos.ELA/account"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/cli/password"
+	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/servers"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/urfave/cli"
@@ -28,7 +29,7 @@ import (
 
 type Transfer struct {
 	Address string
-	Amount  *common.Fixed64
+	Amount  *utilcom.Fixed64
 }
 
 func createTransaction(c *cli.Context) error {
@@ -37,7 +38,7 @@ func createTransaction(c *cli.Context) error {
 		return errors.New("use --fee to specify transfer fee")
 	}
 
-	fee, err := common.StringToFixed64(feeStr)
+	fee, err := utilcom.StringToFixed64(feeStr)
 	if err != nil {
 		return errors.New("invalid transaction fee")
 	}
@@ -54,7 +55,7 @@ func createTransaction(c *cli.Context) error {
 		return errors.New("use --amount to specify transfer amount")
 	}
 
-	amount, err := common.StringToFixed64(amountStr)
+	amount, err := utilcom.StringToFixed64(amountStr)
 	if err != nil {
 		return errors.New("invalid transaction amount")
 	}
@@ -130,23 +131,23 @@ func getTransactionContent(context *cli.Context) (string, error) {
 	return content, nil
 }
 
-func CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*types.Transaction, error) {
+func CreateTransaction(fromAddress, toAddress string, amount, fee *utilcom.Fixed64) (*types.Transaction, error) {
 	return CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
 }
 
-func CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*types.Transaction, error) {
+func CreateLockedTransaction(fromAddress, toAddress string, amount, fee *utilcom.Fixed64, lockedUntil uint32) (*types.Transaction, error) {
 	return CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
 }
 
-func CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*types.Transaction, error) {
+func CreateMultiOutputTransaction(fromAddress string, fee *utilcom.Fixed64, outputs ...*Transfer) (*types.Transaction, error) {
 	return CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
 }
 
-func CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
+func CreateLockedMultiOutputTransaction(fromAddress string, fee *utilcom.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
 	return createTransaction_(fromAddress, fee, lockedUntil, outputs...)
 }
 
-func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
+func createTransaction_(fromAddress string, fee *utilcom.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
 	// Check if output is valid
 	if len(outputs) == 0 {
 		return nil, errors.New("[Wallet], Invalid transaction target")
@@ -167,11 +168,11 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 
 	if fromAddress != "" && fromAddress != acc.Address {
-		programHash, err := common.Uint168FromAddress(fromAddress)
+		programHash, err := utilcom.Uint168FromAddress(fromAddress)
 		if err != nil {
 			return nil, err
 		}
-		acc = client.GetAccountByProgramHash(*programHash)
+		acc = client.GetAccountByCodeHash(common.Uint160ParseFromUint168(*programHash))
 		if acc == nil {
 			return nil, errors.New(fromAddress + " is not local account")
 		}
@@ -179,17 +180,17 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	fromAddress = acc.Address
 
 	// Check if from address is valid
-	spender, err := common.Uint168FromAddress(fromAddress)
+	spender, err := utilcom.Uint168FromAddress(fromAddress)
 	if err != nil {
 		return nil, errors.New(fmt.Sprint("[Wallet], Invalid spender address: ", fromAddress, ", error: ", err))
 	}
 	// Create transaction outputs
-	var totalOutputAmount = common.Fixed64(0) // The total amount will be spend
-	var txOutputs []*types.Output             // The outputs in transaction
-	totalOutputAmount += *fee                 // Add transaction fee
+	var totalOutputAmount = utilcom.Fixed64(0) // The total amount will be spend
+	var txOutputs []*types.Output              // The outputs in transaction
+	totalOutputAmount += *fee                  // Add transaction fee
 
 	for _, output := range outputs {
-		receiver, err := common.Uint168FromAddress(output.Address)
+		receiver, err := utilcom.Uint168FromAddress(output.Address)
 		if err != nil {
 			return nil, errors.New(fmt.Sprint("[Wallet], Invalid receiver address: ", output.Address, ", error: ", err))
 		}
@@ -231,7 +232,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	var txInputs []*types.Input // The inputs in transaction
 	for _, utxo := range availabelUtxos {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
-		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
+		txID, _ := utilcom.Uint256FromBytes(utilcom.BytesReverse(txIDReverse))
 		input := &types.Input{
 			Previous: types.OutPoint{
 				TxID:  *txID,
@@ -240,7 +241,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 			Sequence: 4294967295,
 		}
 		txInputs = append(txInputs, input)
-		amount, _ := common.StringToFixed64(utxo.Amount)
+		amount, _ := utilcom.StringToFixed64(utxo.Amount)
 		if *amount < totalOutputAmount {
 			totalOutputAmount -= *amount
 		} else if *amount == totalOutputAmount {
@@ -264,7 +265,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		return nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	return newTransaction(acc.Contract.RedeemScript, txInputs, txOutputs, types.TransferAsset), nil
+	return newTransaction(acc.Contract.Code, txInputs, txOutputs, types.TransferAsset), nil
 }
 
 func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TransactionType) *types.Transaction {

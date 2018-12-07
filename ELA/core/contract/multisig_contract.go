@@ -32,14 +32,14 @@ func CreateMultiSigContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Contra
 	sb.AddOp(vm.CHECKMULTISIG)
 
 	return &Contract{
-		RedeemScript: sb.ToArray(),
-		HashPrefix:   PrefixMultiSig,
+		Code:       sb.ToArray(),
+		HashPrefix: PrefixMultiSig,
 	}, nil
 }
 
 func CreateMultiSigContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
-		RedeemScript: code,
-		HashPrefix:   PrefixMultiSig,
+		Code:       code,
+		HashPrefix: PrefixMultiSig,
 	}, nil
 }
