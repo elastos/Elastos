@@ -182,7 +182,7 @@ func (node *node) nodeHeartBeat() {
 		log.Info("node heart beat")
 		for _, peer := range node.GetNeighborNodes() {
 			if time.Now().Sub(peer.GetLastActive()) > 10 * time.Minute {
-				log.Warn("does not get pong message for 10 minutes.")
+				log.Warn("does not update last active time for 10 minutes.")
 				peer.Disconnect()
 			}
 		}
