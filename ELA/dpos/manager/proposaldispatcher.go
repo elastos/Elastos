@@ -169,6 +169,11 @@ func (p *proposalDispatcher) FinishProposal() {
 	log.Info("[FinishProposal] start")
 	defer log.Info("[FinishProposal] end")
 
+	if p.processingBlock == nil {
+		log.Warn("[FinishProposal] nil processing block")
+		return
+	}
+
 	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
 	if !p.TryAppendAndBroadcastConfirmBlockMsg() {

@@ -288,7 +288,8 @@ func (node *node) WaitForSyncFinish() {
 		return
 	}
 	for {
-		if node.IsCurrent() {
+		heights := node.GetNeighborHeights()
+		if len(heights) != 0 && node.IsCurrent() {
 			LocalNode.SetSyncHeaders(false)
 			break
 		}
@@ -390,7 +391,6 @@ func (node *node) SetSyncHeaders(b bool) {
 		node.syncFlag = node.syncFlag & 0xFE
 	}
 }
-
 
 // IsCurrent returns if node believes it was synced to current height.
 func (node *node) IsCurrent() bool {
