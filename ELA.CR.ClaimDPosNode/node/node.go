@@ -287,11 +287,16 @@ func (node *node) WaitForSyncFinish() {
 	if len(Parameters.SeedList) <= 0 {
 		return
 	}
+
+	startTime := time.Now()
 	for {
 		heights := node.GetNeighborHeights()
 		if len(heights) != 0 && node.IsCurrent() {
 			LocalNode.SetSyncHeaders(false)
 			break
+		}
+		if time.Now().After(startTime.Add(syncBlockTimeout)) {
+			return
 		}
 		time.Sleep(5 * time.Second)
 	}
