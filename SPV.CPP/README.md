@@ -24,7 +24,7 @@ This repository is a basic library aimed to provide a serials of wallet related 
 
 #### Initialize
 
-At first, copy all files(CoinConfig.json, mnemonic_chinese.txt mnemonic_*.txt) from `Data` directory of source code to the `rootPath`, and then create instance of **MasterWalletManager**
+Copy all files(CoinConfig.json, mnemonic_chinese.txt mnemonic_*.txt) from `Data` directory of source code to the `rootPath`, and then create an instance of **MasterWalletManager**
 
 ```c++
 const std::string rootPath = "./Data"
@@ -389,8 +389,6 @@ Make sure your computer have installed the required packages below:
 - [ndk](https://developer.android.com/ndk/downloads/)  (for Android)
 
 ### Prepare source code
-Open a terminal, go to */home/xxx/dev*
-
 ```shell
 $ cd /home/xxx/dev/
 $ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
@@ -400,7 +398,6 @@ $ git submodule update --force --recursive
 ```
 
 ### Build on Ubuntu/MacOS
-Create a build directory *cmake-build*
 ```shell
 $ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build
@@ -410,17 +407,37 @@ $ make -j 8
 ```
 
 ### Build for IOS
-Create a build directory *cmake-build-ios*
+1. Architecture armv7 and arm64.
 
-```shell
-$ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build-ios
-$ cd cmake-build-ios
-$ cmake -DSPV_PLATFORM=IOS ..
-$ make -j 8
-```
+   ```shell
+    $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
+    $ mkdir cmake-build-ios
+    $ cd cmake-build-ios
+    $ cmake -DSPV_PLATFORM=IOS -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/arm ..
+    $ make -j 8 && make install
+   ```
 
-Note: If built successfully, you will see output static library in directory *cmake-build-ios/lib/*, which combined with all dependent static libraries(libsqlite.a libboost_*.a libcrypto.a libssl.a libbigint.a). Only support architecture armv7 & arm64 for iPhone now, and minimum IOS target version is 10.0
+2. Simulator
+
+   x86
+
+   ```shell
+   $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
+   $ mkdir cmake-build-simulator
+   $ cd cmake-build-simulator
+   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/simulator ..
+   $ make -j 8 && make install
+   ```
+   x86_64
+   ```shell
+   $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
+   $ mkdir cmake-build-simulator64
+   $ cd cmake-build-simulator64
+   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR64 -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/simulator64 ..
+   $ make -j 8 && make install
+   ```
+
+Note: If built successfully, you will see output static library in directory *cmake-build-ios/lib/* or in installed directory, which combined with all dependent static libraries(libsqlite.a libboost_*.a libcrypto.a libssl.a libbigint.a). Support minimum IOS target version is 10.0
 
 ### Build for Android
 
@@ -430,13 +447,16 @@ Unzip to somewhere, for example */Users/xxx/dev/android-ndk-r16*
 
 Set system environment variable **ANDROID_NDK** to */Users/xxx/dev/android-ndk-r16*
 
-Create a build directory *cmake-build-ndk*
+Support architecture **arm64-v8a** **armeabi-v7a** and simulator( **x86** **x86_64** )
+
+Set **CMAKE_ANDROID_ARCH_ABI** properly to fit your need
+
 ```shell
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build-ndk
 $ cd cmake-build-ndk
-$ cmake -DSPV_PLATFORM=Android ..
-$ make -j 8
+$ cmake -DSPV_PLATFORM=Android -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/android/armeabi-v7a ..
+$ make -j 8 && make install
 ```
 
 ## Development
