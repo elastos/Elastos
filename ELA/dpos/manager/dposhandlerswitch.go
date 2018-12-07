@@ -90,7 +90,7 @@ func (h *dposHandlerSwitch) SwitchTo(onDuty bool) {
 	} else {
 		h.currentHandler = h.normalHandler
 	}
-	h.consensus.SetOnDuty(true)
+	h.consensus.SetOnDuty(onDuty)
 }
 
 func (h *dposHandlerSwitch) FinishConsensus() {

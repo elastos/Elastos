@@ -209,7 +209,7 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if d.BlockHash.IsEqual(p.processingProposal.Hash()) {
+	if p.processingProposal != nil && d.BlockHash.IsEqual(p.processingProposal.Hash()) {
 		log.Info("Already processing processing")
 		return
 	}
