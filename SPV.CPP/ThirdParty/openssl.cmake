@@ -24,7 +24,7 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 	set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/${CMAKE_ANDROID_ARCH_ABI}/include)
 elseif(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 	set(OPENSSL_BUILD_COMMENT "Building openssl for ios...")
-	set(OPENSSL_SELECT_VERSION echo Nerver mind)
+	set(OPENSSL_SELECT_VERSION git submodule update --force || echo Nerver mind)
 	set(
 		OPENSSL_BUILD_COMMAND
 		./build-libssl.sh
