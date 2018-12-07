@@ -74,10 +74,13 @@ type PowService struct {
 
 	wg   sync.WaitGroup
 	quit chan struct{}
+
 	wait chan bool
 
-	lastBlock *Block
-	lastNode  *BlockNode
+	lock          sync.Mutex
+	lastBlock     *Block
+	lastNode      *BlockNode
+	needBroadCast bool
 }
 
 func CreateCoinbaseTx(minerAddr string) (*Transaction, error) {
@@ -234,7 +237,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 			continue
 		}
 
-		if pow.SolveBlock(msgBlock) {
+		if pow.SolveBlock(msgBlock, make(chan bool)) {
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 
 				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
@@ -257,7 +260,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	}
 }
 
-func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
+func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 
@@ -273,6 +276,12 @@ func (pow *PowService) SolveBlock(MsgBlock *Block) bool {
 			// 	return false
 			// }
 			return false
+
+		case state := <-wait:
+			pow.needBroadCast = true
+			if !state {
+				return false
+			}
 
 		default:
 			// Non-blocking select to fall through
@@ -307,7 +316,7 @@ func (pow *PowService) Start() {
 	pow.wait = make(chan bool, 1)
 	pow.wg.Add(1)
 	pow.Started = true
-	pow.wait <- true
+	pow.needBroadCast = true
 
 	go pow.cpuMining()
 }
@@ -384,9 +393,11 @@ func (pow *PowService) OnConfirmReceived(p *DPosProposalVoteSlot) {
 		if p.Hash.IsEqual(block.Hash()) {
 			pow.wait <- true
 		} else {
-			pow.wait <- false
+			pow.lock.Lock()
+			defer pow.lock.Unlock()
 			pow.lastBlock = block
 			pow.lastNode = DefaultLedger.Blockchain.BestChain
+			pow.wait <- false
 		}
 	}
 }
@@ -403,21 +414,31 @@ out:
 		}
 		log.Debug("<================Packing Block==============>")
 
+		pow.lock.Lock()
+		lastHeight := pow.lastNode.Height + 1
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, pow.lastNode)
 		if err != nil {
 			log.Debug("generage block err", err)
+			pow.lock.Unlock()
 			continue
 		}
+		pow.lock.Unlock()
 
 		//begin to mine the block with POW
-		if pow.SolveBlock(msgBlock) {
+		if pow.SolveBlock(msgBlock, pow.wait) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == pow.lastNode.Height+1 {
-
-				if !<-pow.wait {
-					continue
+			if msgBlock.Header.Height == lastHeight {
+				pow.lock.Lock()
+				if !pow.needBroadCast {
+					if !<-pow.wait {
+						pow.needBroadCast = true
+						pow.lock.Unlock()
+						continue
+					}
 				}
+				pow.needBroadCast = false
+				pow.lock.Unlock()
 
 				time.Sleep(time.Second * 1)
 
@@ -435,8 +456,10 @@ out:
 					node.WorkSum = node.WorkSum.Add(parentNode.WorkSum, node.WorkSum)
 					node.Parent = parentNode
 				}
+				pow.lock.Lock()
 				pow.lastBlock = msgBlock
 				pow.lastNode = node
+				pow.lock.Unlock()
 			}
 		}
 
