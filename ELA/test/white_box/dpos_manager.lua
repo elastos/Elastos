@@ -25,4 +25,17 @@ dpos.E.network = dpos_network.new()
 dpos.E.arbitrators = arbitrators.new()
 dpos.E.manager = dpos_manager.new(dpos.E.network, dpos.E.arbitrators, 4)
 
+dpos.current_arbitrators = { dpos.A, dpos.B, dpos.C, dpos.D, dpos.E }
+
+function dpos.set_on_duty(index)
+    for i = 1, 5 do
+        if index == i
+        then
+            dpos.current_arbitrators[i].manager:set_on_duty(true)
+        else
+            dpos.current_arbitrators[i].manager:set_on_duty(false)
+        end
+    end
+end
+
 return dpos
