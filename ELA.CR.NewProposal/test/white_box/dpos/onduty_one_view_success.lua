@@ -1,12 +1,18 @@
 --- This is a test about on duty arbitrator successfully
 ---
 local api = require("api")
-local dpos = require("test/white_box/dpos_manager")
+local colors = require 'test/common/ansicolors'
 local dpos_msg = require("test/white_box/dpos_msg")
+local log = require("test/white_box/log_config")
 local block_utils = require("test/white_box/block_utils")
 
+print(colors('%{blue}-----------------Begin-----------------'))
+local dpos = dofile("test/white_box/dpos_manager.lua")
+
 api.clear_store()
-api.init_ledger()
+api.init_ledger(log.level, dpos.A.arbitrators)
+
+dpos.set_on_duty(1) -- set A on duty
 
 --- initial status check
 assert(dpos.A.manager:is_on_duty())
@@ -22,17 +28,30 @@ assert(b1:hash() ~= b2:hash())
 local prop = proposal.new(dpos.A.manager:public_key(), b1:hash(), 0)
 dpos.A.manager:sign_proposal(prop)
 
+local va = vote.new(prop:hash(), dpos.A.manager:public_key(), true)
 dpos.A.network:push_block(b1, false)
-dpos.A.network:check_last_msg(dpos_msg.proposal, prop)
+assert(dpos.A.network:check_last_msg(dpos_msg.accept_vote, va))
 dpos.A.network:push_block(b2, false)
-dpos.A.network:check_last_msg(dpos_msg.proposal, prop) -- should be first block
 
 --- simulate other arbitrators' approve votes
 local vb = vote.new(prop:hash(), dpos.B.manager:public_key(), true)
 dpos.B.manager:sign_vote(vb)
 dpos.A.network:push_vote(dpos.B.manager:public_key(), vb)
-dpos.A.network:check_last_msg(dpos_msg.proposal, prop) -- collecting, still be first block
+
+local vc = vote.new(prop:hash(), dpos.C.manager:public_key(), true)
+dpos.C.manager:sign_vote(vc)
+dpos.A.network:push_vote(dpos.C.manager:public_key(), vc)
+
+local confirm = confirm.new(b1:hash())
+confirm:set_proposal(prop)
+confirm:append_vote(va)
+confirm:append_vote(vb)
+confirm:append_vote(vc)
+assert(dpos.A.manager:check_last_relay(1, confirm))
+
+print(dpos.A.manager:dump_node_relays())
+print(dpos.A.network:dump_msg())
 
 --- clean up
 api.close_store()
-print("Test success!")
+print(colors('%{green}-----------------Test success!-----------------'))

@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"github.com/elastos/Elastos.ELA/node"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -122,7 +123,7 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 	proposalDispatcher, illegalMonitor := NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
-	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor)
+	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
 	network.Initialize(proposalDispatcher)
 
 	result := &arbitrator{
