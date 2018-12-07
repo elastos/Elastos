@@ -9,13 +9,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 )
 
-const (
-	ST_Contract   blockchain.EntryPrefix = 0xc2
-	ST_Storage    blockchain.EntryPrefix = 0xc3
-	ST_Account    blockchain.EntryPrefix = 0xc4
-	ST_AssetState blockchain.EntryPrefix = 0xc5
-)
-
 type IStateValueInterface interface {
 	Serialize(w io.Writer) error
 	Deserialize(r io.Reader) error
@@ -28,10 +21,10 @@ type IStateKeyInterface interface {
 
 var (
 	StatesMap = map[blockchain.EntryPrefix]IStateValueInterface{
-		ST_Contract:   new(ContractState),
-		ST_Account:    new(AccountState),
-		ST_AssetState: new(AssetState),
-		ST_Storage:    new(StorageItem),
+		blockchain.ST_Contract:   new(ContractState),
+		blockchain.ST_Account:    new(AccountState),
+		blockchain.ST_AssetState: new(AssetState),
+		blockchain.ST_Storage:    new(StorageItem),
 	}
 )
 
@@ -40,7 +33,7 @@ func GetStateValue(prefix blockchain.EntryPrefix, data []byte) (IStateValueInter
 	state := StatesMap[prefix]
 	if state == nil {
 		fmt.Println("StatesMap not has this key", prefix)
-		return  nil, errors.New("StatesMap not has key")
+		return nil, errors.New("StatesMap not has key")
 	}
 	err := state.Deserialize(r)
 	if err != nil {

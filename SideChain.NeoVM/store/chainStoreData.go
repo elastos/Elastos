@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -77,7 +78,7 @@ func (c *LedgerStore) PersisAccount(batch database.Batch, block *side.Block) err
 	}
 	for programHash, value := range accounts {
 		accountKey := new(bytes.Buffer)
-		accountKey.WriteByte(byte(states.ST_Account))
+		accountKey.WriteByte(byte(sb.ST_Account))
 		programHash.Serialize(accountKey)
 
 		accountValue := new(bytes.Buffer)
@@ -122,7 +123,7 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
 	data := params.UInt168ToUInt160(codeHash)
 
-	dbCache.GetOrAdd(states.ST_Contract, string(data), &states.ContractState{
+	dbCache.GetOrAdd(sb.ST_Contract, string(data), &states.ContractState{
 		Code:        payloadDeploy.Code,
 		Name:        payloadDeploy.Name,
 		Version:     payloadDeploy.CodeVersion,
@@ -144,7 +145,7 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 		if err != nil {
 			return err
 		}
-		state, err := states.GetStateValue(states.ST_Contract, contract)
+		state, err := states.GetStateValue(sb.ST_Contract, contract)
 		if err != nil {
 			return err
 		}
@@ -185,7 +186,7 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 }
 
 func (c *LedgerStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
-	prefix := []byte{byte(states.ST_Contract)}
+	prefix := []byte{byte(sb.ST_Contract)}
 
 	hashBytes := params.UInt168ToUInt160(codeHash)
 	bData, err_get := c.Get(append(prefix, hashBytes...))
@@ -196,7 +197,7 @@ func (c *LedgerStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
 }
 
 func (c *LedgerStore) GetAccount(programHash *common.Uint168) (*states.AccountState, error) {
-	accountPrefix := []byte{byte(states.ST_Account)}
+	accountPrefix := []byte{byte(sb.ST_Account)}
 	state, err := c.Get(append(accountPrefix, programHash.Bytes()...))
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
@@ -19,7 +20,7 @@ func NewCacheCodeTable(dbCache *blockchain.DBCache) *CacheCodeTable {
 }
 
 func (table *CacheCodeTable) GetScript(codeHash []byte) ([]byte) {
-	value, err := table.dbCache.TryGet(states.ST_Contract, string(codeHash))
+	value, err := table.dbCache.TryGet(sb.ST_Contract, string(codeHash))
 	if err != nil {
 		return nil
 	}
