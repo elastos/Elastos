@@ -1,4 +1,4 @@
---- This is a test about on duty arbitrator successfully collect vote and broadcast block confirm
+--- This is a test about normal arbitrator successfully collect vote and broadcast block confirm
 ---
 local api = require("api")
 local colors = require 'test/common/ansicolors'
@@ -12,11 +12,11 @@ local dpos = dofile("test/white_box/dpos_manager.lua")
 api.clear_store()
 api.init_ledger(log.level, dpos.A.arbitrators)
 
-dpos.set_on_duty(1) -- set A on duty
+dpos.set_on_duty(2) -- set B on duty
 dpos.dump_on_duty()
 
 --- initial status check
-assert(dpos.A.manager:is_on_duty())
+assert(not dpos.A.manager:is_on_duty())
 assert(dpos.A.manager:is_status_ready())
 assert(not dpos.A.manager:is_status_running())
 
@@ -26,14 +26,16 @@ local b2 = block_utils.height_one()
 assert(b1:hash() ~= b2:hash())
 
 --- simulate block arrive event
-local prop = proposal.new(dpos.A.manager:public_key(), b1:hash(), 0)
-dpos.A.manager:sign_proposal(prop)
+local prop = proposal.new(dpos.B.manager:public_key(), b1:hash(), 0)
+dpos.B.manager:sign_proposal(prop)
 
 local va = vote.new(prop:hash(), dpos.A.manager:public_key(), true)
 dpos.A.network:push_block(b1, false)
-assert(dpos.A.manager:is_status_running())
-assert(dpos.A.network:check_last_msg(dpos_msg.accept_vote, va))
 dpos.A.network:push_block(b2, false)
+
+--- simulate proposal arrive event
+dpos.A.network:push_proposal(dpos.B.manager:public_key(), prop)
+assert(dpos.A.network:check_last_msg(dpos_msg.accept_vote, va))
 
 --- simulate other arbitrators' approve votes
 local vb = vote.new(prop:hash(), dpos.B.manager:public_key(), true)
