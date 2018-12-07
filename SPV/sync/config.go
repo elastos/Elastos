@@ -14,7 +14,7 @@ const (
 type Config struct {
 	Chain *blockchain.BlockChain
 
-	MaxPeers        int
+	MaxPeers int
 
 	UpdateFilter        func() *bloom.Filter
 	TransactionAnnounce func(tx util.Transaction)

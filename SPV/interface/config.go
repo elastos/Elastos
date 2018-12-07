@@ -3,6 +3,7 @@ package _interface
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/interface/iutil"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -11,7 +12,11 @@ import (
 )
 
 func newBlockHeader() util.BlockHeader {
-	return util.NewElaHeader(&core.Header{})
+	return iutil.NewHeader(&core.Header{})
+}
+
+func newTransaction() util.Transaction {
+	return iutil.NewTx(&core.Transaction{})
 }
 
 // GenesisHeader creates a specific genesis header by the given
@@ -87,5 +92,5 @@ func GenesisHeader(foundation *common.Uint168) util.BlockHeader {
 	}
 	header.MerkleRoot, _ = crypto.ComputeRoot(hashes)
 
-	return util.NewElaHeader(&header)
+	return iutil.NewHeader(&header)
 }

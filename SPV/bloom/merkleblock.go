@@ -6,10 +6,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 // mBlock is used to house intermediate information needed to generate a
@@ -102,31 +100,15 @@ func NewMerkleBlock(block *util.Block, filter *Filter) (*msg.MerkleBlock, []uint
 
 	// Find and keep track of any transactions that match the filter.
 	var matchedIndexes []uint32
-	switch block.Header.BlockHeader.(type) {
-	case *util.ElaHeader:
-		for index, tx := range block.Transactions {
-			if filter.MatchElaTxAndUpdate(tx.(*core.Transaction)) {
-				mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
-				matchedIndexes = append(matchedIndexes, uint32(index))
-			} else {
-				mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
-			}
-			txHash := tx.Hash()
-			mBlock.AllHashes = append(mBlock.AllHashes, &txHash)
+	for index, tx := range block.Transactions {
+		if tx.MatchFilter(filter) {
+			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
+			matchedIndexes = append(matchedIndexes, uint32(index))
+		} else {
+			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
 		}
-
-	case *util.SideHeader:
-		for index, tx := range block.Transactions {
-			if filter.MatchSideTxAndUpdate(tx.(*types.Transaction)) {
-				mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
-				matchedIndexes = append(matchedIndexes, uint32(index))
-			} else {
-				mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
-			}
-			txHash := tx.Hash()
-			mBlock.AllHashes = append(mBlock.AllHashes, &txHash)
-		}
-
+		txHash := tx.Hash()
+		mBlock.AllHashes = append(mBlock.AllHashes, &txHash)
 	}
 
 	// Calculate the number of merkle branches (height) in the tree.

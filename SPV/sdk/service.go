@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -138,7 +139,7 @@ func (s *service) updateFilter() *bloom.Filter {
 	addresses, outpoints := s.cfg.GetFilterData()
 	elements := uint32(len(addresses) + len(outpoints))
 
-	filter := bloom.NewFilter(elements, 0, 0)
+	filter := bloom.NewFilter(elements, rand.Uint32(), 0)
 	for _, address := range addresses {
 		filter.Add(address.Bytes())
 	}

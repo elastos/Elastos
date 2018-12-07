@@ -6,10 +6,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -239,112 +237,6 @@ func (bf *Filter) AddOutPoint(outpoint *util.OutPoint) {
 	bf.mtx.Lock()
 	bf.addOutPoint(outpoint)
 	bf.mtx.Unlock()
-}
-
-// matchTxAndUpdate returns true if the bloom filter matches data within the
-// passed tx, otherwise false is returned.  If the filter does match
-// the passed tx, it will also update the filter depending on the bloom
-// update flags set via the loaded filter if needed.
-//
-// This function MUST be called with the filter lock held.
-func (bf *Filter) matchElaTxAndUpdate(tx *core.Transaction) bool {
-	// Check if the filter matches the hash of the tx.
-	// This is useful for finding transactions when they appear in a block.
-	hash := tx.Hash()
-	matched := bf.matches(hash[:])
-
-	for i, txOut := range tx.Outputs {
-		if !bf.matches(txOut.ProgramHash[:]) {
-			continue
-		}
-
-		matched = true
-		bf.addOutPoint(util.NewOutPoint(tx.Hash(), uint16(i)))
-	}
-
-	// Nothing more to do if a match has already been made.
-	if matched {
-		return true
-	}
-
-	// At this point, the tx and none of the data elements in the
-	// public key scripts of its outputs matched.
-
-	// Check if the filter matches any outpoints this tx spends
-	for _, txIn := range tx.Inputs {
-		op := txIn.Previous
-		if bf.matchesOutPoint(util.NewOutPoint(op.TxID, op.Index)) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// MatchTxAndUpdate returns true if the bloom filter matches data within the
-// passed tx, otherwise false is returned.  If the filter does match
-// the passed tx, it will also update the filter depending on the bloom
-// update flags set via the loaded filter if needed.
-//
-// This function is safe for concurrent access.
-func (bf *Filter) MatchElaTxAndUpdate(tx *core.Transaction) bool {
-	bf.mtx.Lock()
-	match := bf.matchElaTxAndUpdate(tx)
-	bf.mtx.Unlock()
-	return match
-}
-
-// matchTxAndUpdate returns true if the bloom filter matches data within the
-// passed tx, otherwise false is returned.  If the filter does match
-// the passed tx, it will also update the filter depending on the bloom
-// update flags set via the loaded filter if needed.
-//
-// This function MUST be called with the filter lock held.
-func (bf *Filter) matchSideTxAndUpdate(tx *types.Transaction) bool {
-	// Check if the filter matches the hash of the tx.
-	// This is useful for finding transactions when they appear in a block.
-	hash := tx.Hash()
-	matched := bf.matches(hash[:])
-
-	for i, txOut := range tx.Outputs {
-		if !bf.matches(txOut.ProgramHash[:]) {
-			continue
-		}
-
-		matched = true
-		bf.addOutPoint(util.NewOutPoint(tx.Hash(), uint16(i)))
-	}
-
-	// Nothing more to do if a match has already been made.
-	if matched {
-		return true
-	}
-
-	// At this point, the tx and none of the data elements in the
-	// public key scripts of its outputs matched.
-
-	// Check if the filter matches any outpoints this tx spends
-	for _, txIn := range tx.Inputs {
-		op := txIn.Previous
-		if bf.matchesOutPoint(util.NewOutPoint(op.TxID, op.Index)) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// MatchTxAndUpdate returns true if the bloom filter matches data within the
-// passed tx, otherwise false is returned.  If the filter does match
-// the passed tx, it will also update the filter depending on the bloom
-// update flags set via the loaded filter if needed.
-//
-// This function is safe for concurrent access.
-func (bf *Filter) MatchSideTxAndUpdate(tx *types.Transaction) bool {
-	bf.mtx.Lock()
-	match := bf.matchSideTxAndUpdate(tx)
-	bf.mtx.Unlock()
-	return match
 }
 
 func (bf *Filter) GetFilterLoadMsg() *msg.FilterLoad {

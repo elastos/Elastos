@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -28,7 +29,7 @@ var (
 	BKTChainTip = []byte("B")
 )
 
-func NewDatabase(newHeader func() util.BlockHeader) (*Database, error) {
+func NewDatabase() (*Database, error) {
 	db, err := leveldb.OpenFile("HEADER", nil)
 	if err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func NewDatabase(newHeader func() util.BlockHeader) (*Database, error) {
 		RWMutex:   new(sync.RWMutex),
 		db:        db,
 		cache:     newCache(100),
-		newHeader: newHeader,
+		newHeader: sutil.NewEmptyHeader,
 	}
 
 	headers.initCache()

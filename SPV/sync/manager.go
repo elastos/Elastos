@@ -345,6 +345,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	block := bmsg.block
 	blockHash := block.Hash()
 	if _, exists = state.requestedBlocks[blockHash]; !exists {
+		log.Warnf("Received unrequested block from peer %s", peer)
 		peer.Disconnect()
 		return
 	}
@@ -380,9 +381,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		if state.badBlockRate() > maxBadBlockRate {
 			log.Warnf("Disconnecting from peer %s because he sent us too many bad blocks", peer)
 			peer.Disconnect()
-			return
 		}
-		log.Warnf("Received unrequested block from peer %s", peer)
 		return
 	}
 

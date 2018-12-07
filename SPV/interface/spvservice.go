@@ -9,6 +9,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
+	"github.com/elastos/Elastos.ELA.SPV/interface/iutil"
 	"github.com/elastos/Elastos.ELA.SPV/interface/store"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -70,16 +71,14 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 	chainStore := database.NewDefaultChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
-		DataDir:       dataDir,
-		Magic:         cfg.Magic,
-		SeedList:      cfg.SeedList,
-		DefaultPort:   cfg.DefaultPort,
-		MaxPeers:      cfg.MaxConnections,
-		GenesisHeader: GenesisHeader(foundation),
-		ChainStore:    chainStore,
-		NewTransaction: func() util.Transaction {
-			return &core.Transaction{}
-		},
+		DataDir:        dataDir,
+		Magic:          cfg.Magic,
+		SeedList:       cfg.SeedList,
+		DefaultPort:    cfg.DefaultPort,
+		MaxPeers:       cfg.MaxConnections,
+		GenesisHeader:  GenesisHeader(foundation),
+		ChainStore:     chainStore,
+		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
 		GetFilterData:  service.GetFilterData,
 		StateNotifier:  service,
@@ -149,7 +148,7 @@ func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transact
 }
 
 func (s *spvservice) SendTransaction(tx core.Transaction) error {
-	return s.IService.SendTransaction(&tx)
+	return s.IService.SendTransaction(iutil.NewTx(&tx))
 }
 
 func (s *spvservice) GetTransaction(txId *common.Uint256) (*core.Transaction, error) {
@@ -239,7 +238,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 	log.Infof("Receive block %s height %d", block.Hash(), block.Height)
 	for _, tx := range block.Transactions {
 		for _, listener := range s.listeners {
-			s.queueMessageByListener(listener, tx.(*core.Transaction), block.Height)
+			s.queueMessageByListener(listener, tx.(*iutil.Tx).Transaction, block.Height)
 		}
 	}
 
@@ -385,7 +384,7 @@ type txBatch struct {
 // PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
 func (b *txBatch) PutTx(utx util.Transaction, height uint32) (bool, error) {
-	tx := utx.(*core.Transaction)
+	tx := utx.(*iutil.Tx)
 	hits := make(map[common.Uint168]struct{})
 	ops := make(map[*util.OutPoint]common.Uint168)
 	for index, output := range tx.Outputs {

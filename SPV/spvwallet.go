@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	MaxPeers        = 12
+	MaxPeers = 12
 )
 
 var ErrInvalidParameter = fmt.Errorf("invalide parameter")
@@ -162,8 +162,8 @@ type txBatch struct {
 
 // PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
-func (b *txBatch) PutTx(mtx util.Transaction, height uint32) (bool, error) {
-	tx := mtx.(*core.Transaction)
+func (b *txBatch) PutTx(utx util.Transaction, height uint32) (bool, error) {
+	tx := utx.(*sutil.Tx)
 	txId := tx.Hash()
 	hits := 0
 
@@ -272,18 +272,18 @@ func (w *spvwallet) sendTransaction(params httputil.Params) (interface{}, error)
 		return nil, ErrInvalidParameter
 	}
 
-	var tx core.Transaction
+	var tx = newTransaction()
 	err = tx.Deserialize(bytes.NewReader(txBytes))
 	if err != nil {
 		return nil, fmt.Errorf("deserialize transaction failed %s", err)
 	}
 
-	return nil, w.SendTransaction(&tx)
+	return nil, w.SendTransaction(tx)
 }
 
 func NewWallet() (*spvwallet, error) {
 	// Initialize headers db
-	headers, err := headers.NewDatabase(newBlockHeader)
+	headers, err := headers.NewDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -301,16 +301,16 @@ func NewWallet() (*spvwallet, error) {
 	// Initialize spv service
 	w.IService, err = sdk.NewService(
 		&sdk.Config{
-			Magic:           config.Magic,
-			SeedList:        config.SeedList,
-			DefaultPort:     config.DefaultPort,
-			MaxPeers:        MaxPeers,
-			GenesisHeader:   GenesisHeader(),
-			ChainStore:      chainStore,
-			NewTransaction:  newTransaction,
-			NewBlockHeader:  newBlockHeader,
-			GetFilterData:   w.GetFilterData,
-			StateNotifier:   &w,
+			Magic:          config.Magic,
+			SeedList:       config.SeedList,
+			DefaultPort:    config.DefaultPort,
+			MaxPeers:       MaxPeers,
+			GenesisHeader:  GenesisHeader(),
+			ChainStore:     chainStore,
+			NewTransaction: newTransaction,
+			NewBlockHeader: sutil.NewEmptyHeader,
+			GetFilterData:  w.GetFilterData,
+			StateNotifier:  &w,
 		})
 	if err != nil {
 		return nil, err
@@ -327,12 +327,8 @@ func NewWallet() (*spvwallet, error) {
 	return &w, nil
 }
 
-func newBlockHeader() util.BlockHeader {
-	return util.NewElaHeader(&core.Header{})
-}
-
 func newTransaction() util.Transaction {
-	return new(core.Transaction)
+	return sutil.NewTx(&core.Transaction{})
 }
 
 // GenesisHeader creates a specific genesis header by the given
@@ -408,5 +404,5 @@ func GenesisHeader() util.BlockHeader {
 	}
 	header.MerkleRoot, _ = crypto.ComputeRoot(hashes)
 
-	return util.NewElaHeader(&header)
+	return sutil.NewHeader(&header)
 }

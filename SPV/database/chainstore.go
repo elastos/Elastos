@@ -18,7 +18,7 @@ type ChainStore interface {
 
 	// Rollback delete all transactions after the reorg point,
 	// it is used when blockchain reorganized.
-	Rollback(reorg *util.Header)  error
+	Rollback(reorg *util.Header) error
 }
 
 func NewHeadersOnlyChainDB(db Headers) ChainStore {

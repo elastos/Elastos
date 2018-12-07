@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -14,9 +12,7 @@ var Version string
 
 func main() {
 	url := fmt.Sprint("http://127.0.0.1:", config.JsonRpcPort, "/spvwallet")
-	wallet.RunClient(Version, url, getSystemAssetId(), func() util.BlockHeader {
-		return util.NewElaHeader(&core.Header{})
-	})
+	wallet.RunClient(Version, url, getSystemAssetId())
 }
 
 func getSystemAssetId() common.Uint256 {

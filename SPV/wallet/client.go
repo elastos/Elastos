@@ -1,7 +1,6 @@
 package wallet
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/util"
 	"os"
 
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client"
@@ -13,8 +12,8 @@ import (
 	"github.com/urfave/cli"
 )
 
-func RunClient(version, rpcUrl string, assetId common.Uint256, newBlockHeader func() util.BlockHeader) {
-	client.Setup(rpcUrl, assetId, newBlockHeader)
+func RunClient(version, rpcUrl string, assetId common.Uint256) {
+	client.Setup(rpcUrl, assetId)
 
 	app := cli.NewApp()
 	app.Name = "ELASTOS SPV WALLET"

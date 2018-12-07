@@ -16,8 +16,14 @@ type BlockHeader interface {
 	Deserialize(r io.Reader) error
 }
 
+type Filter interface {
+	Add(data []byte)
+	Matches(data []byte) bool
+}
+
 type Transaction interface {
 	Hash() common.Uint256
 	Serialize(w io.Writer) error
 	Deserialize(r io.Reader) error
+	MatchFilter(filter Filter) bool
 }

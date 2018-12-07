@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/database"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
@@ -22,7 +21,6 @@ import (
 var (
 	jsonRpcUrl string
 	sysAssetId common.Uint256
-	newHeader  func() util.BlockHeader
 )
 
 type Transfer struct {
@@ -35,10 +33,9 @@ type Wallet struct {
 	*Keystore
 }
 
-func Setup(rpcUrl string, assetId common.Uint256, newBlockHeader func() util.BlockHeader) {
+func Setup(rpcUrl string, assetId common.Uint256) {
 	jsonRpcUrl = rpcUrl
 	sysAssetId = assetId
-	newHeader = newBlockHeader
 }
 
 func Create(password []byte) error {
@@ -47,7 +44,7 @@ func Create(password []byte) error {
 		return err
 	}
 
-	db, err := database.New(newHeader)
+	db, err := database.New()
 	if err != nil {
 		return err
 	}
@@ -58,7 +55,7 @@ func Create(password []byte) error {
 }
 
 func Open() (*Wallet, error) {
-	db, err := database.New(newHeader)
+	db, err := database.New()
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,6 @@ package database
 import (
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/headers"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
@@ -11,7 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func New(newBlockHeader func() util.BlockHeader) (*database, error) {
+func New() (*database, error) {
 	dataStore, err := sqlite.NewDatabase()
 	if err != nil {
 		return nil, err
@@ -20,14 +19,12 @@ func New(newBlockHeader func() util.BlockHeader) (*database, error) {
 	return &database{
 		lock:           new(sync.RWMutex),
 		store:          dataStore,
-		newBlockHeader: newBlockHeader,
 	}, nil
 }
 
 type database struct {
 	lock           *sync.RWMutex
 	store          sqlite.DataStore
-	newBlockHeader func() util.BlockHeader
 }
 
 func (d *database) AddAddress(address *common.Uint168, script []byte, addrType int) error {
@@ -83,7 +80,7 @@ func (d *database) Clear() error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
-	headers, err := headers.NewDatabase(d.newBlockHeader)
+	headers, err := headers.NewDatabase()
 	if err != nil {
 		return err
 	}
