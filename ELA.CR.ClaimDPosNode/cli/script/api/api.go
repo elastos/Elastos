@@ -167,6 +167,9 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterDposManagerType(L)
 	RegisterArbitratorsType(L)
 	RegisterRegisterProducerType(L)
+	RegisterIllegalProposalsType(L)
+	RegisterIllegalVotesType(L)
+	RegisterIllegalBlocksType(L)
 
 	return 0
 }
