@@ -43,6 +43,8 @@ namespace Elastos {
 				// func syncStarted()
 				virtual void syncStarted() = 0;
 
+				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight) = 0;
+
 				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
 
@@ -59,7 +61,7 @@ namespace Elastos {
 				virtual bool networkIsReachable() = 0;
 
 				// Called on publishTransaction
-				virtual void txPublished(const std::string &error) = 0;
+				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
 
@@ -137,7 +139,7 @@ namespace Elastos {
 
 			void publishTransaction(const TransactionPtr &transaction);
 
-			void publishTransaction(const TransactionPtr &transaction, const Peer::PeerCallback &callback);
+			void publishTransaction(const TransactionPtr &transaction, const Peer::PeerPubTxCallback &callback);
 
 			uint64_t getRelayCount(const UInt256 &txHash) const;
 
@@ -168,7 +170,7 @@ namespace Elastos {
 
 			virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash);
 
-			virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code);
+			virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason);
 
 			virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block);
 
@@ -188,6 +190,8 @@ namespace Elastos {
 		private:
 			void fireSyncStarted();
 
+			void fireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+
 			void fireSyncStopped(int error);
 
 			void fireTxStatusUpdate();
@@ -198,7 +202,7 @@ namespace Elastos {
 
 			bool fireNetworkIsReachable();
 
-			void fireTxPublished(int error);
+			void fireTxPublished(const UInt256 &hash, int code, const std::string &reason);
 
 			void fireThreadCleanup();
 
@@ -225,7 +229,7 @@ namespace Elastos {
 
 			void syncStopped();
 
-			void addTxToPublishList(const TransactionPtr &tx, const Peer::PeerCallback &callback);
+			void addTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback);
 
 			void publishPendingTx(const PeerPtr &peer);
 

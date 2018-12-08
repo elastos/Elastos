@@ -603,7 +603,7 @@ namespace Elastos {
 			return fee;
 		}
 
-		nlohmann::json Transaction::generateExtraTransactionInfo(const WalletPtr &wallet,
+		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet,
 												  uint32_t lastBlockHeight) {
 
 			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash()));

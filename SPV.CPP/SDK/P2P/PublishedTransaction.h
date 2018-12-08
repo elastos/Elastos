@@ -12,27 +12,29 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		typedef boost::function<void(const UInt256 &, int, const std::string &)> PublishedTxCallback;
+
 		class PublishedTransaction {
 		public:
 			PublishedTransaction();
 
 			explicit PublishedTransaction(const TransactionPtr &tx);
 
-			PublishedTransaction(const TransactionPtr &tx, const boost::function<void(int)> &callback);
+			PublishedTransaction(const TransactionPtr &tx, const PublishedTxCallback &callback);
 
-			void FireCallback(int code);
+			void FireCallback(int code, const std::string &reason);
 
 			bool HasCallback() const;
 
 			void ResetCallback();
 
-			const boost::function<void(int)> &GetCallback() const;
+			const PublishedTxCallback &GetCallback() const;
 
 			const TransactionPtr &GetTransaction() const;
 
 		private:
 			TransactionPtr _tx;
-			boost::function<void(int)> _callback;
+			PublishedTxCallback _callback;
 		};
 
 	}

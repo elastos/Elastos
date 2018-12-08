@@ -9,18 +9,17 @@ namespace Elastos {
 
 		PublishedTransaction::PublishedTransaction() :
 				_tx(nullptr),
-				_callback(boost::function<void(int)>()) {
+				_callback(PublishedTxCallback()) {
 
 		}
 
 		PublishedTransaction::PublishedTransaction(const TransactionPtr &tx) :
 				_tx(tx),
-				_callback(boost::function<void(int)>()) {
+				_callback(PublishedTxCallback()) {
 
 		}
 
-		PublishedTransaction::PublishedTransaction(const TransactionPtr &tx,
-												   const boost::function<void(int)> &callback) :
+		PublishedTransaction::PublishedTransaction(const TransactionPtr &tx, const PublishedTxCallback &callback) :
 				_tx(tx),
 				_callback(callback) {
 		}
@@ -34,14 +33,14 @@ namespace Elastos {
 		}
 
 		void PublishedTransaction::ResetCallback() {
-			_callback = boost::function<void(int)>();
+			_callback = PublishedTxCallback();
 		}
 
-		void PublishedTransaction::FireCallback(int code) {
-			_callback(code);
+		void PublishedTransaction::FireCallback(int code, const std::string &reason) {
+			_callback(_tx->getHash(), code, reason);
 		}
 
-		const boost::function<void(int)> &PublishedTransaction::GetCallback() const {
+		const PublishedTxCallback &PublishedTransaction::GetCallback() const {
 			return _callback;
 		}
 	}

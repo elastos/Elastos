@@ -50,6 +50,8 @@ namespace Elastos {
 			// func syncStarted()
 			virtual void syncStarted();
 
+			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+
 			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);
 
@@ -66,7 +68,7 @@ namespace Elastos {
 			virtual bool networkIsReachable();
 
 			// Called on publishTransaction
-			virtual void txPublished(const std::string &error);
+			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
@@ -116,6 +118,8 @@ namespace Elastos {
 
 			virtual void syncStarted();
 
+			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+
 			virtual void syncStopped(const std::string &error);
 
 			virtual void txStatusUpdate();
@@ -126,7 +130,7 @@ namespace Elastos {
 
 			virtual bool networkIsReachable();
 
-			virtual void txPublished(const std::string &error);
+			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
@@ -148,6 +152,8 @@ namespace Elastos {
 
 			virtual void syncStarted();
 
+			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+
 			virtual void syncStopped(const std::string &error);
 
 			virtual void txStatusUpdate();
@@ -158,7 +164,7 @@ namespace Elastos {
 
 			virtual bool networkIsReachable();
 
-			virtual void txPublished(const std::string &error);
+			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 

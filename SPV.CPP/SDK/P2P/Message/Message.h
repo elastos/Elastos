@@ -82,7 +82,7 @@ namespace Elastos {
 
 			void FireHasTx(const UInt256 &txHash);
 
-			void FireRejectedTx(const UInt256 &txHash, uint8_t code);
+			void FireRejectedTx(const UInt256 &txHash, uint8_t code, const std::string &reason);
 
 			void FireRelayedBlock(const MerkleBlockPtr &block);
 

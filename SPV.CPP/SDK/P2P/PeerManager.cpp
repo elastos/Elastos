@@ -43,6 +43,12 @@ namespace Elastos {
 			}
 		}
 
+		void PeerManager::fireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			if (!_listener.expired()) {
+				_listener.lock()->syncProgress(currentHeight, estimatedHeight);
+			}
+		}
+
 		void PeerManager::fireSyncStopped(int error) {
 			if (!_listener.expired()) {
 				_listener.lock()->syncStopped(error == 0 ? "" : strerror(error));
@@ -75,9 +81,14 @@ namespace Elastos {
 			return result;
 		}
 
-		void PeerManager::fireTxPublished(int error) {
+		void PeerManager::fireTxPublished(const UInt256 &hash, int code, const std::string &reason) {
+			nlohmann::json result;
+			result["Code"] = code;
+			result["Reason"] = reason;
+			std::string txID = Utils::UInt256ToString(hash, true);
+
 			if (!_listener.expired()) {
-				_listener.lock()->txPublished(error == 0 ? "" : strerror(error));
+				_listener.lock()->txPublished(txID, result);
 			}
 		}
 
@@ -474,30 +485,31 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &tx) {
-			publishTransaction(tx, Peer::PeerCallback());
+			publishTransaction(tx, boost::bind(&PeerManager::fireTxPublished, this, _1, _2, _3));
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &tx,
-											 const Peer::PeerCallback &callback) {
+											 const Peer::PeerPubTxCallback &callback) {
 
 			assert(tx != NULL && tx->isSigned());
+			bool txValid = (tx != nullptr);
 			if (tx) lock.lock();
 
 			if (tx && !tx->isSigned()) {
 				lock.unlock();
-				if (!callback.empty()) callback(EINVAL); // transaction not signed
-			} else if (tx && !_isConnected) {
-				int connectFailureCount = connectFailureCount;
-
-				lock.unlock();
-
-				if (connectFailureCount >= MAX_CONNECT_FAILURES ||
-					(!fireNetworkIsReachable())) {
-					if (!callback.empty()) callback(ENOTCONN); // not connected to bitcoin network
-				} else lock.lock();
+				if (!callback.empty()) callback(tx->getHash(), EINVAL, "tx not signed"); // transaction not signed
+				txValid = false;
+//			} else if (tx && !_isConnected) {
+//				int connectFailureCount = connectFailureCount;
+//				lock.unlock();
+//
+//				if (connectFailureCount >= MAX_CONNECT_FAILURES ||
+//					(!fireNetworkIsReachable())) {
+//					if (!callback.empty()) callback(ENOTCONN); // not connected to bitcoin network
+//				} else lock.lock();
 			}
 
-			if (tx) {
+			if (txValid) {
 				size_t i, count = 0;
 
 				tx->setTimestamp((uint32_t) time(NULL)); // set timestamp to publish time
@@ -749,7 +761,7 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::addTxToPublishList(const TransactionPtr &tx, const Peer::PeerCallback &callback) {
+		void PeerManager::addTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback) {
 			if (tx && tx->getBlockHeight() == TX_UNCONFIRMED) {
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
 					if (_publishedTx[i - 1].GetTransaction()->IsEqual(tx.get())) return;
@@ -760,7 +772,7 @@ namespace Elastos {
 
 				for (size_t i = 0; i < tx->getInputs().size(); i++) {
 					addTxToPublishList(_wallet->transactionForHash(tx->getInputs()[i].getTransctionHash()),
-									   boost::function<void(int)>());
+									   Peer::PeerPubTxCallback());
 				}
 			}
 		}
@@ -848,7 +860,8 @@ namespace Elastos {
 				_syncSucceeded = false;
 				_keepAliveTimestamp = time(nullptr);
 				_isConnected = 1;
-				_estimatedHeight = peer->GetLastBlock();
+				if (_estimatedHeight < peer->GetLastBlock())
+					_estimatedHeight = peer->GetLastBlock();
 				loadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->getHeight());
 				publishPendingTx(peer);
@@ -966,9 +979,9 @@ namespace Elastos {
 				}
 			}
 
-			for (size_t i = 0; i < pubTx.size(); i++) {
-				pubTx[i].FireCallback(txError);
-			}
+//			for (size_t i = 0; i < pubTx.size(); i++) {
+//				pubTx[i].FireCallback(txError, "tx canceled");
+//			}
 
 			//if (willSave) fireSavePeers(true, {});
 			if (willSave) fireSyncStopped(error);
@@ -1030,7 +1043,7 @@ namespace Elastos {
 			int isWalletTx = 0, hasPendingCallbacks = 0;
 			size_t relayCount = 0;
 			TransactionPtr tx = transaction;
-			Peer::PeerCallback txCallback;
+			PublishedTransaction pubTx;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -1038,7 +1051,7 @@ namespace Elastos {
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (UInt256Eq(&_publishedTxHashes[i - 1], &tx->getHash())) {
-						txCallback = _publishedTx[i - 1].GetCallback();
+						pubTx = _publishedTx[i - 1];
 						_publishedTx[i - 1].ResetCallback();
 						relayCount = addPeerToList(peer, tx->getHash(), _txRelays);
 					} else if (_publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
@@ -1064,7 +1077,7 @@ namespace Elastos {
 
 					if (_wallet->getTransactionAmountSent(tx) > 0 &&
 						_wallet->transactionIsValid(tx)) {
-						addTxToPublishList(tx, Peer::PeerCallback());  // add valid send tx to mempool
+						addTxToPublishList(tx, Peer::PeerPubTxCallback());  // add valid send tx to mempool
 					}
 
 					// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1115,7 +1128,7 @@ namespace Elastos {
 				}
 			}
 
-			if (!txCallback.empty()) txCallback(0);
+			if (pubTx.HasCallback()) pubTx.FireCallback(0, "success");
 		}
 
 		void PeerManager::OnHasTx(const PeerPtr &peer, const UInt256 &txHash) {
@@ -1167,16 +1180,24 @@ namespace Elastos {
 				}
 			}
 
-			if (pubTx.HasCallback()) pubTx.FireCallback(0);
+			if (pubTx.HasCallback()) pubTx.FireCallback(0, "has tx");
 		}
 
-		void PeerManager::OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) {
+		void PeerManager::OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason) {
 
+			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("rejected tx: {}", Utils::UInt256ToString(txHash));
 				TransactionPtr tx = _wallet->transactionForHash(txHash);
 				removePeerFromList(peer, txHash, _txRequests);
+
+				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
+					if (UInt256Eq(&_publishedTxHashes[i - 1], &(tx->getHash()))) {
+						pubTx = _publishedTx[i - 1];
+						_publishedTx[i - 1].ResetCallback();
+					}
+				}
 
 				if (tx) {
 					if (removePeerFromList(peer, txHash, _txRelays) && tx->getBlockHeight() == TX_UNCONFIRMED) {
@@ -1201,6 +1222,7 @@ namespace Elastos {
 			}
 
 			fireTxStatusUpdate();
+			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
 		}
 
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
@@ -1285,6 +1307,7 @@ namespace Elastos {
 					if ((block->getHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->getHeight() >= peer->GetLastBlock()) {
 						peer->info("adding block #{}, false positive rate: {}", block->getHeight(), _fpRate);
+						fireSyncProgress(block->getHeight(), _estimatedHeight);
 					}
 
 					_blocks.Insert(block);
@@ -1486,7 +1509,7 @@ namespace Elastos {
 					error = EINVAL;
 			}
 
-			if (pubTx.HasCallback()) pubTx.FireCallback(error);
+			if (error && pubTx.HasCallback()) pubTx.FireCallback(error, "tx not signed");
 			return pubTx.GetTransaction();
 		}
 

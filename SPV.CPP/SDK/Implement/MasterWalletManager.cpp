@@ -368,13 +368,17 @@ namespace Elastos {
 			return txn.toJson();
 		}
 
+		std::string MasterWalletManager::GetVersion() const {
+			return SPVSDK_VERSION_MESSAGE;
+		}
+
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
 
 #if defined(__ANDROID__)
 			Log::setPattern("%v");
 #else
-			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %v");
+			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %n: %v");
 #endif
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));

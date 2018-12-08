@@ -209,6 +209,8 @@ namespace Elastos {
 					IMasterWallet *masterWallet,
 					const std::string &payPassword);
 
+			virtual std::string GetVersion() const;
+
 			nlohmann::json EncodeTransactionToString(const nlohmann::json &tx);
 
 			nlohmann::json DecodeTransactionFromString(const nlohmann::json &cipher);

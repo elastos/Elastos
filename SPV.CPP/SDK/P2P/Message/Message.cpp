@@ -44,9 +44,9 @@ namespace Elastos {
 				_peer->_listener->OnHasTx(_peer->shared_from_this(), txHash);
 		}
 
-		void Message::FireRejectedTx(const UInt256 &txHash, uint8_t code) {
+		void Message::FireRejectedTx(const UInt256 &txHash, uint8_t code, const std::string &reason) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRejectedTx(_peer->shared_from_this(), txHash, code);
+				_peer->_listener->OnRejectedTx(_peer->shared_from_this(), txHash, code, reason);
 		}
 
 		void Message::FireRelayedBlock(const MerkleBlockPtr &block) {

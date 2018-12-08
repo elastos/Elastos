@@ -133,7 +133,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			nlohmann::json generateExtraTransactionInfo(const boost::shared_ptr<TransactionHub> &wallet,
+			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet,
 											  uint32_t lastBlockHeight);
 
 			uint8_t	getPayloadVersion() const;

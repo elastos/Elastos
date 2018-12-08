@@ -156,7 +156,7 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
-				jsonList[i]["Summary"] = transactions[i]->generateExtraTransactionInfo(_walletManager->getWallet(),
+				jsonList[i]["Summary"] = transactions[i]->GetSummary(_walletManager->getWallet(),
 															  _walletManager->getPeerManager()->GetLastBlockHeight());
 			}
 			nlohmann::json j;
@@ -216,7 +216,6 @@ namespace Elastos {
 				return;
 
 			std::string txHash = Utils::UInt256ToString(transaction->getHash());
-			Log::debug("onTxAdded hash={}", txHash);
 			_confirmingTxs[txHash] = transaction;
 
 			fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
@@ -237,7 +236,6 @@ namespace Elastos {
 			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
 								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
 			if (_walletManager->getPeerManager()->SyncSucceeded()) {
-				Log::debug("onTxUpdated hash={} confirm={}", hash, confirm);
 				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 _confirmingTxs[hash]->toJson(), confirm);
 			}
@@ -245,9 +243,10 @@ namespace Elastos {
 
 		void SubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
 									bool recommendRescan) {
-			Log::debug("onTxDeleted hash={}", hash);
-			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Deleted),
-										 nlohmann::json(), 0);
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&hash, &assetID, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
+				callback->OnTxDeleted(hash, notifyUser, recommendRescan);
+			});
 		}
 
 		void SubWallet::recover(int limitGap) {
@@ -342,6 +341,13 @@ namespace Elastos {
 						  });
 		}
 
+		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&currentHeight, &estimatedHeight](ISubWalletCallback *callback) {
+							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight);
+						  });
+		}
+
 		void SubWallet::syncStopped(const std::string &error) {
 			_syncStartHeight = 0;
 
@@ -359,6 +365,12 @@ namespace Elastos {
 			Log::debug("[{}] Save blocks count={}", _info.getChainId(), blocks.size());
 		}
 
+		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
+			std::for_each(_callbacks.begin(), _callbacks.end(), [&hash, &result](ISubWalletCallback *callback) {
+				callback->OnTxPublished(hash, result);
+			});
+		}
+
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			if (_walletManager->getPeerManager()->SyncSucceeded()) {
 				for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
@@ -367,7 +379,6 @@ namespace Elastos {
 										blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
 
 					if (confirms > 1) {
-						Log::debug("Tx hash={} confirms={}", it->first, confirms);
 						fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 													 it->second->toJson(), confirms);
 					}
@@ -384,14 +395,6 @@ namespace Elastos {
 				else
 					++it;
 			}
-
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [blockHeight, this](ISubWalletCallback *callback) {
-							  callback->OnBlockHeightIncreased(
-									  blockHeight,
-									  (int) (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) *
-											 100));
-						  });
 		}
 
 		void SubWallet::fireTransactionStatusChanged(const std::string &txid, const std::string &status,

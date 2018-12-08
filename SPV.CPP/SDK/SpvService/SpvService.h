@@ -69,6 +69,8 @@ namespace Elastos {
 		public:
 			virtual void syncStarted();
 
+			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+
 			virtual void syncStopped(const std::string &error);
 
 			virtual void txStatusUpdate();
@@ -79,7 +81,7 @@ namespace Elastos {
 
 			virtual bool networkIsReachable();
 
-			virtual void txPublished(const std::string &error);
+			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 

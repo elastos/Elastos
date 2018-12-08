@@ -60,7 +60,7 @@ namespace Elastos {
 
 				virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
 
-				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) = 0;
+				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason) = 0;
 
 				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) = 0;
 
@@ -80,6 +80,8 @@ namespace Elastos {
 			};
 
 			typedef boost::function<void(int)> PeerCallback;
+
+			typedef boost::function<void(const UInt256 &, int, const std::string &)> PeerPubTxCallback;
 
 			struct UInt256Compare {
 				bool operator()(const UInt256 *first, const UInt256 *second) const {
