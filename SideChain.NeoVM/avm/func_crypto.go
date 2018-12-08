@@ -68,8 +68,8 @@ func opCheckMultiSig(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.New("too many signatures in stack")
 	}
 
-	signatures := make([][]byte, m)
-	for i := 0; i < m; i++ {
+	signatures := make([][]byte, n)
+	for i := 0; i < n; i++ {
 		signatures[i] = PopByteArray(e)
 	}
 
