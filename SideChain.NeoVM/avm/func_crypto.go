@@ -68,9 +68,9 @@ func opCheckMultiSig(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.New("too many signatures in stack")
 	}
 
-	signatures := make([][]byte, n)
-	for i := 0; i < n; i++ {
-		signatures[i] = PopByteArray(e)
+	signatures := make([][]byte, 0, n)
+	for e.evaluationStack.Count() > 0 {
+		signatures = append(signatures, AssertStackItem(e.evaluationStack.Pop()).GetByteArray())
 	}
 
 	data := e.dataContainer.GetData()
