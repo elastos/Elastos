@@ -45,7 +45,7 @@ typedef struct {
 	BRTransaction *tx;
 	void *info;
 
-	void (*callback)(void *info, int error);
+	void (*callback)(void *info, const UInt256 *hash, int error, const char *reason);
 } BRPublishedTx;
 
 typedef struct {
@@ -71,6 +71,8 @@ typedef struct BRPeerManagerStruct {
 	void *info;
 
 	void (*syncStarted)(void *info);
+
+	void (*syncProgress)(void *info, uint32_t currentHeight, uint32_t estimatedHeight);
 
 	void (*syncStopped)(void *info, int error);
 
@@ -126,6 +128,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
 // void threadCleanup(void *) - called before a thread terminates to faciliate any needed cleanup
 void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
 							   void (*syncStarted)(void *info),
+							   void (*syncProgress)(void *info, uint32_t currentHeight, uint32_t estimatedHeight),
 							   void (*syncStopped)(void *info, int error),
 							   void (*txStatusUpdate)(void *info),
 							   void (*saveBlocks)(void *info, int replace, BRMerkleBlock *blocks[], size_t blocksCount),
@@ -175,7 +178,7 @@ const char *BRPeerManagerDownloadPeerName(BRPeerManager *manager);
 
 // publishes tx to bitcoin network (do not call BRTransactionFree() on tx afterward)
 void BRPeerManagerPublishTx(BRPeerManager *manager, BRTransaction *tx, void *info,
-							void (*callback)(void *info, int error));
+							void (*callback)(void *info, const UInt256 *hash, int error, const char *reason));
 
 // number of connected peers that have relayed the given unconfirmed transaction
 size_t BRPeerManagerRelayCount(BRPeerManager *manager, UInt256 txHash);

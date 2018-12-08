@@ -37,9 +37,9 @@ namespace Elastos {
 			/**
 			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
 			 * @param currentBlockHeight is the of current block when callback fired.
-			 * @param progress is current progress when block height increased.
+			 * @param estimatedHeight is max height of blockchain.
 			 */
-			virtual void OnBlockHeightIncreased(uint32_t currentBlockHeight, int progress) = 0;
+			virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight) = 0;
 
 			/**
 			 * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
@@ -48,6 +48,9 @@ namespace Elastos {
 
 			virtual void OnBalanceChanged(uint64_t balance) = 0;
 
+			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
+
+			virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
 		};
 
 	}

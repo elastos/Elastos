@@ -88,6 +88,10 @@ namespace Elastos {
 
 		}
 
+		void CoreWalletManager::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+
+		}
+
 		void CoreWalletManager::syncStopped(const std::string &error) {
 
 		}
@@ -109,7 +113,7 @@ namespace Elastos {
 			return true;
 		}
 
-		void CoreWalletManager::txPublished(const std::string &error) {
+		void CoreWalletManager::txPublished(const std::string &hash, const nlohmann::json &result) {
 
 		}
 
@@ -167,6 +171,16 @@ namespace Elastos {
 			}
 			catch (...) {
 				Log::getLogger()->error("Peer manager callback (syncStarted) error.");
+			}
+		}
+
+		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			try {
+				_listener->syncProgress(currentHeight, estimatedHeight);
+			} catch (std::exception ex) {
+				Log::getLogger()->error("Peer manager callback (syncProgress) error: {}", ex.what());
+			} catch (...) {
+				Log::getLogger()->error("Peer manager callback (syncProgress) error");
 			}
 		}
 
@@ -237,9 +251,9 @@ namespace Elastos {
 			return true;
 		}
 
-		void WrappedExceptionPeerManagerListener::txPublished(const std::string &error) {
+		void WrappedExceptionPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
 			try {
-				_listener->txPublished(error);
+				_listener->txPublished(hash, result);
 			}
 			catch (std::exception ex) {
 				Log::getLogger()->error("Peer manager callback (txPublished) error: {}", ex.what());
@@ -294,6 +308,18 @@ namespace Elastos {
 				}
 				catch (...) {
 					Log::error("Peer manager callback (syncStarted) error.");
+				}
+			}));
+		}
+
+		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			_executor->execute(Runnable([this, currentHeight, estimatedHeight]() -> void {
+				try {
+					_listener->syncProgress(currentHeight, estimatedHeight);
+				} catch (std::exception ex) {
+					Log::getLogger()->error("Peer manager callback (syncProgress) error: {}", ex.what());
+				} catch (...) {
+					Log::getLogger()->error("Peer manager callback (syncProgress) error");
 				}
 			}));
 		}
@@ -374,11 +400,11 @@ namespace Elastos {
 			return result;
 		}
 
-		void WrappedExecutorPeerManagerListener::txPublished(const std::string &error) {
+		void WrappedExecutorPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
 
-			_executor->execute(Runnable([this, error]() -> void {
+			_executor->execute(Runnable([this, hash, result]() -> void {
 				try {
-					_listener->txPublished(error);
+					_listener->txPublished(hash, result);
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (txPublished) error: {}", ex.what());

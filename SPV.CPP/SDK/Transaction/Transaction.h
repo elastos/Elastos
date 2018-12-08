@@ -175,7 +175,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight);
+			void GetSummary(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight);
 
 			void removeDuplicatePrograms();
 

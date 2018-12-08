@@ -31,6 +31,13 @@ namespace Elastos {
 				}
 			}
 
+			static void syncProgress(void *info, uint32_t currentHeight, uint32_t estimatedHeight) {
+				WeakListener *listener = (WeakListener *) info;
+				if (!listener->expired()) {
+					listener->lock()->syncProgress(currentHeight, estimatedHeight);
+				}
+			}
+
 			static void syncStopped(void *info, int error) {
 
 				WeakListener *listener = (WeakListener *) info;
@@ -88,12 +95,16 @@ namespace Elastos {
 				return result;
 			}
 
-			static void txPublished(void *info, int error) {
+			static void txPublished(void *info, const UInt256 *hash, int error, const char *reason) {
 
 				WeakListener *listener = (WeakListener *) info;
-				if (!listener->expired()) {
+				nlohmann::json result;
+				result["Code"] = error;
+				result["Reason"] = std::string(reason);
+				const std::string txID = Utils::UInt256ToString(*hash, true);
 
-					listener->lock()->txPublished(error == 0 ? "" : strerror(error));
+				if (!listener->expired()) {
+					listener->lock()->txPublished(txID, result);
 				}
 			}
 
@@ -167,6 +178,7 @@ namespace Elastos {
 
 			BRPeerManagerSetCallbacks((BRPeerManager *) _manager, &_listener,
 									  syncStarted,
+									  syncProgress,
 									  syncStopped,
 									  txStatusUpdate,
 									  saveBlocks,
