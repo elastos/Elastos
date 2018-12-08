@@ -917,7 +917,7 @@ static int _BRPeerAcceptRejectMessage(BRPeer *peer, const uint8_t *msg, size_t m
 
 			if (! UInt256IsZero(&txHash)) {
 				peer_log(peer, "rejected %s code: 0x%x reason: \"%s\" txid: %s", type, code, reason, u256hex(txHash));
-				if (ctx->rejectedTx) ctx->rejectedTx(ctx->info, txHash, code);
+				if (ctx->rejectedTx) ctx->rejectedTx(ctx->info, txHash, code, reason);
 			}
 			else peer_log(peer, "rejected %s code: 0x%x reason: \"%s\"", type, code, reason);
 		}

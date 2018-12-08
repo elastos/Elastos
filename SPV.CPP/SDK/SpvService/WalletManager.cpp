@@ -194,6 +194,13 @@ namespace Elastos {
 						  });
 		}
 
+		void WalletManager::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
+						  [&currentHeight, &estimatedHeight](PeerManager::Listener *listener) {
+				listener->syncProgress(currentHeight, estimatedHeight);
+			});
+		}
+
 		void WalletManager::syncStopped(const std::string &error) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [&error](PeerManager::Listener *listener) {
@@ -292,10 +299,10 @@ namespace Elastos {
 			return reachable;
 		}
 
-		void WalletManager::txPublished(const std::string &error) {
+		void WalletManager::txPublished(const std::string &hash, const nlohmann::json &result) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&error](PeerManager::Listener *listener) {
-							  listener->txPublished(error);
+						  [&hash, &result](PeerManager::Listener *listener) {
+							  listener->txPublished(hash, result);
 						  });
 		}
 

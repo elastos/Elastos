@@ -27,7 +27,7 @@ This repository is a basic library aimed to provide a serials of wallet related 
 Copy all files(CoinConfig.json, mnemonic_chinese.txt mnemonic_*.txt) from `Data` directory of source code to the `rootPath`, and then create an instance of **MasterWalletManager**
 
 ```c++
-const std::string rootPath = "./Data"
+const std::string rootPath = "./Data";
 try {
     MasterWalletManager *manager = new MasterWalletManager(rootPath);
     if (manager == nullptr) {
@@ -47,7 +47,7 @@ try {
         // see create master wallet below
     } else {
         for (size_t i = 0; i < masterWallets.size(); ++i) {
-            std::vector<ISubWalelt *> subWallets = masterWallets[i]->GetAllSubWallets();
+            std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
             // see transaction operation below
         }
     }
@@ -155,7 +155,8 @@ class SubWalletCallback: public ISubWalletCallback {
         virtual void OnBlockSyncStarted() {
             std::cout << "OnBlockSyncStarted" << std::endl;
         }
-        virtual void OnBlockHeightIncreased(uint32_t currentBlockHeight, int progress) {
+        virtual void OnBlockHeightIncreased(uint32_t currentBlockHeight,
+                                            uint32_t estimatedHeight) {
             std::cout << "OnBlockHeightIncreased -> " << std::endl;
         }
         virtual void OnBlockSyncStopped() {
@@ -164,6 +165,17 @@ class SubWalletCallback: public ISubWalletCallback {
         virtual void OnBalanceChanged(uint64_t balance) {
             std::cout << "OnBalanceChanged -> " << std::endl;
         }
+        virtual void OnTxPublished(const std::string &hash,
+                                   const nlohmann::json &result) {
+		    logger->debug("OnTxPublished -> hash = {}, result = {}",
+                          hash, result.dump());
+	    }
+
+	    virtual void OnTxDeleted(const std::string &hash, bool notifyUser,
+                                 bool recommendRescan) {
+		    logger->debug("OnTxDeleted -> hash = {}, notifyUser = {}, recommendRescan",
+                          recommendRescan);
+	    }
 }
 
 try {
