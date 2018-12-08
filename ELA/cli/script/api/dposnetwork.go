@@ -47,10 +47,13 @@ func checkDposNetwork(L *lua.LState, idx int) NetworkMock {
 }
 
 var networkMethods = map[string]lua.LGFunction{
-	"push_block":    networkPushBlock,
-	"push_confirm":  networkPushConfirm,
-	"push_vote":     networkPushVote,
-	"push_proposal": networkPushProposal,
+	"push_block":             networkPushBlock,
+	"push_confirm":           networkPushConfirm,
+	"push_vote":              networkPushVote,
+	"push_proposal":          networkPushProposal,
+	"push_illegal_proposals": networkPushIllegalProposals,
+	"push_illegal_votes":     networkPushIllegalVotes,
+	"push_illegal_blocks":    networkPushIllegalBlocks,
 
 	"check_last_msg": networkCheckLastMsg,
 	"check_last_pid": networkCheckLastPid,
@@ -106,6 +109,35 @@ func networkPushProposal(L *lua.LState) int {
 	return 0
 }
 
+func networkPushIllegalProposals(L *lua.LState) int {
+	n := checkDposNetwork(L, 1)
+	puk := L.ToString(2)
+	i := checkIllegalProposals(L, 3)
+
+	n.FireIllegalProposalReceived(pidFromString(puk), i)
+
+	return 0
+}
+
+func networkPushIllegalVotes(L *lua.LState) int {
+	n := checkDposNetwork(L, 1)
+	puk := L.ToString(2)
+	i := checkIllegalVotes(L, 3)
+
+	n.FireIllegalVotesReceived(pidFromString(puk), i)
+
+	return 0
+}
+
+func networkPushIllegalBlocks(L *lua.LState) int {
+	n := checkDposNetwork(L, 1)
+	i := checkIllegalBlocks(L, 2)
+
+	n.FireIllegalBlocksReceived(i)
+
+	return 0
+}
+
 func networkCheckLastMsg(L *lua.LState) int {
 	n := checkDposNetwork(L, 1)
 	if n.GetLastMessage() != nil {
@@ -123,6 +155,16 @@ func networkCheckLastMsg(L *lua.LState) int {
 			if voteMsg, ok := n.GetLastMessage().(*msg.Vote); ok {
 				vote := checkVote(L, 3)
 				result = voteMsg.Vote.Hash().IsEqual(vote.Hash())
+			}
+		case msg.CmdIllegalProposals:
+			if i, ok := n.GetLastMessage().(*msg.IllegalProposals); ok {
+				illegalProposals := checkIllegalProposals(L, 3)
+				result = i.Proposals.Hash().IsEqual(illegalProposals.Hash())
+			}
+		case msg.CmdIllegalVotes:
+			if i, ok := n.GetLastMessage().(*msg.IllegalVotes); ok {
+				illegalVotes := checkIllegalVotes(L, 3)
+				result = i.Votes.Hash().IsEqual(illegalVotes.Hash())
 			}
 		}
 		L.Push(lua.LBool(result))

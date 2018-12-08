@@ -52,6 +52,7 @@ func checkBlock(L *lua.LState, idx int) *types.Block {
 
 var blockMethods = map[string]lua.LGFunction{
 	"hash":       blockHash,
+	"get_header": blockGetHeader,
 	"set_header": blockSetHeader,
 	"append_tx":  blockAppendTx,
 	"update":     blockUpdate,
@@ -72,6 +73,18 @@ func blockSetHeader(L *lua.LState) int {
 	p.Header = *h
 
 	return 0
+}
+
+func blockGetHeader(L *lua.LState) int {
+	p := checkBlock(L, 1)
+	h := &p.Header
+
+	ud := L.NewUserData()
+	ud.Value = h
+	L.SetMetatable(ud, L.GetTypeMetatable(luaHeaderTypeName))
+	L.Push(ud)
+
+	return 1
 }
 
 func blockAppendTx(L *lua.LState) int {
