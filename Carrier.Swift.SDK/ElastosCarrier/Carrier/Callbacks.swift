@@ -195,6 +195,100 @@ private func onFriendInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
     handler.didReceiveFriendInviteRequest?(carrier, from, data)
 }
 
+private func onGroupInvite(_: OperationQueue?, cfrom: UnsafePointer<Int8>?,
+                           _ ccookie: UnsafeRawPointer?, _ length: Int,
+                           cctxt: UnsafeMutableRawPointer?) {
+    let carrier = getCarrier(cctxt!)
+    let handler = carrier.delegate!
+
+    let from = String(cString: cfrom!)
+    let cookie = Data(bytes: ccookie!, count: length)
+
+    handler.didReceiveGroupInvite?(carrier, from, cookie)
+}
+
+private func onGroupConnected(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
+                              cctxt: UnsafeMutableRawPointer?) {
+    let carrier = getCarrier(cctxt!)
+    let groupid = String(cString: cgroupid!)
+    let group   = carrier.groups[groupid]
+
+    if (group != nil)  {
+        let handler = group!.delegate!
+
+        handler.willBecomeConnected(group!)
+    }
+}
+
+private func onGroupMessage(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
+                            cfrom: UnsafePointer<Int8>?,
+                            cmsg: UnsafeRawPointer?, length: Int,
+                            cctxt: UnsafeMutableRawPointer?) {
+    let carrier = getCarrier(cctxt!)
+    let groupid = String(cString: cgroupid!)
+    let group   = carrier.groups[groupid]
+
+    if (group != nil) {
+        let handler = group!.delegate!
+        let from    = String(cString: cfrom!)
+        let message = Data(bytes: cmsg!, count: length)
+
+        handler.didReceiveMessage?(group!, from, message)
+    }
+}
+
+private func onGroupTitle(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
+                          _ cfrom: UnsafePointer<Int8>?,
+                          _ ctitle: UnsafePointer<Int8>?,
+                          cctxt: UnsafeMutableRawPointer?)
+{
+    let carrier = getCarrier(cctxt!)
+    let groupid = String(cString: cgroupid!)
+    let group   = carrier.groups[groupid]
+
+    if (group != nil) {
+        let handler = group!.delegate!
+
+        let from  = String(cString: cfrom!)
+        let title = String(cString: ctitle!)
+
+        handler.titleDidChange?(group!, from, title)
+    }
+}
+
+private func onPeerName(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
+                        _ cfrom: UnsafePointer<Int8>?,
+                        _ cname: UnsafePointer<Int8>?,
+                        cctxt: UnsafeMutableRawPointer?)
+{
+    let carrier = getCarrier(cctxt!)
+    let groupid = String(cString: cgroupid!)
+    let group   = carrier.groups[groupid]
+
+    if (group != nil)  {
+        let handler = group!.delegate!
+
+        let from = String(cString: cfrom!)
+        let name = String(cString: cname!)
+
+        handler.peerNameDidChange?(group!, from, name)
+    }
+}
+
+private func onPeerListChanged(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
+                               cctxt: UnsafeMutableRawPointer?)
+{
+    let carrier = getCarrier(cctxt!)
+    let groupid = String(cString: cgroupid!)
+    let group   = carrier.groups[groupid]
+
+    if (group != nil)  {
+        let handler = group!.delegate!
+
+        handler.peerListDidChange?(group!)
+    }
+}
+
 internal func getNativeHandlers() -> CCallbacks {
 
     var callbacks = CCallbacks()
@@ -212,6 +306,12 @@ internal func getNativeHandlers() -> CCallbacks {
     callbacks.friend_removed = onFriendRemoved
     callbacks.friend_message = onFriendMessage
     callbacks.friend_invite = onFriendInvite
+    callbacks.group_invite = onGroupInvite
+    callbacks.group_callbacks.group_connected = onGroupConnected
+    callbacks.group_callbacks.group_message = onGroupMessage
+    callbacks.group_callbacks.group_title = onGroupTitle
+    callbacks.group_callbacks.peer_name = onPeerName
+    callbacks.group_callbacks.peer_list_changed = onPeerListChanged
 
     return callbacks
 }

@@ -187,4 +187,17 @@ public protocol CarrierDelegate {
     func didReceiveFriendInviteRequest(_ carrier: Carrier,
                                        _ from: String,
                                        _ data: String)
+
+    /// Tell the delegate that an group invite request has been received.
+    ///
+    /// - Parameters:
+    ///   - carrier: Carrier node instance
+    ///   - from: The friendid from who send the invite request
+    ///   - cookie: The cookie attached to the invite request
+    ///
+    /// - Returns: Void
+    @objc(carrier:didReceiveGroupInvite:withCookie:) optional
+    func didReceiveGroupInvite(_ carrier: Carrier,
+                               _ from: String,
+                               _ cookie: Data)
 }

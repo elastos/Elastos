@@ -52,6 +52,8 @@ public class Carrier: NSObject {
 
     internal var friends: [CarrierFriendInfo]
 
+    internal var groups: [String: CarrierGroup]
+
     /// Get current carrier node version.
     ///
     /// - Returns: The current carrier node version.
@@ -147,9 +149,10 @@ public class Carrier: NSObject {
 
     private init(_ delegate: CarrierDelegate) {
         self.delegate = delegate
-        self.didKill = true
+        self.didKill = false
         self.semaph = DispatchSemaphore(value: 0)
         self.friends = [CarrierFriendInfo]()
+        self.groups = [String: CarrierGroup]()
         super.init()
     }
 
@@ -763,5 +766,131 @@ public class Carrier: NSObject {
         }
 
         Log.d(Carrier.TAG, "Sended reply to friend invite request to \(target)")
+    }
+
+    /// New a group with specified delegate.
+    ///
+    /// - Parameters:
+    ///     - delegate: The delegate attached to the new group.
+    ///
+    /// - Returns:
+    ///     - The new group.
+    ///
+    /// - Throws:
+    ///     CarrierError
+    ///
+    public func newGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+        let len  = Carrier.MAX_ID_LEN + 1
+        var data = Data(count: len);
+
+        let result = data.withUnsafeMutableBytes() {
+            (ptr: UnsafeMutablePointer<Int8>) -> Int32 in
+            return ela_new_group(ccarrier, ptr, data.count)
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "New group error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        let groupid = data.withUnsafeBytes() {
+            (ptr: UnsafePointer<Int8>) -> String in
+                return String(cString: ptr)
+        }
+
+        let group = CarrierGroup(ccarrier, groupid, delegate)
+        groups[groupid] = group
+        return group
+    }
+
+    /// Join a group with specific cookie information.
+    ///
+    /// This function should be called only if application received a group
+    /// invitation from remote friend.
+    ///
+    /// - Parameters:
+    ///     - friendId: The friend who send a group invitation
+    ///     - cookie:   The cookie information to join group
+    ///     - delegate: The delegate to the new group
+    ///
+    /// - Returns:
+    ///     The new group instance.
+    ///
+    /// - Throws:
+    ///     CarrierError
+    ///
+    @objc(joinGroup:createdBy:withCookie:delegate:)
+    public func joinGroup(createdBy friendId: String, withCookie cookie: Data,
+                            delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+
+        let len  = Carrier.MAX_ID_LEN + 1
+        var data = Data(count: len);
+
+        let result = friendId.withCString { (cfriendid) -> Int32 in
+            return cookie.withUnsafeBytes { (ccookie: UnsafePointer<Int8>) -> Int32 in
+                return data.withUnsafeMutableBytes()  {
+                    (cdata: UnsafeMutablePointer<Int8>) -> Int32 in
+                        return ela_group_join(ccarrier, cfriendid, ccookie,
+                                              cookie.count, cdata, data.count)
+                }
+            }
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "New group error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        let groupid = data.withUnsafeBytes() {
+            (ptr: UnsafePointer<Int8>) -> String in
+                return String(cString: ptr)
+        }
+
+        let group = CarrierGroup(ccarrier, groupid, delegate)
+        groups[groupid] = group
+        return group
+    }
+
+    /// Leave from a specified group.
+    ///
+    /// - Parameters:
+    ///     - group: The specified group to leave from.
+    ///
+    /// - Throws:
+    ///     CarrierError
+    ///
+    @objc(leave:fromGroup:)
+    public func leaveGroup(from group: CarrierGroup) throws {
+        let groupid = group.getId()
+        groups.removeValue(forKey: group.getId())
+
+        let result = groupid.withCString() { (ptr) in
+            return ela_leave_group(ccarrier, ptr)
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "Leave group \(groupid) error: 0x%X", errno)
+            groups[groupid] = group
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        group.leave()
+    }
+
+    /// Get groups in the Carrier instance.
+    ///
+    /// - Returns:
+    ///     The array of CarrierGroup instances.
+    ///
+    /// - Throws:
+    ///     CarrierError
+    ///
+    public func getGroups() throws -> [CarrierGroup] {
+        var tempGroups = [CarrierGroup]()
+        tempGroups.append(contentsOf: self.groups.values)
+        return tempGroups
     }
 }
