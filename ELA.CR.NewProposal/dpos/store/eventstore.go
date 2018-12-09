@@ -13,49 +13,60 @@ type EventStore struct {
 	dbOperator DBOperator
 }
 
+var ConsensusEventTable = &DposTable{
+	Name:       "ConsensusEvent",
+	PrimaryKey: 0,
+	Indexes:    nil,
+	Fields: []string{
+		"StartTime",
+		"EndTime",
+		"Height",
+		"RawData",
+	},
+}
+
+var ProposalEventTable = &DposTable{
+	Name:       "ProposalEvent",
+	PrimaryKey: 0,
+	Indexes:    nil,
+	Fields: []string{
+		"Proposal",
+		"BlockHash",
+		"ReceivedTime",
+		"EndTime",
+		"Result",
+		"RawData",
+	},
+}
+
+var VoteEventTable = &DposTable{
+	Name:       "VoteEvent",
+	PrimaryKey: 0,
+	Indexes:    nil,
+	Fields: []string{
+		"ProposalID",
+		"Signer",
+		"ReceivedTime",
+		"Result",
+		"RawData",
+	},
+}
+
+var ViewEventTable = &DposTable{
+	Name:       "ViewEvent",
+	PrimaryKey: 0,
+	Indexes:    nil,
+	Fields: []string{
+		"ConsensusID",
+		"OnDutyArbitrator",
+		"StartTime",
+		"Offset",
+	},
+}
+
 const (
 	DBDriverName = "sqlite3"
 	DBFilePath   = "./vote.db"
-
-	CreateConsensusEventTable = `CREATE TABLE IF NOT EXISTS ConsensusEvent (
-				ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				StartTime INTEGER,
-				EndTime INTEGER,
-				Height INTEGER ,
-				RawData BLOB
-			);`
-	CreateProposalEventTable = `CREATE TABLE IF NOT EXISTS ProposalEvent (
-				ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				Proposal VARCHAR(20),
-				BlockHash  BLOB,
-				ReceivedTime INTEGER,
-				EndTime INTEGER,
-				Result INTEGER,
-				RawData BLOB
-			);`
-	CreateVoteEventTable = `CREATE TABLE IF NOT EXISTS VoteEvent (
-				ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				ProposalID INTEGER,
-				Signer VARCHAR(20),
-				ReceivedTime INTEGER,
-				Result INTEGER,
-				RawData BLOB
-			);`
-	CreateConfirmEventTable = `CREATE TABLE IF NOT EXISTS ConfirmEvent (
-				ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				BlockHash  BLOB,
-				ProposalID INTEGER,
-				ReceivedTime INTEGER,
-				Result INTEGER,
-				RawData BLOB
-			);`
-	CreateViewEventTable = `CREATE TABLE IF NOT EXISTS ViewEvent (
-				ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				ConsensusID INTEGER,
-				OnDutyArbitrator VARCHAR(20) ,
-				StartTime INTEGER ,
-				Offset INTEGER
-			);`
 )
 
 func (s *EventStore) Open() error {
@@ -93,54 +104,67 @@ func (s *EventStore) Close() error {
 }
 
 func (s *EventStore) createConsensusEventTable() error {
-	_, result := s.dbOperator.Execute(CreateConsensusEventTable)
+	result := s.dbOperator.Create(ConsensusEventTable)
 	return result
 }
 
 func (s *EventStore) AddConsensusEvent(cons ConsensusEvent) (uint64, error) {
-	sql := "INSERT INTO ConsensusEvent(StartTime, Height, RawData) values(?,?,?)"
-	id, err := s.dbOperator.Execute(sql, cons.StartTime.UnixNano(), cons.Height, cons.RawData)
+	id, err := s.dbOperator.Insert(ConsensusEventTable, []*Field{
+		{"StartTime", cons.StartTime.UnixNano()},
+		{"Height", cons.Height},
+		{"RawData", cons.RawData},
+	})
 	if err != nil {
 		return 0, err
 	}
 	return id, nil
 }
 
-func (s *EventStore) UpdateConsensusEvent(cons ConsensusEvent) (uint64, error) {
-	sql := "UPDATE ConsensusEvent SET EndTime=? WHERE Height=?"
-	id, err := s.dbOperator.Execute(sql, cons.EndTime.UnixNano(), cons.Height)
-
+func (s *EventStore) UpdateConsensusEvent(cons ConsensusEvent) ([]uint64, error) {
+	ids, err := s.dbOperator.Update(ConsensusEventTable, []*Field{
+		{"Height", cons.Height}}, []*Field{
+		{"EndTime", cons.EndTime.UnixNano()}})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return id, nil
+	return ids, nil
 }
 
 func (s *EventStore) createProposalEventTable() error {
-	_, result := s.dbOperator.Execute(CreateProposalEventTable)
+	result := s.dbOperator.Create(ProposalEventTable)
 	return result
 }
 
 func (s *EventStore) AddProposalEvent(event ProposalEvent) (uint64, error) {
-	sqlInsert := "INSERT INTO ProposalEvent(Proposal, BlockHash, ReceivedTime, Result, RawData) values(?,?,?,?,?)"
-	id, err := s.dbOperator.Execute(sqlInsert, event.Proposal, event.BlockHash.Bytes(), event.ReceivedTime.UnixNano(), event.Result, event.RawData)
+	id, err := s.dbOperator.Insert(ProposalEventTable, []*Field{
+		{"Proposal", event.Proposal},
+		{"BlockHash", event.BlockHash.Bytes()},
+		{"ReceivedTime", event.ReceivedTime.UnixNano()},
+		{"Result", event.Result},
+		{"RawData", event.RawData},
+	})
 	if err != nil {
 		return 0, err
 	}
 	return id, nil
 }
 
-func (s *EventStore) UpdateProposalEvent(event ProposalEvent) (uint64, error) {
-	sqlUpdate := "UPDATE ProposalEvent SET EndTime=?,Result=? WHERE Proposal=? AND BlockHash=?"
-	id, err := s.dbOperator.Execute(sqlUpdate, event.EndTime.UnixNano(), event.Result, event.Proposal, event.BlockHash.Bytes())
+func (s *EventStore) UpdateProposalEvent(event ProposalEvent) ([]uint64, error) {
+	ids, err := s.dbOperator.Update(ProposalEventTable, []*Field{
+		{"Proposal", event.Proposal},
+		{"BlockHash", event.BlockHash.Bytes()},
+	}, []*Field{
+		{"EndTime", event.EndTime.UnixNano()},
+		{"Result", event.Result},
+	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return id, nil
+	return ids, nil
 }
 
 func (s *EventStore) createVoteEventTable() error {
-	_, result := s.dbOperator.Execute(CreateVoteEventTable)
+	result := s.dbOperator.Create(VoteEventTable)
 	return result
 }
 
@@ -156,14 +180,24 @@ func (s *EventStore) AddVoteEvent(event VoteEvent) (uint64, error) {
 		return 0, err
 	}
 
-	sqlSelect := "SELECT ID FROM ProposalEvent WHERE RawData=?"
-	proposalId, err := s.dbOperator.Query(sqlSelect, w.Bytes())
-	if err != nil {
+	var proposalId uint64
+	rowIDs, err := s.dbOperator.SelectID(ProposalEventTable, []*Field{
+		&Field{"RawData", w.Bytes()},
+	})
+	if err != nil || len(rowIDs) != 1 {
 		proposalId = math.MaxInt64
+	} else {
+		proposalId = rowIDs[0]
 	}
+
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
-	sql := "INSERT INTO VoteEvent (ProposalID, Signer, ReceivedTime, Result, RawData) values(?,?,?,?,?)"
-	id, err := s.dbOperator.Execute(sql, proposalId, event.Signer, event.ReceivedTime.UnixNano(), event.Result, event.RawData)
+	id, err := s.dbOperator.Insert(VoteEventTable, []*Field{
+		&Field{"ProposalID", proposalId},
+		&Field{"Signer", event.Signer},
+		&Field{"ReceivedTime", event.ReceivedTime.UnixNano()},
+		&Field{"Result", event.Result},
+		&Field{"RawData", event.RawData},
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -171,19 +205,27 @@ func (s *EventStore) AddVoteEvent(event VoteEvent) (uint64, error) {
 }
 
 func (s *EventStore) createViewEventTable() error {
-	_, result := s.dbOperator.Execute(CreateViewEventTable)
+	result := s.dbOperator.Create(ViewEventTable)
 	return result
 }
 
 func (s *EventStore) AddViewEvent(event ViewEvent) (uint64, error) {
-	sqlSelect := "SELECT ID FROM ConsensusEvent WHERE Height=?"
-	consensusId, err := s.dbOperator.Query(sqlSelect, event.Height)
-	if err != nil {
+	var consensusId uint64
+	rowIDs, err := s.dbOperator.SelectID(ConsensusEventTable, []*Field{
+		&Field{"Height", event.Height},
+	})
+	if err != nil || len(rowIDs) != 1 {
 		consensusId = math.MaxInt64
+	} else {
+		consensusId = rowIDs[0]
 	}
 
-	sqlInsert := "INSERT INTO ViewEvent(ConsensusID, OnDutyArbitrator, StartTime, Offset) values(?,?,?,?)"
-	id, err := s.dbOperator.Execute(sqlInsert, consensusId, event.OnDutyArbitrator, event.StartTime.UnixNano(), event.Offset)
+	id, err := s.dbOperator.Insert(ViewEventTable, []*Field{
+		&Field{"ConsensusID", consensusId},
+		&Field{"OnDutyArbitrator", event.OnDutyArbitrator},
+		&Field{"StartTime", event.StartTime.UnixNano()},
+		&Field{"Offset", event.Offset},
+	})
 	if err != nil {
 		return 0, err
 	}
