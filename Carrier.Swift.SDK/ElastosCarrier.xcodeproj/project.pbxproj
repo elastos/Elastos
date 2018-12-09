@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */; };
+		A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
+		A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
 		A360378020161AAF001A666E /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
 		A38A7CC4214B6A9D0010D5EB /* libelasession.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */; };
 		A38A7CC5214B6A9D0010D5EB /* libelacarrier.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */; };
@@ -55,6 +58,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GroupPeer.swift; path = Carrier/GroupPeer.swift; sourceTree = "<group>"; };
+		A35CE15121BB4F3B00AF4FE3 /* Group.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Group.swift; path = Carrier/Group.swift; sourceTree = "<group>"; };
+		A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CarrierGroupDelegate.swift; path = Carrier/CarrierGroupDelegate.swift; sourceTree = "<group>"; };
 		A360377F20161AAF001A666E /* BootstrapNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootstrapNode.swift; path = Carrier/BootstrapNode.swift; sourceTree = "<group>"; };
 		A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelasession.dylib; path = NativeDistributions/libs/libelasession.dylib; sourceTree = "<group>"; };
 		A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelacarrier.dylib; path = NativeDistributions/libs/libelacarrier.dylib; sourceTree = "<group>"; };
@@ -221,6 +227,9 @@
 		A3B497DA200375EE00420421 /* Carrier */ = {
 			isa = PBXGroup;
 			children = (
+				A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */,
+				A35CE15121BB4F3B00AF4FE3 /* Group.swift */,
+				A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */,
 				A360377F20161AAF001A666E /* BootstrapNode.swift */,
 				A3B4981820045F0A00420421 /* PresenceStatus.swift */,
 				A3B497E22003763500420421 /* Callbacks.swift */,
@@ -387,6 +396,7 @@
 				A3B497EB2003763600420421 /* UserInfo.swift in Sources */,
 				A3B498172003B3AF00420421 /* CarrierError.swift in Sources */,
 				A3B498092003B3A500420421 /* PortForwardingProtocol.swift in Sources */,
+				A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */,
 				A3B4980B2003B3A500420421 /* CloseReason.swift in Sources */,
 				A3B498132003B3A500420421 /* StreamType.swift in Sources */,
 				A3B4980F2003B3A500420421 /* TransportInfo.swift in Sources */,
@@ -399,12 +409,14 @@
 				A3B497E82003763600420421 /* LogLevel.swift in Sources */,
 				A360378020161AAF001A666E /* BootstrapNode.swift in Sources */,
 				A3B497F52003779300420421 /* CCarrier.swift in Sources */,
+				A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */,
 				A3B498142003B3A500420421 /* NetworkTopology.swift in Sources */,
 				A3B497F02003763600420421 /* CarrierDelegate.swift in Sources */,
 				A3B497FA2003B39800420421 /* Log.swift in Sources */,
 				A3B497F12003763600420421 /* Carrier.swift in Sources */,
 				A3B497E92003763600420421 /* FriendInfo.swift in Sources */,
 				A3B497EE2003763600420421 /* CarrierOptions.swift in Sources */,
+				A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */,
 				A3B4981920045F0A00420421 /* PresenceStatus.swift in Sources */,
 				A3B497F42003779300420421 /* CSession.swift in Sources */,
 				A3B497FB2003B39800420421 /* Base58.swift in Sources */,

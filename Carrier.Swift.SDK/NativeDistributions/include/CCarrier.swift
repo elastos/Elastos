@@ -343,6 +343,119 @@ internal struct CFriendInfo {
 
 /**
  * \~English
+ * A structure representing the Carrier group peer information.
+ *
+ * Include the basic peer information.
+ */
+internal struct CGroupPeer {
+    /**
+     * \~English
+     * Nickname, also known as display name.
+     */
+    var name: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    /**
+     * \~English
+     * User ID. Read only to application.
+     */
+    var userid: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    init() {}
+}
+
+/**
+ * \~English
+ * Carrier group callbacks, include all global group callbacks for Carrier.
+ */
+internal struct CGroupCallbacks {
+    /**
+     * \~English
+     * An application-defined function that process event to be connected to
+     * group.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group connected.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var group_connected: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * An application-defined function that process the group messages.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The group that received message.
+     * @param
+     *      from        [in] The user id who send the message.
+     * @param
+     *      message     [in] The message content.
+     * @param
+     *      length      [in] The message length in bytes.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var group_message: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafeRawPointer?, Int, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * An application-defined function that process the group title change
+     * event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The group id of its title changed.
+     * @param
+     *      from        [in] The peer Id who changed title name.
+     * @param
+     *      title       [in] The updated title name.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var group_title: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * An application-defined function that process the group peer's name
+     * change event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group.
+     * @param
+     *      peerid      [in] The peer Id who changed its name.
+     * @param
+     *      peer_name   [in] The updated peer name.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var peer_name: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * An application-defined function that process the group list change
+     * event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group that changed it's peer list.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var peer_list_changed: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    init() {}
+}
+
+/**
+ * \~English
  * Carrier callbacks, include all global callbacks for carrier.
  */
 internal struct CCallbacks {
@@ -544,6 +657,30 @@ internal struct CCallbacks {
      *      context     [in] The application defined context data.
      */
     var friend_invite: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * An application-defined function that process the group invite request.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      from        [in] The friendid from who send the invite request.
+     * @param
+     *      cookie      [in] The cookie attached to this invite request.
+     * @param
+     *      len         [in] The data length in bytes.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    var group_invite: (@convention(c) (OperationQueue?, UnsafePointer<Int8>?, UnsafeRawPointer?, Int,
+        UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    /**
+     * \~English
+     * Group related callbacks.
+     */
+    var group_callbacks: CGroupCallbacks!
 
     init() {}
 }
@@ -1082,7 +1219,6 @@ internal func ela_send_friend_message(_ carrier: OpaquePointer!,
 internal typealias CFriendInviteResponseCallback = @convention(c)
     (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
 
-
 /**
  * \~English
  * Send invite request to a friend.
@@ -1158,6 +1294,287 @@ internal func ela_reply_friend_invite(_ carrier: OpaquePointer!,
                                       _ reason: UnsafePointer<Int8>!,
                                       _ data: UnsafePointer<Int8>!,
                                       _ len: Int) -> Int32
+
+// MARK: - Carrier group new & leave.
+
+/**
+ * \~English
+ * Create a new group
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [out] The buffer to receive a created group Id.
+ * @param
+ *      length      [in] The buffer length to receive the group Id.
+ *
+ * @return
+ *      0 if creating group in success, Otherwise, return -1, and a specific
+ *      error code can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_new_group")
+internal func ela_new_group(_ carrier: OpaquePointer!,
+                            _ groupid: UnsafeMutablePointer<Int8>!,
+                            _ len: Int) -> Int32
+
+/**
+ * \~English
+ * Leave from a specified group
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The group to leave from.
+ *
+ * @return
+ *      0 if leaving from group in success, Otherwise, return -1, and a specific
+ *      error code can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_leave_group")
+internal func ela_leave_group(_ carrier: OpaquePointer!,
+                              _ groupid: UnsafePointer<Int8>!) -> Int32
+
+// MARK: - Carrier group invite & join.
+
+/**
+ * \~English
+ * Invite a specified friend into group.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The group into which we intend to invite friend.
+ * @param
+ *      friendid    [in] The friend that we intend to invite.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_invite")
+internal func ela_group_invite(_ carrier: OpaquePointer!,
+                               _ groupid: UnsafePointer<Int8>!,
+                               _ friendid: UnsafePointer<Int8>!) -> Int32
+
+/**
+ * \~English
+ * Join a specified group with cookie invited from remote friend.
+ *
+ * This function should be called only if application received a group
+ * invitation from remote friend.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      friendid    [in] The friend who send a group invitation.
+ * @param
+ *      cookie      [in] The cookie information required to join group.
+ * @param
+ *      cookie_len  [in] The buffer length to cookie.
+ * @param
+ *      groupId     [out] The buffer to receive group id.
+ * @param
+ *      group_len   [in] The buffer length to receive group Id.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_join")
+internal func ela_group_join(_ carrier: OpaquePointer!,
+                             _ friendid: UnsafePointer<Int8>!,
+                             _ cookie: UnsafePointer<Int8>!,
+                             _ cookie_len: Int,
+                             _ groupid: UnsafeMutablePointer<Int8>!,
+                             _ length: Int) -> Int32
+
+// MARK: - Carrier group messaging.
+
+ /**
+ * \~English
+ * Send a message to a group.
+ *
+ * The message length may not exceed ELA_MAX_APP_MESSAGE_LEN. Larger messages
+ * must be split by application and sent as separate fragments. Other carrier
+ * nodes can reassemble the fragments.
+ *
+ * Message may not be empty or NULL.
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group to send message.
+ * @param
+ *      message     [in] The message content defined by application.
+ * @param
+ *      length      [in] The message length in bytes.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_send_message")
+internal func ela_group_send_message(_ carrier: OpaquePointer!,
+                                     _ groupid: UnsafePointer<Int8>!,
+                                     _ message: UnsafePointer<Int8>!,
+                                     _ length: Int) -> Int32
+
+// MARK: - Carrier group title
+
+/**
+ * \~English
+ * Get group title.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      title       [out] The buffer to receive group title.
+ * @param
+ *      length      [in] The length of buffer to receive group title.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_get_title")
+internal func ela_group_get_title(_ carrier: OpaquePointer!,
+                                  _ groupid: UnsafePointer<Int8>!,
+                                  _ title: UnsafeMutablePointer<Int8>!,
+                                  _ length: Int) -> Int32
+
+/**
+ * \~English
+ * Set group title.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      title       [in] The title name to set(should be no
+ *                       longer than ELA_MAX_GROUP_TITLE_LEN).
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_set_title")
+internal func ela_group_set_title(_ carrier: OpaquePointer!,
+                                  _ groupid: UnsafePointer<Int8>!,
+                                  _ title: UnsafePointer<Int8>!) -> Int32
+
+ /**
+ * \~English
+ * An application-defined function that iterate the each peers list item
+ * of a specified group.
+ *
+ * ElaGroupPeersIterateCallback is the callback function type.
+ *
+ * @param
+ *      peer        [in] A pointer to ElaGroupPeer structure that
+ *                       representing a group peer(NULL indicates
+ *                       iteration finished).
+ * @param
+ *      context     [in] The application defined context data.
+ *
+ * @return
+ *      Return true to continue iterate next group peer, false to stop
+ *      iteration.
+ */
+internal typealias CGroupPeersIterateCallback = @convention(c)
+    (UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Bool
+
+/**
+ * \~English
+ * Get group peer list. For each peer will call the application defined
+ * iterate callback.
+ *
+ * @param
+ *      carrier     [in] a handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      callback    [in] a pointer to ElaGroupPeersIterateCallback function.
+ * @param
+ *      context     [in] the application defined context data.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_get_peers")
+internal func ela_group_get_peers(_ carrier: OpaquePointer!,
+                                  _ groupid: UnsafePointer<Int8>!,
+                                  _ callback: CGroupPeersIterateCallback,
+                                  _ context: UnsafeMutableRawPointer) -> Int32
+
+/**
+ * \~English
+ * Get group peer information.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      peerId      [in] The target peerId to get it's information.
+ * @param
+ *      peer        [in] The ElaGroupPeer pointer to receive the peer
+ *                       information.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_group_get_peer")
+internal func ela_group_get_peer(_ carrier: OpaquePointer!,
+                                 _ groupid: UnsafePointer<Int8>!,
+                                 _ peerid: UnsafePointer<Int8>!,
+                                 _ peer: UnsafePointer<CGroupPeer>) -> Int32
+
+// MARK: - Carrier group interation.
+
+/**
+ * \~English
+ * An application-defined function that iterate the each group.
+ *
+ * ElaIterateGroupCallback is the callback function type.
+ *
+ * @param
+ *      groupid     [in] A pointer to iterating group Id(NULL
+ *                       indicates iteration finished).
+ * @param
+ *      context     [in] The application defined context data.
+ *
+ * @return
+ *      Return true to continue iterate next group peer, false to stop
+ *      iteration.
+ */
+internal typealias CGroupsIterateCallback = @convention(c)
+    (UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Bool
+
+/**
+ * \~English
+ * Get group list. For each group will call the application defined
+ * iterate callback.
+ *
+ * @param
+ *      carrier     [in] a handle to the Carrier node instance.
+ * @param
+ *      callback    [in] a pointer to ElaIterateGroupCallback function.
+ * @param
+ *      context     [in] the application defined context data.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+@_silgen_name("ela_get_groups")
+internal func ela_get_groups(_ carrier: OpaquePointer!,
+                             _ callback: CGroupsIterateCallback,
+                             _ context: UnsafeMutableRawPointer) -> Int32
+
 // MARK: - Error handling
 
 /*
