@@ -15,7 +15,7 @@ type EventRecord struct {
 
 func (e *EventRecord) Initialize() {
 	e.eventStore = EventStore{
-		dbOperator: new(SqlDBOperator),
+		dbOperator: new(LevelDBOperator),
 	}
 	err := e.eventStore.Open()
 	if err != nil {
