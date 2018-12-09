@@ -20,61 +20,7 @@
  * SOFTWARE.
  */
 
-#ifndef __ELA_FILETRANSFER_H__
-#define __ELA_FILETRANSFER_H__
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <limits.h>
-#include <ela_carrier.h>
-
-#if defined(__APPLE__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdocumentation"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if defined(CARRIER_STATIC)
-#define CARRIER_API
-#elif defined(CARRIER_DYNAMIC)
-  #ifdef CARRIER_BUILD
-    #if defined(_WIN32) || defined(_WIN64)
-      #define CARRIER_API        __declspec(dllexport)
-    #else
-      #define CARRIER_API        __attribute__((visibility("default")))
-    #endif
-  #else
-    #if defined(_WIN32) || defined(_WIN64)
-      #define CARRIER_API        __declspec(dllimport)
-    #else
-      #define CARRIER_API        __attribute__((visibility("default")))
-    #endif
-  #endif
-#else
-#define CARRIER_API
-#endif
-
-/**
- * \~English
- * Carrier transfer file name max length.
- */
-#define ELA_MAX_FILE_NAME_LEN   255
-
-/**
- * \~English
- * Carrier transfer file ID max length.
- */
-#define ELA_MAX_FILE_ID_LEN     ELA_MAX_ID_LEN
-
-/**
- * \~English
- * A defined type representing the transaction of file transfer between a friend
- * and us.
- */
-typedef struct ElaFileTransfer ElaFileTransfer;
+import Foundation
 
 /**
  * \~English
@@ -82,53 +28,56 @@ typedef struct ElaFileTransfer ElaFileTransfer;
  *
  * Two peer carrier nodes use this structure to declare which file to transfer.
  */
-typedef struct ElaFileTransferInfo {
+internal struct CFileTransferInfo {
     /**
      * \~English
      * File name of file to transfer, without file path.
      */
-    char filename[ELA_MAX_FILE_NAME_LEN + 1];
+    var filename: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     /**
      * \~English
      * Unique fileid of file to transfer, which is being unique in a file
      * transfer instance.
      */
-    char fileid[ELA_MAX_FILE_ID_LEN + 1];
+    var fileid: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     /**
      * \~English
      * Total file size of file transfer.
      */
-    uint64_t size;
-} ElaFileTransferInfo;
+    var size: UInt64
+}
 
-/**
- * \~English
- * Carrier file transfer connection state enumeration.
- */
-typedef enum FileTransferConnection {
-    /** The file transfer connection is initialized. */
-    FileTransferConnection_initialized = 1,
+internal struct CFileTransferConnection : RawRepresentable, Equatable {
 
-    /** The file transfer connection is being established.*/
-    FileTransferConnection_connecting,
+    init(_ rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
 
-    /** The file transfer connection has been connected. */
-    FileTransferConnection_connected,
+    init(rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
 
-    /** The file transfer connection failed with some reason. */
-    FileTransferConnection_failed,
+    var rawValue: UInt32
+}
 
-    /** The file transfer connection is closed and disconnected. */
-    FileTransferConnection_closed
-} FileTransferConnection;
+/** The file transfer connection is initialized. */
+internal var CFileTransferConnection_initialized: CFileTransferConnection { get { return CFileTransferConnection(1) } }
+/** The file transfer connection is being established.*/
+internal var CFileTransferConnection_connecting: CFileTransferConnection { get { return CFileTransferConnection(2) } }
+/** The file transfer connection has been connected. */
+internal var CFileTransferConnection_connected: CFileTransferConnection { get { return CFileTransferConnection(3) } }
+/** The file transfer connection failed with some reason. */
+internal var CFileTransferConnection_failed: CFileTransferConnection { get { return CFileTransferConnection(4) } }
+/** The file transfer connection is closed and disconnected. */
+internal var CFileTransferConnection_closed: CFileTransferConnection { get { return CFileTransferConnection(5) } }
 
 /**
  * \~English
  * Carrier file transfer callbacks.
  */
-typedef struct ElaFileTransferCallbacks {
+internal struct CFileTransferCallbacks {
     /**
      * \~English
      * An application-defined function that handle the state changed event.
@@ -141,8 +90,7 @@ typedef struct ElaFileTransferCallbacks {
      *      context         [in] The application defined context data.
      *
      */
-    void (*state_changed)(ElaFileTransfer *filetransfer,
-                          FileTransferConnection state, void *context);
+    var state_changed: (@convention(c) (OpaquePointer?, Int32, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -160,8 +108,8 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*file)(ElaFileTransfer *filetransfer, const char *fileid,
-                 const char *filename, uint64_t size, void *context);
+    var file: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
+
     /**
      * \~English
      * An application-defined function that handle file transfer pull request
@@ -177,8 +125,7 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-     void (*pull)(ElaFileTransfer *filetransfer, const char *fileid,
-                  uint64_t offset, void *context);
+     var pull: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -198,8 +145,7 @@ typedef struct ElaFileTransferCallbacks {
      * @return
      *      Return True if file transfer has completed, otherwise return False.
      */
-    bool (*data)(ElaFileTransfer *filetransfer, const char *fileid,
-                 const uint8_t *data, size_t length, void *context);
+    var data: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>, UInt32, UnsafeMutableRawPointer?) -> Swift.Bool)!
 
     /**
      * \~English
@@ -213,8 +159,7 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*pending)(ElaFileTransfer *filetransfer, const char *fileid,
-                   void *context);
+    var pending: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -228,8 +173,7 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*resume)(ElaFileTransfer *filetransfer, const char *fileid,
-                   void *context);
+    var resume: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -247,10 +191,10 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*cancel)(ElaFileTransfer *filetransfer, const char *fileid,
-                   int status, const char *reason, void *context);
+    var cancel: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
 
-} ElaFileTransferCallbacks;
+    init() {}
+}
 
 /**
  * \~English
@@ -267,8 +211,9 @@ typedef struct ElaFileTransferCallbacks {
  * @return
  *      The generated unique file identifier.
  */
-CARRIER_API
-char *ela_filetransfer_fileid(char *fileid, size_t length);
+@_silgen_name("ela_filetransfer_fileid")
+internal func ela_filetransfer_fileid(_ fileid: UnsafeMutablePointer<Int8>?,
+                                      _ length: Int) -> UnsafePointer<Int8>?
 
 /**
  * \~English
@@ -284,9 +229,9 @@ char *ela_filetransfer_fileid(char *fileid, size_t length);
  * @param
  *      context         [in] The application defined context data.
  */
-typedef void ElaFileTransferConnectCallback(ElaCarrier *carrier,
-                    const char *address, const ElaFileTransferInfo *fileinfo,
-                    void *context);
+internal typealias CFileTransferConnectCallback = @convention(c)
+    (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<CFileTransferInfo>?,
+    UnsafeMutableRawPointer?) -> Swift.Void
 
 /**
  * \~English
@@ -306,10 +251,10 @@ typedef void ElaFileTransferConnectCallback(ElaCarrier *carrier,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_init(ElaCarrier *carrier,
-                          ElaFileTransferConnectCallback *callback,
-                          void *context);
+@_silgen_name("ela_filetransfer_init")
+internal func ela_filetransfer_init(_ carrier: OpaquePointer!,
+                                    _ callback: CFileTransferConnectCallback?,
+                                    _ context: UnsafeMutableRawPointer?) -> Int32
 
 /**
  * \~English
@@ -320,8 +265,8 @@ int ela_filetransfer_init(ElaCarrier *carrier,
  *
  * If the extension is not initialized, this function has no effect.
  */
-CARRIER_API
-void ela_filetransfer_cleanup(ElaCarrier *carrier);
+@_silgen_name("ela_session_cleanup")
+internal func ela_filetransfer_cleanup(_ carrier: OpaquePointer!)
 
 /**
  * \~English
@@ -351,13 +296,12 @@ void ela_filetransfer_cleanup(ElaCarrier *carrier);
  *      Return an ElaFileTransfer instance on success, NULL otherwise(The
  *      specific error code can be retrieved by calling ela_get_error()).
  */
-CARRIER_API
-ElaFileTransfer *ela_filetransfer_new(ElaCarrier *carrier,
-                                      const char *address,
-                                      const ElaFileTransferInfo *fileinfo,
-                                      ElaFileTransferCallbacks *callbacks,
-                                      void *context);
-
+@_silgen_name("ela_filetransfer_new")
+internal func ela_filetransfer_new(_ carrier: OpaquePointer!,
+                                   _ address: UnsafePointer<Int8>!,
+                                   _ fileinfo: UnsafePointer<CFileTransferInfo>?,
+                                   _ callback: CFileTransferCallbacks!,
+                                   _ context: UnsafeMutableRawPointer?) -> OpaquePointer?
 /**
  * \~English
  * Close file transfer instance.
@@ -365,8 +309,8 @@ ElaFileTransfer *ela_filetransfer_new(ElaCarrier *carrier,
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
  */
-CARRIER_API
-void ela_filetransfer_close(ElaFileTransfer *filetransfer);
+@_silgen_name("ela_filetransfer_close")
+internal func ela_filetransfer_close(_ filetransfer: OpaquePointer!)
 
 /**
  * \~English
@@ -388,10 +332,10 @@ void ela_filetransfer_close(ElaFileTransfer *filetransfer);
  *      otherwise, NULL value is returned. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-char *ela_filetransfer_get_fileid(ElaFileTransfer *filetransfer,
-                                  const char *filename,
-                                  char *fileid, size_t length);
+@_silgen_name("ela_session_cleanup")
+internal func ela_filetransfer_get_fileid(_ filetransfer: OpaquePointer!,
+                                          _ filename: UnsafeMutablePointer<Int8>!,
+                                          _ length: Int) -> UnsafePointer<Int8>?
 
 /**
  * \~English
@@ -413,11 +357,11 @@ char *ela_filetransfer_get_fileid(ElaFileTransfer *filetransfer,
  *      otherwise, NULL value is returned. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-char *ela_filetransfer_get_filename(ElaFileTransfer *filetransfer,
-                                    const char *fileid,
-                                    char *filename, size_t length);
-
+@_silgen_name("ela_filetransfer_get_filename")
+internal func ela_filetransfer_get_filename(_ filetransfer: OpaquePointer!,
+                                            _ fileid: UnsafePointer<Int8>!,
+                                            _ filename: UnsafeMutablePointer<Int8>!,
+                                            _ length: Int) -> UnsafePointer<Int8>?
 /**
  * \~English
  * Send a file transfer connect request to target peer.
@@ -429,8 +373,8 @@ char *ela_filetransfer_get_filename(ElaFileTransfer *filetransfer,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_connect(ElaFileTransfer *filetransfer);
+@_silgen_name("ela_filetransfer_connect")
+internal func ela_filetransfer_connect(_ filetransfer: OpaquePointer!) -> Int32
 
 /**
  * \~English
@@ -443,8 +387,8 @@ int ela_filetransfer_connect(ElaFileTransfer *filetransfer);
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_accept_connect(ElaFileTransfer *filetransfer);
+@_silgen_name("ela_filetransfer_accept_connect")
+internal func ela_filetransfer_accept_connect(_ filetransfer: OpaquePointer!) -> Int32
 
 /**
  * \~English
@@ -459,9 +403,9 @@ int ela_filetransfer_accept_connect(ElaFileTransfer *filetransfer);
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_add(ElaFileTransfer *filetransfer,
-                         const ElaFileTransferInfo *fileinfo);
+@_silgen_name("ela_filetransfer_add")
+internal func ela_filetransfer_add(_ filetransfer: OpaquePointer!,
+                                   _ fileinfo: UnsafePointer<CFileTransferInfo>!) -> Int32
 
 /**
  * \~English
@@ -478,9 +422,10 @@ int ela_filetransfer_add(ElaFileTransfer *filetransfer,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_pull(ElaFileTransfer *filetransfer, const char *fileid,
-                          uint64_t offset);
+@_silgen_name("ela_filetransfer_pull")
+internal func ela_filetransfer_pull(_ filetransfer: OpaquePointer!,
+                                    _ fileid: UnsafePointer<Int8>!,
+                                    _ offset: UInt64) -> Int32
 
 /**
  * \~English
@@ -499,9 +444,11 @@ int ela_filetransfer_pull(ElaFileTransfer *filetransfer, const char *fileid,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
-                          const uint8_t *data, size_t length);
+@_silgen_name("ela_filetransfer_send")
+internal func ela_filetransfer_send(_ filetransfer: OpaquePointer!,
+                                    _ fileid: UnsafePointer<Int8>!,
+                                    _ data: UnsafePointer<Int8>?,
+                                    _ length: UInt32)
 
 /**
  * \~English
@@ -516,9 +463,11 @@ int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_cancel(ElaFileTransfer *filetransfer, const char *fileid,
-                            int status, const char *reason);
+@_silgen_name("ela_filetransfer_cancel")
+internal func ela_filetransfer_cancel(_ filetransfer: OpaquePointer!,
+                                      _ fileid: UnsafePointer<Int8>!,
+                                      _ status: Int32,
+                                      _ reason: UnsafePointer<Int8>!) -> Int32
 
 /**
  * \~English
@@ -533,8 +482,9 @@ int ela_filetransfer_cancel(ElaFileTransfer *filetransfer, const char *fileid,
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_pend(ElaFileTransfer *filetransfer, const char *fileid);
+@_silgen_name("ela_filetransfer_pend")
+internal func ela_filetransfer_pend(_ filetransfer: OpaquePointer!,
+                                    _ fileid: UnsafePointer<Int8>!) -> Int32
 
 /**
  * \~English
@@ -549,8 +499,9 @@ int ela_filetransfer_pend(ElaFileTransfer *filetransfer, const char *fileid);
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_resume(ElaFileTransfer *filetransfer, const char *fileid);
+@_silgen_name("ela_filetransfer_resume")
+internal func ela_filetransfer_resume(_ filetransfer: OpaquePointer!,
+                                      _ fileid: UnsafePointer<Int8>!) -> Int32
 
 /**
  * \~English
@@ -567,9 +518,10 @@ int ela_filetransfer_resume(ElaFileTransfer *filetransfer, const char *fileid);
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_filetransfer_set_userdata(ElaFileTransfer *filetransfer,
-                                  const char *fileid, void *userdata);
+@_silgen_name("ela_filetransfer_set_userdata")
+internal func ela_filetransfer_set_userdata(_ filetransfer: OpaquePointer!,
+                                            _ fileid: UnsafePointer<Int8>!,
+                                            _ userdata: UnsafeMutableRawPointer?) -> Int32
 
 /**
  * \~English
@@ -584,14 +536,15 @@ int ela_filetransfer_set_userdata(ElaFileTransfer *filetransfer,
  *      userdata on success, or NULL if an error occurred. The specific error
  *      code can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-void *ela_filetransfer_get_userdata(ElaFileTransfer *ft, const char *fileid);
+@_silgen_name("ela_filetransfer_set_userdata")
+internal func ela_filetransfer_set_userdata(_ filetransfer: OpaquePointer!,
+                                            _ fileid: UnsafePointer<Int8>!) -> UnsafeMutableRawPointer?
 
 /**
  * \~English
  * Carrier file progress callbacks.
  */
-typedef struct ElaFileProgressCallbacks {
+internal struct CFileProgressCallbacks {
     /**
      * \~English
      * An application-defined function that handles file transfer connection
@@ -602,7 +555,7 @@ typedef struct ElaFileProgressCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*state_changed)(FileTransferConnection state, void *context);
+    var state_changed: (@convention(c) (Int32, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -615,7 +568,7 @@ typedef struct ElaFileProgressCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*sent)(size_t length, uint64_t totalsz, void *context);
+    var sent: (@convention(c) (UInt32, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -628,8 +581,10 @@ typedef struct ElaFileProgressCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    void (*received)(size_t length, uint64_t totalsz, void *context);
-} ElaFileProgressCallbacks;
+    var received: (@convention(c) (UInt32, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
+
+    init() {}
+}
 
 /**
  * \~English
@@ -653,9 +608,12 @@ typedef struct ElaFileProgressCallbacks {
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_file_send(ElaCarrier *carrier, const char *address, const char *filename,
-                  ElaFileProgressCallbacks *callbacks, void *context);
+@_silgen_name("ela_file_send")
+internal func ela_file_send(_ carrier: OpaquePointer!,
+                            _ address: UnsafePointer<Int8>!,
+                            _ filename: UnsafePointer<Int8>!,
+                            _ callbacks: CFileProgressCallbacks!,
+                            _ context: UnsafeMutableRawPointer?) -> Int32
 
 /**
  * \~English
@@ -679,16 +637,9 @@ int ela_file_send(ElaCarrier *carrier, const char *address, const char *filename
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-CARRIER_API
-int ela_file_recv(ElaCarrier *carrier, const char *address, const char *filename,
-                  ElaFileProgressCallbacks *callbacks, void *context);
-
-#ifdef __cplusplus
-}
-#endif
-
-#if defined(__APPLE__)
-#pragma GCC diagnostic pop
-#endif
-
-#endif /* __ELA_FILETRANSFER_H__ */
+@_silgen_name("ela_file_recv")
+internal func ela_file_recv(_ carrier: OpaquePointer!,
+                            _ address: UnsafePointer<Int8>!,
+                            _ filename: UnsafePointer<Int8>!,
+                            _ callbacks: CFileProgressCallbacks!,
+                            _ context: UnsafeMutableRawPointer?) -> Int32
