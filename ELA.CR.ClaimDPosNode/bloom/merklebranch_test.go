@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/auxpow"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {
@@ -48,7 +48,7 @@ func run(txs uint32) {
 	merkleRoot := *mBlock.CalcHash(treeDepth(txs), 0)
 	// Create and return the merkle block.
 	merkleBlock := msg.MerkleBlock{
-		Header: &core.Header{
+		Header: &types.Header{
 			MerkleRoot: merkleRoot,
 		},
 		Transactions: mBlock.NumTx,

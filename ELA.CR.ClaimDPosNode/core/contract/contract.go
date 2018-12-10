@@ -43,7 +43,7 @@ func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 		if len(code) < crypto.MinMultiSignCodeLength || (len(code)-3)%(crypto.PublicKeyScriptLength-1) != 0 {
 			return nil, errors.New("[ToProgramHash] error, not a valid multisig script")
 		}
-	case utilcom.CROSSCHAIN: // FIXME should not use this opcode
+	case utilcom.CROSSCHAIN: // FIXME should not use this opcode in future
 	default:
 		return nil, errors.New("[ToProgramHash] error, unknown opcode")
 	}

@@ -10,7 +10,8 @@ import (
 	. "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -148,9 +149,9 @@ func newMessage(cmd string) p2p.Message {
 	case p2p.CmdNotFound:
 		message = new(msg.NotFound)
 	case p2p.CmdBlock:
-		message = msg.NewBlock(new(core.Block))
+		message = msg.NewBlock(new(types.Block))
 	case p2p.CmdTx:
-		message = msg.NewTx(NewCoinBaseTransaction(new(core.PayloadCoinBase), 0))
+		message = msg.NewTx(NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0))
 	case p2p.CmdPing:
 		message = new(msg.Ping)
 	case p2p.CmdPong:
@@ -160,7 +161,7 @@ func newMessage(cmd string) p2p.Message {
 	case p2p.CmdFilterLoad:
 		message = new(msg.FilterLoad)
 	case p2p.CmdMerkleBlock:
-		message = msg.NewMerkleBlock(new(core.Header))
+		message = msg.NewMerkleBlock(new(types.Header))
 	case p2p.CmdReject:
 		message = new(msg.Reject)
 	}

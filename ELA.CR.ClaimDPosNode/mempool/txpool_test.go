@@ -5,13 +5,16 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"os"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/auxpow"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/errors"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -30,9 +33,9 @@ func TestTxPoolInit(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	FoundationAddress = *foundation
+	blockchain.FoundationAddress = *foundation
 
-	chainStore, err := NewTestChainStore()
+	chainStore, err := blockchain.NewTestChainStore()
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
