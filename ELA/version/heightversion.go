@@ -6,14 +6,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/version/heights"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-)
-
-const (
-	GenesisHeightVersion = uint32(0)
-	HeightVersion1       = uint32(88812)
-	HeightVersion2       = uint32(108812) //fixme edit height later
 )
 
 type TxCheckMethod func(TxVersion) error
@@ -133,7 +128,7 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFu
 
 func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction) TxVersion {
 	// before HeightVersion2 tx version means tx type, use special get method instead
-	if blockHeight < HeightVersion2 {
+	if blockHeight < heights.HeightVersion2 {
 		return info.CompatibleTxVersions[info.DefaultTxVersion]
 	}
 
