@@ -4,6 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	. "github.com/elastos/Elastos.ELA/version"
 	"github.com/elastos/Elastos.ELA/version/blockhistory"
+	. "github.com/elastos/Elastos.ELA/version/heights"
 	"github.com/elastos/Elastos.ELA/version/txhistory"
 )
 
