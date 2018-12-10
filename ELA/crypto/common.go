@@ -20,49 +20,6 @@ const (
 	MinMultiSignCodeLength = 71
 )
 
-//func ToProgramHash(code []byte) (*Uint168, error) {
-//	if len(code) < 1 {
-//		return nil, errors.New("[ToProgramHash] failed, empty program code")
-//	}
-//
-//	sum168 := func(prefix byte, code []byte) []byte {
-//		hash := sha256.Sum256(code)
-//		md160 := ripemd160.New()
-//		md160.Write(hash[:])
-//		return md160.Sum([]byte{prefix})
-//	}
-//
-//	switch code[len(code)-1] {
-//	case STANDARD:
-//		if len(code) != PublicKeyScriptLength {
-//			return nil, errors.New("[ToProgramHash] error, not a valid checksig script")
-//		}
-//		return Uint168FromBytes(sum168(PrefixStandard, code))
-//	case MULTISIG:
-//		if len(code) < MinMultiSignCodeLength || (len(code)-3)%(PublicKeyScriptLength-1) != 0 {
-//			return nil, errors.New("[ToProgramHash] error, not a valid multisig script")
-//		}
-//		return Uint168FromBytes(sum168(PrefixMultisig, code))
-//	case CROSSCHAIN:
-//		return Uint168FromBytes(sum168(PrefixCrossChain, code))
-//	default:
-//		return nil, errors.New("[ToProgramHash] error, unknown script type")
-//	}
-//}
-
-func CreateStandardRedeemScript(publicKey *PublicKey) ([]byte, error) {
-	content, err := publicKey.EncodePoint(true)
-	if err != nil {
-		return nil, errors.New("create standard redeem script, encode public key failed")
-	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(content)))
-	buf.Write(content)
-	buf.WriteByte(byte(STANDARD))
-
-	return buf.Bytes(), nil
-}
-
 func CreateMultiSignRedeemScript(M uint, publicKeys []*PublicKey) ([]byte, error) {
 	// Write M
 	buf := new(bytes.Buffer)
