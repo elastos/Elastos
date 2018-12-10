@@ -149,7 +149,7 @@ public class Carrier: NSObject {
 
     private init(_ delegate: CarrierDelegate) {
         self.delegate = delegate
-        self.didKill = false
+        self.didKill = true
         self.semaph = DispatchSemaphore(value: 0)
         self.friends = [CarrierFriendInfo]()
         self.groups = [String: CarrierGroup]()

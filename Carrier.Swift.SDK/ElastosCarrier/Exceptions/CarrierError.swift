@@ -82,11 +82,11 @@ extension CarrierError: CustomNSError {
 
 extension CarrierError {
     internal static func getFacility(_ errno: Int) -> Int {
-        return (errno &  0x8FFFFFFF) >> 24
+        return (errno &  0x7FFFFFFF) >> 24
     }
 
     internal static func getCode(_ errno: Int) -> Int {
-        return (errno & 0x8FFFFFFF)
+        return (errno & 0x00FFFFFF)
     }
 
     internal static func FromErrorCode(errno: Int) -> CarrierError {
