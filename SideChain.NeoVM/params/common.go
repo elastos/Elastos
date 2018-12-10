@@ -58,3 +58,18 @@ func BytesToInt(b []byte) int64 {
 	binary.Read(buffer, binary.BigEndian, &n)
 	return n
 }
+
+func BytesToUInt(b []byte) uint32 {
+	buffer := bytes.NewBuffer(b)
+	var n uint32
+	binary.Read(buffer, binary.BigEndian, &n)
+	return n
+}
+
+func StringToInvokeHash(method []byte) uint32 {
+	sh := sha256.New()
+	sh.Write(method)
+	method = sh.Sum(nil)
+	hash := BytesToUInt(method)
+	return hash
+}

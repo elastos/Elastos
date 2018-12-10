@@ -290,7 +290,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 		return nil, util.NewError(int(sideser.InvalidParams), "script is error hexString")
 	}
 
-	returntype, ok:= param.String("returnType")
+	returntype, ok:= param.String("returntype")
 	if !ok {
 		returntype = "Void"
 	}
@@ -328,7 +328,7 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	if ok && operation != "" {
 		paramBuilder.EmitPushByteArray([]byte(operation))
 	}
-	returnType, ok := param.String("returnType")
+	returnType, ok := param.String("returntype")
 	if !ok {
 		returnType = "Void"
 	}
