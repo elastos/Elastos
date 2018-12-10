@@ -7,7 +7,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.SPV
   version: release_v0.0.1
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: release_v0.1.1
+  version: release_v0.1.2
 - package: github.com/elastos/Elastos.ELA.SideChain
   version: release_v0.1.1
 - package: github.com/mattn/go-sqlite3
