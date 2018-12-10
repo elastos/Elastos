@@ -244,7 +244,7 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 		ApiGetConnectionCount  = "/api/v1/node/connectioncount"
 		ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height/:height"
 		ApiGetBlockByHeight    = "/api/v1/block/details/height/:height"
-		ApiGetBlockByHash      = "/api/v1/block/details/hash/:blockhash/:verbosity"
+		ApiGetBlockByHash      = "/api/v1/block/details/hash/:blockhash"
 		ApiGetBlockHeight      = "/api/v1/block/height"
 		ApiGetBlockHash        = "/api/v1/block/hash/:height"
 		ApiGetTotalIssued      = "/api/v1/totalissued"
