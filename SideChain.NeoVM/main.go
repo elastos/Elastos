@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
@@ -33,6 +34,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
+
 )
 
 const (
@@ -216,11 +219,20 @@ func main() {
 		}
 	}()
 
+	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService)
+	defer socketServer.Server.Stop()
+	go func() {
+		if err := socketServer.Server.Start(); err != nil {
+			sockLog.Errorf("Start HttpSocket server failed, %s", err.Error())
+		}
+	}()
+
 	if cfg.PrintSyncState {
 		go printSyncState(ledgerStore.ChainStore, server)
 	}
 
 	events.Subscribe(handleRunTimeEvents)
+	events.Subscribe(socketServer.OnEvent)
 
 	<-interrupt.C
 }
@@ -250,6 +262,8 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
+	s.RegisterAction("getreceivedbyaddress", service.GetReceivedByAddress, "address", "assetid")
+
 	s.RegisterAction("invokescript", service.InvokeScript, "script", "returnType")
 	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params", "returnType")
 	s.RegisterAction("getOpPrice", service.GetOpPrice, "op", "args")
@@ -326,6 +340,15 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
 
 	return s
+}
+
+func newWebSocketServer(port uint16, service *service.HttpService) *websocket.SocketServer {
+	svrCfg := sw.Config{
+		ServePort:port,
+		Service: service,
+	}
+	server := websocket.NewSocketServer(&svrCfg)
+	return server
 }
 
 func printSyncState(db *blockchain.ChainStore, server server.Server) {

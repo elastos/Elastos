@@ -22,6 +22,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
 )
 
 const (
@@ -64,6 +65,7 @@ var (
 	restlog = backend.Logger("REST", cfg.LogLevel)
 	eladlog = backend.Logger("ELAD", cfg.LogLevel)
 
+	sockLog = backend.Logger("SOCKET", cfg.LogLevel)
 	avmlog  = backend.Logger("AVM", cfg.LogLevel)
 )
 
@@ -85,4 +87,5 @@ func init() {
 	avm.UseLogger(avmlog)
 	store.UseLogger(avmlog)
 	service.UseLogger(avmlog)
+	websocket.UseLogger(sockLog)
 }

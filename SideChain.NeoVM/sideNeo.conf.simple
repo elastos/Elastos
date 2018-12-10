@@ -26,5 +26,6 @@
   "HttpInfoPort": 10603,
   "HttpRestPort": 10604,
   "HttpJsonPort": 10606,
+  "HttpWsPort":   10607,
   "PrintSyncState": false
 }

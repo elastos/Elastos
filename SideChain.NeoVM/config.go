@@ -60,6 +60,7 @@ type config struct {
 	HttpInfoPort      uint16       `json:"HttpInfoPort"`
 	HttpRestPort      uint16       `json:"HttpRestPort"`
 	HttpJsonPort      uint16       `json:"HttpJsonPort"`
+	HttpWsPort        uint16       `json:"HttpWsPort"`
 	PrintSyncState    bool         `json:"PrintSyncState"`
 
 	dataDir string
@@ -89,6 +90,7 @@ func loadConfig() (*config, error) {
 		HttpInfoPort:      10603,
 		HttpRestPort:      10604,
 		HttpJsonPort:      10606,
+		HttpWsPort:        10607,
 		dataDir:           defaultDataDir,
 		PrintSyncState:    true,
 	}

@@ -12,6 +12,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
+	"github.com/elastos/Elastos.ELA.SideChain/events"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
@@ -19,9 +21,25 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 )
 
 const AccountPersisFlag = "AccountPersisFlag"
+
+const DEPLOY_TRANSACTION = "DeployTransaction"
+const INVOKE_TRANSACTION = "InvokeTransaction"
+const RunTime_Notify = "RunTime_Notify"
+const RunTime_Log = "RunTime_Log"
+
+// Response represent the response data structure.
+type ResponseExt struct {
+	Action   string
+	Result   bool
+	Error    int
+	Desc     interface{}
+	TxID     string
+	CodeHash string
+}
 
 func (c *LedgerStore) PersisAccount(batch database.Batch, block *side.Block) error {
 	accounts := make(map[common.Uint168]*states.AccountState, 0)
@@ -105,19 +123,47 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		Trigger:      avm.Application,
 	})
 	if err != nil {
+		events.Notify(event.ETDeployTransaction, &ResponseExt{
+			Action:   DEPLOY_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: "",
+		})
 		return err
 	}
 	ret, err := smartcontract.DeployContract(payloadDeploy)
 	if err != nil {
+		events.Notify(event.ETDeployTransaction, &ResponseExt{
+			Action:   DEPLOY_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: "",
+		})
 		return err
 	}
 	codeHash, err := params.ToCodeHash(ret)
 	if err != nil {
+		events.Notify(event.ETDeployTransaction, &ResponseExt{
+			Action:   DEPLOY_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: codeHash.String(),
+		})
 		return err
 	}
 
 	contract, err := c.GetContract(codeHash)
 	if err != nil && contract != nil {
+		events.Notify(event.ETDeployTransaction, &ResponseExt{
+			Action:   DEPLOY_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: codeHash.String(),
+		})
 		return err
 	}
 	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
@@ -133,6 +179,13 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		ProgramHash: payloadDeploy.ProgramHash,
 	})
 	log.Info("deploy contract suc:", codeHash.String())
+	events.Notify(event.ETDeployTransaction, &ResponseExt{
+		Action:   DEPLOY_TRANSACTION,
+		Result:   true,
+		Desc:     "Success",
+		TxID:     tx.Hash().String(),
+		CodeHash: codeHash.String(),
+	})
 	dbCache.Commit()
 	return nil
 }
@@ -143,10 +196,26 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 	if !payloadInvoke.CodeHash.IsEqual(common.Uint168{}) {
 		contract, err := c.GetContract(&payloadInvoke.CodeHash)
 		if err != nil {
+			events.Notify(event.ETInvokeTransaction, &ResponseExt{
+				Action:   INVOKE_TRANSACTION,
+				Result:   false,
+				Desc:     err.Error(),
+				TxID:     tx.Hash().String(),
+				CodeHash: payloadInvoke.CodeHash.String(),
+			})
+			log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
 			return err
 		}
 		state, err := states.GetStateValue(sb.ST_Contract, contract)
 		if err != nil {
+			events.Notify(event.ETInvokeTransaction, &ResponseExt{
+				Action:   INVOKE_TRANSACTION,
+				Result:   false,
+				Desc:     err.Error(),
+				TxID:     tx.Hash().String(),
+				CodeHash: payloadInvoke.CodeHash.String(),
+			})
+			log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
 			return err
 		}
 		constractState = state.(*states.ContractState)
@@ -169,19 +238,39 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 		Trigger:        avm.Application,
 	})
 	if err != nil {
-		//httpwebsocket.PushResult(tx.Hash(), int64(SmartCodeError), INVOKE_TRANSACTION, err)
-		fmt.Println(err.Error(), tx.Hash())
+		events.Notify(event.ETInvokeTransaction, &ResponseExt{
+			Action:   INVOKE_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: payloadInvoke.CodeHash.String(),
+		})
+		log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
 	}
 
 	ret, err := smartcontract.InvokeContract()
 	if err != nil {
-		//httpwebsocket.PushResult(tx.Hash(), int64(OutOfGas), INVOKE_TRANSACTION, ret)
+		events.Notify(event.ETInvokeTransaction, &ResponseExt{
+			Action:   INVOKE_TRANSACTION,
+			Result:   false,
+			Desc:     err.Error(),
+			TxID:     tx.Hash().String(),
+			CodeHash: payloadInvoke.CodeHash.String(),
+		})
+		log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
 		return err
 	}
-	log.Info("InvokeContract ret=",ret)
+	log.Info("InvokeContract ret=", ret)
 	stateMachine.CloneCache.Commit()
 	dbCache.Commit()
-	//httpwebsocket.PushResult(tx.Hash(), int64(Success), INVOKE_TRANSACTION, ret)
+	events.Notify(event.ETInvokeTransaction, &ResponseExt{
+		Action:   INVOKE_TRANSACTION,
+		Result:   true,
+		Desc:     ret,
+		TxID:     tx.Hash().String(),
+		CodeHash: payloadInvoke.CodeHash.String(),
+	})
+
 	return nil
 }
 

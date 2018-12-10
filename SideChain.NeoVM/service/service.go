@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"bytes"
+	"math/big"
+	"math"
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -196,7 +198,50 @@ func GetPayloadInfo(p side.Payload, pVersion byte) sideser.PayloadInfo {
 	}
 	return nil
 }
-//
+
+
+func (s *HttpServiceExtend) GetReceivedByAddress(param util.Params) (interface{}, error) {
+	tokenValueList := make(map[Uint256]*big.Int)
+	var elaValue Fixed64
+	str, ok := param.String("address")
+	if !ok {
+		return nil, fmt.Errorf(sideser.InvalidParams.String())
+	}
+
+	programHash, err := Uint168FromAddress(str)
+	if err != nil {
+		return nil, fmt.Errorf(sideser.InvalidParams.String())
+	}
+
+	unspends, err := s.cfg.Chain.GetUnspents(*programHash)
+	for assetID, utxos := range unspends {
+		for _, u := range utxos {
+			if assetID == side.GetSystemAssetId() {
+				elaValue += u.Value
+			} else {
+				data, _ := u.Value.Bytes()
+				value := new(big.Int).SetBytes(data)
+				if _, ok := tokenValueList[assetID]; !ok {
+					tokenValueList[assetID] = new(big.Int)
+				}
+				tokenValueList[assetID] = tokenValueList[assetID].Add(tokenValueList[assetID], value)
+			}
+		}
+	}
+	valueList := make(map[string]string)
+	valueList[BytesToHexString(BytesReverse(side.GetSystemAssetId().Bytes()))] = elaValue.String()
+	for k, v := range tokenValueList {
+		reverse, _ := Uint256FromBytes(BytesReverse(k.Bytes()))
+		totalValue, _ := new(big.Int).SetString(v.String(), 10)
+		valueList[reverse.String()] = totalValue.Div(totalValue, big.NewInt(int64(math.Pow10(18)))).String()
+	}
+	if assetID, ok := param.String("assetid"); ok {
+		return map[string]string{assetID: valueList[assetID]}, nil
+	} else {
+		return valueList, nil
+	}
+}
+
 func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
 	bestHeight := s.cfg.Chain.GetBestHeight()
 	var result []UTXOInfo

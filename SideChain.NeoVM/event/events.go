@@ -6,11 +6,15 @@ import (
 
 // Constants for the type of a notification message.
 const (
-	ETRunTimeNotify events.EventType = 0x50
-	ETRunTimeLog    events.EventType = 051
+	ETRunTimeNotify     events.EventType = 0x50
+	ETRunTimeLog        events.EventType = 0x51
+	ETDeployTransaction events.EventType = 0x52
+	ETInvokeTransaction events.EventType = 0x53
 )
 
 var notificationStrings = map[events.EventType]string{
-	ETRunTimeNotify: "ETRunTimeNotify",
-	ETRunTimeLog:    "ETRunTimeLog",
+	ETRunTimeNotify:     "ETRunTimeNotify",
+	ETRunTimeLog:        "ETRunTimeLog",
+	ETDeployTransaction: "ETDeployTransaction",
+	ETInvokeTransaction: "ETInvokeTransaction",
 }
