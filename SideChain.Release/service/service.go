@@ -537,6 +537,26 @@ func (s *HttpService) GetBalanceByAddr(param util.Params) (interface{}, error) {
 	return balance.String(), nil
 }
 
+func (s *HttpService) GetReceivedByAddress(param util.Params) (interface{}, error) {
+	str, ok := param.String("address")
+	if !ok {
+		return nil, newError(InvalidParams)
+	}
+
+	programHash, err := common.Uint168FromAddress(str)
+	if err != nil {
+		return nil, newError(InvalidParams)
+	}
+	unspends, err := s.cfg.Chain.GetUnspents(*programHash)
+	var balance common.Fixed64 = 0
+	for _, u := range unspends {
+		for _, v := range u {
+			balance = balance + v.Value
+		}
+	}
+	return balance.String(), nil
+}
+
 func (s *HttpService) GetBalanceByAsset(param util.Params) (interface{}, error) {
 	addr, ok := param.String("addr")
 	if !ok {
