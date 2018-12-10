@@ -109,7 +109,7 @@ func (h *dposHandlerSwitch) StartNewProposal(p types.DPosProposal) {
 		RawData:      rawData.Bytes(),
 		Result:       false,
 	}
-	h.eventMonitor.OnProposalArrived(proposalEvent)
+	h.eventMonitor.OnProposalArrived(&proposalEvent)
 }
 
 func (h *dposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
@@ -121,7 +121,7 @@ func (h *dposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 		Offset:           h.consensus.GetViewOffset(),
 		Height:           h.proposalDispatcher.CurrentHeight(),
 	}
-	h.eventMonitor.OnViewStarted(viewEvent)
+	h.eventMonitor.OnViewStarted(&viewEvent)
 }
 
 func (h *dposHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
@@ -135,7 +135,7 @@ func (h *dposHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 			rawData := new(bytes.Buffer)
 			b.Serialize(rawData)
 			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height, RawData: rawData.Bytes()}
-			h.eventMonitor.OnConsensusStarted(c)
+			h.eventMonitor.OnConsensusStarted(&c)
 			return true
 		}
 	}
@@ -150,7 +150,7 @@ func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p types.DPosProposalV
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: p.Signer, ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
-	h.eventMonitor.OnVoteArrived(voteEvent)
+	h.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
@@ -159,7 +159,7 @@ func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p types.DPosProposalV
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: p.Signer, ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
-	h.eventMonitor.OnVoteArrived(voteEvent)
+	h.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {

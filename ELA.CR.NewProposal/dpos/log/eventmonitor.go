@@ -37,12 +37,12 @@ type ConsensusEvent struct {
 }
 
 type EventListener interface {
-	OnProposalArrived(prop ProposalEvent)
-	OnProposalFinished(prop ProposalEvent)
-	OnVoteArrived(vote VoteEvent)
-	OnViewStarted(view ViewEvent)
-	OnConsensusStarted(cons ConsensusEvent)
-	OnConsensusFinished(cons ConsensusEvent)
+	OnProposalArrived(prop *ProposalEvent)
+	OnProposalFinished(prop *ProposalEvent)
+	OnVoteArrived(vote *VoteEvent)
+	OnViewStarted(view *ViewEvent)
+	OnConsensusStarted(cons *ConsensusEvent)
+	OnConsensusFinished(cons *ConsensusEvent)
 }
 
 type EventMonitor struct {
@@ -65,37 +65,37 @@ func (e *EventMonitor) UnregisterListener(l EventListener) {
 	e.listeners = e.listeners[0 : len(e.listeners)-2]
 }
 
-func (e *EventMonitor) OnProposalArrived(prop ProposalEvent) {
+func (e *EventMonitor) OnProposalArrived(prop *ProposalEvent) {
 	for _, l := range e.listeners {
 		l.OnProposalArrived(prop)
 	}
 }
 
-func (e *EventMonitor) OnProposalFinished(prop ProposalEvent) {
+func (e *EventMonitor) OnProposalFinished(prop *ProposalEvent) {
 	for _, l := range e.listeners {
 		l.OnProposalFinished(prop)
 	}
 }
 
-func (e *EventMonitor) OnVoteArrived(vote VoteEvent) {
+func (e *EventMonitor) OnVoteArrived(vote *VoteEvent) {
 	for _, l := range e.listeners {
 		l.OnVoteArrived(vote)
 	}
 }
 
-func (e *EventMonitor) OnViewStarted(view ViewEvent) {
+func (e *EventMonitor) OnViewStarted(view *ViewEvent) {
 	for _, l := range e.listeners {
 		l.OnViewStarted(view)
 	}
 }
 
-func (e *EventMonitor) OnConsensusStarted(cons ConsensusEvent) {
+func (e *EventMonitor) OnConsensusStarted(cons *ConsensusEvent) {
 	for _, l := range e.listeners {
 		l.OnConsensusStarted(cons)
 	}
 }
 
-func (e *EventMonitor) OnConsensusFinished(cons ConsensusEvent) {
+func (e *EventMonitor) OnConsensusFinished(cons *ConsensusEvent) {
 	for _, l := range e.listeners {
 		l.OnConsensusFinished(cons)
 	}
