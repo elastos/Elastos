@@ -149,7 +149,7 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 		RawData:      rawData.Bytes(),
 		Result:       false,
 	}
-	p.eventMonitor.OnProposalArrived(proposalEvent)
+	p.eventMonitor.OnProposalArrived(&proposalEvent)
 
 	p.acceptProposal(proposal)
 }
@@ -189,7 +189,7 @@ func (p *proposalDispatcher) FinishProposal() {
 		EndTime:   time.Now(),
 		Result:    true,
 	}
-	p.eventMonitor.OnProposalFinished(proposalEvent)
+	p.eventMonitor.OnProposalFinished(&proposalEvent)
 }
 
 func (p *proposalDispatcher) CleanProposals(changeView bool) {
@@ -303,7 +303,7 @@ func (p *proposalDispatcher) FinishConsensus() {
 		defer log.Info("[FinishConsensus] end")
 
 		c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
-		p.eventMonitor.OnConsensusFinished(c)
+		p.eventMonitor.OnConsensusFinished(&c)
 		p.consensus.SetReady()
 		p.CleanProposals(false)
 	}
@@ -439,7 +439,7 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: vote.Signer, ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
-	p.eventMonitor.OnVoteArrived(voteEvent)
+	p.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
@@ -466,7 +466,7 @@ func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: vote.Signer, ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
-	p.eventMonitor.OnVoteArrived(voteEvent)
+	p.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
