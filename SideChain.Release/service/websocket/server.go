@@ -104,6 +104,10 @@ func (s *Server) Stop() error {
 	return fmt.Errorf("server not started")
 }
 
+func (s *Server) GetSessionList() *SessionList {
+	return s.sessions
+}
+
 func (s *Server) hearBeat(params util.Params) (interface{}, error) {
 	return params["Userid"], nil
 }
