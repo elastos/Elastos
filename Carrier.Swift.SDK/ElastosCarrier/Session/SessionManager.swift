@@ -46,13 +46,9 @@ public class CarrierSessionManager: NSObject {
     ///   - carrier: Carrier node instance
     ///   - options: The options to set for carrier session manager
     ///
-    /// - Returns: A carrier session manager
-    ///
     /// - Throws: CarrierError
     @objc(getInstance:error:)
-    public static func getInstance(carrier: Carrier)
-        throws -> CarrierSessionManager {
-
+    public static func InitializeInstance(carrier: Carrier) throws {
         if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
             sessionMgr!.cleanup()
         }
@@ -81,8 +77,6 @@ public class CarrierSessionManager: NSObject {
 
             Log.i(TAG(), "Native carrier session manager instance created.");
         }
-
-        return sessionMgr!
     }
 
     /// Get a carrier session manager instance.
@@ -93,14 +87,10 @@ public class CarrierSessionManager: NSObject {
     ///   - handler: The handler for carrier session manager to process session
     ///              request from friends.
     ///
-    /// - Returns: A carrier session manager
-    ///
     /// - Throws: CarrierError
     @objc(getInstance:usingHandler:error:)
-    public static func getInstance(carrier: Carrier,
-                                   handler: @escaping CarrierSessionRequestHandler)
-        throws -> CarrierSessionManager {
-
+    public static func InitializeInstance(carrier: Carrier,
+                        handler: @escaping CarrierSessionRequestHandler) throws {
         if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
             sessionMgr!.cleanup()
         }
@@ -108,8 +98,6 @@ public class CarrierSessionManager: NSObject {
         if (sessionMgr == nil) {
 
             Log.d(TAG(), "Begin to initialize native carrier session manager...")
-
-
 
             let sessionManager = CarrierSessionManager(carrier)
             sessionManager.handler = handler
@@ -152,8 +140,6 @@ public class CarrierSessionManager: NSObject {
 
             Log.i(TAG(), "Native carrier session manager instance created.");
         }
-
-        return sessionMgr!;
     }
 
     /// Get a carrier session manager instance.

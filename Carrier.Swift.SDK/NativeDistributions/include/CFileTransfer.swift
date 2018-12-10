@@ -33,7 +33,7 @@ internal struct CFileTransferInfo {
      * \~English
      * File name of file to transfer, without file path.
      */
-    var filename: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    var filename: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     /**
      * \~English
@@ -44,9 +44,11 @@ internal struct CFileTransferInfo {
 
     /**
      * \~English
-     * Total file size of file transfer.
+     * Total size of file to transfer.
      */
-    var size: UInt64
+    var size: UInt64 = 0
+
+    init() {}
 }
 
 internal struct CFileTransferConnection : RawRepresentable, Equatable {
@@ -108,7 +110,8 @@ internal struct CFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    var file: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
+    var file: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?,
+                               UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -125,7 +128,8 @@ internal struct CFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-     var pull: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UInt64, UnsafeMutableRawPointer?) -> Swift.Void)!
+     var pull: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UInt64,
+                                UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -145,7 +149,8 @@ internal struct CFileTransferCallbacks {
      * @return
      *      Return True if file transfer has completed, otherwise return False.
      */
-    var data: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>, UInt32, UnsafeMutableRawPointer?) -> Swift.Bool)!
+    var data: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>,
+                               UInt32, UnsafeMutableRawPointer?) -> Swift.Bool)!
 
     /**
      * \~English
@@ -159,7 +164,8 @@ internal struct CFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    var pending: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+    var pending: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?,
+                                  UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -173,7 +179,8 @@ internal struct CFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    var resume: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+    var resume: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?,
+                                 UnsafeMutableRawPointer?) -> Swift.Void)!
 
     /**
      * \~English
@@ -191,7 +198,8 @@ internal struct CFileTransferCallbacks {
      * @param
      *      context         [in] The application defined context data.
      */
-    var cancel: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
+    var cancel: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, Int32,
+                UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Swift.Void)!
 
     init() {}
 }
@@ -230,8 +238,7 @@ internal func ela_filetransfer_fileid(_ fileid: UnsafeMutablePointer<Int8>?,
  *      context         [in] The application defined context data.
  */
 internal typealias CFileTransferConnectCallback = @convention(c)
-    (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<CFileTransferInfo>?,
-    UnsafeMutableRawPointer?) -> Swift.Void
+    (OpaquePointer?, UnsafePointer<Int8>?, UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Swift.Void
 
 /**
  * \~English
@@ -300,7 +307,7 @@ internal func ela_filetransfer_cleanup(_ carrier: OpaquePointer!)
 internal func ela_filetransfer_new(_ carrier: OpaquePointer!,
                                    _ address: UnsafePointer<Int8>!,
                                    _ fileinfo: UnsafePointer<CFileTransferInfo>?,
-                                   _ callback: CFileTransferCallbacks!,
+                                   _ callbacks: CFileTransferCallbacks!,
                                    _ context: UnsafeMutableRawPointer?) -> OpaquePointer?
 /**
  * \~English
@@ -334,7 +341,8 @@ internal func ela_filetransfer_close(_ filetransfer: OpaquePointer!)
  */
 @_silgen_name("ela_session_cleanup")
 internal func ela_filetransfer_get_fileid(_ filetransfer: OpaquePointer!,
-                                          _ filename: UnsafeMutablePointer<Int8>!,
+                                          _ filename: UnsafePointer<Int8>!,
+                                          _ fileid: UnsafeMutablePointer<Int8>!,
                                           _ length: Int) -> UnsafePointer<Int8>?
 
 /**
@@ -447,8 +455,8 @@ internal func ela_filetransfer_pull(_ filetransfer: OpaquePointer!,
 @_silgen_name("ela_filetransfer_send")
 internal func ela_filetransfer_send(_ filetransfer: OpaquePointer!,
                                     _ fileid: UnsafePointer<Int8>!,
-                                    _ data: UnsafePointer<Int8>?,
-                                    _ length: UInt32)
+                                    _ cdata: UnsafePointer<Int8>!,
+                                    _ length: UInt32) -> Int32
 
 /**
  * \~English
