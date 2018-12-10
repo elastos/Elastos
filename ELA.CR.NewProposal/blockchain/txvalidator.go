@@ -680,7 +680,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
+		programHash, err := contract.PublicKeyToPledgeProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
@@ -705,7 +705,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	// check the pledge coin
 	isPledged := false
 	for _, output := range txn.Outputs {
-		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge && output.Value > MinPledgeAmount {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge && output.Value >= MinPledgeAmount {
 			isPledged = true
 		}
 	}
