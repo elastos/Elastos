@@ -11,18 +11,34 @@ import (
 )
 
 type LevelDBOperator struct {
-	db *blockchain.LevelDB
+	blockchain.IStore
+
+	dbFilePath string
 }
 
 func (s *LevelDBOperator) InitConnection(connParams ...interface{}) error {
+	filePath, ok := connParams[0].(string)
+	if !ok {
+		return errors.New("[InitConnection] Invalid sql db file path.")
+	}
+
+	s.dbFilePath = filePath
+
 	return nil
 }
 
 func (s *LevelDBOperator) Connect() error {
+	db, err := blockchain.NewLevelDB(s.dbFilePath)
+	if err != nil {
+		return err
+	}
+
+	s.IStore = db
 	return nil
 }
 
 func (s *LevelDBOperator) Disconnect() error {
+	s.Close()
 	return nil
 }
 
@@ -33,19 +49,20 @@ func (s *LevelDBOperator) Create(table *DposTable) error {
 	}
 
 	key := getTableKey(table.Name)
-	_, err := s.db.Get(key)
+	_, err := s.Get(key)
 	if err != nil {
 		return fmt.Errorf("already exist table: %s", table.Name)
 	}
 
-	if err := s.db.Put(getTableIDKey(table.Name), uint64ToBytes(uint64(0))); err != nil {
+	if err := s.Put(getTableIDKey(table.Name), uint64ToBytes(uint64(0))); err != nil {
 		return err
 	}
 
-	return s.db.Put(key, buf.Bytes())
+	return s.Put(key, buf.Bytes())
 }
 
 func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, error) {
+	s.NewBatch()
 	tableName := table.Name
 	var hasPrimaryKey bool
 	for _, f := range fields {
@@ -59,58 +76,53 @@ func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, err
 
 	// key: tableName_rowID
 	// value: [colvalue1, colvalue2, colvalue3, ...]
-	idBytes, err := s.db.Get(getTableIDKey(table.Name))
+	idBytes, err := s.Get(getTableIDKey(table.Name))
 	if err != nil {
 		return 0, err
 	}
 	id := bytesToUint64(idBytes)
-	row := id + 1
+	rowID := id + 1
 	data, err := table.Data(fields)
 	if err != nil {
 		return 0, err
 	}
-	if err := s.db.Put(getRowKey(tableName, row), data); err != nil {
-		return 0, err
-	}
+	s.BatchPut(getRowKey(tableName, rowID), data)
 
 	for _, f := range fields {
 		col := table.Column(f.Name)
 		if col == table.PrimaryKey {
 			buf := new(bytes.Buffer)
-			common.WriteUint64(buf, id+uint64(1))
+			common.WriteUint64(buf, rowID)
 			key := getIndexKey(tableName, table.PrimaryKey, f.Data())
-			if _, err := s.db.Get(key); err != nil {
+			if _, err := s.Get(key); err != nil {
 				return 0, errors.New("duplicated primary")
 			}
 			// key: tableName_PrimaryKey_ColumnValue
 			// value: rowID
-			if err := s.db.Put(key, buf.Bytes()); err != nil {
-				return 0, err
-			}
+			s.BatchPut(key, buf.Bytes())
 		}
 		for _, index := range table.Indexes {
 			if col == index {
 				key := getIndexKey(tableName, col, f.Data())
 				var indexes []uint64
-				indexData, err := s.db.Get(key)
+				indexData, err := s.Get(key)
 				if err == nil {
 					indexes = bytesToUint64List(indexData)
 				}
-				indexes = append(indexes, id+uint64(1))
+				indexes = append(indexes, rowID)
 				// key: tableName_IndexID_ColumnValue
 				// value: [rowID1,rowID2,rowID3,...]
-				if err := s.db.Put(key, uint64ListToBytes(indexes)); err != nil {
-					return 0, err
-				}
+				s.BatchPut(key, uint64ListToBytes(indexes))
 			}
 		}
 	}
 
 	// update id
-	if err := s.db.Put(getTableIDKey(table.Name), uint64ToBytes(id+1)); err != nil {
+	s.BatchPut(getTableIDKey(table.Name), uint64ToBytes(rowID))
+	if err := s.BatchCommit(); err != nil {
 		return 0, err
 	}
-	return id + 1, nil
+	return rowID, nil
 }
 
 func (s *LevelDBOperator) Select(table *DposTable, inputFields []*Field) ([][]*Field, error) {
@@ -133,7 +145,7 @@ func (s *LevelDBOperator) SelectID(table *DposTable, inputFields []*Field) ([]ui
 func (s *LevelDBOperator) selectValuesFromRowIDs(table *DposTable, rowIDs []uint64) ([][]*Field, error) {
 	var result [][]*Field
 	for _, rowID := range rowIDs {
-		columnsData, err := s.db.Get(getRowKey(table.Name, rowID))
+		columnsData, err := s.Get(getRowKey(table.Name, rowID))
 		if err != nil {
 			return nil, err
 		}
@@ -167,11 +179,12 @@ func (s *LevelDBOperator) selectRowIDs(table *DposTable, inputFields []*Field) (
 	return selectRowIDs, nil
 }
 
+// because if one field is neither primary key nor index key, requires full table lookup
 // only sport select from primary key or index column
 func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field) ([]uint64, error) {
 	col := table.Column(inputField.Name)
 	if col == table.PrimaryKey {
-		rowIDBytes, err := s.db.Get(getIndexKey(table.Name, col, inputField.Data()))
+		rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
 		if err == nil {
 			return nil, err
 		}
@@ -180,7 +193,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 	}
 	for _, index := range table.Indexes {
 		if col == index {
-			rowIDBytes, err := s.db.Get(getIndexKey(table.Name, col, inputField.Data()))
+			rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
 			if err == nil {
 				return nil, err
 			}
@@ -192,6 +205,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 }
 
 func (s *LevelDBOperator) Update(table *DposTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
+	s.NewBatch()
 	if err := s.checkUpdateFields(table, updateFields); err != nil {
 		return nil, err
 	}
@@ -206,6 +220,9 @@ func (s *LevelDBOperator) Update(table *DposTable, inputFields []*Field, updateF
 			return nil, err
 		}
 	}
+	if err := s.BatchCommit(); err != nil {
+		return nil, err
+	}
 	return ids, nil
 }
 
@@ -213,7 +230,7 @@ func (s *LevelDBOperator) checkUpdateFields(table *DposTable, updateFields []*Fi
 	// check updateFields include exist primary key value
 	for _, f := range updateFields {
 		if table.Column(f.Name) == table.PrimaryKey {
-			if _, err := s.db.Get(getIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
+			if _, err := s.Get(getIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
 				return err
 			}
 		}
@@ -243,7 +260,7 @@ func (s *LevelDBOperator) updateRow(table *DposTable, rowID uint64, updateFields
 		var isIndexColumn bool
 		var oldData []byte
 		for _, field := range table.Fields {
-			if col == table.Column(field) {
+			if col != 0 && col == table.Column(field) {
 				oldData = f.Data()
 				isIndexColumn = true
 			}
@@ -277,9 +294,7 @@ func (s *LevelDBOperator) updateRowData(table *DposTable, oldFields []*Field, up
 	if err != nil {
 		return err
 	}
-	if err := s.db.Put(getRowKey(table.Name, rowID), data); err != nil {
-		return err
-	}
+	s.BatchPut(getRowKey(table.Name, rowID), data)
 	return nil
 }
 
@@ -291,28 +306,22 @@ func (s *LevelDBOperator) updatePrimaryKeyValue(table *DposTable, oldFields []*F
 		}
 	}
 	oldIndexKey := getIndexKey(table.Name, column, data)
-	if err := s.db.Delete(oldIndexKey); err != nil {
-		return err
-	}
+	s.BatchDelete(oldIndexKey)
 	newIndexKey := getIndexKey(table.Name, column, newData)
-	if err := s.db.Put(newIndexKey, uint64ToBytes(rowID)); err != nil {
-		return err
-	}
+	s.BatchPut(newIndexKey, uint64ToBytes(rowID))
 	return nil
 }
 
 func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
 	// if exist index column before, need update old record
 	oldIndexKey := getIndexKey(table.Name, column, oldData)
-	rowIDBytes, err := s.db.Get(oldIndexKey)
+	rowIDBytes, err := s.Get(oldIndexKey)
 	if err != nil {
 		return err
 	}
 	rowIDs := bytesToUint64List(rowIDBytes)
 	if len(rowIDs) <= 1 {
-		if err := s.db.Delete(oldIndexKey); err != nil {
-			return err
-		}
+		s.BatchDelete(oldIndexKey)
 	} else {
 		var newRowIDs []uint64
 		for _, r := range rowIDs {
@@ -320,30 +329,24 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, co
 				newRowIDs = append(newRowIDs, r)
 			}
 		}
-		if err := s.db.Put(oldIndexKey, uint64ListToBytes(newRowIDs)); err != nil {
-			return err
-		}
+		s.BatchPut(oldIndexKey, uint64ListToBytes(newRowIDs))
 	}
 
 	// update or add new record
 	newIndexKey := getIndexKey(table.Name, column, newData)
-	newRowIDBytes, err := s.db.Get(newIndexKey)
+	newRowIDBytes, err := s.Get(newIndexKey)
 	if err == nil {
 		rowIDs := bytesToUint64List(rowIDBytes)
 		rowIDs = append(rowIDs, rowID)
-		if err := s.db.Put(newIndexKey, uint64ListToBytes(rowIDs)); err != nil {
-			return err
-		}
+		s.BatchPut(newIndexKey, uint64ListToBytes(rowIDs))
 	} else {
-		if err := s.db.Put(newIndexKey, newRowIDBytes); err != nil {
-			return err
-		}
+		s.BatchPut(newIndexKey, newRowIDBytes)
 	}
 	return nil
 }
 
 func (s *LevelDBOperator) getFieldsByRowID(table *DposTable, rowID uint64) ([]*Field, error) {
-	columnsData, err := s.db.Get(getRowKey(table.Name, rowID))
+	columnsData, err := s.Get(getRowKey(table.Name, rowID))
 	if err != nil {
 		return nil, fmt.Errorf("not found row id")
 	}

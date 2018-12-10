@@ -47,11 +47,21 @@ func (f *Field) Data() []byte {
 	return buf.Bytes()
 }
 
+// todo change fields to map[string]FieldType, change indexes to ma[uint64]struct{}
 type DposTable struct {
-	Name       string
+	// name of table
+	Name string
+
+	// primary key range from 1 to len(table.Fields)
+	// if give other value, will use default rowID as primary key only
 	PrimaryKey uint64
-	Indexes    []uint64
-	Fields     []string
+
+	// database index range from 1 to len(table.Fields)
+	// if give values not in scope, the database index will not be effective
+	Indexes []uint64
+
+	// field name of table
+	Fields []string
 }
 
 func (d *DposTable) Serialize(w io.Writer) error {
@@ -166,10 +176,11 @@ func readElements(reader io.Reader) (interface{}, error) {
 	return nil, errors.New("unknown type")
 }
 
+// column range from 1 to len(table.Fields), if a field name not found in table will return 0
 func (d *DposTable) Column(fieldName string) uint64 {
 	for i, f := range d.Fields {
 		if f == fieldName {
-			return uint64(i)
+			return uint64(i) + 1
 		}
 	}
 	return 0
