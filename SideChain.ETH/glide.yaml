@@ -129,7 +129,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dev
 - package: github.com/elastos/Elastos.ELA
-  version: release_v0.2.0
+  version: release_v0.2.1
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 testImport:
