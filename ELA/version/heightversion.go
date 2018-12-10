@@ -121,7 +121,7 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFu
 
 	v := h.findTxVersion(blockHeight, &info, tx)
 	if v == nil {
-		return fmt.Errorf("Block height ", blockHeight, "can not support transaction version ", tx.Version)
+		return fmt.Errorf("Block height %d can not support transaction version %d", blockHeight, tx.Version)
 	}
 	return txFun(v)
 }

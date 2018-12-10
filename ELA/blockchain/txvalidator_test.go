@@ -68,8 +68,6 @@ func TestCheckTransactionSize(t *testing.T) {
 	config.Parameters.MaxBlockSize = size - 1
 	err = CheckTransactionSize(tx)
 	assert.EqualError(t, err, fmt.Sprintf("Invalid transaction size: %d bytes", size))
-
-	t.Log("[TestCheckTransactionSize] PASSED")
 }
 
 func TestCheckTransactionInput(t *testing.T) {
@@ -115,8 +113,6 @@ func TestCheckTransactionInput(t *testing.T) {
 	tx.Inputs = append(tx.Inputs, tx.Inputs[0])
 	err = CheckTransactionInput(tx)
 	assert.EqualError(t, err, "duplicated transaction inputs")
-
-	t.Log("[TestCheckTransactionInput] PASSED")
 }
 
 func TestCheckTransactionOutput(t *testing.T) {
@@ -166,63 +162,6 @@ func TestCheckTransactionOutput(t *testing.T) {
 	err = CheckTransactionOutput(heights.HeightVersion1, tx)
 	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
 
-	// reward to foundation in coinbase = 30%, reward to miner in coinbase >= 35%
-	foundationReward = common.Fixed64(float64(totalReward) * 0.3)
-	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward := common.Fixed64(float64(totalReward) * 0.35)
-	t.Logf("Miner reward amount %s", minerReward.String())
-	dposReward := totalReward - foundationReward - minerReward
-	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
-	assert.NoError(t, err)
-
-	// reward to foundation in coinbase = 30%, reward to miner in coinbase < 35%
-	//fixme
-	//foundationReward = common.Fixed64(float64(totalReward) * 0.3)
-	//t.Logf("Foundation reward amount %s", foundationReward.String())
-	//minerReward = common.Fixed64(float64(totalReward) * 0.3499999)
-	//t.Logf("Miner reward amount %s", minerReward.String())
-	//dposReward = totalReward - foundationReward - minerReward
-	//tx.Outputs = []*types.Output{
-	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
-	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
-	//}
-	//err = CheckTransactionOutput(heights.HeightVersion1, tx)
-	//assert.EqualError(t, err, "Reward to dpos in coinbase < 35%")
-
-	// reward to foundation in coinbase < 30%, reward to miner in coinbase >= 35%
-	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
-	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward = common.Fixed64(float64(totalReward) * 0.35)
-	t.Logf("Miner reward amount %s", minerReward.String())
-	dposReward = totalReward - foundationReward - minerReward
-	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
-	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
-
-	// reward to foundation in coinbase < 30%, reward to miner in coinbase < 35%
-	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
-	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward = common.Fixed64(float64(totalReward) * 0.3499999)
-	t.Logf("Miner reward amount %s", minerReward.String())
-	dposReward = totalReward - foundationReward - minerReward
-	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
-	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
-
 	// normal transaction
 	tx = buildTx()
 	for _, output := range tx.Outputs {
@@ -254,11 +193,6 @@ func TestCheckTransactionOutput(t *testing.T) {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
-	//fixme
-	//err = CheckTransactionOutput(heights.HeightVersion1, tx)
-	//assert.EqualError(t, err, "output address is invalid")
-
-	t.Log("[TestCheckTransactionOutput] PASSED")
 }
 
 func TestCheckAssetPrecision(t *testing.T) {
@@ -314,8 +248,6 @@ func TestCheckAssetPrecision(t *testing.T) {
 	}
 	err = CheckAssetPrecision(tx)
 	assert.EqualError(t, err, "The precision of asset is incorrect.")
-
-	t.Log("[TestCheckAssetPrecision] PASSED")
 }
 
 func TestCheckAmountPrecision(t *testing.T) {
@@ -326,7 +258,6 @@ func TestCheckAmountPrecision(t *testing.T) {
 		assert.Equal(t, true, checkAmountPrecise(amount, byte(8-i)))
 		assert.Equal(t, false, checkAmountPrecise(amount, byte(8-i-1)))
 	}
-	t.Log("[TestCheckAmountPrecision] PASSED")
 }
 
 func TestCheckAttributeProgram(t *testing.T) {
@@ -402,8 +333,6 @@ func TestCheckAttributeProgram(t *testing.T) {
 		err = CheckAttributeProgram(heights.HeightVersion1, tx)
 		assert.EqualError(t, err, fmt.Sprintf("invalid program code type, %x", p.Code))
 	}
-
-	t.Log("[TestCheckAttributeProgram] PASSED")
 }
 
 func TestCheckTransactionPayload(t *testing.T) {
@@ -431,8 +360,6 @@ func TestCheckTransactionPayload(t *testing.T) {
 	payload.Amount = 1234567
 	err = CheckTransactionPayload(tx)
 	assert.EqualError(t, err, "Invalide asset value,out of precise.")
-
-	t.Log("[TestCheckTransactionPayload] PASSED")
 }
 
 func TestCheckDuplicateSidechainTx(t *testing.T) {
@@ -459,8 +386,6 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 	// 2. Run CheckDuplicateSidechainTx
 	err := CheckDuplicateSidechainTx(txn)
 	assert.EqualError(t, err, "Duplicate sidechain tx detected in a transaction")
-
-	t.Log("[TestCheckDuplicateSidechainTx] PASSED")
 }
 
 func TestCheckTransactionBalance(t *testing.T) {
@@ -505,8 +430,6 @@ func TestCheckTransactionBalance(t *testing.T) {
 	DefaultLedger.Store.(*ChainStore).NewBatch()
 	DefaultLedger.Store.(*ChainStore).RollbackTransaction(deposit)
 	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	t.Log("[TestCheckTransactionBalance] PASSED")
 }
 
 func TestCheckSideChainPowConsensus(t *testing.T) {
@@ -635,8 +558,6 @@ func TestCheckRegisterProducerTransaction(t *testing.T) {
 	// 10. Check transaction
 	err = CheckRegisterProducerTransaction(txn)
 	assert.EqualError(t, err, "Duplicated public key.")
-
-	t.Log("[TestCheckRegisterProducerTransaction] PASSED")
 }
 
 func TestCheckVoteProducerOutput(t *testing.T) {
@@ -710,8 +631,6 @@ func TestCheckVoteProducerOutput(t *testing.T) {
 
 	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
 	assert.EqualError(t, err, "duplicate candidate")
-
-	t.Log("[TestCheckVoteProducerOutput] PASSED")
 }
 
 func TestCheckCancelProducerTransaction(t *testing.T) {
@@ -761,8 +680,6 @@ func TestCheckCancelProducerTransaction(t *testing.T) {
 	// 8. Check transaction
 	err = CheckCancelProducerTransaction(txn)
 	assert.EqualError(t, err, "Invalid producer.")
-
-	t.Log("[TestCheckCancelProducerTransaction] PASSED")
 }
 
 func TestTxValidatorDone(t *testing.T) {
