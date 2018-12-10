@@ -51,7 +51,7 @@ func (v *TxVersionMain) CheckOutputProgramHash(programHash Uint168) error {
 func (v *TxVersionMain) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward Fixed64) error {
 	minerReward := tx.Outputs[1].Value
 	if Fixed64(minerReward) < Fixed64(float64(totalReward)*0.35) {
-		return errors.New("Reward to dpos in coinbase < 35%")
+		return errors.New("Reward to miner in coinbase < 35%")
 	}
 
 	return nil

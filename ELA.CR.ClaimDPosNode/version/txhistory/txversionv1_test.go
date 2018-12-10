@@ -1,4 +1,4 @@
-package version
+package txhistory
 
 import (
 	"testing"
@@ -6,22 +6,22 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/stretchr/testify/suite"
 )
 
-type txVersionTestSuite struct {
+type txVersionV1TestSuite struct {
 	suite.Suite
 
-	Version TxVersion
+	Version version.TxVersion
 }
 
-func (s *txVersionTestSuite) SetupTest() {
-	s.Version = &TxVersionMain{}
+func (s *txVersionV1TestSuite) SetupTest() {
+	s.Version = &TxVersionV1{}
 }
-
-func (s *txVersionTestSuite) TestCheckOutputProgramHash() {
+func (s *txVersionV1TestSuite) TestCheckOutputProgramHash() {
 	programHash := common.Uint168{}
 
 	// empty program hash should pass
@@ -44,7 +44,7 @@ func (s *txVersionTestSuite) TestCheckOutputProgramHash() {
 	s.Error(s.Version.CheckOutputProgramHash(programHash))
 }
 
-func (s *txVersionTestSuite) TestTxVersionMain_CheckCoinbaseMinerReward() {
+func (s *txVersionV1TestSuite) TestTxVersionMain_CheckCoinbaseMinerReward() {
 	totalReward := blockchain.RewardAmountPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
@@ -72,9 +72,9 @@ func (s *txVersionTestSuite) TestTxVersionMain_CheckCoinbaseMinerReward() {
 		{ProgramHash: common.Uint168{}, Value: dposReward},
 	}
 	err = s.Version.CheckCoinbaseMinerReward(tx, totalReward)
-	s.EqualError(err, "Reward to miner in coinbase < 35%")
+	s.NoError(err, "Reward to miner in coinbase < 35%")
 }
 
-func TestTxVersionMainSuit(t *testing.T) {
-	suite.Run(t, new(txVersionTestSuite))
+func TestTxVersionV1Suit(t *testing.T) {
+	suite.Run(t, new(txVersionV1TestSuite))
 }

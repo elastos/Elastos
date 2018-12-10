@@ -58,10 +58,9 @@ func TestChainStore_PersisSidechainTx(t *testing.T) {
 
 	// 1. The sidechain Tx should not exist in DB.
 	_, err := testChainStore.GetSidechainTx(sidechainTxHash)
-	//fixme
-	//if err == nil {
-	//	t.Error("Found the sidechain Tx which should not exist in DB")
-	//}
+	if err == nil {
+		t.Error("Found the sidechain Tx which should not exist in DB")
+	}
 
 	// 2. Run PersistSidechainTx
 	testChainStore.PersistSidechainTx(sidechainTxHash)
