@@ -21,11 +21,11 @@ type Info struct {
 	HttpJsonPort  int
 	HttpLocalPort int
 	NodePort      uint16
-	NodeId        string
+	NodeID        string
 }
 
 type NgbNodeInfo struct {
-	NgbId   string
+	NgbID   string
 	NbrAddr string
 }
 
@@ -39,7 +39,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(neighbors); i++ {
 		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
-			NgbId:   fmt.Sprintf("0x%x", neighbors[i].ID()),
+			NgbID:   fmt.Sprintf("0x%x", neighbors[i].ID()),
 			NbrAddr: neighbors[i].Addr(),
 		})
 	}
@@ -52,7 +52,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		HttpWsPort:   config.Parameters.HttpWsPort,
 		HttpJsonPort: config.Parameters.HttpJsonPort,
 		NodePort:     config.Parameters.NodePort,
-		NodeId:       fmt.Sprintf("0x%x", node.ID()),
+		NodeID:       fmt.Sprintf("0x%x", node.ID()),
 	}
 
 	err := templates.ExecuteTemplate(w, "info", pageInfo)

@@ -16,12 +16,12 @@ import (
 
 const (
 	ProtocolVersion    = 0
-	HandshakeTimeout   = 2
+	HandshakeTimeout   = 8
 	MinConnectionCount = 3
 	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount   = 8
 	DefaultMaxPeers    = 125
-	MaxIdCached        = 5000
+	MaxIDCached        = 5000
 )
 
 const (
@@ -120,6 +120,8 @@ type Noder interface {
 	RemoveTransaction(txn *types.Transaction)
 
 	SetHeight(height uint64)
+	SetLastActive(now time.Time)
+	GetLastActive() time.Time
 	Relay(Noder, interface{}) error
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)

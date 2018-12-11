@@ -363,8 +363,8 @@ func (h *HandlerEIP001) onMemPool(*msg.MemPool) {
 
 	for _, tx := range txMemPool {
 		if !node.BloomFilter().IsLoaded() || node.BloomFilter().MatchTxAndUpdate(tx) {
-			txId := tx.Hash()
-			inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
+			txID := tx.Hash()
+			inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txID))
 		}
 	}
 
