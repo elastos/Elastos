@@ -1143,6 +1143,42 @@ static void cresume(TestContext *context, int argc, char *argv[])
     }
 }
 
+static void gnew(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *wextra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_new_group(wctx->carrier, wextra->groupid, sizeof(wextra->groupid));
+    if (rc < 0) {
+        write_ack("gnew failed\n");
+        return;
+    }
+
+    write_ack("gnew succeeded\n");
+}
+
+static void ginvite(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *wextra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 2);
+
+    rc = ela_group_invite(wctx->carrier, wextra->groupid, argv[1]);
+    if (rc < 0) {
+        write_ack("ginvite failed\n");
+        return;
+    }
+
+    write_ack("ginvite succeeded\n");
+}
+
 static void gjoin(TestContext *context, int argc, char *argv[])
 {
     TestContext *ctx = (TestContext *)context;
@@ -1160,12 +1196,12 @@ static void gjoin(TestContext *context, int argc, char *argv[])
         return;
     }
 
-    // wait for group connected callback
-    cond_wait(wctx->cond);
-
-    // wait for peer_list_changed callback twice
-    cond_wait(wctx->cond);
-    cond_wait(wctx->cond);
+    /* wait for the peer_list_changed_cb(because of the cases's joining),
+       group_connected_cb, peer_list_changed_cb(because of the robot's joining)
+       callback functions to be invoked. */
+    cond_wait(wctx->group_cond);
+    cond_wait(wctx->group_cond);
+    cond_wait(wctx->group_cond);
 
     write_ack("gjoin succeeded\n");
 }
@@ -1213,6 +1249,8 @@ static struct command {
     { "cready2open",  cready2open  },
     { "cpend",        cpend        },
     { "cresume",      cresume      },
+    { "gnew",         gnew         },
+    { "ginvite",      ginvite      },
     { "gjoin",        gjoin        },
     { "gleave",       gleave       },
     { NULL, NULL},
@@ -1235,9 +1273,9 @@ int start_cmd_listener(const char *host, const char *port)
     }
 
 #ifdef _WIN32
-    struct timeval timeout = {120000,0};//120s
+    struct timeval timeout = {300000,0};//300s
 #else
-    struct timeval timeout = {120,0};//120s
+    struct timeval timeout = {300,0};//300s
 #endif
     setsockopt(cmd_sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
     setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));

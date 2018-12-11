@@ -207,6 +207,52 @@ static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
         cbs->friend_invite(w, from, bundle, data, len, context);
 }
 
+static void group_invite_cb(ElaCarrier *w, const char *from,
+                         const void *cookie, size_t len, void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_invite)
+        cbs->group_invite(w, from, cookie, len, context);
+}
+
+static void group_connected_cb(ElaCarrier *w, const char *groupid, void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_callbacks.group_connected)
+        cbs->group_callbacks.group_connected(w, groupid, context);
+}
+
+static void group_message_cb(ElaCarrier *w, const char *groupid,
+                          const char *from, const void *message, size_t length,
+                          void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_callbacks.group_message)
+        cbs->group_callbacks.group_message(w, groupid, from, message, length, context);
+}
+
+static void peer_name_cb(ElaCarrier *w, const char *groupid,
+                      const char *peerid, const char *peer_name,
+                      void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_callbacks.peer_name)
+        cbs->group_callbacks.peer_name(w, groupid, peerid, peer_name, context);
+}
+
+static void group_title_cb(ElaCarrier *w, const char *groupid,
+                        const char *from, const char *title, void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_callbacks.group_title)
+        cbs->group_callbacks.group_title(w, groupid, from, title, context);
+}
+
 static void carrier_peer_list_changed_cb(ElaCarrier *w,
                                          const char *groupid,
                                          void *context)
@@ -231,7 +277,12 @@ static ElaCallbacks callbacks = {
     .friend_removed  = carrier_friend_removed_cb,
     .friend_message  = carrier_friend_message_cb,
     .friend_invite   = carrier_friend_invite_cb,
+    .group_invite    = group_invite_cb,
     .group_callbacks = {
+        .group_connected   = group_connected_cb,
+        .group_message     = group_message_cb,
+        .group_title       = group_title_cb,
+        .peer_name         = peer_name_cb,
         .peer_list_changed = carrier_peer_list_changed_cb
     }
 };
@@ -533,4 +584,64 @@ const char* connection_str(enum ElaConnectionStatus status)
             break;
     }
     return str;
+}
+
+void test_group_scheme(TestContext *context,
+                       int (*do_work_cb)(TestContext *))
+{
+    CarrierContext *wctx = context->carrier;
+    char cmd[32] = {0};
+    char result[32] = {0};
+    int rc = 0;
+    int len = ELA_MAX_ID_LEN + 1;
+
+    context->context_reset(context);
+
+    rc = add_friend_anyway(context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctx->carrier, robotid));
+
+    rc = ela_new_group(wctx->carrier, wctx->groupid, sizeof(wctx->groupid));
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_FATAL(strlen(wctx->groupid));
+
+    rc = ela_group_invite(wctx->carrier, wctx->groupid, robotid);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    // wait until robot having received the invitation
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL_FATAL(cmd, "ginvite");
+    CU_ASSERT_STRING_EQUAL_FATAL(result, "received");
+
+    rc = write_cmd("gjoin\n");
+    CU_ASSERT_FATAL(rc > 0);
+
+    // wait until robot having joined in the group
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gjoin") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    // wait until peer_list_changed callback invoked
+    cond_wait(wctx->group_cond);
+    CU_ASSERT_TRUE_FATAL(strcmp(wctx->groupid, wctx->joined_groupid) == 0);
+    CU_ASSERT_EQUAL_FATAL(wctx->peer_list_cnt, 1);
+
+    rc = do_work_cb ? do_work_cb(context) : 0;
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    rc = write_cmd("gleave\n");
+    CU_ASSERT_FATAL(rc > 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gleave") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    // wait until peer_list_changed callback invoked
+    cond_wait(wctx->group_cond);
+
+    rc = ela_leave_group(wctx->carrier, wctx->groupid);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
 }

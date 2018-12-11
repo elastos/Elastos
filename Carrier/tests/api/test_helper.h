@@ -60,6 +60,9 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
 
 const char* connection_str(enum ElaConnectionStatus status);
 
+void test_group_scheme(TestContext *context, 
+                       int (*do_work_cb)(TestContext *));
+
 int write_cmd(const char *cmd, ...);
 int read_ack(const char *format, ...);
 
