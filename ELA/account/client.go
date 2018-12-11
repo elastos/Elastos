@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"sort"
 	"sync"
 	"syscall"
 	"time"
@@ -314,6 +315,20 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	}
 
 	return nil
+}
+
+func (cl *ClientImpl) GetAccounts() []*Account {
+	accounts := make([]*Account, 0, len(cl.accounts))
+	for _, account := range cl.accounts {
+		accounts = append(accounts, account)
+	}
+
+	sort.Slice(accounts, func(i, j int) bool {
+		return bytes.Compare(accounts[i].ProgramHash[:],
+			accounts[j].ProgramHash[:]) < 0
+	})
+
+	return accounts
 }
 
 // LoadAccounts loads all accounts from db to memory
