@@ -533,7 +533,7 @@ func TestServer_BroadcastMessage(t *testing.T) {
 		priKeys = append(priKeys, priKey)
 		ePubKey, _ := pubKey.EncodePoint(true)
 		copy(pid[:], ePubKey)
-		port := 60000 + i
+		port := 40000 + i
 		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
 		addrList = append(addrList, addr)
 		connectPeers[pid] = addr
