@@ -95,14 +95,6 @@ func (h *HandlerBase) onVersion(version *msg.Version) {
 		return
 	}
 
-	//// Obsolete node
-	//n, ret := LocalNode.DelNeighborNode(version.Nonce)
-	//if ret == true {
-	//	log.Info(fmt.Sprintf("Node %s reconnect", n))
-	//	// Close the connection and release the node soure
-	//	n.Disconnect()
-	//}
-
 	node.UpdateInfo(time.Now(), version.Version,
 		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
 
@@ -165,14 +157,12 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 }
 
 func (h *HandlerBase) onPing(ping *msg.Ping) {
-	log.Debug("onPing")
 	h.node.SetHeight(ping.Nonce)
 	h.node.SetLastActive(time.Now())
 	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Store.GetHeight())))
 }
 
 func (h *HandlerBase) onPong(pong *msg.Pong) {
-	log.Debug("onPong")
 	h.node.SetHeight(pong.Nonce)
 	h.node.SetLastActive(time.Now())
 }
@@ -183,13 +173,9 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.OpenService == protocol.OpenService {
-				addrs = append(addrs,
-					&p2p.NetAddress{
-						addr.Timestamp,
-						addr.Services,
-						addr.IP,
-						config.Parameters.NodeOpenPort,
-					})
+				var copyAddr = *addr
+				copyAddr.Port = config.Parameters.NodeOpenPort
+				addrs = append(addrs, &copyAddr)
 			}
 		}
 	} else {
