@@ -72,6 +72,69 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	return s.cfg.GetTransactionInfo(s.cfg, header, txn), nil
 }
 
+func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
+	bestHeight := s.cfg.Store.GetHeight()
+	type UTXOInfo struct {
+		AssetId       string `json:"assetid"`
+		Txid          string `json:"txid"`
+		VOut          uint32 `json:"vout"`
+		Address       string `json:"address"`
+		Amount        string `json:"amount"`
+		Confirmations uint32 `json:"confirmations"`
+		OutputLock    uint32 `json:"outputlock"`
+	}
+
+	var results []UTXOInfo
+
+	if _, ok := param["addresses"]; !ok {
+		return nil, errors.New("need a param called address")
+	}
+	var addressStrings []string
+	switch addresses := param["addresses"].(type) {
+	case []interface{}:
+		for _, v := range addresses {
+			str, ok := v.(string)
+			if !ok {
+				return nil, errors.New("please send a string")
+			}
+			addressStrings = append(addressStrings, str)
+		}
+	default:
+		return nil, errors.New("wrong type")
+	}
+
+	for _, address := range addressStrings {
+		programHash, err := Uint168FromAddress(address)
+		if err != nil {
+			return nil, errors.New("Invalid address: " + address)
+		}
+		differentAssets, err := s.cfg.Chain.GetUnspents(*programHash)
+		if err != nil {
+			return nil, errors.New("cannot get asset with program")
+		}
+		for _, asset := range differentAssets {
+			for _, unspent := range asset {
+				tx, height, err := s.cfg.Chain.GetTransaction(unspent.TxId)
+				if err != nil {
+					return nil, errors.New("unknown transaction " + unspent.TxId.String() + " from persisted utxo")
+				}
+				elaAssetID := types.GetSystemAssetId()
+				results = append(results, UTXOInfo{
+					Amount:        unspent.Value.String(),
+					AssetId:       BytesToHexString(BytesReverse(elaAssetID[:])),
+					Txid:          BytesToHexString(BytesReverse(unspent.TxId[:])),
+					VOut:          unspent.Index,
+					Address:       address,
+					Confirmations: bestHeight - height + 1,
+					OutputLock:    tx.Outputs[unspent.Index].OutputLock,
+				})
+			}
+		}
+	}
+
+	return results, nil
+}
+
 func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, error) {
 	var txInfo service.TransactionInfo
 	err := json.Unmarshal(txInfoBytes, &txInfo)
