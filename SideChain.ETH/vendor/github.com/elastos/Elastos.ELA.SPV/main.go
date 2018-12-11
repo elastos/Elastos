@@ -2,49 +2,23 @@ package main
 
 import (
 	"os"
-	"os/signal"
-	"encoding/binary"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 )
 
 func main() {
-	// Initiate log
-	log.Init(
-		config.Values().PrintLevel,
-		config.Values().MaxPerLogSize,
-		config.Values().MaxLogsSize,
-	)
+	// Listen interrupt signals.
+	interrupt := signal.NewInterrupt()
 
-	file, err := spvwallet.OpenKeystoreFile()
+	// Create the SPV wallet instance.
+	w, err := NewWallet()
 	if err != nil {
-		log.Error("Keystore.dat file not found, please create your wallet using ela-wallet first")
+		waltlog.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
 	}
+	defer w.Stop()
 
-	// Initiate SPV service
-	iv, _ := file.GetIV()
-	wallet, err := spvwallet.Init(binary.LittleEndian.Uint64(iv), config.Values().SeedList)
-	if err != nil {
-		log.Error("Initiate SPV service failed,", err)
-		os.Exit(0)
-	}
+	w.Start()
 
-	// Handle interrupt signal
-	stop := make(chan int, 1)
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			log.Trace("SPVWallet shutting down...")
-			wallet.Stop()
-			stop <- 1
-		}
-	}()
-
-	wallet.Start()
-
-	<-stop
+	<-interrupt.C
 }

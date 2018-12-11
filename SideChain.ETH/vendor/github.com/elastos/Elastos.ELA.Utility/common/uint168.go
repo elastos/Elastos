@@ -1,7 +1,6 @@
 package common
 
 import (
-	"encoding/binary"
 	"errors"
 	"io"
 	"math/big"
@@ -53,11 +52,13 @@ func (u *Uint168) Bytes() []byte {
 }
 
 func (u *Uint168) Serialize(w io.Writer) error {
-	return binary.Write(w, binary.LittleEndian, u)
+	_, err := w.Write(u[:])
+	return err
 }
 
 func (u *Uint168) Deserialize(r io.Reader) error {
-	return binary.Read(r, binary.LittleEndian, u)
+	_, err := io.ReadFull(r, u[:])
+	return err
 }
 
 func (u *Uint168) ToAddress() (string, error) {

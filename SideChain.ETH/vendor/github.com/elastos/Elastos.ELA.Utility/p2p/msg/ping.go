@@ -1,19 +1,22 @@
 package msg
 
 import (
-	"io"
 	"encoding/binary"
+	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
+
+// Ensure Ping implement p2p.Message interface.
+var _ p2p.Message = (*Ping)(nil)
 
 type Ping struct {
 	Nonce uint64
 }
 
-func NewPing(nonce uint32) *Ping {
+func NewPing(nonce uint64) *Ping {
 	ping := new(Ping)
-	ping.Nonce = uint64(nonce)
+	ping.Nonce = nonce
 	return ping
 }
 

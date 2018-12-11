@@ -4,15 +4,15 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
+// Ensure NotFound implement p2p.Message interface.
+var _ p2p.Message = (*NotFound)(nil)
+
 type NotFound struct {
-	Inventory
+	Inv
 }
 
 func NewNotFound() *NotFound {
-	msg := &NotFound{
-		Inventory: *NewInventory(),
-	}
-	return msg
+	return &NotFound{}
 }
 
 func (msg *NotFound) CMD() string {

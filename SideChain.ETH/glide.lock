@@ -1,5 +1,5 @@
-hash: e648753bffef07f3a6e76bb75ad32816e403aea65e2361f8d7ac4a1da5227b3f
-updated: 2018-11-15T04:36:20.506055+08:00
+hash: 567d34a305d8cdf09b956186755ce7f469fb6227851bda87579e0ee3f4845b94
+updated: 2018-12-11T22:00:21.2670774+08:00
 imports:
 - name: bazil.org/fuse
   version: 65cc252bf6691cb3c7014bcb2c8dc29de91e3a7e
@@ -9,7 +9,7 @@ imports:
 - name: github.com/AlexpanXX/fsnotify
   version: 7824671dc7bf1d6925c956976fa0b80ac25dbe32
 - name: github.com/aristanetworks/goarista
-  version: 5faa74ffbed7096292069fdcd0eae96146a3158a
+  version: aa2a42e13be68c4a95fe9e58003adaf63fe6476f
   subpackages:
   - monotime
 - name: github.com/Azure/azure-pipeline-go
@@ -23,7 +23,7 @@ imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
 - name: github.com/btcsuite/btcd
-  version: 67e573d211ace594f1366b4ce9d39726c4b19bd0
+  version: 7d2daa5bfef28c5e282571bc06416516936115ee
   subpackages:
   - btcec
 - name: github.com/cevaris/ordered_map
@@ -47,39 +47,49 @@ imports:
   subpackages:
   - sys/windows
 - name: github.com/elastos/Elastos.ELA
-  version: 19abff85035bef11e609a3829feb0a2710b9ba7c
+  version: b74a971f9e30e4a46bfbc997974cec045e5d00c6
   subpackages:
   - auxpow
-  - bloom
   - core
 - name: github.com/elastos/Elastos.ELA.SideChain
-  version: f203469fda0fd8f9e28b66168f6d9275e0dc5f15
+  version: b9e60d27109bf5307d5752b280448f8a02f92b0d
   subpackages:
   - auxpow
-  - config
-  - core
-  - log
+  - types
   - vm/interfaces
 - name: github.com/elastos/Elastos.ELA.SPV
-  version: 3ac938157b0ac94c52c11f33b8c72579bf7741cb
+  version: 12857546b3174b2d6b4b783b996b1651d46d20e3
   subpackages:
+  - blockchain
+  - bloom
+  - database
+  - fprate
   - interface
-  - interface/db
-  - log
-  - net
+  - interface/iutil
+  - interface/store
+  - peer
   - sdk
-  - spvwallet
-  - spvwallet/config
-  - spvwallet/db
-  - spvwallet/rpc
-  - store
+  - sync
+  - util
+  - wallet/client
+  - wallet/client/database
+  - wallet/store/headers
+  - wallet/store/sqlite
+  - wallet/sutil
 - name: github.com/elastos/Elastos.ELA.Utility
-  version: c1ff96fcd4b8e526ca59f72a114e9f27fc222ec2
+  version: 80e2afd897d53a5a030090f9293ddba804bb9277
   subpackages:
   - common
   - crypto
+  - elalog
+  - http/jsonrpc
+  - http/util
   - p2p
+  - p2p/addrmgr
+  - p2p/connmgr
   - p2p/msg
+  - p2p/peer
+  - p2p/server
 - name: github.com/fatih/color
   version: 5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4
 - name: github.com/fjl/memsize
@@ -89,30 +99,32 @@ imports:
 - name: github.com/gizak/termui
   version: bf53c5cbea3f372f745e1d8e4660e29f73d41517
 - name: github.com/go-ole/go-ole
-  version: 7a0fa49edf48165190530c675167e2f319a05268
+  version: ae2e2a20879aabdd3a51104ab6a4328af2773948
   subpackages:
   - oleutil
 - name: github.com/go-stack/stack
   version: 2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a
 - name: github.com/golang/crypto
-  version: 3d3f9f413869b949e48070b5bc593aa22cc2b8f2
+  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
 - name: github.com/golang/protobuf
   version: aa810b61a9c79d51363740d207bb46cf8e620ed5
   subpackages:
   - proto
   - protoc-gen-go/descriptor
 - name: github.com/golang/snappy
-  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/golang/sys
-  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
+  version: 2a47403f2ae58167c4d75973960ccc62b28cb0d8
 - name: github.com/google/uuid
   version: 9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8
 - name: github.com/gorilla/websocket
-  version: 483fb8d7c32fcb4b5636cd293a92e3935932e2f4
+  version: 95ba29eb981bbb27d92e1f70bf8a1949452d926b
 - name: github.com/hashicorp/golang-lru
   version: 20f1fb78b0740ba8c3cb143a61e86ba5c8669768
   subpackages:
   - simplelru
+- name: github.com/howeyc/gopass
+  version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/huin/goupnp
   version: 656e61dfadd241c7cbdd22a023fa81ecb6860ea8
   subpackages:
@@ -135,7 +147,7 @@ imports:
 - name: github.com/julienschmidt/httprouter
   version: 348b672cd90d8190f8240323e372ecd1e66b59dc
 - name: github.com/karalabe/hid
-  version: 2b4488a37358b7283de4f9622553e85ebbe73125
+  version: d815e0c1a2e2082a287a2806bc90bc8fc7b276a9
 - name: github.com/maruel/panicparse
   version: f20d4c4d746f810c9110e21928d4135e1f2a3efa
   subpackages:
@@ -145,9 +157,9 @@ imports:
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/mattn/go-runewidth
-  version: b20a3daf6a39840c202fd42cc23d53607162b045
+  version: 3ee7d812e62a0804a7d0a324e0249ca2db3476d3
 - name: github.com/mattn/go-sqlite3
-  version: c7c4067b79cc51e6dfdcef5c702e74b1e0fa7c75
+  version: 03cb0c0623bd3dd467afdec9f3e1d4deeca7890c
 - name: github.com/mitchellh/go-wordwrap
   version: 9e67c67572bc5dd02aef930e2b0ae3c02a4b5a5c
 - name: github.com/mohae/deepcopy
@@ -193,7 +205,7 @@ imports:
 - name: github.com/StackExchange/wmi
   version: b12b22c5341f0c26d88c4d66176330500e84db68
 - name: github.com/syndtr/goleveldb
-  version: 6b91fda63f2e36186f1c9d0e48578defb69c5d43
+  version: b001fa50d6b27f3f0bb175a87d0cb55426d0a0ae
   subpackages:
   - leveldb
   - leveldb/cache
@@ -230,14 +242,17 @@ imports:
   version: ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5
   subpackages:
   - metrics
+- name: github.com/urfave/cli
+  version: b67dcf995b6a7b7f14fad5fcb7cc5441b05e814b
 - name: golang.org/x/crypto
-  version: c3a3ad6d03f7a915c0f7e194b7152974bb73d287
+  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
   subpackages:
   - cast5
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
   - internal/chacha20
+  - internal/subtle
   - openpgp
   - openpgp/armor
   - openpgp/elgamal
@@ -263,7 +278,7 @@ imports:
   subpackages:
   - syncmap
 - name: golang.org/x/sys
-  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
+  version: 2a47403f2ae58167c4d75973960ccc62b28cb0d8
   subpackages:
   - cpu
   - unix
@@ -289,7 +304,7 @@ imports:
 - name: gopkg.in/natefinch/npipe.v2
   version: c1b8fa8bdccecb0b8db834ee0b92fdbcfa606dd6
 - name: gopkg.in/olebedev/go-duktape.v3
-  version: d53328019b21fe1987c97f368f98c072c8f44455
+  version: ccb656ba24c2a193e5650299767e2df1554725fd
 - name: gopkg.in/sourcemap.v1
   version: 6e83acea0053641eff084973fee085f0c193c61a
   subpackages:

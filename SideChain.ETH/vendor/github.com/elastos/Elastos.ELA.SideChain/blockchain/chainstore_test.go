@@ -4,9 +4,9 @@ import (
 	"container/list"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"bytes"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -15,15 +15,15 @@ var mainchainTxHash common.Uint256
 
 func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
-	st, err := NewLevelDB("Chain_UnitTest")
+	levelDB, err := database.NewLevelDB("Chain_UnitTest")
 	if err != nil {
 		return nil, err
 	}
 
 	store := &ChainStore{
-		IStore:             st,
+		Database:           levelDB,
 		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*core.Header{},
+		headerCache:        map[common.Uint256]*types.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
@@ -31,7 +31,7 @@ func newTestChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 
-	go store.loop()
+	go store.taskHandler()
 	store.NewBatch()
 
 	return store, nil
@@ -64,10 +64,11 @@ func TestChainStore_PersisMainchainTx(t *testing.T) {
 	}
 
 	// 2. Run PersistMainchainTx
-	testChainStore.PersistMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	testChainStore.PersistMainchainTx(batch, mainchainTxHash)
 
 	// Need batch commit here because PersistMainchainTx use BatchPut
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify PersistMainchainTx
 	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
@@ -76,63 +77,6 @@ func TestChainStore_PersisMainchainTx(t *testing.T) {
 	}
 	if exist != ValueExist {
 		t.Error("Mainchian Tx matched wrong value")
-	}
-}
-
-func TestChainStore_PersistRegisterIdentificationTx(t *testing.T) {
-	if testChainStore == nil {
-		t.Error("Chainstore init failed")
-	}
-
-	txHash1 := common.Uint256{1, 1, 1}
-	txHash2 := common.Uint256{2, 2, 2}
-
-	buf := new(bytes.Buffer)
-	buf.WriteString("id")
-	buf.WriteString("path")
-
-	// 1. The register identification Tx should not exist in DB.
-	_, err := testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err == nil {
-		t.Error("Found the register identification Tx which should not exist in DB")
-	}
-
-	// 2. Run PersistRegisterIdentificationTx
-	testChainStore.PersistRegisterIdentificationTx(buf.Bytes(), txHash1)
-
-	// Need batch commit here because PersistRegisterIdentificationTx use BatchPut
-	testChainStore.BatchCommit()
-
-	// 3. Verify PersistRegisterIdentificationTx
-	txHashBytes, err := testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err != nil {
-		t.Error("Not found the register Tx")
-	}
-	txHash3, err := common.Uint256FromBytes(txHashBytes)
-	if err != nil {
-		t.Error("Invalid tx hash")
-	}
-	if !txHash3.IsEqual(txHash1) {
-		t.Error("Register Tx matched wrong value")
-	}
-
-	// 4. Run PersistRegisterIdentificationTx again
-	testChainStore.PersistRegisterIdentificationTx(buf.Bytes(), txHash2)
-
-	// Need batch commit here because PersistRegisterIdentificationTx use BatchPut
-	testChainStore.BatchCommit()
-
-	// 5. Verify PersistRegisterIdentificationTx again
-	txHashBytes, err = testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err != nil {
-		t.Error("Not found the register Tx")
-	}
-	txHash4, err := common.Uint256FromBytes(txHashBytes)
-	if err != nil {
-		t.Error("Invalid tx hash")
-	}
-	if !txHash4.IsEqual(txHash2) {
-		t.Error("Register Tx matched wrong value")
 	}
 }
 
@@ -151,13 +95,14 @@ func TestChainStore_RollbackMainchainTx(t *testing.T) {
 	}
 
 	// 2. Run Rollback
-	err = testChainStore.RollbackMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	err = testChainStore.RollbackMainchainTx(batch, mainchainTxHash)
 	if err != nil {
 		t.Error("Rollback the mainchain Tx failed")
 	}
 
 	// Need batch commit here because RollbackMainchainTx use BatchDelete
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify RollbackMainchainTx
 	_, err = testChainStore.GetMainchainTx(mainchainTxHash)
@@ -178,10 +123,11 @@ func TestChainStore_IsMainchainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 2. Persist the mainchain Tx hash
-	testChainStore.PersistMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	testChainStore.PersistMainchainTx(batch, mainchainTxHash)
 
 	// Need batch commit here because PersistMainchainTx use BatchPut
-	testChainStore.BatchCommit()
+	batch.Commit()
 
 	// 3. Verify PersistMainchainTx
 	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
@@ -193,7 +139,7 @@ func TestChainStore_IsMainchainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 4. Run IsMainchainTxHashDuplicate
-	isDuplicate := testChainStore.IsMainchainTxHashDuplicate(mainchainTxHash)
+	isDuplicate := testChainStore.IsDuplicateMainchainTx(mainchainTxHash)
 	if !isDuplicate {
 		t.Error("Mainchain Tx hash should be checked to be duplicated")
 	}
@@ -205,11 +151,12 @@ func TestChainStoreDone(t *testing.T) {
 		return
 	}
 
-	err := testChainStore.RollbackMainchainTx(mainchainTxHash)
+	batch := testChainStore.Database.NewBatch()
+	err := testChainStore.RollbackMainchainTx(batch, mainchainTxHash)
 	if err != nil {
 		t.Error("Rollback the mainchain Tx failed")
 	}
 
-	testChainStore.BatchCommit()
+	batch.Commit()
 	testChainStore.Close()
 }

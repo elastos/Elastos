@@ -1,8 +1,6 @@
 package msg
 
 import (
-	"io"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
@@ -11,12 +9,15 @@ const MaxBlockSize = 8000000
 
 const MaxTxPerBlock = 100000
 
+// Ensure Block implement p2p.Message interface.
+var _ p2p.Message = (*Block)(nil)
+
 type Block struct {
-	Block common.Serializable
+	common.Serializable
 }
 
 func NewBlock(block common.Serializable) *Block {
-	return &Block{Block: block}
+	return &Block{Serializable: block}
 }
 
 func (msg *Block) CMD() string {
@@ -25,12 +26,4 @@ func (msg *Block) CMD() string {
 
 func (msg *Block) MaxLength() uint32 {
 	return MaxBlockSize
-}
-
-func (msg *Block) Serialize(writer io.Writer) error {
-	return msg.Block.Serialize(writer)
-}
-
-func (msg *Block) Deserialize(reader io.Reader) error {
-	return msg.Block.Deserialize(reader)
 }

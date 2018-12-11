@@ -8,9 +8,15 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
+// Ensure Reject implement p2p.Message interface.
+var _ p2p.Message = (*Reject)(nil)
+
 // RejectCode represents a numeric value by which a remote peer indicates
 // why a message was rejected.
 type RejectCode uint8
+
+// maxRejectMessageSize is the maximum bytes a reject message.
+const maxRejectMessageSize = 1024 * 512 // 512KB
 
 // These constants define the various supported reject codes.
 const (
@@ -77,41 +83,41 @@ func (msg *Reject) CMD() string {
 }
 
 func (msg *Reject) MaxLength() uint32 {
-	return p2p.MaxMessagePayload
+	return maxRejectMessageSize
 }
 
-func (msg *Reject) Serialize(writer io.Writer) error {
-	if err := common.WriteVarString(writer, msg.Cmd); err != nil {
+func (msg *Reject) Serialize(w io.Writer) error {
+	if err := common.WriteVarString(w, msg.Cmd); err != nil {
 		return err
 	}
 
-	if err := common.WriteUint8(writer, uint8(msg.Code)); err != nil {
+	if err := common.WriteUint8(w, uint8(msg.Code)); err != nil {
 		return err
 	}
 
-	if err := common.WriteVarString(writer, msg.Reason); err != nil {
+	if err := common.WriteVarString(w, msg.Reason); err != nil {
 		return err
 	}
 
-	return common.WriteElement(writer, msg.Hash)
+	return msg.Hash.Serialize(w)
 }
 
-func (msg *Reject) Deserialize(reader io.Reader) (err error) {
-	msg.Cmd, err = common.ReadVarString(reader)
+func (msg *Reject) Deserialize(r io.Reader) (err error) {
+	msg.Cmd, err = common.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	code, err := common.ReadUint8(reader)
+	code, err := common.ReadUint8(r)
 	if err != nil {
 		return err
 	}
 	msg.Code = RejectCode(code)
 
-	msg.Reason, err = common.ReadVarString(reader)
+	msg.Reason, err = common.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	return common.ReadElement(reader, &msg.Hash)
+	return msg.Hash.Deserialize(r)
 }

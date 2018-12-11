@@ -1,24 +1,24 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+	"github.com/elastos/Elastos.ELA.SPV/wallet/client"
 )
 
-type KeystoreImpl struct {
-	keystore spvwallet.Keystore
+type keystore struct {
+	keystore *client.Keystore
 }
 
 // This method will open or create a keystore with the given password
-func (impl *KeystoreImpl) Open(password string) (Keystore, error) {
+func (impl *keystore) Open(password string) (Keystore, error) {
 	var err error
 	// Try to open keystore first
-	impl.keystore, err = spvwallet.OpenKeystore([]byte(password))
+	impl.keystore, err = client.OpenKeystore([]byte(password))
 	if err == nil {
 		return impl, nil
 	}
 
 	// Try to create a keystore
-	impl.keystore, err = spvwallet.CreateKeystore([]byte(password))
+	impl.keystore, err = client.CreateKeystore([]byte(password))
 	if err != nil {
 		return nil, err
 	}
@@ -26,19 +26,19 @@ func (impl *KeystoreImpl) Open(password string) (Keystore, error) {
 	return impl, nil
 }
 
-func (impl *KeystoreImpl) ChangePassword(old, new string) error {
+func (impl *keystore) ChangePassword(old, new string) error {
 	return impl.keystore.ChangePassword([]byte(old), []byte(new))
 }
 
-func (impl *KeystoreImpl) MainAccount() Account {
+func (impl *keystore) MainAccount() Account {
 	return impl.keystore.MainAccount()
 }
 
-func (impl *KeystoreImpl) NewAccount() Account {
+func (impl *keystore) NewAccount() Account {
 	return impl.keystore.NewAccount()
 }
 
-func (impl *KeystoreImpl) GetAccounts() []Account {
+func (impl *keystore) GetAccounts() []Account {
 	var accounts []Account
 	for _, account := range impl.keystore.GetAccounts() {
 		accounts = append(accounts, account)
@@ -46,11 +46,11 @@ func (impl *KeystoreImpl) GetAccounts() []Account {
 	return accounts
 }
 
-func (impl *KeystoreImpl) Json() (string, error) {
+func (impl *keystore) Json() (string, error) {
 	return impl.keystore.Json()
 }
 
-func (impl *KeystoreImpl) FromJson(str string, password string) error {
-	impl.keystore = new(spvwallet.KeystoreImpl)
+func (impl *keystore) FromJson(str string, password string) error {
+	impl.keystore = new(client.Keystore)
 	return impl.keystore.FromJson(str, password)
 }

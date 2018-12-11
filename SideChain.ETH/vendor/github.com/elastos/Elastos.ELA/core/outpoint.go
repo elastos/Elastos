@@ -23,7 +23,7 @@ func (op *OutPoint) IsEqual(o OutPoint) bool {
 }
 
 func (op *OutPoint) Serialize(w io.Writer) error {
-	return WriteElements(w, op.TxID, op.Index)
+	return WriteElements(w, &op.TxID, op.Index)
 }
 
 func (op *OutPoint) Deserialize(r io.Reader) error {
@@ -36,9 +36,9 @@ func (op *OutPoint) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func NewOutPoint(txId Uint256, index uint16) *OutPoint {
+func NewOutPoint(txID Uint256, index uint16) *OutPoint {
 	return &OutPoint{
-		TxID:  txId,
+		TxID:  txID,
 		Index: index,
 	}
 }

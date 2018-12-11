@@ -7,6 +7,9 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
+// Ensure NotFound implement p2p.Message interface.
+var _ p2p.Message = (*NotFound)(nil)
+
 type NotFound struct {
 	Hash common.Uint256
 }
@@ -24,9 +27,9 @@ func (msg *NotFound) MaxLength() uint32 {
 }
 
 func (msg *NotFound) Serialize(w io.Writer) error {
-	return common.WriteElement(w, msg.Hash)
+	return msg.Hash.Serialize(w)
 }
 
 func (msg *NotFound) Deserialize(r io.Reader) error {
-	return common.ReadElement(r, &msg.Hash)
+	return msg.Hash.Deserialize(r)
 }

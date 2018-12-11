@@ -2,6 +2,7 @@ package common
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,4 +32,17 @@ func TestUint256FromHexString(t *testing.T) {
 	if *c != Uint256(cBytes) {
 		t.Error("did not convert correctly:", c.Bytes())
 	}
+}
+
+func TestUint256_IsEqual(t *testing.T) {
+	u1 := Uint256{}
+	u2 := Uint256{}
+
+	for i := 0; i < 32; i++ {
+		u1[i] = byte(i)
+		u2[i] = byte(i)
+	}
+
+	assert.Equal(t, true, u1.IsEqual(u2))
+	assert.Equal(t, true, (&u1).IsEqual(u2))
 }

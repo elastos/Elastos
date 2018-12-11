@@ -17,7 +17,7 @@ type Input struct {
 }
 
 func (i *Input) Serialize(w io.Writer) error {
-	return WriteElements(w, i.Previous.TxID, i.Previous.Index, i.Sequence)
+	return WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
 }
 
 func (i *Input) Deserialize(r io.Reader) error {
@@ -40,7 +40,7 @@ func (i *Input) IsEqual(o Input) bool {
 
 func (i Input) String() string {
 	return fmt.Sprint("{",
-		"TxId: ", i.Previous.TxID.String(),
+		"TxID: ", i.Previous.TxID.String(),
 		" Index: ", fmt.Sprint(i.Previous.Index),
 		" Sequence: ", fmt.Sprint(i.Sequence),
 		"}")

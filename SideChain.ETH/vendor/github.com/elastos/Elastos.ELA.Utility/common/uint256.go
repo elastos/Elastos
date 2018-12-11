@@ -1,7 +1,7 @@
 package common
 
 import (
-	"encoding/binary"
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"io"
@@ -25,8 +25,8 @@ func (u Uint256) Compare(o Uint256) int {
 	return 0
 }
 
-func (u *Uint256) IsEqual(o Uint256) bool {
-	return *u == o
+func (u Uint256) IsEqual(o Uint256) bool {
+	return bytes.Equal(u[:], o[:])
 }
 
 func (u Uint256) String() string {
@@ -40,11 +40,13 @@ func (u Uint256) Bytes() []byte {
 }
 
 func (u *Uint256) Serialize(w io.Writer) error {
-	return binary.Write(w, binary.LittleEndian, u)
+	_, err := w.Write(u[:])
+	return err
 }
 
 func (u *Uint256) Deserialize(r io.Reader) error {
-	return binary.Read(r, binary.LittleEndian, u)
+	_, err := io.ReadFull(r, u[:])
+	return err
 }
 
 func Uint256FromBytes(f []byte) (*Uint256, error) {
