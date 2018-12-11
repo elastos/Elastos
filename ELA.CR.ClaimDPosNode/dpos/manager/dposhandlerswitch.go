@@ -106,6 +106,7 @@ func (h *dposHandlerSwitch) StartNewProposal(p types.DPosProposal) {
 		Proposal:     p.Sponsor,
 		BlockHash:    p.BlockHash,
 		ReceivedTime: time.Now(),
+		ProposalHash: p.Hash(),
 		RawData:      rawData.Bytes(),
 		Result:       false,
 	}

@@ -43,8 +43,7 @@ type Field struct {
 
 func (f *Field) Data() []byte {
 	buf := new(bytes.Buffer)
-	// todo  support string
-	err := common.WriteElement(buf, f.Value)
+	err := writeElements(buf, f.Value)
 	if err != nil {
 		log.Error("value to bytes failed")
 		return nil
@@ -172,7 +171,7 @@ func (d *DposTable) Data(fields []*Field) ([]byte, error) {
 			}
 		}
 	}
-	return nil, nil
+	return buf.Bytes(), nil
 }
 
 func (d *DposTable) GetFields(data []byte) ([]*Field, error) {
@@ -196,7 +195,7 @@ func (d *DposTable) GetFields(data []byte) ([]*Field, error) {
 			Value: value,
 		})
 	}
-	return nil, nil
+	return result, nil
 }
 
 func writeElements(buf *bytes.Buffer, element interface{}) error {
@@ -232,7 +231,9 @@ func writeElements(buf *bytes.Buffer, element interface{}) error {
 		if err := buf.WriteByte(FieldUint256); err != nil {
 			return err
 		}
-		common.WriteElement(buf, e)
+		if err := e.Serialize(buf); err != nil {
+			return err
+		}
 	case int:
 		if err := buf.WriteByte(FieldInt); err != nil {
 			return err
@@ -347,7 +348,7 @@ func readElements(r io.Reader) (interface{}, error) {
 		return result, nil
 	case FieldUint256:
 		var result common.Uint256
-		if err := common.ReadElement(r, result); err != nil {
+		if err := result.Deserialize(r); err != nil {
 			return nil, err
 		}
 		return result, nil
