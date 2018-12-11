@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type OutputType byte
@@ -23,7 +24,6 @@ type OutputPayload interface {
 	Deserialize(r io.Reader) error
 	GetVersion() byte
 	Validate() error
-	String() string
 }
 
 type Output struct {
@@ -33,17 +33,6 @@ type Output struct {
 	ProgramHash   Uint168
 	OutputType    OutputType
 	OutputPayload OutputPayload
-}
-
-func (o Output) String() string {
-	return "Output: {\n\t\t" +
-		"AssetID: " + o.AssetID.String() + "\n\t\t" +
-		"Value: " + o.Value.String() + "\n\t\t" +
-		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
-		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
-		"OutputType: " + fmt.Sprint(o.OutputType) + "\n\t\t" +
-		"OutputPayload: " + o.OutputPayload.String() + "\n\t\t" +
-		"}"
 }
 
 func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
@@ -110,6 +99,21 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 	}
 
 	return nil
+}
+
+func (o *Output) String() string {
+	outputStr := fmt.Sprint("Output: {\n\t",
+		"AssetID: ", o.AssetID.String(), "\n\t",
+		"Value: ", o.Value.String(), "\n\t",
+		"OutputLock: ", o.OutputLock, "\n\t",
+		"ProgramHash: ", o.ProgramHash.String(), "\n\t")
+
+	if o.OutputPayload != nil {
+		outputStr += fmt.Sprint("OutputType: ", o.OutputType, "\n\t", "OutputPayload: ", o.OutputPayload, "\n\t")
+	}
+	outputStr += "}"
+
+	return outputStr
 }
 
 func getOutputPayload(outputType OutputType) (OutputPayload, error) {
