@@ -401,7 +401,18 @@ func (pow *PowService) OnConfirmReceived(p *DPosProposalVoteSlot) {
 }
 
 func (pow *PowService) cpuMining() {
+	blockVersion := DefaultLedger.HeightVersions.GetDefaultBlockVersion(DefaultLedger.Blockchain.BestChain.Height + 1)
+	switch blockVersion {
+	case 0:
+		pow.cpuMiningV0()
+	case 1:
+		pow.cpuMiningMain()
+	default:
+		log.Error("invalid block version for cpu mining")
+	}
+}
 
+func (pow *PowService) cpuMiningMain() {
 out:
 	for {
 		select {
@@ -413,7 +424,7 @@ out:
 		log.Info("<================Packing Block==============>")
 
 		pow.lock.Lock()
-		lastHeight := pow.lastNode.Height + 1
+		newHeight := pow.lastNode.Height + 1
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, pow.lastNode)
 		if err != nil {
 			log.Error("generage block err", err)
@@ -426,7 +437,7 @@ out:
 		if pow.SolveBlock(msgBlock, pow.wait) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == lastHeight {
+			if msgBlock.Header.Height == newHeight {
 				pow.lock.Lock()
 				if !pow.needBroadCast {
 					if !<-pow.wait {
@@ -460,6 +471,44 @@ out:
 				pow.lock.Unlock()
 			}
 		}
+	}
+
+	pow.wg.Done()
+}
+
+func (pow *PowService) cpuMiningV0() {
+out:
+	for {
+		select {
+		case <-pow.quit:
+			break out
+		default:
+			// Non-blocking select to fall through
+		}
+		log.Debug("<================Packing Block==============>")
+		//time.Sleep(15 * time.Second)
+
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, DefaultLedger.Blockchain.BestChain)
+		if err != nil {
+			log.Debug("generage block err", err)
+			continue
+		}
+
+		//begin to mine the block with POW
+		if pow.SolveBlock(msgBlock, nil) {
+			log.Info("<================Solved Block==============>")
+			//send the valid block to p2p networkd
+			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+
+				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
+					log.Debug(err)
+					continue
+				}
+
+				pow.BroadcastBlock(msgBlock)
+			}
+		}
+
 	}
 
 	pow.wg.Done()
