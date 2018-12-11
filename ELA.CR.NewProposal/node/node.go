@@ -299,24 +299,31 @@ func (node *node) IP() net.IP {
 	return node.ip
 }
 
-func (node *node) WaitForSyncFinish() {
-	if len(Parameters.SeedList) <= 0 {
+func (node *node) WaitForSyncFinish(interrupt <-chan struct{}) {
+	if len(Parameters.SeedList) == 0 {
 		return
 	}
 
-	startTime := time.Now()
+out:
 	for {
-		addresses, heights := node.GetInternalNeighborAddressAndHeights()
-		log.Debug("others height is (internal only) ", heights)
-		log.Debug("others address is (internal only) ", addresses)
-		if len(heights) != 0 && node.IsCurrent() {
-			LocalNode.SetSyncHeaders(false)
-			break
+		select {
+		case <-time.After(time.Second * 5):
+      addresses, heights := node.GetInternalNeighborAddressAndHeights()
+			// Can not connect to neighbors.
+			if len(heights) == 0 {
+				break out
+			}
+      log.Debug("others height is (internal only) ", heights)
+		  log.Debug("others address is (internal only) ", addresses)
+			// Sync finished.
+			if node.IsCurrent() {
+				LocalNode.SetSyncHeaders(false)
+				break out
+			}
+
+		case <-interrupt:
+			break out
 		}
-		if time.Now().After(startTime.Add(syncBlockTimeout)) {
-			return
-		}
-		time.Sleep(5 * time.Second)
 	}
 }
 

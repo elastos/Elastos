@@ -21,39 +21,6 @@ const (
 var (
 	Parameters configParams
 	Version    string
-	mainNet    = &ChainParams{
-		Name:               "MainNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x1f0008ff,
-		TargetTimePerBlock: time.Minute * 2,
-		TargetTimespan:     time.Minute * 2 * 720,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		CoinbaseLockTime:   100,
-	}
-	testNet = &ChainParams{
-		Name:               "TestNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x1e1da5ff,
-		TargetTimePerBlock: time.Second * 10,
-		TargetTimespan:     time.Second * 10 * 10,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		CoinbaseLockTime:   100,
-	}
-	regNet = &ChainParams{
-		Name:               "RegNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x207fffff,
-		TargetTimePerBlock: time.Second * 1,
-		TargetTimespan:     time.Second * 1 * 10,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		CoinbaseLockTime:   100,
-	}
 )
 
 type PowConfiguration struct {
@@ -117,7 +84,7 @@ type ArbiterConfiguration struct {
 
 type Seed struct {
 	PublicKey string `json:"PublicKey"`
-	Addrress  string `json:"Address"`
+	Address   string `json:"Address"`
 }
 
 type ConfigFile struct {
@@ -142,20 +109,25 @@ type configParams struct {
 }
 
 func init() {
-	file, e := ioutil.ReadFile(DefaultConfigFilename)
-	if e != nil {
-		log.Fatalf("File error: %v\n", e)
-		os.Exit(1)
-	}
-	// Remove the UTF-8 Byte Order Mark
-	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
+	var config ConfigFile
 
-	config := ConfigFile{}
-	e = json.Unmarshal(file, &config)
-	if e != nil {
-		log.Fatalf("Unmarshal json file erro %v", e)
-		os.Exit(1)
+	if _, err := os.Stat(DefaultConfigFilename); os.IsExist(err) {
+		file, e := ioutil.ReadFile(DefaultConfigFilename)
+		if e != nil {
+			log.Fatalf("File error: %v\n", e)
+			os.Exit(1)
+		}
+		// Remove the UTF-8 Byte Order Mark
+		file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
+
+		if e := json.Unmarshal(file, &config); e != nil {
+			log.Fatalf("Unmarshal json file erro %v", e)
+			os.Exit(1)
+		}
+	} else {
+		config.ConfigFile = configTemplate
 	}
+
 	//	Parameters = &(config.ConfigFile)
 	Parameters.Configuration = &config.ConfigFile
 	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
