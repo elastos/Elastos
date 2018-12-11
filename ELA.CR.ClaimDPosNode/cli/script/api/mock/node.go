@@ -65,6 +65,14 @@ func (n *nodeMock) GetLastRelay() interface{} {
 	return n.relayList[len(n.relayList)-1]
 }
 
+func (n * nodeMock) GetLastActive() time.Time {
+	return time.Time{}
+}
+
+func (n *nodeMock) SetLastActive(t time.Time) {
+
+}
+
 func (n *nodeMock) GetTxPool() *mempool.TxPool {
 	return &n.TxPool
 }
