@@ -421,7 +421,7 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 	if returnType == "String" {
 		return string(item.GetByteArray())
 	} else if returnType == "Integer" {
-		return item.GetBigInteger()
+		return item.GetBigInteger().Int64()
 	} else if returnType == "Hash168" {
 		return BytesToHexString(item.GetByteArray())
 	} else if returnType == "Boolean" {
@@ -432,7 +432,7 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 	case *datatype.Boolean:
 		return item.GetBoolean()
 	case *datatype.Integer:
-		return item.GetBigInteger()
+		return item.GetBigInteger().Int64()
 	case *datatype.ByteArray:
 		 return item.GetByteArray()
 	case *datatype.GeneralInterface:

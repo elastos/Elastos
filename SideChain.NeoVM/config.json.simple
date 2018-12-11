@@ -1,0 +1,50 @@
+{
+    "NetType": "MainNet",
+    "Configuration":{
+        "Magic":2018001,
+        "SpvMagic":2017001,
+        "Version":1,
+        "SeedList":[
+        ],
+        "SpvSeedList":[
+        ],
+        "SpvMinOutbound":3,
+        "SpvMaxConnections":10,
+        "ExchangeRate":1.0,
+        "MinCrossChainTxFee":10000,
+        "HttpInfoPort":10603,
+        "HttpInfoStart":true,
+        "HttpRestPort":10604,
+        "HttpWsPort":10607,
+        "WsHeartbeatInterval":60,
+        "HttpJsonPort":10606,
+        "NoticeServerUrl":"",
+        "OauthServerUrl":"",
+        "NodePort":10808,
+        "NodeOpenPort":10807,
+        "OpenService":true,
+        "PrintLevel":1,
+        "MaxLogsSize":0,
+        "MaxPerLogSize":0,
+        "IsTLS":false,
+        "CertPath":"./sample-cert.pem",
+        "KeyPath":"./sample-cert-key.pem",
+        "CAPath":"./sample-ca.pem",
+        "MultiCoreNum":4,
+        "MaxTransactionInBlock":10000,
+        "MaxBlockSize":8000000,
+        "ConsensusType":"pow",
+        "PrintSyncState":true,
+        "DisableTxFilters": false,
+        "MainChainDefaultPort":10866,
+        "MainChainFoundationAddress":"EM8DhdWEFmuLff9fH7fZssK7h5ayUzKcV7",
+        "FoundationAddress":"EPwPux7M4YQZyhJbGsZzCUSdkEby3s8uYJ",
+        "PowConfiguration":{
+            "PayToAddr":"EbnrcE57wWRrUA5NuUNg4uCksFk39hhoxR",
+            "AutoMining":false,
+            "MinerInfo":"ELA",
+            "MinTxFee":100,
+            "InstantBlock":true
+        }
+    }
+}
