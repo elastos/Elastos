@@ -115,7 +115,12 @@ func main() {
 	log.Info("Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
 
-	noder.WaitForSyncFinish()
+	noder.WaitForSyncFinish(interrupt.C)
+
+	if interrupt.Interrupted() {
+		return
+	}
+
 	go httprestful.StartServer()
 	go httpwebsocket.StartServer()
 	if config.Parameters.HttpInfoStart {

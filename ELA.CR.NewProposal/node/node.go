@@ -283,22 +283,30 @@ func (node *node) IP() net.IP {
 	return node.ip
 }
 
-func (node *node) WaitForSyncFinish() {
-	if len(Parameters.SeedList) <= 0 {
+func (node *node) WaitForSyncFinish(interrupt <-chan struct{}) {
+	if len(Parameters.SeedList) == 0 {
 		return
 	}
 
-	startTime := time.Now()
+out:
 	for {
-		heights := node.GetNeighborHeights()
-		if len(heights) != 0 && node.IsCurrent() {
-			LocalNode.SetSyncHeaders(false)
-			break
+		select {
+		case <-time.After(time.Second * 5):
+			heights := node.GetNeighborHeights()
+			// Can not connect to neighbors.
+			if len(heights) == 0 {
+				break out
+			}
+
+			// Sync finished.
+			if node.IsCurrent() {
+				LocalNode.SetSyncHeaders(false)
+				break out
+			}
+
+		case <-interrupt:
+			break out
 		}
-		if time.Now().After(startTime.Add(syncBlockTimeout)) {
-			return
-		}
-		time.Sleep(5 * time.Second)
 	}
 }
 
