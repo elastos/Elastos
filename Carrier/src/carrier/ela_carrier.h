@@ -434,7 +434,7 @@ typedef struct ElaFriendInfo {
 typedef struct ElaGroupPeer {
     /**
      * \~English
-     * Peer's name.
+     * Peer's Carrier user name.
      */
     char name[ELA_MAX_USER_NAME_LEN + 1];
 

@@ -58,10 +58,12 @@ struct DHTCallbacks {
                                  const uint8_t *msg, size_t len, void *context);
 
     void (*notify_group_title)(uint32_t gnum, uint32_t pnum,
-                               const char *title, void *context);
+                               const uint8_t *title, size_t length,
+                               void *context);
 
     void (*notify_group_peer_name)(uint32_t gnum, uint32_t pnum,
-                                   const char *name, void *context);
+                                   const uint8_t *name, size_t length,
+                                   void *context);
 
     void (*notify_group_peer_list_changed)(uint32_t gnum, void *context);
 };

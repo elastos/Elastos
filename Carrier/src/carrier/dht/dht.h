@@ -70,7 +70,9 @@ int dht_iteration_idle(DHT *dht);
 
 void dht_iterate(DHT *dht, void *context);
 
-int dht_self_set_name(DHT *dht, const char *name);
+int dht_self_get_name(DHT *dht, uint8_t *name, size_t length);
+
+int dht_self_set_name(DHT *dht, const uint8_t *name, size_t length);
 
 int dht_self_set_desc(DHT *dht, uint8_t *status_msg, size_t length);
 
@@ -110,9 +112,11 @@ int dht_group_join(DHT *dht, uint32_t friend_number, const uint8_t *cookie,
 int dht_group_send_message(DHT *dht, uint32_t group_number,
                            const uint8_t *msg, size_t length);
 
-int dht_group_get_title(DHT *dht, uint32_t group_number, char *title, size_t length);
+int dht_group_get_title(DHT *dht, uint32_t group_number, uint8_t *title,
+                        size_t length);
 
-int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title);
+int dht_group_set_title(DHT *dht, uint32_t group_number, const uint8_t *title,
+                        size_t length);
 
 int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
                             char *name, size_t length);

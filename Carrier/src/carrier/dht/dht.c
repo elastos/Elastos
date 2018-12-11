@@ -683,7 +683,7 @@ void notify_conference_title_cb(Tox *tox, uint32_t conference_number,
     DHTCallbacks *cbs = (DHTCallbacks *)context;
 
     cbs->notify_group_title(conference_number, peer_number,
-                            (const char *)title, cbs->context);
+                            title, length, cbs->context);
 }
 
 static
@@ -694,7 +694,7 @@ void notify_conference_peer_name_cb(Tox *tox, uint32_t conference_number,
     DHTCallbacks *cbs = (DHTCallbacks *)context;
 
     cbs->notify_group_peer_name(conference_number, peer_number,
-                                (const char *)name, cbs->context);
+                                name, length, cbs->context);
 }
 
 static
@@ -1018,7 +1018,28 @@ void dht_iterate(DHT *dht, void *context)
     tox_iterate(tox, context);
 }
 
-int dht_self_set_name(DHT *dht, const char *name)
+int dht_self_get_name(DHT *dht, uint8_t *name, size_t length)
+{
+    Tox *tox = dht->tox;
+    TOX_ERR_SET_INFO error;
+    bool success;
+    size_t name_len;
+
+    assert(tox);
+    assert(name);
+    assert(length);
+
+    name_len = tox_self_get_name_size(tox);
+    if (name_len > length) {
+        assert(0);
+        return ELA_DHT_ERROR(ELAERR_BUFFER_TOO_SMALL);
+    }
+
+    tox_self_get_name(tox, name);
+    return name_len;
+}
+
+int dht_self_set_name(DHT *dht, const uint8_t *name, size_t length)
 {
     Tox *tox = dht->tox;
     TOX_ERR_SET_INFO error;
@@ -1027,8 +1048,7 @@ int dht_self_set_name(DHT *dht, const char *name)
     assert(tox);
     assert(name);
 
-    success = tox_self_set_name(tox, (const uint8_t *)name,
-                                strlen(name) + 1, &error);
+    success = tox_self_set_name(tox, name, length, &error);
     if (!success) {
         vlogE("DHT: set self name error (%d).", error);
         return __dht_set_info_error(error);
@@ -1314,7 +1334,7 @@ int dht_group_send_message(DHT *dht, uint32_t group_number,
     return 0;
 }
 
-int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
+int dht_group_get_title(DHT *dht, uint32_t group_number, uint8_t *title,
                         size_t length)
 {
     Tox *tox = dht->tox;
@@ -1327,7 +1347,9 @@ int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
     assert(length > 0);
 
     len = tox_conference_get_title_size(tox, group_number, &error);
-    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+    if (error == TOX_ERR_CONFERENCE_TITLE_INVALID_LENGTH)
+        return 0;
+    else if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
         vlogE("DHT: Get title size of group %lu error (%d)", group_number,
               error);
         return __dht_group_title_error(error);
@@ -1342,10 +1364,11 @@ int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
         return __dht_group_title_error(error);
     }
 
-    return 0;
+    return len;
 }
 
-int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title)
+int dht_group_set_title(DHT *dht, uint32_t group_number,
+                        const uint8_t *title, size_t length)
 {
     Tox *tox = dht->tox;
     TOX_ERR_CONFERENCE_TITLE error;
@@ -1354,8 +1377,7 @@ int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title)
     assert(group_number != UINT32_MAX);
     assert(title);
 
-    tox_conference_set_title(tox, group_number, (const uint8_t *)title,
-                             strlen(title) + 1, &error);
+    tox_conference_set_title(tox, group_number, title, length, &error);
     if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
         vlogE("DHT: Get title of group %lu error (%d)", group_number, error);
         return __dht_group_title_error(error);
@@ -1403,6 +1425,9 @@ int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_numbe
         return __dht_group_peer_query_error(error);
     }
 
+    if (!len)
+        return 0;
+
     if (len > length)
         return ELA_DHT_ERROR(ELAERR_BUFFER_TOO_SMALL);
 
@@ -1414,7 +1439,7 @@ int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_numbe
         return __dht_group_peer_query_error(error);
     }
 
-    return 0;
+    return len;
 }
 
 int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
