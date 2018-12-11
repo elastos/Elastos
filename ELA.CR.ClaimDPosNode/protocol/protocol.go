@@ -114,7 +114,7 @@ type Noder interface {
 	GetNeighborNodes() []Noder
 	GetNeighbourAddresses() []*p2p.NetAddress
 
-	WaitForSyncFinish()
+	WaitForSyncFinish(interrupt <-chan struct{})
 	CleanSubmittedTransactions(block *types.Block) error
 	MaybeAcceptTransaction(txn *types.Transaction) error
 	RemoveTransaction(txn *types.Transaction)

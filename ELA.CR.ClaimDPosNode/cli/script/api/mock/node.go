@@ -258,7 +258,7 @@ func (n *nodeMock) GetNeighbourAddresses() []*p2p.NetAddress {
 	panic("implement me")
 }
 
-func (n *nodeMock) WaitForSyncFinish() {
+func (n *nodeMock) WaitForSyncFinish(interrupt <-chan struct{}) {
 	panic("implement me")
 }
 
