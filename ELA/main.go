@@ -112,21 +112,18 @@ func main() {
 	servers.ServerNode.RegisterTxPoolListener(arbitrator)
 	servers.ServerNode.RegisterTxPoolListener(chainStore)
 
-	log.Info("Start the RPC service")
+	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()
-
-	noder.WaitForSyncFinish(interrupt.C)
-
-	if interrupt.Interrupted() {
-		return
-	}
-
 	go httprestful.StartServer()
 	go httpwebsocket.StartServer()
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}
 
+	noder.WaitForSyncFinish(interrupt.C)
+	if interrupt.Interrupted() {
+		return
+	}
 	log.Info("Start consensus")
 	startConsensus()
 
