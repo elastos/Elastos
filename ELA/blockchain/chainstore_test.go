@@ -14,32 +14,11 @@ import (
 var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
-func NewTestChainStore() (*ChainStore, error) {
-	// TODO: read config file decide which db to use.
-	st, err := NewLevelDB("Chain_UnitTest")
-	if err != nil {
-		return nil, err
-	}
-
-	store := &ChainStore{
-		IStore:             st,
-		currentBlockHeight: 0,
-		taskCh:             make(chan persistTask, TaskChanCap),
-		quit:               make(chan chan bool, 1),
-		producerVotes:      make(map[common.Uint168]*ProducerInfo, 0),
-		dirty:              make(map[outputpayload.VoteType]bool, 0),
-	}
-
-	go store.loop()
-	store.NewBatch()
-
-	return store, nil
-}
-
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
-	var err error
-	testChainStore, err = NewTestChainStore()
+	temp, err := NewChainStore("Chain_UnitTest")
+	testChainStore = temp.(*ChainStore)
+	testChainStore.NewBatch()
 	if err != nil {
 		t.Error("Create chainstore failed")
 	}

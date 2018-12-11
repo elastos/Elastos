@@ -121,12 +121,12 @@ func initLedger(L *lua.LState) int {
 	versions := verconfig.InitVersions()
 	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox")
 	if err != nil {
-		fmt.Printf("Init chain store error: ", err, "\n")
+		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
 	err = blockchain.Init(chainStore, versions)
 	if err != nil {
-		fmt.Printf("Init block chain error: ", err, "\n")
+		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
 	blockchain.DefaultLedger.Arbitrators = arbitrators

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"math"
 	"os"
 	"testing"
@@ -37,13 +39,13 @@ func TestTxValidatorInit(t *testing.T) {
 		os.Exit(-1)
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewTestChainStore()
+	chainStore, err := NewChainStore("Chain_UnitTest")
 	if err != nil {
 		log.Error(err)
 		os.Exit(-1)
 	}
 
-	err = Init(chainStore, &blockHeightMock{})
+	err = Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		log.Error(err)
 		os.Exit(-1)
@@ -153,7 +155,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	assert.NoError(t, err)
 
 	// reward to foundation in coinbase < 30% (CheckTxOut version)
-	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
+	foundationReward = common.Fixed64(float64(totalReward) * 0.299999)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
 	tx.Outputs = []*types.Output{
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
@@ -488,7 +490,7 @@ func TestCheckDestructionAddress(t *testing.T) {
 func getCode(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := crypto.CreateStandardRedeemScript(pk)
+	redeemScript, _ := createStandardRedeemScript(pk)
 	return redeemScript
 }
 
@@ -684,4 +686,17 @@ func TestCheckCancelProducerTransaction(t *testing.T) {
 
 func TestTxValidatorDone(t *testing.T) {
 	DefaultLedger.Store.Close()
+}
+
+func createStandardRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
+	content, err := publicKey.EncodePoint(true)
+	if err != nil {
+		return nil, errors.New("create standard redeem script, encode public key failed")
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(content)))
+	buf.Write(content)
+	buf.WriteByte(byte(common.STANDARD))
+
+	return buf.Bytes(), nil
 }

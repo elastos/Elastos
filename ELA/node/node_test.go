@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"testing"
 	"time"
 
@@ -31,12 +32,12 @@ func initLocalNode(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("TestChain")
+	chainStore, err := NewChainStore("Chain_UnitTest")
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	err = Init(chainStore, nil)
+	err = Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		t.Error(err.Error())
 	}

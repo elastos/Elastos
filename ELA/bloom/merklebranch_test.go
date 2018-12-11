@@ -13,7 +13,7 @@ import (
 )
 
 func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {
-	for txs := uint32(1); txs < 1<<10; txs++ {
+	for txs := uint32(1); txs < 1<<10; txs = txs << 1 {
 		run(txs)
 		fmt.Println("GetTxMerkleBranch() with txs:", txs, "PASSED")
 	}
@@ -78,7 +78,7 @@ func run(txs uint32) {
 		calcRoot := auxpow.GetMerkleRoot(*txIDs[i], mb.Branches, mb.Index)
 		if merkleRoot == calcRoot {
 		} else {
-			fmt.Println("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
+			fmt.Printf("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
 			os.Exit(0)
 		}
 	}
