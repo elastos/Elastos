@@ -175,7 +175,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			void GetSummary(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight);
+			nlohmann::json GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail);
 
 			void removeDuplicatePrograms();
 
@@ -190,10 +190,6 @@ namespace Elastos {
 			IPayload *newPayload(ELATransaction::Type type);
 
 			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
-
-			std::string getConfirmInfo(uint32_t blockHeight);
-
-			std::string getStatus(uint32_t blockHeight);
 
 		private:
 			bool _isRegistered;

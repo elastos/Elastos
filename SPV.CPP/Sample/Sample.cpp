@@ -332,6 +332,26 @@ static void InitWallets(MasterWalletManager *manager) {
 	}
 }
 
+static void GetAllTxSummary(MasterWalletManager *manager,
+							const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 500, "");
+	logger->debug("[{}:{}] all tx -> {}", masterWalletID, subWalletID, txSummary.dump());
+
+	nlohmann::json txns = txSummary["Transactions"];
+	for (nlohmann::json::iterator it = txns.begin(); it != txns.end(); ++it) {
+		nlohmann::json tx = subWallet->GetAllTransaction(0, 500, (*it)["TxHash"]);
+		logger->debug("tx = {}", tx.dump());
+	}
+}
+
+static void GetBalance(MasterWalletManager *manager,
+					   const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	logger->debug("[{}:{}] balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
+}
+
 int main(int argc, char *argv[]) {
 
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
@@ -374,6 +394,10 @@ int main(int argc, char *argv[]) {
 			}
 
 			sleep(10);
+			//GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
+			//GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
+		} else {
+			sleep(1);
 		}
 	}
 

@@ -146,7 +146,6 @@ namespace Elastos {
 			if (start >= fullTxCount) {
 				j["Transactions"] = {};
 				j["MaxCount"] = fullTxCount;
-				SPDLOG_DEBUG(Log::getLogger(), "{}", j.dump());
 				return j;
 			}
 
@@ -167,14 +166,18 @@ namespace Elastos {
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
 				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
-				nlohmann::json txJson;
-				transactionPtr->GetSummary(txJson, _walletManager->getWallet(),
-										   _walletManager->getPeerManager()->getLastBlockHeight());
-				jsonList[i] = txJson;
+				uint32_t confirms = 0;
+
+				uint32_t txBlockHeight = transactionPtr->getBlockHeight();
+				uint32_t lastBlockHeight = _walletManager->getPeerManager()->getLastBlockHeight();
+				if (txBlockHeight != TX_UNCONFIRMED) {
+					confirms = lastBlockHeight >= txBlockHeight ? lastBlockHeight - txBlockHeight + 1 : 0;
+				}
+
+				jsonList[i] = transactionPtr->GetSummary(_walletManager->getWallet(), confirms, !addressOrTxid.empty());
 			}
 			j["Transactions"] = jsonList;
 			j["MaxCount"] = fullTxCount;
-			SPDLOG_DEBUG(Log::getLogger(), "{}", j.dump());
 			return j;
 		}
 
