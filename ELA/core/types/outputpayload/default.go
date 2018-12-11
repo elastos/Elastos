@@ -26,7 +26,3 @@ func (o *DefaultOutput) GetVersion() byte {
 func (o *DefaultOutput) Validate() error {
 	return nil
 }
-
-func (o *DefaultOutput) String() string {
-	return ""
-}
