@@ -785,7 +785,7 @@ public class Carrier: NSObject {
 
         let result = data.withUnsafeMutableBytes() {
             (ptr: UnsafeMutablePointer<Int8>) -> Int32 in
-            return ela_new_group(ccarrier, ptr, data.count)
+            return ela_new_group(ccarrier, ptr, len)
         }
 
         guard result >= 0 else {
@@ -832,7 +832,7 @@ public class Carrier: NSObject {
                 return data.withUnsafeMutableBytes()  {
                     (cdata: UnsafeMutablePointer<Int8>) -> Int32 in
                         return ela_group_join(ccarrier, cfriendid, ccookie,
-                                              cookie.count, cdata, data.count)
+                                              cookie.count, cdata, len)
                 }
             }
         }
