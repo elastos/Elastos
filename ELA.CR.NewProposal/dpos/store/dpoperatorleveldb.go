@@ -107,12 +107,19 @@ func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, err
 				var indexes []uint64
 				indexData, err := s.Get(key)
 				if err == nil {
-					indexes = bytesToUint64List(indexData)
+					indexes, err = bytesToUint64List(indexData)
+					if err != nil {
+						return 0, err
+					}
 				}
 				indexes = append(indexes, rowID)
 				// key: tableName_IndexID_ColumnValue
 				// value: [rowID1,rowID2,rowID3,...]
-				s.BatchPut(key, uint64ListToBytes(indexes))
+				indexListBytes, err := uint64ListToBytes(indexes)
+				if err != nil {
+					return 0, err
+				}
+				s.BatchPut(key, indexListBytes)
 			}
 		}
 	}
@@ -197,7 +204,10 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 			if err == nil {
 				return nil, err
 			}
-			rowIDs := bytesToUint64List(rowIDBytes)
+			rowIDs, err := bytesToUint64List(rowIDBytes)
+			if err != nil {
+				return nil, err
+			}
 			return rowIDs, nil
 		}
 	}
@@ -319,7 +329,10 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, co
 	if err != nil {
 		return err
 	}
-	rowIDs := bytesToUint64List(rowIDBytes)
+	rowIDs, err := bytesToUint64List(rowIDBytes)
+	if err != nil {
+		return err
+	}
 	if len(rowIDs) <= 1 {
 		s.BatchDelete(oldIndexKey)
 	} else {
@@ -329,16 +342,27 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, co
 				newRowIDs = append(newRowIDs, r)
 			}
 		}
-		s.BatchPut(oldIndexKey, uint64ListToBytes(newRowIDs))
+		rowIDsListBytes, err := uint64ListToBytes(newRowIDs)
+		if err != nil {
+			return err
+		}
+		s.BatchPut(oldIndexKey, rowIDsListBytes)
 	}
 
 	// update or add new record
 	newIndexKey := getIndexKey(table.Name, column, newData)
 	newRowIDBytes, err := s.Get(newIndexKey)
 	if err == nil {
-		rowIDs := bytesToUint64List(rowIDBytes)
+		rowIDs, err := bytesToUint64List(rowIDBytes)
+		if err != nil {
+			return err
+		}
 		rowIDs = append(rowIDs, rowID)
-		s.BatchPut(newIndexKey, uint64ListToBytes(rowIDs))
+		rowIDsListBytes, err := uint64ListToBytes(rowIDs)
+		if err != nil {
+			return err
+		}
+		s.BatchPut(newIndexKey, rowIDsListBytes)
 	} else {
 		s.BatchPut(newIndexKey, newRowIDBytes)
 	}
