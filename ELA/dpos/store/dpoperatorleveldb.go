@@ -64,15 +64,6 @@ func (s *LevelDBOperator) Create(table *DposTable) error {
 func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, error) {
 	s.NewBatch()
 	tableName := table.Name
-	var hasPrimaryKey bool
-	for _, f := range fields {
-		if table.Column(f.Name) == table.PrimaryKey {
-			hasPrimaryKey = true
-		}
-	}
-	if !hasPrimaryKey {
-		return 0, errors.New("have no primary key")
-	}
 
 	// key: tableName_rowID
 	// value: [colvalue1, colvalue2, colvalue3, ...]
@@ -94,7 +85,7 @@ func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, err
 			buf := new(bytes.Buffer)
 			common.WriteUint64(buf, rowID)
 			key := getIndexKey(tableName, table.PrimaryKey, f.Data())
-			if _, err := s.Get(key); err != nil {
+			if _, err := s.Get(key); err == nil {
 				return 0, errors.New("duplicated primary")
 			}
 			// key: tableName_PrimaryKey_ColumnValue
@@ -192,7 +183,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 	col := table.Column(inputField.Name)
 	if col == table.PrimaryKey {
 		rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
-		if err == nil {
+		if err != nil {
 			return nil, err
 		}
 		rowID := bytesToUint64(rowIDBytes)
@@ -201,7 +192,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 	for _, index := range table.Indexes {
 		if col == index {
 			rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
-			if err == nil {
+			if err != nil {
 				return nil, err
 			}
 			rowIDs, err := bytesToUint64List(rowIDBytes)
@@ -269,8 +260,8 @@ func (s *LevelDBOperator) updateRow(table *DposTable, rowID uint64, updateFields
 
 		var isIndexColumn bool
 		var oldData []byte
-		for _, field := range table.Fields {
-			if col != 0 && col == table.Column(field) {
+		for _, i := range table.Indexes {
+			if col != 0 && col == i {
 				oldData = f.Data()
 				isIndexColumn = true
 			}
