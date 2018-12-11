@@ -41,7 +41,7 @@ public protocol CarrierFileProgressDelegate {
     ///     - length:     The length of file data that has been sent
     ///     - totalSize:  The total size of file being transfered.
     @objc(didSendDataWithLength:totalSize:) optional
-    func didSendData(withLength length: UInt32, totalSize: UInt64)
+    func didSendData(length: UInt32, totalSize: UInt64)
 
     /// Tell the delegate that a block data of file has been received.
     ///
@@ -49,5 +49,5 @@ public protocol CarrierFileProgressDelegate {
     ///     - length:     The length of file data that has been sent
     ///     - totalSize:  The total size of file being transfered.
     @objc(didReceiveDataWithLength:totalSize:)optional
-    func didReceiveData(withLength length: UInt32, totalSize: UInt64)
+    func didReceiveData(length: UInt32, totalSize: UInt64)
 }
