@@ -61,8 +61,6 @@ func (auxpool *auxBlockPool) GetBlock(hash common.Uint256) (*Block, bool) {
 }
 
 type PowService struct {
-	NewBlocksListener
-
 	PayToAddr      string
 	Started        bool
 	discreteMining bool
@@ -74,8 +72,6 @@ type PowService struct {
 
 	wg   sync.WaitGroup
 	quit chan struct{}
-
-	wait chan bool
 
 	lock          sync.Mutex
 	lastBlock     *Block
@@ -237,7 +233,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 			continue
 		}
 
-		if pow.SolveBlock(msgBlock, make(chan bool)) {
+		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 
 				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
@@ -260,12 +256,12 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	}
 }
 
-func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
+func (pow *PowService) SolveBlock(msgBlock *Block, lastBlockHash *common.Uint256) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 	// fake a btc blockheader and coinbase
-	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
-	header := MsgBlock.Header
+	auxPow := auxpow.GenerateAuxPow(msgBlock.Hash())
+	header := msgBlock.Header
 	targetDifficulty := CompactToBig(header.Bits)
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
@@ -274,10 +270,9 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
 			return false
 		case hash := <-BlockPersistCompletedSignal:
 			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
-			return false
-		case state := <-wait:
 			pow.needBroadCast = true
-			if !state {
+			if DefaultLedger.HeightVersions.GetDefaultBlockVersion(msgBlock.Height) != 1 ||
+				lastBlockHash == nil || !lastBlockHash.IsEqual(hash) {
 				return false
 			}
 		default:
@@ -287,7 +282,7 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
 		auxPow.ParBlockHeader.Nonce = i
 		hash := auxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Header.AuxPow = *auxPow
+			msgBlock.Header.AuxPow = *auxPow
 			return true
 		}
 	}
@@ -310,7 +305,6 @@ func (pow *PowService) Start() {
 	}
 
 	pow.quit = make(chan struct{})
-	pow.wait = make(chan bool, 1)
 	pow.wg.Add(1)
 	pow.Started = true
 	pow.needBroadCast = true
@@ -328,7 +322,6 @@ func (pow *PowService) Halt() {
 	}
 
 	close(pow.quit)
-	close(pow.wait)
 	pow.wg.Wait()
 	pow.Started = false
 }
@@ -355,7 +348,17 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 			log.Warn(err)
 		}
 		node.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
-		BlockPersistCompletedSignal <- block.Hash()
+
+		hash := block.Hash()
+
+		pow.lock.Lock()
+		if block.Height == pow.lastBlock.Height && !hash.IsEqual(pow.lastBlock.Hash()) {
+			pow.lastBlock = block
+			pow.lastNode = DefaultLedger.Blockchain.BestChain
+		}
+		pow.lock.Unlock()
+
+		BlockPersistCompletedSignal <- hash
 	}
 }
 
@@ -373,31 +376,8 @@ func NewPowService() *PowService {
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
 	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
 
-	DefaultLedger.Blockchain.NewBlocksListeners = append(DefaultLedger.Blockchain.NewBlocksListeners, pow)
-
 	log.Debug("pow Service Init succeed")
 	return pow
-}
-
-func (pow *PowService) OnBlockReceived(b *Block, confirmed bool) {}
-
-func (pow *PowService) OnConfirmReceived(p *DPosProposalVoteSlot) {
-	block, err := DefaultLedger.Store.GetBlock(p.Hash)
-	if err != nil {
-		return
-	}
-
-	if block.Height == pow.lastBlock.Height {
-		if p.Hash.IsEqual(block.Hash()) {
-			pow.wait <- true
-		} else {
-			pow.lock.Lock()
-			defer pow.lock.Unlock()
-			pow.lastBlock = block
-			pow.lastNode = DefaultLedger.Blockchain.BestChain
-			pow.wait <- false
-		}
-	}
 }
 
 func (pow *PowService) cpuMining() {
@@ -405,10 +385,8 @@ func (pow *PowService) cpuMining() {
 	switch blockVersion {
 	case 0:
 		pow.cpuMiningV0()
-	case 1:
-		pow.cpuMiningMain()
 	default:
-		log.Error("invalid block version for cpu mining")
+		pow.cpuMiningMain()
 	}
 }
 
@@ -434,13 +412,15 @@ out:
 		pow.lock.Unlock()
 
 		//begin to mine the block with POW
-		if pow.SolveBlock(msgBlock, pow.wait) {
+		hash := pow.lastBlock.Hash()
+		if pow.SolveBlock(msgBlock, &hash) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
 			if msgBlock.Header.Height == newHeight {
 				pow.lock.Lock()
 				if !pow.needBroadCast {
-					if !<-pow.wait {
+					hash := <-BlockPersistCompletedSignal
+					if !hash.IsEqual(pow.lastBlock.Hash()) {
 						pow.needBroadCast = true
 						pow.lock.Unlock()
 						continue
