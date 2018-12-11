@@ -142,7 +142,9 @@ out:
 		case <-pingTicker.C:
 
 			// send ping message to node
+			log.Debug("new ping begin")
 			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
+			log.Debug("new ping end")
 
 		case <-node.quit:
 			break out
@@ -181,13 +183,13 @@ func (node *node) ConnectNodes() {
 	}
 
 	if total > DefaultMaxPeers {
-		DisconnectNode(node.GetANeighbourRandomly().ID())
+		DisconnectNode(node.GetExternalNeighbourRandomly().ID())
 	}
 }
 
 func (node *node) NetAddress() *p2p.NetAddress {
 	return &p2p.NetAddress{
-		IP:        node.IP(),
+		IP:        node.IP().To4(),
 		Timestamp: time.Now(),
 		Services:  node.Services(),
 		Port:      node.Port(),

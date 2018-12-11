@@ -21,7 +21,7 @@ import (
 
 const (
 	// idleTimeout is the duration of inactivity before we time out a peer.
-	idleTimeout = 5 * time.Minute
+	idleTimeout = 80 * time.Second
 )
 
 type link struct {
@@ -59,10 +59,12 @@ func (node *node) initConnection() {
 	}
 }
 
-func (node *node) start() {
+func (node *node) start(inbound bool) {
 	go node.inHandler()
 	go node.outHandler()
-	go node.pingHandler()
+	if !inbound {
+		go node.pingHandler()
+	}
 }
 
 func listenNodePort() {
@@ -277,8 +279,14 @@ out:
 		// is done.  The timer is reset below for the next iteration if
 		// needed.
 		rmsg, err := node.readMessage()
+		if rmsg != nil {
+			log.Debug("node ip:", node.addr, "message cmd:", rmsg.CMD())
+		} else {
+			log.Debug("rmsg is nil!!!!!")
+		}
 		idleTimer.Stop()
 		if err != nil {
+			log.Error("in handler message error:", err.Error(), "ip:", node.ip.String())
 			// Only log the error and send reject message if the
 			// local peer is not forcibly disconnecting and the
 			// remote peer has not disconnected.
@@ -323,6 +331,7 @@ out:
 		case smsg := <-node.sendQueue:
 			err := p2p.WriteMessage(node.conn, node.magic, smsg)
 			if err != nil {
+				log.Error("out handler error:", err, "ip:", node.ip.String())
 				node.Disconnect()
 				continue
 			}
@@ -363,7 +372,7 @@ func (node *node) Disconnect() {
 	}
 	node.SetState(INACTIVITY)
 
-	log.Debugf("Disconnecting %s", node)
+	log.Infof("Disconnecting %s", node)
 	node.conn.Close()
 	close(node.quit)
 }
