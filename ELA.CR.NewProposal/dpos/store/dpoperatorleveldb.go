@@ -50,7 +50,7 @@ func (s *LevelDBOperator) Create(table *DposTable) error {
 
 	key := getTableKey(table.Name)
 	_, err := s.Get(key)
-	if err != nil {
+	if err == nil {
 		return fmt.Errorf("already exist table: %s", table.Name)
 	}
 
