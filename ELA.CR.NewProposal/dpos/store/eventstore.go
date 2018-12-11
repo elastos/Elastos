@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/dpos/log"
-	"time"
 )
 
 var ConsensusEventTable = &DposTable{
 	Name:       "ConsensusEvent",
 	PrimaryKey: 4,
-	Indexes:    nil,
+	Indexes:    []uint64{3},
 	Fields: []string{
 		"StartTime",
 		"EndTime",
@@ -24,14 +24,15 @@ var ConsensusEventTable = &DposTable{
 
 var ProposalEventTable = &DposTable{
 	Name:       "ProposalEvent",
-	PrimaryKey: 6,
-	Indexes:    nil,
+	PrimaryKey: 7,
+	Indexes:    []uint64{1, 2, 6},
 	Fields: []string{
 		"Proposal",
 		"BlockHash",
 		"ReceivedTime",
 		"EndTime",
 		"Result",
+		"ProposalHash",
 		"RawData",
 	},
 }
@@ -284,6 +285,7 @@ func (s *EventStore) addProposalEvent(event *ProposalEvent) (uint64, error) {
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
+		{"ProposalHash", event.ProposalHash},
 		{"RawData", event.RawData},
 	})
 }
@@ -320,15 +322,9 @@ func (s *EventStore) addVoteEvent(event *VoteEvent) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	w := bytes.NewBuffer(nil)
-	err = vote.ProposalHash.Serialize(w)
-	if err != nil {
-		return 0, err
-	}
-
 	var proposalId uint64
 	rowIDs, err := s.dbOperator.SelectID(ProposalEventTable, []*Field{
-		&Field{"RawData", w.Bytes()},
+		&Field{"ProposalHash", vote.ProposalHash},
 	})
 	if err != nil || len(rowIDs) != 1 {
 		proposalId = math.MaxInt64

@@ -12,6 +12,7 @@ type ProposalEvent struct {
 	ReceivedTime time.Time
 	EndTime      time.Time
 	Result       bool
+	ProposalHash common.Uint256
 	RawData      []byte
 }
 

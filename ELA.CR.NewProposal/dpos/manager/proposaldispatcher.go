@@ -146,6 +146,7 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 		Proposal:     proposal.Sponsor,
 		BlockHash:    proposal.BlockHash,
 		ReceivedTime: time.Now(),
+		ProposalHash: proposal.Hash(),
 		RawData:      rawData.Bytes(),
 		Result:       false,
 	}

@@ -25,11 +25,6 @@ func TestEventStore_Open(t *testing.T) {
 }
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
-	err := eventStore.createProposalEventTable()
-	if err != nil {
-		t.Error("create proposal event table failed!")
-	}
-
 	proposal := &types.DPosProposal{
 		Sponsor:    "B",
 		BlockHash:  common.Uint256{2},
@@ -46,6 +41,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 		ReceivedTime: time.Time{},
 		EndTime:      time.Time{},
 		Result:       false,
+		ProposalHash: common.Uint256{1, 2, 3},
 		RawData:      buf.Bytes(),
 	}
 	id, err := eventStore.addProposalEvent(proposalEvent)
@@ -69,16 +65,11 @@ func TestEventStore_UpdateProposalEvent(t *testing.T) {
 	}
 	_, err := eventStore.updateProposalEvent(proposalEvent)
 	if err != nil {
-		t.Error("update proposal event data failed!")
+		t.Error("update proposal event data failed, err:", err.Error())
 	}
 }
 
 func TestEventStore_AddConsensusEvent(t *testing.T) {
-	err := eventStore.createConsensusEventTable()
-	if err != nil {
-		t.Error("create consensus store table failed!")
-	}
-
 	cons := &log.ConsensusEvent{
 		StartTime: time.Time{},
 		Height:    0,
@@ -104,16 +95,11 @@ func TestEventStore_UpdateConsensusEvent(t *testing.T) {
 	}
 	_, err := eventStore.updateConsensusEvent(cons)
 	if err != nil {
-		t.Error("update consensus event data failed!")
+		t.Error("update consensus event data failed, err:", err.Error())
 	}
 }
 
 func TestEventStore_AddViewEvent(t *testing.T) {
-	err := eventStore.createViewEventTable()
-	if err != nil {
-		t.Error("create view event table failed!")
-	}
-
 	viewEvent := &log.ViewEvent{
 		OnDutyArbitrator: "A",
 		StartTime:        time.Time{},
@@ -132,19 +118,8 @@ func TestEventStore_AddViewEvent(t *testing.T) {
 }
 
 func TestEventStore_AddVoteEvent(t *testing.T) {
-	err := eventStore.createVoteEventTable()
-	if err != nil {
-		t.Error("create vote event table failed!")
-	}
-
-	proposal := types.DPosProposal{
-		Sponsor:    "B",
-		BlockHash:  common.Uint256{2},
-		Sign:       []byte{1, 2, 3},
-		ViewOffset: 1,
-	}
 	vote := &types.DPosProposalVote{
-		ProposalHash: proposal.Hash(),
+		ProposalHash: common.Uint256{1, 2, 3},
 		Signer:       "A",
 		Accept:       false,
 		Sign:         []byte{1, 2, 3},
