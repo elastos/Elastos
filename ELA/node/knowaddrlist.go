@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
@@ -24,7 +25,6 @@ const (
 type KnownAddress struct {
 	srcAddr        *p2p.NetAddress
 	lastattempt    time.Time
-	lastDisconnect time.Time
 	attempts       int
 }
 
@@ -45,11 +45,6 @@ func (ka *KnownAddress) increaseAttempts() {
 func (ka *KnownAddress) updateLastAttempt() {
 	// set last tried time to now
 	ka.lastattempt = time.Now()
-}
-
-func (ka *KnownAddress) updateLastDisconnect() {
-	// set last disconnect time to now
-	ka.lastDisconnect = time.Now()
 }
 
 // chance returns the selection probability for a known address.  The priority
@@ -134,6 +129,13 @@ func (al *KnownAddressList) UpdateAddress(na *p2p.NetAddress) {
 }
 
 func (al *KnownAddressList) AddKnownAddress(na *p2p.NetAddress) {
+	if na.IP == nil {
+		log.Error("net address ip is nil, return.")
+		return
+	} else if na.IP.To4() == nil {
+		log.Error("net address ip to4 is nil, return. IP:", na.IP)
+		return
+	}
 	al.Lock()
 	defer al.Unlock()
 

@@ -40,7 +40,7 @@ func (i *Input) IsEqual(o Input) bool {
 
 func (i Input) String() string {
 	return fmt.Sprint("{",
-		"TxId: ", i.Previous.TxID.String(),
+		"TxID: ", i.Previous.TxID.String(),
 		" Index: ", fmt.Sprint(i.Previous.Index),
 		" Sequence: ", fmt.Sprint(i.Sequence),
 		"}")

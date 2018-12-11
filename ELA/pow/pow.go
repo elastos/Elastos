@@ -24,11 +24,11 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-var TaskCh chan bool
+var BlockPersistCompletedSignal = make(chan common.Uint256)
 
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
-	hashUpdateSecs = 15
+	hashUpdateSecs = 5
 )
 
 type auxBlockPool struct {
@@ -263,26 +263,23 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
-
 	// fake a btc blockheader and coinbase
 	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Header
 	targetDifficulty := CompactToBig(header.Bits)
-
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			// if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
-			// 	return false
-			// }
+			log.Info("five second countdown ends. Re-generate block.")
 			return false
-
+		case hash := <-BlockPersistCompletedSignal:
+			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
+			return false
 		case state := <-wait:
 			pow.needBroadCast = true
 			if !state {
 				return false
 			}
-
 		default:
 			// Non-blocking select to fall through
 		}
@@ -352,12 +349,13 @@ func (pow *PowService) RollbackTransaction(v interface{}) {
 func (pow *PowService) BlockPersistCompleted(v interface{}) {
 	log.Debug()
 	if block, ok := v.(*Block); ok {
-		log.Infof("persist block: %x", block.Hash())
+		log.Infof("persist block: %s", block.Hash())
 		err := node.LocalNode.CleanSubmittedTransactions(block)
 		if err != nil {
 			log.Warn(err)
 		}
 		node.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
+		BlockPersistCompletedSignal <- block.Hash()
 	}
 }
 
@@ -412,13 +410,13 @@ out:
 		default:
 			// Non-blocking select to fall through
 		}
-		log.Debug("<================Packing Block==============>")
+		log.Info("<================Packing Block==============>")
 
 		pow.lock.Lock()
 		lastHeight := pow.lastNode.Height + 1
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, pow.lastNode)
 		if err != nil {
-			log.Debug("generage block err", err)
+			log.Error("generage block err", err)
 			pow.lock.Unlock()
 			continue
 		}
@@ -462,7 +460,6 @@ out:
 				pow.lock.Unlock()
 			}
 		}
-
 	}
 
 	pow.wg.Done()
