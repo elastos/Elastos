@@ -3689,6 +3689,7 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
         return -1;
     }
 
+    memset(peer->name, 0, sizeof(peer->name));
     rc = dht_group_get_peer_name(&w->dht, group_number, i, peer->name,
                                  sizeof(peer->name));
     if (rc < 0) {
@@ -3696,11 +3697,9 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
               group_number);
         ela_set_error(rc);
         return -1;
-    } else if (rc == 0) {
-        peer->name[0] = '\0';
-    } else {
-        strcpy(peer->userid, peerid);
     }
+
+    strcpy(peer->userid, peerid);
 
     return 0;
 }
