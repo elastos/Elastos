@@ -108,11 +108,8 @@ func (pool *TxPool) GetTransactionPool(hasMaxCount bool) map[Uint256]*Transactio
 //clean the trasaction Pool with committed block.
 func (pool *TxPool) CleanSubmittedTransactions(block *Block) error {
 	pool.cleanTransactions(block.Transactions)
-	log.Debug("clean transactions end")
 	pool.cleanSidechainTx(block.Transactions)
-	log.Debug("clean sidechain tx end")
 	pool.cleanSideChainPowTx()
-	log.Debug("clean sidechain pow tx end")
 
 	return nil
 }
