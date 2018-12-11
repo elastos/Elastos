@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/dpos/log"
 	"time"
@@ -154,47 +153,47 @@ func (s *EventStore) loop() {
 func (s *EventStore) handleAddConsensusEvent(cons *ConsensusEvent) {
 	rowID, err := s.addConsensusEvent(cons)
 	if err != nil {
-		log.Error("add consensus event failed:", err.Error())
+		Error("add consensus event failed:", err.Error())
 	}
-	log.Info("add consensus event succeed row id:", rowID)
+	Info("add consensus event succeed row id:", rowID)
 }
 
 func (s *EventStore) handleUpdateConsensusEvent(cons *ConsensusEvent) {
 	_, err := s.updateConsensusEvent(cons)
 	if err != nil {
-		log.Error("update consensus event failed:", err.Error())
+		Error("update consensus event failed:", err.Error())
 	}
 }
 
 func (s *EventStore) handleAddProposalEvent(prop *ProposalEvent) {
 	rowID, err := s.addProposalEvent(prop)
 	if err != nil {
-		log.Error("add proposal event failed:", err.Error())
+		Error("add proposal event failed:", err.Error())
 	}
-	log.Info("add proposal event succeed at row id:", rowID)
+	Info("add proposal event succeed at row id:", rowID)
 }
 
 func (s *EventStore) handleUpdateProposalEvent(prop *ProposalEvent) {
 	_, err := s.updateProposalEvent(prop)
 	if err != nil {
-		log.Error("update proposal event failed:", err.Error())
+		Error("update proposal event failed:", err.Error())
 	}
 }
 
 func (s *EventStore) handleVoteProposalEvent(vote *VoteEvent) {
 	rowID, err := s.addVoteEvent(vote)
 	if err != nil {
-		log.Error("add vote event failed:", err.Error())
+		Error("add vote event failed:", err.Error())
 	}
-	log.Info("add vote event succeed at row id:", rowID)
+	Info("add vote event succeed at row id:", rowID)
 }
 
 func (s *EventStore) handleViewProposalEvent(view *ViewEvent) {
 	rowID, err := s.addViewEvent(view)
 	if err != nil {
-		log.Error("add view event failed:", err.Error())
+		Error("add view event failed:", err.Error())
 	}
-	log.Info("add view event succeed at row id:", rowID)
+	Info("add view event succeed at row id:", rowID)
 }
 
 func (s *EventStore) Open() error {

@@ -2,59 +2,35 @@ package store
 
 import (
 	"bytes"
-	"database/sql"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"testing"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-func InitEventStore() *EventStore {
-	eventStore := &EventStore{
-		dbOperator: &SqlDBOperator{
-			db: new(sql.DB),
-		},
-	}
-	return eventStore
+var eventStore = &EventStore{
+	dbOperator: new(LevelDBOperator),
 }
 
 func TestEventStore_Open(t *testing.T) {
-	eventStore := InitEventStore()
-	err := eventStore.Open()
-	defer eventStore.Close()
-	if err != nil {
-		t.Error("open database failed!")
-	}
+	log.Init(0, 20, 100)
 
-}
-
-func TestEventStore_Close(t *testing.T) {
-	eventStore := InitEventStore()
 	err := eventStore.Open()
 	if err != nil {
-		t.Error("open database failed!")
-	}
-
-	err = eventStore.Close()
-	if err != nil {
-		t.Error("close database failed!")
+		t.Error("open database failed:", err.Error())
 	}
 }
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-
 	err := eventStore.createProposalEventTable()
 	if err != nil {
 		t.Error("create proposal event table failed!")
 	}
 
-	proposal := &core.DPosProposal{
+	proposal := &types.DPosProposal{
 		Sponsor:    "B",
 		BlockHash:  common.Uint256{2},
 		Sign:       []byte{1, 2, 3},
@@ -64,7 +40,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 	buf := new(bytes.Buffer)
 	proposal.Serialize(buf)
 
-	proposalEvent := log.ProposalEvent{
+	proposalEvent := &log.ProposalEvent{
 		Proposal:     "A",
 		BlockHash:    common.Uint256{},
 		ReceivedTime: time.Time{},
@@ -72,8 +48,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 		Result:       false,
 		RawData:      buf.Bytes(),
 	}
-	id, err := eventStore.AddProposalEvent(proposalEvent)
-
+	id, err := eventStore.addProposalEvent(proposalEvent)
 	if id != 1 {
 		t.Errorf("add proposal event failed! got %d, expected 1", id)
 	}
@@ -84,11 +59,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 }
 
 func TestEventStore_UpdateProposalEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-
-	proposalEvent := log.ProposalEvent{
+	proposalEvent := &log.ProposalEvent{
 		Proposal:     "A",
 		BlockHash:    common.Uint256{},
 		ReceivedTime: time.Time{},
@@ -96,28 +67,24 @@ func TestEventStore_UpdateProposalEvent(t *testing.T) {
 		Result:       true,
 		RawData:      nil,
 	}
-	_, err := eventStore.UpdateProposalEvent(proposalEvent)
+	_, err := eventStore.updateProposalEvent(proposalEvent)
 	if err != nil {
 		t.Error("update proposal event data failed!")
 	}
 }
 
 func TestEventStore_AddConsensusEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-
 	err := eventStore.createConsensusEventTable()
 	if err != nil {
 		t.Error("create consensus store table failed!")
 	}
 
-	cons := log.ConsensusEvent{
+	cons := &log.ConsensusEvent{
 		StartTime: time.Time{},
 		Height:    0,
 		RawData:   []byte{1},
 	}
-	id, err := eventStore.AddConsensusEvent(cons)
+	id, err := eventStore.addConsensusEvent(cons)
 
 	if id != 1 {
 		t.Errorf("add consensus event failed! got %d, expected 1", id)
@@ -130,38 +97,31 @@ func TestEventStore_AddConsensusEvent(t *testing.T) {
 }
 
 func TestEventStore_UpdateConsensusEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-	cons := log.ConsensusEvent{
+	cons := &log.ConsensusEvent{
 		StartTime: time.Time{},
 		Height:    0,
 		RawData:   []byte{1},
 	}
-	_, err := eventStore.UpdateConsensusEvent(cons)
+	_, err := eventStore.updateConsensusEvent(cons)
 	if err != nil {
 		t.Error("update consensus event data failed!")
 	}
 }
 
 func TestEventStore_AddViewEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-
 	err := eventStore.createViewEventTable()
 	if err != nil {
 		t.Error("create view event table failed!")
 	}
 
-	viewEvent := log.ViewEvent{
+	viewEvent := &log.ViewEvent{
 		OnDutyArbitrator: "A",
 		StartTime:        time.Time{},
 		Offset:           0,
 		Height:           0,
 	}
 
-	id, err := eventStore.AddViewEvent(viewEvent)
+	id, err := eventStore.addViewEvent(viewEvent)
 	if id != 1 {
 		t.Errorf("add view event failed! got %d, expected 1", id)
 	}
@@ -172,38 +132,35 @@ func TestEventStore_AddViewEvent(t *testing.T) {
 }
 
 func TestEventStore_AddVoteEvent(t *testing.T) {
-	eventStore := InitEventStore()
-	eventStore.Open()
-	defer eventStore.Close()
-
 	err := eventStore.createVoteEventTable()
 	if err != nil {
 		t.Error("create vote event table failed!")
 	}
 
-	vote := &core.DPosProposalVote{
-		Proposal: core.DPosProposal{
-			Sponsor:    "B",
-			BlockHash:  common.Uint256{2},
-			Sign:       []byte{1, 2, 3},
-			ViewOffset: 1,
-		},
-		Signer: "A",
-		Accept: false,
-		Sign:   []byte{1, 2, 3},
+	proposal := types.DPosProposal{
+		Sponsor:    "B",
+		BlockHash:  common.Uint256{2},
+		Sign:       []byte{1, 2, 3},
+		ViewOffset: 1,
+	}
+	vote := &types.DPosProposalVote{
+		ProposalHash: proposal.Hash(),
+		Signer:       "A",
+		Accept:       false,
+		Sign:         []byte{1, 2, 3},
 	}
 
 	buf := new(bytes.Buffer)
 	vote.Serialize(buf)
 
-	voteEvent := log.VoteEvent{
+	voteEvent := &log.VoteEvent{
 		Signer:       "A",
 		ReceivedTime: time.Time{},
 		Result:       false,
 		RawData:      buf.Bytes(),
 	}
 
-	id, err := eventStore.AddVoteEvent(voteEvent)
+	id, err := eventStore.addVoteEvent(voteEvent)
 
 	if id != 1 {
 		t.Errorf("add vote event failed, got %d, expected 1", id)
@@ -213,4 +170,8 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 		t.Error("add vote event failed, got error: ", err)
 
 	}
+}
+
+func TestEventStore_Close(t *testing.T) {
+	eventStore.Close()
 }
