@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
@@ -153,6 +154,25 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 	}
 }
 
+func peerConfig(magic, prev uint32, services uint64) *peer.Config {
+	var pid peer.PID
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
+	return &peer.Config{
+		Magic:           magic,
+		ProtocolVersion: prev,
+		Services:        services,
+		PID:             pid,
+		PingInterval:    time.Second * 30,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
+	}
+}
+
 // TestPeerConnection tests connection between inbound and outbound peers.
 func TestPeerConnection(t *testing.T) {
 	verack := make(chan struct{})
@@ -169,24 +189,11 @@ func TestPeerConnection(t *testing.T) {
 			verack <- struct{}{}
 		}
 	}
-	var pid1 peer.PID
-	var pid2 peer.PID
-	rand.Read(pid1[:])
-	rand.Read(pid2[:])
-	peer1Cfg := &peer.Config{
-		Magic:            123123,
-		ProtocolVersion:  p2p.EIP001Version,
-		Services:         0,
-		PID:              pid1,
-		MakeEmptyMessage: makeMessage,
-	}
-	peer2Cfg := &peer.Config{
-		Magic:            123123,
-		ProtocolVersion:  p2p.EIP001Version,
-		Services:         1,
-		PID:              pid2,
-		MakeEmptyMessage: makeMessage,
-	}
+
+	peer1Cfg := peerConfig(123123, p2p.EIP001Version, 0)
+	peer2Cfg := peerConfig(123123, p2p.EIP001Version, 1)
+	peer1Cfg.MakeEmptyMessage = makeMessage
+	peer2Cfg.MakeEmptyMessage = makeMessage
 	peer1Cfg.AddMessageFunc(messageFunc)
 	peer2Cfg.AddMessageFunc(messageFunc)
 
@@ -288,10 +295,21 @@ func TestPeerConnection(t *testing.T) {
 // Tests that the node disconnects from peers with an unsupported protocol
 // version.
 func TestUnsupportedVersionPeer(t *testing.T) {
+	var pid peer.PID
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
 	peerCfg := &peer.Config{
-		Magic:            123123,
-		ProtocolVersion:  0,
-		Services:         0,
+		Magic:           123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		PID:             pid,
+		PingInterval:    time.Second * 30,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
 		MakeEmptyMessage: makeEmptyMessage,
 	}
 

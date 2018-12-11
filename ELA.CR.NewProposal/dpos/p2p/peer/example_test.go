@@ -39,6 +39,7 @@ func mockRemotePeer() error {
 		ProtocolVersion: 0,
 		Services:        0,
 		PID:             pid,
+		PingInterval:    time.Second * 30,
 		SignNonce: func(nonce []byte) (signature [64]byte) {
 			sign, _ := crypto.Sign(priKey, nonce)
 			copy(signature[:], sign)
@@ -86,10 +87,21 @@ func Example_newOutboundPeer() {
 	// messages.  The verack listener is used here to signal the code below
 	// when the handshake has been finished by signalling a channel.
 	verack := make(chan struct{})
+	var pid peer.PID
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
 	peerCfg := &peer.Config{
-		Magic:            123123,
-		ProtocolVersion:  0,
-		Services:         0,
+		Magic:           123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		PID:             pid,
+		PingInterval:    time.Second * 30,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
 		MakeEmptyMessage: makeEmptyMessage,
 	}
 	peerCfg.AddMessageFunc(func(peer *peer.Peer, message p2p.Message) {
