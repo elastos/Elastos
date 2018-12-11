@@ -687,80 +687,85 @@ namespace Elastos {
 			_transaction->fee = fee;
 		}
 
-		void
-		Transaction::GetSummary(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight) {
 
+		nlohmann::json Transaction::GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail) {
 			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash()));
 			setRemark(remark);
 
+			std::string addr;
 			nlohmann::json summary;
-			summary["TxHash"] = Utils::UInt256ToString(getHash(), true);
-			summary["Status"] = getStatus(blockHeight);
-			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
-			summary["Remark"] = getRemark();
-			summary["Fee"] = getTxFee(wallet);
-			summary["Timestamp"] = getTimestamp();
-			nlohmann::json jOut;
-			nlohmann::json jIn;
+			std::string direction = "Received";
+			uint64_t inputAmount = 0, outputAmount = 0, changeAmount = 0, fee = 0;
 
-			if (_transaction->raw.inCount > 0 && wallet->inputFromWallet(&_transaction->raw.inputs[0])) {
-				std::string toAddress = "";
+			std::map<std::string, uint64_t> inputList;
+			for (size_t i = 0; i < _transaction->raw.inCount; i++) {
+				BRTxInput *input = &_transaction->raw.inputs[i];
+				BRTransaction *tx = BRWalletTransactionForHash(wallet->getRaw(), input->txHash);
+				if (tx) {
+					addr = ((ELATransaction *)tx)->outputs[input->index]->getAddress();
+					if (wallet->containsAddress(addr)) {
+						// sent or moved
+						uint64_t spentAmount = ((ELATransaction *)tx)->outputs[input->index]->getAmount();
+						direction = "Sent";
+						inputAmount += spentAmount;
 
-				if (wallet->containsAddress(_transaction->outputs[0]->getAddress())) {
-					// transfer to my other address of wallet
-					jOut["Amount"] = _transaction->outputs[0]->getAmount();
-					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
-					summary["Outcoming"] = jOut;
-
-					jIn["Amount"] = _transaction->outputs[0]->getAmount();
-					jIn["ToAddress"] = _transaction->outputs[0]->getAddress();
-					summary["Incoming"] = jIn;
-				} else {
-					jOut["Amount"] = _transaction->outputs[0]->getAmount();
-					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
-					summary["Outcoming"] = jOut;
-
-					jIn["Amount"] = 0;
-					jIn["ToAddress"] = "";
-					summary["Incoming"] = jIn;
-				}
-			} else {
-				uint64_t inputAmount = 0;
-				std::string toAddress = "";
-
-				for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
-					if (wallet->containsAddress(_transaction->outputs[i]->getAddress())) {
-						inputAmount += _transaction->outputs[i]->getAmount();
-						toAddress = _transaction->outputs[i]->getAddress();
+						if (detail) {
+							if (inputList.find(addr) == inputList.end())
+								inputList[addr] = spentAmount;
+							else
+								inputList[addr] += spentAmount;
+						}
 					}
 				}
-
-				jOut["Amount"] = 0;
-				jOut["ToAddress"] = "";
-				summary["Outcoming"] = jOut;
-
-				jIn["Amount"] = inputAmount;
-				jIn["ToAddress"] = toAddress;
-				summary["Incoming"] = jIn;
 			}
 
-			rawTxJson["Summary"] = summary;
-		}
+			std::map<std::string, uint64_t> outputList;
+			for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
+				addr = _transaction->outputs[i]->getAddress();
+				uint64_t oAmount = _transaction->outputs[i]->getAmount();
+				bool containAddress = wallet->containsAddress(addr);
+				if (containAddress) {
+					changeAmount += oAmount;
+				} else {
+					outputAmount += oAmount;
+				}
+				if (detail && ((direction == "Received" && containAddress) || direction != "Received")) {
+					if (outputList.find(addr) == outputList.end())
+						outputList[addr] = oAmount;
+					else
+						outputList[addr] += oAmount;
+				}
+			}
 
-		std::string Transaction::getConfirmInfo(uint32_t blockHeight) {
-			if(getBlockHeight() == TX_UNCONFIRMED)
-				return std::to_string(0);
+			if (direction == "Sent" && outputAmount == 0) {
+				direction = "Moved";
+			}
 
-			uint32_t confirmCount = blockHeight >= getBlockHeight() ? blockHeight - getBlockHeight() + 1 : 0;
-			return confirmCount <= 6 ? std::to_string(confirmCount) : "6+";
-		}
+			fee = inputAmount > (outputAmount + changeAmount) ? inputAmount - outputAmount - changeAmount : 0;
+			uint32_t amount = 0;
+			if (direction == "Received") {
+				amount = changeAmount;
+			} else if (direction == "Sent") {
+				amount = outputAmount;
+			} else {
+				amount = 0;
+			}
 
-		std::string Transaction::getStatus(uint32_t blockHeight) {
-			if(getBlockHeight() == TX_UNCONFIRMED)
-				return "Unconfirmed";
+			summary["TxHash"] = Utils::UInt256ToString(getHash(), true);
+			summary["Status"] = confirms <= 6 ? "Pending" : "Confirmed";
+			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
+			summary["Timestamp"] = getTimestamp();
+			summary["Direction"] = direction;
+			summary["Amount"] = amount;
+			if (detail) {
+				summary["Fee"] = fee;
+				summary["Remark"] = getRemark();
+				summary["Type"] = getTransactionType();
+				summary["Inputs"] = inputList;
+				summary["Outputs"] = outputList;
+			}
 
-			uint32_t confirmCount = blockHeight >= getBlockHeight() ? blockHeight - getBlockHeight() + 1 : 0;
-			return confirmCount <= 6 ? "Pending" : "Confirmed";
+			return summary;
 		}
 
 		CMBlock Transaction::GetShaData() const {
