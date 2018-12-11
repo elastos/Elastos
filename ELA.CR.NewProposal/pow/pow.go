@@ -264,11 +264,9 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, wait chan bool) bool {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 	// fake a btc blockheader and coinbase
-	log.Debug()
 	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Header
 	targetDifficulty := CompactToBig(header.Bits)
-	log.Debug()
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
@@ -358,7 +356,6 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 		}
 		node.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
 		BlockPersistCompletedSignal <- block.Hash()
-		log.Info("pow service: block persist completed. Block Hash:", block.Hash())
 	}
 }
 
@@ -407,10 +404,8 @@ func (pow *PowService) cpuMining() {
 
 out:
 	for {
-		log.Info("before select")
 		select {
 		case <-pow.quit:
-			log.Info("pow quit")
 			break out
 		default:
 			// Non-blocking select to fall through
@@ -464,9 +459,7 @@ out:
 				pow.lastNode = node
 				pow.lock.Unlock()
 			}
-			log.Info("block header end")
 		}
-		log.Info("solve block end")
 	}
 
 	pow.wg.Done()
