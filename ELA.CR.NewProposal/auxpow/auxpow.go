@@ -156,7 +156,7 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
+func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainID int) bool {
 	if GetMerkleRoot(ap.ParCoinbaseTx.Hash(), ap.ParCoinBaseMerkle, ap.ParMerkleIndex) != ap.ParBlockHeader.MerkleRoot {
 		return false
 	}
@@ -201,7 +201,7 @@ func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 	}
 
 	nonce := binary.LittleEndian.Uint32(script[rootHashIndex/2+4 : rootHashIndex/2+8])
-	if ap.AuxMerkleIndex != GetExpectedIndex(nonce, chainId, merkleHeight) {
+	if ap.AuxMerkleIndex != GetExpectedIndex(nonce, chainID, merkleHeight) {
 		return false
 	}
 
@@ -228,10 +228,10 @@ func GetMerkleRoot(hash common.Uint256, merkleBranch []common.Uint256, index int
 	return hash
 }
 
-func GetExpectedIndex(nonce uint32, chainId, h int) int {
+func GetExpectedIndex(nonce uint32, chainID, h int) int {
 	rand := nonce
 	rand = rand*1103515245 + 12345
-	rand += uint32(chainId)
+	rand += uint32(chainID)
 	rand = rand*1103515245 + 12345
 
 	return int(rand % (1 << uint32(h)))

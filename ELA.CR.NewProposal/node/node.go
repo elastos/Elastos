@@ -5,7 +5,6 @@ import (
 	"github.com/elastos/Elastos.ELA/mempool"
 	"math/rand"
 	"net"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -51,7 +50,7 @@ func (s Semaphore) release() { <-s }
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
 	state             int32         // node state
-	timestamp         time.Time     // The timestamp of node
+	lastActive        time.Time     // The lastActive of node
 	id                uint64        // The nodes's id
 	version           uint32        // The network protocol the node used
 	services          uint64        // The services the node supplied
@@ -71,12 +70,10 @@ type node struct {
 	 */
 	syncFlag           uint8
 	flagLock           sync.RWMutex
-	cachelock          sync.RWMutex
 	requestedBlockLock sync.RWMutex
 	ConnectingNodes
 	KnownAddressList
 	DefaultMaxPeers    uint
-	headerFirstMode    bool
 	RequestedBlockList map[Uint256]time.Time
 	syncTimer          *syncTimer
 	SyncBlkReqSem      Semaphore
@@ -114,9 +111,9 @@ func NewNode(conn net.Conn, inbound bool) *node {
 		conn.LocalAddr(), conn.RemoteAddr(), conn.RemoteAddr().Network())
 
 	addr := conn.RemoteAddr().String()
-	ip := addr
-	if i := strings.LastIndex(addr, ":"); i > 0 {
-		ip = addr[:i-1]
+	ip, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Error("node init err:", err)
 	}
 	n := node{
 		link: link{
@@ -132,7 +129,7 @@ func NewNode(conn net.Conn, inbound bool) *node {
 	}
 
 	n.handler = NewHandlerBase(&n)
-	n.start()
+	n.start(inbound)
 
 	return &n
 }
@@ -177,8 +174,23 @@ func InitLocalNode() protocol.Noder {
 		}
 	}()
 
+	go LocalNode.nodeHeartBeat()
 	go monitorNodeState()
 	return LocalNode
+}
+
+func (node *node) nodeHeartBeat() {
+	ticker := time.NewTicker(pingInterval)
+	for {
+		log.Info("node heart beat")
+		for _, peer := range node.GetNeighborNodes() {
+			if time.Now().Sub(peer.GetLastActive()) > 10 * time.Minute {
+				log.Warn("does not update last active time for 10 minutes.")
+				peer.Disconnect()
+			}
+		}
+		<-ticker.C
+	}
 }
 
 func DisconnectNode(id uint64) {
@@ -198,7 +210,7 @@ func (node *node) RemoveFromConnectingList(addr string) {
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	port uint16, nonce uint64, relay bool, height uint64) {
 
-	node.timestamp = t
+	node.lastActive = t
 	node.id = nonce
 	node.version = version
 	node.services = services
@@ -213,10 +225,6 @@ func (node *node) State() protocol.State {
 
 func (node *node) SetState(state protocol.State) {
 	atomic.StoreInt32(&node.state, int32(state))
-}
-
-func (node *node) TimeStamp() time.Time {
-	return node.timestamp
 }
 
 func (node *node) ID() uint64 {
@@ -275,6 +283,14 @@ func (node *node) SetHeight(height uint64) {
 	node.height = height
 }
 
+func (node *node) SetLastActive(now time.Time) {
+	node.lastActive = now
+}
+
+func (node *node) GetLastActive() time.Time {
+	return node.lastActive
+}
+
 func (node *node) Addr() string {
 	return node.addr
 }
@@ -290,7 +306,9 @@ func (node *node) WaitForSyncFinish() {
 
 	startTime := time.Now()
 	for {
-		heights := node.GetNeighborHeights()
+		addresses, heights := node.GetInternalNeighborAddressAndHeights()
+		log.Debug("others height is (internal only) ", heights)
+		log.Debug("others address is (internal only) ", addresses)
 		if len(heights) != 0 && node.IsCurrent() {
 			LocalNode.SetSyncHeaders(false)
 			break
@@ -344,9 +362,9 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				log.Debug("Relay transaction message")
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
 					inv := msg.NewInventory()
-					txId := message.Hash()
-					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
-					nbr.SendMessage(inv)
+					txID := message.Hash()
+					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txID))
+					go nbr.SendMessage(inv)
 					continue
 				}
 
@@ -360,7 +378,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					inv := msg.NewInventory()
 					blockHash := message.Block.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
-					nbr.SendMessage(inv)
+					go nbr.SendMessage(inv)
 					continue
 				}
 
@@ -399,8 +417,9 @@ func (node *node) SetSyncHeaders(b bool) {
 
 // IsCurrent returns if node believes it was synced to current height.
 func (node *node) IsCurrent() bool {
-	heights := node.GetNeighborHeights()
-	log.Info("nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	addresses, heights := node.GetInternalNeighborAddressAndHeights()
+	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	log.Info("internal nbr address ", addresses)
 	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0
 }
 

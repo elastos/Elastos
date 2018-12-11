@@ -53,10 +53,10 @@ func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 //Note: the later version will support the mutiLedger.So this func mybe expired later.
 
 //Get the Asset from store.
-func (l *Ledger) GetAsset(assetId Uint256) (*Asset, error) {
-	asset, err := l.Store.GetAsset(assetId)
+func (l *Ledger) GetAsset(assetID Uint256) (*Asset, error) {
+	asset, err := l.Store.GetAsset(assetID)
 	if err != nil {
-		return nil, errors.New("[Ledger],GetAsset failed with assetId =" + assetId.String())
+		return nil, errors.New("[Ledger],GetAsset failed with assetID =" + assetID.String())
 	}
 	return asset, nil
 }
