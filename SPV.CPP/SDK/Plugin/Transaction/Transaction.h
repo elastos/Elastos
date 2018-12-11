@@ -133,8 +133,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet,
-											  uint32_t lastBlockHeight);
+			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet, uint32_t confirms, bool detail);
 
 			uint8_t	getPayloadVersion() const;
 
@@ -167,10 +166,6 @@ namespace Elastos {
 			void reinit();
 
 			bool transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<TransactionHub> &wallet);
-
-			std::string getConfirmInfo(uint32_t lastBlockHeight);
-
-			std::string getStatus(uint32_t lastBlockHeight);
 
 		private:
 			bool _isRegistered;

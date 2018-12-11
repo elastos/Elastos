@@ -1307,7 +1307,8 @@ namespace Elastos {
 					if ((block->getHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->getHeight() >= peer->GetLastBlock()) {
 						peer->info("adding block #{}, false positive rate: {}", block->getHeight(), _fpRate);
-						fireSyncProgress(block->getHeight(), _estimatedHeight);
+						if (block->getHeight() <= _estimatedHeight)
+							fireSyncProgress(block->getHeight(), _estimatedHeight);
 					}
 
 					_blocks.Insert(block);
