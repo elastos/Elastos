@@ -312,7 +312,7 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Generate key pair failed, error %s", err.Error())
 	}
 
-	a.redeemScript, err = crypto.CreateStandardRedeemScript(a.public)
+	a.redeemScript, err = createStandardRedeemScript(a.public)
 	if err != nil {
 		t.Errorf("Create standard redeem script failed, error %s", err.Error())
 	}

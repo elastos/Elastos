@@ -5,12 +5,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"os"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -35,13 +35,13 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	blockchain.FoundationAddress = *foundation
 
-	chainStore, err := blockchain.NewTestChainStore()
+	chainStore, err := blockchain.NewChainStore("Chain_UnitTest")
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
 
-	err = Init(chainStore)
+	err = blockchain.Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}
@@ -58,9 +58,9 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	hash2, _ := common.Uint256FromBytes(hashBytes2)
 
 	// 1. Generate a withdraw transaction
-	txn1 := new(core.Transaction)
-	txn1.TxType = core.WithdrawFromSideChain
-	txn1.Payload = &core.PayloadWithdrawFromSideChain{
+	txn1 := new(types.Transaction)
+	txn1.TxType = types.WithdrawFromSideChain
+	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -73,9 +73,9 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	txPool.addSidechainTx(txn1)
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
-	txn2 := new(core.Transaction)
-	txn2.TxType = core.WithdrawFromSideChain
-	txn2.Payload = &core.PayloadWithdrawFromSideChain{
+	txn2 := new(types.Transaction)
+	txn2.TxType = types.WithdrawFromSideChain
+	txn2.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -108,9 +108,9 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	hash5, _ := common.Uint256FromBytes(hashBytes5)
 
 	// 1. Generate some withdraw transactions
-	txn1 := new(core.Transaction)
-	txn1.TxType = core.WithdrawFromSideChain
-	txn1.Payload = &core.PayloadWithdrawFromSideChain{
+	txn1 := new(types.Transaction)
+	txn1.TxType = types.WithdrawFromSideChain
+	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -119,9 +119,9 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 		},
 	}
 
-	txn2 := new(core.Transaction)
-	txn2.TxType = core.WithdrawFromSideChain
-	txn2.Payload = &core.PayloadWithdrawFromSideChain{
+	txn2 := new(types.Transaction)
+	txn2.TxType = types.WithdrawFromSideChain
+	txn2.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -129,9 +129,9 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 		},
 	}
 
-	txn3 := new(core.Transaction)
-	txn3.TxType = core.WithdrawFromSideChain
-	txn3.Payload = &core.PayloadWithdrawFromSideChain{
+	txn3 := new(types.Transaction)
+	txn3.TxType = types.WithdrawFromSideChain
+	txn3.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -139,7 +139,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 			*hash5,
 		},
 	}
-	txns := []*core.Transaction{txn1, txn2, txn3}
+	txns := []*types.Transaction{txn1, txn2, txn3}
 
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
@@ -174,9 +174,9 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 	rand.Read(sideBlockHash2[:])
 	rand.Read(sideGenesisHash[:])
 
-	txn1 := new(core.Transaction)
-	txn1.TxType = core.SideChainPow
-	txn1.Payload = &core.PayloadSideChainPow{
+	txn1 := new(types.Transaction)
+	txn1.TxType = types.SideChainPow
+	txn1.Payload = &payload.PayloadSideChainPow{
 		SideBlockHash:   sideBlockHash1,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
@@ -187,9 +187,9 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		t.Error("Add sidechainpow txn1 to txpool failed")
 	}
 
-	txn2 := new(core.Transaction)
-	txn2.TxType = core.SideChainPow
-	txn2.Payload = &core.PayloadSideChainPow{
+	txn2 := new(types.Transaction)
+	txn2.TxType = types.SideChainPow
+	txn2.Payload = &payload.PayloadSideChainPow{
 		SideBlockHash:   sideBlockHash2,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
@@ -216,9 +216,9 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	rand.Read(sideTx2[:])
 
 	// 1. Generate a withdraw transaction
-	txn1 := new(core.Transaction)
-	txn1.TxType = core.WithdrawFromSideChain
-	txn1.Payload = &core.PayloadWithdrawFromSideChain{
+	txn1 := new(types.Transaction)
+	txn1.TxType = types.WithdrawFromSideChain
+	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -238,7 +238,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 }
 
 func TestTxPool_AppendToTxnPool(t *testing.T) {
-	tx := new(core.Transaction)
+	tx := new(types.Transaction)
 	txBytes, _ := hex.DecodeString("000403454c41010008803e6306563b26de010" +
 		"000000000000000000000000000000000000000000000000000000000000000ffff" +
 		"ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a" +
@@ -254,12 +254,12 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	txPool.Init()
-	var input *core.Input
+	var input *types.Input
 	var inputTxID common.Uint256
 	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
 	inputTxID.Deserialize(bytes.NewReader(inputTxIDBytes))
-	input = &core.Input{
-		Previous: core.OutPoint{
+	input = &types.Input{
+		Previous: types.OutPoint{
 			TxID:  inputTxID,
 			Index: 0,
 		},
@@ -268,41 +268,41 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	/*------------------------------------------------------------*/
 	/* check double spend but not duplicate txs */
 	//two mock transactions, they are double-spent to each other.
-	tx1 := new(core.Transaction)
-	tx1.TxType = core.TransferAsset
+	tx1 := new(types.Transaction)
+	tx1.TxType = types.TransferAsset
 	tx1.PayloadVersion = 0
-	tx1.Payload = &core.PayloadTransferAsset{}
-	var attribute1 *core.Attribute
-	attribute1 = &core.Attribute{
-		Usage: core.Nonce,
+	tx1.Payload = &payload.PayloadTransferAsset{}
+	var attribute1 *types.Attribute
+	attribute1 = &types.Attribute{
+		Usage: types.Nonce,
 		Data: []byte("5217023ca4139475f8a4c2772a113168568da958c05faaaedff1b3" +
 			"77d420ed328f39f15420f48ce4e9c83b69b14e88da00ab6c87f35dc5841c064" +
 			"35b7c49dbf3a944171e3d8604dd817324bb2c77f0500000ae0858a6c4222a83" +
 			"ba0c42ea3d8038177531a4dfc8183a0ab1de6741e6da79b8bddeacdeeefb78f" +
 			"586c8bc45e9c"),
 	}
-	tx1.Attributes = []*core.Attribute{attribute1}
+	tx1.Attributes = []*types.Attribute{attribute1}
 
-	tx1.Inputs = []*core.Input{input}
+	tx1.Inputs = []*types.Input{input}
 
-	tx2 := new(core.Transaction)
-	tx2.TxType = core.TransferAsset
+	tx2 := new(types.Transaction)
+	tx2.TxType = types.TransferAsset
 	tx2.PayloadVersion = 0
-	tx2.Payload = &core.PayloadTransferAsset{}
-	var attribute2 *core.Attribute
-	attribute2 = &core.Attribute{
-		Usage: core.Nonce,
+	tx2.Payload = &payload.PayloadTransferAsset{}
+	var attribute2 *types.Attribute
+	attribute2 = &types.Attribute{
+		Usage: types.Nonce,
 		Data: []byte("202bf0908cfe9687d04f4dc29f3b73eea8d0f7b00d159a3f4843a4" +
 			"400a86297404bda1c1f2f5c497149db3fdea371f1bb9e71c86dafccce128944" +
 			"b26a7181ebafa9e4869cdfbc7a6e1f34b8818a78f361888907452a05d04c399" +
 			"1c10e92b1041e7258611dc52059917f4a946ea89cf68b7af0808e89aa5d8241" +
 			"e453410fb1f46"),
 	}
-	tx2.Attributes = []*core.Attribute{attribute2}
-	tx2.Inputs = []*core.Input{input}
+	tx2.Attributes = []*types.Attribute{attribute2}
+	tx2.Inputs = []*types.Input{input}
 
 	// a mock block
-	var newBLock core.Block
+	var newBLock types.Block
 	var previousBlockHash common.Uint256
 	var merkleRoot common.Uint256
 	var blockAuxpow auxpow.AuxPow
@@ -324,7 +324,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	newBLock.Nonce = 0
 	newBLock.Height = 221
 	newBLock.AuxPow = blockAuxpow
-	newBLock.Transactions = []*core.Transaction{tx2}
+	newBLock.Transactions = []*types.Transaction{tx2}
 	txPool.addToTxList(tx1)
 	txPool.addInputUTXOList(tx1, input)
 
@@ -363,56 +363,56 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	txPool.Init()
 	//two mock transactions again, they have some identical sidechain hashes
-	tx3 := new(core.Transaction)
-	tx3.TxType = core.WithdrawFromSideChain
-	tx3.Payload = &core.PayloadWithdrawFromSideChain{
+	tx3 := new(types.Transaction)
+	tx3.TxType = types.WithdrawFromSideChain
+	tx3.Payload = &payload.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash2},
 	}
-	tx3.Inputs = []*core.Input{
+	tx3.Inputs = []*types.Input{
 		{
-			Previous: core.OutPoint{
+			Previous: types.OutPoint{
 				TxID:  inputTxID,
 				Index: 0,
 			},
 			Sequence: 100,
 		},
 	}
-	tx4 := new(core.Transaction)
-	tx4.TxType = core.WithdrawFromSideChain
-	tx4.Payload = &core.PayloadWithdrawFromSideChain{
+	tx4 := new(types.Transaction)
+	tx4.TxType = types.WithdrawFromSideChain
+	tx4.Payload = &payload.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash4},
 	}
-	tx4.Inputs = []*core.Input{
+	tx4.Inputs = []*types.Input{
 		{
-			Previous: core.OutPoint{
+			Previous: types.OutPoint{
 				TxID:  inputTxID,
 				Index: 1,
 			},
 			Sequence: 100,
 		},
 	}
-	tx5 := new(core.Transaction)
-	tx5.TxType = core.WithdrawFromSideChain
-	tx5.Payload = &core.PayloadWithdrawFromSideChain{
+	tx5 := new(types.Transaction)
+	tx5.TxType = types.WithdrawFromSideChain
+	tx5.Payload = &payload.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash2, sideBlockHash5},
 	}
-	tx5.Inputs = []*core.Input{
+	tx5.Inputs = []*types.Input{
 		{
-			Previous: core.OutPoint{
+			Previous: types.OutPoint{
 				TxID:  inputTxID,
 				Index: 2,
 			},
 			Sequence: 100,
 		},
 	}
-	tx6 := new(core.Transaction)
-	tx6.TxType = core.WithdrawFromSideChain
-	tx6.Payload = &core.PayloadWithdrawFromSideChain{
+	tx6 := new(types.Transaction)
+	tx6.TxType = types.WithdrawFromSideChain
+	tx6.Payload = &payload.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash3},
 	}
-	tx6.Inputs = []*core.Input{
+	tx6.Inputs = []*types.Input{
 		{
-			Previous: core.OutPoint{
+			Previous: types.OutPoint{
 				TxID:  inputTxID,
 				Index: 3,
 			},
@@ -438,7 +438,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 	txPool.addSidechainTx(tx6)
 
-	newBLock.Transactions = []*core.Transaction{tx3}
+	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
 	if err := txPool.isTransactionCleaned(tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
@@ -462,7 +462,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 	txPool.addSidechainTx(tx4)
 
-	newBLock.Transactions = []*core.Transaction{tx4}
+	newBLock.Transactions = []*types.Transaction{tx4}
 
 	txPool.CleanSubmittedTransactions(&newBLock)
 
@@ -477,7 +477,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		txPool.addInputUTXOList(tx6, v)
 	}
 	txPool.addSidechainTx(tx6)
-	newBLock.Transactions = []*core.Transaction{tx3}
+	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
 	if err := txPool.isTransactionExisted(tx6); err != nil {
 		t.Error("should have transaction: tx6", err)
