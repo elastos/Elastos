@@ -155,8 +155,3 @@ func (o *VoteOutput) Validate() error {
 
 	return nil
 }
-
-func (o *VoteOutput) String() string {
-
-	return ""
-}
