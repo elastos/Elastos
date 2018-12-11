@@ -6,7 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -22,7 +22,7 @@ var (
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
-			Controller: Uint168{},
+			Controller: common.Uint168{},
 		},
 		Attributes: []*types.Attribute{},
 		Inputs:     []*types.Input{},
@@ -36,7 +36,7 @@ var (
 	// genesisHeader
 	genesisHeader = types.Header{
 		Version:    types.BlockVersion,
-		Previous:   EmptyHash,
+		Previous:   common.EmptyHash,
 		MerkleRoot: ElaAssetId,
 		Timestamp:  uint32(time.Unix(time.Date(2018, time.June, 30,
 			12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),

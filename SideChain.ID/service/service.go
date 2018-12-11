@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 )
 
@@ -35,7 +35,7 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	if !ok {
 		return nil, util.NewError(int(service.InvalidParams), "id is null")
 	}
-	_, err := Uint168FromAddress(id)
+	_, err := common.Uint168FromAddress(id)
 	if err != nil {
 		return nil, util.NewError(int(service.InvalidParams), "invalid id")
 	}
@@ -51,7 +51,7 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	if err != nil {
 		return nil, util.NewError(int(service.UnknownTransaction), "get identification transaction failed")
 	}
-	txHash, err := Uint256FromBytes(txHashBytes)
+	txHash, err := common.Uint256FromBytes(txHashBytes)
 	if err != nil {
 		return nil, util.NewError(int(service.InvalidTransaction), "invalid transaction hash")
 	}
@@ -104,7 +104,7 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 	}
 
 	for _, address := range addressStrings {
-		programHash, err := Uint168FromAddress(address)
+		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
 			return nil, errors.New("Invalid address: " + address)
 		}
@@ -121,8 +121,8 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 				elaAssetID := types.GetSystemAssetId()
 				results = append(results, UTXOInfo{
 					Amount:        unspent.Value.String(),
-					AssetId:       BytesToHexString(BytesReverse(elaAssetID[:])),
-					Txid:          BytesToHexString(BytesReverse(unspent.TxId[:])),
+					AssetId:       common.BytesToHexString(common.BytesReverse(elaAssetID[:])),
+					Txid:          common.BytesToHexString(common.BytesReverse(unspent.TxId[:])),
 					VOut:          unspent.Index,
 					Address:       address,
 					Confirmations: bestHeight - height + 1,
@@ -192,13 +192,13 @@ func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Tra
 	attributes := make([]service.AttributeInfo, len(tx.Attributes))
 	for i, v := range tx.Attributes {
 		attributes[i].Usage = v.Usage
-		attributes[i].Data = BytesToHexString(v.Data)
+		attributes[i].Data = common.BytesToHexString(v.Data)
 	}
 
 	programs := make([]service.ProgramInfo, len(tx.Programs))
 	for i, v := range tx.Programs {
-		programs[i].Code = BytesToHexString(v.Code)
-		programs[i].Parameter = BytesToHexString(v.Parameter)
+		programs[i].Code = common.BytesToHexString(v.Code)
+		programs[i].Parameter = common.BytesToHexString(v.Parameter)
 	}
 
 	var txHash = tx.Hash()
@@ -246,7 +246,7 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 		obj := new(service.RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
-		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
+		obj.Controller = common.BytesToHexString(common.BytesReverse(object.Controller.Bytes()))
 		return obj
 	case *types.PayloadTransferCrossChainAsset:
 		obj := new(service.TransferCrossChainAssetInfo)
@@ -265,8 +265,8 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 	case *types.PayloadRechargeToSideChain:
 		if pVersion == types.RechargeToSideChainPayloadVersion0 {
 			obj := new(service.RechargeToSideChainInfoV0)
-			obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
-			obj.Proof = BytesToHexString(object.MerkleProof)
+			obj.MainChainTransaction = common.BytesToHexString(object.MainChainTransaction)
+			obj.Proof = common.BytesToHexString(object.MerkleProof)
 			return obj
 		} else if pVersion == types.RechargeToSideChainPayloadVersion1 {
 			obj := new(service.RechargeToSideChainInfoV1)
@@ -276,7 +276,7 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 	case *id.PayloadRegisterIdentification:
 		obj := new(RegisterIdentificationInfo)
 		obj.Id = object.ID
-		obj.Sign = BytesToHexString(object.Sign)
+		obj.Sign = common.BytesToHexString(object.Sign)
 		contents := []RegisterIdentificationContentInfo{}
 		for _, content := range object.Contents {
 			values := []RegisterIdentificationValueInfo{}

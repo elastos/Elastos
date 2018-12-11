@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type IDChainStore struct {
@@ -65,7 +65,7 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash Uint256) {
+func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
