@@ -6,10 +6,9 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/heights"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type TxCheckMethod func(TxVersion) error
@@ -44,19 +43,19 @@ func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transa
 	})
 }
 
-func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash Uint168) error {
+func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error {
 	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputProgramHash(programHash)
 	})
 }
 
-func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward Fixed64) error {
+func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward common.Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseMinerReward(tx, totalReward)
 	})
 }
 
-func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase Fixed64) error {
+func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase common.Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
 	})
@@ -103,7 +102,7 @@ func (h *heightVersions) AddBlockConfirm(blockConfirm *types.BlockConfirm) (bool
 	})
 }
 
-func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward Fixed64) error {
+func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	return h.checkBlock(block, func(version BlockVersion) error {
 		return version.AssignCoinbaseTxRewards(block, totalReward)
 	})

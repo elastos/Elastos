@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
 
-	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -27,7 +26,7 @@ type Contract struct {
 	HashPrefix PrefixType
 }
 
-func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
+func (c *Contract) ToProgramHash() (*common.Uint168, error) {
 	code := c.Code
 	if len(code) < 1 {
 		return nil, errors.New("[ToProgramHash] failed, empty program code")
@@ -43,7 +42,7 @@ func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 		if len(code) < crypto.MinMultiSignCodeLength || (len(code)-3)%(crypto.PublicKeyScriptLength-1) != 0 {
 			return nil, errors.New("[ToProgramHash] error, not a valid multisig script")
 		}
-	case utilcom.CROSSCHAIN: // FIXME should not use this opcode in future
+	case common.CROSSCHAIN: // FIXME should not use this opcode in future
 	default:
 		return nil, errors.New("[ToProgramHash] error, unknown opcode")
 	}
@@ -53,7 +52,7 @@ func (c *Contract) ToProgramHash() (*utilcom.Uint168, error) {
 	md160.Write(hash[:])
 	programBytes := md160.Sum([]byte{byte(c.HashPrefix)})
 
-	return utilcom.Uint168FromBytes(programBytes)
+	return common.Uint168FromBytes(programBytes)
 }
 
 func (c *Contract) ToCodeHash() (*common.Uint160, error) {

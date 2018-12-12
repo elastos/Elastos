@@ -5,11 +5,12 @@
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA/common/log"
 	"math"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/common/log"
 )
 
 const (

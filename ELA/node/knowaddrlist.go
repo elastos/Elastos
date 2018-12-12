@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 const (

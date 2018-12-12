@@ -3,9 +3,8 @@ package blockchain
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var (

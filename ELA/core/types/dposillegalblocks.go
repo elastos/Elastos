@@ -5,9 +5,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/elastos/Elastos.ELA/common/config"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type CoinType uint32
@@ -43,7 +42,8 @@ func (b *BlockEvidence) Serialize(w io.Writer) error {
 
 func (b *BlockEvidence) Deserialize(r io.Reader) error {
 	var err error
-	if b.Block, err = common.ReadVarBytes(r, uint32(config.Parameters.MaxBlockSize), "block data"); err != nil {
+	if b.Block, err = common.ReadVarBytes(r, msg.MaxBlockSize,
+		"block data"); err != nil {
 		return err
 	}
 	return nil

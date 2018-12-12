@@ -2,8 +2,9 @@ package outputpayload
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"testing"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (

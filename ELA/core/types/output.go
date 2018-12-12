@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type OutputType byte
@@ -27,10 +26,10 @@ type OutputPayload interface {
 }
 
 type Output struct {
-	AssetID       Uint256
-	Value         Fixed64
+	AssetID       common.Uint256
+	Value         common.Fixed64
 	OutputLock    uint32
-	ProgramHash   Uint168
+	ProgramHash   common.Uint168
 	OutputType    OutputType
 	OutputPayload OutputPayload
 }
@@ -44,7 +43,7 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 		return err
 	}
 
-	if err := WriteUint32(w, o.OutputLock); err != nil {
+	if err := common.WriteUint32(w, o.OutputLock); err != nil {
 		return err
 	}
 
@@ -53,7 +52,7 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 	}
 
 	if txVersion >= TxVersion09 {
-		if err := WriteUint8(w, byte(o.OutputType)); err != nil {
+		if err := common.WriteUint8(w, byte(o.OutputType)); err != nil {
 			return err
 		}
 		if err := o.OutputPayload.Serialize(w); err != nil {
@@ -73,7 +72,7 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 		return err
 	}
 
-	temp, err := ReadUint32(r)
+	temp, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -84,7 +83,7 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 	}
 
 	if txVersion >= TxVersion09 {
-		outputType, err := ReadUint8(r)
+		outputType, err := common.ReadUint8(r)
 		if err != nil {
 			return err
 		}

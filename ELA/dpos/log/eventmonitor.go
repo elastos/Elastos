@@ -3,7 +3,7 @@ package log
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type ProposalEvent struct {

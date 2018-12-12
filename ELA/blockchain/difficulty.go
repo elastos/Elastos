@@ -5,10 +5,9 @@ import (
 	"math/big"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var (

@@ -1,8 +1,8 @@
 package msg
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 // Ensure GetBlock implement p2p.Message interface.

@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"errors"
 
+	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) error {

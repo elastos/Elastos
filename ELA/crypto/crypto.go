@@ -11,7 +11,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (

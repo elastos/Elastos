@@ -3,7 +3,7 @@ package crypto
 import (
 	"bytes"
 	"errors"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
 )
 
 const (

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlock(block *Block, filter *Filter) (*msg.MerkleBlock, []uint32) {
+func NewMerkleBlock(block *types.Block, filter *Filter) (*msg.MerkleBlock, []uint32) {
 	NumTx := uint32(len(block.Transactions))
 	mBlock := MBlock{
 		NumTx:       NumTx,
@@ -105,7 +105,7 @@ func CheckMerkleBlock(m msg.MerkleBlock) ([]*common.Uint256, error) {
 	if len(m.Flags) == 0 {
 		return nil, fmt.Errorf("No flag bits")
 	}
-	var header = m.Header.(*Header)
+	var header = m.Header.(*types.Header)
 	var s []merkleNode      // the stack
 	var r []*common.Uint256 // slice to return; txids we care about
 

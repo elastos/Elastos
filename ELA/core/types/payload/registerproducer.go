@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
@@ -28,27 +28,27 @@ func (a *PayloadRegisterProducer) Data(version byte) []byte {
 }
 
 func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
-	err := WriteVarBytes(w, a.PublicKey)
+	err := common.WriteVarBytes(w, a.PublicKey)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], PublicKey serialize failed.")
 	}
 
-	err = WriteVarString(w, a.NickName)
+	err = common.WriteVarString(w, a.NickName)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], NickName serialize failed.")
 	}
 
-	err = WriteVarString(w, a.Url)
+	err = common.WriteVarString(w, a.Url)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Url serialize failed.")
 	}
 
-	err = WriteUint64(w, a.Location)
+	err = common.WriteUint64(w, a.Location)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Location serialize failed.")
 	}
 
-	err = WriteVarString(w, a.Address)
+	err = common.WriteVarString(w, a.Address)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Address serialize failed.")
 	}
@@ -56,27 +56,27 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
-	publicKey, err := ReadVarBytes(r, crypto.NegativeBigLength, "public key")
+	publicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], PublicKey deserialize failed.")
 	}
 
-	nickName, err := ReadVarString(r)
+	nickName, err := common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], NickName deserialize failed.")
 	}
 
-	url, err := ReadVarString(r)
+	url, err := common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Url deserialize failed.")
 	}
 
-	location, err := ReadUint64(r)
+	location, err := common.ReadUint64(r)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Location deserialize failed.")
 	}
 
-	addr, err := ReadVarString(r)
+	addr, err := common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], Address deserialize failed.")
 	}
