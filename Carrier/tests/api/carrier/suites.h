@@ -50,7 +50,6 @@ DECL_TESTSUITE(group_list_test)
     DEFINE_TESTSUITE(friend_invite_test), \
     DEFINE_TESTSUITE(friend_invite_assembly_test), \
     DEFINE_TESTSUITE(group_new_test), \
-    DEFINE_TESTSUITE(group_invite_join_test), \
     DEFINE_TESTSUITE(group_message_test), \
     DEFINE_TESTSUITE(group_title_test), \
     DEFINE_TESTSUITE(group_peer_test), \
