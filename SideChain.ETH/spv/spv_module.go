@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
@@ -19,6 +20,8 @@ const (
 	minConnections = 8
 	maxConnections = 125
 )
+
+var dataDir = "./"
 
 type Config struct {
 	// DataDir is the data path to store db files peer addresses etc.
@@ -70,6 +73,7 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
+	dataDir = cfg.DataDir
 	return &Service{SPVService: service}, nil
 }
 
@@ -149,12 +153,13 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	fmt.Println(string(tx.String()))
 	fmt.Println("----------------------------------------------------------------------------------------")
 	fmt.Println(" ")
+
 	savePayloadInfo(tx)
 	defer l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
 func savePayloadInfo(elaTx core.Transaction) error {
-	db, err := bolt.Open("spv_transaction_info.db", 0644, &bolt.Options{InitialMmapSize: 5000000})
+	db, err := bolt.Open(filepath.Join(dataDir, "spv_transaction_info.db"), 0644, &bolt.Options{InitialMmapSize: 5000000})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -176,7 +181,7 @@ func FindPayloadByTransactionHash(transactionHash string) string {
 	var data = []byte("0")
 	if transactionHash != "" {
 		transactionHash = strings.Replace(transactionHash, "0x", "", 1)
-		db, err := bolt.Open("spv_transaction_info.db", 0644, &bolt.Options{InitialMmapSize: 5000000})
+		db, err := bolt.Open(filepath.Join(dataDir, "spv_transaction_info.db"), 0644, &bolt.Options{InitialMmapSize: 5000000})
 		if err != nil {
 			fmt.Println(err)
 		}
