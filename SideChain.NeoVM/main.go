@@ -35,7 +35,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
-
 )
 
 const (
@@ -85,12 +84,11 @@ func main() {
 
 	mempoolCfg := mempool.Config{
 		ChainParams: activeNetParams,
-		ChainStore: chainStore,
+		ChainStore:  chainStore,
 	}
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
-
 
 	eladlog.Info("2. SPV module init")
 	genesisHash := activeNetParams.GenesisBlock.Hash()
@@ -141,7 +139,6 @@ func main() {
 		os.Exit(1)
 	}
 	chain.Store = ledgerStore
-
 
 	flag, err := ledgerStore.Get([]byte(store.AccountPersisFlag))
 	if err != nil {
@@ -196,6 +193,7 @@ func main() {
 		TxMemPool:                   txPool,
 		PowService:                  powService,
 		SpvService:                  spvService,
+		SetLogLevel:                 setLogLevel,
 		GetBlockInfo:                service.GetBlockInfo,
 		GetTransactionInfo:          sv.GetTransactionInfo,
 		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
@@ -261,7 +259,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
-	s.RegisterAction("listunspent",service.ListUnspent, "addresses")
+	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
 	s.RegisterAction("getreceivedbyaddress", service.GetReceivedByAddress, "address", "assetid")
 
 	s.RegisterAction("invokescript", service.InvokeScript, "script", "returntype")
@@ -344,8 +342,8 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 
 func newWebSocketServer(port uint16, service *service.HttpService) *websocket.SocketServer {
 	svrCfg := sw.Config{
-		ServePort:port,
-		Service: service,
+		ServePort: port,
+		Service:   service,
 	}
 	server := websocket.NewSocketServer(&svrCfg)
 	return server
@@ -377,7 +375,6 @@ func printSyncState(db *blockchain.ChainStore, server server.Server) {
 	}
 }
 
-
 func handleRunTimeEvents(et *events.Event) {
 	if et.Type == event.ETRunTimeNotify {
 		notifyInfo(et.Data.(datatype.StackItem))
@@ -387,7 +384,7 @@ func handleRunTimeEvents(et *events.Event) {
 	}
 }
 
-func notifyInfo(item datatype.StackItem)  {
+func notifyInfo(item datatype.StackItem) {
 	switch item.(type) {
 	case *datatype.Boolean:
 		avmlog.Info("notifyInfo:", item.GetBoolean())
