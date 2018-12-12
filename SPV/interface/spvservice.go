@@ -188,9 +188,10 @@ func (s *spvservice) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
 // of transactions within a block.
 func (s *spvservice) Batch() database.TxBatch {
 	return &txBatch{
-		db:       s.db,
-		batch:    s.db.Batch(),
-		rollback: s.rollback,
+		db:        s.db,
+		batch:     s.db.Batch(),
+		rollback:  s.rollback,
+		listeners: s.listeners,
 	}
 }
 
@@ -235,13 +236,6 @@ func (s *spvservice) TransactionConfirmed(tx *util.Tx) {}
 // BlockCommitted will be invoked when a block and transactions within it are
 // successfully committed into database.
 func (s *spvservice) BlockCommitted(block *util.Block) {
-	log.Infof("Receive block %s height %d", block.Hash(), block.Height)
-	for _, tx := range block.Transactions {
-		for _, listener := range s.listeners {
-			s.queueMessageByListener(listener, tx.(*iutil.Tx).Transaction, block.Height)
-		}
-	}
-
 	// Look up for queued transactions
 	items, err := s.db.Que().GetAll()
 	if err != nil {
