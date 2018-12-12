@@ -1127,7 +1127,8 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 			var contentInfo VoteContentInfo
 			contentInfo.VoteType = content.VoteType
 			for _, candidate := range content.Candidates {
-				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, candidate.String())
+				address, _ := candidate.ToAddress()
+				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, address)
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}
