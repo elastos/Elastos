@@ -111,7 +111,10 @@ type configParams struct {
 func init() {
 	var config ConfigFile
 
-	if _, err := os.Stat(DefaultConfigFilename); os.IsExist(err) {
+	if _, err := os.Stat(DefaultConfigFilename); os.IsNotExist(err) {
+		config.ConfigFile = configTemplate
+
+	} else {
 		file, e := ioutil.ReadFile(DefaultConfigFilename)
 		if e != nil {
 			log.Fatalf("File error: %v\n", e)
@@ -124,8 +127,6 @@ func init() {
 			log.Fatalf("Unmarshal json file erro %v", e)
 			os.Exit(1)
 		}
-	} else {
-		config.ConfigFile = configTemplate
 	}
 
 	//	Parameters = &(config.ConfigFile)
