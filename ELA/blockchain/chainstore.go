@@ -17,9 +17,6 @@ import (
 )
 
 const (
-	ValueNone  = 0
-	ValueExist = 1
-
 	TaskChanCap = 4
 
 	ProducerUnRegistered ProducerState = 0x00
@@ -458,14 +455,14 @@ func (c *ChainStore) PersistSidechainTx(sidechainTxHash Uint256) {
 	key = append(key, sidechainTxHash.Bytes()...)
 
 	// PUT VALUE
-	c.BatchPut(key, []byte{byte(ValueExist)})
+	c.BatchPut(key, []byte{0})
 }
 
 func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	key := []byte{byte(IXSideChainTx)}
 	data, err := c.Get(append(key, sidechainTxHash.Bytes()...))
 	if err != nil {
-		return ValueNone, err
+		return 0, err
 	}
 
 	return data[0], nil
