@@ -1,6 +1,5 @@
 print("-----------start testing register producer tx----------- ")
 
-local c = dofile("test/test_script/common.lua")
 local m = require("api")
 
 -- open keystore
