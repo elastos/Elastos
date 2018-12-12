@@ -390,6 +390,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	}
 
 	// start the SPV service
+	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
 	if _, err := spv.NewService(spvCfg); err != nil {
 		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
 	} else {
