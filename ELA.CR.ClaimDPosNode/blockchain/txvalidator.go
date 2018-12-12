@@ -447,7 +447,7 @@ func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 	// Coinbase and illegal transactions do not check attribute and program
 	if tx.IsCoinBaseTx() {
-		return DefaultLedger.HeightVersions.CheckTxHasNoProgramsAndAttributes(blockHeight, tx)
+		return DefaultLedger.HeightVersions.CheckTxHasNoPrograms(blockHeight, tx)
 	}
 
 	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() {

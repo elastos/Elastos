@@ -56,7 +56,7 @@ func (b *BlockHeightMock) CheckVoteProducerOutputs(blockHeight uint32, tx *types
 	return nil
 }
 
-func (b *BlockHeightMock) CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *types.Transaction) error {
+func (b *BlockHeightMock) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error {
 	return nil
 }
 

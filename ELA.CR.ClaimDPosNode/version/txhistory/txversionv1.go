@@ -27,10 +27,6 @@ func (v *TxVersionV1) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction
 	return nil
 }
 
-func (v *TxVersionV1) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
-	return nil
-}
-
-func (v *TxVersionV1) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
+func (v *TxVersionV1) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	return nil
 }

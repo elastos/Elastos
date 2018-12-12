@@ -35,6 +35,6 @@ func (v *TxVersionV0) CheckVoteProducerOutputs(outputs []*types.Output, referenc
 	return nil
 }
 
-func (v *TxVersionV0) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
+func (v *TxVersionV0) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	return nil
 }

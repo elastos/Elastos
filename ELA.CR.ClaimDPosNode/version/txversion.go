@@ -17,7 +17,7 @@ type TxVersion interface {
 	CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error
 	CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error
 	CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error
-	CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error
+	CheckTxHasNoPrograms(tx *types.Transaction) error
 }
 
 type TxVersionMain struct {
@@ -94,7 +94,7 @@ func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transacti
 			return errors.New("Unknown dpos reward address.")
 		}
 
-		if amount != individualProducerReward+individualBlockConfirmReward {
+		if amount != individualProducerReward {
 			return errors.New("Incorrect dpos reward amount.")
 		}
 	}
@@ -119,11 +119,7 @@ func (v *TxVersionMain) CheckVoteProducerOutputs(outputs []*types.Output, refere
 	return nil
 }
 
-func (v *TxVersionMain) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
-	if len(tx.Attributes) != 0 {
-		return errors.New("Transaction should have no attributes.")
-	}
-
+func (v *TxVersionMain) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	if len(tx.Programs) != 0 {
 		return errors.New("Transaction should have no programs.")
 	}
