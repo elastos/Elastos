@@ -878,10 +878,11 @@ static
 void stream_base_on_data(StreamHandler *handler, FlexBuffer *buf)
 {
     ElaStream *s = (ElaStream *)handler;
+    size_t buf_sz = flex_buffer_size(buf);
 
     if (s->callbacks.stream_data)
         s->callbacks.stream_data(s->session, s->id,
-                                 flex_buffer_ptr(buf), flex_buffer_size(buf),
+                                 buf_sz ? flex_buffer_ptr(buf) : NULL, buf_sz,
                                  s->context);
 }
 
@@ -1252,7 +1253,7 @@ ssize_t ela_stream_write_channel(ElaSession *ws, int stream,
     ssize_t written;
     ElaStream *s;
 
-    if (!ws || stream <= 0 || channel < 0 || !data || !len ||
+    if (!ws || stream <= 0 || channel < 0 || (len && !data) || (!len && data) ||
         len > ELA_MAX_USER_DATA_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;

@@ -39,6 +39,11 @@ if (HAVE_ARPA_INET_H)
     add_definitions(-DHAVE_ARPA_INET_H=1)
 endif()
 
+check_include_file(sys/time.h HAVE_SYS_TIME_H)
+if(HAVE_SYS_TIME_H)
+    add_definitions(-DHAVE_SYS_TIME_H=1)
+endif()
+
 set(SRC
     filetransfer.c
     easyfile.c)

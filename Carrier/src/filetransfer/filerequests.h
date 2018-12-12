@@ -27,11 +27,22 @@
 #include <stddef.h>
 #include <linkedhashtable.h>
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
+
 #include "ela_filetransfer.h"
+
+#define FILE_TRANSFER_REQUEST_EXPIRE_INTERVAL (5 * 60) // 5m
 
 typedef struct FileRequest {
     hash_entry_t he;
 
+    struct timeval expire_time;
     char from[ELA_MAX_ID_LEN + 1 + 36];
     char *sdp;
     size_t sdp_len;
@@ -62,12 +73,19 @@ int filereqs_exist(hashtable_t *filereqs, const char *from)
 static inline
 void filereqs_put(hashtable_t *filereqs, FileRequest *fr)
 {
+    struct timeval now, interval;
+
     assert(filereqs);
     assert(fr);
 
     fr->he.data = fr;
     fr->he.key = fr->from;
     fr->he.keylen = strlen(fr->from);
+
+    gettimeofday(&now, NULL);
+    interval.tv_sec = FILE_TRANSFER_REQUEST_EXPIRE_INTERVAL;
+    interval.tv_usec = 0;
+    timeradd(&now, &interval, &fr->expire_time);
 
     hashtable_put(filereqs, &fr->he);
 }

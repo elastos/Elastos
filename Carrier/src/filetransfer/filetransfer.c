@@ -69,9 +69,28 @@
 
 const char *bundle_prefix = "filetransfer";
 
-static void cleanup_expired_filereqs(hashtable_t *filelreqs)
+static void cleanup_expired_filereqs(hashtable_t *filereqs)
 {
-    //TODO;
+    hashtable_iterator_t it;
+    struct timeval now;
+
+    gettimeofday(&now, NULL);
+
+    filereqs_iterate(filereqs, &it);
+    while(filereqs_iterator_has_next(&it)) {
+        FileRequest *fr;
+        int rc;
+
+        rc = filereqs_iterator_next(&it, &fr);
+        if (rc <= 0)
+            break;
+
+        if (timercmp(&now, &fr->expire_time, >)) {
+            hashtable_iterator_remove(&it);
+        }
+
+        deref(fr);
+    }
 }
 
 static
@@ -467,7 +486,7 @@ static bool stream_channel_open(ElaSession *ws, int stream, int channel,
         item->state = FileTransferState_standby;
     } else {
         if (item->state != FileTransferState_standby) {
-            vlogE(TAG "sender received pull request data over channel %s "
+            vlogE(TAG "receiver received file request data over channel %d "
                   "in wrong state %d, dropping.", channel, item->state);
             return false;
         }
@@ -542,20 +561,20 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
 
     switch(ft->sender_receiver) {
     case SENDER:
-        if (item->state != FileTransferState_standby) {
-            vlogE(TAG "sender received pull request data over channel %s "
-                  "in wrong state %d, dropping.", channel, item->state);
-            return false;
-        }
-
         packet->type = ntohs(packet->type);
 
         switch(packet->type) {
         case PACKET_PULL: {
+            if (item->state != FileTransferState_standby) {
+                vlogE(TAG "sender received pull request data over channel %d "
+                          "in wrong state %d, dropping.", channel, item->state);
+                return false;
+            }
+
             packet_pull_t *pull_data = (packet_pull_t *)packet;
 
             pull_data->offset = (uint64_t)ntohll(pull_data->offset);
-            vlogD(TAG "sender received pull request data over channel with "
+            vlogD(TAG "sender received pull request data over channel %d with "
                   "requested offset: %llu.", channel, pull_data->offset);
 
             item->state = FileTransferState_transfering;
@@ -569,11 +588,12 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
         case PACKET_CANCEL: {
             packet_cancel_t *cancel_data = (packet_cancel_t *)packet;
 
+            item->state = FileTransferState_none;
+
             cancel_data->status = ntohl(cancel_data->status);
 
-            vlogD(TAG "sender received cancel transfer over channel with "
-                  "status %d and reason:%s.",
-                  channel, cancel_data->status, cancel_data->reason);
+            vlogD(TAG "sender received cancel transfer over channel %d with "
+                  "status %d and reason:%s.", channel, cancel_data->status, cancel_data->reason);
 
             if (ft->callbacks.cancel)
                 ft->callbacks.cancel(ft, fileid, cancel_data->status,
@@ -594,7 +614,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
         if (item->state != FileTransferState_transfering) {
             vlogE(TAG "receiver received file transfer data over channel %d "
                   "in wrong state %d, dropping.", channel, item->state);
-            return false;
+            return true;
         }
 
         vlogV(TAG "receiver received filetransfer data over channel %d with "
@@ -606,7 +626,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
             rc = ft->callbacks.data(ft, fileid, data, len, ft->callbacks_context);
             if (!rc) { // Tell filetransfering is finished.
                 vlogW(TAG "file transferring finished over channel %d, ",
-                       "closing channel.", channel);
+                      "closing channel.", channel);
                 return false;
             }
         }
@@ -1200,7 +1220,7 @@ int ela_filetransfer_send(ElaFileTransfer *ft, const char *fileid,
     FileTransferItem *item;
     ssize_t rc;
 
-    if (!ft || !fileid || !*fileid || !data || !length) {
+    if (!ft || !fileid || !*fileid || (length && !data) || (!length && data)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -1253,9 +1273,9 @@ int ela_filetransfer_cancel(ElaFileTransfer *ft, const char *fileid,
 {
     FileTransferItem *item;
     packet_cancel_t *cancel_data;
-    int rc;
+    ssize_t rc;
 
-    if (!ft || !fileid || !*fileid)  {
+    if (!ft || !fileid || !*fileid || !reason)  {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -1285,21 +1305,23 @@ int ela_filetransfer_cancel(ElaFileTransfer *ft, const char *fileid,
     assert(ft->stream > 0);
     assert(item->channel > 0);
 
-    cancel_data = (packet_cancel_t *)alloca(sizeof(cancel_data) + strlen(reason));
+    cancel_data = (packet_cancel_t *)alloca(sizeof(*cancel_data) +
+                                            strlen(reason));
     cancel_data->type = htons(PACKET_CANCEL);
     cancel_data->status = htonl(status);
     strcpy(cancel_data->reason, reason);
 
     rc = ela_stream_write_channel(ft->session, ft->stream, item->channel,
-                                  &cancel_data,
-                                  sizeof(cancel_data) + strlen(reason));
-    if (rc < 0)
+                                  (uint8_t *)cancel_data,
+                                  sizeof(*cancel_data) + strlen(reason));
+    if (rc < 0) {
         vlogE(TAG "receiver canceling to transfer file %s error (0x%x).",
               item->fileid, ela_get_error());
-    else
-        vlogT(TAG "receiver canceled to transfer file %s over channel %d.",
-          item->fileid, item->channel);
+        return -1;
+    }
 
+    vlogT(TAG "receiver canceled to transfer file %s over channel %d.",
+          item->fileid, item->channel);
     return 0;
 }
 

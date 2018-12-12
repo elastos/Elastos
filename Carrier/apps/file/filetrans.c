@@ -63,6 +63,7 @@
 #include <rc_mem.h>
 #include <ela_carrier.h>
 #include <ela_filetransfer.h>
+#include <linkedlist.h>
 
 #include "config.h"
 
@@ -76,6 +77,8 @@ typedef struct filentry filentry_t;
 typedef struct filectx  filectx_t;
 
 struct filectx {
+    list_t *filentries;
+
     ElaCarrier *carrier;
     char default_path[PATH_MAX];
 
@@ -86,6 +89,8 @@ struct filectx {
 };
 
 struct filentry {
+    list_entry_t le;
+
     ElaFileTransfer *ft;
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
     char realpath[ELA_MAX_FILE_NAME_LEN + 1];
@@ -141,6 +146,41 @@ static void logging(const char *fmt, va_list args)
     //DO NOTHING.
 }
 
+static int file_context_init(filectx_t *fctx)
+{
+    memset(fctx, 0, sizeof(*fctx));
+    fctx->filentries = list_create(1, NULL);
+    if (!fctx->filentries)
+        return -1;
+    return 0;
+}
+
+static void file_context_reset(filectx_t *fctx)
+{
+    ElaFileTransfer *ft = fctx->ft;
+    fctx->ft = NULL;
+
+    if (ft) {
+        ela_filetransfer_close(ft);
+    }
+
+    list_clear(fctx->filentries);
+}
+
+static void file_context_deinit(filectx_t *fctx)
+{
+    file_context_reset(fctx);
+    deref(fctx->filentries);
+}
+
+static void file_entry_destroy(void *p)
+{
+    filentry_t *entry = p;
+
+    if (entry->fp)
+        fclose(entry->fp);
+}
+
 static void transfer_state_changed_cb(ElaFileTransfer *ft,
                                       FileTransferConnection state,
                                       void *context)
@@ -159,13 +199,7 @@ static void transfer_state_changed_cb(ElaFileTransfer *ft,
     case FileTransferConnection_failed:
     case FileTransferConnection_closed:
         console("filetransfer is disconnected to %s.", fctx->friendid);
-
-        if (fctx->ft) {
-            ElaFileTransfer *ft = fctx->ft;
-
-            fctx->ft = NULL;
-            ela_filetransfer_close(ft);
-        }
+        file_context_reset(fctx);
         break;
 
     case FileTransferConnection_initialized:
@@ -210,7 +244,7 @@ static void transfer_file_cb(ElaFileTransfer *ft, const char *filename,
         goto cancel_transfer;
     }
 
-    entry = (filentry_t *)rc_zalloc(sizeof(filentry_t), NULL);
+    entry = (filentry_t *)rc_zalloc(sizeof(filentry_t), file_entry_destroy);
     if (!entry) {
         fclose(fp);
         errno = ENOMEM;
@@ -223,46 +257,47 @@ static void transfer_file_cb(ElaFileTransfer *ft, const char *filename,
     entry->sentsz = st.st_size;
     entry->percent = (int)(entry->sentsz * 100 / entry->filesz);
     entry->fp = fp;
+    entry->fctx = fctx;
+
+    entry->le.data = entry;
+    list_add(fctx->filentries, &entry->le);
+    ela_filetransfer_set_userdata(fctx->ft, fileid, entry);
 
     console("send pull %s request (offset:%llu).", fileid, (uint64_t)st.st_size);
     rc = ela_filetransfer_pull(fctx->ft, fileid, st.st_size);
     if (rc < 0) {
         console("sending pull %s request error (0x%x)", fileid, ela_get_error());
         vlogE("pull file %s error (0x%x).", fileid, ela_get_error());
-        fclose(fp);
-        deref(entry);
-        return;
+        goto cancel_transfer;
     }
 
     console("waiting for receiving ...");
-    ela_filetransfer_set_userdata(fctx->ft, fileid, entry);
+    deref(entry);
     return;
 
 cancel_transfer:
-    ela_filetransfer_set_userdata(fctx->ft, fileid, NULL);
-
     console("cancel file %s transfer because of error (%d).", fileid, errno);
     ela_filetransfer_cancel(fctx->ft, fileid, errno, strerror(errno));
-    if (fp)
-        fclose(fp);
-    if (entry)
-        deref(fp);
+    ela_filetransfer_set_userdata(fctx->ft, fileid, NULL);
+    if (entry) {
+        deref(entry);
+        deref(list_remove_entry(fctx->filentries, &entry->le));
+    }
 }
 
 static void *send_file_routine(void *args)
 {
     filentry_t *entry = (filentry_t *)args;
-    uint8_t buf[ELA_MAX_USER_NAME_LEN];
-    FILE *fp = NULL;
+    uint8_t buf[1024];
     int rc;
 
-    fp = fopen(entry->realpath, "rb");
-    if (!fp) {
+    entry->fp = fopen(entry->realpath, "rb");
+    if (!entry->fp) {
         console("fopen %s error (%d)", entry->fileid, errno);
         goto cancel_transfer;
     }
 
-    rc = fseek(fp, entry->offset, SEEK_SET);
+    rc = fseek(entry->fp, entry->offset, SEEK_SET);
     if (rc < 0) {
         console("fseek %s to %llu error (%d)", entry->fileid, entry->offset, errno);
         goto cancel_transfer;
@@ -278,19 +313,15 @@ static void *send_file_routine(void *args)
             pthread_cond_wait(&entry->cond, &entry->lock);
         pthread_mutex_unlock(&entry->lock);
 
-        bytes = fread(buf, 1, sizeof(buf), fp);
-        if (!bytes) {
-            if (feof(fp))
-                console("\nfile [%s] transmitted with total size: %llu",
-                        entry->fileid, entry->filesz);
-            else
-                console("\nfile [%s] read error (%d).", entry->fileid, ferror(fp));
-
+        bytes = fread(buf, 1, sizeof(buf), entry->fp);
+        if (bytes < sizeof(buf) && !feof(entry->fp)) {
+            console("\nfile [%s] read error (%d).", entry->fileid,
+                    ferror(entry->fp));
             goto cancel_transfer;
         }
 
         rc = ela_filetransfer_send(entry->ft, entry->fileid, buf, (size_t)bytes);
-        if (rc < 0)  {
+        if (rc < 0) {
             console("sending file %s error (0x%x).", entry->fileid, ela_get_error());
             goto cancel_transfer;
         }
@@ -302,16 +333,19 @@ static void *send_file_routine(void *args)
             entry->percent = percent;
         }
 
+        if (entry->sentsz == entry->filesz) {
+            console("\nfile [%s] transmitted with total size: %llu",
+                    entry->fileid, entry->filesz);
+            goto cancel_transfer;
+        }
+
         pthread_mutex_lock(&entry->lock);
     }
     pthread_mutex_unlock(&entry->lock);
 
 cancel_transfer:
     ela_filetransfer_set_userdata(entry->ft, entry->fileid, NULL);
-    if (fp)
-        fclose(fp);
-    if (entry)
-        deref(entry);
+    deref(list_remove_entry(entry->fctx->filentries, &entry->le));
 
     return NULL;
 }
@@ -375,6 +409,13 @@ static bool transfer_data_cb(ElaFileTransfer *ft, const char *fileid,
         goto cancel_transfer;
     }
 
+    if (!length) {
+        console("received cancel to transfer %s", fileid);
+        ela_filetransfer_set_userdata(ft, fileid, NULL);
+        deref(list_remove_entry(entry->fctx->filentries, &entry->le));
+        return false;
+    }
+
     rc = fwrite(data, length, 1, entry->fp);
     if (rc != 1) {
         console("Error: write data to file failed.");
@@ -387,7 +428,6 @@ static bool transfer_data_cb(ElaFileTransfer *ft, const char *fileid,
         console("Error: receive excessive data.");
         errno = ENOSPC;
         goto cancel_transfer;
-
     } else if (entry->sentsz == entry->filesz) {
         char filename[ELA_MAX_FILE_NAME_LEN + 1] = {0};
 
@@ -395,8 +435,7 @@ static bool transfer_data_cb(ElaFileTransfer *ft, const char *fileid,
         console("\nfile %s received with total size: %llu", fileid, entry->sentsz);
 
         ela_filetransfer_set_userdata(ft, fileid, NULL);
-        fclose(entry->fp);
-        deref(entry);
+        deref(list_remove_entry(entry->fctx->filentries, &entry->le));
         return false;
     } else {
         int percent = (int)(entry->sentsz * 100 / (double)entry->filesz);
@@ -408,10 +447,11 @@ static bool transfer_data_cb(ElaFileTransfer *ft, const char *fileid,
     }
 
 cancel_transfer:
-    ela_filetransfer_set_userdata(ft, fileid, NULL);
-    ela_filetransfer_cancel(ft, fileid, errno, strerror(errno));
-    fclose(entry->fp);
-    deref(entry);
+    if (entry) {
+        ela_filetransfer_cancel(ft, fileid, errno, strerror(errno));
+        ela_filetransfer_set_userdata(ft, fileid, NULL);
+        deref(list_remove_entry(entry->fctx->filentries, &entry->le));
+    }
 
     return true;
 }
@@ -445,7 +485,7 @@ static void transfer_cancel_cb(ElaFileTransfer *ft, const char *fileid,
 {
     filentry_t *entry;
 
-    console("received cancel to transfer %s with status %s and reason %s",
+    console("received cancel to transfer %s with status %d and reason %s",
             fileid, status, reason);
 
     entry = ela_filetransfer_get_userdata(ft, fileid);
@@ -651,17 +691,7 @@ static void unbind_transfer(filectx_t *fctx, int argc, char *argv[])
         return;
     }
 
-    if (!fctx->ft) {
-        console("Error: filetransfer connection not eixst");
-        return;
-    }
-
-    //TODO: how to remove all transfer entries.
-
-    fctx->ft = NULL;
-
-    ela_filetransfer_close(ft);
-    memset(fctx, 0, sizeof(*fctx)); //TODO: need to memset all.
+    file_context_reset(fctx);
 }
 
 static void send_file(filectx_t *fctx, int argc, char *argv[])
@@ -696,7 +726,7 @@ static void send_file(filectx_t *fctx, int argc, char *argv[])
     if (!p)
         return;
 
-    entry = (filentry_t *)rc_zalloc(sizeof(filentry_t), NULL);
+    entry = (filentry_t *)rc_zalloc(sizeof(filentry_t), file_entry_destroy);
     if (!entry)
         return;
 
@@ -721,29 +751,50 @@ static void send_file(filectx_t *fctx, int argc, char *argv[])
 
     entry->fctx = fctx;
 
+    entry->le.data = entry;
+    list_add(fctx->filentries, &entry->le);
+
     rc = ela_filetransfer_add(fctx->ft, &fi);
     if (rc < 0) {
-        deref(entry);
+        ela_filetransfer_set_userdata(fctx->ft, fi.fileid, NULL);
+        deref(list_remove_entry(fctx->filentries, &entry->le));
         console("Error: adding %s failed (0x%x), please try later.",
                 fi.filename, ela_get_error());
     } else {
         ela_filetransfer_set_userdata(fctx->ft, fi.fileid, entry);
         console("file %s added, waiting pull request.", fi.fileid);
     }
+    deref(entry);
 }
 
 static void cancel_file(filectx_t *fctx, int argc, char *argv[])
 {
     int rc;
+    filentry_t *entry;
 
     if (argc != 2) {
         console("Error: invalid command syntax");
         return;
     }
 
-    rc = ela_filetransfer_cancel(fctx->ft, argv[1], 1, "cancel filetransfer");
-    if (rc < 0)
+    entry = ela_filetransfer_get_userdata(fctx->ft, argv[1]);
+    if (!entry)
+        return;
+
+    rc = fctx->receiver ?
+         ela_filetransfer_cancel(fctx->ft, argv[1], 1, "cancel filetransfer") :
+         ela_filetransfer_send(fctx->ft, argv[1], NULL, 0);
+    if (rc < 0) {
         console("Error: cancel %s failed (0x%x)", argv[1], ela_get_error());
+        return;
+    }
+
+    if (fctx->receiver) {
+        ela_filetransfer_set_userdata(fctx->ft, argv[1], NULL);
+        if (entry)
+            deref(list_remove_entry(fctx->filentries, &entry->le));
+    } else
+        entry->cancel(entry);
 }
 
 static void system_cmd(filectx_t *fctx, int argc, char *argv[])
@@ -1055,7 +1106,12 @@ int main(int argc, char *argv[])
 #endif
 
     memset(&opts, 0, sizeof(opts));
-    memset(&fctx, 0, sizeof(fctx));
+    rc = file_context_init(&fctx);
+
+    if (rc < 0) {
+        fprintf(stderr, "Initialize file context error.\n");
+        return -1;
+    }
 
     while ((opt = getopt_long(argc, argv, "c:t:s:h?", options, &idx)) != -1) {
         switch (opt) {
@@ -1193,6 +1249,8 @@ int main(int argc, char *argv[])
         ela_kill(w);
         return -1;
     }
+
+    file_context_deinit(&fctx);
 
     return 0;
 }

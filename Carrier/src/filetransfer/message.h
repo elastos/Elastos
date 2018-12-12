@@ -35,7 +35,7 @@ enum {
 };
 
 typedef struct {
-    uint64_t type;
+    uint16_t type;
 } packet_t;
 
 typedef struct {

@@ -111,17 +111,17 @@ typedef enum FileTransferConnection {
     /** The file transfer connection is initialized. */
     FileTransferConnection_initialized = 1,
 
-    /** The file transfer connection is being established.*/
+    /** The file transfer connection is connecting.*/
     FileTransferConnection_connecting,
 
-    /** The file transfer connection has been connected. */
+    /** The file transfer connection has been established. */
     FileTransferConnection_connected,
 
-    /** The file transfer connection failed with some reason. */
-    FileTransferConnection_failed,
-
     /** The file transfer connection is closed and disconnected. */
-    FileTransferConnection_closed
+    FileTransferConnection_closed,
+
+    /** The file transfer connection failed with some reason. */
+    FileTransferConnection_failed
 } FileTransferConnection;
 
 /**
@@ -189,14 +189,15 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      fileid          [in] The unique identifier of transferring file.
      * @param
-     *      data            [in] The pointer to received data.
+     *      data            [in] The pointer to received data(NULL if @length
+     *                           is zero).
      * @param
      *      length          [in] The length of received data.
      * @param
      *      context         [in] The application defined context data.
      *
      * @return
-     *      Return True if file transfer has completed, otherwise return False.
+     *      Return false if you require no more data, otherwise return true.
      */
     bool (*data)(ElaFileTransfer *filetransfer, const char *fileid,
                  const uint8_t *data, size_t length, void *context);
@@ -332,7 +333,7 @@ void ela_filetransfer_cleanup(ElaCarrier *carrier);
  *
  * As to send request to transfer file, application may or may not feed
  * information of the file that we want to transfer. And for receiving side,
- * application MUST feed file information received from connect request
+ * application may feed file information received from connect request
  * callback.
  *
  * @param
@@ -491,9 +492,13 @@ int ela_filetransfer_pull(ElaFileTransfer *filetransfer, const char *fileid,
  * @param
  *      fileid          [in] The file identifier.
  * @param
- *      data            [in] The data to transfer for file.
+ *      data            [in] The data to transfer for file(MUST be NULL if
+ *                           @length is zero).
  * @param
- *      length          [in] The length of data to transfer for file.
+ *      length          [in] The length of data to transfer for file
+ *                           (COULD be zero. In that case, the receiver will
+ *                            get ElaFileTransferCallbacks::data callback with
+ *                            argument @length being zero).
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
@@ -511,6 +516,10 @@ int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
  * @param
  *      fileid          [in] The file identifier.
+ * @param
+ *      status          [in] Cancel transfer status code.
+ * @param
+ *      reason          [in] Cancel transfer reason.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
