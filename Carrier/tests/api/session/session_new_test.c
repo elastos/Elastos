@@ -109,6 +109,9 @@ static SessionContext session_context = {
 
 static void test_context_reset(TestContext *context)
 {
+    cond_reset(context->carrier->cond);
+    cond_reset(context->carrier->friend_status_cond);
+
     context->session->session = NULL;
 }
 

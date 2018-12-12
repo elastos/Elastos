@@ -152,6 +152,8 @@ static void test_context_reset(TestContext *context)
 {
     context->carrier->peer_list_cnt = 0;
     cond_reset(context->carrier->cond);
+    cond_reset(context->carrier->group_cond);
+    cond_reset(context->carrier->friend_status_cond);
 }
 
 static TestContext test_context = {

@@ -79,6 +79,7 @@ static CarrierContext carrier_context = {
         .carrier = NULL,
         .ready_cond = &ready_cond,
         .cond = &cond,
+        .group_cond = NULL,
         .friend_status_cond = NULL,
         .extra = NULL
 };
@@ -90,75 +91,75 @@ static TestContext test_context = {
         .context_reset = NULL
 };
 
-static void test_new_group_with_invalid_arguments(void)
+static void test_check_new_group_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_new_group(NULL, groupid, sizeof(groupid));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_new_group(wctx->carrier, NULL, sizeof(groupid));
+    rc = ela_new_group(carrier, NULL, sizeof(groupid));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_new_group(wctx->carrier, groupid, sizeof(groupid) - 1);
+    rc = ela_new_group(carrier, groupid, sizeof(groupid) - 1);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_leave_group_with_invalid_arguments(void)
+static void test_check_leave_group_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_leave_group(NULL, groupid);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_leave_group(wctx->carrier, NULL);
+    rc = ela_leave_group(carrier, NULL);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_leave_group(wctx->carrier, "");
+    rc = ela_leave_group(carrier, "");
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_invite_with_invalid_arguments(void)
+static void test_check_group_invite_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_group_invite(NULL, groupid, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_invite(wctx->carrier, NULL, robotid);
+    rc = ela_group_invite(carrier, NULL, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_invite(wctx->carrier, "", robotid);
+    rc = ela_group_invite(carrier, "", robotid);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_invite(wctx->carrier, groupid, NULL);
+    rc = ela_group_invite(carrier, groupid, NULL);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_invite(wctx->carrier, groupid, "");
+    rc = ela_group_invite(carrier, groupid, "");
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_join_with_invalid_arguments(void)
+static void test_check_group_join_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
-    CarrierContext *wctx = test_context.carrier;
     const void *cookie = "cookie";
     size_t cookie_len = strlen(cookie);
     size_t length = sizeof(groupid);
@@ -168,216 +169,216 @@ static void test_group_join_with_invalid_arguments(void)
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, NULL, cookie, cookie_len, groupid, length);
+    rc = ela_group_join(carrier, NULL, cookie, cookie_len, groupid, length);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, "", cookie, cookie_len, groupid, length);
+    rc = ela_group_join(carrier, "", cookie, cookie_len, groupid, length);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, robotid, NULL, cookie_len, groupid, length);
+    rc = ela_group_join(carrier, robotid, NULL, cookie_len, groupid, length);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, robotid, cookie, 0, groupid, length);
+    rc = ela_group_join(carrier, robotid, cookie, 0, groupid, length);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, robotid, cookie, cookie_len, NULL, length);
+    rc = ela_group_join(carrier, robotid, cookie, cookie_len, NULL, length);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_join(wctx->carrier, robotid, cookie, cookie_len, groupid, 0);
+    rc = ela_group_join(carrier, robotid, cookie, cookie_len, groupid, 0);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_message_with_invalid_arguments(void)
+static void test_check_group_message_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
     char msg[ELA_MAX_APP_MESSAGE_LEN + 1] = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
-    rc = ela_group_send_message(NULL, groupid, "hello", strlen("hello"));
+    rc = ela_group_send_message(NULL, groupid, "hello", strlen("hello") + 1);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_send_message(wctx->carrier, NULL, "hello", strlen("hello"));
+    rc = ela_group_send_message(carrier, NULL, "hello", strlen("hello"));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_send_message(wctx->carrier, "", "hello", strlen("hello"));
+    rc = ela_group_send_message(carrier, "", "hello", strlen("hello"));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_send_message(wctx->carrier, groupid, NULL, strlen("hello"));
+    rc = ela_group_send_message(carrier, groupid, NULL, strlen("hello"));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_send_message(wctx->carrier, groupid, "hello", 0);
+    rc = ela_group_send_message(carrier, groupid, "hello", 0);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
     memset(msg, 'M', sizeof(msg) - 1);
-    rc = ela_group_send_message(wctx->carrier, groupid, msg, sizeof(msg));
+    rc = ela_group_send_message(carrier, groupid, msg, sizeof(msg));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_set_title_with_invalid_arguments(void)
+static void test_check_group_set_title_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
     char title[32] = {0};
     char overlong_title[ELA_MAX_GROUP_TITLE_LEN + 2] = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_group_set_title(NULL, groupid, title);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_set_title(wctx->carrier, NULL, title);
+    rc = ela_group_set_title(carrier, NULL, title);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_set_title(wctx->carrier, "", title);
+    rc = ela_group_set_title(carrier, "", title);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_set_title(wctx->carrier, groupid, NULL);
+    rc = ela_group_set_title(carrier, groupid, NULL);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_set_title(wctx->carrier, groupid, "");
+    rc = ela_group_set_title(carrier, groupid, "");
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
     memset(overlong_title, 'O', sizeof(overlong_title) - 1);
-    rc = ela_group_set_title(wctx->carrier, groupid, overlong_title);
+    rc = ela_group_set_title(carrier, groupid, overlong_title);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_get_title_with_invalid_arguments(void)
+static void test_check_group_get_title_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
-    char title[ELA_MAX_GROUP_TITLE_LEN + 1] = {0}; 
-    CarrierContext *wctx = test_context.carrier;
+    char title[ELA_MAX_GROUP_TITLE_LEN + 1] = {0};
     int rc;
 
     rc = ela_group_get_title(NULL, groupid, title, sizeof(title));
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_title(wctx->carrier, NULL, title, sizeof(title));
+    rc = ela_group_get_title(carrier, NULL, title, sizeof(title));
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_title(wctx->carrier, "", title, sizeof(title));
+    rc = ela_group_get_title(carrier, "", title, sizeof(title));
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_title(wctx->carrier, groupid, NULL, sizeof(title));
+    rc = ela_group_get_title(carrier, groupid, NULL, sizeof(title));
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_title(wctx->carrier, groupid, title, 0);
+    rc = ela_group_get_title(carrier, groupid, title, 0);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_get_peer_with_invalid_arguments(void)
+static void test_check_group_get_peer_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
     ElaGroupPeer group_peer = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_group_get_peer(NULL, groupid, robotid, &group_peer);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peer(wctx->carrier, NULL, robotid, &group_peer);
+    rc = ela_group_get_peer(carrier, NULL, robotid, &group_peer);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peer(wctx->carrier, "", robotid, &group_peer);
+    rc = ela_group_get_peer(carrier, "", robotid, &group_peer);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peer(wctx->carrier, groupid, NULL, &group_peer);
+    rc = ela_group_get_peer(carrier, groupid, NULL, &group_peer);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peer(wctx->carrier, groupid, "", &group_peer);
+    rc = ela_group_get_peer(carrier, groupid, "", &group_peer);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peer(wctx->carrier, groupid, robotid, NULL);
+    rc = ela_group_get_peer(carrier, groupid, robotid, NULL);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_get_peers_with_invalid_arguments(void)
+static void test_check_group_get_peers_args(void)
 {
+    ElaCarrier *carrier = test_context.carrier->carrier;
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
     ElaGroupPeer group_peer = {0};
-    CarrierContext *wctx = test_context.carrier;
     int rc;
 
     rc = ela_group_get_peers(NULL, groupid, peer_iterate_cb, &group_peer);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peers(wctx->carrier, NULL, peer_iterate_cb, &group_peer);
+    rc = ela_group_get_peers(carrier, NULL, peer_iterate_cb, &group_peer);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peers(wctx->carrier, "", peer_iterate_cb, &group_peer);
+    rc = ela_group_get_peers(carrier, "", peer_iterate_cb, &group_peer);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_group_get_peers(wctx->carrier, groupid, NULL, &group_peer);
+    rc = ela_group_get_peers(carrier, groupid, NULL, &group_peer);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_group_get_groups_with_invalid_arguments(void)
+static void test_check_group_get_groups_args(void)
 {
-    CarrierContext *wctx = test_context.carrier;
+    ElaCarrier *carrier = test_context.carrier->carrier;
     int rc;
 
     rc = ela_get_groups(NULL, group_iterate_cb, NULL);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 
-    rc = ela_get_groups(wctx->carrier, NULL, NULL);
+    rc = ela_get_groups(carrier, NULL, NULL);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
 static CU_TestInfo cases[] = {
-    { "test_new_group_with_invalid_arguments",        test_new_group_with_invalid_arguments },
-    { "test_leave_group_with_invalid_arguments",      test_leave_group_with_invalid_arguments },
-    { "test_group_invite_with_invalid_arguments",     test_group_invite_with_invalid_arguments },
-    { "test_group_join_with_invalid_arguments",       test_group_join_with_invalid_arguments },
-    { "test_group_message_with_invalid_arguments",    test_group_message_with_invalid_arguments },
-    { "test_group_set_title_with_invalid_arguments",  test_group_set_title_with_invalid_arguments },
-    { "test_group_get_title_with_invalid_arguments",  test_group_get_title_with_invalid_arguments },
-    { "test_group_get_peer_with_invalid_arguments",   test_group_get_peer_with_invalid_arguments },
-    { "test_group_get_peers_with_invalid_arguments",  test_group_get_peers_with_invalid_arguments },
-    { "test_group_get_groups_with_invalid_arguments", test_group_get_groups_with_invalid_arguments },
+    { "test_check_new_group_args",        test_check_new_group_args         },
+    { "test_check_leave_group_args",      test_check_leave_group_args       },
+    { "test_check_group_invite_args",     test_check_group_invite_args      },
+    { "test_check_group_join_args",       test_check_group_join_args        },
+    { "test_check_group_message_args",    test_check_group_message_args     },
+    { "test_check_group_set_title_args",  test_check_group_set_title_args   },
+    { "test_check_group_get_title_args",  test_check_group_get_title_args   },
+    { "test_check_group_get_peer_args",   test_check_group_get_peer_args    },
+    { "test_check_group_get_peers_args",  test_check_group_get_peers_args   },
+    { "test_check_group_get_groups_args", test_check_group_get_groups_args  },
     { NULL, NULL }
 };
 
-CU_TestInfo *invalid_arguments_test_get_cases(void)
+CU_TestInfo *check_api_args_test_get_cases(void)
 {
     return cases;
 }
 
-int invalid_arguments_test_suite_init(void)
+int check_api_args_test_suite_init(void)
 {
     int rc;
 
@@ -390,7 +391,7 @@ int invalid_arguments_test_suite_init(void)
     return 0;
 }
 
-int invalid_arguments_test_suite_cleanup(void)
+int check_api_args_test_suite_cleanup(void)
 {
     test_suite_cleanup(&test_context);
 

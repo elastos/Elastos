@@ -176,8 +176,6 @@ static StreamContextExtra stream_extra = {
     .channel_id = { 0 },
     .channel_count = 0,
     .channel_cond = &channel_cond
-
-
 };
 
 static void stream_on_data(ElaSession *ws, int stream,
@@ -299,6 +297,9 @@ static void test_context_reset(TestContext *context)
 {
     SessionContext *session = context->session;
     StreamContext *stream = context->stream;
+
+    cond_reset(context->carrier->cond);
+    cond_reset(context->carrier->friend_status_cond);
 
     cond_reset(session->request_complete_cond);
 

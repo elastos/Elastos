@@ -24,6 +24,7 @@
 #define __API_CARRIER_TEST_SUITES_H__
 
 DECL_TESTSUITE(check_id_test)
+DECL_TESTSUITE(check_api_args_test)
 DECL_TESTSUITE(get_id_test)
 DECL_TESTSUITE(get_info_test)
 DECL_TESTSUITE(friend_request_test)
@@ -31,7 +32,6 @@ DECL_TESTSUITE(friend_label_test)
 DECL_TESTSUITE(friend_message_test)
 DECL_TESTSUITE(friend_invite_test)
 DECL_TESTSUITE(friend_invite_assembly_test)
-DECL_TESTSUITE(invalid_arguments_test)
 DECL_TESTSUITE(group_new_test)
 DECL_TESTSUITE(group_invite_join_test)
 DECL_TESTSUITE(group_message_test)
@@ -41,6 +41,7 @@ DECL_TESTSUITE(group_list_test)
 
 #define DEFINE_CARRIER_TESTSUITES \
     DEFINE_TESTSUITE(check_id_test), \
+    DEFINE_TESTSUITE(check_api_args_test), \
     DEFINE_TESTSUITE(get_id_test), \
     DEFINE_TESTSUITE(get_info_test), \
     DEFINE_TESTSUITE(friend_request_test), \
@@ -48,7 +49,6 @@ DECL_TESTSUITE(group_list_test)
     DEFINE_TESTSUITE(friend_message_test), \
     DEFINE_TESTSUITE(friend_invite_test), \
     DEFINE_TESTSUITE(friend_invite_assembly_test), \
-    DEFINE_TESTSUITE(invalid_arguments_test), \
     DEFINE_TESTSUITE(group_new_test), \
     DEFINE_TESTSUITE(group_invite_join_test), \
     DEFINE_TESTSUITE(group_message_test), \

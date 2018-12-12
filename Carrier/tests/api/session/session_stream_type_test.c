@@ -177,6 +177,9 @@ static void test_context_reset(TestContext *context)
     SessionContext *session = context->session;
     StreamContext *stream = context->stream;
 
+    cond_reset(context->carrier->cond);
+    cond_reset(context->carrier->friend_status_cond);
+
     cond_reset(session->request_complete_cond);
 
     session->request_received = 0;
