@@ -2,10 +2,10 @@ package blockchain
 
 import (
 	"errors"
+
+	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var FoundationAddress Uint168

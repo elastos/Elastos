@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 const (

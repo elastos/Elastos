@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -25,18 +25,18 @@ type Program struct {
 
 func (p Program) String() string {
 	return "Program: {\n\t\t" +
-		"Code: " + BytesToHexString(p.Code) + "\n\t\t" +
-		"Parameter: " + BytesToHexString(p.Parameter) + "\n\t\t" +
+		"Code: " + common.BytesToHexString(p.Code) + "\n\t\t" +
+		"Parameter: " + common.BytesToHexString(p.Parameter) + "\n\t\t" +
 		"}"
 }
 
 //Serialize the Program
 func (p *Program) Serialize(w io.Writer) error {
-	if err := WriteVarBytes(w, p.Parameter); err != nil {
+	if err := common.WriteVarBytes(w, p.Parameter); err != nil {
 		return errors.New("Execute Program Serialize Parameter failed.")
 	}
 
-	if err := WriteVarBytes(w, p.Code); err != nil {
+	if err := common.WriteVarBytes(w, p.Code); err != nil {
 		return errors.New("Execute Program Serialize Code failed.")
 	}
 
@@ -45,14 +45,14 @@ func (p *Program) Serialize(w io.Writer) error {
 
 //Deserialize the Program
 func (p *Program) Deserialize(w io.Reader) error {
-	parameter, err := ReadVarBytes(w, MaxProgramParamSize,
+	parameter, err := common.ReadVarBytes(w, MaxProgramParamSize,
 		"program parameter")
 	if err != nil {
 		return errors.New("Execute Program Deserialize Parameter failed.")
 	}
 	p.Parameter = parameter
 
-	code, err := ReadVarBytes(w, MaxProgramCodeSize,
+	code, err := common.ReadVarBytes(w, MaxProgramCodeSize,
 		"program code")
 	if err != nil {
 		return errors.New("Execute Program Deserialize Code failed.")

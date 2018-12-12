@@ -5,13 +5,12 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/protocol"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 var _ protocol.Handler = (*HandlerBase)(nil)
@@ -189,7 +188,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		if h.node.NetAddress().String() != addr.String() {
 			uniqueAddrs = append(uniqueAddrs, addr)
 		} else {
-			repeatNum ++
+			repeatNum++
 			if repeatNum > 1 {
 				log.Warn("more than one repeat:", repeatNum, " ", repeatNum, " ", addr.String())
 			}

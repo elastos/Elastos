@@ -16,7 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 // conn mocks a network connection by implementing the net.Conn interface.  It

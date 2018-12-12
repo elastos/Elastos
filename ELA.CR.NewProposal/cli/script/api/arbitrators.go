@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/cli/script/api/mock"
 	"github.com/yuin/gopher-lua"
 )

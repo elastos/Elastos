@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type OutPoint struct {
-	TxID  Uint256
+	TxID  common.Uint256
 	Index uint16
 }
 
@@ -23,11 +23,11 @@ func (op *OutPoint) IsEqual(o OutPoint) bool {
 }
 
 func (op *OutPoint) Serialize(w io.Writer) error {
-	return WriteElements(w, &op.TxID, op.Index)
+	return common.WriteElements(w, &op.TxID, op.Index)
 }
 
 func (op *OutPoint) Deserialize(r io.Reader) error {
-	return ReadElements(r, &op.TxID, &op.Index)
+	return common.ReadElements(r, &op.TxID, &op.Index)
 }
 
 func (op *OutPoint) Bytes() []byte {

@@ -6,9 +6,9 @@ import (
 	"github.com/elastos/Elastos.ELA/protocol"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	utip2p "github.com/elastos/Elastos.ELA.Utility/p2p"
-	utimsg "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	utip2p "github.com/elastos/Elastos.ELA/p2p"
+	utimsg "github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"

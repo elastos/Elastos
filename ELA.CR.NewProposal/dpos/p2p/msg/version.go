@@ -3,8 +3,8 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 // Ensure Version implement p2p.Message interface.

@@ -5,12 +5,11 @@ import (
 	"errors"
 	"sort"
 
+	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type producerSorter []*ProducerInfo

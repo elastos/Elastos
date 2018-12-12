@@ -14,8 +14,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -210,7 +208,7 @@ func CheckDestructionAddress(references map[*Input]*Output) error {
 		// is the program hash of the Elastos foundation destruction address ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr
 		// we allow no output from destruction address.
 		// So add a check here in case someone crack the private key of this address.
-		if output.ProgramHash == Uint168([21]uint8{33, 32, 254, 229, 215, 235, 62, 92, 125, 49, 151, 254, 207, 108, 13, 227, 15, 136, 154, 206, 247}) {
+		if output.ProgramHash == common.Uint168([21]uint8{33, 32, 254, 229, 215, 235, 62, 92, 125, 49, 151, 254, 207, 108, 13, 227, 15, 136, 154, 206, 247}) {
 			return errors.New("cannot use utxo in the Elastos foundation destruction address")
 		}
 	}
@@ -222,7 +220,7 @@ func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 		isCoinbaseTx bool
 		locktime     uint32
 	}
-	transactionCache := make(map[Uint256]lockTxInfo)
+	transactionCache := make(map[common.Uint256]lockTxInfo)
 	currentHeight := DefaultLedger.Store.GetHeight()
 	var referTxn *Transaction
 	for _, input := range txn.Inputs {
@@ -263,7 +261,7 @@ func CheckTransactionInput(txn *Transaction) error {
 		coinbaseInputHash := txn.Inputs[0].Previous.TxID
 		coinbaseInputIndex := txn.Inputs[0].Previous.Index
 		//TODO :check sequence
-		if !coinbaseInputHash.IsEqual(EmptyHash) || coinbaseInputIndex != math.MaxUint16 {
+		if !coinbaseInputHash.IsEqual(common.EmptyHash) || coinbaseInputIndex != math.MaxUint16 {
 			return errors.New("invalid coinbase input")
 		}
 
@@ -281,7 +279,7 @@ func CheckTransactionInput(txn *Transaction) error {
 	}
 	existingTxInputs := make(map[string]struct{})
 	for _, input := range txn.Inputs {
-		if input.Previous.TxID.IsEqual(EmptyHash) && (input.Previous.Index == math.MaxUint16) {
+		if input.Previous.TxID.IsEqual(common.EmptyHash) && (input.Previous.Index == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
 		if _, exists := existingTxInputs[input.ReferKey()]; exists {
@@ -308,7 +306,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return errors.New("First output address should be foundation address.")
 		}
 
-		var totalReward = Fixed64(0)
+		var totalReward = common.Fixed64(0)
 		for _, output := range txn.Outputs {
 			if output.AssetID != DefaultLedger.Blockchain.AssetID {
 				return errors.New("Asset ID in coinbase is invalid")
@@ -318,7 +316,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		foundationReward := txn.Outputs[0].Value
 
-		if Fixed64(foundationReward) < Fixed64(float64(totalReward)*0.3) {
+		if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
@@ -346,7 +344,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 		}
 
 		// output value must >= 0
-		if output.Value < Fixed64(0) {
+		if output.Value < common.Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 
@@ -411,7 +409,7 @@ func CheckAssetPrecision(txn *Transaction) error {
 	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[Uint256][]*Output)
+	assetOutputs := make(map[common.Uint256][]*Output)
 
 	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
@@ -432,15 +430,15 @@ func CheckAssetPrecision(txn *Transaction) error {
 }
 
 func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
-	var outputValue Fixed64
-	var inputValue Fixed64
+	var outputValue common.Fixed64
+	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
 		outputValue += output.Value
 	}
 	for _, reference := range references {
 		inputValue += reference.Value
 	}
-	if inputValue < Fixed64(config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+	if inputValue < common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)+outputValue {
 		return fmt.Errorf("transaction fee not enough")
 	}
 	return nil
@@ -519,7 +517,7 @@ func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) e
 	return RunPrograms(buf.Bytes(), programHashes, tx.Programs)
 }
 
-func checkAmountPrecise(amount Fixed64, precision byte) bool {
+func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, float64(8-precision))) == 0
 }
 
@@ -552,7 +550,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 func CheckDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
-		existingHashs := make(map[Uint256]struct{})
+		existingHashs := make(map[common.Uint256]struct{})
 		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
 				return errors.New("Duplicate sidechain tx detected in a transaction")
@@ -600,7 +598,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Inp
 	}
 
 	for _, v := range references {
-		if bytes.Compare(v.ProgramHash[0:1], []byte{PrefixCrossChain}) != 0 {
+		if bytes.Compare(v.ProgramHash[0:1], []byte{common.PrefixCrossChain}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
 		}
 	}
@@ -631,7 +629,7 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 
 	//check address in outputs and payload
 	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
-		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{PrefixCrossChain}) != 0 {
+		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{common.PrefixCrossChain}) != 0 {
 			return errors.New("Invalid transaction output address, without \"X\" at beginning")
 		}
 		if payloadObj.CrossChainAddresses[i] == "" {
@@ -641,23 +639,23 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
-		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(config.Parameters.MinCrossChainTxFee) {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}
 
 	//check transaction fee
-	var totalInput Fixed64
+	var totalInput common.Fixed64
 	for _, v := range references {
 		totalInput += v.Value
 	}
 
-	var totalOutput Fixed64
+	var totalOutput common.Fixed64
 	for _, output := range txn.Outputs {
 		totalOutput += output.Value
 	}
 
-	if totalInput-totalOutput < Fixed64(config.Parameters.MinCrossChainTxFee) {
+	if totalInput-totalOutput < common.Fixed64(config.Parameters.MinCrossChainTxFee) {
 		return errors.New("Invalid transaction fee")
 	}
 	return nil
@@ -883,31 +881,31 @@ func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposal
 
 	arbitratorsSet := make(map[string]interface{})
 	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
-		arbitratorsSet[BytesToHexString(v)] = nil
+		arbitratorsSet[common.BytesToHexString(v)] = nil
 	}
 
 	for _, v := range signers {
-		if _, ok := arbitratorsSet[BytesToHexString(v)]; !ok {
+		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
 			return errors.New("Invalid signers within evidence.")
 		}
 	}
 
 	for _, v := range compareSigners {
-		if _, ok := arbitratorsSet[BytesToHexString(v)]; !ok {
+		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
 			return errors.New("Invalid signers within evidence.")
 		}
 	}
 
 	confirmSigners := getConfirmSigners(confirm)
 	for _, v := range signers {
-		if _, ok := confirmSigners[BytesToHexString(v)]; !ok {
+		if _, ok := confirmSigners[common.BytesToHexString(v)]; !ok {
 			return errors.New("Signers and confirm votes do not match.")
 		}
 	}
 
 	compareConfirmSigners := getConfirmSigners(compareConfirm)
 	for _, v := range signers {
-		if _, ok := compareConfirmSigners[BytesToHexString(v)]; !ok {
+		if _, ok := compareConfirmSigners[common.BytesToHexString(v)]; !ok {
 			return errors.New("Signers and confirm votes do not match.")
 		}
 	}

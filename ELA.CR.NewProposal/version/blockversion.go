@@ -11,10 +11,10 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	errors2 "github.com/elastos/Elastos.ELA/errors"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/node"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type BlockVersion interface {
@@ -91,7 +91,7 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
 		Inputs:         []*types.Input{},
 		Fee:            0,
 	}
-	if code := node.LocalNode.AppendToTxnPool(txn); code == errors2.Success {
+	if code := node.LocalNode.AppendToTxnPool(txn); code == elaerr.Success {
 		node.LocalNode.AppendToTxnPool(txn)
 	}
 

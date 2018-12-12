@@ -51,6 +51,12 @@ func BytesToInt16(b []byte) int16 {
 	return int16(tmp)
 }
 
+func ClearBytes(arr []byte) {
+	for i := 0; i < len(arr); i++ {
+		arr[i] = 0
+	}
+}
+
 func Sha256D(data []byte) [32]byte {
 	once := sha256.Sum256(data)
 	return sha256.Sum256(once[:])

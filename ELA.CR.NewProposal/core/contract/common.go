@@ -3,8 +3,6 @@ package contract
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/vm"
-
-	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ContractType byte
@@ -116,7 +114,7 @@ func GetCodeType(code []byte) ContractType {
 	return Custom
 }
 
-func GetPrefixType(programHash utilcom.Uint168) PrefixType {
+func GetPrefixType(programHash common.Uint168) PrefixType {
 	prefixType := PrefixType(programHash[0])
 	return PrefixType(prefixType)
 }

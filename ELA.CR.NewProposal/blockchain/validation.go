@@ -12,11 +12,9 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) error {
+func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Program) error {
 	if len(programHashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
@@ -30,7 +28,7 @@ func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) erro
 		programHash := programHashes[i]
 		ownerHash := common.Uint160ParseFromUint168(programHash)
 
-		if !ownerHash.IsEqual(*codeHash) && programHash[0] != PrefixCrossChain {
+		if !ownerHash.IsEqual(*codeHash) && programHash[0] != common.PrefixCrossChain {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 
@@ -40,12 +38,12 @@ func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) erro
 				return err
 			}
 
-		} else if programHash[0] == PrefixMultisig {
+		} else if programHash[0] == common.PrefixMultisig {
 			if err = checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
 
-		} else if programHash[0] == PrefixCrossChain {
+		} else if programHash[0] == common.PrefixCrossChain {
 			if err = checkCrossChainSignatures(*program, data); err != nil {
 				return err
 			}
@@ -58,12 +56,12 @@ func RunPrograms(data []byte, programHashes []Uint168, programs []*Program) erro
 	return nil
 }
 
-func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]Uint168, error) {
+func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
-	hashes := make([]Uint168, 0)
-	uniqueHashes := make([]Uint168, 0)
+	hashes := make([]common.Uint168, 0)
+	uniqueHashes := make([]common.Uint168, 0)
 	// add inputUTXO's transaction
 	for _, output := range references {
 		programHash := output.ProgramHash
@@ -71,7 +69,7 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]Uint1
 	}
 	for _, attribute := range tx.Attributes {
 		if attribute.Usage == Script {
-			dataHash, err := Uint168FromBytes(attribute.Data)
+			dataHash, err := common.Uint168FromBytes(attribute.Data)
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
 			}
@@ -80,7 +78,7 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]Uint1
 	}
 
 	//remove dupilicated hashes
-	unique := make(map[Uint168]bool)
+	unique := make(map[common.Uint168]bool)
 	for _, v := range hashes {
 		unique[v] = true
 	}
@@ -155,7 +153,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 		return errors.New("invalid signatures, too many signatures")
 	}
 
-	var verified = make(map[Uint256]struct{})
+	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
 		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
