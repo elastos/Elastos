@@ -2,6 +2,7 @@ package outputpayload
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -65,6 +66,12 @@ func (vc *VoteContent) Deserialize(r io.Reader) error {
 	}
 
 	return nil
+}
+
+func (vc VoteContent) String() string {
+	return fmt.Sprint("Content: {",
+		"VoteType: ", vc.VoteType, " ",
+		"Candidates: ", vc.Candidates, "}")
 }
 
 type VoteOutput struct {
@@ -154,4 +161,10 @@ func (o *VoteOutput) Validate() error {
 	}
 
 	return nil
+}
+
+func (o VoteOutput) String() string {
+	return fmt.Sprint("Vote: {",
+		"Version: ", o.Version, " ",
+		"Contents: ", o.Contents, "\n\t}")
 }
