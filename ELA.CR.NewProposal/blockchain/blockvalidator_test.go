@@ -79,12 +79,6 @@ func TestCheckBlockSanity(t *testing.T) {
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
-
-	block.Nonce = 0
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
-	if err != nil {
-		t.Error(err.Error())
-	}
 }
 
 func TestCheckCoinbaseTransactionContext(t *testing.T) {

@@ -1,6 +1,7 @@
 package version
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
@@ -116,6 +117,10 @@ func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, 
 }
 
 func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
+	if tx == nil {
+		return errors.New("Transaction is null")
+	}
+
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
