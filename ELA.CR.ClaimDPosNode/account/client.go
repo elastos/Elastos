@@ -57,7 +57,7 @@ func Create(path string, password []byte, accountType string) (*ClientImpl, erro
 		return nil, err
 	}
 
-	client.mainAccount = common.Uint160ParseFromUint168(account.ProgramHash)
+	client.mainAccount = account.ProgramHash.ToCodeHash()
 
 	return client, nil
 }
@@ -340,7 +340,7 @@ func (cl *ClientImpl) LoadAccounts() error {
 	for _, a := range storeAddresses {
 		p, _ := common.HexStringToBytes(a.ProgramHash)
 		acc, _ := common.Uint168FromBytes(p)
-		codeHash := common.Uint160ParseFromUint168(*acc)
+		codeHash := acc.ToCodeHash()
 		if a.Type == MAINACCOUNT {
 			cl.mainAccount = codeHash
 		}

@@ -18,7 +18,7 @@ func TestSortProgramHashes(t *testing.T) {
 		dupHashes = append(dupHashes, hash)
 	}
 
-	SortProgramHashes(hashes)
+	SortProgramHashByCodeHash(hashes)
 	sort.Sort(byProgramHashes(dupHashes))
 
 	for i, hash := range hashes {

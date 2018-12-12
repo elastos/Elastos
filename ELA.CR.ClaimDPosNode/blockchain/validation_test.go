@@ -277,7 +277,7 @@ func TestRunPrograms(t *testing.T) {
 
 	// With disordered hashes
 	init()
-	common.SortProgramHashes(hashes)
+	common.SortProgramHashByCodeHash(hashes)
 	sort.Sort(sort.Reverse(byHash(programs)))
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with disordered hashes")
@@ -468,7 +468,7 @@ func TestSortPrograms(t *testing.T) {
 			//programs = append(programs, p)
 		}
 
-		common.SortProgramHashes(hashes)
+		common.SortProgramHashByCodeHash(hashes)
 		SortPrograms(programs)
 
 		//fixme
