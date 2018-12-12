@@ -48,12 +48,9 @@ func TestChainStore_PersisSidechainTx(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
-	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
 	}
 }
 
@@ -63,12 +60,9 @@ func TestChainStore_RollbackSidechainTx(t *testing.T) {
 	}
 
 	// 1. The sidechain Tx hash should exist in DB.
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
-	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
 	}
 
 	// 2. Run Rollback
@@ -105,12 +99,9 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
-	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
 	}
 
 	// 4. Run IsSidechainTxHashDuplicate
