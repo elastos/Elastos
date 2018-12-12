@@ -2,13 +2,12 @@ package store
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"testing"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/dpos/log"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 var eventStore = &EventStore{
