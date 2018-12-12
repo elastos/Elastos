@@ -6,8 +6,9 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type LevelDBOperator struct {
@@ -42,7 +43,7 @@ func (s *LevelDBOperator) Disconnect() error {
 	return nil
 }
 
-func (s *LevelDBOperator) Create(table *DposTable) error {
+func (s *LevelDBOperator) Create(table *DBTable) error {
 	buf := new(bytes.Buffer)
 	if err := table.Serialize(buf); err != nil {
 		return err
@@ -61,7 +62,7 @@ func (s *LevelDBOperator) Create(table *DposTable) error {
 	return s.Put(key, buf.Bytes())
 }
 
-func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, error) {
+func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error) {
 	s.NewBatch()
 	tableName := table.Name
 
@@ -123,7 +124,7 @@ func (s *LevelDBOperator) Insert(table *DposTable, fields []*Field) (uint64, err
 	return rowID, nil
 }
 
-func (s *LevelDBOperator) Select(table *DposTable, inputFields []*Field) ([][]*Field, error) {
+func (s *LevelDBOperator) Select(table *DBTable, inputFields []*Field) ([][]*Field, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -132,7 +133,7 @@ func (s *LevelDBOperator) Select(table *DposTable, inputFields []*Field) ([][]*F
 	return s.selectValuesFromRowIDs(table, ids)
 }
 
-func (s *LevelDBOperator) SelectID(table *DposTable, inputFields []*Field) ([]uint64, error) {
+func (s *LevelDBOperator) SelectID(table *DBTable, inputFields []*Field) ([]uint64, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -140,7 +141,7 @@ func (s *LevelDBOperator) SelectID(table *DposTable, inputFields []*Field) ([]ui
 	return ids, nil
 }
 
-func (s *LevelDBOperator) selectValuesFromRowIDs(table *DposTable, rowIDs []uint64) ([][]*Field, error) {
+func (s *LevelDBOperator) selectValuesFromRowIDs(table *DBTable, rowIDs []uint64) ([][]*Field, error) {
 	var result [][]*Field
 	for _, rowID := range rowIDs {
 		columnsData, err := s.Get(getRowKey(table.Name, rowID))
@@ -157,7 +158,7 @@ func (s *LevelDBOperator) selectValuesFromRowIDs(table *DposTable, rowIDs []uint
 	return result, nil
 }
 
-func (s *LevelDBOperator) selectRowIDs(table *DposTable, inputFields []*Field) ([]uint64, error) {
+func (s *LevelDBOperator) selectRowIDs(table *DBTable, inputFields []*Field) ([]uint64, error) {
 	idsCount := make(map[uint64]uint32)
 	for _, f := range inputFields {
 		rowIDs, err := s.selectRowsByField(table, f)
@@ -179,7 +180,7 @@ func (s *LevelDBOperator) selectRowIDs(table *DposTable, inputFields []*Field) (
 
 // because if one field is neither primary key nor index key, requires full table lookup
 // only sport select from primary key or index column
-func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field) ([]uint64, error) {
+func (s *LevelDBOperator) selectRowsByField(table *DBTable, inputField *Field) ([]uint64, error) {
 	col := table.Column(inputField.Name)
 	if col == table.PrimaryKey {
 		rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
@@ -205,7 +206,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DposTable, inputField *Field)
 	return nil, errors.New("not found in table")
 }
 
-func (s *LevelDBOperator) Update(table *DposTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
+func (s *LevelDBOperator) Update(table *DBTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
 	s.NewBatch()
 	if err := s.checkUpdateFields(table, updateFields); err != nil {
 		return nil, err
@@ -227,7 +228,7 @@ func (s *LevelDBOperator) Update(table *DposTable, inputFields []*Field, updateF
 	return ids, nil
 }
 
-func (s *LevelDBOperator) checkUpdateFields(table *DposTable, updateFields []*Field) error {
+func (s *LevelDBOperator) checkUpdateFields(table *DBTable, updateFields []*Field) error {
 	// check updateFields include exist primary key value
 	for _, f := range updateFields {
 		if table.Column(f.Name) == table.PrimaryKey {
@@ -240,7 +241,7 @@ func (s *LevelDBOperator) checkUpdateFields(table *DposTable, updateFields []*Fi
 	return nil
 }
 
-func (s *LevelDBOperator) updateRow(table *DposTable, rowID uint64, updateFields []*Field) error {
+func (s *LevelDBOperator) updateRow(table *DBTable, rowID uint64, updateFields []*Field) error {
 	oldFields, err := s.getFieldsByRowID(table, rowID)
 	if err != nil {
 		return err
@@ -276,7 +277,7 @@ func (s *LevelDBOperator) updateRow(table *DposTable, rowID uint64, updateFields
 	return nil
 }
 
-func (s *LevelDBOperator) updateRowData(table *DposTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
+func (s *LevelDBOperator) updateRowData(table *DBTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
 	// update row data
 	newFieldMap := make(map[string]*Field)
 	for _, f := range oldFields {
@@ -299,7 +300,7 @@ func (s *LevelDBOperator) updateRowData(table *DposTable, oldFields []*Field, up
 	return nil
 }
 
-func (s *LevelDBOperator) updatePrimaryKeyValue(table *DposTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
+func (s *LevelDBOperator) updatePrimaryKeyValue(table *DBTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
 	var data []byte
 	for _, field := range oldFields {
 		if table.Column(field.Name) == table.PrimaryKey {
@@ -313,7 +314,7 @@ func (s *LevelDBOperator) updatePrimaryKeyValue(table *DposTable, oldFields []*F
 	return nil
 }
 
-func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
+func (s *LevelDBOperator) updateIndexKeyValue(table *DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
 	// if exist index column before, need update old record
 	oldIndexKey := getIndexKey(table.Name, column, oldData)
 	rowIDBytes, err := s.Get(oldIndexKey)
@@ -360,7 +361,7 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DposTable, rowID uint64, co
 	return nil
 }
 
-func (s *LevelDBOperator) getFieldsByRowID(table *DposTable, rowID uint64) ([]*Field, error) {
+func (s *LevelDBOperator) getFieldsByRowID(table *DBTable, rowID uint64) ([]*Field, error) {
 	columnsData, err := s.Get(getRowKey(table.Name, rowID))
 	if err != nil {
 		return nil, fmt.Errorf("not found row id")

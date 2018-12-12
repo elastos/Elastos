@@ -10,7 +10,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var ConsensusEventTable = &DposTable{
+var ConsensusEventTable = &DBTable{
 	Name:       "ConsensusEvent",
 	PrimaryKey: 4,
 	Indexes:    []uint64{3},
@@ -22,7 +22,7 @@ var ConsensusEventTable = &DposTable{
 	},
 }
 
-var ProposalEventTable = &DposTable{
+var ProposalEventTable = &DBTable{
 	Name:       "ProposalEvent",
 	PrimaryKey: 7,
 	Indexes:    []uint64{1, 2, 6},
@@ -37,7 +37,7 @@ var ProposalEventTable = &DposTable{
 	},
 }
 
-var VoteEventTable = &DposTable{
+var VoteEventTable = &DBTable{
 	Name:       "VoteEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -50,7 +50,7 @@ var VoteEventTable = &DposTable{
 	},
 }
 
-var ViewEventTable = &DposTable{
+var ViewEventTable = &DBTable{
 	Name:       "ViewEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
