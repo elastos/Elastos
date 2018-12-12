@@ -208,19 +208,19 @@ func (s *EventStore) Open() error {
 	}
 	err = s.createConsensusEventTable()
 	if err != nil {
-		return fmt.Errorf("create ConsensusEvent table Connect failed:", err.Error())
+		Debug("create ConsensusEvent table Connect failed:", err.Error())
 	}
 	err = s.createProposalEventTable()
 	if err != nil {
-		return fmt.Errorf("create ProposalEvent table failed:", err.Error())
+		Debug("create ProposalEvent table failed:", err.Error())
 	}
 	err = s.createVoteEventTable()
 	if err != nil {
-		return fmt.Errorf("create VoteEvent table failed:", err.Error())
+		Debug("create VoteEvent table failed:", err.Error())
 	}
 	err = s.createViewEventTable()
 	if err != nil {
-		return fmt.Errorf("create ViewEvent table failed:", err.Error())
+		Debug("create ViewEvent table failed:", err.Error())
 	}
 
 	s.taskCh = make(chan persistTask, MaxEvnetTaskNumber)
