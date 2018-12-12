@@ -52,7 +52,7 @@ func (f *Field) Data() []byte {
 }
 
 // todo change fields to map[string]FieldType, change indexes to ma[uint64]struct{}
-type DposTable struct {
+type DBTable struct {
 	// name of table
 	Name string
 
@@ -68,7 +68,7 @@ type DposTable struct {
 	Fields []string
 }
 
-func (d *DposTable) Serialize(w io.Writer) error {
+func (d *DBTable) Serialize(w io.Writer) error {
 	if err := common.WriteVarString(w, d.Name); err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (d *DposTable) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (d *DposTable) Deserialize(r io.Reader) error {
+func (d *DBTable) Deserialize(r io.Reader) error {
 	var err error
 	d.Name, err = common.ReadVarString(r)
 	if err != nil {
@@ -141,7 +141,7 @@ func (d *DposTable) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (d *DposTable) Data(fields []*Field) ([]byte, error) {
+func (d *DBTable) Data(fields []*Field) ([]byte, error) {
 	fieldsMap := make(map[string]struct{})
 	for _, f := range d.Fields {
 		fieldsMap[f] = struct{}{}
@@ -174,7 +174,7 @@ func (d *DposTable) Data(fields []*Field) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (d *DposTable) GetFields(data []byte) ([]*Field, error) {
+func (d *DBTable) GetFields(data []byte) ([]*Field, error) {
 	r := bytes.NewReader(data)
 	len, err := common.ReadVarUint(r, 0)
 	if err != nil {
@@ -415,7 +415,7 @@ func readVarInt(r io.Reader) (int64, error) {
 }
 
 // column range from 1 to len(table.Fields), if a field name not found in table will return 0
-func (d *DposTable) Column(fieldName string) uint64 {
+func (d *DBTable) Column(fieldName string) uint64 {
 	for i, f := range d.Fields {
 		if f == fieldName {
 			return uint64(i) + 1
