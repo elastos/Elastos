@@ -17,11 +17,9 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/vm"
-
-	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type Client interface {
@@ -29,10 +27,10 @@ type Client interface {
 
 	ContainsAccount(pubKey *crypto.PublicKey) bool
 	CreateAccount() (*Account, error)
-	DeleteAccount(programHash utilcom.Uint168) error
+	DeleteAccount(programHash common.Uint168) error
 	GetAccount(pubKey *crypto.PublicKey) (*Account, error)
 	GetDefaultAccount() (*Account, error)
-	GetAccountByProgramHash(programHash utilcom.Uint168) *Account
+	GetAccountByProgramHash(programHash common.Uint168) *Account
 	GetAccounts() []*Account
 }
 
@@ -261,7 +259,7 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 			return nil
 		}
 	}
-	utilcom.ClearBytes(passwordKey)
+	common.ClearBytes(passwordKey)
 
 	return client
 }
@@ -306,7 +304,7 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	if err != nil {
 		return err
 	}
-	utilcom.ClearBytes(decryptedPrivateKey)
+	common.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
 	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), encryptedPrivateKey)
@@ -340,13 +338,13 @@ func (cl *ClientImpl) LoadAccounts() error {
 		return err
 	}
 	for _, a := range storeAddresses {
-		p, _ := utilcom.HexStringToBytes(a.ProgramHash)
-		acc, _ := utilcom.Uint168FromBytes(p)
+		p, _ := common.HexStringToBytes(a.ProgramHash)
+		acc, _ := common.Uint168FromBytes(p)
 		codeHash := common.Uint160ParseFromUint168(*acc)
 		if a.Type == MAINACCOUNT {
 			cl.mainAccount = codeHash
 		}
-		encryptedKeyPair, _ := utilcom.HexStringToBytes(a.PrivateKeyEncrypted)
+		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
 		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
 		if err != nil {
 			log.Error(err)

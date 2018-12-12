@@ -19,7 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA/version/verconfig"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 )
 

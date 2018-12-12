@@ -5,18 +5,17 @@ import (
 	"math"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type TxVersion interface {
 	GetVersion() byte
 
 	CheckOutputPayload(output *types.Output) error
-	CheckOutputProgramHash(programHash Uint168) error
-	CheckCoinbaseMinerReward(tx *types.Transaction, totalReward Fixed64) error
-	CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase Fixed64) error
+	CheckOutputProgramHash(programHash common.Uint168) error
+	CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error
+	CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error
 	CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error
 	CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error
 }
@@ -36,29 +35,29 @@ func (v *TxVersionMain) CheckOutputPayload(output *types.Output) error {
 	}
 }
 
-func (v *TxVersionMain) CheckOutputProgramHash(programHash Uint168) error {
-	var empty = Uint168{}
+func (v *TxVersionMain) CheckOutputProgramHash(programHash common.Uint168) error {
+	var empty = common.Uint168{}
 	prefix := programHash[0]
-	if prefix == PrefixStandard ||
-		prefix == PrefixMultisig ||
-		prefix == PrefixCrossChain ||
+	if prefix == common.PrefixStandard ||
+		prefix == common.PrefixMultisig ||
+		prefix == common.PrefixCrossChain ||
 		programHash == empty {
 		return nil
 	}
 	return errors.New("Invalid program hash prefix.")
 }
 
-func (v *TxVersionMain) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward Fixed64) error {
+func (v *TxVersionMain) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
 	minerReward := tx.Outputs[1].Value
-	if Fixed64(minerReward) < Fixed64(float64(totalReward)*0.35) {
+	if common.Fixed64(minerReward) < common.Fixed64(float64(totalReward)*0.35) {
 		return errors.New("Reward to miner in coinbase < 35%")
 	}
 
 	return nil
 }
 
-func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase Fixed64) error {
-	outputAddressMap := make(map[Uint168]Fixed64)
+func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
+	outputAddressMap := make(map[common.Uint168]common.Fixed64)
 
 	for i := 2; i < len(coinbase.Outputs); i++ {
 		outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
@@ -70,11 +69,11 @@ func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transacti
 		return errors.New("Coinbase output count not match.")
 	}
 
-	dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
+	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
 	totalBlockConfirmReward := float64(dposTotalReward) * 0.25
 	totalTopProducersReward := float64(dposTotalReward) * 0.75
-	individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
+	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
+	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
 
 	for _, v := range arbitratorsHashes {
 
@@ -104,7 +103,7 @@ func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transacti
 }
 
 func (v *TxVersionMain) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
-	programHashes := make(map[Uint168]struct{})
+	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
 		programHashes[v.ProgramHash] = struct{}{}
 	}

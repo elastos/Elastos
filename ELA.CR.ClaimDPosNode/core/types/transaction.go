@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
@@ -97,10 +97,10 @@ type Transaction struct {
 	Outputs        []*Output
 	LockTime       uint32
 	Programs       []*pg.Program
-	Fee            Fixed64
-	FeePerKB       Fixed64
+	Fee            common.Fixed64
+	FeePerKB       common.Fixed64
 
-	hash *Uint256
+	hash *common.Uint256
 }
 
 func (tx *Transaction) String() string {
@@ -110,7 +110,7 @@ func (tx *Transaction) String() string {
 		"Version: ", tx.Version, "\n\t",
 		"TxType: ", tx.TxType.Name(), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
-		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
+		"Payload: ", common.BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
 		"Inputs: ", tx.Inputs, "\n\t",
 		"Outputs: ", tx.Outputs, "\n\t",
@@ -125,7 +125,7 @@ func (tx *Transaction) Serialize(w io.Writer) error {
 		return errors.New("Transaction txSerializeUnsigned Serialize failed, " + err.Error())
 	}
 	//Serialize  Transaction's programs
-	if err := WriteVarUint(w, uint64(len(tx.Programs))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(tx.Programs))); err != nil {
 		return errors.New("Transaction program count failed.")
 	}
 	for _, program := range tx.Programs {
@@ -161,7 +161,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	}
 
 	//[]*txAttribute
-	if err := WriteVarUint(w, uint64(len(tx.Attributes))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(tx.Attributes))); err != nil {
 		return errors.New("Transaction item txAttribute length serialization failed.")
 	}
 	for _, attr := range tx.Attributes {
@@ -171,7 +171,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	}
 
 	//[]*Inputs
-	if err := WriteVarUint(w, uint64(len(tx.Inputs))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(tx.Inputs))); err != nil {
 		return errors.New("Transaction item Inputs length serialization failed.")
 	}
 	for _, utxo := range tx.Inputs {
@@ -181,7 +181,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	}
 
 	//[]*Outputs
-	if err := WriteVarUint(w, uint64(len(tx.Outputs))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(tx.Outputs))); err != nil {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
 	for _, output := range tx.Outputs {
@@ -190,7 +190,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		}
 	}
 
-	return WriteUint32(w, tx.LockTime)
+	return common.WriteUint32(w, tx.LockTime)
 }
 
 // Deserialize the Transaction
@@ -201,7 +201,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 	}
 
 	// tx program
-	count, err := ReadVarUint(r, 0)
+	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return errors.New("transaction write program count error: " + err.Error())
 	}
@@ -216,14 +216,14 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 }
 
 func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
-	flagByte, err := ReadBytes(r, 1)
+	flagByte, err := common.ReadBytes(r, 1)
 	if err != nil {
 		return err
 	}
 
 	if TransactionVersion(flagByte[0]) >= TxVersion09 {
 		tx.Version = TransactionVersion(flagByte[0])
-		txType, err := ReadBytes(r, 1)
+		txType, err := common.ReadBytes(r, 1)
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		tx.TxType = TransactionType(flagByte[0])
 	}
 
-	payloadVersion, err := ReadBytes(r, 1)
+	payloadVersion, err := common.ReadBytes(r, 1)
 	if err != nil {
 		return err
 	}
@@ -249,7 +249,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		return errors.New("deserialize Payload failed")
 	}
 	// attributes
-	count, err := ReadVarUint(r, 0)
+	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
 	// inputs
-	count, err = ReadVarUint(r, 0)
+	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		tx.Inputs = append(tx.Inputs, &input)
 	}
 	// outputs
-	count, err = ReadVarUint(r, 0)
+	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		tx.Outputs = append(tx.Outputs, &output)
 	}
 
-	tx.LockTime, err = ReadUint32(r)
+	tx.LockTime, err = common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -301,11 +301,11 @@ func (tx *Transaction) GetSize() int {
 	return buf.Len()
 }
 
-func (tx *Transaction) Hash() Uint256 {
+func (tx *Transaction) Hash() common.Uint256 {
 	if tx.hash == nil {
 		buf := new(bytes.Buffer)
 		tx.SerializeUnsigned(buf)
-		hash := Uint256(Sha256D(buf.Bytes()))
+		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		tx.hash = &hash
 	}
 	return *tx.hash
@@ -359,9 +359,9 @@ func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
 
-func NewTrimmedTx(hash Uint256) *Transaction {
+func NewTrimmedTx(hash common.Uint256) *Transaction {
 	tx := new(Transaction)
-	tx.hash, _ = Uint256FromBytes(hash[:])
+	tx.hash, _ = common.Uint256FromBytes(hash[:])
 	return tx
 }
 

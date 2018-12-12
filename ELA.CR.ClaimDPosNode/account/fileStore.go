@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
 )
 
 type AccountData struct {
@@ -85,7 +85,7 @@ func (cs *FileStore) closeDB() {
 }
 
 func (cs *FileStore) BuildDatabase(path string) {
-	if exist := FileExisted(path); exist {
+	if _, err := os.Stat(path); err == nil || os.IsExist(err) {
 		fmt.Println(path + " file already exist")
 		os.Exit(1)
 	}

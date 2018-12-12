@@ -10,6 +10,7 @@ import (
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -19,8 +20,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -34,13 +33,13 @@ var preChainHeight uint64
 var preTime int64
 var currentAuxBlock *Block
 
-func ToReversedString(hash Uint256) string {
-	return BytesToHexString(BytesReverse(hash[:]))
+func ToReversedString(hash common.Uint256) string {
+	return common.BytesToHexString(common.BytesReverse(hash[:]))
 }
 
 func FromReversedString(reversed string) ([]byte, error) {
-	bytes, err := HexStringToBytes(reversed)
-	return BytesReverse(bytes), err
+	bytes, err := common.HexStringToBytes(reversed)
+	return common.BytesReverse(bytes), err
 }
 
 func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
@@ -66,13 +65,13 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	attributes := make([]AttributeInfo, len(tx.Attributes))
 	for i, v := range tx.Attributes {
 		attributes[i].Usage = v.Usage
-		attributes[i].Data = BytesToHexString(v.Data)
+		attributes[i].Data = common.BytesToHexString(v.Data)
 	}
 
 	programs := make([]ProgramInfo, len(tx.Programs))
 	for i, v := range tx.Programs {
-		programs[i].Code = BytesToHexString(v.Code)
-		programs[i].Parameter = BytesToHexString(v.Parameter)
+		programs[i].Code = common.BytesToHexString(v.Code)
+		programs[i].Parameter = common.BytesToHexString(v.Parameter)
 	}
 
 	var txHash = tx.Hash()
@@ -121,7 +120,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	var hash Uint256
+	var hash common.Uint256
 	err = hash.Deserialize(bytes.NewReader(hex))
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
@@ -155,7 +154,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	} else {
 		buf := new(bytes.Buffer)
 		targetTransaction.Serialize(buf)
-		return ResponsePack(Success, BytesToHexString(buf.Bytes()))
+		return ResponsePack(Success, common.BytesToHexString(buf.Bytes()))
 	}
 }
 
@@ -219,7 +218,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "parameter auxpow not found")
 	}
 
-	blockHash, err := Uint256FromHexString(blockHashHex)
+	blockHash, err := common.Uint256FromHexString(blockHashHex)
 	if err != nil {
 		return ResponsePack(InvalidParams, "bad blockhash")
 	}
@@ -230,7 +229,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	}
 
 	var aux aux.AuxPow
-	buf, _ := HexStringToBytes(auxPow)
+	buf, _ := common.HexStringToBytes(auxPow)
 	if err := aux.Deserialize(bytes.NewReader(buf)); err != nil {
 		log.Debug("[json-rpc:SubmitAuxBlock] auxpow deserialization failed", auxPow)
 		return ResponsePack(InternalError, "auxpow deserialization failed")
@@ -290,12 +289,12 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 	}
 
 	type AuxBlock struct {
-		ChainID           int     `json:"chainid"`
-		Height            uint64  `json:"height"`
-		CoinBaseValue     Fixed64 `json:"coinbasevalue"`
-		Bits              string  `json:"bits"`
-		Hash              string  `json:"hash"`
-		PreviousBlockHash string  `json:"previousblockhash"`
+		ChainID           int            `json:"chainid"`
+		Height            uint64         `json:"height"`
+		CoinBaseValue     common.Fixed64 `json:"coinbasevalue"`
+		Bits              string         `json:"bits"`
+		Hash              string         `json:"hash"`
+		PreviousBlockHash string         `json:"previousblockhash"`
 	}
 
 	SendToAux := AuxBlock{
@@ -431,7 +430,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Weight:            uint32(block.GetSize() * 4),
 		Height:            block.Header.Height,
 		Version:           block.Header.Version,
-		VersionHex:        BytesToHexString(versionBytes[:]),
+		VersionHex:        common.BytesToHexString(versionBytes[:]),
 		MerkleRoot:        ToReversedString(block.Header.MerkleRoot),
 		Tx:                txs,
 		Time:              block.Header.Timestamp,
@@ -439,15 +438,15 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Nonce:             block.Header.Nonce,
 		Bits:              block.Header.Bits,
 		Difficulty:        chain.CalcCurrentDifficulty(block.Header.Bits),
-		ChainWork:         BytesToHexString(chainWork[:]),
+		ChainWork:         common.BytesToHexString(chainWork[:]),
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
-		AuxPow:            BytesToHexString(auxPow.Bytes()),
+		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
 		MinerInfo:         string(block.Transactions[0].Payload.(*PayloadCoinBase).CoinbaseData[:]),
 	}
 }
 
-func getBlock(hash Uint256, verbose uint32) (interface{}, ErrCode) {
+func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 	block, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
 		return "", UnknownBlock
@@ -456,7 +455,7 @@ func getBlock(hash Uint256, verbose uint32) (interface{}, ErrCode) {
 	case 0:
 		w := new(bytes.Buffer)
 		block.Serialize(w)
-		return BytesToHexString(w.Bytes()), Success
+		return common.BytesToHexString(w.Bytes()), Success
 	case 2:
 		return GetBlockInfo(block, true), Success
 	}
@@ -469,7 +468,7 @@ func GetBlockByHash(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "block hash not found")
 	}
 
-	var hash Uint256
+	var hash common.Uint256
 	hashBytes, err := FromReversedString(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid block hash")
@@ -494,7 +493,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need a string parameter named data")
 	}
 
-	bys, err := HexStringToBytes(str)
+	bys, err := common.HexStringToBytes(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "hex string to bytes error")
 	}
@@ -609,7 +608,7 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 
 	var arbitrators []string
 	for _, data := range arbitratorsBytes {
-		arbitrators = append(arbitrators, BytesToHexString(data))
+		arbitrators = append(arbitrators, common.BytesToHexString(data))
 	}
 
 	result := ArbitratorGroupInfo{
@@ -630,7 +629,7 @@ func GetAssetByHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	var hash Uint256
+	var hash common.Uint256
 	err = hash.Deserialize(bytes.NewReader(hashBytes))
 	if err != nil {
 		return ResponsePack(InvalidAsset, "")
@@ -642,7 +641,7 @@ func GetAssetByHash(param Params) map[string]interface{} {
 	if false {
 		w := new(bytes.Buffer)
 		asset.Serialize(w)
-		return ResponsePack(Success, BytesToHexString(w.Bytes()))
+		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
 	}
 	return ResponsePack(Success, asset)
 }
@@ -653,12 +652,12 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(str)
+	programHash, err := common.Uint168FromAddress(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
-	var balance Fixed64 = 0
+	var balance common.Fixed64 = 0
 	for _, u := range unspends {
 		for _, v := range u {
 			balance = balance + v.Value
@@ -673,7 +672,7 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(addr)
+	programHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -686,13 +685,13 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetID, err := Uint256FromBytes(assetIDBytes)
+	assetID, err := common.Uint256FromBytes(assetIDBytes)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
 	unspents, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
-	var balance Fixed64 = 0
+	var balance common.Fixed64 = 0
 	for k, u := range unspents {
 		for _, v := range u {
 			if assetID.IsEqual(k) {
@@ -708,7 +707,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
-	programHash, err := Uint168FromAddress(address)
+	programHash, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
@@ -717,7 +716,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, err)
 	}
 	UTXOs := UTXOsWithAssetID[chain.DefaultLedger.Blockchain.AssetID]
-	var totalValue Fixed64
+	var totalValue common.Fixed64
 	for _, unspent := range UTXOs {
 		totalValue += unspent.Value
 	}
@@ -734,7 +733,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need addresses in an array!")
 	}
 	for _, address := range addresses {
-		programHash, err := Uint168FromAddress(address)
+		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
 			return ResponsePack(InvalidParams, "Invalid address: "+address)
 		}
@@ -770,7 +769,7 @@ func GetUnspends(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(addr)
+	programHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -806,7 +805,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	programHash, err := Uint168FromAddress(addr)
+	programHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -819,7 +818,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	var assetHash Uint256
+	var assetHash common.Uint256
 	if err := assetHash.Deserialize(bytes.NewReader(bys)); err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -852,7 +851,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	var hash Uint256
+	var hash common.Uint256
 	err = hash.Deserialize(bytes.NewReader(bys))
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
@@ -864,7 +863,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	if false {
 		w := new(bytes.Buffer)
 		txn.Serialize(w)
-		return ResponsePack(Success, BytesToHexString(w.Bytes()))
+		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
 	}
 	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
@@ -884,7 +883,7 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "txs not found")
 	}
 
-	txsBytes, err := HexStringToBytes(txsStr)
+	txsBytes, err := common.HexStringToBytes(txsStr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -897,11 +896,11 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 
 	var resultTxHashes []string
 	for _, txHash := range txHashes {
-		txHashBytes, err := HexStringToBytes(txHash)
+		txHashBytes, err := common.HexStringToBytes(txHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
 		}
-		hash, err := Uint256FromBytes(txHashBytes)
+		hash, err := common.Uint256FromBytes(txHashBytes)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
 		}
@@ -971,10 +970,10 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 
 	var resultPs []Producer
-	var totalVotes Fixed64
+	var totalVotes common.Fixed64
 	for i := start; i < limit && i < int64(len(ps)); i++ {
 		resultPs = append(resultPs, ps[i])
-		v, _ := StringToFixed64(ps[i].Votes)
+		v, _ := common.StringToFixed64(ps[i].Votes)
 		totalVotes += *v
 	}
 
@@ -991,7 +990,7 @@ func ProducerStatus(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "address not found.")
 	}
-	programHash, err := Uint168FromAddress(address)
+	programHash, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid address.")
 	}
@@ -1005,7 +1004,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "address not found.")
 	}
 
-	programHash, err := Uint168FromAddress(address)
+	programHash, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
@@ -1014,8 +1013,8 @@ func VoteStatus(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "cannot get asset with program")
 	}
 
-	var total Fixed64
-	var voting Fixed64
+	var total common.Fixed64
+	var voting common.Fixed64
 	status := true
 	for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
 		if unspent.Index == 0 {
@@ -1064,14 +1063,14 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
-		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
+		obj.Controller = common.BytesToHexString(common.BytesReverse(object.Controller.Bytes()))
 		return obj
 	case *PayloadSideChainPow:
 		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
 		obj.SideGenesisHash = object.SideGenesisHash.String()
-		obj.SignedData = BytesToHexString(object.SignedData)
+		obj.SignedData = common.BytesToHexString(object.SignedData)
 		return obj
 	case *PayloadWithdrawFromSideChain:
 		obj := new(WithdrawFromSideChainInfo)
@@ -1091,7 +1090,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadRecord:
 	case *PayloadRegisterProducer:
 		obj := new(RegisterProducerInfo)
-		obj.PublicKey = BytesToHexString(object.PublicKey)
+		obj.PublicKey = common.BytesToHexString(object.PublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
@@ -1099,13 +1098,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
-		obj.PublicKey = BytesToHexString(object.PublicKey)
+		obj.PublicKey = common.BytesToHexString(object.PublicKey)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
 			new(RegisterProducerInfo),
 		}
-		obj.PublicKey = BytesToHexString(object.PublicKey)
+		obj.PublicKey = common.BytesToHexString(object.PublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location

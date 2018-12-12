@@ -5,14 +5,14 @@ import (
 	"errors"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const SideChainPowPayloadVersion byte = 0x00
 
 type PayloadSideChainPow struct {
-	SideBlockHash   Uint256
-	SideGenesisHash Uint256
+	SideBlockHash   common.Uint256
+	SideGenesisHash common.Uint256
 	BlockHeight     uint32
 	SignedData      []byte
 }
@@ -35,11 +35,11 @@ func (a *PayloadSideChainPow) Serialize(w io.Writer, version byte) error {
 	if err != nil {
 		return errors.New("[PayloadSideChainPow], SideGenesisHash serialize failed.")
 	}
-	err = WriteUint32(w, a.BlockHeight)
+	err = common.WriteUint32(w, a.BlockHeight)
 	if err != nil {
 		return errors.New("[PayloadSideChainPow], BlockHeight serialize failed.")
 	}
-	err = WriteVarBytes(w, a.SignedData)
+	err = common.WriteVarBytes(w, a.SignedData)
 	if err != nil {
 		return errors.New("[PayloadSideChainPow], SignatureData serialize failed.")
 	}
@@ -55,11 +55,11 @@ func (a *PayloadSideChainPow) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
 	}
-	a.BlockHeight, err = ReadUint32(r)
+	a.BlockHeight, err = common.ReadUint32(r)
 	if err != nil {
 		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
 	}
-	if a.SignedData, err = ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+	if a.SignedData, err = common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
 		"payload sidechainpow signed data"); err != nil {
 		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
 	}

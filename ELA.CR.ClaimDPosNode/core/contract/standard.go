@@ -7,8 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
-
-	utilcom "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func CreateStandardContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
@@ -26,7 +24,7 @@ func CreateStandardContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error)
 	}, nil
 }
 
-func PublicKeyToStandardProgramHash(pubKey []byte) (*utilcom.Uint168, error) {
+func PublicKeyToStandardProgramHash(pubKey []byte) (*common.Uint168, error) {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
 		return nil, err

@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 var (

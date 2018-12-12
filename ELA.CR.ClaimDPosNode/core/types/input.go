@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Input struct {
@@ -17,11 +17,11 @@ type Input struct {
 }
 
 func (i *Input) Serialize(w io.Writer) error {
-	return WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
+	return common.WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
 }
 
 func (i *Input) Deserialize(r io.Reader) error {
-	return ReadElements(r, &i.Previous.TxID, &i.Previous.Index, &i.Sequence)
+	return common.ReadElements(r, &i.Previous.TxID, &i.Previous.Index, &i.Sequence)
 }
 
 func (i *Input) ReferKey() string {

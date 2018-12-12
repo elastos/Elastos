@@ -6,8 +6,6 @@ import (
 	"errors"
 	"io"
 	"sort"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const UINT160SIZE int = 20
@@ -88,7 +86,7 @@ func Uint160ParseFromBytes(f []byte) (Uint160, error) {
 	return Uint160(hash), nil
 }
 
-func Uint160ParseFromUint168(u168 common.Uint168) Uint160 {
+func Uint160ParseFromUint168(u168 Uint168) Uint160 {
 	buf := u168[1:21]
 	var hash [20]uint8
 	for i := 0; i < 20; i++ {
@@ -107,11 +105,11 @@ func (a codeHashes) Len() int           { return len(a) }
 func (a codeHashes) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a codeHashes) Less(i, j int) bool { return a[i].Compare(a[j]) < 0 }
 
-func SortProgramHashByCodeHash(hashes []common.Uint168) {
+func SortProgramHashByCodeHash(hashes []Uint168) {
 	sort.Sort(programHashes(hashes))
 }
 
-type programHashes []common.Uint168
+type programHashes []Uint168
 
 func (a programHashes) Len() int      { return len(a) }
 func (a programHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

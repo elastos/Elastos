@@ -6,8 +6,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -20,7 +18,7 @@ const (
 )
 
 var IDReverse, _ = hex.DecodeString("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0")
-var SystemAssetID, _ = Uint256FromBytes(BytesReverse(IDReverse))
+var SystemAssetID, _ = common.Uint256FromBytes(common.BytesReverse(IDReverse))
 
 func GetSigners(code []byte) ([]*common.Uint160, error) {
 	publicKeys, err := crypto.ParseMultisigScript(code)

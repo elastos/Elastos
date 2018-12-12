@@ -3,11 +3,10 @@ package contract
 import (
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/vm"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func CreatePledgeContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {

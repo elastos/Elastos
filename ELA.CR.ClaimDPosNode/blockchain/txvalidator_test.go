@@ -6,11 +6,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"math"
 	"os"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -21,7 +22,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/version/heights"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/stretchr/testify/assert"
 )
 

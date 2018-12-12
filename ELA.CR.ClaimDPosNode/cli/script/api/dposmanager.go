@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	common2 "github.com/elastos/Elastos.ELA.Utility/common"
 	account2 "github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/cli/script/api/mock"
 	"github.com/elastos/Elastos.ELA/common"
@@ -181,12 +180,12 @@ func confirmsEqual(con1 *types.DPosProposalVoteSlot, con2 *types.DPosProposalVot
 		return false
 	}
 
-	votes1 := make(map[common2.Uint256]interface{}, 0)
+	votes1 := make(map[common.Uint256]interface{}, 0)
 	for _, v := range con1.Votes {
 		votes1[v.Hash()] = nil
 	}
 
-	votes2 := make(map[common2.Uint256]interface{}, 0)
+	votes2 := make(map[common.Uint256]interface{}, 0)
 	for _, v := range con2.Votes {
 		votes2[v.Hash()] = nil
 	}
