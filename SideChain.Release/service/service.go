@@ -289,7 +289,7 @@ func (s *HttpService) SendRechargeToSideChainTxByHash(param util.Params) (interf
 
 	hash, err := common.Uint256FromBytes(txBytes)
 	if err != nil {
-		return nil, util.NewError(int(InvalidParams), "invalid tx hash")
+		return nil, util.NewError(int(InvalidParams), "to tx hash failed")
 	}
 
 	tx, err := s.cfg.SpvService.GetTransaction(hash)
@@ -958,6 +958,7 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
+		MinerInfo:         string(block.Transactions[0].Payload.(*types.PayloadCoinBase).CoinbaseData[:]),
 	}
 }
 
