@@ -225,7 +225,7 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 
-		realDposReward += individualBlockConfirmReward
+		realDposReward += individualProducerReward
 	}
 
 	change := reward - realDposReward
