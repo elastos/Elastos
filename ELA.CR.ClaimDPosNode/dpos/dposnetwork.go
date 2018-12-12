@@ -102,7 +102,8 @@ func (n *dposNetwork) Start() {
 }
 
 func (n *dposNetwork) UpdateProducersInfo() {
-
+	log.Info("[UpdateProducersInfo] start")
+	defer log.Info("[UpdateProducersInfo] end")
 	connectionInfoMap := n.getProducersConnectionInfo()
 
 	n.peersLock.Lock()
@@ -130,8 +131,6 @@ func (n *dposNetwork) UpdateProducersInfo() {
 		}
 	}
 
-	n.peersLock.Lock()
-	defer n.peersLock.Unlock()
 	n.saveDirectPeers()
 }
 
