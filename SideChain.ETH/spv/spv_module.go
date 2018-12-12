@@ -59,7 +59,7 @@ func NewService(cfg *Config) (*Service, error) {
 		MaxConnections: maxConnections,
 		OnRollback:     nil, // Not implemented yet
 	}
-
+	initLog(cfg.DataDir)
 	service, err := spv.NewSPVService(&spvCfg)
 	if err != nil {
 		return nil, err

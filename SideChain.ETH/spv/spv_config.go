@@ -150,6 +150,8 @@ func init() {
 		config.ConfigFile.MinCrossChainTxFee = 10000
 		config.ConfigFile.ExchangeRate = 1.0
 		config.ConfigFile.SpvPrintLevel = 1
+		config.ConfigFile.MaxPerLogSize = 0
+		config.ConfigFile.MaxLogsSize = 0
 	}
 	//	Parameters = &(config.ConfigFile)
 	Parameters.Configuration = &(config.ConfigFile)
