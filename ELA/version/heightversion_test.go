@@ -295,44 +295,44 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckVoteProducerOutputs() {
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 }
 
-func (s *heightVersionTestSuit) TestHeightVersions_CheckTxHasNoProgramsAndAttributes() {
+func (s *heightVersionTestSuit) TestHeightVersions_CheckTxHasNoPrograms() {
 	txV1 := &types.Transaction{Version: 1}
 	txV2 := &types.Transaction{Version: 2}
 	txVMax := &types.Transaction{Version: 255}
 
 	//note less or equal than heights.HeightVersion2(s.Height2) find version only by DefaultTxVersion
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height1, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txV1))
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height1, txV2))
-	s.Equal("txVersionTest1_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txV2))
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height1, txVMax))
-	s.Equal("txVersionTest1_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txVMax))
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
-	s.Error(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height1, nil), "do not support nil tx")
+	s.Error(s.Version.CheckTxHasNoPrograms(s.Height1, nil), "do not support nil tx")
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes((s.Height1+s.Height2)/2, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height1+s.Height2)/2, txV1))
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height2, txV1))
-	s.Equal("txVersionTest2_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txV1))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes((s.Height2+s.Height3)/2, txV1))
-	s.Equal("txVersionTest2_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txV1))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
 
-	s.Error(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height3, txV1), "do not support v1")
-	s.Error(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height3, txVMax), "do not support vMax")
-	s.Error(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height3, nil), "do not support nil tx")
+	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, txV1), "do not support v1")
+	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, txVMax), "do not support vMax")
+	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, nil), "do not support nil tx")
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height3, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height3, txV2))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 
-	s.NoError(s.Version.CheckTxHasNoProgramsAndAttributes(s.Height3+5, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoProgramsAndAttributes", versionsMsg)
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height3+5, txV2))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 }
 
 func (s *heightVersionTestSuit) TestHeightVersions_GetProducersDesc() {
@@ -620,8 +620,8 @@ func (v *txVersionTest1) CheckVoteProducerOutputs(outputs []*types.Output, refer
 	return nil
 }
 
-func (v *txVersionTest1) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
-	versionsMsg = "txVersionTest1_CheckTxHasNoProgramsAndAttributes"
+func (v *txVersionTest1) CheckTxHasNoPrograms(tx *types.Transaction) error {
+	versionsMsg = "txVersionTest1_CheckTxHasNoPrograms"
 	return nil
 }
 
@@ -657,8 +657,8 @@ func (v *txVersionTest2) CheckVoteProducerOutputs(outputs []*types.Output, refer
 	return nil
 }
 
-func (v *txVersionTest2) CheckTxHasNoProgramsAndAttributes(tx *types.Transaction) error {
-	versionsMsg = "txVersionTest2_CheckTxHasNoProgramsAndAttributes"
+func (v *txVersionTest2) CheckTxHasNoPrograms(tx *types.Transaction) error {
+	versionsMsg = "txVersionTest2_CheckTxHasNoPrograms"
 	return nil
 }
 

@@ -67,9 +67,9 @@ func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.
 	})
 }
 
-func (h *heightVersions) CheckTxHasNoProgramsAndAttributes(blockHeight uint32, tx *types.Transaction) error {
+func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
-		return version.CheckTxHasNoProgramsAndAttributes(tx)
+		return version.CheckTxHasNoPrograms(tx)
 	})
 }
 
