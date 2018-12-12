@@ -89,6 +89,9 @@ func main() {
 		goto ERROR
 	}
 
+	log.Info("Start the P2P networks")
+	noder = node.InitLocalNode()
+
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
 		pwd, err = password.GetPassword()
@@ -104,9 +107,6 @@ func main() {
 		blockchain.DefaultLedger.Blockchain.NewBlocksListeners = append(blockchain.DefaultLedger.Blockchain.NewBlocksListeners, arbitrator)
 		blockchain.DefaultLedger.Arbitrators.RegisterListener(arbitrator)
 	}
-
-	log.Info("Start the P2P networks")
-	noder = node.InitLocalNode()
 
 	servers.ServerNode = noder
 	servers.ServerNode.RegisterTxPoolListener(arbitrator)
