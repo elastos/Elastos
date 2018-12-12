@@ -26,7 +26,7 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 		}
 
 		programHash := programHashes[i]
-		ownerHash := common.Uint160ParseFromUint168(programHash)
+		ownerHash := programHash.ToCodeHash()
 
 		if !ownerHash.IsEqual(*codeHash) && programHash[0] != common.PrefixCrossChain {
 			return errors.New("The data hashes is different with corresponding program code.")

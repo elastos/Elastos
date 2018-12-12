@@ -36,7 +36,7 @@ func (op *OutPoint) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func NewOutPoint(txID Uint256, index uint16) *OutPoint {
+func NewOutPoint(txID common.Uint256, index uint16) *OutPoint {
 	return &OutPoint{
 		TxID:  txID,
 		Index: index,

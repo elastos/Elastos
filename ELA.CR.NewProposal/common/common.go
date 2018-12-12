@@ -6,6 +6,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"sort"
+
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -15,11 +17,17 @@ func ToCodeHash(code []byte) (*Uint160, error) {
 	md160.Write(hash[:])
 	codeHashBytes := md160.Sum(nil)
 
-	codeHash, err := Uint160ParseFromBytes(codeHashBytes)
+	codeHash, err := Uint160FromBytes(codeHashBytes)
 	if err != nil {
 		return nil, errors.New("[Common] , ToCodeHash err.")
 	}
 	return &codeHash, nil
+}
+
+func SortProgramHashByCodeHash(hashes []Uint168) {
+	sort.Slice(hashes, func(i, j int) bool {
+		return hashes[i].ToCodeHash().Compare(hashes[j].ToCodeHash()) < 0
+	})
 }
 
 func BytesReverse(u []byte) []byte {

@@ -171,7 +171,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		if err != nil {
 			return nil, err
 		}
-		acc = client.GetAccountByCodeHash(common.Uint160ParseFromUint168(*programHash))
+		acc = client.GetAccountByCodeHash(programHash.ToCodeHash())
 		if acc == nil {
 			return nil, errors.New(fromAddress + " is not local account")
 		}
