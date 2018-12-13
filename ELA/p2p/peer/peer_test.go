@@ -6,7 +6,6 @@ package peer_test
 
 import (
 	"errors"
-	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"io"
 	"math/rand"
 	"net"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 )
 
@@ -264,7 +264,7 @@ func TestPeerConnection(t *testing.T) {
 				}
 				outPeer.AssociateConnection(outConn)
 
-				for i := 0; i < 4; i++ {
+				for i := 0; i < 2; i++ {
 					select {
 					case <-verack:
 					case <-time.After(time.Second):
@@ -290,7 +290,7 @@ func TestPeerConnection(t *testing.T) {
 				}
 				outPeer.AssociateConnection(outConn)
 
-				for i := 0; i < 4; i++ {
+				for i := 0; i < 2; i++ {
 					select {
 					case <-verack:
 					case <-time.After(time.Second):
@@ -321,6 +321,7 @@ func TestPeerConnection(t *testing.T) {
 // Tests that the node disconnects from peers with an unsupported protocol
 // version.
 func TestUnsupportedVersionPeer(t *testing.T) {
+	verNonce := rand.Uint64()
 	peerCfg := &peer.Config{
 		Magic:            123123,
 		ProtocolVersion:  0,
@@ -332,10 +333,10 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 			return 0
 		},
 		IsSelfConnection: func(nonce uint64) bool {
-			return false
+			return nonce == verNonce
 		},
 		GetVersionNonce: func() uint64 {
-			return rand.Uint64()
+			return verNonce
 		},
 	}
 
@@ -383,13 +384,9 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	}
 
 	// Remote peer writes version message advertising invalid protocol version 1
-	invalidVersionMsg := msg.NewVersion(1, 0, rand.Uint64(), 0, true)
+	invalidVersionMsg := msg.NewVersion(1, 0, verNonce, 0, true)
 
-	err = p2p.WriteMessage(
-		remoteConn.Writer,
-		peerCfg.Magic,
-		invalidVersionMsg,
-	)
+	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg)
 	if err != nil {
 		t.Fatalf("p2p.WriteMessageN: unexpected err - %v\n", err)
 	}
