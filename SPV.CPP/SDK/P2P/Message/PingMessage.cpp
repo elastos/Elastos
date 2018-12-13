@@ -45,7 +45,7 @@ namespace Elastos {
 					for (size_t i = manager->getPublishedTransaction().size(); i > 0; i--) {
 						if (manager->getPublishedTransaction()[i - 1].HasCallback()) {
 							_peer->info("publish pending tx hash = {}, do not disconnect",
-										Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1]));
+										Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1], true));
 							needRelayPing = false;
 							break;
 						}

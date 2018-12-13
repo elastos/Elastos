@@ -33,10 +33,10 @@ namespace Elastos {
 			if (locatorsCount > 0) {
 				_peer->debug("calling getheaders with {} locators: [{},{} {}]",
 							 locatorsCount,
-							 Utils::UInt256ToString(getHeadersParameter.locators[0]),
+							 Utils::UInt256ToString(getHeadersParameter.locators[0], true),
 							 (locatorsCount > 2 ? " ...," : ""),
 							 (locatorsCount > 1 ? Utils::UInt256ToString(
-								 getHeadersParameter.locators[locatorsCount - 1]) : ""));
+								 getHeadersParameter.locators[locatorsCount - 1], true) : ""));
 				SendMessage(msg.getBuffer(), Type());
 			}
 		}

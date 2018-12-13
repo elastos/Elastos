@@ -20,6 +20,7 @@
 #include "Message/BloomFilterMessage.h"
 #include "Message/GetAddressMessage.h"
 #include "Message/HeadersMessage.h"
+#include "Message/RejectMessage.h"
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/CMemBlock.h>
@@ -394,7 +395,7 @@ namespace Elastos {
 								if (UInt32GetLE(&hash) != checksum) { // verify checksum
 									this->error("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
 												" SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
-												Utils::UInt256ToString(hash));
+												Utils::UInt256ToString(hash, true));
 									error = EPROTO;
 								} else if (!acceptMessage(payload, type)) error = EPROTO;
 							}
@@ -444,6 +445,7 @@ namespace Elastos {
 			initSingleMessage(new BloomFilterMessage(shared_from_this()));
 			initSingleMessage(new MerkleBlockMessage(shared_from_this()));
 			initSingleMessage(new GetAddressMessage(shared_from_this()));
+			initSingleMessage(new RejectMessage(shared_from_this()));
 		}
 
 		bool Peer::acceptMessage(const CMBlock &msg, const std::string &type) {
@@ -451,7 +453,7 @@ namespace Elastos {
 
 			if (_currentBlock != nullptr && MSG_TX == type) { // if we receive a non-tx message, merkleblock is done
 				this->error("incomplete merkleblock {}, expected {} more tx, got {}",
-							Utils::UInt256ToString(_currentBlock->getHash()),
+							Utils::UInt256ToString(_currentBlock->getHash(), true),
 							_currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();

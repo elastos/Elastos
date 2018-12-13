@@ -655,7 +655,7 @@ namespace Elastos {
 		}
 
 		void GroupedAssetTransactions::Append(const TransactionPtr &transaction) {
-			transaction->SetAssetTableID(Utils::UInt256ToString(transaction->GetAssetID()));
+			transaction->SetAssetTableID(Utils::UInt256ToString(transaction->GetAssetID(), true));
 			_groupedTransactions[transaction->GetAssetID()]->Append(transaction);
 		}
 
@@ -788,7 +788,7 @@ namespace Elastos {
 				!WalletContainsTx(txArray[0])) { // verify _transactions match master pubKey
 				std::stringstream ess;
 				ess << "Wallet do not contain tx = "
-					<< Utils::UInt256ToString(txArray[0]->getHash());
+					<< Utils::UInt256ToString(txArray[0]->getHash(), true);
 				Log::error(ess.str());
 				throw std::logic_error(ess.str());
 			}
@@ -797,7 +797,7 @@ namespace Elastos {
 		nlohmann::json GroupedAssetTransactions::GetAllSupportedAssets() const {
 			std::vector<std::string> result;
 			_groupedTransactions.ForEach([this, &result](const UInt256 &key, const AssetTransactionsPtr &value) {
-				result.push_back(Utils::UInt256ToString(key));
+				result.push_back(Utils::UInt256ToString(key, true));
 			});
 			nlohmann::json j;
 			std::for_each(result.begin(), result.end(), [&j](const std::string &asset){
@@ -807,7 +807,7 @@ namespace Elastos {
 		}
 
 		bool GroupedAssetTransactions::ContainsAsset(const std::string &assetID) {
-			return _groupedTransactions.Contains(Utils::UInt256FromString(assetID));
+			return _groupedTransactions.Contains(Utils::UInt256FromString(assetID, true));
 		}
 
 		bool GroupedAssetTransactions::ContainsAsset(const UInt256 &assetID) {

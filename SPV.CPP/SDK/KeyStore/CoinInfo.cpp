@@ -195,7 +195,7 @@ namespace Elastos {
 		nlohmann::json CoinInfo::VisibleAssetsToJson() const {
 			std::vector<std::string> assets;
 			std::for_each(_visibleAssets.begin(), _visibleAssets.end(), [&assets](const UInt256 &asset) {
-				assets.push_back(Utils::UInt256ToString(asset));
+				assets.push_back(Utils::UInt256ToString(asset, true));
 			});
 			nlohmann::json j;
 			std::for_each(assets.begin(), assets.end(), [&j](const std::string &asset) {
@@ -208,7 +208,7 @@ namespace Elastos {
 			_visibleAssets.clear();
 			std::vector<std::string> assets = j.get<std::vector<std::string>>();
 			std::for_each(assets.begin(), assets.end(), [this](const std::string &assetStr) {
-				_visibleAssets.push_back(Utils::UInt256FromString(assetStr));
+				_visibleAssets.push_back(Utils::UInt256FromString(assetStr, true));
 			});
 		}
 

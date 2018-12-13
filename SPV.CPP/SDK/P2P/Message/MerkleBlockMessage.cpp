@@ -44,7 +44,7 @@ namespace Elastos {
 			}
 
 			if (!block->isValid((uint32_t) time(nullptr))) {
-				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->getHash()));
+				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->getHash(), true));
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
 				_peer->error("got merkleblock message before loading a filter");

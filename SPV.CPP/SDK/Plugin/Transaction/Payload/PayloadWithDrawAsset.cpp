@@ -102,7 +102,7 @@ namespace Elastos {
 			j["GenesisBlockAddress"] = _genesisBlockAddress;
 			std::vector<std::string> hashes;
 			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
-				std::string str = Utils::UInt256ToString(_sideChainTransactionHash[i]);
+				std::string str = Utils::UInt256ToString(_sideChainTransactionHash[i], true);
 				hashes.push_back(str);
 			}
 			j["SideChainTransactionHash"] = hashes;
@@ -117,7 +117,7 @@ namespace Elastos {
 			std::vector<std::string> hashes = j["SideChainTransactionHash"].get<std::vector<std::string>>();
 			_sideChainTransactionHash.resize(hashes.size());
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				_sideChainTransactionHash[i] = Utils::UInt256FromString(hashes[i]);
+				_sideChainTransactionHash[i] = Utils::UInt256FromString(hashes[i], true);
 			}
 		}
 	}

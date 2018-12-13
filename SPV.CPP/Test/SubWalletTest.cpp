@@ -88,7 +88,7 @@ protected:
 		out->setAssetId(Key::getSystemAssetId());
 		elaTransaction->outputs.push_back(out);
 		elaTransaction->raw.txHash = Utils::UInt256FromString(
-				"0000000000000000011111111111111111111111111111111111111111111111");
+				"0000000000000000011111111111111111111111111111111111111111111111", true);
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code(10);
 		CMBlock parameter(10);
@@ -107,7 +107,7 @@ protected:
 		out1->setAssetId(Key::getSystemAssetId());
 		elaTransaction1->outputs.push_back(out1);
 		elaTransaction1->raw.txHash = Utils::UInt256FromString(
-				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1", true);
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code1(10);
 		CMBlock parameter1(10);
@@ -227,7 +227,7 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 
 		nlohmann::json result;
 		nlohmann::json txJson;
-		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
+		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO, true);
 		CHECK_NOTHROW(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
 				50 * BASIC_UINT, "", ""));
 

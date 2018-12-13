@@ -47,7 +47,7 @@ namespace Elastos {
 			});
 
 			for (int i = 0; i < txArray.size(); ++i) {
-				_txRemarkMap[Utils::UInt256ToString(txArray[i]->getHash())] = txArray[i]->getRemark();
+				_txRemarkMap[Utils::UInt256ToString(txArray[i]->getHash(), true)] = txArray[i]->getRemark();
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace Elastos {
 		}
 
 		void TransactionHub::RegisterRemark(const TransactionPtr &transaction) {
-			_txRemarkMap[Utils::UInt256ToString(transaction->getHash())] = transaction->getRemark();
+			_txRemarkMap[Utils::UInt256ToString(transaction->getHash(), true)] = transaction->getRemark();
 		}
 
 		std::string TransactionHub::GetRemark(const std::string &txHash) {
@@ -517,7 +517,7 @@ namespace Elastos {
 			if (!_listener.expired()) {
 				// Invoke the callback for each of txHashes.
 				for (size_t i = 0; i < txHashes.size(); i++) {
-					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i]), _blockHeight, timestamp);
+					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), _blockHeight, timestamp);
 				}
 			}
 		}
@@ -527,8 +527,8 @@ namespace Elastos {
 			if (!_listener.expired()) {
 
 				for (size_t i = 0; i < txHashes.size(); i++) {
-					_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHashes[i]),
-												  UInt256IsZero(&assetID) ? "" : Utils::UInt256ToString(assetID),
+					_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHashes[i], true),
+												  UInt256IsZero(&assetID) ? "" : Utils::UInt256ToString(assetID, true),
 												  notifyUser, recommendRescan);
 				}
 			}

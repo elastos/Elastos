@@ -1047,7 +1047,7 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("relayed tx: {}", Utils::UInt256ToString(tx->getHash()));
+				peer->info("relayed tx: {}", Utils::UInt256ToString(tx->getHash(), true));
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (UInt256Eq(&_publishedTxHashes[i - 1], &tx->getHash())) {
@@ -1139,7 +1139,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				TransactionPtr tx = _wallet->transactionForHash(txHash);
-				peer->info("has tx: {}", Utils::UInt256ToString(txHash));
+				peer->info("has tx: {}", Utils::UInt256ToString(txHash, true));
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (UInt256Eq(&(_publishedTxHashes[i - 1]), &txHash)) {
@@ -1188,7 +1188,7 @@ namespace Elastos {
 			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("rejected tx: {}", Utils::UInt256ToString(txHash));
+				peer->info("rejected tx: {}", Utils::UInt256ToString(txHash, true));
 				TransactionPtr tx = _wallet->transactionForHash(txHash);
 				removePeerFromList(peer, txHash, _txRequests);
 
@@ -1279,9 +1279,9 @@ namespace Elastos {
 					}
 				} else if (!prev) { // block is an orphan
 					peer->info("relayed orphan block {}, previous {}, last block is {}, height {}",
-							   Utils::UInt256ToString(block->getHash()),
-							   Utils::UInt256ToString(block->getPrevBlockHash()),
-							   Utils::UInt256ToString(_lastBlock->getHash()),
+							   Utils::UInt256ToString(block->getHash(), true),
+							   Utils::UInt256ToString(block->getPrevBlockHash(), true),
+							   Utils::UInt256ToString(_lastBlock->getHash(), true),
 							   _lastBlock->getHeight());
 
 					if (block->getHeight() + 7 * 24 * 60 * 60 <
@@ -1370,7 +1370,7 @@ namespace Elastos {
 						   _chainParams.getRaw()->checkpoints[_chainParams.getRaw()->checkpointsCount -
 															  1].height) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
-							   block->getHeight(), Utils::UInt256ToString(block->getHash()));
+							   block->getHeight(), Utils::UInt256ToString(block->getHash(), true));
 				} else { // new block is on a fork
 					peer->warn("chain fork reached height {}", block->getHeight());
 					_blocks.Insert(block);
@@ -1722,7 +1722,7 @@ namespace Elastos {
 
 				if (!b) {
 					peer->warn("missing previous difficulty tansition, can't verify block: {}",
-							   Utils::UInt256ToString(block->getHash()));
+							   Utils::UInt256ToString(block->getHash(), true));
 					r = false;
 				} else prevBlock = b->getPrevBlockHash();
 
@@ -1750,8 +1750,8 @@ namespace Elastos {
 				// verify blockchain checkpoints
 				if (checkpoint && !block->isEqual(checkpoint.get())) {
 					peer->warn("relayed a block that differs from the checkpoint at height {}, blockHash: {}, "
-							   "expected: {}", block->getHeight(), Utils::UInt256ToString(block->getHash()),
-							   Utils::UInt256ToString(checkpoint->getHash()));
+							   "expected: {}", block->getHeight(), Utils::UInt256ToString(block->getHash(), true),
+							   Utils::UInt256ToString(checkpoint->getHash(), true));
 					r = false;
 				}
 			}
@@ -1901,7 +1901,7 @@ namespace Elastos {
 					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
 						PeerListCount(_txRequests, hash) == 0) {
 						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->getHeight(),
-								   Utils::UInt256ToString(hash));
+								   Utils::UInt256ToString(hash, true));
 						assert(tx[i - 1]->getBlockHeight() == TX_UNCONFIRMED);
 						_wallet->removeTransaction(hash);
 					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {

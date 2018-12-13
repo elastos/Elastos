@@ -34,7 +34,7 @@ namespace Elastos {
 				return false;
 			} else {
 				txHash = tx->getHash();
-				_peer->debug("got tx: %s", Utils::UInt256ToString(txHash));
+				_peer->debug("got tx: %s", Utils::UInt256ToString(txHash, true));
 
 				FireRelayedTx(tx);
 
@@ -59,7 +59,7 @@ namespace Elastos {
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
 			CMBlock buf = stream.getBuffer();
-			_peer->info("sending tx: tx hash = %s", Utils::UInt256ToString(txParam.tx->getHash()));
+			_peer->info("sending tx: tx hash = %s", Utils::UInt256ToString(txParam.tx->getHash(), true));
 			SendMessage(stream.getBuffer(), Type());
 		}
 

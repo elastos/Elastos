@@ -125,7 +125,7 @@ namespace Elastos {
 											  const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, _info.getMinFee(), memo,
-												  remark, Utils::UInt256FromString(assetID)));
+												  remark, Utils::UInt256FromString(assetID, true)));
 			TransactionPtr transaction = createTransaction(txParam.get());
 			ParamChecker::checkCondition(!transaction, Error::CreateTransaction,
 										 "create transaction error.");
@@ -133,17 +133,17 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) {
-			return _walletManager->getWallet()->GetBalanceInfo(Utils::UInt256FromString(assetID));
+			return _walletManager->getWallet()->GetBalanceInfo(Utils::UInt256FromString(assetID, true));
 		}
 
 		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) {
 			Log::info("chain = {}, balance = {}", _info.getChainId(),
-								   _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID)));
-			return _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID));
+								   _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID, true)));
+			return _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID, true));
 		}
 
 		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) {
-			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID), address);
+			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID, true), address);
 		}
 
 		nlohmann::json SidechainSubWallet::GetAllSupportedAssets() const {

@@ -85,7 +85,7 @@ namespace Elastos {
 
 			std::vector<std::string> hashes;
 			for (int i = 0; i < _hashes.size(); ++i) {
-				hashes.push_back(Utils::UInt256ToString(_hashes[i]));
+				hashes.push_back(Utils::UInt256ToString(_hashes[i], true));
 			}
 
 			std::vector<uint8_t> flags;
@@ -93,10 +93,10 @@ namespace Elastos {
 				flags.push_back(_flags[i]);
 			}
 
-			j["BlockHash"] = Utils::UInt256ToString(_blockHash);
+			j["BlockHash"] = Utils::UInt256ToString(_blockHash, true);
 			j["Version"] = _version;
-			j["PrevBlock"] = Utils::UInt256ToString(_prevBlock);
-			j["MerkleRoot"] = Utils::UInt256ToString(_merkleRoot);
+			j["PrevBlock"] = Utils::UInt256ToString(_prevBlock, true);
+			j["MerkleRoot"] = Utils::UInt256ToString(_merkleRoot, true);
 			j["Timestamp"] = _timestamp;
 			j["Target"] = _target;
 			j["Nonce"] = _nonce;
@@ -112,10 +112,10 @@ namespace Elastos {
 
 		void MerkleBlockBase::fromJson(const nlohmann::json &j) {
 
-			_blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>());
+			_blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>(), true);
 			_version = j["Version"].get<uint32_t>();
-			_prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>());
-			_merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>());
+			_prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>(), true);
+			_merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>(), true);
 			_timestamp = j["Timestamp"].get<uint32_t>();
 			_target = j["Target"].get<uint32_t>();
 			_nonce = j["Nonce"].get<uint32_t>();
@@ -124,7 +124,7 @@ namespace Elastos {
 			_hashes.clear();
 			std::vector<std::string> hashes = j["Hashes"].get<std::vector<std::string>>();
 			for (int i = 0; i < hashes.size(); ++i) {
-				_hashes.push_back(Utils::UInt256FromString(hashes[i]));
+				_hashes.push_back(Utils::UInt256FromString(hashes[i], true));
 			}
 
 			_flags.clear();

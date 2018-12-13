@@ -65,7 +65,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item.DataHash = Utils::UInt256FromString(Content1_DataHash1, true);
 		content.Values.push_back(item);
 		payload.addContent(content);
 
@@ -73,7 +73,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
+		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2, true);
 		content2.Values.push_back(item2);
 		payload.addContent(content2);
 
@@ -105,7 +105,7 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item.DataHash = Utils::UInt256FromString(Content1_DataHash1, true);
 		content.Values.push_back(item);
 		payload.addContent(content);
 
@@ -113,7 +113,7 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
+		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2, true);
 		content2.Values.push_back(item2);
 		payload.addContent(content2);
 

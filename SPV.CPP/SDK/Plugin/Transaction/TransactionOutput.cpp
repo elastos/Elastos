@@ -126,7 +126,7 @@ namespace Elastos {
 			nlohmann::json jsonData;
 
 			jsonData["Amount"] = _amount;
-			jsonData["AssetId"] = Utils::UInt256ToString(_assetId);
+			jsonData["AssetId"] = Utils::UInt256ToString(_assetId, true);
 			jsonData["OutputLock"] = _outputLock;
 			jsonData["ProgramHash"] = Utils::UInt168ToString(_programHash);
 			return jsonData;
@@ -134,7 +134,7 @@ namespace Elastos {
 
 		void TransactionOutput::fromJson(const nlohmann::json &jsonData) {
 			_amount = jsonData["Amount"].get<uint64_t>();
-			_assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>());
+			_assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>(), true);
 			_outputLock = jsonData["OutputLock"].get<uint32_t>();
 			_programHash = Utils::UInt168FromString(jsonData["ProgramHash"].get<std::string>());
 		}

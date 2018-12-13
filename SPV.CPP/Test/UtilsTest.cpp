@@ -22,7 +22,7 @@ TEST_CASE("Utils test 0", "[Utils]") {
 						0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
 				}
 		};
-		UInt256 u2 = Utils::UInt256FromString(rawStr);
+		UInt256 u2 = Utils::UInt256FromString(rawStr, true);
 		REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
 
 
@@ -32,7 +32,7 @@ TEST_CASE("Utils test 0", "[Utils]") {
 						0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
 				}
 		};
-		REQUIRE(expectStr == Utils::UInt256ToString(u1));
+		REQUIRE(expectStr == Utils::UInt256ToString(u1, true));
 	}
 
 	SECTION("UInt256 and string reverse converting") {
@@ -83,7 +83,7 @@ TEST_CASE("Utils test 1", "[Utils]") {
 					0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
 			}
 	};
-	UInt256 u2 = Utils::UInt256FromString(rawStr);
+	UInt256 u2 = Utils::UInt256FromString(rawStr, true);
 	REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
 
 
@@ -93,7 +93,7 @@ TEST_CASE("Utils test 1", "[Utils]") {
 					0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
 			}
 	};
-	REQUIRE("11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff" == Utils::UInt256ToString(u1));
+	REQUIRE("11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff" == Utils::UInt256ToString(u1, true));
 }
 
 TEST_CASE ("enctrypt/decrept content without nothing and password with meaning", "[aes crypto]") {

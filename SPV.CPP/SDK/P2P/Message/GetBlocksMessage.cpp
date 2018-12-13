@@ -38,9 +38,9 @@ namespace Elastos {
 			if (locatorsCount > 0) {
 				_peer->debug("calling getblocks with {} locators: [{},{} {}]",
 							 locatorsCount,
-							 Utils::UInt256ToString(getBlocksParameter.locators[0]),
+							 Utils::UInt256ToString(getBlocksParameter.locators[0], true),
 							 (locatorsCount > 2 ? " ...," : ""),
-							 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1])
+							 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1], true)
 												: ""));
 				SendMessage(msg.getBuffer(), Type());
 			}

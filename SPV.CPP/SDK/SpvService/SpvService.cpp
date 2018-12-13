@@ -119,7 +119,7 @@ namespace Elastos {
 
 			CMBlock data = stream.getBuffer();
 
-			std::string txHash = Utils::UInt256ToString(tx->getHash());
+			std::string txHash = Utils::UInt256ToString(tx->getHash(), true);
 			std::string remark = _wallet->GetRemark(txHash);
 			tx->setRemark(remark);
 
@@ -131,7 +131,7 @@ namespace Elastos {
 				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
 
 				Asset asset = registerAsset->getAsset();
-				std::string assetID = Utils::UInt256ToString(asset.GetHash());
+				std::string assetID = Utils::UInt256ToString(asset.GetHash(), true);
 				ByteStream stream;
 				asset.Serialize(stream);
 				AssetEntity assetEntity(assetID, registerAsset->getAmount(), stream.getBuffer(), txHash);
@@ -366,7 +366,7 @@ namespace Elastos {
 
 			AssetEntity defaultAssetEntity;
 			UInt256 defaultAssetID = Asset::GetELAAssetID();
-			std::string assetStringID = Utils::UInt256ToString(defaultAssetID);
+			std::string assetStringID = Utils::UInt256ToString(defaultAssetID, true);
 			if (!_databaseManager.GetAssetDetails(ISO, assetStringID, defaultAssetEntity)) {
 				Asset defaultAsset;
 				defaultAsset.setName("ELA");
@@ -393,7 +393,7 @@ namespace Elastos {
 				Asset asset;
 				ByteStream stream(assetsEntity[i].Asset);
 				if (asset.Deserialize(stream)) {
-					asset.SetHash(Utils::UInt256FromString(assetsEntity[i].AssetID));
+					asset.SetHash(Utils::UInt256FromString(assetsEntity[i].AssetID, true));
 					assets.push_back(asset);
 				}
 			}
@@ -466,7 +466,7 @@ namespace Elastos {
 				if (!asset.Deserialize(stream)) {
 					Log::error("Update assets deserialize fail");
 				} else {
-					asset.SetHash(Utils::UInt256FromString(entity.AssetID));
+					asset.SetHash(Utils::UInt256FromString(entity.AssetID, true));
 					assetArray.push_back(asset);
 				}
 			});
@@ -487,7 +487,7 @@ namespace Elastos {
 				Log::error("Asset {} deserialize fail", assetID);
 				return Asset();
 			}
-			asset.SetHash(Utils::UInt256FromString(assetEntity.AssetID));
+			asset.SetHash(Utils::UInt256FromString(assetEntity.AssetID, true));
 
 			return asset;
 		}

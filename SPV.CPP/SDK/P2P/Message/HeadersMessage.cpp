@@ -77,7 +77,7 @@ namespace Elastos {
 						}
 
 						if (! block->isValid((uint32_t)now)) {
-							_peer->error("Invalid block header: {}", Utils::UInt256ToString(block->getHash()));
+							_peer->error("Invalid block header: {}", Utils::UInt256ToString(block->getHash(), true));
 							return false;
 						}
 						FireRelayedBlock(block);
