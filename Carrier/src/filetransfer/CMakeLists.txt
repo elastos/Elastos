@@ -48,12 +48,6 @@ set(SRC
     filetransfer.c
     easyfile.c)
 
-if(WIN32)
-    set(SRC
-        ${SRC}
-        windows/basename.c)
-endif()
-
 set(HEADERS
     ela_filetransfer.h)
 

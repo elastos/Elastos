@@ -41,9 +41,6 @@
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
-#ifdef HAVE_LIBGEN_H
-#include <libgen.h>
-#endif
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -52,6 +49,9 @@
 #endif
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
+#endif
+#ifdef HAVE_LIBGEN_H
+#include <libgen.h>
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)

@@ -1021,8 +1021,6 @@ void dht_iterate(DHT *dht, void *context)
 int dht_self_get_name(DHT *dht, uint8_t *name, size_t length)
 {
     Tox *tox = dht->tox;
-    TOX_ERR_SET_INFO error;
-    bool success;
     size_t name_len;
 
     assert(tox);
