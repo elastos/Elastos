@@ -86,7 +86,7 @@ func ShowAccountBalance(name string) error {
 				return err
 			}
 
-			if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+			if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 				lockedAmount += *amount
 				continue
 			}

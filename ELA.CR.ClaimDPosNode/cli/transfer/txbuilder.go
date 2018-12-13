@@ -221,7 +221,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
@@ -267,7 +267,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	return newTransaction(acc.Contract.Code, txInputs, txOutputs, types.TransferAsset), nil
 }
 
-func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TransactionType) *types.Transaction {
+func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TxType) *types.Transaction {
 	txPayload := &payload.PayloadTransferAsset{}
 	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
 	attributes := make([]*types.Attribute, 0)
