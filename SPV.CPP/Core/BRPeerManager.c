@@ -449,9 +449,12 @@ static void _requestUnrelayedTxGetdataDone(void *info, int success)
 
             if (! isPublishing && _BRTxPeerListCount(manager->txRelays, hash) == 0 &&
                 _BRTxPeerListCount(manager->txRequests, hash) == 0) {
-                peer_log(peer, "removing tx unconfirmed at: %d, txHash: %s", manager->lastBlock->height, u256hex(hash));
-                assert(tx[i - 1]->blockHeight == TX_UNCONFIRMED);
-                BRWalletRemoveTransaction(manager->wallet, hash);
+                if (!manager->initialized) {
+                    peer_log(peer, "removing tx unconfirmed at: %d, txHash: %s", manager->lastBlock->height,
+                             u256hex(hash));
+                    assert(tx[i - 1]->blockHeight == TX_UNCONFIRMED);
+                    BRWalletRemoveTransaction(manager->wallet, hash);
+                }
             }
             else if (! isPublishing && _BRTxPeerListCount(manager->txRelays, hash) < manager->maxConnectCount) {
                 // set timestamp 0 to mark as unverified
@@ -460,6 +463,7 @@ static void _requestUnrelayedTxGetdataDone(void *info, int success)
         }
     }
 
+    manager->initialized = 1;
     pthread_mutex_unlock(&manager->lock);
 }
 
@@ -1127,6 +1131,7 @@ static void _peerRejectedTx(void *info, UInt256 txHash, uint8_t code, const char
     pthread_mutex_unlock(&manager->lock);
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
     if (pubTx.callback) pubTx.callback(pubTx.info, &txHash, code, reason);
+    if (code != 0x12) BRWalletRemoveTransaction(manager->wallet, txHash);
 }
 
 static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *block, BRMerkleBlock *prev, BRPeer *peer)
