@@ -32,7 +32,7 @@ func RegisterTransactionType(L *lua.LState) {
 
 // Constructor
 //  Version		   TransactionVersion
-//	TxType         TransactionType
+//	TxType         TxType
 //	PayloadVersion byte
 //	Payload        Payload
 //	Attributes     []*Attribute
@@ -41,7 +41,7 @@ func RegisterTransactionType(L *lua.LState) {
 //	LockTime       uint32
 func newTransaction(L *lua.LState) int {
 	version := L.ToInt(1)
-	txType := types.TransactionType(L.ToInt(2))
+	txType := types.TxType(L.ToInt(2))
 	payloadVersion := byte(L.ToInt(3))
 	ud := L.CheckUserData(4)
 	lockTime := uint32(L.ToInt(5))
@@ -223,7 +223,7 @@ func transactionAppendEnough(L *lua.LState) int {
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
