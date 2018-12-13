@@ -133,7 +133,7 @@ func (o *VoteOutput) Validate() error {
 	typeMap := make(map[VoteType]struct{})
 	for _, content := range o.Contents {
 		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
-			return errors.New("invalid public key length.")
+			return errors.New("invalid public key length")
 		}
 		if _, exists := typeMap[content.VoteType]; exists {
 			return errors.New("duplicate vote type")
