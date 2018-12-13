@@ -9,7 +9,6 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dpos
 - package: github.com/gorilla/websocket
-- package: github.com/mattn/go-sqlite3
 - package: github.com/urfave/cli
 - package: github.com/pborman/uuid
 - package: github.com/howeyc/gopass
