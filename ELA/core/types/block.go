@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	GenesisNonce     uint32 = 2083236893
 	InvalidBlockSize int    = -1
 )
 
