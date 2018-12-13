@@ -8,7 +8,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -82,27 +81,25 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	return Success
 }
 
-//get the transaction in txnpool
-func (pool *TxPool) GetTransactionPool(hasMaxCount bool) map[Uint256]*Transaction {
+func (pool *TxPool) AppendToTxPool(txn *Transaction) error {
+	code := pool.AppendToTxnPool(txn)
+	if code != Success {
+		return errors.New(code.Message())
+	}
+	return nil
+}
+
+// GetTxsInPool returns a slice of all transactions in the pool.
+//
+// This function is safe for concurrent access.
+func (pool *TxPool) GetTxsInPool() []*Transaction {
 	pool.RLock()
-	count := config.Parameters.MaxTxsInBlock
-	if count <= 0 {
-		hasMaxCount = false
-	}
-	if len(pool.txnList) < count || !hasMaxCount {
-		count = len(pool.txnList)
-	}
-	var num int
-	txnMap := make(map[Uint256]*Transaction)
-	for txnID, tx := range pool.txnList {
-		txnMap[txnID] = tx
-		num++
-		if num >= count {
-			break
-		}
+	txs := make([]*Transaction, len(pool.txnList))
+	for _, tx := range pool.txnList {
+		txs = append(txs, tx)
 	}
 	pool.RUnlock()
-	return txnMap
+	return txs
 }
 
 //clean the trasaction Pool with committed block.
