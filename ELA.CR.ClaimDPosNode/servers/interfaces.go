@@ -499,7 +499,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 	}
 	var txn Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
-		return ResponsePack(InvalidTransaction, "transaction deserialize error")
+		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
