@@ -742,9 +742,10 @@ namespace Elastos {
 			}
 
 			fee = inputAmount > (outputAmount + changeAmount) ? inputAmount - outputAmount - changeAmount : 0;
-			uint32_t amount = 0;
+			uint64_t amount = 0;
 			if (direction == "Received") {
 				amount = changeAmount;
+				fee = 0;
 			} else if (direction == "Sent") {
 				amount = outputAmount;
 			} else {
