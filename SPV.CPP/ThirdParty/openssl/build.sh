@@ -166,7 +166,7 @@ android_build_setup() {
 			CXXPATH=$NDK_ROOT/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/arm-linux-androideabi-g++
 			TOOLSET=gcc-androidR8e
 			;;
-		16.*|17.*)
+		16.*|17.*|18.*)
 			TOOLCHAIN=${TOOLCHAIN:-llvm}
 			CXXPATH=$NDK_ROOT/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/clang++
 			TOOLSET=clang
