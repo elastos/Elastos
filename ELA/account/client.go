@@ -47,12 +47,12 @@ type ClientImpl struct {
 	FileStore
 }
 
-func Create(path string, password []byte, accountType string) (*ClientImpl, error) {
+func Create(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, true)
 	if client == nil {
 		return nil, errors.New("client nil")
 	}
-	account, err := client.CreateAccount(accountType)
+	account, err := client.CreateAccount()
 	if err != nil {
 		return nil, err
 	}
@@ -265,8 +265,8 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 }
 
 // CreateAccount create a new Account then save it
-func (cl *ClientImpl) CreateAccount(accountType string) (*Account, error) {
-	account, err := NewAccount(accountType)
+func (cl *ClientImpl) CreateAccount() (*Account, error) {
+	account, err := NewAccount()
 	if err != nil {
 		return nil, err
 	}
@@ -338,12 +338,6 @@ func (cl *ClientImpl) LoadAccounts() error {
 		return err
 	}
 	for _, a := range storeAddresses {
-		p, _ := common.HexStringToBytes(a.ProgramHash)
-		acc, _ := common.Uint168FromBytes(p)
-		codeHash := acc.ToCodeHash()
-		if a.Type == MAINACCOUNT {
-			cl.mainAccount = codeHash
-		}
 		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
 		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
 		if err != nil {
@@ -351,12 +345,15 @@ func (cl *ClientImpl) LoadAccounts() error {
 			continue
 		}
 		privateKey := keyPair[64:96]
-		prefixType := contract.GetPrefixType(*acc)
-		ac, err := NewAccountWithPrivateKey(privateKey, prefixType)
+		ac, err := NewAccountWithPrivateKey(privateKey)
 		if err != nil {
 			return err
 		}
-		accounts[codeHash] = ac
+		accounts[ac.ProgramHash.ToCodeHash()] = ac
+
+		if a.Type == MAINACCOUNT {
+			cl.mainAccount = ac.ProgramHash.ToCodeHash()
+		}
 	}
 
 	cl.accounts = accounts

@@ -115,3 +115,10 @@ func Uint168FromAddress(address string) (*Uint168, error) {
 
 	return programHash, nil
 }
+
+func Uint168FromCodeHash(prefixType byte, codeHash Uint160) Uint168 {
+	var hash Uint168
+	hash[0] = prefixType
+	copy(hash[1:], codeHash[:])
+	return hash
+}
