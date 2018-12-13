@@ -396,15 +396,16 @@ func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
 
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
-		listener:            listener,
-		directPeers:         make(map[string]*PeerItem),
-		messageQueue:        make(chan *messageItem, 10000), //todo config handle capacity though config file
-		quit:                make(chan bool),
-		changeViewChan:      make(chan bool),
-		blockReceivedChan:   make(chan blockItem, 10),                   //todo config handle capacity though config file
-		confirmReceivedChan: make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
-		currentHeight:       blockchain.DefaultLedger.Blockchain.GetBestHeight() - 1,
-		account:             dposAccount,
+		listener:              listener,
+		directPeers:           make(map[string]*PeerItem),
+		messageQueue:          make(chan *messageItem, 10000), //todo config handle capacity though config file
+		quit:                  make(chan bool),
+		changeViewChan:        make(chan bool),
+		blockReceivedChan:     make(chan blockItem, 10),                   //todo config handle capacity though config file
+		confirmReceivedChan:   make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
+		illegalBlocksEvidence: make(chan *types.DposIllegalBlocks),
+		currentHeight:         blockchain.DefaultLedger.Blockchain.GetBestHeight() - 1,
+		account:               dposAccount,
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)
