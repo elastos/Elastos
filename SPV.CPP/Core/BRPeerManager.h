@@ -68,6 +68,8 @@ typedef struct BRPeerManagerStruct {
 	BRTxPeerList *txRelays, *txRequests;
 	BRPublishedTx *publishedTx;
 	UInt256 *publishedTxHashes;
+	int initialized;
+
 	void *info;
 
 	void (*syncStarted)(void *info);
