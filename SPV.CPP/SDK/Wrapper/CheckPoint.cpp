@@ -43,14 +43,14 @@ namespace Elastos {
 
 		void to_json(nlohmann::json &j, const CheckPoint &p) {
 			j["Height"] = p._checkPoint.height;
-			j["Hash"] = Utils::UInt256ToString(p._checkPoint.hash);
+			j["Hash"] = Utils::UInt256ToString(p._checkPoint.hash, true);
 			j["Timestamp"] = p._checkPoint.timestamp;
 			j["Target"] = p._checkPoint.target;
 		}
 
 		void from_json(const nlohmann::json &j, CheckPoint &p) {
 			p._checkPoint.height = j["Height"].get<uint32_t>();
-			p._checkPoint.hash = Utils::UInt256FromString(j["Hash"].get<std::string>());
+			p._checkPoint.hash = Utils::UInt256FromString(j["Hash"].get<std::string>(), true);
 			p._checkPoint.timestamp = j["Timestamp"].get<uint32_t>();
 			p._checkPoint.target = j["Target"].get<uint32_t>();
 		}
