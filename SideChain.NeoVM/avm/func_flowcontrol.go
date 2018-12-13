@@ -118,6 +118,11 @@ func opCallE(e *ExecutionEngine) (VMState, error) {
 	var script_hash []byte
 	if (e.opCode == CALL_ED || e.opCode == CALL_EDT) {
 		script_hash = PopByteArray(e)
+		if len(script_hash) == 21 {
+			hash := make([]byte, 20)
+			copy(hash, script_hash[1 :])
+			script_hash = hash
+		}
 	} else {
 		script_hash = e.context.OpReader.ReadBytes(20)
 		script_hash = common.BytesReverse(script_hash)

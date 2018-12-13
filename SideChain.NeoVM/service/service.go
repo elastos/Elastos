@@ -345,7 +345,9 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 	if err != nil {
 		codeHash = &Uint168{}
 	}
-	codeHashBytes = params.UInt168ToUInt160(codeHash)
+	if len(codeHashBytes) == 21 {
+		codeHashBytes = params.UInt168ToUInt160(codeHash)
+	}
 	codeHashBytes = BytesReverse(codeHashBytes)
 	paramBuilder.EmitPushCall(codeHashBytes)
 	engine, err := RunScript(paramBuilder.Bytes())
