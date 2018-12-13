@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/elanet/bloom"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
