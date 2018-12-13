@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 )
 
 type LevelDBOperator struct {
-	blockchain.IStore
+	Database
 
 	dbFilePath string
 }
@@ -27,12 +26,12 @@ func (s *LevelDBOperator) InitConnection(connParams ...interface{}) error {
 }
 
 func (s *LevelDBOperator) Connect() error {
-	db, err := blockchain.NewLevelDB(s.dbFilePath)
+	db, err := NewLevelDB(s.dbFilePath)
 	if err != nil {
 		return err
 	}
 
-	s.IStore = db
+	s.Database = db
 	return nil
 }
 
@@ -61,7 +60,7 @@ func (s *LevelDBOperator) Create(table *DBTable) error {
 }
 
 func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error) {
-	s.NewBatch()
+	batch := s.NewBatch()
 	tableName := table.Name
 
 	// key: tableName_rowID
@@ -76,7 +75,7 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 	if err != nil {
 		return 0, err
 	}
-	s.BatchPut(getRowKey(tableName, rowID), data)
+	batch.Put(getRowKey(tableName, rowID), data)
 
 	for _, f := range fields {
 		col := table.Column(f.Name)
@@ -89,7 +88,7 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 			}
 			// key: tableName_PrimaryKey_ColumnValue
 			// value: rowID
-			s.BatchPut(key, buf.Bytes())
+			batch.Put(key, buf.Bytes())
 		}
 		for _, index := range table.Indexes {
 			if col == index {
@@ -109,14 +108,14 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 				if err != nil {
 					return 0, err
 				}
-				s.BatchPut(key, indexListBytes)
+				batch.Put(key, indexListBytes)
 			}
 		}
 	}
 
 	// update id
-	s.BatchPut(getTableIDKey(table.Name), uint64ToBytes(rowID))
-	if err := s.BatchCommit(); err != nil {
+	batch.Put(getTableIDKey(table.Name), uint64ToBytes(rowID))
+	if err := batch.Commit(); err != nil {
 		return 0, err
 	}
 	return rowID, nil
@@ -205,7 +204,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DBTable, inputField *Field) (
 }
 
 func (s *LevelDBOperator) Update(table *DBTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
-	s.NewBatch()
+	batch := s.NewBatch()
 	if err := s.checkUpdateFields(table, updateFields); err != nil {
 		return nil, err
 	}
@@ -216,11 +215,11 @@ func (s *LevelDBOperator) Update(table *DBTable, inputFields []*Field, updateFie
 	}
 
 	for _, id := range ids {
-		if err := s.updateRow(table, id, updateFields); err != nil {
+		if err := s.updateRow(batch, table, id, updateFields); err != nil {
 			return nil, err
 		}
 	}
-	if err := s.BatchCommit(); err != nil {
+	if err := batch.Commit(); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -239,20 +238,20 @@ func (s *LevelDBOperator) checkUpdateFields(table *DBTable, updateFields []*Fiel
 	return nil
 }
 
-func (s *LevelDBOperator) updateRow(table *DBTable, rowID uint64, updateFields []*Field) error {
+func (s *LevelDBOperator) updateRow(batch Batch, table *DBTable, rowID uint64, updateFields []*Field) error {
 	oldFields, err := s.getFieldsByRowID(table, rowID)
 	if err != nil {
 		return err
 	}
 
-	if err := s.updateRowData(table, oldFields, updateFields, rowID); err != nil {
+	if err := s.updateRowData(batch, table, oldFields, updateFields, rowID); err != nil {
 		return err
 	}
 
 	for _, f := range updateFields {
 		col := table.Column(f.Name)
 		if col == table.PrimaryKey {
-			if err := s.updatePrimaryKeyValue(table, oldFields, rowID, col, f.Data()); err != nil {
+			if err := s.updatePrimaryKeyValue(batch, table, oldFields, rowID, col, f.Data()); err != nil {
 				return err
 			}
 		}
@@ -266,7 +265,7 @@ func (s *LevelDBOperator) updateRow(table *DBTable, rowID uint64, updateFields [
 			}
 		}
 		if isIndexColumn {
-			if err := s.updateIndexKeyValue(table, rowID, col, oldData, f.Data()); err != nil {
+			if err := s.updateIndexKeyValue(batch, table, rowID, col, oldData, f.Data()); err != nil {
 				return err
 			}
 		}
@@ -275,7 +274,7 @@ func (s *LevelDBOperator) updateRow(table *DBTable, rowID uint64, updateFields [
 	return nil
 }
 
-func (s *LevelDBOperator) updateRowData(table *DBTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
+func (s *LevelDBOperator) updateRowData(batch Batch, table *DBTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
 	// update row data
 	newFieldMap := make(map[string]*Field)
 	for _, f := range oldFields {
@@ -294,11 +293,11 @@ func (s *LevelDBOperator) updateRowData(table *DBTable, oldFields []*Field, upda
 	if err != nil {
 		return err
 	}
-	s.BatchPut(getRowKey(table.Name, rowID), data)
+	batch.Put(getRowKey(table.Name, rowID), data)
 	return nil
 }
 
-func (s *LevelDBOperator) updatePrimaryKeyValue(table *DBTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
+func (s *LevelDBOperator) updatePrimaryKeyValue(batch Batch, table *DBTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
 	var data []byte
 	for _, field := range oldFields {
 		if table.Column(field.Name) == table.PrimaryKey {
@@ -306,13 +305,13 @@ func (s *LevelDBOperator) updatePrimaryKeyValue(table *DBTable, oldFields []*Fie
 		}
 	}
 	oldIndexKey := getIndexKey(table.Name, column, data)
-	s.BatchDelete(oldIndexKey)
+	batch.Delete(oldIndexKey)
 	newIndexKey := getIndexKey(table.Name, column, newData)
-	s.BatchPut(newIndexKey, uint64ToBytes(rowID))
+	batch.Put(newIndexKey, uint64ToBytes(rowID))
 	return nil
 }
 
-func (s *LevelDBOperator) updateIndexKeyValue(table *DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
+func (s *LevelDBOperator) updateIndexKeyValue(batch Batch, table *DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
 	// if exist index column before, need update old record
 	oldIndexKey := getIndexKey(table.Name, column, oldData)
 	rowIDBytes, err := s.Get(oldIndexKey)
@@ -324,7 +323,7 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DBTable, rowID uint64, colu
 		return err
 	}
 	if len(rowIDs) <= 1 {
-		s.BatchDelete(oldIndexKey)
+		batch.Delete(oldIndexKey)
 	} else {
 		var newRowIDs []uint64
 		for _, r := range rowIDs {
@@ -336,7 +335,7 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DBTable, rowID uint64, colu
 		if err != nil {
 			return err
 		}
-		s.BatchPut(oldIndexKey, rowIDsListBytes)
+		batch.Put(oldIndexKey, rowIDsListBytes)
 	}
 
 	// update or add new record
@@ -352,9 +351,9 @@ func (s *LevelDBOperator) updateIndexKeyValue(table *DBTable, rowID uint64, colu
 		if err != nil {
 			return err
 		}
-		s.BatchPut(newIndexKey, rowIDsListBytes)
+		batch.Put(newIndexKey, rowIDsListBytes)
 	} else {
-		s.BatchPut(newIndexKey, newRowIDBytes)
+		batch.Put(newIndexKey, newRowIDBytes)
 	}
 	return nil
 }
