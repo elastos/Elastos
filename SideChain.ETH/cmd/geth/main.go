@@ -345,7 +345,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	spvCfg := &spv.Config{
 		DataDir: ctx.GlobalString(utils.DataDirFlag.Name),
 		Magic: spv.Parameters.SpvMagic,
-		Foundation: spv.Parameters.FoundationAddress,
+		Foundation: spv.Parameters.MainChainFoundationAddress,
 		SeedList: spv.Parameters.SpvSeedList,
 		DefaultPort: spv.Parameters.NodePort,
 	}
@@ -391,9 +391,10 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 
 	// start the SPV service
 	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
-	if _, err := spv.NewService(spvCfg); err != nil {
+	if spvService, err := spv.NewService(spvCfg); err != nil {
 		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
 	} else {
+		spvService.Start()
 		fmt.Println("Mainchain SPV module started successfully!")
 	}
 

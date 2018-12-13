@@ -152,6 +152,7 @@ func init() {
 		config.ConfigFile.SpvPrintLevel = 1
 		config.ConfigFile.MaxPerLogSize = 0
 		config.ConfigFile.MaxLogsSize = 0
+		config.ConfigFile.MainChainFoundationAddress = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"
 	}
 	//	Parameters = &(config.ConfigFile)
 	Parameters.Configuration = &(config.ConfigFile)
