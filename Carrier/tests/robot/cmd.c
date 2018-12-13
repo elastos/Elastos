@@ -1143,24 +1143,6 @@ static void cresume(TestContext *context, int argc, char *argv[])
     }
 }
 
-static void gnew(TestContext *context, int argc, char *argv[])
-{
-    TestContext *ctx = (TestContext *)context;
-    CarrierContext *wctx = ctx->carrier;
-    CarrierContextExtra *wextra = wctx->extra;
-    int rc;
-
-    CHK_ARGS(argc == 1);
-
-    rc = ela_new_group(wctx->carrier, wextra->groupid, sizeof(wextra->groupid));
-    if (rc < 0) {
-        write_ack("gnew failed\n");
-        return;
-    }
-
-    write_ack("gnew succeeded\n");
-}
-
 static void ginvite(TestContext *context, int argc, char *argv[])
 {
     TestContext *ctx = (TestContext *)context;
@@ -1170,6 +1152,13 @@ static void ginvite(TestContext *context, int argc, char *argv[])
 
     CHK_ARGS(argc == 2);
 
+    rc = ela_new_group(wctx->carrier, wextra->groupid, sizeof(wextra->groupid));
+    if (rc < 0) {
+        vlogE("ela_new_group failed");
+        write_ack("ginvite failed\n");
+        return;
+    }
+
     rc = ela_group_invite(wctx->carrier, wextra->groupid, argv[1]);
     if (rc < 0) {
         write_ack("ginvite failed\n");
@@ -1177,6 +1166,8 @@ static void ginvite(TestContext *context, int argc, char *argv[])
     }
 
     write_ack("ginvite succeeded\n");
+
+    cond_wait(wctx->group_cond);
 }
 
 static void gjoin(TestContext *context, int argc, char *argv[])
@@ -1249,7 +1240,6 @@ static struct command {
     { "cready2open",  cready2open  },
     { "cpend",        cpend        },
     { "cresume",      cresume      },
-    { "gnew",         gnew         },
     { "ginvite",      ginvite      },
     { "gjoin",        gjoin        },
     { "gleave",       gleave       },

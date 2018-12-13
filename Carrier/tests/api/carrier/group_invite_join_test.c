@@ -189,10 +189,23 @@ static TestContext test_context = {
 static int group_invite_after_joining_cb(TestContext *ctx)
 {
     CarrierContext *wctx = test_context.carrier;
+    const char *msg = "hello";
+    char cmd[32] = {0};
+    char result[32] = {0};
     int rc;
 
     rc = ela_group_invite(wctx->carrier, wctx->groupid, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    rc = ela_group_send_message(wctx->carrier, wctx->groupid,
+                                msg, strlen(msg) + 1);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    // wait until robot having received group message
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gmsg") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, msg) == 0);
 
     return 0;
 }
@@ -280,16 +293,8 @@ static void test_group_join(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctx->carrier, robotid));
 
-    rc = write_cmd("gnew\n");
-    CU_ASSERT_FATAL(rc > 0);
-
     char cmd[32];
     char result[32];
-    rc = read_ack("%32s %32s", cmd, result);
-    CU_ASSERT_EQUAL_FATAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL_FATAL(cmd, "gnew");
-    CU_ASSERT_STRING_EQUAL_FATAL(result, "succeeded");
-
     ela_get_userid(wctx->carrier, userid, sizeof(userid));
     rc = write_cmd("ginvite %s\n", userid);
     CU_ASSERT_FATAL(rc > 0);
