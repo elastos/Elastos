@@ -49,12 +49,12 @@ contract CrossChainPayload {
         uint256 size;
         // 823b -> 82dd
         assembly {
-            size := extpayloadsize(_txhash)
+            size := spvpayloadsize(_txhash)
         }
         _payload = new bytes(size);
         // 853c -> 85de
         assembly {
-            extpayloadcopy(_txhash, add(_payload, 0x20), 0, size)
+            spvpayloadcopy(_txhash, add(_payload, 0x20), 0, size)
         }
     }
 
