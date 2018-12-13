@@ -15,33 +15,33 @@ const (
 	InvalidTransactionSize = -1
 )
 
-// TransactionType represents different transaction types with different payload format.
-// The TransactionType range is 0x00 - 0x08. When it is greater than 0x08 it will be
+// TxType represents different transaction types with different payload format.
+// The TxType range is 0x00 - 0x08. When it is greater than 0x08 it will be
 // interpreted as a TransactionVersion.
-type TransactionType byte
+type TxType byte
 
 const (
-	CoinBase                TransactionType = 0x00
-	RegisterAsset           TransactionType = 0x01
-	TransferAsset           TransactionType = 0x02
-	Record                  TransactionType = 0x03
-	Deploy                  TransactionType = 0x04
-	SideChainPow            TransactionType = 0x05
-	RechargeToSideChain     TransactionType = 0x06
-	WithdrawFromSideChain   TransactionType = 0x07
-	TransferCrossChainAsset TransactionType = 0x08
+	CoinBase                TxType = 0x00
+	RegisterAsset           TxType = 0x01
+	TransferAsset           TxType = 0x02
+	Record                  TxType = 0x03
+	Deploy                  TxType = 0x04
+	SideChainPow            TxType = 0x05
+	RechargeToSideChain     TxType = 0x06
+	WithdrawFromSideChain   TxType = 0x07
+	TransferCrossChainAsset TxType = 0x08
 
-	RegisterProducer  TransactionType = 0x09
-	CancelProducer    TransactionType = 0x0a
-	UpdateProducer    TransactionType = 0x0b
-	ReturnDepositCoin TransactionType = 0x0c
+	RegisterProducer TxType = 0x09
+	CancelProducer   TxType = 0x0a
+	UpdateProducer   TxType = 0x0b
+	ReturnDepositCoin TxType = 0x0c
 
-	IllegalProposalEvidence TransactionType = 0x0d
-	IllegalVoteEvidence     TransactionType = 0x0e
-	IllegalBlockEvidence    TransactionType = 0x0f
+	IllegalProposalEvidence TxType = 0x0d
+	IllegalVoteEvidence     TxType = 0x0e
+	IllegalBlockEvidence    TxType = 0x0f
 )
 
-func (self TransactionType) Name() string {
+func (self TxType) Name() string {
 	switch self {
 	case CoinBase:
 		return "CoinBase"
@@ -89,7 +89,7 @@ const (
 
 type Transaction struct {
 	Version        TransactionVersion // New field added in TxVersionC0
-	TxType         TransactionType
+	TxType         TxType
 	PayloadVersion byte
 	Payload        Payload
 	Attributes     []*Attribute
@@ -227,10 +227,10 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		if err != nil {
 			return err
 		}
-		tx.TxType = TransactionType(txType[0])
+		tx.TxType = TxType(txType[0])
 	} else {
 		tx.Version = TxVersionDefault
-		tx.TxType = TransactionType(flagByte[0])
+		tx.TxType = TxType(flagByte[0])
 	}
 
 	payloadVersion, err := common.ReadBytes(r, 1)
@@ -376,7 +376,7 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
-func GetPayload(txType TransactionType) (Payload, error) {
+func GetPayload(txType TxType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:

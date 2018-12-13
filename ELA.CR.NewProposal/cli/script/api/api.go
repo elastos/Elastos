@@ -118,7 +118,7 @@ func getUTXO(L *lua.LState) int {
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if types.TransactionType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
