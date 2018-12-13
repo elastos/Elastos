@@ -14,13 +14,47 @@ import (
 
 const (
 	DefaultConfigFilename = "./config.json"
-	MINGENBLOCKTIME       = 2
-	DefaultGenBlockTime   = 6
 )
 
 var (
 	Parameters configParams
 	Version    string
+
+	mainNet = &ChainParams{
+		Name:               "MainNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x1f0008ff,
+		TargetTimePerBlock: time.Minute * 2,
+		TargetTimespan:     time.Minute * 2 * 720,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+	}
+
+	testNet = &ChainParams{
+		Name:               "TestNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x1e1da5ff,
+		TargetTimePerBlock: time.Second * 10,
+		TargetTimespan:     time.Second * 10 * 10,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+	}
+
+	regNet = &ChainParams{
+		Name:               "RegNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x207fffff,
+		TargetTimePerBlock: time.Second * 1,
+		TargetTimespan:     time.Second * 1 * 10,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+	}
 )
 
 type PowConfiguration struct {
