@@ -2,7 +2,6 @@ package store
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/binary"
 	"sync"
 
@@ -19,7 +18,6 @@ type dataBatch struct {
 	mutex sync.Mutex
 	*leveldb.DB
 	*leveldb.Batch
-	sqlTx *sql.Tx
 }
 
 func (b *dataBatch) Txs() TxsBatch {
@@ -31,7 +29,7 @@ func (b *dataBatch) Ops() OpsBatch {
 }
 
 func (b *dataBatch) Que() QueBatch {
-	return &queBatch{Tx: b.sqlTx}
+	return &queBatch{Batch: b.Batch}
 }
 
 // Delete all transactions, ops, queued items on the given height.
@@ -72,20 +70,10 @@ func (b *dataBatch) DelAll(height uint32) error {
 }
 
 func (b *dataBatch) Commit() error {
-	defer b.sqlTx.Rollback()
-
-	if err := b.DB.Write(b.Batch, nil); err != nil {
-		return err
-	}
-
-	if err := b.sqlTx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
+	return b.DB.Write(b.Batch, nil)
 }
 
 func (b *dataBatch) Rollback() error {
 	b.Batch.Reset()
-	return b.sqlTx.Rollback()
+	return nil
 }

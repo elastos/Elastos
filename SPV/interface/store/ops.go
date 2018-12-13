@@ -22,8 +22,8 @@ type ops struct {
 	db *leveldb.DB
 }
 
-func NewOps(db *leveldb.DB) (*ops, error) {
-	return &ops{db: db}, nil
+func NewOps(db *leveldb.DB) *ops {
+	return &ops{db: db}
 }
 
 func (o *ops) Put(op *util.OutPoint, addr common.Uint168) error {
