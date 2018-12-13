@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"os"
 
 	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/cli/common"
+	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	pwd "github.com/elastos/Elastos.ELA/cli/password"
-	"github.com/elastos/Elastos.ELA/core/contract"
-
 	"github.com/urfave/cli"
 )
 
@@ -30,7 +30,7 @@ func getConfirmedPassword(passwd string) []byte {
 	return tmp
 }
 
-func createWallet(name string, password string, accountType string) error {
+func createWallet(name string, password string) error {
 	var err error
 	var passwd []byte
 	if password == "" {
@@ -40,7 +40,7 @@ func createWallet(name string, password string, accountType string) error {
 		}
 	}
 
-	client, err := account.Create(name, passwd, accountType)
+	client, err := account.Create(name, passwd)
 	if err != nil {
 		return err
 	}
@@ -75,8 +75,7 @@ func importAccount(name, password, privateKeyHexStr string) error {
 		}
 	}
 
-	acc, err := account.NewAccountWithPrivateKey(privateKeyBytes,
-		contract.PrefixStandard)
+	acc, err := account.NewAccountWithPrivateKey(privateKeyBytes)
 	if err != nil {
 		return err
 	}
@@ -119,6 +118,36 @@ func exportAccount(name, password string) error {
 	return nil
 }
 
+func generatePledgeAddress(name string) (string, error) {
+	var fileStore account.FileStore
+	fileStore.SetPath(name)
+	storeAccounts, err := fileStore.LoadAccountData()
+	if err != nil {
+		return "", err
+	}
+	for _, a := range storeAccounts {
+		if a.Type == account.MAINACCOUNT {
+			p, err := common.HexStringToBytes(a.ProgramHash)
+			if err != nil {
+				return "", err
+			}
+			program, err := common.Uint168FromBytes(p)
+			if err != nil {
+				return "", err
+			}
+			codeHash := program.ToCodeHash()
+			pledgeHash := common.Uint168FromCodeHash(byte(contract.PrefixPledge), codeHash)
+			address, err := pledgeHash.ToAddress()
+			if err != nil {
+				return "", nil
+			}
+			return address, nil
+		}
+	}
+
+	return "", errors.New("no main account found")
+}
+
 func walletAction(context *cli.Context) error {
 	if context.NumFlags() == 0 {
 		cli.ShowSubcommandHelp(context)
@@ -130,27 +159,15 @@ func walletAction(context *cli.Context) error {
 
 	// create wallet
 	if context.Bool("create") {
-		// show account info
-		if accType := context.String("type"); accType != "" {
-			switch accType {
-			case "standard":
-			case "multisig":
-			case "sidechain":
-			case "pledge":
-			default:
-				fmt.Println("error: account type not found")
-				cli.ShowCommandHelpAndExit(context, "create", 1)
-			}
-			if err := createWallet(name, passwd, accType); err != nil {
-				fmt.Println("error: create wallet failed,", err)
-				cli.ShowCommandHelpAndExit(context, "create", 1)
-			}
-			return nil
+		if err := createWallet(name, passwd); err != nil {
+			fmt.Println("error: create wallet failed,", err)
+			cli.ShowCommandHelpAndExit(context, "create", 1)
 		}
+		return nil
 	}
 
 	if context.Bool("account") {
-		if exist := common.FileExisted(name); !exist {
+		if exist := clicom.FileExisted(name); !exist {
 			fmt.Println(fmt.Sprintf("error: %s is not found.", name))
 			cli.ShowCommandHelpAndExit(context, "account", 1)
 		}
@@ -170,7 +187,7 @@ func walletAction(context *cli.Context) error {
 
 	// list accounts information
 	if context.Bool("list") {
-		if exist := common.FileExisted(name); !exist {
+		if exist := clicom.FileExisted(name); !exist {
 			fmt.Println(fmt.Sprintf("error: %s is not found.", name))
 			cli.ShowCommandHelpAndExit(context, "account", 1)
 		}
@@ -196,6 +213,16 @@ func walletAction(context *cli.Context) error {
 		}
 	}
 
+	// generate pledge address
+	if context.Bool("getpledgeaddress") {
+		address, err := generatePledgeAddress(name)
+		if err != nil {
+			fmt.Println("error: get pledge address failed,", err)
+			cli.ShowCommandHelpAndExit(context, "getpledgeaddress", 1)
+		}
+		fmt.Println(address)
+	}
+
 	return nil
 }
 
@@ -209,11 +236,6 @@ func NewCommand() *cli.Command {
 			cli.BoolFlag{
 				Name:  "create, c",
 				Usage: "create wallet",
-			},
-			cli.StringFlag{
-				Name:  "type, t",
-				Usage: "use [standard, multisig, sidechain, pledge] to indicate account type",
-				Value: "standard",
 			},
 			cli.BoolFlag{
 				Name:  "list, l",
@@ -256,10 +278,14 @@ func NewCommand() *cli.Command {
 				Name:  "export",
 				Usage: "export all account private keys in hex string",
 			},
+			cli.BoolFlag{
+				Name:  "getpledgeaddress, gpa",
+				Usage: "generate the pledge address form main account",
+			},
 		},
 		Action: walletAction,
 		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			common.PrintError(c, err, "wallet")
+			clicom.PrintError(c, err, "wallet")
 			return cli.NewExitError("", 1)
 		},
 	}

@@ -13,9 +13,9 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 func FormatOutput(o []byte) error {
@@ -58,12 +58,12 @@ func ShowAccountBalance(name string) error {
 
 	var fileStore account.FileStore
 	fileStore.SetPath(name)
-	storeAddresses, err := fileStore.LoadAccountData()
+	storeAccounts, err := fileStore.LoadAccountData()
 	if err != nil {
 		return err
 	}
 
-	for _, a := range storeAddresses {
+	for _, a := range storeAccounts {
 		result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
 			"addresses": []string{a.Address},
 		})
