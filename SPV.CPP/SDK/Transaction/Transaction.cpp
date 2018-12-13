@@ -689,7 +689,7 @@ namespace Elastos {
 
 
 		nlohmann::json Transaction::GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail) {
-			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash()));
+			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash(), true));
 			setRemark(remark);
 
 			std::string addr;

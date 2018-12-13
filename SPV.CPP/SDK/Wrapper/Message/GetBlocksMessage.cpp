@@ -37,9 +37,9 @@ namespace Elastos {
 			if (locatorsCount > 0) {
 				peer_dbg(peer, "calling getblocks with %zu locators: [%s,%s %s]",
 									   locatorsCount,
-									   Utils::UInt256ToString(locators[0]).c_str(),
+									   Utils::UInt256ToString(locators[0], true).c_str(),
 									   (locatorsCount > 2 ? " ...," : ""),
-									   (locatorsCount > 1 ? Utils::UInt256ToString(locators[locatorsCount - 1]).c_str() : ""));
+									   (locatorsCount > 1 ? Utils::UInt256ToString(locators[locatorsCount - 1], true).c_str() : ""));
 				BRPeerSendMessage(peer, msg, off, MSG_GETBLOCKS);
 			}
 		}

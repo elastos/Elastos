@@ -130,7 +130,7 @@ namespace Elastos {
 		void ELAWalletLoadRemarks(ELAWallet *wallet,
 								  const SharedWrapperList<Transaction, BRTransaction *> &transaction) {
 			for (int i = 0; i < transaction.size(); ++i) {
-				wallet->TxRemarkMap[Utils::UInt256ToString(transaction[i]->getHash())] =
+				wallet->TxRemarkMap[Utils::UInt256ToString(transaction[i]->getHash(), true)] =
 					((ELATransaction *) transaction[i]->getRaw())->Remark;
 			}
 		}
@@ -205,7 +205,7 @@ namespace Elastos {
 
 		void Wallet::RegisterRemark(const TransactionPtr &transaction) {
 			ELAWalletRegisterRemark(_wallet,
-									Utils::UInt256ToString(transaction->getHash()),
+									Utils::UInt256ToString(transaction->getHash(), true),
 									((ELATransaction *) transaction->getRaw())->Remark);
 		}
 
@@ -351,7 +351,7 @@ namespace Elastos {
 				o = &wallet->utxos[i];
 				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
 				if (!tx || o->n >= tx->outputs.size()) {
-					Log::getLogger()->error("Invalid utxo {} n={}", Utils::UInt256ToString(o->hash), o->n);
+					Log::getLogger()->error("Invalid utxo {} n={}", Utils::UInt256ToString(o->hash, true), o->n);
 					continue;
 				}
 
@@ -976,7 +976,7 @@ namespace Elastos {
 
 				// Invoke the callback for each of txHashes.
 				for (size_t i = 0; i < count; i++) {
-					listener->lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i]), blockHeight, timestamp);
+					listener->lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), blockHeight, timestamp);
 				}
 			}
 		}
@@ -985,7 +985,7 @@ namespace Elastos {
 
 			WeakListener *listener = (WeakListener *) info;
 			if (!listener->expired()) {
-				listener->lock()->onTxDeleted(Utils::UInt256ToString(txHash), static_cast<bool>(notifyUser),
+				listener->lock()->onTxDeleted(Utils::UInt256ToString(txHash, true), static_cast<bool>(notifyUser),
 											  static_cast<bool>(recommendRescan));
 			}
 		}

@@ -43,7 +43,7 @@ namespace Elastos {
 			int r = 1;
 
 			if (!block->isValid((uint32_t) time(nullptr))) {
-				peer_log(peer, "error: invalid merkleblock: %s", Utils::UInt256ToString(block->getBlockHash()).c_str());
+				peer_log(peer, "error: invalid merkleblock: %s", Utils::UInt256ToString(block->getBlockHash(), true).c_str());
 				block->deleteRawBlock();
 				blockRaw = nullptr;
 				r = 0;

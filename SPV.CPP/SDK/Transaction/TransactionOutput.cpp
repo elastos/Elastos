@@ -169,7 +169,7 @@ namespace Elastos {
 
 			jsonData["Amount"] = _output->raw.amount;
 
-			jsonData["AssetId"] = Utils::UInt256ToString(_output->assetId);
+			jsonData["AssetId"] = Utils::UInt256ToString(_output->assetId, true);
 
 			jsonData["OutputLock"] = _output->outputLock;
 
@@ -189,7 +189,7 @@ namespace Elastos {
 
 			_output->signType = jsonData["SignType"].get<int>();
 
-			_output->assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>());
+			_output->assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>(), true);
 			_output->outputLock = jsonData["OutputLock"].get<uint32_t>();
 			_output->programHash = Utils::UInt168FromString(jsonData["ProgramHash"].get<std::string>());
 

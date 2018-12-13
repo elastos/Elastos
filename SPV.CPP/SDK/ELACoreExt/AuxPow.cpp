@@ -321,14 +321,14 @@ namespace Elastos {
 			size_t len = _auxMerkleBranch.size();
 			std::vector<std::string> auxMerkleBranch(len);
 			for (size_t i = 0; i < len; ++i) {
-				auxMerkleBranch[i] = Utils::UInt256ToString(_auxMerkleBranch[i]);
+				auxMerkleBranch[i] = Utils::UInt256ToString(_auxMerkleBranch[i], true);
 			}
 			jsonData["AuxMerkleBranch"] = auxMerkleBranch;
 
 			len = _parCoinBaseMerkle.size();
 			std::vector<std::string> parCoinBaseMerkle(len);
 			for (size_t i = 0; i < len; ++i) {
-				parCoinBaseMerkle[i] = Utils::UInt256ToString(_parCoinBaseMerkle[i]);
+				parCoinBaseMerkle[i] = Utils::UInt256ToString(_parCoinBaseMerkle[i], true);
 			}
 			jsonData["ParCoinBaseMerkle"] = parCoinBaseMerkle;
 
@@ -336,7 +336,7 @@ namespace Elastos {
 			jsonData["Transaction"] = transactionToJson();
 			jsonData["ParMerkleIndex"] = _parMerkleIndex;
 			jsonData["ParBlockHeader"] = merkleBlockToJson();
-			jsonData["ParentHash"] = Utils::UInt256ToString(_parentHash);
+			jsonData["ParentHash"] = Utils::UInt256ToString(_parentHash, true);
 
 			return jsonData;
 		}
@@ -344,7 +344,7 @@ namespace Elastos {
 		nlohmann::json AuxPow::transactionToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(_parCoinBaseTx->txHash);
+			jsonData["TxHash"] = Utils::UInt256ToString(_parCoinBaseTx->txHash, true);
 			jsonData["Version"] = _parCoinBaseTx->version;
 
 			std::vector<nlohmann::json> inputs(_parCoinBaseTx->inCount);
@@ -369,7 +369,7 @@ namespace Elastos {
 		nlohmann::json AuxPow::txInputsToJson(const BRTxInput &input) const {
 			nlohmann::json jsonData;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(input.txHash);
+			jsonData["TxHash"] = Utils::UInt256ToString(input.txHash, true);
 			jsonData["Index"] = input.index;
 			jsonData["Address"] = std::string(input.address);
 			jsonData["Amount"] = input.amount;
@@ -393,10 +393,10 @@ namespace Elastos {
 		nlohmann::json AuxPow::merkleBlockToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["BlockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash);
+			jsonData["BlockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash, true);
 			jsonData["Version"] = _parBlockHeader->version;
-			jsonData["PrevBlock"] = Utils::UInt256ToString(_parBlockHeader->prevBlock);
-			jsonData["MerkleRoot"] = Utils::UInt256ToString(_parBlockHeader->merkleRoot);
+			jsonData["PrevBlock"] = Utils::UInt256ToString(_parBlockHeader->prevBlock, true);
+			jsonData["MerkleRoot"] = Utils::UInt256ToString(_parBlockHeader->merkleRoot, true);
 			jsonData["Timestamp"] = _parBlockHeader->timestamp;
 			jsonData["Target"] = _parBlockHeader->target;
 			jsonData["Nonce"] = _parBlockHeader->nonce;
@@ -404,7 +404,7 @@ namespace Elastos {
 
 			std::vector<std::string> hashes(_parBlockHeader->hashesCount);
 			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
-				hashes[i] = Utils::UInt256ToString(_parBlockHeader->hashes[i]);
+				hashes[i] = Utils::UInt256ToString(_parBlockHeader->hashes[i], true);
 			}
 			jsonData["Hashes"] = hashes;
 
@@ -418,24 +418,24 @@ namespace Elastos {
 			std::vector<std::string> auxMerkleBranch = jsonData["AuxMerkleBranch"];
 			_auxMerkleBranch.resize(auxMerkleBranch.size());
 			for (size_t i = 0; i < _auxMerkleBranch.size(); ++i) {
-				_auxMerkleBranch[i] = Utils::UInt256FromString(auxMerkleBranch[i]);
+				_auxMerkleBranch[i] = Utils::UInt256FromString(auxMerkleBranch[i], true);
 			}
 
 			std::vector<std::string> parCoinBaseMerkle = jsonData["ParCoinBaseMerkle"];
 			_parCoinBaseMerkle.resize(parCoinBaseMerkle.size());
 			for (size_t i = 0; i < parCoinBaseMerkle.size(); ++i) {
-				_parCoinBaseMerkle[i] = Utils::UInt256FromString(parCoinBaseMerkle[i]);
+				_parCoinBaseMerkle[i] = Utils::UInt256FromString(parCoinBaseMerkle[i], true);
 			}
 
 			_auxMerkleIndex = jsonData["AuxMerkleIndex"].get<uint32_t>();
 			transactionFromJson(jsonData["Transaction"]);
 			_parMerkleIndex = jsonData["ParMerkleIndex"].get<uint32_t>();
 			merkleBlockFromJson(jsonData["ParBlockHeader"]);
-			_parentHash = Utils::UInt256FromString(jsonData["ParentHash"].get<std::string>());
+			_parentHash = Utils::UInt256FromString(jsonData["ParentHash"].get<std::string>(), true);
 		}
 
 		void AuxPow::transactionFromJson(const nlohmann::json &jsonData) {
-			_parCoinBaseTx->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			_parCoinBaseTx->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
 			_parCoinBaseTx->version = jsonData["Version"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
@@ -456,12 +456,12 @@ namespace Elastos {
 		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) {
 
 			std::string blockHash = jsonData["BlockHash"].get<std::string>();
-			_parBlockHeader->blockHash = Utils::UInt256FromString(blockHash);
+			_parBlockHeader->blockHash = Utils::UInt256FromString(blockHash, true);
 			_parBlockHeader->version = jsonData["Version"].get<uint32_t>();
 			std::string prevBlock = jsonData["PrevBlock"].get<std::string>();
-			_parBlockHeader->prevBlock = Utils::UInt256FromString(prevBlock);
+			_parBlockHeader->prevBlock = Utils::UInt256FromString(prevBlock, true);
 			std::string merkleRoot = jsonData["MerkleRoot"].get<std::string>();
-			_parBlockHeader->merkleRoot = Utils::UInt256FromString(merkleRoot);
+			_parBlockHeader->merkleRoot = Utils::UInt256FromString(merkleRoot, true);
 			_parBlockHeader->timestamp = jsonData["Timestamp"].get<uint32_t>();
 			_parBlockHeader->target = jsonData["Target"].get<uint32_t>();
 			_parBlockHeader->nonce = jsonData["Nonce"].get<uint32_t>();
@@ -471,7 +471,7 @@ namespace Elastos {
 			_parBlockHeader->hashesCount = hashArray.size();
 			UInt256 hashes[_parBlockHeader->hashesCount];
 			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
-				hashes[i] = Utils::UInt256FromString(hashArray[i]);
+				hashes[i] = Utils::UInt256FromString(hashArray[i], true);
 			}
 
 			CMBlock flags = Utils::decodeHex(jsonData["Flags"].get<std::string>());
@@ -484,7 +484,7 @@ namespace Elastos {
 		}
 
 		void AuxPow::txInputsFromJson(const nlohmann::json &input) {
-			UInt256 hash = Utils::UInt256FromString(input["TxHash"]);
+			UInt256 hash = Utils::UInt256FromString(input["TxHash"], true);
 			uint32_t index = input["Index"].get<uint32_t>();
 			uint64_t amount = input["Amount"].get<uint64_t>();
 			CMBlock script = Utils::decodeHex(input["Script"].get<std::string>());

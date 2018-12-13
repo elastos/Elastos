@@ -109,10 +109,10 @@ namespace Elastos {
 		nlohmann::json IdAuxPow::mainBlockHeaderToJson() const {
 			nlohmann::json j;
 
-			j["BlockHash"] = Utils::UInt256ToString(_mainBlockHeader->raw.blockHash);
+			j["BlockHash"] = Utils::UInt256ToString(_mainBlockHeader->raw.blockHash, true);
 			j["Version"] = _mainBlockHeader->raw.version;
-			j["PrevBlock"] = Utils::UInt256ToString(_mainBlockHeader->raw.prevBlock);
-			j["MerkleRoot"] = Utils::UInt256ToString(_mainBlockHeader->raw.merkleRoot);
+			j["PrevBlock"] = Utils::UInt256ToString(_mainBlockHeader->raw.prevBlock, true);
+			j["MerkleRoot"] = Utils::UInt256ToString(_mainBlockHeader->raw.merkleRoot, true);
 			j["Timestamp"] = _mainBlockHeader->raw.timestamp;
 			j["Target"] = _mainBlockHeader->raw.target;
 			j["Nonce"] = _mainBlockHeader->raw.nonce;
@@ -120,7 +120,7 @@ namespace Elastos {
 
 			std::vector<std::string> hashes(_mainBlockHeader->raw.hashesCount);
 			for (size_t i = 0; i < _mainBlockHeader->raw.hashesCount; ++i) {
-				hashes[i] = Utils::UInt256ToString(_mainBlockHeader->raw.hashes[i]);
+				hashes[i] = Utils::UInt256ToString(_mainBlockHeader->raw.hashes[i], true);
 			}
 			j["Hashes"] = hashes;
 
@@ -135,12 +135,12 @@ namespace Elastos {
 		void IdAuxPow::mainBlockHeaderFromJson(const nlohmann::json &j) {
 
 			std::string blockHash = j["BlockHash"].get<std::string>();
-			_mainBlockHeader->raw.blockHash = Utils::UInt256FromString(blockHash);
+			_mainBlockHeader->raw.blockHash = Utils::UInt256FromString(blockHash, true);
 			_mainBlockHeader->raw.version = j["Version"].get<uint32_t>();
 			std::string prevBlock = j["PrevBlock"].get<std::string>();
-			_mainBlockHeader->raw.prevBlock = Utils::UInt256FromString(prevBlock);
+			_mainBlockHeader->raw.prevBlock = Utils::UInt256FromString(prevBlock, true);
 			std::string merkleRoot = j["MerkleRoot"].get<std::string>();
-			_mainBlockHeader->raw.merkleRoot = Utils::UInt256FromString(merkleRoot);
+			_mainBlockHeader->raw.merkleRoot = Utils::UInt256FromString(merkleRoot, true);
 			_mainBlockHeader->raw.timestamp = j["Timestamp"].get<uint32_t>();
 			_mainBlockHeader->raw.target = j["Target"].get<uint32_t>();
 			_mainBlockHeader->raw.nonce = j["Nonce"].get<uint32_t>();
@@ -150,7 +150,7 @@ namespace Elastos {
 			_mainBlockHeader->raw.hashesCount = hashArray.size();
 			UInt256 hashes[_mainBlockHeader->raw.hashesCount];
 			for (size_t i = 0; i < _mainBlockHeader->raw.hashesCount; ++i) {
-				hashes[i] = Utils::UInt256FromString(hashArray[i]);
+				hashes[i] = Utils::UInt256FromString(hashArray[i], true);
 			}
 
 			CMBlock flags = Utils::decodeHex(j["Flags"].get<std::string>());
@@ -170,7 +170,7 @@ namespace Elastos {
 			size_t len = _idAuxMerkleBranch.size();
 			std::vector<std::string> auxMerkleBranch(len);
 			for (size_t i = 0; i < len; ++i) {
-				auxMerkleBranch[i] = Utils::UInt256ToString(_idAuxMerkleBranch[i]);
+				auxMerkleBranch[i] = Utils::UInt256ToString(_idAuxMerkleBranch[i], true);
 			}
 			j["IdAuxMerkleBranch"] = auxMerkleBranch;
 
@@ -185,7 +185,7 @@ namespace Elastos {
 			std::vector<std::string> idAuxMerkleBranch = j["IdAuxMerkleBranch"];
 			_idAuxMerkleBranch.resize(idAuxMerkleBranch.size());
 			for (size_t i = 0; i < _idAuxMerkleBranch.size(); ++i) {
-				_idAuxMerkleBranch[i] = Utils::UInt256FromString(idAuxMerkleBranch[i]);
+				_idAuxMerkleBranch[i] = Utils::UInt256FromString(idAuxMerkleBranch[i], true);
 			}
 
 			_idAuxMerkleIndex = j["IdAuxMerkleIndex"].get<uint32_t>();

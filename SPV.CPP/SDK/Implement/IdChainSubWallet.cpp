@@ -111,7 +111,7 @@ namespace Elastos {
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
-				std::string txHash = Utils::UInt256ToString(transaction->getHash());
+				std::string txHash = Utils::UInt256ToString(transaction->getHash(), true);
 				Log::getLogger()->debug("ID onTxAdded: hash={}", txHash);
 
 				std::for_each(_callbacks.begin(), _callbacks.end(),
@@ -131,7 +131,7 @@ namespace Elastos {
 
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
-					Utils::UInt256FromString(hash));
+					Utils::UInt256FromString(hash, true));
 			if (transaction != nullptr &&
 				transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 
@@ -155,7 +155,7 @@ namespace Elastos {
 
 		void IdChainSubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
-					Utils::UInt256FromString(hash));
+					Utils::UInt256FromString(hash, true));
 			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				Log::getLogger()->debug("ID onTxDeleted");
 				std::string reversedId(hash.rbegin(), hash.rend());

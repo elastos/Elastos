@@ -148,12 +148,12 @@ namespace Elastos {
 			CMBlock data = stream.getBuffer();
 
 			UInt256 hash = tx->getHash();
-			std::string hashStr = Utils::UInt256ToString(hash);
+			std::string hashStr = Utils::UInt256ToString(hash, true);
 			std::string remark = _wallet->GetRemark(hashStr);
 			tx->setRemark(remark);
 
 			TransactionEntity txEntity(data, tx->getBlockHeight(),
-									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
+									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash(), true));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),

@@ -286,7 +286,7 @@ namespace Elastos {
 
 			std::vector<std::string> hashes;
 			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				hashes.push_back(Utils::UInt256ToString(_merkleBlock->raw.hashes[i]));
+				hashes.push_back(Utils::UInt256ToString(_merkleBlock->raw.hashes[i], true));
 			}
 
 			std::vector<uint8_t> flags;
@@ -294,10 +294,10 @@ namespace Elastos {
 				flags.push_back(_merkleBlock->raw.flags[i]);
 			}
 
-			j["BlockHash"] = Utils::UInt256ToString(_merkleBlock->raw.blockHash);
+			j["BlockHash"] = Utils::UInt256ToString(_merkleBlock->raw.blockHash, true);
 			j["Version"] = _merkleBlock->raw.version;
-			j["PrevBlock"] = Utils::UInt256ToString(_merkleBlock->raw.prevBlock);
-			j["MerkleRoot"] = Utils::UInt256ToString(_merkleBlock->raw.merkleRoot);
+			j["PrevBlock"] = Utils::UInt256ToString(_merkleBlock->raw.prevBlock, true);
+			j["MerkleRoot"] = Utils::UInt256ToString(_merkleBlock->raw.merkleRoot, true);
 			j["Timestamp"] = _merkleBlock->raw.timestamp;
 			j["Target"] = _merkleBlock->raw.target;
 			j["Nonce"] = _merkleBlock->raw.nonce;
@@ -318,10 +318,10 @@ namespace Elastos {
 				return;
 			}
 
-			_merkleBlock->raw.blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>());
+			_merkleBlock->raw.blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>(), true);
 			_merkleBlock->raw.version = j["Version"].get<uint32_t>();
-			_merkleBlock->raw.prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>());
-			_merkleBlock->raw.merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>());
+			_merkleBlock->raw.prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>(), true);
+			_merkleBlock->raw.merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>(), true);
 			_merkleBlock->raw.timestamp = j["Timestamp"].get<uint32_t>();
 			_merkleBlock->raw.target = j["Target"].get<uint32_t>();
 			_merkleBlock->raw.nonce = j["Nonce"].get<uint32_t>();
@@ -338,7 +338,7 @@ namespace Elastos {
 				(UInt256 *) malloc(sizeof(UInt256) * _merkleBlock->raw.hashesCount) : nullptr;
 
 			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				UInt256 hash = Utils::UInt256FromString(hashes[i]);
+				UInt256 hash = Utils::UInt256FromString(hashes[i], true);
 				memcpy(&_merkleBlock->raw.hashes[i], &hash, sizeof(hash));
 			}
 

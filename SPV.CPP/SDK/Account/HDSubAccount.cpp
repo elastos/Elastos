@@ -49,7 +49,7 @@ namespace Elastos {
 				std::stringstream ess;
 				ess << "txCount = " << txCount
 					<< ", wallet do not contain tx[0] = "
-					<< Utils::UInt256ToString(transactions[0]->txHash);
+					<< Utils::UInt256ToString(transactions[0]->txHash, true);
 				ParamChecker::checkCondition(true, Error::Wallet, ess.str());
 			}
 		}

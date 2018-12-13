@@ -233,7 +233,7 @@ namespace Elastos {
 				return;
 
 
-			std::string txHash = Utils::UInt256ToString(transaction->getHash());
+			std::string txHash = Utils::UInt256ToString(transaction->getHash(), true);
 			Log::getLogger()->debug("onTxAdded: Tx hash={}", txHash);
 			_confirmingTxs[txHash] = transaction;
 
@@ -248,7 +248,7 @@ namespace Elastos {
 			}
 
 			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
-				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
+				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash, true));
 			}
 
 			uint32_t confirm = blockHeight != TX_UNCONFIRMED && blockHeight >= _confirmingTxs[hash]->getBlockHeight() ?
@@ -261,10 +261,9 @@ namespace Elastos {
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-			std::string reversedId(hash.rbegin(), hash.rend());
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&reversedId, &notifyUser, recommendRescan](ISubWalletCallback *callback) {
-							  callback->OnTxDeleted(reversedId, notifyUser, recommendRescan);
+						  [&hash, &notifyUser, recommendRescan](ISubWalletCallback *callback) {
+							  callback->OnTxDeleted(hash, notifyUser, recommendRescan);
 						  });
 		}
 
@@ -422,10 +421,9 @@ namespace Elastos {
 
 		void SubWallet::fireTransactionStatusChanged(const std::string &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
-			std::string reversedId(txid.rbegin(), txid.rend());
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&reversedId, &status, &desc, confirms](ISubWalletCallback *callback) {
-							  callback->OnTransactionStatusChanged(reversedId, status, desc, confirms);
+						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
+							  callback->OnTransactionStatusChanged(txid, status, desc, confirms);
 						  });
 		}
 

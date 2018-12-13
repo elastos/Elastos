@@ -42,7 +42,7 @@ namespace Elastos {
 				ELATransactionFree(tx);
 			} else {
 				txHash = trans.getHash();
-				peer_log(peer, "got tx: %s", Utils::UInt256ToString(txHash).c_str());
+				peer_log(peer, "got tx: %s", Utils::UInt256ToString(txHash, true).c_str());
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, (BRTransaction *)tx);
@@ -76,7 +76,7 @@ namespace Elastos {
 			ByteStream stream;
 			transaction.Serialize(stream);
 			CMBlock buf = stream.getBuffer();
-			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash).c_str());
+			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash, true).c_str());
 			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_TX);
 		}
 	}
