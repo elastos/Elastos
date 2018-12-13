@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/hex"
 	"fmt"
+	"os"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/yuin/gopher-lua"
@@ -118,12 +120,17 @@ func RegisterRegisterProducerType(L *lua.LState) {
 
 // Constructor
 func newRegisterProducer(L *lua.LState) int {
-	publicKey := L.ToString(1)
+	publicKeyStr := L.ToString(1)
 	nickName := L.ToString(2)
 	url := L.ToString(3)
 	location := L.ToInt64(4)
 	address := L.ToString(5)
 
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer public key")
+		os.Exit(1)
+	}
 	registerProducer := &payload.PayloadRegisterProducer{
 		PublicKey: []byte(publicKey),
 		NickName:  nickName,
