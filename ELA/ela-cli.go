@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/elastos/Elastos.ELA/cli/rollback"
 	"math/rand"
 	"os"
 	"sort"
@@ -42,6 +43,7 @@ func main() {
 		*wallet.NewCommand(),
 		*transfer.NewCommand(),
 		*script.NewCommand(),
+		*rollback.NewCommand(),
 	}
 	sort.Sort(cli.CommandsByName(app.Commands))
 	sort.Sort(cli.FlagsByName(app.Flags))
