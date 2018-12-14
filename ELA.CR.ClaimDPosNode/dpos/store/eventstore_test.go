@@ -149,5 +149,9 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 }
 
 func TestEventStore_Close(t *testing.T) {
+	eventStore.deleteTable(ProposalEventTable)
+	eventStore.deleteTable(ConsensusEventTable)
+	eventStore.deleteTable(VoteEventTable)
+	eventStore.deleteTable(ViewEventTable)
 	eventStore.Disconnect()
 }

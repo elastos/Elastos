@@ -562,7 +562,7 @@ func TestCheckVoteProducerOutput(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
-	assert.EqualError(t, err, "invalid public key length.")
+	assert.EqualError(t, err, "invalid public key length")
 
 	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
 	assert.EqualError(t, err, "duplicate candidate")

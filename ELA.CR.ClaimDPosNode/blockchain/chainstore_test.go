@@ -141,15 +141,15 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 
 	// 2. Should have no producer in db
-	producers := testChainStore.GetRegisteredProducers()
-	if len(producers) != 0 {
+	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	if err == nil || len(producers) != 0 {
 		t.Error("Found registered producers in DB")
 	}
 
 	// 3. Run RegisterProducer
-	err := testChainStore.PersistRegisterProducer(payload1)
+	err = testChainStore.PersistRegisterProducer(payload1)
 	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+		t.Error("PersistRegisterProducer failed:", err.Error())
 	}
 	testChainStore.BatchCommit()
 
@@ -160,7 +160,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 	testChainStore.BatchCommit()
 
-	producers = testChainStore.GetRegisteredProducers()
+	producers, err = testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
 	if len(producers) != 2 {
 		t.Error("GetRegisteredProducers failed")
 	}
@@ -198,7 +198,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName2 := "nickname 2"
 
-	// 2. Run RegisterProducer
+	// 2. Run PersistCancelProducer
 	err := testChainStore.PersistCancelProducer(payload1)
 	if err != nil {
 		t.Error("PersistRegisterProducer failed")
@@ -206,8 +206,8 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
-	producers := testChainStore.GetRegisteredProducers()
-	if len(producers) != 1 {
+	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	if err != nil || len(producers) != 1 {
 		t.Error("GetRegisteredProducers failed")
 	}
 
@@ -249,8 +249,8 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
-	producers := testChainStore.GetRegisteredProducers()
-	if len(producers) != 1 {
+	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	if err != nil || len(producers) != 1 {
 		t.Error("GetRegisteredProducers failed")
 	}
 
@@ -452,6 +452,9 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	if vote2 != 0 {
 		t.Error("GetProducerVote failed")
 	}
+
+	testChainStore.ClearRegisterdProducer()
+	testChainStore.BatchCommit()
 }
 
 //fixme uncommon util unit test pass

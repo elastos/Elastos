@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/errors"
 
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,10 +35,14 @@ func TestTxPoolInit(t *testing.T) {
 		return
 	}
 	blockchain.FoundationAddress = *foundation
-
 	chainStore, err := blockchain.NewChainStore("Chain_UnitTest")
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
+		os.Exit(1)
+	}
+	dposStore, err := store.NewDposStore("Dpos_UnitTest")
+	if err != nil {
+		t.Fatal("open dpos store err:", err)
 		os.Exit(1)
 	}
 
@@ -45,6 +50,12 @@ func TestTxPoolInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}
+	store.InitArbitrators(store.ArbitratorsConfig{
+		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
+		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		Store:            dposStore,
+	})
 
 	txPool.Init()
 }
