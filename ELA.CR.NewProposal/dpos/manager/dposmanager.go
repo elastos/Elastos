@@ -12,19 +12,24 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
-	utip2p "github.com/elastos/Elastos.ELA/p2p"
-	utimsg "github.com/elastos/Elastos.ELA/p2p/msg"
+	elap2p "github.com/elastos/Elastos.ELA/p2p"
+	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/protocol"
 )
 
+type DposNetworkConfig struct {
+	ProposalDispatcher ProposalDispatcher
+	Store              blockchain.IDposStore
+}
+
 type DposNetwork interface {
-	Initialize(proposalDispatcher ProposalDispatcher)
+	Initialize(dnConfig DposNetworkConfig)
 
 	Start()
 	Stop() error
 
-	SendMessageToPeer(id peer.PID, msg utip2p.Message) error
-	BroadcastMessage(msg utip2p.Message)
+	SendMessageToPeer(id peer.PID, msg elap2p.Message) error
+	BroadcastMessage(msg elap2p.Message)
 
 	UpdatePeers(arbitrators [][]byte) error
 	ChangeHeight(height uint32) error
@@ -230,7 +235,7 @@ func (d *dposManager) OnInv(id peer.PID, blockHash common.Uint256) {
 
 func (d *dposManager) OnGetBlock(id peer.PID, blockHash common.Uint256) {
 	if block, err := d.getBlock(blockHash); err == nil {
-		d.network.SendMessageToPeer(id, utimsg.NewBlock(block))
+		d.network.SendMessageToPeer(id, elamsg.NewBlock(block))
 	}
 }
 

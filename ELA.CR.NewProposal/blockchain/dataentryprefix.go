@@ -11,14 +11,8 @@ const (
 	DATAConfirm     DataEntryPrefix = 0x03
 
 	// DPOS
-	DPOSVoteProducer       DataEntryPrefix = 0xc1
-	DPOSIllegalProducer    DataEntryPrefix = 0x10
-	DPOSDutyChangedCount   DataEntryPrefix = 0x11
-	DPOSCurrentArbitrators DataEntryPrefix = 0x12
-	DPOSCurrentCandidates  DataEntryPrefix = 0x13
-	DPOSNextArbitrators    DataEntryPrefix = 0x14
-	DPOSNextCandidates     DataEntryPrefix = 0x15
-	DPOSDirectPeers        DataEntryPrefix = 0x16
+	DPOSVoteProducer    DataEntryPrefix = 0xc1
+	DPOSIllegalProducer DataEntryPrefix = 0x10
 
 	// INDEX
 	IXHeaderHashList DataEntryPrefix = 0x80

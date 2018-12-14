@@ -16,14 +16,6 @@ type IChainStoreDpos interface {
 	GetProducerStatus(programHash Uint168) ProducerState
 
 	GetIllegalProducers() map[string]struct{}
-
-	GetArbitrators(a *arbitrators) error
-	SaveDposDutyChangedCount(count uint32)
-	SaveCurrentArbitrators(a *arbitrators)
-	SaveNextArbitrators(a *arbitrators)
-
-	GetDirectPeers() ([]*DirectPeers, error)
-	SaveDirectPeers(peers []*DirectPeers)
 }
 
 // IChainStore provides func with store package.

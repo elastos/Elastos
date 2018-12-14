@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
@@ -14,10 +15,8 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/common"
-	utip2p "github.com/elastos/Elastos.ELA/p2p"
-	utimsg "github.com/elastos/Elastos.ELA/p2p/msg"
+	elap2p "github.com/elastos/Elastos.ELA/p2p"
+	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type PeerItem struct {
@@ -34,7 +33,7 @@ type blockItem struct {
 
 type messageItem struct {
 	ID      peer.PID
-	Message utip2p.Message
+	Message elap2p.Message
 }
 
 type dposNetwork struct {
@@ -44,6 +43,7 @@ type dposNetwork struct {
 	proposalDispatcher manager.ProposalDispatcher
 	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
+	store              blockchain.IDposStore
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -55,9 +55,9 @@ type dposNetwork struct {
 	illegalBlocksEvidence chan *types.DposIllegalBlocks
 }
 
-func (n *dposNetwork) Initialize(proposalDispatcher manager.ProposalDispatcher) {
-	n.proposalDispatcher = proposalDispatcher
-	if peers, err := blockchain.DefaultLedger.Store.GetDirectPeers(); err == nil {
+func (n *dposNetwork) Initialize(dnConfig manager.DposNetworkConfig) {
+	n.proposalDispatcher = dnConfig.ProposalDispatcher
+	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {
 		for _, p := range peers {
 			pid := peer.PID{}
 			copy(pid[:], p.PublicKey)
@@ -177,11 +177,11 @@ func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
 	return nil
 }
 
-func (n *dposNetwork) SendMessageToPeer(id peer.PID, msg utip2p.Message) error {
+func (n *dposNetwork) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
 	return n.p2pServer.SendMessageToPeer(id, msg)
 }
 
-func (n *dposNetwork) BroadcastMessage(msg utip2p.Message) {
+func (n *dposNetwork) BroadcastMessage(msg elap2p.Message) {
 	log.Info("[BroadcastMessage] current connected peers:", len(n.getValidPeers()))
 	n.p2pServer.BroadcastMessage(msg)
 }
@@ -268,7 +268,7 @@ func (n *dposNetwork) notifyFlag(flag p2p.NotifyFlag) {
 	}
 }
 
-func (n *dposNetwork) handleMessage(pid peer.PID, msg utip2p.Message) {
+func (n *dposNetwork) handleMessage(pid peer.PID, msg elap2p.Message) {
 	n.messageQueue <- &messageItem{pid, msg}
 }
 
@@ -300,8 +300,8 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnPong(msgItem.ID, uint32(msgPong.Nonce))
 		}
-	case utip2p.CmdBlock:
-		msgBlock, processed := m.(*utimsg.Block)
+	case elap2p.CmdBlock:
+		msgBlock, processed := m.(*elamsg.Block)
 		if processed {
 			if block, ok := msgBlock.Serializable.(*types.Block); ok {
 				n.listener.OnBlock(msgItem.ID, block)
@@ -371,7 +371,7 @@ func (n *dposNetwork) saveDirectPeers() {
 			Sequence:  v.Sequence,
 		})
 	}
-	blockchain.DefaultLedger.Store.SaveDirectPeers(peers)
+	n.store.SaveDirectPeers(peers)
 }
 
 func (n *dposNetwork) changeView() {
@@ -431,10 +431,10 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 	return network, nil
 }
 
-func makeEmptyMessage(cmd string) (message utip2p.Message, err error) {
+func makeEmptyMessage(cmd string) (message elap2p.Message, err error) {
 	switch cmd {
-	case utip2p.CmdBlock:
-		message = utimsg.NewBlock(&types.Block{})
+	case elap2p.CmdBlock:
+		message = elamsg.NewBlock(&types.Block{})
 	case msg.CmdAcceptVote:
 		message = &msg.Vote{Command: msg.CmdAcceptVote}
 	case msg.CmdReceivedProposal:

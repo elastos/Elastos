@@ -50,32 +50,6 @@ type persistConfirmTask struct {
 	reply   chan bool
 }
 
-type persistDutyChangedCountTask struct {
-	count uint32
-	reply chan bool
-}
-
-type persistCurrentArbitratorsTask struct {
-	arbiters *arbitrators
-	reply    chan bool
-}
-
-type persistNextArbitratorsTask struct {
-	arbiters *arbitrators
-	reply    chan bool
-}
-
-type DirectPeers struct {
-	PublicKey []byte
-	Address   string
-	Sequence  uint32
-}
-
-type persistDirectPeersTask struct {
-	peers []*DirectPeers
-	reply chan bool
-}
-
 type ChainStore struct {
 	IStore
 
@@ -140,26 +114,36 @@ func (c *ChainStore) loop() {
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block rollback exetime: %g", tcall)
-			case *persistDutyChangedCountTask:
-				c.handlePersistDposDutyChangedCount(task.count)
+			}
+
+		case closed := <-c.quit:
+			closed <- true
+			return
+		}
+	}
+}
+
+func (c *ChainStore) loop2() {
+	for {
+		select {
+		case t := <-c.taskCh:
+			now := time.Now()
+			switch task := t.(type) {
+			case *persistBlockTask:
+				c.handlePersistBlockTask(task.block)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
-			case *persistCurrentArbitratorsTask:
-				c.handlePersistCurrentArbiters(task.arbiters)
+				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
+			case *persistConfirmTask:
+				c.handlePersistConfirmTask(task.confirm)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist current arbiters exetime: %g", tcall)
-			case *persistNextArbitratorsTask:
-				c.handlePersistNextArbiters(task.arbiters)
+				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Hash.String())
+			case *rollbackBlockTask:
+				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist next arbiters exetime: %g", tcall)
-			case *persistDirectPeersTask:
-				c.handlePersistDirectPeers(task.peers)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist current arbiters exetime: %g", tcall)
+				log.Debugf("handle block rollback exetime: %g", tcall)
 			}
 
 		case closed := <-c.quit:

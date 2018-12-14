@@ -85,12 +85,7 @@ func Init(store IChainStore, versions interfaces.HeightVersions) error {
 	DefaultLedger.Blockchain = NewBlockchain(0)
 	DefaultLedger.Store = store
 	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
-	DefaultLedger.Arbitrators = NewArbitrators(ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
-		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
-	})
-	DefaultLedger.Blockchain.NewBlocksListeners = []interfaces.NewBlocksListener{DefaultLedger.Arbitrators}
+
 	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
 	if err != nil {
 		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")

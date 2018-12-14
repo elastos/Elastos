@@ -19,8 +19,9 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA/version/verconfig"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
 const (
@@ -98,7 +99,17 @@ func main() {
 		if err != nil {
 			goto ERROR
 		}
-		arbitrator, err = dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{EnableEventLog: true, EnableEventRecord: true})
+		dposStore, err := store.NewDposStore("Dpos")
+		if err != nil {
+			goto ERROR
+		}
+		defer dposStore.Disconnect()
+		arbitrator, err = dpos.NewArbitrator(pwd,
+			dpos.ArbitratorConfig{
+				EnableEventLog:    true,
+				EnableEventRecord: true,
+				Store:             dposStore,
+			})
 		if err != nil {
 			goto ERROR
 		}
