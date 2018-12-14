@@ -2,7 +2,9 @@ package store
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"testing"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 
@@ -19,6 +21,7 @@ func TestQue(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
+	defer que.Clear()
 
 	notifyIDs := make([]common.Uint256, 100)
 	txHashes := make([]common.Uint256, 100)
@@ -31,7 +34,11 @@ func TestQue(t *testing.T) {
 
 	idIndex := make(map[common.Uint256]common.Uint256)
 	for i, notifyID := range notifyIDs {
-		que.Put(&QueItem{NotifyId: notifyID, TxId: txHashes[i]})
+		item := QueItem{NotifyId: notifyID, TxId: txHashes[i]}
+		if i%2 == 1 {
+			item.LastNotify = item.LastNotify.Add(time.Second)
+		}
+		que.Put(&item)
 		idIndex[notifyIDs[i]] = txHashes[i]
 	}
 
@@ -52,16 +59,27 @@ func TestQue(t *testing.T) {
 		}
 	}
 
-	height0 := make([]byte, 4)
+	var defaultTime time.Time
+	data0 := make([]byte, 12)
+	data1 := make([]byte, 12)
+	binary.BigEndian.PutUint64(data0[4:], uint64(defaultTime.Unix()))
+	binary.BigEndian.PutUint64(data1[4:], uint64(defaultTime.Add(time.Second).Unix()))
 	for i, notifyID := range notifyIDs {
 		value := append(notifyID[:], txHashes[i][:]...)
-		height, err := que.db.Get(toKey(BKTQue, value...), nil)
+		data, err := que.db.Get(toKey(BKTQue, value...), nil)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
-		if !assert.Equal(t, height0, height) {
-			t.FailNow()
+		if i%2 == 0 {
+			if !assert.Equal(t, data0, data) {
+				t.FailNow()
+			}
+		} else {
+			if !assert.Equal(t, data1, data) {
+				t.FailNow()
+			}
 		}
+
 	}
 
 	for i, notifyID := range notifyIDs {

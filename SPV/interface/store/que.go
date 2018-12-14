@@ -1,11 +1,12 @@
 package store
 
 import (
+	"bytes"
 	"encoding/binary"
 	"sync"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
@@ -34,11 +35,12 @@ func (q *que) Put(item *QueItem) error {
 	defer q.Unlock()
 
 	batch := new(leveldb.Batch)
-	var height [4]byte
-	binary.BigEndian.PutUint32(height[:], item.Height)
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.BigEndian, item.Height)
 	value := append(item.NotifyId[:], item.TxId[:]...)
-	batch.Put(toKey(BKTQue, value...), height[:])
-	batch.Put(toKey(BKTQueIdx, append(height[:], value...)...), empty)
+	batch.Put(toKey(BKTQueIdx, append(buf.Bytes(), value...)...), empty)
+	binary.Write(buf, binary.BigEndian, item.LastNotify.Unix())
+	batch.Put(toKey(BKTQue, value...), buf.Bytes())
 	return q.db.Write(batch, nil)
 }
 
@@ -51,10 +53,14 @@ func (q *que) GetAll() (items []*QueItem, err error) {
 	defer it.Release()
 	for it.Next() {
 		var item QueItem
+		var lastNotify int64
 		value := subKey(BKTQue, it.Key())
 		copy(item.NotifyId[:], value[:32])
 		copy(item.TxId[:], value[32:])
-		item.Height = binary.BigEndian.Uint32(it.Value())
+		buf := bytes.NewReader(it.Value())
+		binary.Read(buf, binary.BigEndian, &item.Height)
+		binary.Read(buf, binary.BigEndian, &lastNotify)
+		item.LastNotify = time.Unix(lastNotify, 0)
 		items = append(items, &item)
 	}
 	return items, nil
