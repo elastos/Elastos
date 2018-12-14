@@ -71,6 +71,30 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 	return a.NextCandidates
 }
 
+func (a *ArbitratorsMock) GetDutyChangedCount() uint32 {
+	return a.DutyChangedCount
+}
+
+func (a *ArbitratorsMock) SetDutyChangedCount(count uint32) {
+	a.DutyChangedCount = count
+}
+
+func (a *ArbitratorsMock) SetArbitrators(ar [][]byte) {
+	a.CurrentArbitrators = ar
+}
+
+func (a *ArbitratorsMock) SetCandidates(ca [][]byte) {
+	a.CurrentCandidates = ca
+}
+
+func (a *ArbitratorsMock) SetNextArbitrators(ar [][]byte) {
+	a.NextArbitrators = ar
+}
+
+func (a *ArbitratorsMock) SetNextCandidates(ca [][]byte) {
+	a.NextCandidates = ca
+}
+
 func (a *ArbitratorsMock) GetArbitratorsProgramHashes() []*common.Uint168 {
 	return a.CurrentArbitratorsPrograms
 }

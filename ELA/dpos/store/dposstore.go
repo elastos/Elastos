@@ -4,85 +4,103 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type LevelDBOperator struct {
+type persistTask interface{}
+
+type DposStore struct {
 	Database
 
-	dbFilePath string
+	taskCh chan persistTask
+
+	wg   sync.WaitGroup
+	quit chan struct{}
 }
 
-func (s *LevelDBOperator) InitConnection(connParams ...interface{}) error {
+func NewDposStore(filePath string) (blockchain.IDposStore, error) {
+	store := &DposStore{}
+	if err := store.InitConnection(filePath); err != nil {
+		return nil, err
+	}
+
+	store.StartRecordEvent()
+	store.StartRecordArbitrators()
+
+	return store, nil
+}
+
+func (s *DposStore) InitConnection(connParams ...interface{}) error {
 	filePath, ok := connParams[0].(string)
 	if !ok {
 		return errors.New("[InitConnection] Invalid sql db file path.")
 	}
 
-	s.dbFilePath = filePath
-
-	return nil
-}
-
-func (s *LevelDBOperator) Connect() error {
-	db, err := NewLevelDB(s.dbFilePath)
+	db, err := NewLevelDB(filePath)
 	if err != nil {
-		return err
+		return errors.New("[InitConnection] database connect failed.")
 	}
 
 	s.Database = db
+	s.taskCh = make(chan persistTask, MaxEvnetTaskNumber)
+	s.quit = make(chan struct{}, 1)
+
 	return nil
 }
 
-func (s *LevelDBOperator) Disconnect() error {
+func (s *DposStore) Disconnect() error {
+	close(s.quit)
+	s.wg.Wait()
 	s.Close()
 	return nil
 }
 
-func (s *LevelDBOperator) Create(table *DBTable) error {
+func (s *DposStore) Create(table *blockchain.DBTable) error {
 	buf := new(bytes.Buffer)
 	if err := table.Serialize(buf); err != nil {
 		return err
 	}
 
-	key := getTableKey(table.Name)
+	key := blockchain.GetTableKey(table.Name)
 	_, err := s.Get(key)
 	if err == nil {
 		return fmt.Errorf("already exist table: %s", table.Name)
 	}
 
-	if err := s.Put(getTableIDKey(table.Name), uint64ToBytes(uint64(0))); err != nil {
+	if err := s.Put(blockchain.GetTableIDKey(table.Name), blockchain.Uint64ToBytes(uint64(0))); err != nil {
 		return err
 	}
 
 	return s.Put(key, buf.Bytes())
 }
 
-func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error) {
+func (s *DposStore) Insert(table *blockchain.DBTable, fields []*blockchain.Field) (uint64, error) {
 	batch := s.NewBatch()
 	tableName := table.Name
 
 	// key: tableName_rowID
 	// value: [colvalue1, colvalue2, colvalue3, ...]
-	idBytes, err := s.Get(getTableIDKey(table.Name))
+	idBytes, err := s.Get(blockchain.GetTableIDKey(table.Name))
 	if err != nil {
 		return 0, err
 	}
-	id := bytesToUint64(idBytes)
+	id := blockchain.BytesToUint64(idBytes)
 	rowID := id + 1
 	data, err := table.Data(fields)
 	if err != nil {
 		return 0, err
 	}
-	batch.Put(getRowKey(tableName, rowID), data)
+	batch.Put(blockchain.GetRowKey(tableName, rowID), data)
 
 	for _, f := range fields {
 		col := table.Column(f.Name)
 		if col == table.PrimaryKey {
 			buf := new(bytes.Buffer)
 			common.WriteUint64(buf, rowID)
-			key := getIndexKey(tableName, table.PrimaryKey, f.Data())
+			key := blockchain.GetIndexKey(tableName, table.PrimaryKey, f.Data())
 			if _, err := s.Get(key); err == nil {
 				return 0, errors.New("duplicated primary")
 			}
@@ -92,11 +110,11 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 		}
 		for _, index := range table.Indexes {
 			if col == index {
-				key := getIndexKey(tableName, col, f.Data())
+				key := blockchain.GetIndexKey(tableName, col, f.Data())
 				var indexes []uint64
 				indexData, err := s.Get(key)
 				if err == nil {
-					indexes, err = bytesToUint64List(indexData)
+					indexes, err = blockchain.BytesToUint64List(indexData)
 					if err != nil {
 						return 0, err
 					}
@@ -104,7 +122,7 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 				indexes = append(indexes, rowID)
 				// key: tableName_IndexID_ColumnValue
 				// value: [rowID1,rowID2,rowID3,...]
-				indexListBytes, err := uint64ListToBytes(indexes)
+				indexListBytes, err := blockchain.Uint64ListToBytes(indexes)
 				if err != nil {
 					return 0, err
 				}
@@ -114,14 +132,14 @@ func (s *LevelDBOperator) Insert(table *DBTable, fields []*Field) (uint64, error
 	}
 
 	// update id
-	batch.Put(getTableIDKey(table.Name), uint64ToBytes(rowID))
+	batch.Put(blockchain.GetTableIDKey(table.Name), blockchain.Uint64ToBytes(rowID))
 	if err := batch.Commit(); err != nil {
 		return 0, err
 	}
 	return rowID, nil
 }
 
-func (s *LevelDBOperator) Select(table *DBTable, inputFields []*Field) ([][]*Field, error) {
+func (s *DposStore) Select(table *blockchain.DBTable, inputFields []*blockchain.Field) ([][]*blockchain.Field, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -130,7 +148,7 @@ func (s *LevelDBOperator) Select(table *DBTable, inputFields []*Field) ([][]*Fie
 	return s.selectValuesFromRowIDs(table, ids)
 }
 
-func (s *LevelDBOperator) SelectID(table *DBTable, inputFields []*Field) ([]uint64, error) {
+func (s *DposStore) SelectID(table *blockchain.DBTable, inputFields []*blockchain.Field) ([]uint64, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -138,10 +156,10 @@ func (s *LevelDBOperator) SelectID(table *DBTable, inputFields []*Field) ([]uint
 	return ids, nil
 }
 
-func (s *LevelDBOperator) selectValuesFromRowIDs(table *DBTable, rowIDs []uint64) ([][]*Field, error) {
-	var result [][]*Field
+func (s *DposStore) selectValuesFromRowIDs(table *blockchain.DBTable, rowIDs []uint64) ([][]*blockchain.Field, error) {
+	var result [][]*blockchain.Field
 	for _, rowID := range rowIDs {
-		columnsData, err := s.Get(getRowKey(table.Name, rowID))
+		columnsData, err := s.Get(blockchain.GetRowKey(table.Name, rowID))
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +173,7 @@ func (s *LevelDBOperator) selectValuesFromRowIDs(table *DBTable, rowIDs []uint64
 	return result, nil
 }
 
-func (s *LevelDBOperator) selectRowIDs(table *DBTable, inputFields []*Field) ([]uint64, error) {
+func (s *DposStore) selectRowIDs(table *blockchain.DBTable, inputFields []*blockchain.Field) ([]uint64, error) {
 	idsCount := make(map[uint64]uint32)
 	for _, f := range inputFields {
 		rowIDs, err := s.selectRowsByField(table, f)
@@ -177,23 +195,23 @@ func (s *LevelDBOperator) selectRowIDs(table *DBTable, inputFields []*Field) ([]
 
 // because if one field is neither primary key nor index key, requires full table lookup
 // only sport select from primary key or index column
-func (s *LevelDBOperator) selectRowsByField(table *DBTable, inputField *Field) ([]uint64, error) {
+func (s *DposStore) selectRowsByField(table *blockchain.DBTable, inputField *blockchain.Field) ([]uint64, error) {
 	col := table.Column(inputField.Name)
 	if col == table.PrimaryKey {
-		rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
+		rowIDBytes, err := s.Get(blockchain.GetIndexKey(table.Name, col, inputField.Data()))
 		if err != nil {
 			return nil, err
 		}
-		rowID := bytesToUint64(rowIDBytes)
+		rowID := blockchain.BytesToUint64(rowIDBytes)
 		return []uint64{rowID}, nil
 	}
 	for _, index := range table.Indexes {
 		if col == index {
-			rowIDBytes, err := s.Get(getIndexKey(table.Name, col, inputField.Data()))
+			rowIDBytes, err := s.Get(blockchain.GetIndexKey(table.Name, col, inputField.Data()))
 			if err != nil {
 				return nil, err
 			}
-			rowIDs, err := bytesToUint64List(rowIDBytes)
+			rowIDs, err := blockchain.BytesToUint64List(rowIDBytes)
 			if err != nil {
 				return nil, err
 			}
@@ -203,7 +221,7 @@ func (s *LevelDBOperator) selectRowsByField(table *DBTable, inputField *Field) (
 	return nil, errors.New("not found in table")
 }
 
-func (s *LevelDBOperator) Update(table *DBTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
+func (s *DposStore) Update(table *blockchain.DBTable, inputFields []*blockchain.Field, updateFields []*blockchain.Field) ([]uint64, error) {
 	batch := s.NewBatch()
 	if err := s.checkUpdateFields(table, updateFields); err != nil {
 		return nil, err
@@ -225,11 +243,11 @@ func (s *LevelDBOperator) Update(table *DBTable, inputFields []*Field, updateFie
 	return ids, nil
 }
 
-func (s *LevelDBOperator) checkUpdateFields(table *DBTable, updateFields []*Field) error {
+func (s *DposStore) checkUpdateFields(table *blockchain.DBTable, updateFields []*blockchain.Field) error {
 	// check updateFields include exist primary key value
 	for _, f := range updateFields {
 		if table.Column(f.Name) == table.PrimaryKey {
-			if _, err := s.Get(getIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
+			if _, err := s.Get(blockchain.GetIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
 				return err
 			}
 		}
@@ -238,7 +256,7 @@ func (s *LevelDBOperator) checkUpdateFields(table *DBTable, updateFields []*Fiel
 	return nil
 }
 
-func (s *LevelDBOperator) updateRow(batch Batch, table *DBTable, rowID uint64, updateFields []*Field) error {
+func (s *DposStore) updateRow(batch Batch, table *blockchain.DBTable, rowID uint64, updateFields []*blockchain.Field) error {
 	oldFields, err := s.getFieldsByRowID(table, rowID)
 	if err != nil {
 		return err
@@ -274,9 +292,9 @@ func (s *LevelDBOperator) updateRow(batch Batch, table *DBTable, rowID uint64, u
 	return nil
 }
 
-func (s *LevelDBOperator) updateRowData(batch Batch, table *DBTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
+func (s *DposStore) updateRowData(batch Batch, table *blockchain.DBTable, oldFields []*blockchain.Field, updateFields []*blockchain.Field, rowID uint64) error {
 	// update row data
-	newFieldMap := make(map[string]*Field)
+	newFieldMap := make(map[string]*blockchain.Field)
 	for _, f := range oldFields {
 		newFieldMap[f.Name] = f
 	}
@@ -284,7 +302,7 @@ func (s *LevelDBOperator) updateRowData(batch Batch, table *DBTable, oldFields [
 		newFieldMap[f.Name] = f
 	}
 
-	var newFields []*Field
+	var newFields []*blockchain.Field
 	for _, v := range newFieldMap {
 		newFields = append(newFields, v)
 	}
@@ -293,32 +311,32 @@ func (s *LevelDBOperator) updateRowData(batch Batch, table *DBTable, oldFields [
 	if err != nil {
 		return err
 	}
-	batch.Put(getRowKey(table.Name, rowID), data)
+	batch.Put(blockchain.GetRowKey(table.Name, rowID), data)
 	return nil
 }
 
-func (s *LevelDBOperator) updatePrimaryKeyValue(batch Batch, table *DBTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
+func (s *DposStore) updatePrimaryKeyValue(batch Batch, table *blockchain.DBTable, oldFields []*blockchain.Field, rowID uint64, column uint64, newData []byte) error {
 	var data []byte
 	for _, field := range oldFields {
 		if table.Column(field.Name) == table.PrimaryKey {
 			data = field.Data()
 		}
 	}
-	oldIndexKey := getIndexKey(table.Name, column, data)
+	oldIndexKey := blockchain.GetIndexKey(table.Name, column, data)
 	batch.Delete(oldIndexKey)
-	newIndexKey := getIndexKey(table.Name, column, newData)
-	batch.Put(newIndexKey, uint64ToBytes(rowID))
+	newIndexKey := blockchain.GetIndexKey(table.Name, column, newData)
+	batch.Put(newIndexKey, blockchain.Uint64ToBytes(rowID))
 	return nil
 }
 
-func (s *LevelDBOperator) updateIndexKeyValue(batch Batch, table *DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
+func (s *DposStore) updateIndexKeyValue(batch Batch, table *blockchain.DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
 	// if exist index column before, need update old record
-	oldIndexKey := getIndexKey(table.Name, column, oldData)
+	oldIndexKey := blockchain.GetIndexKey(table.Name, column, oldData)
 	rowIDBytes, err := s.Get(oldIndexKey)
 	if err != nil {
 		return err
 	}
-	rowIDs, err := bytesToUint64List(rowIDBytes)
+	rowIDs, err := blockchain.BytesToUint64List(rowIDBytes)
 	if err != nil {
 		return err
 	}
@@ -331,7 +349,7 @@ func (s *LevelDBOperator) updateIndexKeyValue(batch Batch, table *DBTable, rowID
 				newRowIDs = append(newRowIDs, r)
 			}
 		}
-		rowIDsListBytes, err := uint64ListToBytes(newRowIDs)
+		rowIDsListBytes, err := blockchain.Uint64ListToBytes(newRowIDs)
 		if err != nil {
 			return err
 		}
@@ -339,15 +357,15 @@ func (s *LevelDBOperator) updateIndexKeyValue(batch Batch, table *DBTable, rowID
 	}
 
 	// update or add new record
-	newIndexKey := getIndexKey(table.Name, column, newData)
+	newIndexKey := blockchain.GetIndexKey(table.Name, column, newData)
 	newRowIDBytes, err := s.Get(newIndexKey)
 	if err == nil {
-		rowIDs, err := bytesToUint64List(rowIDBytes)
+		rowIDs, err := blockchain.BytesToUint64List(rowIDBytes)
 		if err != nil {
 			return err
 		}
 		rowIDs = append(rowIDs, rowID)
-		rowIDsListBytes, err := uint64ListToBytes(rowIDs)
+		rowIDsListBytes, err := blockchain.Uint64ListToBytes(rowIDs)
 		if err != nil {
 			return err
 		}
@@ -358,8 +376,8 @@ func (s *LevelDBOperator) updateIndexKeyValue(batch Batch, table *DBTable, rowID
 	return nil
 }
 
-func (s *LevelDBOperator) getFieldsByRowID(table *DBTable, rowID uint64) ([]*Field, error) {
-	columnsData, err := s.Get(getRowKey(table.Name, rowID))
+func (s *DposStore) getFieldsByRowID(table *blockchain.DBTable, rowID uint64) ([]*blockchain.Field, error) {
+	columnsData, err := s.Get(blockchain.GetRowKey(table.Name, rowID))
 	if err != nil {
 		return nil, fmt.Errorf("not found row id")
 	}

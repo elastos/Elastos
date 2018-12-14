@@ -2,15 +2,17 @@ package store
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var ConsensusEventTable = &DBTable{
+var ConsensusEventTable = &blockchain.DBTable{
 	Name:       "ConsensusEvent",
 	PrimaryKey: 4,
 	Indexes:    []uint64{3},
@@ -22,7 +24,7 @@ var ConsensusEventTable = &DBTable{
 	},
 }
 
-var ProposalEventTable = &DBTable{
+var ProposalEventTable = &blockchain.DBTable{
 	Name:       "ProposalEvent",
 	PrimaryKey: 7,
 	Indexes:    []uint64{1, 2, 6},
@@ -37,7 +39,7 @@ var ProposalEventTable = &DBTable{
 	},
 }
 
-var VoteEventTable = &DBTable{
+var VoteEventTable = &blockchain.DBTable{
 	Name:       "VoteEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -50,7 +52,7 @@ var VoteEventTable = &DBTable{
 	},
 }
 
-var ViewEventTable = &DBTable{
+var ViewEventTable = &blockchain.DBTable{
 	Name:       "ViewEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -63,50 +65,43 @@ var ViewEventTable = &DBTable{
 }
 
 const (
-	DBFilePath         = "DposEvent"
 	MaxEvnetTaskNumber = 10000
 )
 
-type persistTask interface{}
-
 type addConsensusEventTask struct {
-	event *ConsensusEvent
+	event *log.ConsensusEvent
 	reply chan bool
 }
 
 type updateConsensusEventTask struct {
-	event *ConsensusEvent
+	event *log.ConsensusEvent
 	reply chan bool
 }
 
 type addProposalEventTask struct {
-	event *ProposalEvent
+	event *log.ProposalEvent
 	reply chan bool
 }
 
 type updateProposalEventTask struct {
-	event *ProposalEvent
+	event *log.ProposalEvent
 	reply chan bool
 }
 
 type addVoteEventTask struct {
-	event *VoteEvent
+	event *log.VoteEvent
 	reply chan bool
 }
 
 type addViewEventTask struct {
-	event *ViewEvent
+	event *log.ViewEvent
 	reply chan bool
 }
 
-type EventStore struct {
-	dbOperator DBOperator
+func (s *DposStore) eventLoop() {
+	s.wg.Add(1)
 
-	taskCh chan persistTask
-	quit   chan chan bool
-}
-
-func (s *EventStore) loop() {
+out:
 	for {
 		select {
 		case t := <-s.taskCh:
@@ -116,171 +111,175 @@ func (s *EventStore) loop() {
 				s.handleAddConsensusEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle add consensus event task exetime: %g", tcall)
+				log.Debugf("handle add consensus event task exetime: %g", tcall)
 			case *updateConsensusEventTask:
 				s.handleUpdateConsensusEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle update consensus event task exetime: %g", tcall)
+				log.Debugf("handle update consensus event task exetime: %g", tcall)
 			case *addProposalEventTask:
 				s.handleAddProposalEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle add proposal event task exetime: %g", tcall)
+				log.Debugf("handle add proposal event task exetime: %g", tcall)
 			case *updateProposalEventTask:
 				s.handleUpdateProposalEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle update proposal event task exetime: %g", tcall)
+				log.Debugf("handle update proposal event task exetime: %g", tcall)
 			case *addVoteEventTask:
 				s.handleVoteProposalEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle add vote event task exetime: %g", tcall)
+				log.Debugf("handle add vote event task exetime: %g", tcall)
 			case *addViewEventTask:
 				s.handleViewProposalEvent(task.event)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				Debugf("handle add view event task exetime: %g", tcall)
+				log.Debugf("handle add view event task exetime: %g", tcall)
 			}
 
-		case closed := <-s.quit:
-			closed <- true
-			return
+		case <-s.quit:
+			break out
 		}
 	}
+
+	s.wg.Done()
 }
 
-func (s *EventStore) handleAddConsensusEvent(cons *ConsensusEvent) {
+func (s *DposStore) handleAddConsensusEvent(cons *log.ConsensusEvent) {
 	rowID, err := s.addConsensusEvent(cons)
 	if err != nil {
-		Error("add consensus event failed:", err.Error())
+		log.Error("add consensus event failed:", err.Error())
 	}
-	Info("add consensus event succeed row id:", rowID)
+	log.Info("add consensus event succeed row id:", rowID)
 }
 
-func (s *EventStore) handleUpdateConsensusEvent(cons *ConsensusEvent) {
+func (s *DposStore) handleUpdateConsensusEvent(cons *log.ConsensusEvent) {
 	_, err := s.updateConsensusEvent(cons)
 	if err != nil {
-		Error("update consensus event failed:", err.Error())
+		log.Error("update consensus event failed:", err.Error())
 	}
 }
 
-func (s *EventStore) handleAddProposalEvent(prop *ProposalEvent) {
+func (s *DposStore) handleAddProposalEvent(prop *log.ProposalEvent) {
 	rowID, err := s.addProposalEvent(prop)
 	if err != nil {
-		Error("add proposal event failed:", err.Error())
+		log.Error("add proposal event failed:", err.Error())
 	}
-	Info("add proposal event succeed at row id:", rowID)
+	log.Info("add proposal event succeed at row id:", rowID)
 }
 
-func (s *EventStore) handleUpdateProposalEvent(prop *ProposalEvent) {
+func (s *DposStore) handleUpdateProposalEvent(prop *log.ProposalEvent) {
 	_, err := s.updateProposalEvent(prop)
 	if err != nil {
-		Error("update proposal event failed:", err.Error())
+		log.Error("update proposal event failed:", err.Error())
 	}
 }
 
-func (s *EventStore) handleVoteProposalEvent(vote *VoteEvent) {
+func (s *DposStore) handleVoteProposalEvent(vote *log.VoteEvent) {
 	rowID, err := s.addVoteEvent(vote)
 	if err != nil {
-		Error("add vote event failed:", err.Error())
+		log.Error("add vote event failed:", err.Error())
 	}
-	Info("add vote event succeed at row id:", rowID)
+	log.Info("add vote event succeed at row id:", rowID)
 }
 
-func (s *EventStore) handleViewProposalEvent(view *ViewEvent) {
+func (s *DposStore) handleViewProposalEvent(view *log.ViewEvent) {
 	rowID, err := s.addViewEvent(view)
 	if err != nil {
-		Error("add view event failed:", err.Error())
+		log.Error("add view event failed:", err.Error())
 	}
-	Info("add view event succeed at row id:", rowID)
+	log.Info("add view event succeed at row id:", rowID)
 }
 
-func (s *EventStore) Open() error {
-	err := s.dbOperator.InitConnection(DBFilePath)
+func (s *DposStore) StartRecordEvent() error {
+	err := s.createConsensusEventTable()
 	if err != nil {
-		return err
-	}
-	err = s.dbOperator.Connect()
-	if err != nil {
-		return fmt.Errorf("database connect failed: %s", err.Error())
-	}
-	err = s.createConsensusEventTable()
-	if err != nil {
-		Debug("create ConsensusEvent table Connect failed:", err.Error())
+		log.Debug("create ConsensusEvent table Connect failed:", err.Error())
 	}
 	err = s.createProposalEventTable()
 	if err != nil {
-		Debug("create ProposalEvent table failed:", err.Error())
+		log.Debug("create ProposalEvent table failed:", err.Error())
 	}
 	err = s.createVoteEventTable()
 	if err != nil {
-		Debug("create VoteEvent table failed:", err.Error())
+		log.Debug("create VoteEvent table failed:", err.Error())
 	}
 	err = s.createViewEventTable()
 	if err != nil {
-		Debug("create ViewEvent table failed:", err.Error())
+		log.Debug("create ViewEvent table failed:", err.Error())
 	}
 
-	s.taskCh = make(chan persistTask, MaxEvnetTaskNumber)
-	s.quit = make(chan chan bool, 1)
-
-	go s.loop()
+	go s.eventLoop()
 
 	return nil
 }
 
-func (s *EventStore) Close() error {
-	closed := make(chan bool)
-	s.quit <- closed
-	<-closed
-	return s.dbOperator.Disconnect()
-}
-
-func (s *EventStore) createConsensusEventTable() error {
-	result := s.dbOperator.Create(ConsensusEventTable)
+func (s *DposStore) createConsensusEventTable() error {
+	result := s.Create(ConsensusEventTable)
 	return result
 }
 
-func (s *EventStore) AddConsensusEvent(cons *ConsensusEvent) {
+func (s *DposStore) AddConsensusEvent(event interface{}) error {
+	e, ok := event.(*log.ConsensusEvent)
+	if !ok {
+		return errors.New("[AddProposalEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &addConsensusEventTask{event: cons, reply: reply}
+	s.taskCh <- &addConsensusEventTask{event: e, reply: reply}
 	<-reply
+
+	return nil
 }
 
-func (s *EventStore) addConsensusEvent(cons *ConsensusEvent) (uint64, error) {
-	return s.dbOperator.Insert(ConsensusEventTable, []*Field{
+func (s *DposStore) addConsensusEvent(cons *log.ConsensusEvent) (uint64, error) {
+	return s.Insert(ConsensusEventTable, []*blockchain.Field{
 		{"StartTime", cons.StartTime.UnixNano()},
 		{"Height", cons.Height},
 		{"RawData", cons.RawData},
 	})
 }
 
-func (s *EventStore) UpdateConsensusEvent(cons *ConsensusEvent) {
+func (s *DposStore) UpdateConsensusEvent(event interface{}) error {
+	e, ok := event.(*log.ConsensusEvent)
+	if !ok {
+		return errors.New("[AddProposalEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &updateConsensusEventTask{event: cons, reply: reply}
+	s.taskCh <- &updateConsensusEventTask{event: e, reply: reply}
 	<-reply
+
+	return nil
 }
 
-func (s *EventStore) updateConsensusEvent(cons *ConsensusEvent) ([]uint64, error) {
-	return s.dbOperator.Update(ConsensusEventTable, []*Field{
-		{"Height", cons.Height}}, []*Field{
+func (s *DposStore) updateConsensusEvent(cons *log.ConsensusEvent) ([]uint64, error) {
+	return s.Update(ConsensusEventTable, []*blockchain.Field{
+		{"Height", cons.Height}}, []*blockchain.Field{
 		{"EndTime", cons.EndTime.UnixNano()}})
 }
 
-func (s *EventStore) createProposalEventTable() error {
-	return s.dbOperator.Create(ProposalEventTable)
+func (s *DposStore) createProposalEventTable() error {
+	return s.Create(ProposalEventTable)
 }
 
-func (s *EventStore) AddProposalEvent(event *ProposalEvent) {
+func (s *DposStore) AddProposalEvent(event interface{}) error {
+	e, ok := event.(*log.ProposalEvent)
+	if !ok {
+		return errors.New("[AddProposalEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &addProposalEventTask{event: event, reply: reply}
+	s.taskCh <- &addProposalEventTask{event: e, reply: reply}
 	<-reply
+
+	return nil
 }
 
-func (s *EventStore) addProposalEvent(event *ProposalEvent) (uint64, error) {
-	return s.dbOperator.Insert(ProposalEventTable, []*Field{
+func (s *DposStore) addProposalEvent(event *log.ProposalEvent) (uint64, error) {
+	return s.Insert(ProposalEventTable, []*blockchain.Field{
 		{"Proposal", event.Proposal},
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
@@ -289,42 +288,56 @@ func (s *EventStore) addProposalEvent(event *ProposalEvent) (uint64, error) {
 		{"RawData", event.RawData},
 	})
 }
-func (s *EventStore) UpdateProposalEvent(event *ProposalEvent) {
+func (s *DposStore) UpdateProposalEvent(event interface{}) error {
+	e, ok := event.(*log.ProposalEvent)
+	if !ok {
+		return errors.New("[UpdateProposalEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &updateProposalEventTask{event: event, reply: reply}
+	s.taskCh <- &updateProposalEventTask{event: e, reply: reply}
 	<-reply
+
+	return nil
 }
 
-func (s *EventStore) updateProposalEvent(event *ProposalEvent) ([]uint64, error) {
-	return s.dbOperator.Update(ProposalEventTable, []*Field{
+func (s *DposStore) updateProposalEvent(event *log.ProposalEvent) ([]uint64, error) {
+	return s.Update(ProposalEventTable, []*blockchain.Field{
 		{"Proposal", event.Proposal},
 		{"BlockHash", event.BlockHash.Bytes()},
-	}, []*Field{
+	}, []*blockchain.Field{
 		{"EndTime", event.EndTime.UnixNano()},
 		{"Result", event.Result},
 	})
 }
 
-func (s *EventStore) createVoteEventTable() error {
-	result := s.dbOperator.Create(VoteEventTable)
+func (s *DposStore) createVoteEventTable() error {
+	result := s.Create(VoteEventTable)
 	return result
 }
 
-func (s *EventStore) AddVoteEvent(event *VoteEvent) {
+func (s *DposStore) AddVoteEvent(event interface{}) error {
+	e, ok := event.(*log.VoteEvent)
+	if !ok {
+		return errors.New("[AddVoteEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &addVoteEventTask{event: event, reply: reply}
+	s.taskCh <- &addVoteEventTask{event: e, reply: reply}
 	<-reply
+
+	return nil
 }
 
-func (s *EventStore) addVoteEvent(event *VoteEvent) (uint64, error) {
+func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
 	vote := &types.DPosProposalVote{}
 	err := vote.Deserialize(bytes.NewReader(event.RawData))
 	if err != nil {
 		return 0, err
 	}
 	var proposalId uint64
-	rowIDs, err := s.dbOperator.SelectID(ProposalEventTable, []*Field{
-		&Field{"ProposalHash", vote.ProposalHash},
+	rowIDs, err := s.SelectID(ProposalEventTable, []*blockchain.Field{
+		{"ProposalHash", vote.ProposalHash},
 	})
 	if err != nil || len(rowIDs) != 1 {
 		proposalId = math.MaxInt64
@@ -333,30 +346,36 @@ func (s *EventStore) addVoteEvent(event *VoteEvent) (uint64, error) {
 	}
 
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
-	return s.dbOperator.Insert(VoteEventTable, []*Field{
-		&Field{"ProposalID", proposalId},
-		&Field{"Signer", event.Signer},
-		&Field{"ReceivedTime", event.ReceivedTime.UnixNano()},
-		&Field{"Result", event.Result},
-		&Field{"RawData", event.RawData},
+	return s.Insert(VoteEventTable, []*blockchain.Field{
+		{"ProposalID", proposalId},
+		{"Signer", event.Signer},
+		{"ReceivedTime", event.ReceivedTime.UnixNano()},
+		{"Result", event.Result},
+		{"RawData", event.RawData},
 	})
 }
 
-func (s *EventStore) createViewEventTable() error {
-	result := s.dbOperator.Create(ViewEventTable)
+func (s *DposStore) createViewEventTable() error {
+	result := s.Create(ViewEventTable)
 	return result
 }
 
-func (s *EventStore) AddViewEvent(event *ViewEvent) {
+func (s *DposStore) AddViewEvent(event interface{}) error {
+	e, ok := event.(*log.ViewEvent)
+	if !ok {
+		return errors.New("[AddViewEvent] invalid proposal event")
+	}
+
 	reply := make(chan bool)
-	s.taskCh <- &addViewEventTask{event: event, reply: reply}
+	s.taskCh <- &addViewEventTask{event: e, reply: reply}
 	<-reply
+	return nil
 }
 
-func (s *EventStore) addViewEvent(event *ViewEvent) (uint64, error) {
+func (s *DposStore) addViewEvent(event *log.ViewEvent) (uint64, error) {
 	var consensusId uint64
-	rowIDs, err := s.dbOperator.SelectID(ConsensusEventTable, []*Field{
-		&Field{"Height", event.Height},
+	rowIDs, err := s.SelectID(ConsensusEventTable, []*blockchain.Field{
+		{"Height", event.Height},
 	})
 	if err != nil || len(rowIDs) != 1 {
 		consensusId = math.MaxInt64
@@ -364,10 +383,10 @@ func (s *EventStore) addViewEvent(event *ViewEvent) (uint64, error) {
 		consensusId = rowIDs[0]
 	}
 
-	return s.dbOperator.Insert(ViewEventTable, []*Field{
-		&Field{"ConsensusID", consensusId},
-		&Field{"OnDutyArbitrator", event.OnDutyArbitrator},
-		&Field{"StartTime", event.StartTime.UnixNano()},
-		&Field{"Offset", event.Offset},
+	return s.Insert(ViewEventTable, []*blockchain.Field{
+		{"ConsensusID", consensusId},
+		{"OnDutyArbitrator", event.OnDutyArbitrator},
+		{"StartTime", event.StartTime.UnixNano()},
+		{"Offset", event.Offset},
 	})
 }

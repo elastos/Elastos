@@ -1,4 +1,4 @@
-package store
+package blockchain
 
 import (
 	"bytes"
@@ -195,6 +195,16 @@ func (d *DBTable) GetFields(data []byte) ([]*Field, error) {
 		})
 	}
 	return result, nil
+}
+
+// column range from 1 to len(table.Fields), if a field name not found in table will return 0
+func (d *DBTable) Column(fieldName string) uint64 {
+	for i, f := range d.Fields {
+		if f == fieldName {
+			return uint64(i) + 1
+		}
+	}
+	return 0
 }
 
 func writeElements(buf *bytes.Buffer, element interface{}) error {
@@ -413,17 +423,7 @@ func readVarInt(r io.Reader) (int64, error) {
 	return int64(value) * neg, nil
 }
 
-// column range from 1 to len(table.Fields), if a field name not found in table will return 0
-func (d *DBTable) Column(fieldName string) uint64 {
-	for i, f := range d.Fields {
-		if f == fieldName {
-			return uint64(i) + 1
-		}
-	}
-	return 0
-}
-
-func getTableKey(tableName string) []byte {
+func GetTableKey(tableName string) []byte {
 	// tablePrefix_indexPrefixSep_tableName
 	buf := new(bytes.Buffer)
 	buf.Write(tablePrefix)
@@ -434,7 +434,7 @@ func getTableKey(tableName string) []byte {
 	return buf.Bytes()
 }
 
-func getTableIDKey(tableName string) []byte {
+func GetTableIDKey(tableName string) []byte {
 	// return tablePrefix_indexPrefixSep_idPrefix_tableName
 	buf := new(bytes.Buffer)
 	buf.Write(tablePrefix)
@@ -447,7 +447,7 @@ func getTableIDKey(tableName string) []byte {
 	return buf.Bytes()
 }
 
-func getRowKey(tableName string, rowID uint64) []byte {
+func GetRowKey(tableName string, rowID uint64) []byte {
 	// return tablePrefix_indexPrefixSep_tableName_rowID
 	buf := new(bytes.Buffer)
 	buf.Write(tablePrefix)
@@ -460,7 +460,7 @@ func getRowKey(tableName string, rowID uint64) []byte {
 	return buf.Bytes()
 }
 
-func getIndexKey(tableName string, index uint64, columnValue []byte) []byte {
+func GetIndexKey(tableName string, index uint64, columnValue []byte) []byte {
 	// return tablePrefix_indexPrefixSep_tableName_index_columnValue
 	buf := new(bytes.Buffer)
 	buf.Write(tablePrefix)
@@ -475,13 +475,13 @@ func getIndexKey(tableName string, index uint64, columnValue []byte) []byte {
 	return buf.Bytes()
 }
 
-func uint64ToBytes(value uint64) []byte {
+func Uint64ToBytes(value uint64) []byte {
 	buf := new(bytes.Buffer)
 	common.WriteUint64(buf, value)
 	return buf.Bytes()
 }
 
-func bytesToUint64(b []byte) uint64 {
+func BytesToUint64(b []byte) uint64 {
 	reader := bytes.NewReader(b)
 	value, err := common.ReadUint64(reader)
 	if err != nil {
@@ -490,33 +490,33 @@ func bytesToUint64(b []byte) uint64 {
 	return value
 }
 
-func bytesToUint64List(b []byte) ([]uint64, error) {
+func BytesToUint64List(b []byte) ([]uint64, error) {
 	r := bytes.NewReader(b)
 	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
-		return nil, errors.New("")
+		return nil, err
 	}
 
 	var result []uint64
 	for i := uint64(0); i < count; i++ {
 		value, err := common.ReadUint64(r)
 		if err != nil {
-			return nil, errors.New("")
+			return nil, err
 		}
 		result = append(result, value)
 	}
 	return result, nil
 }
 
-func uint64ListToBytes(indexes []uint64) ([]byte, error) {
+func Uint64ListToBytes(indexes []uint64) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	if err := common.WriteVarUint(buf, uint64(len(indexes))); err != nil {
-		return nil, errors.New("")
+		return nil, err
 	}
 
 	for _, index := range indexes {
 		if err := common.WriteUint64(buf, index); err != nil {
-			return nil, errors.New("")
+			return nil, err
 		}
 	}
 	return buf.Bytes(), nil

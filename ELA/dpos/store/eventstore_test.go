@@ -10,18 +10,19 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var eventStore = &EventStore{
-	dbOperator: new(LevelDBOperator),
-}
+var eventStore = &DposStore{}
 
 //fixme clean event store for next unit test
 func TestEventStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	err := eventStore.Open()
+	err := eventStore.InitConnection("Dpos_Test")
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}
+
+	eventStore.StartRecordEvent()
+	eventStore.StartRecordArbitrators()
 }
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
@@ -148,5 +149,5 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 }
 
 func TestEventStore_Close(t *testing.T) {
-	eventStore.Close()
+	eventStore.Disconnect()
 }

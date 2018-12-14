@@ -79,7 +79,10 @@ func newDposManager(L *lua.LState) int {
 
 	mockManager.Node = mock.NewNodeMock()
 	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor, mockManager.Node.GetBlockPool(), mockManager.Node.GetTxPool(), mockManager.Node)
-	n.Initialize(mockManager.Dispatcher)
+	n.Initialize(DposNetworkConfig{
+		ProposalDispatcher: mockManager.Dispatcher,
+		Store:              nil,
+	})
 	n.SetListener(dposManager)
 
 	ud := L.NewUserData()
@@ -101,9 +104,9 @@ func checkDposManager(L *lua.LState, idx int) *manager {
 }
 
 var dposManagerMethods = map[string]lua.LGFunction{
-	"public_key":     dposManagerPublicKey,
-	"dump_consensus": dposManagerDumpConsensus,
-	"dump_node_relays":  dposManagerDumpRelays,
+	"public_key":       dposManagerPublicKey,
+	"dump_consensus":   dposManagerDumpConsensus,
+	"dump_node_relays": dposManagerDumpRelays,
 
 	"is_on_duty":        dposManagerCheckOnDuty,
 	"is_status_ready":   dposManagerCheckStatusReady,
