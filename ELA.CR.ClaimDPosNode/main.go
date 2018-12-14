@@ -4,11 +4,15 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/cli/password"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/node"
 	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/protocol"
@@ -18,10 +22,6 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA/version/verconfig"
-
-	"github.com/elastos/Elastos.ELA.Utility/signal"
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
 const (
@@ -76,7 +76,7 @@ func main() {
 	log.Info("Node version: ", config.Version)
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
-	var dposStore blockchain.IDposStore
+	var dposStore interfaces.IDposStore
 	chainStore, err := blockchain.NewChainStore("Chain")
 	if err != nil {
 		goto ERROR

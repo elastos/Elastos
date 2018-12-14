@@ -19,7 +19,7 @@ import (
 
 type DposNetworkConfig struct {
 	ProposalDispatcher ProposalDispatcher
-	Store              blockchain.IDposStore
+	Store              interfaces.IDposStore
 }
 
 type DposNetwork interface {

@@ -17,23 +17,23 @@ type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
 	MajorityCount    uint32
-	Store            blockchain.IDposStore
+	Store            interfaces.IDposStore
 }
 
 type Arbitrators struct {
-	store blockchain.IDposStore
+	store interfaces.IDposStore
 
 	config           ArbitratorsConfig
 	DutyChangedCount uint32
 
-	CurrentArbitrators [][]byte
-	CurrentCandidates  [][]byte
+	currentArbitrators [][]byte
+	currentCandidates  [][]byte
 
 	currentArbitratorsProgramHashes []*common.Uint168
 	currentCandidatesProgramHashes  []*common.Uint168
 
-	NextArbitrators [][]byte
-	NextCandidates  [][]byte
+	nextArbitrators [][]byte
+	nextCandidates  [][]byte
 
 	listener interfaces.ArbitratorsListener
 	lock     sync.Mutex
@@ -81,7 +81,7 @@ func (a *Arbitrators) ForceChange() error {
 	}
 
 	if a.listener != nil {
-		a.listener.OnNewElection(a.NextArbitrators)
+		a.listener.OnNewElection(a.nextArbitrators)
 	}
 
 	return nil
@@ -108,74 +108,32 @@ func (a *Arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	a.onChainHeightIncreased(block)
 }
 
-func (a *Arbitrators) GetDutyChangedCount() uint32 {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	return a.DutyChangedCount
-}
-
 func (a *Arbitrators) GetArbitrators() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	return a.CurrentArbitrators
+	return a.currentArbitrators
 }
 
 func (a *Arbitrators) GetCandidates() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	return a.CurrentCandidates
+	return a.currentCandidates
 }
 
 func (a *Arbitrators) GetNextArbitrators() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	return a.NextArbitrators
+	return a.nextArbitrators
 }
 
 func (a *Arbitrators) GetNextCandidates() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	return a.NextCandidates
-}
-
-func (a *Arbitrators) SetDutyChangedCount(count uint32) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.DutyChangedCount = count
-}
-
-func (a *Arbitrators) SetArbitrators(ar [][]byte) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.CurrentArbitrators = ar
-}
-
-func (a *Arbitrators) SetCandidates(ca [][]byte) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.CurrentCandidates = ca
-}
-
-func (a *Arbitrators) SetNextArbitrators(ar [][]byte) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.NextArbitrators = ar
-}
-
-func (a *Arbitrators) SetNextCandidates(ca [][]byte) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.NextCandidates = ca
+	return a.nextCandidates
 }
 
 func (a *Arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
@@ -230,7 +188,7 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 		}
 
 		if a.listener != nil {
-			a.listener.OnNewElection(a.NextArbitrators)
+			a.listener.OnNewElection(a.nextArbitrators)
 		}
 	} else {
 		a.DutyChangedCount++
@@ -243,8 +201,8 @@ func (a *Arbitrators) isNewElection() bool {
 }
 
 func (a *Arbitrators) changeCurrentArbitrators() error {
-	a.CurrentArbitrators = a.NextArbitrators
-	a.CurrentCandidates = a.NextCandidates
+	a.currentArbitrators = a.nextArbitrators
+	a.currentCandidates = a.nextCandidates
 
 	a.store.SaveCurrentArbitrators(a)
 
@@ -272,12 +230,12 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 		return errors.New("Producers count less than arbitrators count.")
 	}
 
-	a.NextArbitrators = producers[:a.config.ArbitratorsCount]
+	a.nextArbitrators = producers[:a.config.ArbitratorsCount]
 
 	if uint32(len(producers)) < a.config.ArbitratorsCount+a.config.CandidatesCount {
-		a.NextCandidates = producers[a.config.ArbitratorsCount:]
+		a.nextCandidates = producers[a.config.ArbitratorsCount:]
 	} else {
-		a.NextCandidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
+		a.nextCandidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
 	}
 
 	a.store.SaveNextArbitrators(a)
@@ -286,27 +244,27 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 
 func (a *Arbitrators) sortArbitrators() error {
 
-	strArbitrators := make([]string, len(a.CurrentArbitrators))
+	strArbitrators := make([]string, len(a.currentArbitrators))
 	for i := 0; i < len(strArbitrators); i++ {
-		strArbitrators[i] = common.BytesToHexString(a.CurrentArbitrators[i])
+		strArbitrators[i] = common.BytesToHexString(a.currentArbitrators[i])
 	}
 	sort.Strings(strArbitrators)
 
-	a.CurrentArbitrators = make([][]byte, len(strArbitrators))
+	a.currentArbitrators = make([][]byte, len(strArbitrators))
 	for i := 0; i < len(strArbitrators); i++ {
 		value, err := common.HexStringToBytes(strArbitrators[i])
 		if err != nil {
 			return err
 		}
-		a.CurrentArbitrators[i] = value
+		a.currentArbitrators[i] = value
 	}
 
 	return nil
 }
 
 func (a *Arbitrators) updateArbitratorsProgramHashes() error {
-	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.CurrentArbitrators))
-	for index, v := range a.CurrentArbitrators {
+	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
+	for index, v := range a.currentArbitrators {
 		hash, err := contract.PublicKeyToStandardProgramHash(v)
 		if err != nil {
 			return err
@@ -314,8 +272,8 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 		a.currentArbitratorsProgramHashes[index] = hash
 	}
 
-	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.CurrentCandidates))
-	for index, v := range a.CurrentCandidates {
+	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
+	for index, v := range a.currentCandidates {
 		hash, err := contract.PublicKeyToStandardProgramHash(v)
 		if err != nil {
 			return err

@@ -6,22 +6,21 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-	. "github.com/elastos/Elastos.ELA/dpos/manager"
+	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/protocol"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
 type ArbitratorConfig struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
-	Store             blockchain.IDposStore
+	Store             interfaces.IDposStore
 }
 
 type Arbitrator interface {
@@ -36,7 +35,7 @@ type Arbitrator interface {
 type arbitrator struct {
 	enableViewLoop bool
 	network        *dposNetwork
-	dposManager    DposManager
+	dposManager    manager.DposManager
 }
 
 func (a *arbitrator) Start() {
@@ -95,7 +94,7 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 		return nil, err
 	}
 
-	dposManager := NewManager(config.Parameters.ArbiterConfiguration.Name, blockchain.DefaultLedger.Arbitrators)
+	dposManager := manager.NewManager(config.Parameters.ArbiterConfiguration.Name, blockchain.DefaultLedger.Arbitrators)
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
@@ -119,14 +118,15 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 		eventMonitor.RegisterListener(eventRecorder)
 	}
 
-	dposHandlerSwitch := NewHandler(network, dposManager, eventMonitor)
+	dposHandlerSwitch := manager.NewHandler(network, dposManager, eventMonitor)
 
-	consensus := NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher, illegalMonitor := NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
+	consensus := manager.NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
+	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
-	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
-	network.Initialize(DposNetworkConfig{
+	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network,
+		illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
+	network.Initialize(manager.DposNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
 		Store:              arConfig.Store,
 	})

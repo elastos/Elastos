@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -43,7 +44,7 @@ type dposNetwork struct {
 	proposalDispatcher manager.ProposalDispatcher
 	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
-	store              blockchain.IDposStore
+	store              interfaces.IDposStore
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -356,7 +357,7 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 }
 
 func (n *dposNetwork) saveDirectPeers() {
-	var peers []*blockchain.DirectPeers
+	var peers []*interfaces.DirectPeers
 	for k, v := range n.directPeers {
 		if !v.NeedConnect {
 			continue
@@ -365,7 +366,7 @@ func (n *dposNetwork) saveDirectPeers() {
 		if err != nil {
 			continue
 		}
-		peers = append(peers, &blockchain.DirectPeers{
+		peers = append(peers, &interfaces.DirectPeers{
 			PublicKey: pk,
 			Address:   v.Address.Addr,
 			Sequence:  v.Sequence,

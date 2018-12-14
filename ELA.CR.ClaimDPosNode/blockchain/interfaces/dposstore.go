@@ -1,6 +1,4 @@
-package blockchain
-
-import "github.com/elastos/Elastos.ELA/blockchain/interfaces"
+package interfaces
 
 type IDBBasic interface {
 	InitConnection(connParams ...interface{}) error
@@ -34,10 +32,10 @@ type IEventRecord interface {
 }
 
 type IArbitratorsRecord interface {
-	GetArbitrators(a interfaces.Arbitrators) error
+	GetArbitrators(a Arbitrators) error
 	SaveDposDutyChangedCount(count uint32)
-	SaveCurrentArbitrators(a interfaces.Arbitrators)
-	SaveNextArbitrators(a interfaces.Arbitrators)
+	SaveCurrentArbitrators(a Arbitrators)
+	SaveNextArbitrators(a Arbitrators)
 
 	GetDirectPeers() ([]*DirectPeers, error)
 	SaveDirectPeers(peers []*DirectPeers)
