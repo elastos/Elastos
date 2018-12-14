@@ -1,13 +1,14 @@
 package version
 
 import (
+	"math"
+	"testing"
+
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/heights"
 	"github.com/stretchr/testify/suite"
-	"math"
-	"testing"
 )
 
 var versionsMsg string
@@ -15,7 +16,7 @@ var versionsMsg string
 type heightVersionTestSuit struct {
 	suite.Suite
 
-	Version blockchain.HeightVersions
+	Version interfaces.HeightVersions
 	Height1 uint32
 	Height2 uint32
 	Height3 uint32

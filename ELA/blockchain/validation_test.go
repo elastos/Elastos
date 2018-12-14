@@ -186,7 +186,6 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	assert.NoError(t, err, "Generate signature failed, error %v", err)
 	err = checkMultiSigSignatures(program.Program{Code: act.redeemScript, Parameter: signature}, data)
 	assert.Error(t, err, "[CheckMultisigSignature] invalid signature fake signature")
-	assert.Equal(t, "matched signatures not enough", err.Error())
 
 	t.Log("TestCheckMultisigSignature passed")
 }

@@ -3,11 +3,10 @@ package manager
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
 type ViewListener interface {
@@ -18,7 +17,7 @@ type view struct {
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
-	arbitrators   blockchain.Arbitrators
+	arbitrators   interfaces.Arbitrators
 
 	listener ViewListener
 }

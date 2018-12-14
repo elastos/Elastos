@@ -3,6 +3,7 @@ package blockchain
 import (
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -12,36 +13,12 @@ var FoundationAddress Uint168
 
 var DefaultLedger *Ledger
 
-type NewBlocksListener interface {
-	OnBlockReceived(b *Block, confirmed bool)
-	OnConfirmReceived(p *DPosProposalVoteSlot)
-}
-
-type HeightVersions interface {
-	GetDefaultTxVersion(blockHeight uint32) byte
-	GetDefaultBlockVersion(blockHeight uint32) uint32
-
-	CheckOutputPayload(blockHeight uint32, tx *Transaction, output *Output) error
-	CheckOutputProgramHash(blockHeight uint32, tx *Transaction, programHash Uint168) error
-	CheckCoinbaseMinerReward(blockHeight uint32, tx *Transaction, totalReward Fixed64) error
-	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error
-	CheckVoteProducerOutputs(blockHeight uint32, tx *Transaction, outputs []*Output, references map[*Input]*Output) error
-	CheckTxHasNoPrograms(blockHeight uint32, tx *Transaction) error
-
-	GetProducersDesc(block *Block) ([][]byte, error)
-	AddBlock(block *Block) error
-	AddBlockConfirm(block *BlockConfirm) (bool, error)
-	AssignCoinbaseTxRewards(block *Block, totalReward Fixed64) error
-	CheckConfirmedBlockOnFork(block *Block) error
-	GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte
-}
-
 // Ledger - the struct for ledger
 type Ledger struct {
 	Blockchain     *Blockchain
 	Store          IChainStore
-	Arbitrators    Arbitrators
-	HeightVersions HeightVersions
+	Arbitrators    interfaces.Arbitrators
+	HeightVersions interfaces.HeightVersions
 }
 
 //check weather the transaction contains the doubleSpend.

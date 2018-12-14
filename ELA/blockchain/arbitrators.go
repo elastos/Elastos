@@ -5,6 +5,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -15,33 +16,6 @@ type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
 	MajorityCount    uint32
-}
-
-type ArbitratorsListener interface {
-	OnNewElection(arbiters [][]byte)
-}
-
-type Arbitrators interface {
-	NewBlocksListener
-
-	StartUp() error
-	ForceChange() error
-
-	GetArbitrators() [][]byte
-	GetCandidates() [][]byte
-	GetNextArbitrators() [][]byte
-	GetNextCandidates() [][]byte
-	GetArbitratorsProgramHashes() []*common.Uint168
-	GetCandidatesProgramHashes() []*common.Uint168
-
-	GetOnDutyArbitrator() []byte
-	GetNextOnDutyArbitrator(offset uint32) []byte
-
-	HasArbitersMajorityCount(num uint32) bool
-	HasArbitersMinorityCount(num uint32) bool
-
-	RegisterListener(listener ArbitratorsListener)
-	UnregisterListener(listener ArbitratorsListener)
 }
 
 type arbitrators struct {
@@ -57,7 +31,7 @@ type arbitrators struct {
 	nextArbitrators [][]byte
 	nextCandidates  [][]byte
 
-	listener ArbitratorsListener
+	listener interfaces.ArbitratorsListener
 	lock     sync.Mutex
 }
 
@@ -175,11 +149,11 @@ func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num >= a.config.ArbitratorsCount-a.config.MajorityCount
 }
 
-func (a *arbitrators) RegisterListener(listener ArbitratorsListener) {
+func (a *arbitrators) RegisterListener(listener interfaces.ArbitratorsListener) {
 	a.listener = listener
 }
 
-func (a *arbitrators) UnregisterListener(listener ArbitratorsListener) {
+func (a *arbitrators) UnregisterListener(listener interfaces.ArbitratorsListener) {
 	a.listener = nil
 }
 
@@ -292,7 +266,7 @@ func (a *arbitrators) updateArbitratorsProgramHashes() error {
 	return nil
 }
 
-func NewArbitrators(arbitratorsConfig ArbitratorsConfig) Arbitrators {
+func NewArbitrators(arbitratorsConfig ArbitratorsConfig) interfaces.Arbitrators {
 	if arbitratorsConfig.MajorityCount > arbitratorsConfig.ArbitratorsCount {
 		log.Error("Majority count should less or equal than arbitrators count.")
 		return nil

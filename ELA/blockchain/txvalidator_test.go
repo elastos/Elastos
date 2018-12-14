@@ -10,7 +10,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -39,17 +38,6 @@ func TestTxValidatorInit(t *testing.T) {
 		os.Exit(-1)
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest")
-	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
-	}
-
-	err = Init(chainStore, mock.NewBlockHeightMock())
-	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
-	}
 }
 
 func TestCheckTransactionSize(t *testing.T) {
@@ -195,61 +183,6 @@ func TestCheckTransactionOutput(t *testing.T) {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
-}
-
-func TestCheckAssetPrecision(t *testing.T) {
-	// normal transaction
-	tx := buildTx()
-	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
-		output.ProgramHash = common.Uint168{}
-	}
-	err := CheckAssetPrecision(tx)
-	assert.NoError(t, err)
-
-	// asset not exist
-	for _, output := range tx.Outputs {
-		output.AssetID = common.EmptyHash
-		output.ProgramHash = common.Uint168{}
-	}
-	err = CheckAssetPrecision(tx)
-	assert.EqualError(t, err, "The asset not exist in local blockchain.")
-
-	// register asset
-	asset := payload.Asset{
-		Name:      "TEST",
-		Precision: 0x04,
-		AssetType: 0x00,
-	}
-	register := &types.Transaction{
-		TxType:         types.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &payload.PayloadRegisterAsset{
-			Asset:  asset,
-			Amount: 0 * 100000000,
-		},
-	}
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	// valid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 123456780000
-	}
-	err = CheckAssetPrecision(tx)
-	assert.NoError(t, err)
-
-	// invalid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 12345678000
-	}
-	err = CheckAssetPrecision(tx)
-	assert.EqualError(t, err, "The precision of asset is incorrect.")
 }
 
 func TestCheckAmountPrecision(t *testing.T) {
@@ -635,57 +568,7 @@ func TestCheckVoteProducerOutput(t *testing.T) {
 	assert.EqualError(t, err, "duplicate candidate")
 }
 
-func TestCheckCancelProducerTransaction(t *testing.T) {
-	// 1. Generate a cancel producer transaction
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
-	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
-	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
-
-	txn := new(types.Transaction)
-	txn.TxType = types.CancelProducer
-	txn.Payload = &payload.PayloadCancelProducer{
-		PublicKey: publicKey1,
-	}
-
-	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
-		Parameter: nil,
-	}}
-
-	// 2. Check transaction
-	err := CheckCancelProducerTransaction(txn)
-	assert.NoError(t, err)
-
-	// 3. Change public key in payload
-	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = errPublicKey
-
-	// 4. Check transaction
-	err = CheckCancelProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid publick key.")
-
-	// 5. Change public key in payload
-	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey2
-
-	// 6. Check transaction
-	err = CheckCancelProducerTransaction(txn)
-	assert.EqualError(t, err, "Public key unsigned.")
-
-	// 7. Persist transaction
-	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey1
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).PersistCancelProducer(txn.Payload.(*payload.PayloadCancelProducer))
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	// 8. Check transaction
-	err = CheckCancelProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid producer.")
-}
-
 func TestTxValidatorDone(t *testing.T) {
-	DefaultLedger.Store.Close()
 }
 
 func createStandardRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {

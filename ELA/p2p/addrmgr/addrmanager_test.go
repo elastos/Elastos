@@ -88,7 +88,7 @@ func addNaTests() {
 
 func addNaTest(ip string, port uint16, want string) {
 	nip := net.ParseIP(ip)
-	na := *p2p.NewNetAddressIPPort(nip, port, p2p.SFNodeNetwork)
+	na := *p2p.NewNetAddressIPPort(nip, port, 1)
 	test := naTest{na, want}
 	naTests = append(naTests, test)
 }

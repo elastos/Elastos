@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -51,7 +52,7 @@ type Blockchain struct {
 	BCEvents           *events.Event
 	mutex              sync.RWMutex
 	AssetID            Uint256
-	NewBlocksListeners []NewBlocksListener
+	NewBlocksListeners []interfaces.NewBlocksListener
 }
 
 func NewBlockchain(height uint32) *Blockchain {
@@ -72,7 +73,7 @@ func NewBlockchain(height uint32) *Blockchain {
 	}
 }
 
-func Init(store IChainStore, versions HeightVersions) error {
+func Init(store IChainStore, versions interfaces.HeightVersions) error {
 	DefaultLedger = new(Ledger)
 	DefaultLedger.HeightVersions = versions
 
@@ -89,7 +90,7 @@ func Init(store IChainStore, versions HeightVersions) error {
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
 		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
 	})
-	DefaultLedger.Blockchain.NewBlocksListeners = []NewBlocksListener{DefaultLedger.Arbitrators}
+	DefaultLedger.Blockchain.NewBlocksListeners = []interfaces.NewBlocksListener{DefaultLedger.Arbitrators}
 	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
 	if err != nil {
 		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")

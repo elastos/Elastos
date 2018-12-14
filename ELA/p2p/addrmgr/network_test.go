@@ -32,10 +32,10 @@ func TestIPTypes(t *testing.T) {
 	}
 
 	newIPTest := func(ip string, rfc1918, rfc2544, rfc3849, rfc3927, rfc3964,
-		rfc4193, rfc4380, rfc4843, rfc4862, rfc5737, rfc6052, rfc6145, rfc6598,
-		local, valid, routable bool) ipTest {
+	rfc4193, rfc4380, rfc4843, rfc4862, rfc5737, rfc6052, rfc6145, rfc6598,
+	local, valid, routable bool) ipTest {
 		nip := net.ParseIP(ip)
-		na := *p2p.NewNetAddressIPPort(nip, 8333, p2p.SFNodeNetwork)
+		na := *p2p.NewNetAddressIPPort(nip, 8333, 1)
 		test := ipTest{na, rfc1918, rfc2544, rfc3849, rfc3927, rfc3964, rfc4193, rfc4380,
 			rfc4843, rfc4862, rfc5737, rfc6052, rfc6145, rfc6598, local, valid, routable}
 		return test
@@ -188,7 +188,7 @@ func TestGroupKey(t *testing.T) {
 
 	for i, test := range tests {
 		nip := net.ParseIP(test.ip)
-		na := *p2p.NewNetAddressIPPort(nip, 8333, p2p.SFNodeNetwork)
+		na := *p2p.NewNetAddressIPPort(nip, 8333, 1)
 		if key := addrmgr.GroupKey(&na); key != test.expected {
 			t.Errorf("TestGroupKey #%d (%s): unexpected group key "+
 				"- got '%s', want '%s'", i, test.name,
