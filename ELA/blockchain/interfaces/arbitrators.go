@@ -20,17 +20,10 @@ type Arbitrators interface {
 	StartUp() error
 	ForceChange() error
 
-	GetDutyChangedCount() uint32
 	GetArbitrators() [][]byte
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
-
-	SetDutyChangedCount(count uint32)
-	SetArbitrators(ar [][]byte)
-	SetCandidates(ca [][]byte)
-	SetNextArbitrators(ar [][]byte)
-	SetNextCandidates(ca [][]byte)
 
 	GetArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168

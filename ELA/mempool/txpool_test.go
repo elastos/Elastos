@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/errors"
 
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -26,6 +27,11 @@ var txPool TxPool
 
 func TestTxPoolInit(t *testing.T) {
 	log.Init(
+		config.Parameters.PrintLevel,
+		config.Parameters.MaxPerLogSize,
+		config.Parameters.MaxLogsSize,
+	)
+	dplog.Init(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,

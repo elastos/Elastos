@@ -7,12 +7,12 @@ import (
 	"math"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var ConsensusEventTable = &blockchain.DBTable{
+var ConsensusEventTable = &interfaces.DBTable{
 	Name:       "ConsensusEvent",
 	PrimaryKey: 4,
 	Indexes:    []uint64{3},
@@ -24,7 +24,7 @@ var ConsensusEventTable = &blockchain.DBTable{
 	},
 }
 
-var ProposalEventTable = &blockchain.DBTable{
+var ProposalEventTable = &interfaces.DBTable{
 	Name:       "ProposalEvent",
 	PrimaryKey: 7,
 	Indexes:    []uint64{1, 2, 6},
@@ -39,7 +39,7 @@ var ProposalEventTable = &blockchain.DBTable{
 	},
 }
 
-var VoteEventTable = &blockchain.DBTable{
+var VoteEventTable = &interfaces.DBTable{
 	Name:       "VoteEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -52,7 +52,7 @@ var VoteEventTable = &blockchain.DBTable{
 	},
 }
 
-var ViewEventTable = &blockchain.DBTable{
+var ViewEventTable = &interfaces.DBTable{
 	Name:       "ViewEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -235,7 +235,7 @@ func (s *DposStore) AddConsensusEvent(event interface{}) error {
 }
 
 func (s *DposStore) addConsensusEvent(cons *log.ConsensusEvent) (uint64, error) {
-	return s.Insert(ConsensusEventTable, []*blockchain.Field{
+	return s.Insert(ConsensusEventTable, []*interfaces.Field{
 		{"StartTime", cons.StartTime.UnixNano()},
 		{"Height", cons.Height},
 		{"RawData", cons.RawData},
@@ -256,8 +256,8 @@ func (s *DposStore) UpdateConsensusEvent(event interface{}) error {
 }
 
 func (s *DposStore) updateConsensusEvent(cons *log.ConsensusEvent) ([]uint64, error) {
-	return s.Update(ConsensusEventTable, []*blockchain.Field{
-		{"Height", cons.Height}}, []*blockchain.Field{
+	return s.Update(ConsensusEventTable, []*interfaces.Field{
+		{"Height", cons.Height}}, []*interfaces.Field{
 		{"EndTime", cons.EndTime.UnixNano()}})
 }
 
@@ -279,7 +279,7 @@ func (s *DposStore) AddProposalEvent(event interface{}) error {
 }
 
 func (s *DposStore) addProposalEvent(event *log.ProposalEvent) (uint64, error) {
-	return s.Insert(ProposalEventTable, []*blockchain.Field{
+	return s.Insert(ProposalEventTable, []*interfaces.Field{
 		{"Proposal", event.Proposal},
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
@@ -302,10 +302,10 @@ func (s *DposStore) UpdateProposalEvent(event interface{}) error {
 }
 
 func (s *DposStore) updateProposalEvent(event *log.ProposalEvent) ([]uint64, error) {
-	return s.Update(ProposalEventTable, []*blockchain.Field{
+	return s.Update(ProposalEventTable, []*interfaces.Field{
 		{"Proposal", event.Proposal},
 		{"BlockHash", event.BlockHash.Bytes()},
-	}, []*blockchain.Field{
+	}, []*interfaces.Field{
 		{"EndTime", event.EndTime.UnixNano()},
 		{"Result", event.Result},
 	})
@@ -336,7 +336,7 @@ func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
 		return 0, err
 	}
 	var proposalId uint64
-	rowIDs, err := s.SelectID(ProposalEventTable, []*blockchain.Field{
+	rowIDs, err := s.SelectID(ProposalEventTable, []*interfaces.Field{
 		{"ProposalHash", vote.ProposalHash},
 	})
 	if err != nil || len(rowIDs) != 1 {
@@ -346,7 +346,7 @@ func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
 	}
 
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
-	return s.Insert(VoteEventTable, []*blockchain.Field{
+	return s.Insert(VoteEventTable, []*interfaces.Field{
 		{"ProposalID", proposalId},
 		{"Signer", event.Signer},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
@@ -374,7 +374,7 @@ func (s *DposStore) AddViewEvent(event interface{}) error {
 
 func (s *DposStore) addViewEvent(event *log.ViewEvent) (uint64, error) {
 	var consensusId uint64
-	rowIDs, err := s.SelectID(ConsensusEventTable, []*blockchain.Field{
+	rowIDs, err := s.SelectID(ConsensusEventTable, []*interfaces.Field{
 		{"Height", event.Height},
 	})
 	if err != nil || len(rowIDs) != 1 {
@@ -383,7 +383,7 @@ func (s *DposStore) addViewEvent(event *log.ViewEvent) (uint64, error) {
 		consensusId = rowIDs[0]
 	}
 
-	return s.Insert(ViewEventTable, []*blockchain.Field{
+	return s.Insert(ViewEventTable, []*interfaces.Field{
 		{"ConsensusID", consensusId},
 		{"OnDutyArbitrator", event.OnDutyArbitrator},
 		{"StartTime", event.StartTime.UnixNano()},

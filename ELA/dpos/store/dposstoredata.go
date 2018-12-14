@@ -3,7 +3,7 @@ package store
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
@@ -162,7 +162,7 @@ func (s *DposStore) persistBytesArray(batch Batch, bytesArray [][]byte, prefix D
 	return nil
 }
 
-func (s *DposStore) persistDirectPeers(batch Batch, peers []*blockchain.DirectPeers) error {
+func (s *DposStore) persistDirectPeers(batch Batch, peers []*interfaces.DirectPeers) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DPOSDirectPeers))
 
