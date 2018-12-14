@@ -266,6 +266,11 @@ func (s *DposStore) updateRow(batch Batch, table *blockchain.DBTable, rowID uint
 		return err
 	}
 
+	indexes := make(map[uint64]struct{})
+	for _, index := range table.Indexes {
+		indexes[index] = struct{}{}
+	}
+
 	for _, f := range updateFields {
 		col := table.Column(f.Name)
 		if col == table.PrimaryKey {
@@ -274,15 +279,13 @@ func (s *DposStore) updateRow(batch Batch, table *blockchain.DBTable, rowID uint
 			}
 		}
 
-		var isIndexColumn bool
-		var oldData []byte
-		for _, i := range table.Indexes {
-			if col != 0 && col == i {
-				oldData = f.Data()
-				isIndexColumn = true
+		if _, ok := indexes[col]; ok {
+			var oldData []byte
+			for _, field := range oldFields {
+				if field.Name == f.Name {
+					oldData = field.Data()
+				}
 			}
-		}
-		if isIndexColumn {
 			if err := s.updateIndexKeyValue(batch, table, rowID, col, oldData, f.Data()); err != nil {
 				return err
 			}
@@ -316,13 +319,13 @@ func (s *DposStore) updateRowData(batch Batch, table *blockchain.DBTable, oldFie
 }
 
 func (s *DposStore) updatePrimaryKeyValue(batch Batch, table *blockchain.DBTable, oldFields []*blockchain.Field, rowID uint64, column uint64, newData []byte) error {
-	var data []byte
+	var oldData []byte
 	for _, field := range oldFields {
 		if table.Column(field.Name) == table.PrimaryKey {
-			data = field.Data()
+			oldData = field.Data()
 		}
 	}
-	oldIndexKey := blockchain.GetIndexKey(table.Name, column, data)
+	oldIndexKey := blockchain.GetIndexKey(table.Name, column, oldData)
 	batch.Delete(oldIndexKey)
 	newIndexKey := blockchain.GetIndexKey(table.Name, column, newData)
 	batch.Put(newIndexKey, blockchain.Uint64ToBytes(rowID))
@@ -330,6 +333,7 @@ func (s *DposStore) updatePrimaryKeyValue(batch Batch, table *blockchain.DBTable
 }
 
 func (s *DposStore) updateIndexKeyValue(batch Batch, table *blockchain.DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
+
 	// if exist index column before, need update old record
 	oldIndexKey := blockchain.GetIndexKey(table.Name, column, oldData)
 	rowIDBytes, err := s.Get(oldIndexKey)
@@ -388,4 +392,55 @@ func (s *DposStore) getFieldsByRowID(table *blockchain.DBTable, rowID uint64) ([
 	}
 
 	return fields, nil
+}
+
+func (s *DposStore) deleteTable(table *blockchain.DBTable) error {
+	buf := new(bytes.Buffer)
+	if err := table.Serialize(buf); err != nil {
+		return err
+	}
+
+	key := blockchain.GetTableKey(table.Name)
+	_, err := s.Get(key)
+	if err != nil {
+		return fmt.Errorf("not exist table: %s", table.Name)
+	}
+	rowCount, err := s.Get(blockchain.GetTableIDKey(table.Name))
+	if err != nil {
+		return err
+	}
+	var rowIDs []uint64
+	for i := uint64(0); i < blockchain.BytesToUint64(rowCount); i++ {
+		rowIDs = append(rowIDs, i+1)
+	}
+	fields, err := s.selectValuesFromRowIDs(table, rowIDs)
+	if err != nil {
+		return err
+	}
+
+	indexes := make(map[uint64]struct{})
+	for _, index := range table.Indexes {
+		indexes[index] = struct{}{}
+	}
+
+	for rowID, fs := range fields {
+		for _, f := range fs {
+			// delete primary value
+			if table.Column(f.Name) == table.PrimaryKey {
+				s.Delete(blockchain.GetIndexKey(table.Name, table.PrimaryKey, f.Data()))
+			}
+			// delete index value
+			if _, ok := indexes[table.Column(f.Name)]; ok {
+				s.Delete(blockchain.GetIndexKey(table.Name, table.Column(f.Name), f.Data()))
+			}
+		}
+		// delete row data
+		s.Delete(blockchain.GetRowKey(table.Name, uint64(rowID)))
+	}
+	// delete row count
+	s.Delete(blockchain.GetTableIDKey(table.Name))
+	// delete table key
+	s.Delete(blockchain.GetTableKey(table.Name))
+
+	return nil
 }

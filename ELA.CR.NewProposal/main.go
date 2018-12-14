@@ -76,16 +76,27 @@ func main() {
 	log.Info("Node version: ", config.Version)
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
+	var dposStore blockchain.IDposStore
 	chainStore, err := blockchain.NewChainStore("Chain")
 	if err != nil {
 		goto ERROR
 	}
 	defer chainStore.Close()
-
+	dposStore, err = store.NewDposStore("Dpos")
+	if err != nil {
+		goto ERROR
+	}
+	defer dposStore.Disconnect()
 	err = blockchain.Init(chainStore, versions)
 	if err != nil {
 		goto ERROR
 	}
+	store.InitArbitrators(store.ArbitratorsConfig{
+		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
+		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		Store:            dposStore,
+	})
 	if err = blockchain.DefaultLedger.Arbitrators.StartUp(); err != nil {
 		goto ERROR
 	}
@@ -99,11 +110,6 @@ func main() {
 		if err != nil {
 			goto ERROR
 		}
-		dposStore, err := store.NewDposStore("Dpos")
-		if err != nil {
-			goto ERROR
-		}
-		defer dposStore.Disconnect()
 		arbitrator, err = dpos.NewArbitrator(pwd,
 			dpos.ArbitratorConfig{
 				EnableEventLog:    true,

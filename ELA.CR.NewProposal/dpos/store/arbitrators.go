@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -40,29 +39,22 @@ type Arbitrators struct {
 	lock     sync.Mutex
 }
 
-func NewArbitrators(arConfig ArbitratorsConfig) interfaces.Arbitrators {
+func InitArbitrators(arConfig ArbitratorsConfig) {
 	if arConfig.MajorityCount > arConfig.ArbitratorsCount {
 		log.Error("Majority count should less or equal than arbitrators count.")
-		return nil
+		return
 	}
 	arbiters := &Arbitrators{
 		config: arConfig,
 	}
 	arbiters.store = arConfig.Store
-	return arbiters
+	blockchain.DefaultLedger.Arbitrators = arbiters
+	blockchain.DefaultLedger.Blockchain.NewBlocksListeners = []interfaces.NewBlocksListener{blockchain.DefaultLedger.Arbitrators}
 }
 
 func (a *Arbitrators) StartUp() error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
-
-	blockchain.DefaultLedger.Arbitrators = NewArbitrators(ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
-		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
-		Store:            a.store,
-	})
-	blockchain.DefaultLedger.Blockchain.NewBlocksListeners = []interfaces.NewBlocksListener{blockchain.DefaultLedger.Arbitrators}
 
 	if err := a.store.GetArbitrators(a); err != nil {
 		return err
