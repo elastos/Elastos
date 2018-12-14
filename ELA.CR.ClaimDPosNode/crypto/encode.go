@@ -238,6 +238,10 @@ func DecodePoint(encodeData []byte) (*PublicKey, error) {
 		return nil, errors.New("The encodeData cann't be nil")
 	}
 
+	if len(encodeData) != COMPRESSEDLEN {
+		return nil, errors.New("The encodeData error, len != 33")
+	}
+
 	expectedLength := (algSet.EccParams.P.BitLen() + 7) / 8
 
 	switch encodeData[0] {
