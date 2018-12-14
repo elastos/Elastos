@@ -361,6 +361,11 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 	return nil
 }
 
+func (c *ChainStore) ClearRegisterdProducer() {
+	key := []byte{byte(DPOSVoteProducer)}
+	c.BatchDelete(key)
+}
+
 func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
 	key := []byte{byte(DPOSVoteProducer)}
 	data, err := c.Get(key)
