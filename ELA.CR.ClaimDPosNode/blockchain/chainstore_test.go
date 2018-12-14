@@ -454,6 +454,114 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 }
 
+//fixme uncommon util unit test pass
+//func TestCheckAssetPrecision(t *testing.T) {
+//	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
+//	defaultAsset, _ := common.Uint256FromHexString(assetStr)
+//
+//	// normal transaction
+//	tx := buildTx()
+//	for _, output := range tx.Outputs {
+//		output.AssetID = *defaultAsset
+//		output.ProgramHash = common.Uint168{}
+//	}
+//	err := CheckAssetPrecision(tx)
+//	assert.NoError(t, err)
+//
+//	// asset not exist
+//	for _, output := range tx.Outputs {
+//		output.AssetID = common.EmptyHash
+//		output.ProgramHash = common.Uint168{}
+//	}
+//	err = CheckAssetPrecision(tx)
+//	assert.EqualError(t, err, "The asset not exist in local blockchain.")
+//
+//	// register asset
+//	asset := payload.Asset{
+//		Name:      "TEST",
+//		Precision: 0x04,
+//		AssetType: 0x00,
+//	}
+//	register := &types.Transaction{
+//		TxType:         types.RegisterAsset,
+//		PayloadVersion: 0,
+//		Payload: &payload.PayloadRegisterAsset{
+//			Asset:  asset,
+//			Amount: 0 * 100000000,
+//		},
+//	}
+//	DefaultLedger.Store.(*ChainStore).NewBatch()
+//	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
+//	DefaultLedger.Store.(*ChainStore).BatchCommit()
+//
+//	// valid precision
+//	for _, output := range tx.Outputs {
+//		output.AssetID = register.Hash()
+//		output.ProgramHash = common.Uint168{}
+//		output.Value = 123456780000
+//	}
+//	err = CheckAssetPrecision(tx)
+//	assert.NoError(t, err)
+//
+//	// invalid precision
+//	for _, output := range tx.Outputs {
+//		output.AssetID = register.Hash()
+//		output.ProgramHash = common.Uint168{}
+//		output.Value = 12345678000
+//	}
+//	err = CheckAssetPrecision(tx)
+//	assert.EqualError(t, err, "The precision of asset is incorrect.")
+//}
+//
+//func TestCheckCancelProducerTransaction(t *testing.T) {
+//	// 1. Generate a cancel producer transaction
+//	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+//	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+//	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+//	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+//	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+//	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+//
+//	txn := new(types.Transaction)
+//	txn.TxType = types.CancelProducer
+//	txn.Payload = &payload.PayloadCancelProducer{
+//		PublicKey: publicKey1,
+//	}
+//
+//	txn.Programs = []*program.Program{&program.Program{
+//		Code:      getCode(publicKeyStr1),
+//		Parameter: nil,
+//	}}
+//
+//	// 2. Check transaction
+//	err := CheckCancelProducerTransaction(txn)
+//	assert.NoError(t, err)
+//
+//	// 3. Change public key in payload
+//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = errPublicKey
+//
+//	// 4. Check transaction
+//	err = CheckCancelProducerTransaction(txn)
+//	assert.EqualError(t, err, "Invalid publick key.")
+//
+//	// 5. Change public key in payload
+//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey2
+//
+//	// 6. Check transaction
+//	err = CheckCancelProducerTransaction(txn)
+//	assert.EqualError(t, err, "Public key unsigned.")
+//
+//	// 7. Persist transaction
+//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey1
+//	DefaultLedger.Store.(*ChainStore).NewBatch()
+//	DefaultLedger.Store.(*ChainStore).PersistCancelProducer(txn.Payload.(*payload.PayloadCancelProducer))
+//	DefaultLedger.Store.(*ChainStore).BatchCommit()
+//
+//	// 8. Check transaction
+//	err = CheckCancelProducerTransaction(txn)
+//	assert.EqualError(t, err, "Invalid producer.")
+//}
+
 func TestChainStoreDone(t *testing.T) {
 	if testChainStore == nil {
 		t.Error("Chainstore init failed")

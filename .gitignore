@@ -11,6 +11,7 @@ Chain_WhiteBox/
 Chain_UnitTest/
 ArbiterLogs/
 Logs/
+DposEvent/
 /ela
 /ela-cli
 *.db

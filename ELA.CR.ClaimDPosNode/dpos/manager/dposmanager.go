@@ -1,19 +1,20 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/mempool"
-	"github.com/elastos/Elastos.ELA/protocol"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/common"
-	utip2p "github.com/elastos/Elastos.ELA/p2p"
-	utimsg "github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/mempool"
+	utip2p "github.com/elastos/Elastos.ELA/p2p"
+	utimsg "github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 type DposNetwork interface {
@@ -71,7 +72,7 @@ type DposManager interface {
 
 	GetPublicKey() string
 	GetBlockCache() *ConsensusBlockCache
-	GetArbitrators() blockchain.Arbitrators
+	GetArbitrators() interfaces.Arbitrators
 
 	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool, txPool *mempool.TxPool, node protocol.Noder)
 
@@ -97,7 +98,7 @@ type dposManager struct {
 	consensus      Consensus
 	illegalMonitor IllegalBehaviorMonitor
 
-	arbitrators blockchain.Arbitrators
+	arbitrators interfaces.Arbitrators
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
 	node        protocol.Noder
@@ -107,7 +108,7 @@ func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) error {
 	return d.blockPool.AppendConfirm(confirm)
 }
 
-func NewManager(name string, arbitrators blockchain.Arbitrators) DposManager {
+func NewManager(name string, arbitrators interfaces.Arbitrators) DposManager {
 	m := &dposManager{
 		publicKey:   name,
 		blockCache:  &ConsensusBlockCache{},
@@ -146,7 +147,7 @@ func (d *dposManager) GetBlockCache() *ConsensusBlockCache {
 	return d.blockCache
 }
 
-func (d *dposManager) GetArbitrators() blockchain.Arbitrators {
+func (d *dposManager) GetArbitrators() interfaces.Arbitrators {
 	return d.arbitrators
 }
 
