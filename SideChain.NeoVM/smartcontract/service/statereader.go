@@ -272,6 +272,37 @@ func (s *StateReader) SerializeStackItem(item datatype.StackItem, w io.Writer) {
 	}
 }
 
+func (s *StateReader) CheckWitnessHash160(engine *avm.ExecutionEngine, programHash []byte) (bool, error) {
+	if engine.GetDataContainer() == nil {
+		return false, errors.New("CheckWitnessHash getDataContainer is null")
+	}
+
+	if len(programHash) != 20 {
+		return false, errors.New("CheckWitnessHash programHash length is not 20")
+	}
+
+	tx := engine.GetDataContainer().(*st.Transaction)
+	hashForVerify, err := blockchain.DefaultChain.Validator.TxProgramHashes(tx)
+	if err != nil {
+		return false, err
+	}
+
+	var index int
+	for _, v := range hashForVerify {
+		p1 := v.Bytes()[1:]
+		for i, x := range p1 {
+			if x != programHash[i] {
+				break
+			}
+			index = i
+		}
+	}
+	if index == len(programHash) - 1 {
+		return true, nil
+	}
+	return false, errors.New("can't find programhash" + common.BytesToHexString(programHash))
+}
+
 func (s *StateReader) CheckWitnessHash(engine *avm.ExecutionEngine, programHash common.Uint168) (bool, error) {
 	if engine.GetDataContainer() == nil {
 		return false, errors.New("CheckWitnessHash getDataContainer is null")
@@ -313,13 +344,7 @@ func (s *StateReader) RuntimeCheckWitness(e *avm.ExecutionEngine) bool {
 		}
 		result, err = s.CheckWitnessHash(e, *program)
 	} else if len(data) == 20 {
-		temp := []byte{33}
-		data = append(temp, data...)
-		program, err := common.Uint168FromBytes(data)
-		if err != nil {
-			return false
-		}
-		result, err = s.CheckWitnessHash(e, *program)
+		result, err = s.CheckWitnessHash160(e, data)
 	} else if len(data) == 33 {
 		publickKey, err := crypto.DecodePoint(data)
 		if err != nil {
