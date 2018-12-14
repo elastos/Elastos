@@ -16,6 +16,8 @@ deploy:
     tags: true
     branches:
       only:
-      - master
-      - dev
-      - /(release).{7}/
+        - master
+        - dev
+        - /(release).{7}/
+script:
+  - go test -v ./...
