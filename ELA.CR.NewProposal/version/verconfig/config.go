@@ -1,14 +1,14 @@
 package verconfig
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/version"
 	"github.com/elastos/Elastos.ELA/version/blockhistory"
 	. "github.com/elastos/Elastos.ELA/version/heights"
 	"github.com/elastos/Elastos.ELA/version/txhistory"
 )
 
-func InitVersions() blockchain.HeightVersions {
+func InitVersions() interfaces.HeightVersions {
 	txV0 := &txhistory.TxVersionV0{}
 	txV1 := &txhistory.TxVersionV1{}
 	txVCurrent := &TxVersionMain{}

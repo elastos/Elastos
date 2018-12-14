@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/heights"
@@ -188,7 +188,7 @@ func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
 	return h.sortedHeights[len(h.sortedHeights)-1]
 }
 
-func NewHeightVersions(versions map[uint32]VersionInfo) blockchain.HeightVersions {
+func NewHeightVersions(versions map[uint32]VersionInfo) interfaces.HeightVersions {
 
 	h := &heightVersions{
 		versions:      versions,

@@ -3,9 +3,7 @@ package blockchain
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
 	"math/big"
-	"math/rand"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
@@ -13,7 +11,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -67,7 +64,6 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	var block types.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	fmt.Printf("MedianTime %s", timeSource.AdjustedTime().String())
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	if err != nil {
 		t.Error(err.Error())
@@ -79,30 +75,4 @@ func TestCheckBlockSanity(t *testing.T) {
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
-}
-
-func TestCheckCoinbaseTransactionContext(t *testing.T) {
-	totalTxFee := common.Fixed64(rand.Int63())
-	totalReward := RewardAmountPerBlock + totalTxFee
-
-	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
-	minerReward := common.Fixed64(float64(totalReward) * 0.35)
-	dposReward := totalReward - foundationReward - minerReward
-
-	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
-
-	//test coinbase inflation
-	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err := checkCoinbaseTransactionContext(0, tx, totalTxFee)
-	assert.NoError(t, err)
-
-	//output count should match
-	//err = checkCoinbaseTransactionContext(heights.HeightVersion2, tx, totalTxFee)
-	//assert.EqualError(t, err, "Coinbase output count not match.")
-
-	//todo check each arbitrators reward when arbitrators mock object is ready
 }

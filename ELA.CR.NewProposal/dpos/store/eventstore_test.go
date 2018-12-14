@@ -14,6 +14,7 @@ var eventStore = &EventStore{
 	dbOperator: new(LevelDBOperator),
 }
 
+//fixme clean event store for next unit test
 func TestEventStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 

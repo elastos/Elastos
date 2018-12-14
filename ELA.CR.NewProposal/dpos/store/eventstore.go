@@ -204,7 +204,7 @@ func (s *EventStore) Open() error {
 	}
 	err = s.dbOperator.Connect()
 	if err != nil {
-		return fmt.Errorf("database connect failed:", err.Error())
+		return fmt.Errorf("database connect failed: %s", err.Error())
 	}
 	err = s.createConsensusEventTable()
 	if err != nil {

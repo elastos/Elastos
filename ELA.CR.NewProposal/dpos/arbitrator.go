@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/node"
 	"time"
 
@@ -23,8 +24,8 @@ type ArbitratorConfig struct {
 }
 
 type Arbitrator interface {
-	blockchain.NewBlocksListener
-	blockchain.ArbitratorsListener
+	interfaces.NewBlocksListener
+	interfaces.ArbitratorsListener
 	protocol.TxnPoolListener
 
 	Start()

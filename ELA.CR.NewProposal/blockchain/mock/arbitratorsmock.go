@@ -1,10 +1,9 @@
 package mock
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core/types"
-
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
@@ -99,10 +98,10 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num uint32) bool {
 	return num > uint32(len(a.CurrentArbitrators))-a.MajorityCount
 }
 
-func (a *ArbitratorsMock) RegisterListener(listener blockchain.ArbitratorsListener) {
+func (a *ArbitratorsMock) RegisterListener(listener interfaces.ArbitratorsListener) {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) UnregisterListener(listener blockchain.ArbitratorsListener) {
+func (a *ArbitratorsMock) UnregisterListener(listener interfaces.ArbitratorsListener) {
 	panic("implement me")
 }
