@@ -21,6 +21,7 @@ import (
 type ArbitratorConfig struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
+	Store             blockchain.IDposStore
 }
 
 type Arbitrator interface {
@@ -114,7 +115,7 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 
 	if arConfig.EnableEventRecord {
 		eventRecorder := &store.EventRecord{}
-		eventRecorder.Initialize()
+		eventRecorder.Initialize(arConfig.Store)
 		eventMonitor.RegisterListener(eventRecorder)
 	}
 
@@ -125,7 +126,10 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network, illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
-	network.Initialize(proposalDispatcher)
+	network.Initialize(DposNetworkConfig{
+		ProposalDispatcher: proposalDispatcher,
+		Store:              arConfig.Store,
+	})
 
 	result := &arbitrator{
 		enableViewLoop: true,

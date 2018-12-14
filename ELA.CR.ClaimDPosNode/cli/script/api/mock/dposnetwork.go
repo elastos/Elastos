@@ -88,7 +88,7 @@ func (n *network) SetListener(listener NetworkEventListener) {
 	n.listener = listener
 }
 
-func (n *network) Initialize(proposalDispatcher ProposalDispatcher) {
+func (n *network) Initialize(dnConfig DposNetworkConfig) {
 
 }
 
