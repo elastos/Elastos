@@ -3,18 +3,18 @@ package store
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 type EventRecord struct {
-	eventStore blockchain.IEventRecord
+	eventStore interfaces.IEventRecord
 
 	currentConsensus   uint64
 	startConsensusTime time.Time
 }
 
-func (e *EventRecord) Initialize(store blockchain.IEventRecord) {
+func (e *EventRecord) Initialize(store interfaces.IEventRecord) {
 	e.eventStore = store
 }
 
