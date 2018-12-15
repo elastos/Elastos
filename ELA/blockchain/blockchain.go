@@ -802,6 +802,10 @@ func (b *Blockchain) connectBlock(node *BlockNode, block *Block) error {
 	return nil
 }
 
+func (b *Blockchain) HaveBlock(hash *Uint256) (bool, error) {
+	return b.BlockExists(hash) || b.IsKnownOrphan(hash), nil
+}
+
 func (b *Blockchain) BlockExists(hash *Uint256) bool {
 	// Check memory chain first (could be main chain or side chain blocks).
 	//if _, ok := b.Index[*hash]; ok {
