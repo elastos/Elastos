@@ -710,13 +710,20 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 
 	// check the pledge coin
 	isPledged := false
+	var pledgeCount int
 	for _, output := range txn.Outputs {
-		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge && output.Value >= MinPledgeAmount {
-			isPledged = true
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge {
+			pledgeCount++
+			if output.Value >= MinPledgeAmount || output.ProgramHash.IsEqual(*hash) {
+				isPledged = true
+			}
 		}
 	}
+	if pledgeCount != 1 {
+		return errors.New("Invalid pledge address count.")
+	}
 	if !isPledged {
-		return errors.New("the pledge coin is insufficient")
+		return errors.New("The pledge coin is insufficient.")
 	}
 
 	return nil
