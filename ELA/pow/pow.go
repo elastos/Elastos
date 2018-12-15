@@ -23,8 +23,6 @@ import (
 	"github.com/elastos/Elastos.ELA/node"
 )
 
-var BlockPersistCompletedSignal = make(chan common.Uint256)
-
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
 	hashUpdateSecs = 5
@@ -66,11 +64,9 @@ type PowService struct {
 	AuxBlockPool   auxBlockPool
 	Mutex          sync.Mutex
 
-	blockPersistCompletedSubscriber events.Subscriber
-	RollbackTransactionSubscriber   events.Subscriber
-
-	wg   sync.WaitGroup
-	quit chan struct{}
+	blockChan chan common.Uint256
+	wg        sync.WaitGroup
+	quit      chan struct{}
 
 	lock          sync.Mutex
 	lastBlock     *Block
@@ -88,7 +84,7 @@ func CreateCoinbaseTx(minerAddr string) (*Transaction, error) {
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
 	}
 
-	txn := NewCoinBaseTransaction(pd, DefaultLedger.Blockchain.GetBestHeight()+1)
+	txn := NewCoinBaseTransaction(pd, DefaultLedger.Blockchain.GetHeight()+1)
 	txn.Inputs = []*Input{
 		{
 			Previous: OutPoint{
@@ -156,7 +152,7 @@ func (pow *PowService) GenerateBlock(minerAddr string, bestChain *BlockNode) (*B
 	txCount := 1
 	totalTxFee := common.Fixed64(0)
 	var txsByFeeDesc byFeeDesc
-	txsInPool := node.LocalNode.GetTransactionPool(false)
+	txsInPool := node.LocalNode.GetTxsInPool()
 	txsByFeeDesc = make([]*Transaction, 0, len(txsInPool))
 	for _, v := range txsInPool {
 		txsByFeeDesc = append(txsByFeeDesc, v)
@@ -233,7 +229,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 		}
 
 		if pow.SolveBlock(msgBlock, nil) {
-			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetHeight()+1 {
 
 				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
 					BlockFlag: true,
@@ -247,7 +243,6 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 					continue
 				}
 
-				pow.BroadcastBlock(msgBlock)
 				h := msgBlock.Hash()
 				blockHashes = append(blockHashes, &h)
 				i++
@@ -275,7 +270,7 @@ func (pow *PowService) SolveBlock(msgBlock *Block, lastBlockHash *common.Uint256
 		case <-ticker.C:
 			log.Info("five second countdown ends. Re-generate block.")
 			return false
-		case hash := <-BlockPersistCompletedSignal:
+		case hash := <-pow.blockChan:
 			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
 			pow.needBroadCast = true
 			if DefaultLedger.HeightVersions.GetDefaultBlockVersion(msgBlock.Height) != 1 ||
@@ -333,43 +328,6 @@ func (pow *PowService) Halt() {
 	pow.Started = false
 }
 
-func (pow *PowService) RollbackTransaction(v interface{}) {
-	if block, ok := v.(*Block); ok {
-		for _, tx := range block.Transactions[1:] {
-			err := node.LocalNode.MaybeAcceptTransaction(tx)
-			if err == nil {
-				node.LocalNode.RemoveTransaction(tx)
-			} else {
-				log.Error(err)
-			}
-		}
-	}
-}
-
-func (pow *PowService) BlockPersistCompleted(v interface{}) {
-	log.Debug()
-	if block, ok := v.(*Block); ok {
-		log.Infof("persist block: %s", block.Hash())
-		err := node.LocalNode.CleanSubmittedTransactions(block)
-		if err != nil {
-			log.Warn(err)
-		}
-		node.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
-
-		hash := block.Hash()
-
-		pow.lock.Lock()
-		if block.Height == pow.lastBlock.Height && !hash.IsEqual(pow.lastBlock.Hash()) {
-			pow.lastBlock = block
-			pow.lastNode = DefaultLedger.Blockchain.BestChain
-		}
-		pow.lock.Unlock()
-		if pow.Started {
-			BlockPersistCompletedSignal <- hash
-		}
-	}
-}
-
 func NewPowService() *PowService {
 	block, _ := DefaultLedger.Store.GetBlock(*DefaultLedger.Blockchain.BestChain.Hash)
 	pow := &PowService{
@@ -381,10 +339,15 @@ func NewPowService() *PowService {
 		lastNode:       DefaultLedger.Blockchain.BestChain,
 	}
 
-	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
-	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
+	events.Subscribe(func(e *events.Event) {
+		switch e.Type {
+		case events.ETBlockConnected:
+			if pow.Started {
+				pow.blockChan <- e.Data.(*Block).Hash()
+			}
+		}
+	})
 
-	log.Debug("pow Service Init succeed")
 	return pow
 }
 
@@ -410,7 +373,6 @@ out:
 		log.Info("<================Packing Block==============>")
 
 		pow.lock.Lock()
-		newHeight := pow.lastNode.Height + 1
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, pow.lastNode)
 		if err != nil {
 			log.Error("generage block err", err)
@@ -424,48 +386,46 @@ out:
 		if pow.SolveBlock(msgBlock, &hash) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == newHeight {
-				pow.lock.Lock()
-				if !pow.needBroadCast {
-					hash := <-BlockPersistCompletedSignal
-					if !hash.IsEqual(pow.lastBlock.Hash()) {
-						pow.needBroadCast = true
-						pow.lock.Unlock()
-						continue
-					}
-				}
-				pow.needBroadCast = false
-				pow.lock.Unlock()
-
-				time.Sleep(time.Second * 1)
-
-				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
-					BlockFlag: true,
-					Block:     msgBlock,
-				})
-				if err != nil {
-					log.Debug(err)
+			pow.lock.Lock()
+			if !pow.needBroadCast {
+				hash := <-pow.blockChan
+				if !hash.IsEqual(pow.lastBlock.Hash()) {
+					pow.needBroadCast = true
+					pow.lock.Unlock()
 					continue
 				}
-
-				if isOrphan || !inMainChain {
-					continue
-				}
-
-				pow.BroadcastBlock(msgBlock)
-				hash := msgBlock.Hash()
-				node := NewBlockNode(&msgBlock.Header, &hash)
-				node.InMainChain = true
-				prevHash := &msgBlock.Previous
-				if parentNode, ok := DefaultLedger.Blockchain.LookupNodeInIndex(prevHash); ok {
-					node.WorkSum = node.WorkSum.Add(parentNode.WorkSum, node.WorkSum)
-					node.Parent = parentNode
-				}
-				pow.lock.Lock()
-				pow.lastBlock = msgBlock
-				pow.lastNode = node
-				pow.lock.Unlock()
 			}
+			pow.needBroadCast = false
+			pow.lock.Unlock()
+
+			time.Sleep(time.Second * 1)
+
+			inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
+				BlockFlag: true,
+				Block:     msgBlock,
+			})
+			if err != nil {
+				log.Debug(err)
+				continue
+			}
+
+			if isOrphan || !inMainChain {
+				continue
+			}
+
+			pow.BroadcastBlock(msgBlock)
+			hash := msgBlock.Hash()
+			node := NewBlockNode(&msgBlock.Header, &hash)
+			node.InMainChain = true
+			prevHash := &msgBlock.Previous
+			if parentNode, ok := DefaultLedger.Blockchain.LookupNodeInIndex(prevHash); ok {
+				node.WorkSum = node.WorkSum.Add(parentNode.WorkSum, node.WorkSum)
+				node.Parent = parentNode
+			}
+			pow.lock.Lock()
+			pow.lastBlock = msgBlock
+			pow.lastNode = node
+			pow.lock.Unlock()
 		}
 	}
 
@@ -494,7 +454,7 @@ out:
 		if pow.SolveBlock(msgBlock, nil) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetHeight()+1 {
 
 				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
 					BlockFlag: true,
@@ -508,8 +468,6 @@ out:
 				if isOrphan || !inMainChain {
 					continue
 				}
-
-				pow.BroadcastBlock(msgBlock)
 			}
 		}
 

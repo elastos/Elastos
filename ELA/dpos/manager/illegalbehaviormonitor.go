@@ -1,12 +1,13 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const WaitHeightTolerance = uint32(1)
@@ -99,12 +100,12 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPo
 	i.AddProposalEvidence(evidences)
 	i.sendIllegalProposalTransaction(evidences)
 
-	m := &msg.IllegalProposals{Proposals: *evidences}
+	m := &dmsg.IllegalProposals{Proposals: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
 }
 
 func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types.DposIllegalProposals) {
-	transaction := &types.Transaction{
+	tx := &types.Transaction{
 		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
 		TxType:         types.IllegalProposalEvidence,
 		PayloadVersion: types.PayloadIllegalProposalVersion,
@@ -117,13 +118,13 @@ func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types
 		Fee:            0,
 	}
 
-	if code := i.manager.AppendToTxnPool(transaction); code == errors.Success {
-		i.manager.Relay(nil, transaction)
+	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+		i.manager.Broadcast(msg.NewTx(tx))
 	}
 }
 
 func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.DposIllegalVotes) {
-	transaction := &types.Transaction{
+	tx := &types.Transaction{
 		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
 		TxType:         types.IllegalVoteEvidence,
 		PayloadVersion: types.PayloadIllegalVoteVersion,
@@ -136,8 +137,8 @@ func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.Dpo
 		Fee:            0,
 	}
 
-	if code := i.manager.AppendToTxnPool(transaction); code == errors.Success {
-		i.manager.Relay(nil, transaction)
+	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+		i.manager.Broadcast(msg.NewTx(tx))
 	}
 }
 
@@ -163,7 +164,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosPro
 	i.AddVoteEvidence(evidences)
 	i.sendIllegalVoteTransaction(evidences)
 
-	m := &msg.IllegalVotes{Votes: *evidences}
+	m := &dmsg.IllegalVotes{Votes: *evidences}
 	i.dispatcher.network.BroadcastMessage(m)
 }
 

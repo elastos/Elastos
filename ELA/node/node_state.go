@@ -56,7 +56,7 @@ func dumpNodeState() {
 	state += fmt.Sprintf(NodeLineFormat,
 		len(neighbors),
 		LocalNode.ID(),
-		chain.DefaultLedger.Blockchain.BlockHeight,
+		chain.DefaultLedger.Blockchain.GetHeight(),
 		LocalNode.services,
 		LocalNode.IsRelay(),
 		LocalNode.Port(),

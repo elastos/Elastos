@@ -28,7 +28,7 @@ func (b *BlockVersionV0) GetVersion() uint32 {
 
 func (b *BlockVersionV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
 	arbitrators, _ := b.GetProducersDesc()
-	height := blockchain.DefaultLedger.Store.GetHeight()
+	height := blockchain.DefaultLedger.Blockchain.GetHeight()
 	index := (height + offset) % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
 

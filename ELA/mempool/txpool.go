@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/events"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -12,8 +13,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/events"
-	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 type TxPool struct {
@@ -23,7 +22,6 @@ type TxPool struct {
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	Listeners       map[protocol.TxnPoolListener]interface{}
 }
 
 func (pool *TxPool) Init() {
@@ -34,49 +32,43 @@ func (pool *TxPool) Init() {
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
 	pool.sidechainTxList = make(map[Uint256]*Transaction)
-	pool.Listeners = make(map[protocol.TxnPoolListener]interface{})
 }
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
-
-	if txn.IsCoinBaseTx() {
-		log.Warn("coinbase cannot be added into transaction pool", txn.Hash().String())
+func (pool *TxPool) AppendToTxnPool(tx *Transaction) ErrCode {
+	if tx.IsCoinBaseTx() {
+		log.Warn("coinbase cannot be added into transaction pool", tx.Hash().String())
 		return ErrIneffectiveCoinbase
 	}
 
 	//verify transaction with Concurrency
-	if errCode := blockchain.CheckTransactionSanity(blockchain.DefaultLedger.Blockchain.BlockHeight+1, txn); errCode != Success {
-		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash().String())
+	if errCode := blockchain.CheckTransactionSanity(blockchain.DefaultLedger.Blockchain.GetHeight()+1, tx); errCode != Success {
+		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash().String())
 		return errCode
 	}
-	if errCode := blockchain.CheckTransactionContext(blockchain.DefaultLedger.Blockchain.BlockHeight+1, txn); errCode != Success {
-		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash().String())
+	if errCode := blockchain.CheckTransactionContext(blockchain.DefaultLedger.Blockchain.GetHeight()+1, tx); errCode != Success {
+		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash().String())
 		return errCode
 	}
 	//verify transaction by pool with lock
-	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
-		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
+	if errCode := pool.verifyTransactionWithTxnPool(tx); errCode != Success {
+		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
 	}
 
-	txn.Fee = blockchain.GetTxFee(txn, blockchain.DefaultLedger.Blockchain.AssetID)
+	tx.Fee = blockchain.GetTxFee(tx, blockchain.DefaultLedger.Blockchain.AssetID)
 	buf := new(bytes.Buffer)
-	txn.Serialize(buf)
-	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	tx.Serialize(buf)
+	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	//add the transaction to process scope
-	if ok := pool.addToTxList(txn); !ok {
+	if ok := pool.addToTxList(tx); !ok {
 		// reject duplicated transaction
-		log.Debugf("Transaction duplicate %s", txn.Hash().String())
+		log.Debugf("Transaction duplicate %s", tx.Hash().String())
 		return ErrTransactionDuplicate
 	}
 
-	if pool.Listeners != nil && txn.IsIllegalBlockTx() {
-		for k := range pool.Listeners {
-			k.OnIllegalBlockTxnReceived(txn)
-		}
-	}
+	events.Notify(events.ETTransactionAccepted, tx)
 
 	return Success
 }
@@ -343,7 +335,6 @@ func (pool *TxPool) addToTxList(txn *Transaction) bool {
 		return false
 	}
 	pool.txnList[txnHash] = txn
-	blockchain.DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
 

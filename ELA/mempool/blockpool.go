@@ -2,6 +2,7 @@ package mempool
 
 import (
 	"errors"
+	"github.com/elastos/Elastos.ELA/events"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -53,19 +54,17 @@ func (pool *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, 
 	}
 
 	// confirm block
-	isConfirmed := true
+	copyBlock := *dposBlock
+	copyBlock.ConfirmFlag = true
 	inMainChain, isOrphan, err := pool.ConfirmBlock(hash)
 	if err != nil {
 		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
-		isConfirmed = false
+		copyBlock.ConfirmFlag = false
 	}
 
-	// notify arbiter new block received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
-		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
-			v.OnBlockReceived(block, isConfirmed)
-		}
-	}
+	// notify new block received
+	events.Notify(events.ETNewBlockReceived, &copyBlock)
+
 	return inMainChain, isOrphan, nil
 }
 
@@ -92,12 +91,8 @@ func (pool *BlockPool) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool,
 		return inMainChain, isOrphan, err
 	}
 
-	// notify arbiter new confirm received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
-		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
-			v.OnConfirmReceived(confirm)
-		}
-	}
+	// notify new confirm received
+	events.Notify(events.ETConfirmReceived, confirm)
 
 	return inMainChain, isOrphan, nil
 }

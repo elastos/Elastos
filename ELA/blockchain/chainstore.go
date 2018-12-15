@@ -81,6 +81,19 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		orderedProducers:   make([]*PayloadRegisterProducer, 0),
 	}
 
+	events.Subscribe(func(e *events.Event) {
+		switch e.Type {
+		case events.ETTransactionAccepted:
+			tx := e.Data.(*Transaction)
+			if tx.IsIllegalBlockTx() {
+				err := store.PersistIllegalBlock(tx.Payload.(*PayloadIllegalBlock))
+				if err != nil {
+					log.Error("Persist illegal block tx error: ", err)
+				}
+			}
+		}
+	})
+
 	go store.loop()
 
 	return store, nil
@@ -160,7 +173,7 @@ func (c *ChainStore) InitProducerVotes() error {
 	return nil
 }
 
-func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
+func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) error {
 	prefix := []byte{byte(CFGVersion)}
 	version, err := c.Get(prefix)
 	if err != nil {
@@ -178,19 +191,19 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 
 		err := c.BatchCommit()
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// persist genesis block
 		err = c.persist(genesisBlock)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// put version to db
 		err = c.Put(prefix, []byte{0x01})
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
@@ -198,7 +211,7 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
 	if !c.IsBlockInStore(hash) {
-		return 0, errors.New("genesis block is not consistent with the chain")
+		return errors.New("genesis block is not consistent with the chain")
 	}
 	DefaultLedger.Blockchain.GenesisHash = hash
 	//c.headerIndex[0] = hash
@@ -207,7 +220,7 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
 	data, err := c.Get(currentBlockPrefix)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	r := bytes.NewReader(data)
@@ -224,24 +237,22 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 	for start := startHeight; start <= endHeight; start++ {
 		hash, err := c.GetBlockHash(start)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		header, err := c.GetHeader(hash)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		node, err := DefaultLedger.Blockchain.LoadBlockNode(header, &hash)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// This node is now the end of the best chain.
 		DefaultLedger.Blockchain.BestChain = node
-
 	}
-	//c.ledger.Blockchain.DumpState()
 
-	return c.currentBlockHeight, nil
+	return nil
 
 }
 
@@ -536,12 +547,9 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.RollbackConfirm(b)
 	c.BatchCommit()
 
-	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
 	c.mu.Lock()
 	c.currentBlockHeight = b.Header.Height - 1
 	c.mu.Unlock()
-
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
 
 	return nil
 }
@@ -617,11 +625,9 @@ func (c *ChainStore) persistBlock(block *Block) {
 		return
 	}
 
-	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
 }
 
 func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
@@ -689,7 +695,6 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 func (c *ChainStore) GetHeight() uint32 {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
 	return c.currentBlockHeight
 }
 
@@ -871,19 +876,4 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 	}
 
 	return assets
-}
-
-func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
-	illegalBlock, ok := txn.Payload.(*PayloadIllegalBlock)
-	if !ok {
-		return
-	}
-	if err := c.PersistIllegalBlock(illegalBlock); err != nil {
-		log.Error("Persist illegal block tx error: ", err.Error())
-	}
-	if illegalBlock.CoinType == ELACoin {
-		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
-			log.Error("OnIllegalBlockTxnReceived force change failed:", err.Error())
-		}
-	}
 }

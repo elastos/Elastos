@@ -4,7 +4,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 // IChainStoreDpos provides func for dpos
@@ -21,9 +20,8 @@ type IChainStoreDpos interface {
 // IChainStore provides func with store package.
 type IChainStore interface {
 	IChainStoreDpos
-	protocol.TxnPoolListener
 
-	InitWithGenesisBlock(genesisblock *Block) (uint32, error)
+	InitWithGenesisBlock(genesisblock *Block) error
 	InitProducerVotes() error
 
 	SaveBlock(b *Block) error

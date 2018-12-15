@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/node"
+	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/protocol"
 	"github.com/elastos/Elastos.ELA/servers"
@@ -110,24 +111,24 @@ func main() {
 		if err != nil {
 			goto ERROR
 		}
-		arbitrator, err = dpos.NewArbitrator(pwd,
-			dpos.ArbitratorConfig{
-				EnableEventLog:    true,
-				EnableEventRecord: true,
-				Store:             dposStore,
-			})
+		arbitrator, err = dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{
+			EnableEventLog:    true,
+			EnableEventRecord: true,
+			Store:             dposStore,
+			TxMemPool:         &node.LocalNode.TxPool,
+			BlockMemPool:      &node.LocalNode.BlockPool,
+			Broadcast: func(msg p2p.Message) {
+				noder.Relay(nil, msg)
+			},
+		})
 		if err != nil {
 			goto ERROR
 		}
 		defer arbitrator.Stop()
 		arbitrator.Start()
-		blockchain.DefaultLedger.Blockchain.NewBlocksListeners = append(blockchain.DefaultLedger.Blockchain.NewBlocksListeners, arbitrator)
-		blockchain.DefaultLedger.Arbitrators.RegisterListener(arbitrator)
 	}
 
 	servers.ServerNode = noder
-	servers.ServerNode.RegisterTxPoolListener(arbitrator)
-	servers.ServerNode.RegisterTxPoolListener(chainStore)
 
 	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()
