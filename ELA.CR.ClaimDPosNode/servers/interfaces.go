@@ -82,7 +82,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - header.Height + 1
+		confirmations = chain.DefaultLedger.Blockchain.GetHeight() - header.Height + 1
 		blockHash = ToReversedString(header.Hash())
 		time = header.Timestamp
 		blockTime = header.Timestamp
@@ -181,7 +181,7 @@ func GetNodeState(param Params) map[string]interface{} {
 		Compile:     config.Version,
 		ID:          ServerNode.ID(),
 		HexID:       fmt.Sprintf("0x%x", ServerNode.ID()),
-		Height:      uint64(chain.DefaultLedger.Blockchain.BlockHeight),
+		Height:      uint64(chain.DefaultLedger.Blockchain.GetHeight()),
 		Version:     ServerNode.Version(),
 		Services:    ServerNode.Services(),
 		Relay:       ServerNode.IsRelay(),
@@ -244,8 +244,6 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 		log.Debug(err)
 		return ResponsePack(InternalError, "adding block failed")
 	}
-
-	LocalPow.BroadcastBlock(msgAuxBlock)
 
 	log.Debug("AddBlock called finished and LocalPow.MsgBlock.MapNewBlock has been deleted completely")
 	log.Info(auxPow, blockHash)
@@ -418,7 +416,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	binary.BigEndian.PutUint32(versionBytes[:], block.Header.Version)
 
 	var chainWork [4]byte
-	binary.BigEndian.PutUint32(chainWork[:], chain.DefaultLedger.Blockchain.GetBestHeight()-block.Header.Height)
+	binary.BigEndian.PutUint32(chainWork[:], chain.DefaultLedger.Blockchain.GetHeight()-block.Header.Height)
 
 	nextBlockHash, _ := chain.DefaultLedger.Store.GetBlockHash(block.Header.Height + 1)
 
@@ -427,7 +425,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
-		Confirmations:     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
+		Confirmations:     chain.DefaultLedger.Blockchain.GetHeight() - block.Header.Height + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
 		Weight:            uint32(block.GetSize() * 4),
@@ -513,16 +511,16 @@ func SendRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetBlockHeight(param Params) map[string]interface{} {
-	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight)
+	return ResponsePack(Success, chain.DefaultLedger.Blockchain.GetHeight())
 }
 
 func GetBestBlockHash(param Params) map[string]interface{} {
-	bestHeight := chain.DefaultLedger.Blockchain.BlockHeight
+	bestHeight := chain.DefaultLedger.Blockchain.GetHeight()
 	return GetBlockHash(map[string]interface{}{"height": float64(bestHeight)})
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight+1)
+	return ResponsePack(Success, chain.DefaultLedger.Blockchain.GetHeight()+1)
 }
 
 func GetBlockHash(param Params) map[string]interface{} {
@@ -728,7 +726,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 }
 
 func ListUnspent(param Params) map[string]interface{} {
-	bestHeight := chain.DefaultLedger.Blockchain.GetBestHeight()
+	bestHeight := chain.DefaultLedger.Blockchain.GetHeight()
 
 	var result []UTXOInfo
 	addresses, ok := param.ArrayString("addresses")
@@ -1032,7 +1030,7 @@ func VoteStatus(param Params) map[string]interface{} {
 				return ResponsePack(UnknownTransaction, "")
 			}
 
-			if chain.DefaultLedger.Blockchain.GetBestHeight()-header.Height < 6 {
+			if chain.DefaultLedger.Blockchain.GetHeight()-header.Height < 6 {
 				status = false
 			}
 		}

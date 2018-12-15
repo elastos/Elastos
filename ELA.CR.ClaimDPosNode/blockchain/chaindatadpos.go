@@ -111,7 +111,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 	key = []byte{byte(DPOSCancelProducer)}
 	key = append(key, payload.PublicKey...)
 	buf = new(bytes.Buffer)
-	err = WriteUint32(buf, DefaultLedger.Blockchain.GetBestHeight())
+	err = WriteUint32(buf, DefaultLedger.Blockchain.GetHeight())
 	if err != nil {
 		return errors.New("write cancel producer height failed")
 	}
@@ -151,7 +151,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 }
 
 func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
-	height := DefaultLedger.Blockchain.GetBestHeight()
+	height := DefaultLedger.Blockchain.GetHeight()
 	for i := uint32(0); i <= height; i++ {
 		hash, err := c.GetBlockHash(height)
 		if err != nil {

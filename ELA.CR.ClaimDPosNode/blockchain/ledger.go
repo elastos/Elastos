@@ -76,7 +76,7 @@ func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 
 //Get local block chain height.
 func (l *Ledger) GetLocalBlockChainHeight() uint32 {
-	return l.Blockchain.GetBestHeight()
+	return l.Blockchain.GetHeight()
 }
 
 //Get blocks and confirms by given height range, if end equals zero will be treat as current highest block height

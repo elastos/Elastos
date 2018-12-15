@@ -405,7 +405,7 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 		blockReceivedChan:     make(chan blockItem, 10),                   //todo config handle capacity though config file
 		confirmReceivedChan:   make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence: make(chan *types.DposIllegalBlocks),
-		currentHeight:         blockchain.DefaultLedger.Blockchain.GetBestHeight() - 1,
+		currentHeight:         blockchain.DefaultLedger.Blockchain.GetHeight() - 1,
 		account:               dposAccount,
 	}
 

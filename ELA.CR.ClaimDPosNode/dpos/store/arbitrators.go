@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/events"
 )
 
 type ArbitratorsConfig struct {
@@ -35,8 +36,7 @@ type Arbitrators struct {
 	nextArbitrators [][]byte
 	nextCandidates  [][]byte
 
-	listener interfaces.ArbitratorsListener
-	lock     sync.Mutex
+	lock sync.Mutex
 }
 
 func InitArbitrators(arConfig ArbitratorsConfig) {
@@ -49,7 +49,6 @@ func InitArbitrators(arConfig ArbitratorsConfig) {
 	}
 	arbiters.store = arConfig.Store
 	blockchain.DefaultLedger.Arbitrators = arbiters
-	blockchain.DefaultLedger.Blockchain.NewBlocksListeners = []interfaces.NewBlocksListener{blockchain.DefaultLedger.Arbitrators}
 }
 
 func (a *Arbitrators) StartUp() error {
@@ -78,7 +77,8 @@ func (a *Arbitrators) StartUp() error {
 }
 
 func (a *Arbitrators) ForceChange() error {
-	block, err := blockchain.DefaultLedger.GetBlockWithHeight(blockchain.DefaultLedger.Blockchain.BlockHeight)
+	block, err := blockchain.DefaultLedger.GetBlockWithHeight(
+		blockchain.DefaultLedger.Blockchain.GetHeight())
 	if err != nil {
 		return err
 	}
@@ -91,9 +91,7 @@ func (a *Arbitrators) ForceChange() error {
 		return err
 	}
 
-	if a.listener != nil {
-		a.listener.OnNewElection(a.nextArbitrators)
-	}
+	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
 
 	return nil
 }
@@ -167,7 +165,7 @@ func (a *Arbitrators) GetOnDutyArbitrator() []byte {
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 	return blockchain.DefaultLedger.HeightVersions.GetNextOnDutyArbitrator(
-		blockchain.DefaultLedger.Blockchain.BlockHeight, a.DutyChangedCount, offset)
+		blockchain.DefaultLedger.Blockchain.GetHeight(), a.DutyChangedCount, offset)
 }
 
 func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
@@ -176,14 +174,6 @@ func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
 
 func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num >= a.config.ArbitratorsCount-a.config.MajorityCount
-}
-
-func (a *Arbitrators) RegisterListener(listener interfaces.ArbitratorsListener) {
-	a.listener = listener
-}
-
-func (a *Arbitrators) UnregisterListener(listener interfaces.ArbitratorsListener) {
-	a.listener = nil
 }
 
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
@@ -198,9 +188,8 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 			return
 		}
 
-		if a.listener != nil {
-			a.listener.OnNewElection(a.nextArbitrators)
-		}
+		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+
 	} else {
 		a.DutyChangedCount++
 		a.store.SaveDposDutyChangedCount(a.DutyChangedCount)
