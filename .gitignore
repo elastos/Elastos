@@ -9,6 +9,7 @@
 Chain/
 Chain_WhiteBox/
 Chain_UnitTest/
+Dpos_UnitTest/
 Dpos/
 Dpos_Test/
 ArbiterLogs/

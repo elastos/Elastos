@@ -68,7 +68,6 @@ type Configuration struct {
 type ArbiterConfiguration struct {
 	Name             string `json:"Name"`
 	Magic            uint32 `json:"Magic"`
-	SeedList         []Seed `json:"SeedList"`
 	NodePort         uint16 `json:"NodePort"`
 	ProtocolVersion  uint32 `json:"ProtocolVersion"`
 	Services         uint64 `json:"Services"`
