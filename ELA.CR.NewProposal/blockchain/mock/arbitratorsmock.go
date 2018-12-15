@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
@@ -120,12 +119,4 @@ func (a *ArbitratorsMock) HasArbitersMajorityCount(num uint32) bool {
 func (a *ArbitratorsMock) HasArbitersMinorityCount(num uint32) bool {
 	//note "num >= uint32(len(arbitratorsPublicKeys))-majorityCount" in real logic
 	return num > uint32(len(a.CurrentArbitrators))-a.MajorityCount
-}
-
-func (a *ArbitratorsMock) RegisterListener(listener interfaces.ArbitratorsListener) {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) UnregisterListener(listener interfaces.ArbitratorsListener) {
-	panic("implement me")
 }

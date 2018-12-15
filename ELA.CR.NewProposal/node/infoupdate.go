@@ -61,7 +61,7 @@ func (t *syncTimer) stop() {
 func (node *node) SyncBlocks() {
 	needSync := !node.IsCurrent()
 	log.Info("needSync: ", needSync)
-	log.Info("BlockHeight = ", chain.DefaultLedger.Blockchain.BlockHeight)
+	log.Info("BlockHeight = ", chain.DefaultLedger.Blockchain.GetHeight())
 	chain.DefaultLedger.Blockchain.DumpState()
 	bc := chain.DefaultLedger.Blockchain
 	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
@@ -141,7 +141,7 @@ out:
 		case <-pingTicker.C:
 
 			// send ping message to node
-			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
+			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Blockchain.GetHeight())))
 		case <-node.quit:
 			break out
 		}

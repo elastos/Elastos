@@ -10,7 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-	msg2 "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type ProposalDispatcher interface {
@@ -61,7 +62,7 @@ func (p *proposalDispatcher) OnAbnormalStateDetected() {
 
 func (p *proposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
-	msgItem := &msg2.RequestConsensus{Height: height}
+	msgItem := &dmsg.RequestConsensus{Height: height}
 	peerID := p.network.GetActivePeer()
 	if peerID == nil {
 		log.Error("[RequestAbnormalRecovering] can not find active peer")
@@ -122,7 +123,7 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 	}
 	p.processingBlock = b
 
-	p.network.BroadcastMessage(msg2.NewInventory(b.Hash()))
+	p.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 	proposal := types.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.consensus.GetViewOffset()}
 	var err error
 	proposal.Sign, err = p.account.SignProposal(&proposal)
@@ -133,11 +134,11 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 
 	log.Info("[StartProposal] sponsor:", p.manager.GetPublicKey())
 
-	m := &msg2.Proposal{
+	m := &dmsg.Proposal{
 		Proposal: proposal,
 	}
 
-	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", msg2.GetMessageHash(m))
+	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", dmsg.GetMessageHash(m))
 	p.network.BroadcastMessage(m)
 
 	rawData := new(bytes.Buffer)
@@ -273,11 +274,12 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	p.manager.Relay(nil, &types.DposBlock{
+	p.manager.Broadcast(msg.NewBlock(&types.DposBlock{
 		ConfirmFlag: true,
 		Confirm:     currentVoteSlot,
-	})
-	if inMainChain, isOrphan, err := p.manager.AppendConfirm(currentVoteSlot); err != nil || !inMainChain || isOrphan {
+	}))
+	inMainChain, isOrphan, err := p.manager.AppendConfirm(currentVoteSlot)
+	if err != nil || !inMainChain || isOrphan {
 		log.Error("[AppendConfirm] err:", err.Error())
 		return false
 	}
@@ -310,7 +312,7 @@ func (p *proposalDispatcher) FinishConsensus() {
 	}
 }
 
-func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.ConsensusStatus) error {
+func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error {
 	if height > p.CurrentHeight() {
 		return errors.New("Requesting height greater than current processing height")
 	}
@@ -338,7 +340,7 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *msg2.
 	return nil
 }
 
-func (p *proposalDispatcher) RecoverFromConsensusStatus(status *msg2.ConsensusStatus) error {
+func (p *proposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error {
 	p.acceptVotes = make(map[common.Uint256]types.DPosProposalVote)
 	for _, v := range status.AcceptVotes {
 		p.acceptVotes[v.Hash()] = v
@@ -368,7 +370,7 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	if currentBlock != nil {
 		height = currentBlock.Height
 	} else {
-		height = blockchain.DefaultLedger.Blockchain.BlockHeight
+		height = blockchain.DefaultLedger.Blockchain.GetHeight()
 	}
 	return height
 }
@@ -431,11 +433,11 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 		log.Error("[acceptProposal] sign failed")
 		return
 	}
-	voteMsg := &msg2.Vote{Command: msg2.CmdAcceptVote, Vote: vote}
+	voteMsg := &dmsg.Vote{Command: dmsg.CmdAcceptVote, Vote: vote}
 	p.ProcessVote(vote, true)
 
 	p.network.BroadcastMessage(voteMsg)
-	log.Info("[acceptProposal] send acc_vote msg:", msg2.GetMessageHash(voteMsg).String())
+	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
@@ -453,8 +455,8 @@ func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 		log.Error("[rejectProposal] sign failed")
 		return
 	}
-	msg := &msg2.Vote{Command: msg2.CmdRejectVote, Vote: vote}
-	log.Info("[rejectProposal] send rej_vote msg:", msg2.GetMessageHash(msg))
+	msg := &dmsg.Vote{Command: dmsg.CmdRejectVote, Vote: vote}
+	log.Info("[rejectProposal] send rej_vote msg:", dmsg.GetMessageHash(msg))
 
 	_, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok {

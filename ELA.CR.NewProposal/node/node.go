@@ -142,7 +142,7 @@ func InitLocalNode() protocol.Noder {
 		SyncBlkReqSem:      MakeSemaphore(protocol.MaxSyncHdrReq),
 		RequestedBlockList: make(map[Uint256]time.Time),
 		syncTimer:          newSyncTimer(stopSyncing),
-		height:             uint64(chain.DefaultLedger.Blockchain.GetBestHeight()),
+		height:             uint64(chain.DefaultLedger.Blockchain.GetHeight()),
 		link: link{
 			magic: Parameters.Magic,
 			port:  Parameters.NodePort,
@@ -425,9 +425,9 @@ func (node *node) SetSyncHeaders(b bool) {
 // IsCurrent returns if node believes it was synced to current height.
 func (node *node) IsCurrent() bool {
 	addresses, heights := node.GetInternalNeighborAddressAndHeights()
-	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.GetHeight())
 	log.Info("internal nbr address ", addresses)
-	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0
+	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.GetHeight()), heights) > 0
 }
 
 func CompareHeight(localHeight uint64, heights []uint64) int {

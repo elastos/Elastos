@@ -55,10 +55,6 @@ func (s State) String() string {
 	return fmt.Sprintf("STATE%d", s)
 }
 
-type TxnPoolListener interface {
-	OnIllegalBlockTxnReceived(txn *types.Transaction)
-}
-
 // Handler is the P2P message handler interface.
 type Handler interface {
 	MakeEmptyMessage(cmd string) (p2p.Message, error)
@@ -91,8 +87,6 @@ type Noder interface {
 	GetConnectionCount() (uint, uint)
 	GetTransactionPool(bool) map[common.Uint256]*types.Transaction
 	AppendToTxnPool(*types.Transaction) errors.ErrCode
-	RegisterTxPoolListener(listener TxnPoolListener)
-	UnregisterTxPoolListener(listener TxnPoolListener)
 	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
 	ExistedID(id common.Uint256) bool
 	RequireNeighbourList()

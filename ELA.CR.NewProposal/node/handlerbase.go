@@ -158,7 +158,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 func (h *HandlerBase) onPing(ping *msg.Ping) {
 	h.node.SetHeight(ping.Nonce)
 	h.node.SetLastActive(time.Now())
-	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Store.GetHeight())))
+	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Blockchain.GetHeight())))
 }
 
 func (h *HandlerBase) onPong(pong *msg.Pong) {
@@ -241,7 +241,7 @@ func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256, maxBlockH
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := chain.DefaultLedger.Store.GetHeight()
+	curHeight := chain.DefaultLedger.Blockchain.GetHeight()
 	if stopHash == common.EmptyHash {
 		if startHash == common.EmptyHash {
 			if curHeight > maxBlockHashes {

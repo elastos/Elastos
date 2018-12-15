@@ -223,7 +223,7 @@ func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 		locktime     uint32
 	}
 	transactionCache := make(map[common.Uint256]lockTxInfo)
-	currentHeight := DefaultLedger.Store.GetHeight()
+	currentHeight := DefaultLedger.Blockchain.GetHeight()
 	var referTxn *Transaction
 	for _, input := range txn.Inputs {
 		var lockHeight uint32

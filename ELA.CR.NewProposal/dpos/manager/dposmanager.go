@@ -8,13 +8,12 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
-	elap2p "github.com/elastos/Elastos.ELA/p2p"
-	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
-	"github.com/elastos/Elastos.ELA/protocol"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type DposNetworkConfig struct {
@@ -28,36 +27,36 @@ type DposNetwork interface {
 	Start()
 	Stop() error
 
-	SendMessageToPeer(id peer.PID, msg elap2p.Message) error
-	BroadcastMessage(msg elap2p.Message)
+	SendMessageToPeer(id dpeer.PID, msg p2p.Message) error
+	BroadcastMessage(msg p2p.Message)
 
 	UpdatePeers(arbitrators [][]byte) error
 	ChangeHeight(height uint32) error
 
-	GetActivePeer() *peer.PID
+	GetActivePeer() *dpeer.PID
 }
 
 type StatusSyncEventListener interface {
-	OnPing(id peer.PID, height uint32)
-	OnPong(id peer.PID, height uint32)
-	OnBlock(id peer.PID, block *types.Block)
-	OnInv(id peer.PID, blockHash common.Uint256)
-	OnGetBlock(id peer.PID, blockHash common.Uint256)
-	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock)
-	OnRequestConsensus(id peer.PID, height uint32)
-	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
-	OnRequestProposal(id peer.PID, hash common.Uint256)
-	OnIllegalProposalReceived(id peer.PID, proposals *types.DposIllegalProposals)
-	OnIllegalVotesReceived(id peer.PID, votes *types.DposIllegalVotes)
+	OnPing(id dpeer.PID, height uint32)
+	OnPong(id dpeer.PID, height uint32)
+	OnBlock(id dpeer.PID, block *types.Block)
+	OnInv(id dpeer.PID, blockHash common.Uint256)
+	OnGetBlock(id dpeer.PID, blockHash common.Uint256)
+	OnGetBlocks(id dpeer.PID, startBlockHeight, endBlockHeight uint32)
+	OnResponseBlocks(id dpeer.PID, blockConfirms []*types.DposBlock)
+	OnRequestConsensus(id dpeer.PID, height uint32)
+	OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus)
+	OnRequestProposal(id dpeer.PID, hash common.Uint256)
+	OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals)
+	OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes)
 }
 
 type NetworkEventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(id peer.PID, p types.DPosProposal)
-	OnVoteReceived(id peer.PID, p types.DPosProposalVote)
-	OnVoteRejected(id peer.PID, p types.DPosProposalVote)
+	OnProposalReceived(id dpeer.PID, p types.DPosProposal)
+	OnVoteReceived(id dpeer.PID, p types.DPosProposalVote)
+	OnVoteRejected(id dpeer.PID, p types.DPosProposalVote)
 
 	OnChangeView()
 	OnBadNetwork()
@@ -68,8 +67,8 @@ type NetworkEventListener interface {
 }
 
 type AbnormalRecovering interface {
-	CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error
-	RecoverFromConsensusStatus(status *msg.ConsensusStatus) error
+	CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error
+	RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error
 }
 
 type DposManager interface {
@@ -79,7 +78,10 @@ type DposManager interface {
 	GetBlockCache() *ConsensusBlockCache
 	GetArbitrators() interfaces.Arbitrators
 
-	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool, txPool *mempool.TxPool, node protocol.Noder)
+	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher,
+		consensus Consensus, network DposNetwork,
+		illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
+		txPool *mempool.TxPool, broadcast func(message p2p.Message))
 
 	Recover()
 
@@ -90,7 +92,7 @@ type DposManager interface {
 
 	AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error)
 	AppendToTxnPool(txn *types.Transaction) errors.ErrCode
-	Relay(from protocol.Noder, message interface{}) error
+	Broadcast(msg p2p.Message)
 }
 
 type dposManager struct {
@@ -106,7 +108,7 @@ type dposManager struct {
 	arbitrators interfaces.Arbitrators
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
-	node        protocol.Noder
+	broadcast   func(p2p.Message)
 }
 
 func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
@@ -124,7 +126,10 @@ func NewManager(name string, arbitrators interfaces.Arbitrators) DposManager {
 	return m
 }
 
-func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork, illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool, txPool *mempool.TxPool, node protocol.Noder) {
+func (d *dposManager) Initialize(handler DposHandlerSwitch,
+	dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork,
+	illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
+	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
 	d.handler = handler
 	d.dispatcher = dispatcher
 	d.consensus = consensus
@@ -133,15 +138,15 @@ func (d *dposManager) Initialize(handler DposHandlerSwitch, dispatcher ProposalD
 	d.blockCache.Listener = d.dispatcher.(*proposalDispatcher)
 	d.blockPool = blockPool
 	d.txPool = txPool
-	d.node = node
+	d.broadcast = broadcast
 }
 
 func (d *dposManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
 	return d.txPool.AppendToTxnPool(txn)
 }
 
-func (d *dposManager) Relay(from protocol.Noder, message interface{}) error {
-	return d.node.Relay(from, message)
+func (d *dposManager) Broadcast(msg p2p.Message) {
+	d.broadcast(msg)
 }
 
 func (d *dposManager) GetPublicKey() string {
@@ -175,7 +180,7 @@ func (d *dposManager) ProcessHigherBlock(b *types.Block) {
 	}
 
 	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
-	d.network.BroadcastMessage(msg.NewInventory(b.Hash()))
+	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 	d.handler.TryStartNewConsensus(b)
 }
 
@@ -187,36 +192,36 @@ func (d *dposManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *dposManager) OnProposalReceived(id peer.PID, p types.DPosProposal) {
+func (d *dposManager) OnProposalReceived(id dpeer.PID, p types.DPosProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *dposManager) OnVoteReceived(id peer.PID, p types.DPosProposalVote) {
+func (d *dposManager) OnVoteReceived(id dpeer.PID, p types.DPosProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(id, p)
 }
 
-func (d *dposManager) OnVoteRejected(id peer.PID, p types.DPosProposalVote) {
+func (d *dposManager) OnVoteRejected(id dpeer.PID, p types.DPosProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)
 }
 
-func (d *dposManager) OnPing(id peer.PID, height uint32) {
+func (d *dposManager) OnPing(id dpeer.PID, height uint32) {
 	d.processHeartBeat(id, height)
 }
 
-func (d *dposManager) OnPong(id peer.PID, height uint32) {
+func (d *dposManager) OnPong(id dpeer.PID, height uint32) {
 	d.processHeartBeat(id, height)
 }
 
-func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
+func (d *dposManager) OnBlock(id dpeer.PID, block *types.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
-	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
+	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
 		if _, _, err := d.blockPool.AppendDposBlock(&types.DposBlock{
 			BlockFlag: true,
 			Block:     block,
@@ -226,24 +231,24 @@ func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
 	}
 }
 
-func (d *dposManager) OnInv(id peer.PID, blockHash common.Uint256) {
+func (d *dposManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
 	if _, err := d.getBlock(blockHash); err != nil {
 		log.Info("[ProcessInv] send getblock:", blockHash.String())
-		d.network.SendMessageToPeer(id, msg.NewGetBlock(blockHash))
+		d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
 	}
 }
 
-func (d *dposManager) OnGetBlock(id peer.PID, blockHash common.Uint256) {
+func (d *dposManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
 	if block, err := d.getBlock(blockHash); err == nil {
-		d.network.SendMessageToPeer(id, elamsg.NewBlock(block))
+		d.network.SendMessageToPeer(id, msg.NewBlock(block))
 	}
 }
 
-func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
+func (d *dposManager) OnGetBlocks(id dpeer.PID, startBlockHeight, endBlockHeight uint32) {
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock) {
+func (d *dposManager) OnResponseBlocks(id dpeer.PID, blockConfirms []*types.DposBlock) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
@@ -252,11 +257,11 @@ func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*types.DposB
 	}
 }
 
-func (d *dposManager) OnRequestConsensus(id peer.PID, height uint32) {
+func (d *dposManager) OnRequestConsensus(id dpeer.PID, height uint32) {
 	d.handler.HelpToRecoverAbnormal(id, height)
 }
 
-func (d *dposManager) OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus) {
+func (d *dposManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus) {
 	log.Info("[OnResponseConsensus], status:", *status)
 	d.handler.RecoverAbnormal(status)
 }
@@ -280,10 +285,10 @@ func (d *dposManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		return
 	}
 
-	if blockchain.DefaultLedger.Blockchain.BlockHeight < b.Height { //new height block coming
+	if blockchain.DefaultLedger.Blockchain.GetHeight() < b.Height { //new height block coming
 		d.ProcessHigherBlock(b)
 	} else {
-		log.Warn("a.Leger.LastBlock.Height", blockchain.DefaultLedger.Blockchain.BlockHeight, "b.Height", b.Height)
+		log.Warn("a.Leger.LastBlock.Height", blockchain.DefaultLedger.Blockchain.GetHeight(), "b.Height", b.Height)
 	}
 }
 
@@ -296,11 +301,11 @@ func (d *dposManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	d.changeHeight()
 }
 
-func (d *dposManager) OnIllegalProposalReceived(id peer.PID, proposals *types.DposIllegalProposals) {
+func (d *dposManager) OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals) {
 	d.illegalMonitor.AddProposalEvidence(proposals)
 }
 
-func (d *dposManager) OnIllegalVotesReceived(id peer.PID, votes *types.DposIllegalVotes) {
+func (d *dposManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes) {
 	d.illegalMonitor.AddVoteEvidence(votes)
 }
 
@@ -308,10 +313,10 @@ func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
 	d.illegalMonitor.AddBlockEvidence(i)
 }
 
-func (d *dposManager) OnRequestProposal(id peer.PID, hash common.Uint256) {
+func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 	currentProposal := d.dispatcher.GetProcessingProposal()
 	if currentProposal != nil {
-		responseProposal := &msg.Proposal{Proposal: *currentProposal}
+		responseProposal := &dmsg.Proposal{Proposal: *currentProposal}
 		d.network.SendMessageToPeer(id, responseProposal)
 	}
 }
@@ -333,16 +338,16 @@ func (d *dposManager) changeHeight() {
 	d.ChangeConsensus(onDuty)
 }
 
-func (d *dposManager) processHeartBeat(id peer.PID, height uint32) {
+func (d *dposManager) processHeartBeat(id dpeer.PID, height uint32) {
 	if d.tryRequestBlocks(id, height) {
 		log.Info("Found higher block, requesting it.")
 	}
 }
 
-func (d *dposManager) tryRequestBlocks(id peer.PID, sourceHeight uint32) bool {
+func (d *dposManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
 	height := d.dispatcher.CurrentHeight()
 	if sourceHeight > height {
-		m := &msg.GetBlocks{
+		m := &dmsg.GetBlocks{
 			StartBlockHeight: height,
 			EndBlockHeight:   sourceHeight}
 		d.network.SendMessageToPeer(id, m)

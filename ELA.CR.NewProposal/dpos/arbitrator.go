@@ -1,11 +1,10 @@
 package dpos
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/node"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -14,20 +13,21 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
-	"github.com/elastos/Elastos.ELA/protocol"
+	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/mempool"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 type ArbitratorConfig struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
 	Store             interfaces.IDposStore
+	TxMemPool         *mempool.TxPool
+	BlockMemPool      *mempool.BlockPool
+	Broadcast         func(msg p2p.Message)
 }
 
 type Arbitrator interface {
-	interfaces.NewBlocksListener
-	interfaces.ArbitratorsListener
-	protocol.TxnPoolListener
-
 	Start()
 	Stop() error
 }
@@ -55,10 +55,10 @@ func (a *arbitrator) Stop() error {
 	return nil
 }
 
-func (a *arbitrator) OnIllegalBlockTxnReceived(txn *types.Transaction) {
+func (a *arbitrator) OnIllegalBlockTxReceived(tx *types.Transaction) {
 	log.Info("[OnIllegalBlockTxnReceived] listener received block")
-	if txn.TxType == types.IllegalBlockEvidence {
-		payload := txn.Payload.(*types.PayloadIllegalBlock)
+	if tx.TxType == types.IllegalBlockEvidence {
+		payload := tx.Payload.(*types.PayloadIllegalBlock)
 		if payload.CoinType != types.ELACoin {
 			a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
 		}
@@ -87,14 +87,15 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, error) {
+func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
 		log.Error("Init dpos account error")
 		return nil, err
 	}
 
-	dposManager := manager.NewManager(config.Parameters.ArbiterConfiguration.Name, blockchain.DefaultLedger.Arbitrators)
+	dposManager := manager.NewManager(config.Parameters.ArbiterConfiguration.Name,
+		blockchain.DefaultLedger.Arbitrators)
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
@@ -107,14 +108,14 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 
 	eventMonitor := log.NewEventMoniter()
 
-	if arConfig.EnableEventLog {
+	if cfg.EnableEventLog {
 		eventLogs := &log.EventLogs{}
 		eventMonitor.RegisterListener(eventLogs)
 	}
 
-	if arConfig.EnableEventRecord {
+	if cfg.EnableEventRecord {
 		eventRecorder := &store.EventRecord{}
-		eventRecorder.Initialize(arConfig.Store)
+		eventRecorder.Initialize(cfg.Store)
 		eventMonitor.RegisterListener(eventRecorder)
 	}
 
@@ -124,11 +125,11 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
-	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network,
-		illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
+	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus,
+		network, illegalMonitor, cfg.BlockMemPool, cfg.TxMemPool, cfg.Broadcast)
 	network.Initialize(manager.DposNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
-		Store:              arConfig.Store,
+		Store:              cfg.Store,
 	})
 
 	result := &arbitrator{
@@ -136,6 +137,26 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 		dposManager:    dposManager,
 		network:        network,
 	}
+
+	events.Subscribe(func(e *events.Event) {
+		switch e.Type {
+		case events.ETNewBlockReceived:
+			block := e.Data.(*types.BlockConfirm)
+			result.OnBlockReceived(block.Block, block.ConfirmFlag)
+
+		case events.ETConfirmReceived:
+			result.OnConfirmReceived(e.Data.(*types.DPosProposalVoteSlot))
+
+		case events.ETNewArbiterElection:
+			result.OnNewElection(e.Data.([][]byte))
+
+		case events.ETTransactionAccepted:
+			tx := e.Data.(*types.Transaction)
+			if tx.IsIllegalBlockTx() {
+				result.OnIllegalBlockTxReceived(tx)
+			}
+		}
+	})
 
 	return result, nil
 }
