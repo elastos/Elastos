@@ -8,6 +8,7 @@ local block_utils = require("test/white_box/block_utils")
 
 print(colors('%{blue}-----------------Begin-----------------'))
 local dpos = dofile("test/white_box/dpos_manager.lua")
+local test = dofile("test/common/test_utils.lua")
 
 api.clear_store()
 api.init_ledger(log.level, dpos.A.arbitrators)
@@ -16,14 +17,14 @@ dpos.set_on_duty(1) -- set A on duty
 dpos.dump_on_duty()
 
 --- initial status check
-assert(dpos.A.manager:is_on_duty())
-assert(dpos.A.manager:is_status_ready())
-assert(not dpos.A.manager:is_status_running())
+test.assert_true(dpos.A.manager:is_on_duty())
+test.assert_true(dpos.A.manager:is_status_ready())
+test.assert_false(dpos.A.manager:is_status_running())
 
 --- prepare related data
 local b1 = block_utils.height_one()
 local b2 = block_utils.height_one()
-assert(b1:hash() ~= b2:hash())
+test.assert_not_equal(b1:hash(), b2:hash())
 
 local prop = proposal.new(dpos.A.manager:public_key(), b1:hash(), 0)
 local prop2 = proposal.new(dpos.A.manager:public_key(), b2:hash(), 0)
@@ -54,13 +55,13 @@ dpos.B.network:push_block(b1, false)
 dpos.B.network:push_block(b2, false)
 
 dpos.B.network:push_proposal(dpos.A.manager:public_key(), prop)
-assert(dpos.B.network:check_last_msg(dpos_msg.accept_vote, vb))
+test.assert_true(dpos.B.network:check_last_msg(dpos_msg.accept_vote, vb))
 dpos.B.network:push_proposal(dpos.A.manager:public_key(), prop2)
-assert(dpos.B.network:check_last_msg(dpos_msg.illegal_proposals, illegal))
+test.assert_true(dpos.B.network:check_last_msg(dpos_msg.illegal_proposals, illegal))
 
 dpos.B.network:push_vote(dpos.A.manager:public_key(), va)
 dpos.B.network:push_vote(dpos.C.manager:public_key(), vc)
-assert(dpos.B.manager:check_last_relay(1, confirm))
+test.assert_true(dpos.B.manager:check_last_relay(1, confirm))
 
 print(colors('%{blue}dump node relays'))
 print(dpos.B.manager:dump_node_relays())
@@ -79,3 +80,5 @@ dpos.C.network:push_illegal_proposals(dpos.B.manager:public_key(), illegal)
 --- clean up
 api.close_store()
 print(colors('%{green}-----------------Test success!-----------------'))
+
+return test.result
