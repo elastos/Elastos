@@ -457,15 +457,15 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if err := txPool.isTransactionCleaned(tx4); err != nil {
+	if err := isTransactionCleaned(&txPool, tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
 	}
 
-	if err := txPool.isTransactionCleaned(tx5); err != nil {
+	if err := isTransactionCleaned(&txPool, tx5); err != nil {
 		t.Error("should clean transaction: tx5:", err)
 	}
 
-	if err := txPool.isTransactionExisted(tx6); err != nil {
+	if err := isTransactionExisted(&txPool, tx6); err != nil {
 		t.Error("should have transaction: tx6", err)
 	}
 
@@ -483,7 +483,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	txPool.CleanSubmittedTransactions(&newBLock)
 
-	if err := txPool.isTransactionCleaned(tx4); err != nil {
+	if err := isTransactionCleaned(&txPool, tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
 	}
 
@@ -496,7 +496,47 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	txPool.addSidechainTx(tx6)
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if err := txPool.isTransactionExisted(tx6); err != nil {
+	if err := isTransactionExisted(&txPool, tx6); err != nil {
 		t.Error("should have transaction: tx6", err)
 	}
+}
+
+func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
+	if tx := pool.txnList[tx.Hash()]; tx != nil {
+		return fmt.Errorf("has transaction in transaction pool" + tx.Hash().String())
+	}
+	for _, input := range tx.Inputs {
+		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput != nil {
+			return fmt.Errorf("has utxo inputs in input list pool" + input.String())
+		}
+	}
+	if tx.TxType == types.WithdrawFromSideChain {
+		payload := tx.Payload.(*payload.PayloadWithdrawFromSideChain)
+		for _, hash := range payload.SideChainTransactionHashes {
+			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx != nil {
+				return fmt.Errorf("has sidechain hash in sidechain list pool" + hash.String())
+			}
+		}
+	}
+	return nil
+}
+
+func isTransactionExisted(pool *TxPool, tx *types.Transaction) error {
+	if tx := pool.txnList[tx.Hash()]; tx == nil {
+		return fmt.Errorf("does not have transaction in transaction pool" + tx.Hash().String())
+	}
+	for _, input := range tx.Inputs {
+		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput == nil {
+			return fmt.Errorf("does not have utxo inputs in input list pool" + input.String())
+		}
+	}
+	if tx.TxType == types.WithdrawFromSideChain {
+		payload := tx.Payload.(*payload.PayloadWithdrawFromSideChain)
+		for _, hash := range payload.SideChainTransactionHashes {
+			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx == nil {
+				return fmt.Errorf("does not have sidechain hash in sidechain list pool" + hash.String())
+			}
+		}
+	}
+	return nil
 }
