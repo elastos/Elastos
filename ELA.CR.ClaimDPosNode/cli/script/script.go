@@ -2,6 +2,7 @@ package script
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/cli/script/api"
@@ -18,6 +19,7 @@ func scriptAction(c *cli.Context) error {
 
 	fileContent := c.String("file")
 	strContent := c.String("str")
+	testContent := c.String("test")
 
 	L := lua.NewState()
 	defer L.Close()
@@ -38,6 +40,16 @@ func scriptAction(c *cli.Context) error {
 		}
 	}
 
+	if testContent != "" {
+		fmt.Println("begin white box")
+		if err := L.DoFile(testContent); err != nil {
+			println(err.Error())
+			os.Exit(1)
+		} else {
+			os.Exit(0)
+		}
+	}
+
 	return nil
 }
 
@@ -55,6 +67,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "str, s",
 				Usage: "test string",
+			},
+			cli.StringFlag{
+				Name:  "test, t",
+				Usage: "white box test",
 			},
 		},
 		Action: scriptAction,

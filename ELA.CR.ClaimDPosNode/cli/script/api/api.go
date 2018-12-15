@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -15,9 +16,9 @@ import (
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/version/verconfig"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -33,13 +34,30 @@ func Loader(L *lua.LState) int {
 }
 
 var exports = map[string]lua.LGFunction{
-	"hexStrReverse": hexReverse,
-	"sendTx":        sendTx,
-	"getAssetID":    getAssetID,
-	"getUTXO":       getUTXO,
-	"init_ledger":   initLedger,
-	"close_store":   closeStore,
-	"clear_store":   clearStore,
+	"hexStrReverse":     hexReverse,
+	"sendTx":            sendTx,
+	"getAssetID":        getAssetID,
+	"getUTXO":           getUTXO,
+	"init_ledger":       initLedger,
+	"close_store":       closeStore,
+	"clear_store":       clearStore,
+	"get_dir_all_files": getDirAllFiles,
+}
+
+func getDirAllFiles(L *lua.LState) int {
+	str := L.ToString(1)
+	files, err := ioutil.ReadDir(str)
+	if err != nil {
+		fmt.Println("Read directory error: " + err.Error())
+	}
+
+	fileNamesStr := ""
+	for _, f := range files {
+		fileNamesStr = fileNamesStr + f.Name() + ","
+	}
+
+	L.Push(lua.LString(fileNamesStr))
+	return 1
 }
 
 func hexReverse(L *lua.LState) int {
