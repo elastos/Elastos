@@ -64,14 +64,14 @@ type ChainStore struct {
 	orderedProducers []*PayloadRegisterProducer
 }
 
-func NewChainStore(filePath string) (IChainStore, error) {
-	st, err := NewLevelDB(filePath)
+func NewChainStore(filePath string, genesisBlock *Block) (IChainStore, error) {
+	db, err := NewLevelDB(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	store := &ChainStore{
-		IStore:             st,
+	s := &ChainStore{
+		IStore:             db,
 		currentBlockHeight: 0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
@@ -86,7 +86,7 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*Transaction)
 			if tx.IsIllegalBlockTx() {
-				err := store.PersistIllegalBlock(tx.Payload.(*PayloadIllegalBlock))
+				err := s.PersistIllegalBlock(tx.Payload.(*PayloadIllegalBlock))
 				if err != nil {
 					log.Error("Persist illegal block tx error: ", err)
 				}
@@ -94,9 +94,11 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		}
 	})
 
-	go store.loop()
+	go s.taskHandler()
 
-	return store, nil
+	s.init(genesisBlock)
+
+	return s, nil
 }
 
 func (c *ChainStore) Close() {
@@ -106,7 +108,7 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) loop() {
+func (c *ChainStore) taskHandler() {
 	for {
 		select {
 		case t := <-c.taskCh:
@@ -136,7 +138,7 @@ func (c *ChainStore) loop() {
 	}
 }
 
-func (c *ChainStore) InitProducerVotes() error {
+func (c *ChainStore) initProducerVotes() error {
 	publicKeys, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
@@ -173,7 +175,7 @@ func (c *ChainStore) InitProducerVotes() error {
 	return nil
 }
 
-func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) error {
+func (c *ChainStore) init(genesisBlock *Block) error {
 	prefix := []byte{byte(CFGVersion)}
 	version, err := c.Get(prefix)
 	if err != nil {
@@ -210,11 +212,9 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) error {
 	// GenesisBlock should exist in chain
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
-	if !c.IsBlockInStore(hash) {
+	if !c.IsBlockInStore(&hash) {
 		return errors.New("genesis block is not consistent with the chain")
 	}
-	DefaultLedger.Blockchain.GenesisHash = hash
-	//c.headerIndex[0] = hash
 
 	// Get Current Block
 	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
@@ -227,33 +227,7 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) error {
 	var blockHash Uint256
 	blockHash.Deserialize(r)
 	c.currentBlockHeight, err = ReadUint32(r)
-	endHeight := c.currentBlockHeight
-
-	startHeight := uint32(0)
-	if endHeight > MinMemoryNodes {
-		startHeight = endHeight - MinMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := c.GetBlockHash(start)
-		if err != nil {
-			return err
-		}
-		header, err := c.GetHeader(hash)
-		if err != nil {
-			return err
-		}
-		node, err := DefaultLedger.Blockchain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return err
-		}
-
-		// This node is now the end of the best chain.
-		DefaultLedger.Blockchain.BestChain = node
-	}
-
-	return nil
-
+	return c.initProducerVotes()
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
@@ -698,7 +672,7 @@ func (c *ChainStore) GetHeight() uint32 {
 	return c.currentBlockHeight
 }
 
-func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
+func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
 	blockData, err := c.Get(append(prefix, hash.Bytes()...))
