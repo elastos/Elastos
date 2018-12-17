@@ -17,8 +17,8 @@ type HeightVersions interface {
 	CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error
 
 	GetProducersDesc(block *types.Block) ([][]byte, error)
-	AddBlock(block *types.Block) error
-	AddBlockConfirm(block *types.BlockConfirm) (bool, error)
+	AddBlock(block *types.Block) (bool, bool, error)
+	AddDposBlock(block *types.DposBlock) (bool, bool, error)
 	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error
 	CheckConfirmedBlockOnFork(block *types.Block) error
 	GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte

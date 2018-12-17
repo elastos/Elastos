@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -273,11 +273,11 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	p.manager.Relay(nil, &types.BlockConfirm{
+	p.manager.Relay(nil, &types.DposBlock{
 		ConfirmFlag: true,
 		Confirm:     currentVoteSlot,
 	})
-	if err := p.manager.AppendConfirm(currentVoteSlot); err != nil {
+	if inMainChain, isOrphan, err := p.manager.AppendConfirm(currentVoteSlot); err != nil || !inMainChain || isOrphan {
 		log.Error("[AppendConfirm] err:", err.Error())
 		return false
 	}

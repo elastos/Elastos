@@ -437,43 +437,43 @@ func (s *heightVersionTestSuit) TestHeightVersions_AddBlock() {
 	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
 	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
 
-	err = s.Version.AddBlock(blockV1_h1)
+	_, _, err = s.Version.AddBlock(blockV1_h1)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_AddBlock", versionsMsg)
+	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
 
-	err = s.Version.AddBlock(blockV1_h2)
+	_, _, err = s.Version.AddBlock(blockV1_h2)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_AddBlock", versionsMsg)
+	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
 
-	err = s.Version.AddBlock(blockV1_h3)
+	_, _, err = s.Version.AddBlock(blockV1_h3)
 	s.Error(err, "height 3 do not support block v1")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	err = s.Version.AddBlock(blockV2_h1)
+	_, _, err = s.Version.AddBlock(blockV2_h1)
 	s.Error(err, "height 1 do not support block v2")
 
-	err = s.Version.AddBlock(blockV2_h2)
+	_, _, err = s.Version.AddBlock(blockV2_h2)
 	s.NoError(err)
-	s.Equal("blockVersionTest2_AddBlock", versionsMsg)
+	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
 
-	err = s.Version.AddBlock(blockV2_h3)
+	_, _, err = s.Version.AddBlock(blockV2_h3)
 	s.NoError(err)
-	s.Equal("blockVersionTest2_AddBlock", versionsMsg)
+	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
 
 	blockVMax_h1 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height1}}
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	err = s.Version.AddBlock(blockVMax_h1)
+	_, _, err = s.Version.AddBlock(blockVMax_h1)
 	s.Error(err, "height 1 do not support block vmax")
 
-	err = s.Version.AddBlock(blockVMax_h2)
+	_, _, err = s.Version.AddBlock(blockVMax_h2)
 	s.Error(err, "height 1 do not support block vmax")
 
-	err = s.Version.AddBlock(blockVMax_h3)
+	_, _, err = s.Version.AddBlock(blockVMax_h3)
 	s.Error(err, "height 1 do not support block vmax")
 }
 
@@ -484,46 +484,46 @@ func (s *heightVersionTestSuit) TestHeightVersions_AddBlockConfirmConfirm() {
 	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
 	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV1_h1})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV1_h1})
 	s.NoError(err)
-	s.Equal("blockVersionTest1_AddBlockConfirm", versionsMsg)
+	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV1_h2})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV1_h2})
 	s.NoError(err)
-	s.Equal("blockVersionTest1_AddBlockConfirm", versionsMsg)
+	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV1_h3})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV1_h3})
 	s.Error(err, "height 3 do not support block v1")
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: false, Block: blockV1_h1})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: false, Block: blockV1_h1})
 	s.Error(err, "block flag must be true")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV2_h1})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV2_h1})
 	s.Error(err, "height 1 do not support block v2")
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV2_h2})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV2_h2})
 	s.NoError(err)
-	s.Equal("blockVersionTest2_AddBlockConfirm", versionsMsg)
+	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockV2_h3})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockV2_h3})
 	s.NoError(err)
-	s.Equal("blockVersionTest2_AddBlockConfirm", versionsMsg)
+	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
 
 	blockVMax_h1 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height1}}
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockVMax_h1})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockVMax_h1})
 	s.Error(err, "height 1 do not support block vmax")
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockVMax_h2})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockVMax_h2})
 	s.Error(err, "height 1 do not support block vmax")
 
-	_, err = s.Version.AddBlockConfirm(&types.BlockConfirm{BlockFlag: true, Block: blockVMax_h3})
+	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockVMax_h3})
 	s.Error(err, "height 1 do not support block vmax")
 }
 
@@ -675,14 +675,9 @@ func (v *txBlockTest1) GetProducersDesc() ([][]byte, error) {
 	return nil, nil
 }
 
-func (v *txBlockTest1) AddBlock(block *types.Block) error {
-	versionsMsg = "blockVersionTest1_AddBlock"
-	return nil
-}
-
-func (v *txBlockTest1) AddBlockConfirm(block *types.BlockConfirm) (bool, error) {
-	versionsMsg = "blockVersionTest1_AddBlockConfirm"
-	return true, nil
+func (v *txBlockTest1) AddDposBlock(block *types.DposBlock) (bool, bool, error) {
+	versionsMsg = "blockVersionTest1_AddDposBlock"
+	return true, false, nil
 }
 
 func (v *txBlockTest1) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
@@ -712,14 +707,9 @@ func (v *txBlockTest2) GetProducersDesc() ([][]byte, error) {
 	return nil, nil
 }
 
-func (v *txBlockTest2) AddBlock(block *types.Block) error {
-	versionsMsg = "blockVersionTest2_AddBlock"
-	return nil
-}
-
-func (v *txBlockTest2) AddBlockConfirm(block *types.BlockConfirm) (bool, error) {
-	versionsMsg = "blockVersionTest2_AddBlockConfirm"
-	return true, nil
+func (v *txBlockTest2) AddDposBlock(block *types.DposBlock) (bool, bool, error) {
+	versionsMsg = "blockVersionTest2_AddDposBlock"
+	return true, false, nil
 }
 
 func (v *txBlockTest2) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
