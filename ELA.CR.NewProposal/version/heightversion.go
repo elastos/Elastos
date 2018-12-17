@@ -40,37 +40,37 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
 	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputPayload(output)
-	})
+	}, false)
 }
 
 func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error {
 	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputProgramHash(programHash)
-	})
+	}, true)
 }
 
 func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward common.Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseMinerReward(tx, totalReward)
-	})
+	}, true)
 }
 
 func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase common.Fixed64) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
-	})
+	}, true)
 }
 
 func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output, references map[*types.Input]*types.Output) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckVoteProducerOutputs(outputs, references)
-	})
+	}, true)
 }
 
 func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error {
 	return h.checkTx(blockHeight, tx, func(version TxVersion) error {
 		return version.CheckTxHasNoPrograms(tx)
-	})
+	}, true)
 }
 
 func (h *heightVersions) GetProducersDesc(block *types.Block) ([][]byte, error) {
@@ -120,7 +120,7 @@ func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, 
 	return info.CompatibleBlockVersions[info.DefaultBlockVersion].GetNextOnDutyArbitrator(dutyChangedCount, offset)
 }
 
-func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
+func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod, allowFindByHeight bool) error {
 	if tx == nil {
 		return errors.New("Transaction is null")
 	}
@@ -128,16 +128,16 @@ func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFu
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
-	v := h.findTxVersion(blockHeight, &info, tx)
+	v := h.findTxVersion(blockHeight, &info, tx, allowFindByHeight)
 	if v == nil {
 		return fmt.Errorf("Block height %d can not support transaction version %d", blockHeight, tx.Version)
 	}
 	return txFun(v)
 }
 
-func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction) TxVersion {
+func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction, allowFindByHeight bool) TxVersion {
 	// before HeightVersion2 tx version means tx type, use special get method instead
-	if blockHeight < heights.HeightVersion2 {
+	if allowFindByHeight && blockHeight < heights.HeightVersion2 {
 		return info.CompatibleTxVersions[info.DefaultTxVersion]
 	}
 

@@ -101,29 +101,32 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputPayload() {
 	txV2 := &types.Transaction{Version: 2}
 	txVMax := &types.Transaction{Version: 255}
 
-	//note less or equal than heights.HeightVersion2(s.Height2) find version only by DefaultTxVersion
+	//check output payload shall always find version by Transaction.Version
+
+	s.Error(s.Version.CheckOutputPayload(s.Height1, txV2, nil))
+	s.Error(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
+	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
 
 	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV1, nil))
 	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
 
-	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV2, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
-
 	s.NoError(s.Version.CheckOutputPayload((s.Height1+s.Height2)/2, txV1, nil))
 	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
 
+	s.Error(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
+	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
+
 	s.NoError(s.Version.CheckOutputPayload(s.Height2, txV1, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
+	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
 
 	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txV1, nil))
+	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputPayload(s.Height2, txV2, nil))
 	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
 
-	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
+	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txV2, nil))
+	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
 
 	s.Error(s.Version.CheckOutputPayload(s.Height3, txV1, nil), "do not support v1")
 	s.Error(s.Version.CheckOutputPayload(s.Height3, txVMax, nil), "do not support vMax")
