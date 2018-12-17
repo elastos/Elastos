@@ -130,7 +130,7 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 			CurrentArbitratorsPrograms: arbitratorHashes,
 			CurrentCandidatesPrograms:  candidateHashes,
 		},
-		Blockchain: &blockchain.Blockchain{
+		Blockchain: &blockchain.BlockChain{
 			AssetID: common.Uint256{},
 		},
 	}

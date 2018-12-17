@@ -67,7 +67,7 @@ func startConsensus() {
 }
 
 func main() {
-	//var blockChain *ledger.Blockchain
+	//var blockChain *ledger.BlockChain
 	var err error
 	var noder protocol.Noder
 	var pwd []byte
