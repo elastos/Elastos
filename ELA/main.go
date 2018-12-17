@@ -82,7 +82,7 @@ func main() {
 		goto ERROR
 	}
 	defer chainStore.Close()
-	dposStore, err = store.NewDposStore("Dpos")
+	dposStore, err = store.NewDposStore("Dpos_Data")
 	if err != nil {
 		goto ERROR
 	}
