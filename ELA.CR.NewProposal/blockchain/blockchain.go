@@ -209,6 +209,15 @@ func (b *Blockchain) GetHeader(hash Uint256) (*Header, error) {
 	return header, nil
 }
 
+//Get block with block hash.
+func (b *Blockchain) GetBlockByHash(hash Uint256) (*Block, error) {
+	bk, err := DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
+	}
+	return bk, nil
+}
+
 func (b *Blockchain) ContainsTransaction(hash Uint256) bool {
 	//TODO: implement error catch
 	_, _, err := DefaultLedger.Store.GetTransaction(hash)
@@ -1117,6 +1126,7 @@ func (b *Blockchain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	defer b.mutex.RUnlock()
 	return b.blockLocatorFromHash(inhash)
 }
+
 func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// The locator contains the requested hash at the very least.
 	var hash Uint256
@@ -1183,7 +1193,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	return locator
 }
 
-func (b *Blockchain) LatestLocatorHash(locator []*Uint256) *Uint256 {
+func (b *Blockchain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
 		_, err := DefaultLedger.Store.GetBlock(*hash)
@@ -1193,6 +1203,96 @@ func (b *Blockchain) LatestLocatorHash(locator []*Uint256) *Uint256 {
 		}
 	}
 	return &startHash
+}
+
+func (b *Blockchain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBlockHashes uint32) ([]*Uint256, error) {
+	var count = uint32(0)
+	var startHeight uint32
+	var stopHeight uint32
+	curHeight := DefaultLedger.Store.GetHeight()
+	if stopHash.IsEqual(EmptyHash) {
+		if startHash.IsEqual(EmptyHash) {
+			if curHeight > maxBlockHashes {
+				count = maxBlockHashes
+			} else {
+				count = curHeight
+			}
+		} else {
+			startHeader, err := DefaultLedger.Store.GetHeader(*startHash)
+			if err != nil {
+				return nil, err
+			}
+			startHeight = startHeader.Height
+			count = curHeight - startHeight
+			if count > maxBlockHashes {
+				count = maxBlockHashes
+			}
+		}
+	} else {
+		stopHeader, err := DefaultLedger.Store.GetHeader(*stopHash)
+		if err != nil {
+			return nil, err
+		}
+		stopHeight = stopHeader.Height
+		if !startHash.IsEqual(EmptyHash) {
+			startHeader, err := DefaultLedger.Store.GetHeader(*startHash)
+			if err != nil {
+				return nil, err
+			}
+			startHeight = startHeader.Height
+
+			// avoid unsigned integer underflow
+			if stopHeight < startHeight {
+				return nil, fmt.Errorf("do not have header to send")
+			}
+			count = stopHeight - startHeight
+
+			if count >= maxBlockHashes {
+				count = maxBlockHashes
+			}
+		} else {
+			if stopHeight > maxBlockHashes {
+				count = maxBlockHashes
+			} else {
+				count = stopHeight
+			}
+		}
+	}
+
+	hashes := make([]*Uint256, 0)
+	for i := uint32(1); i <= count; i++ {
+		hash, err := DefaultLedger.Store.GetBlockHash(startHeight + i)
+		if err != nil {
+			return nil, err
+		}
+		hashes = append(hashes, &hash)
+	}
+
+	return hashes, nil
+}
+
+// LocateBlocks returns the hashes of the blocks after the first known block in
+// the locator until the provided stop hash is reached, or up to the provided
+// max number of block hashes.
+//
+// In addition, there are two special cases:
+//
+// - When no locators are provided, the stop hash is treated as a request for
+//   that block, so it will either return the stop hash itself if it is known,
+//   or nil if it is unknown
+// - When locators are provided, but none of them are known, hashes starting
+//   after the genesis block will be returned
+//
+// This function is safe for concurrent access.
+func (b *Blockchain) LocateBlocks(locator []*Uint256, hashStop *Uint256, maxHashes uint32) []*Uint256 {
+	b.mutex.RLock()
+	defer b.mutex.RUnlock()
+	startHash := b.locateStartBlock(locator)
+	blocks, err := b.locateBlocks(startHash, hashStop, maxHashes)
+	if err != nil {
+		log.Errorf("LocateBlocks error %s", err)
+	}
+	return blocks
 }
 
 func (b *Blockchain) MedianAdjustedTime() time.Time {
