@@ -187,13 +187,6 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		return ErrIneffectiveCoinbase
 	}
 
-	for _, output := range txn.Outputs {
-		if err := DefaultLedger.HeightVersions.CheckOutputPayload(blockHeight, txn, output); err != nil {
-			log.Warn("[OutputPayload],", err)
-			return ErrInvalidOutput
-		}
-	}
-
 	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references); err != nil {
 		log.Warn("[CheckVoteProducerOutputs],", err)
 		return ErrInvalidOutput
