@@ -21,9 +21,6 @@ type IChainStoreDpos interface {
 type IChainStore interface {
 	IChainStoreDpos
 
-	InitWithGenesisBlock(genesisblock *Block) error
-	InitProducerVotes() error
-
 	SaveBlock(b *Block) error
 	GetBlock(hash Uint256) (*Block, error)
 	GetBlockHash(height uint32) (Uint256, error)
@@ -56,7 +53,7 @@ type IChainStore interface {
 
 	IsTxHashDuplicate(txhash Uint256) bool
 	IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool
-	IsBlockInStore(hash Uint256) bool
+	IsBlockInStore(hash *Uint256) bool
 
 	Close()
 }

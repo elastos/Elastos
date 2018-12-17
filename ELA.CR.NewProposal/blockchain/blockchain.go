@@ -13,21 +13,15 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
 const (
-	MaxBlockLocatorsPerMsg = 500
-	medianTimeBlocks       = 11
-)
-
-var (
-	maxOrphanBlocks = config.Parameters.ChainParam.MaxOrphanBlocks
-	MinMemoryNodes  = config.Parameters.ChainParam.MinMemoryNodes
+	maxOrphanBlocks  = 10000
+	minMemoryNodes   = 20160
+	maxBlockLocators = 500
+	medianTimeBlocks = 11
 )
 
 var (
@@ -35,7 +29,19 @@ var (
 )
 
 type BlockChain struct {
-	GenesisHash    Uint256
+	chainParams *config.Params
+	db          IChainStore
+	versions    interfaces.HeightVersions
+	GenesisHash Uint256
+
+	// The following fields are calculated based upon the provided chain
+	// parameters.  They are also set when the instance is created and
+	// can't be changed afterwards, so there is no need to protect them with
+	// a separate mutex.
+	minRetargetTimespan int64  // target timespan / adjustment factor
+	maxRetargetTimespan int64  // target timespan * adjustment factor
+	blocksPerRetarget   uint32 // target timespan / target time per block
+
 	BestChain      *BlockNode
 	Root           *BlockNode
 	Index          map[Uint256]*BlockNode
@@ -49,129 +55,62 @@ type BlockChain struct {
 	MedianTimePast time.Time
 	OrphanLock     sync.RWMutex
 	mutex          sync.RWMutex
-	AssetID        Uint256
 }
 
-func NewBlockChain() *BlockChain {
-	return &BlockChain{
-		Root:         nil,
-		BestChain:    nil,
-		Index:        make(map[Uint256]*BlockNode),
-		DepNodes:     make(map[Uint256][]*BlockNode),
-		OldestOrphan: nil,
-		Orphans:      make(map[Uint256]*OrphanBlock),
-		PrevOrphans:  make(map[Uint256][]*OrphanBlock),
-		BlockCache:   make(map[Uint256]*Block),
-		TimeSource:   NewMedianTime(),
-		AssetID:      EmptyHash,
-	}
-}
+func New(db IChainStore, chainParams *config.Params,
+	versions interfaces.HeightVersions) (*BlockChain, error) {
 
-func Init(store IChainStore, versions interfaces.HeightVersions) error {
-	DefaultLedger = new(Ledger)
-	DefaultLedger.HeightVersions = versions
-
-	genesisBlock, err := GetGenesisBlock()
-	if err != nil {
-		return errors.New("[BlockChain], NewBlockchainWithGenesisBlock failed.")
-	}
-
-	DefaultLedger.Blockchain = NewBlockChain()
-	DefaultLedger.Store = store
-	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
-
-	err = DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
-	if err != nil {
-		return errors.New("[BlockChain], InitLevelDBStoreWithGenesisBlock failed.")
-	}
-	DefaultLedger.Store.InitProducerVotes()
-
-	return nil
-}
-
-func GetGenesisBlock() (*Block, error) {
-	// header
-	header := Header{
-		Version:    0,
-		Previous:   EmptyHash,
-		MerkleRoot: EmptyHash,
-		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
-		Bits:       0x1d03ffff,
-		Nonce:      2083236893,
-		Height:     uint32(0),
+	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
+	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
+	adjustmentFactor := chainParams.AdjustmentFactor
+	chain := BlockChain{
+		chainParams:         chainParams,
+		db:                  db,
+		versions:            versions,
+		GenesisHash:         chainParams.GenesisBlock.Hash(),
+		minRetargetTimespan: targetTimespan / adjustmentFactor,
+		maxRetargetTimespan: targetTimespan * adjustmentFactor,
+		blocksPerRetarget:   uint32(targetTimespan / targetTimePerBlock),
+		Root:                nil,
+		BestChain:           nil,
+		Index:               make(map[Uint256]*BlockNode),
+		DepNodes:            make(map[Uint256][]*BlockNode),
+		OldestOrphan:        nil,
+		Orphans:             make(map[Uint256]*OrphanBlock),
+		PrevOrphans:         make(map[Uint256][]*OrphanBlock),
+		BlockCache:          make(map[Uint256]*Block),
+		TimeSource:          NewMedianTime(),
 	}
 
-	// ELA coin
-	elaCoin := &Transaction{
-		TxType:         RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &PayloadRegisterAsset{
-			Asset: Asset{
-				Name:      "ELA",
-				Precision: 0x08,
-				AssetType: 0x00,
-			},
-			Amount:     0 * 100000000,
-			Controller: Uint168{},
-		},
-		Attributes: []*Attribute{},
-		Inputs:     []*Input{},
-		Outputs:    []*Output{},
-		Programs:   []*Program{},
+	endHeight := chain.db.GetHeight()
+	startHeight := uint32(0)
+	if endHeight > minMemoryNodes {
+		startHeight = endHeight - minMemoryNodes
 	}
 
-	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
-	coinBase.Outputs = []*Output{
-		{
-			AssetID:     elaCoin.Hash(),
-			Value:       3300 * 10000 * 100000000,
-			ProgramHash: FoundationAddress,
-		},
+	for start := startHeight; start <= endHeight; start++ {
+		hash, err := chain.db.GetBlockHash(start)
+		if err != nil {
+			return nil, err
+		}
+		header, err := chain.db.GetHeader(hash)
+		if err != nil {
+			return nil, err
+		}
+		node, err := chain.LoadBlockNode(header, &hash)
+		if err != nil {
+			return nil, err
+		}
+
+		// This node is now the end of the best chain.
+		chain.BestChain = node
 	}
 
-	txAttr := NewAttribute(Nonce, []byte{77, 101, 130, 33, 7, 252, 253, 82})
-	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
-	//block
-	block := &Block{
-		Header:       header,
-		Transactions: []*Transaction{coinBase, elaCoin},
-	}
-	hashes := make([]Uint256, 0, len(block.Transactions))
-	for _, tx := range block.Transactions {
-		hashes = append(hashes, tx.Hash())
-	}
-	var err error
-	block.Header.MerkleRoot, err = crypto.ComputeRoot(hashes)
-	if err != nil {
-		return nil, errors.New("[GenesisBlock] ,BuildMerkleRoot failed.")
-	}
-
-	return block, nil
-}
-
-func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint32) *Transaction {
-	return &Transaction{
-		Version:        TransactionVersion(DefaultLedger.HeightVersions.GetDefaultTxVersion(currentHeight)),
-		TxType:         CoinBase,
-		PayloadVersion: PayloadCoinBaseVersion,
-		Payload:        coinBasePayload,
-		Inputs: []*Input{
-			{
-				Previous: OutPoint{
-					TxID:  EmptyHash,
-					Index: 0x0000,
-				},
-				Sequence: 0x00000000,
-			},
-		},
-		Attributes: []*Attribute{},
-		LockTime:   currentHeight,
-		Programs:   []*Program{},
-	}
+	return &chain, nil
 }
 
 func (b *BlockChain) GetHeight() uint32 {
-	return DefaultLedger.Store.GetHeight()
+	return b.db.GetHeight()
 }
 
 func (b *BlockChain) AddBlock(block *Block) (bool, bool, error) {
@@ -202,7 +141,7 @@ func (b *BlockChain) AddConfirm(confirm *DPosProposalVoteSlot) error {
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
-	header, err := DefaultLedger.Store.GetHeader(hash)
+	header, err := b.db.GetHeader(hash)
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
 	}
@@ -211,7 +150,7 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 
 //Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	bk, err := DefaultLedger.Store.GetBlock(hash)
+	bk, err := b.db.GetBlock(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
@@ -220,7 +159,7 @@ func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
 
 func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 	//TODO: implement error catch
-	_, _, err := DefaultLedger.Store.GetTransaction(hash)
+	_, _, err := b.db.GetTransaction(hash)
 	if err != nil {
 		return false
 	}
@@ -228,7 +167,7 @@ func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 }
 
 func (b *BlockChain) CurrentBlockHash() Uint256 {
-	return DefaultLedger.Store.GetCurrentBlockHash()
+	return b.db.GetCurrentBlockHash()
 }
 
 type OrphanBlock struct {
@@ -521,7 +460,7 @@ func (b *BlockChain) pruneBlockNodes() error {
 	}
 
 	newRootNode := b.BestChain
-	for i := uint32(0); i < MinMemoryNodes-1 && newRootNode != nil; i++ {
+	for i := uint32(0); i < minMemoryNodes-1 && newRootNode != nil; i++ {
 		newRootNode = newRootNode.Parent
 	}
 
@@ -709,7 +648,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := DefaultLedger.Store.GetBlock(*n.Hash)
+		block, err := b.db.GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
@@ -748,7 +687,7 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
 		return err
 	}
 
-	err = DefaultLedger.Store.RollbackBlock(*node.Hash)
+	err = b.db.RollbackBlock(*node.Hash)
 	if err != nil {
 		return err
 	}
@@ -787,7 +726,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Insert the block into the database which houses the main chain.
-	err = DefaultLedger.Store.SaveBlock(block)
+	err = b.db.SaveBlock(block)
 	if err != nil {
 		return err
 	}
@@ -823,7 +762,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return DefaultLedger.BlockInLedger(*hash)
+	return b.db.IsBlockInStore(hash)
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block) (bool, error) {
@@ -1049,7 +988,7 @@ func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
 }
 
 func (b *BlockChain) ProcessConfirm(confirm *DPosProposalVoteSlot) error {
-	return DefaultLedger.Store.SaveConfirm(confirm)
+	return b.db.SaveConfirm(confirm)
 }
 
 func (b *BlockChain) DumpState() {
@@ -1092,7 +1031,7 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 		// database.
 
 		// Get Current Block
-		blockHash := DefaultLedger.Store.GetCurrentBlockHash()
+		blockHash := b.db.GetCurrentBlockHash()
 		return b.blockLocatorFromHash(&blockHash), nil
 	}
 
@@ -1151,7 +1090,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := DefaultLedger.Store.GetBlock(hash)
+		block, err := b.db.GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1164,7 +1103,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// in the Locator comment and make sure to leave room for the
 	// final genesis hash.
 	increment := int32(1)
-	for len(locator) < MaxBlockLocatorsPerMsg-1 {
+	for len(locator) < maxBlockLocators-1 {
 		// Once there are 10 locators, exponentially increase the
 		// distance between each block locator.
 		if len(locator) > 10 {
@@ -1178,7 +1117,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// The desired block height is in the main chain, so look it up
 		// from the main chain database.
 
-		h, err := DefaultLedger.Store.GetBlockHash(uint32(blockHeight))
+		h, err := b.db.GetBlockHash(uint32(blockHeight))
 		if err != nil {
 			log.Debugf("Lookup of known valid height failed %v", blockHeight)
 			continue
@@ -1196,7 +1135,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := DefaultLedger.Store.GetBlock(*hash)
+		_, err := b.db.GetBlock(*hash)
 		if err == nil {
 			startHash = *hash
 			break
@@ -1209,7 +1148,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := DefaultLedger.Store.GetHeight()
+	curHeight := b.db.GetHeight()
 	if stopHash.IsEqual(EmptyHash) {
 		if startHash.IsEqual(EmptyHash) {
 			if curHeight > maxBlockHashes {
@@ -1218,7 +1157,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := DefaultLedger.Store.GetHeader(*startHash)
+			startHeader, err := b.db.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1229,13 +1168,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := DefaultLedger.Store.GetHeader(*stopHash)
+		stopHeader, err := b.db.GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := DefaultLedger.Store.GetHeader(*startHash)
+			startHeader, err := b.db.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1261,7 +1200,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 
 	hashes := make([]*Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
-		hash, err := DefaultLedger.Store.GetBlockHash(startHeight + i)
+		hash, err := b.db.GetBlockHash(startHeight + i)
 		if err != nil {
 			return nil, err
 		}

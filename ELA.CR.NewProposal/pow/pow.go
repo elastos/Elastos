@@ -475,3 +475,22 @@ out:
 
 	pow.wg.Done()
 }
+
+func NewCoinBaseTransaction(coinBasePayload *payload.PayloadCoinBase, currentHeight uint32) *Transaction {
+	return &Transaction{
+		Version:        TransactionVersion(DefaultLedger.HeightVersions.GetDefaultTxVersion(currentHeight)),
+		TxType:         CoinBase,
+		PayloadVersion: payload.PayloadCoinBaseVersion,
+		Payload:        coinBasePayload,
+		Inputs: []*Input{
+			{
+				Previous: OutPoint{
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Attributes: []*Attribute{},
+		LockTime:   currentHeight,
+	}
+}
