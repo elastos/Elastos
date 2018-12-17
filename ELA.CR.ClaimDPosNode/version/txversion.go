@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
@@ -37,14 +38,30 @@ func (v *TxVersionMain) CheckOutputPayload(output *types.Output) error {
 
 func (v *TxVersionMain) CheckOutputProgramHash(programHash common.Uint168) error {
 	var empty = common.Uint168{}
-	prefix := programHash[0]
-	if prefix == common.PrefixStandard ||
-		prefix == common.PrefixMultisig ||
-		prefix == common.PrefixCrossChain ||
-		programHash == empty {
+	if programHash.IsEqual(empty) {
 		return nil
 	}
-	return errors.New("Invalid program hash prefix.")
+
+	prefix := contract.PrefixType(programHash[0])
+	switch prefix {
+	case contract.PrefixStandard:
+	case contract.PrefixMultiSig:
+	case contract.PrefixCrossChain:
+	case contract.PrefixPledge:
+	default:
+		return errors.New("invalid program hash prefix")
+	}
+
+	addr, err := programHash.ToAddress()
+	if err != nil {
+		return errors.New("invalid program hash")
+	}
+	_, err = common.Uint168FromAddress(addr)
+	if err != nil {
+		return errors.New("invalid program hash")
+	}
+
+	return nil
 }
 
 func (v *TxVersionMain) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
