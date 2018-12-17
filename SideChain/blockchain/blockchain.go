@@ -740,6 +740,12 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *types.Block) error 
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *types.Block) error {
+
+	if err := b.CheckBlockContext(block); err != nil {
+		log.Errorf("CheckBlockContext error %s", err.Error())
+		return err
+	}
+
 	// Make sure it's extending the end of the best chain.
 	prevHash := &block.Header.Previous
 	if b.BestChain != nil && !prevHash.IsEqual(*b.BestChain.Hash) {
@@ -769,6 +775,30 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *types.Block) error {
 	// updating wallets.
 	events.Notify(events.ETBlockConnected, block)
 
+	return nil
+}
+
+func (b *BlockChain) CheckBlockContext(block *types.Block) error {
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
+	for index, tx := range block.Transactions {
+		if err := b.cfg.CheckTxContext(tx); err != nil {
+			return fmt.Errorf("CheckTransactionContext failed when verify block:", err.Error())
+		}
+		if index == 0 {
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
+		// Calculate transaction fee
+		totalTxFee += b.cfg.GetTxFee(tx, b.chainParams.ElaAssetId)
+	}
+	// Reward in coinbase must match total transaction fee
+	if rewardInCoinbase != totalTxFee {
+		return errors.New("reward amount in coinbase not correct")
+	}
 	return nil
 }
 
