@@ -45,7 +45,7 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 func (s *blockVersionV0TestSuite) TestAssignCoinbaseTxRewards() {
 	originLedger := blockchain.DefaultLedger
 	blockchain.DefaultLedger = &blockchain.Ledger{
-		Blockchain: &blockchain.Blockchain{
+		Blockchain: &blockchain.BlockChain{
 			AssetID: common.Uint256{},
 		},
 	}
@@ -123,7 +123,7 @@ func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNextOnDutyArbitrator()
 	//}
 	blockchain.DefaultLedger = &blockchain.Ledger{
 		//fixme uncommon when chain store mock is ready
-		//Blockchain: chainMock,
+		//BlockChain: chainMock,
 	}
 
 	//var currentArbitrator []byte
