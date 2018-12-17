@@ -3,21 +3,11 @@ local colors = require 'test/common/ansicolors'
 
 local result = 0
 
-local function do_files(inputstr, sep, base_path)
-    if sep == nil then
-        sep = "%s"
-    end
-
-    local file_count = 1
-    local test_files = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
-        test_files[file_count] = base_path .. str
-        file_count = file_count + 1
-    end
+local function do_files(files, base_path)
 
     local result = 0
-    for i = 1, file_count - 1 do
-        local temp = dofile(test_files[i])
+    for i = 1, #files do
+        local temp = dofile(files[i])
 
         if temp == nil then
             result = result + 1
