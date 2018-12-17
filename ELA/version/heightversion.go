@@ -12,8 +12,8 @@ import (
 )
 
 type TxCheckMethod func(TxVersion) error
-type BlockCheckMethod func(BlockVersion) error
-type BlockConfirmCheckMethod func(BlockVersion) (bool, error)
+type BlockCheckMethod func(BlockVersion) (bool, bool, error)
+type BlockConfirmCheckMethod func(BlockVersion) (bool, bool, error)
 
 type VersionInfo struct {
 	DefaultTxVersion        byte
@@ -85,27 +85,32 @@ func (h *heightVersions) GetProducersDesc(block *types.Block) ([][]byte, error) 
 }
 
 func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
-	return h.checkBlock(block, func(version BlockVersion) error {
-		return version.CheckConfirmedBlockOnFork(block)
+	_, _, err := h.checkBlock(block, func(version BlockVersion) (bool, bool, error) {
+		err := version.CheckConfirmedBlockOnFork(block)
+		return false, false, err
+	})
+	return err
+}
+
+func (h *heightVersions) AddBlock(block *types.Block) (bool, bool, error) {
+	dposBlock := &types.DposBlock{BlockFlag: true, Block: block}
+	return h.checkDposBlock(dposBlock, func(version BlockVersion) (bool, bool, error) {
+		return version.AddDposBlock(dposBlock)
 	})
 }
 
-func (h *heightVersions) AddBlock(block *types.Block) error {
-	return h.checkBlock(block, func(version BlockVersion) error {
-		return version.AddBlock(block)
-	})
-}
-
-func (h *heightVersions) AddBlockConfirm(blockConfirm *types.BlockConfirm) (bool, error) {
-	return h.checkBlockConfirm(blockConfirm, func(version BlockVersion) (bool, error) {
-		return version.AddBlockConfirm(blockConfirm)
+func (h *heightVersions) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	return h.checkDposBlock(dposBlock, func(version BlockVersion) (bool, bool, error) {
+		return version.AddDposBlock(dposBlock)
 	})
 }
 
 func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
-	return h.checkBlock(block, func(version BlockVersion) error {
-		return version.AssignCoinbaseTxRewards(block, totalReward)
+	_, _, err := h.checkBlock(block, func(version BlockVersion) (bool, bool, error) {
+		err := version.AssignCoinbaseTxRewards(block, totalReward)
+		return false, false, err
 	})
+	return err
 }
 
 func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte {
@@ -144,27 +149,28 @@ func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx
 	}
 }
 
-func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMethod) error {
+func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMethod) (bool, bool, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
 	v := h.findBlockVersion(&info, block)
 	if v == nil {
-		return fmt.Errorf("[checkBlock] Block height %d can not support block version %d", block.Height, block.Version)
+		return false, false, fmt.Errorf("[checkBlock] Block height %d can not support block version %d", block.Height, block.Version)
 	}
 	return blockFun(v)
 }
 
-func (h *heightVersions) checkBlockConfirm(blockConfirm *types.BlockConfirm, blockConfirmFun BlockConfirmCheckMethod) (bool, error) {
-	if blockConfirm == nil || !blockConfirm.BlockFlag {
-		return false, fmt.Errorf("[checkBlockConfirm] received block confirm with nil block")
+func (h *heightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirmFun BlockConfirmCheckMethod) (bool, bool, error) {
+	if dposBlock == nil || !dposBlock.BlockFlag {
+		return false, false, fmt.Errorf("[checkBlockConfirm] received block confirm with nil block")
 	}
-	heightKey := h.findLastAvailableHeightKey(blockConfirm.Block.Height)
+	heightKey := h.findLastAvailableHeightKey(dposBlock.Block.Height)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, blockConfirm.Block)
+	v := h.findBlockVersion(&info, dposBlock.Block)
 	if v == nil {
-		return false, fmt.Errorf("[checkBlockConfirm] Block height %d can not support block version %d", blockConfirm.Block.Height, blockConfirm.Block.Version)
+		return false, false, fmt.Errorf("[checkBlockConfirm] Block height %d can not support block version %d",
+			dposBlock.Block.Height, dposBlock.Block.Version)
 	}
 	return blockConfirmFun(v)
 }

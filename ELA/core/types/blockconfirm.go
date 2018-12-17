@@ -7,14 +7,14 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type BlockConfirm struct {
+type DposBlock struct {
 	BlockFlag   bool
 	Block       *Block
 	ConfirmFlag bool
 	Confirm     *DPosProposalVoteSlot
 }
 
-func (b *BlockConfirm) Serialize(w io.Writer) error {
+func (b *DposBlock) Serialize(w io.Writer) error {
 	var blockFlag uint8
 	if b.BlockFlag {
 		blockFlag = uint8(1)
@@ -44,7 +44,7 @@ func (b *BlockConfirm) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (b *BlockConfirm) Deserialize(r io.Reader) error {
+func (b *DposBlock) Deserialize(r io.Reader) error {
 	blockFlag, err := common.ReadUint8(r)
 	if err != nil {
 		return errors.New("Block flag dserialize failed," + err.Error())

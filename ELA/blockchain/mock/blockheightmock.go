@@ -64,12 +64,12 @@ func (b *BlockHeightMock) GetProducersDesc(block *types.Block) ([][]byte, error)
 	return b.Producers, nil
 }
 
-func (b *BlockHeightMock) AddBlock(block *types.Block) error {
-	return nil
+func (b *BlockHeightMock) AddBlock(block *types.Block) (bool, bool, error) {
+	return true, false, nil
 }
 
-func (b *BlockHeightMock) AddBlockConfirm(block *types.BlockConfirm) (bool, error) {
-	return b.ShouldConfirm, nil
+func (b *BlockHeightMock) AddDposBlock(block *types.DposBlock) (bool, bool, error) {
+	return true, false, nil
 }
 
 func (b *BlockHeightMock) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

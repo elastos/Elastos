@@ -44,7 +44,7 @@ type StatusSyncEventListener interface {
 	OnInv(id peer.PID, blockHash common.Uint256)
 	OnGetBlock(id peer.PID, blockHash common.Uint256)
 	OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm)
+	OnResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock)
 	OnRequestConsensus(id peer.PID, height uint32)
 	OnResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 	OnRequestProposal(id peer.PID, hash common.Uint256)
@@ -88,7 +88,7 @@ type DposManager interface {
 
 	ChangeConsensus(onDuty bool)
 
-	AppendConfirm(confirm *types.DPosProposalVoteSlot) error
+	AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error)
 	AppendToTxnPool(txn *types.Transaction) errors.ErrCode
 	Relay(from protocol.Noder, message interface{}) error
 }
@@ -109,7 +109,7 @@ type dposManager struct {
 	node        protocol.Noder
 }
 
-func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) error {
+func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
 	return d.blockPool.AppendConfirm(confirm)
 }
 
@@ -217,7 +217,7 @@ func (d *dposManager) OnPong(id peer.PID, height uint32) {
 func (d *dposManager) OnBlock(id peer.PID, block *types.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-		if _, err := d.blockPool.AppendBlock(&types.BlockConfirm{
+		if _, _, err := d.blockPool.AppendDposBlock(&types.DposBlock{
 			BlockFlag: true,
 			Block:     block,
 		}); err != nil {
@@ -243,11 +243,11 @@ func (d *dposManager) OnGetBlocks(id peer.PID, startBlockHeight, endBlockHeight 
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm) {
+func (d *dposManager) OnResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
-	if err := blockchain.DefaultLedger.AppendBlocksAndConfirms(blockConfirms); err != nil {
+	if err := blockchain.DefaultLedger.AppendDposBlocks(blockConfirms); err != nil {
 		log.Error("Response blocks error: ", err)
 	}
 }

@@ -171,14 +171,14 @@ func (h *dposHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, end
 	if currentHeight < endBlockHeight {
 		endHeight = currentHeight
 	}
-	blockConfirms, err := blockchain.DefaultLedger.GetBlocksAndConfirms(startBlockHeight, endHeight)
+	blockConfirms, err := blockchain.DefaultLedger.GetDposBlocks(startBlockHeight, endHeight)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
 	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
-		blockConfirms = append(blockConfirms, &types.BlockConfirm{
+		blockConfirms = append(blockConfirms, &types.DposBlock{
 			BlockFlag: true,
 			Block:     currentBlock,
 		})

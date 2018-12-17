@@ -235,7 +235,15 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 
-				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
+				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
+					BlockFlag: true,
+					Block:     msgBlock,
+				})
+				if err != nil {
+					continue
+				}
+
+				if isOrphan || !inMainChain {
 					continue
 				}
 
@@ -290,7 +298,7 @@ func (pow *PowService) SolveBlock(msgBlock *Block, lastBlockHash *common.Uint256
 }
 
 func (pow *PowService) BroadcastBlock(block *Block) error {
-	return node.LocalNode.Relay(nil, &BlockConfirm{
+	return node.LocalNode.Relay(nil, &DposBlock{
 		BlockFlag: true,
 		Block:     block,
 	})
@@ -430,8 +438,16 @@ out:
 
 				time.Sleep(time.Second * 1)
 
-				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
+				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
+					BlockFlag: true,
+					Block:     msgBlock,
+				})
+				if err != nil {
 					log.Debug(err)
+					continue
+				}
+
+				if isOrphan || !inMainChain {
 					continue
 				}
 
@@ -479,8 +495,16 @@ out:
 			//send the valid block to p2p networkd
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 
-				if err := DefaultLedger.HeightVersions.AddBlock(msgBlock); err != nil {
+				inMainChain, isOrphan, err := DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
+					BlockFlag: true,
+					Block:     msgBlock,
+				})
+				if err != nil {
 					log.Debug(err)
+					continue
+				}
+
+				if isOrphan || !inMainChain {
 					continue
 				}
 

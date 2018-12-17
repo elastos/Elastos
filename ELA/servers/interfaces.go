@@ -236,7 +236,10 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	}
 
 	msgAuxBlock.Header.AuxPow = aux
-	err = chain.DefaultLedger.HeightVersions.AddBlock(msgAuxBlock)
+	_, _, err = chain.DefaultLedger.HeightVersions.AddDposBlock(&DposBlock{
+		BlockFlag: true,
+		Block:     msgAuxBlock,
+	})
 	if err != nil {
 		log.Debug(err)
 		return ResponsePack(InternalError, "adding block failed")
