@@ -149,7 +149,7 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 			}
 		}
 	case relayBlockConfirm:
-		if relayedConfirm, ok := m.Node.GetLastRelay().(*types.BlockConfirm); ok {
+		if relayedConfirm, ok := m.Node.GetLastRelay().(*types.DposBlock); ok {
 			if relayedConfirm.BlockFlag && relayedConfirm.ConfirmFlag {
 				b := checkBlock(L, 3)
 				c := checkConfirm(L, 4)

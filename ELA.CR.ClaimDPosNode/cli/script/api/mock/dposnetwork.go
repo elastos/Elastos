@@ -22,7 +22,7 @@ type NetworkMock interface {
 	FireInv(id peer.PID, blockHash common.Uint256)
 	FireGetBlock(id peer.PID, blockHash common.Uint256)
 	FireGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32)
-	FireResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm)
+	FireResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock)
 	FireRequestConsensus(id peer.PID, height uint32)
 	FireResponseConsensus(id peer.PID, status *msg.ConsensusStatus)
 	FireRequestProposal(id peer.PID, hash common.Uint256)
@@ -145,7 +145,7 @@ func (n *network) FireGetBlocks(id peer.PID, startBlockHeight, endBlockHeight ui
 	n.listener.OnGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (n *network) FireResponseBlocks(id peer.PID, blockConfirms []*types.BlockConfirm) {
+func (n *network) FireResponseBlocks(id peer.PID, blockConfirms []*types.DposBlock) {
 	n.listener.OnResponseBlocks(id, blockConfirms)
 }
 

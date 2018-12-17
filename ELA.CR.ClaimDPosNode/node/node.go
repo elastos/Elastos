@@ -184,7 +184,7 @@ func (node *node) nodeHeartBeat() {
 	for {
 		log.Info("node heart beat")
 		for _, peer := range node.GetNeighborNodes() {
-			if time.Now().Sub(peer.GetLastActive()) > 10 * time.Minute {
+			if time.Now().Sub(peer.GetLastActive()) > 10*time.Minute {
 				log.Warn("does not update last active time for 10 minutes.")
 				peer.Disconnect()
 			}
@@ -308,13 +308,13 @@ out:
 	for {
 		select {
 		case <-time.After(time.Second * 5):
-      addresses, heights := node.GetInternalNeighborAddressAndHeights()
+			addresses, heights := node.GetInternalNeighborAddressAndHeights()
 			// Can not connect to neighbors.
 			if len(heights) == 0 {
 				break out
 			}
-      log.Debug("others height is (internal only) ", heights)
-		  log.Debug("others address is (internal only) ", addresses)
+			log.Debug("others height is (internal only) ", heights)
+			log.Debug("others address is (internal only) ", addresses)
 			// Sync finished.
 			if node.IsCurrent() {
 				LocalNode.SetSyncHeaders(false)
@@ -379,7 +379,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					nbr.SendMessage(msg.NewTx(message))
 					node.txnCnt++
 				}
-			case *BlockConfirm:
+			case *DposBlock:
 				log.Debug("Relay block message")
 				if nbr.BloomFilter().IsLoaded() && message.BlockFlag {
 					inv := msg.NewInventory()

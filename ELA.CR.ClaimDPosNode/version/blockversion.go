@@ -7,7 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
@@ -20,8 +19,7 @@ import (
 type BlockVersion interface {
 	GetVersion() uint32
 	GetProducersDesc() ([][]byte, error)
-	AddBlock(block *types.Block) error
-	AddBlockConfirm(block *types.BlockConfirm) (bool, error)
+	AddDposBlock(block *types.DposBlock) (bool, bool, error)
 	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error
 	CheckConfirmedBlockOnFork(block *types.Block) error
 	GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte
@@ -152,26 +150,8 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func (b *BlockVersionMain) AddBlock(block *types.Block) error {
-	if _, err := node.LocalNode.AppendBlock(&types.BlockConfirm{
-		BlockFlag: true,
-		Block:     block,
-	}); err != nil {
-		log.Error("[AddBlock] err:", err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func (b *BlockVersionMain) AddBlockConfirm(blockConfirm *types.BlockConfirm) (bool, error) {
-	isConfirmed, err := node.LocalNode.AppendBlock(blockConfirm)
-	if err != nil {
-		log.Error("[AddBlockConfirm] err:", err.Error())
-		return false, err
-	}
-
-	return isConfirmed, nil
+func (b *BlockVersionMain) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	return node.LocalNode.AppendDposBlock(dposBlock)
 }
 
 func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

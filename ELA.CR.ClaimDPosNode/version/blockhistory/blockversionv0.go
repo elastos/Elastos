@@ -56,21 +56,8 @@ func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (b *BlockVersionV0) AddBlock(block *types.Block) error {
-	inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
-	if err != nil {
-		return err
-	}
-
-	if isOrphan || !inMainChain {
-		return errors.New("Append to best chain error.")
-	}
-
-	return nil
-}
-
-func (b *BlockVersionV0) AddBlockConfirm(block *types.BlockConfirm) (bool, error) {
-	return false, b.AddBlock(block.Block)
+func (b *BlockVersionV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	return blockchain.DefaultLedger.Blockchain.AddBlock(dposBlock.Block)
 }
 
 func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

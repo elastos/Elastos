@@ -49,8 +49,8 @@ func (n *nodeMock) DumpRelays(level uint32) string {
 		for _, v := range n.relayList {
 			if tx, ok := v.(*types.Transaction); ok {
 				result += fmt.Sprintln("[transaction]: type=" + strconv.FormatUint(uint64(tx.TxType), 0))
-			} else if blockConfirm, ok := v.(*types.BlockConfirm); ok {
-				result += fmt.Sprintln("[block confirm]: HasBlock=" + strconv.FormatBool(blockConfirm.BlockFlag) + " HasConfirm=" + strconv.FormatBool(blockConfirm.ConfirmFlag))
+			} else if dposBlock, ok := v.(*types.DposBlock); ok {
+				result += fmt.Sprintln("[block confirm]: HasBlock=" + strconv.FormatBool(dposBlock.BlockFlag) + " HasConfirm=" + strconv.FormatBool(dposBlock.ConfirmFlag))
 			}
 		}
 	}
@@ -65,7 +65,7 @@ func (n *nodeMock) GetLastRelay() interface{} {
 	return n.relayList[len(n.relayList)-1]
 }
 
-func (n * nodeMock) GetLastActive() time.Time {
+func (n *nodeMock) GetLastActive() time.Time {
 	return time.Time{}
 }
 
