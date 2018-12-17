@@ -5,8 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
@@ -46,17 +47,19 @@ var exports = map[string]lua.LGFunction{
 
 func getDirAllFiles(L *lua.LState) int {
 	str := L.ToString(1)
-	files, err := ioutil.ReadDir(str)
+
+	files, err := walkDir(str, ".lua")
 	if err != nil {
 		fmt.Println("Read directory error: " + err.Error())
 	}
 
-	fileNamesStr := ""
+	table := L.NewTable()
+	L.SetMetatable(table, L.GetTypeMetatable(luaStringsTypeName))
 	for _, f := range files {
-		fileNamesStr = fileNamesStr + f.Name() + ","
+		table.Append(lua.LString(f))
 	}
+	L.Push(table)
 
-	L.Push(lua.LString(fileNamesStr))
 	return 1
 }
 
@@ -163,6 +166,21 @@ func clearStore(L *lua.LState) int {
 	return 0
 }
 
+func walkDir(dirPth, suffix string) (files []string, err error) {
+	files = make([]string, 0, 30)
+	suffix = strings.ToUpper(suffix)
+	err = filepath.Walk(dirPth, func(filename string, fi os.FileInfo, err error) error {
+		if fi.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(strings.ToUpper(fi.Name()), suffix) {
+			files = append(files, filename)
+		}
+		return nil
+	})
+	return files, err
+}
+
 func RegisterDataType(L *lua.LState) int {
 	RegisterClientType(L)
 	RegisterAttributeType(L)
@@ -188,6 +206,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterIllegalProposalsType(L)
 	RegisterIllegalVotesType(L)
 	RegisterIllegalBlocksType(L)
+	RegisterStringsType(L)
 
 	return 0
 }
