@@ -141,11 +141,38 @@ func generatePledgeAddress(name string) (string, error) {
 			if err != nil {
 				return "", nil
 			}
-			return address, nil
+			//return address, nil
+			fmt.Println("from program hash:", address)
 		}
 	}
 
-	return "", errors.New("no main account found")
+	if exist := clicom.FileExisted(name); !exist {
+		fmt.Println(fmt.Sprintf("error: %s is not found.", name))
+	}
+	password, err := pwd.GetPassword()
+	if err != nil {
+		return "", err
+	}
+	client, err := account.Open(name, password)
+	if err != nil {
+		return "", err
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		return "", err
+	}
+	ct, err := contract.CreatePledgeContractByPubKey(acc.PublicKey)
+	if err != nil {
+		return "", err
+	}
+	programHash, err := ct.ToProgramHash()
+	addr, err := programHash.ToAddress()
+	if err != nil {
+		return "", err
+	}
+
+	return addr, nil
+	//return "", errors.New("no main account found")
 }
 
 func walletAction(context *cli.Context) error {
@@ -279,7 +306,7 @@ func NewCommand() *cli.Command {
 				Usage: "export all account private keys in hex string",
 			},
 			cli.BoolFlag{
-				Name:  "getpledgeaddress, gpa",
+				Name:  "getpledgeaddress, pa",
 				Usage: "generate the pledge address form main account",
 			},
 		},

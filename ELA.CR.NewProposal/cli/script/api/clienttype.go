@@ -52,9 +52,9 @@ func checkClient(L *lua.LState, idx int) *account.ClientImpl {
 }
 
 var clientMethods = map[string]lua.LGFunction{
-	"get":       clientGet,
-	"getAddr":   getWalletAddr,
-	"getPubkey": getWalletPubkey,
+	"get":           clientGet,
+	"get_address":   getWalletAddr,
+	"get_publickey": getWalletPubkey,
 }
 
 // Getter and setter for the Person#Name
