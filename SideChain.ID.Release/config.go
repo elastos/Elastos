@@ -178,5 +178,7 @@ func loadNewConfig() (*appConfig, error) {
 	activeNetParams.MinTransactionFee = 100
 	activeNetParams.ExchangeRate = 1
 	activeNetParams.MinCrossChainTxFee = 10000
+	activeNetParams.GenesisBlock = params.GenesisBlock
+
 	return &appCfg, nil
 }
