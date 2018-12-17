@@ -1,49 +1,49 @@
-print("-----------start testing return pledge coin tx----------- ")
-
 local m = require("api")
 
--- open keystore
-wallet = client.new("keystore_pledge.dat", "123", false)
+-- client: path, password, if create
+local wallet = client.new("keystore.dat", "123", false)
 
 -- account
-addr = wallet:getAddr()
-pubkey = wallet:getPubkey()
+local addr = wallet:get_address()
+local pubkey = wallet:get_publickey()
 
 print(addr)
 print(pubkey)
 
 -- assetID
-assetID = m.getAssetID()
+local assetID = m.get_asset_id()
 
--- payload
-payloadRP = returnpledgecoin.new()
-print(payloadRP:get())
--- transaction
-tx = transaction.new(9, 0x0c, 0, payloadRP, 0)
+-- amount, fee
+local amount = 0.2
+local fee = 0.001
+local recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
 
--- input
-charge = tx:appendenough(addr, 0.02)
+-- return pledge payload
+local rp_payload = returnpledgecoin.new()
+print(rp_payload:get())
+
+-- transaction: version, txType, payloadVersion, payload, locktime
+local tx = transaction.new(9, 0x0c, 0, rp_payload, 0)
+
+-- input: from, amount + fee
+local charge = tx:appendenough(addr, (amount + fee) * 100000000)
 print(charge)
 
--- fee(sela)
-fee = 100000
+-- default output payload
+local default_output = defaultoutput.new()
 
--- outputpayload
-txoutputpayload = defaultoutput.new()
-
--- output
-recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
-txoutput = output.new(assetID, charge - fee, recipient, 0, txoutputpayload)
-tx:appendtxout(txoutput)
--- print(txoutput:get())
+-- output: asset_id, value, recipient, output_paload_type, output_paload
+local amount_output = output.new(assetID, (amount + charge) * 100000000, recipient, 0, default_output)
+tx:appendtxout(amount_output)
+-- print(amount_output:get())
 
 -- sign
 tx:sign(wallet)
 print(tx:get())
 
 -- send
-hash = tx:hash()
-res = m.sendTx(tx)
+local hash = tx:hash()
+local res = m.send_tx(tx)
 
 print("sending " .. hash)
 

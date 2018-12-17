@@ -35,10 +35,10 @@ func Loader(L *lua.LState) int {
 }
 
 var exports = map[string]lua.LGFunction{
-	"hexStrReverse":     hexReverse,
-	"sendTx":            sendTx,
-	"getAssetID":        getAssetID,
-	"getUTXO":           getUTXO,
+	"hex_reverse":       hexReverse,
+	"send_tx":           sendTx,
+	"get_asset_id":      getAssetID,
+	"get_utxo":          getUTXO,
 	"init_ledger":       initLedger,
 	"close_store":       closeStore,
 	"clear_store":       clearStore,
@@ -136,8 +136,8 @@ func initLedger(L *lua.LState) int {
 	logLevel := uint8(L.ToInt(1))
 	arbitrators := checkArbitrators(L, 2)
 
-	log.Init(logLevel, 0, 0, )
-	log2.Init(logLevel, 0, 0, )
+	log.Init(logLevel, 0, 0)
+	log2.Init(logLevel, 0, 0)
 
 	versions := verconfig.InitVersions()
 	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox")

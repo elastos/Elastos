@@ -1,9 +1,7 @@
-local map = {}
+local tx = {}
 
-function common_test()
+function tx.common_test()
     print('common_test invoked.')
 end
 
-map['common_test'] = common_test
-
-return map
+return tx
