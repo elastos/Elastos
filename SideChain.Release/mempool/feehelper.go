@@ -14,12 +14,12 @@ import (
 
 type FeeHelper struct {
 	chainParams *config.Params
-	chainStore   *blockchain.ChainStore
+	chainStore  *blockchain.ChainStore
 }
 
 func NewFeeHelper(cfg *Config) *FeeHelper {
 	return &FeeHelper{
-		chainStore:   cfg.ChainStore,
+		chainStore:  cfg.ChainStore,
 		chainParams: cfg.ChainParams,
 	}
 }

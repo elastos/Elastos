@@ -33,7 +33,7 @@ func NewValidator(chain *BlockChain) *Validator {
 	v.RegisterFunc(ValidateFuncNames.CheckHeader, v.checkHeader)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsCount, v.checkTransactionsCount)
 	v.RegisterFunc(ValidateFuncNames.CheckBlockSize, v.checkBlockSize)
-	v.RegisterFunc(ValidateFuncNames.CheckTransactionsFee, v.checkTransactionsFee)
+	v.RegisterFunc(ValidateFuncNames.CheckCoinBaseTransaction, v.checkCoinBaseTransaction)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsMerkle, v.checkTransactionsMerkle)
 	return v
 }
@@ -165,37 +165,23 @@ func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 }
 
 //block *Block
-func (v *Validator) checkTransactionsFee(params ...interface{}) (err error) {
+func (v *Validator) checkCoinBaseTransaction(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 
 	transactions := block.Transactions
-	var rewardInCoinbase = common.Fixed64(0)
-	var totalTxFee = common.Fixed64(0)
 	for index, tx := range transactions {
 		// The first transaction in a block must be a coinbase.
 		if index == 0 {
 			if !tx.IsCoinBaseTx() {
-				return errors.New("[powCheckTransactionsFee] first transaction in block is not a coinbase")
-			}
-			// Calculate reward in coinbase
-			for _, output := range tx.Outputs {
-				rewardInCoinbase += output.Value
+				return errors.New("[checkCoinBaseTransaction] first transaction in block is not a coinbase")
 			}
 			continue
 		}
 
 		// A block must not have more than one coinbase.
 		if tx.IsCoinBaseTx() {
-			return errors.New("[powCheckTransactionsFee] block contains second coinbase")
+			return errors.New("[checkCoinBaseTransaction] block contains second coinbase")
 		}
-
-		// Calculate transaction fee
-		totalTxFee += v.chain.cfg.GetTxFee(tx, v.chain.chainParams.ElaAssetId)
-	}
-
-	// Reward in coinbase must match total transaction fee
-	if rewardInCoinbase != totalTxFee {
-		return errors.New("[powCheckTransactionsFee] reward amount in coinbase not correct")
 	}
 
 	return nil

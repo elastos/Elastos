@@ -9,7 +9,7 @@ var (
 		CheckHeader:               "checkheader",
 		CheckTransactionsCount:    "checktransactionscount",
 		CheckBlockSize:            "checkblocksize",
-		CheckTransactionsFee:      "checktransactionsfee",
+		CheckCoinBaseTransaction:  "checkcoinbasetransaction",
 		CheckTransactionsMerkle:   "checktransactionsmerkle",
 		PowCheckBlockContext:      "checkblockcontext",
 		CheckProofOfWork:          "checkproofofwork",
@@ -37,7 +37,7 @@ type blockValidateFuncs struct {
 	CheckHeader               ValidateFuncName
 	CheckTransactionsCount    ValidateFuncName
 	CheckBlockSize            ValidateFuncName
-	CheckTransactionsFee      ValidateFuncName
+	CheckCoinBaseTransaction  ValidateFuncName
 	CheckTransactionsMerkle   ValidateFuncName
 	PowCheckBlockContext      ValidateFuncName
 	CheckProofOfWork          ValidateFuncName
