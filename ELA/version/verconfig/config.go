@@ -27,7 +27,7 @@ func InitVersions() interfaces.HeightVersions {
 			HeightVersion1: {
 				1,
 				0,
-				map[byte]TxVersion{txV1.GetVersion(): txV1},
+				map[byte]TxVersion{txV1.GetVersion(): txV1, txVCurrent.GetVersion(): txVCurrent},
 				map[uint32]BlockVersion{blockV0.GetVersion(): blockV0},
 			},
 			HeightVersion2: {
