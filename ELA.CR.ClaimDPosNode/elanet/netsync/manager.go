@@ -123,7 +123,7 @@ type SyncManager struct {
 	peerNotifier PeerNotifier
 	started      int32
 	shutdown     int32
-	chain        *blockchain.Blockchain
+	chain        *blockchain.BlockChain
 	versions     interfaces.HeightVersions
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool

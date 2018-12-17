@@ -37,7 +37,7 @@ type relayMsg struct {
 type server struct {
 	svr.IServer
 	syncManager *netsync.SyncManager
-	chain       *blockchain.Blockchain
+	chain       *blockchain.BlockChain
 	txMemPool   *mempool.TxPool
 
 	newPeers  chan svr.IPeer
@@ -708,7 +708,7 @@ func (s *server) Stop() error {
 // NewServer returns a new elanet server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func NewServer(chain *blockchain.Blockchain, txPool *mempool.TxPool, params *config.Params) (*server, error) {
+func NewServer(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *config.Params) (*server, error) {
 	services := defaultServices
 	if params.DisableTxFilters {
 		services &^= pact.SFTxFiltering
