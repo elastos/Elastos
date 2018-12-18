@@ -711,10 +711,10 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
-
-	err := CheckBlockContext(block)
+	// Check transactions context first.
+	err := b.checkTxsContext(block)
 	if err != nil {
-		log.Errorf("PowCheckBlockSanity error %s", err.Error())
+		log.Errorf("connect block error %s", err.Error())
 		return err
 	}
 
@@ -787,7 +787,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = PowCheckBlockContext(block, prevNode, DefaultLedger)
+	err = b.CheckBlockContext(block, prevNode)
 	if err != nil {
 		log.Error("PowCheckBlockContext error!", err)
 		return false, err
@@ -947,7 +947,7 @@ func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = PowCheckBlockSanity(block, PowLimit, b.TimeSource)
-	err := PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, b.TimeSource)
+	err := b.CheckBlockSanity(block)
 	if err != nil {
 		log.Errorf("PowCheckBlockSanity error %s", err.Error())
 		return false, false, err
