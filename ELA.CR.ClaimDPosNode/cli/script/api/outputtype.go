@@ -216,16 +216,16 @@ func newVoteContent(L *lua.LState) int {
 	voteType := L.ToInt(1)
 	candidatesTable := L.ToTable(2)
 
-	candidates := make([]common.Uint168, 0)
+	candidates := make([][]byte, 0)
 	candidatesTable.ForEach(func(i, value lua.LValue) {
 		//fmt.Println(lua.LVAsString(value))
-		addr := lua.LVAsString(value)
-		candi, err := common.Uint168FromAddress(addr)
+		publicKey := lua.LVAsString(value)
+		pk, err := common.HexStringToBytes(publicKey)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("invalid public key")
 			os.Exit(1)
 		}
-		candidates = append(candidates, *candi)
+		candidates = append(candidates, pk)
 	})
 
 	voteContent := &outputpayload.VoteContent{

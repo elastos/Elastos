@@ -720,13 +720,13 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid payload.")
 	}
 	// check public key
-	hash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
+		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
@@ -768,13 +768,13 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check public key
-	hash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
+		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}

@@ -12,8 +12,8 @@ import (
 type IChainStoreDpos interface {
 	GetRegisteredProducers() []*PayloadRegisterProducer
 	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
-	GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64
-	GetProducerStatus(programHash Uint168) ProducerState
+	GetProducerVote(voteType outputpayload.VoteType, publicKey []byte) Fixed64
+	GetProducerStatus(address string) ProducerState
 
 	GetIllegalProducers() map[string]struct{}
 	GetCancelProducerHeight(publicKey []byte) (uint32, error)

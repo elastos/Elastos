@@ -29,8 +29,6 @@ func (s *txVersionTestSuite) SetupTest() {
 func (s *txVersionTestSuite) TestCheckOutputPayload() {
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-
-	programHash1, _ := contract.PublicKeyToStandardProgramHash(publicKey1)
 	outputs := []*types.Output{
 		{
 			AssetID:     common.Uint256{},
@@ -43,8 +41,8 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: []common.Uint168{
-							*programHash1,
+						Candidates: [][]byte{
+							publicKey1,
 						},
 					},
 				},
@@ -61,7 +59,7 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType:   outputpayload.Delegate,
-						Candidates: []common.Uint168{},
+						Candidates: [][]byte{},
 					},
 				},
 			},
@@ -77,9 +75,9 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: []common.Uint168{
-							*programHash1,
-							*programHash1,
+						Candidates: [][]byte{
+							publicKey1,
+							publicKey1,
 						},
 					},
 				},

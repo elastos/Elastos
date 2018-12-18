@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	VOTEPAYLOADHEX = "0002000000000400000021036e86f83253e88acfc9cd771e344d178e9c31ed21f409e6f52d4766d0151e4c644af3bc0884bf916521aecfab7a57ed1d05cfda1d930bde6669b90db32321e9084586d4a5c48651db79e8d6718fc4fb7c3b27010200000021036e86f83253e88acfc9cd771e344d178e9c31ed21e9084586d4a5c48651db79e8d6718fc4fb7c3b27"
-	OUTPUTHEX      = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0a08601000000000000000000210fcd528848be05f8cffe5d99896c44bdeec70502010002000000000400000021036e86f83253e88acfc9cd771e344d178e9c31ed21f409e6f52d4766d0151e4c644af3bc0884bf916521aecfab7a57ed1d05cfda1d930bde6669b90db32321e9084586d4a5c48651db79e8d6718fc4fb7c3b27010200000021036e86f83253e88acfc9cd771e344d178e9c31ed21e9084586d4a5c48651db79e8d6718fc4fb7c3b27"
+	OUTPUTHEX = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0a08601000000000000000000210fcd528848be05f8cffe5d99896c44bdeec70502010101000000000100000003010203"
 )
 
 var (
@@ -20,21 +19,21 @@ var (
 
 func TestOutput_Serialize(t *testing.T) {
 	// C0
-	voteBytes, _ := common.HexStringToBytes(VOTEPAYLOADHEX)
-	voteBuf := bytes.NewBuffer(voteBytes)
-
-	var vo outputpayload.VoteOutput
-	if err := vo.Deserialize(voteBuf); err != nil {
-		t.Error("vote output deserialize failed")
-	}
-
 	output := Output{
-		AssetID:       *assetID,
-		Value:         100000,
-		OutputLock:    0,
-		ProgramHash:   *recipient,
-		OutputType:    VoteOutput,
-		OutputPayload: &vo,
+		AssetID:     *assetID,
+		Value:       100000,
+		OutputLock:  0,
+		ProgramHash: *recipient,
+		OutputType:  VoteOutput,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType:   0,
+					Candidates: [][]byte{[]byte{1, 2, 3}},
+				},
+			},
+		},
 	}
 
 	buf := new(bytes.Buffer)
@@ -44,7 +43,7 @@ func TestOutput_Serialize(t *testing.T) {
 
 	resBytes, _ := common.HexStringToBytes(OUTPUTHEX)
 	if !bytes.Equal(buf.Bytes(), resBytes) {
-		t.Error("output serialize failed")
+		t.Error("output serialize failed\n", common.BytesToHexString(buf.Bytes()))
 	}
 }
 
