@@ -310,7 +310,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		var totalReward = common.Fixed64(0)
 		for _, output := range txn.Outputs {
-			if output.AssetID != DefaultLedger.Blockchain.AssetID {
+			if output.AssetID != config.ELAAssetID {
 				return errors.New("Asset ID in coinbase is invalid")
 			}
 			totalReward += output.Value
@@ -341,7 +341,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 	}
 	// check if output address is valid
 	for _, output := range txn.Outputs {
-		if output.AssetID != DefaultLedger.Blockchain.AssetID {
+		if output.AssetID != config.ELAAssetID {
 			return errors.New("asset ID in output is invalid")
 		}
 
