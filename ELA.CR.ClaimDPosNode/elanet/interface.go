@@ -17,4 +17,8 @@ type Server interface {
 	// RelayInventory relays the passed inventory vector to all connected peers
 	// that are not already known to have it.
 	RelayInventory(invVect *msg.InvVect, data interface{})
+
+	// IsCurrent returns whether or not the sync manager believes it is synced
+	// with the connected peers.
+	IsCurrent() bool
 }
