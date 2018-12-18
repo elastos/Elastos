@@ -19,7 +19,7 @@ const (
 	defaultLogLevel       = "info"
 	defaultLogsFolderSize = 2 * elalog.GBSize  // 2 GB
 	defaultMaxLogFileSize = 20 * elalog.MBSize // 20 MB
-	defaultLogDir         = "./logs/"
+	defaultLogDir         = "logs"
 )
 
 var (

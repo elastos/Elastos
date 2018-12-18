@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
@@ -35,7 +36,7 @@ func configFileWriter() (string, int64, int64) {
 	if cfg.MaxLogsFolderSize > 0 {
 		maxLogsFolderSize = cfg.MaxLogsFolderSize * elalog.MBSize
 	}
-	return defaultLogDir, maxPerLogFileSize, maxLogsFolderSize
+	return filepath.Join(DataPath, defaultLogDir), maxPerLogFileSize, maxLogsFolderSize
 }
 
 // log is a logger that is initialized with no output filters.  This
