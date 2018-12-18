@@ -687,6 +687,12 @@ func (s *server) RelayInventory(invVect *msg.InvVect, data interface{}) {
 	s.relayInv <- relayMsg{invVect: invVect, data: data}
 }
 
+// IsCurrent returns whether or not the sync manager believes it is synced with
+// the connected peers.
+func (s *server) IsCurrent() bool {
+	return s.syncManager.IsCurrent()
+}
+
 // Start begins accepting connections from peers.
 func (s *server) Start() {
 	s.IServer.Start()
