@@ -1,6 +1,8 @@
 package store
 
 import (
+	"time"
+
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -105,7 +107,8 @@ type QueBatch interface {
 }
 
 type QueItem struct {
-	NotifyId common.Uint256
-	TxId     common.Uint256
-	Height   uint32
+	NotifyId   common.Uint256
+	TxId       common.Uint256
+	Height     uint32
+	LastNotify time.Time
 }

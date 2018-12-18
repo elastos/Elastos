@@ -117,12 +117,11 @@ import:
 - package: golang.org/x/sys
   subpackages:
   - cpu
+- package: golang.org/x/text
 - package: gopkg.in/natefinch/npipe.v2
 - package: gopkg.in/olebedev/go-duktape.v3
 - package: gopkg.in/urfave/cli.v1
   version: ~1.20.0
-- package: github.com/golang/crypto
-- package: github.com/golang/sys
 - package: github.com/AlexpanXX/fsnotify
 - package: github.com/elastos/Elastos.ELA.SideChain
   version: release_v0.1.1

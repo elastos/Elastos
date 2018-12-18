@@ -1,25 +1,20 @@
 package store
 
 import (
-	"database/sql"
-	"fmt"
-	"path/filepath"
+	"bytes"
+	"encoding/binary"
 	"sync"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-const (
-	DriverName = "sqlite3"
-
-	CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
-				NotifyId BLOB NOT NULL,
-				TxId BLOB NOT NULL,
-				Height INTEGER NOT NULL);
-				CREATE INDEX IF NOT EXISTS idx_queue_notify_id ON Queue (NotifyId);
-				CREATE INDEX IF NOT EXISTS idx_queue_tx_id ON Queue (TxId);
-				CREATE INDEX IF NOT EXISTS idx_queue_height ON Queue (height);`
+var (
+	BKTQue    = []byte("Q")
+	BKTQueIdx = []byte("U")
+	empty     = make([]byte, 0)
 )
 
 // Ensure que implement Que interface.
@@ -27,21 +22,11 @@ var _ Que = (*que)(nil)
 
 type que struct {
 	sync.RWMutex
-	*sql.DB
+	db *leveldb.DB
 }
 
-func NewQue(dataDir string) (*que, error) {
-	db, err := sql.Open(DriverName, filepath.Join(dataDir, "queue.db"))
-	if err != nil {
-		fmt.Println("Open queue db error:", err)
-		return nil, err
-	}
-
-	_, err = db.Exec(CreateQueueDB)
-	if err != nil {
-		return nil, err
-	}
-	return &que{DB: db}, nil
+func NewQue(db *leveldb.DB) *que {
+	return &que{db: db}
 }
 
 // Put a queue item to database
@@ -49,43 +34,35 @@ func (q *que) Put(item *QueItem) error {
 	q.Lock()
 	defer q.Unlock()
 
-	sql := "INSERT OR REPLACE INTO Queue(NotifyId, TxId, Height) VALUES(?,?,?)"
-	_, err := q.Exec(sql, item.NotifyId.Bytes(), item.TxId.Bytes(), item.Height)
-	return err
+	batch := new(leveldb.Batch)
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.BigEndian, item.Height)
+	value := append(item.NotifyId[:], item.TxId[:]...)
+	batch.Put(toKey(BKTQueIdx, append(buf.Bytes(), value...)...), empty)
+	binary.Write(buf, binary.BigEndian, item.LastNotify.Unix())
+	batch.Put(toKey(BKTQue, value...), buf.Bytes())
+	return q.db.Write(batch, nil)
 }
 
 // Get all items in queue
-func (q *que) GetAll() ([]*QueItem, error) {
+func (q *que) GetAll() (items []*QueItem, err error) {
 	q.RLock()
 	defer q.RUnlock()
 
-	rows, err := q.Query("SELECT NotifyId, TxId, Height FROM Queue")
-	if err != nil {
-		return nil, err
+	it := q.db.NewIterator(util.BytesPrefix(BKTQue), nil)
+	defer it.Release()
+	for it.Next() {
+		var item QueItem
+		var lastNotify int64
+		value := subKey(BKTQue, it.Key())
+		copy(item.NotifyId[:], value[:32])
+		copy(item.TxId[:], value[32:])
+		buf := bytes.NewReader(it.Value())
+		binary.Read(buf, binary.BigEndian, &item.Height)
+		binary.Read(buf, binary.BigEndian, &lastNotify)
+		item.LastNotify = time.Unix(lastNotify, 0)
+		items = append(items, &item)
 	}
-
-	var items []*QueItem
-	for rows.Next() {
-		var notifyIdBytes []byte
-		var txHashBytes []byte
-		var height uint32
-		err = rows.Scan(&notifyIdBytes, &txHashBytes, &height)
-		if err != nil {
-			return nil, err
-		}
-
-		notifyId, err := common.Uint256FromBytes(notifyIdBytes)
-		if err != nil {
-			return nil, err
-		}
-		txHash, err := common.Uint256FromBytes(txHashBytes)
-		if err != nil {
-			return nil, err
-		}
-		item := &QueItem{NotifyId: *notifyId, TxId: *txHash, Height: height}
-		items = append(items, item)
-	}
-
 	return items, nil
 }
 
@@ -94,28 +71,42 @@ func (q *que) Del(notifyId, txHash *common.Uint256) error {
 	q.Lock()
 	defer q.Unlock()
 
-	_, err := q.Exec("DELETE FROM Queue WHERE NotifyId=? AND TxId=?", notifyId.Bytes(), txHash.Bytes())
-	return err
+	value := append(notifyId[:], txHash[:]...)
+	height, err := q.db.Get(toKey(BKTQue, value...), nil)
+	if err != nil {
+		return err
+	}
+	batch := new(leveldb.Batch)
+	batch.Delete(toKey(BKTQue, value...))
+	batch.Delete(toKey(BKTQueIdx, append(height[:], value...)...))
+	return q.db.Write(batch, nil)
 }
 
 func (q *que) Batch() QueBatch {
-	tx, err := q.Begin()
-	if err != nil {
-		panic(err)
-	}
-	return &queBatch{Tx: tx}
+	return &queBatch{DB: q.db, Batch: new(leveldb.Batch)}
 }
 
 func (q *que) Clear() error {
 	q.Lock()
 	defer q.Unlock()
 
-	_, err := q.Exec("DROP TABLE if EXISTS Queue")
-	return err
+	batch := new(leveldb.Batch)
+	it := q.db.NewIterator(util.BytesPrefix(BKTQue), nil)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	it.Release()
+
+	it = q.db.NewIterator(util.BytesPrefix(BKTQueIdx), nil)
+	for it.Next() {
+		batch.Delete(it.Key())
+	}
+	it.Release()
+
+	return q.db.Write(batch, nil)
 }
 
 func (q *que) Close() error {
 	q.Lock()
-	defer q.Unlock()
-	return q.DB.Close()
+	return nil
 }

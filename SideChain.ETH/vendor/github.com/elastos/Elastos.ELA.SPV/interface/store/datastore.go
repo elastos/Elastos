@@ -33,27 +33,12 @@ func NewDataStore(dataDir string) (*dataStore, error) {
 		return nil, err
 	}
 
-	txs, err := NewTxs(db)
-	if err != nil {
-		return nil, err
-	}
-
-	ops, err := NewOps(db)
-	if err != nil {
-		return nil, err
-	}
-
-	que, err := NewQue(dataDir)
-	if err != nil {
-		return nil, err
-	}
-
 	return &dataStore{
 		db:    db,
 		addrs: addrs,
-		txs:   txs,
-		ops:   ops,
-		que:   que,
+		txs:   NewTxs(db),
+		ops:   NewOps(db),
+		que:   NewQue(db),
 	}, nil
 }
 
@@ -74,15 +59,9 @@ func (d *dataStore) Que() Que {
 }
 
 func (d *dataStore) Batch() DataBatch {
-	sqlTx, err := d.que.Begin()
-	if err != nil {
-		panic(err)
-	}
-
 	return &dataBatch{
-		DB:d.db,
+		DB:    d.db,
 		Batch: new(leveldb.Batch),
-		sqlTx:  sqlTx,
 	}
 }
 

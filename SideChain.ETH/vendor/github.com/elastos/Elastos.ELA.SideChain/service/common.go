@@ -68,6 +68,7 @@ type BlockInfo struct {
 	PreviousBlockHash string        `json:"previousblockhash"`
 	NextBlockHash     string        `json:"nextblockhash"`
 	AuxPow            string        `json:"auxpow"`
+	MinerInfo         string        `json:"minerinfo"`
 }
 
 type ArbitratorGroupInfo struct {

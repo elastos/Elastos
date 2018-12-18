@@ -25,8 +25,8 @@ type txs struct {
 	db *leveldb.DB
 }
 
-func NewTxs(db *leveldb.DB) (*txs, error) {
-	return &txs{db: db}, nil
+func NewTxs(db *leveldb.DB) *txs {
+	return &txs{db: db}
 }
 
 func (t *txs) Put(txn *util.Tx) error {

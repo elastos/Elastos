@@ -1,7 +1,6 @@
 package _interface
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"testing"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
@@ -27,6 +25,7 @@ import (
 
 type TxListener struct {
 	t       *testing.T
+	log     elalog.Logger
 	service SPVService
 	address string
 	txType  core.TransactionType
@@ -46,7 +45,7 @@ func (l *TxListener) Flags() uint64 {
 }
 
 func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
-	fmt.Printf("Receive notify ID: %s, Type: %s\n", id.String(), tx.TxType.Name())
+	l.log.Infof("Notify Type %s, TxID %s", tx.TxType.Name(), tx.Hash())
 	err := l.service.VerifyTransaction(proof, tx)
 	if !assert.NoError(l.t, err) {
 		l.t.FailNow()
@@ -135,13 +134,12 @@ func TestNewSPVService(t *testing.T) {
 	peerlog := backend.Logger("PEER", elalog.LevelDebug)
 	spvslog := backend.Logger("SPVS", elalog.LevelDebug)
 	srvrlog := backend.Logger("SRVR", elalog.LevelDebug)
-	rpcslog := backend.Logger("RPCS", elalog.LevelDebug)
+	listlog := backend.Logger("RPCS", elalog.LevelDebug)
 
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
 	blockchain.UseLogger(bcdblog)
 	sdk.UseLogger(spvslog)
-	jsonrpc.UseLogger(rpcslog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	store.UseLogger(bcdblog)
@@ -173,6 +171,7 @@ func TestNewSPVService(t *testing.T) {
 
 	confirmedListener := &TxListener{
 		t:       t,
+		log:     listlog,
 		service: service,
 		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
 		txType:  core.CoinBase,
@@ -181,6 +180,7 @@ func TestNewSPVService(t *testing.T) {
 
 	unconfirmedListener := &TxListener{
 		t:       t,
+		log:     listlog,
 		service: service,
 		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
 		txType:  core.TransferAsset,
