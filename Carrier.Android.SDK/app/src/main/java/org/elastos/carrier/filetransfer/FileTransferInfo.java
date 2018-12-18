@@ -27,7 +27,7 @@ public class FileTransferInfo {
 	private String fileId;
 	private long size;
 
-	public final int ELA_MAX_FILE_NAME_LEN = 255;
+	public final int MAX_FILE_NAME_LEN = 255;
 
 	/**
 	 * Constructor of FileTransferInfo which denotes a file.

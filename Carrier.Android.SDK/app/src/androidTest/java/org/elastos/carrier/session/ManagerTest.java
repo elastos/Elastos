@@ -42,6 +42,20 @@ public class ManagerTest {
 	}
 
 	@Test
+	public void testGetInstanceWithoutRequestHandler() {
+		try {
+			Manager.initializeInstance(carrier);
+			Manager sessionMgr = Manager.getInstance();
+			assertNotNull(sessionMgr);
+			sessionMgr.cleanup();
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
 	public void testGetInstanceWithRequestHandler() {
 		try {
 			Manager.initializeInstance(carrier, new ManagerHandler() {

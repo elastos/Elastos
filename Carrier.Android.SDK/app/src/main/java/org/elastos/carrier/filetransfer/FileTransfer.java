@@ -221,7 +221,7 @@ public class FileTransfer {
 	 * @throws
 	 * 		CarrierException
 	 */
-	public void finish(String fileId) throws CarrierException {
+	public void sendFinish(String fileId) throws CarrierException {
 		if (fileId == null || fileId.isEmpty())
 			throw new IllegalArgumentException();
 
@@ -242,7 +242,7 @@ public class FileTransfer {
 	 * @throws
 	 * 		CarrierException
 	 */
-	public void cancel(String fileId, int status, String reason) throws CarrierException {
+	public void cancelTransfer(String fileId, int status, String reason) throws CarrierException {
 		if (fileId == null || fileId.isEmpty() || reason == null)
 			throw new IllegalArgumentException();
 
@@ -324,7 +324,7 @@ public class FileTransfer {
 	 * @throws
 	 * 		CarrierException
 	 */
-	public static void recvFile(Carrier carrier, String from, String filename,
+	public static void receiveFile(Carrier carrier, String from, String filename,
 								FileProgressHandler handler) throws CarrierException {
 		if (carrier == null || from == null || from.isEmpty() || filename == null ||
 				filename.isEmpty() || handler == null)

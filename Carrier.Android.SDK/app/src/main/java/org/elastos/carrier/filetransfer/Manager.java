@@ -60,6 +60,19 @@ public class Manager {
 	 *
 	 * @param
 	 * 		carrier		Carrier node instance
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public static void initializeInstance(Carrier carrier) throws CarrierException {
+		initializeInstance(carrier, null);
+	}
+
+	/**
+	 * Initialize carrier file transfer manager singleton instance.
+	 *
+	 * @param
+	 * 		carrier		Carrier node instance
 	 * @param
 	 *      handler     The interface handler for carrier file transfer manager to comply with
 	 *
@@ -69,8 +82,9 @@ public class Manager {
 	public static void initializeInstance(Carrier carrier, ManagerHandler handler)
 			throws CarrierException {
 
-		if (carrier == null || handler == null)
-			throw new IllegalArgumentException();
+		if (fileTransMgr != null && fileTransMgr.carrier != carrier) {
+			fileTransMgr.cleanup();
+		}
 
 		if (fileTransMgr == null) {
 			Log.d(TAG, "Attempt to create carrier file transfer manager instance ...");

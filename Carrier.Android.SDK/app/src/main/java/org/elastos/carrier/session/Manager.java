@@ -54,6 +54,25 @@ public class Manager {
 	}
 
 	/**
+	 * Get a carrier session manager instance.
+	 *
+	 * This function is convinience way to get instance without interest to session request
+	 * from friends.
+	 *
+	 * @param
+	 * 		carrier		Carrier node instance
+	 *
+	 * @return
+	 * 		A carrier session manager
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public static void initializeInstance(Carrier carrier) throws CarrierException {
+		initializeInstance(carrier, null);
+	}
+
+	/**
 	 * Initialize session manager singleton instance.
 	 *
 	 * @param
@@ -66,10 +85,14 @@ public class Manager {
 	 */
 	public static void initializeInstance(Carrier carrier, ManagerHandler handler)
 			throws CarrierException {
-		if (carrier == null || handler == null)
-			throw new IllegalArgumentException();
+		if (sessionMgr != null && sessionMgr.carrier != carrier) {
+			sessionMgr.cleanup();
+		}
 
 		if (sessionMgr == null) {
+			if (carrier == null)
+				throw new IllegalArgumentException();
+
 			Log.d(TAG, "Attempt to create carrier session manager instance ...");
 
 			if (!native_init(carrier, handler))
@@ -116,6 +139,7 @@ public class Manager {
 	 *      The new Session object
 	 *
 	 * @throws
+	 * 		IllegalArgumentException
 	 * 		CarrierException
 	 */
 	public Session newSession(String to) throws CarrierException {
