@@ -217,10 +217,8 @@ func TestCheckAttributeProgram(t *testing.T) {
 		var usage = make([]byte, 1)
 	NEXT:
 		rand.Read(usage)
-		for _, u := range usages {
-			if u == types.AttributeUsage(usage[0]) {
-				goto NEXT
-			}
+		if types.IsValidAttributeType(types.AttributeUsage(usage[0])) {
+			goto NEXT
 		}
 		return types.AttributeUsage(usage[0])
 	}
