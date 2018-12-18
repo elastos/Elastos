@@ -38,7 +38,7 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 }
 
 func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
-	return h.checkTx(blockHeight, tx, func(v TxVersion) error {
+	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(v TxVersion) error {
 		return v.CheckOutputPayload(output)
 	})
 }
@@ -120,21 +120,6 @@ func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, 
 	return info.CompatibleBlockVersions[info.DefaultBlockVersion].GetNextOnDutyArbitrator(dutyChangedCount, offset)
 }
 
-func (h *heightVersions) checkTx(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
-	if tx == nil {
-		return errors.New("Transaction is null")
-	}
-
-	heightKey := h.findLastAvailableHeightKey(blockHeight)
-	info := h.versions[heightKey]
-
-	v := h.findTxVersion(blockHeight, &info, tx)
-	if v == nil {
-		return fmt.Errorf("Block height %d can not support transaction version %d", blockHeight, tx.Version)
-	}
-	return txFun(v)
-}
-
 func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
 	if tx == nil {
 		return errors.New("Transaction is null")
@@ -143,13 +128,11 @@ func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx 
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
-	var txVersion TxVersion
-	// before HeightVersion2 tx version means tx type, use special get method instead
-	if blockHeight < heights.HeightVersion2 {
+	txVersion := h.findTxVersion(blockHeight, &info, tx)
+	if txVersion == nil && blockHeight < heights.HeightVersion2 {
 		txVersion = info.CompatibleTxVersions[info.DefaultTxVersion]
-	} else {
-		txVersion = h.findTxVersion(blockHeight, &info, tx)
 	}
+
 	if txVersion == nil {
 		return fmt.Errorf("Block height %d can not support transaction version %d", blockHeight, tx.Version)
 	}
