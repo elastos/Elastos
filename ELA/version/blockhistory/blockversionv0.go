@@ -68,7 +68,7 @@ func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *types.Block, totalReward
 	block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
 	block.Transactions[0].Outputs[1].Value = rewardMergeMiner
 	block.Transactions[0].Outputs = append(block.Transactions[0].Outputs, &types.Output{
-		AssetID:     blockchain.DefaultLedger.Blockchain.AssetID,
+		AssetID:     blockconfig.ELAAssetID,
 		Value:       rewardDposArbiter,
 		ProgramHash: blockchain.FoundationAddress,
 	})
