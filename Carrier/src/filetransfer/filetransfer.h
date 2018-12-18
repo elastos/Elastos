@@ -123,7 +123,7 @@ static inline
 FileTransferItem *get_fileinfo_free(ElaFileTransfer *ft)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files); i++) {
+    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
         if (ft->files[i].state == FileTransferState_none)
             break;
     }
