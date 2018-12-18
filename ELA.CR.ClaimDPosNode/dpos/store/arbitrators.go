@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -18,13 +19,13 @@ type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
 	MajorityCount    uint32
+	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
+	ChainStore       blockchain.IChainStore
 }
 
 type Arbitrators struct {
-	store interfaces.IDposStore
-
-	config           ArbitratorsConfig
+	cfg              ArbitratorsConfig
 	DutyChangedCount uint32
 
 	currentArbitrators [][]byte
@@ -39,32 +40,20 @@ type Arbitrators struct {
 	lock sync.Mutex
 }
 
-func InitArbitrators(arConfig ArbitratorsConfig) {
-	if arConfig.MajorityCount > arConfig.ArbitratorsCount {
-		log.Error("Majority count should less or equal than arbitrators count.")
-		return
-	}
-	arbiters := &Arbitrators{
-		config: arConfig,
-	}
-	arbiters.store = arConfig.Store
-	blockchain.DefaultLedger.Arbitrators = arbiters
-}
-
-func (a *Arbitrators) StartUp() error {
+func (a *Arbitrators) Start() error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	block, err := blockchain.DefaultLedger.GetBlockWithHeight(blockchain.DefaultLedger.Blockchain.BlockHeight)
+	block, err := a.cfg.ChainStore.GetBlock(a.cfg.ChainStore.GetCurrentBlockHash())
 	if err != nil {
 		return err
 	}
-	if blockchain.DefaultLedger.HeightVersions.GetDefaultBlockVersion(block.Height) == 0 {
-		if a.currentArbitrators, err = blockchain.DefaultLedger.HeightVersions.GetProducersDesc(block); err != nil {
+	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) == 0 {
+		if a.currentArbitrators, err = a.cfg.Versions.GetProducersDesc(block); err != nil {
 			return err
 		}
 	} else {
-		if err := a.store.GetArbitrators(a); err != nil {
+		if err := a.cfg.Store.GetArbitrators(a); err != nil {
 			return err
 		}
 	}
@@ -77,8 +66,7 @@ func (a *Arbitrators) StartUp() error {
 }
 
 func (a *Arbitrators) ForceChange() error {
-	block, err := blockchain.DefaultLedger.GetBlockWithHeight(
-		blockchain.DefaultLedger.Blockchain.GetHeight())
+	block, err := a.cfg.ChainStore.GetBlock(a.cfg.ChainStore.GetCurrentBlockHash())
 	if err != nil {
 		return err
 	}
@@ -105,14 +93,13 @@ func (a *Arbitrators) OnBlockReceived(b *types.Block, confirmed bool) {
 }
 
 func (a *Arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
-	block, err := blockchain.DefaultLedger.GetBlockWithHash(p.Hash)
-	if err != nil {
-		log.Error("Error occurred when changing arbitrators, details: ", err)
-		return
-	}
-
 	a.lock.Lock()
 	defer a.lock.Unlock()
+	block, err := a.cfg.ChainStore.GetBlock(p.Hash)
+	if err != nil {
+		log.Warn("Error occurred when changing arbitrators, details: ", err)
+		return
+	}
 
 	a.onChainHeightIncreased(block)
 }
@@ -164,16 +151,16 @@ func (a *Arbitrators) GetOnDutyArbitrator() []byte {
 }
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	return blockchain.DefaultLedger.HeightVersions.GetNextOnDutyArbitrator(
-		blockchain.DefaultLedger.Blockchain.GetHeight(), a.DutyChangedCount, offset)
+	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.ChainStore.GetHeight(),
+		a.DutyChangedCount, offset)
 }
 
 func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
-	return num > a.config.MajorityCount
+	return num > a.cfg.MajorityCount
 }
 
 func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
-	return num >= a.config.ArbitratorsCount-a.config.MajorityCount
+	return num >= a.cfg.ArbitratorsCount-a.cfg.MajorityCount
 }
 
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
@@ -192,19 +179,19 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 
 	} else {
 		a.DutyChangedCount++
-		a.store.SaveDposDutyChangedCount(a.DutyChangedCount)
+		a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
 	}
 }
 
 func (a *Arbitrators) isNewElection() bool {
-	return a.DutyChangedCount == a.config.ArbitratorsCount-1
+	return a.DutyChangedCount == a.cfg.ArbitratorsCount-1
 }
 
 func (a *Arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
 	a.currentCandidates = a.nextCandidates
 
-	a.store.SaveCurrentArbitrators(a)
+	a.cfg.Store.SaveCurrentArbitrators(a)
 
 	if err := a.sortArbitrators(); err != nil {
 		return err
@@ -215,30 +202,30 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 	}
 
 	a.DutyChangedCount = 0
-	a.store.SaveDposDutyChangedCount(a.DutyChangedCount)
+	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
 
 	return nil
 }
 
 func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
-	producers, err := blockchain.DefaultLedger.HeightVersions.GetProducersDesc(block)
+	producers, err := a.cfg.Versions.GetProducersDesc(block)
 	if err != nil {
 		return err
 	}
 
-	if uint32(len(producers)) < a.config.ArbitratorsCount {
+	if uint32(len(producers)) < a.cfg.ArbitratorsCount {
 		return errors.New("Producers count less than arbitrators count.")
 	}
 
-	a.nextArbitrators = producers[:a.config.ArbitratorsCount]
+	a.nextArbitrators = producers[:a.cfg.ArbitratorsCount]
 
-	if uint32(len(producers)) < a.config.ArbitratorsCount+a.config.CandidatesCount {
-		a.nextCandidates = producers[a.config.ArbitratorsCount:]
+	if uint32(len(producers)) < a.cfg.ArbitratorsCount+a.cfg.CandidatesCount {
+		a.nextCandidates = producers[a.cfg.ArbitratorsCount:]
 	} else {
-		a.nextCandidates = producers[a.config.ArbitratorsCount : a.config.ArbitratorsCount+a.config.CandidatesCount]
+		a.nextCandidates = producers[a.cfg.ArbitratorsCount : a.cfg.ArbitratorsCount+a.cfg.CandidatesCount]
 	}
 
-	a.store.SaveNextArbitrators(a)
+	a.cfg.Store.SaveNextArbitrators(a)
 	return nil
 }
 
@@ -282,4 +269,11 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 	}
 
 	return nil
+}
+
+func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
+	if cfg.MajorityCount > cfg.ArbitratorsCount {
+		return nil, fmt.Errorf("Majority count should less or equal than arbitrators count.")
+	}
+	return &Arbitrators{cfg: *cfg}, nil
 }

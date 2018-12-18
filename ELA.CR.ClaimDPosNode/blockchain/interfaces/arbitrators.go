@@ -5,7 +5,7 @@ import (
 )
 
 type Arbitrators interface {
-	StartUp() error
+	Start() error
 	ForceChange() error
 
 	GetArbitrators() [][]byte
