@@ -477,27 +477,6 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		if program.Parameter == nil {
 			return fmt.Errorf("invalid program parameter nil")
 		}
-		switch contract.GetCodeType(program.Code) {
-		case contract.Signature:
-			_, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
-			if err != nil {
-				return fmt.Errorf("invalid standard program code %x", program.Code)
-			}
-		case contract.MultiSig:
-			publicKeys, err := ParseMultisigScript(program.Code)
-			if err != nil {
-				return fmt.Errorf("invalid multi signature program code, %x", program.Code)
-			}
-			for _, pk := range publicKeys {
-				_, err := contract.PublicKeyToStandardProgramHash(pk[1:])
-				if err != nil {
-					return fmt.Errorf("invalid  multi signature public key %x", pk)
-				}
-			}
-		default:
-			return fmt.Errorf("invalid program code type, %x", program.Code)
-		}
-
 	}
 	return nil
 }

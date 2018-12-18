@@ -253,24 +253,6 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	tx.Programs = []*program.Program{p}
 	err = CheckAttributeProgram(heights.HeightVersion1, tx)
 	s.EqualError(err, "invalid program parameter nil")
-
-	// invalid program code
-	getInvalidCode := func() []byte {
-		var code = make([]byte, 21)
-	NEXT:
-		rand.Read(code)
-		switch code[len(code)-1] {
-		case common.STANDARD, common.MULTISIG, common.CROSSCHAIN:
-			goto NEXT
-		}
-		return code
-	}
-	for i := 0; i < 10; i++ {
-		p = &program.Program{Code: getInvalidCode(), Parameter: make([]byte, 1)}
-		tx.Programs = []*program.Program{p}
-		err = CheckAttributeProgram(heights.HeightVersion1, tx)
-		s.EqualError(err, fmt.Sprintf("invalid program code type, %x", p.Code))
-	}
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionPayload() {
