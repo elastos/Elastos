@@ -37,7 +37,7 @@ module.exports = async function(json_data, res) {
                 reject(err);
             });
         });
-        res.json({"result":[sctxhash], "id": null, "error": null, "jsonrpc": "2.0"});
+        res.json({"result":sctxhash, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
     } catch (err) {
         common.reterr("InvalidParams", res);
