@@ -233,8 +233,9 @@ namespace Elastos {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
-			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
-				_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
+			uint32_t txBlockHeight = _confirmingTxs[hash]->getBlockHeight();
+			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
+								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
 			if (_walletManager->getPeerManager()->SyncSucceeded()) {
 				Log::debug("onTxUpdated hash={} confirm={}", hash, confirm);
 				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
@@ -361,8 +362,9 @@ namespace Elastos {
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			if (_walletManager->getPeerManager()->SyncSucceeded()) {
 				for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-					uint32_t confirms = blockHeight >= it->second->getBlockHeight() ?
-										blockHeight - it->second->getBlockHeight() + 1 : 0;
+					uint32_t txBlockHeight = it->second->getBlockHeight();
+					uint32_t confirms = txBlockHeight != TX_UNCONFIRMED &&
+										blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
 
 					if (confirms > 1) {
 						Log::debug("Tx hash={} confirms={}", it->first, confirms);
@@ -373,8 +375,9 @@ namespace Elastos {
 			}
 
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
-				uint32_t confirms =
-					blockHeight >= it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
+				uint32_t txBlockHeight = it->second->getBlockHeight();
+				uint32_t confirms = txBlockHeight != TX_UNCONFIRMED &&
+									blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
 
 				if (confirms >= 6)
 					_confirmingTxs.erase(it++);
