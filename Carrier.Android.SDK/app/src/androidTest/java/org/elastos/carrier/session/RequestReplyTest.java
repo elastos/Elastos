@@ -438,7 +438,8 @@ public class RequestReplyTest {
 			}
 			Log.i(TAG, "Carrier node is ready now");
 
-			sessionManager = Manager.getInstance(carrier, sessionHandler);
+			Manager.initializeInstance(carrier, sessionHandler);
+			sessionManager = Manager.getInstance();
 			assertNotNull(sessionManager);
 		}
 		catch (CarrierException | InterruptedException e) {

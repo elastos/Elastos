@@ -44,50 +44,32 @@ public class Manager {
 	private static native int get_error_code();
 
 	/**
-	 * Get a carrier session manager instance.
-	 *
-	 * This function is convinience way to get instance without interest to session request
-	 * from friends.
-	 *
-	 * @param
-	 * 		carrier		Carrier node instance
+	 * Get a carrier session manager singleton instance.
 	 *
 	 * @return
-	 * 		A carrier session manager
-	 *
-	 * @throws
-	 * 		CarrierException
+	 * 		A carrier session manager or nil on failure.
 	 */
-	public static Manager getInstance(Carrier carrier) throws CarrierException {
-
-		return getInstance(carrier, null);
+	public static Manager getInstance() {
+		return sessionMgr;
 	}
 
 	/**
-	 * Get a carrier session manager instance.
+	 * Initialize session manager singleton instance.
 	 *
 	 * @param
 	 * 		carrier		Carrier node instance
 	 * @param
 	 *      handler     The interface handler for carrier session manager to comply with
 	 *
-	 * @return
-	 * 		A carrier session manager
-	 *
 	 * @throws
 	 * 		CarrierException
 	 */
-	public static Manager getInstance(Carrier carrier, ManagerHandler handler)
+	public static void initializeInstance(Carrier carrier, ManagerHandler handler)
 			throws CarrierException {
-
-		if (sessionMgr != null && sessionMgr.carrier != carrier) {
-			sessionMgr.cleanup();
-		}
+		if (carrier == null || handler == null)
+			throw new IllegalArgumentException();
 
 		if (sessionMgr == null) {
-			if (carrier == null)
-				throw new IllegalArgumentException();
-
 			Log.d(TAG, "Attempt to create carrier session manager instance ...");
 
 			if (!native_init(carrier, handler))
@@ -97,18 +79,6 @@ public class Manager {
 
 			Log.d(TAG, "Carrier session manager instance created");
 		}
-
-		return sessionMgr;
-	}
-
-	/**
-	 * Get a carrier session manager instance.
-	 *
-	 * @return
-	 * 		A carrier session manager or null
-	 */
-	public static Manager getInstance() {
-		return sessionMgr;
 	}
 
 	private Manager(Carrier carrier) {
@@ -146,7 +116,6 @@ public class Manager {
 	 *      The new Session object
 	 *
 	 * @throws
-	 *      IllegalArgumentException
 	 * 		CarrierException
 	 */
 	public Session newSession(String to) throws CarrierException {

@@ -42,27 +42,15 @@ public class ManagerTest {
 	}
 
 	@Test
-	public void testGetInstanceWithoutRequestHandler() {
-		try {
-			Manager sessionMgr = Manager.getInstance(carrier);
-			assertNotNull(sessionMgr);
-			sessionMgr.cleanup();
-		}
-		catch (CarrierException e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-
-	@Test
 	public void testGetInstanceWithRequestHandler() {
 		try {
-			Manager sessionMgr = Manager.getInstance(carrier, new ManagerHandler() {
+			Manager.initializeInstance(carrier, new ManagerHandler() {
 				@Override
 				public void onSessionRequest(Carrier carrier, String from, String sdp) {
 					Log.i(TAG, "onSessionRequest");
 				}
 			});
+			Manager sessionMgr = Manager.getInstance();
 			assertNotNull(sessionMgr);
 			sessionMgr.cleanup();
 		}
