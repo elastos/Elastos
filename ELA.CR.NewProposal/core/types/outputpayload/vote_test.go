@@ -9,35 +9,35 @@ import (
 )
 
 const (
-	ADDRESS1 = "EHU3vj4AbaVSB78otYm57kWYXoBL4JKqg3"
-	ADDRESS2 = "EfQGEQWtur9Ydvho61deHm3XfgZNPJ4mkW"
-	ADDRESS3 = "EZ6Dr7fuRvwAwNSvtysc8sWf66MuTYCDPt"
-	ADDRESS4 = "EeQ4qzzkGNmJpScU1UNgrGAQCi61AvwUxj"
-	VOTEHEX  = "0002000000000400000021036e86f83253e88acfc9cd771e344d178e9c31ed21f409e6f52d4766d0151e4c644af3bc0884bf916521aecfab7a57ed1d05cfda1d930bde6669b90db32321e9084586d4a5c48651db79e8d6718fc4fb7c3b27010200000021036e86f83253e88acfc9cd771e344d178e9c31ed21e9084586d4a5c48651db79e8d6718fc4fb7c3b27"
+	PUBLICKEY1 = "03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd"
+	PUBLICKEY2 = "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
+	PUBLICKEY3 = "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	PUBLICKEY4 = "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
+	VOTEHEX    = "000200000000040000002103e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd21023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a21030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c701020000002103e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
 )
 
 var (
-	candidate1, _ = common.Uint168FromAddress(ADDRESS1)
-	candidate2, _ = common.Uint168FromAddress(ADDRESS2)
-	candidate3, _ = common.Uint168FromAddress(ADDRESS3)
-	candidate4, _ = common.Uint168FromAddress(ADDRESS4)
+	candidate1, _ = common.HexStringToBytes(PUBLICKEY1)
+	candidate2, _ = common.HexStringToBytes(PUBLICKEY2)
+	candidate3, _ = common.HexStringToBytes(PUBLICKEY3)
+	candidate4, _ = common.HexStringToBytes(PUBLICKEY4)
 )
 
 func TestVoteOutput_Serialize(t *testing.T) {
 	voteContent1 := VoteContent{
 		VoteType: Delegate,
-		Candidates: []common.Uint168{
-			*candidate1,
-			*candidate2,
-			*candidate3,
-			*candidate4,
+		Candidates: [][]byte{
+			candidate1,
+			candidate2,
+			candidate3,
+			candidate4,
 		},
 	}
 	voteContent2 := VoteContent{
 		VoteType: CRC,
-		Candidates: []common.Uint168{
-			*candidate1,
-			*candidate4,
+		Candidates: [][]byte{
+			candidate1,
+			candidate4,
 		},
 	}
 	voteOutput := VoteOutput{
@@ -78,18 +78,18 @@ func TestVoteOutput_Deserialize(t *testing.T) {
 		t.Error("error vote type in content0")
 	}
 	if len(vo.Contents[0].Candidates) != 4 ||
-		!vo.Contents[0].Candidates[0].IsEqual(*candidate1) ||
-		!vo.Contents[0].Candidates[1].IsEqual(*candidate2) ||
-		!vo.Contents[0].Candidates[2].IsEqual(*candidate3) ||
-		!vo.Contents[0].Candidates[3].IsEqual(*candidate4) {
+		!bytes.Equal(vo.Contents[0].Candidates[0], candidate1) ||
+		!bytes.Equal(vo.Contents[0].Candidates[1], candidate2) ||
+		!bytes.Equal(vo.Contents[0].Candidates[2], candidate3) ||
+		!bytes.Equal(vo.Contents[0].Candidates[3], candidate4) {
 		t.Error("error candidates in content0")
 	}
 	if vo.Contents[1].VoteType != CRC {
 		t.Error("error vote type in content1")
 	}
 	if len(vo.Contents[1].Candidates) != 2 ||
-		!vo.Contents[1].Candidates[0].IsEqual(*candidate1) ||
-		!vo.Contents[1].Candidates[1].IsEqual(*candidate4) {
+		!bytes.Equal(vo.Contents[1].Candidates[0], candidate1) ||
+		!bytes.Equal(vo.Contents[1].Candidates[1], candidate4) {
 		t.Error("error candidates in content1")
 	}
 }
