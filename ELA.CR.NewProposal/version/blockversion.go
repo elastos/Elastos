@@ -185,7 +185,7 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 	for _, v := range arbitratorsHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       blockchain.DefaultLedger.Blockchain.AssetID,
+			AssetID:       blockconfig.ELAAssetID,
 			Value:         individualBlockConfirmReward + individualProducerReward,
 			ProgramHash:   *v,
 			OutputType:    types.DefaultOutput,
@@ -198,7 +198,7 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 	for _, v := range candidatesHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       blockchain.DefaultLedger.Blockchain.AssetID,
+			AssetID:       blockconfig.ELAAssetID,
 			Value:         individualProducerReward,
 			ProgramHash:   *v,
 			OutputType:    types.DefaultOutput,

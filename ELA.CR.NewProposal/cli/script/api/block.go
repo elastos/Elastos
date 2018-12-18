@@ -107,7 +107,7 @@ func updateDposRewards(b *types.Block) {
 
 	totalTxFee := common.Fixed64(0)
 	for _, tx := range b.Transactions {
-		fee := blockchain.GetTxFee(tx, blockchain.DefaultLedger.Blockchain.AssetID)
+		fee := blockchain.GetTxFee(tx, blockconfig.ELAAssetID)
 		if fee != tx.Fee {
 			continue
 		}
