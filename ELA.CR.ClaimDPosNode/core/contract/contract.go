@@ -17,7 +17,7 @@ const (
 	PrefixStandard   PrefixType = 0x21
 	PrefixMultiSig   PrefixType = 0x12
 	PrefixCrossChain PrefixType = 0x4B
-	PrefixPledge     PrefixType = 0x55
+	PrefixDeposit    PrefixType = 0x1F
 )
 
 // Contract include the redeem script and hash prefix

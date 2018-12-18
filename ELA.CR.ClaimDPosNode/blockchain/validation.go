@@ -33,7 +33,7 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 		}
 
 		prefixType := contract.PrefixType(programHash[0])
-		if prefixType == contract.PrefixStandard || prefixType == contract.PrefixPledge {
+		if prefixType == contract.PrefixStandard || prefixType == contract.PrefixDeposit {
 			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}

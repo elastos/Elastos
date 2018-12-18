@@ -15,13 +15,12 @@ const (
 	luaCoinBaseTypeName      = "coinbase"
 	luaTransferAssetTypeName = "transferasset"
 	luaRegisterProducerName  = "registerproducer"
-	luaReturnPledgeCoinName  = "returnpledgecoin"
+	luaReturnDepositCoinName = "returndepositcoin"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaCoinBaseTypeName)
 	L.SetGlobal("coinbase", mt)
-	// static attributes
 	L.SetField(mt, "new", L.NewFunction(newCoinBase))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), coinbaseMethods))
@@ -169,44 +168,44 @@ func registerProducerGet(L *lua.LState) int {
 	return 0
 }
 
-func RegisterReturnPledgeCoinType(L *lua.LState) {
-	mt := L.NewTypeMetatable(luaReturnPledgeCoinName)
-	L.SetGlobal("returnpledgecoin", mt)
+func RegisterReturnDepositCoinType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaReturnDepositCoinName)
+	L.SetGlobal("returndepositcoin", mt)
 	// static attributes
-	L.SetField(mt, "new", L.NewFunction(newReturnPledgeCoin))
+	L.SetField(mt, "new", L.NewFunction(newReturnDepositCoin))
 	// methods
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), returnPledgeCoinMethods))
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), returnDepositCoinMethods))
 }
 
 // Constructor
-func newReturnPledgeCoin(L *lua.LState) int {
-	registerProducer := &payload.PayloadReturnPledgeCoin{}
+func newReturnDepositCoin(L *lua.LState) int {
+	registerProducer := &payload.PayloadReturnDepositCoin{}
 	ud := L.NewUserData()
 	ud.Value = registerProducer
-	L.SetMetatable(ud, L.GetTypeMetatable(luaReturnPledgeCoinName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaReturnDepositCoinName))
 	L.Push(ud)
 
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *PayloadReturnPledgeCoin and
-// returns this *PayloadReturnPledgeCoin.
-func checkReturnPledgeCoin(L *lua.LState, idx int) *payload.PayloadReturnPledgeCoin {
+// Checks whether the first lua argument is a *LUserData with *PayloadReturnDepositCoin and
+// returns this *PayloadReturnDepositCoin.
+func checkReturnDepositCoin(L *lua.LState, idx int) *payload.PayloadReturnDepositCoin {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadReturnPledgeCoin); ok {
+	if v, ok := ud.Value.(*payload.PayloadReturnDepositCoin); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadReturnPledgeCoin expected")
+	L.ArgError(1, "PayloadReturnDepositCoin expected")
 	return nil
 }
 
-var returnPledgeCoinMethods = map[string]lua.LGFunction{
-	"get": returnPledgeCoinGet,
+var returnDepositCoinMethods = map[string]lua.LGFunction{
+	"get": returnDepositCoinGet,
 }
 
 // Getter and setter for the Person#Name
-func returnPledgeCoinGet(L *lua.LState) int {
-	p := checkReturnPledgeCoin(L, 1)
+func returnDepositCoinGet(L *lua.LState) int {
+	p := checkReturnDepositCoin(L, 1)
 	fmt.Println(p)
 
 	return 0

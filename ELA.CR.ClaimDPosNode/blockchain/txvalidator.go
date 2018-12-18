@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	MinPledgeAmount = 5000
+	MinDepositAmount = 5000
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -172,8 +172,8 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionPledgeUTXO(txn, references); err != nil {
-		log.Warn("[CheckTransactionPledgeUTXO],", err)
+	if err := CheckTransactionDepositUTXO(txn, references); err != nil {
+		log.Warn("[CheckTransactionDepositUTXO],", err)
 		return ErrInvalidInput
 	}
 
@@ -373,15 +373,15 @@ func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) e
 	return nil
 }
 
-func CheckTransactionPledgeUTXO(txn *Transaction, references map[*Input]*Output) error {
+func CheckTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
 	for _, output := range references {
-		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge {
-			if !txn.IsReturnPledgeCoin() {
-				return errors.New("only ReturnPledgeCoin transaction can use the pledge utxo")
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			if !txn.IsReturnDepositCoin() {
+				return errors.New("only ReturnDepositCoin transaction can use the deposit utxo")
 			}
 		} else {
-			if txn.IsReturnPledgeCoin() {
-				return errors.New("the ReturnPledgeCoin can only use the pledge utxo")
+			if txn.IsReturnDepositCoin() {
+				return errors.New("the ReturnDepositCoin can only use the deposit utxo")
 			}
 		}
 	}
@@ -519,7 +519,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadRegisterProducer:
 	case *PayloadCancelProducer:
 	case *PayloadUpdateProducer:
-	case *PayloadReturnPledgeCoin:
+	case *PayloadReturnDepositCoin:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -649,7 +649,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hash, err := contract.PublicKeyToPledgeProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
@@ -666,7 +666,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 	var signed bool
 	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToPledgeProgramHash(program.Code[1 : len(program.Code)-1])
+		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
 		if err != nil {
 			return errors.New("Invalid program code.")
 		}
@@ -688,22 +688,22 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid IP.")
 	}
 
-	// check the pledge coin
-	isPledged := false
-	var pledgeCount int
+	// check the deposit coin
+	isDeposit := false
+	var depositCount int
 	for _, output := range txn.Outputs {
-		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixPledge {
-			pledgeCount++
-			if output.Value >= MinPledgeAmount || output.ProgramHash.IsEqual(*hash) {
-				isPledged = true
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			depositCount++
+			if output.Value >= MinDepositAmount || output.ProgramHash.IsEqual(*hash) {
+				isDeposit = true
 			}
 		}
 	}
-	if pledgeCount != 1 {
-		return errors.New("Invalid pledge address count.")
+	if depositCount != 1 {
+		return errors.New("Invalid deposit address count.")
 	}
-	if !isPledged {
-		return errors.New("The pledge coin is insufficient.")
+	if !isDeposit {
+		return errors.New("The deposit coin is insufficient.")
 	}
 
 	return nil

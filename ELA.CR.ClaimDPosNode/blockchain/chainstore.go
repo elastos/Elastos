@@ -175,7 +175,7 @@ func (c *ChainStore) InitProducerVotes() error {
 			return err
 		}
 
-		programHash, err := contract.PublicKeyToPledgeProgramHash(p.PublicKey)
+		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
 		if err != nil {
 			return errors.New("[InitProducerVotes]" + err.Error())
 		}

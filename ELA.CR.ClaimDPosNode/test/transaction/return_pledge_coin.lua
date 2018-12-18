@@ -18,8 +18,8 @@ local amount = 0.2
 local fee = 0.001
 local recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
 
--- return pledge payload
-local rp_payload = returnpledgecoin.new()
+-- return deposit payload
+local rp_payload = returndepositcoin.new()
 print(rp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
