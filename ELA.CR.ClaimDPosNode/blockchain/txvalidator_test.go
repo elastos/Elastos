@@ -114,15 +114,15 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// coinbase
 	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
 	err := CheckTransactionOutput(heights.HeightVersion1, tx)
 	s.NoError(err)
 
 	// outputs < 2
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
 	err = CheckTransactionOutput(heights.HeightVersion1, tx)
 	s.EqualError(err, "coinbase output is not enough, at least 2")
@@ -141,8 +141,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	fmt.Printf("Foundation reward amount %s", foundationReward.String())
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
 	err = CheckTransactionOutput(heights.HeightVersion1, tx)
 	s.NoError(err)
@@ -151,8 +151,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	foundationReward = common.Fixed64(float64(totalReward) * 0.299999)
 	fmt.Printf("Foundation reward amount %s", foundationReward.String())
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
 	err = CheckTransactionOutput(heights.HeightVersion1, tx)
 	s.EqualError(err, "Reward to foundation in coinbase < 30%")
@@ -160,7 +160,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// normal transaction
 	tx = buildTx()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
 	}
 	err = CheckTransactionOutput(heights.HeightVersion1, tx)
@@ -183,7 +183,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// invalid program hash
 	tx.Outputs = randomOutputs()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = config.ELAAssetID
 		address := common.Uint168{}
 		address[0] = 0x23
 		output.ProgramHash = address
@@ -318,7 +318,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	outputValue1 := common.Fixed64(100 * s.ELA)
 	deposit := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
 	deposit.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
 	}
 
 	references := map[*types.Input]*types.Output{
@@ -336,8 +336,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	outputValue1 = common.Fixed64(30 * s.ELA)
 	outputValue2 := common.Fixed64(70 * s.ELA)
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
 	}
 
 	references = map[*types.Input]*types.Output{

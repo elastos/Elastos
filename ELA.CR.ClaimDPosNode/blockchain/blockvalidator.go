@@ -19,13 +19,13 @@ const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
-func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
+func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	header := block.Header
 	hash := header.Hash()
 	if !header.AuxPow.Check(&hash, AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check aux pow failed")
 	}
-	if CheckProofOfWork(&header, powLimit) != nil {
+	if CheckProofOfWork(&header, b.chainParams.PowLimit) != nil {
 		return errors.New("[PowCheckBlockSanity] block check proof of work failed")
 	}
 
@@ -36,7 +36,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// Ensure the block time is not too far in the future.
-	maxTimestamp := timeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
+	maxTimestamp := b.TimeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
 	if tempTime.After(maxTimestamp) {
 		return errors.New("[PowCheckBlockSanity] block timestamp of is too far in the future")
 	}
@@ -126,7 +126,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	return nil
 }
 
-func CheckBlockContext(block *Block) error {
+func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
@@ -135,20 +135,20 @@ func CheckBlockContext(block *Block) error {
 		}
 
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
+		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID)
 	}
 
 	return checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
-func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
+func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil
 	}
 
 	header := block.Header
-	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode,
+	expectedDifficulty, err := b.CalcNextRequiredDifficulty(prevNode,
 		time.Unix(int64(header.Timestamp), 0))
 	if err != nil {
 		return err

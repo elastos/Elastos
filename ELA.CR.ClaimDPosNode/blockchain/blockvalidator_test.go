@@ -64,7 +64,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	var block types.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
+	err = CheckBlockSanity(&block, powLimit, timeSource)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -72,7 +72,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	// change of time stamp, this will change the block hash
 	// and the proof check would fail
 	block.Timestamp = uint32(timeSource.AdjustedTime().Unix())
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
+	err = CheckBlockSanity(&block, powLimit, timeSource)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
 }
