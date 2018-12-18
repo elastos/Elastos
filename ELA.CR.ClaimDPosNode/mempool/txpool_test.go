@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var txPool TxPool
+var txPool *TxPool
 
 func TestTxPoolInit(t *testing.T) {
 	log.Init(
@@ -63,7 +63,7 @@ func TestTxPoolInit(t *testing.T) {
 		Store:            dposStore,
 	})
 
-	txPool.Init()
+	txPool = NewTxPool()
 }
 
 func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
@@ -199,10 +199,11 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		BlockHeight:     100,
 	}
 
-	ok := txPool.addToTxList(txn1)
+	_, ok := txPool.txnList[txn1.Hash()]
 	if !ok {
 		t.Error("Add sidechainpow txn1 to txpool failed")
 	}
+	txPool.txnList[txn1.Hash()] = txn1
 
 	txn2 := new(types.Transaction)
 	txn2.TxType = types.SideChainPow
@@ -212,10 +213,11 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		BlockHeight:     100,
 	}
 	txPool.replaceDuplicateSideChainPowTx(txn2)
-	ok = txPool.addToTxList(txn2)
+	_, ok = txPool.txnList[txn2.Hash()]
 	if !ok {
 		t.Error("Add sidechainpow txn2 to txpool failed")
 	}
+	txPool.txnList[txn2.Hash()] = txn2
 
 	if txn := txPool.GetTransaction(txn1.Hash()); txn != nil {
 		t.Errorf("Txn1 should be replaced")
@@ -270,7 +272,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 }
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
-	txPool.Init()
+	txPool = NewTxPool()
 	var input *types.Input
 	var inputTxID common.Uint256
 	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
@@ -378,7 +380,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	rand.Read(sideBlockHash5[:])
 	fmt.Println("sideBlockHash5:", sideBlockHash5)
 
-	txPool.Init()
+	txPool = NewTxPool()
 	//two mock transactions again, they have some identical sidechain hashes
 	tx3 := new(types.Transaction)
 	tx3.TxType = types.WithdrawFromSideChain
@@ -457,21 +459,21 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if err := isTransactionCleaned(&txPool, tx4); err != nil {
+	if err := isTransactionCleaned(txPool, tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
 	}
 
-	if err := isTransactionCleaned(&txPool, tx5); err != nil {
+	if err := isTransactionCleaned(txPool, tx5); err != nil {
 		t.Error("should clean transaction: tx5:", err)
 	}
 
-	if err := isTransactionExisted(&txPool, tx6); err != nil {
+	if err := isTransactionExisted(txPool, tx6); err != nil {
 		t.Error("should have transaction: tx6", err)
 	}
 
 	/*------------------------------------------------------------*/
 	/* check double spend and duplicate txs */
-	txPool.Init()
+	txPool = NewTxPool()
 
 	txPool.addToTxList(tx4)
 	for _, v := range tx4.Inputs {
@@ -483,7 +485,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	txPool.CleanSubmittedTransactions(&newBLock)
 
-	if err := isTransactionCleaned(&txPool, tx4); err != nil {
+	if err := isTransactionCleaned(txPool, tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
 	}
 
@@ -496,7 +498,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	txPool.addSidechainTx(tx6)
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if err := isTransactionExisted(&txPool, tx6); err != nil {
+	if err := isTransactionExisted(txPool, tx6); err != nil {
 		t.Error("should have transaction: tx6", err)
 	}
 }
