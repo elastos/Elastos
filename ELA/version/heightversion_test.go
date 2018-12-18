@@ -103,17 +103,20 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputPayload() {
 
 	//check output payload shall always find version by Transaction.Version
 
-	s.Error(s.Version.CheckOutputPayload(s.Height1, txV2, nil))
-	s.Error(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
 	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
 
 	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV1, nil))
 	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
 
+	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV2, nil))
+	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
+	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
+
 	s.NoError(s.Version.CheckOutputPayload((s.Height1+s.Height2)/2, txV1, nil))
 	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
 
-	s.Error(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
 	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
 
 	s.NoError(s.Version.CheckOutputPayload(s.Height2, txV1, nil))
@@ -126,6 +129,12 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputPayload() {
 	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
 
 	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txV2, nil))
+	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputPayload(s.Height2, txVMax, nil))
+	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txVMax, nil))
 	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
 
 	s.Error(s.Version.CheckOutputPayload(s.Height3, txV1, nil), "do not support v1")
@@ -161,9 +170,21 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputProgramHash() {
 	s.Equal("txVersionTest1_CheckOutputProgramHash", versionsMsg)
 
 	s.NoError(s.Version.CheckOutputProgramHash(s.Height2, txV1, common.Uint168{}))
-	s.Equal("txVersionTest2_CheckOutputProgramHash", versionsMsg)
+	s.Equal("txVersionTest1_CheckOutputProgramHash", versionsMsg)
 
 	s.NoError(s.Version.CheckOutputProgramHash((s.Height2+s.Height3)/2, txV1, common.Uint168{}))
+	s.Equal("txVersionTest1_CheckOutputProgramHash", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputProgramHash(s.Height2, txV2, common.Uint168{}))
+	s.Equal("txVersionTest2_CheckOutputProgramHash", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputProgramHash((s.Height2+s.Height3)/2, txV2, common.Uint168{}))
+	s.Equal("txVersionTest2_CheckOutputProgramHash", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputProgramHash(s.Height2, txVMax, common.Uint168{}))
+	s.Equal("txVersionTest2_CheckOutputProgramHash", versionsMsg)
+
+	s.NoError(s.Version.CheckOutputProgramHash((s.Height2+s.Height3)/2, txVMax, common.Uint168{}))
 	s.Equal("txVersionTest2_CheckOutputProgramHash", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
@@ -201,9 +222,21 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckCoinbaseMinerReward() {
 	s.Equal("txVersionTest1_CheckCoinbaseMinerReward", versionsMsg)
 
 	s.NoError(s.Version.CheckCoinbaseMinerReward(s.Height2, txV1, 0))
-	s.Equal("txVersionTest2_CheckCoinbaseMinerReward", versionsMsg)
+	s.Equal("txVersionTest1_CheckCoinbaseMinerReward", versionsMsg)
 
 	s.NoError(s.Version.CheckCoinbaseMinerReward((s.Height2+s.Height3)/2, txV1, 0))
+	s.Equal("txVersionTest1_CheckCoinbaseMinerReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseMinerReward(s.Height2, txV2, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseMinerReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseMinerReward((s.Height2+s.Height3)/2, txV2, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseMinerReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseMinerReward(s.Height2, txVMax, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseMinerReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseMinerReward((s.Height2+s.Height3)/2, txVMax, 0))
 	s.Equal("txVersionTest2_CheckCoinbaseMinerReward", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
@@ -241,9 +274,21 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckCoinbaseArbitratorsRewar
 	s.Equal("txVersionTest1_CheckCoinbaseArbitratorsReward", versionsMsg)
 
 	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(s.Height2, txV1, 0))
-	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
+	s.Equal("txVersionTest1_CheckCoinbaseArbitratorsReward", versionsMsg)
 
 	s.NoError(s.Version.CheckCoinbaseArbitratorsReward((s.Height2+s.Height3)/2, txV1, 0))
+	s.Equal("txVersionTest1_CheckCoinbaseArbitratorsReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(s.Height2, txV2, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward((s.Height2+s.Height3)/2, txV2, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(s.Height2, txVMax, 0))
+	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
+
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward((s.Height2+s.Height3)/2, txVMax, 0))
 	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
@@ -281,9 +326,21 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckVoteProducerOutputs() {
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
 	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV1, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
+	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
 	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV1, nil, nil))
+	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
+
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV2, nil, nil))
+	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
+
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV2, nil, nil))
+	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
+
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txVMax, nil, nil))
+	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
+
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txVMax, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
@@ -321,9 +378,21 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckTxHasNoPrograms() {
 	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
 	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txV1))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
 
 	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txV1))
+	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
+
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txV2))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
+
+	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txV2))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
+
+	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txVMax))
+	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
+
+	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txVMax))
 	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
