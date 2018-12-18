@@ -1,7 +1,7 @@
 package org.elastos.carrier.common;
 
 public enum TestErrorCodeFacility {
-    GENERAL, SYS, HTTP, MQTT, ICE;
+    GENERAL, SYS, HTTP, MQTT, ICE, DHT;
 
     public static TestErrorCodeFacility valueOf(int facility) {
         switch (facility) {
@@ -16,6 +16,8 @@ public enum TestErrorCodeFacility {
                 return MQTT;
             case 5:
                 return ICE;
+            case 6:
+                return DHT;
         }
     }
 
@@ -33,6 +35,8 @@ public enum TestErrorCodeFacility {
                 return 4;
             case ICE:
                 return 5;
+            case DHT:
+                return 6;
         }
     }
 }

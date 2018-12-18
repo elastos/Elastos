@@ -147,7 +147,7 @@ public class RobotConnector extends Socket {
 			return revData.split("\\s+");
 		}
 		catch (IOException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 //			String msg = e.getMessage();
 //			if (msg != null) Log.e(TAG, msg);
 		}

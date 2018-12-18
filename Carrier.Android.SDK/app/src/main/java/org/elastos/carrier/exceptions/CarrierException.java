@@ -84,7 +84,7 @@ public abstract class CarrierException extends Exception {
 	}
 
 	private static int getFacility(int errorCode) {
-		return (errorCode & 0x8FFFFFFF) >> 24;
+		return (errorCode & 0x7FFFFFFF) >> 24;
 	}
 
 	public static CarrierException fromErrorCode(int errorCode, String message, Throwable cause) {

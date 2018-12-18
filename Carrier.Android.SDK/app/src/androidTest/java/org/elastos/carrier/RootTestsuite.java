@@ -27,13 +27,21 @@ import static org.junit.Assert.fail;
 		GetIDTest.class,
 		GetInfoTest.class,
 
+		//Group
+		GroupNewTest.class,
+		GroupTitleTest.class,
+		GroupInviteJoinTest.class,
+		GroupListTest.class,
+		GroupGetPeerTest.class,
+		GroupMessageTest.class,
+
 		//Session
 		ManagerTest.class,
 		NewTest.class,
 		RequestReplyTest.class,
 		StreamTest.class,
 		PortforwardingTest.class,
-		ChannelTest.class
+		ChannelTest.class,
 })
 
 public class RootTestsuite {

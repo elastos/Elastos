@@ -342,7 +342,6 @@ public class RequestReplyTest {
 			}
 
 			LocalData data = (LocalData)context.getExtra().getExtraData();
-			data = (LocalData)context.getExtra().getExtraData();
 			assertEquals(StreamState.Initialized, data.mState);
 
 			TestSessionRequestCompleteHandler completeHandler = new TestSessionRequestCompleteHandler();

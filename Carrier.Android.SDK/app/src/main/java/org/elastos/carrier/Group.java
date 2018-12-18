@@ -183,7 +183,7 @@ public class Group {
 	 *
 	 * Include the basic userid and it's nickname.
 	 */
-	public class PeerInfo {
+	static public class PeerInfo {
 		private String userId;
 		private String name;
 
@@ -241,7 +241,7 @@ public class Group {
 	 * 		CarrierException
 	 * 		IllegalArgumentException
 	 */
-	public PeerInfo GetPeer(String peerId) throws CarrierException {
+	public PeerInfo getPeer(String peerId) throws CarrierException {
 		if (peerId == null || peerId.length() == 0)
 			throw new IllegalArgumentException();
 

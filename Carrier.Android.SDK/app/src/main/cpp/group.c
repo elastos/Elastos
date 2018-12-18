@@ -284,7 +284,7 @@ bool groupPeerIteratedCallback(const ElaGroupPeer *peer, void *context)
     rc = callBooleanMethod(env, NULL, jiterator, "onIterated",
                        "("_W("Group$PeerInfo;")_J("Object;)Z"),
                        &result, jpeerInfo, jcontext);
-    (*env)->DeleteWeakGlobalRef(env, jpeerInfo);
+    (*env)->DeleteLocalRef(env, jpeerInfo);
     if (!rc) {
         logE("Call method boolean onIterated(GroupPeerInfo, Object) error");
         *javaErr = 0;
