@@ -21,3 +21,4 @@ vendor/*
 *.json
 *.bin
 *.db
+/elastos_did/*

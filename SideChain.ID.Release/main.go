@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -29,6 +30,11 @@ import (
 
 const (
 	printStateInterval = 10 * time.Second
+
+	DataPath = "elastos_did"
+	DataDir  = "data"
+	ChainDir = "chain"
+	SpvDir   = "spv"
 )
 
 var (
@@ -61,7 +67,8 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
-	idChainStore, err := bc.NewChainStore(activeNetParams.GenesisBlock)
+	idChainStore, err := bc.NewChainStore(activeNetParams.GenesisBlock,
+		filepath.Join(DataPath, DataDir, ChainDir))
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
@@ -96,7 +103,7 @@ func main() {
 	}
 
 	spvCfg := spv.Config{
-		DataDir:        "./data_spv",
+		DataDir:        filepath.Join(DataPath, DataDir, SpvDir),
 		Magic:          activeNetParams.SpvParams.Magic,
 		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
 		SeedList:       activeNetParams.SpvParams.SeedList,
