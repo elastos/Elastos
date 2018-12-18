@@ -31,10 +31,10 @@ const (
 	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
 
-	RegisterProducer TransactionType = 0x09
-	CancelProducer   TransactionType = 0x0a
-	UpdateProducer   TransactionType = 0x0b
-	ReturnPledgeCoin TransactionType = 0x0c
+	RegisterProducer  TransactionType = 0x09
+	CancelProducer    TransactionType = 0x0a
+	UpdateProducer    TransactionType = 0x0b
+	ReturnDepositCoin TransactionType = 0x0c
 
 	IllegalProposalEvidence TransactionType = 0x0d
 	IllegalVoteEvidence     TransactionType = 0x0e
@@ -67,8 +67,8 @@ func (self TransactionType) Name() string {
 		return "CancelProducer"
 	case UpdateProducer:
 		return "UpdateProducer"
-	case ReturnPledgeCoin:
-		return "ReturnPledgeCoin"
+	case ReturnDepositCoin:
+		return "ReturnDepositCoin"
 	case IllegalProposalEvidence:
 		return "IllegalProposalEvidence"
 	case IllegalVoteEvidence:
@@ -327,8 +327,8 @@ func (tx *Transaction) IsUpdateProducerTx() bool {
 	return tx.TxType == UpdateProducer
 }
 
-func (tx *Transaction) IsReturnPledgeCoin() bool {
-	return tx.TxType == ReturnPledgeCoin
+func (tx *Transaction) IsReturnDepositCoin() bool {
+	return tx.TxType == ReturnDepositCoin
 }
 
 func (tx *Transaction) IsCancelProducerTx() bool {
@@ -402,8 +402,8 @@ func GetPayload(txType TransactionType) (Payload, error) {
 			new(PayloadRegisterProducer),
 		}
 		p = new(PayloadUpdateProducer)
-	case ReturnPledgeCoin:
-		p = new(PayloadReturnPledgeCoin)
+	case ReturnDepositCoin:
+		p = new(PayloadReturnDepositCoin)
 	case IllegalProposalEvidence:
 		p = new(PayloadIllegalProposal)
 	case IllegalVoteEvidence:

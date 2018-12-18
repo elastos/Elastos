@@ -47,7 +47,7 @@ func (v *TxVersionMain) CheckOutputProgramHash(programHash common.Uint168) error
 	case contract.PrefixStandard:
 	case contract.PrefixMultiSig:
 	case contract.PrefixCrossChain:
-	case contract.PrefixPledge:
+	case contract.PrefixDeposit:
 	default:
 		return errors.New("invalid program hash prefix")
 	}

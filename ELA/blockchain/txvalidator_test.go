@@ -429,7 +429,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	publicKeyPlege1, _ := contract.PublicKeyToPledgeProgramHash(publicKey1)
+	publicKeyPlege1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
 		Value:       5000,

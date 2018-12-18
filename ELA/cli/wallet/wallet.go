@@ -118,7 +118,7 @@ func exportAccount(name, password string) error {
 	return nil
 }
 
-func generatePledgeAddress(name string) (string, error) {
+func generateDepositAddress(name string) (string, error) {
 	var fileStore account.FileStore
 	fileStore.SetPath(name)
 	storeAccounts, err := fileStore.LoadAccountData()
@@ -136,8 +136,8 @@ func generatePledgeAddress(name string) (string, error) {
 				return "", err
 			}
 			codeHash := program.ToCodeHash()
-			pledgeHash := common.Uint168FromCodeHash(byte(contract.PrefixPledge), codeHash)
-			address, err := pledgeHash.ToAddress()
+			depositHash := common.Uint168FromCodeHash(byte(contract.PrefixDeposit), codeHash)
+			address, err := depositHash.ToAddress()
 			if err != nil {
 				return "", nil
 			}
@@ -213,12 +213,12 @@ func walletAction(context *cli.Context) error {
 		}
 	}
 
-	// generate pledge address
-	if context.Bool("getpledgeaddress") {
-		address, err := generatePledgeAddress(name)
+	// generate deposit address
+	if context.Bool("getdepositaddress") {
+		address, err := generateDepositAddress(name)
 		if err != nil {
-			fmt.Println("error: get pledge address failed,", err)
-			cli.ShowCommandHelpAndExit(context, "getpledgeaddress", 1)
+			fmt.Println("error: get deposit address failed,", err)
+			cli.ShowCommandHelpAndExit(context, "getdepositaddress", 1)
 		}
 		fmt.Println(address)
 	}
@@ -279,8 +279,8 @@ func NewCommand() *cli.Command {
 				Usage: "export all account private keys in hex string",
 			},
 			cli.BoolFlag{
-				Name:  "getpledgeaddress, gpa",
-				Usage: "generate the pledge address form main account",
+				Name:  "getdepositaddress, gda",
+				Usage: "generate the deposit address form main account",
 			},
 		},
 		Action: walletAction,

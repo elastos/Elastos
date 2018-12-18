@@ -945,7 +945,7 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 	var ps []Producer
 	for _, p := range producers {
-		programHash, err := contract.PublicKeyToPledgeProgramHash(p.PublicKey)
+		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
 		if err != nil {
 			return ResponsePack(Error, "invalid public key")
 		}
