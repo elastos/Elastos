@@ -716,7 +716,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, err)
 	}
-	UTXOs := UTXOsWithAssetID[chain.DefaultLedger.Blockchain.AssetID]
+	UTXOs := UTXOsWithAssetID[config.ELAAssetID]
 	var totalValue common.Fixed64
 	for _, unspent := range UTXOs {
 		totalValue += unspent.Value
@@ -743,7 +743,7 @@ func ListUnspent(param Params) map[string]interface{} {
 			return ResponsePack(InvalidParams, "cannot get asset with program")
 		}
 
-		for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
+		for _, unspent := range unspents[config.ELAAssetID] {
 			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
@@ -752,7 +752,7 @@ func ListUnspent(param Params) map[string]interface{} {
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
 				TxID:          ToReversedString(unspent.TxID),
-				AssetID:       ToReversedString(chain.DefaultLedger.Blockchain.AssetID),
+				AssetID:       ToReversedString(config.ELAAssetID),
 				VOut:          unspent.Index,
 				Amount:        unspent.Value.String(),
 				Address:       address,
@@ -1012,7 +1012,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	var total common.Fixed64
 	var voting common.Fixed64
 	status := true
-	for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
+	for _, unspent := range unspents[config.ELAAssetID] {
 		if unspent.Index == 0 {
 			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
 			if err != nil {

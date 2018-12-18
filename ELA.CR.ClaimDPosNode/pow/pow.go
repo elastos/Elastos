@@ -96,14 +96,14 @@ func CreateCoinbaseTx(minerAddr string) (*Transaction, error) {
 	}
 	txn.Outputs = []*Output{
 		{
-			AssetID:       DefaultLedger.Blockchain.AssetID,
+			AssetID:       config.ELAAssetID,
 			Value:         0,
 			ProgramHash:   FoundationAddress,
 			OutputType:    DefaultOutput,
 			OutputPayload: &outputpayload.DefaultOutput{},
 		},
 		{
-			AssetID:       DefaultLedger.Blockchain.AssetID,
+			AssetID:       config.ELAAssetID,
 			Value:         0,
 			ProgramHash:   *minerProgramHash,
 			OutputType:    DefaultOutput,
@@ -175,7 +175,7 @@ func (pow *PowService) GenerateBlock(minerAddr string, bestChain *BlockNode) (*B
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
-		fee := GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		fee := GetTxFee(tx, config.ELAAssetID)
 		if fee != tx.Fee {
 			continue
 		}
