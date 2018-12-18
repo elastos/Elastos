@@ -431,7 +431,7 @@ void close(JNIEnv* env, jobject thiz)
 }
 
 static
-jstring getFileId(JNIEnv* env, jobject thiz, jobject jfilename)
+jstring getFileId(JNIEnv* env, jobject thiz, jstring jfilename)
 {
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
     const char *filename;
@@ -465,7 +465,7 @@ jstring getFileId(JNIEnv* env, jobject thiz, jobject jfilename)
 }
 
 static
-jstring getFileName(JNIEnv* env, jobject thiz, jobject jfileid)
+jstring getFileName(JNIEnv* env, jobject thiz, jstring jfileid)
 {
     char filename[ELA_MAX_FILE_NAME_LEN + 1];
     const char *fileid;
@@ -760,10 +760,10 @@ static const char* gClassName = "org/elastos/carrier/filetransfer/FileTransfer";
 static JNINativeMethod gMethods[] = {
     {"generate_fileId",  "()"_J("String;"),                (void*)generateFileid},
     {"native_close",     "()V",                            (void*)close         },
-    {"get_fileid",       "("_J("String;)")_J("String;"),   (void*)getFileId     },
+    {"get_fileId",       "("_J("String;)")_J("String;"),   (void*)getFileId     },
     {"get_filename",     "("_J("String;)")_J("String;"),   (void*)getFileName   },
     {"native_connect",   "()Z",                            (void*)connect       },
-    {"accept_connect"    "()Z",                            (void*)acceptConnect },
+    {"accept_connect",   "()Z",                            (void*)acceptConnect },
     {"native_add",       "("_F("FileTransferInfo;)Z"),     (void*)addFile       },
     {"native_pull",      "("_J("String;")"J)Z",            (void*)pullData      },
     {"native_send",      "("_J("String;")"[B)Z",           (void*)sendData      },

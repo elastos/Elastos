@@ -206,7 +206,7 @@ static JNINativeMethod gMethods[] = {
     {"native_init",         "("_W("Carrier;")_F("ManagerHandler;)Z"),        (void*)fileTransferMgrInit   },
     {"native_cleanup",      "("_W("Carrier;)V"),                             (void*)fileTransferMgrCleanup},
     {"create_filetransfer", "("_W("Carrier;")_J("String;")_F("FileTransferInfo;")
-                            _F("FiletTransferHandler;)")_F("FileTransfer;"), (void*)create                },
+                            _F("FileTransferHandler;)")_F("FileTransfer;"),  (void*)create                },
     {"get_error_code",      "()I",                                           (void*)getErrorCode          },
 };
 
