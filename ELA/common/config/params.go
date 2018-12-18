@@ -56,7 +56,7 @@ var MainNetParams = Params{
 	},
 
 	Foundation:         mainNetFoundation,
-	GenesisBlock:       genesisBlock(mainNetFoundation),
+	GenesisBlock:       GenesisBlock(mainNetFoundation),
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
 	TargetTimespan:     24 * time.Hour,  // 24 hours
@@ -81,7 +81,7 @@ var TestNetParams = Params{
 	},
 
 	Foundation:         testNetFoundation,
-	GenesisBlock:       genesisBlock(testNetFoundation),
+	GenesisBlock:       GenesisBlock(testNetFoundation),
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
 	TargetTimespan:     24 * time.Hour,  // 24 hours
@@ -95,7 +95,7 @@ var TestNetParams = Params{
 var RegNetParams = Params{
 	Name:               "regnet",
 	Foundation:         testNetFoundation,
-	GenesisBlock:       genesisBlock(testNetFoundation),
+	GenesisBlock:       GenesisBlock(testNetFoundation),
 	PowLimit:           powLimit,
 	PowLimitBits:       0x207fffff,
 	TargetTimePerBlock: time.Second * 1,      // 1 second

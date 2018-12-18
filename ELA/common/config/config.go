@@ -1,9 +1,6 @@
 package config
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
@@ -12,15 +9,11 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-const (
-	DefaultConfigFilename = "./config.json"
-)
-
 var (
-	Parameters configParams
+	Parameters ConfigParams
 	Version    string
 
-	mainNet = &ChainParams{
+	MainNet = ChainParams{
 		Name:               "MainNet",
 		PowLimit:           powLimit,
 		PowLimitBits:       0x1f0008ff,
@@ -32,7 +25,7 @@ var (
 		CoinbaseLockTime:   100,
 	}
 
-	testNet = &ChainParams{
+	TestNet = ChainParams{
 		Name:               "TestNet",
 		PowLimit:           powLimit,
 		PowLimitBits:       0x1e1da5ff,
@@ -44,7 +37,7 @@ var (
 		CoinbaseLockTime:   100,
 	}
 
-	regNet = &ChainParams{
+	RegNet = ChainParams{
 		Name:               "RegNet",
 		PowLimit:           powLimit,
 		PowLimitBits:       0x207fffff,
@@ -121,7 +114,7 @@ type Seed struct {
 }
 
 type ConfigFile struct {
-	ConfigFile Configuration `json:"Configuration"`
+	Configuration `json:"Configuration"`
 }
 
 type ChainParams struct {
@@ -136,41 +129,9 @@ type ChainParams struct {
 	CoinbaseLockTime   uint32        `json:"CoinbaseLockTime"`
 }
 
-type configParams struct {
+type ConfigParams struct {
 	*Configuration
 	ChainParam *ChainParams
-}
-
-func init() {
-	var config ConfigFile
-
-	if _, err := os.Stat(DefaultConfigFilename); os.IsNotExist(err) {
-		config.ConfigFile = configTemplate
-
-	} else {
-		file, e := ioutil.ReadFile(DefaultConfigFilename)
-		if e != nil {
-			log.Fatalf("File error: %v\n", e)
-			os.Exit(1)
-		}
-		// Remove the UTF-8 Byte Order Mark
-		file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
-
-		if e := json.Unmarshal(file, &config); e != nil {
-			log.Fatalf("Unmarshal json file erro %v", e)
-			os.Exit(1)
-		}
-	}
-
-	//	Parameters = &(config.ConfigFile)
-	Parameters.Configuration = &config.ConfigFile
-	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
-		Parameters.ChainParam = mainNet
-	} else if Parameters.PowConfiguration.ActiveNet == "TestNet" {
-		Parameters.ChainParam = testNet
-	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
-		Parameters.ChainParam = regNet
-	}
 }
 
 func (config *Configuration) GetArbiterID() []byte {
