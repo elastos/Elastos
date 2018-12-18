@@ -83,11 +83,11 @@ func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.Vot
 	return nil, errors.New("[GetRegisteredProducers] not found vote")
 }
 
-func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, programHash Uint168) Fixed64 {
+func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, publicKey []byte) Fixed64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	info, ok := c.producerVotes[programHash]
+	info, ok := c.producerVotes[BytesToHexString(publicKey)]
 	if !ok {
 		return Fixed64(0)
 	}
@@ -100,11 +100,11 @@ func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, programHas
 	return vote
 }
 
-func (c *ChainStore) GetProducerStatus(programHash Uint168) ProducerState {
+func (c *ChainStore) GetProducerStatus(address string) ProducerState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if p, ok := c.producerVotes[programHash]; ok {
+	if p, ok := c.producerVotes[address]; ok {
 		if c.currentBlockHeight-p.RegHeight >= 6 {
 			return ProducerRegistered
 		} else {

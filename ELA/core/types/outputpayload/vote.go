@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (
@@ -26,7 +27,7 @@ var VoteTypes = []VoteType{
 
 type VoteContent struct {
 	VoteType   VoteType
-	Candidates []common.Uint168
+	Candidates [][]byte
 }
 
 func (vc *VoteContent) Serialize(w io.Writer) error {
@@ -37,7 +38,7 @@ func (vc *VoteContent) Serialize(w io.Writer) error {
 		return err
 	}
 	for _, candidate := range vc.Candidates {
-		if err := candidate.Serialize(w); err != nil {
+		if err := common.WriteVarBytes(w, candidate); err != nil {
 			return err
 		}
 	}
@@ -58,8 +59,8 @@ func (vc *VoteContent) Deserialize(r io.Reader) error {
 	}
 
 	for i := uint32(0); i < candidatesCount; i++ {
-		var candidate common.Uint168
-		if err := candidate.Deserialize(r); err != nil {
+		candidate, err := common.ReadVarBytes(r, crypto.COMPRESSEDLEN, "producer")
+		if err != nil {
 			return err
 		}
 		vc.Candidates = append(vc.Candidates, candidate)
@@ -144,12 +145,13 @@ func (o *VoteOutput) Validate() error {
 		}
 		typeMap[content.VoteType] = struct{}{}
 
-		candidateMap := make(map[common.Uint168]struct{})
+		candidateMap := make(map[string]struct{})
 		for _, candidate := range content.Candidates {
-			if _, exists := candidateMap[candidate]; exists {
+			c := common.BytesToHexString(candidate)
+			if _, exists := candidateMap[c]; exists {
 				return errors.New("duplicate candidate")
 			}
-			candidateMap[candidate] = struct{}{}
+			candidateMap[c] = struct{}{}
 		}
 	}
 

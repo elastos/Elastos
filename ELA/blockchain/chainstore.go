@@ -8,7 +8,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -60,7 +59,8 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 
-	producerVotes    map[Uint168]*ProducerInfo
+	producerVotes    map[string]*ProducerInfo
+	producerAddress  map[string]string // key: address  value: public key
 	dirty            map[outputpayload.VoteType]bool
 	orderedProducers map[outputpayload.VoteType][]*PayloadRegisterProducer
 }
@@ -76,8 +76,9 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		currentBlockHeight: 0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
-		producerVotes:      make(map[Uint168]*ProducerInfo, 0),
-		dirty:              make(map[outputpayload.VoteType]bool, 0),
+		producerVotes:      make(map[string]*ProducerInfo),
+		producerAddress:    make(map[string]string),
+		dirty:              make(map[outputpayload.VoteType]bool),
 		orderedProducers:   make(map[outputpayload.VoteType][]*PayloadRegisterProducer),
 	}
 
@@ -94,36 +95,6 @@ func (c *ChainStore) Close() {
 }
 
 func (c *ChainStore) loop() {
-	for {
-		select {
-		case t := <-c.taskCh:
-			now := time.Now()
-			switch task := t.(type) {
-			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
-			case *persistConfirmTask:
-				c.handlePersistConfirmTask(task.confirm)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Hash.String())
-			case *rollbackBlockTask:
-				c.handleRollbackBlockTask(task.blockHash)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block rollback exetime: %g", tcall)
-			}
-
-		case closed := <-c.quit:
-			closed <- true
-			return
-		}
-	}
-}
-
-func (c *ChainStore) loop2() {
 	for {
 		select {
 		case t := <-c.taskCh:
@@ -175,16 +146,12 @@ func (c *ChainStore) InitProducerVotes() error {
 			return err
 		}
 
-		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
-		if err != nil {
-			return errors.New("[InitProducerVotes]" + err.Error())
-		}
 		vote := make(map[outputpayload.VoteType]Fixed64, 0)
 		for _, voteType := range outputpayload.VoteTypes {
-			v, _ := c.getProducerVote(voteType, *programHash)
+			v, _ := c.getProducerVote(voteType, p.PublicKey)
 			vote[voteType] = v
 		}
-		c.producerVotes[*programHash] = &ProducerInfo{
+		c.producerVotes[BytesToHexString(p.PublicKey)] = &ProducerInfo{
 			Payload:   &p,
 			RegHeight: h,
 			Vote:      vote,

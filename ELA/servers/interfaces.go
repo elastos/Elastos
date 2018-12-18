@@ -954,11 +954,11 @@ func ListProducers(param Params) map[string]interface{} {
 			return ResponsePack(Error, "invalid program hash")
 		}
 		var active bool
-		state := chain.DefaultLedger.Store.GetProducerStatus(*programHash)
+		state := chain.DefaultLedger.Store.GetProducerStatus(addr)
 		if state == chain.ProducerRegistered {
 			active = true
 		}
-		vote := chain.DefaultLedger.Store.GetProducerVote(outputpayload.Delegate, *programHash)
+		vote := chain.DefaultLedger.Store.GetProducerVote(outputpayload.Delegate, p.PublicKey)
 		producer := Producer{
 			Address:  addr,
 			Nickname: p.NickName,
@@ -993,12 +993,7 @@ func ProducerStatus(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "address not found.")
 	}
-	programHash, err := common.Uint168FromAddress(address)
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid address.")
-	}
-
-	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(*programHash))
+	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(address))
 }
 
 func VoteStatus(param Params) map[string]interface{} {
@@ -1129,8 +1124,7 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 			var contentInfo VoteContentInfo
 			contentInfo.VoteType = content.VoteType
 			for _, candidate := range content.Candidates {
-				address, _ := candidate.ToAddress()
-				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, address)
+				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, common.BytesToHexString(candidate))
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}
