@@ -135,7 +135,7 @@ static inline
 FileTransferItem *get_fileinfo_channel(ElaFileTransfer *ft, int channel)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files); i++) {
+    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
         if (channel == ft->files[i].channel)
             break;
     }
@@ -147,7 +147,7 @@ static inline
 FileTransferItem *get_fileinfo_fileid(ElaFileTransfer *ft, const char *fileid)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files); i++) {
+    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
         if (strcmp(fileid, ft->files[i].fileid) == 0)
             break;
     }
@@ -159,7 +159,7 @@ static inline
 FileTransferItem *get_fileinfo_name(ElaFileTransfer *ft, const char *filename)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files); i++) {
+    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
         if (strcmp(filename, ft->files[i].filename) == 0)
             break;
     }
