@@ -56,9 +56,20 @@ func (a *Arbitrators) StartUp() error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	if err := a.store.GetArbitrators(a); err != nil {
+	block, err := blockchain.DefaultLedger.GetBlockWithHeight(blockchain.DefaultLedger.Blockchain.BlockHeight)
+	if err != nil {
 		return err
 	}
+	if blockchain.DefaultLedger.HeightVersions.GetDefaultBlockVersion(block.Height) == 0 {
+		if a.currentArbitrators, err = blockchain.DefaultLedger.HeightVersions.GetProducersDesc(block); err != nil {
+			return err
+		}
+	} else {
+		if err := a.store.GetArbitrators(a); err != nil {
+			return err
+		}
+	}
+
 	if err := a.updateArbitratorsProgramHashes(); err != nil {
 		return err
 	}
