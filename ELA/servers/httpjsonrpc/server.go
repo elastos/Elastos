@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/servers"
@@ -50,8 +50,7 @@ func StartRPCServer() {
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
 	// aux interfaces
 	mainMux["help"] = AuxHelp
-	mainMux["submitauxblock"] =
-		SubmitAuxBlock
+	mainMux["submitauxblock"] = SubmitAuxBlock
 	mainMux["createauxblock"] = CreateAuxBlock
 	// mining interfaces
 	mainMux["togglemining"] = ToggleMining
@@ -61,7 +60,7 @@ func StartRPCServer() {
 	mainMux["producerstatus"] = ProducerStatus
 	mainMux["votestatus"] = VoteStatus
 
-	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
+	err := http.ListenAndServe(":"+strconv.Itoa(config.Parameters.HttpJsonPort), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err.Error())
 	}
