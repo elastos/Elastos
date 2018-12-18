@@ -12,6 +12,7 @@ Chain_UnitTest/
 Dpos_UnitTest/
 Dpos/
 Dpos_Test/
+Dpos_Data/
 ArbiterLogs/
 Logs/
 DposEvent/

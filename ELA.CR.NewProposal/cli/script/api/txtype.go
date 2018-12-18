@@ -62,8 +62,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.PayloadCancelProducer)
 	case *payload.PayloadUpdateProducer:
 		pload, _ = ud.Value.(*payload.PayloadUpdateProducer)
-	case *payload.PayloadReturnPledgeCoin:
-		pload, _ = ud.Value.(*payload.PayloadReturnPledgeCoin)
+	case *payload.PayloadReturnDepositCoin:
+		pload, _ = ud.Value.(*payload.PayloadReturnDepositCoin)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)

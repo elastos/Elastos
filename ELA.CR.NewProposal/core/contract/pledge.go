@@ -9,10 +9,10 @@ import (
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
-func CreatePledgeContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
+func CreateDepositContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
 	temp, err := pubkey.EncodePoint(true)
 	if err != nil {
-		return nil, errors.New("[Contract],CreatePledgeContractByPubKey failed.")
+		return nil, errors.New("[Contract],CreateDepositContractByPubKey failed.")
 	}
 	sb := program.NewProgramBuilder()
 	sb.PushData(temp)
@@ -20,24 +20,24 @@ func CreatePledgeContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
 
 	return &Contract{
 		Code:       sb.ToArray(),
-		HashPrefix: PrefixPledge,
+		HashPrefix: PrefixDeposit,
 	}, nil
 }
 
-func CreatePledgeContractByCode(code []byte) (*Contract, error) {
+func CreateDepositContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
 		Code:       code,
-		HashPrefix: PrefixPledge,
+		HashPrefix: PrefixDeposit,
 	}, nil
 }
 
-func PublicKeyToPledgeProgramHash(pubKey []byte) (*common.Uint168, error) {
+func PublicKeyToDepositProgramHash(pubKey []byte) (*common.Uint168, error) {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
 		return nil, err
 	}
 
-	contract, err := CreatePledgeContractByPubKey(publicKey)
+	contract, err := CreateDepositContractByPubKey(publicKey)
 	if err != nil {
 		return nil, err
 	}
