@@ -455,7 +455,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		t.Error("GetProducerVote failed")
 	}
 
-	testChainStore.ClearRegisterdProducer()
+	testChainStore.ClearRegisteredProducer()
 	testChainStore.BatchCommit()
 }
 

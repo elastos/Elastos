@@ -10,9 +10,9 @@ const (
 	DATATransaction DataEntryPrefix = 0x02
 	DATAConfirm     DataEntryPrefix = 0x03
 
-	// DPOS
-	DPOSVoteProducer    DataEntryPrefix = 0xc1
-	DPOSIllegalProducer DataEntryPrefix = 0x10
+	//SYSTEM
+	SYSCurrentBlock      DataEntryPrefix = 0x40
+	SYSCurrentBookKeeper DataEntryPrefix = 0x42
 
 	// INDEX
 	IXHeaderHashList DataEntryPrefix = 0x80
@@ -23,9 +23,10 @@ const (
 	// ASSET
 	STInfo DataEntryPrefix = 0xc0
 
-	//SYSTEM
-	SYSCurrentBlock      DataEntryPrefix = 0x40
-	SYSCurrentBookKeeper DataEntryPrefix = 0x42
+	// DPOS
+	DPOSVoteProducer    DataEntryPrefix = 0xd0
+	DPOSIllegalProducer DataEntryPrefix = 0xd1
+	DPOSCancelProducer  DataEntryPrefix = 0xd2
 
 	//CONFIG
 	CFGVersion DataEntryPrefix = 0xf0

@@ -647,6 +647,11 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid payload.")
 	}
 
+	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.PublicKey)
+	if err == nil {
+		return fmt.Errorf("Invalid producer, canceled at height: %d", height)
+	}
+
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)

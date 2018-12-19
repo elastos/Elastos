@@ -138,6 +138,16 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 		return errors.New("[PersistCancelProducer]" + err.Error())
 	}
 
+	// add to cancel producer database
+	key = []byte{byte(DPOSCancelProducer)}
+	key = append(key, payload.PublicKey...)
+	buf := new(bytes.Buffer)
+	err = WriteUint32(buf, DefaultLedger.Blockchain.GetBestHeight())
+	if err != nil {
+		return errors.New("write cancel producer height failed")
+	}
+	c.BatchPut(key, buf.Bytes())
+
 	// remove from database
 	for _, voteType := range outputpayload.VoteTypes {
 		keyVote := []byte{byte(voteType)}
@@ -163,6 +173,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 }
 
 func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
+	// todo clean leveldb and mempool before persist
 	height := DefaultLedger.Blockchain.GetBestHeight()
 	for i := uint32(0); i <= height; i++ {
 		hash, err := c.GetBlockHash(height)
@@ -361,7 +372,7 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 	return nil
 }
 
-func (c *ChainStore) ClearRegisterdProducer() {
+func (c *ChainStore) ClearRegisteredProducer() {
 	key := []byte{byte(DPOSVoteProducer)}
 	c.BatchDelete(key)
 }
@@ -483,4 +494,21 @@ func (c *ChainStore) getIllegalProducers() map[string]struct{} {
 	}
 
 	return result
+}
+
+func (c *ChainStore) getCancelProducerHeight(publicKey []byte) (uint32, error) {
+	key := []byte{byte(DPOSCancelProducer)}
+	key = append(key, publicKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		return 0, err
+	}
+	r := bytes.NewReader(data)
+	height, err := ReadUint32(r)
+	if err != nil {
+		return 0, err
+	}
+
+	return height, nil
 }
