@@ -5,9 +5,13 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var testChainStore *ChainStore
@@ -178,6 +182,132 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	if !bytes.Equal(producers[1].PublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
+}
+
+func TestChainStore_TransactionChecks(t *testing.T) {
+	originChainStore := DefaultLedger.Store
+	DefaultLedger.Store = testChainStore
+
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	//publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	//publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	publicKeyStr3 := "03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613"
+	publicKey3, _ := common.HexStringToBytes(publicKeyStr3)
+
+	publicKeyPlege1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	publicKeyPlege3, _ := contract.PublicKeyToDepositProgramHash(publicKey3)
+
+	//CheckRegisterProducerTransaction
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterProducer
+	txn.Payload = &payload.PayloadRegisterProducer{
+		PublicKey: publicKey1,
+		NickName:  "nick name 1",
+		Url:       "http://www.google.com",
+		Location:  1,
+		Address:   "127.0.0.1",
+	}
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	txn.Outputs = []*types.Output{{
+		AssetID:     common.Uint256{},
+		Value:       5000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyPlege1,
+	}}
+
+	err := CheckRegisterProducerTransaction(txn)
+	assert.EqualError(t, err, "Duplicated public key.")
+
+	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey3
+	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 1"
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr3),
+		Parameter: nil,
+	}}
+	txn.Outputs[0].ProgramHash = *publicKeyPlege3
+
+	err = CheckRegisterProducerTransaction(txn)
+	assert.EqualError(t, err, "Duplicated nick name.")
+
+	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 3"
+	err = CheckRegisterProducerTransaction(txn)
+	assert.NoError(t, err)
+
+	//CheckUpdateProducerTransaction
+
+	txn.TxType = types.UpdateProducer
+	txn.Payload = &payload.PayloadUpdateProducer{
+		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
+			PublicKey: publicKey3,
+			NickName:  "nick name 1",
+			Url:       "http://www.google.com",
+			Location:  1,
+			Address:   "127.0.0.1",
+		},
+	}
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr3),
+		Parameter: nil,
+	}}
+
+	txn.Outputs = []*types.Output{{
+		AssetID:     common.Uint256{},
+		Value:       5000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyPlege3,
+	}}
+
+	err = CheckUpdateProducerTransaction(txn)
+	assert.EqualError(t, err, "Invalid producer.")
+
+	txn.Payload.(*payload.PayloadUpdateProducer).PublicKey = publicKey1
+	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 1"
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	txn.Outputs[0].ProgramHash = *publicKeyPlege1
+
+	err = CheckUpdateProducerTransaction(txn)
+	assert.EqualError(t, err, "Duplicated nick name.")
+
+	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 3"
+	err = CheckUpdateProducerTransaction(txn)
+	assert.NoError(t, err)
+
+	//CheckCancelProducerTransaction
+	txn.TxType = types.CancelProducer
+	cancelPayload := &payload.PayloadCancelProducer{
+		PublicKey: publicKey3,
+	}
+	txn.Payload = cancelPayload
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr3),
+		Parameter: nil,
+	}}
+
+	err = CheckCancelProducerTransaction(txn)
+	assert.EqualError(t, err, "Invalid producer.")
+
+	cancelPayload.PublicKey = publicKey1
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	err = CheckCancelProducerTransaction(txn)
+	assert.NoError(t, err)
+
+	DefaultLedger.Store = originChainStore
 }
 
 func TestChainStore_PersistCancelProducer(t *testing.T) {
@@ -459,113 +589,68 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	testChainStore.BatchCommit()
 }
 
-//fixme uncommon util unit test pass
-//func TestCheckAssetPrecision(t *testing.T) {
-//	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
-//	defaultAsset, _ := common.Uint256FromHexString(assetStr)
-//
-//	// normal transaction
-//	tx := buildTx()
-//	for _, output := range tx.Outputs {
-//		output.AssetID = *defaultAsset
-//		output.ProgramHash = common.Uint168{}
-//	}
-//	err := CheckAssetPrecision(tx)
-//	assert.NoError(t, err)
-//
-//	// asset not exist
-//	for _, output := range tx.Outputs {
-//		output.AssetID = common.EmptyHash
-//		output.ProgramHash = common.Uint168{}
-//	}
-//	err = CheckAssetPrecision(tx)
-//	assert.EqualError(t, err, "The asset not exist in local blockchain.")
-//
-//	// register asset
-//	asset := payload.Asset{
-//		Name:      "TEST",
-//		Precision: 0x04,
-//		AssetType: 0x00,
-//	}
-//	register := &types.Transaction{
-//		TxType:         types.RegisterAsset,
-//		PayloadVersion: 0,
-//		Payload: &payload.PayloadRegisterAsset{
-//			Asset:  asset,
-//			Amount: 0 * 100000000,
-//		},
-//	}
-//	DefaultLedger.Store.(*ChainStore).NewBatch()
-//	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
-//	DefaultLedger.Store.(*ChainStore).BatchCommit()
-//
-//	// valid precision
-//	for _, output := range tx.Outputs {
-//		output.AssetID = register.Hash()
-//		output.ProgramHash = common.Uint168{}
-//		output.Value = 123456780000
-//	}
-//	err = CheckAssetPrecision(tx)
-//	assert.NoError(t, err)
-//
-//	// invalid precision
-//	for _, output := range tx.Outputs {
-//		output.AssetID = register.Hash()
-//		output.ProgramHash = common.Uint168{}
-//		output.Value = 12345678000
-//	}
-//	err = CheckAssetPrecision(tx)
-//	assert.EqualError(t, err, "The precision of asset is incorrect.")
-//}
-//
-//func TestCheckCancelProducerTransaction(t *testing.T) {
-//	// 1. Generate a cancel producer transaction
-//	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
-//	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-//	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-//	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
-//	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
-//	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
-//
-//	txn := new(types.Transaction)
-//	txn.TxType = types.CancelProducer
-//	txn.Payload = &payload.PayloadCancelProducer{
-//		PublicKey: publicKey1,
-//	}
-//
-//	txn.Programs = []*program.Program{&program.Program{
-//		Code:      getCode(publicKeyStr1),
-//		Parameter: nil,
-//	}}
-//
-//	// 2. Check transaction
-//	err := CheckCancelProducerTransaction(txn)
-//	assert.NoError(t, err)
-//
-//	// 3. Change public key in payload
-//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = errPublicKey
-//
-//	// 4. Check transaction
-//	err = CheckCancelProducerTransaction(txn)
-//	assert.EqualError(t, err, "Invalid publick key.")
-//
-//	// 5. Change public key in payload
-//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey2
-//
-//	// 6. Check transaction
-//	err = CheckCancelProducerTransaction(txn)
-//	assert.EqualError(t, err, "Public key unsigned.")
-//
-//	// 7. Persist transaction
-//	txn.Payload.(*payload.PayloadCancelProducer).PublicKey = publicKey1
-//	DefaultLedger.Store.(*ChainStore).NewBatch()
-//	DefaultLedger.Store.(*ChainStore).PersistCancelProducer(txn.Payload.(*payload.PayloadCancelProducer))
-//	DefaultLedger.Store.(*ChainStore).BatchCommit()
-//
-//	// 8. Check transaction
-//	err = CheckCancelProducerTransaction(txn)
-//	assert.EqualError(t, err, "Invalid producer.")
-//}
+func TestCheckAssetPrecision(t *testing.T) {
+	originalStore := DefaultLedger.Store
+	DefaultLedger.Store = testChainStore
+
+	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
+	defaultAsset, _ := common.Uint256FromHexString(assetStr)
+
+	// normal transaction
+	tx := buildTx()
+	for _, output := range tx.Outputs {
+		output.AssetID = *defaultAsset
+		output.ProgramHash = common.Uint168{}
+	}
+	err := CheckAssetPrecision(tx)
+	assert.NoError(t, err)
+
+	// asset not exist
+	for _, output := range tx.Outputs {
+		output.AssetID = common.EmptyHash
+		output.ProgramHash = common.Uint168{}
+	}
+	err = CheckAssetPrecision(tx)
+	assert.EqualError(t, err, "The asset not exist in local blockchain.")
+
+	// register asset
+	asset := payload.Asset{
+		Name:      "TEST",
+		Precision: 0x04,
+		AssetType: 0x00,
+	}
+	register := &types.Transaction{
+		TxType:         types.RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &payload.PayloadRegisterAsset{
+			Asset:  asset,
+			Amount: 0 * 100000000,
+		},
+	}
+	testChainStore.NewBatch()
+	testChainStore.PersistAsset(register.Hash(), asset)
+	testChainStore.BatchCommit()
+
+	// valid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 123456780000
+	}
+	err = CheckAssetPrecision(tx)
+	assert.NoError(t, err)
+
+	// invalid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 12345678000
+	}
+	err = CheckAssetPrecision(tx)
+	assert.EqualError(t, err, "The precision of asset is incorrect.")
+
+	DefaultLedger.Store = originalStore
+}
 
 func TestChainStoreDone(t *testing.T) {
 	if testChainStore == nil {
