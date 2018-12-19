@@ -1,4 +1,4 @@
-package version
+package heights
 
 import (
 	"math"
@@ -7,7 +7,8 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/version/heights"
+	"github.com/elastos/Elastos.ELA/version/blocks"
+	"github.com/elastos/Elastos.ELA/version/txs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,9 +24,9 @@ type heightVersionTestSuit struct {
 }
 
 func (s *heightVersionTestSuit) SetupTest() {
-	s.Height1 = heights.GenesisHeightVersion
-	s.Height2 = heights.HeightVersion1
-	s.Height3 = heights.HeightVersion2
+	s.Height1 = GenesisHeightVersion
+	s.Height2 = HeightVersion1
+	s.Height3 = HeightVersion2
 
 	txV1 := &txVersionTest1{}
 	txV2 := &txVersionTest2{}
@@ -37,20 +38,20 @@ func (s *heightVersionTestSuit) SetupTest() {
 			s.Height1: {
 				1,
 				1,
-				map[byte]TxVersion{txV1.GetVersion(): txV1},
-				map[uint32]BlockVersion{blockV1.GetVersion(): blockV1},
+				map[byte]txs.TxVersion{txV1.GetVersion(): txV1},
+				map[uint32]blocks.BlockVersion{blockV1.GetVersion(): blockV1},
 			},
 			s.Height2: {
 				2,
 				2,
-				map[byte]TxVersion{txV1.GetVersion(): txV1, txV2.GetVersion(): txV2},
-				map[uint32]BlockVersion{blockV1.GetVersion(): blockV1, blockV2.GetVersion(): blockV2},
+				map[byte]txs.TxVersion{txV1.GetVersion(): txV1, txV2.GetVersion(): txV2},
+				map[uint32]blocks.BlockVersion{blockV1.GetVersion(): blockV1, blockV2.GetVersion(): blockV2},
 			},
 			s.Height3: {
 				2,
 				2,
-				map[byte]TxVersion{txV2.GetVersion(): txV2},
-				map[uint32]BlockVersion{blockV2.GetVersion(): blockV2},
+				map[byte]txs.TxVersion{txV2.GetVersion(): txV2},
+				map[uint32]blocks.BlockVersion{blockV2.GetVersion(): blockV2},
 			},
 		},
 	)
