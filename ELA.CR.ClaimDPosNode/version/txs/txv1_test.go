@@ -1,4 +1,4 @@
-package txhistory
+package txs
 
 import (
 	"fmt"
@@ -7,26 +7,26 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/version"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/stretchr/testify/suite"
 )
 
-type txVersionV0TestSuite struct {
+type txVersionV1TestSuite struct {
 	suite.Suite
 
-	Version version.TxVersion
+	Version TxVersion
 }
 
-func (s *txVersionV0TestSuite) SetupTest() {
-	s.Version = &TxVersionV0{}
+func (s *txVersionV1TestSuite) SetupTest() {
+	s.Version = &txV1{}
 }
 
-func (s *txVersionV0TestSuite) TestCheckOutputProgramHash() {
+func (s *txVersionV1TestSuite) TestCheckOutputProgramHash() {
 	programHash := common.Uint168{}
 
 	// empty program hash should pass
@@ -46,10 +46,10 @@ func (s *txVersionV0TestSuite) TestCheckOutputProgramHash() {
 
 	// other prefix program hash should not pass
 	programHash[0] = 0x34
-	s.NoError(s.Version.CheckOutputProgramHash(programHash))
+	s.Error(s.Version.CheckOutputProgramHash(programHash))
 }
 
-func (s *txVersionV0TestSuite) TestCheckCoinbaseMinerReward() {
+func (s *txVersionV1TestSuite) TestCheckCoinbaseMinerReward() {
 	totalReward := blockchain.RewardAmountPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
@@ -80,7 +80,7 @@ func (s *txVersionV0TestSuite) TestCheckCoinbaseMinerReward() {
 	s.NoError(err, "Reward to miner in coinbase < 35%")
 }
 
-func (s *txVersionV0TestSuite) TestCheckCoinbaseArbitratorsReward() {
+func (s *txVersionV1TestSuite) TestCheckCoinbaseArbitratorsReward() {
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
 		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
@@ -155,7 +155,7 @@ func (s *txVersionV0TestSuite) TestCheckCoinbaseArbitratorsReward() {
 	blockchain.DefaultLedger = originLedger
 }
 
-func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
+func (s *txVersionV1TestSuite) TestCheckVoteProducerOutputs() {
 	outputs := []*types.Output{
 		{
 			OutputType: types.DefaultOutput,
@@ -165,22 +165,52 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 
 	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
 
+	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	candidate1, _ := common.HexStringToBytes(publicKey1)
+	candidate2, _ := common.HexStringToBytes(publicKey2)
+	producers := [][]byte{candidate1}
+
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
 	hash, _ := common.Uint168FromBytes(hashByte)
 	outputs = append(outputs, &types.Output{
 		OutputType:  types.VoteOutput,
 		ProgramHash: *hash,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType:   0,
+					Candidates: [][]byte{candidate1},
+				},
+			},
+		},
 	})
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
+	s.Error(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
+
+	outputs = append(outputs, &types.Output{
+		OutputType:  types.VoteOutput,
+		ProgramHash: *hash,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType:   0,
+					Candidates: [][]byte{candidate2},
+				},
+			},
+		},
+	})
+	s.Error(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 }
 
-func (s *txVersionV0TestSuite) TestCheckTxHasNoPrograms() {
+func (s *txVersionV1TestSuite) TestCheckTxHasNoPrograms() {
 	tx := &types.Transaction{
 		Version:  types.TransactionVersion(s.Version.GetVersion()),
 		TxType:   types.CoinBase,
@@ -193,6 +223,6 @@ func (s *txVersionV0TestSuite) TestCheckTxHasNoPrograms() {
 	s.NoError(s.Version.CheckTxHasNoPrograms(tx))
 }
 
-func TestTxVersionV0Suit(t *testing.T) {
-	suite.Run(t, new(txVersionV0TestSuite))
+func TestTxVersionV1Suit(t *testing.T) {
+	suite.Run(t, new(txVersionV1TestSuite))
 }

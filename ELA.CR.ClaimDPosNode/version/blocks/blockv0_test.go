@@ -1,7 +1,6 @@
-package blockhistory
+package blocks
 
 import (
-	"github.com/elastos/Elastos.ELA/version"
 	"math"
 	"testing"
 
@@ -15,11 +14,11 @@ import (
 type blockVersionV0TestSuite struct {
 	suite.Suite
 
-	Version version.BlockVersion
+	Version BlockVersion
 }
 
 func (s *blockVersionV0TestSuite) SetupTest() {
-	s.Version = &BlockVersionV0{}
+	s.Version = &blockV0{}
 }
 
 func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
@@ -45,9 +44,7 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 func (s *blockVersionV0TestSuite) TestAssignCoinbaseTxRewards() {
 	originLedger := blockchain.DefaultLedger
 	blockchain.DefaultLedger = &blockchain.Ledger{
-		Blockchain: &blockchain.BlockChain{
-			AssetID: common.Uint256{},
-		},
+		Blockchain: &blockchain.BlockChain{},
 	}
 
 	//reward can be exactly division

@@ -1,4 +1,4 @@
-package version
+package txs
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type txVersionTestSuite struct {
 }
 
 func (s *txVersionTestSuite) SetupTest() {
-	s.Version = &TxVersionMain{}
+	s.Version = &txCurrent{}
 }
 
 func (s *txVersionTestSuite) TestCheckOutputPayload() {
