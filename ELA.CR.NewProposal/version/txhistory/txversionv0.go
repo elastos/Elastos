@@ -15,7 +15,7 @@ func (v *TxVersionV0) GetVersion() byte {
 	return 0
 }
 
-func (v *TxVersionV0) CheckOutputPayload(output *types.Output) error {
+func (v *TxVersionV0) CheckOutputPayload(txType types.TransactionType, output *types.Output) error {
 	return nil
 }
 
