@@ -364,8 +364,9 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 			pow.lastNode = DefaultLedger.Blockchain.BestChain
 		}
 		pow.lock.Unlock()
-
-		BlockPersistCompletedSignal <- hash
+		if pow.Started {
+			BlockPersistCompletedSignal <- hash
+		}
 	}
 }
 
