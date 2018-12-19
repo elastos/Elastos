@@ -16,6 +16,7 @@ type IChainStoreDpos interface {
 	GetProducerStatus(programHash Uint168) ProducerState
 
 	GetIllegalProducers() map[string]struct{}
+	GetCancelProducerHeight(publicKey []byte) (uint32, error)
 }
 
 // IChainStore provides func with store package.
