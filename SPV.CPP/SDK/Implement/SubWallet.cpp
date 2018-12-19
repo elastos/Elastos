@@ -65,8 +65,9 @@ namespace Elastos {
 			_walletManager->registerWalletListener(this);
 			_walletManager->registerPeerManagerListener(this);
 
+			WalletPtr wallet = _walletManager->getWallet();
 			if (info.getFeePerKb() > 0) {
-				_walletManager->getWallet()->setFeePerKb(Asset::GetELAAssetID(), info.getFeePerKb());
+				wallet->setFeePerKb(Asset::GetELAAssetID(), info.getFeePerKb());
 			}
 		}
 

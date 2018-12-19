@@ -7,8 +7,7 @@
 
 #include <SDK/Wrapper/Wrapper.h>
 #include <SDK/KeyStore/CoinConfig.h>
-
-#include <Core/BRChainParams.h>
+#include <SDK/Wrapper/CheckPoint.h>
 
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -16,39 +15,63 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct ELAChainParams {
-			BRChainParams Raw;
-
-			//time unit is second
-			uint32_t TargetTimeSpan;
-			uint32_t TargetTimePerBlock;
-			std::string NetType;
-		};
-
-		class ChainParams :
-				public Wrapper<BRChainParams> {
+		class ChainParams {
 		public:
 			ChainParams(const ChainParams &chainParams);
 
-			ChainParams(const CoinConfig &coinConfig);
+			ChainParams(const CoinConfig &config);
 
 			ChainParams &operator=(const ChainParams &params);
 
-			virtual std::string toString() const;
+			const std::vector<std::string> &GetDNSSeeds() const;
 
-			virtual BRChainParams *getRaw() const;
+			const CheckPoint &GetLastCheckpoint() const;
 
-			uint32_t getMagicNumber() const;
-			uint32_t getTargetTimeSpan() const;
-			uint32_t getTargetTimePerBlock() const;
+			const CheckPoint &GetFirstCheckpoint() const;
+
+			const std::vector<CheckPoint> &GetCheckpoints() const;
+
+			const uint32_t &GetMagicNumber() const;
+
+			const uint16_t &GetStandardPort() const;
+
+			const uint64_t &GetServices() const;
+
+			const uint32_t &GetTargetTimeSpan() const;
+
+			const uint32_t &GetTargetTimePerBlock() const;
 
 		private:
-			void tryInit(const CoinConfig &coinConfig);
+			void MainNetMainChainParamsInit();
+
+			void MainNetIDChainParamsInit();
+
+			void TestNetMainChainParamsInit();
+
+			void TestNetIDChainParamsInit();
+
+			void RegNetMainChainParamsInit();
+
+			void RegNetIDChainParamsInit();
+
+			void MainNetParamsInit(SubWalletType type);
+
+			void TestNetParamsInit(SubWalletType type);
+
+			void RegNetParamsInit(SubWalletType type);
 
 		private:
+			std::vector<std::string> _dnsSeeds;
+			uint16_t _standardPort;
+			uint32_t _magicNumber;
+			uint64_t _services;
+			std::vector<CheckPoint> _checkpoints;
 
-			boost::shared_ptr<ELAChainParams> _chainParams;
+			uint32_t _targetTimeSpan;
+			uint32_t _targetTimePerBlock;
 		};
+
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
 
 	}
 }

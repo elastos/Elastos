@@ -443,22 +443,17 @@ namespace Elastos {
 
 			CoinInfo fixedInfo = info;
 
-			BRChainParams *rawParams = chainParams.getRaw();
 			time_t timeStamp;
-			size_t checkPointsCount = rawParams->checkpointsCount;
 
 			if (_initFrom == CreateNormal) {
-				timeStamp = rawParams->checkpoints[checkPointsCount - 1].timestamp;
-				fixedInfo.setEaliestPeerTime(timeStamp);
+				fixedInfo.setEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
 			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic ||
 					   _initFrom == ImportFromOldKeyStore) {
-				timeStamp = rawParams->checkpoints[0].timestamp;
-				fixedInfo.setEaliestPeerTime(timeStamp);
+				fixedInfo.setEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			} else if (_initFrom == ImportFromKeyStore || _initFrom == ImportFromLocalStore) {
 				fixedInfo.setEaliestPeerTime(info.getEarliestPeerTime());
 			} else {
-				timeStamp = rawParams->checkpoints[0].timestamp;
-				fixedInfo.setEaliestPeerTime(timeStamp);
+				fixedInfo.setEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			}
 
 			std::vector<UInt256> visibleAssets;

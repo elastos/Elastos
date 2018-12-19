@@ -4,55 +4,53 @@
 
 #include "CheckPoint.h"
 #include <SDK/Common/Utils.h>
-#include <Core/BRChainParams.h>
 
 #include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		CheckPoint::CheckPoint() {
-
+		CheckPoint::CheckPoint(uint32_t height, const std::string &hash, time_t timestamp, uint32_t target) :
+			_height(height),
+			_timestamp(timestamp),
+			_target(target) {
+			_hash = Utils::UInt256FromString(hash, true);
 		}
 
-		CheckPoint::CheckPoint(const BRCheckPoint &checkPoint) :
-				_checkPoint(checkPoint) {
+		CheckPoint::CheckPoint(uint32_t height, const UInt256 &hash, time_t timestamp, uint32_t target) :
+			_height(height),
+			_hash(hash),
+			_timestamp(timestamp),
+			_target(target) {
 		}
 
-		std::string CheckPoint::toString() const {
-			std::stringstream ss;
-			ss << this;
-			return ss.str();
+		CheckPoint::~CheckPoint() {
 		}
 
-		const BRCheckPoint *CheckPoint::getRaw() const {
-			return &_checkPoint;
+		const uint32_t &CheckPoint::GetHeight() const {
+			return _height;
 		}
 
-		nlohmann::json &operator<<(nlohmann::json &j, const CheckPoint &p) {
-			to_json(j, p);
-
-			return j;
+		const UInt256 &CheckPoint::GetHash() const {
+			return _hash;
 		}
 
-		const nlohmann::json &operator>>(const nlohmann::json &j, CheckPoint &p) {
-			from_json(j, p);
-
-			return j;
+		const time_t &CheckPoint::GetTimestamp() const {
+			return _timestamp;
 		}
 
-		void to_json(nlohmann::json &j, const CheckPoint &p) {
-			j["Height"] = p._checkPoint.height;
-			j["Hash"] = Utils::UInt256ToString(p._checkPoint.hash, true);
-			j["Timestamp"] = p._checkPoint.timestamp;
-			j["Target"] = p._checkPoint.target;
+		const uint32_t &CheckPoint::GetTarget() const {
+			return _target;
 		}
 
-		void from_json(const nlohmann::json &j, CheckPoint &p) {
-			p._checkPoint.height = j["Height"].get<uint32_t>();
-			p._checkPoint.hash = Utils::UInt256FromString(j["Hash"].get<std::string>(), true);
-			p._checkPoint.timestamp = j["Timestamp"].get<uint32_t>();
-			p._checkPoint.target = j["Target"].get<uint32_t>();
+		CheckPoint &CheckPoint::operator=(const CheckPoint &checkpoint) {
+			_height = checkpoint._height;
+			_hash = checkpoint._hash;
+			_timestamp = checkpoint._timestamp;
+			_target = checkpoint._target;
+
+			return *this;
 		}
+
 	}
 }

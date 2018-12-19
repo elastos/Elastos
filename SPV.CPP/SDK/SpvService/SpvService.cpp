@@ -219,7 +219,7 @@ namespace Elastos {
 
 #ifndef NDEBUG
 				if (blocks.size() == 1) {
-					Log::debug("checkpoint ====> {{ {},  uint256(\"{}\"), {}, {} }},",
+					Log::debug("checkpoint ====> ({},  \"{}\", {}, {});",
 							blocks[i]->getHeight(),
 							Utils::UInt256ToString(blocks[i]->getHash(), true),
 							blocks[i]->getTimestamp(),
@@ -291,9 +291,7 @@ namespace Elastos {
 		void SpvService::syncIsInactive(uint32_t time) {
 			Log::info("time to disconnect");
 
-			_peerManager->Lock();
 			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
-			_peerManager->Unlock();
 
 			_executor.stopThread();
 			if (_peerManager->getConnectStatus() == Peer::Connected) {

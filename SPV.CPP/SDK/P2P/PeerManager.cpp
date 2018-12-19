@@ -142,12 +142,13 @@ namespace Elastos {
 			sortPeers();
 
 			time_t now = time(nullptr);
-			for (size_t i = 0; i < params.getRaw()->checkpointsCount; i++) {
+			const std::vector<CheckPoint> &Checkpoints = params.GetCheckpoints();
+			for (size_t i = 0; i < Checkpoints.size(); i++) {
 				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_pluginType);
-				checkBlock->setHeight(params.getRaw()->checkpoints[i].height);
-				checkBlock->setHash(UInt256Reverse(&params.getRaw()->checkpoints[i].hash));
-				checkBlock->setTimestamp(params.getRaw()->checkpoints[i].timestamp);
-				checkBlock->setTarget(params.getRaw()->checkpoints[i].target);
+				checkBlock->setHeight(Checkpoints[i].GetHeight());
+				checkBlock->setHash(Checkpoints[i].GetHash());
+				checkBlock->setTimestamp(Checkpoints[i].GetTimestamp());
+				checkBlock->setTarget(Checkpoints[i].GetTarget());
 				_checkpoints.Insert(checkBlock);
 				_blocks.Insert(checkBlock);
 				if (i == 0 || checkBlock->getTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime ||
@@ -276,7 +277,7 @@ namespace Elastos {
 					}
 
 					if (i != SIZE_MAX) {
-						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.getRaw()->magicNumber));
+						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.GetMagicNumber()));
 						newPeer->initDefaultMessages();
 						newPeer->SetPeerInfo(peers[i]);
 						newPeer->setEarliestKeyTime(_earliestKeyTime);
@@ -332,10 +333,11 @@ namespace Elastos {
 
 			if (_isConnected) {
 				// start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-				for (size_t i = _chainParams.getRaw()->checkpointsCount; i > 0; i--) {
+				const std::vector<CheckPoint> &checkpoints = _chainParams.GetCheckpoints();
+				for (size_t i = checkpoints.size(); i > 0; i--) {
 					if (i - 1 == 0 ||
-						_chainParams.getRaw()->checkpoints[i - 1].timestamp + 7 * 24 * 60 * 60 < _earliestKeyTime) {
-						UInt256 hash = UInt256Reverse(&_chainParams.getRaw()->checkpoints[i - 1].hash);
+						checkpoints[i - 1].GetTimestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
+						UInt256 hash = checkpoints[i - 1].GetHash();
 						_lastBlock = _blocks.Get(hash);
 						break;
 					}
@@ -443,7 +445,8 @@ namespace Elastos {
 				if (inet_pton(AF_INET, node.c_str(), &addr) != 1) return false;
 				address.u16[5] = 0xffff;
 				address.u32[3] = addr.s_addr;
-				if (port == 0) _port = _chainParams.getRaw()->standardPort;
+				if (port == 0)
+					_port = _chainParams.GetStandardPort();
 			} else {
 				_port = 0;
 			}
@@ -557,58 +560,49 @@ namespace Elastos {
 			return count;
 		}
 
-		int PeerManager::verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
-												 const BRSet *blockSet) {
-			const ELAChainParams *wrapperParams = (const ELAChainParams *) params;
-			return verifyDifficulty(block, blockSet, wrapperParams->TargetTimeSpan,
-									wrapperParams->TargetTimePerBlock, wrapperParams->NetType);
-		}
-
-		int PeerManager::verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
-										  uint32_t targetTimePerBlock, const std::string &netType) {
-			const BRMerkleBlock *previous, *b = nullptr;
+		int PeerManager::verifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+										  const BlockSet &blockSet) {
+			MerkleBlockPtr previous, b = nullptr;
 			uint32_t i;
+			const uint32_t &targetTimeSpan = params.GetTargetTimeSpan();
+			const uint32_t &targetTimePerBlock = params.GetTargetTimePerBlock();
 
 			assert(block != nullptr);
-			assert(blockSet != nullptr);
 
 			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
 
 			// check if we hit a difficulty transition, and find previous transition block
-			if ((block->height % blocksPerRetarget) == 0) {
+			if ((block->getHeight() % blocksPerRetarget) == 0) {
 				for (i = 0, b = block; b && i < blocksPerRetarget; i++) {
-					b = (const BRMerkleBlock *) BRSetGet(blockSet, &b->prevBlock);
+					b = blockSet.Get(b->getPrevBlockHash());
 				}
 			}
 
-			previous = (const BRMerkleBlock *) BRSetGet(blockSet, &block->prevBlock);
-			return verifyDifficultyInner(block, previous, (b) ? b->timestamp : 0, targetTimeSpan,
-										 targetTimePerBlock, netType);
+			previous = blockSet.Get(block->getPrevBlockHash());
+			return verifyDifficultyInner(block, previous, (b != nullptr) ? b->getTimestamp() : 0, targetTimeSpan,
+										 targetTimePerBlock);
 		}
 
-		int PeerManager::verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
+		int PeerManager::verifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
 											   uint32_t transitionTime, uint32_t targetTimeSpan,
-											   uint32_t targetTimePerBlock, const std::string &netType) {
+											   uint32_t targetTimePerBlock) {
 			int r = 1;
-			//fixme figure out why difficult validation fails occasionally
-			if (1 || netType == "RegNet")
-				return r;
 
 			assert(block != nullptr);
 			assert(previous != nullptr);
 
 			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
 
-			if (!previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) ||
-				block->height != previous->height + 1)
+			if (!previous || !UInt256Eq(&(block->getPrevBlockHash()), &(previous->getHash())) ||
+				block->getHeight() != previous->getHeight() + 1)
 				r = 0;
-			if (r && (block->height % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
+			if (r && (block->getHeight() % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
 
-			if (r && (block->height % blocksPerRetarget) == 0) {
-				uint32_t timespan = previous->timestamp - transitionTime;
+			if (r && (block->getHeight() % blocksPerRetarget) == 0) {
+				uint32_t timespan = previous->getTimestamp() - transitionTime;
 
 				arith_uint256 target;
-				target.SetCompact(previous->target);
+				target.SetCompact(previous->getTarget());
 
 				// limit difficulty transition to -75% or +400%
 				if (timespan < targetTimeSpan / 4) timespan = uint32_t(targetTimeSpan) / 4;
@@ -620,8 +614,8 @@ namespace Elastos {
 				target /= targetTimeSpan;
 
 				uint32_t actualTargetCompact = target.GetCompact();
-				if (block->target != actualTargetCompact) r = 0;
-			} else if (r && previous->height != 0 && block->target != previous->target) r = 0;
+				if (block->getTarget() != actualTargetCompact) r = 0;
+			} else if (r && previous->getHeight() != 0 && block->getTarget() != previous->getTarget()) r = 0;
 
 			return r;
 		}
@@ -709,7 +703,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::findPeers() {
-			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams.getRaw()->services;
+			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams.GetServices();
 			time_t now = time(NULL);
 			struct timespec ts;
 
@@ -726,11 +720,12 @@ namespace Elastos {
 				_peers[0].Timestamp = now;
 			} else {
 				std::vector<UInt128> addrList;
-				for (size_t i = 0; _chainParams.getRaw()->dnsSeeds && _chainParams.getRaw()->dnsSeeds[i]; i++) {
-					addrList = addressLookup(_chainParams.getRaw()->dnsSeeds[i]);
+				const std::vector<std::string> &dnsSeeds = _chainParams.GetDNSSeeds();
+				for (size_t i = 0; i < dnsSeeds.size(); i++) {
+					addrList = addressLookup(dnsSeeds[i]);
 					for (std::vector<UInt128>::iterator addr = addrList.begin();
 						 addr != addrList.end() && !UInt128IsZero(&(*addr)); addr++) {
-						_peers.push_back(PeerInfo(*addr, _chainParams.getRaw()->standardPort, now, services));
+						_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
 					}
 				}
 
@@ -805,7 +800,7 @@ namespace Elastos {
 				peer->SetTimestamp(now); // sanity check
 
 			// TODO: XXX does this work with 0.11 pruned nodes?
-			if ((peer->GetServices() & _chainParams.getRaw()->services) != _chainParams.getRaw()->services) {
+			if ((peer->GetServices() & _chainParams.GetServices()) != _chainParams.GetServices()) {
 				peer->warn("unsupported node type");
 				peer->Disconnect();
 			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
@@ -998,8 +993,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed {} peer(s)", peersCount);
 
-				uint32_t dnsSeedCount = sizeof(_chainParams.getRaw()->dnsSeeds) / sizeof(_chainParams.getRaw()->dnsSeeds[0]);
-				if (dnsSeedCount == _peers.size() || _peers.size() == 0) {
+				if (_chainParams.GetDNSSeeds().size() == _peers.size() || _peers.size() == 0) {
 					willReconnect = true;
 				}
 
@@ -1035,6 +1029,7 @@ namespace Elastos {
 			// peer relaying is complete when we receive <1000
 			if (peersCount > 1 && peersCount < 1000)
 				fireSavePeers(true, _peers);
+
 			if (willReconnect) {
 				fireSyncIsInactive(2);
 			}
@@ -1370,9 +1365,7 @@ namespace Elastos {
 					peer->info("marking new block #{} as orphan until rescan completes", block->getHeight());
 					_orphans.insert(block); // mark as orphan til we're caught up
 					_lastOrphan = block;
-				} else if (block->getHeight() <=
-						   _chainParams.getRaw()->checkpoints[_chainParams.getRaw()->checkpointsCount -
-															  1].height) { // old fork
+				} else if (block->getHeight() <= _chainParams.GetLastCheckpoint().GetHeight()) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
 							   block->getHeight(), Utils::UInt256ToString(block->getHash(), true));
 				} else { // new block is on a fork
@@ -1740,13 +1733,12 @@ namespace Elastos {
 				}
 			}
 
-			//fixme [refactor]
-//			// verify block difficulty
-//			if (r && ! _chainParams.getRaw()->verifyDifficulty(block, _blocks)) {
-//				peer->warn("relayed block with invalid difficulty target {}, blockHash: {}", block->getTarget(),
-//						 Utils::UInt256ToString(block->getHash()));
-//				r = false;
-//			}
+			//fixme figure out why difficult validation fails occasionally
+			if (0 && verifyDifficulty(_chainParams, block, _blocks)) {
+				peer->error("relayed block with invalid difficulty target {}, blockHash: {}", block->getTarget(),
+							Utils::UInt256ToString(block->getHash()));
+				r = false;
+			}
 
 			if (r) {
 				const MerkleBlockPtr &checkpoint = _checkpoints.Get(block->getHash());
@@ -1779,7 +1771,7 @@ namespace Elastos {
 				}
 			}
 
-			locators.push_back(_chainParams.getRaw()->checkpoints[0].hash);
+			locators.push_back(_chainParams.GetFirstCheckpoint().GetHash());
 			return locators;
 		}
 

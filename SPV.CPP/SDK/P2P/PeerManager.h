@@ -29,6 +29,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		typedef ElementSet<MerkleBlockPtr> BlockSet;
+
 		class PeerManager :
 				public Lockable,
 				public Peer::Listener {
@@ -210,14 +212,11 @@ namespace Elastos {
 
 			void fireSyncIsInactive(uint32_t time);
 
-			int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
+			int verifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+								 const BlockSet &blockSet);
 
-			int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
-								 uint32_t targetTimePerBlock, const std::string &netType);
-
-			int
-			verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime,
-								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock, const std::string &netType);
+			int verifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
+									  uint32_t transitionTime, uint32_t targetTimeSpan, uint32_t targetTimePerBlock);
 
 			void loadBloomFilter(const PeerPtr &peer);
 
@@ -268,7 +267,6 @@ namespace Elastos {
 			void publishTxInivDone(const PeerPtr &peer, int success);
 
 		private:
-			typedef ElementSet<MerkleBlockPtr> BlockSet;
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
 			bool _syncSucceeded, _enableReconnect, _initialized;
 

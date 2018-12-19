@@ -209,7 +209,7 @@ namespace Elastos {
 				memcpy(&buf[off], hash, sizeof(uint32_t));
 				off += sizeof(uint32_t);
 				memcpy(&buf[off], message, message.GetSize());
-
+				this->info("sending {}", type);
 				size_t msgLen = 0;
 				socket = _socket;
 				if (socket < 0) error = ENOTCONN;
