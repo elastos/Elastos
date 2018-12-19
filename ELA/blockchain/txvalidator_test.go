@@ -537,6 +537,53 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	s.EqualError(err, "duplicate candidate")
 }
 
+func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterProducer
+	updatePayload := &payload.PayloadUpdateProducer{
+		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
+			PublicKey: publicKey1,
+			NickName:  "",
+			Url:       "",
+			Location:  1,
+			Address:   "",
+		},
+	}
+	txn.Payload = updatePayload
+
+	txn.Programs = []*program.Program{{
+		Code:      s.getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid nick name.")
+
+	updatePayload.NickName = "nick name"
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid url.")
+
+	updatePayload.Url = "www.elastos.org"
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid IP.")
+
+	updatePayload.Address = "127.0.0.1:20338"
+	updatePayload.PublicKey = errPublicKey
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid publick key.")
+
+	updatePayload.PublicKey = publicKey2
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Public key unsigned.")
+
+	updatePayload.PublicKey = publicKey1
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid producer.")
+
+	//rest of check test will be continued in chain test
+}
+
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }
