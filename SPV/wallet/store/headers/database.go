@@ -30,7 +30,7 @@ var (
 )
 
 func NewDatabase() (*Database, error) {
-	db, err := leveldb.OpenFile("HEADER", nil)
+	db, err := leveldb.OpenFile("header", nil)
 	if err != nil {
 		return nil, err
 	}
