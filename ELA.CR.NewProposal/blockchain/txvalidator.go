@@ -742,6 +742,64 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 }
 
 func CheckUpdateProducerTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*PayloadUpdateProducer)
+	if !ok {
+		return errors.New("Invalid payload.")
+	}
+
+	// check nick name
+	if payload.NickName == "" {
+		return errors.New("Invalid nick name.")
+	}
+
+	// check url
+	if payload.Url == "" {
+		return errors.New("Invalid url.")
+	}
+
+	// check ip
+	if payload.Address == "" {
+		return errors.New("Invalid IP.")
+	}
+
+	// check public key
+	hash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
+	if err != nil {
+		return errors.New("Invalid publick key.")
+	}
+	var signed bool
+	for _, program := range txn.Programs {
+		programHash, err := contract.PublicKeyToStandardProgramHash(program.Code[1 : len(program.Code)-1])
+		if err != nil {
+			return errors.New("Invalid program code.")
+		}
+		if programHash.IsEqual(*hash) {
+			signed = true
+		}
+	}
+	if !signed {
+		return errors.New("Public key unsigned.")
+	}
+
+	// check from database
+	producers := DefaultLedger.Store.GetRegisteredProducers()
+	hasProducer := false
+	for _, p := range producers {
+		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+			hasProducer = true
+			break
+		}
+	}
+	if !hasProducer {
+		return errors.New("Invalid producer.")
+	}
+
+	for _, p := range producers {
+		if p.NickName == payload.NickName {
+			return errors.New("Duplicated nick name.")
+		}
+	}
+
 	return nil
 }
 

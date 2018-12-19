@@ -264,6 +264,8 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	if producers[0].Address != ip1 {
 		t.Error("GetRegisteredProducers failed")
 	}
+
+	//todo add test about checking chain store within CheckUpdateProducerTransaction
 }
 
 func TestChainStore_PersistVoteProducer(t *testing.T) {
