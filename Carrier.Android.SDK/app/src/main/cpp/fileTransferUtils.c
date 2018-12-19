@@ -73,12 +73,13 @@ int newJavaFileTransferState(JNIEnv* env, FileTransferConnection state, jobject*
 
 int newJavaFileTransfer(JNIEnv* env, jobject* jFileTransfer)
 {
+    const char* clazzName = "org/elastos/carrier/filetransfer/FileTransfer";
     jclass clazz;
     jmethodID ctor;
     jobject jobj;
     int rc;
 
-    clazz = (*env)->FindClass(env, _F("FileTransfer"));
+    clazz = (*env)->FindClass(env, clazzName);
     if (!clazz) {
         logE("Java class 'FileTransfer' not found");
         return 0;

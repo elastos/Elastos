@@ -101,6 +101,12 @@ typedef struct ElaFileTransferInfo {
      * Total file size of file transfer.
      */
     uint64_t size;
+
+    /**
+     * \~English
+     * The user defined data attached to this transfer.
+     */
+    void *userdata;
 } ElaFileTransferInfo;
 
 /**

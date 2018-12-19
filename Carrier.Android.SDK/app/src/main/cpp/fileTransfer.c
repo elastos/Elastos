@@ -154,14 +154,14 @@ void fileCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
         return;
     }
 
-    jfilename = (*cc->env)->NewStringUTF(cc->env, filename);
+    jfilename = (*env)->NewStringUTF(env, filename);
     if (!jfilename) {
         logE("New Java String object error");
         (*env)->DeleteLocalRef(env, jfileid);
@@ -199,7 +199,7 @@ void pullCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
@@ -239,7 +239,7 @@ bool dataCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return true;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
@@ -291,7 +291,7 @@ void pendingCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
@@ -327,7 +327,7 @@ void resumeCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
@@ -365,14 +365,14 @@ void cancelCallback(ElaFileTransfer *filetransfer, const char *fileid,
         return;
     }
 
-    jfileid = (*cc->env)->NewStringUTF(cc->env, fileid);
+    jfileid = (*env)->NewStringUTF(env, fileid);
     if (!jfileid) {
         logE("New Java String object error");
         detachJvm(env, needDetach);
         return;
     }
 
-    jreason = (*cc->env)->NewStringUTF(cc->env, reason);
+    jreason = (*env)->NewStringUTF(env, reason);
     if (!jreason) {
         logE("New Java String object error");
         (*env)->DeleteLocalRef(env, jfileid);
