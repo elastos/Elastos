@@ -135,7 +135,7 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(chain, txPool, activeNetParams)
+	server, err := server.New(filepath.Join(DataPath, DataDir), chain, txPool, activeNetParams)
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
