@@ -10,7 +10,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -25,78 +24,6 @@ type txVersionV0TestSuite struct {
 
 func (s *txVersionV0TestSuite) SetupTest() {
 	s.Version = &TxVersionV0{}
-}
-
-func (s *txVersionV0TestSuite) TestCheckOutputPayload() {
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-
-	programHash1, _ := contract.PublicKeyToStandardProgramHash(publicKey1)
-	outputs := []*types.Output{
-		{
-			AssetID:     common.Uint256{},
-			Value:       1.0,
-			OutputLock:  0,
-			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
-				Version: 0,
-				Contents: []outputpayload.VoteContent{
-					{
-						VoteType: outputpayload.Delegate,
-						Candidates: []common.Uint168{
-							*programHash1,
-						},
-					},
-				},
-			},
-		},
-		{
-			AssetID:     common.Uint256{},
-			Value:       1.0,
-			OutputLock:  0,
-			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
-				Version: 0,
-				Contents: []outputpayload.VoteContent{
-					{
-						VoteType:   outputpayload.Delegate,
-						Candidates: []common.Uint168{},
-					},
-				},
-			},
-		},
-		{
-			AssetID:     common.Uint256{},
-			Value:       1.0,
-			OutputLock:  0,
-			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
-				Version: 0,
-				Contents: []outputpayload.VoteContent{
-					{
-						VoteType: outputpayload.Delegate,
-						Candidates: []common.Uint168{
-							*programHash1,
-							*programHash1,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	err := s.Version.CheckOutputPayload(outputs[0])
-	s.NoError(err)
-
-	err = s.Version.CheckOutputPayload(outputs[1])
-	s.NoError(err)
-
-	err = s.Version.CheckOutputPayload(outputs[2])
-	s.NoError(err)
-
 }
 
 func (s *txVersionV0TestSuite) TestCheckOutputProgramHash() {

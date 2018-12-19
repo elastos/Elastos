@@ -87,13 +87,13 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 		},
 	}
 
-	err := s.Version.CheckOutputPayload(outputs[0])
+	err := s.Version.CheckOutputPayload(types.TransferAsset, outputs[0])
 	s.NoError(err)
 
-	err = s.Version.CheckOutputPayload(outputs[1])
+	err = s.Version.CheckOutputPayload(types.TransferAsset, outputs[1])
 	s.EqualError(err, "invalid public key length")
 
-	err = s.Version.CheckOutputPayload(outputs[2])
+	err = s.Version.CheckOutputPayload(types.TransferAsset, outputs[2])
 	s.EqualError(err, "duplicate candidate")
 }
 

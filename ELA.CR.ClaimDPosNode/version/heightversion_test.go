@@ -668,7 +668,7 @@ func (v *txVersionTest1) GetVersion() byte {
 	return 1
 }
 
-func (v *txVersionTest1) CheckOutputPayload(output *types.Output) error {
+func (v *txVersionTest1) CheckOutputPayload(txType types.TransactionType, output *types.Output) error {
 	versionsMsg = "txVersionTest1_CheckOutputPayload"
 	return nil
 }
@@ -705,7 +705,7 @@ func (v *txVersionTest2) GetVersion() byte {
 	return 2
 }
 
-func (v *txVersionTest2) CheckOutputPayload(output *types.Output) error {
+func (v *txVersionTest2) CheckOutputPayload(txType types.TransactionType, output *types.Output) error {
 	versionsMsg = "txVersionTest2_CheckOutputPayload"
 	return nil
 }

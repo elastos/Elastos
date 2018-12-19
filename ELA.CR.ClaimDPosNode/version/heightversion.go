@@ -39,7 +39,7 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 
 func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
 	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(v TxVersion) error {
-		return v.CheckOutputPayload(output)
+		return v.CheckOutputPayload(tx.TxType, output)
 	})
 }
 
