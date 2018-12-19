@@ -118,34 +118,43 @@ func exportAccount(name, password string) error {
 	return nil
 }
 
-func generateDepositAddress(name string) (string, error) {
-	var fileStore account.FileStore
-	fileStore.SetPath(name)
-	storeAccounts, err := fileStore.LoadAccountData()
-	if err != nil {
-		return "", err
-	}
-	for _, a := range storeAccounts {
-		if a.Type == account.MAINACCOUNT {
-			p, err := common.HexStringToBytes(a.ProgramHash)
-			if err != nil {
-				return "", err
+func generateDepositAddress(addr string, name string) (string, error) {
+	var programHash *common.Uint168
+	var err error
+
+	if addr == "" {
+		var fileStore account.FileStore
+		fileStore.SetPath(name)
+		storeAccounts, err := fileStore.LoadAccountData()
+		if err != nil {
+			return "", err
+		}
+		for _, a := range storeAccounts {
+			if a.Type == account.MAINACCOUNT {
+				p, err := common.HexStringToBytes(a.ProgramHash)
+				if err != nil {
+					return "", err
+				}
+				programHash, err = common.Uint168FromBytes(p)
+				if err != nil {
+					return "", err
+				}
 			}
-			program, err := common.Uint168FromBytes(p)
-			if err != nil {
-				return "", err
-			}
-			codeHash := program.ToCodeHash()
-			depositHash := common.Uint168FromCodeHash(byte(contract.PrefixDeposit), codeHash)
-			address, err := depositHash.ToAddress()
-			if err != nil {
-				return "", nil
-			}
-			return address, nil
+		}
+	} else {
+		programHash, err = common.Uint168FromAddress(addr)
+		if err != nil {
+			return "", err
 		}
 	}
 
-	return "", errors.New("no main account found")
+	codeHash := programHash.ToCodeHash()
+	depositHash := common.Uint168FromCodeHash(byte(contract.PrefixDeposit), codeHash)
+	address, err := depositHash.ToAddress()
+	if err != nil {
+		return "", nil
+	}
+	return address, nil
 }
 
 func walletAction(context *cli.Context) error {
@@ -215,7 +224,8 @@ func walletAction(context *cli.Context) error {
 
 	// generate deposit address
 	if context.Bool("getdepositaddress") {
-		address, err := generateDepositAddress(name)
+		addr := context.String("address")
+		address, err := generateDepositAddress(addr, name)
 		if err != nil {
 			fmt.Println("error: get deposit address failed,", err)
 			cli.ShowCommandHelpAndExit(context, "getdepositaddress", 1)
@@ -281,6 +291,10 @@ func NewCommand() *cli.Command {
 			cli.BoolFlag{
 				Name:  "getdepositaddress, gda",
 				Usage: "generate the deposit address form main account",
+			},
+			cli.StringFlag{
+				Name:  "address",
+				Usage: "source standard address",
 			},
 		},
 		Action: walletAction,
