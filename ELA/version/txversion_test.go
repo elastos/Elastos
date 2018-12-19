@@ -90,8 +90,11 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 	err := s.Version.CheckOutputPayload(types.TransferAsset, outputs[0])
 	s.NoError(err)
 
+	err = s.Version.CheckOutputPayload(types.RechargeToSideChain, outputs[0])
+	s.EqualError(err, "transaction type dose not match the output payload type")
+
 	err = s.Version.CheckOutputPayload(types.TransferAsset, outputs[1])
-	s.EqualError(err, "invalid public key length")
+	s.EqualError(err, "invalid public key count")
 
 	err = s.Version.CheckOutputPayload(types.TransferAsset, outputs[2])
 	s.EqualError(err, "duplicate candidate")
