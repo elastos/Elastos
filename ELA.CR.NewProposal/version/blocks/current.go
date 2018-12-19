@@ -1,4 +1,4 @@
-package version
+package blocks
 
 import (
 	"bytes"
@@ -6,34 +6,28 @@ import (
 	"math"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	elaerr "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/node"
-
-	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
-type BlockVersion interface {
-	GetVersion() uint32
-	GetProducersDesc() ([][]byte, error)
-	AddDposBlock(block *types.DposBlock) (bool, bool, error)
-	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error
-	CheckConfirmedBlockOnFork(block *types.Block) error
-	GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte
+// Ensure blockCurrent implement the BlockVersion interface.
+var _ BlockVersion = (*blockCurrent)(nil)
+
+// blockCurrent represent the current block version.
+type blockCurrent struct {
+	cfg *verconf.Config
 }
 
-type BlockVersionMain struct {
-}
-
-func (b *BlockVersionMain) GetVersion() uint32 {
+func (b *blockCurrent) GetVersion() uint32 {
 	return 1
 }
 
-func (b *BlockVersionMain) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators := blockchain.DefaultLedger.Arbitrators.GetArbitrators()
+func (b *blockCurrent) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
+	arbitrators := b.cfg.Arbitrators.GetArbitrators()
 	if len(arbitrators) == 0 {
 		return nil
 	}
@@ -43,12 +37,17 @@ func (b *BlockVersionMain) GetNextOnDutyArbitrator(dutyChangedCount, offset uint
 	return arbitrator
 }
 
-func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
-	if !node.LocalNode.IsCurrent() {
+func (b *blockCurrent) CheckConfirmedBlockOnFork(block *types.Block) error {
+	if !b.cfg.Server.IsCurrent() {
 		return nil
 	}
 
-	anotherBlock, err := blockchain.DefaultLedger.GetBlockWithHeight(block.Height)
+	hash, err := b.cfg.ChainStore.GetBlockHash(block.Height)
+	if err != nil {
+		return err
+	}
+
+	anotherBlock, err := b.cfg.ChainStore.GetBlock(hash)
 	if err != nil {
 		return err
 	}
@@ -80,8 +79,8 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
 		return err
 	}
 
-	txn := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(block.Height)),
+	tx := &types.Transaction{
+		Version:        types.TransactionVersion(b.cfg.Versions.GetDefaultTxVersion(block.Height)),
 		TxType:         types.IllegalBlockEvidence,
 		PayloadVersion: types.PayloadIllegalBlockVersion,
 		Payload:        illegalBlocks,
@@ -92,20 +91,20 @@ func (b *BlockVersionMain) CheckConfirmedBlockOnFork(block *types.Block) error {
 		Inputs:         []*types.Input{},
 		Fee:            0,
 	}
-	if code := node.LocalNode.AppendToTxnPool(txn); code == elaerr.Success {
-		node.LocalNode.AppendToTxnPool(txn)
+	if err := b.cfg.TxMemPool.AppendToTxPool(tx); err == nil {
+		err = b.cfg.TxMemPool.AppendToTxPool(tx)
 	}
 
 	return nil
 }
 
-func (b *BlockVersionMain) generateBlockEvidence(block *types.Block) (*types.BlockEvidence, error) {
+func (b *blockCurrent) generateBlockEvidence(block *types.Block) (*types.BlockEvidence, error) {
 	headerBuf := new(bytes.Buffer)
 	if err := block.Header.Serialize(headerBuf); err != nil {
 		return nil, err
 	}
 
-	confirm, err := blockchain.DefaultLedger.Store.GetConfirm(block.Hash())
+	confirm, err := b.cfg.ChainStore.GetConfirm(block.Hash())
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +124,7 @@ func (b *BlockVersionMain) generateBlockEvidence(block *types.Block) (*types.Blo
 	}, nil
 }
 
-func (b *BlockVersionMain) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([][]byte, error) {
+func (b *blockCurrent) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([][]byte, error) {
 	result := make([][]byte, 0)
 	for _, v := range confirm.Votes {
 		data, err := common.HexStringToBytes(v.Signer)
@@ -137,8 +136,8 @@ func (b *BlockVersionMain) getConfirmSigners(confirm *types.DPosProposalVoteSlot
 	return result, nil
 }
 
-func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
-	producersInfo := blockchain.DefaultLedger.Store.GetRegisteredProducers()
+func (b *blockCurrent) GetProducersDesc() ([][]byte, error) {
+	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
 	if uint32(len(producersInfo)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
 		return nil, errors.New("producers count less than min arbitrators count.")
 	}
@@ -150,11 +149,11 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func (b *BlockVersionMain) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return node.LocalNode.AppendDposBlock(dposBlock)
+func (b *blockCurrent) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	return b.cfg.BlockMemPool.AppendDposBlock(dposBlock)
 }
 
-func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
+func (b *blockCurrent) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
 	rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
 
@@ -169,12 +168,12 @@ func (b *BlockVersionMain) AssignCoinbaseTxRewards(block *types.Block, totalRewa
 	return nil
 }
 
-func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes := blockchain.DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
+func (b *blockCurrent) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
+	arbitratorsHashes := b.cfg.Arbitrators.GetArbitratorsProgramHashes()
 	if uint32(len(arbitratorsHashes)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
 		return 0, errors.New("Current arbitrators count less than required arbitrators count.")
 	}
-	candidatesHashes := blockchain.DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
+	candidatesHashes := b.cfg.Arbitrators.GetCandidatesProgramHashes()
 
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) * 0.75
@@ -185,7 +184,7 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 	for _, v := range arbitratorsHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       blockconfig.ELAAssetID,
+			AssetID:       config.ELAAssetID,
 			Value:         individualBlockConfirmReward + individualProducerReward,
 			ProgramHash:   *v,
 			OutputType:    types.DefaultOutput,
@@ -198,7 +197,7 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 	for _, v := range candidatesHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       blockconfig.ELAAssetID,
+			AssetID:       config.ELAAssetID,
 			Value:         individualProducerReward,
 			ProgramHash:   *v,
 			OutputType:    types.DefaultOutput,
@@ -213,4 +212,8 @@ func (b *BlockVersionMain) distributeDposReward(coinBaseTx *types.Transaction, r
 		return 0, errors.New("Real dpos reward more than reward limit.")
 	}
 	return change, nil
+}
+
+func NewBlockCurrent(cfg *verconf.Config) *blockCurrent {
+	return &blockCurrent{cfg: cfg}
 }

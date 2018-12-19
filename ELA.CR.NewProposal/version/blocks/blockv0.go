@@ -1,13 +1,13 @@
-package blockhistory
+package blocks
 
 import (
 	"errors"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/version"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 var originalArbitrators = []string{
@@ -18,28 +18,32 @@ var originalArbitrators = []string{
 	"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 }
 
-type BlockVersionV0 struct {
-	version.BlockVersionMain
+// Ensure blockV0 implement the BlockVersion interface.
+var _ BlockVersion = (*blockV0)(nil)
+
+// blockV0 represent the version 0 block.
+type blockV0 struct {
+	cfg *verconf.Config
 }
 
-func (b *BlockVersionV0) GetVersion() uint32 {
+func (b *blockV0) GetVersion() uint32 {
 	return 0
 }
 
-func (b *BlockVersionV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
+func (b *blockV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
 	arbitrators, _ := b.GetProducersDesc()
-	height := blockchain.DefaultLedger.Blockchain.GetHeight()
+	height := b.cfg.ChainStore.GetHeight()
 	index := (height + offset) % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
 
 	return arbitrator
 }
 
-func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *types.Block) error {
+func (b *blockV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
+func (b *blockV0) GetProducersDesc() ([][]byte, error) {
 	if len(originalArbitrators) == 0 {
 		return nil, errors.New("arbiters not configured")
 	}
@@ -56,11 +60,11 @@ func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (b *BlockVersionV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return blockchain.DefaultLedger.Blockchain.AddBlock(dposBlock.Block)
+func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	return b.cfg.Chain.AddBlock(dposBlock.Block)
 }
 
-func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
+func (b *blockV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
 	rewardCyberRepublic := common.Fixed64(float64(totalReward) * 0.3)
 	rewardMergeMiner := common.Fixed64(float64(totalReward) * 0.35)
@@ -68,10 +72,14 @@ func (b *BlockVersionV0) AssignCoinbaseTxRewards(block *types.Block, totalReward
 	block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
 	block.Transactions[0].Outputs[1].Value = rewardMergeMiner
 	block.Transactions[0].Outputs = append(block.Transactions[0].Outputs, &types.Output{
-		AssetID:     blockconfig.ELAAssetID,
+		AssetID:     config.ELAAssetID,
 		Value:       rewardDposArbiter,
 		ProgramHash: blockchain.FoundationAddress,
 	})
 
 	return nil
+}
+
+func NewBlockV0(cfg *verconf.Config) *blockV0 {
+	return &blockV0{cfg: cfg}
 }

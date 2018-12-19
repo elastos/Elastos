@@ -1,4 +1,4 @@
-package version
+package blocks
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type blockVersionTestSuite struct {
 }
 
 func (s *blockVersionTestSuite) SetupTest() {
-	s.Version = &BlockVersionMain{}
+	s.Version = &blockCurrent{}
 }
 
 func (s *blockVersionTestSuite) TestGetProducersDesc() {
