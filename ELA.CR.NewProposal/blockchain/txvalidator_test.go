@@ -531,7 +531,7 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	s.NoError(err)
 
 	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
-	s.EqualError(err, "invalid public key length")
+	s.EqualError(err, "invalid public key count")
 
 	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "duplicate candidate")

@@ -2,6 +2,7 @@ package outputpayload
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -91,4 +92,75 @@ func TestVoteOutput_Deserialize(t *testing.T) {
 		!vo.Contents[1].Candidates[1].IsEqual(*candidate4) {
 		t.Error("error candidates in content1")
 	}
+}
+
+func TestVoteOutput_Validate(t *testing.T) {
+	// vo0
+	var vo0 *VoteOutput
+	err := vo0.Validate()
+	assert.EqualError(t, err, "vote output payload is nil")
+
+	// vo1
+	content1 := VoteContent{
+		VoteType:   Delegate,
+		Candidates: []common.Uint168{},
+	}
+	vo1 := VoteOutput{
+		Version: 0,
+		Contents: []VoteContent{
+			content1,
+		},
+	}
+	err = vo1.Validate()
+	assert.EqualError(t, err, "invalid public key count")
+
+	// vo2
+	content2 := VoteContent{
+		VoteType: Delegate,
+		Candidates: []common.Uint168{
+			*candidate1,
+		},
+	}
+	content3 := VoteContent{
+		VoteType: Delegate,
+		Candidates: []common.Uint168{
+			*candidate1,
+		},
+	}
+	vo2 := VoteOutput{
+		Version: 0,
+		Contents: []VoteContent{
+			content2,
+			content3,
+		},
+	}
+	err = vo2.Validate()
+	assert.EqualError(t, err, "duplicate vote type")
+
+	// vo3
+	content4 := VoteContent{
+		VoteType: Delegate,
+		Candidates: []common.Uint168{
+			*candidate1,
+			*candidate1,
+		},
+	}
+	vo3 := VoteOutput{
+		Version: 0,
+		Contents: []VoteContent{
+			content4,
+		},
+	}
+	err = vo3.Validate()
+	assert.EqualError(t, err, "duplicate candidate")
+
+	// vo4
+	resBytes, _ := common.HexStringToBytes(VOTEHEX)
+	buf := bytes.NewBuffer(resBytes)
+	var vo4 VoteOutput
+	if err := vo4.Deserialize(buf); err != nil {
+		t.Error("vote output deserialize failed")
+	}
+	err = vo4.Validate()
+	assert.EqualError(t, err, "invalid vote type")
 }
