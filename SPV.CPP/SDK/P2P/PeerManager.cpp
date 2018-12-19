@@ -132,7 +132,8 @@ namespace Elastos {
 				_reconnectTaskCount(0),
 				_chainParams(params),
 				_syncSucceeded(false),
-				_enableReconnect(true) {
+				_enableReconnect(true),
+				_initialized(false) {
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
@@ -1223,6 +1224,9 @@ namespace Elastos {
 
 			fireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
+			if (code != 0x12) {
+				_wallet->removeTransaction(pubTx.GetTransaction()->getHash());
+			}
 		}
 
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
@@ -1900,16 +1904,20 @@ namespace Elastos {
 
 					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
 						PeerListCount(_txRequests, hash) == 0) {
-						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->getHeight(),
-								   Utils::UInt256ToString(hash, true));
-						assert(tx[i - 1]->getBlockHeight() == TX_UNCONFIRMED);
-						_wallet->removeTransaction(hash);
+						if (!_initialized) {
+							peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->getHeight(),
+									   Utils::UInt256ToString(hash, true));
+							assert(tx[i - 1]->getBlockHeight() == TX_UNCONFIRMED);
+							_wallet->removeTransaction(hash);
+						}
 					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
 						// set timestamp 0 to mark as unverified
 						_wallet->updateTransactions({hash}, TX_UNCONFIRMED, 0);
 					}
 				}
 			}
+
+			_initialized = true;
 		}
 
 		size_t PeerManager::PeerListCount(const std::vector<TransactionPeerList> &list, const UInt256 &txhash) {

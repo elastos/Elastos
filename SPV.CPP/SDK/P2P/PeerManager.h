@@ -270,7 +270,7 @@ namespace Elastos {
 		private:
 			typedef ElementSet<MerkleBlockPtr> BlockSet;
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _enableReconnect;
+			bool _syncSucceeded, _enableReconnect, _initialized;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;
