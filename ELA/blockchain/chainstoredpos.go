@@ -120,3 +120,10 @@ func (c *ChainStore) GetIllegalProducers() map[string]struct{} {
 
 	return c.getIllegalProducers()
 }
+
+func (c *ChainStore) GetCancelProducerHeight(publicKey []byte) (uint32, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	return c.getCancelProducerHeight(publicKey)
+}
