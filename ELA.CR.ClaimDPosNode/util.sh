@@ -6,7 +6,7 @@ if [ "$1" = "clean" ]; then
 	find . -name "Dpos_UnitTest" | sed 's#^#rm -fr #g' | sh
 	find . -name "Logs" | sed 's#^#rm -fr #g' | sh
 	find . -name "ArbiterLogs" | sed 's#^#rm -fr #g' | sh
-	find . -name "DposEvent" | sed 's#^#rm -fr #g' | sh
+	find . -name "Dpos_Test" | sed 's#^#rm -fr #g' | sh
 elif [ "$1" = "test" ]; then
 	./ela-cli script -f test/white_box/main/test_all.lua
 fi

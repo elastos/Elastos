@@ -398,13 +398,6 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	s.EqualError(err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
 }
 
-func (s *txValidatorTestSuite) getCode(publicKey string) []byte {
-	pkBytes, _ := common.HexStringToBytes(publicKey)
-	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := createStandardRedeemScript(pk)
-	return redeemScript
-}
-
 func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	// 1. Generate a register producer transaction
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
@@ -425,7 +418,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	}
 
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      s.getCode(publicKeyStr1),
+		Code:      getCode(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -462,6 +455,13 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	// 8. Check transaction
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Invalid url.")
+}
+
+func  getCode(publicKey string) []byte {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := createStandardRedeemScript(pk)
+	return redeemScript
 }
 
 func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
@@ -559,7 +559,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.Payload = updatePayload
 
 	txn.Programs = []*program.Program{{
-		Code:      s.getCode(publicKeyStr1),
+		Code:      getCode(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -582,6 +582,33 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid producer.")
 
 	//rest of check test will be continued in chain test
+}
+
+func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.CancelProducer
+	cancelPayload := &payload.PayloadCancelProducer{
+		PublicKey: publicKey1,
+	}
+	txn.Payload = cancelPayload
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	cancelPayload.PublicKey = errPublicKey
+	s.EqualError(CheckCancelProducerTransaction(txn), "Invalid publick key.")
+
+	cancelPayload.PublicKey = publicKey2
+	s.EqualError(CheckCancelProducerTransaction(txn), "Public key unsigned.")
 }
 
 func TestTxValidatorSuite(t *testing.T) {
