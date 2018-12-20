@@ -100,14 +100,7 @@ func opBigIntComp(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.ErrUnderStackLen
 	}
 	x2 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if ok, err := checkBigInteger(x2); !ok {
-		return FAULT, err
-	}
 	x1 := AssertStackItem(e.evaluationStack.Pop()).GetBigInteger()
-	if ok, err := checkBigInteger(x1); !ok {
-		return FAULT, err
-	}
-
 	err := pushData(e, BigIntMultiComp(x1, x2, e.opCode))
 	if err != nil {
 		return FAULT, err

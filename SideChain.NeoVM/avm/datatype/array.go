@@ -34,13 +34,17 @@ func (a *Array) Equals(other StackItem) bool{
 }
 
 func (a *Array) GetBigInteger() *big.Int{
-	if len(a.items) == 0 {  return big.NewInt(0) }
-	return a.items[0].GetBigInteger()
+	data := big.NewInt(0)
+	if len(a.items) == 0 {
+		return data
+	}
+	data.SetBytes(a.GetByteArray())
+	return data
 }
 
 func (a *Array) GetBoolean() bool{
 	if len(a.items) == 0 { return false }
-	return a.items[0].GetBoolean()
+	return true
 }
 
 func (a *Array) GetByteArray() []byte{

@@ -21,7 +21,9 @@ func (ii *GeneralInterface) Equals(other StackItem) bool {
 }
 
 func (ii *GeneralInterface) GetBigInteger() *big.Int {
-	return big.NewInt(0)
+	data := big.NewInt(0)
+	data.SetBytes(ii.GetByteArray())
+	return data
 }
 
 func (ii *GeneralInterface) GetBoolean() bool {
