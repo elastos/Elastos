@@ -2,11 +2,11 @@ package api
 
 import (
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/pow"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -27,9 +27,10 @@ func RegisterBlockType(L *lua.LState) {
 // Constructor
 func newBlock(L *lua.LState) int {
 
-	tx, _ := pow.CreateCoinbaseTx(minerAddress)
+	//tx, _ := pow.CreateCoinbaseTx(minerAddress)
+	var tx types.Transaction
 	block := &types.Block{
-		Transactions: []*types.Transaction{tx},
+		Transactions: []*types.Transaction{&tx},
 	}
 
 	ud := L.NewUserData()
@@ -107,16 +108,16 @@ func updateDposRewards(b *types.Block) {
 
 	totalTxFee := common.Fixed64(0)
 	for _, tx := range b.Transactions {
-		fee := blockchain.GetTxFee(tx, blockconfig.ELAAssetID)
+		fee := blockchain.GetTxFee(tx, config.ELAAssetID)
 		if fee != tx.Fee {
 			continue
 		}
 		totalTxFee += fee
 	}
 
-	blockReward := blockchain.RewardAmountPerBlock
-	totalReward := totalTxFee + blockReward
-	blockchain.DefaultLedger.HeightVersions.AssignCoinbaseTxRewards(b, totalReward)
+	//blockReward := blockchain.RewardAmountPerBlock
+	//totalReward := totalTxFee + blockReward
+	//blockchain.DefaultLedger.HeightVersions.AssignCoinbaseTxRewards(b, totalReward)
 }
 
 func updateMerkleRoot(b *types.Block) {
