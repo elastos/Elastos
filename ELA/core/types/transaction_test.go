@@ -1,0 +1,30 @@
+package types
+
+import (
+	"bytes"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/stretchr/testify/suite"
+	"testing"
+)
+
+type transactionSuite struct {
+	suite.Suite
+}
+
+func (s *transactionSuite) TestTransaction_SerializeDeserialize() {
+	//todo complete me
+}
+
+func (s *transactionSuite) TestTransaction_SpecificSample() {
+	// update producer transaction deserialize sample
+	byteReader := new(bytes.Buffer)
+	updateProducerByteStr := "090B0021037F3CAEDE72447B6082C1E8F7705FFD1ED6E24F348130D34CBC7C0A35C9E993F507646F6E676C65690B7A68697A616F64616A69650C000000000000000831322E302E302E310100133331373237383934343537373235363832383201FE52A99C9CA67307BCEB50BA0A7D2E05E4461954FB34FCF29FBBEA7F7F08CB2800000000000001B037DB964A231458D2D6FFD5EA18944C4F90E63D547C5D3B9874DF66A4EAD0A300743BA40B00000000000000214FFBC4FB3B3C30A626A3B298BFA392A0121D42490000000000014140821CF72B20045AF7D29ABF9269825CE11B9BFC57BE2ED0DF71EACB61927F86238A8A022FE502DCC7F2B0FE20C854034B84AE43F65D08A4BDF5ACBA6ECF076EAD2321037F3CAEDE72447B6082C1E8F7705FFD1ED6E24F348130D34CBC7C0A35C9E993F5AC"
+	updateProducerByte, _ := common.HexStringToBytes(updateProducerByteStr)
+	byteReader.Write(updateProducerByte)
+	txn := &Transaction{}
+	s.NoError(txn.Deserialize(byteReader))
+}
+
+func TestTransactionSuite(t *testing.T) {
+	suite.Run(t, new(transactionSuite))
+}

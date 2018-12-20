@@ -398,9 +398,6 @@ func GetPayload(txType TransactionType) (Payload, error) {
 	case CancelProducer:
 		p = new(PayloadCancelProducer)
 	case UpdateProducer:
-		p = &PayloadUpdateProducer{
-			new(PayloadRegisterProducer),
-		}
 		p = new(PayloadUpdateProducer)
 	case ReturnDepositCoin:
 		p = new(PayloadReturnDepositCoin)
