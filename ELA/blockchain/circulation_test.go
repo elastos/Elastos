@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/config"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,12 +19,16 @@ var (
 
 func TestGetBlockRewardAmount(t *testing.T) {
 	var blocks = uint32(GeneratedBlocksPerYear)
-	for i := uint32(0); i < blocks; i++ {
-		if !assert.Equal(t, calcBlockSubsidy(i), RewardAmountPerBlock) {
+	blockSamples := make([]uint32, 0)
+	for i := uint32(1); i < blocks; i *= 2 {
+		blockSamples = append(blockSamples, i)
+	}
+
+	for _, v := range blockSamples {
+		if !assert.Equal(t, calcBlockSubsidy(v), RewardAmountPerBlock) {
 			break
 		}
 	}
-	t.Logf("Circulation test finished with %d blocks", blocks)
 }
 
 func calcBlockSubsidy(currentHeight uint32) common.Fixed64 {

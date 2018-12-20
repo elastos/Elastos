@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/msg/v0"
 	"github.com/elastos/Elastos.ELA/protocol"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg/v0"
 )
 
 var _ protocol.Handler = (*HandlerV0)(nil)
@@ -46,10 +45,10 @@ func (h *HandlerV0) MakeEmptyMessage(cmd string) (message p2p.Message, err error
 		message = &v0.GetData{}
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.Block{})
+		message = msg.NewBlock(&types.DposBlock{})
 
 	case p2p.CmdTx:
-		message = msg.NewTx(&core.Transaction{})
+		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdNotFound:
 		message = &v0.NotFound{}
@@ -158,47 +157,86 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		return err
 	}
 
-	node.SendMessage(msg.NewBlock(block))
+	var confirm *types.DPosProposalVoteSlot
+	confirm, err = chain.DefaultLedger.Store.GetConfirm(hash)
+	if err != nil {
+		var ok bool
+		confirm, ok = LocalNode.GetConfirm(hash)
+		if !ok {
+			log.Debugf("Can't get confirm from hash %s, only send block", hash)
+			node.SendMessage(msg.NewBlock(&types.DposBlock{
+				BlockFlag: true,
+				Block:     block,
+			}))
+			return nil
+		}
+	}
+
+	log.Debugf("send block and confirm: %s", hash)
+	node.SendMessage(msg.NewBlock(&types.DposBlock{
+		BlockFlag:   true,
+		Block:       block,
+		ConfirmFlag: true,
+		Confirm:     confirm,
+	}))
 
 	return nil
 }
 
-func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
+func (h *HandlerV0) onBlock(msg *msg.Block) error {
+	var blockHash common.Uint256
+	var isOrphan bool
 	node := h.base.node
-	block := msgBlock.Serializable.(*core.Block)
+	dposBlock := msg.Serializable.(*types.DposBlock)
+	if !dposBlock.BlockFlag && !dposBlock.ConfirmFlag {
+		return fmt.Errorf("nil block confirm")
+	} else if !dposBlock.BlockFlag && dposBlock.ConfirmFlag {
+		log.Info("[onBlock] received confirm from main chain p2p")
+		var err error
+		_, isOrphan, err = LocalNode.AppendConfirm(dposBlock.Confirm)
+		if err != nil {
+			return fmt.Errorf("[onConfirm] receive invalid confirm %s, err: %s", dposBlock.Confirm.Hash, err.Error())
+		}
+		blockHash = dposBlock.Confirm.Hash
+		return nil
+	} else {
 
-	hash := block.Hash()
-	if !LocalNode.IsNeighborNode(node.ID()) {
-		log.Debug("received block message from unknown peer")
-		return fmt.Errorf("received block message from unknown peer")
-	}
+		blockHash := dposBlock.Block.Hash()
+		log.Debug("[onblock] handlerV0 received block:", blockHash.String())
 
-	if chain.DefaultLedger.BlockInLedger(hash) {
-		h.duplicateBlocks++
-		log.Debug("Receive ", h.duplicateBlocks, " duplicated block.")
-		return fmt.Errorf("received duplicated block")
-	}
+		if !LocalNode.IsNeighborNode(node.ID()) {
+			log.Debug("Received block message from unknown peer")
+			return fmt.Errorf("received block message from unknown peer")
+		}
 
-	// Update sync timer
-	LocalNode.syncTimer.update()
-	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
-	LocalNode.DeleteRequestedBlock(hash)
-	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
-	if err != nil {
-		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+		if chain.DefaultLedger.BlockInLedger(blockHash) {
+			h.duplicateBlocks++
+			log.Debug("Receive ", h.duplicateBlocks, " duplicated block.")
+			return fmt.Errorf("received duplicated block")
+		}
+
+		// Update sync timer
+		LocalNode.syncTimer.update()
+		LocalNode.DeleteRequestedBlock(blockHash)
+
+		var err error
+		_, isOrphan, err = chain.DefaultLedger.HeightVersions.AddDposBlock(dposBlock)
+		if err != nil {
+			log.Debugf("Received invalid block %s, err: %s", blockHash.String(), err.Error())
+			return fmt.Errorf("Receive invalid block %s, err: %s", blockHash.String(), err.Error())
+		}
 	}
 
 	if !LocalNode.IsSyncHeaders() {
 		// relay
-		if !LocalNode.ExistedID(hash) {
-			LocalNode.Relay(node, block)
+		if !LocalNode.ExistedID(blockHash) {
+			LocalNode.Relay(node, dposBlock)
 			log.Debug("Relay block")
 		}
 
-		if isOrphan && !LocalNode.IsRequestedBlock(hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+		if isOrphan && !LocalNode.IsRequestedBlock(blockHash) {
 			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
-			SendGetBlocks(node, locator, *orphanRoot)
+			SendGetBlocks(node, locator, dposBlock.Block.Hash())
 		}
 	}
 
@@ -207,7 +245,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 
 func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
 	node := h.base.node
-	tx := msgTx.Serializable.(*core.Transaction)
+	tx := msgTx.Serializable.(*types.Transaction)
 
 	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
 		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
