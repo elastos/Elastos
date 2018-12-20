@@ -4,10 +4,12 @@ import (
 	"errors"
 	"math"
 
+	"fmt"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 )
 
 type TxVersion interface {
@@ -17,7 +19,7 @@ type TxVersion interface {
 	CheckOutputProgramHash(programHash common.Uint168) error
 	CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error
 	CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error
-	CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error
+	CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error
 	CheckTxHasNoPrograms(tx *types.Transaction) error
 }
 
@@ -138,16 +140,34 @@ func (v *TxVersionMain) CheckCoinbaseArbitratorsReward(coinbase *types.Transacti
 	return nil
 }
 
-func (v *TxVersionMain) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (v *TxVersionMain) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
 		programHashes[v.ProgramHash] = struct{}{}
+	}
+
+	pds := make(map[string]struct{})
+	for _, p := range producers {
+		pds[common.BytesToHexString(p)] = struct{}{}
 	}
 
 	for _, o := range outputs {
 		if o.OutputType == types.VoteOutput {
 			if _, ok := programHashes[o.ProgramHash]; !ok {
 				return errors.New("Invalid vote output")
+			}
+			payload, ok := o.OutputPayload.(*outputpayload.VoteOutput)
+			if !ok {
+				return errors.New("Invalid vote output payload")
+			}
+			for _, content := range payload.Contents {
+				if content.VoteType == outputpayload.Delegate {
+					for _, candidate := range content.Candidates {
+						if _, ok := pds[common.BytesToHexString(candidate)]; !ok {
+							return fmt.Errorf("Invalid vote output payload candidate: %s", common.BytesToHexString(candidate))
+						}
+					}
+				}
 			}
 		}
 	}

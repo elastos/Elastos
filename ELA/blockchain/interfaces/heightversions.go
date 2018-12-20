@@ -13,7 +13,8 @@ type HeightVersions interface {
 	CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error
 	CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward common.Fixed64) error
 	CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error
-	CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output, references map[*types.Input]*types.Output) error
+	CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output,
+		references map[*types.Input]*types.Output, producers [][]byte) error
 	CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error
 
 	GetProducersDesc(block *types.Block) ([][]byte, error)

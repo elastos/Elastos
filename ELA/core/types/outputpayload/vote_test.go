@@ -103,7 +103,7 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo1
 	content1 := VoteContent{
 		VoteType:   Delegate,
-		Candidates: []common.Uint168{},
+		Candidates: [][]byte{},
 	}
 	vo1 := VoteOutput{
 		Version: 0,
@@ -117,14 +117,14 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo2
 	content2 := VoteContent{
 		VoteType: Delegate,
-		Candidates: []common.Uint168{
-			*candidate1,
+		Candidates: [][]byte{
+			candidate1,
 		},
 	}
 	content3 := VoteContent{
 		VoteType: Delegate,
-		Candidates: []common.Uint168{
-			*candidate1,
+		Candidates: [][]byte{
+			candidate1,
 		},
 	}
 	vo2 := VoteOutput{
@@ -140,9 +140,9 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo3
 	content4 := VoteContent{
 		VoteType: Delegate,
-		Candidates: []common.Uint168{
-			*candidate1,
-			*candidate1,
+		Candidates: [][]byte{
+			candidate1,
+			candidate1,
 		},
 	}
 	vo3 := VoteOutput{

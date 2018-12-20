@@ -52,7 +52,8 @@ func (b *BlockHeightMock) CheckCoinbaseArbitratorsReward(blockHeight uint32, coi
 	return nil
 }
 
-func (b *BlockHeightMock) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (b *BlockHeightMock) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output,
+	references map[*types.Input]*types.Output, producers [][]byte) error {
 	return nil
 }
 
