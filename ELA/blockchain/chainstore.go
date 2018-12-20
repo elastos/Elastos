@@ -12,7 +12,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/events"
 )
 
 const (
@@ -80,19 +79,6 @@ func NewChainStore(filePath string, genesisBlock *Block) (IChainStore, error) {
 		dirty:              make(map[outputpayload.VoteType]bool),
 		orderedProducers:   make([]*PayloadRegisterProducer, 0),
 	}
-
-	events.Subscribe(func(e *events.Event) {
-		switch e.Type {
-		case events.ETTransactionAccepted:
-			tx := e.Data.(*Transaction)
-			if tx.IsIllegalBlockTx() {
-				err := s.PersistIllegalBlock(tx.Payload.(*PayloadIllegalBlock))
-				if err != nil {
-					log.Error("Persist illegal block tx error: ", err)
-				}
-			}
-		}
-	})
 
 	go s.taskHandler()
 
