@@ -48,9 +48,6 @@ func main() {
 	// usage.
 	debug.SetGCPercent(10)
 
-	// Init global log
-	log.NewDefault(cfg.PrintLevel, cfg.MaxPerLogSize, cfg.MaxLogsSize)
-
 	log.Infof("Node version: %s", Version)
 	log.Info(GoVersion)
 
