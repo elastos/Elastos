@@ -457,7 +457,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	s.EqualError(err, "Invalid url.")
 }
 
-func  getCode(publicKey string) []byte {
+func getCode(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
 	redeemScript, _ := createStandardRedeemScript(pk)
@@ -548,13 +548,11 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
 	updatePayload := &payload.PayloadUpdateProducer{
-		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
-			PublicKey: publicKey1,
-			NickName:  "",
-			Url:       "",
-			Location:  1,
-			Address:   "",
-		},
+		PublicKey: publicKey1,
+		NickName:  "",
+		Url:       "",
+		Location:  1,
+		Address:   "",
 	}
 	txn.Payload = updatePayload
 

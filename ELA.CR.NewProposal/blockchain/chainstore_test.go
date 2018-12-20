@@ -244,13 +244,11 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	txn.TxType = types.UpdateProducer
 	txn.Payload = &payload.PayloadUpdateProducer{
-		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
-			PublicKey: publicKey3,
-			NickName:  "nick name 1",
-			Url:       "http://www.google.com",
-			Location:  1,
-			Address:   "127.0.0.1",
-		},
+		PublicKey: publicKey3,
+		NickName:  "nick name 1",
+		Url:       "http://www.google.com",
+		Location:  1,
+		Address:   "127.0.0.1",
 	}
 
 	txn.Programs = []*program.Program{{
@@ -362,13 +360,11 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	nickName1 := "nickname 1"
 	ip1 := "168.192.1.1"
 	payload1 := &payload.PayloadUpdateProducer{
-		PayloadRegisterProducer: &payload.PayloadRegisterProducer{
-			PublicKey: publicKey2,
-			NickName:  nickName1,
-			Url:       "http://www.test.com",
-			Location:  2,
-			Address:   ip1,
-		},
+		PublicKey: publicKey2,
+		NickName:  nickName1,
+		Url:       "http://www.test.com",
+		Location:  2,
+		Address:   ip1,
 	}
 
 	// 2. Run RegisterProducer
