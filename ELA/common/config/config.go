@@ -11,7 +11,6 @@ import (
 
 var (
 	Parameters ConfigParams
-	Version    string
 
 	MainNet = ChainParams{
 		Name:               "MainNet",
@@ -23,6 +22,7 @@ var (
 		MaxOrphanBlocks:    10000,
 		MinMemoryNodes:     20160,
 		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Minute * 2),
 	}
 
 	TestNet = ChainParams{
@@ -35,6 +35,7 @@ var (
 		MaxOrphanBlocks:    10000,
 		MinMemoryNodes:     20160,
 		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Second * 10),
 	}
 
 	RegNet = ChainParams{
@@ -47,6 +48,7 @@ var (
 		MaxOrphanBlocks:    10000,
 		MinMemoryNodes:     20160,
 		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Second * 1),
 	}
 )
 
@@ -118,15 +120,16 @@ type ConfigFile struct {
 }
 
 type ChainParams struct {
-	Name               string        `json:"Name"`
-	PowLimit           *big.Int      `json:"PowLimit"`
-	PowLimitBits       uint32        `json:"PowLimitBits"`
-	TargetTimePerBlock time.Duration `json:"TargetTimePerBlock"`
-	TargetTimespan     time.Duration `json:"TargetTimespan"`
-	AdjustmentFactor   int64         `json:"AdjustmentFactor"`
-	MaxOrphanBlocks    int           `json:"MaxOrphanBlocks"`
-	MinMemoryNodes     uint32        `json:"MinMemoryNodes"`
-	CoinbaseLockTime   uint32        `json:"CoinbaseLockTime"`
+	Name               string
+	PowLimit           *big.Int
+	PowLimitBits       uint32
+	TargetTimePerBlock time.Duration
+	TargetTimespan     time.Duration
+	AdjustmentFactor   int64
+	MaxOrphanBlocks    int
+	MinMemoryNodes     uint32
+	CoinbaseLockTime   uint32
+	RewardPerBlock     common.Fixed64
 }
 
 type ConfigParams struct {

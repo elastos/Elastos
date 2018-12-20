@@ -203,8 +203,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		txCount++
 	}
 
-	blockReward := blockchain.RewardAmountPerBlock
-	totalReward := totalTxFee + blockReward
+	totalReward := totalTxFee + pow.chainParams.RewardPerBlock
 	if err := pow.versions.AssignCoinbaseTxRewards(msgBlock, totalReward); err != nil {
 		return nil, err
 	}

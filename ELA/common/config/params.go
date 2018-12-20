@@ -11,6 +11,12 @@ import (
 // These variables are the chain proof-of-work limit parameters for each default
 // network.
 var (
+	// originIssuanceAmount is the origin issuance ELA amount.
+	originIssuanceAmount = 3300 * 10000 * 100000000
+
+	// inflationPerYear is the inflation amount per year.
+	inflationPerYear = originIssuanceAmount * 4 / 100
+
 	// bigOne is 1 represented as a big.Int.  It is defined here to avoid
 	// the overhead of creating it multiple times.
 	bigOne = big.NewInt(1)
@@ -62,6 +68,7 @@ var MainNetParams = Params{
 	TargetTimespan:     24 * time.Hour,  // 24 hours
 	TargetTimePerBlock: 2 * time.Minute, // 2 minute
 	AdjustmentFactor:   4,               // 25% less, 400% more
+	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
 }
@@ -87,6 +94,7 @@ var TestNetParams = Params{
 	TargetTimespan:     24 * time.Hour,  // 24 hours
 	TargetTimePerBlock: 2 * time.Minute, // 2 minute
 	AdjustmentFactor:   4,               // 25% less, 400% more
+	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
 }
@@ -98,9 +106,10 @@ var RegNetParams = Params{
 	GenesisBlock:       GenesisBlock(testNetFoundation),
 	PowLimit:           powLimit,
 	PowLimitBits:       0x207fffff,
-	TargetTimePerBlock: time.Second * 1,      // 1 second
-	TargetTimespan:     time.Second * 1 * 10, // 10 seconds
-	AdjustmentFactor:   4,                    // 25% less, 400% more
+	TargetTimePerBlock: 1 * time.Second,  // 1 second
+	TargetTimespan:     10 * time.Second, // 10 seconds
+	AdjustmentFactor:   4,                // 25% less, 400% more
+	RewardPerBlock:     rewardPerBlock(1 * time.Second),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
 }
@@ -151,6 +160,9 @@ type Params struct {
 	// retargets.
 	AdjustmentFactor int64
 
+	// RewardPerBlock is the reward amount per block.
+	RewardPerBlock common.Fixed64
+
 	// CoinbaseMaturity is the number of blocks required before newly mined
 	// coins (coinbase transactions) can be spent.
 	CoinbaseMaturity uint32
@@ -161,4 +173,10 @@ type Params struct {
 
 	// MinTransactionFee defines the minimum fee of a transaction.
 	MinTransactionFee int64
+}
+
+func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {
+	blockGenerateInterval := int64(targetTimePerBlock / time.Second)
+	generatedBlocksPerYear := 365 * 24 * 60 * 60 / blockGenerateInterval
+	return common.Fixed64(float64(inflationPerYear) / float64(generatedBlocksPerYear))
 }
