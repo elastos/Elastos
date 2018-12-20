@@ -138,7 +138,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID)
 	}
 
-	return checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
+	return b.checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
 func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error {
@@ -274,7 +274,7 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 	return feeMap, nil
 }
 
-func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
+func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
 	var rewardInCoinbase = Fixed64(0)
 	outputAddressMap := make(map[Uint168]Fixed64)
 
@@ -287,7 +287,7 @@ func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, 
 	}
 
 	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+	if rewardInCoinbase-totalTxFee != b.chainParams.RewardPerBlock {
 		return errors.New("Reward amount in coinbase not correct")
 	}
 
