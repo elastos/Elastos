@@ -145,8 +145,8 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 
 	// 2. Should have no producer in db
-	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
-	if err == nil || len(producers) != 0 {
+	producers, err := testChainStore.GetRegisteredProducersSorted()
+	if err == nil && len(producers) != 0 {
 		t.Error("Found registered producers in DB")
 	}
 
@@ -164,7 +164,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 	testChainStore.BatchCommit()
 
-	producers, err = testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	producers, err = testChainStore.GetRegisteredProducersSorted()
 	if len(producers) != 2 {
 		t.Error("GetRegisteredProducers failed")
 	}
@@ -334,7 +334,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
-	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	producers, err := testChainStore.GetRegisteredProducersSorted()
 	if err != nil || len(producers) != 1 {
 		t.Error("GetRegisteredProducers failed")
 	}
@@ -346,6 +346,9 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	if !bytes.Equal(producers[0].PublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
+
+	testChainStore.RemoveCanceledProducer(publicKey1)
+	testChainStore.BatchCommit()
 }
 
 func TestChainStore_PersistUpdateProducer(t *testing.T) {
@@ -375,7 +378,7 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
-	producers, err := testChainStore.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	producers, err := testChainStore.GetRegisteredProducersSorted()
 	if err != nil || len(producers) != 1 {
 		t.Error("GetRegisteredProducers failed")
 	}
@@ -469,7 +472,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 4. Check vote
-	vote1 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey1)
+	vote1 := testChainStore.GetProducerVote(publicKey1)
 	if vote1 != stake1 {
 		t.Error("GetProducerVote failed")
 	}
@@ -481,7 +484,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 6. Check vote
-	vote2 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey1)
+	vote2 := testChainStore.GetProducerVote(publicKey1)
 	if vote2 != stake1*2 {
 		t.Error("GetProducerVote failed")
 	}
@@ -493,11 +496,11 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 8. Check vote
-	vote3 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey1)
+	vote3 := testChainStore.GetProducerVote(publicKey1)
 	if vote3 != stake1*3 {
 		t.Error("GetProducerVote failed")
 	}
-	vote4 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey2)
+	vote4 := testChainStore.GetProducerVote(publicKey2)
 	if vote4 != stake1 {
 		t.Error("GetProducerVote failed")
 	}
@@ -561,7 +564,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 3. Check vote
-	vote1 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey1)
+	vote1 := testChainStore.GetProducerVote(publicKey1)
 	if vote1 != stake1*2 {
 		t.Error("GetProducerVote failed")
 	}
@@ -573,7 +576,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 5. Check Vote
-	vote2 := testChainStore.GetProducerVote(outputpayload.Delegate, publicKey2)
+	vote2 := testChainStore.GetProducerVote(publicKey2)
 	if vote2 != 0 {
 		t.Error("GetProducerVote failed")
 	}

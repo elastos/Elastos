@@ -10,25 +10,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-type producerSorter []*ProducerInfo
-
-func (s producerSorter) Len() int {
-	return len(s)
-}
-
-func (s producerSorter) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s producerSorter) Less(i, j int) bool {
-	ivalue, _ := s[i].Vote[currentVoteType]
-	jvalue, _ := s[j].Vote[currentVoteType]
-	if ivalue == jvalue {
-		return bytes.Compare(s[i].Payload.PublicKey, s[j].Payload.PublicKey) > 0
-	}
-	return ivalue > jvalue
-}
-
 func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -47,11 +28,11 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	return result
 }
 
-func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error) {
+func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if dirty, ok := c.dirty[voteType]; ok && dirty {
+	if dirty, ok := c.dirty[outputpayload.Delegate]; ok && dirty {
 		producersInfo := make([]*ProducerInfo, 0)
 		for _, v := range c.producerVotes {
 			producersInfo = append(producersInfo, v)
@@ -60,8 +41,14 @@ func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.Vot
 			return nil, errors.New("[GetRegisteredProducers] not found producer")
 		}
 
-		currentVoteType = voteType
-		sort.Sort(producerSorter(producersInfo))
+		sort.Slice(producersInfo, func(i, j int) bool {
+			ivalue := producersInfo[i].Vote
+			jvalue := producersInfo[j].Vote
+			if ivalue == jvalue {
+				return bytes.Compare(producersInfo[i].Payload.PublicKey, producersInfo[j].Payload.PublicKey) > 0
+			}
+			return ivalue > jvalue
+		})
 
 		producers := make([]*PayloadRegisterProducer, 0)
 		illProducers := c.getIllegalProducers()
@@ -72,18 +59,14 @@ func (c *ChainStore) GetRegisteredProducersByVoteType(voteType outputpayload.Vot
 			producers = append(producers, p.Payload)
 		}
 
-		c.orderedProducers[voteType] = producers
-		c.dirty[voteType] = false
+		c.orderedProducers = producers
+		c.dirty[outputpayload.Delegate] = false
 	}
 
-	if result, ok := c.orderedProducers[voteType]; ok {
-		return result, nil
-	}
-
-	return nil, errors.New("[GetRegisteredProducers] not found vote")
+	return c.orderedProducers, nil
 }
 
-func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, publicKey []byte) Fixed64 {
+func (c *ChainStore) GetProducerVote(publicKey []byte) Fixed64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -92,12 +75,7 @@ func (c *ChainStore) GetProducerVote(voteType outputpayload.VoteType, publicKey 
 		return Fixed64(0)
 	}
 
-	vote, ok := info.Vote[voteType]
-	if !ok {
-		return Fixed64(0)
-	}
-
-	return vote
+	return info.Vote
 }
 
 func (c *ChainStore) GetProducerStatus(address string) ProducerState {

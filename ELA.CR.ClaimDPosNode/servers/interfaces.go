@@ -939,7 +939,7 @@ func ListProducers(param Params) map[string]interface{} {
 		limit = math.MaxInt64
 	}
 
-	producers, err := chain.DefaultLedger.Store.GetRegisteredProducersByVoteType(outputpayload.Delegate)
+	producers, err := chain.DefaultLedger.Store.GetRegisteredProducersSorted()
 	if err != nil {
 		return ResponsePack(Error, "not found producer")
 	}
@@ -958,7 +958,7 @@ func ListProducers(param Params) map[string]interface{} {
 		if state == chain.ProducerRegistered {
 			active = true
 		}
-		vote := chain.DefaultLedger.Store.GetProducerVote(outputpayload.Delegate, p.PublicKey)
+		vote := chain.DefaultLedger.Store.GetProducerVote(p.PublicKey)
 		producer := Producer{
 			Address:  addr,
 			Nickname: p.NickName,

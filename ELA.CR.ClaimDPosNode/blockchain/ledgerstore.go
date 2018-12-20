@@ -3,7 +3,6 @@ package blockchain
 import (
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/protocol"
 )
@@ -11,8 +10,8 @@ import (
 // IChainStoreDpos provides func for dpos
 type IChainStoreDpos interface {
 	GetRegisteredProducers() []*PayloadRegisterProducer
-	GetRegisteredProducersByVoteType(voteType outputpayload.VoteType) ([]*PayloadRegisterProducer, error)
-	GetProducerVote(voteType outputpayload.VoteType, publicKey []byte) Fixed64
+	GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error)
+	GetProducerVote(publicKey []byte) Fixed64
 	GetProducerStatus(address string) ProducerState
 
 	GetIllegalProducers() map[string]struct{}
