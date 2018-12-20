@@ -70,7 +70,7 @@ out:
 	s.wg.Done()
 }
 
-func (s *DposStore) StartRecordArbitrators() {
+func (s *DposStore) StartArbitratorsRecord() {
 	go s.arbiterLoop()
 }
 
@@ -148,7 +148,7 @@ func (s *DposStore) GetArbitrators(a interfaces.Arbitrators) error {
 
 func (s *DposStore) GetDirectPeers() ([]*interfaces.DirectPeers, error) {
 	key := []byte{byte(DPOSDirectPeers)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (s *DposStore) GetDirectPeers() ([]*interfaces.DirectPeers, error) {
 
 func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 	log.Debugf("SaveDposDutyChangedCount()")
-	batch := s.NewBatch()
+	batch := s.db.NewBatch()
 	if err := s.persistDposDutyChangedCount(batch, count); err != nil {
 		log.Fatal("[persistDposDutyChangedCount]: error to persist dpos duty changed count:", err.Error())
 		return
@@ -199,7 +199,7 @@ func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 
 func (s *DposStore) saveCurrentArbitrators(a *Arbitrators) {
 	log.Debug("SaveCurrentArbitrators()")
-	batch := s.NewBatch()
+	batch := s.db.NewBatch()
 	if err := s.persistCurrentArbitrators(batch, a.currentArbitrators); err != nil {
 		log.Fatal("[persistCurrentArbitrators]: error to persist current arbiters:", err.Error())
 		return
@@ -213,7 +213,7 @@ func (s *DposStore) saveCurrentArbitrators(a *Arbitrators) {
 
 func (s *DposStore) saveNextArbitrators(a *Arbitrators) {
 	log.Debug("SaveNextArbitrators()")
-	batch := s.NewBatch()
+	batch := s.db.NewBatch()
 	if err := s.persistNextArbitrators(batch, a.nextArbitrators); err != nil {
 		log.Fatal("[persistNextArbitrators]: error to persist current arbiters:", err.Error())
 		return
@@ -227,7 +227,7 @@ func (s *DposStore) saveNextArbitrators(a *Arbitrators) {
 
 func (s *DposStore) saveDirectPeers(p []*interfaces.DirectPeers) {
 	log.Debug("SaveDirectPeers()")
-	batch := s.NewBatch()
+	batch := s.db.NewBatch()
 	if err := s.persistDirectPeers(batch, p); err != nil {
 		log.Fatal("[persistDirectPeers]: error to persist direct peers:", err.Error())
 		return
