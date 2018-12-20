@@ -60,7 +60,7 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 	c.producerVotes[pk] = &ProducerInfo{
 		Payload:   payload,
 		RegHeight: regHeight,
-		Vote:      make(map[outputpayload.VoteType]Fixed64, 0),
+		Vote:      Fixed64(0),
 	}
 	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
 	if err != nil {
@@ -120,7 +120,7 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 	// remove from voteType
 	for _, voteType := range outputpayload.VoteTypes {
 		keyVote := []byte{byte(voteType)}
-		_, err = c.getProducerVote(voteType, payload.PublicKey)
+		_, err = c.getVoteByPublicKey(voteType, payload.PublicKey)
 		if err == nil {
 			c.BatchDelete(append(keyVote, payload.PublicKey...))
 		}
@@ -244,33 +244,31 @@ func (c *ChainStore) PersistVoteOutput(output *Output) error {
 	}
 
 	for _, vote := range pyaload.Contents {
-		for _, candidate := range vote.Candidates {
-			// add vote to database
-			key := []byte{byte(vote.VoteType)}
-			k := append(key, candidate...)
-			oldStake, err := c.getProducerVote(vote.VoteType, candidate)
-			if err != nil {
-				c.Put(k, stake)
-			} else {
-				votes := output.Value + oldStake
-				votesBytes, err := votes.Bytes()
+		if vote.VoteType == outputpayload.Delegate {
+			for _, candidate := range vote.Candidates {
+				// add vote to database
+				key := []byte{byte(vote.VoteType)}
+				k := append(key, candidate...)
+				oldStake, err := c.getVoteByPublicKey(vote.VoteType, candidate)
 				if err != nil {
-					return err
-				}
-				c.Put(k, votesBytes)
-			}
-
-			// add vote to mempool
-			c.mu.Lock()
-			if p, ok := c.producerVotes[BytesToHexString(candidate)]; ok {
-				if v, ok := p.Vote[vote.VoteType]; ok {
-					c.producerVotes[BytesToHexString(candidate)].Vote[vote.VoteType] = v + output.Value
+					c.Put(k, stake)
 				} else {
-					c.producerVotes[BytesToHexString(candidate)].Vote[vote.VoteType] = output.Value
+					votes := output.Value + oldStake
+					votesBytes, err := votes.Bytes()
+					if err != nil {
+						return err
+					}
+					c.Put(k, votesBytes)
 				}
+
+				// add vote to mempool
+				c.mu.Lock()
+				c.producerVotes[BytesToHexString(candidate)].Vote += output.Value
 				c.dirty[vote.VoteType] = true
+				c.mu.Unlock()
 			}
-			c.mu.Unlock()
+		} else {
+			// todo persist other vote
 		}
 	}
 
@@ -284,40 +282,64 @@ func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
 	}
 
 	for _, vote := range pyaload.Contents {
-		for _, candidate := range vote.Candidates {
-			// subtract vote to database
-			key := []byte{byte(vote.VoteType)}
-			k := append(key, candidate...)
-			oldStake, err := c.getProducerVote(vote.VoteType, candidate)
-			if err != nil {
-				return nil
-			} else {
-				votes := oldStake - output.Value
-				votesBytes, err := votes.Bytes()
+		if vote.VoteType == outputpayload.Delegate {
+			for _, candidate := range vote.Candidates {
+				// subtract vote to database
+				key := []byte{byte(vote.VoteType)}
+				k := append(key, candidate...)
+				oldStake, err := c.getVoteByPublicKey(vote.VoteType, candidate)
 				if err != nil {
-					return err
+					return nil
+				} else {
+					votes := oldStake - output.Value
+					votesBytes, err := votes.Bytes()
+					if err != nil {
+						return err
+					}
+					c.Put(k, votesBytes)
 				}
-				c.Put(k, votesBytes)
-			}
 
-			// subtract vote to mempool
-			c.mu.Lock()
-			if p, ok := c.producerVotes[BytesToHexString(candidate)]; ok {
-				if v, ok := p.Vote[vote.VoteType]; ok {
-					c.producerVotes[BytesToHexString(candidate)].Vote[vote.VoteType] = v - output.Value
-				}
+				// subtract vote to mempool
+				c.mu.Lock()
+				c.producerVotes[BytesToHexString(candidate)].Vote -= output.Value
 				c.dirty[vote.VoteType] = true
+				c.mu.Unlock()
 			}
-			c.mu.Unlock()
+		} else {
+			// todo canel other vote
 		}
 	}
 
 	return nil
 }
 
-func (c *ChainStore) ClearRegisteredProducer() {
-	key := []byte{byte(DPOSVoteProducer)}
+func (c *ChainStore) RemoveCanceledProducer(publicKey []byte) {
+	key := []byte{byte(DPOSCancelProducer)}
+	key = append(key, publicKey...)
 	c.BatchDelete(key)
+	return
+}
+
+func (c *ChainStore) ClearRegisteredProducer() {
+	// clean from database
+	publicKeys, err := c.getRegisteredProducers()
+	if err != nil {
+		return
+	}
+	key := []byte{byte(DPOSProducers)}
+	c.BatchDelete(key)
+
+	for _, pk := range publicKeys {
+		key = []byte{byte(DPOSVoteProducer)}
+		key = append(key, pk...)
+		c.BatchDelete(key)
+	}
+
+	// clean from mempool
+	c.producerVotes = make(map[string]*ProducerInfo)
+	c.producerAddress = make(map[string]string)
+	c.dirty = make(map[outputpayload.VoteType]bool)
+	c.orderedProducers = make([]*PayloadRegisterProducer, 0)
 }
 
 func (c *ChainStore) getRegisteredProducers() ([][]byte, error) {
@@ -363,9 +385,9 @@ func (c *ChainStore) getProducerInfo(publicKey []byte) (uint32, Payload, error) 
 	return height, &payload, nil
 }
 
-func (c *ChainStore) getProducerVote(voteType outputpayload.VoteType, producer []byte) (Fixed64, error) {
+func (c *ChainStore) getVoteByPublicKey(voteType outputpayload.VoteType, publicKey []byte) (Fixed64, error) {
 	key := []byte{byte(voteType)}
-	key = append(key, producer...)
+	key = append(key, publicKey...)
 
 	// PUT VALUE
 	data, err := c.Get(key)
