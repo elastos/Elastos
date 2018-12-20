@@ -1,8 +1,10 @@
 package servers
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const TlsPort = 443
@@ -19,11 +21,27 @@ type InputInfo struct {
 }
 
 type OutputInfo struct {
-	Value      string `json:"value"`
-	Index      uint32 `json:"n"`
-	Address    string `json:"address"`
-	AssetID    string `json:"assetid"`
-	OutputLock uint32 `json:"outputlock"`
+	Value         string            `json:"value"`
+	Index         uint32            `json:"n"`
+	Address       string            `json:"address"`
+	AssetID       string            `json:"assetid"`
+	OutputLock    uint32            `json:"outputlock"`
+	OutputType    uint32            `json:"outputtype"`
+	OutputPayload OutputPayloadInfo `json:"outputpayload"`
+}
+
+type OutputPayloadInfo interface{}
+
+type DefaultOutputInfo struct{}
+
+type VoteContentInfo struct {
+	VoteType       outputpayload.VoteType `json:"votetype"`
+	CandidatesInfo []string               `json:"candidates"`
+}
+
+type VoteOutputInfo struct {
+	Version  byte              `json:"version"`
+	Contents []VoteContentInfo `json:"contents"`
 }
 
 type ProgramInfo struct {
@@ -32,23 +50,23 @@ type ProgramInfo struct {
 }
 
 type TransactionInfo struct {
-	TxID          string       `json:"txid"`
-	Hash          string       `json:"hash"`
-	Size          uint32       `json:"size"`
-	VSize         uint32       `json:"vsize"`
-	Version       uint32       `json:"version"`
-	LockTime      uint32       `json:"locktime"`
-	Inputs        []InputInfo  `json:"vin"`
-	Outputs       []OutputInfo `json:"vout"`
-	BlockHash     string       `json:"blockhash"`
-	Confirmations uint32       `json:"confirmations"`
-	Time          uint32       `json:"time"`
-	BlockTime      uint32          `json:"blocktime"`
-	TxType         TransactionType `json:"type"`
-	PayloadVersion byte            `json:"payloadversion"`
-	Payload        PayloadInfo     `json:"payload"`
-	Attributes     []AttributeInfo `json:"attributes"`
-	Programs       []ProgramInfo   `json:"programs"`
+	TxID           string             `json:"txid"`
+	Hash           string             `json:"hash"`
+	Size           uint32             `json:"size"`
+	VSize          uint32             `json:"vsize"`
+	Version        TransactionVersion `json:"version"`
+	LockTime       uint32             `json:"locktime"`
+	Inputs         []InputInfo        `json:"vin"`
+	Outputs        []OutputInfo       `json:"vout"`
+	BlockHash      string             `json:"blockhash"`
+	Confirmations  uint32             `json:"confirmations"`
+	Time           uint32             `json:"time"`
+	BlockTime      uint32             `json:"blocktime"`
+	TxType         TransactionType    `json:"type"`
+	PayloadVersion byte               `json:"payloadversion"`
+	Payload        PayloadInfo        `json:"payload"`
+	Attributes     []AttributeInfo    `json:"attributes"`
+	Programs       []ProgramInfo      `json:"programs"`
 }
 
 type BlockInfo struct {
@@ -116,7 +134,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      Asset
+	Asset      payload.Asset
 	Amount     string
 	Controller string
 }
@@ -140,12 +158,29 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
+type RegisterProducerInfo struct {
+	PublicKey string
+	NickName  string
+	Url       string
+	Location  uint64
+	Address   string
+}
+
+type CancelProducerInfo struct {
+	PublicKey string
+}
+
+type UpdateProducerInfo struct {
+	*RegisterProducerInfo
+}
+
 type UTXOInfo struct {
-	AssetID       string `json:"assetid"`
+	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
+	AssetID       string `json:"assetid"`
 	VOut          uint32 `json:"vout"`
 	Address       string `json:"address"`
 	Amount        string `json:"amount"`
-	Confirmations uint32 `json:"confirmations"`
 	OutputLock    uint32 `json:"outputlock"`
+	Confirmations uint32 `json:"confirmations"`
 }

@@ -1,19 +1,38 @@
 package blockchain
 
 import (
-	. "github.com/elastos/Elastos.ELA/core"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/protocol"
 )
+
+// IChainStoreDpos provides func for dpos
+type IChainStoreDpos interface {
+	GetRegisteredProducers() []*PayloadRegisterProducer
+	GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error)
+	GetProducerVote(publicKey []byte) Fixed64
+	GetProducerStatus(address string) ProducerState
+
+	GetIllegalProducers() map[string]struct{}
+	GetCancelProducerHeight(publicKey []byte) (uint32, error)
+}
 
 // IChainStore provides func with store package.
 type IChainStore interface {
+	IChainStoreDpos
+	protocol.TxnPoolListener
+
 	InitWithGenesisBlock(genesisblock *Block) (uint32, error)
+	InitProducerVotes() error
 
 	SaveBlock(b *Block) error
 	GetBlock(hash Uint256) (*Block, error)
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *Transaction) bool
+
+	SaveConfirm(confirm *DPosProposalVoteSlot) error
+	GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error)
 
 	GetHeader(hash Uint256) (*Header, error)
 
@@ -31,8 +50,6 @@ type IChainStore interface {
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 
-	RemoveHeaderListElement(hash Uint256)
-
 	GetUnspent(txID Uint256, index uint16) (*Output, error)
 	ContainsUnspent(txID Uint256, index uint16) (bool, error)
 	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error)
@@ -42,5 +59,6 @@ type IChainStore interface {
 	IsTxHashDuplicate(txhash Uint256) bool
 	IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool
 	IsBlockInStore(hash Uint256) bool
+
 	Close()
 }

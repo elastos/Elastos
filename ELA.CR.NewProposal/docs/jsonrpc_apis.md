@@ -816,3 +816,132 @@ result sample:
 
 description: return node information.  
 warning: this interface is ready to be deprecated. So no api information will be supplied.
+
+
+#### listproducers
+
+description: show producers infromation
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| start | integer | the start index of producers |
+| limit | integer | the limit index of producers |  
+
+named arguments sample:
+```json
+{
+  "method": "listproducers",
+  "params":{
+  	"start": 0,
+   	"limit": 3
+   }
+}
+```
+
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "producers": [
+            {
+                "address": "EWrRwo2JR7siemdE9vqCZQNjTPobUhgqAL",
+                "nickname": "elastos1",
+                "url": "http://www.google.com",
+                "location": 404,
+                "active": true,
+                "votes": "3.11100000",
+                "ip": "127.0.0.1"
+            },
+            {
+                "address": "EVM5DvheR7FFgEApTE4TX3HyTzNb2VnXfn",
+                "nickname": "elastos2",
+                "url": "http://www.google.com",
+                "location": 404,
+                "active": true,
+                "votes": "3.11100000",
+                "ip": "127.0.0.1"
+            },
+            {
+                "address": "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda",
+                "nickname": "elastos3",
+                "url": "http://www.google.com",
+                "location": 404,
+                "active": true,
+                "votes": "0",
+                "ip": "127.0.0.1"
+            }
+        ],
+        "total_votes": "6.22200000"
+    }
+}
+```
+
+
+#### producerstatus
+
+description: show producer status
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| address | string | the address of producer |
+
+named arguments sample:
+```json
+{
+  "method": "producerstatus",
+  "params":{
+  	"address": "EVM5DvheR7FFgEApTE4TX3HyTzNb2VnXfn"
+  }
+}
+```
+
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": 1
+}
+```
+
+
+
+#### votestatus
+
+description: show producer vote status
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| address | string | the address of producer |
+
+named arguments sample:
+```json
+{
+  "method": "votestatus",
+  "params":{
+  	"address": "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda"
+  }
+}
+```
+
+result sample:
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "total": "4.66088900",
+        "voting": "0",
+        "pending": true
+    }
+}
+```
+
