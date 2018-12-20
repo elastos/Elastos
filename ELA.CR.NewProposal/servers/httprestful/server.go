@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/servers"
@@ -70,11 +70,11 @@ func InitRestServer() ApiServer {
 }
 
 func (rt *restServer) Start() {
-	if Parameters.HttpRestPort == 0 {
+	if config.Parameters.HttpRestPort == 0 {
 		log.Fatal("Not configure HttpRestPort port ")
 	}
 
-	if Parameters.HttpRestPort%1000 == servers.TlsPort {
+	if config.Parameters.HttpRestPort%1000 == servers.TlsPort {
 		var err error
 		rt.listener, err = rt.initTlsListen()
 		if err != nil {
@@ -82,7 +82,7 @@ func (rt *restServer) Start() {
 		}
 	} else {
 		var err error
-		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort))
+		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort))
 		if err != nil {
 			log.Fatal("net.Listen: ", err.Error())
 		}
@@ -287,8 +287,8 @@ func (rt *restServer) Restart(cmd servers.Params) map[string]interface{} {
 
 func (rt *restServer) initTlsListen() (net.Listener, error) {
 
-	CertPath := Parameters.RestCertPath
-	KeyPath := Parameters.RestKeyPath
+	CertPath := config.Parameters.RestCertPath
+	KeyPath := config.Parameters.RestKeyPath
 
 	// load cert
 	cert, err := tls.LoadX509KeyPair(CertPath, KeyPath)
@@ -301,8 +301,8 @@ func (rt *restServer) initTlsListen() (net.Listener, error) {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.HttpRestPort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort), tlsConfig)
+	log.Info("TLS listen port is ", strconv.Itoa(config.Parameters.HttpRestPort))
+	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err
