@@ -7,12 +7,15 @@ import:
   repo: https://github.com/golang/sys.git
   vcs: git
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: 80e2afd897d53a5a030090f9293ddba804bb9277
+  version: dpos
 - package: github.com/gorilla/websocket
-- package: github.com/mattn/go-sqlite3
+- package: github.com/urfave/cli
 - package: github.com/pborman/uuid
+- package: github.com/howeyc/gopass
 - package: github.com/itchyny/base58-go
-- package: github.com/stretchr/testify/assert
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
@@ -21,3 +24,4 @@ import:
   - leveldb/iterator
   - leveldb/opt
   - leveldb/util
+- package: github.com/yuin/gopher-lua

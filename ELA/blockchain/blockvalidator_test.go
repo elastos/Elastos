@@ -3,16 +3,15 @@ package blockchain
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/elastos/Elastos.ELA/config"
 )
 
 const (
@@ -45,13 +44,13 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore()
+	chainStore, err := NewChainStore("Chain_UnitTest")
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	err = Init(chainStore)
+	err = Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -63,9 +62,8 @@ func TestCheckBlockSanity(t *testing.T) {
 		t.Errorf("Decode block hex error %s", err.Error())
 	}
 
-	var block core.Block
+	var block types.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	fmt.Println("MedianTime %s", timeSource.AdjustedTime().String())
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	if err != nil {
 		t.Error(err.Error())
@@ -77,10 +75,4 @@ func TestCheckBlockSanity(t *testing.T) {
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
-
-	block.Nonce = 0
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
-	if err != nil {
-		t.Error(err.Error())
-	}
 }

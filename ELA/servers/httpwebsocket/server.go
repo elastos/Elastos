@@ -1,25 +1,25 @@
 package httpwebsocket
 
 import (
-	"net"
-	"sync"
-	"time"
-	"strconv"
 	"context"
-	"net/http"
 	"crypto/tls"
 	"encoding/json"
+	"net"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	. "github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/servers"
 
-	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pborman/uuid"
 )
 
 var instance *WebSocketServer
