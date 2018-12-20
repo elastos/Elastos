@@ -77,8 +77,8 @@ func newDposManager(L *lua.LState) int {
 	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(mockManager.Consensus, mockManager.EventMonitor, n, dposManager, mockManager.Account)
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
 
-	mockManager.Node = mock.NewNodeMock()
-	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor, mockManager.Node.GetBlockPool(), mockManager.Node.GetTxPool(), mockManager.Node)
+	mockManager.Peer = mock.NewPeerMock()
+	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor, mockManager.Peer.GetBlockPool(), mockManager.Peer.GetTxPool(), mockManager.Peer.Broadcast)
 	n.Initialize(DposNetworkConfig{
 		ProposalDispatcher: mockManager.Dispatcher,
 		Store:              nil,
@@ -122,7 +122,7 @@ var dposManagerMethods = map[string]lua.LGFunction{
 
 func dposManagerDumpRelays(L *lua.LState) int {
 	m := checkDposManager(L, 1)
-	relays := m.Node.DumpRelays(0)
+	relays := m.Peer.DumpRelays(0)
 	L.Push(lua.LString(relays))
 
 	return 1
@@ -143,13 +143,13 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 	result := false
 	switch t {
 	case relayTx:
-		if relayedTx, ok := m.Node.GetLastRelay().(*types.Transaction); ok {
+		if relayedTx, ok := m.Peer.GetLastRelay().(*types.Transaction); ok {
 			if tx := checkTransaction(L, 3); tx != nil {
 				result = tx.Hash().IsEqual(relayedTx.Hash())
 			}
 		}
 	case relayBlockConfirm:
-		if relayedConfirm, ok := m.Node.GetLastRelay().(*types.DposBlock); ok {
+		if relayedConfirm, ok := m.Peer.GetLastRelay().(*types.DposBlock); ok {
 			if relayedConfirm.BlockFlag && relayedConfirm.ConfirmFlag {
 				b := checkBlock(L, 3)
 				c := checkConfirm(L, 4)
@@ -283,5 +283,5 @@ type manager struct {
 	Handler        DposHandlerSwitch
 	Dispatcher     ProposalDispatcher
 	IllegalMonitor IllegalBehaviorMonitor
-	Node           mock.NodeMock
+	Peer           mock.PeerMock
 }

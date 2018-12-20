@@ -11,15 +11,15 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	log2 "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/servers"
-	"github.com/elastos/Elastos.ELA/version/verconfig"
+	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -139,17 +139,18 @@ func initLedger(L *lua.LState) int {
 	log.Init(logLevel, 0, 0)
 	log2.Init(logLevel, 0, 0)
 
-	versions := verconfig.InitVersions()
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox")
+	versions := version.NewVersions(nil)
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", nil)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	err = blockchain.Init(chainStore, versions)
+	chain, err := blockchain.New(chainStore, nil, versions)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
+	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Arbitrators = arbitrators
 
 	return 1
