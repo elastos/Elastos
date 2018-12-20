@@ -938,6 +938,13 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 	auxPow := new(bytes.Buffer)
 	block.Header.SideAuxPow.Serialize(auxPow)
 
+	var minerInfo string
+	if block.Height == 0 {
+		minerInfo = "ELA"
+	} else {
+		minerInfo = string(block.Transactions[0].Payload.(*types.PayloadCoinBase).CoinbaseData[:])
+	}
+
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
 		Confirmations:     cfg.Chain.GetBestHeight() - block.Header.Height + 1,
@@ -958,7 +965,7 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
-		MinerInfo:         string(block.Transactions[0].Payload.(*types.PayloadCoinBase).CoinbaseData[:]),
+		MinerInfo:         minerInfo,
 	}
 }
 
