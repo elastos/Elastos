@@ -798,9 +798,11 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	// check from database
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	hasProducer := false
+	keepNickName := false
 	for _, p := range producers {
 		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			hasProducer = true
+			keepNickName = p.NickName == payload.NickName
 			break
 		}
 	}
@@ -808,9 +810,11 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 		return errors.New("Invalid producer.")
 	}
 
-	for _, p := range producers {
-		if p.NickName == payload.NickName {
-			return errors.New("Duplicated nick name.")
+	if !keepNickName {
+		for _, p := range producers {
+			if p.NickName == payload.NickName {
+				return errors.New("Duplicated nick name.")
+			}
 		}
 	}
 
