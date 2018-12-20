@@ -53,6 +53,9 @@ func main() {
 
 	var interrupt = signal.NewInterrupt()
 
+	// fixme remove singleton Ledger
+	ledger := blockchain.Ledger{}
+
 	var dposStore interfaces.IDposStore
 	chainStore, err := blockchain.NewChainStore("Chain",
 		activeNetParams.GenesisBlock)
@@ -60,6 +63,8 @@ func main() {
 		printErrorAndExit(err)
 	}
 	defer chainStore.Close()
+	ledger.Store = chainStore // fixme
+
 	dposStore, err = store.NewDposStore("Dpos_Data")
 	if err != nil {
 		printErrorAndExit(err)
@@ -74,11 +79,14 @@ func main() {
 		BlockMemPool: blockMemPool,
 	}
 	versions := version.NewVersions(&verconf)
+	ledger.HeightVersions = versions // fixme
 	chain, err := blockchain.New(chainStore, activeNetParams, versions)
 	if err != nil {
 		printErrorAndExit(err)
 	}
 	verconf.Chain = chain
+	ledger.Blockchain = chain // fixme
+	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := store.NewArbitrators(&store.ArbitratorsConfig{
 		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
@@ -92,6 +100,7 @@ func main() {
 		printErrorAndExit(err)
 	}
 	verconf.Arbitrators = arbiters
+	ledger.Arbitrators = arbiters
 
 	log.Info("Start the P2P networks")
 	server, err := elanet.NewServer(chain, txMemPool, activeNetParams)
