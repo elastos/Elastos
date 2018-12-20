@@ -100,8 +100,6 @@ func TestCheckCheckSigSignature(t *testing.T) {
 	err = checkStandardSignature(program.Program{Code: act.redeemScript, Parameter: fakeSignature}, nil)
 	assert.Error(t, err, "[CheckChecksigSignature] with invalid data content")
 	assert.Equal(t, "[Validation], Verify failed.", err.Error())
-
-	t.Log("TestCheckChecksigSignature passed")
 }
 
 func TestCheckMultiSigSignature(t *testing.T) {
@@ -186,8 +184,6 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	assert.NoError(t, err, "Generate signature failed, error %v", err)
 	err = checkMultiSigSignatures(program.Program{Code: act.redeemScript, Parameter: signature}, data)
 	assert.Error(t, err, "[CheckMultisigSignature] invalid signature fake signature")
-
-	t.Log("TestCheckMultisigSignature passed")
 }
 
 func TestRunPrograms(t *testing.T) {
@@ -299,8 +295,6 @@ func TestRunPrograms(t *testing.T) {
 	}
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with random no parameter")
-
-	t.Log("TestRunPrograms passed")
 }
 
 func newAccount(t *testing.T) *account {

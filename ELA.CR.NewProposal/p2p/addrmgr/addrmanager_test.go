@@ -451,7 +451,6 @@ func TestGetBestLocalAddress(t *testing.T) {
 func TestNetAddressKey(t *testing.T) {
 	addNaTests()
 
-	t.Logf("Running %d tests", len(naTests))
 	for i, test := range naTests {
 		key := addrmgr.NetAddressKey(&test.in)
 		if key != test.want {
