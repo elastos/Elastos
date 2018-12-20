@@ -199,7 +199,7 @@ func main() {
 		}
 	}()
 
-	socketServer := newWebSocketServer(cfg.HttpWebSocketPort, service.HttpService, service.Config)
+	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, service.Config)
 	defer socketServer.Stop()
 	go func() {
 		if err := socketServer.Start(); err != nil {

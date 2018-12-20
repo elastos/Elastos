@@ -41,7 +41,7 @@ type config struct {
 		MinCrossChainTxFee         int64
 		HttpRestPort               uint16
 		HttpJsonPort               uint16
-		HttpWebSocketPort          uint16
+		HttpWsPort                 uint16
 		NodePort                   uint16
 		PrintLevel                 elalog.Level
 		MaxLogsSize                int64
@@ -62,7 +62,7 @@ type config struct {
 type appConfig struct {
 	HttpRestPort      uint16
 	HttpJsonPort      uint16
-	HttpWebSocketPort uint16
+	HttpWsPort        uint16
 	Mining            bool
 	MinerInfo         string
 	MinerAddr         string
@@ -79,7 +79,7 @@ func loadNewConfig() (*appConfig, error) {
 		MaxPerLogFileSize: defaultMaxLogFileSize,
 		HttpRestPort:      20604,
 		HttpJsonPort:      20606,
-		HttpWebSocketPort: 20605,
+		HttpWsPort:        20605,
 		MinerAddr:         "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
 		MonitorState:      true,
 	}
@@ -107,7 +107,7 @@ func loadNewConfig() (*appConfig, error) {
 		activeNetParams = &params.TestNetParams
 		appCfg.HttpJsonPort = 21606
 		appCfg.HttpRestPort = 21604
-		appCfg.HttpWebSocketPort = 20605
+		appCfg.HttpWsPort = 20605
 		appCfg.MinerAddr = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"
 	} else {
 		return nil, errors.New("invalid NetType: should be MainNet, TestNet")
@@ -121,8 +121,8 @@ func loadNewConfig() (*appConfig, error) {
 	if config.HttpJsonPort > 0 {
 		appCfg.HttpJsonPort = config.HttpJsonPort
 	}
-	if config.HttpWebSocketPort > 0 {
-		appCfg.HttpWebSocketPort = config.HttpWebSocketPort
+	if config.HttpWsPort > 0 {
+		appCfg.HttpWsPort = config.HttpWsPort
 	}
 	if powCfg.PayToAddr != "" {
 		appCfg.MinerAddr = powCfg.PayToAddr
