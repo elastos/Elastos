@@ -874,7 +874,16 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 }
 
 func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
-	if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock), true); err != nil {
-		log.Error("Persist illegal block tx error: ", err)
+	illegalBlock, ok := txn.Payload.(*PayloadIllegalBlock)
+	if !ok {
+		return
+	}
+	if err := c.PersistIllegalBlock(illegalBlock); err != nil {
+		log.Error("Persist illegal block tx error: ", err.Error())
+	}
+	if illegalBlock.CoinType == ELACoin {
+		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
+			log.Error("OnIllegalBlockTxnReceived force change failed:", err.Error())
+		}
 	}
 }
