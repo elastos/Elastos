@@ -19,7 +19,7 @@ import (
 var Version string
 
 func init() {
-	log.Init(
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,

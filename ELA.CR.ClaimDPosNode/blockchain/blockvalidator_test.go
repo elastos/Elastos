@@ -34,7 +34,7 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	log.Init(
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
