@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/errors"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -56,6 +55,10 @@ func (s State) String() string {
 	return fmt.Sprintf("STATE%d", s)
 }
 
+type TxnPoolListener interface {
+	OnIllegalBlockTxnReceived(txn *types.Transaction)
+}
+
 // Handler is the P2P message handler interface.
 type Handler interface {
 	MakeEmptyMessage(cmd string) (p2p.Message, error)
@@ -76,6 +79,7 @@ type Noder interface {
 	SetState(state State)
 	State() State
 	IsRelay() bool
+	IsCurrent() bool
 	AddNeighborNode(Noder)
 	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64
@@ -85,8 +89,10 @@ type Noder interface {
 	AddToHandshakeQueue(addr string, node Noder)
 	RemoveFromHandshakeQueue(node Noder)
 	GetConnectionCount() (uint, uint)
-	GetTransactionPool(bool) map[common.Uint256]*core.Transaction
-	AppendToTxnPool(*core.Transaction) errors.ErrCode
+	GetTransactionPool(bool) map[common.Uint256]*types.Transaction
+	AppendToTxnPool(*types.Transaction) errors.ErrCode
+	RegisterTxPoolListener(listener TxnPoolListener)
+	UnregisterTxPoolListener(listener TxnPoolListener)
 	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
 	ExistedID(id common.Uint256) bool
 	RequireNeighbourList()
@@ -99,7 +105,7 @@ type Noder interface {
 	BloomFilter() *bloom.Filter
 	SendMessage(msg p2p.Message)
 	NodeEstablished(uid uint64) bool
-	GetTransaction(hash common.Uint256) *core.Transaction
+	GetTransaction(hash common.Uint256) *types.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
@@ -107,10 +113,10 @@ type Noder interface {
 	GetNeighborNodes() []Noder
 	GetNeighbourAddresses() []*p2p.NetAddress
 
-	WaitForSyncFinish()
-	CleanSubmittedTransactions(block *core.Block) error
-	MaybeAcceptTransaction(txn *core.Transaction) error
-	RemoveTransaction(txn *core.Transaction)
+	WaitForSyncFinish(interrupt <-chan struct{})
+	CleanSubmittedTransactions(block *types.Block) error
+	MaybeAcceptTransaction(txn *types.Transaction) error
+	RemoveTransaction(txn *types.Transaction)
 
 	SetHeight(height uint64)
 	SetLastActive(now time.Time)

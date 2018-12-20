@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"github.com/elastos/Elastos.ELA/mempool"
 	"math/rand"
 	"net"
 	"sync"
@@ -10,14 +11,14 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -53,14 +54,15 @@ type node struct {
 	id         uint64        // The nodes's id
 	version    uint32        // The network protocol the node used
 	services   uint64        // The services the node supplied
-	relay      bool          // The relay capability of the node (merge into capbility flag)
+	relay      bool          // The relay capability of the node (merge into capability flag)
 	height     uint64        // The node latest block height
 	external   bool          // Indicate if this is an external node
 	txnCnt     uint64        // The transactions be transmit by this node
 	rxTxnCnt   uint64        // The transaction received by this node
-	link                     // The link status and infomation
+	link                     // The link status and information
 	neighbours               // The neighbor node connect with currently node except itself
-	chain.TxPool             // Unconfirmed transaction pool
+	mempool.TxPool           // Unconfirmed transaction pool
+	mempool.BlockPool        // Unconfirmed block pool
 	idCache                  // The buffer to store the id of the items which already be processed
 	filter     *bloom.Filter // The bloom filter of a spv node
 	/*
@@ -155,6 +157,7 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.ConnectingNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
+	LocalNode.BlockPool.Init()
 	LocalNode.idCache.init()
 	LocalNode.handshakeQueue.init()
 	LocalNode.initConnection()
@@ -181,7 +184,7 @@ func (node *node) nodeHeartBeat() {
 	for {
 		log.Info("node heart beat")
 		for _, peer := range node.GetNeighborNodes() {
-			if time.Now().Sub(peer.GetLastActive()) > 10 * time.Minute {
+			if time.Now().Sub(peer.GetLastActive()) > 10*time.Minute {
 				log.Warn("does not update last active time for 10 minutes.")
 				peer.Disconnect()
 			}
@@ -296,24 +299,31 @@ func (node *node) IP() net.IP {
 	return node.ip
 }
 
-func (node *node) WaitForSyncFinish() {
-	if len(Parameters.SeedList) <= 0 {
+func (node *node) WaitForSyncFinish(interrupt <-chan struct{}) {
+	if len(Parameters.SeedList) == 0 {
 		return
 	}
+
+out:
 	for {
-		log.Debug("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
-		bc := chain.DefaultLedger.Blockchain
-		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
+		select {
+		case <-time.After(time.Second * 5):
+			addresses, heights := node.GetInternalNeighborAddressAndHeights()
+			// Can not connect to neighbors.
+			if len(heights) == 0 {
+				break out
+			}
+			log.Debug("others height is (internal only) ", heights)
+			log.Debug("others address is (internal only) ", addresses)
+			// Sync finished.
+			if node.IsCurrent() {
+				LocalNode.SetSyncHeaders(false)
+				break out
+			}
 
-		addresses, heights := node.GetInternalNeighborAddressAndHeights()
-		log.Debug("others height is (internal only) ", heights)
-		log.Debug("others address is (internal only) ", addresses)
-
-		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0 {
-			LocalNode.SetSyncHeaders(false)
-			break
+		case <-interrupt:
+			break out
 		}
-		time.Sleep(5 * time.Second)
 	}
 }
 
@@ -369,11 +379,11 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 					nbr.SendMessage(msg.NewTx(message))
 					node.txnCnt++
 				}
-			case *Block:
+			case *DposBlock:
 				log.Debug("Relay block message")
-				if nbr.BloomFilter().IsLoaded() {
+				if nbr.BloomFilter().IsLoaded() && message.BlockFlag {
 					inv := msg.NewInventory()
-					blockHash := message.Hash()
+					blockHash := message.Block.Hash()
 					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
 					go nbr.SendMessage(inv)
 					continue
@@ -412,11 +422,12 @@ func (node *node) SetSyncHeaders(b bool) {
 	}
 }
 
-func (node *node) needSync() bool {
+// IsCurrent returns if node believes it was synced to current height.
+func (node *node) IsCurrent() bool {
 	addresses, heights := node.GetInternalNeighborAddressAndHeights()
 	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
 	log.Info("internal nbr address ", addresses)
-	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) < 0
+	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0
 }
 
 func CompareHeight(localHeight uint64, heights []uint64) int {
@@ -484,4 +495,12 @@ func (node *node) SetStopHash(hash Uint256) {
 
 func (node *node) GetStopHash() Uint256 {
 	return node.StopHash
+}
+
+func (node *node) RegisterTxPoolListener(listener protocol.TxnPoolListener) {
+	node.TxPool.Listeners[listener] = nil
+}
+
+func (node *node) UnregisterTxPoolListener(listener protocol.TxnPoolListener) {
+	delete(node.TxPool.Listeners, listener)
 }
