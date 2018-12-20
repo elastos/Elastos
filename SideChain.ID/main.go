@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -197,6 +199,13 @@ func main() {
 		}
 	}()
 
+	socketServer := newWebSocketServer(cfg.HttpWebSocketPort, service.HttpService, service.Config)
+	defer socketServer.Stop()
+	go func() {
+		if err := socketServer.Start(); err != nil {
+			fmt.Println("Start HttpSocket server failed, %s", err.Error())
+		}
+	}()
 	if cfg.MonitorState {
 		go printSyncState(idChainStore.ChainStore, server)
 	}
@@ -284,6 +293,17 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
 
 	return s
+}
+
+func newWebSocketServer(port uint16, service *service.HttpService, config *service.Config) *websocket.Server {
+	svrCfg := websocket.Config{
+		Flags: 2,
+		ServePort: port,
+		Service:   service,
+		ServiceCfg: config,
+	}
+	server := websocket.NewServer(&svrCfg)
+	return server
 }
 
 func printSyncState(db *blockchain.ChainStore, server server.Server) {

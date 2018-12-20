@@ -17,15 +17,15 @@ import (
 type HttpServiceExtend struct {
 	*service.HttpService
 
-	cfg   *service.Config
-	store *blockchain.IDChainStore
+	Config *service.Config
+	store  *blockchain.IDChainStore
 }
 
 func NewHttpService(cfg *service.Config, store *blockchain.IDChainStore) *HttpServiceExtend {
 	server := &HttpServiceExtend{
 		HttpService: service.NewHttpService(cfg),
 		store:       store,
-		cfg:         cfg,
+		Config:      cfg,
 	}
 	return server
 }
@@ -69,11 +69,11 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 		return nil, util.NewError(int(service.UnknownBlock), "get header failed")
 	}
 
-	return s.cfg.GetTransactionInfo(s.cfg, header, txn), nil
+	return s.Config.GetTransactionInfo(s.Config, header, txn), nil
 }
 
 func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
-	bestHeight := s.cfg.Store.GetHeight()
+	bestHeight := s.Config.Store.GetHeight()
 	type UTXOInfo struct {
 		AssetId       string `json:"assetid"`
 		Txid          string `json:"txid"`
@@ -108,13 +108,13 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 		if err != nil {
 			return nil, errors.New("Invalid address: " + address)
 		}
-		differentAssets, err := s.cfg.Chain.GetUnspents(*programHash)
+		differentAssets, err := s.Config.Chain.GetUnspents(*programHash)
 		if err != nil {
 			return nil, errors.New("cannot get asset with program")
 		}
 		for _, asset := range differentAssets {
 			for _, unspent := range asset {
-				tx, height, err := s.cfg.Chain.GetTransaction(unspent.TxId)
+				tx, height, err := s.Config.Chain.GetTransaction(unspent.TxId)
 				if err != nil {
 					return nil, errors.New("unknown transaction " + unspent.TxId.String() + " from persisted utxo")
 				}
