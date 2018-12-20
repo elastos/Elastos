@@ -170,6 +170,10 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 	return b.db.GetCurrentBlockHash()
 }
 
+func (b *BlockChain) SaveIllegalBlock(payload *PayloadIllegalBlock) error {
+	return b.db.SaveIllegalBlock(payload)
+}
+
 type OrphanBlock struct {
 	Block      *Block
 	Expiration time.Time

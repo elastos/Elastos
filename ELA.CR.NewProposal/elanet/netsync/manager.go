@@ -680,6 +680,18 @@ out:
 // connected peers.
 func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 	switch event.Type {
+	// A transaction has been accepted into the transaction mem pool.  See if it
+	// is a illegal block transaction.
+	case events.ETTransactionAccepted:
+		tx := event.Data.(*types.Transaction)
+		if tx.IsIllegalBlockTx() {
+			// Save the payload into database.
+			err := sm.chain.SaveIllegalBlock(tx.Payload.(*types.PayloadIllegalBlock))
+			if err != nil {
+				log.Warnf("Illegal transaction persist failed, %s", err)
+			}
+		}
+
 	// A block has been accepted into the block chain.  Relay it to other
 	// peers.
 	case events.ETBlockAccepted:

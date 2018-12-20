@@ -403,8 +403,45 @@ func (c *ChainStore) getVoteByPublicKey(voteType outputpayload.VoteType, publicK
 	return *value, nil
 }
 
+func (c *ChainStore) SaveIllegalBlock(illegalBlocks *PayloadIllegalBlock) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DPOSIllegalProducer))
+
+	producers := c.getIllegalProducers()
+
+	signers := make(map[string]interface{})
+	for _, v := range illegalBlocks.Evidence.Signers {
+		signers[BytesToHexString(v)] = nil
+	}
+
+	for _, v := range illegalBlocks.CompareEvidence.Signers {
+		compareSigner := BytesToHexString(v)
+		if _, ok := signers[compareSigner]; ok {
+			producers[compareSigner] = struct{}{}
+		}
+	}
+
+	value := new(bytes.Buffer)
+	if err := WriteUint64(value, uint64(len(producers))); err != nil {
+		return err
+	}
+
+	for k := range producers {
+		if err := WriteVarString(value, k); err != nil {
+			return err
+		}
+	}
+
+	if err := c.Put(key.Bytes(), value.Bytes()); err != nil {
+		return err
+	}
+	c.dirty[outputpayload.Delegate] = true
+
+	return nil
+}
+
 func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock) error {
-	if err := c.persistIllegalPayload(func() []string {
+	return c.persistIllegalPayload(func() []string {
 		signers := make(map[string]interface{})
 		for _, v := range illegalBlocks.Evidence.Signers {
 			signers[BytesToHexString(v)] = nil
@@ -419,11 +456,7 @@ func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock) err
 		}
 
 		return result
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 func (c *ChainStore) PersistIllegalProposal(payload *PayloadIllegalProposal) error {

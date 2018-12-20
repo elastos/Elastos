@@ -13,6 +13,7 @@ type IChainStoreDpos interface {
 	GetProducerVote(publicKey []byte) Fixed64
 	GetProducerStatus(address string) ProducerState
 
+	SaveIllegalBlock(illegalBlocks *PayloadIllegalBlock) error
 	GetIllegalProducers() map[string]struct{}
 	GetCancelProducerHeight(publicKey []byte) (uint32, error)
 }
