@@ -361,7 +361,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			}
 		}
 		if txn.TxType == IllegalBlockEvidence {
-			if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock), false); err != nil {
+			if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
 				return err
 			}
 		}

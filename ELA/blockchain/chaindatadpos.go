@@ -403,7 +403,7 @@ func (c *ChainStore) getVoteByPublicKey(voteType outputpayload.VoteType, publicK
 	return *value, nil
 }
 
-func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock, forceChange bool) error {
+func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock) error {
 	if err := c.persistIllegalPayload(func() []string {
 		signers := make(map[string]interface{})
 		for _, v := range illegalBlocks.Evidence.Signers {
@@ -423,11 +423,6 @@ func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock, for
 		return err
 	}
 
-	if illegalBlocks.CoinType == ELACoin && forceChange {
-		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
