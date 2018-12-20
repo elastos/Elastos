@@ -25,7 +25,7 @@ func Debug(a ...interface{}) {
 }
 
 func Debugf(format string, a ...interface{}) {
-	logger.Debugf("%s %s:%d "+format, a...)
+	logger.Debugf(format, a...)
 }
 
 func Info(a ...interface{}) {
@@ -58,8 +58,4 @@ func Errorf(format string, a ...interface{}) {
 
 func Fatalf(format string, a ...interface{}) {
 	logger.Fatalf(format, a...)
-}
-
-func SetPrintLevel(level uint8) {
-	logger.SetPrintLevel(level)
 }

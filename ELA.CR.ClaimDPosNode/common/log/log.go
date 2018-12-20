@@ -104,10 +104,6 @@ func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
 	return logger
 }
 
-func (l *Logger) SetPrintLevel(level uint8) {
-	l.level = level
-}
-
 func (l *Logger) Output(level uint8, a ...interface{}) {
 	if l.level <= level {
 		gidStr := strconv.FormatUint(GetGID(), 10)
@@ -152,7 +148,7 @@ func (l *Logger) Debugf(format string, a ...interface{}) {
 	fn := runtime.FuncForPC(pc)
 	a = append([]interface{}{fn.Name(), filepath.Base(file), line}, a...)
 
-	l.Outputf(debugLog, format, a...)
+	l.Outputf(debugLog, "%s %s:%d "+format, a...)
 }
 
 func (l *Logger) Info(a ...interface{}) {
@@ -204,7 +200,7 @@ func Debug(a ...interface{}) {
 }
 
 func Debugf(format string, a ...interface{}) {
-	logger.Debugf("%s %s:%d "+format, a...)
+	logger.Debugf(format, a...)
 }
 
 func Info(a ...interface{}) {
@@ -240,5 +236,5 @@ func Fatalf(format string, a ...interface{}) {
 }
 
 func SetPrintLevel(level uint8) {
-	logger.SetPrintLevel(level)
+	logger.SetLevel(elalog.Level(level))
 }
