@@ -82,7 +82,6 @@ func TestIPTypes(t *testing.T) {
 			false, false, false, false, false, false, false, true, false),
 	}
 
-	t.Logf("Running %d tests", len(tests))
 	for _, test := range tests {
 		if rv := addrmgr.IsRFC1918(&test.in); rv != test.rfc1918 {
 			t.Errorf("IsRFC1918 %s\n got: %v want: %v", test.in.IP, rv, test.rfc1918)
