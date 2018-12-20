@@ -2,13 +2,14 @@ package types
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"math/rand"
 	"strconv"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/stretchr/testify/suite"
@@ -305,6 +306,126 @@ func (s *transactionSuite) TestReturnDepositCoin_SerializeDeserialize() {
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 }
 
+func (s *transactionSuite) TestIllegalProposalEvidence_SerializeDeserialize() {
+	txn := randomOldVersionTransaction(false, byte(IllegalProposalEvidence), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+	txn.Payload = &PayloadIllegalProposal{
+		DposIllegalProposals: DposIllegalProposals{
+			Evidence: ProposalEvidence{
+				Proposal: DPosProposal{
+					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					BlockHash:  *randomUint256(),
+					ViewOffset: rand.Uint32(),
+					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+				BlockHeader: *randomBlockHeader(),
+			},
+			CompareEvidence: ProposalEvidence{
+				Proposal: DPosProposal{
+					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					BlockHash:  *randomUint256(),
+					ViewOffset: rand.Uint32(),
+					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+				BlockHeader: *randomBlockHeader(),
+			},
+		},
+	}
+
+	serializedData := new(bytes.Buffer)
+	txn.Serialize(serializedData)
+
+	txn2 := &Transaction{}
+	txn2.Deserialize(serializedData)
+
+	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+
+	s.True(txn.Payload.(*PayloadIllegalProposal).Hash().IsEqual(txn2.Payload.(*PayloadIllegalProposal).Hash()))
+}
+
+func (s *transactionSuite) TestIllegalVoteEvidence_SerializeDeserialize() {
+	txn := randomOldVersionTransaction(false, byte(IllegalVoteEvidence), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+	txn.Payload = &PayloadIllegalVote{
+		DposIllegalVotes: DposIllegalVotes{
+			Evidence: VoteEvidence{
+				Proposal: DPosProposal{
+					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					BlockHash:  *randomUint256(),
+					ViewOffset: rand.Uint32(),
+					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+				BlockHeader: *randomBlockHeader(),
+				Vote: DPosProposalVote{
+					ProposalHash: *randomUint256(),
+					Signer:       strconv.FormatUint(rand.Uint64(), 10),
+					Accept:       true,
+					Sign:         []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+			},
+			CompareEvidence: VoteEvidence{
+				Proposal: DPosProposal{
+					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					BlockHash:  *randomUint256(),
+					ViewOffset: rand.Uint32(),
+					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+				BlockHeader: *randomBlockHeader(),
+				Vote: DPosProposalVote{
+					ProposalHash: *randomUint256(),
+					Signer:       strconv.FormatUint(rand.Uint64(), 10),
+					Accept:       true,
+					Sign:         []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+			},
+		},
+	}
+
+	serializedData := new(bytes.Buffer)
+	txn.Serialize(serializedData)
+
+	txn2 := &Transaction{}
+	txn2.Deserialize(serializedData)
+
+	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+
+	s.True(txn.Payload.(*PayloadIllegalVote).Hash().IsEqual(txn2.Payload.(*PayloadIllegalVote).Hash()))
+}
+
+func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
+	txn := randomOldVersionTransaction(false, byte(IllegalBlockEvidence), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+	txn.Payload = &PayloadIllegalBlock{
+		DposIllegalBlocks: DposIllegalBlocks{
+			CoinType:    CoinType(rand.Uint32()),
+			BlockHeight: rand.Uint32(),
+			Evidence: BlockEvidence{
+				Block:        []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				BlockConfirm: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				Signers: [][]byte{
+					[]byte(strconv.FormatUint(rand.Uint64(), 10)),
+					[]byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+			},
+			CompareEvidence: BlockEvidence{
+				Block:        []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				BlockConfirm: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+				Signers: [][]byte{
+					[]byte(strconv.FormatUint(rand.Uint64(), 10)),
+					[]byte(strconv.FormatUint(rand.Uint64(), 10)),
+				},
+			},
+		},
+	}
+
+	serializedData := new(bytes.Buffer)
+	txn.Serialize(serializedData)
+
+	txn2 := &Transaction{}
+	txn2.Deserialize(serializedData)
+
+	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+
+	s.True(txn.Payload.(*PayloadIllegalBlock).Hash().IsEqual(txn2.Payload.(*PayloadIllegalBlock).Hash()))
+}
+
 func (s *transactionSuite) TestTransaction_SpecificSample() {
 	// update producer transaction deserialize sample
 	byteReader := new(bytes.Buffer)
@@ -422,6 +543,71 @@ func randomOldVersionTransaction(oldVersion bool, txType byte, inputNum, outputN
 	}
 
 	return txn
+}
+
+func randomBlockHeader() *Header {
+	return &Header{
+		Version:    rand.Uint32(),
+		Previous:   *randomUint256(),
+		MerkleRoot: *randomUint256(),
+		Timestamp:  rand.Uint32(),
+		Bits:       rand.Uint32(),
+		Nonce:      rand.Uint32(),
+		Height:     rand.Uint32(),
+		AuxPow: auxpow.AuxPow{
+			AuxMerkleBranch: []common.Uint256{
+				*randomUint256(),
+				*randomUint256(),
+			},
+			AuxMerkleIndex: rand.Int(),
+			ParCoinbaseTx: auxpow.BtcTx{
+				Version: rand.Int31(),
+				TxIn: []*auxpow.BtcTxIn{
+					{
+						PreviousOutPoint: auxpow.BtcOutPoint{
+							Hash:  *randomUint256(),
+							Index: rand.Uint32(),
+						},
+						SignatureScript: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+						Sequence:        rand.Uint32(),
+					},
+					{
+						PreviousOutPoint: auxpow.BtcOutPoint{
+							Hash:  *randomUint256(),
+							Index: rand.Uint32(),
+						},
+						SignatureScript: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+						Sequence:        rand.Uint32(),
+					},
+				},
+				TxOut: []*auxpow.BtcTxOut{
+					{
+						Value:    rand.Int63(),
+						PkScript: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+					},
+					{
+						Value:    rand.Int63(),
+						PkScript: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+					},
+				},
+				LockTime: rand.Uint32(),
+			},
+			ParCoinBaseMerkle: []common.Uint256{
+				*randomUint256(),
+				*randomUint256(),
+			},
+			ParMerkleIndex: rand.Int(),
+			ParBlockHeader: auxpow.BtcHeader{
+				Version:    rand.Uint32(),
+				Previous:   *randomUint256(),
+				MerkleRoot: *randomUint256(),
+				Timestamp:  rand.Uint32(),
+				Bits:       rand.Uint32(),
+				Nonce:      rand.Uint32(),
+			},
+			ParentHash: *randomUint256(),
+		},
+	}
 }
 
 func randomUint256() *common.Uint256 {
