@@ -57,7 +57,6 @@ void onFileTransferRequestCallback(ElaCarrier *carrier, const char *from,
 
     assert(carrier);
     assert(from);
-    assert(fileinfo);
 
     (void)carrier;
 
@@ -73,11 +72,13 @@ void onFileTransferRequestCallback(ElaCarrier *carrier, const char *from,
         return;
     }
 
-    rc = newJavaFileTransferInfo(env, fileinfo, &jfileInfo) ;
-    if (!rc) {
-        (*env)->DeleteLocalRef(env, jfrom);
-        detachJvm(env, needDetach);
-        return;
+    if (fileinfo) {
+        rc = newJavaFileTransferInfo(env, fileinfo, &jfileInfo) ;
+        if (!rc) {
+            (*env)->DeleteLocalRef(env, jfrom);
+            detachJvm(env, needDetach);
+            return;
+        }
     }
 
     if (!callVoidMethod(env, cc->clazz, cc->handler, "onConnectRequest",
@@ -87,7 +88,8 @@ void onFileTransferRequestCallback(ElaCarrier *carrier, const char *from,
     }
 
     (*env)->DeleteLocalRef(env, jfrom);
-    (*env)->DeleteLocalRef(env, jfileInfo);
+    if (jfileInfo)
+        (*env)->DeleteLocalRef(env, jfileInfo);
 
     detachJvm(env, needDetach);
 }
