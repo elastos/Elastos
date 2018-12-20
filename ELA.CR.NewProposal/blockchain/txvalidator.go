@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	MinDepositAmount = 5000
+	MinDepositAmount    = 5000
+	DepositLockupBlocks = 2160
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -128,6 +129,13 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		if err := CheckUpdateProducerTransaction(txn); err != nil {
 			log.Warn("[CheckUpdateProducerTransaction],", err)
 			return ErrTransactionPayload
+		}
+	}
+
+	if txn.IsReturnDepositCoin() {
+		if err := CheckReturnDepositCoinTransaction(txn); err != nil {
+			log.Warn("[CheckReturnDepositCoinTransaction],", err)
+			return ErrReturnDepositConsensus
 		}
 	}
 
@@ -818,6 +826,19 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 		}
 	}
 
+	return nil
+}
+
+func CheckReturnDepositCoinTransaction(txn *Transaction) error {
+	for _, program := range txn.Programs {
+		cancelHeight, err := DefaultLedger.Store.GetCancelProducerHeight(program.Code[1 : len(program.Code)-1])
+		if err != nil {
+			return errors.New("no cancel sign found on this public key")
+		}
+		if cancelHeight-DefaultLedger.Store.GetHeight() < DepositLockupBlocks {
+			return errors.New("there is no lockup period for the deposit")
+		}
+	}
 	return nil
 }
 

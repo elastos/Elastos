@@ -6,5 +6,5 @@ import (
 
 type ChainStoreMock struct {
 	RegisterProducers []*payload.PayloadRegisterProducer
-	BlockHeight uint32
+	BlockHeight       uint32
 }

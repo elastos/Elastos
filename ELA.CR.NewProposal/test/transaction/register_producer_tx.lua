@@ -17,7 +17,7 @@ local amount = 0.2
 local fee = 0.001
 
 -- deposit params
-local deposit_address = "bMMAtD3QyhzKQTEYiAZFPofVnJxgbmmfPm"
+local deposit_address = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
 local deposit_publickey = "034f3a7e2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 local deposit_nick_name = "ela_test"
 local deposit_url = "ela_test.org"
