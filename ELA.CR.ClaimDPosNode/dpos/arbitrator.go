@@ -135,6 +135,9 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 		Store:              cfg.Store,
 	})
 
+	cfg.Store.StartEventRecord()
+	cfg.Store.StartArbitratorsRecord()
+
 	result := &arbitrator{
 		enableViewLoop: true,
 		dposManager:    dposManager,

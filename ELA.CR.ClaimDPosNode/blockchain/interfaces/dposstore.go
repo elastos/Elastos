@@ -1,8 +1,7 @@
 package interfaces
 
 type IDBBasic interface {
-	InitConnection(connParams ...interface{}) error
-	Disconnect() error
+	Close() error
 }
 
 type IDBOperator interface {
@@ -23,6 +22,7 @@ type DirectPeers struct {
 }
 
 type IEventRecord interface {
+	StartEventRecord()
 	AddProposalEvent(event interface{}) error
 	UpdateProposalEvent(event interface{}) error
 	AddVoteEvent(event interface{}) error
@@ -32,6 +32,7 @@ type IEventRecord interface {
 }
 
 type IArbitratorsRecord interface {
+	StartArbitratorsRecord()
 	GetArbitrators(a Arbitrators) error
 	SaveDposDutyChangedCount(count uint32)
 	SaveCurrentArbitrators(a Arbitrators)

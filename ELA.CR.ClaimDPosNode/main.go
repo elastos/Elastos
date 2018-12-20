@@ -67,7 +67,7 @@ func main() {
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	defer dposStore.Disconnect()
+	defer dposStore.Close()
 
 	txMemPool := mempool.NewTxPool()
 	blockMemPool := mempool.NewBlockPool()

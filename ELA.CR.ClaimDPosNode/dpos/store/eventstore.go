@@ -193,7 +193,7 @@ func (s *DposStore) handleViewProposalEvent(view *log.ViewEvent) {
 	log.Info("add view event succeed at row id:", rowID)
 }
 
-func (s *DposStore) StartRecordEvent() error {
+func (s *DposStore) StartEventRecord() {
 	err := s.createConsensusEventTable()
 	if err != nil {
 		log.Debug("create ConsensusEvent table Connect failed:", err.Error())
@@ -212,8 +212,6 @@ func (s *DposStore) StartRecordEvent() error {
 	}
 
 	go s.eventLoop()
-
-	return nil
 }
 
 func (s *DposStore) createConsensusEventTable() error {
