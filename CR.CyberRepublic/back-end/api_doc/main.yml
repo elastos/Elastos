@@ -1,0 +1,113 @@
+openapi: 3.0.1
+
+info:
+  title: EBP back-end api
+  description: The EBP backend
+#   termsOfService:
+  contact:
+    name: Elastos.Community
+    url: https://github.com/elastos/Elastos.Community/issues
+#    email: liyangwood@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+
+servers:
+- url: http://localhost:3000/api
+  description: local server
+- url: http://52.15.45.1:3000
+  description: dev server
+
+tags:
+- name: test
+  description: test api, only available in dev env.
+- name: user
+  description: user api
+- name: team
+  description: team api
+- name: task
+  description: task api
+- name: community
+  description: community api
+
+components:
+  schemas:
+
+  securitySchemes:
+#    session-token:
+#      type: apiKey
+#      in: cookie
+#      name: ebp-token
+    api-token:
+      type: apiKey
+      in: header
+      name: api-token
+
+  UnauthorizedError:
+    description: ebp-token is missing or invalid
+
+paths:
+  /test/hello:
+    $ref: "./path/test/hello.yml"
+
+  /user/reauth:
+    $ref: "./path/user/reauth.yml"
+  /user/register:
+    $ref: "./path/user/register.yml"
+  /user/login:
+    $ref: "./path/user/login.yml"
+  /user/current_user:
+    $ref: './path/user/current_user.yml'
+  /user/change_password:
+    $ref: './path/user/change_password.yml'
+  /user/{userIds}/users:
+    $ref: './path/user/list_users.yml'
+  /user/list:
+    $ref: './path/user/list.yml'
+  /user/{userId}:
+    $ref: './path/user/update.yml'
+
+  /team/create:
+    $ref: './path/team/create.yml'
+  /team/update:
+    $ref: './path/team/update.yml'
+  /team/apply_add_team:
+    $ref: './path/team/apply_add_team.yml'
+  /team/action/accept:
+    $ref: './path/team/accept_apply.yml'
+  /team/action/reject:
+    $ref: './path/team/reject_apply.yml'
+  /team/get:
+    $ref: './path/team/get.yml'
+  /team/list:
+    $ref: './path/team/list.yml'
+  /team/list_member:
+    $ref: './path/team/list_member.yml'
+
+
+  /task/create:
+    $ref: './path/task/create.yml'
+  /task/{taskId}:
+    $ref: './path/task/get.yml'
+  /task/list:
+    $ref: './path/task/list.yml'
+
+  /community/{communityId}:
+    $ref: './path/community/get.yml'
+  /community/delete:
+    $ref: './path/community/delete.yml'
+  /community/create:
+    $ref: './path/community/create.yml'
+  /community/update:
+    $ref: './path/community/update.yml'
+  /community/{communityId}/members:
+    $ref: './path/community/list_member.yml'
+  /community/{communityId}/{userId}:
+    $ref: './path/community/add_member.yml'
+  /community/country/{countryName}:
+    $ref: './path/community/get_with_country.yml'
+  /community/parent/{communityId}:
+    $ref: './path/community/get_child.yml'
+  /community/all:
+    $ref: './path/community/get_all.yml'

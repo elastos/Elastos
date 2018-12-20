@@ -1,0 +1,21 @@
+{
+  "restartable": "rs",
+  "delay": "2500",
+  "watch": [
+    "index.ts",
+    "src/**/*.ts"
+  ],
+  "events": {
+    "restart": "echo display notification \"App restarted due to:\n'$FILENAME'\" with title \"nodemon\""
+  },
+  "ext": "ts js json",
+  "ignore": [
+    "node_modules/**/*",
+    "node_modules/**/node_modules",
+    ".hg",
+    ".git",
+    ".idea",
+    "src/**/*.spec.ts"
+  ],
+  "exec": "NODE_ENV=dev ts-node ./index.ts"
+}

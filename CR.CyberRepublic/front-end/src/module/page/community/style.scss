@@ -1,0 +1,126 @@
+
+@import "../../../style/variable";
+
+.p_Community {
+
+  background: #ffffff;
+  text-align: left;
+
+  p {
+    padding-bottom: $gap_0;
+  }
+
+  .ant-card-body {
+    padding: 0px;
+  }
+
+  .public-communities-page.user-card .ant-card-body {
+    height: 100px;
+  }
+
+  .d_box {
+    padding: 0 $gap_3;
+
+    .btnContainer {
+      padding-top: $gap_2;
+      text-align: right;
+    }
+  }
+
+  .d_rightContainer {
+    border-left: 1px solid #e0e0e0;
+  }
+
+  .community-left-column {
+    padding-right: 40px;
+  }
+  .community-left-column--text-center {
+    text-align: center;
+
+    .wrap-child-box-users {
+      border-left: 1px solid #e8e8e8;
+    }
+  }
+
+  .community-right-column {
+    border: 1px solid #d0d0d0;
+    text-align: center;
+    padding: 10px;
+    height: 535px;
+
+    .list-members {
+      margin-bottom: 10px;
+      height: 400px;
+      overflow-y: auto;
+
+      table .member-name {
+        padding: 10px;
+      }
+    }
+
+    .btn-member-action {
+      margin: 0;
+      width: 100%;
+    }
+  }
+
+  .user-card {
+    p.user-info {
+      height: 50px;
+    }
+
+    .ant-card-cover > * {
+      height: 90px;
+      width: 90px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .wrap-event {
+    padding: 0 10px;
+    img {
+      width: 100%
+    }
+
+    .event-title {
+      margin-top: 10px;
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .event-description {
+      padding: 15px 0;
+    }
+    .wrap-image {
+      height: 200px;
+      overflow: hidden;
+    }
+  }
+
+  .wrap-tasks {
+    table {
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .wrap-mobile {
+    margin-left: -20px;
+    margin-right: -20px;
+
+    .ant-list-item .member-name {
+      padding: 10px;
+    }
+
+    .ant-btn {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .list-item-without-padding-top-first-item .ant-list-split .ant-list-item:first-child {
+      padding-top: 0;
+    }
+  }
+}
+

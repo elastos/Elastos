@@ -1,0 +1,46 @@
+post:
+  tags:
+  - user
+  description: register new user
+  operationId: register
+
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+
+  requestBody:
+    required: true
+    content:
+      application/x-www-form-urlencoded:
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              required: true
+              example: jacky
+            password:
+              type: string
+              required: true
+              example: password
+
+            email:
+              type: string
+              example: test@elastos.org
+
+            firstName:
+              type: string
+              example: Jacky
+
+            lastName:
+              type: string
+              example: Li
+
+            country:
+              type: string
+              example: China
+            city:
+              type: string
+              example: Dalian
+

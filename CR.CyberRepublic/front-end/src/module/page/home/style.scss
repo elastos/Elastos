@@ -1,0 +1,159 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+@mixin homeContent {
+  max-width: $main_width;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.c_Home {
+
+  background-image: url('/assets/images/cr_white_bg.png');
+
+  .d_topBackdrop {
+    font-size: 44px;
+    font-weight: 500;
+    color: #fff;
+
+    text-transform: uppercase;
+
+    background-position: 50% 50%;
+
+    padding-left: 24px;
+    padding-top: 36px;
+    text-align: center;
+
+    height: 130px;
+
+    > .d_topBackdrop_title {
+      @include homeContent;
+    }
+  }
+
+  .d_rowHome {
+
+    &.white {
+
+      background-color: $cr_color;
+
+      .icon-home, p, h3, h4 {
+        color: white;
+      }
+    }
+
+    .icon-home {
+      color: #1C2437;
+      font-size: 250px;
+      margin-top: 25px;
+    }
+
+    p, h3, h4 {
+      color: #1C2437;
+    }
+
+    p {
+      font-weight: 200;
+    }
+
+    .d_developer {
+      height: 320px;
+      @include homeContent;
+
+    }
+
+    .d_organizer {
+      height: 320px;
+      @include homeContent;
+    }
+
+
+  }
+
+  .entryContainer {
+    margin-left: auto;
+    margin-right: auto;
+
+    display: block;
+
+    height: 100px;
+    margin-bottom: 100px;
+
+    width: 1000px;
+
+    line-height: 200%;
+
+    position: relative;
+
+    > .textContainer {
+      position: absolute;
+      bottom: 0;
+      left: 8px;
+
+      text-align: center;
+
+      z-index: 1001;
+
+      font-size: 22px;
+    }
+
+    > .bar {
+      position: absolute;
+
+      width: 930px;
+      height: 10px;
+      background-color: $cr_primary_color;
+
+      &.bar1 {
+        bottom: 29px;
+        z-index: 1;
+      }
+
+      &.bar2 {
+        bottom: 1px;
+        z-index: 2;
+
+        width: 910px;
+        margin-left: 10px;
+      }
+    }
+
+    > .continueContainer {
+
+      cursor: pointer;
+
+      position: absolute;
+      bottom: -14vh;
+
+      width: auto;
+      margin-left: 170px;
+
+      font-size: 1.1rem;
+
+      padding-bottom: 8px;
+
+      border-bottom: 1px solid #1C2437;
+
+      &:hover {
+        color: rgba(56, 70, 99, 0.8);
+      }
+    }
+
+    > .arrow {
+      cursor: pointer;
+
+      position: absolute;
+      bottom: -13.5vh;
+
+      width: 25px;
+      height: 30px;
+
+      background-image: url('/assets/images/cr_arrow.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+
+      right: 175px;
+    }
+  }
+}

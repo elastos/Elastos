@@ -1,0 +1,24 @@
+get:
+  tags:
+  - user
+  description: login api
+  operationId: login
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+
+  parameters:
+    - name: username
+      in: query
+      required: true
+      schema:
+        type: string
+      example: jacky
+
+    - name: password
+      in: query
+      required: true
+      schema:
+        type: string
+      example: password

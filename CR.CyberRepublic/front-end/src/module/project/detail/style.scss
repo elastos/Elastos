@@ -1,0 +1,271 @@
+@import '@/style/variable';
+@import '@/style/color';
+@import '@/style/typography';
+
+
+.c_Project.c_Detail {
+  width: 100%;
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0;
+  }
+
+  .meta {
+    margin: $gap_1 $gap_2 $gap_3 $gap_2;
+  }
+
+  .ql-editor {
+    padding: 0;
+    font-size: 14px;
+    overflow-y: hidden !important;
+  }
+
+  .detail-container {
+    margin-top: $gap_2;
+    padding-bottom: $gap_3;
+    position: relative;
+
+    .carousel-container {
+      position: absolute;
+      right: 0;
+      width: 150px;
+    }
+
+    .header h3 {
+      padding-top: 0;
+      width: 80%;
+    }
+  }
+
+  .team-selector {
+    width: 332px;
+    margin-right: $gap_0;
+  }
+
+  .actions {
+    .ant-btn:not(:last-child) {
+      margin-right: $gap_0;
+    }
+  }
+
+  .team-application {
+    margin-bottom: $gap_0;
+  }
+
+  .application-form {
+    margin: $gap_3 auto 0;
+    max-width: 500px;
+  }
+
+  .ant-table-empty {
+    display: none;
+  }
+
+  .ant-select-selection-selected-value .ant-avatar {
+    display: none;
+  }
+
+  .top-section {
+    border: 1px solid $border_gray;
+    border-radius: 50px 50px 5px 5px;
+    width: 752px;
+    margin: 0 auto;
+
+    @media only screen and (max-width: $mobile-width) {
+      width: auto;
+    }
+
+    .col-left {
+      display: flex;
+      width: 250px;
+
+      @media only screen and (max-width: $mobile-width) {
+        padding-top: $gap_1;
+        width: 100%;
+      }
+
+      .left-container {
+        width: 100%;
+        padding: 4px;
+
+        .pictures-container {
+          width: 100%;
+          text-align: center;
+
+          img {
+            max-height: 250px;
+            max-width: 250px;
+          }
+        }
+
+        .domains-container {
+          display: flex;
+          text-align: center;
+          justify-content: center;
+          align-items: center;
+          height: 250px;
+
+          @media only screen and (max-width: $mobile-width) {
+            height: auto;
+            margin: $gap_2 0;
+          }
+        }
+
+        .divider {
+          border: 1px solid gainsboro;
+          margin: $gap_3 0;
+        }
+      }
+    }
+
+    .col-right {
+      border-left: 1px solid $border_gray;
+      padding: $gap_2 $gap_0 $gap_2 $gap_2;
+      min-height: 500px;
+
+      @media only screen and (max-width: $mobile-width) {
+        height: auto;
+        border-left: 0;
+      }
+
+      .title {
+        height: 108px;
+        width: 300px;
+        overflow: hidden;
+
+        @media only screen and (max-width: $mobile-width) {
+          width: auto;
+          text-align: center;
+        }
+
+        @media only screen and (max-width: $mobile-width) {
+          width: auto;
+          height: auto;
+          margin-bottom: $gap_2;
+        }
+        span {
+          color: $primary_color;
+          font-size: 24px;
+        }
+        .badge {
+          padding-left: $gap_2;
+        }
+      }
+
+      .leader {
+        position: absolute;
+        width: 150px;
+        top: $gap_2;
+        right: $gap_2;
+        display: inline-block;
+        text-align: right;
+
+        @media only screen and (max-width: $mobile-width) {
+          position: static;
+          width: auto;
+
+          .ellipsis {
+            margin-left: $gap_0;
+          }
+        }
+        & > div {
+          margin-top: $gap_0;
+        }
+      }
+
+      .content {
+        display: block;
+        position: relative;
+        padding: $gap_0 $gap_2 0 $gap_2;
+        height: 120px;
+
+        @media only screen and (max-width: $mobile-width) {
+          height: auto;
+        }
+
+        .entry {
+          margin: $gap_0 0;
+        }
+      }
+
+      .divider {
+        border: 1px solid gainsboro;
+        margin-right: $gap_2;
+      }
+
+      .description-title {
+        font-weight: bold;
+        margin: $gap_0 $gap_2 $gap_0 0;
+      }
+
+      .description-content {
+        white-space: pre-line;
+        margin: $gap_0 $gap_2 $gap_0 0;
+      }
+    }
+  }
+
+  .description-box {
+    padding-left: $gap_2;
+  }
+
+  .actions {
+    margin: $gap_2 0;
+    text-align: center;
+
+    .callToActionText {
+      margin-right: $gap_2;
+      font-size: 18px;
+    }
+  }
+
+  .contributors {
+    margin-top: $gap_2;
+    text-align: center;
+    .leave-button {
+      text-align:center;
+      margin: $gap_2;
+    }
+    .align-left {
+      text-align: left;
+    }
+    .row-name-link {
+      margin-left: $gap_1;
+    }
+    .avatar-leader {
+      border: 2px solid $primary_color;
+      margin-right: $gap_0;
+    }
+    .avatar-member {
+      margin-right: $gap_0;
+    }
+  }
+
+  .applications {
+    .title {
+      padding-top: 0;
+    }
+    .row-name-link {
+      margin-left: $gap_1;
+    }
+
+    .ant-table-wrapper {
+      margin-bottom: $gap_0;
+    }
+  }
+
+  .no-teams {
+    padding: $gap_3;
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .assignment-info {
+    padding-left: $gap_2;
+
+    > .ant-tag {
+      cursor: auto;
+    }
+  }
+}

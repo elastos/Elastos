@@ -1,0 +1,33 @@
+create_param:
+  required: true
+  content:
+    application/x-www-form-urlencoded:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            required: true
+            example: test_community
+
+          parentCommunityId:
+            type: string
+            example: ''
+
+          geolocation:
+            type: string
+            example: ''
+
+          type:
+            type: string
+            description: community type
+            example: TASK
+
+          parentCommunityId:
+            type: string
+            example: ''
+
+          createdBy:
+            type: string
+            format: 'date'
+            example: ''

@@ -1,0 +1,256 @@
+
+@import "@/style/variable";
+@import "@/style/color";
+
+.p_EVENTS {
+
+  background: #ffffff;
+  text-align: left;
+
+  .mobile-header {
+    width: 100%;
+    height: 100px;
+    text-align: center;
+    vertical-align: middle;
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,f1f1f1+50,e1e1e1+51,f6f6f6+100;White+Gloss+%231 */
+    background: rgb(255,255,255); /* Old browsers */
+    background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(241,241,241,1) 50%, rgba(225,225,225,1) 51%, rgba(246,246,246,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0 ); /* IE6-9 */
+    color: gray;
+    box-shadow: rgb(211, 211, 211) 5px 2px 5px;
+
+    .mobile-header-title {
+      font-size: 2rem;
+      line-height: 100px;
+    }
+  }
+
+  > .ebp-page {
+    max-width: 90%;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    .ebp-events-time {
+      .ebp-months-bar {
+        padding: 20px;
+        font-size: 2rem;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .select-months {
+        width: 250px;
+      }
+
+      .ebp-events-month {
+        padding: 10px;
+        border-top: 2px solid transparent;
+      }
+
+      .ebp-events-month-all {
+        padding: 10px;
+        position: absolute;
+        left: 50px;
+        top: 50px;
+      }
+
+      .ebp-events-month:hover, .ebp-events-month-all:hover {
+        border-top: 2px solid $primary_color;
+        cursor: pointer;
+      }
+
+      .ebp-events-active-month {
+        border-top: 2px solid $primary_color;
+        font-size: 3rem;
+        padding-top: 0;
+      }
+    }
+
+    .ebp-events-location {
+      padding-bottom: 20px;
+      font-size: 2rem;
+
+      .ebp-events-country-select {
+        width: 250px;
+      }
+      .country-select {
+        width: 250px;
+      }
+    }
+
+    .ebp-events-favorites {
+      .star {
+        color: orange;
+        font-size: 1rem;
+      }
+    }
+
+    .events-spinner {
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .events-count {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    .d_row {
+      padding: 30px;
+
+      .no-events {
+        display: block;
+        text-align: center;
+        font-size: 1rem;
+      }
+
+      .ant-card {
+        display: inline-block;
+        width: 350px;
+        margin: 20px;
+        box-shadow: rgba(128, 128, 128, 0.4) 0 5px 15px;
+
+        .ant-card-cover {
+          height: 50%;
+          display: flex;
+          align-items: center;
+        }
+
+        .card-icon {
+          position: absolute;
+          top: 0;
+          left: 0;
+          z-index: 1000;
+          width: 100%;
+          height: 50%;
+
+          .star {
+            vertical-align: middle;
+            position: absolute;
+            display: none;
+            left: 25%;
+            top: 25%;
+
+            .star-poly {
+              fill-rule:nonzero;
+              stroke: #ffd055;
+              fill: transparent;
+            }
+
+            .star-poly-active {
+              fill-rule:nonzero;
+              stroke: #ffd055;
+              fill: #ffd055;
+            }
+          }
+        }
+
+        .card-icon:hover {
+          background-color: rgba(0,0,0,0.5);
+
+          .star {
+            display: block;
+          }
+        }
+
+        .event-card-image {
+          height: 100%;
+          background-color: white;
+          border: 1px solid $bg_gray;
+        }
+
+        .event-card-icon {
+          font-size: 5rem;
+        }
+
+        .ant-card-body {
+          padding: 10px;
+          height: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          .events-card-detail {
+            margin: auto 0;
+            width: 100%;
+            text-align: center;
+
+            .events-card-time {
+              font-size: 1rem;
+            }
+
+            .events-card-title {
+              font-weight: bold;
+              font-size: 16px;
+              color: black;
+              margin-top: 10px;
+              text-decoration: underline;
+              cursor: pointer;
+            }
+            .events-card-location {
+              font-size: 12px;
+            }
+          }
+        }
+
+        .events-card-button-container {
+          padding: 10px;
+          margin-bottom: 10px;
+
+          & > button {
+            display: inline-block;
+            width: 40%;
+          }
+
+          .events-card-button-register, .events-card-button-unregister {
+            width: 100%;
+            font-size: 16px;
+          }
+
+          .events-card-button-unregister:hover {
+            background-color: $danger_red;
+            border-color: $danger_red;
+            color: white;
+          }
+
+          .cancel-text {
+            display: none;
+          }
+
+          .events-card-button-unregister:hover,
+          .ant-btn-loading {
+            .cancel-text {
+              margin-left: $gap_0;
+              display: inline-block;
+            }
+
+            .going-text {
+              display: none;
+            }
+          }
+        }
+
+        .events-card-details-button {
+          margin-bottom: 15px;
+        }
+
+        .events-card-hashtags {
+          width: 100%;
+          margin-top: auto;
+          border-top: 1px solid lightgray;
+          padding: 10px 10px 0 10px;
+          text-align: center;
+          vertical-align: middle;
+        }
+      }
+      .ant-card:hover {
+        box-shadow: rgba(128, 128, 128, 0.6) 0 5px 15px;
+      }
+    }
+  }
+}

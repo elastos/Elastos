@@ -1,0 +1,33 @@
+@import "../../../style/color";
+
+.c_CVoteForm {
+
+  text-align: left;
+
+  .d_item {
+    .ant-form-item-children {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .d_btn {
+    width: 100%;
+    background: #66bda3;
+    color: #fff;
+    border-color: #009999;
+  }
+
+  input:read-only,
+  textarea:read-only {
+    cursor: not-allowed;
+  }
+
+  .cvoteStatus {
+    color: $cr_dark_color;
+    font-weight: 600;
+  }
+  .ant-tabs-nav-scroll{
+    text-align: center;
+  }
+}

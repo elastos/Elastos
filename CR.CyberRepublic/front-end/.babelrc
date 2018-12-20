@@ -1,0 +1,11 @@
+{
+  "presets": [
+    ["es2015"],
+    "stage-2",
+    "react"
+  ],
+
+  "plugins": [
+    ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": "css" }]
+  ]
+}

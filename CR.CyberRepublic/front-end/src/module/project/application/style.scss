@@ -1,0 +1,105 @@
+@import '@/style/variable';
+@import '@/style/color';
+
+.public {
+  .main-area {
+    display: flex;
+    flex-direction: row;
+
+    @media screen and (max-width: $mobile-width) {
+      flex-direction: column;
+    }
+
+    .application-col {
+      flex: 1;
+      padding: $gap_3;
+
+      .header-text {
+        padding: 10px 0 0 10px;
+        margin-bottom: $gap_2;
+        font-size: 50px;
+        line-height: 50px;
+      }
+      .application-container {
+        margin-bottom: $gap_2;
+        .application-date {
+          font-weight: bold;
+        }
+      }
+      .apply-type-select {
+        margin-bottom: $gap_3;
+        width: 100%;
+
+        .ant-select-selection-selected-value {
+          padding-left: $gap_1;
+          color: #031E28;
+
+          .ant-avatar {
+            display: none;
+          }
+        }
+        .ant-select-arrow {
+          top: 45%;
+        }
+        .ant-select-arrow:before {
+          content: '';
+          background-image: url("/assets/images/emp35/down_arrow.png");
+          background-size: 27px 15px;
+          width: 27px;
+          height: 15px;
+        }
+      }
+      .bid-container {
+        margin-bottom: $gap_3;
+
+        .ant-input-number {
+          margin: 0 $gap_1;
+        }
+      }
+      .task-reason {
+        margin-bottom: $gap_2;
+      }
+      .task-reason-text-area {
+        min-height: 150px;
+        padding: $gap_0 $gap_1;
+        border: 1px solid $text-new_gray;
+        background: $bg_gray;// #E5EBF3
+        cursor: not-allowed;
+
+        p {
+          color: #737E90;
+        }
+      }
+    }
+    .comments-col {
+      flex: 1;
+      padding: $gap_3;
+      border-left: 1px solid black;
+
+      .c_Comments {
+
+        h3 {
+          margin-top: 0 !important;
+          padding: 10px 0 0 10px;
+          font-size: 50px;
+          line-height: 50px;
+        }
+        .ant-list {
+          margin-top: $gap_3;
+        }
+        #headline {
+          border-radius: 0;
+          border: 1px solid #434D72;
+        }
+        .ant-mention-editor {
+          border-radius: 0;
+          border: 1px solid #434D72;
+        }
+        .ant-spin-container {
+          max-height:300px;
+          overflow-y: auto;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,243 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+@import "../../../style/typography";
+
+$mobile-padding: $gap_0 0px;
+
+.p_Cr100 {
+
+  background: #ffffff;
+  text-align: left;
+
+  .c_Footer {
+    margin-top: 0;
+  }
+
+  .spinner {
+    display: block;
+    margin-bottom: $gap_3;
+    padding-bottom: $gap_3;
+  }
+
+  h3 {
+    @extend .komu-a;
+    font-size: 32px;
+    padding: $gap_3 0;
+  }
+
+  .ebp-wrap {
+    padding: 0;
+  }
+
+  .category-title {
+    @media only screen and (max-width: $mobile-width) {
+      text-align: center;
+    }
+  }
+
+  .c_projectList {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  $projectBoxSize: 156px;
+  .c_project {
+    cursor: pointer;
+    height: $projectBoxSize;
+    width: $projectBoxSize;
+    text-align: center;
+    position: relative;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin: 0 auto;
+    }
+  }
+
+  .project-number {
+    position: absolute;
+    top: 0;
+    left: -20px;
+  }
+
+  .project-icon {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto;
+  }
+
+  .base-icon, .overlay-icon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    top: 0;
+    left: 30px;
+  }
+
+  .base-icon {
+    background-image: url('/assets/images/IconBG.png');
+    background-size: contain;
+  }
+
+  .overlay-icon {
+    z-index: 1;
+
+    &:hover {
+      background-image: url('/assets/images/IconBG_Hover.png');
+      background-size: contain;
+    }
+  }
+
+  .caption {
+    position: absolute;
+    top: 96px + $gap_0;
+    width: 100%;
+  }
+
+  .c_list_wrapper {
+    background: $bg_blue;
+    position: relative;
+    padding-bottom: 140px;
+  }
+
+  .cr100-header {
+    margin-bottom: 180px;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-bottom: $gap_1;
+    }
+  }
+
+  .project-title {
+    margin-bottom: $gap_2;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-bottom: 0;
+      text-align: center;
+      font-size: 40px;
+    }
+  }
+
+  .disclaimer-box {
+    background: $bg_dark;
+    padding: $gap_2 0;
+    position: relative;
+  }
+
+  .footer_enrich {
+    position: absolute;
+    top: -110px;
+    right: 0;
+  }
+
+  .c_list {
+    margin: 0 auto;
+    max-width: 1200px;
+    position: relative;
+
+    @media screen and (max-width: 1300px) {
+      > .inner-container {
+        margin: 0 66px;
+      }
+    }
+  }
+
+  .cr100-logo-text {
+    float: right;
+
+    @media only screen and (max-width: $mobile-width) {
+      float: none;
+    }
+  }
+
+  .welcomeBox {
+    max-width: 800px;
+    margin: $gap_5 auto;
+    padding: $gap_4;
+    font-size: 20px;
+    text-align: center;
+    background: $bg_blue;
+    position: relative;
+
+    .cr100_logo {
+      position: absolute;
+      top: -$gap_4;
+      left: -$gap_4;
+      @media only screen and (max-width: $mobile-width) {
+        left: -$gap_0;
+        width: 150px;
+      }
+    }
+
+    .oomph_box {
+      position: absolute;
+      bottom: -$gap_2;
+      right: -$gap_3;
+
+      @media only screen and (max-width: $mobile-width) {
+        left: -$gap_3;
+      }
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: 400;
+      margin-bottom: 38px;
+      font-family: 'Synthese', sans-serif;
+    }
+
+    .content {
+
+      margin-bottom: $gap_1;
+
+      p {
+        font-family: "synthese", sans-serif;
+        font-weight: 200;
+        font-size: 18px;
+        margin: 38px 0;
+        text-align: center;
+      }
+
+      .submit-idea-button {
+        @media only screen and (max-width: $mobile-width) {
+          width: 100%;
+          white-space: normal;
+          height: auto;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: $mobile-width) {
+
+  .p_Cr100 {
+
+    .welcomeBox {
+
+      margin-bottom: 0;
+      padding: $gap_4 $gap_2;
+
+      > .title {
+        font-size: 30px;
+      }
+
+      > .content > p {
+        text-align: left;
+      }
+
+    }
+
+    .c_list_wrapper > .c_list {
+
+      > .inner-container {
+
+        margin: 0;
+
+        > .cr100-logo-text {
+          display: none;
+        }
+      }
+    }
+  }
+}

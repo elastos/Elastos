@@ -1,0 +1,835 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+$mobile-padding: $gap_0 0px;
+$landingPageWidth: 1152px;
+
+.emp35-circle-item {
+  &:hover {
+    color: $primary_color;
+  }
+
+  height: 174px;
+  width: 174px;
+  .circle-img {
+    position: absolute;
+    top: 41px;
+    left: 41px;
+    width: 140px;
+    height: 140px;
+  }
+
+  color: white;
+  &.member {
+    color: $cr100_green;
+  }
+
+  .ellipsis-img {
+    position: absolute;
+  }
+
+  margin: $gap_2;
+
+  .title {
+    position: absolute;
+    top: 36px;
+    left: 36px;
+    cursor: pointer;
+    font-family: "komu-a",sans-serif;
+    font-size: 24px;
+    word-spacing: 9999px;
+    text-align: center;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    &.member {
+      color: $cr100_green;
+    }
+    &.my-circles {
+      width: 100px;
+      height: 100px;
+      font-size: 14px;
+    }
+  }
+  .indicator-container,
+  .top-indicator-container {
+    position: absolute;
+    top: 152px;
+    left: 74px;
+    &.my-circles {
+      top: 92px;
+      left: 38px;
+    }
+    .indicator {
+      display: inline-block;
+      font-family: "synthese",sans-serif;
+      font-size: 10px;
+      margin-left: $gap_0;
+      margin-right: $gap_2;
+    }
+  }
+
+  .top-indicator-container {
+    top: 42px;
+  }
+}
+
+.emp35-apply-modal {
+
+  .ant-modal-content {
+    border-radius: 0;
+    background-color: $modal_bg;
+  }
+
+  .role-title {
+    font-size: 48px;
+    color: $text_new_gray;
+    padding-left: 12px;
+    line-height: 56px;
+  }
+
+  .role-funding {
+    font-size: 32px;
+    color: $bg_navy;
+    line-height: 38px;
+  }
+
+  .seal {
+    width: 90px;
+    padding-right: 32px;
+  }
+
+  .form-title {
+    font-size: 36px;
+    color: $bg_navy;
+    line-height: 42px;
+  }
+
+  .header-spacer {
+    padding-bottom: 30px;
+  }
+
+  .ant-modal-body {
+    padding: 75px 82px;
+  }
+
+  .ant-modal-close-x {
+    width: 90px;
+    height: 90px;
+    line-height: 90px;
+    font-size: 34px;
+  }
+}
+
+.p_emp35 {
+  background: #ffffff;
+  text-align: left;
+
+  /*
+  ************************************************************************
+  Abs Position Gfx
+  ************************************************************************
+   */
+  .p_content {
+
+    .emp35-empower {
+      position: relative;
+
+      .d_Row {
+        margin-left: 15%;
+        margin-right: 15%;
+
+        .container-circles {
+          background-color: $bg_obsidian;
+          height: 200px;
+
+          .content {
+            .inner-container {
+              .title {
+                font-family: "synthese",sans-serif;
+                font-size: 24px;
+                padding-top: 102px;
+                text-align: center;
+                font-size: 36px;
+              }
+            }
+          }
+
+        }
+      }
+    }
+
+    .emp35-statement-container {
+      max-width: 950px;
+      margin: $gap_3 auto;
+      .emp35-statement {
+        position: relative;
+
+        .emp35-statement-image {
+          display: inline-grid;
+          #emp35_statement {
+            width: 465px;
+            height: 452px;
+            @media only screen and (max-width: $mobile-width) {
+              width: 100%;
+              height: inherit;
+             }
+          }
+        }
+
+        .emp35-statement-message {
+          display: inline-block;
+          width: 465px;
+          height: 452px;
+          @media only screen and (max-width: $mobile-width) {
+            width: 100%;
+            height: 100%;
+           }
+          background-color: $bg_blue;
+
+          .message-container {
+            margin: $gap_3;
+            .container {
+              margin-top: $gap_3;
+              .content {
+                font-size: 20px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .emp35-my-circles-container {
+      padding-top: $gap_5 * 2;
+      padding-bottom: $gap_5 * 2;
+      background-color: $bg_blue;
+
+      .emp35-my-circles {
+        position: relative;
+        margin-left: 10%;
+        margin-right: 10%;
+
+
+        .emp35-my-circles-message {
+          display: inline-block;
+          background-color: #fff;
+          width: 50%;
+
+          @media only screen and (max-width: $mobile-width) {
+            width: 100%;
+          }
+
+          .container {
+            margin: $gap_5;
+
+            @media only screen and (max-width: $mobile-width) {
+              margin: $gap_3;
+            }
+            .content {
+              font-size: 24px;
+            }
+          }
+        }
+
+        .emp35-my-circles-list {
+          background-color: $bg_obsidian;
+          display: inline-block;
+          width: 50%;
+          min-height: 370px;
+
+          @media only screen and (max-width: $mobile-width) {
+            width: 100%;
+          }
+
+          .container {
+            .header {
+              margin: $gap_3;
+            }
+            .inner-container {
+              margin: $gap_1 0 $gap_3 0;
+              .title {
+                font-family: "synthese",sans-serif;
+                font-size: 24px;
+                color: white;
+              }
+            }
+            .content {
+              .d_Row {
+                margin: $gap_3;
+                @media only screen and (max-width: $mobile-width) {
+                  margin: 0 auto;
+                  width: 225px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .emp35-teamHeader .container {
+      position: relative;
+
+      .circle-container {
+        position: absolute;
+        left: 50%;
+        top: 50px;
+      }
+
+      .title {
+        color: white;
+      }
+
+      #emp35_darkBlock {
+        position: absolute;
+        height: 35px;
+        width: 100vw;
+        top: -35px;
+        right: 65%;
+        background-color: $bg_obsidian;
+      }
+
+      #emp35_lock {
+        position: absolute;
+
+        top: -100px;
+        right: 0px;
+
+        width: 261px;
+        height: 185px;
+      }
+
+      #emp35_square {
+        position: absolute;
+        left: 66px;
+        top: 60px;
+
+        @media only screen and (max-width: $mobile-width) {
+          position: static;
+          top: 0;
+          left: 0;
+        }
+      }
+
+      .inner-container {
+        @media only screen and (max-width: $mobile-width) {
+          margin: 0;
+          padding-top: 0;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  /*
+  ************************************************************************
+  Sections / General
+  ************************************************************************
+   */
+  %container {
+    max-width: $landingPageWidth;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  %team-dark {
+    background-color: $bg_dark;
+
+    .container {
+      @extend %container;
+
+      .inner-container {
+        margin: 0 66px;
+      }
+    }
+
+    .row-positions {
+      margin-top: 24px;
+    }
+  }
+
+  %section-title {
+    font-family: "komu-a", sans-serif;
+    font-size: 48px;
+    text-transform: uppercase;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0 0;
+  }
+
+  .ebp-wrap {
+    padding: 0;
+  }
+
+  .lower-section {
+    padding-top: 150px;
+  }
+
+  .blue-title {
+    @extend %section-title;
+    color: $cr100_sky_blue;
+  }
+
+  .dark-title {
+    @extend %section-title;
+    color: $text_new_gray;
+  }
+
+  /*
+  ************************************************************************
+  Header
+  ************************************************************************
+   */
+  .emp35-header {
+    background-color: #031E28;
+    min-height: 750px;
+    position: relative;
+
+    @media only screen and (max-width: $mobile-width) {
+      min-height: 550px;
+    }
+
+    .circle-container {
+      position: absolute;
+      bottom: 50%;
+      left: $gap_5;
+
+      @media only screen and (max-width: $mobile-width) {
+        bottom: 68%;
+        left: $gap_5;
+      }
+
+      .circle {
+        display: block;
+        width: 100px;
+        height: 100px;
+
+        @media only screen and (max-width: $mobile-width) {
+          width: 25px;
+          height: 25px;
+        }
+      }
+    }
+
+    .right-box-container {
+      position: absolute;
+      top: $gap_4;
+      right: $gap_3;
+
+      @media only screen and (max-width: $mobile-width) {
+        top: 120px;
+        right: $gap_5;
+      }
+
+      .small-box {
+
+      }
+      .box {
+        margin-left: 50px;
+      }
+      img {
+        position: absolute;
+        top: 62.5px;
+        left: 62.5px;
+        width: 75px;
+        height: 75px;
+        @media only screen and (max-width: $mobile-width) {
+          top: 32.5px;
+          left: 57.5px;
+          width: 35px;
+          height: 35px;
+        }
+      }
+    }
+
+    .bottom-box-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+
+    .connector-container {
+      position: absolute;
+      bottom: 50px;
+      right: 0%;
+    }
+
+    .small-box {
+      width: 50px;
+      height: 50px;
+      background-color: #434D72;
+      opacity: 0.4;
+      @media only screen and (max-width: $mobile-width) {
+        width: 25px;
+        height: 25px;
+      }
+    }
+
+    .box {
+      width: 100px;
+      height: 100px;
+      background-color: #434D72;
+      opacity: 0.4;
+
+
+      @media only screen and (max-width: $mobile-width) {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .container {
+
+      padding-top: 95px;
+
+      position: relative;
+      text-align: center;
+
+      // this floats behind the text
+      .rect-container {
+        z-index: 1;
+
+        position: absolute;
+        width: 100%;
+
+        .rect {
+          position: static;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          border: 38px solid #434D72;
+          width: 450px;
+          height: 450px;
+          opacity: 0.4;
+          @media only screen and (max-width: $mobile-width) {
+            border: 12px solid #434D72;
+            width: 75%;
+            height: 300px;
+          }
+        }
+      }
+
+      .title {
+        margin-top: 106px;
+
+        @media only screen and (max-width: $mobile-width) {
+          margin-top: 75px;
+        }
+      }
+
+      .title-big {
+        line-height: 100px;
+        font-family: "komu-a", sans-serif;
+        font-size: 100px;
+        text-transform: uppercase;
+        color: $cr100_green;
+
+        @media only screen and (max-width: $mobile-width) {
+          font-size: 50px;
+        }
+      }
+
+      .title-small {
+        line-height: 75px;
+        font-family: "komu-a", sans-serif;
+        font-size: 75px;
+        color: $cr100_green;
+        @media only screen and (max-width: $mobile-width) {
+          font-size: 30px;
+        }
+      }
+
+      .content {
+        margin-top: 240px;
+
+        font-family: "synthese",sans-serif;
+        font-size: 24px;
+
+        @media only screen and (max-width: $mobile-width) {
+          margin-top: 155px;
+        }
+
+        > .center {
+          margin-left: auto;
+          margin-right: auto;
+          width: 875px;
+          @media only screen and (max-width: $mobile-width) {
+            font-size: 12px;
+            width: 80%;
+          }
+
+          > .button {
+            margin-top: $gap_5;
+            width: 250px;
+            height: 60px;
+            font-size: 22px;
+            border-radius: unset;
+
+            @media only screen and (max-width: $mobile-width) {
+              margin-top: $gap_3;
+              width: 85%;
+            }
+          }
+        }
+
+        /*
+        ************************************************************************
+        Strike Text Green
+        ************************************************************************
+        */
+        .strike-text {
+          color: white;
+          position: relative;
+          display: inline-block;
+
+          .strike-line {
+            position: absolute;
+            left: 0;
+            top: 24px;
+            width: 100%;
+            height: 12px;
+            background-color: #434D72;
+            opacity: 0.4;
+            z-index: 0;
+          }
+          .strike-line:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -14px;
+            width: 14px;
+            height: 12px;
+            background-color: #434D72;
+            z-index: 0;
+
+            @media only screen and (max-width: $mobile-width) {
+              left: -2px;
+              width: 2px;
+            }
+          }
+          .strike-line:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: auto;
+            right: -14px;
+            width: 14px;
+            height: 12px;
+            background-color: #434D72;
+
+            @media only screen and (max-width: $mobile-width) {
+              left: -2px;
+              width: 2px;
+            }
+          }
+          p {
+            position: relative;
+            z-index: 1;
+            padding-bottom: 0;
+          }
+
+          &.filler {
+            width: 100%;
+            height: 0;
+          }
+
+          &.mob {
+            display: none;
+          }
+        }
+      }
+
+      .title,
+      .content {
+        width: 100%;
+        position: absolute;
+        z-index: 5;
+      }
+    }
+  }
+
+  /*
+  ************************************************************************
+  Empower Text
+  ************************************************************************
+   */
+
+  // this is only the gap between empower and team
+  .emp35-teamHeader-container {
+    background-color: $bg_blue;
+    .header-bar {
+      width: 60%;
+      height: 44px;
+      background-color: $bg_obsidian;
+    }
+
+    .emp35-teamHeader {
+      @extend %team-dark;
+      padding-bottom: $gap_5;
+
+      .container .inner-container {
+        padding-top: 92px;
+      }
+
+      .title {
+        font-family: "synthese",sans-serif;
+        font-size: 48px;
+      }
+    }
+  }
+
+  .emp35-teamDesigner, .emp35-teamMedia {
+    .container {
+      .inner-container {
+        text-align: center;
+        margin-left: 0;
+
+        @media only screen and (max-width: $mobile-width) {
+          > div {
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  .emp35-teamDark {
+    @extend %team-dark;
+    padding-bottom: $gap_5;
+
+    .container {
+      padding-left: 66px;
+      @media only screen and (max-width: $mobile-width) {
+        padding-left: unset;
+        .blue-title {
+          padding-left: 33px;
+        }
+        .d_Row {
+          margin: 0 auto;
+          width: 225px;
+        }
+      }
+    }
+  }
+
+  .lower-section {
+    max-width: $landingPageWidth;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 40px;
+  }
+
+  /*
+  ************************************************************************
+  Strike Text Green
+  ************************************************************************
+   */
+  .strike-text {
+    position: relative;
+    display: inline-block;
+
+    .strike-line {
+      position: absolute;
+      left: 0;
+      top: 0;
+      top: 24px;
+      width: 100%;
+      height: 12px;
+      background-color: #1de9b6;
+      z-index: 0;
+    }
+    .strike-line:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      left: -14px;
+      width: 14px;
+      height: 12px;
+      background-color: #1de9b6;
+    }
+    .strike-line:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      left: auto;
+      right: -14px;
+      width: 14px;
+      height: 12px;
+      background-color: #1de9b6;
+    }
+    p {
+      position: relative;
+      z-index: 1;
+      padding-bottom: 0;
+    }
+
+    &.filler {
+      width: 100%;
+      height: 0px;
+    }
+
+    &.mob {
+      display: none;
+    }
+  }
+
+  .disclaimer-box {
+    background: $bg_dark;
+    padding: $gap_2 0;
+    position: relative;
+  }
+
+  .footer_enrich {
+    position: absolute;
+    top: -110px;
+    right: 0;
+  }
+
+  .welcomeBox {
+    max-width: 800px;
+    margin: $gap_5 auto;
+    padding: $gap_4;
+    font-size: 20px;
+    text-align: center;
+    background: $bg_blue;
+    position: relative;
+
+    .cr100_logo {
+      position: absolute;
+      top: -$gap_4;
+      left: -$gap_4;
+    }
+
+    .oomph_box {
+      position: absolute;
+      bottom: -$gap_2;
+      right: -$gap_3;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: $gap_1;
+    }
+
+    .content {
+      margin-bottom: $gap_1;
+    }
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+}
+
+.empower-modal-view {
+
+}
+

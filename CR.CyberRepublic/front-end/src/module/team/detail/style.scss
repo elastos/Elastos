@@ -1,0 +1,246 @@
+
+@import '../../../style/variable';
+@import '../../../style/color';
+
+
+.c_Team.c_TeamDetail {
+  padding: $gap_3;
+  width: 100%;
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: $gap_1 0 0;
+  }
+
+  .team-selector {
+    width: 332px;
+    margin-right: $gap_0;
+  }
+
+  .top-section .col-left {
+    width: 250px;
+  }
+
+  .actions {
+    .ant-btn:not(:last-child) {
+      margin-right: $gap_0;
+    }
+  }
+
+  .team-application {
+    margin-bottom: $gap_0;
+  }
+
+  .application-form {
+    margin: 0 auto;
+    max-width: 500px;
+  }
+
+  .ant-table-empty {
+    display: none;
+  }
+
+  .ant-select-selection-selected-value .ant-avatar {
+    display: none;
+  }
+
+  .top-section {
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    margin: 0 auto;
+
+    .title {
+      padding-left: $gap_2;
+    }
+
+    @media only screen and (max-width: $mobile-width) {
+      width: auto;
+    }
+
+    .col-left {
+      display: flex;
+
+      @media only screen and (max-width: $mobile-width) {
+        padding-top: $gap_1;
+        width: 100%;
+      }
+
+      .left-container {
+        width: 100%;
+
+        .pictures-container {
+          width: 100%;
+          text-align: center;
+
+          img {
+            max-height: 250px;
+            max-width: 250px;
+          }
+        }
+
+        .domains-container {
+          display: flex;
+          text-align: center;
+          justify-content: center;
+          align-items: center;
+          height: 250px;
+
+          @media only screen and (max-width: $mobile-width) {
+            height: auto;
+            margin: $gap_2 0;
+          }
+        }
+
+        .divider {
+          border: 1px solid $border_gray;
+          margin: $gap_3 0;
+        }
+      }
+    }
+
+    .col-right {
+      border-left: 1px solid $border_gray;
+      padding: $gap_2 $gap_0 $gap_2 $gap_2;
+      height: 500px;
+
+      @media only screen and (max-width: $mobile-width) {
+        height: auto;
+        border-left: 0;
+      }
+
+      .title {
+        height: 108px;
+        width: 300px;
+        overflow: hidden;
+        @media only screen and (max-width: $mobile-width) {
+          width: auto;
+          text-align: center;
+        }
+        span {
+          color: $primary_color;
+          font-size: 24px;
+        }
+
+        .badge {
+          padding-left: $gap_2;
+        }
+      }
+
+      .leader {
+        position: absolute;
+        width: 150px;
+        top: $gap_2;
+        right: $gap_2;
+        display: inline-block;
+        text-align: right;
+
+        @media only screen and (max-width: $mobile-width) {
+          position: static;
+          text-align: left;
+          width: auto;
+          margin: 0 $gap_2;
+        }
+
+        & > div {
+          margin-top: $gap_0;
+        }
+      }
+
+      .content {
+        display: block;
+        position: relative;
+        padding: $gap_0 $gap_2 0 $gap_2;
+        height: 120px;
+
+        .reward {
+          position: absolute;
+          bottom: 0;
+          right: $gap_2;
+          text-align: right;
+          font-size: 24px;
+        }
+
+        .entry {
+          margin: $gap_0 0;
+          position: absolute;
+          bottom: 0;
+          right: $gap_2;
+
+          @media only screen and (max-width: $mobile-width) {
+            position: static;
+            text-align: left;
+
+            h3 {
+              position: static;
+              text-align: left;
+            }
+          }
+        }
+      }
+
+      .divider {
+        border-top: 1px solid $border_gray;
+        margin-right: $gap_2;
+      }
+
+      .description-title {
+        font-weight: bold;
+        margin: $gap_0 $gap_2 $gap_0 0;
+      }
+
+      .description-content {
+        margin: $gap_0 $gap_2 $gap_0 0;
+        overflow-y: auto;
+        max-height: 175px;
+      }
+      .ql-editor {
+        padding: 0;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .description-box {
+    padding-left: $gap_2;
+  }
+
+  .actions {
+    margin: $gap_2 0;
+    text-align: center;
+
+    .callToActionText {
+      margin-right: $gap_2;
+      font-size: 18px;
+    }
+  }
+
+  .contributors {
+    margin-top: $gap_2;
+
+    h3 {
+      padding: 0;
+    }
+    .title {
+      font-size: 24px;
+    }
+    .align-left {
+      text-align: left;
+    }
+    .no-borders {
+      margin: 0 auto;
+    }
+    .avatar-leader {
+      border: 2px solid $primary_color;
+    }
+  }
+
+  .applications {
+    margin-top: $gap_2;
+
+    h3 {
+      padding: 0;
+    }
+    .title {
+      font-size: 24px;
+    }
+  }
+}

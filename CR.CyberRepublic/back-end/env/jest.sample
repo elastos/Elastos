@@ -1,0 +1,9 @@
+# SERVER
+SERVER_PORT=3000
+
+# DB
+DB_URL=mongodb://localhost:27017/EBP_JEST
+
+
+# APP
+APP_SECRET=elastos

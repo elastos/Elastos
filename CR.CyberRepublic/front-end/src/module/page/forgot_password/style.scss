@@ -1,0 +1,20 @@
+
+.p_forgotPassword {
+
+  text-align: center;
+
+  .d_box {
+
+    padding: 80px 50px;
+    width: 80vw;
+    margin: 80px auto 0;
+    background: #ffffff;
+  }
+
+  button.resetPassword {
+    border-color: #64bebb;
+    height: 52px;
+    padding: 0;
+    border-radius: 8px;
+  }
+}

@@ -1,0 +1,91 @@
+
+@import '../../style/variable';
+@import '../../style/color';
+
+.c_ProfileContainer {
+  background: white;
+  .applicants {
+    .ant-list-item.active {
+      a {
+        color: $primary_dark_color;
+      }
+    }
+  }
+}
+
+.c_TaskDetail,
+.c_TeamDetail,
+.p_TaskApplication,
+.c_ProfileContainer {
+  .grid-col, .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+
+  p {
+    white-space: pre-line;
+  }
+
+  .ant-badge {
+    color: $primary_color;
+  }
+
+  .public {
+
+    .label-col {
+      color: $text_light_gray;
+    }
+
+    .task-thumbnail {
+      width: 100%;
+      padding-left: $gap_0;
+    }
+
+    .ant-row {
+      .main-area {
+        margin: $gap_3 0;
+      }
+
+      div[class^="ant-col-"]{
+        @media only screen and (max-width: $mobile-width) {
+          float: none;
+        }
+      }
+
+      p {
+        padding-bottom: $gap_0;
+      }
+    }
+
+    .ant-divider-inner-text {
+      color: $text_light_gray;
+    }
+
+    .main-area {
+      border-right: 1px solid $border_gray;
+
+      @media only screen and (max-width: $mobile-width) {
+        border-right: 0;
+        border-bottom: 1px solid $border_gray;
+        padding-bottom: 40px;
+      }
+    }
+
+    .applicants {
+      text-align: center;
+      position: relative;
+      padding-bottom: $gap_3;
+
+      .join-btn {
+        position: absolute;
+        bottom: 0;
+        left: 20%;
+        width: 60%;
+      }
+    }
+  }
+}

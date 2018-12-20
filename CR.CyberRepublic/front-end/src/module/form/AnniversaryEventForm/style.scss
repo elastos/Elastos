@@ -1,0 +1,40 @@
+
+@import "../../../style/variable";
+
+.c_anniversaryAppFormContainer {
+
+  h4 {
+    padding-top: 0
+  }
+
+  ul.itinerary {
+    text-align: left;
+    margin-left: 5%;
+
+    h5 {
+      padding-bottom: 0;
+    }
+  }
+
+  .static-field {
+    padding-right: 8px;
+    margin-bottom: 24px;
+    padding-top: 8px;
+  }
+
+  .content {
+    padding-left: 4px;
+    font-weight: 500;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .c_anniversaryAppFormContainer {
+    .ant-form-item-label, .static-field {
+      text-align: left !important;
+      margin-bottom: 4px !important;
+      margin-top: 15px !important;
+    }
+  }
+}

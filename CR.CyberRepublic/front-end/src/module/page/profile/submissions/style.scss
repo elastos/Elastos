@@ -1,0 +1,23 @@
+
+@import "../../../../style/variable";
+
+.p_ProfileSubmissions {
+  text-align: left;
+  background: white;
+
+  .filter-group {
+    margin-bottom: $gap_2;
+
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+    }
+  }
+
+  .ant-select {
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+      margin-bottom: $gap_1;
+    }
+  }
+}
+

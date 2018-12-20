@@ -1,0 +1,36 @@
+@import '@/style/variable';
+@import '@/style/color';
+@import "@/style/typography";
+
+.c_loginForm {
+  text-align: left;
+
+  .d_item{
+    .ant-form-item-children{
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+  .d_btn {
+    width: 100%;
+    border-radius: 0;
+    border-color: black;
+    font-size: 24px;
+    color: white;
+    background-color: $bg_obsidian;
+  }
+  .ant-form-item {
+    text-align: center;
+    .d_btn_join {
+      width: 150px;
+      height: 50px;
+    }
+  }
+  .ant-tabs-tab-active .ant-tabs-tab {
+    padding-left: 0;
+  }
+  .login-form-forgot {
+    text-decoration: underline;
+    color: $text_new_gray;
+  }
+}

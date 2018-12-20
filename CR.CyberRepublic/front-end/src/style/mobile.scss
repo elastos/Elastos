@@ -1,0 +1,348 @@
+@import './variable';
+
+// hiding certain elements at full size
+.c_Header .c_MenuItem.mobile {
+  display: none;
+}
+
+.logo .mob {
+  display: none;
+}
+
+@media only screen and (max-width: $mobile-width) {
+
+  .c_Header .logo .dsk {
+    display: none;
+  }
+  .c_Header .logo .mob {
+    display: block;
+    width: 35px;
+  }
+
+  .p_emp35 .strike-text {
+
+    p {
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    &.dsk {
+      display: none;
+    }
+
+    &.mob {
+      display: block;
+    }
+
+    .strike-line {
+      top: 12px;
+    }
+    .strike-line:before {
+      left: -5px;
+      width: 5px;
+    }
+    .strike-line:after {
+      right: -5px;
+      width: 5px;
+    }
+  }
+
+  .ant-menu-vertical .ant-menu-item.mobile-language-dropdown {
+    padding-right: 0;
+  }
+
+  .mobile-hide {
+    display: none;
+  }
+
+  .mobile-left-align {
+    text-align: left;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .c_Header {
+
+    .c_Header_Menu {
+
+      .c_MenuItem {
+
+        &.link {
+          display: none;
+          padding: 0 3px;
+          top: 25px;
+          height: 49px;
+          font-size: 13px;
+
+          margin-right: 2vw;
+        }
+
+        &.account {
+          display: none;
+        }
+
+        &.mobile {
+          padding: 24px 24px 0 12px;
+          display: block;
+          float: right;
+          font-size: 150%;
+          margin-top: 16px;
+          i {
+            margin-right: 0;
+          }
+        }
+        @media only screen and (max-width: $mobile-width) {
+          &.mobile {
+            margin-top: 0;
+          }
+        }
+      }
+    }
+
+    .c_MenuTopRight {
+      display: none;
+      font-size: 12px;
+    }
+  }
+
+  .d_topBackdrop_title {
+    font-size: 22px;
+  }
+
+  .ebp-page {
+    .d_leftContainer {
+      border-right: none;
+    }
+  }
+
+  .ebp-page, .ebp-wrap {
+    padding: 0 20px;
+  }
+
+  /*
+  ****************************************************************************
+  Landing Page
+  ****************************************************************************
+   */
+  .p_landingBg {
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    .entryContainer {
+      width: 100%;
+
+      > .continueContainer {
+        margin: 0 auto;
+        position: static;
+
+        text-align: center;
+        border-bottom: 0;
+
+        margin-top: 10vh;
+      }
+
+      > .arrow {
+        display: none;
+      }
+    }
+
+    .textContainer, .bar {
+      display: none;
+    }
+
+    .footer-email.form-wrap > p {
+      text-align: center;
+    }
+
+    .social-icons {
+      text-align: center;
+      padding-left: 20px;
+    }
+
+    ul.social > li.title {
+      text-align: center;
+      padding-bottom: 8px;
+    }
+  }
+
+
+  /*
+  ****************************************************************************
+  Home
+  ****************************************************************************
+   */
+  .c_Home {
+
+    p.mobile-left-align {
+      padding: 0 $gap_1;
+      margin-bottom: $gap_1;
+    }
+
+    .d_rowHome {
+      position: static;
+
+      > .d_organizer {
+        float: none;
+        position: static;
+      }
+    }
+
+    .d_colEvents {
+      border-left: none;
+    }
+
+    .d_topBackdrop {
+      background-position: 75% 50%;
+    }
+
+    .entryContainer {
+      position: static;
+      width: 100%;
+      height: auto;
+      margin-bottom: $gap_2;
+
+      .textContainer {
+        position: static;
+        padding: 0 $gap_1;
+      }
+
+      .bar {
+        display: none;
+      }
+    }
+  }
+
+  /*
+  ****************************************************************************
+  Profile
+  ****************************************************************************
+   */
+  .c_Member {
+
+    &.public {
+
+      padding: 0 $gap_1;
+
+    }
+  }
+
+  /*
+  ****************************************************************************
+  Admin
+  ****************************************************************************
+   */
+  .admin-left-column, .admin-right-column {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .ant-form {
+    padding: 0 $gap_1;
+  }
+
+  /*
+  ****************************************************************************
+  Developer
+  ****************************************************************************
+   */
+  .p_Developer {
+    .ebp-page {
+      .d_rowTop {
+        .d_box {
+          margin: 5px 0;
+        }
+      }
+      .d_bottomRow {
+        margin-bottom: 20px;
+        .component-box {
+          .button-container {
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  /*
+  ****************************************************************************
+  Other
+  ****************************************************************************
+  */
+  table {
+    > thead.ant-table-thead > tr > th {
+      word-break: normal;
+      white-space: nowrap;
+    }
+
+    .ant-table-thead > tr > th {
+      padding: 16px 3px;
+    }
+    .ant-table-tbody > tr > td {
+      padding: 16px 3px;
+      font-size: 12px;
+    }
+  }
+
+  .p_Developer, .p_Social {
+
+    .d_box {
+      padding: 0;
+
+      .btnContainer {
+        width: 100%;
+      }
+
+      .pull-left {
+        text-align: left;
+      }
+
+      .pull-right {
+        text-align: left;
+      }
+    }
+
+    .ebp-page-desc > p {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+    .ant-table-expand-icon-th, .ant-table-row-expand-icon-cell {
+      min-width: min-content;
+      width: fit-content;
+    }
+
+  }
+
+  /*
+  ****************************************************************************
+  Footer
+  - note this is independent of the landing page footer
+  ****************************************************************************
+  */
+  .c_Footer {
+
+
+
+    .d_rowFooter {
+      .shield,
+      .resources {
+        display: none;
+      }
+    }
+
+    .contact-container, .join {
+      padding-left: 48px;
+    }
+
+    .contact-container > .footer-vertical-section {
+      line-height: 2;
+      font-weight: 400;
+    }
+
+    .join {
+      margin: 50px 0;
+    }
+  }
+}

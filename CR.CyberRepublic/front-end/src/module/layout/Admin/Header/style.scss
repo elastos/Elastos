@@ -1,0 +1,30 @@
+.admin-logo {
+  text-align: left;
+  margin-left: 25px;
+  margin-top: 10px;
+}
+
+.admin-top-menu {
+  float: right;
+  list-style: none;
+  margin-right: 20px;
+
+  li {
+    float: left;
+    padding: 0 5px;
+
+    a {
+      color: rgba(0, 0, 0, 0.65);
+      &:hover {
+        border-bottom: 1px solid black;
+      }
+    }
+  }
+
+  li + li:before {
+    content: '|';
+    padding-right: 10px;
+  }
+}
+
+.
