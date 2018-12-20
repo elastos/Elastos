@@ -209,8 +209,8 @@ static void transfer_state_changed_cb(ElaFileTransfer *ft,
     }
 }
 
-static void transfer_file_cb(ElaFileTransfer *ft, const char *filename,
-                             const char *fileid, uint64_t size, void *context)
+static void transfer_file_cb(ElaFileTransfer *ft, const char *fileid,
+                             const char *filename, uint64_t size, void *context)
 {
     filectx_t *fctx = (filectx_t *)context;
     char path[PATH_MAX] = {0};

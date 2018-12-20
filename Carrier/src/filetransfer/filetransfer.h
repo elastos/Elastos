@@ -128,7 +128,7 @@ FileTransferItem *get_fileinfo_free(ElaFileTransfer *ft)
             break;
     }
 
-    return (i < sizeof(ft->files) ? &ft->files[i] : NULL);
+    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
 }
 
 static inline
@@ -140,7 +140,7 @@ FileTransferItem *get_fileinfo_channel(ElaFileTransfer *ft, int channel)
             break;
     }
 
-    return (i < sizeof(ft->files) ? &ft->files[i] : NULL);
+    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
 }
 
 static inline
@@ -152,7 +152,7 @@ FileTransferItem *get_fileinfo_fileid(ElaFileTransfer *ft, const char *fileid)
             break;
     }
 
-    return (i < sizeof(ft->files) ? &ft->files[i] : NULL);
+    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
 }
 
 static inline
@@ -164,7 +164,7 @@ FileTransferItem *get_fileinfo_name(ElaFileTransfer *ft, const char *filename)
             break;
     }
 
-    return (i < sizeof(ft->files) ? &ft->files[i] : NULL);
+    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
 }
 
 static inline void filename_safe_free(FileTransferItem *item) {

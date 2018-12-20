@@ -512,7 +512,7 @@ static void stream_channel_opened(ElaSession *ws, int stream, int channel,
     }
 
     if (ft->callbacks.file)
-        ft->callbacks.file(ft, item->filename, item->fileid, item->filesz,
+        ft->callbacks.file(ft, item->fileid, item->filename, item->filesz,
                            ft->callbacks_context);
 }
 
