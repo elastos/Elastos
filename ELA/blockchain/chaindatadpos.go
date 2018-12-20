@@ -9,58 +9,42 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) error {
-	key := []byte{byte(DPOSVoteProducer)}
-	hBuf := new(bytes.Buffer)
+	// key: DPOSProducers  value: len,producer1,producer2,producer3
+	key := []byte{byte(DPOSProducers)}
+	var publicKeys [][]byte
+	publicKeys = append(publicKeys, payload.PublicKey)
+	pks, err := c.getRegisteredProducers()
+	if err == nil {
+		publicKeys = append(publicKeys, pks...)
+	}
+
+	buf := new(bytes.Buffer)
+	if err = WriteVarUint(buf, uint64(len(publicKeys))); err != nil {
+		return errors.New("write count failed")
+	}
+	for _, pk := range publicKeys {
+		if err := WriteVarBytes(buf, pk); err != nil {
+			return err
+		}
+	}
+	c.BatchPut(key, buf.Bytes())
+
+	// key: DPOSVoteProducer value: height,payload
+	key = []byte{byte(DPOSVoteProducer)}
+	key = append(key, payload.PublicKey...)
+	buf = new(bytes.Buffer)
 	height := c.GetHeight()
-	err := WriteUint32(hBuf, height)
-	if err != nil {
+	if err := WriteUint32(buf, height); err != nil {
 		return errors.New("write height failed")
 	}
-	producerBytes, err := c.getRegisteredProducers()
-	if err != nil {
-		count := new(bytes.Buffer)
-		err = WriteUint64(count, uint64(1))
-		if err != nil {
-			return errors.New("write count failed")
-		}
-		c.BatchPut(key, append(count.Bytes(), append(hBuf.Bytes(), payload.Data(PayloadRegisterProducerVersion)...)...))
-		return c.recordProducer(payload, height)
+	if err := payload.Serialize(buf, PayloadRegisterProducerVersion); err != nil {
+		return errors.New("write payload failed")
 	}
-	r := bytes.NewReader(producerBytes)
-	length, err := ReadUint64(r)
-	if err != nil {
-		return err
-	}
-
-	for i := uint64(0); i < length; i++ {
-		_, err := ReadUint32(r)
-		if err != nil {
-			return err
-		}
-		var p PayloadRegisterProducer
-		err = p.Deserialize(r, PayloadRegisterProducerVersion)
-		if err != nil {
-			return err
-		}
-		if p.NickName == payload.NickName {
-			return errors.New("duplicated nickname")
-		}
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
-			return errors.New("duplicated public key")
-		}
-	}
-
-	// PUT VALUE: length(uint64),oldProducers(height+payload),newProducer
-	value := new(bytes.Buffer)
-	err = WriteUint64(value, length+uint64(1))
-	if err != nil {
-		return errors.New("write new count failed")
-	}
-	c.BatchPut(key, append(append(value.Bytes(), producerBytes[8:]...),
-		append(hBuf.Bytes(), payload.Data(PayloadRegisterProducerVersion)...)...))
+	c.BatchPut(key, buf.Bytes())
 
 	return c.recordProducer(payload, height)
 }
@@ -94,64 +78,48 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 }
 
 func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error {
-	key := []byte{byte(DPOSVoteProducer)}
-	producerBytes, err := c.getRegisteredProducers()
+	// remove from DPOSProducers
+	key := []byte{byte(DPOSProducers)}
+	var publicKeys [][]byte
+	pks, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
-	}
-	r := bytes.NewReader(producerBytes)
-	length, err := ReadUint64(r)
-	if err != nil {
-		return err
-	}
-
-	var newProducerBytes []byte
-	var count uint64
-	for i := uint64(0); i < length; i++ {
-		h, err := ReadUint32(r)
-		if err != nil {
-			return err
-		}
-		var p PayloadRegisterProducer
-		err = p.Deserialize(r, PayloadRegisterProducerVersion)
-		if err != nil {
-			return err
-		}
-		if !bytes.Equal(p.PublicKey, payload.PublicKey) {
-			buf := new(bytes.Buffer)
-			err := WriteUint32(buf, h)
-			if err != nil {
-				return errors.New("write height failed")
+	} else {
+		for _, pk := range pks {
+			if !bytes.Equal(pk, payload.PublicKey) {
+				publicKeys = append(publicKeys, pk)
 			}
-			p.Serialize(buf, PayloadRegisterProducerVersion)
-			newProducerBytes = append(newProducerBytes, buf.Bytes()...)
-			count++
 		}
 	}
-
-	value := new(bytes.Buffer)
-	err = WriteUint64(value, count)
-	if err != nil {
+	buf := new(bytes.Buffer)
+	if err = WriteVarUint(buf, uint64(len(publicKeys))); err != nil {
 		return errors.New("write count failed")
 	}
-	newProducerBytes = append(value.Bytes(), newProducerBytes...)
+	for _, pk := range publicKeys {
+		if err := WriteVarBytes(buf, pk); err != nil {
+			return err
+		}
+	}
+	c.BatchPut(key, buf.Bytes())
 
-	c.BatchPut(key, newProducerBytes)
+	// remove from DPOSVoteProducer
+	key = []byte{byte(DPOSVoteProducer)}
+	key = append(key, payload.PublicKey...)
+	c.BatchDelete(key)
 
 	// add to cancel producer database
 	key = []byte{byte(DPOSCancelProducer)}
 	key = append(key, payload.PublicKey...)
-	buf := new(bytes.Buffer)
+	buf = new(bytes.Buffer)
 	err = WriteUint32(buf, DefaultLedger.Blockchain.GetBestHeight())
 	if err != nil {
 		return errors.New("write cancel producer height failed")
 	}
 	c.BatchPut(key, buf.Bytes())
 
-	// remove from database
+	// remove from voteType
 	for _, voteType := range outputpayload.VoteTypes {
 		keyVote := []byte{byte(voteType)}
-
 		_, err = c.getProducerVote(voteType, payload.PublicKey)
 		if err == nil {
 			c.BatchDelete(append(keyVote, payload.PublicKey...))
@@ -183,7 +151,6 @@ func (c *ChainStore) PersistCancelProducer(payload *PayloadCancelProducer) error
 }
 
 func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
-	// todo clean leveldb and mempool before persist
 	height := DefaultLedger.Blockchain.GetBestHeight()
 	for i := uint32(0); i <= height; i++ {
 		hash, err := c.GetBlockHash(height)
@@ -233,52 +200,23 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 }
 
 func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error {
+	height, _, err := c.getProducerInfo(payload.PublicKey)
+	if err != nil {
+		return nil
+	}
+
 	// update producer in database
 	key := []byte{byte(DPOSVoteProducer)}
-	producerBytes, err := c.getRegisteredProducers()
-	if err != nil {
-		return err
-	}
-	r := bytes.NewReader(producerBytes)
-	length, err := ReadUint64(r)
-	if err != nil {
-		return err
-	}
+	key = append(key, payload.PublicKey...)
 
-	var newProducerBytes []byte
-	for i := uint64(0); i < length; i++ {
-		h, err := ReadUint32(r)
-		if err != nil {
-			return err
-		}
-		var p PayloadRegisterProducer
-		err = p.Deserialize(r, PayloadUpdateProducerVersion)
-		if err != nil {
-			return err
-		}
-		var pld Payload
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
-			pld = payload
-		} else {
-			pld = &p
-		}
-		buf := new(bytes.Buffer)
-		err = WriteUint32(buf, h)
-		if err != nil {
-			return errors.New("write height failed")
-		}
-		pld.Serialize(buf, PayloadUpdateProducerVersion)
-		newProducerBytes = append(newProducerBytes, buf.Bytes()...)
+	buf := new(bytes.Buffer)
+	if err := WriteUint32(buf, height); err != nil {
+		return errors.New("write height failed")
 	}
-
-	value := new(bytes.Buffer)
-	err = WriteUint64(value, length)
-	if err != nil {
-		return errors.New("write count failed")
+	if err := WriteVarBytes(buf, payload.Data(PayloadRegisterProducerVersion)); err != nil {
+		return errors.New("write payload failed")
 	}
-	newProducerBytes = append(value.Bytes(), newProducerBytes...)
-
-	c.BatchPut(key, newProducerBytes)
+	c.BatchPut(key, buf.Bytes())
 
 	// update producer in mempool
 	c.mu.Lock()
@@ -382,14 +320,47 @@ func (c *ChainStore) ClearRegisteredProducer() {
 	c.BatchDelete(key)
 }
 
-func (c *ChainStore) getRegisteredProducers() ([]byte, error) {
-	key := []byte{byte(DPOSVoteProducer)}
+func (c *ChainStore) getRegisteredProducers() ([][]byte, error) {
+	key := []byte{byte(DPOSProducers)}
 	data, err := c.Get(key)
 	if err != nil {
 		return nil, err
 	}
+	r := bytes.NewReader(data)
+	count, err := ReadVarUint(r, 0)
+	if err != nil {
+		return nil, err
+	}
+	var result [][]byte
+	for i := uint64(0); i < count; i++ {
+		pk, err := ReadVarBytes(r, crypto.COMPRESSEDLEN, "public key")
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, pk)
+	}
 
-	return data, nil
+	return result, nil
+}
+
+func (c *ChainStore) getProducerInfo(publicKey []byte) (uint32, Payload, error) {
+	key := []byte{byte(DPOSVoteProducer)}
+	key = append(key, publicKey...)
+	data, err := c.Get(key)
+	if err != nil {
+		return 0, nil, err
+	}
+	r := bytes.NewReader(data)
+	height, err := ReadUint32(r)
+	if err != nil {
+		return 0, nil, err
+	}
+	var payload PayloadRegisterProducer
+	if err := payload.Deserialize(r, PayloadRegisterProducerVersion); err != nil {
+		return 0, nil, err
+	}
+
+	return height, &payload, nil
 }
 
 func (c *ChainStore) getProducerVote(voteType outputpayload.VoteType, producer []byte) (Fixed64, error) {

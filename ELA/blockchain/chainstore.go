@@ -8,6 +8,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -125,37 +126,39 @@ func (c *ChainStore) loop() {
 }
 
 func (c *ChainStore) InitProducerVotes() error {
-	producerBytes, err := c.getRegisteredProducers()
+	publicKeys, err := c.getRegisteredProducers()
 	if err != nil {
 		return err
 	}
-	r := bytes.NewReader(producerBytes)
-	length, err := ReadUint64(r)
-	if err != nil {
-		return err
-	}
-
-	for i := uint64(0); i < length; i++ {
-		h, err := ReadUint32(r)
+	for _, pk := range publicKeys {
+		height, payload, err := c.getProducerInfo(pk)
 		if err != nil {
 			return err
 		}
-		var p PayloadRegisterProducer
-		err = p.Deserialize(r, PayloadRegisterProducerVersion)
-		if err != nil {
-			return err
+		p, ok := payload.(*PayloadRegisterProducer)
+		if !ok {
+			return errors.New("invalid register producer payload")
 		}
 
 		vote := make(map[outputpayload.VoteType]Fixed64, 0)
 		for _, voteType := range outputpayload.VoteTypes {
-			v, _ := c.getProducerVote(voteType, p.PublicKey)
+			v, _ := c.getProducerVote(voteType, pk)
 			vote[voteType] = v
 		}
-		c.producerVotes[BytesToHexString(p.PublicKey)] = &ProducerInfo{
-			Payload:   &p,
-			RegHeight: h,
+		c.producerVotes[BytesToHexString(pk)] = &ProducerInfo{
+			Payload:   p,
+			RegHeight: height,
 			Vote:      vote,
 		}
+		programHash, err := contract.PublicKeyToStandardProgramHash(pk)
+		if err != nil {
+			return err
+		}
+		addr, err := programHash.ToAddress()
+		if err != nil {
+			return err
+		}
+		c.producerAddress[addr] = BytesToHexString(pk)
 		for _, t := range outputpayload.VoteTypes {
 			c.dirty[t] = true
 		}
