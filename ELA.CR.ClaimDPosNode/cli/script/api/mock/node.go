@@ -48,7 +48,7 @@ func (n *nodeMock) DumpRelays(level uint32) string {
 	case 0:
 		for _, v := range n.relayList {
 			if tx, ok := v.(*types.Transaction); ok {
-				result += fmt.Sprintln("[transaction]: type=" + strconv.FormatUint(uint64(tx.TxType), 0))
+				result += fmt.Sprintln("[transaction]: type=" + strconv.FormatUint(uint64(tx.TxType), 10))
 			} else if dposBlock, ok := v.(*types.DposBlock); ok {
 				result += fmt.Sprintln("[block confirm]: HasBlock=" + strconv.FormatBool(dposBlock.BlockFlag) + " HasConfirm=" + strconv.FormatBool(dposBlock.ConfirmFlag))
 			}
