@@ -201,7 +201,8 @@ func (sm *SyncManager) startSync() {
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
 	// The peer is not a candidate for sync if it's not a full node.
 	if peer.Services()&pact.SFNodeNetwork != pact.SFNodeNetwork {
-		return false
+		// fixme return false when DPOS up online.
+		return true
 	}
 
 	// Candidate if all checks passed.
