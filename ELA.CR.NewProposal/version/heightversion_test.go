@@ -311,48 +311,48 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckVoteProducerOutputs() {
 
 	//note less or equal than heights.HeightVersion2(s.Height2) find version only by DefaultTxVersion
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV1, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV1, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV2, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV2, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txVMax, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txVMax, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height1, nil, nil, nil), "do not support nil tx")
+	s.Error(s.Version.CheckVoteProducerOutputs(s.Height1, nil, nil, nil, nil), "do not support nil tx")
 
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height1+s.Height2)/2, txV1, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height1+s.Height2)/2, txV1, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV1, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV1, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV1, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV1, nil, nil, nil))
 	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV2, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV2, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV2, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV2, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txVMax, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txVMax, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txVMax, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txVMax, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
 	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
 
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txV1, nil, nil), "do not support v1")
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txVMax, nil, nil), "do not support vMax")
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, nil, nil, nil), "do not support nil tx")
+	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txV1, nil, nil, nil), "do not support v1")
+	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txVMax, nil, nil, nil), "do not support vMax")
+	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, nil, nil, nil, nil), "do not support nil tx")
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3, txV2, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3, txV2, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3+5, txV2, nil, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3+5, txV2, nil, nil, nil))
 	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
 }
 
@@ -688,7 +688,7 @@ func (v *txVersionTest1) CheckCoinbaseArbitratorsReward(coinbase *types.Transact
 	return nil
 }
 
-func (v *txVersionTest1) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (v *txVersionTest1) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
 	versionsMsg = "txVersionTest1_CheckVoteProducerOutputs"
 	return nil
 }
@@ -725,7 +725,7 @@ func (v *txVersionTest2) CheckCoinbaseArbitratorsReward(coinbase *types.Transact
 	return nil
 }
 
-func (v *txVersionTest2) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (v *txVersionTest2) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
 	versionsMsg = "txVersionTest2_CheckVoteProducerOutputs"
 	return nil
 }

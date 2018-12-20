@@ -163,7 +163,7 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 	}
 	references := make(map[*types.Input]*types.Output)
 
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
@@ -172,12 +172,12 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 		OutputType:  types.VoteOutput,
 		ProgramHash: *hash,
 	})
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
 
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
 }
 
 func (s *txVersionV0TestSuite) TestCheckTxHasNoPrograms() {

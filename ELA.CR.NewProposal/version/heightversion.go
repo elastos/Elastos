@@ -61,9 +61,10 @@ func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *
 	})
 }
 
-func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction,
+	outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
 	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version TxVersion) error {
-		return version.CheckVoteProducerOutputs(outputs, references)
+		return version.CheckVoteProducerOutputs(outputs, references, producers)
 	})
 }
 

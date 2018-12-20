@@ -187,12 +187,21 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 		return ErrIneffectiveCoinbase
 	}
 
-	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references); err != nil {
+	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references,
+		getProducerPublicKeys(DefaultLedger.Store.GetRegisteredProducers())); err != nil {
 		log.Warn("[CheckVoteProducerOutputs],", err)
 		return ErrInvalidOutput
 	}
 
 	return Success
+}
+
+func getProducerPublicKeys(producers []*PayloadRegisterProducer) [][]byte {
+	var publicKeys [][]byte
+	for _, p := range producers {
+		publicKeys = append(publicKeys, p.PublicKey)
+	}
+	return publicKeys
 }
 
 func CheckDestructionAddress(references map[*Input]*Output) error {
