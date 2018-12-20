@@ -7,12 +7,12 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
-	"github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -74,12 +74,6 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 	}
 
-	// Check transaction outputs after a update checkpoint.
-	version := uint32(0)
-	if block.Height > BlockHeightCheckTxOut {
-		version += CheckTxOut
-	}
-
 	txIDs := make([]Uint256, 0, len(transactions))
 	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
@@ -93,7 +87,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(version, txn); errCode != Success {
+		if errCode := CheckTransactionSanity(block.Height, txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -133,30 +127,18 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 }
 
 func CheckBlockContext(block *Block) error {
-	var rewardInCoinbase = Fixed64(0)
 	var totalTxFee = Fixed64(0)
 
-	for index, tx := range block.Transactions {
-		if errCode := CheckTransactionContext(tx); errCode != Success {
+	for i := 1; i < len(block.Transactions); i++ {
+		if errCode := CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 
-		if index == 0 {
-			// Calculate reward in coinbase
-			for _, output := range tx.Outputs {
-				rewardInCoinbase += output.Value
-			}
-			continue
-		}
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
 	}
 
-	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
-		return errors.New("reward amount in coinbase not correct")
-	}
-	return nil
+	return checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
@@ -238,4 +220,80 @@ func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 		}
 	}
 	return true
+}
+
+func GetTxFee(tx *Transaction, assetId Uint256) Fixed64 {
+	feeMap, err := GetTxFeeMap(tx)
+	if err != nil {
+		return 0
+	}
+
+	return feeMap[assetId]
+}
+
+func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
+	feeMap := make(map[Uint256]Fixed64)
+	reference, err := DefaultLedger.Store.GetTxReference(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	var inputs = make(map[Uint256]Fixed64)
+	var outputs = make(map[Uint256]Fixed64)
+	for _, v := range reference {
+		amout, ok := inputs[v.AssetID]
+		if ok {
+			inputs[v.AssetID] = amout + v.Value
+		} else {
+			inputs[v.AssetID] = v.Value
+		}
+	}
+
+	for _, v := range tx.Outputs {
+		amout, ok := outputs[v.AssetID]
+		if ok {
+			outputs[v.AssetID] = amout + v.Value
+		} else {
+			outputs[v.AssetID] = v.Value
+		}
+	}
+
+	//calc the balance of input vs output
+	for outputAssetid, outputValue := range outputs {
+		if inputValue, ok := inputs[outputAssetid]; ok {
+			feeMap[outputAssetid] = inputValue - outputValue
+		} else {
+			feeMap[outputAssetid] -= outputValue
+		}
+	}
+	for inputAssetid, inputValue := range inputs {
+		if _, exist := feeMap[inputAssetid]; !exist {
+			feeMap[inputAssetid] += inputValue
+		}
+	}
+	return feeMap, nil
+}
+
+func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
+	var rewardInCoinbase = Fixed64(0)
+	outputAddressMap := make(map[Uint168]Fixed64)
+
+	for index, output := range coinbase.Outputs {
+		rewardInCoinbase += output.Value
+
+		if index >= 2 {
+			outputAddressMap[output.ProgramHash] = output.Value
+		}
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+		return errors.New("Reward amount in coinbase not correct")
+	}
+
+	if err := DefaultLedger.HeightVersions.CheckCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
+		return err
+	}
+
+	return nil
 }

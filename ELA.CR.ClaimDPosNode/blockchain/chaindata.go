@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA/core"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-// key: DATA_Header || block hash
+// key: DATAHeader || block hash
 // value: sysfee(8bytes) || trimmed block
 func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Header))
+	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -35,7 +35,7 @@ func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 
 func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Header))
+	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -45,11 +45,11 @@ func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 	return nil
 }
 
-// key: DATA_BlockHash || height
+// key: DATABlockHash || height
 // value: block hash
 func (c *ChainStore) PersistBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_BlockHash))
+	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (c *ChainStore) PersistBlockHash(b *Block) error {
 
 func (c *ChainStore) RollbackBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_BlockHash))
+	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
@@ -75,11 +75,11 @@ func (c *ChainStore) RollbackBlockHash(b *Block) error {
 	return nil
 }
 
-// key: SYS_CurrentBlock
+// key: SYSCurrentBlock
 // value: current block hash || height
 func (c *ChainStore) PersistCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(SYS_CurrentBlock))
+	key.WriteByte(byte(SYSCurrentBlock))
 
 	value := new(bytes.Buffer)
 	hash := b.Hash()
@@ -96,7 +96,7 @@ func (c *ChainStore) PersistCurrentBlock(b *Block) error {
 
 func (c *ChainStore) RollbackCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(SYS_CurrentBlock))
+	key.WriteByte(byte(SYSCurrentBlock))
 
 	value := new(bytes.Buffer)
 	hash := b.Header.Previous
@@ -194,8 +194,8 @@ func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
 	}
 
 	// batch put the UTXOs
-	for programHash, programHash_value := range unspendUTXOs {
-		for assetID, unspents := range programHash_value {
+	for programHash, programHashValue := range unspendUTXOs {
+		for assetID, unspents := range programHashValue {
 			for height, unspent := range unspents {
 				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, unspent)
 				if err != nil {
@@ -280,8 +280,8 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 		}
 	}
 
-	for programHash, programHash_value := range unspendUTXOs {
-		for assetID, unspents := range programHash_value {
+	for programHash, programHashValue := range unspendUTXOs {
+		for assetID, unspents := range programHashValue {
 			for height, unspent := range unspents {
 				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, unspent)
 				if err != nil {
@@ -312,6 +312,59 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				c.PersistSidechainTx(hash)
 			}
 		}
+		if txn.TxType == RegisterProducer {
+			err := c.PersistRegisterProducer(txn.Payload.(*PayloadRegisterProducer))
+			if err != nil {
+				return err
+			}
+		}
+		if txn.TxType == CancelProducer {
+			err := c.PersistCancelProducer(txn.Payload.(*PayloadCancelProducer))
+			if err != nil {
+				return err
+			}
+		}
+		if txn.TxType == UpdateProducer {
+			if err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
+			for _, output := range txn.Outputs {
+				if output.OutputType == VoteOutput {
+					if err := c.PersistVoteOutput(output); err != nil {
+						return err
+					}
+				}
+			}
+			for _, input := range txn.Inputs {
+				transaction, _, err := c.GetTransaction(input.Previous.TxID)
+				if err != nil {
+					return err
+				}
+				output := transaction.Outputs[input.Previous.Index]
+				if output.OutputType == VoteOutput {
+					if err = c.PersistCancelVoteOutput(output); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		if txn.TxType == IllegalProposalEvidence {
+			if err := c.PersistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == IllegalVoteEvidence {
+			if err := c.PersistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == IllegalBlockEvidence {
+			if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -334,6 +387,38 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				}
 			}
 		}
+		if txn.TxType == RegisterProducer {
+			regPayload := txn.Payload.(*PayloadRegisterProducer)
+			if err := c.RollbackRegisterProducer(regPayload); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == CancelProducer || txn.TxType == UpdateProducer {
+			if err := c.RollbackCancelOrUpdateProducer(); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
+			for _, output := range txn.Outputs {
+				if output.OutputType == VoteOutput {
+					if err := c.PersistCancelVoteOutput(output); err != nil {
+						return err
+					}
+				}
+			}
+			for _, input := range txn.Inputs {
+				transaction, _, err := c.GetTransaction(input.Previous.TxID)
+				if err != nil {
+					return err
+				}
+				output := transaction.Outputs[input.Previous.Index]
+				if output.OutputType == VoteOutput {
+					if err = c.PersistVoteOutput(output); err != nil {
+						return err
+					}
+				}
+			}
+		}
 	}
 
 	return nil
@@ -342,7 +427,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATATransaction))
 	hash := txn.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
@@ -354,7 +439,7 @@ func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 
 func (c *ChainStore) RollbackAsset(assetID Uint256) error {
 	key := new(bytes.Buffer)
-	key.WriteByte(byte(ST_Info))
+	key.WriteByte(byte(STInfo))
 	if err := assetID.Serialize(key); err != nil {
 		return err
 	}
@@ -364,7 +449,7 @@ func (c *ChainStore) RollbackAsset(assetID Uint256) error {
 }
 
 func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
 	c.BatchDelete(key)
@@ -372,7 +457,7 @@ func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
 }
 
 func (c *ChainStore) PersistUnspend(b *Block) error {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
 		if txn.TxType == RegisterAsset {
@@ -410,7 +495,7 @@ func (c *ChainStore) PersistUnspend(b *Block) error {
 
 	for txhash, value := range unspents {
 		key := new(bytes.Buffer)
-		key.WriteByte(byte(IX_Unspent))
+		key.WriteByte(byte(IXUnspent))
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
@@ -425,7 +510,7 @@ func (c *ChainStore) PersistUnspend(b *Block) error {
 }
 
 func (c *ChainStore) RollbackUnspend(b *Block) error {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
 		if txn.TxType == RegisterAsset {
@@ -456,7 +541,7 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 
 	for txhash, value := range unspents {
 		key := new(bytes.Buffer)
-		key.WriteByte(byte(IX_Unspent))
+		key.WriteByte(byte(IXUnspent))
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
@@ -467,6 +552,34 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 		}
 	}
 
+	return nil
+}
+
+func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DATAConfirm))
+	if err := confirm.Hash.Serialize(key); err != nil {
+		return err
+	}
+
+	value := new(bytes.Buffer)
+	if err := confirm.Serialize(value); err != nil {
+		return err
+	}
+
+	c.BatchPut(key.Bytes(), value.Bytes())
+	return nil
+}
+
+func (c *ChainStore) RollbackConfirm(b *Block) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DATAConfirm))
+	hash := b.Hash()
+	if err := hash.Serialize(key); err != nil {
+		return err
+	}
+
+	c.BatchDelete(key.Bytes())
 	return nil
 }
 
