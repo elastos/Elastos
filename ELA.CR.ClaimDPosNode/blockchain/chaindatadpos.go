@@ -242,7 +242,7 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 			return err
 		}
 		var p PayloadRegisterProducer
-		err = p.Deserialize(r, PayloadRegisterProducerVersion)
+		err = p.Deserialize(r, PayloadUpdateProducerVersion)
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 		if err != nil {
 			return errors.New("write height failed")
 		}
-		pld.Serialize(buf, PayloadRegisterProducerVersion)
+		pld.Serialize(buf, PayloadUpdateProducerVersion)
 		newProducerBytes = append(newProducerBytes, buf.Bytes()...)
 	}
 
@@ -282,7 +282,7 @@ func (c *ChainStore) PersistUpdateProducer(payload *PayloadUpdateProducer) error
 	if !ok {
 		return errors.New("[PersistCancelProducer], Not found producer in mempool.")
 	}
-	info.Payload = payload.PayloadRegisterProducer
+	info.Payload = ConvertToRegisterProducerPayload(payload)
 	for _, t := range outputpayload.VoteTypes {
 		c.dirty[t] = true
 	}
