@@ -133,6 +133,11 @@ func (o *VoteOutput) Validate() error {
 
 	typeMap := make(map[VoteType]struct{})
 	for _, content := range o.Contents {
+		if _, exists := typeMap[content.VoteType]; exists {
+			return errors.New("duplicate vote type")
+		}
+		typeMap[content.VoteType] = struct{}{}
+
 		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
 			return errors.New("invalid public key count")
 		}
@@ -140,10 +145,10 @@ func (o *VoteOutput) Validate() error {
 		if content.VoteType != Delegate {
 			return errors.New("invalid vote type")
 		}
-		if _, exists := typeMap[content.VoteType]; exists {
-			return errors.New("duplicate vote type")
+
+		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
+			return errors.New("invalid public key length")
 		}
-		typeMap[content.VoteType] = struct{}{}
 
 		candidateMap := make(map[string]struct{})
 		for _, candidate := range content.Candidates {

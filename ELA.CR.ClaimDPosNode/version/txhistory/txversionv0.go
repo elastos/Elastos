@@ -31,7 +31,7 @@ func (v *TxVersionV0) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction
 	return nil
 }
 
-func (v *TxVersionV0) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output) error {
+func (v *TxVersionV0) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
 	return nil
 }
 
