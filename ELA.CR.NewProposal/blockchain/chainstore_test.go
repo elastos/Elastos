@@ -275,6 +275,10 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	txn.Outputs[0].ProgramHash = *publicKeyPlege1
 
 	err = CheckUpdateProducerTransaction(txn)
+	assert.NoError(t, err)
+
+	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 2"
+	err = CheckUpdateProducerTransaction(txn)
 	assert.EqualError(t, err, "Duplicated nick name.")
 
 	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 3"
