@@ -26,7 +26,7 @@ import (
 var txPool *TxPool
 
 func TestTxPoolInit(t *testing.T) {
-	log.Init(
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,

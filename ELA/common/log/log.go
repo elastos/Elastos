@@ -99,8 +99,9 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 	}
 }
 
-func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
+func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
 	logger = NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	return logger
 }
 
 func (l *Logger) SetPrintLevel(level uint8) {
