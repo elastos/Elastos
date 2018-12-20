@@ -23,14 +23,12 @@ const (
 	ProducerRegistering  ProducerState = 0x02
 )
 
-var currentVoteType outputpayload.VoteType
-
 type ProducerState byte
 
 type ProducerInfo struct {
 	Payload   *PayloadRegisterProducer
 	RegHeight uint32
-	Vote      map[outputpayload.VoteType]Fixed64
+	Vote      Fixed64
 }
 
 type persistTask interface{}
@@ -63,7 +61,7 @@ type ChainStore struct {
 	producerVotes    map[string]*ProducerInfo
 	producerAddress  map[string]string // key: address  value: public key
 	dirty            map[outputpayload.VoteType]bool
-	orderedProducers map[outputpayload.VoteType][]*PayloadRegisterProducer
+	orderedProducers []*PayloadRegisterProducer
 }
 
 func NewChainStore(filePath string) (IChainStore, error) {
@@ -80,7 +78,7 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		producerVotes:      make(map[string]*ProducerInfo),
 		producerAddress:    make(map[string]string),
 		dirty:              make(map[outputpayload.VoteType]bool),
-		orderedProducers:   make(map[outputpayload.VoteType][]*PayloadRegisterProducer),
+		orderedProducers:   make([]*PayloadRegisterProducer, 0),
 	}
 
 	go store.loop()
@@ -140,11 +138,7 @@ func (c *ChainStore) InitProducerVotes() error {
 			return errors.New("invalid register producer payload")
 		}
 
-		vote := make(map[outputpayload.VoteType]Fixed64, 0)
-		for _, voteType := range outputpayload.VoteTypes {
-			v, _ := c.getProducerVote(voteType, pk)
-			vote[voteType] = v
-		}
+		vote, _ := c.getVoteByPublicKey(outputpayload.Delegate, pk)
 		c.producerVotes[BytesToHexString(pk)] = &ProducerInfo{
 			Payload:   p,
 			RegHeight: height,
