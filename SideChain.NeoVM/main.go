@@ -39,6 +39,11 @@ import (
 
 const (
 	printStateInterval = 10 * time.Second
+
+	DataPath = "elastos_neo"
+	DataDir  = "data"
+	ChainDir = "chain"
+	SpvDir   = "spv"
 )
 
 var (
@@ -70,7 +75,7 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
-	chainStore, err := blockchain.NewChainStore(cfg.DataDir, activeNetParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(filepath.Join(DataPath, DataDir, ChainDir), activeNetParams.GenesisBlock)
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
@@ -105,7 +110,7 @@ func main() {
 	}
 
 	serviceCfg := spv.Config{
-		DataDir:        filepath.Join(cfg.DataDir, "data_spv"),
+		DataDir:        filepath.Join(DataPath, DataDir, SpvDir),
 		Magic:          activeNetParams.SpvParams.Magic,
 		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
 		SeedList:       activeNetParams.SpvParams.SeedList,
@@ -156,7 +161,7 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain)
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(chain.BlockChain, txPool, activeNetParams)
+	server, err := server.New(filepath.Join(DataPath, DataDir), chain.BlockChain, txPool, activeNetParams)
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)

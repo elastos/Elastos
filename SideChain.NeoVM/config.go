@@ -19,8 +19,7 @@ const (
 	defaultLogLevel       = "info"
 	defaultLogsFolderSize = 2 * elalog.GBSize  // 2 GB
 	defaultMaxLogFileSize = 20 * elalog.MBSize // 20 MB
-	defaultLogDir         = "./logs/"
-	defaultDataDir        = "./"
+	defaultLogDir         = "logs"
 )
 
 var (
@@ -73,7 +72,6 @@ type appConfig struct {
 	MaxPerLogFileSize int64
 	MonitorState      bool
 	PrintSyncState    bool
-	DataDir           string
 }
 
 func loadNewConfig() (*appConfig, error) {
@@ -85,7 +83,6 @@ func loadNewConfig() (*appConfig, error) {
 		HttpJsonPort:      20606,
 		MinerAddr:         "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
 		MonitorState:      true,
-		DataDir:           defaultDataDir,
 	}
 
 	data, err := ioutil.ReadFile(ConfigFilename)
@@ -112,7 +109,6 @@ func loadNewConfig() (*appConfig, error) {
 		appCfg.HttpJsonPort = 10606
 		appCfg.HttpRestPort = 10604
 		appCfg.MinerAddr = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"
-		appCfg.DataDir = "./data_test"
 	} else {
 		return nil, errors.New("invalid NetType: should be MainNet, TestNet")
 	}

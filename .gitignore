@@ -19,7 +19,9 @@ build/
 vendor/*
 /did
 sideNeo
+neo
 *.conf
 *.json
 *.bin
 *.db
+/elastos_neo/*
