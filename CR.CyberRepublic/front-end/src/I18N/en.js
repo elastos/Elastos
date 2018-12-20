@@ -17,7 +17,7 @@ const en = {
     '0008': 'About',
     '0009': 'FAQ',
     '0010': 'Contact',
-    '0011': 'Join Discord',
+    '0011': 'Forum',
 
     '0100': 'Developers',
     '0101': 'Events',

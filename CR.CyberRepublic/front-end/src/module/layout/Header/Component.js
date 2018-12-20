@@ -130,7 +130,7 @@ export default class extends BaseComponent {
                     {I18N.get('0009')}
                 </Menu.Item>
 
-                <Menu.Item key="slack">
+                <Menu.Item key="forum">
                     {I18N.get('0011')}
                 </Menu.Item>
 
@@ -329,7 +329,13 @@ export default class extends BaseComponent {
             } else {
                 this.props.history.push('/' + e.key)
             }
+        } else if (key === 'forum') {
+            analytics.track('FORUM_CLICKED', {
+                url: location.href
+            })
 
+            let forumLink = `${process.env.FORUM_URL}/login`;
+            window.open(forumLink, '_blank');
         } else if (key === 'logout') {
 
             analytics.track('HEADER_CLICKED', {

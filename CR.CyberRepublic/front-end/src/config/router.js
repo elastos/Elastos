@@ -1,5 +1,6 @@
 import LandingPage from '@/module/page/landing/Container'
 import HomePage from '@/module/page/home/Container'
+import SSOPage from '@/module/page/sso/Container'
 import DeveloperPage from '@/module/page/developer/Container'
 import DeveloperLearnPage from '@/module/page/developer/learn/Container'
 import DeveloperSearchPage from '@/module/page/developer/search/Container'
@@ -93,6 +94,10 @@ export default [
     {
         path: '/home',
         page: HomePage
+    },
+    {
+        path: '/sso/login',
+        page: SSOPage
     },
     {
         path: '/cr100',
