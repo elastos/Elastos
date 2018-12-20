@@ -136,7 +136,7 @@ func initLedger(L *lua.LState) int {
 	logLevel := uint8(L.ToInt(1))
 	arbitrators := checkArbitrators(L, 2)
 
-	log.Init(logLevel, 0, 0)
+	log.NewDefault(logLevel, 0, 0)
 	log2.Init(logLevel, 0, 0)
 
 	versions := version.NewVersions(nil)

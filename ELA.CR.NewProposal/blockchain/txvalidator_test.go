@@ -32,7 +32,7 @@ type txValidatorTestSuite struct {
 }
 
 func (s *txValidatorTestSuite) SetupSuite() {
-	log.Init(
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
