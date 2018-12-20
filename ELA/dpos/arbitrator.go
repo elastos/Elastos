@@ -3,7 +3,6 @@ package dpos
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -21,6 +20,8 @@ import (
 type ArbitratorConfig struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
+	Params            config.ArbiterConfiguration
+	Arbitrators       interfaces.Arbitrators
 	Store             interfaces.IDposStore
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
@@ -88,14 +89,16 @@ func (a *arbitrator) changeViewLoop() {
 }
 
 func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
+	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
+		cfg.Params.MaxLogsSize)
+
 	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
 		log.Error("Init dpos account error")
 		return nil, err
 	}
 
-	dposManager := manager.NewManager(config.Parameters.ArbiterConfiguration.Name,
-		blockchain.DefaultLedger.Arbitrators)
+	dposManager := manager.NewManager(cfg.Params.Name, cfg.Arbitrators)
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
@@ -121,7 +124,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 
 	dposHandlerSwitch := manager.NewHandler(network, dposManager, eventMonitor)
 
-	consensus := manager.NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
+	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
 	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
@@ -141,7 +144,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 	events.Subscribe(func(e *events.Event) {
 		switch e.Type {
 		case events.ETNewBlockReceived:
-			block := e.Data.(*types.BlockConfirm)
+			block := e.Data.(*types.DposBlock)
 			result.OnBlockReceived(block.Block, block.ConfirmFlag)
 
 		case events.ETConfirmReceived:
@@ -159,12 +162,4 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 	})
 
 	return result, nil
-}
-
-func init() {
-	log.Init(
-		config.Parameters.ArbiterConfiguration.PrintLevel,
-		config.Parameters.ArbiterConfiguration.MaxPerLogSize,
-		config.Parameters.ArbiterConfiguration.MaxLogsSize,
-	)
 }
