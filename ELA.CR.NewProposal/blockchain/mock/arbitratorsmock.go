@@ -46,7 +46,7 @@ func (a *ArbitratorsMock) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) StartUp() error {
+func (a *ArbitratorsMock) Start() error {
 	return nil
 }
 
