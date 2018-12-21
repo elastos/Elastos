@@ -4,6 +4,8 @@ The purpose of this repository is to provide an npm package for [Elastos React N
 
 Elastos Carrier is a decentralized peer-to-peer platform that takes over all network traffic between virtual machines and conveys information on applications’ behalf.
 
+The release version for plugin is [here](https://www.npmjs.com/package/react-native-elastos-carrier)
+
 ## Primary Code Reviewer
 [Jacky Li](https://github.com/liyangwood)
 
