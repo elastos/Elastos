@@ -1549,7 +1549,8 @@ static void do_friend_event(ElaCarrier *w, FriendEvent *event)
         if (event->fi.status == ElaConnectionStatus_Connected &&
             w->callbacks.friend_connection)
             w->callbacks.friend_connection(w, event->fi.user_info.userid,
-                                           event->fi.status, w->context);
+                                           ElaConnectionStatus_Disconnected,
+                                           w->context);
 
         if (w->callbacks.friend_removed)
             w->callbacks.friend_removed(w, event->fi.user_info.userid, w->context);
