@@ -18,6 +18,12 @@
     }
   }
 
+  .c_SubMenuItem {
+    > .ant-menu-submenu-title {
+      padding: 0;
+    }
+  }
+
   .toast-close-container {
     margin-right: $gap_1;
     font-size: 18px;

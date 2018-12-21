@@ -109,6 +109,16 @@
     }
   }
 
+  .c_SubMenuItem {
+    &.link {
+      padding-bottom: 0;
+
+      .ant-menu-submenu-title {
+        padding-bottom: 8px;
+      }
+    }
+  }
+
   .ant-menu {
     background: none;
     padding-top: 24px;

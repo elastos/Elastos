@@ -202,18 +202,26 @@ export default class extends BaseComponent {
                 </MediaQuery>
 
                 <Menu onClick={this.clickItem.bind(this)} className="c_Header_Menu pull-right"
-                      selectedKeys={this.getSelectedKeys()} mode="horizontal">
-                    <Menu.Item className="c_MenuItem link" key="cr100">
-                        {I18N.get('0105')}
-                    </Menu.Item>
+                    selectedKeys={this.getSelectedKeys()} mode="horizontal">
 
-                    <Menu.Item className="c_MenuItem link" key="crcles">
-                        {I18N.get('0106')}
-                    </Menu.Item>
+                    <SubMenu title={I18N.get('navigation.programs')} onClick={this.clickItem.bind(this)}
+                        className="c_SubMenuItem c_MenuItem link" selectedKeys={this.getSelectedKeys()} mode="horizontal">
+                        <Menu.Item className="c_MenuItem link" key="cr100">
+                            {I18N.get('0105')}
+                        </Menu.Item>
 
-                    <Menu.Item className="c_MenuItem link" key="developer">
-                        {I18N.get('0102')}
-                    </Menu.Item>
+                        <Menu.Item className="c_MenuItem link" key="crcles">
+                            {I18N.get('0106')}
+                        </Menu.Item>
+
+                        <Menu.Item className="c_MenuItem link" key="ambassadors">
+                            {I18N.get('0107')}
+                        </Menu.Item>
+
+                        <Menu.Item className="c_MenuItem link" key="developer">
+                            {I18N.get('0102')}
+                        </Menu.Item>
+                    </SubMenu>
 
                     <Menu.Item className="c_MenuItem link" key="council">
                         {I18N.get('council.0001')}
@@ -221,10 +229,6 @@ export default class extends BaseComponent {
 
                     <Menu.Item className="c_MenuItem link" key="blog">
                         {I18N.get('0110')}
-                    </Menu.Item>
-
-                    <Menu.Item className="c_MenuItem link" key="ambassadors">
-                        {I18N.get('0107')}
                     </Menu.Item>
 
                     { this.props.isLogin ?

@@ -29,6 +29,7 @@ const en = {
     '0108': 'Council',
     '0109': 'Submissions',
     '0110': 'Blog',
+    'navigation.programs': 'Programs',
 
     '0200': 'Profile',
     '0201': 'Login',
@@ -399,7 +400,6 @@ const en = {
     'project.detail.leave': 'Withdraw Application',
     'project.detail.you_bid': 'You bid',
     'project.detail.leave_bid': 'Withdraw Bid',
-    'project.detail.remove': 'Remove',
     'project.detail.view': 'View',
     'project.detail.approve': 'Approve',
     'project.detail.remove': 'Remove',
@@ -787,7 +787,6 @@ const en = {
     'profile.localTime': 'Local Time',
     'profile.sendMessage': 'Send Direct Message',
     'profile.viewProfile': 'View Profile',
-    'profile.editProfile': 'Edit Profile',
     'profile.showPublicProfile': 'Public Profile',
     'profile.crContributors': 'CR Contributors',
     'profile.followers': 'Followers',

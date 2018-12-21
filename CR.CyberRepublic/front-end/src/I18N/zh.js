@@ -29,6 +29,7 @@ const zh = {
     '0108': '筹委会',
     '0109': '提交',
     '0110': '博客',
+    'navigation.programs': 'Programs',
 
     '0200': '简介',
     '0201': '登录',
@@ -75,8 +76,6 @@ const zh = {
 
     'login.success': '登陆成功',
 
-    'profile.skillsets': '我的技能',
-
     'mentions.notFound': '该用户不存在',
 
     'comments': '评论',
@@ -98,11 +97,11 @@ const zh = {
     'home.organizers': '组织者和贡献者',
     'home.organizers.help_1': '帮助组织聚会和推广亦来云',
     'home.organizers.help_2': '无论您是否已成为社区的一员或者想要加入，',
-    'home.organizers.help_3':'您在线上、线下或者全球推广亦来云所做出贡献都会获得奖励。',
+    'home.organizers.help_3': '您在线上、线下或者全球推广亦来云所做出贡献都会获得奖励。',
     'home.organizers.help_4': '您也可以通过成功推荐贡献者以获取ELA。',
     'home.organizers.action_1': '申请成为组织者',
     'home.organizers.action_2': '查看我可以参与的活动和任务',
-    'home.summary_1':'我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
+    'home.summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
 
     // LoginForm
@@ -188,7 +187,7 @@ const zh = {
 
     // Developer
     'developer.breadcrumb.developers': '社区',
-     'developer.breadcrumb.search': '搜索',
+    'developer.breadcrumb.search': '搜索',
     'developer.learn': '学习',
     'developer.learn.basics': '亦来云概述',
     'developer.learn.concepts': '核心概念',
@@ -233,7 +232,7 @@ const zh = {
     'developer.cr100.welcome.2': '每个项目代表了DApp能颠覆的当前传统模型下App的应用场景。申请的团队需要在这些应用场景下迸发出团队现有的或未来白皮书的灵感，并提交详细的提案，阐述项目计划。',
     'developer.cr100.welcome.3': 'CyberRepublic理事会将选择特别有前景的项目，并为选定的团队提供10万美金作为最初的启动资金。请注意：CR100虽然是为了创造生态多样性，但是每个类别并不只限于一个DApp。此外，如果您没有发现适合您项目的类别，可以提交新的类别到Cyber Republic。详情请见本页底部。',
     'developer.cr100.welcome.title': 'Cyber Republic 100',
-    'developer.cr100.disclaimer':'上面描述的项目可能会发生变化，仅作为示例使用',
+    'developer.cr100.disclaimer': '上面描述的项目可能会发生变化，仅作为示例使用',
     'developer.cr100.disclaimer.title': '免责声明',
     'developer.cr100.dontseeProject': '提交项目提案',
     'developer.cr100.dontseeProject.title': '没找到喜欢的项目?',
@@ -305,7 +304,7 @@ const zh = {
     'myrepublic.projects.create': '创建项目',
     'myrepublic.projects.create.cr100': '创建 CR100',
 
-      // Empower 35
+    // Empower 35
     'emp35.header.title.part1': 'CR',
     'emp35.header.title.part2': 'cles',
     'emp35.header.title.part3': ' & Empower35',
@@ -360,7 +359,7 @@ const zh = {
     'training.header.content.4': ' 从该项目毕业的大使将获取ELA预算，并',
     'training.header.content.5': '有权代表Cyber Republic在活动和聚会上发言',
     'training.evangelist.title': '培训目标',
-    'training.evangelist.content':'这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
+    'training.evangelist.content': '这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
     'training.thanksForApplying': '感谢您的申请，我们会尽快与您取得联系！',
     'training.applyError': '出错了，请直接与我们联系。',
     'training.apply.title': '申请成为大使',
@@ -379,7 +378,7 @@ const zh = {
     'training.itinerary.content.day6': '演讲实践',
     'training.disclaimer': '培训内容和行程可能根据实际情况作出调整',
 
-      // Project/Team detail
+    // Project/Team detail
     'project.detail.bid_selected': '已选出中标方案',
     'project.detail.app_selected': '已选出获奖应用',
     'project.detail.deadline': '申请截止日期',
@@ -533,7 +532,7 @@ const zh = {
     'community.selectcountry': '请选择一个国家',
     'community.guidecontainer.part1': '您好！ 看来我们还没有一位组织者',
     'community.guidecontainer.part2': '我们始终寻找新的组织者，特别是在新的社区',
-    'community.guidecontainer.part3': "如果您想成为您所在区域的组织者请注册，我们将会添加您的国家页面，您就可以申请成为该页面的组织者。",
+    'community.guidecontainer.part3': '如果您想成为您所在区域的组织者请注册，我们将会添加您的国家页面，您就可以申请成为该页面的组织者。',
     'community.button.register': '点击注册',
     'community.button.selectcountry': '或者您可以从上面选择一个国家',
     'community.link.toevent': '查看活动',
@@ -752,7 +751,6 @@ const zh = {
     'profile.skillsets': '我的技能',
     'profile.completeProfile': '请完成您的个人档案',
     'profile.completeProfile.explanation': '获取更多任务并与世界各地的英才联系',
-    'profile.editProfile': '编辑档案',
     'profile.editProfile.section.1': '基本信息',
     'profile.editProfile.section.2': '技能',
     'profile.editProfile.section.3': '社交媒体',
@@ -1066,7 +1064,7 @@ const zh = {
     'from.UserContactForm.message.success': '邮件发送成功',
     'from.UserContactForm.field.required': '这是必填项',
     'from.UserContactForm.placeholder.message': '信息',
-    'from.UserContactForm.text.emailreply': "邮件回复地址将设置为您注册帐户使用的电子邮箱，回复将直接发送到您的电子邮箱",
+    'from.UserContactForm.text.emailreply': '邮件回复地址将设置为您注册帐户使用的电子邮箱，回复将直接发送到您的电子邮箱',
     'from.UserContactForm.button.send': '发送信息',
 
     'from.UserEditForm.label.bio': '自传',
@@ -1269,6 +1267,5 @@ zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '待投票'
 zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已拒绝'
 zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '最终版'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '延期的'
-
 
 export default zh
