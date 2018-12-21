@@ -98,13 +98,13 @@ class C extends BaseComponent {
                 <Popconfirm title={I18N.get('project.detail.popup.leave_question')}
                     okText={I18N.get('.yes')} cancelText={I18N.get('.no')}
                     onConfirm={this.leaveTeam.bind(this)}>
-                    <Button className="cr-btn" type="primary" loading={this.props.loading}>
+                    <Button disabled className="cr-btn" type="primary" loading={this.props.loading}>
                         {I18N.get('circle.header.leave')}
                     </Button>
                 </Popconfirm>
             )
             : (
-                <Button className="join-button cr-btn" disabled={hasApplied || maxReached} onClick={() => this.applyToCircle()}
+                <Button disabled className="join-button cr-btn" /* disabled={hasApplied || maxReached} */ onClick={() => this.applyToCircle()}
                     loading={this.props.loading}>
                     { hasApplied
                         ? I18N.get('project.detail.popup.applied')
@@ -263,7 +263,7 @@ class C extends BaseComponent {
             <div>
                 <div className="member-header">
                     <h3 className="member-header-label komu-a with-gizmo">{I18N.get('circle.tasks')}</h3>
-                    {this.isTeamMember() && <Button className="pull-right" onClick={this.createNewTask.bind(this)}>
+                    {this.isTeamMember() && <Button disabled className="pull-right" onClick={this.createNewTask.bind(this)}>
                         {I18N.get('task.createNew')}
                     </Button>}
                 </div>

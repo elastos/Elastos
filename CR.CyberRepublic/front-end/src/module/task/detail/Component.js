@@ -582,7 +582,7 @@ export default class extends BaseComponent {
     renderJoinButton() {
 
         if (this.state.isDeveloperEvent) {
-            return <Button className="join-btn" onClick={this.confirmDeveloperEventJoin}>
+            return <Button disabled className="join-btn" onClick={this.confirmDeveloperEventJoin}>
                 Join Event
             </Button>
             // shortcuts here
@@ -600,14 +600,14 @@ export default class extends BaseComponent {
                 buttonText = 'Apply to Help'
             }
 
-            return <Button className="join-btn" onClick={this.showModalApplyTask}>
+            return <Button disabled className="join-btn" onClick={this.showModalApplyTask}>
                 {buttonText}
             </Button>
         } else {
             buttonText = 'My Application'
             const prefix = this.props.page === 'LEADER' ? '/profile' : ''
 
-            return (<Button className="join-btn" onClick={() => {
+            return (<Button disabled className="join-btn" onClick={() => {
                 this.props.history.push(`${prefix}/task-app/${this.props.task._id}/${this.props.userId}`)
             }}>
                 {buttonText}

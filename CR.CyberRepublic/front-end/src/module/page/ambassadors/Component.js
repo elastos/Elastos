@@ -125,7 +125,7 @@ export default class extends StandardPage {
                             </div>
                         </div>
                         <div className="center">
-                            <Button onClick={this.onApplyModelEmpowerOpen} className="button" type="primary">Apply</Button>
+                            <Button disabled onClick={this.onApplyModelEmpowerOpen} className="button" type="primary">Apply</Button>
                         </div>
                     </div>
                 </div>
