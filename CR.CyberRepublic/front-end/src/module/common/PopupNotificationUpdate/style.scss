@@ -1,0 +1,26 @@
+@import '../../../style/variable';
+@import '../../../style/color';
+
+.ant-modal-body {
+    padding: 0 !important;
+    padding-top: $gap_5 !important;
+}
+
+.left-col-image {
+}
+
+.right-col {
+    padding: $gap_2;
+
+    .title {
+        font-size: 75px;
+        line-height: 75px;
+        text-align: center;
+    }
+    .changes-list {
+        li {
+            padding: $gap_0 0;
+            list-style-image: url("/assets/images/tri-square.svg");
+        }
+    }
+}

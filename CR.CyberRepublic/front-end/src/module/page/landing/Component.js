@@ -100,12 +100,6 @@ export default class extends StandardPage {
 
         return <div className="p_landingBg">
             {this.renderVideoModal()}
-            <div id="loader">
-                <div className="load-clip">
-                    <div className="logo-text part"><img src="assets/images/logo-text.svg"/></div>
-                    <div className="logo-mark part"><img src="assets/images/logo-mark.svg"/></div>
-                </div>
-            </div>
 
             <section id="hero" className="hasAnim">
                 <div className="bg-wrap">

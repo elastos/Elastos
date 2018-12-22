@@ -3,6 +3,7 @@ import BaseComponent from './BaseComponent'
 import {spring, Motion} from 'react-motion'
 import _ from 'lodash'
 import store from '@/store'
+import PopupNotificationUpdate from '@/module/common/PopupNotificationUpdate/PopupNotificationUpdate'
 
 /**
  noWobble: {stiffness: 170, damping: 26}, // the default, if nothing provided
@@ -13,7 +14,6 @@ import store from '@/store'
 const springConfig = {stiffness: 180, damping: 14}
 export default class extends BaseComponent {
     ord_render(p) {
-
         /*
         const s = this.ord_animate()
         const defaultStyle = {}
@@ -41,7 +41,12 @@ export default class extends BaseComponent {
         )
         */
 
-        return (<div>{this.ord_renderPage(p)}</div>)
+        return (
+            <div>
+                <PopupNotificationUpdate/>
+                {this.ord_renderPage(p)}
+            </div>
+        )
     }
 
     ord_animate() {
