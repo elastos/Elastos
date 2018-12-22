@@ -848,31 +848,31 @@ result sample:
     "result": {
         "producers": [
             {
-                "address": "EWrRwo2JR7siemdE9vqCZQNjTPobUhgqAL",
+                "publickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb",
                 "nickname": "elastos1",
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
                 "votes": "3.11100000",
-                "ip": "127.0.0.1"
+                "ip": "127.0.0.1:20618"
             },
             {
-                "address": "EVM5DvheR7FFgEApTE4TX3HyTzNb2VnXfn",
+                "publickey": "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
                 "nickname": "elastos2",
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
                 "votes": "3.11100000",
-                "ip": "127.0.0.1"
+                "ip": "127.0.0.1:20618"
             },
             {
-                "address": "EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda",
-                "nickname": "elastos3",
+                "address": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+                "publickey": "elastos3",
                 "url": "http://www.google.com",
                 "location": 404,
                 "active": true,
                 "votes": "0",
-                "ip": "127.0.0.1"
+                "ip": "127.0.0.1:20618"
             }
         ],
         "total_votes": "6.22200000"
@@ -895,7 +895,7 @@ named arguments sample:
 {
   "method": "producerstatus",
   "params":{
-  	"address": "EVM5DvheR7FFgEApTE4TX3HyTzNb2VnXfn"
+  	"publickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb"
   }
 }
 ```
