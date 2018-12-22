@@ -15,6 +15,7 @@ const (
 	luaCoinBaseTypeName      = "coinbase"
 	luaTransferAssetTypeName = "transferasset"
 	luaRegisterProducerName  = "registerproducer"
+	luaUpdateProducerName    = "updateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 )
 
@@ -102,6 +103,64 @@ var transferassetMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func transferassetGet(L *lua.LState) int {
 	p := checkTransferAsset(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterUpdateProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaUpdateProducerName)
+	L.SetGlobal("updateproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newUpdateProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), updateProducerMethods))
+}
+
+// Constructor
+func newUpdateProducer(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	nickName := L.ToString(2)
+	url := L.ToString(3)
+	location := L.ToInt64(4)
+	address := L.ToString(5)
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer public key")
+		os.Exit(1)
+	}
+	updateProducer := &payload.PayloadUpdateProducer{
+		PublicKey: []byte(publicKey),
+		NickName:  nickName,
+		Url:       url,
+		Location:  uint64(location),
+		Address:   address,
+	}
+	ud := L.NewUserData()
+	ud.Value = updateProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaUpdateProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkUpdateProducer(L *lua.LState, idx int) *payload.PayloadUpdateProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.PayloadUpdateProducer); ok {
+		return v
+	}
+	L.ArgError(1, "PayloadUpdateProducer expected")
+	return nil
+}
+
+var updateProducerMethods = map[string]lua.LGFunction{
+	"get": updateProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func updateProducerGet(L *lua.LState) int {
+	p := checkUpdateProducer(L, 1)
 	fmt.Println(p)
 
 	return 0
