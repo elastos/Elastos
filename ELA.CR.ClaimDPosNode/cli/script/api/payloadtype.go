@@ -16,6 +16,7 @@ const (
 	luaTransferAssetTypeName = "transferasset"
 	luaRegisterProducerName  = "registerproducer"
 	luaUpdateProducerName    = "updateproducer"
+	luaCancelProducerName    = "cancelproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 )
 
@@ -222,6 +223,55 @@ var registerProducerMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func registerProducerGet(L *lua.LState) int {
 	p := checkRegisterProducer(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterCancelProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCancelProducerName)
+	L.SetGlobal("cancelproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCancelProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), cancelProducerMethods))
+}
+
+// Constructor
+func newCancelProducer(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer public key")
+		os.Exit(1)
+	}
+	cancelProducer := &payload.PayloadCancelProducer{
+		PublicKey: []byte(publicKey),
+	}
+	ud := L.NewUserData()
+	ud.Value = cancelProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCancelProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkCancelProducer(L *lua.LState, idx int) *payload.PayloadCancelProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.PayloadCancelProducer); ok {
+		return v
+	}
+	L.ArgError(1, "PayloadCancelProducer expected")
+	return nil
+}
+
+var cancelProducerMethods = map[string]lua.LGFunction{
+	"get": cancelProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func cancelProducerGet(L *lua.LState) int {
+	p := checkCancelProducer(L, 1)
 	fmt.Println(p)
 
 	return 0
