@@ -333,9 +333,12 @@ export default class extends BaseComponent {
             analytics.track('FORUM_CLICKED', {
                 url: location.href
             })
-
-            let forumLink = `${process.env.FORUM_URL}/login`;
-            window.open(forumLink, '_blank');
+            if (!sessionStorage['api-token']) {
+                this.props.history.push('/login');
+            } else {
+                let forumLink = `${process.env.FORUM_URL}/login`;
+                window.open(forumLink, '_blank');
+            }
         } else if (key === 'logout') {
 
             analytics.track('HEADER_CLICKED', {

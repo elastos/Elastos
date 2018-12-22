@@ -4,7 +4,7 @@ import { sso } from '../utility';
 export default class extends Base {
     public login(param: any): string {
         const { sso: payload, sig } = param; // fetch from incoming request
-        if (!sso.validate(payload, sig)) {
+        if (!sso.validate(payload, sig) || !this.currentUser) {
             throw 'login info invalid'
         }
         const nonce = sso.getNonce(payload);
