@@ -3,7 +3,7 @@ import BaseComponent from './BaseComponent'
 import {spring, Motion} from 'react-motion'
 import _ from 'lodash'
 import store from '@/store'
-import PopupNotificationUpdate from '@/module/common/PopupNotificationUpdate/PopupNotificationUpdate'
+import PopupNotificationUpdate from '@/module/common/PopupNotificationUpdate/Container'
 
 /**
  noWobble: {stiffness: 170, damping: 26}, // the default, if nothing provided

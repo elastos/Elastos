@@ -40,6 +40,7 @@ export default class extends BaseService {
         this.dispatch(userRedux.actions.circles_update(_.values(res.user.circles)))
         this.dispatch(userRedux.actions.subscribers_update(_.values(res.user.subscribers)))
         this.dispatch(userRedux.actions.current_user_id_update(res.user._id))
+        this.dispatch(userRedux.actions.popup_update_update(res.user.popupUpdate))
         sessionStorage.setItem('api-token', res['api-token']);
 
         if (persist) {
@@ -131,6 +132,7 @@ export default class extends BaseService {
         this.dispatch(userRedux.actions.profile_update(data.profile))
         this.dispatch(userRedux.actions.role_update(data.role))
         this.dispatch(userRedux.actions.current_user_id_update(data._id))
+        this.dispatch(userRedux.actions.popup_update_update(data.popupUpdate))
 
         this.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
         this.dispatch(userRedux.actions.loading_update(false))
@@ -199,6 +201,7 @@ export default class extends BaseService {
             this.dispatch(userRedux.actions.role_reset())
             this.dispatch(userRedux.actions.circles_reset())
             this.dispatch(userRedux.actions.current_user_id_reset())
+            this.dispatch(userRedux.actions.popup_update_reset())
 
             this.dispatch(tasksRedux.actions.all_tasks_reset())
             sessionStorage.clear()

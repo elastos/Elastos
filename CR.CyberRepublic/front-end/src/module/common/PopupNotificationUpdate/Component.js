@@ -9,7 +9,25 @@ class C extends BaseComponent {
 
     ord_states() {
         return {
-            visible: true
+            visible: false
+        }
+    }
+
+    async componentDidMount() {
+        await this.props.getCurrentUser();
+        console.log(this.props);
+        this.updateModalVisibility();
+    }
+
+    updateModalVisibility() {
+        const value = localStorage.getItem('popup-update')
+        if (!value) {
+            if (!this.props.is_login || !this.props.popup_update) {
+                // User didn't see it yet
+                this.setState({
+                    visible: true
+                })
+            }
         }
     }
 
@@ -47,6 +65,12 @@ class C extends BaseComponent {
     }
 
     handleCancel() {
+        if (this.props.is_login) {
+            this.props.updateUserPopupUpdate(this.props.currentUserId)
+            localStorage.setItem('popup-update', 'true')
+        } else {
+            localStorage.setItem('popup-update', 'true')
+        }
         this.setState({
             visible: false
         })
