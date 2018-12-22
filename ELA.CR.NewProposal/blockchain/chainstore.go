@@ -58,8 +58,8 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 
-	producerVotes    map[string]*ProducerInfo
-	producerAddress  map[string]string // key: address  value: public key
+	producerVotes    map[string]*ProducerInfo // key: public key
+	producerAddress  map[string]string        // key: address  value: public key
 	dirty            map[outputpayload.VoteType]bool
 	orderedProducers []*PayloadRegisterProducer
 }

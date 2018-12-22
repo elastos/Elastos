@@ -78,11 +78,11 @@ func (c *ChainStore) GetProducerVote(publicKey []byte) Fixed64 {
 	return info.Vote
 }
 
-func (c *ChainStore) GetProducerStatus(address string) ProducerState {
+func (c *ChainStore) GetProducerStatus(publicKey string) ProducerState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if p, ok := c.producerVotes[address]; ok {
+	if p, ok := c.producerVotes[publicKey]; ok {
 		if c.currentBlockHeight-p.RegHeight >= 6 {
 			return ProducerRegistered
 		} else {
