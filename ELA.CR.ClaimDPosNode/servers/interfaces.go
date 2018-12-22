@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -918,13 +917,13 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 type Producer struct {
-	Address  string `json:"address"`
-	Nickname string `json:"nickname"`
-	Url      string `json:"url"`
-	Location uint64 `json:"location"`
-	Active   bool   `json:"active"`
-	Votes    string `json:"votes"`
-	IP       string `json:"ip"`
+	PublicKey string `json:"publickey"`
+	Nickname  string `json:"nickname"`
+	Url       string `json:"url"`
+	Location  uint64 `json:"location"`
+	Active    bool   `json:"active"`
+	Votes     string `json:"votes"`
+	IP        string `json:"ip"`
 }
 
 type Producers struct {
@@ -945,28 +944,21 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 	var ps []Producer
 	for _, p := range producers {
-		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
-		if err != nil {
-			return ResponsePack(Error, "invalid public key")
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return ResponsePack(Error, "invalid program hash")
-		}
 		var active bool
-		state := chain.DefaultLedger.Store.GetProducerStatus(addr)
+		pk := common.BytesToHexString(p.PublicKey)
+		state := chain.DefaultLedger.Store.GetProducerStatus(pk)
 		if state == chain.ProducerRegistered {
 			active = true
 		}
 		vote := chain.DefaultLedger.Store.GetProducerVote(p.PublicKey)
 		producer := Producer{
-			Address:  addr,
-			Nickname: p.NickName,
-			Url:      p.Url,
-			Location: p.Location,
-			Active:   active,
-			Votes:    vote.String(),
-			IP:       p.Address,
+			PublicKey: pk,
+			Nickname:  p.NickName,
+			Url:       p.Url,
+			Location:  p.Location,
+			Active:    active,
+			Votes:     vote.String(),
+			IP:        p.Address,
 		}
 
 		ps = append(ps, producer)
@@ -989,11 +981,11 @@ func ListProducers(param Params) map[string]interface{} {
 }
 
 func ProducerStatus(param Params) map[string]interface{} {
-	address, ok := param.String("address")
+	publicKey, ok := param.String("publickey")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "publicKey not found.")
 	}
-	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(address))
+	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(publicKey))
 }
 
 func VoteStatus(param Params) map[string]interface{} {
