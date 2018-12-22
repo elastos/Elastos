@@ -15,7 +15,8 @@ const resolve = util.resolve;
 const prodEnv = {
     NODE_ENV: JSON.stringify('production'),
     PLATFORM_ENV: JSON.stringify('web'),
-    SERVER_URL: JSON.stringify('https://ebp-api-beta.elastos.org'),
+    // SERVER_URL: JSON.stringify('https://ebp-api-beta.elastos.org'),
+    SERVER_URL: JSON.stringify('http://13.228.218.132:3000'),
     FORUM_URL: JSON.stringify('https://forum.cyberrepublic.org'),
     SSO_URL: JSON.stringify('https://forum.cyberrepublic.org/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION),
