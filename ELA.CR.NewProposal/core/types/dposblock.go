@@ -49,9 +49,7 @@ func (b *DposBlock) Deserialize(r io.Reader) error {
 	if err != nil {
 		return errors.New("Block flag dserialize failed," + err.Error())
 	}
-	if blockFlag == 1 {
-		b.BlockFlag = true
-	}
+	b.BlockFlag = blockFlag == 1
 	if b.BlockFlag {
 		b.Block = new(Block)
 		if err := b.Block.Deserialize(r); err != nil {
@@ -63,9 +61,7 @@ func (b *DposBlock) Deserialize(r io.Reader) error {
 	if err != nil {
 		return errors.New("Confirm flag dserialize failed," + err.Error())
 	}
-	if confirmFlag == 1 {
-		b.ConfirmFlag = true
-	}
+	b.ConfirmFlag = confirmFlag == 1
 	if b.ConfirmFlag {
 		b.Confirm = new(DPosProposalVoteSlot)
 		if err := b.Confirm.Deserialize(r); err != nil {
