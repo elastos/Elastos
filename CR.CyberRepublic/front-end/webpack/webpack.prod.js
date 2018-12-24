@@ -15,7 +15,9 @@ const resolve = util.resolve;
 const prodEnv = {
     NODE_ENV: JSON.stringify('production'),
     PLATFORM_ENV: JSON.stringify('web'),
-    SERVER_URL: JSON.stringify('https://ebp-api-beta.elastos.org'),
+    SERVER_URL: JSON.stringify('https://api.cyberrepublic.org'),
+    FORUM_URL: JSON.stringify('https://forum.cyberrepublic.org'),
+    SSO_URL: JSON.stringify('https://forum.cyberrepublic.org/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION),
     GA_ID: JSON.stringify(process.env.GA_ID),
     GOOGLE_MAPS_API_KEY: JSON.stringify(process.env.GOOGLE_MAPS_API_KEY)
@@ -25,6 +27,8 @@ const stagingEnv = {
     NODE_ENV: JSON.stringify('staging'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('http://staging.cyberrepublic.org:3000'),
+    FORUM_URL: JSON.stringify('http://staging.cyberrepublic.org:3100'),
+    SSO_URL: JSON.stringify('http://staging.cyberrepublic.org:3100/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION)
 };
 
@@ -32,6 +36,8 @@ const devEnv = {
     NODE_ENV: JSON.stringify('dev'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('http://local.ebp.com:3000'),
+    FORUM_URL: JSON.stringify('http://local.ebp.com:3100'),
+    SSO_URL: JSON.stringify('http://local.ebp.com:3100/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION)
 };
 

@@ -17,6 +17,7 @@ import cvote from './cvote';
 import upload from './upload';
 
 import ping from './ping';
+import sso from './sso';
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -93,6 +94,7 @@ router.use('/community', community);
 router.use('/upload', upload);
 router.use('/submission', submission);
 router.use('/cvote', cvote);
+router.use('/sso', sso);
 
 router.use((req, res) => {
     return res.sendStatus(403);
