@@ -1007,26 +1007,24 @@ func VoteStatus(param Params) map[string]interface{} {
 	var voting common.Fixed64
 	status := true
 	for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
-		if unspent.Index == 0 {
-			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
-			if err != nil {
-				return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
-			}
-			if tx.Outputs[unspent.Index].OutputType == VoteOutput {
-				voting += unspent.Value
-			}
-			bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
-			header, err := chain.DefaultLedger.Store.GetHeader(bHash)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
+		tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
+		if err != nil {
+			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+		}
+		if tx.Outputs[unspent.Index].OutputType == VoteOutput {
+			voting += unspent.Value
+		}
+		bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+		if err != nil {
+			return ResponsePack(UnknownTransaction, "")
+		}
+		header, err := chain.DefaultLedger.Store.GetHeader(bHash)
+		if err != nil {
+			return ResponsePack(UnknownTransaction, "")
+		}
 
-			if chain.DefaultLedger.Blockchain.GetBestHeight()-header.Height < 6 {
-				status = false
-			}
+		if chain.DefaultLedger.Blockchain.GetBestHeight()-header.Height < 6 {
+			status = false
 		}
 		total += unspent.Value
 	}
