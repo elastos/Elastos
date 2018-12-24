@@ -148,13 +148,26 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 	return header, nil
 }
 
-//Get block with block hash.
+// Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	bk, err := b.db.GetBlock(hash)
+	return b.db.GetBlock(hash)
+}
+
+// Get DPOS block with block hash.
+func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
+	block, err := b.db.GetBlock(hash)
 	if err != nil {
-		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
+		return nil, err
 	}
-	return bk, nil
+
+	confirm, _ := b.db.GetConfirm(hash)
+
+	return &DposBlock{
+		BlockFlag:   true,
+		Block:       block,
+		ConfirmFlag: confirm != nil,
+		Confirm:     confirm,
+	}, nil
 }
 
 func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
