@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
@@ -464,7 +463,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	waitChan <-chan struct{}) error {
 
 	// Fetch the block from the database.
-	block, err := s.chain.GetBlockByHash(*hash)
+	block, err := s.chain.GetDposBlockByHash(*hash)
 	if err != nil {
 		if doneChan != nil {
 			doneChan <- struct{}{}
@@ -714,8 +713,9 @@ func (s *server) Stop() error {
 // NewServer returns a new elanet server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func NewServer(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *config.Params) (*server, error) {
+func NewServer(cfg *Config) (*server, error) {
 	services := defaultServices
+	params := cfg.ChainParams
 	if params.DisableTxFilters {
 		services &^= pact.SFTxFiltering
 	}
@@ -725,7 +725,7 @@ func NewServer(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *con
 		params.ListenAddrs = []string{fmt.Sprint(":", params.DefaultPort)}
 	}
 
-	cfg := svr.NewDefaultConfig(
+	svrCfg := svr.NewDefaultConfig(
 		params.Magic,
 		pact.EBIP002Version,
 		uint64(services),
@@ -733,22 +733,22 @@ func NewServer(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *con
 		params.SeedList,
 		params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
-		func() uint64 { return uint64(chain.GetHeight()) },
+		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
 	)
 
 	s := server{
-		chain:     chain,
-		txMemPool: txPool,
-		newPeers:  make(chan svr.IPeer, cfg.MaxPeers),
-		donePeers: make(chan svr.IPeer, cfg.MaxPeers),
-		relayInv:  make(chan relayMsg, cfg.MaxPeers),
+		chain:     cfg.Chain,
+		txMemPool: cfg.TxMemPool,
+		newPeers:  make(chan svr.IPeer, svrCfg.MaxPeers),
+		donePeers: make(chan svr.IPeer, svrCfg.MaxPeers),
+		relayInv:  make(chan relayMsg, svrCfg.MaxPeers),
 		quit:      make(chan struct{}),
 		services:  services,
 	}
-	cfg.OnNewPeer = s.NewPeer
-	cfg.OnDonePeer = s.DonePeer
+	svrCfg.OnNewPeer = s.NewPeer
+	svrCfg.OnDonePeer = s.DonePeer
 
-	p2pServer, err := svr.NewServer(cfg)
+	p2pServer, err := svr.NewServer(svrCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -756,9 +756,11 @@ func NewServer(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *con
 
 	s.syncManager = netsync.New(&netsync.Config{
 		PeerNotifier: &s,
-		Chain:        s.chain,
-		TxMemPool:    s.txMemPool,
-		MaxPeers:     cfg.MaxPeers,
+		Chain:        cfg.Chain,
+		Versions:     cfg.Versions,
+		TxMemPool:    cfg.TxMemPool,
+		BlockMemPool: cfg.BlockMemPool,
+		MaxPeers:     svrCfg.MaxPeers,
 	})
 
 	return &s, nil
