@@ -85,7 +85,7 @@ func main() {
 		printErrorAndExit(err)
 	}
 	verconf.Chain = chain
-	ledger.Blockchain = chain // fixme
+	ledger.Blockchain = chain          // fixme
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := store.NewArbitrators(&store.ArbitratorsConfig{
@@ -103,7 +103,13 @@ func main() {
 	ledger.Arbitrators = arbiters
 
 	log.Info("Start the P2P networks")
-	server, err := elanet.NewServer(chain, txMemPool, activeNetParams)
+	server, err := elanet.NewServer(&elanet.Config{
+		Chain:        chain,
+		ChainParams:  activeNetParams,
+		Versions:     versions,
+		TxMemPool:    txMemPool,
+		BlockMemPool: blockMemPool,
+	})
 	if err != nil {
 		printErrorAndExit(err)
 	}
