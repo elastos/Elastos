@@ -554,8 +554,8 @@ class C extends BaseComponent {
                             : I18N.get('pdetail.like')
                         }
                     </Button>
-                    <Button loading={this.props.loading} icon='message' onClick={applyHandler.bind(this)}
-                        disabled={this.isTaskOwner()}>
+                    <Button disabled loading={this.props.loading} icon='message' onClick={applyHandler.bind(this)}
+                        /* disabled={this.isTaskOwner()} */>
                         {I18N.get('pdetail.involve')}
                     </Button>
                 </div>
@@ -770,7 +770,7 @@ class C extends BaseComponent {
                 <div className="rect-container">
                     <div className="rect"/>
                 </div>
-                <Button className="apply-button" onClick={applyHandler.bind(this)}>{I18N.get('.apply')}</Button>
+                <Button disabled className="apply-button" onClick={applyHandler.bind(this)}>{I18N.get('.apply')}</Button>
             </div>
         )
     }

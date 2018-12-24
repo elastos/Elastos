@@ -333,7 +333,7 @@ class C extends BaseComponent {
                 </Popconfirm>
             )
             : (
-                <Button disabled={hasApplied} type="primary" onClick={() => this.setState({ applying: true })}>
+                <Button disabled /* disabled={hasApplied} */ type="primary" onClick={() => this.setState({ applying: true })}>
                     {hasApplied
                         ? I18N.get('project.detail.popup.applied')
                         : I18N.get('project.detail.popup.join_team')
