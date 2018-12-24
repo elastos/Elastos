@@ -25,6 +25,8 @@ package org.elastos.carrier.filetransfer;
 import org.elastos.carrier.exceptions.CarrierException;
 import org.elastos.carrier.Carrier;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +42,7 @@ public class FileTransfer {
 	private native boolean accept_connect();
 	private native boolean native_add(FileTransferInfo fileinfo);
 	private native boolean native_pull(String fileId, long offset);
-	private native boolean native_send(String fileId, byte[] data);
+	private native int native_send(String fileId, byte[] data, int offset, int len);
 	private native boolean native_cancel(String fileId, int status, String reason);
 	private native boolean native_pend(String fileId);
 	private native boolean native_resume(String fileId);
@@ -53,6 +55,49 @@ public class FileTransfer {
 	private static native int get_error_code();
 
 	private FileTransfer() {}
+
+	private class FileTransferOutputStream extends OutputStream {
+		private String fileId;
+
+		FileTransferOutputStream(String fileId) {
+			this.fileId = fileId;
+		}
+
+		@Override
+		public void write(int i) throws IOException {
+			try {
+				FileTransfer.this.writeData(fileId, (byte)i);
+			} catch (CarrierException e) {
+				throw new IOException(e);
+			}
+		}
+
+		@Override
+		public void write(byte[] b) throws IOException {
+			try {
+				FileTransfer.this.writeData(fileId, b);
+			} catch (CarrierException e) {
+				throw new IOException(e);
+			}
+		}
+
+		@Override
+		public void write(byte[] b, int offset, int len) throws IOException {
+			try {
+				FileTransfer.this.writeData(fileId, b, offset, len);
+			} catch (CarrierException e) {
+				throw new IOException(e);
+			}
+		}
+
+		@Override
+		public void flush() {
+		}
+
+		@Override
+		public void close() {
+		}
+	}
 
 	/**
 	 * Generate unique file identifier with random algorithm.
@@ -200,20 +245,73 @@ public class FileTransfer {
 	 *      fileId          [in] The file identifier.
 	 * @param
 	 *      data            [in] The data to transfer for file.
+	 * @param
+	 *      offset          [in] The start offset.
+	 * @param
+	 *      len             [in] The bytes to write.
+	 *
+	 * @return
+	 * 		Bytes of data sent on success.
 	 *
 	 * @throws
 	 * 		CarrierException
 	 */
-	public void sendData(String fileId, byte[] data) throws CarrierException {
-		if (fileId == null || fileId.isEmpty() || data == null || data.length == 0)
+	public int writeData(String fileId, byte[] data, int offset, int len) throws CarrierException {
+		if (fileId == null || fileId.isEmpty() || data == null || data.length == 0 ||
+			offset < 0 || len <= 0 || offset + len < len || offset + len > data.length)
 			throw new IllegalArgumentException();
 
-		if (!native_send(fileId, data))
+		int bytes = native_send(fileId, data, offset, len);
+		if (bytes < 0)
 			throw CarrierException.fromErrorCode(get_error_code());
+		return bytes;
 	}
 
 	/**
-	 * finish transferring file with specified fileId(only available to sender).
+	 * To transfer file data with specified fileId.
+	 *
+	 * @param
+	 *      fileId          [in] The file identifier.
+	 * @param
+	 *      data            [in] The data to transfer for file.
+	 *
+	 * @return
+	 * 		Bytes of data sent on success.
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public int writeData(String fileId, byte[] data) throws CarrierException {
+		return writeData(fileId, data, 0, data.length);
+	}
+
+	/**
+	 * To transfer file data with specified fileId.
+	 *
+	 * @param
+	 *      fileId          [in] The file identifier.
+	 * @param
+	 *      data            [in] The data to transfer for file.
+	 *
+	 * @return
+	 * 		Bytes of data sent on success.
+	 *
+	 * @throws
+	 * 		CarrierException
+	 */
+	public int writeData(String fileId, byte data) throws CarrierException {
+		byte[] _data = new byte[1];
+		_data[0] = data;
+
+		return writeData(fileId, _data);
+	}
+
+	public OutputStream getOutputStream(String fileId) {
+		return new FileTransferOutputStream(fileId);
+	}
+
+	/**
+	 * Finish transferring file with specified fileId(only available to sender).
 	 *
 	 * @param
 	 *      fileId          [in] The file identifier.
@@ -225,7 +323,8 @@ public class FileTransfer {
 		if (fileId == null || fileId.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (!native_send(fileId, new byte[0]))
+		int bytes = native_send(fileId, new byte[0], 0, 0);
+		if (bytes < 0)
 			throw CarrierException.fromErrorCode(get_error_code());
 	}
 

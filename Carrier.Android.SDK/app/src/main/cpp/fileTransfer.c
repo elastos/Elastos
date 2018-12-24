@@ -571,7 +571,7 @@ jboolean pullData(JNIEnv* env, jobject thiz, jstring jfileid, jlong offset)
 }
 
 static
-jboolean sendData(JNIEnv* env, jobject thiz, jstring jfileid, jbyteArray jdata)
+jint sendData(JNIEnv* env, jobject thiz, jstring jfileid, jbyteArray jdata, jint joffset, jint jlen)
 {
     int rc;
     const char *fileid;
@@ -584,22 +584,21 @@ jboolean sendData(JNIEnv* env, jobject thiz, jstring jfileid, jbyteArray jdata)
     fileid = (*env)->GetStringUTFChars(env, jfileid, NULL);
     if (!fileid) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
-        return JNI_FALSE;
+        return -1;
     }
 
     len = (*env)->GetArrayLength(env, jdata);
     data = (*env)->GetByteArrayElements(env, jdata, NULL);
 
-    rc = ela_filetransfer_send(getFileTransfer(env, thiz), fileid, (const uint8_t *)data, (size_t)len);
+    rc = ela_filetransfer_send(getFileTransfer(env, thiz), fileid, (const uint8_t *)(data + joffset), (size_t)jlen);
     (*env)->ReleaseStringUTFChars(env, jfileid, fileid);
     (*env)->ReleaseByteArrayElements(env, jdata, data, 0);
 
     if (rc < 0) {
         setErrorCode(ela_get_error());
-        return JNI_FALSE;
     }
 
-    return JNI_TRUE;
+    return (jint)rc;
 }
 
 static
@@ -766,7 +765,7 @@ static JNINativeMethod gMethods[] = {
     {"accept_connect",   "()Z",                            (void*)acceptConnect },
     {"native_add",       "("_F("FileTransferInfo;)Z"),     (void*)addFile       },
     {"native_pull",      "("_J("String;")"J)Z",            (void*)pullData      },
-    {"native_send",      "("_J("String;")"[B)Z",           (void*)sendData      },
+    {"native_send",      "("_J("String;")"[BII)I",         (void*)sendData      },
     {"native_cancel",    "("_J("String;I")_J("String;)Z"), (void*)cancelTransfer},
     {"native_pend",      "("_J("String;)Z"),               (void*)pendTransfer  },
     {"native_resume",    "("_J("String;)Z"),               (void*)resumeTransfer},
