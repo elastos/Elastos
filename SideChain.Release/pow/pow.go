@@ -127,7 +127,7 @@ func (s *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 		if s.SolveBlock(msgBlock, ticker) {
 			if msgBlock.Header.Height == s.cfg.Chain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(msgBlock)
+				inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
 				if err != nil {
 					return nil, err
 				}
@@ -208,7 +208,7 @@ func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
 		return fmt.Errorf("deserialize side aux pow failed")
 	}
 
-	inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(msgBlock)
+	inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
 	if err != nil {
 		return err
 	}
@@ -308,7 +308,7 @@ out:
 		if s.SolveBlock(msgBlock, ticker) {
 			//send the valid block to p2p networkd
 			if msgBlock.Header.Height == s.cfg.Chain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(msgBlock)
+				inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
 				if err != nil {
 					continue
 				}
