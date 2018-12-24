@@ -39,7 +39,9 @@ class UserRedux extends BaseRedux {
             },
             current_user_id: null,
 
-            teams: []
+            teams: [],
+
+            popup_update: false
         };
     }
 }

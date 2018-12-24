@@ -1,0 +1,27 @@
+@import '../../../style/variable';
+@import '../../../style/color';
+
+.c_Popup_Notif {
+    .ant-modal-body {
+        padding: 0 !important;
+        padding-top: $gap_5 !important;
+    }
+    .left-col-image img {
+        max-width: 100%;
+    }
+    .right-col {
+        padding: $gap_1 $gap_3;
+
+        .title {
+            font-size: 75px;
+            line-height: 75px;
+            text-align: center;
+        }
+        .changes-list {
+            li {
+                padding: $gap_0 0;
+                list-style-image: url("/assets/images/tri-square.svg");
+            }
+        }
+    }
+}

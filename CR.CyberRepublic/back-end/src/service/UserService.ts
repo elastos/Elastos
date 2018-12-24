@@ -215,6 +215,10 @@ export default class extends Base {
             updateObj.bannerFilename = ''
         }
 
+        if (param.popupUpdate) {
+            updateObj.popupUpdate = param.popupUpdate;
+        }
+
         await db_user.update({_id: userId}, updateObj)
 
         user = db_user.getDBInstance().findOne({_id: userId}).select(selectFields)

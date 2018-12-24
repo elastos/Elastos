@@ -74,6 +74,8 @@ const en = {
     '2305': 'My Projects',
     '2306': 'Communities',
 
+    'popup.changes.title': 'BIG CHANGES ARE COMING SOON!',
+
     'login.success': 'Login Successful',
 
     'mentions.notFound': 'User not found',

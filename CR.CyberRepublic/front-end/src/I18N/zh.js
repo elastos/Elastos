@@ -74,6 +74,8 @@ const zh = {
     '2305': '我的项目',
     '2306': '社区',
 
+    'popup.changes.title': 'BIG CHANGES ARE COMING SOON!',
+
     'login.success': '登陆成功',
 
     'mentions.notFound': '该用户不存在',
