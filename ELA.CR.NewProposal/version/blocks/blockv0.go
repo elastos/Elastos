@@ -1,7 +1,6 @@
 package blocks
 
 import (
-	"errors"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -9,14 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
-
-var originalArbitrators = []string{
-	"0248df6705a909432be041e0baa25b8f648741018f70d1911f2ed28778db4b8fe4",
-	"02771faf0f4d4235744b30972d5f2c470993920846c761e4d08889ecfdc061cddf",
-	"0342196610e57d75ba3afa26e030092020aec56822104e465cba1d8f69f8d83c8e",
-	"02fa3e0d14e0e93ca41c3c0f008679e417cf2adb6375dd4bbbee9ed8e8db606a56",
-	"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
-}
 
 // Ensure blockV0 implement the BlockVersion interface.
 var _ BlockVersion = (*blockV0)(nil)
@@ -44,12 +35,8 @@ func (b *blockV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 }
 
 func (b *blockV0) GetProducersDesc() ([][]byte, error) {
-	if len(originalArbitrators) == 0 {
-		return nil, errors.New("arbiters not configured")
-	}
-
 	arbitersByte := make([][]byte, 0)
-	for _, arbiter := range originalArbitrators {
+	for _, arbiter := range b.cfg.ChainParams.OriginArbiters {
 		arbiterByte, err := common.HexStringToBytes(arbiter)
 		if err != nil {
 			return nil, err

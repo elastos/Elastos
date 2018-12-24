@@ -69,6 +69,9 @@ func loadConfigParams() *config.ConfigParams {
 		activeNetParams.Foundation = *foundation
 		activeNetParams.GenesisBlock = config.GenesisBlock(*foundation)
 	}
+	if len(cfg.ArbiterConfiguration.OriginArbiters) > 0 {
+		activeNetParams.OriginArbiters = cfg.ArbiterConfiguration.OriginArbiters
+	}
 
 	return &config.Parameters
 }

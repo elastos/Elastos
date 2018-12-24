@@ -75,6 +75,7 @@ func main() {
 	blockMemPool := mempool.NewBlockPool()
 	verconf := verconf.Config{
 		ChainStore:   chainStore,
+		ChainParams:  activeNetParams,
 		TxMemPool:    txMemPool,
 		BlockMemPool: blockMemPool,
 	}
@@ -100,7 +101,7 @@ func main() {
 		printErrorAndExit(err)
 	}
 	verconf.Arbitrators = arbiters
-	ledger.Arbitrators = arbiters
+	ledger.Arbitrators = arbiters // fixme
 
 	log.Info("Start the P2P networks")
 	server, err := elanet.NewServer(&elanet.Config{
