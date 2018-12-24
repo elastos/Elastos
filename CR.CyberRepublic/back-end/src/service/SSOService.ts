@@ -9,7 +9,7 @@ export default class extends Base {
         }
         const nonce = sso.getNonce(payload);
         const {
-            _id: external_id,
+            _id,
             email,
             username,
             profile: { lastName, firstName, bio }
@@ -17,7 +17,7 @@ export default class extends Base {
         const userparams = {
             // Required, will throw exception otherwise
             nonce,
-            external_id,
+            external_id: _id.toString(),
             email,
             // Optional
             username,
