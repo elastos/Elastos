@@ -45,10 +45,10 @@ func (v *validator) checkTransactionPayload(txn *side.Transaction) error {
 	switch pld := txn.Payload.(type) {
 	case *side.PayloadRegisterAsset:
 		if pld.Asset.Precision < side.MinPrecision || pld.Asset.Precision > side.MaxPrecision {
-			return errors.New("[ID CheckTransactionPayload] Invalide asset Precision.")
+			return errors.New("[NeoVM CheckTransactionPayload] Invalide asset Precision.")
 		}
 		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision, side.MaxPrecision) {
-			return errors.New("[ID CheckTransactionPayload] Invalide asset value,out of precise.")
+			return errors.New("[NeoVM CheckTransactionPayload] Invalide asset value,out of precise.")
 		}
 	case *side.PayloadTransferAsset:
 	case *side.PayloadRecord:
@@ -58,7 +58,7 @@ func (v *validator) checkTransactionPayload(txn *side.Transaction) error {
 	case *types.PayloadDeploy:
 	case *types.PayloadInvoke:
 	default:
-		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
+		return errors.New("[NeoVM CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
 	}
 	return nil
 }
@@ -126,25 +126,25 @@ func checkOutputProgramHash(programHash common.Uint168) bool {
 func (v *validator) checkTransactionSignature(txn *side.Transaction) error {
 	if txn.IsRechargeToSideChainTx() {
 		if err := v.spvService.VerifyTransaction(txn); err != nil {
-			return errors.New("[ID checkTransactionSignature] Invalide recharge to side chain tx: " + err.Error())
+			return errors.New("[NeoVM checkTransactionSignature] Invalide recharge to side chain tx: " + err.Error())
 		}
 		return nil
 	}
 
 	hashes, err := v.TxProgramHashes(txn)
 	if err != nil {
-		return errors.New("[ID checkTransactionSignature] Get program hashes error:" + err.Error())
+		return errors.New("[NeoVM checkTransactionSignature] Get program hashes error:" + err.Error())
 	}
 
 	// Sort first
 	common.SortProgramHashes(hashes)
 	if err := mempool.SortPrograms(txn.Programs); err != nil {
-		return errors.New("[ID checkTransactionSignature] Sort program hashes error:" + err.Error())
+		return errors.New("[NeoVM checkTransactionSignature] Sort program hashes error:" + err.Error())
 	}
 
 	err = RunPrograms(txn, hashes, txn.Programs)
 	if err != nil {
-		return errors.New("[ID checkTransactionSignature] Run program error:" + err.Error())
+		return errors.New("[NeoVM checkTransactionSignature] Run program error:" + err.Error())
 	}
 
 	return nil
