@@ -17,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
 )
@@ -1039,6 +1040,39 @@ func VoteStatus(param Params) map[string]interface{} {
 		Voting:  voting.String(),
 		Pending: status,
 	})
+}
+
+func EstimateSmartFee(param Params) map[string]interface{} {
+	confirm, ok := param.Int("confirmations")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called confirmations")
+	}
+	if confirm > 25 {
+		return ResponsePack(InvalidParams, "support only 25 confirmations at most")
+	}
+	currentHeight := chain.DefaultLedger.GetLocalBlockChainHeight()
+	var FeeRate = 10000 //basic fee rate 10000 sela per KB
+	var count = 0
+	// 6 confirmations at most
+	for i := currentHeight; i == 0; i-- {
+		b, _ := chain.DefaultLedger.GetBlockWithHeight(i)
+		if b.GetSize() < msg.MaxBlockSize {
+			break
+		} else {
+			//how many full blocks continuously before?
+			count++
+		}
+	}
+
+	return ResponsePack(Success, GetFeeRate(count, int(confirm))*FeeRate)
+}
+
+func GetFeeRate(count int, confirm int) int {
+	gap := count - confirm
+	if gap < 0 {
+		gap = -1
+	}
+	return gap + 2
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {

@@ -59,6 +59,7 @@ func StartRPCServer() {
 	mainMux["listproducers"] = ListProducers
 	mainMux["producerstatus"] = ProducerStatus
 	mainMux["votestatus"] = VoteStatus
+	mainMux["estimatesmartfee"] = EstimateSmartFee
 
 	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
@@ -188,6 +189,8 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "address")
 	case "getblockbyheight":
 		return FromArray(params, "height")
+	case "estimatesmartfee":
+		return FromArray(params, "confirmations")
 	default:
 		return Params{}
 	}
