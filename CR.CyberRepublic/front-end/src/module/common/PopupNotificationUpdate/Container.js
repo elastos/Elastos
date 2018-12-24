@@ -1,7 +1,6 @@
 import {createContainer} from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
-import {message} from "antd";
 
 export default createContainer(Component, (state) => {
     return {
@@ -15,9 +14,8 @@ export default createContainer(Component, (state) => {
     return {
         async getCurrentUser() {
             try {
-                const rs = await userService.getCurrentUser()
+                await userService.getCurrentUser()
             } catch (err) {
-                message.error(err.message)
             }
         },
 

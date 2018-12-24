@@ -15,7 +15,6 @@ class C extends BaseComponent {
 
     async componentDidMount() {
         await this.props.getCurrentUser();
-        console.log(this.props);
         this.updateModalVisibility();
     }
 
