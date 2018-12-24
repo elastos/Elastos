@@ -945,3 +945,36 @@ result sample:
 }
 ```
 
+#### estimatesmartfee
+
+description: estimate transaction fee smartly.
+
+parameters:
+| name | type | description |
+| ---- | ---- | ----------- |
+| confirmations | int | in how many blocks do you want your transaction to be packed |
+
+result:
+| name | type | description |
+| ---- | ---- | ----------- |
+|  -   | int  | fee rate, the unit is sela per KB |
+
+named arguments sample:
+```json
+{
+  "method": "votestatus",
+  "params":{
+	"confirmations": 5
+  }
+}
+```
+result sample:
+```json
+{
+	"error": null,
+	"id": null,
+	"jsonrpc": "2.0",
+	"result": 10000
+}
+```
+
