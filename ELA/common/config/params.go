@@ -61,8 +61,15 @@ var MainNetParams = Params{
 		"node-mainnet-023.elastos.org",
 	},
 
-	Foundation:         mainNetFoundation,
-	GenesisBlock:       GenesisBlock(mainNetFoundation),
+	Foundation:   mainNetFoundation,
+	GenesisBlock: GenesisBlock(mainNetFoundation),
+	OriginArbiters: []string{
+		"0248df6705a909432be041e0baa25b8f648741018f70d1911f2ed28778db4b8fe4",
+		"02771faf0f4d4235744b30972d5f2c470993920846c761e4d08889ecfdc061cddf",
+		"0342196610e57d75ba3afa26e030092020aec56822104e465cba1d8f69f8d83c8e",
+		"02fa3e0d14e0e93ca41c3c0f008679e417cf2adb6375dd4bbbee9ed8e8db606a56",
+		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
+	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
 	TargetTimespan:     24 * time.Hour,  // 24 hours
@@ -87,8 +94,15 @@ var TestNetParams = Params{
 		"node-testnet-005.elastos.org",
 	},
 
-	Foundation:         testNetFoundation,
-	GenesisBlock:       GenesisBlock(testNetFoundation),
+	Foundation:   testNetFoundation,
+	GenesisBlock: GenesisBlock(testNetFoundation),
+	OriginArbiters: []string{
+		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
+		"02dd22722c3b3a284929e4859b07e6a706595066ddd2a0b38e5837403718fb047c",
+		"03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
+		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
+		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
+	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
 	TargetTimespan:     24 * time.Hour,  // 24 hours
@@ -136,6 +150,9 @@ type Params struct {
 
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
+
+	// OriginArbiters defines the original arbiters producing the block.
+	OriginArbiters []string
 
 	// PowLimit defines the highest allowed proof of work value for a block
 	// as a uint256.
