@@ -5,6 +5,7 @@ services:
     image: nginx:alpine
     ports:
       - 80:80
+      - 3101:3101
 #    build: .
 
     volumes:
