@@ -38,6 +38,7 @@ class C extends BaseComponent {
                 onCancel={this.handleCancel.bind(this)}
                 footer={null}
                 width="76%"
+                className = "c_Popup_Notif"
             >
                 <Row>
                     <Col span={10}>
