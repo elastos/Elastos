@@ -74,6 +74,9 @@ void notify_state_changed_cb(ElaFileTransfer *ft, FileTransferConnection state,
 
     if (file->callbacks.state_changed)
         file->callbacks.state_changed(state, file->callbacks_context);
+
+    if (state >= FileTransferConnection_closed)
+        deref(file);
 }
 
 static
@@ -92,10 +95,18 @@ void notify_file_cb(ElaFileTransfer *ft, const char *fileid,
     strcpy(file->fileid, fileid);
     file->filesz = size;
 
+    if (file->filesz <= file->offset) {
+        vlogE(TAG "filetransfer pulling %s error, file already exists.", fileid);
+        file->sys_errno = EINVAL;
+        ela_filetransfer_cancel(ft, fileid, file->sys_errno, strerror(file->sys_errno));
+        return;
+    }
+
     rc = ela_filetransfer_pull(ft, fileid, file->offset);
     if (rc < 0) {
         vlogE(TAG "filetransfer pulling %s error (0x%x).", fileid, ela_get_error());
-        ela_filetransfer_cancel(ft, fileid, ela_get_error(), "error");
+        file->carrier_errno = ela_get_error();
+        ela_filetransfer_close(ft);
     }
 }
 
@@ -111,6 +122,8 @@ static void *sending_file_routine(void *args)
     if (rc < 0) {
         vlogE(TAG "seeking file %s to offset %llu error (%d).", file->fileid,
               offset, errno);
+        file->sys_errno = errno;
+        ela_filetransfer_close(file->ft);
         return NULL;
     }
 
@@ -122,7 +135,8 @@ static void *sending_file_routine(void *args)
         rc = fread(buf, send_len, 1, file->fp);
         if (rc < 0)  {
             vlogE(TAG "reading local file error (%d).", errno);
-            //TODO: close?
+            file->sys_errno = errno;
+            ela_filetransfer_close(file->ft);
             break;
         }
 
@@ -130,14 +144,15 @@ static void *sending_file_routine(void *args)
         if (rc < 0) {
             vlogE(TAG "filetransfer sending %s data error (0x%x).",
                   file->fileid, ela_get_error());
-            //TOOD: close?
+            file->carrier_errno = ela_get_error();
+            ela_filetransfer_close(file->ft);
             break;
         }
 
-        if (file->callbacks.sent)
-            file->callbacks.sent(send_len, file->filesz, file->callbacks_context);
-
         offset += send_len;
+
+        if (file->callbacks.sent)
+            file->callbacks.sent(offset, file->filesz, file->callbacks_context);
     } while(offset < file->filesz);
 
     return NULL;
@@ -159,7 +174,8 @@ void notify_pull_cb(ElaFileTransfer *ft, const char *fileid, uint64_t offset,
 
     if (offset >= file->filesz) {
         vlogE(TAG "invalid filetransfer offset %llu to pull.", offset);
-        //TODO: close ?
+        file->sys_errno = ERANGE;
+        ela_filetransfer_close(ft);
         return;
     }
 
@@ -186,21 +202,50 @@ bool notify_data_cb(ElaFileTransfer *ft, const char *fileid, const uint8_t *data
     rc = fwrite(data, length, 1, file->fp);
     if (rc < 0) {
         vlogE(TAG "writing data to file %s error (%d).", file->fileid, errno);
+        file->sys_errno = errno;
+        ela_filetransfer_cancel(ft, fileid, file->sys_errno,
+                                strerror(file->sys_errno));
         return true;
     }
 
     file->offset += length;
-    return (file->offset >= file->filesz);
+
+    if (file->offset > file->filesz) {
+        vlogE(TAG "received excessive data.", file->fileid);
+        file->sys_errno = ERANGE;
+        ela_filetransfer_cancel(ft, fileid, file->sys_errno,
+                                strerror(file->sys_errno));
+        return true;
+    } else {
+        if (file->callbacks.received)
+            file->callbacks.received(file->offset, file->filesz, file->callbacks_context);
+
+        return (file->offset < file->filesz);
+    }
+}
+
+static
+void notify_cancel_cb(ElaFileTransfer *ft, const char *fileid, int status,
+                      const char *reason, void *context)
+{
+    EasyFile *file = (EasyFile *)context;
+
+    vlogD("Received cancel event for %s with status %d and reason: %s",
+          fileid, status, reason);
+
+    ela_filetransfer_close(file->ft);
 }
 
 static void easyfile_destroy(void *p)
 {
     EasyFile *file = (EasyFile *)p;
 
+#if 0
     if (file->ft)  {
         ela_filetransfer_close(file->ft);
         file->ft = NULL;
     }
+#endif
 
     if (file->fp) {
         fclose(file->fp);
@@ -272,6 +317,7 @@ int ela_file_send(ElaCarrier *w, const char *address, const char *filename,
     memset(&cbs, 0, sizeof(cbs));
     cbs.state_changed = notify_state_changed_cb;
     cbs.pull = notify_pull_cb;
+    cbs.cancel = notify_cancel_cb;
 
     file->ft = ela_filetransfer_new(w, address, &fi, &cbs, file);
     if (!file->ft) {
@@ -285,6 +331,7 @@ int ela_file_send(ElaCarrier *w, const char *address, const char *filename,
     if (rc < 0) {
         vlogE(TAG "filetransfer connecting to %s error (0x%x).", address,
               ela_get_error());
+        ela_filetransfer_close(file->ft);
         deref(file);
     }
 
@@ -307,13 +354,14 @@ int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
     }
 
     p = realpath(filename, path);
-    if (!p) {
+    if (!p && errno != ENOENT) {
         ela_set_error(ELA_SYS_ERROR(errno));
         return -1;
     }
 
+    memset(&st, 0, sizeof(st));
     rc = stat(path, &st);
-    if (rc < 0) {
+    if (rc < 0 && errno != ENOENT) {
         ela_set_error(ELA_SYS_ERROR(errno));
         return -1;
     }
@@ -353,6 +401,7 @@ int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
     if (rc < 0) {
         vlogE(TAG "accepting filletransfer connection from %s error (0x%x).",
               address, ela_get_error());
+        ela_filetransfer_close(file->ft);
         deref(file);
     }
 

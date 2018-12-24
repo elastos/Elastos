@@ -20,36 +20,24 @@
  * SOFTWARE.
  */
 
-#ifndef __EASYFILE_H__
-#define __EASYFILE_H__
+#ifndef __FILE_CONFIG_H__
+#define __FILE_CONFIG_H__
 
-#include <stdint.h>
+#include <stdbool.h>
+#include <ela_carrier.h>
 
-#include "ela_filetransfer.h"
+typedef struct {
+    bool udp_enabled;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    int loglevel;
+    char *logfile;
 
-typedef struct EasyFile {
-    ElaFileTransfer         *ft;
+    char *datadir;
 
-    ElaFileProgressCallbacks callbacks;
-    void                    *callbacks_context;
+    int bootstraps_size;
+    BootstrapNode **bootstraps;
+} filecfg_t;
 
-    FILE                    *fp;
-    char                    fileid[ELA_MAX_FILE_ID_LEN + 1];
-    uint64_t                filesz;
-    uint64_t                offset;
+filecfg_t *load_config(const char *config_file);
 
-    int                     sys_errno;
-    int                     carrier_errno;
-} EasyFile;
-
-void ela_set_error(int error);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __EASYFILE_H__ */
+#endif /* __FILE_CONFIG_H__ */
