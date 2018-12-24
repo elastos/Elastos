@@ -186,6 +186,8 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "addresses")
 	case "getreceivedbyaddress":
 		return FromArray(params, "address")
+	case "getblockbyheight":
+		return FromArray(params, "height")
 	default:
 		return Params{}
 	}
