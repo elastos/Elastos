@@ -84,7 +84,6 @@ enum {
     FileTransferState_finished,
 };
 
-
 struct FileTransferItem {
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
     char *filename;
@@ -119,52 +118,54 @@ struct ElaFileTransfer {
     bool                    ready_to_connect;
 };
 
+#define item_counts(ft) ((int)(sizeof(ft->files) / sizeof(FileTransferItem)))
+
 static inline
 FileTransferItem *get_fileinfo_free(ElaFileTransfer *ft)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
+    for (i = 0; i < item_counts(ft); i++) {
         if (ft->files[i].state == FileTransferState_none)
             break;
     }
 
-    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
+    return (i < item_counts(ft) ? &ft->files[i] : NULL);
 }
 
 static inline
 FileTransferItem *get_fileinfo_channel(ElaFileTransfer *ft, int channel)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
+    for (i = 0; i < item_counts(ft); i++) {
         if (channel == ft->files[i].channel)
             break;
     }
 
-    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
+    return (i < item_counts(ft) ? &ft->files[i] : NULL);
 }
 
 static inline
 FileTransferItem *get_fileinfo_fileid(ElaFileTransfer *ft, const char *fileid)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
+    for (i = 0; i < item_counts(ft); i++) {
         if (strcmp(fileid, ft->files[i].fileid) == 0)
             break;
     }
 
-    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
+    return (i < item_counts(ft) ? &ft->files[i] : NULL);
 }
 
 static inline
 FileTransferItem *get_fileinfo_name(ElaFileTransfer *ft, const char *filename)
 {
     size_t i;
-    for (i = 0; i < sizeof(ft->files) / sizeof(FileTransferItem); i++) {
+    for (i = 0; i < item_counts(ft); i++) {
         if (strcmp(filename, ft->files[i].filename) == 0)
             break;
     }
 
-    return (i < sizeof(ft->files) / sizeof(FileTransferItem) ? &ft->files[i] : NULL);
+    return (i < item_counts(ft) ? &ft->files[i] : NULL);
 }
 
 static inline void filename_safe_free(FileTransferItem *item) {
