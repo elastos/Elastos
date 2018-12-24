@@ -197,18 +197,6 @@ func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*types.UTXO
 	return b.db.GetUnspents(programHash)
 }
 
-func (b *BlockChain) AddBlock(block *types.Block) (bool, bool, error) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-
-	inMainChain, isOrphan, err := b.ProcessBlock(block)
-	if err != nil {
-		return false, false, err
-	}
-
-	return inMainChain, isOrphan, nil
-}
-
 func (b *BlockChain) GetHeader(hash Uint256) (*types.Header, error) {
 	header, err := b.db.GetHeader(hash)
 	if err != nil {
@@ -974,6 +962,9 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 //2. isOphan
 //3. error
 func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
 	blockHash := block.Hash()
 	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
