@@ -123,9 +123,7 @@ func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) 
 
 	go s.taskHandler()
 
-	s.initWithGenesisBlock(genesisBlock)
-
-	return &s, nil
+	return &s, s.initWithGenesisBlock(genesisBlock)
 }
 
 func (s *ChainStore) RegisterFunctions(isPersist bool, name StoreFuncName, handler func(batch database.Batch, b *types.Block) error) {
@@ -640,7 +638,7 @@ func (s *ChainStore) IsBlockInStore(hash *Uint256) bool {
 	}
 
 	if b.Header.Height > s.currentBlockHeight {
-		log.Error("Header height", b.Header.Height, "greater then current height:", s.currentBlockHeight)
+		log.Error("Header height", b.Header.Height, "greater than current height:", s.currentBlockHeight)
 		return false
 	}
 
