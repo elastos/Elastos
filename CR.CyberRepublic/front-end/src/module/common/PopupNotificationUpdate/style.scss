@@ -10,7 +10,7 @@
         max-width: 100%;
     }
     .right-col {
-        padding: $gap_1 $gap_3;
+        padding: $gap_1 $gap_4 * 2 $gap_4 * 2;
 
         .title {
             font-size: 75px;
@@ -19,9 +19,15 @@
         }
         .changes-list {
             li {
-                padding: $gap_0 0;
+                padding: $gap_1 0;
                 list-style-image: url("/assets/images/tri-square.svg");
             }
+        }
+    }
+
+    @media only screen and (max-width: $mobile-width) {
+        .right-col {
+            padding: $gap_1 $gap_4;
         }
     }
 }

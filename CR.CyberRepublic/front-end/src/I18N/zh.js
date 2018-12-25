@@ -74,8 +74,6 @@ const zh = {
     '2305': '我的项目',
     '2306': '社区',
 
-    'popup.changes.title': 'BIG CHANGES ARE COMING SOON!',
-
     'login.success': '登陆成功',
 
     'mentions.notFound': '该用户不存在',
@@ -105,6 +103,15 @@ const zh = {
     'home.organizers.action_2': '查看我可以参与的活动和任务',
     'home.summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
+
+    // Pop-up Announcement
+    'popup.changes.title': 'Important CR Announcement',
+    'popup.changes.2018-12-26.1': '经CR理事会深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开，透明，社区自治的理念。',
+    'popup.changes.2018-12-26.2': 'CR 网站上的CR100/Circles/Ambassadors/Community等会暂停（停止接受新的提交和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
+    'popup.changes.2018-12-26.3': '我们已经建立新的CR论坛，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
+    'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
+    'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
+    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh',
 
     // LoginForm
     'login.label_username': '请输入用户名或邮箱',
@@ -449,15 +456,17 @@ const zh = {
     'project.public.statusHelp.markAsComplete': '标记为已完成',
     'project.public.statusHelp.markAsCompleteConfirm': '您确定要将此任务标记为已完成吗？',
 
-    'team.detail.team_active': '您的团队已经激活',
-
-    'team.create.error.nameRequired': '请填写团队名称',
-    'team.create.error.nameTooShort': '团队名称过短',
-
     'team.owner': '领导人',
     'team.description': '描述',
     'team.applyMessage': '申请',
     'team.detail.view': '查看',
+
+    'team.detail.team_active': '您的团队已经激活',
+
+    'team.create.error.nameRequired': '请填写团队名称',
+    'team.create.error.descriptionRequired': 'Team description is required',
+    'team.create.error.nameTooShort': '团队名称过短',
+    'team.create.error.descriptionTooShort': 'Team description is too short',
 
     // Team specializations
     'team.spec.media': '媒体',
@@ -514,12 +523,15 @@ const zh = {
     '.ok': '确定',
     '.apply': '申请',
     '.cancel': '取消',
+    '.delete': 'Delete',
+    '.status': 'Status',
     '.edit': '编辑',
     '.upload': '点击上传',
     '.yes': '是',
     '.no': '否',
     '.loading': '加载中...',
     'ela': 'ELA',
+    '.areYouSure': 'Are you sure?',
 
     // Community
     'community.nomember': '没有成员',
@@ -825,6 +837,9 @@ const zh = {
     'profile.detail.sendmessage.disabled': '您无法向自己发送信息',
     'profile.detail.comingsoon': '即将推出...',
     'profile.detail.follow.disabled': '您无法关注自己',
+    'profile.skillset.header': 'Skill Set',
+    'profile.social.header': 'Social Profile',
+    'profile.portfolio': 'Portfolio',
 
     // Validate Form
     'ambassadors.form.required': '必填项目',

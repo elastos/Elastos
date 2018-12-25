@@ -40,8 +40,8 @@ export default class extends BaseComponent {
                                 </div>
                                 <div className="footer-color-dark">{I18N.get('landing.cr')}: <a href="mailto:cyberrepublic@elastos.org">cyberrepublic@elastos.org</a></div>
                                 <div className="footer-color-dark">{I18N.get('landing.footer.community')}: <a href="mailto:global-community@elastos.org">global-community@elastos.org</a></div>
-                                <div className="footer-color-dark">{I18N.get('landing.footer.support')}: <a href="mailto:support@elastos.org">support@elastos.org</a></div>
-                                <div className="footer-color-dark">{I18N.get('landing.footer.contacts')}: <a href="mailto:contact@elastos.org">contact@elastos.org</a></div>
+                                <div className="footer-color-dark">{I18N.get('landing.footer.support')}: <a href="mailto:support@cyberrepublic.org">support@cyberrepublic.org</a></div>
+                                <div className="footer-color-dark">{I18N.get('landing.footer.contacts')}: <a href="mailto:contact@cyberrepublic.org">contact@cyberrepublic.org</a></div>
                             </div>
                         </Col>
                         <Col xs={24} sm={24} md={7}>
