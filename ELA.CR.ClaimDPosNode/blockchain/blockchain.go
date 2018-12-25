@@ -113,18 +113,17 @@ func (b *BlockChain) GetHeight() uint32 {
 	return b.db.GetHeight()
 }
 
-func (b *BlockChain) AddBlock(block *Block) (bool, bool, error) {
-	log.Debug()
+func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	inMainChain, isOrphan, err := b.ProcessBlock(block)
+	inMainChain, isOrphan, err := b.processBlock(block)
 	if err != nil {
 		return false, false, err
 	}
 
 	if !inMainChain && !isOrphan {
-		if err := DefaultLedger.HeightVersions.CheckConfirmedBlockOnFork(block); err != nil {
+		if err := b.versions.CheckConfirmedBlockOnFork(block); err != nil {
 			return false, false, err
 		}
 	}
@@ -133,11 +132,10 @@ func (b *BlockChain) AddBlock(block *Block) (bool, bool, error) {
 }
 
 func (b *BlockChain) AddConfirm(confirm *DPosProposalVoteSlot) error {
-	log.Debug()
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	return b.ProcessConfirm(confirm)
+	return b.processConfirm(confirm)
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
@@ -943,7 +941,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block) (bool, erro
 //1. inMainChain
 //2. isOphan
 //3. error
-func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
+func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
 	blockHash := block.Hash()
 	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
@@ -1004,7 +1002,7 @@ func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
 	return inMainChain, false, nil
 }
 
-func (b *BlockChain) ProcessConfirm(confirm *DPosProposalVoteSlot) error {
+func (b *BlockChain) processConfirm(confirm *DPosProposalVoteSlot) error {
 	return b.db.SaveConfirm(confirm)
 }
 

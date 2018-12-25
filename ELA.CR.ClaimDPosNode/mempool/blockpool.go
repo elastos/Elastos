@@ -121,7 +121,7 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 
 	log.Info("[ConfirmBlock] block height:", block.Height)
 	if !bm.chain.BlockExists(&hash) {
-		inMainChain, isOrphan, err := bm.chain.AddBlock(block)
+		inMainChain, isOrphan, err := bm.chain.ProcessBlock(block)
 		if err != nil {
 			return false, false, errors.New("add block failed," + err.Error())
 		}
