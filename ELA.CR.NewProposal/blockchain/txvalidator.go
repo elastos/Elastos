@@ -711,21 +711,20 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check the deposit coin
-	isDeposit := false
 	var depositCount int
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			depositCount++
-			if output.Value >= MinDepositAmount || output.ProgramHash.IsEqual(*hash) {
-				isDeposit = true
+			if !output.ProgramHash.IsEqual(*hash) {
+				return errors.New("deposit address does not match the public key in payload")
+			}
+			if output.Value < MinDepositAmount {
+				return errors.New("the deposit coin is insufficient")
 			}
 		}
 	}
 	if depositCount != 1 {
-		return errors.New("Invalid deposit address count.")
-	}
-	if !isDeposit {
-		return errors.New("The deposit coin is insufficient.")
+		return errors.New("there must be only one deposit address in outputs")
 	}
 
 	return nil
