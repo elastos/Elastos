@@ -2,9 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -22,8 +19,6 @@ import (
 	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/restful"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -214,14 +209,6 @@ func main() {
 		}
 	}()
 
-	restServer := newRESTfulServer(cfg.HttpRestPort, service.HttpService)
-	defer restServer.Stop()
-	go func() {
-		if err := restServer.Start(); err != nil {
-			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
-		}
-	}()
-
 	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService)
 	defer socketServer.Server.Stop()
 	go func() {
@@ -270,78 +257,6 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("invokescript", service.InvokeScript, "script", "returntype")
 	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params", "returntype")
 	s.RegisterAction("getOpPrice", service.GetOpPrice, "op", "args")
-	return s
-}
-
-func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server {
-	var (
-		s = restful.NewServer(&restful.Config{ServePort: port})
-
-		restartServer = func(params util.Params) (interface{}, error) {
-			if err := s.Stop(); err != nil {
-				str := fmt.Sprintf("Stop HttpRESTful server failed, %s", err.Error())
-				restlog.Error(str)
-				return nil, errors.New(str)
-			}
-
-			done := make(chan error)
-			go func() {
-				done <- s.Start()
-			}()
-
-			select {
-			case err := <-done:
-				return nil, fmt.Errorf("Start HttpRESTful server failed, %s", err.Error())
-			case <-time.After(time.Millisecond * 100):
-			}
-			return nil, nil
-		}
-
-		sendRawTransaction = func(data []byte) (interface{}, error) {
-			var params = util.Params{}
-			if err := json.Unmarshal(data, &params); err != nil {
-				return nil, err
-			}
-			return service.SendRawTransaction(params)
-		}
-	)
-
-	const (
-		ApiGetConnectionCount  = "/api/v1/node/connectioncount"
-		ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height/:height"
-		ApiGetBlockByHeight    = "/api/v1/block/details/height/:height"
-		ApiGetBlockByHash      = "/api/v1/block/details/hash/:blockhash/:verbosity"
-		ApiGetBlockHeight      = "/api/v1/block/height"
-		ApiGetBlockHash        = "/api/v1/block/hash/:height"
-		ApiGetTotalIssued      = "/api/v1/totalissued"
-		ApiGetTransaction      = "/api/v1/transaction/:hash"
-		ApiGetAsset            = "/api/v1/asset/:hash"
-		ApiGetUTXOByAddr       = "/api/v1/asset/utxos/:addr"
-		ApiGetUTXOByAsset      = "/api/v1/asset/utxo/:addr/:assetid"
-		ApiGetBalanceByAddr    = "/api/v1/asset/balances/:addr"
-		ApiGetBalanceByAsset   = "/api/v1/asset/balance/:addr/:assetid"
-		ApiSendRawTransaction  = "/api/v1/transaction"
-		ApiGetTransactionPool  = "/api/v1/transactionpool"
-		ApiRestart             = "/api/v1/restart"
-	)
-
-	s.RegisterGetAction(ApiGetConnectionCount, service.GetConnectionCount)
-	s.RegisterGetAction(ApiGetBlockTxsByHeight, service.GetTransactionsByHeight)
-	s.RegisterGetAction(ApiGetBlockByHeight, service.GetBlockByHeight)
-	s.RegisterGetAction(ApiGetBlockByHash, service.GetBlockByHash)
-	s.RegisterGetAction(ApiGetBlockHeight, service.GetBlockHeight)
-	s.RegisterGetAction(ApiGetBlockHash, service.GetBlockHash)
-	s.RegisterGetAction(ApiGetTransactionPool, service.GetTransactionPool)
-	s.RegisterGetAction(ApiGetTransaction, service.GetTransactionByHash)
-	s.RegisterGetAction(ApiGetAsset, service.GetAssetByHash)
-	s.RegisterGetAction(ApiGetUTXOByAddr, service.GetUnspendsByAddr)
-	s.RegisterGetAction(ApiGetUTXOByAsset, service.GetUnspendsByAsset)
-	s.RegisterGetAction(ApiGetBalanceByAddr, service.GetBalanceByAddr)
-	s.RegisterGetAction(ApiGetBalanceByAsset, service.GetBalanceByAsset)
-	s.RegisterGetAction(ApiRestart, restartServer)
-
-	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
-
 	return s
 }
 
