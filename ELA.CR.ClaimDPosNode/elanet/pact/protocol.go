@@ -7,6 +7,9 @@ import (
 
 // Release version numbers
 const (
+	// EBIP001Version is the protocol version starts to support SPV protocol.
+	EBIP001Version uint32 = 10001
+
 	// EBIP002Version is the protocol version which start support
 	// transaction filtering through txfilter message.
 	EBIP002Version uint32 = 10002
