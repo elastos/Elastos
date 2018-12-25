@@ -21,7 +21,7 @@
       flex-basis: 50%;
       margin: $gap_4 * 2 auto 0;
     }
-    @media only screen and (max-width: $mobile-width) {
+    @media only screen and (max-width: $lg-width) {
       width: 100%;
       margin: 0;
       padding: 0;
@@ -39,7 +39,20 @@
     }
   }
 
-  @media only screen and (max-width: $mobile-width) {
+  .login-msg {
+
+    background-color: $bg_light_gray;
+    margin: $gap_4 $gap_4 * 2;
+    padding: $gap_2 $gap_4;
+    border-radius: 1px;
+
+    + .side-form {
+      display: block;
+      margin-top: 0;
+    }
+  }
+
+  @media only screen and (max-width: $lg-width) {
     padding: 0;
   }
 }
