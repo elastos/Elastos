@@ -399,7 +399,7 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 }
 
 func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
-	// 1. Generate a register producer transaction
+	// Generate a register producer transaction
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
@@ -412,7 +412,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.Payload = &payload.PayloadRegisterProducer{
 		PublicKey: publicKey1,
 		NickName:  "nick name 1",
-		Url:       "http://www.google.com",
+		Url:       "http://www.elastos_test.com",
 		Location:  1,
 		Address:   "127.0.0.1",
 	}
@@ -422,39 +422,72 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	publicKeyPlege1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	publicKeyDeposit1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
 		Value:       5000,
 		OutputLock:  0,
-		ProgramHash: *publicKeyPlege1,
+		ProgramHash: *publicKeyDeposit1,
 	}}
 
-	// 2. Check transaction
 	err := CheckRegisterProducerTransaction(txn)
 	s.NoError(err)
 
-	// 3. Change public key in payload
+	// Give an invalid public key in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = errPublicKey
-
-	// 4. Check transaction
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Invalid publick key.")
 
-	// 5. Change public key in payload
+	// Give a mismatching public key in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey2
-
-	// 6. Check transaction
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Public key unsigned.")
 
-	// 7. Change url in payload
+	// Give an invalid url in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
 	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
-
-	// 8. Check transaction
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Invalid url.")
+
+	// Give a mismatching deposit address
+	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
+	txn.Payload.(*payload.PayloadRegisterProducer).Url = "www.elastos_test.com"
+	publicKeyDeposit2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyDeposit2,
+	}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "deposit address does not match the public key in payload")
+
+	// Give a insufficient deposit coin
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       4000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyDeposit1,
+	}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "the deposit coin is insufficient")
+
+	// Multi deposit addresses
+	txn.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000,
+			OutputLock:  0,
+			ProgramHash: *publicKeyDeposit1,
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000,
+			OutputLock:  0,
+			ProgramHash: *publicKeyDeposit1,
+		}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "there must be only one deposit address in outputs")
 }
 
 func getCode(publicKey string) []byte {
