@@ -7,8 +7,9 @@ import (
 )
 
 type ChainStoreMock struct {
-	RegisterProducers []*payload.PayloadRegisterProducer
-	BlockHeight       uint32
+	RegisterProducers    []*payload.PayloadRegisterProducer
+	BlockHeight          uint32
+	CancelProducerHeight uint32
 }
 
 func (c *ChainStoreMock) GetRegisteredProducers() []*payload.PayloadRegisterProducer {
@@ -32,7 +33,7 @@ func (c *ChainStoreMock) GetIllegalProducers() map[string]struct{} {
 }
 
 func (c *ChainStoreMock) GetCancelProducerHeight(publicKey []byte) (uint32, error) {
-	panic("implement me")
+	return c.CancelProducerHeight, nil
 }
 
 func (c *ChainStoreMock) OnIllegalBlockTxnReceived(txn *types.Transaction) {
