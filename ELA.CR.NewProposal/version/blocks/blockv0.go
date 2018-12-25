@@ -48,7 +48,7 @@ func (b *blockV0) GetProducersDesc() ([][]byte, error) {
 }
 
 func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return b.cfg.Chain.AddBlock(dposBlock.Block)
+	return b.cfg.Chain.ProcessBlock(dposBlock.Block)
 }
 
 func (b *blockV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
