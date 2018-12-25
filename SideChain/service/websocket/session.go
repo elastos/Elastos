@@ -12,6 +12,7 @@ import (
 const timeout int64 = 120 // 120 seconds
 
 type Session struct {
+	mtx        sync.Mutex
 	id         string
 	conn       *websocket.Conn
 	lastActive int64
@@ -23,6 +24,9 @@ type SessionList struct {
 }
 
 func (s *Session) Send(data []byte) error {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
 	if s.conn == nil {
 		return errors.New("WebSocket is null")
 	}
