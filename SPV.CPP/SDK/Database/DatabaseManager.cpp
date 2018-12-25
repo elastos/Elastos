@@ -13,9 +13,7 @@ namespace Elastos {
 			_peerDataSource(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
-			_merkleBlockDataSource(&_sqlite),
-			_externalAddresses(&_sqlite),
-			_internalAddresses(&_sqlite) {
+			_merkleBlockDataSource(&_sqlite) {
 
 		}
 
@@ -98,46 +96,6 @@ namespace Elastos {
 
 		const boost::filesystem::path &DatabaseManager::getPath() const {
 			return _path;
-		}
-
-		bool DatabaseManager::putInternalAddress(uint32_t startIndex, const std::string &address) {
-			return _internalAddresses.putAddress(startIndex, address);
-		}
-
-		bool DatabaseManager::putInternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses) {
-			return _internalAddresses.putAddresses(startIndex, addresses);
-		}
-
-		bool DatabaseManager::clearInternalAddresses() {
-			return _internalAddresses.clearAddresses();
-		}
-
-		std::vector<std::string> DatabaseManager::getInternalAddresses(uint32_t startIndex, uint32_t count) {
-			return _internalAddresses.getAddresses(startIndex, count);
-		}
-
-		uint32_t DatabaseManager::getInternalAvailableAddresses(uint32_t startIndex) {
-			return _internalAddresses.getAvailableAddresses(startIndex);
-		}
-
-		bool DatabaseManager::putExternalAddress(uint32_t startIndex, const std::string &address) {
-			return _externalAddresses.putAddress(startIndex, address);
-		}
-
-		bool DatabaseManager::putExternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses) {
-			return _externalAddresses.putAddresses(startIndex, addresses);
-		}
-
-		bool DatabaseManager::clearExternalAddresses() {
-			return _externalAddresses.clearAddresses();
-		}
-
-		std::vector<std::string> DatabaseManager::getExternalAddresses(uint32_t startIndex, uint32_t count) {
-			return _externalAddresses.getAddresses(startIndex, count);
-		}
-
-		uint32_t DatabaseManager::getExternalAvailableAddresses(uint32_t startIndex) {
-			return _externalAddresses.getAvailableAddresses(startIndex);
 		}
 
 		bool DatabaseManager::PutAsset(const std::string &iso, const AssetEntity &asset) {

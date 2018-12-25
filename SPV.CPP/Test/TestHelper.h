@@ -6,10 +6,10 @@
 #define __ELASTOS_SDK_TESTHELPER_H__
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define TEST_ASCII_BEGIN 48
 
-#include "SDK/Plugin/Block/AuxPow.h"
-#include "Plugin/Block/MerkleBlock.h"
+#include <SDK/Plugin/Block/AuxPow.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -32,13 +32,44 @@ namespace Elastos {
 			return block;
 		}
 
-		static std::string getRandString(size_t length) {
+		static std::string getRandHexString(size_t length) {
 			char buf[length];
-			for (size_t i = 0; i < length; ++i) {
-				buf[i] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % 75);
+			for (size_t i = 0; i < length; ) {
+				char ch = rand();
+				if (isxdigit(ch)) {
+					buf[i++] = ch;
+				}
 			}
 
-			return std::string(buf);
+			return std::string(buf, length);
+		}
+
+		static std::string getRandString(size_t length) {
+			char buf[length];
+			for (size_t i = 0; i < length; ) {
+				char ch = rand();
+				if (isalnum(ch)) {
+					buf[i++] = ch;
+				}
+			}
+
+			return std::string(buf, length);
+		}
+
+		static uint64_t getRandUInt64() {
+			return uint64_t(rand());
+		}
+
+		static uint32_t getRandUInt32() {
+			return uint32_t(rand());
+		}
+
+		static uint16_t getRandUInt16() {
+			return uint16_t(rand());
+		}
+
+		static uint8_t getRandUInt8() {
+			return uint8_t(rand());
 		}
 
 		static UInt168 getRandUInt168(void) {
@@ -48,6 +79,102 @@ namespace Elastos {
 			}
 			return u;
 		}
+
+		static void initTransaction(Transaction &tx) {
+			tx.setVersion(getRandUInt32());
+			tx.setLockTime(getRandUInt32());
+			tx.setBlockHeight(getRandUInt32());
+			tx.setTimestamp(getRandUInt32());
+			tx.setTransactionType(Transaction::TransferAsset);
+			tx.setPayloadVersion(getRandUInt8());
+			tx.setFee(getRandUInt64());
+			tx.setRemark(getRandString(40));
+
+			for (size_t i = 0; i < 20; ++i) {
+				TransactionInput input;
+				input.setTransactionHash(getRandUInt256());
+				input.setIndex(getRandUInt16());
+				input.setSequence(getRandUInt32());
+				tx.addInput(input);
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				TransactionOutput output;
+				output.setAmount(getRandUInt64());
+				output.setAssetId(getRandUInt256());
+				output.setOutputLock(getRandUInt32());
+				output.setProgramHash(getRandUInt168());
+				tx.addOutput(output);
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock data = getRandCMBlock(25);
+				tx.addAttribute(Attribute(Attribute::Script, data));
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock code = getRandCMBlock(25);
+				CMBlock parameter = getRandCMBlock(25);
+				tx.addProgram(Program(code, parameter));
+			}
+
+			tx.getHash();
+		}
+
+		static void verifyTransaction(const Transaction &tx1, const Transaction &tx2, bool checkAll = true) {
+			REQUIRE(tx1.getLockTime() == tx2.getLockTime());
+			REQUIRE(tx1.getTransactionType() == tx2.getTransactionType());
+			REQUIRE(tx1.getPayloadVersion() == tx2.getPayloadVersion());
+			if (checkAll) {
+				REQUIRE(tx1.getBlockHeight() == tx2.getBlockHeight());
+				REQUIRE(tx1.getTimestamp() == tx2.getTimestamp());
+				REQUIRE(tx1.getVersion() == tx2.getVersion());
+				REQUIRE(tx1.getFee() == tx2.getFee());
+				REQUIRE(tx1.getRemark() == tx2.getRemark());
+			}
+
+			REQUIRE(tx1.getOutputs().size() == tx2.getOutputs().size());
+			REQUIRE(UInt256Eq(&tx1.getHash(), &tx2.getHash()));
+			REQUIRE(tx1.getInputs().size() == tx2.getInputs().size());
+			for (size_t i = 0; i < tx1.getInputs().size(); ++i) {
+				TransactionInput in1, in2;
+				in1 = tx1.getInputs()[i];
+				in2 = tx2.getInputs()[i];
+				REQUIRE(UInt256Eq(&in1.getTransctionHash(), &in2.getTransctionHash()));
+				REQUIRE(in1.getIndex() == in2.getIndex());
+				REQUIRE(in1.getSequence() == in2.getSequence());
+			}
+
+			REQUIRE(tx1.getOutputs().size() == tx2.getOutputs().size());
+			for (size_t i = 0; i < tx2.getOutputs().size(); ++i) {
+				TransactionOutput o1, o2;
+				o1 = tx1.getOutputs()[i];
+				o2 = tx2.getOutputs()[i];
+				REQUIRE(UInt256Eq(&o2.getAssetId(), &o1.getAssetId()));
+				REQUIRE(UInt168Eq(&o2.getProgramHash(), &o1.getProgramHash()));
+				REQUIRE(o2.getOutputLock() == o1.getOutputLock());
+				REQUIRE(o2.getAmount() == o1.getAmount());
+			}
+
+			REQUIRE(tx1.getAttributes().size() == tx2.getAttributes().size());
+			for (size_t i = 0; i < tx1.getAttributes().size(); ++i) {
+				Attribute attr1, attr2;
+				attr1 = tx1.getAttributes()[i];
+				attr2 = tx2.getAttributes()[i];
+				REQUIRE(attr1.GetUsage() == attr2.GetUsage());
+				REQUIRE((attr1.GetData() == attr2.GetData()));
+			}
+
+			REQUIRE(tx1.getPrograms().size() == tx2.getPrograms().size());
+			for (size_t i = 0; i < tx2.getPrograms().size(); ++i) {
+				Program p1, p2;
+				p1 = tx1.getPrograms()[i];
+				p2 = tx2.getPrograms()[i];
+				REQUIRE((p1.getCode() == p2.getCode()));
+				REQUIRE((p1.getParameter() == p2.getParameter()));
+			}
+		}
+
 
 		static AuxPow createDummyAuxPow() {
 			AuxPow auxPow;

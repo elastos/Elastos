@@ -40,6 +40,8 @@ namespace Elastos {
 	namespace ElaWallet {
 		class Base64 {
 		public:
+			static std::string Encode(const void *input, size_t inputLen);
+
 			static std::string Encode(const CMBlock &input);
 
 			static CMBlock Decode(const std::string &input);

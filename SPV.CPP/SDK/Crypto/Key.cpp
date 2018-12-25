@@ -31,26 +31,21 @@ namespace Elastos {
 
 		Key::Key(BRKey *brkey) {
 			_key = boost::shared_ptr<BRKey>(brkey);
+
+			getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
 		}
 
 		Key::Key(const BRKey &brkey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey());
 			*_key = brkey;
+
+			getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
 		}
 
 		Key::Key(const std::string &privKey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			assert(!privKey.empty());
 			if (!setPrivKey(privKey)) {
-				Log::error("Failed to set PrivKey");
-			}
-		}
-
-		Key::Key(const CMBlock &privKey) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			char data[privKey.GetSize() + 1];
-			memcpy((void *) data, (void *) privKey, sizeof(uint8_t) * privKey.GetSize());
-			if (!setPrivKey(data)) {
 				Log::error("Failed to set PrivKey");
 			}
 		}
@@ -75,11 +70,15 @@ namespace Elastos {
 		}
 
 		CMBlock Key::getPubkey() const {
-			CMBlock privKey;
-			privKey.SetMemFixed((uint8_t *) &_key->secret, sizeof(_key->secret));
 			CMBlock result;
-			result.Resize(33);
-			getPubKeyFromPrivKey(result, (UInt256 *) (uint8_t *) privKey);
+			int len = getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
+			if (len != 33 && len != 65) {
+				Log::error("Invalid public key length");
+				return result;
+			}
+
+			result.SetMemFixed(_key->pubKey, len);
+
 			return result;
 		}
 
@@ -96,43 +95,38 @@ namespace Elastos {
 			return _key->compressed != 0;
 		}
 
+		/*
+		 * writes the WIF private key to privKey and returns the number of bytes writen,
+		 * or pkLen needed if privKey is NULL
+		 * returns 0 on failure
+		 */
 		std::string Key::getPrivKey() const {
 			size_t privKeyLen = (size_t) BRKeyPrivKey(_key.get(), nullptr, 0);
-			char privKey[privKeyLen + 1];
+			char privKey[privKeyLen];
 			BRKeyPrivKey(_key.get(), privKey, privKeyLen);
-			privKey[privKeyLen] = '\0';
 			return privKey;
 		}
 
+		/*
+		 * assigns privKey to key and returns true on success
+		 * privKey must be wallet import format (WIF), mini private key format, or hex string
+		 */
 		bool Key::setPrivKey(const std::string &privKey) {
-			bool ret = BRKeySetPrivKey(_key.get(), privKey.c_str()) != 0;
-			if (ret) {
-				setPublicKey();
+			if (BRKeySetPrivKey(_key.get(), privKey.c_str()) == 0) {
+				Log::error("Invalid privKey");
+				return false;
 			}
-			return ret;
+
+			return 0 != getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
 		}
 
 		bool Key::setSecret(const UInt256 &secret, bool compressed) {
-			bool ret = BRKeySetSecret(_key.get(), &secret, compressed) != 0;
-			if (ret) {
-				setPublicKey();
+			if (BRKeySetSecret(_key.get(), &secret, compressed) == 0) {
+				Log::error("Invalid privKey");
+				return false;
 			}
-			return ret;
-		}
 
-		void Key::setPublicKey() {
-			UInt256 secret = getSecret();
-			ParamChecker::checkCondition(0 != UInt256IsZero(&secret), Error::Key,
-										 "Secret is zero, can't generate publicKey");
-			CMBlock secretData;
-			secretData.SetMemFixed(secret.u8, sizeof(secret));
-
-			CMBlock pubKey;
-			pubKey.Resize(33);
-			getPubKeyFromPrivKey(pubKey, (UInt256 *) (uint8_t *) secretData);
-
-			memset(_key->pubKey, 0, sizeof(_key->pubKey));
-			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
+			return 0 != getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
 		}
 
 		CMBlock Key::compactSign(const CMBlock &data) const {

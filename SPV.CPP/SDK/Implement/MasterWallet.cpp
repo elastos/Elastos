@@ -194,7 +194,7 @@ namespace Elastos {
 			char phrase[phraselen];
 			BRBIP39Encode(phrase, phraselen, wordList, entropy.u8, sizeof(entropy));
 
-			return std::string(phrase, phraselen);
+			return phrase;
 		}
 
 		void MasterWallet::ClearLocal() {
@@ -216,6 +216,10 @@ namespace Elastos {
 			_localStore.Save(path);
 		}
 
+		MasterPubKeyPtr MasterWallet::GetMasterPubKey(const std::string &chainID) const {
+			return _localStore.GetMasterPubKey(chainID);
+		}
+
 		std::string MasterWallet::GetId() const {
 			return _id;
 		}
@@ -234,7 +238,7 @@ namespace Elastos {
 		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKb) {
 
 			ParamChecker::checkArgumentNotEmpty(chainID, "Chain ID");
-			ParamChecker::checkCondition(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
+			ParamChecker::checkParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
 
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
@@ -270,7 +274,7 @@ namespace Elastos {
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
 
-			ParamChecker::checkCondition(limitGap > SEQUENCE_GAP_LIMIT_EXTERNAL, Error::LimitGap,
+			ParamChecker::checkParam(limitGap > SEQUENCE_GAP_LIMIT_EXTERNAL, Error::LimitGap,
 										 "Limit gap should less than or equal " +
 										 std::to_string(SEQUENCE_GAP_LIMIT_EXTERNAL));
 
@@ -295,12 +299,8 @@ namespace Elastos {
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
-
-			ParamChecker::checkCondition(wallet == nullptr, Error::Wallet,
-										 "Destroy wallet can't be null");
-
-			ParamChecker::checkCondition(_createdWallets.empty(), Error::Wallet,
-										 "There is no sub wallet in this wallet");
+			ParamChecker::checkParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
+			ParamChecker::checkParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
 
 			if (std::find_if(_createdWallets.begin(), _createdWallets.end(),
 							 [wallet](const WalletMap::value_type &item) {
@@ -443,8 +443,6 @@ namespace Elastos {
 
 			CoinInfo fixedInfo = info;
 
-			time_t timeStamp;
-
 			if (_initFrom == CreateNormal) {
 				fixedInfo.setEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
 			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic ||
@@ -464,21 +462,17 @@ namespace Elastos {
 								   fixedInfo.getEarliestPeerTime());
 
 			fixedInfo.setGenesisAddress(config.GenesisAddress);
-			MasterPubKeyMap subWalletsMasterPubKeyMap = _localStore.GetMasterPubKeyMap();
-			const MasterPubKeyPtr masterPubKey =
-				subWalletsMasterPubKeyMap.find(fixedInfo.getChainId()) != subWalletsMasterPubKeyMap.end() ?
-				subWalletsMasterPubKeyMap[fixedInfo.getChainId()] : nullptr;
 
 			switch (fixedInfo.getWalletType()) {
 				case Mainchain:
-					return new MainchainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
+					return new MainchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Sidechain:
-					return new SidechainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
+					return new SidechainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Idchain:
-					return new IdChainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
+					return new IdChainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Normal:
 				default:
-					return new SubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
+					return new SubWallet(fixedInfo, chainParams, config.PluginType, parent);
 			}
 		}
 

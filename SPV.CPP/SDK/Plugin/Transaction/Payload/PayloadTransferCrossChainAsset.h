@@ -17,17 +17,16 @@ namespace Elastos {
 		public:
 			PayloadTransferCrossChainAsset();
 
-			PayloadTransferCrossChainAsset(const std::vector<std::string> crossChainAddress,
-			                               const std::vector<uint64_t> outputIndex,
-			                               const std::vector<uint64_t> crossChainAmount);
+			PayloadTransferCrossChainAsset(
+				const std::vector<std::string> &crossChainAddress,
+				const std::vector<uint64_t> &outputIndex,
+				const std::vector<uint64_t> &crossChainAmount);
 
 			~PayloadTransferCrossChainAsset();
 
-			void setCrossChainData(const std::vector<std::string> crossChainAddress,
-			                   const std::vector<uint64_t> outputIndex,
-			                   const std::vector<uint64_t> crossChainAmount);
-
-			virtual CMBlock getData() const;
+			void setCrossChainData(const std::vector<std::string> &crossChainAddress,
+			                   const std::vector<uint64_t> &outputIndex,
+			                   const std::vector<uint64_t> &crossChainAmount);
 
 			const std::vector<std::string> &getCrossChainAddress() const;
 

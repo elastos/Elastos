@@ -40,6 +40,13 @@ namespace Elastos {
 			"abcdefghijklmnopqrstuvwxyz"
 			"0123456789+/";
 
+		std::string Base64::Encode(const void *input, size_t inputLen) {
+			CMBlock cmInput;
+			cmInput.SetMemFixed(input, inputLen);
+
+			return Encode(cmInput);
+		}
+
 		std::string Base64::Encode(const CMBlock &input) {
 			std::string ret;
 			int i = 0;

@@ -202,6 +202,26 @@ public:
 		return *this;
 	}
 
+	bool operator==(const CMemBlock &mem) const {
+		if (pValue == mem.pValue) {
+			return true;
+		}
+
+		if (pValue != nullptr && mem.pValue != nullptr) {
+			if (pValue->GetSize() == mem.pValue->GetSize()) {
+				if (0 == memcmp(pValue->data, mem.pValue->data, pValue->GetSize())) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	bool operator!=(const CMemBlock &mem) const {
+		return !(*this == mem);
+	}
+
 	void Zero() {
 		if (nullptr != pValue)
 			pValue->Zero();
@@ -221,8 +241,9 @@ public:
 		return nullptr != pValue ? pValue->SetMem(pV, len) : 0;
 	}
 
-	size_type SetMemFixed(const T *pV, size_type len) {
-		return nullptr != pValue ? pValue->SetMemFixed(pV, len) : 0;
+	template <class Type>
+	size_type SetMemFixed(const Type *pV, size_type len) {
+		return nullptr != pValue ? pValue->SetMemFixed((const T *)pV, len) : 0;
 	}
 
 	size_type Resize(int size) {
@@ -256,22 +277,6 @@ public:
 	operator bool() {
 		return nullptr != pValue ? pValue->data ? true : false : false;
 	};
-
-	operator void *() const {
-		return (void *) nullptr != pValue ? pValue->data : 0;
-	}
-
-	operator void *() {
-		return (void *) nullptr != pValue ? pValue->data : 0;
-	}
-
-	operator const void *() const {
-		return (void *) nullptr != pValue ? pValue->data : 0;
-	}
-
-	operator const void *() {
-		return (void *) nullptr != pValue ? pValue->data : 0;
-	}
 
 	T &operator*() const {
 		return nullptr != pValue ? *pValue->data : (*this)[0];

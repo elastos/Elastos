@@ -4,50 +4,46 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <fstream>
 #include <catch.hpp>
-#include <boost/filesystem.hpp>
 
-#include "KeyStore/SjclFile.h"
+#include <nlohmann/json.hpp>
+#include <SDK/KeyStore/SjclFile.h>
+
+#include <fstream>
+#include <boost/filesystem.hpp>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Json convert", "[SjclFile]") {
 
-	SECTION("Convert to json") {
-		SjclFile sf, sf_re;
-		sf.setIv(std::string("n2JUTJ0/yrLdCDPfIcqAzw=="));
-		sf.setV(uint32_t(1));
-		sf.setIter(uint32_t(10000));
-		sf.setKs(uint32_t(256));
-		sf.setTs(uint32_t(64));
-		sf.setMode(std::string("ccm"));
-		sf.setAdata(std::string(""));
-		sf.setCipher(std::string("aes"));
-		sf.setSalt(std::string("ZRVja4LFrFY="));
-		sf.setCt(std::string("FCuQWGYz3onE/lRt/7vCl5A="));
+	SECTION("to json and from json") {
+		SjclFile s1, s2;
+		s1.setIv("n2JUTJ0/yrLdCDPfIcqAzw==");
+		s1.setV(uint32_t(1));
+		s1.setIter(uint32_t(10000));
+		s1.setKs(uint32_t(256));
+		s1.setTs(uint32_t(64));
+		s1.setMode("ccm");
+		s1.setAdata("");
+		s1.setCipher("aes");
+		s1.setSalt("ZRVja4LFrFY=");
+		s1.setCt("FCuQWGYz3onE/lRt/7vCl5A=");
 
 		nlohmann::json json;
-		json << sf;
+		json << s1;
 
-		json >> sf_re;
+		json >> s2;
 
-		int pause = 0;
-	}
-
-	SECTION("Convert from json file") {
-		const boost::filesystem::path path("conf.json");
-		std::string str_path = path.string();
-		if (str_path != "") {
-			std::ifstream i(str_path);
-			nlohmann::json j;
-			i >> j;
-
-			SjclFile sf;
-			j >> sf;
-
-			int pause = 0;
-		}
+		REQUIRE(s1.getIv() == s2.getIv());
+		REQUIRE(s1.getV() == s2.getV());
+		REQUIRE(s1.getIter() == s2.getIter());
+		REQUIRE(s1.getKs() == s2.getKs());
+		REQUIRE(s1.getTs() == s2.getTs());
+		REQUIRE(s1.getMode() == s2.getMode());
+		REQUIRE(s1.getAdata() == s2.getAdata());
+		REQUIRE(s1.getCipher() == s2.getCipher());
+		REQUIRE(s1.getSalt() == s2.getSalt());
+		REQUIRE(s1.getCt() == s2.getCt());
 	}
 
 }

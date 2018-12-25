@@ -28,20 +28,36 @@ namespace Elastos {
 
 		}
 
-		void PayloadSideMining::setSideBlockHash(const UInt256 &sideBlockHash) {
+		void PayloadSideMining::SetSideBlockHash(const UInt256 &sideBlockHash) {
 			_sideBlockHash = sideBlockHash;
 		}
 
-		void PayloadSideMining::setSideGenesisHash(const UInt256 &sideGensisHash) {
+		void PayloadSideMining::SetSideGenesisHash(const UInt256 &sideGensisHash) {
 			_sideGenesisHash = sideGensisHash;
 		}
 
-		void PayloadSideMining::setBlockHeight(uint32_t height) {
+		void PayloadSideMining::SetBlockHeight(uint32_t height) {
 			_blockHeight = height;
 		}
 
-		void PayloadSideMining::setSignedData(const CMBlock &signedData) {
+		void PayloadSideMining::SetSignedData(const CMBlock &signedData) {
 			_signedData = signedData;
+		}
+
+		const UInt256 &PayloadSideMining::GetSideBlockHash() const {
+			return _sideBlockHash;
+		}
+
+		const UInt256 &PayloadSideMining::GetSideGenesisHash() const {
+			return _sideGenesisHash;
+		}
+
+		const uint32_t &PayloadSideMining::GetBlockHeight() const {
+			return _blockHeight;
+		}
+
+		const CMBlock &PayloadSideMining::GetSignedData() const {
+			return _signedData;
 		}
 
 		CMBlock PayloadSideMining::getData() const {

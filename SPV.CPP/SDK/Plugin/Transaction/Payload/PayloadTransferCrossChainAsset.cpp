@@ -13,10 +13,10 @@ namespace Elastos {
 
 		}
 
-		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(const std::vector<std::string> crossChainAddress,
-		                                                               const std::vector<uint64_t> outputIndex,
-		                                                               const std::vector<uint64_t> crossChainAmount)
-		{
+		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(
+			const std::vector<std::string> &crossChainAddress,
+			const std::vector<uint64_t> &outputIndex,
+			const std::vector<uint64_t> &crossChainAmount) {
 			setCrossChainData(crossChainAddress, outputIndex, crossChainAmount);
 		}
 
@@ -24,19 +24,13 @@ namespace Elastos {
 
 		}
 
-		void PayloadTransferCrossChainAsset::setCrossChainData(const std::vector<std::string> crossChainAddress,
-		                                                       const std::vector<uint64_t> outputIndex,
-		                                                       const std::vector<uint64_t> crossChainAmount) {
+		void PayloadTransferCrossChainAsset::setCrossChainData(
+			const std::vector<std::string> &crossChainAddress,
+			const std::vector<uint64_t> &outputIndex,
+			const std::vector<uint64_t> &crossChainAmount) {
 			_crossChainAddress = crossChainAddress;
 			_outputIndex = outputIndex;
 			_crossChainAmount = crossChainAmount;
-		}
-
-		CMBlock PayloadTransferCrossChainAsset::getData() const {
-			//todo implement IPayload getData
-			ByteStream stream;
-			Serialize(stream);
-			return stream.getBuffer();
 		}
 
 		bool PayloadTransferCrossChainAsset::isValid() const {

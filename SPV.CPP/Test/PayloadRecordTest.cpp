@@ -5,38 +5,35 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Payload/PayloadRecord.h"
+#include "TestHelper.h"
+#include <SDK/Plugin/Transaction/Payload/PayloadRecord.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadRecord test", "PayloadRecord") {
 
-	SECTION("PayloadRecord interface test") {
-		std::string recordType = "a test recordType";
-		uint8_t script[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 8, 182, 57, 98};
-		CMBlock data;
-		data.SetMemFixed(script, sizeof(script));
+	SECTION("Serialize and deserialize") {
+		PayloadRecord p1(getRandString(20), getRandCMBlock(50)), p2;
 
-		PayloadRecord record(recordType, data);
-		REQUIRE(record.getRecordType() == recordType);
-		CMBlock recordData = record.getRecordData();
-		REQUIRE(recordData.GetSize() == data.GetSize());
-		int result = memcmp(recordData, data, data.GetSize());
-		REQUIRE(result == 0);
+		ByteStream stream;
 
-		ByteStream byteStream;
-		record.Serialize(byteStream);
-		byteStream.setPosition(0);
-		REQUIRE(byteStream.length() > 0);
+		p1.Serialize(stream);
 
-		PayloadRecord record1;
-		record1.Deserialize(byteStream);
+		stream.setPosition(0);
+		REQUIRE(p2.Deserialize(stream));
 
-		REQUIRE(record1.getRecordType() == record.getRecordType());
-		CMBlock recordData1 = record1.getRecordData();
-		REQUIRE(recordData1.GetSize() == recordData.GetSize());
-		result = memcmp(recordData1, recordData, recordData1.GetSize());
+		REQUIRE(p1.getRecordType() == p2.getRecordType());
+		REQUIRE((p1.getRecordData() == p2.getRecordData()));
+	}
 
-		REQUIRE(result == 0);
+	SECTION("to json and from json") {
+		PayloadRecord p1(getRandString(20), getRandCMBlock(50)), p2;
+
+		nlohmann::json p1Json = p1.toJson();
+
+		p2.fromJson(p1Json);
+
+		REQUIRE(p1.getRecordType() == p2.getRecordType());
+		REQUIRE(p1.getRecordData() == p2.getRecordData());
 	}
 }

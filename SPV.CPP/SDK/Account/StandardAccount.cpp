@@ -39,7 +39,6 @@ namespace Elastos {
 			Utils::Encrypt(_encryptedKey, secret, payPassword);
 
 			Key key(masterKey);
-			key.setPublicKey();
 			_publicKey = Utils::encodeHex(key.getPubkey());
 
 			//init id chain derived master public key

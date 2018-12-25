@@ -31,7 +31,6 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		SubWallet::SubWallet(const CoinInfo &info,
-							 const MasterPubKeyPtr &masterPubKey,
 							 const ChainParams &chainParams,
 							 const PluginType &pluginTypes,
 							 MasterWallet *parent) :
@@ -48,7 +47,7 @@ namespace Elastos {
 				SubAccountGenerator generator;
 				generator.SetCoinInfo(_info);
 				generator.SetParentAccount(_parent->_localStore.Account());
-				generator.SetMasterPubKey(masterPubKey);
+				generator.SetMasterPubKey(_parent->GetMasterPubKey(_info.getChainId()));
 				_subAccount = SubAccountPtr(generator.Generate());
 
 				_info.setChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));

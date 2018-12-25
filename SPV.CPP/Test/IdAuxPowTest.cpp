@@ -4,13 +4,14 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <Core/BRMerkleBlock.h>
+#include "catch.hpp"
+#include "TestHelper.h"
+
+#include <SDK/Plugin/Block/IdAuxPow.h>
+#include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include "catch.hpp"
-#include "SDK/Plugin/Block/IdAuxPow.h"
-#include "Log.h"
-#include "TestHelper.h"
+#include <Core/BRMerkleBlock.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -29,53 +30,10 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 		idAuxPow.setIdAuxMerkleBranch(hashes);
 		idAuxPow.setIdAuxMerkleIndex(rand());
 
-		ELATransaction *tx = ELATransactionNew();
-		tx->raw.txHash = getRandUInt256();
-		tx->raw.version = rand();
-		for (size_t i = 0; i < 10; ++i) {
-			CMBlock script = getRandCMBlock(25);
-			CMBlock signature = getRandCMBlock(35);
-			UInt256 txHash = getRandUInt256();
-			BRTransactionAddInput(&tx->raw, txHash, rand(), rand(),
-								  script, script.GetSize(), signature, signature.GetSize(), rand());
-		}
+		Transaction tx;
+		initTransaction(tx);
 
-		tx->raw.lockTime = rand();
-		tx->raw.blockHeight = rand();
-		tx->raw.timestamp = rand();
-		tx->type = ELATransaction::Type::TransferAsset;//ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
-		tx->payloadVersion = rand() % sizeof(tx->payloadVersion);
-		tx->fee = rand();
-		tx->payload = ELAPayloadNew(tx->type);
-
-		for (size_t i = 0; i < 10; ++i) {
-			TransactionOutput *output = new TransactionOutput();
-			ELATxOutput *o = (ELATxOutput *)output->getRaw();
-			CMBlock script = getRandCMBlock(25);
-			ELATxOutputSetScript(o, script, script.GetSize());
-			o->raw.amount = rand();
-			o->assetId = getRandUInt256();
-			o->outputLock = rand();
-			o->programHash = getRandUInt168();
-			tx->outputs.push_back(output);
-		}
-
-		for (size_t i = 0; i < 10; ++i) {
-			CMBlock script = getRandCMBlock(25);
-			Attribute *attr = new Attribute(Attribute::Script, script);
-			tx->attributes.push_back(attr);
-		}
-
-		for (size_t i = 0; i < 10; ++i) {
-			CMBlock code = getRandCMBlock(35);
-			CMBlock parameter = getRandCMBlock(45);
-			Program *program = new Program(code, parameter);
-			tx->programs.push_back(program);
-		}
-
-		Transaction txn(tx);
-
-		idAuxPow.setIdAuxBlockTx(txn);
+		idAuxPow.setIdAuxBlockTx(tx);
 //
 //		ELAMerkleBlock *block = ELAMerkleBlockNew();
 //		block->raw.blockHash = getRandUInt256();

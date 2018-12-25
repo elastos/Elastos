@@ -21,10 +21,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		IdChainSubWallet::IdChainSubWallet(const CoinInfo &info, const MasterPubKeyPtr &masterPubKey,
+		IdChainSubWallet::IdChainSubWallet(const CoinInfo &info,
 										   const ChainParams &chainParams, const PluginType &pluginTypes,
 										   MasterWallet *parent) :
-				SidechainSubWallet(info, masterPubKey, chainParams, pluginTypes, parent) {
+				SidechainSubWallet(info, chainParams, pluginTypes, parent) {
 
 			std::vector<std::string> registeredIds = _parent->GetAllIds();
 

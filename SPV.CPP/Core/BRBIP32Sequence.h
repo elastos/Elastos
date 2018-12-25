@@ -104,7 +104,7 @@ void BRBIP32APIAuthKey(BRKey *key, const void *seed, size_t seedLen);
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
 void BRBIP32BitIDKey(BRKey *key, const void *seed, size_t seedLen, uint32_t index, const char *uri);
 
-void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k);
+int getPubKeyFromPrivKey(void *pubKey, size_t pubKeySize, const UInt256 *k);
 
 size_t ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, void *signedData, size_t signedDataSize);
 

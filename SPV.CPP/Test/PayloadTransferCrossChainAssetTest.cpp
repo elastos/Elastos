@@ -5,87 +5,96 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "BRInt.h"
-#include "Payload/PayloadTransferCrossChainAsset.h"
+#include "TestHelper.h"
+#include <Core/BRInt.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 
 using namespace Elastos::ElaWallet;
 
+static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const PayloadTransferCrossChainAsset &p2) {
+	const std::vector<std::string> &addresses1 = p1.getCrossChainAddress();
+	const std::vector<std::string> &addresses2 = p2.getCrossChainAddress();
+	REQUIRE(addresses1.size() == addresses2.size());
+	for (size_t i = 0; i < addresses1.size(); ++i) {
+		REQUIRE(addresses1[i] == addresses2[i]);
+	}
+
+	const std::vector<uint64_t> &indexes1 = p1.getOutputIndex();
+	const std::vector<uint64_t> &indexes2 = p2.getOutputIndex();
+	REQUIRE(indexes1.size() == indexes2.size());
+	for (size_t i = 0; i < indexes1.size(); ++i) {
+		REQUIRE(indexes1[i] == indexes2[i]);
+	}
+
+	const std::vector<uint64_t> &amounts1 = p1.getCrossChainAmout();
+	const std::vector<uint64_t> &amounts2 = p2.getCrossChainAmout();
+	REQUIRE(amounts1.size() == amounts2.size());
+	for (size_t i = 0; i < amounts1.size(); ++i) {
+		REQUIRE(amounts1[i] == amounts2[i]);
+	}
+}
+
 TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsset]") {
 
-    SECTION("none init test") {
-        PayloadTransferCrossChainAsset ptcca, ptcca_re;
+	SECTION("Default construct test") {
+		PayloadTransferCrossChainAsset p1, p2;
 
-        ByteStream stream;
-        ptcca.Serialize(stream);
+		ByteStream stream1, stream2;
+		p1.Serialize(stream1);
+		p2.Serialize(stream2);
 
+		CMBlock buffer1 = stream1.getBuffer();
+		CMBlock buffer2 = stream2.getBuffer();
 
-        stream.setPosition(0);
+		REQUIRE((buffer1 == buffer2));
 
-        ptcca_re.Deserialize(stream);
+		verifyPayload(p1, p2);
+	}
 
-        CMBlock bd_src = ptcca.getData();
-        CMBlock bd_rc = ptcca_re.getData();
+	SECTION("Serialize and deserialize test") {
+		PayloadTransferCrossChainAsset p1, p2;
 
-        REQUIRE(bd_src.GetSize() == bd_rc.GetSize());
+		std::vector<std::string> crossChainAddress;
+		std::vector<uint64_t> crossChainIndex;
+		std::vector<uint64_t> crossChainAmount;
+		for (int i = 0; i < 10; ++i) {
+			crossChainAddress.push_back(getRandString(34));
+			crossChainIndex.push_back(getRandUInt64());
+			crossChainAmount.push_back(getRandUInt64());
+		}
+		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
-        if (bd_src && bd_rc)
-            REQUIRE(0 == memcmp(bd_src, bd_rc, bd_src.GetSize()));
-    }
+		ByteStream stream;
+		p1.Serialize(stream);
+		CMBlock data1 = stream.getBuffer();
 
-    SECTION("init test") {
-        PayloadTransferCrossChainAsset ptcca, ptcca_re;
+		stream.setPosition(0);
+		p2.Deserialize(stream);
+		CMBlock data2 = p2.getData();
 
-        std::vector<std::string> crossChainAddress;
-        std::vector<uint64_t> crossChainIndex;
-        std::vector<uint64_t> crossChainAmount;
-        for (int i = 0; i < 10; ++i) {
-            std::string address = "test Address " + std::to_string(i + 1);
-            crossChainAddress.push_back(address);
-            crossChainIndex.push_back(i + 1);
-            crossChainAmount.push_back(i + 1);
-        }
-        ptcca.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
+		REQUIRE((data1 == data2));
 
-        ByteStream stream;
-        ptcca.Serialize(stream);
+		verifyPayload(p1, p2);
+	}
 
-        stream.setPosition(0);
+	SECTION("to json and from json") {
+		PayloadTransferCrossChainAsset p1, p2;
 
-        ptcca_re.Deserialize(stream);
+		std::vector<std::string> crossChainAddress;
+		std::vector<uint64_t> crossChainIndex;
+		std::vector<uint64_t> crossChainAmount;
+		for (int i = 0; i < 10; ++i) {
+			crossChainAddress.push_back(getRandString(34));
+			crossChainIndex.push_back(getRandUInt64());
+			crossChainAmount.push_back(getRandUInt64());
+		}
 
-        CMBlock bd_src = ptcca.getData();
-        CMBlock bd_rc = ptcca_re.getData();
+		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
-        REQUIRE(bd_src.GetSize() == bd_rc.GetSize());
+		nlohmann::json jsonData = p1.toJson();
 
-        if (bd_src && bd_rc)
-            REQUIRE(0 == memcmp(bd_src, bd_rc, bd_src.GetSize()));
-    }
+		p2.fromJson(jsonData);
 
-    SECTION("toJson fromJson test") {
-        PayloadTransferCrossChainAsset ptcca, ptcca_re;
-
-        std::vector<std::string> crossChainAddress;
-        std::vector<uint64_t> crossChainIndex;
-        std::vector<uint64_t> crossChainAmount;
-        for (int i = 0; i < 10; ++i) {
-            std::string address = "test Address " + std::to_string(i + 1);
-            crossChainAddress.push_back(address);
-            crossChainIndex.push_back(i + 1);
-            crossChainAmount.push_back(i + 1);
-        }
-        ptcca.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
-
-        nlohmann::json jsonData = ptcca.toJson();
-
-        ptcca_re.fromJson(jsonData);
-
-        CMBlock bd_src = ptcca.getData();
-        CMBlock bd_rc = ptcca_re.getData();
-
-        REQUIRE(bd_src.GetSize() == bd_rc.GetSize());
-
-        if (bd_src && bd_rc)
-            REQUIRE(0 == memcmp(bd_src, bd_rc, bd_src.GetSize()));
-    }
+		verifyPayload(p1, p2);
+	}
 }

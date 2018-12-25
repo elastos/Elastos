@@ -13,9 +13,9 @@ namespace Elastos {
 
 		class Mnemonic {
 		public:
-			Mnemonic(const std::string &language, const boost::filesystem::path &path);
+			Mnemonic(const std::string &language, const boost::filesystem::path &rootPath);
 
-			Mnemonic(const boost::filesystem::path &path);
+			Mnemonic(const boost::filesystem::path &rootPath);
 
 			const std::vector<std::string> &words() const;
 

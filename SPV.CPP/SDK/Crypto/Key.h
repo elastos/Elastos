@@ -41,8 +41,6 @@ namespace Elastos {
 
 			bool setPubKey(const CMBlock pubKey);
 
-			void setPublicKey();
-
 			bool getCompressed() const;
 
 			std::string getPrivKey() const;

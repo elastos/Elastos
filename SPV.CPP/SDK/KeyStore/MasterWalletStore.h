@@ -39,6 +39,8 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList);
 
+			MasterPubKeyPtr GetMasterPubKey(const std::string &chainID) const;
+
 			const MasterPubKeyMap &GetMasterPubKeyMap() const;
 
 			void SetMasterPubKeyMap(const MasterPubKeyMap &map);
@@ -82,7 +84,7 @@ namespace Elastos {
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;
 
-			MasterPubKeyMap _subWalletsPubKeyMap;
+			mutable MasterPubKeyMap _subWalletsPubKeyMap;
 		};
 
 	}

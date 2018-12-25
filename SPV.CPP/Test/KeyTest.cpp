@@ -4,102 +4,41 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <boost/shared_ptr.hpp>
+#include <catch.hpp>
 
-#include "SDK/Crypto/Key.h"
-#include "catch.hpp"
-#include "Log.h"
+#include <SDK/Crypto/Key.h>
+#include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/KeyStore/Mnemonic.h>
+
+#include <Core/BRBIP39Mnemonic.h>
+#include <Core/BRBIP32Sequence.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/filesystem/path.hpp>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Key test", "[Key]") {
 
-	SECTION("Default contructor test") {
-		Key key;
-		REQUIRE(key.getRaw() != nullptr);
-	}
-
-	SECTION("Contructor with BRKey") {
-		BRKey *brkey = new BRKey;
-		Key key(brkey);
-		REQUIRE(key.getRaw() != nullptr);
-	}
-
 	SECTION("Contructor with string and CMBlock") {
-		std::string priKey = "S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy";
-		const char *str = priKey.c_str();
-		Key key(priKey);
-		REQUIRE(key.getRaw() != nullptr);
 
-		int len = 0;
-		while (str[len] != '\0') {
-			len++;
-		}
-		uint8_t data[len];
-		memcpy(data, str, len);
-		CMBlock byteData;
-		byteData.SetMemFixed(data, len);
-		Key key1(byteData);
+		std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
+		std::string phrasePasswd = "";
+		//init master public key and private key
+		UInt512 seed;
+		BRBIP39DeriveKey(&seed, phrase.c_str(), phrasePasswd.c_str());
 
-		std::string privateKey = key.getPrivKey();
-		REQUIRE(privateKey.empty() == false);
-		REQUIRE(privateKey == key1.getPrivKey());
+		BRKey masterKey;
+		BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
 
-		CMBlock byteData1 = key.getPubkey();
-		REQUIRE(byteData1.GetSize() > 0);
-		REQUIRE(byteData1 != false);
-		CMBlock byteData2 = key1.getPubkey();
-		REQUIRE(byteData1.GetSize() == byteData2.GetSize());
-		for (size_t i = 0; i < byteData1.GetSize(); i++) {
-			REQUIRE(byteData1[i] == byteData2[i]);
-		}
+		//init id chain derived master public key
+		BRKey idMasterKey;
+		UInt256 idChainCode;
+		BRBIP32PrivKeyPath(&idMasterKey, &idChainCode, &seed, sizeof(seed),
+						   5, 44 | BIP32_HARD, 0 | BIP32_HARD, 0 | BIP32_HARD, 0, 0);
+		Key key(idMasterKey.secret, idMasterKey.compressed);
 
-		std::string addr = key.address();
-		REQUIRE(addr.empty() == false);
-		REQUIRE(addr == key1.address());
-	}
-
-	SECTION("Contructor with secret") {
-		UInt256 secret = uint256("0000000000000000000000000000000000000000000000000000000000000001");
-		Key key(secret, true);
-		REQUIRE(key.getRaw() != nullptr);
-
-		UInt256 hash = key.getSecret();
-		int result = UInt256Eq(&secret, &hash);
-		REQUIRE(result == 1);
-		REQUIRE(true == key.getCompressed());
-
-		Key key1(secret, false);
-		REQUIRE(false == key1.getCompressed());
-	}
-
-	SECTION("Key setPrivKey test") {
-		Key key1;
-		key1.setPrivKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
-		REQUIRE(key1.getPrivKey().empty() == false);
-
-		Key key2("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
-		REQUIRE(key1.getPrivKey() == key2.getPrivKey());
-	}
-
-	SECTION("Key encryptNative test") {
-		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock data;
-		data.SetMemFixed(bytes1, sizeof(bytes1));
-		uint8_t bytes2[] = "\x50\x51\x52\x53\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
-		CMBlock nonce;
-		nonce.SetMemFixed(bytes2, sizeof(bytes2));
-
-		Key key("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
-		CMBlock byteData = key.encryptNative(data, nonce);
-		REQUIRE(byteData.GetSize() >= 16);
-		REQUIRE(byteData != false);
-
-		CMBlock decode = key.decryptNative(byteData, nonce);
-		REQUIRE(decode.GetSize() == data.GetSize());
-		int r = memcmp(bytes1, decode, decode.GetSize());
-		REQUIRE(r == 0);
+		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == key.address());
 	}
 
 }

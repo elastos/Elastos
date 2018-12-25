@@ -6,12 +6,11 @@
 
 #include "catch.hpp"
 
-#include "Account/MultiSignAccount.h"
-#include "Account/SimpleAccount.h"
-#include "Account/MultiSignSubAccount.h"
+#include <SDK/Account/MultiSignAccount.h>
+#include <SDK/Account/SimpleAccount.h>
+#include <SDK/Account/MultiSignSubAccount.h>
 #include <SDK/Common/Utils.h>
-#include "WalletTool.h"
-#include "Log.h"
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -49,7 +48,7 @@ TEST_CASE("SignTransaction test", "[SignTransaction]") {
 	signers = subAccount2->GetTransactionSignedSigners(transaction);
 	REQUIRE(signers.size() == 2);
 
-	REQUIRE(transaction->getPrograms()[0]->isValid(transaction));
+	REQUIRE(transaction->getPrograms()[0].isValid(transaction.get()));
 }
 
 TEST_CASE("MultiSign account test", "[Readonly account test]") {

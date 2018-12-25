@@ -78,7 +78,6 @@ namespace Elastos {
 			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
 
 			Key key(masterKey);
-			key.setPublicKey();
 
 			var_clean(&seed);
 			var_clean(&masterKey);
@@ -308,7 +307,7 @@ namespace Elastos {
 		std::string
 		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 
-			ParamChecker::checkCondition(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
+			ParamChecker::checkParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
 			ParamChecker::checkPassword(payPassword, "Pay");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);

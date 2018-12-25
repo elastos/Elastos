@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "BRInt.h"
-#include "Payload/PayloadRegisterIdentification.h"
+#include <Core/BRInt.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 
 using namespace Elastos::ElaWallet;

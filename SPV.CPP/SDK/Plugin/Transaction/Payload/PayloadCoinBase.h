@@ -14,13 +14,13 @@ namespace Elastos {
 		public:
 			PayloadCoinBase();
 
-			PayloadCoinBase(CMBlock &coinBaseData);
+			PayloadCoinBase(const CMBlock &coinBaseData);
 
 			~PayloadCoinBase();
 
-			void setCoinBaseData(const CMBlock &coinBaseData);
+			void SetCoinBaseData(const CMBlock &coinBaseData);
 
-			virtual CMBlock getData() const;
+			const CMBlock &GetCoinBaseData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

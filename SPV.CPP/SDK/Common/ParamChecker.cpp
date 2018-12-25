@@ -28,6 +28,10 @@ namespace Elastos {
 			return j;
 		}
 
+		void ParamChecker::checkParam(bool condition, Error::Code err, const std::string &msg) {
+			checkCondition(condition, err, msg, Exception::Type::InvalidArgument);
+		}
+
 		void
 		ParamChecker::checkCondition(bool condition, Error::Code err, const std::string &msg, Exception::Type type) {
 			if (condition) {
@@ -57,11 +61,11 @@ namespace Elastos {
 		void ParamChecker::checkPassword(const std::string &password, const std::string &msg) {
 			checkCondition(password.size() < MIN_PASSWORD_LENGTH, Error::InvalidPasswd,
 						   msg + " password invalid: less than " + std::to_string(MIN_PASSWORD_LENGTH),
-						   Exception::LogicError);
+						   Exception::InvalidArgument);
 
 			checkCondition(password.size() > MAX_PASSWORD_LENGTH, Error::InvalidPasswd,
 						   msg + " password invalid: more than " + std::to_string(MAX_PASSWORD_LENGTH),
-						   Exception::LogicError);
+						   Exception::InvalidArgument);
 		}
 
 		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, const std::string &msg) {
@@ -76,7 +80,7 @@ namespace Elastos {
 		}
 
 		void ParamChecker::CheckDecrypt(bool condition) {
-			checkCondition(condition, Error::WrongPasswd, "Wrong password");
+			checkCondition(condition, Error::WrongPasswd, "Wrong password", Exception::InvalidArgument);
 		}
 
 		void ParamChecker::checkJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg) {
@@ -113,5 +117,6 @@ namespace Elastos {
 			ParamChecker::checkCondition(key.length() != 32 * 2, Error::InvalidArgument,
 										 "Private key length should be 32 bytes");
 		}
+
 	}
 }

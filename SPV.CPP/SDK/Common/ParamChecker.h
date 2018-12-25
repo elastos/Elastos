@@ -69,6 +69,8 @@ namespace Elastos {
 
 			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg, uint64_t data);
 
+			static void checkParam(bool condition, Error::Code err, const std::string &msg);
+
 			static void checkCondition(bool condition, Error::Code err, const std::string &msg,
 									   Exception::Type type = Exception::LogicError);
 

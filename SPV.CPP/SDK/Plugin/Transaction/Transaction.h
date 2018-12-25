@@ -81,15 +81,15 @@ namespace Elastos {
 
 			Type getTransactionType() const;
 
-			uint32_t getLockTime();
+			uint32_t getLockTime() const;
 
 			void setLockTime(uint32_t lockTime);
 
-			uint32_t getBlockHeight();
+			uint32_t getBlockHeight() const;
 
 			void setBlockHeight(uint32_t height);
 
-			uint32_t getTimestamp();
+			uint32_t getTimestamp() const;
 
 			void setTimestamp(uint32_t timestamp);
 

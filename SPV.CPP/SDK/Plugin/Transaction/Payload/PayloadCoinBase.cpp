@@ -14,19 +14,19 @@ namespace Elastos {
 
 		}
 
-		PayloadCoinBase::PayloadCoinBase(CMBlock &coinBaseData) {
+		PayloadCoinBase::PayloadCoinBase(const CMBlock &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
 		PayloadCoinBase::~PayloadCoinBase() {
 		}
 
-		CMBlock PayloadCoinBase::getData() const {
-            return _coinBaseData;
-        }
-
-		void PayloadCoinBase::setCoinBaseData(const CMBlock &coinBaseData) {
+		void PayloadCoinBase::SetCoinBaseData(const CMBlock &coinBaseData) {
 			_coinBaseData = coinBaseData;
+		}
+
+		const CMBlock &PayloadCoinBase::GetCoinBaseData() const {
+			return _coinBaseData;
 		}
 
 		void PayloadCoinBase::Serialize(ByteStream &ostream) const {

@@ -61,9 +61,10 @@ static int _TweakSecret(UInt256 *secretOut, const UInt256 *secretIn,
 	return 0;
 }
 
-void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k) {
+int getPubKeyFromPrivKey(void *pubKey, size_t pubKeySize, const UInt256 *k) {
 	BIGNUM *privkey = BN_bin2bn((const unsigned char *) k, sizeof(*k), NULL);
 	EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+	int len = 0;
 	if (NULL != privkey && NULL != key) {
 		const EC_GROUP *curve = EC_KEY_get0_group(key);
 		EC_POINT *_pubkey = EC_POINT_new(curve);
@@ -73,9 +74,9 @@ void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k) {
 													 NULL);
 				if (NULL != __pubkey) {
 					uint8_t arrBN[256] = {0};
-					int len = BN_bn2bin(__pubkey, arrBN);
-					if (0 < len) {
-						memcpy(brecPoint, arrBN, (size_t) len);
+					len = BN_bn2bin(__pubkey, arrBN);
+					if (pubKey && len > 0) {
+						memcpy(pubKey, arrBN, len <= pubKeySize ? len : pubKeySize);
 					}
 					BN_free(__pubkey);
 				}
@@ -85,6 +86,8 @@ void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k) {
 		BN_free(privkey);
 		EC_KEY_free(key);
 	}
+
+	return len;
 }
 
 size_t
@@ -196,7 +199,7 @@ static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i) {
 	if (i & BIP32_HARD) {
 		buf[0] = 0;
 		UInt256Set(&buf[1], *k);
-	} else getPubKeyFromPrivKey((BRECPoint *) buf, k);
+	} else getPubKeyFromPrivKey((BRECPoint *) buf, sizeof(buf), k);
 
 	UInt32SetBE(&buf[sizeof(BRECPoint)], i);
 

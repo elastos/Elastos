@@ -4,16 +4,16 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <fstream>
-
-#include "TransactionDataStore.h"
-#include "DatabaseManager.h"
 #include "catch.hpp"
-#include "SpvService/BackgroundExecutor.h"
-#include <SDK/Common/Utils.h>
-#include "Log.h"
 #include "TestHelper.h"
 
+#include <SDK/Database/TransactionDataStore.h>
+#include <SDK/Database/DatabaseManager.h>
+#include <SDK/SpvService/BackgroundExecutor.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+
+#include <fstream>
 using namespace Elastos::ElaWallet;
 
 #define ISO "els"
@@ -326,154 +326,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(0 == readTx.size());
 		}
 
-	}
-
-	SECTION("InternalAddresses test") {
-		DatabaseManager dbm(DBFILE);
-
-		size_t count = 111111;
-		REQUIRE(dbm.clearInternalAddresses());
-		count = dbm.getInternalAvailableAddresses(0);
-		REQUIRE(0 == count);
-
-		std::string addr0 = getRandString(40);
-		REQUIRE(dbm.putInternalAddress(0, addr0));
-		std::string addr1 = getRandString(40);
-		REQUIRE(dbm.putInternalAddress(1, addr1));
-		std::string addr2 = getRandString(40);
-		REQUIRE(dbm.putInternalAddress(2, addr2));
-		std::string addr3 = getRandString(40);
-		REQUIRE(dbm.putInternalAddress(3, addr3));
-
-		std::vector<std::string> gotAddresses = dbm.getInternalAddresses(0, 2);
-		REQUIRE(gotAddresses.size() == 2);
-		REQUIRE(gotAddresses[0] == addr0);
-		REQUIRE(gotAddresses[1] == addr1);
-
-		gotAddresses = dbm.getInternalAddresses(0, 4);
-		REQUIRE(gotAddresses.size() == 4);
-		REQUIRE(gotAddresses[0] == addr0);
-		REQUIRE(gotAddresses[1] == addr1);
-		REQUIRE(gotAddresses[2] == addr2);
-		REQUIRE(gotAddresses[3] == addr3);
-
-		gotAddresses = dbm.getInternalAddresses(2, 1000);
-		REQUIRE(gotAddresses.size() == 2);
-		REQUIRE(gotAddresses[0] == addr2);
-		REQUIRE(gotAddresses[1] == addr3);
-
-		gotAddresses = dbm.getInternalAddresses(1, 1);
-		REQUIRE(gotAddresses.size() == 1);
-		REQUIRE(gotAddresses[0] == addr1);
-
-		gotAddresses = dbm.getInternalAddresses(0, 0);
-		REQUIRE(gotAddresses.size() == 0);
-
-		gotAddresses = dbm.getInternalAddresses(2, 0);
-		REQUIRE(gotAddresses.size() == 0);
-
-		count = dbm.getInternalAvailableAddresses(0);
-		REQUIRE(count == 4);
-		count = dbm.getInternalAvailableAddresses(2);
-		REQUIRE(count == 2);
-		count = dbm.getInternalAvailableAddresses(4);
-		REQUIRE(count == 0);
-
-		std::vector<std::string> addresses(10);
-		for (size_t i = 0; i < addresses.size(); ++i) {
-			addresses[i] = getRandString(40);
-		}
-		REQUIRE(dbm.putInternalAddresses(4, addresses));
-
-		count = dbm.getInternalAvailableAddresses(20);
-		REQUIRE(count == 0);
-
-		count = dbm.getInternalAvailableAddresses(0);
-		REQUIRE(count == 14);
-
-		gotAddresses = dbm.getInternalAddresses(0, count);
-		REQUIRE(gotAddresses.size() == count);
-		REQUIRE(gotAddresses[4] == addresses[0]);
-		REQUIRE(gotAddresses[6] == addresses[2]);
-		REQUIRE(gotAddresses[13] == addresses[9]);
-
-		REQUIRE(dbm.clearInternalAddresses());
-		count = dbm.getInternalAvailableAddresses(0);
-		REQUIRE(0 == count);
-	}
-
-	SECTION("ExternalAddresses test") {
-		DatabaseManager dbm(DBFILE);
-
-		size_t count = 111111;
-		REQUIRE(dbm.clearExternalAddresses());
-		count = dbm.getExternalAvailableAddresses(0);
-		REQUIRE(0 == count);
-
-		std::string addr0 = getRandString(40);
-		REQUIRE(dbm.putExternalAddress(0, addr0));
-		std::string addr1 = getRandString(40);
-		REQUIRE(dbm.putExternalAddress(1, addr1));
-		std::string addr2 = getRandString(40);
-		REQUIRE(dbm.putExternalAddress(2, addr2));
-		std::string addr3 = getRandString(40);
-		REQUIRE(dbm.putExternalAddress(3, addr3));
-
-		std::vector<std::string> gotAddresses = dbm.getExternalAddresses(0, 2);
-		REQUIRE(gotAddresses.size() == 2);
-		REQUIRE(gotAddresses[0] == addr0);
-		REQUIRE(gotAddresses[1] == addr1);
-
-		gotAddresses = dbm.getExternalAddresses(0, 4);
-		REQUIRE(gotAddresses.size() == 4);
-		REQUIRE(gotAddresses[0] == addr0);
-		REQUIRE(gotAddresses[1] == addr1);
-		REQUIRE(gotAddresses[2] == addr2);
-		REQUIRE(gotAddresses[3] == addr3);
-
-		gotAddresses = dbm.getExternalAddresses(2, 1000);
-		REQUIRE(gotAddresses.size() == 2);
-		REQUIRE(gotAddresses[0] == addr2);
-		REQUIRE(gotAddresses[1] == addr3);
-
-		gotAddresses = dbm.getExternalAddresses(1, 1);
-		REQUIRE(gotAddresses.size() == 1);
-		REQUIRE(gotAddresses[0] == addr1);
-
-		gotAddresses = dbm.getExternalAddresses(0, 0);
-		REQUIRE(gotAddresses.size() == 0);
-
-		gotAddresses = dbm.getExternalAddresses(2, 0);
-		REQUIRE(gotAddresses.size() == 0);
-
-		count = dbm.getExternalAvailableAddresses(0);
-		REQUIRE(count == 4);
-		count = dbm.getExternalAvailableAddresses(2);
-		REQUIRE(count == 2);
-		count = dbm.getExternalAvailableAddresses(4);
-		REQUIRE(count == 0);
-
-		std::vector<std::string> addresses(10);
-		for (size_t i = 0; i < addresses.size(); ++i) {
-			addresses[i] = getRandString(40);
-		}
-		REQUIRE(dbm.putExternalAddresses(4, addresses));
-
-		count = dbm.getExternalAvailableAddresses(20);
-		REQUIRE(count == 0);
-
-		count = dbm.getExternalAvailableAddresses(0);
-		REQUIRE(count == 14);
-
-		gotAddresses = dbm.getExternalAddresses(0, count);
-		REQUIRE(gotAddresses.size() == count);
-		REQUIRE(gotAddresses[4] == addresses[0]);
-		REQUIRE(gotAddresses[6] == addresses[2]);
-		REQUIRE(gotAddresses[13] == addresses[9]);
-
-		REQUIRE(dbm.clearExternalAddresses());
-		count = dbm.getExternalAvailableAddresses(0);
-		REQUIRE(0 == count);
 	}
 
 }

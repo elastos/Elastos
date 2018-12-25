@@ -50,6 +50,13 @@ namespace Elastos {
 			_subWalletsInfoList = infoList;
 		}
 
+		MasterPubKeyPtr MasterWalletStore::GetMasterPubKey(const std::string &chainID) const {
+			if (_subWalletsPubKeyMap.find(chainID) == _subWalletsPubKeyMap.end()) {
+				return nullptr;
+			}
+			return _subWalletsPubKeyMap[chainID];
+		}
+
 		const MasterPubKeyMap &MasterWalletStore::GetMasterPubKeyMap() const {
 			return _subWalletsPubKeyMap;
 		}

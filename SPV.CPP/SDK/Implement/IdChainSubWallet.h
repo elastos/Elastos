@@ -26,7 +26,6 @@ namespace Elastos {
 			friend class MasterWallet;
 
 			IdChainSubWallet(const CoinInfo &info,
-							 const MasterPubKeyPtr &masterPubKey,
 							 const ChainParams &chainParams,
 							 const PluginType &pluginTypes,
 							 MasterWallet *parent);

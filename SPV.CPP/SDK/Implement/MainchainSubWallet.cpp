@@ -19,10 +19,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info, const MasterPubKeyPtr &masterPubKey,
+		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info,
 											   const ChainParams &chainParams, const PluginType &pluginTypes,
 											   MasterWallet *parent) :
-				SubWallet(info, masterPubKey, chainParams, pluginTypes, parent) {
+				SubWallet(info, chainParams, pluginTypes, parent) {
 
 		}
 
@@ -125,44 +125,6 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json MainchainSubWallet::CreateRegisterProducerTransaction(const std::string &fromAddress,
-																			 const std::string &toAddress,
-																			 const std::string &publicKey,
-																			 const std::string &nickName,
-																			 const std::string &url,
-																			 uint64_t location) {
-			RegisterProducerTxParam txParam;
-			txParam.setFromAddress(fromAddress);
-			txParam.setToAddress(toAddress);
-
-			PayloadRegisterProducer payload;
-			payload.SetPublicKey(publicKey);
-			payload.SetNickName(nickName);
-			payload.SetUrl(url);
-			payload.SetLocation(location);
-			txParam.SetPayload(payload);
-
-			TransactionPtr transaction = createTransaction(&txParam);
-			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create tx error");
-
-			return transaction->toJson();
-		}
-
-		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(const std::string &publicKey) {
-			CancelProducerTxParam txParam;
-			txParam.setFromAddress("");
-			txParam.setToAddress(CreateAddress());
-
-			PayloadCancelProducer payload;
-			payload.SetPublicKey(publicKey);
-			txParam.SetPayload(payload);
-
-			TransactionPtr transaction = createTransaction(&txParam);
-			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create tx error");
-
-			return transaction->toJson();
-		}
-
 		nlohmann::json
 		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &pubicKeys) {
 			VoteProducerTxParam txParam;
@@ -184,5 +146,10 @@ namespace Elastos {
 
 			return transaction->toJson();
 		}
+
+		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
+			return nlohmann::json();
+		}
+
 	}
 }

@@ -18,6 +18,8 @@ namespace Elastos {
 
 			virtual std::string GetMainAccountPublicKey() const;
 
+			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const;
+
 		protected:
 			virtual WrapperList<Key, BRKey>
 			DeriveAccountAvailableKeys(const std::string &payPassword,

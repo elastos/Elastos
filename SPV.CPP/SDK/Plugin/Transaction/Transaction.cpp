@@ -44,6 +44,7 @@ namespace Elastos {
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false),
 				_txHash(UINT256_ZERO) {
+			initPayloadFromType(_type);
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
@@ -52,7 +53,13 @@ namespace Elastos {
 
 		Transaction &Transaction::operator=(const Transaction &orig) {
 			_isRegistered = orig._isRegistered;
+			_txHash = orig.getHash();
 			_assetTableID = orig._assetTableID;
+
+			_version = orig._version;
+			_lockTime = orig._lockTime;
+			_blockHeight = orig._blockHeight;
+			_timestamp = orig._timestamp;
 
 			_type = orig._type;
 			_payloadVersion = orig._payloadVersion;
@@ -81,7 +88,7 @@ namespace Elastos {
 			}
 
 			_programs.clear();
-			for (size_t i = 0; i < _programs.size(); ++i) {
+			for (size_t i = 0; i < orig._programs.size(); ++i) {
 				_programs.push_back(orig._programs[i]);
 			}
 
@@ -172,7 +179,7 @@ namespace Elastos {
 			return addresses;
 		}
 
-		uint32_t Transaction::getLockTime() {
+		uint32_t Transaction::getLockTime() const {
 
 			return _lockTime;
 		}
@@ -182,7 +189,7 @@ namespace Elastos {
 			_lockTime = t;
 		}
 
-		uint32_t Transaction::getBlockHeight() {
+		uint32_t Transaction::getBlockHeight() const {
 			return _blockHeight;
 		}
 
@@ -190,7 +197,7 @@ namespace Elastos {
 			_blockHeight = height;
 		}
 
-		uint32_t Transaction::getTimestamp() {
+		uint32_t Transaction::getTimestamp() const {
 			return _timestamp;
 		}
 
@@ -522,7 +529,7 @@ namespace Elastos {
 
 			jsonData["Fee"] = _fee;
 
-			jsonData["_remark"] = _remark;
+			jsonData["Remark"] = _remark;
 
 			return jsonData;
 		}
@@ -577,7 +584,7 @@ namespace Elastos {
 
 			_fee = jsonData["Fee"].get<uint64_t>();
 
-			_remark = jsonData["_remark"].get<std::string>();
+			_remark = jsonData["Remark"].get<std::string>();
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {

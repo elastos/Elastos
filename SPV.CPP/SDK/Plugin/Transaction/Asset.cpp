@@ -21,7 +21,8 @@ namespace Elastos {
 				_description(""),
 				_precision(0),
 				_assetType(AssetType::Share),
-				_recordType(AssetRecordType::Unspent) {
+				_recordType(AssetRecordType::Unspent),
+				_hash(UINT256_ZERO) {
 
 		}
 

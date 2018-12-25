@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_UTILS_H__
 #define __ELASTOS_SDK_UTILS_H__
 
-#include "CMemBlock.h"
+#include <SDK/Common/CMemBlock.h>
 
 #include <Core/BRInt.h>
 

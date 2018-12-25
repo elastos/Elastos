@@ -51,12 +51,6 @@ namespace Elastos {
 			return _sideChainTransactionHash;
 		}
 
-		CMBlock PayloadWithDrawAsset::getData() const {
-			ByteStream stream;
-			Serialize(stream);
-			return stream.getBuffer();
-		}
-
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {
 			ostream.writeUint32(_blockHeight);
 			ostream.writeVarString(_genesisBlockAddress);

@@ -4,214 +4,101 @@
 
 #define CATCH_CONFIG_MAIN
 
+#include "catch.hpp"
+
+#include "TestHelper.h"
 #include <Core/BRInt.h>
 #include <SDK/Common/Utils.h>
-#include "catch.hpp"
+#include <SDK/Common/Log.h>
+#include <Core/BRAddress.h>
 
 using namespace Elastos::ElaWallet;
 
 
-TEST_CASE("Utils test 0", "[Utils]") {
-	std::string rawStr = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
-	std::string expectStr = "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff";
+TEST_CASE("Utils test", "[Utils]") {
+	std::string rawStr = "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3";
+	std::string expectStr = "99ca9a4467b547c19a6554021fd1b5b455b29d1adddbd910dd437bc143785767";
 
-	SECTION("UInt256 and string converting") {
-		UInt256 u1 = {
-				.u8 = {
-						0x00, 0x00, 0x00, 0x00, 0x00, 0x19, 0xd6, 0x68, 0x9c, 0x08, 0x5a, 0xe1, 0x65, 0x83, 0x1e, 0x93,
-						0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
-				}
-		};
-		UInt256 u2 = Utils::UInt256FromString(rawStr, true);
-		REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
+	SECTION("UInt256 to and from std::string") {
+		SECTION("UInt256 and string converting") {
+			UInt256 u1 = uint256("6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3");
+			UInt256 u2 = Utils::UInt256FromString(rawStr);
+			REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
 
-
-		u1 = {
-				.u8 = {
-						0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-						0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-				}
-		};
-		REQUIRE(expectStr == Utils::UInt256ToString(u1, true));
-	}
-
-	SECTION("UInt256 and string reverse converting") {
-		std::string reversedRawStr(rawStr.rbegin(), rawStr.rend());
-		UInt256 u1 = {
-				.u8 = {
-						0x00, 0x00, 0x00, 0x00, 0x00, 0x19, 0xd6, 0x68, 0x9c, 0x08, 0x5a, 0xe1, 0x65, 0x83, 0x1e, 0x93,
-						0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
-				}
-		};
-		UInt256 expectUInt256;
-		for (int i = 0; i < sizeof(u1); ++i) {
-			expectUInt256.u8[sizeof(u1) - 1 - i] = u1.u8[i];
+			u1 = uint256("99ca9a4467b547c19a6554021fd1b5b455b29d1adddbd910dd437bc143785767");
+			REQUIRE(expectStr == Utils::UInt256ToString(u1));
 		}
-		UInt256 u2 = Utils::UInt256FromString(rawStr, true);
-		REQUIRE(0 == memcmp(&expectUInt256, &u2, sizeof(UInt256)));
 
+		SECTION("UInt256 and string reverse converting") {
+			UInt256 u1 = uint256("b3314f465ea5556d570bcc473d59a0855b4405a25b1ea0c957c81b2920be1864");
+			UInt256 u2 = Utils::UInt256FromString(rawStr, true);
+			REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
 
-		u1 = {
-				.u8 = {
-						0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-						0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-				}
-		};
-		std::string reversedExpectStr(expectStr.rbegin(), expectStr.rend());
-		REQUIRE(reversedExpectStr == Utils::UInt256ToString(u1, true));
+			u1 = uint256("67577843c17b43dd10d9dbdd1a9db255b4b5d11f0254659ac147b567449aca99");
+			REQUIRE(expectStr == Utils::UInt256ToString(u1, true));
+		}
 	}
 
 	SECTION("Key encodeHex and decodeHex test") {
-		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock data;
-		data.SetMemFixed(bytes1, sizeof(bytes1) - 1);
-
+		CMBlock data = getRandCMBlock(100);
 		std::string str = Utils::encodeHex(data);
-		REQUIRE(str == "000102030405060708090a0b0c0d0e0f");
+		CMBlock decodeData = Utils::decodeHex(str);
+		REQUIRE(decodeData == data);
 
-		CMBlock decodeByte = Utils::decodeHex(str);
-		int res = memcmp(bytes1, decodeByte, decodeByte.GetSize());
-		REQUIRE(res == 0);
+		std::string dataString = "67577843c17b43dd10d9dbdd1a9db255b4b5d11f0254659ac147b567449aca99";
+		CMBlock dataDecode = Utils::decodeHex(dataString);
+		REQUIRE(dataString == Utils::encodeHex(dataDecode));
 	}
-}
 
-TEST_CASE("Utils test 1", "[Utils]") {
-	std::string rawStr = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
-	UInt256 u1 = {
-			.u8 = {
-					0x00, 0x00, 0x00, 0x00, 0x00, 0x19, 0xd6, 0x68, 0x9c, 0x08, 0x5a, 0xe1, 0x65, 0x83, 0x1e, 0x93,
-					0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
-			}
-	};
-	UInt256 u2 = Utils::UInt256FromString(rawStr, true);
-	REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
+	SECTION("ProgramHash and AddressHash Test") {
+		UInt168 expectedHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");
+		std::string redeemScript = "21022c9652d3ad5cc065aa9147dc2ad022f80001e8ed233de20f352950d351d472b7ac";
 
+		UInt168 hash = Utils::codeToProgramHash(redeemScript);
 
-	u1 = {
-			.u8 = {
-					0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-					0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-			}
-	};
-	REQUIRE("11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff" == Utils::UInt256ToString(u1, true));
-}
+		REQUIRE(UInt168Eq(&hash, &expectedHash) == 1);
 
-TEST_CASE ("enctrypt/decrept content without nothing and password with meaning", "[aes crypto]") {
-	SECTION("Normal") {
-		std::string password = "password";
-		const char content[] = "This is crypto testing.";
-		CMBlock DataToBeEncrypted(sizeof(content));
-		DataToBeEncrypted.Zero();
-		memcpy(DataToBeEncrypted, content, sizeof(content));
-		CMBlock DataBeEncrypted;
-		CMBlock DataBeDecrypted;
-		DataBeEncrypted = Utils::encrypt(DataToBeEncrypted, password);
-		DataBeDecrypted = Utils::decrypt(DataBeEncrypted, password);
+		std::string addr = Utils::UInt168ToAddress(hash);
+		REQUIRE("ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z" == addr);
 
-		REQUIRE(0 == strcmp(content, (const char *) (const void *) DataBeDecrypted));
+		UInt168 addrHash = UINT168_ZERO;
+		REQUIRE(true == Utils::UInt168FromAddress(addrHash, addr));
+		REQUIRE(UInt168Eq(&addrHash, &expectedHash) == 1);
+
+		addrHash = UINT168_ZERO;
+		REQUIRE(ELA_SIDECHAIN_DESTROY_ADDR == Utils::UInt168ToAddress(addrHash));
 	}
-}
 
-TEST_CASE ("enctrypt/decrept content without nothing and password with meaning, which depand on chinese",
-		   "[aes crypto]") {
-	SECTION("Normal") {
-		std::string password = "密码";
-		const char content[] = "现在进行加密测试";
-		CMBlock DataToBeEncrypted(sizeof(content));
-		DataToBeEncrypted.Zero();
-		memcpy(DataToBeEncrypted, content, sizeof(content));
-		CMBlock DataBeEncrypted;
-		CMBlock DataBeDecrypted;
-		DataBeEncrypted = Utils::encrypt(DataToBeEncrypted, password);
-		DataBeDecrypted = Utils::decrypt(DataBeEncrypted, password);
+	SECTION("Encrypt and decrypt") {
 
-		REQUIRE(0 == strcmp(content, (const char *) (const void *) DataBeDecrypted));
+		SECTION("Encrypt and decrypt test with CMBlock data") {
+			CMBlock plainData = getRandCMBlock(50);
+			std::string cipherString;
+			std::string passwd = "123456789";
+			REQUIRE(Utils::Encrypt(cipherString, plainData, passwd));
+
+			CMBlock plainDataDecrypt;
+			REQUIRE(Utils::Decrypt(plainDataDecrypt, cipherString, passwd));
+			REQUIRE(plainData == plainDataDecrypt);
+
+			std::string wrongPasswd = "00000000";
+			REQUIRE(!Utils::Decrypt(plainDataDecrypt, cipherString, wrongPasswd));
+		}
+
+		SECTION("Encrypt and decrypt test with std::string") {
+			std::string plainString = getRandString(100);
+			std::string cipherString;
+			std::string passwd = "1234567890";
+			REQUIRE(Utils::Encrypt(cipherString, plainString, passwd));
+
+			std::string plainStringDecrypt;
+			REQUIRE(Utils::Decrypt(plainStringDecrypt, cipherString, passwd));
+			REQUIRE(plainString == plainStringDecrypt);
+
+			std::string wrongPasswd = "9876543210";
+			REQUIRE(!Utils::Decrypt(plainStringDecrypt, cipherString, wrongPasswd));
+		}
+
 	}
-}
 
-TEST_CASE ("enctrypt/decrept content with "" and password with meaning", "[aes crypto]") {
-	SECTION("None Normal") {
-		std::string password = "password";
-		const char content[] = "";
-		CMBlock DataToBeEncrypted(sizeof(content));
-		DataToBeEncrypted.Zero();
-		memcpy(DataToBeEncrypted, content, sizeof(content));
-		CMBlock DataBeEncrypted;
-		CMBlock DataBeDecrypted;
-		DataBeEncrypted = Utils::encrypt(DataToBeEncrypted, password);
-		DataBeDecrypted = Utils::decrypt(DataBeEncrypted, password);
-
-		REQUIRE(0 == strcmp(content, (const char *) (const void *) DataBeDecrypted));
-	}
-}
-
-TEST_CASE ("enctrypt/decrept content with nothing"" and password with meaning", "[aes crypto]") {
-	SECTION("None Normal") {
-		std::string password = "password";
-		CMBlock DataToBeEncrypted;
-		CMBlock DataBeEncrypted;
-		CMBlock DataBeDecrypted;
-		DataBeEncrypted = Utils::encrypt(DataToBeEncrypted, password);
-		DataBeDecrypted = Utils::decrypt(DataBeEncrypted, password);
-
-		REQUIRE((const void *) DataBeDecrypted == (const void *) DataToBeEncrypted);
-	}
-}
-
-TEST_CASE ("enctrypt/decrept content without nothing and password with "" ", "[aes crypto]") {
-	SECTION("None Normal") {
-		std::string password = "";
-		const char content[] = "This is crypto testing.";
-		CMBlock DataToBeEncrypted(sizeof(content));
-		DataToBeEncrypted.Zero();
-		memcpy(DataToBeEncrypted, content, sizeof(content));
-		CMBlock DataBeEncrypted;
-		CMBlock DataBeDecrypted;
-		DataBeEncrypted = Utils::encrypt(DataToBeEncrypted, password);
-		DataBeDecrypted = Utils::decrypt(DataBeEncrypted, password);
-
-		REQUIRE(0 == strcmp(content, (const char *) (const void *) DataBeDecrypted));
-	}
-}
-
-TEST_CASE("uint168 string", "[Utils]") {
-	CMBlock mbRand(21);
-	for (size_t i = 0; i < 21; i++) {
-		mbRand[i] = Utils::getRandomByte();
-	}
-	UInt168 u168 = {0};
-	UInt168Get(&u168, (const void *) mbRand);
-
-	std::string strUI168 = Utils::UInt168ToString(u168);
-	UInt168 u168Recov = Utils::UInt168FromString(strUI168);
-
-	REQUIRE(1 == UInt168Eq(&u168Recov, &u168));
-}
-
-TEST_CASE("uint128 string", "[Utils]") {
-//	CMBlock mbrand = WalletTool::GenerateSeed128();
-//	UInt128 u128 = {0};
-//	UInt128Get(&u128, (const void *) mbrand);
-//
-//	std::string strUI128 = Utils::UInt128ToString(u128);
-//	UInt128 u128Recov = Utils::UInt128FromString(strUI128);
-//
-//	REQUIRE(1 == UInt128Eq(&u128Recov, &u128));
-}
-
-TEST_CASE("AddressToUInt168 and UInt168ToAddress Test", "[Utils]") {
-
-	SECTION("UInt168 test") {
-		UInt168 targetHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");
-
-		std::string address = Utils::UInt168ToAddress(targetHash);
-		REQUIRE(address.empty() == false);
-
-		UInt168 hash = UINT168_ZERO;
-		bool ret = Utils::UInt168FromAddress(hash, address);
-		REQUIRE(ret == true);
-
-		int r = UInt168Eq(&targetHash, &hash);
-		REQUIRE(r == 1);
-	}
 }

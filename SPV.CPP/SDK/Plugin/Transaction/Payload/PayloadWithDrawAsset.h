@@ -28,8 +28,6 @@ namespace Elastos {
 			void setSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash);
 			const std::vector<UInt256> &getSideChainTransacitonHash() const;
 
-			virtual CMBlock getData() const;
-
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);

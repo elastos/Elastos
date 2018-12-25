@@ -42,12 +42,6 @@ namespace Elastos {
 			bool IsEqual(const Address &address) const;
 
 		public:
-			static boost::shared_ptr<Address> createAddress(const std::string &address);
-
-			static boost::shared_ptr<Address> fromScriptPubKey(CMBlock script, int signType);
-
-			static boost::shared_ptr<Address> fromScriptSignature(CMBlock script);
-
 			static bool isValidAddress(const std::string &address);
 
 			static bool UInt168IsValid(const UInt168 &u168);

@@ -40,9 +40,9 @@ namespace Elastos {
 
 			bool Deserialize(ByteStream &stream);
 
-			CMBlock getPubKey() const;
+			uint32_t getFingerPrint() const;
 
-			boost::shared_ptr<Key> getPubKeyAsKey() const;
+			CMBlock getPubKey() const;
 
 			const UInt256 &getChainCode() const;
 

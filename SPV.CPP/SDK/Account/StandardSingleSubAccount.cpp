@@ -9,6 +9,7 @@
 #include <SDK/Common/Log.h>
 
 #include <Core/BRCrypto.h>
+#include <Core/BRKey.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -34,15 +35,30 @@ namespace Elastos {
 			return Utils::encodeHex(_masterPubKey.getPubKey());
 		}
 
+		std::vector<Address> StandardSingleSubAccount::GetAllAddresses(size_t addrsCount) const {
+			std::vector<Address> address;
+			CMBlock pubKey(65);
+			size_t len = BRBIP32PubKey(pubKey, pubKey.GetSize(), *_masterPubKey.getRaw(), 0, 0);
+			Key key;
+
+			pubKey.Resize(len);
+			key.setPubKey(pubKey);
+
+			if (addrsCount > 0)
+				address.emplace_back(key.address());
+
+			return address;
+		}
+
 		WrapperList<Key, BRKey> StandardSingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
 																					 const TransactionPtr &transaction) {
 			WrapperList<Key, BRKey> result;
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			Key key;
 			UInt256 chainCode;
-			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
+			BRKey brKey;
+			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
 							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD, SEQUENCE_EXTERNAL_CHAIN, 0);
-			key.setPublicKey();
+			Key key(brKey);
 			var_clean(&seed);
 			result.push_back(key);
 			return result;

@@ -61,7 +61,7 @@ namespace Elastos {
 		}
 
 		const CoinConfig &CoinConfigReader::FindConfig(const std::string &chainId) {
-			ParamChecker::checkCondition(_configMap.find(chainId) == _configMap.end(), Error::IDNotFound,
+			ParamChecker::checkParam(_configMap.find(chainId) == _configMap.end(), Error::IDNotFound,
 										 "Chain id " + chainId + " not found");
 			return _configMap[chainId];
 		}

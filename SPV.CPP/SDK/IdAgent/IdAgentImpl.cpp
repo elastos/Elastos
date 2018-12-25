@@ -57,7 +57,7 @@ namespace Elastos {
 		std::string
 		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
-			ParamChecker::checkCondition(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
+			ParamChecker::checkParam(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
 
 			IdItem item(purpose, index);
 			std::string existedId;
@@ -130,7 +130,6 @@ namespace Elastos {
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			key->setPublicKey();
 			return key->keyToRedeemScript(ELA_IDCHAIN);
 		}
 
