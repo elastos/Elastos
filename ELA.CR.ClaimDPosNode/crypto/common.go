@@ -2,8 +2,10 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	. "github.com/elastos/Elastos.ELA/common"
+	"golang.org/x/crypto/ripemd160"
 )
 
 const (
@@ -19,6 +21,15 @@ const (
 	// 1byte n + 1byte OP_CHECKMULTISIG
 	MinMultiSignCodeLength = 71
 )
+
+func ToProgramHash(prefix byte, code []byte) *Uint168 {
+	hash := sha256.Sum256(code)
+	md160 := ripemd160.New()
+	md160.Write(hash[:])
+	sum := Uint168{}
+	copy(sum[:], md160.Sum([]byte{prefix}))
+	return &sum
+}
 
 func CreateMultiSignRedeemScript(M uint, publicKeys []*PublicKey) ([]byte, error) {
 	// Write M
