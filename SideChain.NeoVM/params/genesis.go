@@ -38,7 +38,7 @@ var (
 		Version:    types.BlockVersion,
 		Previous:   EmptyHash,
 		MerkleRoot: elaAssetId,
-		Timestamp:  uint32(time.Unix(time.Date(2018, time.June, 30,
+		Timestamp:  uint32(time.Unix(time.Date(2018, time.December, 24,
 			12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
 		Nonce:      types.GenesisNonce,
