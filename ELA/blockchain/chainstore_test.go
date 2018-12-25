@@ -207,7 +207,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 		NickName:  "nick name 1",
 		Url:       "http://www.google.com",
 		Location:  1,
-		Address:   "127.0.0.1",
+		Address:   "127.0.0.1:20338",
 	}
 
 	txn.Programs = []*program.Program{{
@@ -248,7 +248,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 		NickName:  "nick name 1",
 		Url:       "http://www.google.com",
 		Location:  1,
-		Address:   "127.0.0.1",
+		Address:   "127.0.0.1:20338",
 	}
 
 	txn.Programs = []*program.Program{{

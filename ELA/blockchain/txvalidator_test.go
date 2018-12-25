@@ -414,7 +414,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		NickName:  "nick name 1",
 		Url:       "http://www.elastos_test.com",
 		Location:  1,
-		Address:   "127.0.0.1",
+		Address:   "127.0.0.1:20338",
 	}
 
 	txn.Programs = []*program.Program{&program.Program{
@@ -447,7 +447,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
 	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
 	err = CheckRegisterProducerTransaction(txn)
-	s.EqualError(err, "Invalid url.")
+	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
@@ -592,13 +592,13 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid nick name.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
 
 	updatePayload.NickName = "nick name"
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid url.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Url has invalid string length.")
 
 	updatePayload.Url = "www.elastos.org"
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid IP.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Ip has invalid string length.")
 
 	updatePayload.Address = "127.0.0.1:20338"
 	updatePayload.PublicKey = errPublicKey
@@ -638,6 +638,12 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 	cancelPayload.PublicKey = publicKey2
 	s.EqualError(CheckCancelProducerTransaction(txn), "Public key unsigned.")
+}
+
+func (s *txValidatorTestSuite) TestCheckStringField() {
+	s.NoError(checkStringField("Normal", "test"))
+	s.EqualError(checkStringField("", "test"), "Field test has invalid string length.")
+	s.EqualError(checkStringField("I am more than 100, 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test"), "Field test has invalid string length.")
 }
 
 func TestTxValidatorSuite(t *testing.T) {

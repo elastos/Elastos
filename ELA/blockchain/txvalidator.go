@@ -19,6 +19,7 @@ import (
 const (
 	MinDepositAmount    = 5000
 	DepositLockupBlocks = 2160
+	MaxStringLength     = 100
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -675,8 +676,8 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	if err != nil {
 		return errors.New("Invalid publick key.")
 	}
-	if payload.NickName == "" {
-		return errors.New("Invalid nick name.")
+	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+		return err
 	}
 	for _, p := range producers {
 		if bytes.Equal(p.PublicKey, payload.PublicKey) {
@@ -701,13 +702,13 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check url
-	if payload.Url == "" {
-		return errors.New("Invalid url.")
+	if err = checkStringField(payload.Url, "Url"); err != nil {
+		return err
 	}
 
 	// check ip
-	if payload.Address == "" {
-		return errors.New("Invalid IP.")
+	if err = checkStringField(payload.Address, "IP"); err != nil {
+		return err
 	}
 
 	// check the deposit coin
@@ -769,18 +770,18 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check nick name
-	if payload.NickName == "" {
-		return errors.New("Invalid nick name.")
+	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+		return err
 	}
 
 	// check url
-	if payload.Url == "" {
-		return errors.New("Invalid url.")
+	if err := checkStringField(payload.Url, "Url"); err != nil {
+		return err
 	}
 
 	// check ip
-	if payload.Address == "" {
-		return errors.New("Invalid IP.")
+	if err := checkStringField(payload.Address, "Ip"); err != nil {
+		return err
 	}
 
 	// check public key
@@ -1062,4 +1063,12 @@ func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
 		result[v.Signer] = nil
 	}
 	return result
+}
+
+func checkStringField(rawStr string, field string) error {
+	if len(rawStr) == 0 || len(rawStr) > MaxStringLength {
+		return fmt.Errorf("Field %s has invalid string length.", field)
+	}
+
+	return nil
 }
