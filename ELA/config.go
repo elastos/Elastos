@@ -67,7 +67,7 @@ func loadConfigParams() *config.ConfigParams {
 	if err == nil {
 		blockchain.FoundationAddress = *foundation
 		activeNetParams.Foundation = *foundation
-		activeNetParams.GenesisBlock = config.GenesisBlock(*foundation)
+		activeNetParams.GenesisBlock = config.GenesisBlock(foundation)
 	}
 	if len(cfg.ArbiterConfiguration.OriginArbiters) > 0 {
 		activeNetParams.OriginArbiters = cfg.ArbiterConfiguration.OriginArbiters
