@@ -41,7 +41,7 @@ var (
 	ELAAssetID = elaAsset.Hash()
 )
 
-func GenesisBlock(foundation common.Uint168) *types.Block {
+func GenesisBlock(foundation *common.Uint168) *types.Block {
 	coinBase := types.Transaction{
 		Version:        0,
 		TxType:         types.CoinBase,
@@ -61,7 +61,7 @@ func GenesisBlock(foundation common.Uint168) *types.Block {
 			{
 				AssetID:     ELAAssetID,
 				Value:       3300 * 10000 * 100000000,
-				ProgramHash: foundation,
+				ProgramHash: *foundation,
 			},
 		},
 		LockTime: 0,

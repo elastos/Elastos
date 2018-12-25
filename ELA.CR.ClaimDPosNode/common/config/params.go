@@ -62,7 +62,7 @@ var MainNetParams = Params{
 	},
 
 	Foundation:   mainNetFoundation,
-	GenesisBlock: GenesisBlock(mainNetFoundation),
+	GenesisBlock: GenesisBlock(&mainNetFoundation),
 	OriginArbiters: []string{
 		"0248df6705a909432be041e0baa25b8f648741018f70d1911f2ed28778db4b8fe4",
 		"02771faf0f4d4235744b30972d5f2c470993920846c761e4d08889ecfdc061cddf",
@@ -95,7 +95,7 @@ var TestNetParams = Params{
 	},
 
 	Foundation:   testNetFoundation,
-	GenesisBlock: GenesisBlock(testNetFoundation),
+	GenesisBlock: GenesisBlock(&testNetFoundation),
 	OriginArbiters: []string{
 		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
 		"02dd22722c3b3a284929e4859b07e6a706595066ddd2a0b38e5837403718fb047c",
@@ -117,7 +117,7 @@ var TestNetParams = Params{
 var RegNetParams = Params{
 	Name:               "regnet",
 	Foundation:         testNetFoundation,
-	GenesisBlock:       GenesisBlock(testNetFoundation),
+	GenesisBlock:       GenesisBlock(&testNetFoundation),
 	PowLimit:           powLimit,
 	PowLimitBits:       0x207fffff,
 	TargetTimePerBlock: 1 * time.Second,  // 1 second
