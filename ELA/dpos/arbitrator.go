@@ -56,13 +56,10 @@ func (a *arbitrator) Stop() error {
 	return nil
 }
 
-func (a *arbitrator) OnIllegalBlockTxReceived(tx *types.Transaction) {
-	log.Info("[OnIllegalBlockTxnReceived] listener received block")
-	if tx.TxType == types.IllegalBlockEvidence {
-		payload := tx.Payload.(*types.PayloadIllegalBlock)
-		if payload.CoinType != types.ELACoin {
-			a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
-		}
+func (a *arbitrator) OnIllegalBlockReceived(payload *types.PayloadIllegalBlock) {
+	log.Info("[OnIllegalBlockReceived] listener received block")
+	if payload.CoinType != types.ELACoin {
+		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
 	}
 }
 
@@ -138,7 +135,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 	cfg.Store.StartEventRecord()
 	cfg.Store.StartArbitratorsRecord()
 
-	result := &arbitrator{
+	a := arbitrator{
 		enableViewLoop: true,
 		dposManager:    dposManager,
 		network:        network,
@@ -148,21 +145,21 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 		switch e.Type {
 		case events.ETNewBlockReceived:
 			block := e.Data.(*types.DposBlock)
-			result.OnBlockReceived(block.Block, block.ConfirmFlag)
+			a.OnBlockReceived(block.Block, block.ConfirmFlag)
 
 		case events.ETConfirmReceived:
-			result.OnConfirmReceived(e.Data.(*types.DPosProposalVoteSlot))
+			a.OnConfirmReceived(e.Data.(*types.DPosProposalVoteSlot))
 
 		case events.ETNewArbiterElection:
-			result.OnNewElection(e.Data.([][]byte))
+			a.OnNewElection(e.Data.([][]byte))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)
 			if tx.IsIllegalBlockTx() {
-				result.OnIllegalBlockTxReceived(tx)
+				a.OnIllegalBlockReceived(tx.Payload.(*types.PayloadIllegalBlock))
 			}
 		}
 	})
 
-	return result, nil
+	return &a, nil
 }
