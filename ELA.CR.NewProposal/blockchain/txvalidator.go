@@ -834,8 +834,8 @@ func CheckReturnDepositCoinTransaction(txn *Transaction) error {
 		if err != nil {
 			return errors.New("no cancel sign found on this public key")
 		}
-		if cancelHeight-DefaultLedger.Store.GetHeight() < DepositLockupBlocks {
-			return errors.New("there is no lockup period for the deposit")
+		if DefaultLedger.Store.GetHeight()-cancelHeight < DepositLockupBlocks {
+			return errors.New("the deposit does not meet the lockup limit")
 		}
 	}
 	return nil

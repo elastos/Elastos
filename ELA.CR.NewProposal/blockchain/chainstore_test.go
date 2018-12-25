@@ -309,6 +309,21 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err = CheckCancelProducerTransaction(txn)
 	assert.NoError(t, err)
 
+	// CheckReturnDepositCoinTransaction
+	DefaultLedger.Store = &ChainStoreMock{
+		BlockHeight:          2000,
+		CancelProducerHeight: 1000,
+	}
+	err = CheckReturnDepositCoinTransaction(txn)
+	assert.EqualError(t, err, "the deposit does not meet the lockup limit")
+
+	DefaultLedger.Store = &ChainStoreMock{
+		BlockHeight:          5000,
+		CancelProducerHeight: 1000,
+	}
+	err = CheckReturnDepositCoinTransaction(txn)
+	assert.NoError(t, err)
+
 	DefaultLedger.Store = originChainStore
 }
 
