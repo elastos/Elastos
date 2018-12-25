@@ -25,10 +25,10 @@ import (
 var (
 	fileWriter = elalog.NewFileWriter(
 		filepath.Join(dataDir, "logs"),
-		config.MaxPerLogSize,
-		config.MaxLogsSize,
+		cfg.MaxPerLogSize,
+		cfg.MaxLogsSize,
 	)
-	level   = elalog.Level(config.PrintLevel)
+	level   = elalog.Level(cfg.PrintLevel)
 	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 		elalog.Llongfile)
 

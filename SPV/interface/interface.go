@@ -97,7 +97,7 @@ type TransactionListener interface {
 	Address() string
 
 	// Type() indicates which transaction type this listener are interested
-	Type() types.TransactionType
+	Type() types.TxType
 
 	// Flags control the notification actions by the given flag
 	Flags() uint64

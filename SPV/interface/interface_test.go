@@ -28,7 +28,7 @@ type TxListener struct {
 	log     elalog.Logger
 	service SPVService
 	address string
-	txType  types.TransactionType
+	txType  types.TxType
 	flags   uint64
 }
 
@@ -36,7 +36,7 @@ func (l *TxListener) Address() string {
 	return l.address
 }
 
-func (l *TxListener) Type() types.TransactionType {
+func (l *TxListener) Type() types.TxType {
 	return l.txType
 }
 

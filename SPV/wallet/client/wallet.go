@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 	"math/rand"
 	"strconv"
@@ -96,8 +97,8 @@ func (wallet *Wallet) NewSubAccount(password []byte) (*common.Uint168, error) {
 	return account.ProgramHash(), nil
 }
 
-func (wallet *Wallet) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKey) (*common.Uint168, error) {
-	redeemScript, err := crypto.CreateMultiSignRedeemScript(M, publicKeys)
+func (wallet *Wallet) AddMultiSignAccount(m int, publicKeys ...*crypto.PublicKey) (*common.Uint168, error) {
+	redeemScript, err := contract.CreateMultiSigRedeemScript(m, publicKeys)
 	if err != nil {
 		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
 	}
@@ -343,7 +344,7 @@ func InputFromUTXO(utxo *sutil.UTXO) *types.Input {
 
 func (wallet *Wallet) newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output) *types.Transaction {
 	// Create payload
-	txPayload := &payload.PayloadTransferAsset{}
+	txPayload := &payload.TransferAsset{}
 	// Create attributes
 	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
 	attributes := make([]*types.Attribute, 0)

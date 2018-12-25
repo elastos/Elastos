@@ -9,6 +9,8 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 const (
@@ -17,7 +19,7 @@ const (
 	ConfigFilename = "./config.json"
 )
 
-var config = loadConfig()
+var cfg = loadConfig()
 
 type Config struct {
 	Magic         uint32
@@ -29,7 +31,7 @@ type Config struct {
 	MaxPerLogSize int64
 	JsonRpcPort   uint16
 
-	foundation *common.Uint168
+	genesisBlock *types.Block
 }
 
 func loadConfig() *Config {
@@ -54,11 +56,12 @@ func loadConfig() *Config {
 		c.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	}
 
-	c.foundation, err = common.Uint168FromAddress(c.Foundation)
+	foundation, err := common.Uint168FromAddress(c.Foundation)
 	if err != nil {
 		fmt.Printf("Parse foundation address error %s", err)
 		os.Exit(-1)
 	}
+	c.genesisBlock = config.GenesisBlock(foundation)
 
 	return &c
 }
