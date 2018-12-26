@@ -1,18 +1,18 @@
 package service
 
 type RegisterIdentificationValueInfo struct {
-	DataHash string
-	Proof    string
-	Info     string
+	DataHash string `json:"datahash"`
+	Proof    string `json:"proof"`
+	Info     string `json:"info"`
 }
 
 type RegisterIdentificationContentInfo struct {
-	Path   string
-	Values []RegisterIdentificationValueInfo
+	Path   string                            `json:"path"`
+	Values []RegisterIdentificationValueInfo `json:"values"`
 }
 
 type RegisterIdentificationInfo struct {
-	Id       string
-	Sign     string
-	Contents []RegisterIdentificationContentInfo
+	Id       string                              `json:"id"`
+	Sign     string                              `json:"sign"`
+	Contents []RegisterIdentificationContentInfo `json:"contents"`
 }
