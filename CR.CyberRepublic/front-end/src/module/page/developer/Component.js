@@ -67,7 +67,7 @@ export default class extends StandardPage {
                         <div className="p_admin_content">
                             {this.buildInfoPanel()}
                             {this.buildNavi()}
-                            {this.buildMemberSearch()}
+                            {/*this.buildMemberSearch()*/}
                         </div>
                     </div>
                 </div>
@@ -148,8 +148,8 @@ export default class extends StandardPage {
                             </a>
                         </div>
                         <div className="info-panel-link">
-                            <a href="https://discord.gg/UG9j6kh" target="_blank">
-                                Discord
+                            <a href="javascript:void(0);">
+                                Forum (Coming Soon)
                             </a>
                         </div>
                     </div>
@@ -191,8 +191,6 @@ export default class extends StandardPage {
             <div className="navi-panel panel">
                 <div className="navi-panel-content panel-content">
                     {buildNaviItem(I18N.get('developer.teams.title'), I18N.get('developer.teams.description'), '/developer/search')}
-                    {buildNaviItem(I18N.get('developer.project.title'), I18N.get('developer.projects.description'), '/developer/search?lookingFor=PROJECT')}
-                    {buildNaviItem(I18N.get('developer.tasks.title'), I18N.get('developer.tasks.description'), '/developer/search?lookingFor=TASK')}
                     {buildNaviItem(I18N.get('developer.learn'), I18N.get('developer.learn.description'), '/developer/learn')}
                 </div>
             </div>

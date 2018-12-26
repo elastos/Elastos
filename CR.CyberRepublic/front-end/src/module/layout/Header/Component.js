@@ -136,6 +136,10 @@ export default class extends BaseComponent {
                     {I18N.get('0005')}
                 </Menu.Item>
 
+                <Menu.Item key="developer">
+                    {I18N.get('0102')}
+                </Menu.Item>
+
                 <Menu.Item key="developer/learn">
                     {I18N.get('developer.learn')}
                 </Menu.Item>

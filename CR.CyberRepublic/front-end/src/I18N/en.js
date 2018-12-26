@@ -107,7 +107,7 @@ const en = {
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',
     'popup.changes.2018-12-26.1': 'After in-depth discussions by the Council and Elastos members, we will be revising the website in the near future to better embody the concept of openness, transparency and community autonomy in Cyber Republic.',
-    'popup.changes.2018-12-26.2': 'CR100/CRcles/Ambassadors/Community on the CR website will be temporarily suspended (stop accepting new submissions and applications). For the ongoing community activities and CR100 projects, specific plans will be given in the next few weeks.',
+    'popup.changes.2018-12-26.2': 'CR100/CRcles/Ambassadors on the CR website will be temporarily suspended (stop accepting new submissions and applications). For the ongoing community activities and CR100 projects, specific plans will be given in the next few weeks.',
     'popup.changes.2018-12-26.3': 'A new Cyber Republic forum will be launched Dec 31, 2018, we encourage everyone to use that to voice their questions and concerns. We will also invite everyone from Discord to use the forum, this is mainly due to Discord being inaccessible by the Chinese community.',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
     'popup.changes.2018-12-26.5': 'The updated CR website will be relaunched on January 15, 2019, more information can be found at',
