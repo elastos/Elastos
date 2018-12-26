@@ -28,6 +28,27 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	return result
 }
 
+func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	illProducers := c.getIllegalProducers()
+
+	result := make([]*PayloadRegisterProducer, 0)
+
+	for _, p := range c.producerVotes {
+		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+			continue
+		}
+		if c.currentBlockHeight-p.RegHeight < 6 {
+			continue
+		}
+		result = append(result, p.Payload)
+	}
+
+	return result
+}
+
 func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

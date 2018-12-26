@@ -197,7 +197,7 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	}
 
 	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references,
-		getProducerPublicKeys(DefaultLedger.Store.GetRegisteredProducers())); err != nil {
+		getProducerPublicKeys(DefaultLedger.Store.GetActiveRegisteredProducers())); err != nil {
 		log.Warn("[CheckVoteProducerOutputs],", err)
 		return ErrInvalidOutput
 	}
