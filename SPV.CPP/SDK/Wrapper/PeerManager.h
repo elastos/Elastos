@@ -141,6 +141,8 @@ namespace Elastos {
 
 			static void loadBloomFilter(BRPeerManager *manager, BRPeer *peer);
 
+			static void publishTransactions(BRPeerManager *manager, BRTransaction *tx[], size_t txCount);
+
 		private:
 			ELAPeerManager *_manager;
 
