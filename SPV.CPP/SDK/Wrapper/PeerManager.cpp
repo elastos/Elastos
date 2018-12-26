@@ -190,7 +190,8 @@ namespace Elastos {
 									  blockHeightIncreased,
 									  syncIsInactive,
 									  verifyDifficultyWrapper,
-									  loadBloomFilter);
+									  loadBloomFilter,
+									  publishTransactions);
 		}
 
 		PeerManager::~PeerManager() {
@@ -469,6 +470,12 @@ namespace Elastos {
 			// TODO: XXX if already synced, recursively add inputs of unconfirmed receives
 
 			manager->peerMessages->BRPeerSendFilterloadMessage(peer, filter);
+		}
+
+		void PeerManager::publishTransactions(BRPeerManager *manager, BRTransaction *tx[], size_t txCount) {
+			for (size_t i = 0; i < txCount; i++) {
+				BRPeerManagerPublishTx(manager, tx[i], manager->info, txPublished);
+			}
 		}
 
 	}

@@ -68,7 +68,6 @@ typedef struct BRPeerManagerStruct {
 	BRTxPeerList *txRelays, *txRequests;
 	BRPublishedTx *publishedTx;
 	UInt256 *publishedTxHashes;
-	int initialized;
 
 	void *info;
 
@@ -95,6 +94,8 @@ typedef struct BRPeerManagerStruct {
 	int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
 
 	void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer);
+
+	void (*publishTransactions)(BRPeerManager *manager, BRTransaction *tx[], size_t txCount);
 
 	pthread_mutex_t lock;
 	BRPeerMessages *peerMessages;
@@ -140,7 +141,8 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
 							   void (*blockHeightIncreased)(void *info, uint32_t height),
 							   void (*syncIsInactive)(void *info, uint32_t time),
 							   int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
-							   void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer));
+							   void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer),
+							   void (*publishTransactions)(BRPeerManager *manager, BRTransaction *tx[], size_t txCount));
 
 // specifies a single fixed peer to use when connecting to the bitcoin network
 // set address to UINT128_ZERO to revert to default behavior
