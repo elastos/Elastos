@@ -111,7 +111,7 @@ const en = {
     'popup.changes.2018-12-26.3': 'A new Cyber Republic forum will be launched Dec 31, 2018, we encourage everyone to use that to voice their questions and concerns. We will also invite everyone from Discord to use the forum, this is mainly due to Discord being inaccessible by the Chinese community.',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
     'popup.changes.2018-12-26.5': 'The updated CR website will be relaunched on January 15, 2019, more information can be found at',
-    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org',
+    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/2018/12/26/important-cyber-republic-announcement',
 
     // LoginForm
     'login.label_username': 'Please input your email address or username',

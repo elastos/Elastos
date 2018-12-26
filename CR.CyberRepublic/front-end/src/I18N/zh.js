@@ -111,7 +111,7 @@ const zh = {
     'popup.changes.2018-12-26.3': '我们建立新的CR论坛将于2018年12月31日，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
     'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
-    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh',
+    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
 
     // LoginForm
     'login.label_username': '请输入用户名或邮箱',
