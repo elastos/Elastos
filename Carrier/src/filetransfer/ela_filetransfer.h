@@ -507,11 +507,11 @@ int ela_filetransfer_pull(ElaFileTransfer *filetransfer, const char *fileid,
  *                            argument @length being zero).
  *
  * @return
- *      0 on success, or -1 if an error occurred. The specific error code
+ *      Sent bytes on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
+ssize_t ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
                           const uint8_t *data, size_t length);
 
 /**
