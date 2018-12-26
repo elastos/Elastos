@@ -1105,8 +1105,10 @@ static void _peerRejectedTx(void *info, UInt256 txHash, uint8_t code, const char
     for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
         if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &(tx->txHash))) {
             pubTx = manager->publishedTx[i - 1];
-            manager->publishedTx[i - 1].info = NULL;
-            manager->publishedTx[i - 1].callback = NULL;
+            if (code != 0x12) {
+                manager->publishedTx[i - 1].info = NULL;
+                manager->publishedTx[i - 1].callback = NULL;
+            }
             break;
         }
     }
