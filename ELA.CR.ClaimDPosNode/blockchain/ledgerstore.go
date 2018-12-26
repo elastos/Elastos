@@ -10,6 +10,7 @@ import (
 // IChainStoreDpos provides func for dpos
 type IChainStoreDpos interface {
 	GetRegisteredProducers() []*PayloadRegisterProducer
+	GetActiveRegisteredProducers() []*PayloadRegisterProducer
 	GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error)
 	GetProducerVote(publicKey []byte) Fixed64
 	GetProducerStatus(publicKey string) ProducerState
