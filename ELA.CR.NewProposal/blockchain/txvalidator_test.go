@@ -646,6 +646,39 @@ func (s *txValidatorTestSuite) TestCheckStringField() {
 	s.EqualError(checkStringField("I am more than 100, 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test"), "Field test has invalid string length.")
 }
 
+func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
+	references := make(map[*types.Input]*types.Output, 1)
+	input := &types.Input{
+		Sequence: 1,
+	}
+	var txn types.Transaction
+
+	// Use the deposit UTXO in a TransferAsset transaction
+	depositHash, _ := common.Uint168FromAddress("DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD")
+	depositOutput := &types.Output{
+		ProgramHash: *depositHash,
+	}
+	references[input] = depositOutput
+	txn.TxType = types.TransferAsset
+	err := CheckTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "only the ReturnDepositCoin transaction can use the deposit UTXO")
+
+	// Use the deposit UTXO in a ReturnDepositCoin transaction
+	txn.TxType = types.ReturnDepositCoin
+	err = CheckTransactionDepositUTXO(&txn, references)
+	s.NoError(err)
+
+	// Use the standard UTXO in a ReturnDepositCoin transaction
+	normalHash, _ := common.Uint168FromAddress("EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR")
+	normalOutput := &types.Output{
+		ProgramHash: *normalHash,
+	}
+	references[input] = normalOutput
+	txn.TxType = types.ReturnDepositCoin
+	err = CheckTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+}
+
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }
