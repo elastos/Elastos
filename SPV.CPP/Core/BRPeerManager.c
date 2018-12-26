@@ -714,7 +714,8 @@ static void _peerConnected(void *info)
         peer_log(peer, "unsupported node type");
         BRPeerDisconnect(peer);
     }
-    else if ((peer->services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
+    else if ((peer->services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
+        (peer->services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK) {
         peer_log(peer, "peer->services: %llu != SERVICES_NODE_NETWORK", peer->services);
         peer_log(peer, "node doesn't carry full blocks");
         BRPeerDisconnect(peer);
@@ -724,10 +725,11 @@ static void _peerConnected(void *info)
         peer_log(peer, "node isn't synced");
         BRPeerDisconnect(peer);
     }
-    else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
-        peer_log(peer, "node doesn't support SPV mode");
-        BRPeerDisconnect(peer);
-    }
+//    else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM &&
+//        (peer->services & BTC_SERVICES_NODE_BLOOM) != BTC_SERVICES_NODE_BLOOM) {
+//        peer_log(peer, "node doesn't support SPV mode");
+//        BRPeerDisconnect(peer);
+//    }
     else if (manager->downloadPeer && // check if we should stick with the existing download peer
              (BRPeerLastBlock(manager->downloadPeer) >= BRPeerLastBlock(peer) ||
               manager->lastBlock->height >= BRPeerLastBlock(peer))) {

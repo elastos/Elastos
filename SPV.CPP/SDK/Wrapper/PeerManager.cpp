@@ -4,6 +4,8 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <Core/BRWallet.h>
+#include <Core/BRTransaction.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -406,7 +408,8 @@ namespace Elastos {
 			addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, addrs, addrsCount);
 			utxosCount = BRWalletUTXOs(manager->wallet, utxos, utxosCount);
 			txCount = BRWalletTxUnconfirmedBefore(manager->wallet, transactions, txCount, blockHeight);
-			filter = BRBloomFilterNew(manager->fpRate, addrsCount + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
+			ELAWallet *elaWallet = (ELAWallet *)manager->wallet;
+			filter = BRBloomFilterNew(manager->fpRate, addrsCount + elaWallet->ListeningAddrs.size() + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
 									  BLOOM_UPDATE_ALL); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			for (size_t i = 0; i < addrsCount; i++) { // add addresses to watch for tx receiveing money to the wallet
@@ -421,7 +424,6 @@ namespace Elastos {
 
 			free(addrs);
 
-			ELAWallet *elaWallet = (ELAWallet *)manager->wallet;
 			for (size_t i = 0; i < elaWallet->ListeningAddrs.size(); ++i) {
 				UInt168 hash = UINT168_ZERO;
 
@@ -437,7 +439,9 @@ namespace Elastos {
 
 				UInt256Set(o, utxos[i].hash);
 				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-				if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o, sizeof(o));
+				if (!BRBloomFilterContainsData(filter, o, sizeof(o))) {
+					BRBloomFilterInsertData(filter, o, sizeof(o));
+				}
 			}
 
 			free(utxos);
@@ -452,7 +456,9 @@ namespace Elastos {
 						BRWalletContainsAddress(manager->wallet, tx->outputs[input->index].address)) {
 						UInt256Set(o, input->txHash);
 						UInt32SetLE(&o[sizeof(UInt256)], input->index);
-						if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o,sizeof(o));
+						if (! BRBloomFilterContainsData(filter, o, sizeof(o))) {
+							BRBloomFilterInsertData(filter, o,sizeof(o));
+						}
 					}
 				}
 			}
