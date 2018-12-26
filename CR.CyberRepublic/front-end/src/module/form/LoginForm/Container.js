@@ -31,7 +31,7 @@ export default createContainer(Component, (state) => {
                         sessionStorage.setItem('loggedIn', '1')
                         sessionStorage.setItem('loginDirect', null)
                     } else {
-                        this.history.push('/developer')
+                        this.history.push('/profile/info')
                     }
                     return true
                 }

@@ -220,7 +220,7 @@ class C extends BaseComponent {
         )
 
         const vtt = {}
-        debugger
+
         _.each(s.voter, (item)=>{
             const name = item.value
 

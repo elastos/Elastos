@@ -56,13 +56,15 @@ export default class extends StandardPage {
                     <div className="d_box">
                         <div className="p_admin_content">
                             {this.buildHeader()}
+                            {/*
                             {this.buildTraining()}
                             {this.buildItinerary()}
                             {this.buildDisclaimer()}
+                            */}
                         </div>
                     </div>
                 </div>
-                {this.renderLoginOrRegisterModal()}
+                {/*this.renderLoginOrRegisterModal()
                 <ModalEmpowerForm
                     wrappedComponentRef={this.saveFormEmpowerApplyRef}
                     empowerType={this.state.applyEmpowerType}
@@ -70,7 +72,7 @@ export default class extends StandardPage {
                     visible={this.state.visibleModalEmpowerApply}
                     onCancel={this.handleCancelModalEmpowerApply.bind(this)}
                     onApply={this.handleApplyModalEmpowerApply.bind(this)}
-                />
+                />*/}
                 <Footer/>
             </div>
         )
@@ -124,9 +126,11 @@ export default class extends StandardPage {
                                 <p>{I18N.get('training.header.content.5')}</p>
                             </div>
                         </div>
+                        {/*
                         <div className="center">
                             <Button disabled onClick={this.onApplyModelEmpowerOpen} className="button" type="primary">Apply</Button>
                         </div>
+                        */}
                     </div>
                 </div>
             </div>

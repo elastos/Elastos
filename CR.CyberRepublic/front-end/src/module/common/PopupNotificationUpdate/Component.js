@@ -19,7 +19,16 @@ class C extends BaseComponent {
     }
 
     updateModalVisibility() {
-        const value = localStorage.getItem('popup-update')
+        const popupUpdate = localStorage.getItem('popup-update')
+
+        if (popupUpdate === 'force') {
+            this.setState({
+                visible: true
+            })
+            return
+        }
+
+        const value = popupUpdate === 'true'
         if (!value) {
             if (!this.props.is_login || !this.props.popup_update) {
                 // User didn't see it yet
@@ -30,7 +39,13 @@ class C extends BaseComponent {
         }
     }
 
+    /**
+     * TODO: if we reuse this we need an HTML templating solution
+     */
     ord_render() {
+
+        let lang = localStorage.getItem('lang') || 'en';
+
         return (
             <Modal
                 visible={this.state.visible}
@@ -40,23 +55,27 @@ class C extends BaseComponent {
                 className = "c_Popup_Notif"
             >
                 <Row>
-                    <Col span={10}>
-                        <div className="left-col-image">
-                            <img src="/assets/images/login-left.png"/>
-                        </div>
-                    </Col>
-                    <Col span={14}>
+                    <Col>
                         <div className="right-col">
                             <h1 className="komu-a title">{I18N.get('popup.changes.title')}</h1>
-                            <ul className="synthese changes-list">
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                <li>Cras luctus tortor non ex scelerisque, vitae finibus tortor commodo.</li>
+                            <ol className="synthese changes-list">
+                                <li>{I18N.get('popup.changes.2018-12-26.1')}</li>
+                                <li>{I18N.get('popup.changes.2018-12-26.2')}</li>
                                 <li>
-                                    Nam dapibus massa ultrices odio venenatis, non mollis tortor condimentum.
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                    {I18N.get('popup.changes.2018-12-26.3')}
+                                    <br/><br/>
+                                    {/*
+                                    <a href="https://forum.cyberrepublic.org">https://forum.cyberrepublic.org</a>
+                                    <br/><br/>
+                                    {I18N.get('popup.changes.2018-12-26.4')}
+                                    <div class="center">
+                                        {lang === 'en' ? <img src="/assets/images/popup-changes-2018-12-26-en.png"/> : <img src="/assets/images/popup-changes-2018-12-26-zh.png"/>}
+                                    </div>
+                                    */}
                                 </li>
-                                <li>Fusce vestibulum elit ac nisi laoreet condimentum.</li>
-                            </ul>
+                            </ol>
+
+                            {I18N.get('popup.changes.2018-12-26.5')} <a target="_blank" href={I18N.get('popup.changes.2018-12-26.blog_link')}>{I18N.get('popup.changes.2018-12-26.blog_link')}</a>
                         </div>
                     </Col>
                 </Row>
@@ -67,10 +86,10 @@ class C extends BaseComponent {
     handleCancel() {
         if (this.props.is_login) {
             this.props.updateUserPopupUpdate(this.props.currentUserId)
-            localStorage.setItem('popup-update', 'true')
-        } else {
-            localStorage.setItem('popup-update', 'true')
         }
+
+        localStorage.setItem('popup-update', 'true')
+
         this.setState({
             visible: false
         })

@@ -74,8 +74,6 @@ const zh = {
     '2305': '我的项目',
     '2306': '社区',
 
-    'popup.changes.title': 'BIG CHANGES ARE COMING SOON!',
-
     'login.success': '登陆成功',
 
     'mentions.notFound': '该用户不存在',
@@ -105,6 +103,15 @@ const zh = {
     'home.organizers.action_2': '查看我可以参与的活动和任务',
     'home.summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
+
+    // Pop-up Announcement
+    'popup.changes.title': 'Cyber Republic的重要公告',
+    'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开、透明和社区自治的理念。\n',
+    'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
+    'popup.changes.2018-12-26.3': '我们建立新的CR论坛将于2018年12月31日，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
+    'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
+    'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
+    'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh',
 
     // LoginForm
     'login.label_username': '请输入用户名或邮箱',
@@ -230,9 +237,9 @@ const zh = {
     'developer.cr100.application.view': '查看',
     'developer.cr100.projects': '项目',
     'developer.cr100.submit_whitepaper': '提交白皮书',
-    'developer.cr100.welcome.1': 'Cyber Republic 100（以下简称CR100）是亦来云的旗舰项目，邀请企业家团队申请资金来设计和建造下一代伟大的亦来云 DApp生态系统，下面列出的这100个是能体现出亦来云基础设施多样性和强大功能的模板项目。',
-    'developer.cr100.welcome.2': '每个项目代表了DApp能颠覆的当前传统模型下App的应用场景。申请的团队需要在这些应用场景下迸发出团队现有的或未来白皮书的灵感，并提交详细的提案，阐述项目计划。',
-    'developer.cr100.welcome.3': 'CyberRepublic理事会将选择特别有前景的项目，并为选定的团队提供10万美金作为最初的启动资金。请注意：CR100虽然是为了创造生态多样性，但是每个类别并不只限于一个DApp。此外，如果您没有发现适合您项目的类别，可以提交新的类别到Cyber Republic。详情请见本页底部。',
+    'developer.cr100.welcome.1': '本计划暂时中止，并很快会变成一组特别的提案。当新的Cyber Republic BETA版启动时，每个团队将优先向新选举产生的7人CR委员会推介他们的提案。',
+    'developer.cr100.welcome.2': '我们仍然重视在ALPHA版本期间已提交提案的每个人和每个团队，并对大家都经历过的疲惫与痛苦深感歉意。新的CR秘书团队将尽一切努力与这些团队联系并确保他们得到一对一的回应。\n',
+    'developer.cr100.welcome.3': '欢迎加入我们的新论坛，提出您的建议并讨论CR的未来将于2018年12月31日',
     'developer.cr100.welcome.title': 'Cyber Republic 100',
     'developer.cr100.disclaimer': '上面描述的项目可能会发生变化，仅作为示例使用',
     'developer.cr100.disclaimer.title': '免责声明',
@@ -310,16 +317,16 @@ const zh = {
     'emp35.header.title.part1': 'CR',
     'emp35.header.title.part2': 'cles',
     'emp35.header.title.part3': ' & Empower35',
-    'emp35.header.content.1': '连接同好，组建团队，完成任务，赚取ELA。',
-    'emp35.header.content.2': '随着大家不断展现才华，Empower35领袖将会被选出，',
-    'emp35.header.content.3': '去管理和领导每个团队.',
+    'emp35.header.content.1': '最近扩展到CRcle中的Empower 35计划将暂停。目前的愿景是，',
+    'emp35.header.content.2': '我们社区的技能人才将晋升为各自专长领域的理事会顾问。',
+    'emp35.header.content.3': '关于社区成员如何晋升到CR更固定的职位，我们随后将发布详细方案。',
 
     'emp35.empower.title': 'CRcles & Empower35',
     'emp35.empower.content': '您最多可以加入2个圈子（CRcles）。加入CRcle，您就可以组建小团队，创建并申请任务并开始展现您的才华。 CRcles是一个在CR大网络里面的智能小网络群。随着CRcles的不断扩大，整个网络会随之不断扩大。',
     'emp35.teamHeader.title': 'CRcles',
 
     'emp35.mycircles.title': '我的CRcles',
-    'emp35.circles.statement': '一个圈子上的所有的点到中心距离都相同。CRcles是具有某个领域专长技能的CR公民的分布式集群。CRcle通过将具有特定专长的CR公民聚集起来并让他们一起创建并完成的各自擅长的任务。时机成熟时每个CRcle的领袖会被选出。',
+    'emp35.circles.statement': '',
     'emp35.form.reason.max': '您填写的理由过长',
     'emp35.form.field.required': '此处为必填内容',
     'emp35.form.suitedreason.max': '适合的理由过长',
@@ -355,11 +362,11 @@ const zh = {
     // Training
     'training.header.title': '大使培训',
     'training.subscribeemail.text': '通过您的邮箱订阅来跟进最新进展。',
-    'training.header.content.1': 'Cyber Republic 为大使候选人和演讲嘉宾',
-    'training.header.content.2': '支付所有行程花费，在各个区域接受亦来云团队',
-    'training.header.content.3': '为期一周的培训，从而成为亦来云官方大使。',
-    'training.header.content.4': ' 从该项目毕业的大使将获取ELA预算，并',
-    'training.header.content.5': '有权代表Cyber Republic在活动和聚会上发言',
+    'training.header.content.1': '我们正在初步规划一个开发者黑客马拉松',
+    'training.header.content.2': '大使培训计划将推迟到这之后进行。',
+    'training.header.content.3': '我们重视每个人在世界各地组织和举办亦来云推广活动的辛勤工作，',
+    'training.header.content.4': '并将与现有大使继续合作。请持续关注我们的新闻动态，',
+    'training.header.content.5': '特别是我们的第二届亦来云周年庆典活动。',
     'training.evangelist.title': '培训目标',
     'training.evangelist.content': '这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
     'training.thanksForApplying': '感谢您的申请，我们会尽快与您取得联系！',
@@ -449,15 +456,17 @@ const zh = {
     'project.public.statusHelp.markAsComplete': '标记为已完成',
     'project.public.statusHelp.markAsCompleteConfirm': '您确定要将此任务标记为已完成吗？',
 
-    'team.detail.team_active': '您的团队已经激活',
-
-    'team.create.error.nameRequired': '请填写团队名称',
-    'team.create.error.nameTooShort': '团队名称过短',
-
     'team.owner': '领导人',
     'team.description': '描述',
     'team.applyMessage': '申请',
     'team.detail.view': '查看',
+
+    'team.detail.team_active': '您的团队已经激活',
+
+    'team.create.error.nameRequired': '请填写团队名称',
+    'team.create.error.descriptionRequired': 'Team description is required',
+    'team.create.error.nameTooShort': '团队名称过短',
+    'team.create.error.descriptionTooShort': 'Team description is too short',
 
     // Team specializations
     'team.spec.media': '媒体',
@@ -514,12 +523,19 @@ const zh = {
     '.ok': '确定',
     '.apply': '申请',
     '.cancel': '取消',
+    '.delete': 'Delete',
+    '.status': 'Status',
     '.edit': '编辑',
     '.upload': '点击上传',
     '.yes': '是',
     '.no': '否',
     '.loading': '加载中...',
     'ela': 'ELA',
+    '.areYouSure': 'Are you sure?',
+    '.suspended': '暂停',
+
+    // Temp Notices
+    'notice.suspended': '在接下来几周我们会给出具体的处理方案。',
 
     // Community
     'community.nomember': '没有成员',
@@ -825,6 +841,9 @@ const zh = {
     'profile.detail.sendmessage.disabled': '您无法向自己发送信息',
     'profile.detail.comingsoon': '即将推出...',
     'profile.detail.follow.disabled': '您无法关注自己',
+    'profile.skillset.header': 'Skill Set',
+    'profile.social.header': 'Social Profile',
+    'profile.portfolio': 'Portfolio',
 
     // Validate Form
     'ambassadors.form.required': '必填项目',

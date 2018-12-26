@@ -25,12 +25,12 @@ export default class extends BaseComponent {
             'profile/info',
             'profile/teams',
             'developer',
+            'developer/learn',
             'community',
             'help',
             'about',
             'faq',
             'contact',
-            'slack',
             'council'
         ], key)) {
             this.props.history.push('/' + ev.key)
@@ -48,7 +48,15 @@ export default class extends BaseComponent {
                 onCancel() {
                 }
             })
+        } else if (key === 'teams') {
+            this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
+
         } else if (key === 'blog') {
+
+            analytics.track('BLOG_CLICKED', {
+                url: location.href
+            })
+
             let linkToBlog = 'https://blog.cyberrepublic.org'
 
             if (I18N.getLang() === USER_LANGUAGE.zh) {
@@ -56,6 +64,17 @@ export default class extends BaseComponent {
             }
 
             window.location.href = linkToBlog
+
+        } else if (key === 'forum') {
+            analytics.track('FORUM_CLICKED', {
+                url: location.href
+            })
+            if (!sessionStorage['api-token']) {
+                this.props.history.push('/login');
+            } else {
+                let forumLink = `${process.env.FORUM_URL}/login`;
+                window.open(forumLink, '_blank');
+            }
         }
     }
 
@@ -77,6 +96,7 @@ export default class extends BaseComponent {
                         onClick={this.handleMenuClick.bind(this)}
                         mode="inline"
                     >
+                        {/*
                         <Menu.Item key="cr100">
                             {I18N.get('0105')}
                         </Menu.Item>
@@ -86,16 +106,24 @@ export default class extends BaseComponent {
                         <Menu.Item key="developer">
                             {I18N.get('0102')}
                         </Menu.Item>
+                        */}
+                        <Menu.Item key="developer/learn">
+                            {I18N.get('developer.learn')}
+                        </Menu.Item>
+                        <Menu.Item key="teams">
+                            {I18N.get('0005')}
+                        </Menu.Item>
                         <Menu.Item key="council">
                             {I18N.get('council.0001')}
                         </Menu.Item>
                         <Menu.Item key="blog">
                             {I18N.get('0110')}
                         </Menu.Item>
+                        {/*
                         <Menu.Item key="ambassadors">
                             {I18N.get('0107')}
                         </Menu.Item>
-                        {/*<Menu.Item key="developer">
+                        <Menu.Item key="developer">
                             {I18N.get('0100')}
                         </Menu.Item>*/}
                     </Menu>
@@ -136,12 +164,14 @@ export default class extends BaseComponent {
                         onClick={this.handleMenuClick.bind(this)}
                         mode="inline"
                     >
+                        {/*
                         <Menu.Item key="help">
                             {I18N.get('0007')}
                         </Menu.Item>
-                        <Menu.Item key="slack">
+                        <Menu.Item key="forum">
                             {I18N.get('0011')}
                         </Menu.Item>
+                        */}
                     </Menu>
                 </Col>
             </Row>
