@@ -16,6 +16,10 @@ func (c *ChainStoreMock) GetRegisteredProducers() []*payload.PayloadRegisterProd
 	return c.RegisterProducers
 }
 
+func (c *ChainStoreMock) GetActiveRegisteredProducers() []*payload.PayloadRegisterProducer {
+	return c.RegisterProducers
+}
+
 func (c *ChainStoreMock) GetRegisteredProducersSorted() ([]*payload.PayloadRegisterProducer, error) {
 	panic("implement me")
 }
