@@ -108,9 +108,9 @@ const en = {
     'popup.changes.title': 'Important CR Announcement',
     'popup.changes.2018-12-26.1': 'After in-depth discussions by the Council and Elastos members, we will be revising the website in the near future to better embody the concept of openness, transparency and community autonomy in Cyber Republic.',
     'popup.changes.2018-12-26.2': 'CR100/CRcles/Ambassadors/Community on the CR website will be temporarily suspended (stop accepting new submissions and applications). For the ongoing community activities and CR100 projects, specific plans will be given in the next few weeks.',
-    'popup.changes.2018-12-26.3': 'A new Cyber Republic forum has been created, we encourage everyone to use that to voice their questions and concerns. We will also invite everyone from Discord to use the forum, this is mainly due to Discord being inaccessible by the Chinese community.',
+    'popup.changes.2018-12-26.3': 'A new Cyber Republic forum will be launched Dec 31, 2018, we encourage everyone to use that to voice their questions and concerns. We will also invite everyone from Discord to use the forum, this is mainly due to Discord being inaccessible by the Chinese community.',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
-    'popup.changes.2018-12-26.5': 'The updated CR website will be restarted on January 15, 2019, more information can be found at',
+    'popup.changes.2018-12-26.5': 'The updated CR website will be relaunched on January 15, 2019, more information can be found at',
     'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org',
 
     // LoginForm
@@ -237,9 +237,9 @@ const en = {
     'developer.cr100.application.view': 'View',
     'developer.cr100.projects': 'Projects',
     'developer.cr100.submit_whitepaper': 'Submit Whitepaper',
-    'developer.cr100.welcome.1': 'CR100 is our flagship project, inviting teams of entrepreneurs to apply for funding to design and build the next great Elastos Ecosystem DApp. The 100 projects listed are templates that exemplify the diversity and abilities of the Elastos infrastructure. ',
-    'developer.cr100.welcome.2': 'Each project represents a different use case for a decentralized application that can disrupt the current landscape of applications. Teams are asked to use these ideas as inspirations for either their own future or existing whitepapers and to submit detailed proposals that outline their plan.',
-    'developer.cr100.welcome.3': 'The Cyber Republic Council will select projects that are particularly promising and provide funding with an initial 100k to a chosen team. Please note that while CR100 is designed to create variety, we may fund more than one DApp for each category. Also, if you do not see a category for your project, you can submit it anyway. Details are at the bottom of this page.',
+    'developer.cr100.welcome.1': 'This program is temporarily suspended and will soon become a group of special proposals. When the new Cyber Republic BETA launches each team will have priority access to the new council members to pitch their proposals.',
+    'developer.cr100.welcome.2': 'We still value every person and team that has already submitted a proposal during the ALPHA, and deeply regret the growing pains that everyone has endured. Every effort will be made by the new CR secretariat team to contact and ensure they are responded to individually.\n',
+    'developer.cr100.welcome.3': 'Feel free to join us on the new forums launching Dec 31, 2018 to bring up your proposals and discuss the future of CR. ',
     'developer.cr100.welcome.title': 'Cyber Republic 100',
     'developer.cr100.disclaimer': 'Projects described above are subject to change and are only used as an example.',
     'developer.cr100.disclaimer.title': 'Disclaimer',
@@ -326,7 +326,7 @@ const en = {
     'emp35.teamHeader.title': 'CRcles',
 
     'emp35.mycircles.title': 'My CRcles',
-    'emp35.circles.statement': 'A circle is a shape where all points are equal distance from the center. CR\'s "CRcles" are teams of decentralized citizens who all revolve around a single area of expertise. CRcles are designed to group people by their talent and allow them to begin creating and completing talent specific tasks. In time, leaders will be elected to manage each CRcle.',
+    'emp35.circles.statement': 'Empower 35 which has recently been expanded to the CRcle program will be temporarily suspended. The current vision is that skilled members of our community will be encouraged to form and lead teams. For certain roles that the Secretariat team requires, qualified candidates will be promoted to join as an adviser. More details will follow on how community members can advance to more permanent positions in Cyber Republic.',
     'emp35.form.reason.max': 'Reason too long',
     'emp35.form.field.required': 'This must be filled out',
     'emp35.form.suitedreason.max': 'Suited reason too long',
@@ -362,11 +362,11 @@ const en = {
     // Training
     'training.header.title': 'Ambassadors Training',
     'training.subscribeemail.text': 'Stay updated by subscribing below with your E-Mail',
-    'training.header.content.1': 'Cyber Republic will offer an all expenses paid trip for ambassadors',
-    'training.header.content.2': 'and guest speakers to spend one week training with the Elastos Team',
-    'training.header.content.3': 'in various regions to become an official Elastos Ambassador. Graduates',
-    'training.header.content.4': 'of the program will be given an ELA budget and be empowered to',
-    'training.header.content.5': 'speak on behalf of Cyber Republic at events and meetups.',
+    'training.header.content.1': 'This program will be postponed until after a developer hackathon that is',
+    'training.header.content.2': ' in the early planning phases. We value everyone’s hard work hosting and',
+    'training.header.content.3': 'organizing events around the globe and will still engage existing',
+    'training.header.content.4': 'ambassadors individually. Stay tuned for more news soon, especially as',
+    'training.header.content.5': 'we near the 2nd Elastos Anniversary event.',
     'training.evangelist.title': 'Ambassadors Training',
     'training.evangelist.content': 'The goal of the program is for participants to not only learn the technology from the Elastos Team first hand, but to develop a presentation crafted with marketing and PR professionals that will allow ambassadors to be professionally prepared to represent the project to the public. Cyber Republic plans to run this program several times per year. ',
     'training.thanksForApplying': 'Thank you for applying, we will be in touch shortly!',
@@ -532,6 +532,10 @@ const en = {
     '.loading': 'Loading...',
     'ela': 'ELA',
     '.areYouSure': 'Are you sure?',
+    '.suspended': 'Suspended',
+
+    // Temp Notices
+    'notice.suspended': 'Further plans will be given in the next few weeks',
 
     // Community
     'community.nomember': 'no members',

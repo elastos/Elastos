@@ -655,13 +655,14 @@ export default class extends BaseComponent {
                                     placeholder={I18N.get('developer.search.search.placeholder')}/>
                             </div>
                         </div>
+                        {/*
                         <div className="group">
                             <div className="title">{I18N.get('developer.search.lookingFor')}</div>
                             <div className="content">
                                 {this.renderLookingFor(lookingForOptions, true)}
                             </div>
                         </div>
-
+                        */}
                         <div className="group">
                             <div className="title">{I18N.get('developer.search.sort')}</div>
                             <div className="content">
@@ -744,6 +745,7 @@ export default class extends BaseComponent {
                     </Affix>
                 </MediaQuery>
                 <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
+                    {/*
                     <div className="filter-select-container">
                         <Select className="filter-select" defaultValue={this.state.lookingFor} onChange={this.onChangeLookingForSelect.bind(this)}>
                             <Option value="PROJECT">{I18N.get('developer.search.project')}</Option>
@@ -751,6 +753,7 @@ export default class extends BaseComponent {
                             <Option value="TASK">{I18N.get('developer.search.task')}</Option>
                         </Select>
                     </div>
+                    */}
                     <div className="search-mobile-container">
                         <div className="">
                             <Input defaultValue={this.state.search} onChange={searchChangedHandler.bind(this)}

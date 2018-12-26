@@ -7,7 +7,9 @@ import { Col, Row, Card, Button, Breadcrumb, Icon, List, Spin, Avatar, Modal } f
 import _ from 'lodash'
 
 export default class extends StandardPage {
+
     componentDidMount() {
+        // localStorage.setItem('popup-update', 'false')
         this.setState({ loading: true })
         this.props.getTasks().then(() => {
             this.setState({ loading: false })

@@ -102,12 +102,14 @@ export default class extends StandardPage {
                     <div className="d_box">
                         <div className="p_content">
                             {this.buildHeader()}
+                            {/*
                             {this.buildMyCirclesContainer()}
                             {this.buildTeamHeader()}
                             {this.buildEssentialCircles()}
                             {this.buildAdvancedCircles()}
                             {this.buildServicesCircles()}
                             {this.buildDeveloperCircles()}
+                            */}
                             {this.buildCircleStatement()}
                         </div>
                     </div>
@@ -162,6 +164,12 @@ export default class extends StandardPage {
                     </div>
                 </div>
             </div>
+        )
+    }
+
+    buildTempAnnouncement() {
+        return (
+            <div></div>
         )
     }
 

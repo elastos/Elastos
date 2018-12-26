@@ -19,7 +19,16 @@ class C extends BaseComponent {
     }
 
     updateModalVisibility() {
-        const value = localStorage.getItem('popup-update')
+        const popupUpdate = localStorage.getItem('popup-update')
+
+        if (popupUpdate === 'force') {
+            this.setState({
+                visible: true
+            })
+            return
+        }
+
+        const value = popupUpdate === 'true'
         if (!value) {
             if (!this.props.is_login || !this.props.popup_update) {
                 // User didn't see it yet
@@ -55,12 +64,14 @@ class C extends BaseComponent {
                                 <li>
                                     {I18N.get('popup.changes.2018-12-26.3')}
                                     <br/><br/>
+                                    {/*
                                     <a href="https://forum.cyberrepublic.org">https://forum.cyberrepublic.org</a>
                                     <br/><br/>
                                     {I18N.get('popup.changes.2018-12-26.4')}
                                     <div class="center">
                                         {lang === 'en' ? <img src="/assets/images/popup-changes-2018-12-26-en.png"/> : <img src="/assets/images/popup-changes-2018-12-26-zh.png"/>}
                                     </div>
+                                    */}
                                 </li>
                             </ol>
 
@@ -77,7 +88,7 @@ class C extends BaseComponent {
             this.props.updateUserPopupUpdate(this.props.currentUserId)
         }
 
-        // localStorage.setItem('popup-update', 'true')
+        localStorage.setItem('popup-update', 'true')
 
         this.setState({
             visible: false

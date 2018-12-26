@@ -7,7 +7,7 @@ import {
     Row,
     Tag,
     Icon,
-    Carousel,
+    Popover,
     Avatar,
     Button,
     Spin,
@@ -770,7 +770,9 @@ class C extends BaseComponent {
                 <div className="rect-container">
                     <div className="rect"/>
                 </div>
-                <Button disabled className="apply-button" onClick={applyHandler.bind(this)}>{I18N.get('.apply')}</Button>
+                <Popover content={I18N.get('notice.suspended')} title={I18N.get('.suspended')}>
+                    <Button className="apply-button">{I18N.get('.apply')}</Button>
+                </Popover>
             </div>
         )
     }

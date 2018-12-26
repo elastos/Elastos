@@ -105,10 +105,10 @@ const zh = {
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
 
     // Pop-up Announcement
-    'popup.changes.title': 'Important CR Announcement',
-    'popup.changes.2018-12-26.1': '经CR理事会深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开，透明，社区自治的理念。',
-    'popup.changes.2018-12-26.2': 'CR 网站上的CR100/Circles/Ambassadors/Community等会暂停（停止接受新的提交和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
-    'popup.changes.2018-12-26.3': '我们已经建立新的CR论坛，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
+    'popup.changes.title': 'Cyber Republic的重要公告',
+    'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开、透明和社区自治的理念。\n',
+    'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
+    'popup.changes.2018-12-26.3': '我们建立新的CR论坛将于2018年12月31日，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
     'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
     'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh',
@@ -237,9 +237,9 @@ const zh = {
     'developer.cr100.application.view': '查看',
     'developer.cr100.projects': '项目',
     'developer.cr100.submit_whitepaper': '提交白皮书',
-    'developer.cr100.welcome.1': 'Cyber Republic 100（以下简称CR100）是亦来云的旗舰项目，邀请企业家团队申请资金来设计和建造下一代伟大的亦来云 DApp生态系统，下面列出的这100个是能体现出亦来云基础设施多样性和强大功能的模板项目。',
-    'developer.cr100.welcome.2': '每个项目代表了DApp能颠覆的当前传统模型下App的应用场景。申请的团队需要在这些应用场景下迸发出团队现有的或未来白皮书的灵感，并提交详细的提案，阐述项目计划。',
-    'developer.cr100.welcome.3': 'CyberRepublic理事会将选择特别有前景的项目，并为选定的团队提供10万美金作为最初的启动资金。请注意：CR100虽然是为了创造生态多样性，但是每个类别并不只限于一个DApp。此外，如果您没有发现适合您项目的类别，可以提交新的类别到Cyber Republic。详情请见本页底部。',
+    'developer.cr100.welcome.1': '本计划暂时中止，并很快会变成一组特别的提案。当新的Cyber Republic BETA版启动时，每个团队将优先向新选举产生的7人CR委员会推介他们的提案。',
+    'developer.cr100.welcome.2': '我们仍然重视在ALPHA版本期间已提交提案的每个人和每个团队，并对大家都经历过的疲惫与痛苦深感歉意。新的CR秘书团队将尽一切努力与这些团队联系并确保他们得到一对一的回应。\n',
+    'developer.cr100.welcome.3': '欢迎加入我们的新论坛，提出您的建议并讨论CR的未来将于2018年12月31日',
     'developer.cr100.welcome.title': 'Cyber Republic 100',
     'developer.cr100.disclaimer': '上面描述的项目可能会发生变化，仅作为示例使用',
     'developer.cr100.disclaimer.title': '免责声明',
@@ -362,11 +362,11 @@ const zh = {
     // Training
     'training.header.title': '大使培训',
     'training.subscribeemail.text': '通过您的邮箱订阅来跟进最新进展。',
-    'training.header.content.1': 'Cyber Republic 为大使候选人和演讲嘉宾',
-    'training.header.content.2': '支付所有行程花费，在各个区域接受亦来云团队',
-    'training.header.content.3': '为期一周的培训，从而成为亦来云官方大使。',
-    'training.header.content.4': ' 从该项目毕业的大使将获取ELA预算，并',
-    'training.header.content.5': '有权代表Cyber Republic在活动和聚会上发言',
+    'training.header.content.1': '我们正在初步规划一个开发者黑客马拉松',
+    'training.header.content.2': '大使培训计划将推迟到这之后进行。',
+    'training.header.content.3': '我们重视每个人在世界各地组织和举办亦来云推广活动的辛勤工作，',
+    'training.header.content.4': '并将与现有大使继续合作。请持续关注我们的新闻动态，',
+    'training.header.content.5': '特别是我们的第二届亦来云周年庆典活动。',
     'training.evangelist.title': '培训目标',
     'training.evangelist.content': '这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
     'training.thanksForApplying': '感谢您的申请，我们会尽快与您取得联系！',
@@ -532,6 +532,10 @@ const zh = {
     '.loading': '加载中...',
     'ela': 'ELA',
     '.areYouSure': 'Are you sure?',
+    '.suspended': '暂停',
+
+    // Temp Notices
+    'notice.suspended': '在接下来几周我们会给出具体的处理方案。',
 
     // Community
     'community.nomember': '没有成员',

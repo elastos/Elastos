@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Elastos Bounty Program Front-end",
   "scripts": {
-    "start": "rimraf dev_dist && GOOGLE_MAPS_API_KEY=abc webpack-dev-server --display-reasons --display-chunks --mode development --config ./webpack/webpack.dev.js --colors --progress --profile --bail",
+    "start": "rimraf dev_dist && GOOGLE_MAPS_API_KEY=abc webpack-dev-server --mode development --config ./webpack/webpack.dev.js --colors --progress --bail",
     "build:production": "rimraf dist && NODE_ENV=production webpack --mode production --config ./webpack/webpack.prod.js --colors --progress",
     "build:staging": "rimraf dist && NODE_ENV=staging webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",
     "build:dev": "rimraf dist && NODE_ENV=dev webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",

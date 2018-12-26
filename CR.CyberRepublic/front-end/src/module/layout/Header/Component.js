@@ -123,16 +123,28 @@ export default class extends BaseComponent {
 
         return (
             <Menu onClick={this.clickItem.bind(this)} className="help-menu">
+                {/*
                 <Menu.Item key="about">
                     {I18N.get('0008')}
                 </Menu.Item>
                 <Menu.Item key="faq">
                     {I18N.get('0009')}
                 </Menu.Item>
+                */}
 
+                <Menu.Item key="teams">
+                    {I18N.get('0005')}
+                </Menu.Item>
+
+                <Menu.Item key="developer/learn">
+                    {I18N.get('developer.learn')}
+                </Menu.Item>
+
+                {/*
                 <Menu.Item key="forum">
                     {I18N.get('0011')}
                 </Menu.Item>
+                */}
 
                 {this.props.isLogin &&
                 <Menu.Item key="logout">
@@ -204,6 +216,10 @@ export default class extends BaseComponent {
                 <Menu onClick={this.clickItem.bind(this)} className="c_Header_Menu pull-right"
                     selectedKeys={this.getSelectedKeys()} mode="horizontal">
 
+                    <Menu.Item className="c_MenuItem link" key="notice">
+                        {I18N.get('popup.changes.title')}
+                    </Menu.Item>
+
                     <SubMenu title={I18N.get('navigation.programs')} onClick={this.clickItem.bind(this)}
                         className="c_SubMenuItem c_MenuItem link" selectedKeys={this.getSelectedKeys()} mode="horizontal">
                         <Menu.Item className="c_MenuItem link" key="cr100">
@@ -216,10 +232,6 @@ export default class extends BaseComponent {
 
                         <Menu.Item className="c_MenuItem link" key="ambassadors">
                             {I18N.get('0107')}
-                        </Menu.Item>
-
-                        <Menu.Item className="c_MenuItem link" key="developer">
-                            {I18N.get('0102')}
                         </Menu.Item>
                     </SubMenu>
 
@@ -305,6 +317,7 @@ export default class extends BaseComponent {
             'landing',
             'home',
             'developer',
+            'developer/learn',
             'cr100',
             'crcles',
             'ambassadors',
@@ -314,7 +327,6 @@ export default class extends BaseComponent {
             'council',
             'directory',
             'account',
-            'teams',
             'tasks',
             'login',
             'register',
@@ -334,6 +346,15 @@ export default class extends BaseComponent {
             } else {
                 this.props.history.push('/' + e.key)
             }
+
+            // below this are exceptions from the list above
+
+        } else if (key === 'notice') {
+
+            // hack for now
+            localStorage.setItem('popup-update', 'force')
+            window.location.reload()
+
         } else if (key === 'forum') {
             analytics.track('FORUM_CLICKED', {
                 url: location.href
@@ -344,6 +365,7 @@ export default class extends BaseComponent {
                 let forumLink = `${process.env.FORUM_URL}/login`;
                 window.open(forumLink, '_blank');
             }
+
         } else if (key === 'logout') {
 
             analytics.track('HEADER_CLICKED', {
@@ -368,6 +390,9 @@ export default class extends BaseComponent {
             })
         } else if (key === 'profile') {
             this.props.history.push('/profile/info')
+
+        } else if (key === 'teams') {
+            this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
 
         } else if (key === 'blog') {
 
