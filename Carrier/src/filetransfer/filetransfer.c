@@ -637,7 +637,7 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
         if (ft->callbacks.data) {
             bool rc;
 
-            rc = ft->callbacks.data(ft, fileid, data, len, ft->callbacks_context);
+            rc = ft->callbacks.data(ft, fileid, (len > 0 ? data : NULL), len, ft->callbacks_context);
             if (!rc) { // Tell filetransfering is finished.
                 vlogW(TAG "file transferring finished over channel %d, ",
                       "closing channel.", channel);
