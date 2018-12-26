@@ -401,11 +401,11 @@ func CheckTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 	for _, output := range references {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() {
-				return errors.New("only ReturnDepositCoin transaction can use the deposit utxo")
+				return errors.New("only the ReturnDepositCoin transaction can use the deposit UTXO")
 			}
 		} else {
 			if txn.IsReturnDepositCoin() {
-				return errors.New("the ReturnDepositCoin can only use the deposit utxo")
+				return errors.New("the ReturnDepositCoin transaction can only use the deposit UTXO")
 			}
 		}
 	}
