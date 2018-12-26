@@ -49,10 +49,6 @@ func (c *ChainStore) PersistRegisterProducer(payload *PayloadRegisterProducer) e
 	return c.recordProducer(payload, height)
 }
 
-func (c *ChainStore) RollbackRegisterProducer(payload *PayloadRegisterProducer) error {
-	return c.PersistCancelProducer(&PayloadCancelProducer{PublicKey: payload.PublicKey})
-}
-
 func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight uint32) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -74,6 +70,65 @@ func (c *ChainStore) recordProducer(payload *PayloadRegisterProducer, regHeight 
 	for _, t := range outputpayload.VoteTypes {
 		c.dirty[t] = true
 	}
+	return nil
+}
+
+func (c *ChainStore) RollbackRegisterProducer(payload *PayloadRegisterProducer) error {
+	// remove from DPOSProducers
+	key := []byte{byte(DPOSProducers)}
+	var publicKeys [][]byte
+	pks, err := c.getRegisteredProducers()
+	if err != nil {
+		return err
+	} else {
+		for _, pk := range pks {
+			if !bytes.Equal(pk, payload.PublicKey) {
+				publicKeys = append(publicKeys, pk)
+			}
+		}
+	}
+	buf := new(bytes.Buffer)
+	if err = WriteVarUint(buf, uint64(len(publicKeys))); err != nil {
+		return errors.New("write count failed")
+	}
+	for _, pk := range publicKeys {
+		if err := WriteVarBytes(buf, pk); err != nil {
+			return err
+		}
+	}
+	c.BatchPut(key, buf.Bytes())
+
+	// remove from DPOSVoteProducer
+	key = []byte{byte(DPOSVoteProducer)}
+	key = append(key, payload.PublicKey...)
+	c.BatchDelete(key)
+
+	// remove from voteType
+	keyVote := []byte{byte(outputpayload.Delegate)}
+	_, err = c.getVoteByPublicKey(outputpayload.Delegate, payload.PublicKey)
+	if err == nil {
+		c.BatchDelete(append(keyVote, payload.PublicKey...))
+	}
+
+	// remove from mempool
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	_, ok := c.producerVotes[BytesToHexString(payload.PublicKey)]
+	if !ok {
+		return errors.New("[RollbackRegisterProducer], Not found producer in mempool.")
+	}
+	delete(c.producerVotes, BytesToHexString(payload.PublicKey))
+
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
+	if err != nil {
+		return err
+	}
+	addr, err := programHash.ToAddress()
+	if err != nil {
+		return err
+	}
+	delete(c.producerAddress, addr)
+	c.dirty[outputpayload.Delegate] = true
 	return nil
 }
 
