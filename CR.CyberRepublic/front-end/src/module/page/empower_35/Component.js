@@ -109,8 +109,8 @@ export default class extends StandardPage {
                             {this.buildAdvancedCircles()}
                             {this.buildServicesCircles()}
                             {this.buildDeveloperCircles()}
-                            */}
                             {this.buildCircleStatement()}
+                            */}
                         </div>
                     </div>
                 </div>
