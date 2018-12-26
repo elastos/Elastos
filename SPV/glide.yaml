@@ -10,7 +10,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: v0.1.2
 - package: github.com/elastos/Elastos.ELA
-  version: v0.2.2
+  version: dpos
   subpackages:
   - bloom
   - core
