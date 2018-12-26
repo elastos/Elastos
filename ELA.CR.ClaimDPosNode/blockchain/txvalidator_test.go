@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -460,7 +459,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 func getCode(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := createStandardRedeemScript(pk)
+	redeemScript, _ := CreateStandardRedeemScript(pk)
 	return redeemScript
 }
 
@@ -609,17 +608,4 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
-}
-
-func createStandardRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
-	content, err := publicKey.EncodePoint(true)
-	if err != nil {
-		return nil, errors.New("create standard redeem script, encode public key failed")
-	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(content)))
-	buf.Write(content)
-	buf.WriteByte(byte(common.STANDARD))
-
-	return buf.Bytes(), nil
 }
