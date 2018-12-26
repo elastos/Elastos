@@ -962,7 +962,7 @@ result:
 named arguments sample:
 ```json
 {
-  "method": "votestatus",
+  "method": "estimatesmartfee",
   "params":{
 	"confirmations": 5
   }
