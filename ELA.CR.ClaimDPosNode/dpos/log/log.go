@@ -1,20 +1,18 @@
 package log
 
 import (
+	"github.com/elastos/Elastos.ELA/common/config"
 	elaLog "github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-)
-
-const (
-	OutputPath = "./ArbiterLogs/" // The log files output path
+	"path/filepath"
 )
 
 var logger *elaLog.Logger
 
 func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = elaLog.NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	logger = elaLog.NewLogger(filepath.Join(config.DataPath, config.LogDir, config.ArbiterDir), level, maxPerLogSizeMb, maxLogsSizeMb)
 	connmgr.UseLogger(logger)
 	peer.UseLogger(logger)
 	p2p.UseLogger(logger)

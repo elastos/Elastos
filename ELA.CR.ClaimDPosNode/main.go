@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA.Utility/signal"
@@ -77,12 +78,12 @@ func main() {
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
 	var dposStore interfaces.IDposStore
-	chainStore, err := blockchain.NewChainStore("Chain")
+	chainStore, err := blockchain.NewChainStore(filepath.Join(config.DataPath, config.DataDir, config.ChainDir))
 	if err != nil {
 		goto ERROR
 	}
 	defer chainStore.Close()
-	dposStore, err = store.NewDposStore("Dpos_Data")
+	dposStore, err = store.NewDposStore(filepath.Join(config.DataPath, config.DataDir, config.DposDir))
 	if err != nil {
 		goto ERROR
 	}

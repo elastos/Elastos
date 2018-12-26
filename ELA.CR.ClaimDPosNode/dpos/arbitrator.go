@@ -1,11 +1,10 @@
 package dpos
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/node"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -14,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+	"github.com/elastos/Elastos.ELA/node"
 	"github.com/elastos/Elastos.ELA/protocol"
 )
 

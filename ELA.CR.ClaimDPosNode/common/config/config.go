@@ -16,6 +16,14 @@ const (
 	DefaultConfigFilename = "./config.json"
 	MINGENBLOCKTIME       = 2
 	DefaultGenBlockTime   = 6
+
+	DataPath   = "elastos"
+	DataDir    = "data"
+	ChainDir   = "chain"
+	DposDir    = "dpos"
+	LogDir     = "logs"
+	NodeDir    = "node"
+	ArbiterDir = "arbiter"
 )
 
 var (
