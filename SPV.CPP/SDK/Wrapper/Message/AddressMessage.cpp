@@ -59,7 +59,9 @@ namespace Elastos {
 					peer_dbg(peer, "peers[%zu] = %s, timestamp = %llu, port = %d, services = %llu",
 							 i, host, p.timestamp, p.port, p.services);
 
-					if (! (p.services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+					if ((p.services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
+						(p.services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK)
+						continue; // skip peers that don't carry full blocks
 					if (! (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
 						continue; // ignore IPv6 for now
 					if (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff &&
