@@ -13,8 +13,9 @@ import {USER_ROLE, USER_LANGUAGE} from '@/constant'
 export default class extends BaseComponent {
 
     handleMenuClick(ev,) {
-
         const key = ev.key
+        const { isLogin } = this.props
+
         if (_.includes([
             'cr100',
             'crcles',
@@ -69,8 +70,8 @@ export default class extends BaseComponent {
             analytics.track('FORUM_CLICKED', {
                 url: location.href
             })
-            if (!sessionStorage['api-token']) {
-                this.props.history.push('/login');
+            if (!isLogin) {
+                this.props.history.push('/login?MSG_CODE=1');
             } else {
                 let forumLink = `${process.env.FORUM_URL}/login`;
                 window.open(forumLink, '_blank');
