@@ -636,9 +636,9 @@ func (s *StateReader) HeaderGetConsensusData(e *avm.ExecutionEngine) bool {
 	var consensusData uint32
 	switch d.(type) {
 	case *st.Header:
-		consensusData = d.(*st.Header).Nonce
+		consensusData = d.(*st.Header).SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce
 	case *st.Block:
-		consensusData = d.(*st.Block).Header.Nonce
+		consensusData = d.(*st.Block).Header.SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce
 	default:
 		return false
 	}
