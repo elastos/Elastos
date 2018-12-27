@@ -75,7 +75,7 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		listeners: make(map[common.Uint256]TransactionListener),
 	}
 
-	chainStore := database.NewDefaultChainDB(headerStore, service)
+	chainStore := database.NewChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
 		DataDir:        dataDir,
@@ -190,16 +190,88 @@ func (s *spvservice) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
 	return s.db.Addrs().GetAll(), ops
 }
 
-// Batch returns a TxBatch instance for transactions batch
-// commit, this can get better performance when commit a bunch
-// of transactions within a block.
-func (s *spvservice) Batch() database.TxBatch {
-	return &txBatch{
-		db:        s.db,
-		batch:     s.db.Batch(),
-		rollback:  s.rollback,
-		listeners: s.listeners,
+func (s *spvservice) putTx(batch store.DataBatch, utx util.Transaction,
+	height uint32) (bool, error) {
+
+	tx := utx.(*iutil.Tx)
+	hits := make(map[common.Uint168]struct{})
+	ops := make(map[*util.OutPoint]common.Uint168)
+	for index, output := range tx.Outputs {
+		if s.db.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
+			outpoint := util.NewOutPoint(tx.Hash(), uint16(index))
+			ops[outpoint] = output.ProgramHash
+			hits[output.ProgramHash] = struct{}{}
+		}
 	}
+
+	for _, input := range tx.Inputs {
+		op := input.Previous
+		addr := s.db.Ops().HaveOp(util.NewOutPoint(op.TxID, op.Index))
+		if addr != nil {
+			hits[*addr] = struct{}{}
+		}
+	}
+
+	if len(hits) == 0 {
+		return true, nil
+	}
+
+	for op, addr := range ops {
+		if err := batch.Ops().Put(op, addr); err != nil {
+			return false, err
+		}
+	}
+
+	for _, listener := range s.listeners {
+		hash, _ := common.Uint168FromAddress(listener.Address())
+		if _, ok := hits[*hash]; ok {
+			// skip transactions that not match the require type
+			if listener.Type() != tx.TxType {
+				continue
+			}
+
+			// queue message
+			batch.Que().Put(&store.QueItem{
+				NotifyId: getListenerKey(listener),
+				TxId:     tx.Hash(),
+				Height:   height,
+			})
+		}
+	}
+
+	return false, batch.Txs().Put(util.NewTx(utx, height))
+}
+
+// PutTxs persists the main chain transactions into database and can be
+// queried by GetTxs(height).  Returns the false positive transaction count
+// and error.
+func (s *spvservice) PutTxs(txs []util.Transaction, height uint32) (uint32, error) {
+	fps := uint32(0)
+	batch := s.db.Batch()
+	defer batch.Rollback()
+	for _, tx := range txs {
+		fp, err := s.putTx(batch, tx, height)
+		if err != nil {
+			return 0, err
+		}
+		if fp {
+			fps++
+		}
+	}
+	if err := batch.Commit(); err != nil {
+		return 0, err
+	}
+	return fps, nil
+}
+
+// PutForkTxs persists the fork chain transactions into database with the
+// fork block hash and can be queried by GetForkTxs(hash).
+func (s *spvservice) PutForkTxs(txs []util.Transaction, hash *common.Uint256) error {
+	ftxs := make([]*util.Tx, 0, len(txs))
+	for _, utx := range txs {
+		ftxs = append(ftxs, util.NewTx(utx, 0))
+	}
+	return s.db.Txs().PutForkTxs(ftxs, hash)
 }
 
 // HaveTx returns if the transaction already saved in database
@@ -209,19 +281,65 @@ func (s *spvservice) HaveTx(txId *common.Uint256) (bool, error) {
 	return tx != nil, err
 }
 
-// GetTxs returns all transactions within the given height.
-func (s *spvservice) GetTxs(height uint32) ([]*util.Tx, error) {
-	return nil, nil
+// GetTxs returns all transactions in main chain within the given height.
+func (s *spvservice) GetTxs(height uint32) ([]util.Transaction, error) {
+	txIDs, err := s.db.Txs().GetIds(height)
+	if err != nil {
+		return nil, err
+	}
+
+	txs := make([]util.Transaction, 0, len(txIDs))
+	for _, txID := range txIDs {
+		tx := newTransaction()
+		utx, err := s.db.Txs().Get(txID)
+		if err != nil {
+			return nil, err
+		}
+		err = tx.Deserialize(bytes.NewReader(utx.RawData))
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, tx)
+	}
+	return txs, nil
 }
 
-// RemoveTxs delete all transactions on the given height.  Return
-// how many transactions are deleted from database.
-func (s *spvservice) RemoveTxs(height uint32) (int, error) {
-	batch := s.db.Batch()
-	if err := batch.DelAll(height); err != nil {
-		return 0, batch.Rollback()
+// GetForkTxs returns all transactions within the fork block hash.
+func (s *spvservice) GetForkTxs(hash *common.Uint256) ([]util.Transaction, error) {
+	ftxs, err := s.db.Txs().GetForkTxs(hash)
+	if err != nil {
+		return nil, err
 	}
-	return 0, batch.Commit()
+
+	txs := make([]util.Transaction, 0, len(ftxs))
+	for _, ftx := range ftxs {
+		tx := newTransaction()
+		err = tx.Deserialize(bytes.NewReader(ftx.RawData))
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, tx)
+	}
+	return txs, nil
+}
+
+// DelTxs remove all transactions in main chain within the given height.
+func (s *spvservice) DelTxs(height uint32) error {
+	// Delete transactions, outpoints and queued items.
+	batch := s.db.Batch()
+	defer batch.Rollback()
+	if err := batch.DelAll(height); err != nil {
+		return err
+	}
+	if err := batch.Commit(); err != nil {
+		return err
+	}
+
+	// Invoke main chain rollback.
+	if s.rollback != nil {
+		s.rollback(height)
+	}
+	return nil
 }
 
 // TransactionAnnounce will be invoked when received a new announced transaction.
@@ -383,114 +501,4 @@ func getConfirmations(tx core.Transaction) uint32 {
 		return 100
 	}
 	return DefaultConfirmations
-}
-
-type txBatch struct {
-	db        store.DataStore
-	batch     store.DataBatch
-	heights   []uint32
-	rollback  func(height uint32)
-	listeners map[common.Uint256]TransactionListener
-}
-
-// PutTx add a store transaction operation into batch, and return
-// if it is a false positive and error.
-func (b *txBatch) PutTx(utx util.Transaction, height uint32) (bool, error) {
-	tx := utx.(*iutil.Tx)
-	hits := make(map[common.Uint168]struct{})
-	ops := make(map[*util.OutPoint]common.Uint168)
-	for index, output := range tx.Outputs {
-		if b.db.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
-			outpoint := util.NewOutPoint(tx.Hash(), uint16(index))
-			ops[outpoint] = output.ProgramHash
-			hits[output.ProgramHash] = struct{}{}
-		}
-	}
-
-	for _, input := range tx.Inputs {
-		op := input.Previous
-		addr := b.db.Ops().HaveOp(util.NewOutPoint(op.TxID, op.Index))
-		if addr != nil {
-			hits[*addr] = struct{}{}
-		}
-	}
-
-	if len(hits) == 0 {
-		return true, nil
-	}
-
-	for op, addr := range ops {
-		if err := b.batch.Ops().Put(op, addr); err != nil {
-			return false, err
-		}
-	}
-
-	for _, listener := range b.listeners {
-		hash, _ := common.Uint168FromAddress(listener.Address())
-		if _, ok := hits[*hash]; ok {
-			// skip transactions that not match the require type
-			if listener.Type() != tx.TxType {
-				continue
-			}
-
-			// queue message
-			b.batch.Que().Put(&store.QueItem{
-				NotifyId: getListenerKey(listener),
-				TxId:     tx.Hash(),
-				Height:   height,
-			})
-		}
-	}
-
-	return false, b.batch.Txs().Put(util.NewTx(utx, height))
-}
-
-// DelTx add a delete transaction operation into batch.
-func (b *txBatch) DelTx(txId *common.Uint256) error {
-	utx, err := b.db.Txs().Get(txId)
-	if err != nil {
-		return err
-	}
-
-	var tx core.Transaction
-	err = tx.Deserialize(bytes.NewReader(utx.RawData))
-	if err != nil {
-		return err
-	}
-
-	for index := range tx.Outputs {
-		outpoint := util.NewOutPoint(utx.Hash, uint16(index))
-		b.batch.Ops().Del(outpoint)
-	}
-
-	return b.batch.Txs().Del(txId)
-}
-
-// DelTxs add a delete transactions on given height operation.
-func (b *txBatch) DelTxs(height uint32) error {
-	if b.rollback != nil {
-		b.heights = append(b.heights, height)
-	}
-	return b.batch.DelAll(height)
-}
-
-// Rollback cancel all operations in current batch.
-func (b *txBatch) Rollback() error {
-	return b.batch.Rollback()
-}
-
-// Commit the added transactions into database.
-func (b *txBatch) Commit() error {
-	err := b.batch.Commit()
-	if err != nil {
-		return err
-	}
-
-	go func(heights []uint32) {
-		for _, height := range heights {
-			b.rollback(height)
-		}
-	}(b.heights)
-
-	return nil
 }

@@ -21,7 +21,7 @@ Log
 *.lock
 *.json
 vendor/
-HEADER/
+header/
 DATA/
 ela-wallet
 service

@@ -64,8 +64,8 @@ func (d *dataBatch) RollbackHeight(height uint32) error {
 	}
 
 	// Rollback STXOs, move UTXOs back first, then delete the STXOs
-	_, err = d.Exec(`INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash)
-						SELECT OutPoint, Value, LockTime, AtHeight, ScriptHash FROM STXOs WHERE SpendHeight=?`, height)
+	_, err = d.Exec(`INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, Address)
+						SELECT OutPoint, Value, LockTime, AtHeight, Address FROM STXOs WHERE SpendHeight=?`, height)
 	if err != nil {
 		return err
 	}

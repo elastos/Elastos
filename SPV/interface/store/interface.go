@@ -52,6 +52,8 @@ type Txs interface {
 	Get(txId *common.Uint256) (*util.Tx, error)
 	GetAll() ([]*util.Tx, error)
 	GetIds(height uint32) ([]*common.Uint256, error)
+	PutForkTxs(txs []*util.Tx, hash *common.Uint256) error
+	GetForkTxs(hash *common.Uint256) ([]*util.Tx, error)
 	Del(txId *common.Uint256) error
 	Batch() TxsBatch
 }

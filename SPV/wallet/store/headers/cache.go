@@ -2,15 +2,14 @@ package headers
 
 import (
 	"errors"
-	"sync"
+
+	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/cevaris/ordered_map"
-	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type cache struct {
-	sync.RWMutex
 	size    int
 	tip     *util.Header
 	headers *ordered_map.OrderedMap
@@ -32,9 +31,6 @@ func (cache *cache) pop() {
 }
 
 func (cache *cache) set(header *util.Header) {
-	cache.Lock()
-	defer cache.Unlock()
-
 	if cache.headers.Len() > cache.size {
 		cache.pop()
 	}
@@ -42,9 +38,6 @@ func (cache *cache) set(header *util.Header) {
 }
 
 func (cache *cache) get(hash *common.Uint256) (*util.Header, error) {
-	cache.RLock()
-	defer cache.RUnlock()
-
 	sh, ok := cache.headers.Get(hash.String())
 	if !ok {
 		return nil, errors.New("Header not found in cache ")

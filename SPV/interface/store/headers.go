@@ -64,7 +64,7 @@ func (h *headers) initCache() {
 		headers = append(headers, sh)
 	}
 	for i := len(headers) - 1; i >= 0; i-- {
-		h.cache.Set(headers[i])
+		h.cache.set(headers[i])
 	}
 }
 
@@ -72,7 +72,7 @@ func (h *headers) Put(header *util.Header, newTip bool) error {
 	h.Lock()
 	defer h.Unlock()
 
-	h.cache.Set(header)
+	h.cache.set(header)
 	if newTip {
 		h.cache.tip = header
 	}
@@ -110,7 +110,7 @@ func (h *headers) Get(hash *common.Uint256) (header *util.Header, err error) {
 	h.RLock()
 	defer h.RUnlock()
 
-	header, err = h.cache.Get(hash)
+	header, err = h.cache.get(hash)
 	if err == nil {
 		return header, nil
 	}
@@ -186,7 +186,6 @@ func (h *headers) getHeader(key []byte) (*util.Header, error) {
 }
 
 type cache struct {
-	sync.RWMutex
 	size    int
 	tip     *util.Header
 	headers *ordered_map.OrderedMap
@@ -207,20 +206,14 @@ func (cache *cache) pop() {
 	}
 }
 
-func (cache *cache) Set(header *util.Header) {
-	cache.Lock()
-	defer cache.Unlock()
-
+func (cache *cache) set(header *util.Header) {
 	if cache.headers.Len() > cache.size {
 		cache.pop()
 	}
 	cache.headers.Set(header.Hash().String(), header)
 }
 
-func (cache *cache) Get(hash *common.Uint256) (*util.Header, error) {
-	cache.RLock()
-	defer cache.RUnlock()
-
+func (cache *cache) get(hash *common.Uint256) (*util.Header, error) {
 	sh, ok := cache.headers.Get(hash.String())
 	if !ok {
 		return nil, errors.New("Header not found in cache ")

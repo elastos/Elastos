@@ -77,11 +77,21 @@ type Txs interface {
 	// Fetch all transactions from database
 	GetAll() ([]*util.Tx, error)
 
+	// Fetch all transactions from the given height.
+	GetAllFrom(height uint32) ([]*util.Tx, error)
+
 	// Fetch all unconfirmed transactions.
 	GetAllUnconfirmed() ([]*util.Tx, error)
 
 	// Delete a transaction from the db
 	Del(txId *common.Uint256) error
+
+	// PutForkTxs persists the fork chain transactions into database with the
+	// fork block hash and can be queried by GetForkTxs(hash).
+	PutForkTxs(txs []*util.Tx, hash *common.Uint256) error
+
+	// GetForkTxs returns all transactions within the fork block hash.
+	GetForkTxs(hash *common.Uint256) ([]*util.Tx, error)
 
 	// Batch return a TxsBatch
 	Batch() TxsBatch

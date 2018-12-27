@@ -5,41 +5,30 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+// TxsDB stores all transactions in main chain and fork chains.
 type TxsDB interface {
 	// Extend from DB interface
 	DB
 
-	// Batch returns a TxBatch instance for transactions batch
-	// commit, this can get better performance when commit a bunch
-	// of transactions within a block.
-	Batch() TxBatch
+	// PutTxs persists the main chain transactions into database and can be
+	// queried by GetTxs(height).  Returns the false positive transaction count
+	// and error.
+	PutTxs(txs []util.Transaction, height uint32) (uint32, error)
+
+	// PutForkTxs persists the fork chain transactions into database with the
+	// fork block hash and can be queried by GetForkTxs(hash).
+	PutForkTxs(txs []util.Transaction, hash *common.Uint256) error
 
 	// HaveTx returns if the transaction already saved in database
 	// by it's id.
 	HaveTx(txId *common.Uint256) (bool, error)
 
-	// GetTxs returns all transactions within the given height.
-	GetTxs(height uint32) ([]*util.Tx, error)
+	// GetTxs returns all transactions in main chain within the given height.
+	GetTxs(height uint32) ([]util.Transaction, error)
 
-	// RemoveTxs delete all transactions on the given height.  Return
-	// how many transactions are deleted from database.
-	RemoveTxs(height uint32) (int, error)
-}
+	// GetForkTxs returns all transactions within the fork block hash.
+	GetForkTxs(hash *common.Uint256) ([]util.Transaction, error)
 
-type TxBatch interface {
-	// PutTx add a store transaction operation into batch, and return
-	// if it is a false positive and error.
-	PutTx(tx util.Transaction, height uint32) (bool, error)
-
-	// DelTx add a delete transaction operation into batch.
-	DelTx(txId *common.Uint256) error
-
-	// DelTxs add a delete transactions on given height operation.
+	// DelTxs remove all transactions in main chain within the given height.
 	DelTxs(height uint32) error
-
-	// Rollback cancel all operations in current batch.
-	Rollback() error
-
-	// Commit the added transactions into database.
-	Commit() error
 }
