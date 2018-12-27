@@ -92,6 +92,7 @@ export default class extends StandardPage {
             }
 
             // 2. redirect to login and notify user they need to be logged in
+            sessionStorage.setItem('loginRedirect', window.location.pathname + window.location.search)
             window.location.href = '/login?MSG_CODE=1'
         }
 
