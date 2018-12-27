@@ -108,7 +108,7 @@ const zh = {
     'popup.changes.title': 'Cyber Republic的重要公告',
     'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开、透明和社区自治的理念。\n',
     'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
-    'popup.changes.2018-12-26.3': '我们建立新的CR论坛将于2018年12月31日，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用使用该论坛。',
+    'popup.changes.2018-12-26.3': '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用该论坛。',
     'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
     'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
     'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
