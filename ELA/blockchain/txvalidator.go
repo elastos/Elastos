@@ -308,6 +308,12 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
 
+	for _, output := range txn.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit && !txn.IsRegisterProducerTx() {
+			return errors.New("only RegisterProducer transaction can use the deposit address")
+		}
+	}
+
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
