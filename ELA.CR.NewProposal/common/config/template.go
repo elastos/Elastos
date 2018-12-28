@@ -47,4 +47,9 @@ var configTemplate = Configuration{
 		ArbitratorsCount: 5,
 		CandidatesCount:  0,
 	},
+	RpcConfiguration : RpcConfiguration{
+		User: 		"User",
+		Pass: 		"123" ,
+		WhiteIpList:[]string{"127.0.0.1"},
+	},
 }
