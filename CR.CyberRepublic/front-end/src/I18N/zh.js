@@ -29,7 +29,7 @@ const zh = {
     '0108': '筹委会',
     '0109': '提交',
     '0110': '博客',
-    'navigation.programs': 'Programs',
+    'navigation.programs': '项目',
 
     '0200': '简介',
     '0201': '登录',
@@ -106,11 +106,11 @@ const zh = {
 
     // Pop-up Announcement
     'popup.changes.title': 'Cyber Republic的重要公告',
-    'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好体现Cyber Republic 公开、透明和社区自治的理念。\n',
-    'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来几周我们会给出具体的处理方案。',
-    'popup.changes.2018-12-26.3': '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。因为华人社区无法访问Discord，我们还将邀请Discord的所有用户也使用该论坛。',
-    'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
-    'popup.changes.2018-12-26.5': '更新后的CR网站将于1/15/2019重新上线，更多信息请参考：',
+    'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好地体现Cyber Republic 公开、透明和社区自治的理念。\n',
+    'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来的几周我们会给出具体的处理方案。',
+    'popup.changes.2018-12-26.3': '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。由于因为中国社区无法访问Discord，我们将邀请Discord的所有用户也使用该论坛。',
+    'popup.changes.2018-12-26.4': '您还可以通过右上角的链接自动登录论坛：',
+    'popup.changes.2018-12-26.5': '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
     'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
 
     // LoginForm
@@ -263,7 +263,7 @@ const zh = {
     'developer.search.team': '团队',
     'developer.search.project': '项目',
     'developer.search.task': '任务',
-    'developer.search.taskCategory': 'Task category',
+    'developer.search.taskCategory': '任务类别',
     'developer.search.category': '类别',
     'developer.search.category.social': '社交',
     'developer.search.category.iot': '物联网',
@@ -464,9 +464,9 @@ const zh = {
     'team.detail.team_active': '您的团队已经激活',
 
     'team.create.error.nameRequired': '请填写团队名称',
-    'team.create.error.descriptionRequired': 'Team description is required',
+    'team.create.error.descriptionRequired': '团队描述是必填项',
     'team.create.error.nameTooShort': '团队名称过短',
-    'team.create.error.descriptionTooShort': 'Team description is too short',
+    'team.create.error.descriptionTooShort': '您填写的团队描述过短',
 
     // Team specializations
     'team.spec.media': '媒体',
@@ -523,15 +523,15 @@ const zh = {
     '.ok': '确定',
     '.apply': '申请',
     '.cancel': '取消',
-    '.delete': 'Delete',
-    '.status': 'Status',
+    '.delete': '删除',
+    '.status': '状态',
     '.edit': '编辑',
     '.upload': '点击上传',
     '.yes': '是',
     '.no': '否',
     '.loading': '加载中...',
     'ela': 'ELA',
-    '.areYouSure': 'Are you sure?',
+    '.areYouSure': '您确定吗？',
     '.suspended': '暂停',
 
     // Temp Notices
@@ -707,7 +707,7 @@ const zh = {
     'landing.empower35.marketer': '营销员',
     'landing.empower35.legal': '法律顾问',
     'landing.empower35.video': '录像师',
-    'landing.empower35.designer': '设计师;',
+    'landing.empower35.designer': '设计师',
     'landing.empower35.writer': '作家',
     'landing.empower35.dapp': 'DApp 分析师',
     'landing.empower35.evangelist': '推广大使',
@@ -841,9 +841,9 @@ const zh = {
     'profile.detail.sendmessage.disabled': '您无法向自己发送信息',
     'profile.detail.comingsoon': '即将推出...',
     'profile.detail.follow.disabled': '您无法关注自己',
-    'profile.skillset.header': 'Skill Set',
-    'profile.social.header': 'Social Profile',
-    'profile.portfolio': 'Portfolio',
+    'profile.skillset.header': '技能',
+    'profile.social.header': '社交账号',
+    'profile.portfolio': '作品集',
 
     // Validate Form
     'ambassadors.form.required': '必填项目',
