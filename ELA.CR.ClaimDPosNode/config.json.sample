@@ -47,6 +47,13 @@
       "MajorityCount": 3,
       "ArbitratorsCount": 5,
       "CandidatesCount": 0
+    },
+    "RpcConfiguration": {
+      "User": "ElaUser",
+      "Pass": "Ela123" ,
+      "WhiteIpList":[
+        "127.0.0.1"
+      ]
     }
   }
 }
