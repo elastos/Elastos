@@ -543,7 +543,7 @@ func (c *ChainStore) rollback(b *Block) error {
 
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
 
-	return nil
+	return c.rollbackForMempool(b)
 }
 
 func (c *ChainStore) persist(b *Block) error {
@@ -566,7 +566,11 @@ func (c *ChainStore) persist(b *Block) error {
 	if err := c.PersistCurrentBlock(b); err != nil {
 		return err
 	}
-	return c.BatchCommit()
+	if err := c.BatchCommit(); err != nil {
+		return err
+	}
+
+	return c.persistForMempool(b)
 }
 
 func (c *ChainStore) SaveBlock(b *Block) error {

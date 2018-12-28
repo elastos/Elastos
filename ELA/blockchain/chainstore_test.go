@@ -151,18 +151,22 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 
 	// 3. Run RegisterProducer
-	err = testChainStore.PersistRegisterProducer(payload1)
-	if err != nil {
+	if err := testChainStore.PersistRegisterProducer(payload1); err != nil {
 		t.Error("PersistRegisterProducer failed:", err.Error())
 	}
 	testChainStore.BatchCommit()
+	if err = testChainStore.persistRegisterProducerForMempool(payload1); err != nil {
+		t.Error("persistRegisterProducerForMempool failed:", err.Error())
+	}
 
 	// 4. Run RegisterProducer
-	err = testChainStore.PersistRegisterProducer(payload2)
-	if err != nil {
+	if err := testChainStore.PersistRegisterProducer(payload2); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
+	if err := testChainStore.persistRegisterProducerForMempool(payload2); err != nil {
+		t.Error("persistRegisterProducerForMempool failed")
+	}
 
 	producers, err = testChainStore.GetRegisteredProducersSorted()
 	if len(producers) != 2 {
@@ -346,11 +350,13 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	nickName2 := "nickname 2"
 
 	// 2. Run PersistCancelProducer
-	err := testChainStore.PersistCancelProducer(payload1)
-	if err != nil {
+	if err := testChainStore.PersistCancelProducer(payload1); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
+	if err := testChainStore.persistCancelProducerForMempool(payload1); err != nil {
+		t.Error("persistCancelProducerForMempool failed")
+	}
 
 	// 3. Run GetRegisteredProducers
 	producers, err := testChainStore.GetRegisteredProducersSorted()
@@ -366,7 +372,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 		t.Error("GetRegisteredProducers failed")
 	}
 
-	testChainStore.RemoveCanceledProducer(publicKey1)
+	testChainStore.removeCanceledProducer(publicKey1)
 	testChainStore.BatchCommit()
 }
 
@@ -390,11 +396,13 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	}
 
 	// 2. Run RegisterProducer
-	err := testChainStore.PersistUpdateProducer(payload1)
-	if err != nil {
+	if err := testChainStore.PersistUpdateProducer(payload1); err != nil {
 		t.Error("PersistUpdateProducer failed")
 	}
 	testChainStore.BatchCommit()
+	if err := testChainStore.persistUpdateProducerForMempool(payload1); err != nil {
+		t.Error("persistUpdateProducerForMempool failed")
+	}
 
 	// 3. Run GetRegisteredProducers
 	producers, err := testChainStore.GetRegisteredProducersSorted()
@@ -478,16 +486,20 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 2. Run RegisterProducer
-	err := testChainStore.PersistRegisterProducer(payload2)
-	if err != nil {
+	if err := testChainStore.PersistRegisterProducer(payload2); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
+	if err := testChainStore.persistRegisterProducerForMempool(payload2); err != nil {
+		t.Error("persistRegisterProducerForMempool failed")
+	}
 
 	// 3. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output)
-	if err != nil {
+	if err := testChainStore.PersistVoteOutput(output); err != nil {
 		t.Error("PersistRegisterProducer failed")
+	}
+	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 4. Check vote
@@ -497,9 +509,11 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 5. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output)
-	if err != nil {
+	if err := testChainStore.PersistVoteOutput(output); err != nil {
 		t.Error("PersistRegisterProducer failed")
+	}
+	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 6. Check vote
@@ -509,9 +523,11 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 7. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output2)
-	if err != nil {
+	if err := testChainStore.PersistVoteOutput(output2); err != nil {
 		t.Error("PersistRegisterProducer failed")
+	}
+	if err := testChainStore.persistVoteOutputForMempool(output2); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 8. Check vote
@@ -577,9 +593,11 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 2. Run PersistCancelVoteOutput
-	err := testChainStore.PersistCancelVoteOutput(output)
-	if err != nil {
+	if err := testChainStore.PersistCancelVoteOutput(output); err != nil {
 		t.Error("PersistCancelVoteOutput failed")
+	}
+	if err := testChainStore.persistCancelVoteOutputForMempool(output); err != nil {
+		t.Error("persistCancelVoteOutputForMempool failed")
 	}
 
 	// 3. Check vote
@@ -589,9 +607,11 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 4. Run PersistCancelVoteOutput
-	err = testChainStore.PersistCancelVoteOutput(output2)
-	if err != nil {
+	if err := testChainStore.PersistCancelVoteOutput(output2); err != nil {
 		t.Error("PersistCancelVoteOutput failed")
+	}
+	if err := testChainStore.persistCancelVoteOutputForMempool(output2); err != nil {
+		t.Error("persistCancelVoteOutputForMempool failed")
 	}
 
 	// 5. Check Vote
@@ -600,7 +620,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		t.Error("GetProducerVote failed")
 	}
 
-	testChainStore.ClearRegisteredProducer()
+	testChainStore.clearRegisteredProducer()
 	testChainStore.BatchCommit()
 }
 
