@@ -647,10 +647,8 @@ func (s *txValidatorTestSuite) TestCheckStringField() {
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
-	references := make(map[*types.Input]*types.Output, 1)
-	input := &types.Input{
-		Sequence: 1,
-	}
+	references := make(map[*types.Input]*types.Output)
+	input := &types.Input{}
 	var txn types.Transaction
 
 	// Use the deposit UTXO in a TransferAsset transaction
