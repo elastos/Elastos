@@ -20,16 +20,23 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 	}
 
 	for i, program := range programs {
+		programHash := programHashes[i]
+
+		// TODO: this implementation will be deprecated
+		if programHash[0] == common.PrefixCrossChain {
+			if err := checkCrossChainSignatures(*program, data); err != nil {
+				return err
+			}
+		}
+
 		codeHash, err := common.ToCodeHash(program.Code)
 		if err != nil {
 			return err
 		}
-
-		programHash := programHashes[i]
 		ownerHash := programHash.ToCodeHash()
 
-		if !ownerHash.IsEqual(*codeHash) && programHash[0] != common.PrefixCrossChain {
-			return errors.New("The data hashes is different with corresponding program code.")
+		if !ownerHash.IsEqual(*codeHash) {
+			return errors.New("the data hashes is different with corresponding program code")
 		}
 
 		prefixType := contract.PrefixType(programHash[0])
@@ -42,12 +49,6 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 			if err = checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
-
-		} else if programHash[0] == common.PrefixCrossChain {
-			if err = checkCrossChainSignatures(*program, data); err != nil {
-				return err
-			}
-
 		} else {
 			return errors.New("unknown signature type")
 		}
