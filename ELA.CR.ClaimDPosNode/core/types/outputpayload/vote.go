@@ -146,10 +146,6 @@ func (o *VoteOutput) Validate() error {
 			return errors.New("invalid vote type")
 		}
 
-		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
-			return errors.New("invalid public key length")
-		}
-
 		candidateMap := make(map[string]struct{})
 		for _, candidate := range content.Candidates {
 			c := common.BytesToHexString(candidate)
