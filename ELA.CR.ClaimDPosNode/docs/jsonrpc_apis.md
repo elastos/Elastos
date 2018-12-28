@@ -876,6 +876,18 @@ parameters:
 | start | integer | the start index of producers |
 | limit | integer | the limit index of producers |
 
+result:
+
+| name      | type   | description                     |
+| --------- | ------ | ------------------------------- |
+| publickey | string | the public key of producer      |
+| nickname  | string | the nick name of producer       |
+| url       | string | the url of producer             |
+| location  | uint64 | the location number of producer |
+| active    | bool   | if producer has confirmed       |
+| votes     | string | the votes currently held        |
+| ip        | string | the ip address of producer      |
+
 named arguments sample:
 
 ```json
@@ -900,32 +912,32 @@ result sample:
       {
         "publickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb",
         "nickname": "elastos1",
-        "url": "http://www.google.com",
-        "location": 404,
+        "url": "http://www.elastos1.com",
+        "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "ip": "127.0.0.1:20618"
+        "ip": "127.0.0.1:20339"
       },
       {
         "publickey": "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
         "nickname": "elastos2",
-        "url": "http://www.google.com",
-        "location": 404,
+        "url": "http://www.elastos2.com",
+        "location": 402,
         "active": true,
-        "votes": "3.11100000",
-        "ip": "127.0.0.1:20618"
+        "votes": "2.10000000",
+        "ip": "127.0.0.1:20339"
       },
       {
-        "address": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
-        "publickey": "elastos3",
-        "url": "http://www.google.com",
-        "location": 404,
+        "publickey": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+        "nickname": "elastos3",
+        "url": "http://www.elastos3.com",
+        "location": 403,
         "active": true,
         "votes": "0",
-        "ip": "127.0.0.1:20618"
+        "ip": "127.0.0.1:20339"
       }
     ],
-    "total_votes": "6.22200000"
+    "total_votes": "5.21100000"
   }
 }
 ```
@@ -935,9 +947,15 @@ result sample:
 description: show producer status
 parameters:
 
-| name    | type   | description             |
-| ------- | ------ | ----------------------- |
-| address | string | the address of producer |
+| name    | type   | description                  |
+| ------- | ------ | ---------------------------- |
+| publickey | string | the public key of producer |
+
+result:
+
+0: producer has not registered
+1: producer has confirmed (6 confirms)
+2: producer registered but not confirmed (less than 6 confirms)
 
 named arguments sample:
 
@@ -966,9 +984,17 @@ result sample:
 description: show producer vote status
 parameters:
 
-| name    | type   | description             |
-| ------- | ------ | ----------------------- |
-| address | string | the address of producer |
+| name    | type   | description         |
+| ------- | ------ | ------------------- |
+| address | string | the address of user |
+
+result:
+
+| name      | type   | description             |
+| --------- | ------ | ----------------------- |
+| total     | string | the total voting rights |
+| voting    | string | the used voting rights  |
+| pending   | bool   | have vote in tx pool    |
 
 named arguments sample:
 
