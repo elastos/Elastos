@@ -25,7 +25,7 @@ module.exports = async function(json_data, res) {
                 payload["crosschainassets"].push({
                     "crosschainaddress": event["_addr"],
                     "crosschainamount": String(BigInt(event["_amount"]) / BigInt("10000000000")),
-                    "outputamount":String((BigInt(event["_amount"])+ txreceipt.gasUsed * txinfo.gasPrice) / BigInt("10000000000"))
+                    "outputamount":String((BigInt(event["_amount"])+ BigInt(txreceipt.gasUsed) * BigInt(txinfo.gasPrice)) / BigInt(10000000000))
                 });
                 outputindex++;
             }
