@@ -21,15 +21,15 @@ type dataBatch struct {
 }
 
 func (b *dataBatch) Txs() TxsBatch {
-	return &txsBatch{Batch: b.Batch}
+	return &txsBatch{DB: b.DB, Batch: b.Batch}
 }
 
 func (b *dataBatch) Ops() OpsBatch {
-	return &opsBatch{Batch: b.Batch}
+	return &opsBatch{DB: b.DB, Batch: b.Batch}
 }
 
 func (b *dataBatch) Que() QueBatch {
-	return &queBatch{Batch: b.Batch}
+	return &queBatch{DB: b.DB, Batch: b.Batch}
 }
 
 // Delete all transactions, ops, queued items on the given height.

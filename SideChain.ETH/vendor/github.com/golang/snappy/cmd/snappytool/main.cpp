@@ -1,6 +1,4 @@
 /*
-This is a C version of the cmd/snappytool Go program.
-
 To build the snappytool binary:
 g++ main.cpp /usr/lib/libsnappy.a -o snappytool
 or, if you have built the C++ snappy library from source:

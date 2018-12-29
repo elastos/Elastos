@@ -1,5 +1,5 @@
 hash: a723228447baf27b068b7a8385e2d8a80c1a496a6727ceeecb111b0e63eb0a8e
-updated: 2018-12-18T16:38:47.41151669+08:00
+updated: 2018-12-26T19:11:31.031992518+08:00
 imports:
 - name: bazil.org/fuse
   version: 65cc252bf6691cb3c7014bcb2c8dc29de91e3a7e
@@ -9,7 +9,7 @@ imports:
 - name: github.com/AlexpanXX/fsnotify
   version: 7824671dc7bf1d6925c956976fa0b80ac25dbe32
 - name: github.com/aristanetworks/goarista
-  version: aa2a42e13be68c4a95fe9e58003adaf63fe6476f
+  version: 0ca71131d8f76e0739563d97cc9f95c021825a2b
   subpackages:
   - monotime
 - name: github.com/Azure/azure-pipeline-go
@@ -52,13 +52,13 @@ imports:
   - auxpow
   - core
 - name: github.com/elastos/Elastos.ELA.SideChain
-  version: 1b40b5822d991f00eeab6963c3ccbf2b877a387f
+  version: fe590d15c7312bdd51c46c2fdc15557d91fb1082
   subpackages:
   - auxpow
   - types
   - vm/interfaces
 - name: github.com/elastos/Elastos.ELA.SPV
-  version: 6d8f75479624a066622b6a19196f47aab7d7b5e2
+  version: db86f0325b9fddf7eef5bed5b4277de1a8097db3
   subpackages:
   - blockchain
   - bloom
@@ -115,7 +115,7 @@ imports:
   - proto
   - protoc-gen-go/descriptor
 - name: github.com/golang/snappy
-  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/google/uuid
   version: 9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8
 - name: github.com/gorilla/websocket
@@ -142,7 +142,7 @@ imports:
   - models
   - pkg/escape
 - name: github.com/itchyny/base58-go
-  version: 56d50cf40874c738595ef72ee2445a4de104d27d
+  version: fab293004121aca58c909390f8d4dbd872f448a6
 - name: github.com/jackpal/go-nat-pmp
   version: c9cfead9f2a36ddf3daa40ba269aa7f4bbba6b62
 - name: github.com/julienschmidt/httprouter
@@ -185,7 +185,7 @@ imports:
 - name: github.com/peterh/liner
   version: 5a0dfa99e2aa1d433a9642e863da51402e609376
 - name: github.com/pkg/errors
-  version: 059132a15dd08d6704c67711dae0cf35ab991756
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/prometheus
   version: 85f23d82a045d103ea7f3c89a91fba4a93e6367a
   subpackages:
@@ -275,11 +275,11 @@ imports:
   - html/charset
   - websocket
 - name: golang.org/x/sync
-  version: 42b317875d0fa942474b76e1b46a6060d720ae6e
+  version: 37e7f081c4d4c64e13b10787722085407fe5d15f
   subpackages:
   - syncmap
 - name: golang.org/x/sys
-  version: dcdaa6325bcb8d3c07805583fe12153f08a41e2b
+  version: b4a75ba826a64a70990f11a225237acd6ef35c9f
   subpackages:
   - cpu
   - unix
@@ -320,7 +320,7 @@ testImports:
 - name: github.com/kr/text
   version: e2ffdb16a802fe2bb95e2e35ff34f0e53aeef34f
 - name: github.com/pmezard/go-difflib
-  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  version: 5d4384ee4fb2527b0a1256a821ebfc92f91efefc
   subpackages:
   - difflib
 - name: github.com/stretchr/testify

@@ -197,18 +197,6 @@ func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*types.UTXO
 	return b.db.GetUnspents(programHash)
 }
 
-func (b *BlockChain) AddBlock(block *types.Block) (bool, bool, error) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-
-	inMainChain, isOrphan, err := b.ProcessBlock(block)
-	if err != nil {
-		return false, false, err
-	}
-
-	return inMainChain, isOrphan, nil
-}
-
 func (b *BlockChain) GetHeader(hash Uint256) (*types.Header, error) {
 	header, err := b.db.GetHeader(hash)
 	if err != nil {
@@ -783,7 +771,7 @@ func (b *BlockChain) CheckBlockContext(block *types.Block) error {
 	var totalTxFee = Fixed64(0)
 	for index, tx := range block.Transactions {
 		if err := b.cfg.CheckTxContext(tx); err != nil {
-			return fmt.Errorf("CheckTransactionContext failed when verify block:", err.Error())
+			return fmt.Errorf("CheckTransactionContext failed when verify block: %s", err)
 		}
 		if index == 0 {
 			// Calculate reward in coinbase
@@ -886,7 +874,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
-	if b.BestChain == nil || (node.Parent.Hash.IsEqual(*b.BestChain.Hash)) {
+	if b.BestChain == nil || node.Parent.Hash.IsEqual(*b.BestChain.Hash) {
 		// Perform several checks to verify the block can be connected
 		// to the main chain (including whatever reorganization might
 		// be necessary to get this node to the main chain) without
@@ -938,13 +926,13 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 
 		// Log information about how the block is forking the chain.
 		if fork.Hash.IsEqual(*node.Parent.Hash) {
-			log.Infof("FORK: Block %x forks the chain at height %d"+
-				"/block %x, but does not cause a reorganize",
-				node.Hash.Bytes(), fork.Height, fork.Hash.Bytes())
+			log.Infof("FORK: Block %s forks the chain at height %d"+
+				"/block %s, but does not cause a reorganize",
+				node.Hash, fork.Height, fork.Hash)
 		} else {
-			log.Infof("EXTEND FORK: Block %x extends a side chain "+
-				"which forks the chain at height %d/block %x",
-				node.Hash.Bytes(), fork.Height, fork.Hash.Bytes())
+			log.Infof("EXTEND FORK: Block %s extends a side chain "+
+				"which forks the chain at height %d/block %s",
+				node.Hash, fork.Height, fork.Hash)
 		}
 
 		return false, nil
@@ -960,7 +948,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
 
 	// Reorganize the chain.
-	log.Infof("REORGANIZE: Block %v is causing a reorganize.", node.Hash)
+	log.Infof("REORGANIZE: Block %s is causing a reorganize.", node.Hash)
 	err := b.reorganizeChain(detachNodes, attachNodes)
 	if err != nil {
 		return false, err
@@ -974,6 +962,9 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 //2. isOphan
 //3. error
 func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
 	blockHash := block.Hash()
 	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 

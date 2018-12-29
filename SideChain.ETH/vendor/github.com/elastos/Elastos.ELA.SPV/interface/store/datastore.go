@@ -20,7 +20,7 @@ type dataStore struct {
 }
 
 func NewDataStore(dataDir string) (*dataStore, error) {
-	db, err := leveldb.OpenFile(filepath.Join(dataDir, "DATA"), nil)
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "store"), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,8 @@
 
 const common = require("./common");
 
+const SCErrMainchainTxDuplicate = 45013
+
 module.exports = async function(json_data, res) {
     try {
         console.log("Mainchain Transaction Received: ");
@@ -14,7 +16,7 @@ module.exports = async function(json_data, res) {
         if (txprocessed) {
             console.log("Mainchain Trasaction Hash already processed: " + mctxhash);
             console.log("============================================================");
-            common.reterr("ErrMainchainTxDuplicate", res);
+            common.reterr(SCErrMainchainTxDuplicate, res);
             return;
         }
 

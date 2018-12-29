@@ -5,7 +5,6 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -33,7 +32,7 @@ const (
 	IX_Identification EntryPrefix = 0x94
 
 	// ASSET
-	ST_Info       EntryPrefix = 0xc0
+	ST_Info EntryPrefix = 0xc0
 
 	//NEOVM
 	ST_Contract   EntryPrefix = 0xc1
@@ -92,7 +91,7 @@ type ChainStore struct {
 
 func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
-	levelDB, err := database.NewLevelDB(filepath.Join(path, "Chain"))
+	levelDB, err := database.NewLevelDB(path)
 	if err != nil {
 		return nil, err
 	}
@@ -124,9 +123,7 @@ func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) 
 
 	go s.taskHandler()
 
-	s.initWithGenesisBlock(genesisBlock)
-
-	return &s, nil
+	return &s, s.initWithGenesisBlock(genesisBlock)
 }
 
 func (s *ChainStore) RegisterFunctions(isPersist bool, name StoreFuncName, handler func(batch database.Batch, b *types.Block) error) {
@@ -641,7 +638,7 @@ func (s *ChainStore) IsBlockInStore(hash *Uint256) bool {
 	}
 
 	if b.Header.Height > s.currentBlockHeight {
-		log.Error("Header height", b.Header.Height, "greater then current height:", s.currentBlockHeight)
+		log.Error("Header height", b.Header.Height, "greater than current height:", s.currentBlockHeight)
 		return false
 	}
 

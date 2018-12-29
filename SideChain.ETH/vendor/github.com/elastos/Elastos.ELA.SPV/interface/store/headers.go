@@ -32,7 +32,7 @@ type headers struct {
 }
 
 func NewHeaderStore(dataDir string, newHeader func() util.BlockHeader) (*headers, error) {
-	db, err := leveldb.OpenFile(filepath.Join(dataDir, "HEADER"), nil)
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "header"), nil)
 	if err != nil {
 		return nil, err
 	}

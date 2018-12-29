@@ -23,8 +23,10 @@ func TestQue(t *testing.T) {
 	}
 	defer que.Clear()
 
-	notifyIDs := make([]common.Uint256, 100)
-	txHashes := make([]common.Uint256, 100)
+	times := 1000
+
+	notifyIDs := make([]common.Uint256, times)
+	txHashes := make([]common.Uint256, times)
 	for i := range notifyIDs {
 		rand.Read(notifyIDs[i][:])
 	}
@@ -46,7 +48,7 @@ func TestQue(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 100, len(items)) {
+	if !assert.Equal(t, times, len(items)) {
 		t.FailNow()
 	}
 	for _, item := range items {
@@ -83,8 +85,9 @@ func TestQue(t *testing.T) {
 	}
 
 	for i, notifyID := range notifyIDs {
-		que.Del(&notifyID, &txHashes[i])
-		if i+1 >= 50 {
+		err := que.Del(&notifyID, &txHashes[i])
+		assert.NoError(t, err)
+		if i+1 >= times/2 {
 			break
 		}
 	}
@@ -92,7 +95,7 @@ func TestQue(t *testing.T) {
 	for i, notifyID := range notifyIDs {
 		value := append(notifyID[:], txHashes[i][:]...)
 		_, err := que.db.Get(toKey(BKTQue, value...), nil)
-		if i < 50 {
+		if i < times/2 {
 			if !assert.Error(t, err) {
 				t.FailNow()
 			}
@@ -108,7 +111,7 @@ func TestQue(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 50, len(items)) {
+	if !assert.Equal(t, times/2, len(items)) {
 		t.FailNow()
 	}
 
@@ -138,7 +141,7 @@ func TestQue(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 100, len(items)) {
+	if !assert.Equal(t, times, len(items)) {
 		t.FailNow()
 	}
 	for _, item := range items {
@@ -154,7 +157,7 @@ func TestQue(t *testing.T) {
 	batch = que.Batch()
 	for i, notifyID := range notifyIDs {
 		batch.Del(&notifyID, &txHashes[i])
-		if i+1 >= 50 {
+		if i+1 >= times/2 {
 			break
 		}
 	}
@@ -166,7 +169,7 @@ func TestQue(t *testing.T) {
 	for i, notifyID := range notifyIDs {
 		value := append(notifyID[:], txHashes[i][:]...)
 		_, err := que.db.Get(toKey(BKTQue, value...), nil)
-		if i < 50 {
+		if i < times/2 {
 			if !assert.Error(t, err) {
 				t.FailNow()
 			}
@@ -179,7 +182,7 @@ func TestQue(t *testing.T) {
 	}
 
 	batch = que.Batch()
-	for i := 50; i < 100; i++ {
+	for i := times / 2; i < times; i++ {
 		batch.DelAll(uint32(i))
 	}
 	err = batch.Commit()

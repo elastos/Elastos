@@ -25,7 +25,7 @@ const (
 
 	// notifyTimeout is the duration to timeout a notify to the listener, and
 	// resend the notify to the listener.
-	notifyTimeout  = 10 * time.Second // 10 second
+	notifyTimeout = 10 * time.Second // 10 second
 )
 
 type spvservice struct {
@@ -283,9 +283,11 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 		}
 
 		// Notify listeners
-		if s.notifyTransaction(item.NotifyId, proof, tx, block.Height-item.Height) {
+		listener, ok := s.notifyTransaction(item.NotifyId, proof, tx, block.Height-item.Height)
+		if ok {
 			item.LastNotify = time.Now()
 			s.db.Que().Put(item)
+			listener.Notify(item.NotifyId, proof, tx)
 		}
 	}
 }
@@ -329,11 +331,12 @@ func (s *spvservice) queueMessageByListener(
 }
 
 func (s *spvservice) notifyTransaction(notifyId common.Uint256,
-	proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) bool {
+	proof bloom.MerkleProof, tx core.Transaction,
+	confirmations uint32) (TransactionListener, bool) {
 
 	listener, ok := s.listeners[notifyId]
 	if !ok {
-		return false
+		return nil, false
 	}
 
 	// Get transaction id
@@ -350,21 +353,20 @@ func (s *spvservice) notifyTransaction(notifyId common.Uint256,
 		} else {
 			s.db.Que().Del(&notifyId, &txId)
 		}
-		return false
+		return nil, false
 	}
 
 	// Notify listener
 	if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
 		if confirmations >= getConfirmations(tx) {
-			listener.Notify(notifyId, proof, tx)
-			return true
+			return listener, true
 		}
 	} else {
 		listener.Notify(notifyId, proof, tx)
-		return true
+		return listener, true
 	}
 
-	return false
+	return nil, false
 }
 
 func getListenerKey(listener TransactionListener) common.Uint256 {

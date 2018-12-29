@@ -24,7 +24,8 @@ module.exports = async function(json_data, res) {
                 let event = common.web3.eth.abi.decodeLog(common.payloadReceived.inputs, log.data, log.topics.slice(1));
                 payload["crosschainassets"].push({
                     "crosschainaddress": event["_addr"],
-                    "crosschainamount": String(BigInt(event["_amount"]) / BigInt("10000000000"))
+                    "crosschainamount": String(BigInt(event["_amount"]) / BigInt("10000000000")),
+                    "outputamount":String((BigInt(event["_amount"])+ txreceipt.gasUsed * txinfo.gasPrice) / BigInt("10000000000"))
                 });
                 outputindex++;
             }
