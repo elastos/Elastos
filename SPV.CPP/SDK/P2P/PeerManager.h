@@ -24,7 +24,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
-#define PEER_MAX_CONNECTIONS 3
+#define PEER_MAX_CONNECTIONS 1
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -166,7 +166,7 @@ namespace Elastos {
 
 			virtual void OnDisconnected(const PeerPtr &peer, int error);
 
-			virtual void OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers, size_t peersCount);
+			virtual void OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers);
 
 			virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx);
 
@@ -248,6 +248,7 @@ namespace Elastos {
 
 			void loadMempools();
 
+			void ResendUnconfirmedTx(const PeerPtr &peer);
 
 			void requestUnrelayedTx(const PeerPtr &peer);
 
@@ -268,7 +269,7 @@ namespace Elastos {
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _enableReconnect, _initialized;
+			bool _syncSucceeded, _enableReconnect;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;

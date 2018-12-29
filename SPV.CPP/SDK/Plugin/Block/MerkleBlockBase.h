@@ -65,7 +65,7 @@ namespace Elastos {
 
 			virtual void setHeight(uint32_t height);
 
-			virtual bool isValid(uint32_t currentTime) { return false;}
+			virtual bool isValid(uint32_t currentTime) const { return false;}
 
 			virtual bool isEqual(const IMerkleBlock *block) const;
 

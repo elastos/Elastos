@@ -27,46 +27,55 @@ static const std::string payPasswd = "s12345678";
 static uint64_t feePerKB = 10000;
 
 static std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("sample");;
-static bool syncSucceed = false;
+static bool IDChainSyncSucceed = false;
+static bool ELASyncSucceed = false;
 
 class SubWalletCallback : public ISubWalletCallback {
 public:
 	~SubWalletCallback() {}
-	SubWalletCallback() {}
+	SubWalletCallback(const std::string &walletID) : _walletID(walletID) {}
 
 	virtual void OnTransactionStatusChanged(
 		const std::string &txid,const std::string &status,
 		const nlohmann::json &desc,uint32_t confirms) {
-		logger->debug("OnTransactionStatusChanged ----> txid = {}, confirms = {}", txid, confirms);
+		logger->debug("{} OnTransactionStatusChanged ----> txid = {}, confirms = {}", _walletID, txid, confirms);
 //		logger->debug("OnTransactionStatusChanged ----> desc = {}", desc.dump());
 	}
 
 	virtual void OnBlockSyncStarted() {
-		logger->debug("OnBlockSyncStarted");
+		logger->debug("{} OnBlockSyncStarted", _walletID);
 	}
 
 	virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight) {
-		logger->debug("OnBlockSyncProgress ----> [ {} / {} ]", currentBlockHeight, estimatedHeight);
+		logger->debug("{} OnBlockSyncProgress ----> [ {} / {} ]", _walletID, currentBlockHeight, estimatedHeight);
 		if (currentBlockHeight >= estimatedHeight) {
-			syncSucceed = true;
+			if (_walletID.find(gMainchainSubWalletID) != std::string::npos) {
+
+				ELASyncSucceed = true;
+			} else if (_walletID.find(gSidechainSubWalletID) != std::string::npos) {
+				IDChainSyncSucceed = true;
+			}
 		}
 	}
 
 	virtual void OnBlockSyncStopped() {
-		logger->debug("OnBlockSyncStopped");
+		logger->debug("{} OnBlockSyncStopped", _walletID);
 	}
 
 	virtual void OnBalanceChanged(uint64_t balance) {
-		logger->debug("OnBalanceChanged ----> {}", balance);
+		logger->debug("{} OnBalanceChanged ----> {}", _walletID, balance);
 	}
 
 	virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
-		logger->debug("OnTxPublished ----> hash = {}, result = {}", hash, result.dump());
+		logger->debug("{} OnTxPublished ----> hash = {}, result = {}", _walletID, hash, result.dump());
 	}
 
 	virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-		logger->debug("OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan", recommendRescan);
+		logger->debug("{} OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan", _walletID, recommendRescan);
 	}
+
+private:
+	std::string _walletID;
 
 };
 
@@ -80,7 +89,7 @@ static IMasterWallet *NewWalletWithMnemonic(MasterWalletManager *manager) {
 static IMasterWallet *ImportWalletWithMnemonic(MasterWalletManager *manager) {
 	const std::string phrasePassword = "";
 	const std::string mnemonic =
-		"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+		"闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 	logger->debug("mnemonic -> {}", mnemonic);
 	return manager->ImportWalletWithMnemonic(gMasterWalletID, mnemonic, phrasePassword, payPasswd, false);
 }
@@ -308,8 +317,8 @@ static void InitWallets(MasterWalletManager *manager) {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-//		masterWallet = ImportWalletWithMnemonic(manager);
-		masterWallet = ImportWalletWithKeystore(manager);
+		masterWallet = ImportWalletWithMnemonic(manager);
+//		masterWallet = ImportWalletWithKeystore(manager);
 //		masterWallet = NewWalletWithMnemonic(manager);
 //		masterWallet = NewReadOnlyMultiSignWallet(manager);
 //		masterWallet = NewMultiSignWalletWithMnemonic(manager);
@@ -323,7 +332,8 @@ static void InitWallets(MasterWalletManager *manager) {
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
-			subWallets[j]->AddCallback(new SubWalletCallback());
+			std::string walletID = "(" + masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainId() + ")";
+			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			logger->debug("[{}:{}] all addresses -> {}",
 						  masterWallets[i]->GetId(), subWallets[j]->GetChainId(),
 						  subWallets[j]->GetAllAddress(0, 500).dump());
@@ -369,7 +379,7 @@ int main(int argc, char *argv[]) {
 
 
 	while(1) {
-		if (syncSucceed) {
+		if (ELASyncSucceed && IDChainSyncSucceed) {
 			if (!transferDone) {
 				Transafer(manager, gMasterWalletID, gMainchainSubWalletID,
 						  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
@@ -393,9 +403,12 @@ int main(int argc, char *argv[]) {
 				registerID = true;
 			}
 
-			sleep(10);
-			//GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
-			//GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
+			sleep(60);
+			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
+			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
+
+			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
+			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
 		} else {
 			sleep(1);
 		}

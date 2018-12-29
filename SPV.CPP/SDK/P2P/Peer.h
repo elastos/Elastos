@@ -53,8 +53,7 @@ namespace Elastos {
 				virtual void OnDisconnected(const PeerPtr &peer, int error) = 0;
 
 				virtual void
-				OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers,
-							   size_t peersCount) = 0;
+				OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers) = 0;
 
 				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) = 0;
 

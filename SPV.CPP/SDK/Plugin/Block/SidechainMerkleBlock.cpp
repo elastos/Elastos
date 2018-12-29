@@ -75,13 +75,13 @@ namespace Elastos {
 			// target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
 			// bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
-			const uint32_t size = _target >> 24, target = target & 0x00ffffff;
+			const uint32_t size = _target >> 24, target = _target & 0x00ffffff;
 			size_t hashIdx = 0, flagIdx = 0;
 			UInt256 merkleRoot = MerkleBlockBase::MerkleBlockRootR(&hashIdx, &flagIdx, 0), t = UINT256_ZERO;
 			int r = 1;
 
 			// check if merkle root is correct
-			if (_totalTx > 0 && !UInt256Eq(&(merkleRoot), &(merkleRoot))) r = 0;
+			if (_totalTx > 0 && !UInt256Eq(&(merkleRoot), &(_merkleRoot))) r = 0;
 
 			// check if timestamp is too far in future
 			if (_timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;

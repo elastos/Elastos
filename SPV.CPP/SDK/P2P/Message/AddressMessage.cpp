@@ -56,7 +56,9 @@ namespace Elastos {
 					_peer->debug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
 								 i, p.GetHost(), p.Timestamp, p.Port, p.Services);
 
-					if (!(p.Services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
+						(p.Services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK)
+						continue; // skip peers that don't carry full blocks
 					if (!p.IsIPv4())
 						continue; // ignore IPv6 for now
 					if (p.IsIPv4() &&
@@ -73,7 +75,7 @@ namespace Elastos {
 					peers.push_back(p);
 				}
 
-				if (peers.size() > 0) FireRelayedPeers(peers, peers.size());
+				if (peers.size() > 0) FireRelayedPeers(peers);
 			}
 
 			return r;

@@ -35,7 +35,6 @@ namespace Elastos {
 				PeerManager *manager = _peer->getPeerManager();
 				CMBlock message(sizeof(uint64_t));
 
-				manager->Lock();
 				uint64_t height = manager->GetLastBlockHeight();
 				memcpy(message, &height, message.GetSize());
 				if (manager->getConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
@@ -51,7 +50,6 @@ namespace Elastos {
 						}
 					}
 				}
-				manager->Unlock();
 
 				_peer->SendMessage(message, MSG_PONG);
 				if (needRelayPing)

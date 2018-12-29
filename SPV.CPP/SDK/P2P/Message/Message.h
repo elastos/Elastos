@@ -76,7 +76,7 @@ namespace Elastos {
 
 			void FireDisconnected(int error);
 
-			void FireRelayedPeers(const std::vector<PeerInfo> &peers, size_t peersCount);
+			void FireRelayedPeers(const std::vector<PeerInfo> &peers);
 
 			void FireRelayedTx(const TransactionPtr &tx);
 

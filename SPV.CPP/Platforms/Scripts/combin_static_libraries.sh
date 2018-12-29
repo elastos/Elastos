@@ -419,7 +419,8 @@ apple_combin() {
 			OBJDIR=`echo $LIBNAME | cut -d . -f1`
 			mkdir -p $OUTPUT_DIR/$ARCH/thin/$OBJDIR
 
-			FILE_ARCHS=`lipo -archs $LIB`
+			#FILE_ARCHS=`lipo -archs $LIB`
+			FILE_ARCHS=`lipo -info $LIB | sed 's#^.*: ##g'`
 			if ! pattern_match "$ARCH" "$FILE_ARCHS"; then
 				echo "error: $LIBNAME do not contain $ARCH"
 				exit 1
