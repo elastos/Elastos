@@ -13,16 +13,21 @@ module.exports = async function(json_data, res) {
         let txhash = null;
         let txlog = null;
         let outputindex = 0;
+        let outputamount = 0;
         for (const log of logs) {
             if (txhash === null || txhash != log["transactionHash"]) {
                 txhash = log["transactionHash"];
+                let txinfo = await common.web3.eth.getTransaction(txhash);
+                let txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
+                outputamount = txreceipt.gasUsed * txinfo.gasPrice
                 txlog = {"txid": txhash};
                 result.push(txlog);
                 txlog["crosschainassets"] = new Array();
             }
             txlog["crosschainassets"].push({
                 "crosschainaddress": log["returnValues"]["_addr"],
-                "crosschainamount": String(BigInt(log["returnValues"]["_amount"]) / BigInt("10000000000"))
+                "crosschainamount": String(BigInt(log["returnValues"]["_amount"]) / BigInt("10000000000")),
+                "outputamount":String((BigInt(log["returnValues"]["_amount"])+ BigInt(outputamount)) / BigInt(10000000000))
             });
             outputindex++;
         }
