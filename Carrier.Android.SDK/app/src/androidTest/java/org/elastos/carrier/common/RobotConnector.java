@@ -16,7 +16,7 @@ public class RobotConnector extends Socket {
 	private BufferedReader mBufferedReader = null;
 	private String mRobotId = null;
 	private String mRobotAddress = null;
-	private  int SOCKET_TIMEOUT = 120000;
+	private  int SOCKET_TIMEOUT = 600000;
 
 	public static RobotConnector getInstance() {
 		if (robotConnector == null)

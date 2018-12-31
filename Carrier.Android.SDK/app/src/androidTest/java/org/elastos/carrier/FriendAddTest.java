@@ -34,7 +34,7 @@ public class FriendAddTest {
 	private static Carrier carrier;
 
 	@Rule
-	public Timeout globalTimeout = Timeout.seconds(300);
+	public Timeout globalTimeout = Timeout.seconds(600);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;

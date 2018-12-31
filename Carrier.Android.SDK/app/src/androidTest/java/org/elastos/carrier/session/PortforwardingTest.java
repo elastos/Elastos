@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -61,7 +62,7 @@ public class PortforwardingTest {
 	private static final String localIP = getLocalIpAddress();
 
 	@Rule
-	public Timeout globalTimeout = Timeout.seconds(300);
+	public Timeout globalTimeout = Timeout.seconds(600);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
@@ -591,7 +592,8 @@ public class PortforwardingTest {
 				for (Enumeration<InetAddress> enumIpAddr = intf
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 					InetAddress inetAddress = enumIpAddr.nextElement();
-					if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress()) {
+					if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress() &&
+						inetAddress instanceof Inet4Address) {
 						return inetAddress.getHostAddress();
 					}
 				}

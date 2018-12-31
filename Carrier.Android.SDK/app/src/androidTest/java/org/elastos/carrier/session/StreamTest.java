@@ -44,7 +44,7 @@ public class StreamTest {
 	private static Stream stream;
 
 	@Rule
-	public Timeout globalTimeout = Timeout.seconds(300);
+	public Timeout globalTimeout = Timeout.seconds(600);
 
 	static class TestHandler extends AbstractCarrierHandler {
 		private TestContext mContext;
