@@ -64,14 +64,12 @@ class C extends BaseComponent {
                                 <li>
                                     {I18N.get('popup.changes.2018-12-26.3')}
                                     <br/><br/>
-                                    {/*
-                                    <a href="https://forum.cyberrepublic.org">https://forum.cyberrepublic.org</a>
+                                    <a href="https://forum.cyberrepublic.org" target="_blank">https://forum.cyberrepublic.org</a>
                                     <br/><br/>
                                     {I18N.get('popup.changes.2018-12-26.4')}
                                     <div class="center">
                                         {lang === 'en' ? <img src="/assets/images/popup-changes-2018-12-26-en.png"/> : <img src="/assets/images/popup-changes-2018-12-26-zh.png"/>}
                                     </div>
-                                    */}
                                 </li>
                             </ol>
 
