@@ -120,13 +120,9 @@ export default class extends BaseComponent {
                         <Menu.Item key="blog">
                             {I18N.get('0110')}
                         </Menu.Item>
-                        {/*
-                        <Menu.Item key="ambassadors">
-                            {I18N.get('0107')}
+                        <Menu.Item key="forum">
+                            {I18N.get('0011')}
                         </Menu.Item>
-                        <Menu.Item key="developer">
-                            {I18N.get('0100')}
-                        </Menu.Item>*/}
                     </Menu>
                 </Col>
             </Row>

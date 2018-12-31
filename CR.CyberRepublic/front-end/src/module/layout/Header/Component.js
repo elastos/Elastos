@@ -144,11 +144,9 @@ export default class extends BaseComponent {
                     {I18N.get('developer.learn')}
                 </Menu.Item>
 
-                {/*
                 <Menu.Item key="forum">
                     {I18N.get('0011')}
                 </Menu.Item>
-                */}
 
                 {this.props.isLogin &&
                 <Menu.Item key="logout">
