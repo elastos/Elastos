@@ -5,6 +5,7 @@ import {message} from 'antd';
 
 export default createContainer(Component, (state) => {
     return {
+        isLogin: state.user.is_login,
         user: state.user
     };
 }, () => {

@@ -36,6 +36,7 @@ export default class extends BaseComponent {
         ], key)) {
             this.props.history.push('/' + ev.key)
         }
+
         else if (key === 'logout') {
             Modal.confirm({
                 title: I18N.get('logout.title'),
