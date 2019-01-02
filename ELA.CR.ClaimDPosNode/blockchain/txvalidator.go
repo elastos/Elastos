@@ -693,19 +693,6 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 			return errors.New("Duplicated nick name.")
 		}
 	}
-	var signed bool
-	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
-		if err != nil {
-			return errors.New("Invalid program code.")
-		}
-		if programHash.IsEqual(*hash) {
-			signed = true
-		}
-	}
-	if !signed {
-		return errors.New("Public key unsigned.")
-	}
 
 	// check url
 	if err = checkStringField(payload.Url, "Url"); err != nil {
@@ -714,6 +701,21 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 
 	// check ip
 	if err = checkStringField(payload.Address, "IP"); err != nil {
+		return err
+	}
+
+	// check signature
+	publicKey, err := DecodePoint(payload.PublicKey)
+	if err != nil {
+		return err
+	}
+	signedBuf := new(bytes.Buffer)
+	err = payload.SerializeUnsigned(signedBuf, PayloadRegisterProducerVersion)
+	if err != nil {
+		return err
+	}
+	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	if err != nil {
 		return err
 	}
 
