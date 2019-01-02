@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	printStateInterval = 10 * time.Second
+	printStateInterval = time.Minute
 
 	DataPath = "elastos_did"
 	DataDir  = "data"
@@ -297,9 +297,9 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 
 func newWebSocketServer(port uint16, service *service.HttpService, config *service.Config) *websocket.Server {
 	svrCfg := websocket.Config{
-		Flags: 2,
-		ServePort: port,
-		Service:   service,
+		Flags:      2,
+		ServePort:  port,
+		Service:    service,
 		ServiceCfg: config,
 	}
 	server := websocket.NewServer(&svrCfg)
