@@ -792,23 +792,19 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// check public key
-	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
+	// check signature
+	publicKey, err := DecodePoint(payload.PublicKey)
 	if err != nil {
-		return errors.New("Invalid publick key.")
+		return err
 	}
-	var signed bool
-	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
-		if err != nil {
-			return errors.New("Invalid program code.")
-		}
-		if programHash.IsEqual(*hash) {
-			signed = true
-		}
+	signedBuf := new(bytes.Buffer)
+	err = payload.SerializeUnsigned(signedBuf, PayloadUpdateProducerVersion)
+	if err != nil {
+		return err
 	}
-	if !signed {
-		return errors.New("Public key unsigned.")
+	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	if err != nil {
+		return err
 	}
 
 	// check from database
