@@ -680,7 +680,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
 	if err != nil {
-		return errors.New("invalid publick key")
+		return errors.New("invalid public key")
 	}
 	if err := checkStringField(payload.NickName, "NickName"); err != nil {
 		return err

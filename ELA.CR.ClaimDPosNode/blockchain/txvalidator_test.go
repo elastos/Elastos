@@ -400,8 +400,10 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 
 func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	// Generate a register producer transaction
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
@@ -409,13 +411,20 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	txn.Payload = &payload.PayloadRegisterProducer{
+	rpPayload := &payload.PayloadRegisterProducer{
 		PublicKey: publicKey1,
-		NickName:  "nick name 1",
+		NickName:  "nickname 1",
 		Url:       "http://www.elastos_test.com",
 		Location:  1,
 		Address:   "127.0.0.1:20338",
 	}
+	rpSignBuf := new(bytes.Buffer)
+	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	rpSig, err := crypto.Sign(privateKey1, rpSignBuf.Bytes())
+	s.NoError(err)
+	rpPayload.Signature = rpSig
+	txn.Payload = rpPayload
 
 	txn.Programs = []*program.Program{&program.Program{
 		Code:      getCode(publicKeyStr1),
@@ -430,18 +439,18 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		ProgramHash: *publicKeyDeposit1,
 	}}
 
-	err := CheckRegisterProducerTransaction(txn)
+	err = CheckRegisterProducerTransaction(txn)
 	s.NoError(err)
 
 	// Give an invalid public key in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = errPublicKey
 	err = CheckRegisterProducerTransaction(txn)
-	s.EqualError(err, "Invalid publick key.")
+	s.EqualError(err, "invalid public key")
 
-	// Give a mismatching public key in payload
+	// Invalidates the signature in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey2
 	err = CheckRegisterProducerTransaction(txn)
-	s.EqualError(err, "Public key unsigned.")
+	s.EqualError(err, "invalid signature in payload")
 
 	// Give an invalid url in payload
 	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
@@ -450,8 +459,16 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
-	txn.Payload.(*payload.PayloadRegisterProducer).Url = "www.elastos_test.com"
+	rpPayload.PublicKey = publicKey1
+	rpPayload.Url = "www.test.com"
+	rpSignBuf = new(bytes.Buffer)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	rpSig, err = crypto.Sign(privateKey1, rpSignBuf.Bytes())
+	s.NoError(err)
+	rpPayload.Signature = rpSig
+	txn.Payload = rpPayload
+
 	publicKeyDeposit2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
@@ -569,8 +586,10 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
@@ -602,13 +621,19 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	updatePayload.Address = "127.0.0.1:20338"
 	updatePayload.PublicKey = errPublicKey
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid publick key.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid public key in payload")
 
 	updatePayload.PublicKey = publicKey2
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Public key unsigned.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid signature in payload")
 
 	updatePayload.PublicKey = publicKey1
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Invalid producer.")
+	updateSignBuf := new(bytes.Buffer)
+	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	s.NoError(err)
+	updatePayload.Signature = updateSig
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid producer")
 
 	//rest of check test will be continued in chain test
 }
@@ -634,10 +659,10 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	}}
 
 	cancelPayload.PublicKey = errPublicKey
-	s.EqualError(CheckCancelProducerTransaction(txn), "Invalid publick key.")
+	s.EqualError(CheckCancelProducerTransaction(txn), "invalid public key in payload")
 
 	cancelPayload.PublicKey = publicKey2
-	s.EqualError(CheckCancelProducerTransaction(txn), "Public key unsigned.")
+	s.EqualError(CheckCancelProducerTransaction(txn), "invalid signature in payload")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
