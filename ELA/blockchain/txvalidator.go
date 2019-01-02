@@ -668,29 +668,29 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 func CheckRegisterProducerTransaction(txn *Transaction) error {
 	payload, ok := txn.Payload.(*PayloadRegisterProducer)
 	if !ok {
-		return errors.New("Invalid payload.")
+		return errors.New("invalid payload")
 	}
 
 	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.PublicKey)
 	if err == nil {
-		return fmt.Errorf("Invalid producer, canceled at height: %d", height)
+		return fmt.Errorf("invalid producer, canceled at height: %d", height)
 	}
 
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
 	if err != nil {
-		return errors.New("Invalid publick key.")
+		return errors.New("invalid publick key")
 	}
 	if err := checkStringField(payload.NickName, "NickName"); err != nil {
 		return err
 	}
 	for _, p := range producers {
 		if bytes.Equal(p.PublicKey, payload.PublicKey) {
-			return errors.New("Duplicated public key.")
+			return errors.New("duplicated public key")
 		}
 		if p.NickName == payload.NickName {
-			return errors.New("Duplicated nick name.")
+			return errors.New("duplicated nick name")
 		}
 	}
 
@@ -707,7 +707,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	// check signature
 	publicKey, err := DecodePoint(payload.PublicKey)
 	if err != nil {
-		return err
+		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = payload.SerializeUnsigned(signedBuf, PayloadRegisterProducerVersion)
@@ -716,7 +716,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
 	if err != nil {
-		return err
+		return errors.New("invalid signature in payload")
 	}
 
 	// check the deposit coin
@@ -742,39 +742,37 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 func CheckCancelProducerTransaction(txn *Transaction) error {
 	payload, ok := txn.Payload.(*PayloadCancelProducer)
 	if !ok {
-		return errors.New("Invalid payload.")
+		return errors.New("invalid payload")
 	}
-	// check public key
-	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
+
+	// check signature
+	publicKey, err := DecodePoint(payload.PublicKey)
 	if err != nil {
-		return errors.New("Invalid publick key.")
+		return errors.New("invalid public key in payload")
 	}
-	var signed bool
-	for _, program := range txn.Programs {
-		programHash, err := contract.PublicKeyToDepositProgramHash(program.Code[1 : len(program.Code)-1])
-		if err != nil {
-			return errors.New("Invalid program code.")
-		}
-		if programHash.IsEqual(*hash) {
-			signed = true
-		}
+	signedBuf := new(bytes.Buffer)
+	err = payload.SerializeUnsigned(signedBuf, PayloadCancelProducerVersion)
+	if err != nil {
+		return err
 	}
-	if !signed {
-		return errors.New("Public key unsigned.")
+	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	if err != nil {
+		return errors.New("invalid signature in payload")
 	}
+
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	for _, p := range producers {
 		if bytes.Equal(p.PublicKey, payload.PublicKey) {
 			return nil
 		}
 	}
-	return errors.New("Invalid producer.")
+	return errors.New("invalid producer")
 }
 
 func CheckUpdateProducerTransaction(txn *Transaction) error {
 	payload, ok := txn.Payload.(*PayloadUpdateProducer)
 	if !ok {
-		return errors.New("Invalid payload.")
+		return errors.New("invalid payload")
 	}
 
 	// check nick name
@@ -795,7 +793,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	// check signature
 	publicKey, err := DecodePoint(payload.PublicKey)
 	if err != nil {
-		return err
+		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = payload.SerializeUnsigned(signedBuf, PayloadUpdateProducerVersion)
@@ -804,7 +802,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	}
 	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
 	if err != nil {
-		return err
+		return errors.New("invalid signature in payload")
 	}
 
 	// check from database
@@ -819,13 +817,13 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 		}
 	}
 	if !hasProducer {
-		return errors.New("Invalid producer.")
+		return errors.New("invalid producer")
 	}
 
 	if !keepNickName {
 		for _, p := range producers {
 			if p.NickName == payload.NickName {
-				return errors.New("Duplicated nick name.")
+				return errors.New("duplicated nick name")
 			}
 		}
 	}
