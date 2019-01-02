@@ -17,6 +17,7 @@ type PayloadRegisterProducer struct {
 	Url       string
 	Location  uint64
 	Address   string
+	Signature []byte
 }
 
 func (a *PayloadRegisterProducer) Data(version byte) []byte {
@@ -28,57 +29,82 @@ func (a *PayloadRegisterProducer) Data(version byte) []byte {
 }
 
 func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
+	err := a.SerializeUnsigned(w, version)
+	if err != nil {
+		return err
+	}
+
+	err = common.WriteVarBytes(w, a.Signature)
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], SignedData serialize failed")
+	}
+
+	return nil
+}
+
+func (a *PayloadRegisterProducer) SerializeUnsigned(w io.Writer, version byte) error {
 	err := common.WriteVarBytes(w, a.PublicKey)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], PublicKey serialize failed.")
+		return errors.New("[PayloadRegisterProducer], PublicKey serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.NickName)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], NickName serialize failed.")
+		return errors.New("[PayloadRegisterProducer], NickName serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.Url)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Url serialize failed.")
+		return errors.New("[PayloadRegisterProducer], Url serialize failed")
 	}
 
 	err = common.WriteUint64(w, a.Location)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Location serialize failed.")
+		return errors.New("[PayloadRegisterProducer], Location serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.Address)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Address serialize failed.")
+		return errors.New("[PayloadRegisterProducer], Address serialize failed")
 	}
 	return nil
 }
 
 func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
+	err := a.DeserializeUnsigned(r, version)
+	if err != nil {
+		return err
+	}
+	sig, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "signature")
+	a.Signature = sig
+
+	return nil
+}
+
+func (a *PayloadRegisterProducer) DeserializeUnsigned(r io.Reader, version byte) error {
 	publicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], PublicKey deserialize failed.")
+		return errors.New("[PayloadRegisterProducer], PublicKey deserialize failed")
 	}
 
 	nickName, err := common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], NickName deserialize failed.")
+		return errors.New("[PayloadRegisterProducer], NickName deserialize failed")
 	}
 
 	url, err := common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Url deserialize failed.")
+		return errors.New("[PayloadRegisterProducer], Url deserialize failed")
 	}
 
 	location, err := common.ReadUint64(r)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Location deserialize failed.")
+		return errors.New("[PayloadRegisterProducer], Location deserialize failed")
 	}
 
 	addr, err := common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], Address deserialize failed.")
+		return errors.New("[PayloadRegisterProducer], Address deserialize failed")
 	}
 
 	a.PublicKey = publicKey
