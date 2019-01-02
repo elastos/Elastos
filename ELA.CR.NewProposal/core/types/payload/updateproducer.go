@@ -36,7 +36,7 @@ func (a *PayloadUpdateProducer) Serialize(w io.Writer, version byte) error {
 
 	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], SignedData serialize failed")
+		return errors.New("[PayloadUpdateProducer], Signature serialize failed")
 	}
 
 	return nil
