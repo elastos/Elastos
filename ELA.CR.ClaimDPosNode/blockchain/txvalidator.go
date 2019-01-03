@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
@@ -98,6 +99,13 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	if txn.IsIllegalBlockTx() {
 		if err := CheckIllegalBlocksTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalBlocksTransaction],", err)
+			return ErrTransactionPayload
+		}
+	}
+
+	if txn.IsSidechainIllegalDataTx() {
+		if err := CheckSidechainIllegalEvidenceTransaction(txn); err != nil {
+			log.Warn("[CheckSidechainIllegalEvidenceTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
@@ -269,7 +277,7 @@ func CheckTransactionInput(txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() || txn.IsSidechainIllegalDataTx() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("illegal transactions must has no input")
 		}
@@ -328,7 +336,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
+	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() || txn.IsSidechainIllegalDataTx() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -452,7 +460,7 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		return DefaultLedger.HeightVersions.CheckTxHasNoPrograms(blockHeight, tx)
 	}
 
-	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() {
+	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsSidechainIllegalDataTx() {
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
 			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
 		}
@@ -842,6 +850,40 @@ func CheckIllegalBlocksTransaction(txn *Transaction) error {
 	}
 
 	return CheckDposIllegalBlocks(&payload.DposIllegalBlocks)
+}
+
+func CheckSidechainIllegalEvidenceTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*PayloadSidechainIllegalData)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if payload.IllegalType != SidechainIllegalProposal && payload.IllegalType != SidechainIllegalVote {
+		return errors.New("invalid type")
+	}
+
+	pkBuf, err := common.HexStringToBytes(payload.IllegalSigner)
+	if err != nil {
+		return err
+	}
+	_, err = crypto.DecodePoint(pkBuf)
+	if err != nil {
+		return err
+	}
+
+	_, err = common.Uint168FromAddress(payload.GenesisBlockAddress)
+	if err != nil {
+		return err
+	}
+
+	//fixme change MajorityCount to MajorityCrosschainCount
+	if uint32(len(payload.Signs)) <= config.Parameters.ArbiterConfiguration.MajorityCount {
+		return errors.New("insufficient signs count")
+	}
+
+	//todo get arbitrators by payload.Height and verify each sign in signs
+
+	return nil
 }
 
 func checkDposIllegalProposals(d *DposIllegalProposals) error {
