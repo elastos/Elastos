@@ -3,8 +3,10 @@ package httpjsonrpc
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -27,8 +29,6 @@ const (
 
 func StartRPCServer() {
 	mainMux = make(map[string]func(Params) map[string]interface{})
-
-	http.HandleFunc("/", Handle)
 
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
@@ -63,9 +63,17 @@ func StartRPCServer() {
 	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
 	mainMux["getactivedpospeers"] = GetActiveDposPeers
 
-	err := http.ListenAndServe(":"+strconv.Itoa(config.Parameters.HttpJsonPort), nil)
+	rpcServeMux := http.NewServeMux()
+	server := http.Server{
+		Handler:      rpcServeMux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+	rpcServeMux.HandleFunc("/", Handle)
+	l, _ := net.Listen("tcp4",  ":" + strconv.Itoa(config.Parameters.HttpJsonPort))
+	err := server.Serve(l)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
+		log.Fatal("ListenAndServe error: ", err.Error())
 	}
 }
 
