@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Input struct {
@@ -18,17 +18,17 @@ type Input struct {
 }
 
 func (i *Input) Serialize(w io.Writer) error {
-	return WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
+	return common.WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
 }
 
 func (i *Input) Deserialize(r io.Reader) error {
-	return ReadElements(r, &i.Previous.TxID, &i.Previous.Index, &i.Sequence)
+	return common.ReadElements(r, &i.Previous.TxID, &i.Previous.Index, &i.Sequence)
 }
 
 func (i *Input) ReferKey() string {
 	buf := new(bytes.Buffer)
 	i.Previous.Serialize(buf)
-	hash := Sha256D(buf.Bytes())
+	hash := common.Sha256D(buf.Bytes())
 	return hex.EncodeToString(hash[:])
 }
 
@@ -42,10 +42,10 @@ func (i *Input) IsEqual(o Input) bool {
 	return true
 }
 
-func (o Input) String() string {
+func (i Input) String() string {
 	return "{\n\t\t" +
-		"tx id: " + o.Previous.TxID.String() + "\n\t\t" +
-		"index: " + fmt.Sprint(o.Previous.Index) + "\n\t\t" +
-		"sequence: " + fmt.Sprint(o.Sequence) + "\n\t\t" +
+		"tx id: " + i.Previous.TxID.String() + "\n\t\t" +
+		"index: " + fmt.Sprint(i.Previous.Index) + "\n\t\t" +
+		"sequence: " + fmt.Sprint(i.Sequence) + "\n\t\t" +
 		"}"
 }

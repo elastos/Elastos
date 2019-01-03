@@ -5,15 +5,15 @@ import (
 	"io"
 	"math/big"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Output struct {
-	AssetID     Uint256
-	Value       Fixed64
+	AssetID     common.Uint256
+	Value       common.Fixed64
 	TokenValue  big.Int
 	OutputLock  uint32
-	ProgramHash Uint168
+	ProgramHash common.Uint168
 }
 
 func (o Output) String() string {
@@ -45,7 +45,7 @@ var SerializeOutput = func(output *Output, w io.Writer) error {
 		return err
 	}
 
-	WriteUint32(w, output.OutputLock)
+	common.WriteUint32(w, output.OutputLock)
 
 	err = output.ProgramHash.Serialize(w)
 	if err != nil {
@@ -66,7 +66,7 @@ var DeserializeOutput = func(output *Output, r io.Reader) error {
 		return err
 	}
 
-	temp, err := ReadUint32(r)
+	temp, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}

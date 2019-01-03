@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	svr "github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	svr "github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 type Server interface {

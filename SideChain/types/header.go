@@ -6,13 +6,13 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Header struct {
 	Version    uint32
-	Previous   Uint256
-	MerkleRoot Uint256
+	Previous   common.Uint256
+	MerkleRoot common.Uint256
 	Timestamp  uint32
 	Bits       uint32
 	Nonce      uint32
@@ -36,7 +36,7 @@ func (header *Header) Serialize(w io.Writer) error {
 }
 
 func (header *Header) Deserialize(r io.Reader) error {
-	err := ReadElements(r,
+	err := common.ReadElements(r,
 		&header.Version,
 		&header.Previous,
 		&header.MerkleRoot,
@@ -61,7 +61,7 @@ func (header *Header) Deserialize(r io.Reader) error {
 }
 
 func (header *Header) serializeNoAux(w io.Writer) error {
-	return WriteElements(w,
+	return common.WriteElements(w,
 		header.Version,
 		&header.Previous,
 		&header.MerkleRoot,
@@ -72,8 +72,8 @@ func (header *Header) serializeNoAux(w io.Writer) error {
 	)
 }
 
-func (header *Header) Hash() Uint256 {
+func (header *Header) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
 	header.serializeNoAux(buf)
-	return Uint256(Sha256D(buf.Bytes()))
+	return common.Sha256D(buf.Bytes())
 }

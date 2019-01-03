@@ -11,15 +11,16 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.SideChain/spv"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	ela "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
 )
 
 type Config struct {
@@ -308,7 +309,7 @@ func (s *HttpService) SendRechargeToSideChainTxByHash(param util.Params) (interf
 	return depositTx.Hash().String(), nil
 }
 
-func createRechargeToSideChainTransaction(tx *core.Transaction, genesisAddress string) (*types.Transaction, error) {
+func createRechargeToSideChainTransaction(tx *ela.Transaction, genesisAddress string) (*types.Transaction, error) {
 	rechargeInfo, err := parseRechargeToSideChainTransactionInfo(tx, genesisAddress)
 	if err != nil {
 		return nil, err
@@ -328,9 +329,9 @@ type RechargeToSideChainInfo struct {
 	DepositAssets            []*RechargeToSideChainAsset
 }
 
-func parseRechargeToSideChainTransactionInfo(txn *core.Transaction, genesisAddress string) (*RechargeToSideChainInfo, error) {
+func parseRechargeToSideChainTransactionInfo(txn *ela.Transaction, genesisAddress string) (*RechargeToSideChainInfo, error) {
 	result := new(RechargeToSideChainInfo)
-	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
+	payloadObj, ok := txn.Payload.(*payload.PayloadTransferCrossChainAsset)
 	if !ok {
 		return nil, errors.New("Invalid payload")
 	}

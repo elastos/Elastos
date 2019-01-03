@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 // TestMruInventoryMap ensures the MruInventoryMap behaves as expected including

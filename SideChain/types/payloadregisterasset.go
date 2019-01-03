@@ -4,13 +4,13 @@ import (
 	"errors"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type PayloadRegisterAsset struct {
 	Asset      Asset
-	Amount     Fixed64
-	Controller Uint168
+	Amount     common.Fixed64
+	Controller common.Uint168
 }
 
 func (a *PayloadRegisterAsset) Data(version byte) []byte {
