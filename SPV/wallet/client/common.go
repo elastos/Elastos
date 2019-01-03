@@ -2,6 +2,7 @@ package client
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/howeyc/gopass"
 	"github.com/urfave/cli"
 )
@@ -45,7 +46,7 @@ func GetPassword(password []byte, confirmed bool) ([]byte, error) {
 			return nil, err
 		}
 
-		if !common.IsEqualBytes(password, confirm) {
+		if !bytes.Equal(password, confirm) {
 			return nil, errors.New("input password unmatched")
 		}
 	}

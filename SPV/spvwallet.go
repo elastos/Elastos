@@ -13,11 +13,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (
@@ -61,7 +63,7 @@ func (w *spvwallet) putTx(batch sqlite.DataBatch, utx util.Transaction,
 		// Filter address
 		if w.getAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime = output.OutputLock
-			if tx.TxType == core.CoinBase {
+			if tx.TxType == types.CoinBase {
 				lockTime = height + 100
 			}
 			utxo := sutil.NewUTXO(txId, height, index, output.Value, lockTime, output.ProgramHash)
@@ -350,7 +352,7 @@ func NewWallet() (*spvwallet, error) {
 }
 
 func newTransaction() util.Transaction {
-	return sutil.NewTx(&core.Transaction{})
+	return sutil.NewTx(&types.Transaction{})
 }
 
 // GenesisHeader creates a specific genesis header by the given
@@ -360,22 +362,22 @@ func GenesisHeader() util.BlockHeader {
 	genesisTime := time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC)
 
 	// header
-	header := core.Header{
-		Version:    core.BlockVersion,
+	header := types.Header{
+		Version:    0,
 		Previous:   common.EmptyHash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(genesisTime.Unix()),
 		Bits:       0x1d03ffff,
-		Nonce:      core.GenesisNonce,
+		Nonce:      types.GenesisNonce,
 		Height:     uint32(0),
 	}
 
 	// ELA coin
-	elaCoin := &core.Transaction{
-		TxType:         core.RegisterAsset,
+	elaCoin := &types.Transaction{
+		TxType:         types.RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
-			Asset: core.Asset{
+		Payload: &payload.PayloadRegisterAsset{
+			Asset: payload.Asset{
 				Name:      "ELA",
 				Precision: 0x08,
 				AssetType: 0x00,
@@ -383,31 +385,31 @@ func GenesisHeader() util.BlockHeader {
 			Amount:     0 * 100000000,
 			Controller: common.Uint168{},
 		},
-		Attributes: []*core.Attribute{},
-		Inputs:     []*core.Input{},
-		Outputs:    []*core.Output{},
-		Programs:   []*core.Program{},
+		Attributes: []*types.Attribute{},
+		Inputs:     []*types.Input{},
+		Outputs:    []*types.Output{},
+		Programs:   []*program.Program{},
 	}
 
-	coinBase := &core.Transaction{
-		TxType:         core.CoinBase,
-		PayloadVersion: core.PayloadCoinBaseVersion,
-		Payload:        new(core.PayloadCoinBase),
-		Inputs: []*core.Input{
+	coinBase := &types.Transaction{
+		TxType:         types.CoinBase,
+		PayloadVersion: payload.PayloadCoinBaseVersion,
+		Payload:        new(payload.PayloadCoinBase),
+		Inputs: []*types.Input{
 			{
-				Previous: core.OutPoint{
+				Previous: types.OutPoint{
 					TxID:  common.EmptyHash,
 					Index: 0x0000,
 				},
 				Sequence: 0x00000000,
 			},
 		},
-		Attributes: []*core.Attribute{},
+		Attributes: []*types.Attribute{},
 		LockTime:   0,
-		Programs:   []*core.Program{},
+		Programs:   []*program.Program{},
 	}
 
-	coinBase.Outputs = []*core.Output{
+	coinBase.Outputs = []*types.Output{
 		{
 			AssetID:     elaCoin.Hash(),
 			Value:       3300 * 10000 * 100000000,
@@ -416,10 +418,10 @@ func GenesisHeader() util.BlockHeader {
 	}
 
 	nonce := []byte{0x4d, 0x65, 0x82, 0x21, 0x07, 0xfc, 0xfd, 0x52}
-	txAttr := core.NewAttribute(core.Nonce, nonce)
+	txAttr := types.NewAttribute(types.Nonce, nonce)
 	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
 
-	transactions := []*core.Transaction{coinBase, elaCoin}
+	transactions := []*types.Transaction{coinBase, elaCoin}
 	hashes := make([]common.Uint256, 0, len(transactions))
 	for _, tx := range transactions {
 		hashes = append(hashes, tx.Hash())

@@ -13,13 +13,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
+	"github.com/elastos/Elastos.ELA/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/p2p/server"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +28,7 @@ type TxListener struct {
 	log     elalog.Logger
 	service SPVService
 	address string
-	txType  core.TransactionType
+	txType  types.TransactionType
 	flags   uint64
 }
 
@@ -36,7 +36,7 @@ func (l *TxListener) Address() string {
 	return l.address
 }
 
-func (l *TxListener) Type() core.TransactionType {
+func (l *TxListener) Type() types.TransactionType {
 	return l.txType
 }
 
@@ -44,7 +44,7 @@ func (l *TxListener) Flags() uint64 {
 	return l.flags
 }
 
-func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
+func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx types.Transaction) {
 	l.log.Infof("Notify Type %s, TxID %s", tx.TxType.Name(), tx.Hash())
 	err := l.service.VerifyTransaction(proof, tx)
 	if !assert.NoError(l.t, err) {
@@ -77,14 +77,14 @@ func TestGetListenerKey(t *testing.T) {
 	var key1, key2 common.Uint256
 	listener := &TxListener{
 		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
-		txType:  core.CoinBase,
+		txType:  types.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	}
 
 	key1 = getListenerKey(listener)
 	key2 = getListenerKey(&TxListener{
 		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
-		txType:  core.CoinBase,
+		txType:  types.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	})
 	if !key1.IsEqual(key2) {
@@ -103,7 +103,7 @@ func TestGetListenerKey(t *testing.T) {
 
 	// same address, flags different type
 	key1 = getListenerKey(listener)
-	listener.txType = core.TransferAsset
+	listener.txType = types.TransferAsset
 	key2 = getListenerKey(listener)
 	if key1.IsEqual(key2) {
 		t.Errorf("listeners with different type got same key %s", key1.String())
@@ -172,7 +172,7 @@ func TestNewSPVService(t *testing.T) {
 		log:     listlog,
 		service: service,
 		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
-		txType:  core.CoinBase,
+		txType:  types.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	}
 
@@ -181,7 +181,7 @@ func TestNewSPVService(t *testing.T) {
 		log:     listlog,
 		service: service,
 		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
-		txType:  core.TransferAsset,
+		txType:  types.TransferAsset,
 		flags:   0,
 	}
 

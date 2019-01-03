@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -28,8 +28,7 @@ type KeystoreFile struct {
 }
 
 func CreateKeystoreFile() (*KeystoreFile, error) {
-
-	if common.FileExisted(KeystoreFilename) {
+	if info, err := os.Stat(KeystoreFilename); info != nil || os.IsExist(err) {
 		return nil, errors.New("key store file already exist")
 	}
 

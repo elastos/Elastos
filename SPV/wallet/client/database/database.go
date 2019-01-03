@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 func New() (*database, error) {

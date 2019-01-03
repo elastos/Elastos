@@ -7,7 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -50,14 +50,14 @@ func (b *dataBatch) DelAll(height uint32) error {
 			return err
 		}
 
-		var tx core.Transaction
+		var tx types.Transaction
 		err = tx.Deserialize(bytes.NewReader(utx.RawData))
 		if err != nil {
 			return err
 		}
 
 		for index := range tx.Outputs {
-			outpoint := core.NewOutPoint(utx.Hash, uint16(index))
+			outpoint := types.NewOutPoint(utx.Hash, uint16(index))
 			b.Batch.Delete(toKey(BKTOps, outpoint.Bytes()...))
 		}
 

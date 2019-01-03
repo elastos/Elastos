@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 const (

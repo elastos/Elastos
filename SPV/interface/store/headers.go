@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/cevaris/ordered_map"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

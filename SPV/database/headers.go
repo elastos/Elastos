@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Headers interface {

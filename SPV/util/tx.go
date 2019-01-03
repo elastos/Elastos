@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 // Tx is a data structure used in database.

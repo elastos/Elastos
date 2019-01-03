@@ -4,8 +4,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 // SPV service config
@@ -55,13 +55,13 @@ type SPVService interface {
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(bloom.MerkleProof, core.Transaction) error
+	VerifyTransaction(bloom.MerkleProof, types.Transaction) error
 
 	// Send a transaction to the P2P network
-	SendTransaction(core.Transaction) error
+	SendTransaction(types.Transaction) error
 
 	// GetTransaction query a transaction by it's hash.
-	GetTransaction(txId *common.Uint256) (*core.Transaction, error)
+	GetTransaction(txId *common.Uint256) (*types.Transaction, error)
 
 	// GetTransactionIds query all transaction hashes on the given block height.
 	GetTransactionIds(height uint32) ([]*common.Uint256, error)
@@ -97,7 +97,7 @@ type TransactionListener interface {
 	Address() string
 
 	// Type() indicates which transaction type this listener are interested
-	Type() core.TransactionType
+	Type() types.TransactionType
 
 	// Flags control the notification actions by the given flag
 	Flags() uint64
@@ -105,7 +105,7 @@ type TransactionListener interface {
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it, the notifyId is key of this
 	// notify message and it must be submitted with the receipt together.
-	Notify(notifyId common.Uint256, proof bloom.MerkleProof, tx core.Transaction)
+	Notify(notifyId common.Uint256, proof bloom.MerkleProof, tx types.Transaction)
 }
 
 func NewSPVService(config *Config) (SPVService, error) {

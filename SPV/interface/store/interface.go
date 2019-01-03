@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type HeaderStore interface {

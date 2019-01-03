@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 // Ensure addrsBatch implement AddrsBatch interface.

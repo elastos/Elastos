@@ -3,15 +3,15 @@ package iutil
 import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 // Ensure Header implement BlockHeader interface.
 var _ util.BlockHeader = (*Header)(nil)
 
 type Header struct {
-	*core.Header
+	*types.Header
 }
 
 func (h *Header) Previous() common.Uint256 {
@@ -30,6 +30,6 @@ func (h *Header) PowHash() common.Uint256 {
 	return h.AuxPow.ParBlockHeader.Hash()
 }
 
-func NewHeader(orgHeader *core.Header) util.BlockHeader {
+func NewHeader(orgHeader *types.Header) util.BlockHeader {
 	return &Header{Header: orgHeader}
 }

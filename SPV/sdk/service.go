@@ -12,11 +12,11 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
+	"github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 const (

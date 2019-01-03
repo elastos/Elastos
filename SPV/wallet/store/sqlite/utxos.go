@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const CreateUTXOsDB = `CREATE TABLE IF NOT EXISTS UTXOs(

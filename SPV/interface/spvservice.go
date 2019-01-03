@@ -15,9 +15,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -117,7 +117,7 @@ func (s *spvservice) SubmitTransactionReceipt(notifyId, txHash common.Uint256) e
 	return s.db.Que().Del(&notifyId, &txHash)
 }
 
-func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transaction) error {
+func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx types.Transaction) error {
 	// Get Header from main chain
 	header, err := s.headers.Get(&proof.BlockHash)
 	if err != nil {
@@ -154,17 +154,17 @@ func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transact
 	return nil
 }
 
-func (s *spvservice) SendTransaction(tx core.Transaction) error {
+func (s *spvservice) SendTransaction(tx types.Transaction) error {
 	return s.IService.SendTransaction(iutil.NewTx(&tx))
 }
 
-func (s *spvservice) GetTransaction(txId *common.Uint256) (*core.Transaction, error) {
+func (s *spvservice) GetTransaction(txId *common.Uint256) (*types.Transaction, error) {
 	utx, err := s.db.Txs().Get(txId)
 	if err != nil {
 		return nil, err
 	}
 
-	var tx core.Transaction
+	var tx types.Transaction
 	err = tx.Deserialize(bytes.NewReader(utx.RawData))
 	if err != nil {
 		return nil, err
@@ -386,7 +386,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 			continue
 		}
 
-		var tx core.Transaction
+		var tx types.Transaction
 		err = tx.Deserialize(bytes.NewReader(utx.RawData))
 		if err != nil {
 			continue
@@ -429,7 +429,7 @@ func (s *spvservice) Close() error {
 }
 
 func (s *spvservice) queueMessageByListener(
-	listener TransactionListener, tx *core.Transaction, height uint32) {
+	listener TransactionListener, tx *types.Transaction, height uint32) {
 	// skip unpacked transaction
 	if height == 0 {
 		return
@@ -449,7 +449,7 @@ func (s *spvservice) queueMessageByListener(
 }
 
 func (s *spvservice) notifyTransaction(notifyId common.Uint256,
-	proof bloom.MerkleProof, tx core.Transaction,
+	proof bloom.MerkleProof, tx types.Transaction,
 	confirmations uint32) (TransactionListener, bool) {
 
 	listener, ok := s.listeners[notifyId]
@@ -494,10 +494,10 @@ func getListenerKey(listener TransactionListener) common.Uint256 {
 	return sha256.Sum256(buf.Bytes())
 }
 
-func getConfirmations(tx core.Transaction) uint32 {
+func getConfirmations(tx types.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
-	if tx.TxType == core.CoinBase {
+	if tx.TxType == types.CoinBase {
 		return 100
 	}
 	return DefaultConfirmations

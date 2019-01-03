@@ -9,7 +9,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const CreateTxsDB = `CREATE TABLE IF NOT EXISTS Txs(

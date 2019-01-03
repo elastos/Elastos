@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/wallet"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/urfave/cli"
 )
 
