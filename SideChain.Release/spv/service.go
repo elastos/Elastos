@@ -8,8 +8,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	ela "github.com/elastos/Elastos.ELA/core/types"
 )
 
 const (
@@ -73,14 +73,14 @@ func NewService(cfg *Config) (*Service, error) {
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	payload, ok := tx.Payload.(*types.PayloadRechargeToSideChain)
 	if !ok {
-		return errors.New("[VerifyTransaction] Invalid payload core.PayloadRechargeToSideChain")
+		return errors.New("[VerifyTransaction] Invalid payload PayloadRechargeToSideChain")
 	}
 
 	switch tx.PayloadVersion {
 	case types.RechargeToSideChainPayloadVersion0:
 
 		proof := new(bloom.MerkleProof)
-		mainChainTransaction := new(core.Transaction)
+		mainChainTransaction := new(ela.Transaction)
 
 		reader := bytes.NewReader(payload.MerkleProof)
 		if err := proof.Deserialize(reader); err != nil {
@@ -128,14 +128,14 @@ func (l *listener) Address() string {
 	return l.address
 }
 
-func (l *listener) Type() core.TransactionType {
-	return core.TransferCrossChainAsset
+func (l *listener) Type() ela.TransactionType {
+	return ela.TransferCrossChainAsset
 }
 
 func (l *listener) Flags() uint64 {
 	return spv.FlagNotifyInSyncing
 }
 
-func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
+func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx ela.Transaction) {
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }

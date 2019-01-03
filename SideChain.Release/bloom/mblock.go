@@ -1,7 +1,7 @@
 package bloom
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 // MBlock is used to house intermediate information needed to generate a

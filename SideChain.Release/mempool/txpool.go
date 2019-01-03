@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Config struct {
@@ -28,10 +28,10 @@ type TxPool struct {
 	validator   *Validator
 	feeHelper   *FeeHelper
 	sync.RWMutex
-	txCount         uint64                         // count
-	txnList         map[Uint256]*types.Transaction // transaction which have been verifyed will put into this map
-	inputUTXOList   map[string]*types.Transaction  // transaction which pass the verify will add the UTXO to this map
-	mainchainTxList map[Uint256]*types.Transaction // mainchain tx pool
+	txCount         uint64                                // count
+	txnList         map[common.Uint256]*types.Transaction // transaction which have been verifyed will put into this map
+	inputUTXOList   map[string]*types.Transaction         // transaction which pass the verify will add the UTXO to this map
+	mainchainTxList map[common.Uint256]*types.Transaction // mainchain tx pool
 }
 
 func New(cfg *Config) *TxPool {
@@ -41,8 +41,8 @@ func New(cfg *Config) *TxPool {
 		feeHelper:       cfg.FeeHelper,
 		txCount:         0,
 		inputUTXOList:   make(map[string]*types.Transaction),
-		txnList:         make(map[Uint256]*types.Transaction),
-		mainchainTxList: make(map[Uint256]*types.Transaction),
+		txnList:         make(map[common.Uint256]*types.Transaction),
+		mainchainTxList: make(map[common.Uint256]*types.Transaction),
 	}
 	return &p
 }
@@ -70,7 +70,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)
-	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	tx.FeePerKB = tx.Fee * 1000 / common.Fixed64(len(buf.Bytes()))
 
 	//add the transaction to process scope
 	p.Lock()
@@ -85,7 +85,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 
 // HaveTransaction returns if a transaction is in transaction pool by the given
 // transaction id. If no transaction match the transaction id, return false
-func (p *TxPool) HaveTransaction(txId Uint256) bool {
+func (p *TxPool) HaveTransaction(txId common.Uint256) bool {
 	p.RLock()
 	defer p.RUnlock()
 	_, ok := p.txnList[txId]
@@ -94,10 +94,10 @@ func (p *TxPool) HaveTransaction(txId Uint256) bool {
 
 // GetTxsInPool returns a copy of the transactions in transaction pool,
 // It is safe to modify the returned map.
-func (p *TxPool) GetTxsInPool() map[Uint256]*types.Transaction {
+func (p *TxPool) GetTxsInPool() map[common.Uint256]*types.Transaction {
 	p.RLock()
 	defer p.RUnlock()
-	copy := make(map[Uint256]*types.Transaction)
+	copy := make(map[common.Uint256]*types.Transaction)
 	for txId, tx := range p.txnList {
 		copy[txId] = tx
 	}
@@ -113,7 +113,7 @@ func (p *TxPool) CleanSubmittedTransactions(block *types.Block) error {
 }
 
 //get the transaction by hash
-func (p *TxPool) GetTransaction(hash Uint256) *types.Transaction {
+func (p *TxPool) GetTransaction(hash common.Uint256) *types.Transaction {
 	p.RLock()
 	defer p.RUnlock()
 	return p.txnList[hash]
@@ -165,7 +165,7 @@ func (p *TxPool) verifyDoubleSpend(tx *types.Transaction) error {
 	return nil
 }
 
-func (p *TxPool) IsDuplicateMainchainTx(mainchainTxHash Uint256) bool {
+func (p *TxPool) IsDuplicateMainchainTx(mainchainTxHash common.Uint256) bool {
 	_, ok := p.mainchainTxList[mainchainTxHash]
 	if ok {
 		return true
@@ -247,7 +247,7 @@ func (p *TxPool) cleanMainchainTx(txs []*types.Transaction) {
 	}
 }
 
-func (p *TxPool) delFromTxList(txId Uint256) bool {
+func (p *TxPool) delFromTxList(txId common.Uint256) bool {
 	p.Lock()
 	defer p.Unlock()
 	if _, ok := p.txnList[txId]; !ok {
@@ -257,10 +257,10 @@ func (p *TxPool) delFromTxList(txId Uint256) bool {
 	return true
 }
 
-func (p *TxPool) copyTxList() map[Uint256]*types.Transaction {
+func (p *TxPool) copyTxList() map[common.Uint256]*types.Transaction {
 	p.RLock()
 	defer p.RUnlock()
-	txnMap := make(map[Uint256]*types.Transaction, len(p.txnList))
+	txnMap := make(map[common.Uint256]*types.Transaction, len(p.txnList))
 	for txnId, txn := range p.txnList {
 		txnMap[txnId] = txn
 	}
@@ -315,7 +315,7 @@ func (p *TxPool) addMainchainTx(txn *types.Transaction) {
 	p.mainchainTxList[*hash] = txn
 }
 
-func (p *TxPool) delMainchainTx(hash Uint256) bool {
+func (p *TxPool) delMainchainTx(hash common.Uint256) bool {
 	p.Lock()
 	defer p.Unlock()
 	_, ok := p.mainchainTxList[hash]

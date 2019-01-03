@@ -3,13 +3,15 @@ package mempool
 import (
 	"bytes"
 	"errors"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	ela "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type FeeHelper struct {
@@ -39,13 +41,13 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 	feeMap := make(map[common.Uint256]common.Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
-		var mainChainTransaction *core.Transaction
+		var mainChainTransaction *ela.Transaction
 		depositPayload, ok := tx.Payload.(*types.PayloadRechargeToSideChain)
 		if !ok {
 			return nil, errors.New("invalid recharge to side chain transaction payload")
 		}
 		if tx.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
-			mainChainTransaction = new(core.Transaction)
+			mainChainTransaction = new(ela.Transaction)
 			reader := bytes.NewReader(depositPayload.MainChainTransaction)
 			if err := mainChainTransaction.Deserialize(reader); err != nil {
 				return nil, errors.New("main chain transaction deserialize failed")
@@ -58,7 +60,7 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 			}
 		}
 
-		crossChainPayload, ok := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
+		crossChainPayload, ok := mainChainTransaction.Payload.(*payload.PayloadTransferCrossChainAsset)
 		if !ok {
 			return nil, errors.New("invalid transfer cross chain asset transaction payload")
 		}

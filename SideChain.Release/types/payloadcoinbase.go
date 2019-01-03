@@ -3,7 +3,7 @@ package types
 import (
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const PayloadCoinBaseVersion byte = 0x04
@@ -17,11 +17,11 @@ func (a *PayloadCoinBase) Data(version byte) []byte {
 }
 
 func (a *PayloadCoinBase) Serialize(w io.Writer, version byte) error {
-	return WriteVarBytes(w, a.CoinbaseData)
+	return common.WriteVarBytes(w, a.CoinbaseData)
 }
 
 func (a *PayloadCoinBase) Deserialize(r io.Reader, version byte) error {
-	temp, err := ReadVarBytes(r, MaxPayloadDataSize,
+	temp, err := common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload coinbase data")
 	a.CoinbaseData = temp
 	return err

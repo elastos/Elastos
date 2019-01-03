@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 // mruInventoryMap provides a concurrency safe map that is limited to a maximum
