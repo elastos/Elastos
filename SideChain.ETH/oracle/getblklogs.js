@@ -20,7 +20,7 @@ module.exports = async function(json_data, res) {
                 let txinfo = await common.web3.eth.getTransaction(txhash);
                 let txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
                 costamount = txreceipt.gasUsed * txinfo.gasPrice
-                txlog = {"txid": txhash};
+                txlog = {"txid": txhash.slice(2)};
                 result.push(txlog);
                 txlog["crosschainassets"] = new Array();
             }

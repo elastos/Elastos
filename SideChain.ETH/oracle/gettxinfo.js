@@ -30,7 +30,7 @@ module.exports = async function(json_data, res) {
                 outputindex++;
             }
         }
-        res.json({"error": null, "id": null, "jsonrpc": "2.0", "result": {"txid": sctxhash, "crosschainassets": payload["crosschainassets"]}});
+        res.json({"error": null, "id": null, "jsonrpc": "2.0", "result": {"txid": sctxhash.slice(2), "crosschainassets": payload["crosschainassets"]}});
         return;
     } catch (err) {
         common.reterr(err, res);
