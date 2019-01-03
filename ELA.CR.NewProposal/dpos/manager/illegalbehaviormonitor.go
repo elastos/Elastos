@@ -23,6 +23,7 @@ type IllegalBehaviorMonitor interface {
 
 	ProcessIllegalVote(first, second *types.DPosProposalVote)
 	IsLegalVote(v *types.DPosProposalVote) (*types.DPosProposalVote, bool)
+	SendSidechainIllegalEvidenceTransaction(evidence *types.SidechainIllegalData)
 
 	AddProposalEvidence(evidence *types.DposIllegalProposals)
 	AddVoteEvidence(evidence *types.DposIllegalVotes)
@@ -115,6 +116,25 @@ func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types
 		TxType:         types.IllegalProposalEvidence,
 		PayloadVersion: types.PayloadIllegalProposalVersion,
 		Payload:        &types.PayloadIllegalProposal{DposIllegalProposals: *evidences},
+		Attributes:     []*types.Attribute{},
+		LockTime:       0,
+		Programs:       []*program.Program{},
+		Outputs:        []*types.Output{},
+		Inputs:         []*types.Input{},
+		Fee:            0,
+	}
+
+	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+		i.manager.Broadcast(msg.NewTx(tx))
+	}
+}
+
+func (i *illegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(evidence *types.SidechainIllegalData) {
+	tx := &types.Transaction{
+		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		TxType:         types.IllegalSidechainEvidence,
+		PayloadVersion: types.PayloadSidechainIllegalDataVersion,
+		Payload:        &types.PayloadSidechainIllegalData{SidechainIllegalData: *evidence},
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},

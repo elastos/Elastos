@@ -8,11 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const (
-	SidechainIllegalProposal IllegalDataType = 0x03
-	SidechainIllegalVote     IllegalDataType = 0x04
-)
-
 type SidechainIllegalEvidence struct {
 	DataHash common.Uint256
 }
@@ -20,6 +15,7 @@ type SidechainIllegalEvidence struct {
 type SidechainIllegalData struct {
 	IllegalType         IllegalDataType
 	Height              uint32
+	IllegalSigner       string
 	Evidence            SidechainIllegalEvidence
 	CompareEvidence     SidechainIllegalEvidence
 	GenesisBlockAddress string
@@ -61,6 +57,10 @@ func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer) error {
 		return err
 	}
 
+	if err := common.WriteVarString(w, s.IllegalSigner); err != nil {
+		return err
+	}
+
 	if err := s.Evidence.Serialize(w); err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer) error {
 		return err
 	}
 
-	if err := common.WriteVarString(w, s.GenesisBlockAddress); err != nil{
+	if err := common.WriteVarString(w, s.GenesisBlockAddress); err != nil {
 		return err
 	}
 
@@ -106,6 +106,10 @@ func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
+	if s.IllegalSigner, err = common.ReadVarString(r); err != nil {
+		return err
+	}
+
 	if err = s.Evidence.Deserialize(r); err != nil {
 		return err
 	}
@@ -114,7 +118,7 @@ func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	if s.GenesisBlockAddress, err = common.ReadVarString(r); err != nil{
+	if s.GenesisBlockAddress, err = common.ReadVarString(r); err != nil {
 		return err
 	}
 

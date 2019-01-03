@@ -316,6 +316,7 @@ func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
 
 func (d *dposManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
 	d.illegalMonitor.AddSidechainEvidence(s)
+	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
 func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {

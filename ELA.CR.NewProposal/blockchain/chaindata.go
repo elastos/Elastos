@@ -365,6 +365,11 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
+		if txn.TxType == IllegalSidechainEvidence {
+			if err := c.PersistSidechainIllegalEvidence(txn.Payload.(*PayloadSidechainIllegalData)); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
