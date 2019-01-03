@@ -51,7 +51,11 @@ func (a *PayloadCancelProducer) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	sig, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "signature")
+	sig, err := common.ReadVarBytes(r, crypto.SignatureLength, "signature")
+	if err != nil {
+		return errors.New("[PayloadCancelProducer], Signature deserialize failed")
+	}
+
 	a.Signature = sig
 
 	return nil
