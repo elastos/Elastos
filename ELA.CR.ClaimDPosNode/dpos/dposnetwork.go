@@ -50,10 +50,11 @@ type dposNetwork struct {
 	messageQueue chan *messageItem
 	quit         chan bool
 
-	changeViewChan        chan bool
-	blockReceivedChan     chan blockItem
-	confirmReceivedChan   chan *types.DPosProposalVoteSlot
-	illegalBlocksEvidence chan *types.DposIllegalBlocks
+	changeViewChan           chan bool
+	blockReceivedChan        chan blockItem
+	confirmReceivedChan      chan *types.DPosProposalVoteSlot
+	illegalBlocksEvidence    chan *types.DposIllegalBlocks
+	sidechainIllegalEvidence chan *types.SidechainIllegalData
 }
 
 func (n *dposNetwork) Initialize(dnConfig manager.DposNetworkConfig) {
@@ -95,6 +96,8 @@ func (n *dposNetwork) Start() {
 				n.confirmReceived(confirm)
 			case evidence := <-n.illegalBlocksEvidence:
 				n.illegalBlocksReceived(evidence)
+			case sidechainEvidence := <-n.sidechainIllegalEvidence:
+				n.sidechainIllegalEvidenceReceived(sidechainEvidence)
 			case <-n.quit:
 				break out
 			}
@@ -249,6 +252,10 @@ func (n *dposNetwork) PostIllegalBlocksTask(i *types.DposIllegalBlocks) {
 	n.illegalBlocksEvidence <- i
 }
 
+func (n *dposNetwork) PostSidechainIllegalDataTask(s *types.SidechainIllegalData) {
+	n.sidechainIllegalEvidence <- s
+}
+
 func (n *dposNetwork) PostConfirmReceivedTask(p *types.DPosProposalVoteSlot) {
 	n.confirmReceivedChan <- p
 }
@@ -353,6 +360,11 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnIllegalVotesReceived(msgItem.ID, &msgIllegalVotes.Votes)
 		}
+	case msg.CmdSidechainIllegalData:
+		msgSidechainIllegal, processed := m.(*msg.SidechainIllegalData)
+		if processed {
+			n.listener.OnSidechainIllegalEvidenceReceived(&msgSidechainIllegal.Data)
+		}
 	}
 }
 
@@ -391,22 +403,28 @@ func (n *dposNetwork) illegalBlocksReceived(i *types.DposIllegalBlocks) {
 	n.listener.OnIllegalBlocksReceived(i)
 }
 
+func (n *dposNetwork) sidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+	n.BroadcastMessage(&msg.SidechainIllegalData{Data: *s})
+	n.listener.OnSidechainIllegalEvidenceReceived(s)
+}
+
 func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
 	return uint64(n.proposalDispatcher.CurrentHeight())
 }
 
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
 	network := &dposNetwork{
-		listener:              listener,
-		directPeers:           make(map[string]*PeerItem),
-		messageQueue:          make(chan *messageItem, 10000), //todo config handle capacity though config file
-		quit:                  make(chan bool),
-		changeViewChan:        make(chan bool),
-		blockReceivedChan:     make(chan blockItem, 10),                   //todo config handle capacity though config file
-		confirmReceivedChan:   make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
-		illegalBlocksEvidence: make(chan *types.DposIllegalBlocks),
-		currentHeight:         blockchain.DefaultLedger.Blockchain.GetHeight() - 1,
-		account:               dposAccount,
+		listener:                 listener,
+		directPeers:              make(map[string]*PeerItem),
+		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
+		quit:                     make(chan bool),
+		changeViewChan:           make(chan bool),
+		blockReceivedChan:        make(chan blockItem, 10),                   //todo config handle capacity though config file
+		confirmReceivedChan:      make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
+		illegalBlocksEvidence:    make(chan *types.DposIllegalBlocks),
+		sidechainIllegalEvidence: make(chan *types.SidechainIllegalData),
+		currentHeight:            blockchain.DefaultLedger.Blockchain.GetHeight() - 1,
+		account:                  dposAccount,
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)
@@ -460,6 +478,8 @@ func makeEmptyMessage(cmd string) (message elap2p.Message, err error) {
 		message = &msg.IllegalProposals{}
 	case msg.CmdIllegalVotes:
 		message = &msg.IllegalVotes{}
+	case msg.CmdSidechainIllegalData:
+		message = &msg.SidechainIllegalData{}
 	default:
 		return nil, errors.New("Received unsupported message, CMD " + cmd)
 	}

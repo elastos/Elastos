@@ -63,6 +63,11 @@ func (a *arbitrator) OnIllegalBlockReceived(payload *types.PayloadIllegalBlock) 
 	}
 }
 
+func (a *arbitrator) OnSidechainIllegalEvidenceReceived(data *types.SidechainIllegalData) {
+	log.Info("[OnSidechainIllegalEvidenceReceived] listener received sidechain illegal evidence")
+	a.network.PostSidechainIllegalDataTask(data)
+}
+
 func (a *arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
@@ -152,6 +157,9 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 
 		case events.ETNewArbiterElection:
 			a.OnNewElection(e.Data.([][]byte))
+
+		case events.ETSidechainIllegalEvidenceReceived:
+			a.OnSidechainIllegalEvidenceReceived(e.Data.(*types.SidechainIllegalData))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)

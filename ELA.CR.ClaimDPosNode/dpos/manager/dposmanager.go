@@ -64,6 +64,7 @@ type NetworkEventListener interface {
 	OnBlockReceived(b *types.Block, confirmed bool)
 	OnConfirmReceived(p *types.DPosProposalVoteSlot)
 	OnIllegalBlocksReceived(i *types.DposIllegalBlocks)
+	OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData)
 }
 
 type AbnormalRecovering interface {
@@ -311,6 +312,10 @@ func (d *dposManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIlle
 
 func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
 	d.illegalMonitor.AddBlockEvidence(i)
+}
+
+func (d *dposManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+	d.illegalMonitor.AddSidechainEvidence(s)
 }
 
 func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
