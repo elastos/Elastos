@@ -39,6 +39,7 @@
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+#include "ela_filetransfer.h"
 
 #include "cond.h"
 #include "cmd.h"
@@ -61,6 +62,7 @@ struct CarrierContextExtra {
     int gcookie_len;
     char gfrom[ELA_MAX_ID_LEN + 1];
     char groupid[ELA_MAX_ID_LEN + 1];
+    char fileid[ELA_MAX_FILE_ID_LEN + 1];
 };
 
 struct SessionContextExtra {
@@ -1214,6 +1216,159 @@ static void gleave(TestContext *context, int argc, char *argv[])
     write_ack("gleave succeeded\n");
 }
 
+static void ft_connect_cb(ElaCarrier *carrier,
+                          const char *address,
+                          const ElaFileTransferInfo *fileinfo,
+                          void *context)
+{
+    write_ack("ft_connect received\n");
+}
+
+static void ft_init(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_init(wctx->carrier, ft_connect_cb, &test_context);
+    if (rc < 0) {
+        write_ack("ft_init failed\n");
+        return;
+    }
+    write_ack("ft_init succeeded\n");
+}
+
+static void ft_new(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    int rc;
+
+    CHK_ARGS(argc == 2);
+
+    wctx->ft = ela_filetransfer_new(wctx->carrier, argv[1], NULL,
+                              wctx->ft_cbs, context);
+    if (wctx->ft == NULL) {
+        write_ack("ft_new failed\n");
+        return;
+    }
+    write_ack("ft_new succeeded\n");
+}
+
+static void ft_connect(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_connect(wctx->ft);
+    if (rc < 0) {
+        write_ack("ft_connect failed\n");
+        return;
+    }
+    write_ack("ft_connect succeeded\n");
+}
+
+static void ft_accept(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_accept_connect(wctx->ft);
+    if (rc < 0) {
+        write_ack("ft_accept failed\n");
+        return;
+    }
+    write_ack("ft_accept succeeded\n");
+}
+
+static void ft_pull(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_pull(wctx->ft, extra->fileid, 0);
+    if (rc < 0) {
+        write_ack("ft_pull failed\n");
+        return;
+    }
+    write_ack("ft_pull succeeded\n");
+}
+
+static void ft_pend(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_pend(wctx->ft, extra->fileid);
+    if (rc < 0) {
+        write_ack("ft_pend failed\n");
+        return;
+    }
+    write_ack("ft_pend succeeded\n");
+}
+
+static void ft_resume(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_filetransfer_resume(wctx->ft, extra->fileid);
+    if (rc < 0) {
+        write_ack("ft_resume failed\n");
+        return;
+    }
+    write_ack("ft_resume succeeded\n");
+}
+
+static void ft_cancel(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 3);
+
+    rc = ela_filetransfer_cancel(wctx->ft, extra->fileid, atoi(argv[1]), argv[2]);
+    if (rc < 0) {
+        write_ack("ft_cancel failed\n");
+        return;
+    }
+    write_ack("ft_cancel succeeded\n");
+}
+
+static void ft_cleanup(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+
+    CHK_ARGS(argc == 1);
+
+    ela_filetransfer_close(wctx->ft);
+    ela_filetransfer_cleanup(wctx->carrier);
+    write_ack("ft_cleanup succeeded\n");
+}
+
 static struct command {
     const char* name;
     void (*cmd_cb) (TestContext *context, int argc, char *argv[]);
@@ -1243,6 +1398,15 @@ static struct command {
     { "ginvite",      ginvite      },
     { "gjoin",        gjoin        },
     { "gleave",       gleave       },
+    { "ft_init",      ft_init      },
+    { "ft_new",       ft_new       },
+    { "ft_connect",   ft_connect   },
+    { "ft_accept",    ft_accept    },
+    { "ft_pull",      ft_pull      },
+    { "ft_pend",      ft_pend      },
+    { "ft_resume",    ft_resume    },
+    { "ft_cancel",    ft_cancel    },
+    { "ft_cleanup",   ft_cleanup   },
     { NULL, NULL},
 };
 

@@ -645,3 +645,96 @@ void test_group_scheme(TestContext *context,
     rc = ela_leave_group(wctx->carrier, wctx->groupid);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 }
+
+void test_filetransfer_scheme(TestContext *context, int (*do_work_cb)(TestContext *),
+                              bool use_ft_info)
+{
+    CarrierContext *wctxt = context->carrier;
+    char userid[ELA_MAX_ID_LEN + 1] = {0};
+    char cmd[32] = {0};
+    char result[32] = {0};
+    uint8_t ft_con_state_bits = 0;
+    int rc;
+
+    context->context_reset(context);
+
+    rc = add_friend_anyway(context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+
+    rc = ela_filetransfer_init(wctxt->carrier, NULL, NULL);
+    CU_ASSERT_EQUAL(rc, 0);
+
+    rc = write_cmd("ft_init\n");
+    CU_ASSERT_FATAL(rc > 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "ft_init") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    wctxt->ft = ela_filetransfer_new(wctxt->carrier, robotid,
+                                     use_ft_info ? wctxt->ft_info : NULL,
+                                     wctxt->ft_cbs, context);
+    CU_ASSERT_PTR_NOT_NULL(wctxt->ft);
+
+    ela_get_userid(wctxt->carrier, userid, sizeof(userid));
+    rc = write_cmd("ft_new %s\n", userid);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "ft_new") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    rc = ela_filetransfer_connect(wctxt->ft);
+    CU_ASSERT_EQUAL(rc, 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "ft_connect") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "received") == 0);
+
+    rc = write_cmd("ft_accept\n");
+    CU_ASSERT_FATAL(rc > 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "ft_accept") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    /* Wait for the ft_state_changed_cb to be invoked. After invocation,
+       the filetransfer connection state should have changed to be
+       FileTransferConnection_connecting. */
+    cond_wait(wctxt->ft_cond);
+
+    /* Wait for the ft_state_changed_cb to be invoked. After invocation,
+       the filetransfer connection state should have changed to be
+       FileTransferConnection_connected. */
+    cond_wait(wctxt->ft_cond);
+
+    ft_con_state_bits |= 1 << FileTransferConnection_connecting;
+    ft_con_state_bits |= 1 << FileTransferConnection_connected;
+    CU_ASSERT_EQUAL_FATAL(wctxt->ft_con_state_bits, ft_con_state_bits);
+
+    rc = do_work_cb ? do_work_cb(context) : 0;
+    CU_ASSERT_EQUAL(rc, 0);
+
+    rc = write_cmd("ft_cleanup\n");
+    CU_ASSERT(rc > 0);
+
+    rc = read_ack("%32s %32s", cmd, result);
+    CU_ASSERT_TRUE_FATAL(rc == 2);
+    CU_ASSERT_TRUE_FATAL(strcmp(cmd, "ft_cleanup") == 0);
+    CU_ASSERT_TRUE_FATAL(strcmp(result, "succeeded") == 0);
+
+    /* Wait for the ft_state_changed_cb to be invoked. After invocation,
+       the filetransfer connection state should have changed to be
+       FileTransferConnection_closed. */
+    cond_wait(wctxt->ft_cond);
+
+    ft_con_state_bits |= 1 << FileTransferConnection_closed;
+    CU_ASSERT_EQUAL(wctxt->ft_con_state_bits, ft_con_state_bits);
+
+    ela_filetransfer_close(wctxt->ft);
+    ela_filetransfer_cleanup(wctxt->carrier);
+}

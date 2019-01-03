@@ -47,6 +47,7 @@ endif()
 
 aux_source_directory(api/carrier CARRIER_CASES)
 aux_source_directory(api/session SESSION_CASES)
+aux_source_directory(api/filetransfer FILETRANSFER_CASES)
 
 set(SRC
     main.c
@@ -68,6 +69,7 @@ endif()
 set(LIBS
     elacarrier
     elasession
+    elafiletrans
     crystal
     )
 
@@ -110,17 +112,20 @@ include_directories(
     api
     ../src/carrier
     ../src/session
+    ../src/filetransfer
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
     ${CARRIER_INT_DIST_DIR}/lib
     ${CMAKE_CURRENT_BINARY_DIR}/../src/carrier
-    ${CMAKE_CURRENT_BINARY_DIR}/../src/session)
+    ${CMAKE_CURRENT_BINARY_DIR}/../src/session
+    ${CMAKE_CURRENT_BINARY_DIR}/../src/filetransfer)
 
 add_executable(elatests
     ${SRC}
     ${CARRIER_CASES}
-    ${SESSION_CASES})
+    ${SESSION_CASES}
+    ${FILETRANSFER_CASES})
 
 add_dependencies(elatests ${DEPS})
 target_link_libraries(elatests ${LIBS})

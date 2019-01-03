@@ -84,10 +84,12 @@ typedef struct TestSuite {
 
 #include "carrier/suites.h"
 #include "session/suites.h"
+#include "filetransfer/suites.h"
 
 TestSuite suites[] = {
     DEFINE_CARRIER_TESTSUITES,
     DEFINE_SESSION_TESTSUITES,
+    DEFINE_FILETRANSFER_TESTSUITES,
     DEFINE_TESTSUITE_NULL
 };
 

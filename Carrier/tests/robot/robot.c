@@ -39,11 +39,15 @@
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+#include "ela_filetransfer.h"
 
 #include "test_context.h"
 #include "test_helper.h"
 #include "config.h"
 #include "cmd.h"
+
+static ElaFileTransferInfo file_transfer_info;
+static ElaFileTransferCallbacks file_transfer_cbs;
 
 struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
@@ -54,6 +58,7 @@ struct CarrierContextExtra {
     int gcookie_len;
     char gfrom[ELA_MAX_ID_LEN + 1];
     char groupid[ELA_MAX_ID_LEN + 1];
+    char fileid[ELA_MAX_FILE_ID_LEN + 1];
 };
 
 static CarrierContextExtra extra = {
@@ -64,7 +69,8 @@ static CarrierContextExtra extra = {
     .gcookie = {0},
     .gcookie_len = 0,
     .gfrom  = {0},
-    .groupid = {0}
+    .groupid = {0},
+    .fileid = {0}
 };
 
 static void print_user_info(const ElaUserInfo* info)
@@ -327,6 +333,78 @@ static ElaCallbacks callbacks = {
     }
 };
 
+static void ft_state_changed_cb(ElaFileTransfer *filetransfer,
+                                FileTransferConnection state, void *context)
+{
+
+}
+
+static void ft_file_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                      const char *filename, uint64_t size, void *context)
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
+
+    write_ack("%s %s %d\n", filename, fileid, size);
+    strcpy(extra->fileid, fileid);
+}
+
+static void ft_pull_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                       uint64_t offset, void *context)
+{
+
+}
+
+static bool ft_data_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                       const uint8_t *data, size_t length, void *context)
+{
+    const uint8_t *ack_data = data;
+
+    if (length == ELA_MAX_USER_DATA_LEN - 1)
+        ack_data = (const uint8_t*)"bigdata";
+
+    if (data == NULL)
+        ack_data = (const uint8_t*)"null";
+
+    write_ack("ft_data %s %s %d\n", fileid, ack_data, length);
+    return true;
+}
+
+static void ft_pending_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                          void *context)
+{
+
+}
+
+static void ft_resume_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                         void *context)
+{
+
+}
+
+static void ft_cancel_cb(ElaFileTransfer *filetransfer, const char *fileid,
+                         int status, const char *reason, void *context)
+{
+
+}
+
+static ElaFileTransferCallbacks ft_cbs = {
+    .state_changed = ft_state_changed_cb,
+    .file = ft_file_cb,
+    .pull = ft_pull_cb,
+    .data = ft_data_cb,
+    .pending = ft_pending_cb,
+    .resume = ft_resume_cb,
+    .cancel = ft_cancel_cb
+};
+
+static ElaFileTransferInfo ft_info = {
+    .filename = "robotfile",
+    .fileid = {0},
+    .size = 1
+};
+
 static Condition DEFINE_COND(friend_status_cond);
 static Condition DEFINE_COND(cond);
 static Condition DEFINE_COND(group_cond);
@@ -336,6 +414,10 @@ static CarrierContextExtra extra;
 CarrierContext carrier_context = {
     .cbs = &callbacks,
     .carrier = NULL,
+    .ft = NULL,
+    .ft_info = &ft_info,
+    .ft_cbs = &ft_cbs,
+    .ft_cond = NULL,
     .cond = &cond,
     .friend_status_cond = &friend_status_cond,
     .group_cond = &group_cond,

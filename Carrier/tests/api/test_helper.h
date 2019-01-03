@@ -63,6 +63,9 @@ const char* connection_str(enum ElaConnectionStatus status);
 void test_group_scheme(TestContext *context, 
                        int (*do_work_cb)(TestContext *));
 
+void test_filetransfer_scheme(TestContext *context, int (*do_work_cb)(TestContext *),
+                              bool use_ft_info);
+
 int write_cmd(const char *cmd, ...);
 int read_ack(const char *format, ...);
 

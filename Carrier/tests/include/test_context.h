@@ -25,6 +25,7 @@
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+#include "ela_filetransfer.h"
 
 #include "cond.h"
 
@@ -60,11 +61,17 @@ typedef struct SessionContext {
 typedef struct CarrierContext {
     ElaCallbacks *cbs;
     ElaCarrier *carrier;
+    ElaFileTransfer *ft;
+    ElaFileTransferInfo *ft_info;
+    ElaFileTransferCallbacks *ft_cbs;
+    Condition *ft_cond;
     Condition *ready_cond;
     Condition *cond;
     Condition *friend_status_cond;
     Condition *group_cond;
 
+    FileTransferConnection ft_con_state;
+    uint8_t ft_con_state_bits;
     pthread_t thread;
     /**
      * the sufficient and necessary condition of friend_status being "online" is:
