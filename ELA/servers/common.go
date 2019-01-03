@@ -184,3 +184,12 @@ type UTXOInfo struct {
 	OutputLock    uint32 `json:"outputlock"`
 	Confirmations uint32 `json:"confirmations"`
 }
+
+type SidechainIllegalDataInfo struct {
+	IllegalType         uint8
+	Height              uint32
+	Evidence            string
+	CompareEvidence     string
+	GenesisBlockAddress string
+	Signs               []string
+}

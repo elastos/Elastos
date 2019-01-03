@@ -31,14 +31,15 @@ const (
 	WithdrawFromSideChain   TxType = 0x07
 	TransferCrossChainAsset TxType = 0x08
 
-	RegisterProducer TxType = 0x09
-	CancelProducer   TxType = 0x0a
-	UpdateProducer   TxType = 0x0b
+	RegisterProducer  TxType = 0x09
+	CancelProducer    TxType = 0x0a
+	UpdateProducer    TxType = 0x0b
 	ReturnDepositCoin TxType = 0x0c
 
-	IllegalProposalEvidence TxType = 0x0d
-	IllegalVoteEvidence     TxType = 0x0e
-	IllegalBlockEvidence    TxType = 0x0f
+	IllegalProposalEvidence  TxType = 0x0d
+	IllegalVoteEvidence      TxType = 0x0e
+	IllegalBlockEvidence     TxType = 0x0f
+	IllegalSidechainEvidence TxType = 0x10
 )
 
 func (self TxType) Name() string {
