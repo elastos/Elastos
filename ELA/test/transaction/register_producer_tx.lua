@@ -24,12 +24,13 @@ local deposit_url = "ela_test.org"
 local deposit_local = "112211"
 local deposit_host = "127.0.0.1"
 
--- register producer payload: publickey, nickname, url, local, host
-local pr_payload = registerproducer.new(deposit_publickey, deposit_nick_name, deposit_url, deposit_local, deposit_host)
-print(pr_payload:get())
+-- register producer payload: publickey, nickname, url, local, host, wallet
+local rp_payload = registerproducer.new(deposit_publickey, deposit_nick_name, deposit_url, deposit_local, deposit_host, wallet)
+print(rp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x09, 0, pr_payload, 0)
+local tx = transaction.new(9, 0x09, 0, rp_payload, 0)
+print(tx:get())
 
 -- input: from, amount + fee
 local charge = tx:appendenough(addr, (amount + fee) * 100000000)

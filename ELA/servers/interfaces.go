@@ -1117,10 +1117,12 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Url = object.Url
 		obj.Location = object.Location
 		obj.Address = object.Address
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
@@ -1131,6 +1133,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Url = object.Url
 		obj.Location = object.Location
 		obj.Address = object.Address
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}
 	return nil

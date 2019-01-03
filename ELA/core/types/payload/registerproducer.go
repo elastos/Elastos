@@ -36,7 +36,7 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 
 	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], SignedData serialize failed")
+		return errors.New("[PayloadRegisterProducer], Signature serialize failed")
 	}
 
 	return nil
@@ -75,7 +75,11 @@ func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	sig, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "signature")
+	sig, err := common.ReadVarBytes(r, crypto.SignatureLength, "signature")
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], Signature deserialize failed")
+	}
+
 	a.Signature = sig
 
 	return nil

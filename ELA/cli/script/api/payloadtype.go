@@ -1,12 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"os"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -125,6 +127,7 @@ func newUpdateProducer(L *lua.LState) int {
 	url := L.ToString(3)
 	location := L.ToInt64(4)
 	address := L.ToString(5)
+	client := checkClient(L, 6)
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -138,6 +141,25 @@ func newUpdateProducer(L *lua.LState) int {
 		Location:  uint64(location),
 		Address:   address,
 	}
+
+	upSignBuf := new(bytes.Buffer)
+	err = updateProducer.SerializeUnsigned(upSignBuf, payload.PayloadUpdateProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	updateProducer.Signature = rpSig
+
 	ud := L.NewUserData()
 	ud.Value = updateProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaUpdateProducerName))
@@ -184,6 +206,7 @@ func newRegisterProducer(L *lua.LState) int {
 	url := L.ToString(3)
 	location := L.ToInt64(4)
 	address := L.ToString(5)
+	client := checkClient(L, 6)
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -197,6 +220,25 @@ func newRegisterProducer(L *lua.LState) int {
 		Location:  uint64(location),
 		Address:   address,
 	}
+
+	rpSignBuf := new(bytes.Buffer)
+	err = registerProducer.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	registerProducer.Signature = rpSig
+
 	ud := L.NewUserData()
 	ud.Value = registerProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaRegisterProducerName))
@@ -240,6 +282,8 @@ func RegisterCancelProducerType(L *lua.LState) {
 // Constructor
 func newCancelProducer(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
+	client := checkClient(L, 2)
+
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
 		fmt.Println("wrong producer public key")
@@ -248,6 +292,25 @@ func newCancelProducer(L *lua.LState) int {
 	cancelProducer := &payload.PayloadCancelProducer{
 		PublicKey: []byte(publicKey),
 	}
+
+	cpSignBuf := new(bytes.Buffer)
+	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), cpSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	cancelProducer.Signature = rpSig
+
 	ud := L.NewUserData()
 	ud.Value = cancelProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCancelProducerName))
