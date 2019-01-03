@@ -188,6 +188,7 @@ type UTXOInfo struct {
 type SidechainIllegalDataInfo struct {
 	IllegalType         uint8
 	Height              uint32
+	IllegalSigner       string
 	Evidence            string
 	CompareEvidence     string
 	GenesisBlockAddress string
