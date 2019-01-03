@@ -100,11 +100,7 @@ func (cl *ClientImpl) Sign(txn *types.Transaction) (*types.Transaction, error) {
 
 func (cl *ClientImpl) signStandardTransaction(txn *types.Transaction) (*types.Transaction, error) {
 	code := txn.Programs[0].Code
-	codeHash, err := common.ToCodeHash(code)
-	if err != nil {
-		return nil, err
-	}
-	acct := cl.GetAccountByCodeHash(*codeHash)
+	acct := cl.GetAccountByCodeHash(*common.ToCodeHash(code))
 	if acct == nil {
 		return nil, errors.New("no available account in wallet to do single-sign")
 	}
@@ -170,11 +166,7 @@ func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
 	if err != nil {
 		return nil, errors.New("CreateStandardContractByPubKey failed")
 	}
-	codeHash, err := signatureContract.ToCodeHash()
-	if err != nil {
-		return nil, errors.New("ToCodeHash failed")
-	}
-	return cl.GetAccountByCodeHash(*codeHash), nil
+	return cl.GetAccountByCodeHash(*signatureContract.ToCodeHash()), nil
 }
 
 func (cl *ClientImpl) GetAccountByCodeHash(codeHash common.Uint160) *Account {
@@ -283,11 +275,7 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	defer cl.mu.Unlock()
 
 	// save Account to memory
-	codeHash, err := ac.Contract.ToCodeHash()
-	if err != nil {
-		return err
-	}
-	cl.accounts[*codeHash] = ac
+	cl.accounts[*ac.Contract.ToCodeHash()] = ac
 
 	decryptedPrivateKey := make([]byte, 96)
 	temp, err := ac.PublicKey.EncodePoint(false)

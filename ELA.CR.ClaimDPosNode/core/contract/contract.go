@@ -55,6 +55,6 @@ func (c *Contract) ToProgramHash() (*common.Uint168, error) {
 	return common.Uint168FromBytes(programBytes)
 }
 
-func (c *Contract) ToCodeHash() (*common.Uint160, error) {
+func (c *Contract) ToCodeHash() *common.Uint160 {
 	return common.ToCodeHash(c.Code)
 }

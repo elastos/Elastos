@@ -427,8 +427,7 @@ func TestSortPrograms(t *testing.T) {
 		p.Code = getInvalidCode()
 		programs = append(programs, p)
 	}
-	err := SortPrograms(programs)
-	assert.NoError(t, err)
+	SortPrograms(programs)
 
 	count := 100
 	hashes := make([]common.Uint168, 0, count)
