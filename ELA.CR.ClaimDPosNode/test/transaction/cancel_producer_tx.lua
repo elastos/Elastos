@@ -18,15 +18,15 @@ local fee = 0.001
 -- deposit params
 local deposit_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 
--- cancel producer payload: publickey, nickname, url, local, host
-local cp_payload = cancelproducer.new(deposit_publickey)
+-- cancel producer payload: publickey, wallet
+local cp_payload = cancelproducer.new(deposit_publickey, wallet)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
 local tx = transaction.new(9, 0x0a, 0, cp_payload, 0)
 
 -- input: from, amount + fee
-local charge = tx:appendenough(addr, (fee) * 100000000)
+local charge = tx:appendenough(addr, fee * 100000000)
 print(charge)
 
 -- outputpayload
