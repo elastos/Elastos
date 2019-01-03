@@ -27,6 +27,7 @@ type IllegalBehaviorMonitor interface {
 	AddProposalEvidence(evidence *types.DposIllegalProposals)
 	AddVoteEvidence(evidence *types.DposIllegalVotes)
 	AddBlockEvidence(evidence *types.DposIllegalBlocks)
+	AddSidechainEvidence(evidence *types.SidechainIllegalData)
 }
 
 type illegalBehaviorMonitor struct {
@@ -46,6 +47,10 @@ func (i *illegalBehaviorMonitor) AddProposalEvidence(evidence *types.DposIllegal
 }
 
 func (i *illegalBehaviorMonitor) AddVoteEvidence(evidence *types.DposIllegalVotes) {
+	i.evidenceCache.AddEvidence(evidence)
+}
+
+func (i *illegalBehaviorMonitor) AddSidechainEvidence(evidence *types.SidechainIllegalData) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 

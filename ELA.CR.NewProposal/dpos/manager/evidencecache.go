@@ -52,15 +52,19 @@ func (e *evidenceCache) tryGetEvidenceHash(tx *types.Transaction) (common.Uint25
 	switch tx.TxType {
 	case types.IllegalProposalEvidence:
 		proposalPayload := tx.Payload.(*types.PayloadIllegalProposal)
-		hash = proposalPayload.DposIllegalProposals.Hash()
+		hash = proposalPayload.Hash()
 		result = true
 	case types.IllegalVoteEvidence:
 		votePayload := tx.Payload.(*types.PayloadIllegalVote)
-		hash = votePayload.DposIllegalVotes.Hash()
+		hash = votePayload.Hash()
 		result = true
 	case types.IllegalBlockEvidence:
 		blockPayload := tx.Payload.(*types.PayloadIllegalBlock)
-		hash = blockPayload.DposIllegalBlocks.Hash()
+		hash = blockPayload.Hash()
+		result = true
+	case types.IllegalSidechainEvidence:
+		sidechainPayload := tx.Payload.(*types.PayloadSidechainIllegalData)
+		hash = sidechainPayload.Hash()
 		result = true
 	}
 
