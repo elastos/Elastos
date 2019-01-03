@@ -1,11 +1,11 @@
 package params
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"math/big"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 // These variables are the chain proof-of-work limit parameters for each default

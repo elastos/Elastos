@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 )
 
