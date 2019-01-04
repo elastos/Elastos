@@ -17,7 +17,9 @@ import (
 )
 
 const (
-	MinDepositAmount    = 5000
+	// MinDepositAmount is the minimum deposit as a producer.
+	MinDepositAmount = 5000
+	// DepositLockupBlocks indicates how many blocks need to wait when cancel producer was triggered, and can submit return deposit coin request.
 	DepositLockupBlocks = 2160
 	MaxStringLength     = 100
 )
@@ -733,7 +735,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 				return errors.New("deposit address does not match the public key in payload")
 			}
 			if output.Value < MinDepositAmount {
-				return errors.New("the deposit coin is insufficient")
+				return errors.New("producer deposit amount is insufficient")
 			}
 		}
 	}
