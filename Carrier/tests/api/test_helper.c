@@ -716,6 +716,17 @@ void test_filetransfer_scheme(TestContext *context, int (*do_work_cb)(TestContex
     ft_con_state_bits |= 1 << FileTransferConnection_connected;
     CU_ASSERT_EQUAL_FATAL(wctxt->ft_con_state_bits, ft_con_state_bits);
 
+    if (use_ft_info) {
+        char file_name[ELA_MAX_FILE_NAME_LEN + 1] = {0};
+        char file_id[ELA_MAX_FILE_ID_LEN + 1] = {0};
+        int size;
+
+        rc = read_ack("%64s %64s %d", file_name, file_id, &size);
+        CU_ASSERT_TRUE_FATAL(rc == 3);
+        CU_ASSERT_TRUE_FATAL(strcmp(file_name, wctxt->ft_info->filename) == 0);
+        CU_ASSERT_TRUE_FATAL(size == wctxt->ft_info->size);
+    }
+
     rc = do_work_cb ? do_work_cb(context) : 0;
     CU_ASSERT_EQUAL(rc, 0);
 

@@ -32,6 +32,16 @@
 #include "cond.h"
 #include "test_helper.h"
 
+struct CarrierContextExtra {
+    ElaFileTransferInfo ft_info;
+    bool has_ft_info;
+};
+
+static CarrierContextExtra extra = {
+    .ft_info = {0},
+    .has_ft_info = false
+};
+
 static inline void wakeup(void* context)
 {
     cond_signal(((CarrierContext *)context)->cond);
@@ -82,11 +92,13 @@ static void ft_connect_cb(ElaCarrier *carrier,
 {
     TestContext *wctx = (TestContext *)context;
     CarrierContext *ctx = wctx->carrier;
+    CarrierContextExtra *extra = ctx->extra;
     int rc;
 
-    ctx->ft = ela_filetransfer_new(ctx->carrier, address, fileinfo,
-                                   ctx->ft_cbs, context);
-    assert(ctx->ft);
+    if (fileinfo) {
+        extra->has_ft_info = true;
+        memcpy(&extra->ft_info, fileinfo, sizeof(ElaFileTransferInfo));
+    }
 
     cond_signal(ctx->ft_cond);
 }
@@ -132,7 +144,7 @@ static CarrierContext carrier_context = {
     .ready_cond = &ready_cond,
     .cond = &cond,
     .friend_status_cond = &friend_status_cond,
-    .extra = NULL
+    .extra = &extra
 };
 
 static void test_context_reset(TestContext *context)
@@ -169,6 +181,8 @@ static void test_filetransfer_connect_with_file_info()
 static void test_filetransfer_accept_connect()
 {
     CarrierContext *wctxt = test_context.carrier;
+    CarrierContextExtra *wextra = wctxt->extra;
+    ElaFileTransferInfo *ft_info;
     char userid[ELA_MAX_ID_LEN + 1] = {0};
     char cmd[32] = {0};
     char result[32] = {0};
@@ -211,6 +225,11 @@ static void test_filetransfer_accept_connect()
 
     // Wait for the ft_connect_cb to be invoked.
     cond_wait(wctxt->ft_cond);
+
+    ft_info = wextra->has_ft_info ? &wextra->ft_info : NULL;
+    wctxt->ft = ela_filetransfer_new(wctxt->carrier, robotid, ft_info,
+                                     wctxt->ft_cbs, &test_context);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(wctxt->ft);
 
     rc = ela_filetransfer_accept_connect(wctxt->ft);
     CU_ASSERT_EQUAL(rc, 0);
