@@ -495,31 +495,40 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
-	bHash, err := c.Get(append(prefix, hash.Bytes()...))
+	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
 
-	reader := bytes.NewReader(bHash)
+	r := bytes.NewReader(data)
 
 	// first 8 bytes is sys_fee
-	_, err = ReadUint64(reader)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deserialize block data
-	if err := b.FromTrimmedData(reader); err != nil {
+	if err := b.Header.Deserialize(r); err != nil {
 		return nil, err
 	}
 
-	// Deserialize transaction
-	for i, txn := range b.Transactions {
-		tmp, _, err := c.GetTransaction(txn.Hash())
+	//Transactions
+	count, err := ReadUint32(r)
+	if err != nil {
+		return nil, err
+	}
+	b.Transactions = make([]*Transaction, count)
+	for i := range b.Transactions {
+		var hash Uint256
+		if err := hash.Deserialize(r); err != nil {
+			return nil, err
+		}
+		tx, _, err := c.GetTransaction(hash)
 		if err != nil {
 			return nil, err
 		}
-		b.Transactions[i] = tmp
+		b.Transactions[i] = tx
 	}
 
 	return b, nil
@@ -698,23 +707,7 @@ func (c *ChainStore) GetHeight() uint32 {
 }
 
 func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
-	var b = new(Block)
-	prefix := []byte{byte(DATAHeader)}
-	blockData, err := c.Get(append(prefix, hash.Bytes()...))
-	if err != nil {
-		return false
-	}
-
-	r := bytes.NewReader(blockData)
-
-	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
-	if err != nil {
-		return false
-	}
-
-	// Deserialize block data
-	err = b.FromTrimmedData(r)
+	b, err := c.GetBlock(hash)
 	if err != nil {
 		return false
 	}
