@@ -632,7 +632,12 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 	}
 
 	//check address in outputs and payload
+	csAddresses := make(map[string]struct{}, 0)
 	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
+		if _, ok := csAddresses[payloadObj.CrossChainAddresses[i]]; ok {
+			return errors.New("duplicated cross chain address in payload")
+		}
+		csAddresses[payloadObj.CrossChainAddresses[i]] = struct{}{}
 		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{common.PrefixCrossChain}) != 0 {
 			return errors.New("Invalid transaction output address, without \"X\" at beginning")
 		}
