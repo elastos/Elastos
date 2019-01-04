@@ -970,6 +970,8 @@ func ListProducers(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i := start; i < limit && i < int64(len(ps)); i++ {
 		resultPs = append(resultPs, ps[i])
+	}
+	for i := 0; i < len(ps); i++ {
 		v, _ := common.StringToFixed64(ps[i].Votes)
 		totalVotes += *v
 	}
