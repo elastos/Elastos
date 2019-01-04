@@ -488,7 +488,7 @@ namespace Elastos {
 			payload.fromJson(payLoadJson);
 
 			ByteStream ostream;
-			payload.Serialize(ostream);
+			payload.Serialize(ostream, 0);
 			CMBlock payloadData = ostream.getBuffer();
 
 			nlohmann::json j;

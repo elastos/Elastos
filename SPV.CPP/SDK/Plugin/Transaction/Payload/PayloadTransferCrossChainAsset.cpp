@@ -13,6 +13,10 @@ namespace Elastos {
 
 		}
 
+		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(const PayloadTransferCrossChainAsset &payload) {
+			operator=(payload);
+		}
+
 		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(
 			const std::vector<std::string> &crossChainAddress,
 			const std::vector<uint64_t> &outputIndex,
@@ -65,7 +69,7 @@ namespace Elastos {
 			return _crossChainAmount;
 		}
 
-		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
+		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			if (_crossChainAddress.size() != _outputIndex.size() || _outputIndex.size() != _crossChainAmount.size()) {
 				Log::error("Invalid cross chain asset: len(crossChainAddress)={},"
 							" len(outputIndex)={}, len(crossChainAddress)={}", _crossChainAddress.size(),
@@ -82,7 +86,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
+		bool PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream, uint8_t version) {
 			uint64_t len = 0;
 			if (!istream.readVarUint(len)) {
 				Log::error("Payload transfer cross chain asset deserialize fail");
@@ -128,5 +132,25 @@ namespace Elastos {
 			_outputIndex = j["OutputIndex"].get<std::vector<uint64_t>>();
 			_crossChainAmount = j["CrossChainAmount"].get<std::vector<uint64_t >>();
 		}
+
+		IPayload &PayloadTransferCrossChainAsset::operator=(const IPayload &payload) {
+			try {
+				const PayloadTransferCrossChainAsset &payloadTransferCrossChainAsset = dynamic_cast<const PayloadTransferCrossChainAsset&>(payload);
+				operator=(payloadTransferCrossChainAsset);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadTransferCrossChainAsset");
+			}
+
+			return *this;
+		}
+
+		PayloadTransferCrossChainAsset &PayloadTransferCrossChainAsset::operator=(const PayloadTransferCrossChainAsset &payload) {
+			_crossChainAddress = payload._crossChainAddress;
+			_outputIndex = payload._outputIndex;
+			_crossChainAmount = payload._crossChainAmount;
+
+			return *this;
+		}
+
 	}
 }

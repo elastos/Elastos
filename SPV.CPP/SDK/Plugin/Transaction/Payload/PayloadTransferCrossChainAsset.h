@@ -17,6 +17,8 @@ namespace Elastos {
 		public:
 			PayloadTransferCrossChainAsset();
 
+			PayloadTransferCrossChainAsset(const PayloadTransferCrossChainAsset &payload);
+
 			PayloadTransferCrossChainAsset(
 				const std::vector<std::string> &crossChainAddress,
 				const std::vector<uint64_t> &outputIndex,
@@ -35,15 +37,19 @@ namespace Elastos {
 			const std::vector<uint64_t> &getCrossChainAmout() const;
 
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
 			virtual bool isValid() const;
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadTransferCrossChainAsset &operator=(const PayloadTransferCrossChainAsset &payload);
 
 		private:
 			std::vector<std::string> _crossChainAddress;

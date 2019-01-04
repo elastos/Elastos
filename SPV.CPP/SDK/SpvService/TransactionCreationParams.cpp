@@ -196,11 +196,11 @@ namespace Elastos {
 			_payload = payload;
 		}
 
-		const PayloadVoteProducer &VoteProducerTxParam::GetPayload() const {
+		const PayloadVote &VoteProducerTxParam::GetPayload() const {
 			return _payload;
 		}
 
-		void VoteProducerTxParam::SetPayload(const PayloadVoteProducer &payload) {
+		void VoteProducerTxParam::SetPayload(const PayloadVote &payload) {
 			_payload = payload;
 		}
 	}

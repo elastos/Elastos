@@ -14,12 +14,12 @@ TEST_CASE("Asset test", "[Asset]") {
 
 	srand(time(nullptr));
 
-	SECTION("Asset interface Test") {
+	SECTION("Asset serialize and deserialize test") {
 		Asset asset;
 
 		asset.setName(getRandString(50));
 		asset.setDescription(getRandString(80));
-		asset.setPrecision(rand());
+		asset.setPrecision(getRandUInt8());
 		asset.setAssetType(Asset::AssetType::Share);
 		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
 
@@ -43,7 +43,7 @@ TEST_CASE("Asset test", "[Asset]") {
 
 		asset.setName(getRandString(80));
 		asset.setDescription(getRandString(40));
-		asset.setPrecision(rand());
+		asset.setPrecision(getRandUInt8());
 		asset.setAssetType(Asset::AssetType::Share);
 		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
 
@@ -58,4 +58,23 @@ TEST_CASE("Asset test", "[Asset]") {
 		REQUIRE(asset1.getAssetType() == asset.getAssetType());
 		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
 	}
+
+	SECTION("operator= test") {
+		Asset a1, a2;
+
+		a1.setName(getRandString(100));
+		a1.setDescription(getRandString(70));
+		a1.setPrecision(getRandUInt8());
+		a1.setAssetType(Asset::AssetType::Token);
+		a1.setAssetRecordType(Asset::AssetRecordType::Unspent);
+
+		a2 = a1;
+
+		REQUIRE(a1.getName()            == a2.getName());
+		REQUIRE(a1.getDescription()     == a2.getDescription());
+		REQUIRE(a1.getPrecision()       == a2.getPrecision());
+		REQUIRE(a1.getAssetType()       == a2.getAssetType());
+		REQUIRE(a1.getAssetRecordType() == a2.getAssetRecordType());
+	}
+
 }

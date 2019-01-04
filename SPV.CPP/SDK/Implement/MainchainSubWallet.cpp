@@ -38,69 +38,79 @@ namespace Elastos {
 																	const nlohmann::json &sidechainIndices,
 																	const std::string &memo,
 																	const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, _info.getMinFee(), memo,
-												  remark, Asset::GetELAAssetID()));
-			txParam->setAssetId(Asset::GetELAAssetID());
-
 			ParamChecker::checkJsonArray(sidechainAccounts, 1, "Side chain accounts");
 			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");
 			ParamChecker::checkJsonArray(sidechainIndices, 1, "Side chain indices");
 
-			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string >>();
-			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t >>();
-			std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
+			PayloadPtr payload = nullptr;
+			try {
+				std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string >>();
+				std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
+				std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t >>();
 
-			ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
-										 Error::DepositParam, "Invalid deposit parameters of side chain");
+				ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
+											 Error::DepositParam, "Invalid deposit parameters of side chain");
 
-			DepositTxParam *withdrawTxParam = static_cast<DepositTxParam *>(txParam.get());
-			withdrawTxParam->setSidechainDatas(accounts, indexs, amounts);
-
-			//todo read main chain address from config
-			std::string mainchainAddress;
-			withdrawTxParam->setSidechainAddress(mainchainAddress);
-
-			TransactionPtr transaction = createTransaction(txParam.get());
-			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create tx error");
-
-			return transaction->toJson();
-		}
-
-		boost::shared_ptr<Transaction>
-		MainchainSubWallet::createTransaction(TxParam *param) const {
-			TransactionPtr ptr = nullptr;
-			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
-			RegisterProducerTxParam *registerProducerTxParam = dynamic_cast<RegisterProducerTxParam *>(param);
-			CancelProducerTxParam *cancelProducerTxParam = dynamic_cast<CancelProducerTxParam *>(param);
-			VoteProducerTxParam *voteProducerTxParam = dynamic_cast<VoteProducerTxParam *>(param);
-
-			if (depositTxParam == nullptr && registerProducerTxParam == nullptr && cancelProducerTxParam == nullptr &&
-				voteProducerTxParam == nullptr) {
-				ptr = SubWallet::createTransaction(param);
-			} else {
-				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress(),
-																	 param->getAssetId(), param->getRemark(),
-																	 param->getMemo());
-
-				if (!ptr) return nullptr;
-
-				ptr->setTransactionType(Transaction::TransferCrossChainAsset);
-				const std::vector<TransactionOutput> &outList = ptr->getOutputs();
-				std::for_each(outList.begin(), outList.end(),
-							  [&param](const TransactionOutput &output) {
-								  const_cast<TransactionOutput &>(output).setAssetId(param->getAssetId());
-							  });
-
-				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
-				payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
-																  depositTxParam->getCrossChainOutputIndexs(),
-																  depositTxParam->getCrosschainAmouts());
+				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
+			} catch (const nlohmann::detail::exception &e) {
+				ParamChecker::throwParamException(Error::JsonFormatError, "side chain message error: " + std::string(e.what()));
 			}
-			return ptr;
+
+			TransactionPtr tx = _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress,
+																 Asset::GetELAAssetID(), remark, memo);
+
+			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
+
+			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
+
+			return tx->toJson();
 		}
+
+		nlohmann::json
+		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &publicKeys) {
+			VoteProducerTxParam txParam;
+
+			ParamChecker::checkJsonArray(publicKeys, 1, "Candidates public keys");
+			ParamChecker::checkParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
+
+			std::vector<CMBlock> candidates;
+			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
+				if (!(*it).is_string()) {
+					ParamChecker::throwParamException(Error::Code::JsonFormatError, "Vote produce public keys is not string");
+				}
+
+				candidates.push_back(Utils::decodeHex((*it).get<std::string>()));
+			}
+			PayloadPtr payload = PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates));
+
+			TransactionPtr tx = _walletManager->getWallet()->createTransaction("", stake, CreateAddress(),
+																			   Asset::GetELAAssetID(), "", "");
+
+			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
+
+			tx->setVersion(Transaction::TxVersion::V09);
+			tx->setTransactionType(Transaction::TransferAsset);
+			std::vector<TransactionOutput> &outputs = tx->getOutputs();
+			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
+			outputs[0].SetPayload(payload);
+
+			return tx->toJson();
+		}
+
+		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
+			return nlohmann::json();
+		}
+
+		nlohmann::json MainchainSubWallet::ExportProducerKeystore(const std::string &backupPasswd,
+																  const std::string &payPasswd) const {
+			return nlohmann::json();
+		}
+
+		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
+			return nlohmann::json();
+		}
+
+
 
 		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			if (transaction->getTransactionType() == Transaction::TransferCrossChainAsset) {
@@ -123,32 +133,6 @@ namespace Elastos {
 			j["Type"] = "Mainchain";
 			j["Account"] = _subAccount->GetBasicInfo();
 			return j;
-		}
-
-		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &pubicKeys) {
-			VoteProducerTxParam txParam;
-			txParam.setFromAddress("");
-			txParam.setToAddress(CreateAddress());
-
-			PayloadVoteProducer payload;
-			payload.SetVoter(_subAccount->GetMainAccountPublicKey());
-			payload.SetStake(stake);
-			std::vector<std::string> keys;
-			for (nlohmann::json::const_iterator it = pubicKeys.cbegin(); it != pubicKeys.cend(); ++it) {
-				keys.push_back(it->get<std::string>());
-			}
-			payload.SetPublicKeys(keys);
-			txParam.SetPayload(payload);
-
-			TransactionPtr transaction = createTransaction(&txParam);
-			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create tx error");
-
-			return transaction->toJson();
-		}
-
-		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
-			return nlohmann::json();
 		}
 
 	}

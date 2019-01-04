@@ -181,17 +181,11 @@ namespace Elastos {
 		boost::shared_ptr<Transaction>
 		SubWallet::createTransaction(TxParam *param) const {
 			TransactionPtr ptr = _walletManager->getWallet()->
-					createTransaction(param->getFromAddress(), std::max(param->getFee(), _info.getMinFee()),
-									  param->getAmount(), param->getToAddress(), param->getAssetId(),
-									  param->getRemark(), param->getMemo());
+					createTransaction(param->getFromAddress(), param->getAmount(), param->getToAddress(),
+									  param->getAssetId(), param->getRemark(), param->getMemo());
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(Transaction::TransferAsset);
-			std::vector<TransactionOutput> &outList = ptr->getOutputs();
-			std::for_each(outList.begin(), outList.end(),
-						  [&param](TransactionOutput &output) {
-							  output.setAssetId(param->getAssetId());
-						  });
 
 			return ptr;
 		}

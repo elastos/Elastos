@@ -10,24 +10,28 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadIssueToken :
+		class PayloadRechargeToSideChain :
 				public IPayload {
 		public:
-			PayloadIssueToken();
+			PayloadRechargeToSideChain();
 
-			PayloadIssueToken(const CMBlock &merkeProff, const CMBlock &mainChainTransaction);
+			PayloadRechargeToSideChain(const CMBlock &merkeProff, const CMBlock &mainChainTransaction);
 
-			~PayloadIssueToken();
+			PayloadRechargeToSideChain(const PayloadRechargeToSideChain &payload);
 
-			virtual CMBlock getData() const;
+			~PayloadRechargeToSideChain();
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadRechargeToSideChain &operator=(const PayloadRechargeToSideChain &payload);
 
 		private:
 			CMBlock _merkeProof;

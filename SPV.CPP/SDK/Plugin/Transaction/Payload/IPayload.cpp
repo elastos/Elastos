@@ -11,9 +11,9 @@ namespace Elastos {
 
 		}
 
-		CMBlock IPayload::getData() const {
+		CMBlock IPayload::getData(uint8_t version) const {
 			ByteStream stream;
-			Serialize(stream);
+			Serialize(stream, version);
 
 			return stream.getBuffer();
 		}
@@ -21,5 +21,6 @@ namespace Elastos {
 		bool IPayload::isValid() const {
 			return true;
 		}
+
 	}
 }

@@ -25,7 +25,7 @@ TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 
 	SECTION("transaction Serialize test") {
 		Transaction tx1;
-		initTransaction(tx1);
+		initTransaction(tx1, Transaction::TxVersion::Default);
 
 		ByteStream stream;
 		tx1.Serialize(stream);
@@ -48,6 +48,8 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 	SECTION("to and from json") {
 		Transaction tx1;
+
+		initTransaction(tx1, Transaction::TxVersion::V09);
 
 		nlohmann::json txJson = tx1.toJson();
 

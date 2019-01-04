@@ -23,6 +23,10 @@ namespace Elastos {
 			_recordData = recordData;
 		}
 
+		PayloadRecord::PayloadRecord(const PayloadRecord &payload) {
+			operator=(payload);
+		}
+
 		PayloadRecord::~PayloadRecord() {
 		}
 
@@ -42,19 +46,12 @@ namespace Elastos {
 			return _recordData;
 		}
 
-		CMBlock PayloadRecord::getData() const {
-			ByteStream stream;
-			Serialize(stream);
-
-			return stream.getBuffer();
-		}
-
-		void PayloadRecord::Serialize(ByteStream &ostream) const {
+		void PayloadRecord::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.writeVarString(_recordType);
 			ostream.writeVarBytes(_recordData);
 		}
 
-		bool PayloadRecord::Deserialize(ByteStream &istream) {
+		bool PayloadRecord::Deserialize(ByteStream &istream, uint8_t version) {
 			if (!istream.readVarString(_recordType)) {
 				Log::error("Payload record deserialize type fail");
 				return false;
@@ -81,5 +78,24 @@ namespace Elastos {
 			_recordType = j["RecordType"].get<std::string>();
 			_recordData = Utils::decodeHex(j["RecordData"].get<std::string>());
 		}
+
+		IPayload &PayloadRecord::operator=(const IPayload &payload) {
+			try {
+				const PayloadRecord &payloadRecord = dynamic_cast<const PayloadRecord &>(payload);
+				operator=(payloadRecord);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadRecord");
+			}
+
+			return *this;
+		}
+
+		PayloadRecord &PayloadRecord::operator=(const PayloadRecord &payload) {
+			_recordData.Memcpy(payload._recordData);
+			_recordType = payload._recordType;
+
+			return *this;
+		}
+
 	}
 }

@@ -218,22 +218,6 @@ namespace Elastos {
 			writeBytes(bytes, bytes.GetSize());
 		}
 
-		bool ByteStream::readVarUint(uint64_t &value) {
-			size_t len = 0;
-			value = BRVarInt(&_buf[_pos], 9, &len);
-			return readBytes(nullptr, len);
-		}
-
-		void ByteStream::writeVarUint(uint64_t value) {
-			size_t len = BRVarIntSet(nullptr, 0, value);
-
-			ensureCapacity(position() + len);
-			BRVarIntSet(&_buf[position()], len, value);
-
-			increasePosition(len);
-			_count = position();
-		}
-
 		bool ByteStream::readVarString(char *str, size_t strSize) {
 			CMBlock bytes;
 			if (!readVarBytes(bytes)) {

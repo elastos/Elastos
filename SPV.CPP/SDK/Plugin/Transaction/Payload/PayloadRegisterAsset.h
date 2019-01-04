@@ -17,6 +17,8 @@ namespace Elastos {
 		public:
 			PayloadRegisterAsset();
 
+			PayloadRegisterAsset(const PayloadRegisterAsset &payload);
+
 			~PayloadRegisterAsset();
 
 			void setAsset(const Asset &asset);
@@ -31,17 +33,19 @@ namespace Elastos {
 
 			const UInt168 &getController() const;
 
-			virtual CMBlock getData() const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual void Serialize(ByteStream &ostream) const;
-
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
 			virtual bool isValid() const;
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadRegisterAsset &operator=(const PayloadRegisterAsset &payload);
 
 		private:
 			Asset _asset;

@@ -32,10 +32,10 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
 		ByteStream stream;
 
-		p1.Serialize(stream);
+		p1.Serialize(stream, 0);
 
 		stream.setPosition(0);
-		REQUIRE(p2.Deserialize(stream));
+		REQUIRE(p2.Deserialize(stream, 0));
 
 		Asset asset1 = p1.getAsset();
 		Asset asset2 = p2.getAsset();

@@ -6,6 +6,8 @@
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <SDK/Plugin/Transaction/Asset.h>
 #include <Core/BRInt.h>
 
 #include <boost/shared_ptr.hpp>
@@ -19,13 +21,21 @@ namespace Elastos {
 				public ELAMessageSerializable {
 
 		public:
+			enum Type {
+				Default    = 0x00,
+				VoteOutput = 0x01,
+			};
+
+		public:
 			TransactionOutput();
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const std::string &toAddress);
+			TransactionOutput(uint64_t amount, const std::string &toAddress, const UInt256 &assetID = Asset::GetELAAssetID(),
+							  Type type = Default, const PayloadPtr &payload = nullptr);
 
-			TransactionOutput(uint64_t amount, const UInt168 &programHash);
+			TransactionOutput(uint64_t amount, const UInt168 &programHash, const UInt256 &assetID = Asset::GetELAAssetID(),
+							  Type type = Default, const PayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
 
@@ -33,7 +43,9 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			size_t getSize() const;
+			void Serialize(ByteStream &ostream, uint8_t txVersion) const;
+
+			bool Deserialize(ByteStream &istream, uint8_t txVersion);
 
 			std::string getAddress() const;
 
@@ -53,9 +65,27 @@ namespace Elastos {
 
 			void setProgramHash(const UInt168 &hash);
 
+			const Type &GetType() const;
+
+			void SetType(const Type &type);
+
+			const uint8_t &GetPayloadVersion() const;
+
+			void SetPayloadVersion(const uint8_t &payloadVersion);
+
+			const PayloadPtr &GetPayload() const;
+
+			PayloadPtr &GetPayload();
+
+			void SetPayload(const PayloadPtr &payload);
+
 			virtual nlohmann::json toJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void fromJson(const nlohmann::json &j);
+
+			nlohmann::json toJson(uint8_t txVersion) const;
+
+			void fromJson(const nlohmann::json &j, uint8_t txVersion);
 
 			size_t GetSize() const;
 
@@ -64,6 +94,11 @@ namespace Elastos {
 			UInt256 _assetId;
 			uint32_t _outputLock;
 			UInt168 _programHash;
+
+			Type _outputType;
+
+			uint8_t _payloadVersion;
+			PayloadPtr _payload;
 		};
 
 		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;

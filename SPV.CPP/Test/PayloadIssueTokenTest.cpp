@@ -7,24 +7,24 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 
-#include <SDK/Plugin/Transaction/Payload/PayloadIssueToken.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
+TEST_CASE("PayloadRechargeToSideChain test", "[PayloadRechargeToSideChain]") {
 	CMBlock merkleProof = getRandCMBlock(50);
 	CMBlock mainChainTx = getRandCMBlock(100);
 
-	PayloadIssueToken issueToken(merkleProof, mainChainTx);
+	PayloadRechargeToSideChain p1(merkleProof, mainChainTx);
 	ByteStream stream;
-	issueToken.Serialize(stream);
+	p1.Serialize(stream, 0);
 	stream.setPosition(0);
-	PayloadIssueToken issueToken1;
-	REQUIRE(issueToken1.Deserialize(stream));
+	PayloadRechargeToSideChain p2;
+	REQUIRE(p2.Deserialize(stream, 0));
 
-	CMBlock data = issueToken.getData();
-	CMBlock data1 = issueToken1.getData();
+	CMBlock data1 = p1.getData(0);
+	CMBlock data2 = p2.getData(0);
 
-	REQUIRE(data.GetSize() == data1.GetSize());
-	REQUIRE(0 == memcmp(data, data1, data.GetSize()));
+	REQUIRE(data1.GetSize() == data2.GetSize());
+	REQUIRE(0 == memcmp(data1, data2, data1.GetSize()));
 }

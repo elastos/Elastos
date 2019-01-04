@@ -29,6 +29,8 @@ namespace Elastos {
 		public:
 			PayloadRegisterIdentification();
 
+			PayloadRegisterIdentification(const PayloadRegisterIdentification &payload);
+
 			~PayloadRegisterIdentification();
 
 			const std::string &getId() const;
@@ -57,15 +59,19 @@ namespace Elastos {
 
 			void setSign(const CMBlock &sign);
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &);
 
 			virtual bool isValid() const;
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadRegisterIdentification &operator=(const PayloadRegisterIdentification &payload);
 
 		private:
 			std::string _id;

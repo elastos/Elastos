@@ -270,6 +270,11 @@ public:
 		nullptr != pValue ? pValue->Reverse() : 0;
 	}
 
+	void Memcpy(const CMemBlock &src) {
+		Resize(src.GetSize());
+		memcpy(pValue->data, src.pValue->data, src.GetSize());
+	}
+
 	operator bool() const {
 		return nullptr != pValue ? pValue->data ? true : false : false;
 	};

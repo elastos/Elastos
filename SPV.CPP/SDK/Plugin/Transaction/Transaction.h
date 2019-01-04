@@ -26,18 +26,34 @@ namespace Elastos {
 				public ELAMessageSerializable {
 		public:
 			enum Type {
-				CoinBase = 0x00,
-				RegisterAsset = 0x01,
-				TransferAsset = 0x02,
-				Record = 0x03,
-				Deploy = 0x04,
-				SideMining = 0x05,
-				IssueToken = 0x06,
-				WithdrawAsset = 0x07,
+				CoinBase                = 0x00,
+				RegisterAsset           = 0x01,
+				TransferAsset           = 0x02,
+				Record                  = 0x03,
+				Deploy                  = 0x04,
+				SideChainPow            = 0x05,
+				RechargeToSideChain     = 0x06,
+				WithdrawFromSideChain   = 0x07,
 				TransferCrossChainAsset = 0x08,
-				RegisterIdentification = 0x09,
+
+				RegisterProducer        = 0x09,
+				CancelProducer          = 0x0a,
+				UpdateProducer          = 0x0b,
+				ReturnDepositCoin       = 0x0c,
+
+				IllegalProposalEvidence = 0x0d,
+				IllegalVoteEvidence     = 0x0e,
+				IllegalBlockEvidence    = 0x0f,
+
+				RegisterIdentification  = 0xFF,
 				TypeMaxCount
 			};
+
+			enum TxVersion {
+				Default = 0x00,
+				V09 = 0x09,
+			};
+
 		public:
 			Transaction();
 
@@ -63,9 +79,9 @@ namespace Elastos {
 
 			void resetHash();
 
-			uint32_t getVersion() const;
+			const TxVersion &getVersion() const;
 
-			void setVersion(uint32_t version);
+			void setVersion(const TxVersion &version);
 
 			const std::vector<TransactionOutput> &getOutputs() const;
 
@@ -77,7 +93,7 @@ namespace Elastos {
 
 			std::vector<std::string> getOutputAddresses();
 
-			void setTransactionType(Type type);
+			void setTransactionType(Type type, const PayloadPtr &payload = nullptr);
 
 			Type getTransactionType() const;
 
@@ -116,6 +132,8 @@ namespace Elastos {
 			const IPayload *getPayload() const;
 
 			IPayload *getPayload();
+
+			void SetPayload(const PayloadPtr &payload);
 
 			void addAttribute(const Attribute &attribute);
 
@@ -172,11 +190,11 @@ namespace Elastos {
 			mutable UInt256 _txHash;
 			std::string _assetTableID;
 
-			uint32_t _version;
+			TxVersion _version; // uint8_t
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
 			uint32_t _timestamp; // time interval since unix epoch
-			Type _type;
+			Type _type; // uint8_t
 			uint8_t _payloadVersion;
 			uint64_t _fee;
 			PayloadPtr _payload;

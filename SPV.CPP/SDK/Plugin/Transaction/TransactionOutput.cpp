@@ -9,11 +9,13 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Crypto/Key.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <Core/BRTransaction.h>
 
 #include <iostream>
 #include <cstring>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,7 +24,10 @@ namespace Elastos {
 				_assetId(UINT256_ZERO),
 				_amount(0),
 				_outputLock(0),
-				_programHash(UINT168_ZERO) {
+				_programHash(UINT168_ZERO),
+				_outputType(Type::Default),
+				_payloadVersion(0),
+				_payload(nullptr) {
 		}
 
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
@@ -30,20 +35,36 @@ namespace Elastos {
 			_assetId = output.getAssetId();
 			_programHash = output.getProgramHash();
 			_outputLock = output.getOutputLock();
+			_outputType = output.GetType();
+			_payloadVersion = output.GetPayloadVersion();
+			if (_outputType == VoteOutput) {
+				_payload = PayloadPtr(new PayloadVote());
+				*_payload = *output.GetPayload();
+			} else {
+				_payload = nullptr;
+			}
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const std::string &addr) :
+		TransactionOutput::TransactionOutput(uint64_t a, const std::string &addr, const UInt256 &assetID,
+											 Type type, const PayloadPtr &payload) :
 			_amount(a),
-			_outputLock(0) {
-			_assetId = Asset::GetELAAssetID();
+			_outputLock(0),
+			_outputType(type),
+			_payloadVersion(0) {
+			_assetId = assetID;
 			Utils::UInt168FromAddress(_programHash, addr);
+			_payload = payload;
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash) :
+		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash, const UInt256 &assetID,
+											 Type type, const PayloadPtr &payload) :
 			_amount(a),
-			_outputLock(0) {
-			_assetId = Asset::GetELAAssetID();
-			memcpy(_programHash.u8, programHash.u8, sizeof(_programHash.u8));
+			_outputLock(0),
+			_outputType(type),
+			_payloadVersion(0) {
+			_assetId = assetID;
+			_programHash = programHash;
+			_payload = payload;
 		}
 
 		TransactionOutput::~TransactionOutput() {
@@ -59,12 +80,6 @@ namespace Elastos {
 
 		void TransactionOutput::setAmount(uint64_t a) {
 			_amount = a;
-		}
-
-		size_t TransactionOutput::getSize() const {
-			ByteStream stream;
-			Serialize(stream);
-			return stream.getBuffer().GetSize();
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
@@ -98,6 +113,46 @@ namespace Elastos {
 			return true;
 		}
 
+		void TransactionOutput::Serialize(ByteStream &ostream, uint8_t txVersion) const {
+			Serialize(ostream);
+
+			if (txVersion >= Transaction::TxVersion::V09) {
+				ostream.writeUint8(_outputType);
+				ostream.writeUint8(_payloadVersion);
+				_payload->Serialize(ostream, _payloadVersion);
+			}
+		}
+
+		bool TransactionOutput::Deserialize(ByteStream &istream, uint8_t txVersion) {
+			if (!Deserialize(istream)) {
+				Log::error("tx output deserialize default part error");
+				return false;
+			}
+
+			if (txVersion >= Transaction::TxVersion::V09) {
+				uint8_t outputType = 0;
+				if (!istream.readUint8(outputType)) {
+					Log::error("tx output deserialize output type error");
+					return false;
+				}
+				_outputType = static_cast<Type>(outputType);
+
+				if (!istream.readUint8(_payloadVersion)) {
+					Log::error("tx output deserialize payload version error");
+					return false;
+				}
+
+				_payload = PayloadPtr(new PayloadVote());
+
+				if (!_payload->Deserialize(istream, _payloadVersion)) {
+					Log::error("tx output deserialize payload error");
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		const UInt256 &TransactionOutput::getAssetId() const {
 			return _assetId;
 		}
@@ -122,21 +177,74 @@ namespace Elastos {
 			_programHash = hash;
 		}
 
-		nlohmann::json TransactionOutput::toJson() const {
-			nlohmann::json jsonData;
-
-			jsonData["Amount"] = _amount;
-			jsonData["AssetId"] = Utils::UInt256ToString(_assetId, true);
-			jsonData["OutputLock"] = _outputLock;
-			jsonData["ProgramHash"] = Utils::UInt168ToString(_programHash);
-			return jsonData;
+		const TransactionOutput::Type &TransactionOutput::GetType() const {
+			return _outputType;
 		}
 
-		void TransactionOutput::fromJson(const nlohmann::json &jsonData) {
-			_amount = jsonData["Amount"].get<uint64_t>();
-			_assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>(), true);
-			_outputLock = jsonData["OutputLock"].get<uint32_t>();
-			_programHash = Utils::UInt168FromString(jsonData["ProgramHash"].get<std::string>());
+		void TransactionOutput::SetType(const Type &type) {
+			_outputType = type;
+		}
+
+		const uint8_t &TransactionOutput::GetPayloadVersion() const {
+			return _payloadVersion;
+		}
+
+		void TransactionOutput::SetPayloadVersion(const uint8_t &payloadVersion) {
+			_payloadVersion = payloadVersion;
+		}
+
+		const PayloadPtr &TransactionOutput::GetPayload() const {
+			return _payload;
+		}
+
+		PayloadPtr &TransactionOutput::GetPayload() {
+			return _payload;
+		}
+
+		void TransactionOutput::SetPayload(const PayloadPtr &payload) {
+			_payload = payload;
+		}
+
+		nlohmann::json TransactionOutput::toJson() const {
+			nlohmann::json j;
+
+			j["Amount"] = _amount;
+			j["AssetId"] = Utils::UInt256ToString(_assetId, true);
+			j["OutputLock"] = _outputLock;
+			j["ProgramHash"] = Utils::UInt168ToString(_programHash);
+			return j;
+		}
+
+		void TransactionOutput::fromJson(const nlohmann::json &j) {
+			_amount = j["Amount"].get<uint64_t>();
+			_assetId = Utils::UInt256FromString(j["AssetId"].get<std::string>(), true);
+			_outputLock = j["OutputLock"].get<uint32_t>();
+			_programHash = Utils::UInt168FromString(j["ProgramHash"].get<std::string>());
+		}
+
+		nlohmann::json TransactionOutput::toJson(uint8_t txVersion) const {
+			nlohmann::json j = toJson();
+
+			if (txVersion >= Transaction::TxVersion::V09) {
+				j["OutputType"] = _outputType;
+				j["PayloadVersion"] = _payloadVersion;
+				j["Payload"] = _payload->toJson();
+			}
+
+			return j;
+		}
+
+		void TransactionOutput::fromJson(const nlohmann::json &j, uint8_t txVersion) {
+			fromJson(j);
+
+			if (txVersion >= Transaction::TxVersion::V09) {
+				_outputType = j["OutputType"];
+				_payloadVersion = j["PayloadVersion"];
+
+				_payload = PayloadPtr(new PayloadVote());
+
+				_payload->fromJson(j["Payload"]);
+			}
 		}
 
 		size_t TransactionOutput::GetSize() const {

@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_BYTESTREAM_H__
 
 #include "CMemBlock.h"
+#include <Core/BRAddress.h>
 
 #include <iostream>
 #include <stdint.h>
@@ -79,9 +80,25 @@ namespace Elastos {
 
 			void writeVarBytes(const CMBlock &bytes);
 
-			bool readVarUint(uint64_t &value);
+			template <class T>
+			bool readVarUint(T &value) {
+				size_t len = 0;
+				uint64_t ui;
+				ui = BRVarInt(&_buf[_pos], 9, &len);
+				value = ui;
+				return readBytes(nullptr, len);
+			}
 
-			void writeVarUint(uint64_t value);
+			template <class T>
+			void writeVarUint(const T &value) {
+				size_t len = BRVarIntSet(nullptr, 0, value);
+
+				ensureCapacity(position() + len);
+				BRVarIntSet(&_buf[position()], len, value);
+
+				increasePosition(len);
+				_count = position();
+			}
 
 			bool readVarString(char *str, size_t strSize);
 

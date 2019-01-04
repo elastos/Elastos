@@ -51,7 +51,9 @@ namespace Elastos {
 				Sign,
 				KeyStoreNeedPhrasePassword,
 				BalanceNotEnough,
-				Other,
+				JsonFormatError,
+				VoteStakeError,
+				Other = 29999,
 			} Code;
 		}
 
@@ -69,7 +71,13 @@ namespace Elastos {
 
 			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg, uint64_t data);
 
+			static void throwParamException(Error::Code err, const std::string &msg);
+
+			static void throwLogicException(Error::Code err, const std::string &msg);
+
 			static void checkParam(bool condition, Error::Code err, const std::string &msg);
+
+			static void checkLogic(bool condition, Error::Code err, const std::string &msg);
 
 			static void checkCondition(bool condition, Error::Code err, const std::string &msg,
 									   Exception::Type type = Exception::LogicError);

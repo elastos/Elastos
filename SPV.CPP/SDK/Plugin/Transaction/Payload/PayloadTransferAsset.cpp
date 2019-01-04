@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PayloadTransferAsset.h"
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -11,30 +12,44 @@ namespace Elastos {
 
 		}
 
+		PayloadTransferAsset::PayloadTransferAsset(const PayloadTransferAsset &payload) {
+			operator=(payload);
+		}
+
 		PayloadTransferAsset::~PayloadTransferAsset() {
 
 		}
 
-		CMBlock PayloadTransferAsset::getData() const {
-			//todo implement IPayload getData
-			return CMBlock();
-		}
-
-		void PayloadTransferAsset::Serialize(ByteStream &ostream) const {
+		void PayloadTransferAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 
 		}
 
-		bool PayloadTransferAsset::Deserialize(ByteStream &istream) {
+		bool PayloadTransferAsset::Deserialize(ByteStream &istream, uint8_t version) {
 			return true;
 		}
 
 		nlohmann::json PayloadTransferAsset::toJson() const {
-			nlohmann::json jsonData;
-			return jsonData;
+			return nlohmann::json ();
 		}
 
 		void PayloadTransferAsset::fromJson(const nlohmann::json &jsonData) {
 
 		}
+
+		IPayload &PayloadTransferAsset::operator=(const IPayload &payload) {
+			try {
+				const PayloadTransferAsset &payloadTransferAsset = dynamic_cast<const PayloadTransferAsset&>(payload);
+				operator=(payloadTransferAsset);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadTransferAsset");
+			}
+
+			return *this;
+		}
+
+		PayloadTransferAsset &PayloadTransferAsset::operator=(const PayloadTransferAsset &payload) {
+			return *this;
+		}
+
 	}
 }

@@ -19,7 +19,7 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 	srand((unsigned int)time(nullptr));
 
 	SECTION("Serialize and deserialize") {
-		IdAuxPow idAuxPow;
+		IdAuxPow ap1;
 
 		std::vector<UInt256> hashes;
 		hashes.resize(20);
@@ -27,54 +27,58 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 			hashes[i] = getRandUInt256();
 		}
 
-		idAuxPow.setIdAuxMerkleBranch(hashes);
-		idAuxPow.setIdAuxMerkleIndex(rand());
+		ap1.setIdAuxMerkleBranch(hashes);
+		ap1.setIdAuxMerkleIndex(getRandUInt32());
 
 		Transaction tx;
-		initTransaction(tx);
+		initTransaction(tx, Transaction::TxVersion::V09);
 
-		idAuxPow.setIdAuxBlockTx(tx);
-//
-//		ELAMerkleBlock *block = ELAMerkleBlockNew();
-//		block->raw.blockHash = getRandUInt256();
-//		block->raw.version = rand();
-//		block->raw.prevBlock = getRandUInt256();
-//		block->raw.merkleRoot = getRandUInt256();
-//		block->raw.timestamp = rand();
-//		block->raw.target = rand();
-//		block->raw.nonce = rand();
-//		block->raw.totalTx = rand();
-//		block->raw.hashesCount = 10;
-//		hashes.resize(block->raw.hashesCount);
-//		for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-//			hashes[i] = getRandUInt256();
-//		}
-//		CMBlock flags = getRandCMBlock(5);
-//		BRMerkleBlockSetTxHashes(&block->raw, hashes.data(), hashes.size(), flags, flags.GetSize());
-//		idAuxPow.setMainBlockHeader(block);
-//
-//		ByteStream stream;
-//		idAuxPow.Serialize(stream);
+		ap1.setIdAuxBlockTx(tx);
 
-//		SPDLOG_DEBUG(Log::getLogger(),"idAuxPow serialization = {}", Utils::encodeHex(stream.getBuffer()));
+		ELAMerkleBlock *block = ELAMerkleBlockNew();
+		block->raw.blockHash = getRandUInt256();
+		block->raw.version = getRandUInt32();
+		block->raw.prevBlock = getRandUInt256();
+		block->raw.merkleRoot = getRandUInt256();
+		block->raw.timestamp = getRandUInt32();
+		block->raw.target = getRandUInt32();
+		block->raw.nonce = getRandUInt32();
+		block->raw.totalTx = getRandUInt32();
+		block->raw.hashesCount = 10;
+		hashes.resize(block->raw.hashesCount);
+		for (size_t i = 0; i < block->raw.hashesCount; ++i) {
+			hashes[i] = getRandUInt256();
+		}
+		CMBlock flags = getRandCMBlock(5);
+		BRMerkleBlockSetTxHashes(&block->raw, hashes.data(), hashes.size(), flags, flags.GetSize());
+		ap1.setMainBlockHeader(block);
 
-		// verify
-//		IdAuxPow idAuxPowVerify;
-//		stream.setPosition(0);
-//		REQUIRE(idAuxPowVerify.Deserialize(stream));
-//
-//		hashes = idAuxPow.getIdAuxMerkleBranch();
-//		const std::vector<UInt256> hashesV = idAuxPowVerify.getIdAuxMerkleBranch();
-//		REQUIRE(hashes.size() == hashesV.size());
-//		for (size_t i = 0; i < hashes.size(); ++i) {
-//			REQUIRE(UInt256Eq(&hashes[i], &hashesV[i]));
-//		}
-//
-//		ELAMerkleBlock *b1 = idAuxPow.getMainBlockHeader();
-//		ELAMerkleBlock *b2 = idAuxPowVerify.getMainBlockHeader();
-//
-//		REQUIRE(b1->auxPow.getParBlockHeader()->nonce == b2->auxPow.getParBlockHeader()->nonce);
-//		REQUIRE(b1->auxPow.getParBlockHeader()->target == b2->auxPow.getParBlockHeader()->target);
+		ByteStream stream;
+		ap1.Serialize(stream);
+
+
+//		 verify
+		IdAuxPow ap2;
+		stream.setPosition(0);
+		REQUIRE(ap2.Deserialize(stream));
+
+		const std::vector<UInt256> &hashes1 = ap1.getIdAuxMerkleBranch();
+		const std::vector<UInt256> &hashes2 = ap2.getIdAuxMerkleBranch();
+		REQUIRE(hashes1.size() == hashes2.size());
+		for (size_t i = 0; i < hashes1.size(); ++i) {
+			REQUIRE(UInt256Eq(&hashes1[i], &hashes2[i]));
+		}
+
+		ELAMerkleBlock *b1 = ap1.getMainBlockHeader();
+		ELAMerkleBlock *b2 = ap2.getMainBlockHeader();
+
+		REQUIRE(b1->auxPow.getParBlockHeader()->nonce == b2->auxPow.getParBlockHeader()->nonce);
+		REQUIRE(b1->auxPow.getParBlockHeader()->target == b2->auxPow.getParBlockHeader()->target);
+
+		const Transaction &tx1 = ap1.getIdAuxBlockTx();
+		const Transaction &tx2 = ap2.getIdAuxBlockTx();
+
+		verifyTransaction(tx1, tx2, false);
 	}
 
 	SECTION("to and from json") {

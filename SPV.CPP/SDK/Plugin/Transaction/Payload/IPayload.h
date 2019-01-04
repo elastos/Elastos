@@ -13,14 +13,21 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IPayload :
-				public ELAMessageSerializable {
+		class IPayload {
 		public:
 			virtual ~IPayload();
 
-			virtual CMBlock getData() const;
+			virtual CMBlock getData(uint8_t versin) const;
+
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const = 0;
+			virtual bool Deserialize(ByteStream &istream, uint8_t version) = 0;
+
+			virtual nlohmann::json toJson() const = 0;
+			virtual void fromJson(const nlohmann::json &) = 0;
 
 			virtual bool isValid() const;
+
+			virtual IPayload &operator=(const IPayload &payload) = 0;
 		};
 
 		typedef boost::shared_ptr<IPayload> PayloadPtr;

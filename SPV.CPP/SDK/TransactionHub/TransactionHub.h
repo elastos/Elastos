@@ -99,7 +99,7 @@ namespace Elastos {
 			uint64_t getDefaultFeePerKb();
 
 			TransactionPtr
-			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+			createTransaction(const std::string &fromAddress, uint64_t amount,
 							  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
 							  const std::string &memo);
 

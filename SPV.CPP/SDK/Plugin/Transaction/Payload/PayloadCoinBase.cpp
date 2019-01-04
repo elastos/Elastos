@@ -4,8 +4,10 @@
 
 #include "PayloadCoinBase.h"
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 
 #include <Core/BRInt.h>
+
 #include <cstring>
 
 namespace Elastos {
@@ -16,6 +18,10 @@ namespace Elastos {
 
 		PayloadCoinBase::PayloadCoinBase(const CMBlock &coinBaseData) {
 			_coinBaseData = coinBaseData;
+		}
+
+		PayloadCoinBase::PayloadCoinBase(const PayloadCoinBase &payload) {
+			operator=(payload);
 		}
 
 		PayloadCoinBase::~PayloadCoinBase() {
@@ -29,11 +35,11 @@ namespace Elastos {
 			return _coinBaseData;
 		}
 
-		void PayloadCoinBase::Serialize(ByteStream &ostream) const {
+		void PayloadCoinBase::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.writeVarBytes(_coinBaseData);
 		}
 
-		bool PayloadCoinBase::Deserialize(ByteStream &istream) {
+		bool PayloadCoinBase::Deserialize(ByteStream &istream, uint8_t version) {
 			return istream.readVarBytes(_coinBaseData);
 		}
 
@@ -47,5 +53,22 @@ namespace Elastos {
 			_coinBaseData = Utils::decodeHex(j["CoinBaseData"].get<std::string>());
 
 		}
+
+		IPayload &PayloadCoinBase::operator=(const IPayload &payload) {
+			try {
+				const PayloadCoinBase &payloadCoinBase = dynamic_cast<const PayloadCoinBase &>(payload);
+				operator=(payloadCoinBase);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadCoinBase");
+			}
+
+			return *this;
+		}
+
+		PayloadCoinBase &PayloadCoinBase::operator=(const PayloadCoinBase &payload) {
+			_coinBaseData.Memcpy(payload._coinBaseData);
+			return *this;
+		}
+
 	}
 }

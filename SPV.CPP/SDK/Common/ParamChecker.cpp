@@ -28,8 +28,20 @@ namespace Elastos {
 			return j;
 		}
 
+		void ParamChecker::throwParamException(Error::Code err, const std::string &msg) {
+			checkParam(true, err, msg);
+		}
+
+		void ParamChecker::throwLogicException(Error::Code err, const std::string &msg) {
+			checkLogic(true, err, msg);
+		}
+
 		void ParamChecker::checkParam(bool condition, Error::Code err, const std::string &msg) {
 			checkCondition(condition, err, msg, Exception::Type::InvalidArgument);
+		}
+
+		void ParamChecker::checkLogic(bool condition, Error::Code err, const std::string &msg) {
+			checkCondition(condition, err, msg, Exception::Type::LogicError);
 		}
 
 		void

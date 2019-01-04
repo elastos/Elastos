@@ -15,6 +15,10 @@ namespace Elastos {
 
 		}
 
+		PayloadRegisterIdentification::PayloadRegisterIdentification(const PayloadRegisterIdentification &payload) {
+			operator=(payload);
+		}
+
 		PayloadRegisterIdentification::~PayloadRegisterIdentification() {
 
 		}
@@ -42,7 +46,7 @@ namespace Elastos {
 			return true;
 		}
 
-		void PayloadRegisterIdentification::Serialize(ByteStream &ostream) const {
+		void PayloadRegisterIdentification::Serialize(ByteStream &ostream, uint8_t version) const {
 
 			assert(!_id.empty());
 			assert(!_contents.empty());
@@ -64,7 +68,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream) {
+		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream, uint8_t version) {
 			if (!istream.readVarString(_id)) {
 				Log::error("Payload register identification deserialize id fail");
 				return false;
@@ -223,5 +227,24 @@ namespace Elastos {
 
 			_contents.erase(_contents.begin() + index);
 		}
+
+		IPayload &PayloadRegisterIdentification::operator=(const IPayload &payload) {
+			try {
+				const PayloadRegisterIdentification &payloadRegisterIdentification = dynamic_cast<const PayloadRegisterIdentification &>(payload);
+				operator=(payloadRegisterIdentification);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadRegisterIdentification");
+			}
+			return *this;
+		}
+
+		PayloadRegisterIdentification &PayloadRegisterIdentification::operator=(const PayloadRegisterIdentification &payload) {
+			_id = payload._id;
+			_sign.Memcpy(payload._sign);
+			_contents = payload._contents;
+
+			return *this;
+		}
+
 	}
 }

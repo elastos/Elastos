@@ -7,9 +7,10 @@
 
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Implement/SubWalletType.h>
-#include <SDK/ELACoreExt/Payload/PayloadRegisterProducer.h>
-#include <SDK/ELACoreExt/Payload/PayloadCancelProducer.h>
-#include <SDK/ELACoreExt/Payload/PayloadVoteProducer.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterProducer.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadCancelProducer.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadUpdateProducer.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 #include <Core/BRInt.h>
 
@@ -152,14 +153,24 @@ namespace Elastos {
 			PayloadCancelProducer _payload;
 		};
 
-		class VoteProducerTxParam : public TxParam {
+		class UpdateProducerTxParam : public TxParam {
 		public:
-			const PayloadVoteProducer &GetPayload() const;
+			const PayloadUpdateProducer &GetPayload() const;
 
-			void SetPayload(const PayloadVoteProducer &payload);
+			void SetPayload(const PayloadUpdateProducer &payload);
 
 		private:
-			PayloadVoteProducer _payload;
+			PayloadUpdateProducer _payload;
+		};
+
+		class VoteProducerTxParam : public TxParam {
+		public:
+			const PayloadVote &GetPayload() const;
+
+			void SetPayload(const PayloadVote &payload);
+
+		private:
+			PayloadVote _payload;
 		};
 
 		class TxParamFactory {

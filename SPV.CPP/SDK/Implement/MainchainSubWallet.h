@@ -27,9 +27,14 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateVoteProducerTransaction(
 					uint64_t stake,
-					const nlohmann::json &pubicKeys);
+					const nlohmann::json &publicKeys);
 
 			virtual	nlohmann::json GetVotedProducerList() const;
+
+			virtual nlohmann::json ExportProducerKeystore(const std::string &backupPasswd,
+														  const std::string &payPasswd) const;
+
+			virtual nlohmann::json GetRegisteredProducerInfo() const;
 
 		protected:
 			friend class MasterWallet;
@@ -40,8 +45,6 @@ namespace Elastos {
 							   MasterWallet *parent);
 
 			virtual nlohmann::json GetBasicInfo() const;
-
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 

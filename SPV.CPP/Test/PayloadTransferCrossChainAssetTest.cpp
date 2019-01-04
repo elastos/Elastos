@@ -40,8 +40,8 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 		PayloadTransferCrossChainAsset p1, p2;
 
 		ByteStream stream1, stream2;
-		p1.Serialize(stream1);
-		p2.Serialize(stream2);
+		p1.Serialize(stream1, 0);
+		p2.Serialize(stream2, 0);
 
 		CMBlock buffer1 = stream1.getBuffer();
 		CMBlock buffer2 = stream2.getBuffer();
@@ -65,12 +65,12 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
 		ByteStream stream;
-		p1.Serialize(stream);
+		p1.Serialize(stream, 0);
 		CMBlock data1 = stream.getBuffer();
 
 		stream.setPosition(0);
-		p2.Deserialize(stream);
-		CMBlock data2 = p2.getData();
+		p2.Deserialize(stream, 0);
+		CMBlock data2 = p2.getData(0);
 
 		REQUIRE((data1 == data2));
 

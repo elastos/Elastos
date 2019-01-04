@@ -14,11 +14,13 @@ namespace Elastos {
 		public:
 			PayloadRegisterProducer();
 
+			PayloadRegisterProducer(const PayloadRegisterProducer &payload);
+
 			~PayloadRegisterProducer();
 
-			const std::string &GetPublicKey() const;
+			const CMBlock &GetPublicKey() const;
 
-			void SetPublicKey(const std::string &key);
+			void SetPublicKey(const CMBlock &key);
 
 			const std::string &GetNickName() const;
 
@@ -32,19 +34,28 @@ namespace Elastos {
 
 			void SetLocation(uint64_t location);
 
-			virtual void Serialize(ByteStream &ostream) const;
+			const std::string &GetAddress() const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			void SetAddress(const std::string &address);
+
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
+
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &);
 
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadRegisterProducer &operator=(const PayloadRegisterProducer &payload);
+
 		private:
-			std::string _publicKey;
+			CMBlock _publicKey;
 			std::string _nickName;
 			std::string _url;
 			uint64_t _location;
+			std::string _address;
 		};
 
 	}

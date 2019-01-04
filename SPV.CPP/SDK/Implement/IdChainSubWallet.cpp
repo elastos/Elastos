@@ -75,7 +75,6 @@ namespace Elastos {
 				//todo create transaction without to address
 
 				TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
-																					param->getFee(),
 																					param->getAmount(),
 																					param->getToAddress(),
 																					param->getAssetId(),

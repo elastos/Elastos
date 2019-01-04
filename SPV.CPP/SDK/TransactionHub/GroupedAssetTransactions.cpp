@@ -370,7 +370,8 @@ namespace Elastos {
 				UInt168 programHash;
 				ParamChecker::checkCondition(!Utils::UInt168FromAddress(programHash, addrs[i].stringify()),
 											 Error::CreateTransaction, "Convert from address to program hash error.");
-				transaction->getOutputs().push_back(TransactionOutput(balance - (amount + feeAmount), programHash));
+				TransactionOutput changeOutput(balance - (amount + feeAmount), programHash, outputs[0].getAssetId());
+				transaction->getOutputs().push_back(changeOutput);
 			}
 
 			return transaction;

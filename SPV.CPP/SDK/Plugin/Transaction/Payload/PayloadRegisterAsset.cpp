@@ -17,6 +17,10 @@ namespace Elastos {
 			_asset.setAssetType(Asset::AssetType::Token);
 		}
 
+		PayloadRegisterAsset::PayloadRegisterAsset(const PayloadRegisterAsset &payload) {
+			operator=(payload);
+		}
+
 		PayloadRegisterAsset::~PayloadRegisterAsset() {
 
 		}
@@ -52,20 +56,14 @@ namespace Elastos {
 			return _amount % (uint64_t)pow(10, 8 - _asset.getPrecision()) != 0;
 		}
 
-		CMBlock PayloadRegisterAsset::getData() const {
-			ByteStream stream;
-			Serialize(stream);
-			return stream.getBuffer();
-		}
-
-		void PayloadRegisterAsset::Serialize(ByteStream &ostream) const {
+		void PayloadRegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			_asset.Serialize(ostream);
 
 			ostream.writeBytes(&_amount, sizeof(_amount));
 			ostream.writeBytes(_controller.u8, sizeof(_controller));
 		}
 
-		bool PayloadRegisterAsset::Deserialize(ByteStream &istream) {
+		bool PayloadRegisterAsset::Deserialize(ByteStream &istream, uint8_t version) {
 			if (!_asset.Deserialize(istream)) {
 				Log::error("Payload register asset deserialize asset fail");
 				return false;
@@ -99,5 +97,25 @@ namespace Elastos {
 			_amount = j["Amount"].get<uint64_t>();
 			_controller = Utils::UInt168FromString(j["Controller"].get<std::string>());
 		}
+
+		IPayload &PayloadRegisterAsset::operator=(const IPayload &payload) {
+			try {
+				const PayloadRegisterAsset &payloadRegisterAsset = dynamic_cast<const PayloadRegisterAsset &>(payload);
+				operator=(payloadRegisterAsset);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadRegisterAsset");
+			}
+
+			return *this;
+		}
+
+		PayloadRegisterAsset &PayloadRegisterAsset::operator=(const PayloadRegisterAsset &payload) {
+			_asset = payload._asset;
+			_amount = payload._amount;
+			_controller = payload._controller;
+
+			return *this;
+		}
+
 	}
 }

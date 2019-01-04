@@ -15,17 +15,22 @@ namespace Elastos {
 		public:
 			PayloadTransferAsset();
 
+			PayloadTransferAsset(const PayloadTransferAsset &payload);
+
 			~PayloadTransferAsset();
 
-			virtual CMBlock getData() const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual void Serialize(ByteStream &ostream) const;
-
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadTransferAsset &operator=(const PayloadTransferAsset &payload);
+
 		};
 	}
 }

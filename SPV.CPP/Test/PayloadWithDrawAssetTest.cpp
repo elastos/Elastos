@@ -25,10 +25,10 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 			hashes.push_back(getRandUInt256());
 		}
 		p1.setSideChainTransacitonHash(hashes);
-		p1.Serialize(stream);
+		p1.Serialize(stream, 0);
 
 		stream.setPosition(0);
-		REQUIRE(p2.Deserialize(stream));
+		REQUIRE(p2.Deserialize(stream, 0));
 
 		REQUIRE(p1.getBlockHeight() == p2.getBlockHeight());
 		REQUIRE(p1.getGenesisBlockAddress() == p2.getGenesisBlockAddress());

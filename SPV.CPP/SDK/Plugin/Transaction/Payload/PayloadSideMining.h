@@ -16,6 +16,8 @@ namespace Elastos {
 		public:
 			PayloadSideMining();
 
+			PayloadSideMining(const PayloadSideMining &payload);
+
 			PayloadSideMining(const UInt256 &sideBlockHash, const UInt256 &sideGensisHash, uint32_t height, const CMBlock &signedData);
 
 			~PayloadSideMining();
@@ -36,16 +38,18 @@ namespace Elastos {
 
             const CMBlock &GetSignedData() const;
 
-			virtual CMBlock getData() const;
 
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual void Serialize(ByteStream &ostream) const;
-
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadSideMining &operator=(const PayloadSideMining &payload);
 
 		private:
 			UInt256 _sideBlockHash;

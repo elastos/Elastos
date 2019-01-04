@@ -196,7 +196,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr
-		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t amount,
 								  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
 								  const std::string &memo) {
 			UInt168 u168Address = UINT168_ZERO;
@@ -206,9 +206,10 @@ namespace Elastos {
 			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
 										 "Invalid receiver address " + toAddress);
 
-			TransactionOutput output(amount, toAddress);
+			std::vector<TransactionOutput> outputs;
 
-			std::vector<TransactionOutput> outputs = {output};
+			outputs.push_back(TransactionOutput(amount, toAddress, assetID));
+
 			TransactionPtr result = _transactions.CreateTxForOutputs(outputs, fromAddress,
 																	 boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
 			if (result != nullptr) {

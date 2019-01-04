@@ -77,7 +77,8 @@ namespace Elastos {
 			}
 			_lock->Unlock();
 
-			UInt512 seed;
+			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
+
 			BRKey keys[internalCount + externalCount];
 			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _coinIndex,
 							   SEQUENCE_INTERNAL_CHAIN, internalIdx);

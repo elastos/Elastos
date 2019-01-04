@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_PAYLOADCANCELPRODUCER_H__
 #define __ELASTOS_SDK_PAYLOADCANCELPRODUCER_H__
 
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -14,22 +14,28 @@ namespace Elastos {
 		public:
 			PayloadCancelProducer();
 
+			PayloadCancelProducer(const PayloadCancelProducer &payload);
+
 			~PayloadCancelProducer();
 
-			const std::string &GetPublicKey() const;
+			const CMBlock &GetPublicKey() const;
 
-			void SetPublicKey(const std::string &key);
+			void SetPublicKey(const CMBlock &key);
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &);
 
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadCancelProducer &operator=(const PayloadCancelProducer &payload);
+
 		private:
-			std::string _publicKey;
+			CMBlock _publicKey;
 		};
 
 	}

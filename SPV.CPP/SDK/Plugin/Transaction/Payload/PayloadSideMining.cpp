@@ -4,6 +4,7 @@
 
 #include "PayloadSideMining.h"
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 
 #include <cstring>
 
@@ -16,6 +17,11 @@ namespace Elastos {
 			_blockHeight(0) {
 
 		}
+
+		PayloadSideMining::PayloadSideMining(const PayloadSideMining &payload) {
+			operator=(payload);
+		}
+
 
 		PayloadSideMining::PayloadSideMining(const UInt256 &sideBlockHash, const UInt256 &sideGensisHash, uint32_t height, const CMBlock &signedData) {
 			UInt256Set(&_sideBlockHash, sideBlockHash);
@@ -60,20 +66,14 @@ namespace Elastos {
 			return _signedData;
 		}
 
-		CMBlock PayloadSideMining::getData() const {
-			ByteStream stream;
-			this->Serialize(stream);
-			return stream.getBuffer();
-		}
-
-		void PayloadSideMining::Serialize(ByteStream &ostream) const {
+		void PayloadSideMining::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.writeBytes(_sideBlockHash.u8, sizeof(UInt256));
 			ostream.writeBytes(_sideGenesisHash.u8, sizeof(UInt256));
 			ostream.writeUint32(_blockHeight);
 			ostream.writeVarBytes(_signedData);
 		}
 
-		bool PayloadSideMining::Deserialize(ByteStream &istream) {
+		bool PayloadSideMining::Deserialize(ByteStream &istream, uint8_t version) {
 			if (!istream.readBytes(_sideBlockHash.u8, sizeof(UInt256)))
 				return false;
 
@@ -104,5 +104,26 @@ namespace Elastos {
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_signedData = Utils::decodeHex(j["SignedData"].get<std::string>());
 		}
+
+		IPayload &PayloadSideMining::operator=(const IPayload &payload) {
+			try {
+				const PayloadSideMining &payloadSideMining = dynamic_cast<const PayloadSideMining &>(payload);
+				operator=(payload);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadSideMining");
+			}
+
+			return *this;
+		}
+
+		PayloadSideMining &PayloadSideMining::operator=(const PayloadSideMining &payload) {
+			_sideBlockHash = payload._sideBlockHash;
+			_sideGenesisHash = payload._sideGenesisHash;
+			_blockHeight = payload._blockHeight;
+			_signedData.Memcpy(payload._signedData);
+
+			return *this;
+		}
+
 	}
 }

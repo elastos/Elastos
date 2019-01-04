@@ -44,6 +44,11 @@ namespace Elastos {
 
 			virtual	nlohmann::json GetVotedProducerList() const = 0;
 
+			virtual nlohmann::json ExportProducerKeystore(const std::string &backupPasswd,
+														  const std::string &payPasswd) const = 0;
+
+			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
+
 		};
 
 	}

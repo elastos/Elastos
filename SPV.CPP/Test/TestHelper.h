@@ -10,6 +10,7 @@
 #include <SDK/Plugin/Block/AuxPow.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -80,8 +81,8 @@ namespace Elastos {
 			return u;
 		}
 
-		static void initTransaction(Transaction &tx) {
-			tx.setVersion(getRandUInt32());
+		static void initTransaction(Transaction &tx, const Transaction::TxVersion &version) {
+			tx.setVersion(version);
 			tx.setLockTime(getRandUInt32());
 			tx.setBlockHeight(getRandUInt32());
 			tx.setTimestamp(getRandUInt32());
@@ -104,6 +105,19 @@ namespace Elastos {
 				output.setAssetId(getRandUInt256());
 				output.setOutputLock(getRandUInt32());
 				output.setProgramHash(getRandUInt168());
+				if (version >= Transaction::TxVersion::V09) {
+					output.SetType(TransactionOutput::Type::VoteOutput);
+					output.SetPayloadVersion(0);
+					std::vector<CMBlock> candidates;
+					for (size_t i = 0; i < 50; ++i) {
+						candidates.push_back(getRandCMBlock(33));
+					}
+					output.SetPayload(PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates)));
+				} else {
+					output.SetType(TransactionOutput::Type::Default);
+					output.SetPayloadVersion(0);
+					output.SetPayload(nullptr);
+				}
 				tx.addOutput(output);
 			}
 
@@ -125,10 +139,10 @@ namespace Elastos {
 			REQUIRE(tx1.getLockTime() == tx2.getLockTime());
 			REQUIRE(tx1.getTransactionType() == tx2.getTransactionType());
 			REQUIRE(tx1.getPayloadVersion() == tx2.getPayloadVersion());
+			REQUIRE(tx1.getVersion() == tx2.getVersion());
 			if (checkAll) {
 				REQUIRE(tx1.getBlockHeight() == tx2.getBlockHeight());
 				REQUIRE(tx1.getTimestamp() == tx2.getTimestamp());
-				REQUIRE(tx1.getVersion() == tx2.getVersion());
 				REQUIRE(tx1.getFee() == tx2.getFee());
 				REQUIRE(tx1.getRemark() == tx2.getRemark());
 			}
@@ -154,6 +168,23 @@ namespace Elastos {
 				REQUIRE(UInt168Eq(&o2.getProgramHash(), &o1.getProgramHash()));
 				REQUIRE(o2.getOutputLock() == o1.getOutputLock());
 				REQUIRE(o2.getAmount() == o1.getAmount());
+
+				REQUIRE(o1.GetType() == o2.GetType());
+				REQUIRE(o1.GetPayloadVersion() == o2.GetPayloadVersion());
+				PayloadPtr p1 = o1.GetPayload();
+				PayloadPtr p2 = o2.GetPayload();
+				if (p1 != nullptr && p2 != nullptr) {
+					const PayloadVote &pv1 = dynamic_cast<const PayloadVote &>(*p1);
+					const PayloadVote &pv2 = dynamic_cast<const PayloadVote &>(*p2);
+
+					REQUIRE(pv1.GetVoteType() == pv2.GetVoteType());
+					REQUIRE(pv1.GetCandidates().size() == pv2.GetCandidates().size());
+					for (size_t j = 0; j < pv1.GetCandidates().size(); ++j) {
+						REQUIRE((pv1.GetCandidates()[j] == pv2.GetCandidates()[j]));
+					}
+				} else {
+					REQUIRE(p1 == p2);
+				}
 			}
 
 			REQUIRE(tx1.getAttributes().size() == tx2.getAttributes().size());

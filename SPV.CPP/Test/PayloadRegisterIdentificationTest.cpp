@@ -118,11 +118,11 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		payload.addContent(content2);
 
 		ByteStream stream;
-		payload.Serialize(stream);
+		payload.Serialize(stream, 0);
 
 		stream.setPosition(0);
 		PayloadRegisterIdentification payload2;
-		payload2.Deserialize(stream);
+		payload2.Deserialize(stream, 0);
 
 		REQUIRE(payload.getId() == payload2.getId());
 

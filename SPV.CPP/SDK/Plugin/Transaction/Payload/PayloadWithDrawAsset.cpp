@@ -17,6 +17,10 @@ namespace Elastos {
 
 		}
 
+		PayloadWithDrawAsset::PayloadWithDrawAsset(const PayloadWithDrawAsset &payload) {
+			operator=(payload);
+		}
+
 		PayloadWithDrawAsset::PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
 		                                           const std::vector<UInt256> &sideChainTransactionHash) {
 			_blockHeight = blockHeight;
@@ -51,7 +55,7 @@ namespace Elastos {
 			return _sideChainTransactionHash;
 		}
 
-		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {
+		void PayloadWithDrawAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.writeUint32(_blockHeight);
 			ostream.writeVarString(_genesisBlockAddress);
 			ostream.writeVarUint((uint64_t)_sideChainTransactionHash.size());
@@ -61,7 +65,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadWithDrawAsset::Deserialize(ByteStream &istream) {
+		bool PayloadWithDrawAsset::Deserialize(ByteStream &istream, uint8_t version) {
 			if (!istream.readUint32(_blockHeight)) {
 				Log::error("Payload with draw asset deserialize block height fail");
 				return false;
@@ -114,5 +118,25 @@ namespace Elastos {
 				_sideChainTransactionHash[i] = Utils::UInt256FromString(hashes[i], true);
 			}
 		}
+
+		IPayload &PayloadWithDrawAsset::operator=(const IPayload &payload) {
+			try {
+				const PayloadWithDrawAsset &payloadWithDrawAsset = dynamic_cast<const PayloadWithDrawAsset &>(payload);
+				operator=(payloadWithDrawAsset);
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadWithDrawAsset");
+			}
+
+			return *this;
+		}
+
+		PayloadWithDrawAsset &PayloadWithDrawAsset::operator=(const PayloadWithDrawAsset &payload) {
+			_blockHeight = payload._blockHeight;
+			_genesisBlockAddress = payload._genesisBlockAddress;
+			_sideChainTransactionHash = payload._sideChainTransactionHash;
+
+			return *this;
+		}
+
 	}
 }

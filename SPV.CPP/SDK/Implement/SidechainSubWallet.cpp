@@ -73,7 +73,7 @@ namespace Elastos {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);
 			if (withdrawTxParam != nullptr) {
 				TransactionPtr ptr = _walletManager->getWallet()->
-						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+						createTransaction(param->getFromAddress(), param->getAmount(),
 										  param->getToAddress(), param->getAssetId(), param->getRemark(),
 										  param->getMemo());
 				if (!ptr) return nullptr;

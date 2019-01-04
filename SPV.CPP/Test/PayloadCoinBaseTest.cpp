@@ -18,10 +18,10 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 		PayloadCoinBase p1(getRandCMBlock(50)), p2;
 
 		ByteStream stream;
-		p1.Serialize(stream);
+		p1.Serialize(stream, 0);
 
 		stream.setPosition(0);
-		REQUIRE(p2.Deserialize(stream));
+		REQUIRE(p2.Deserialize(stream, 0));
 		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
 	}
 

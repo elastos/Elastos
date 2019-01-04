@@ -16,6 +16,8 @@ namespace Elastos {
 		public:
 			PayloadWithDrawAsset();
 
+			PayloadWithDrawAsset(const PayloadWithDrawAsset &payload);
+
 			PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
 								 const std::vector<UInt256> &sideChainTransactionHash);
 
@@ -28,13 +30,17 @@ namespace Elastos {
 			void setSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash);
 			const std::vector<UInt256> &getSideChainTransacitonHash() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
+
+			virtual IPayload &operator=(const IPayload &payload);
+
+			PayloadWithDrawAsset &operator=(const PayloadWithDrawAsset &payload);
 
 		private:
 			uint32_t _blockHeight;
