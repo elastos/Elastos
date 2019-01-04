@@ -928,8 +928,9 @@ type Producer struct {
 }
 
 type Producers struct {
-	Producers  []Producer `json:"producers"`
-	TotalVotes string     `json:"total_votes"`
+	Producers   []Producer `json:"producers"`
+	TotalVotes  string     `json:"totalvotes"`
+	TotalCounts uint64     `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -974,8 +975,9 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 
 	result := &Producers{
-		Producers:  resultPs,
-		TotalVotes: totalVotes.String(),
+		Producers:   resultPs,
+		TotalVotes:  totalVotes.String(),
+		TotalCounts: uint64(len(producers)),
 	}
 
 	return ResponsePack(Success, result)
@@ -1006,28 +1008,36 @@ func VoteStatus(param Params) map[string]interface{} {
 
 	var total common.Fixed64
 	var voting common.Fixed64
-	status := true
 	for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
-		tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
+		tx, _, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
 		}
 		if tx.Outputs[unspent.Index].OutputType == VoteOutput {
 			voting += unspent.Value
 		}
-		bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
-		if err != nil {
-			return ResponsePack(UnknownTransaction, "")
-		}
-		header, err := chain.DefaultLedger.Store.GetHeader(bHash)
-		if err != nil {
-			return ResponsePack(UnknownTransaction, "")
-		}
-
-		if chain.DefaultLedger.Blockchain.GetBestHeight()-header.Height < 6 {
-			status = false
-		}
 		total += unspent.Value
+	}
+
+	status := true
+	for _, t := range ServerNode.GetTransactionPool(false) {
+		for _, i := range t.Inputs {
+			tx, _, err := chain.DefaultLedger.Store.GetTransaction(i.Previous.TxID)
+			if err != nil {
+				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
+			}
+			if tx.Outputs[i.Previous.Index].ProgramHash.IsEqual(*programHash) {
+				status = false
+			}
+		}
+		for _, o := range t.Outputs {
+			if o.OutputType == VoteOutput && o.ProgramHash.IsEqual(*programHash) {
+				status = false
+			}
+		}
+		if !status {
+			break
+		}
 	}
 
 	type voteInfo struct {

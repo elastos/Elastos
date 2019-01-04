@@ -878,15 +878,17 @@ parameters:
 
 result:
 
-| name      | type   | description                     |
-| --------- | ------ | ------------------------------- |
-| publickey | string | the public key of producer      |
-| nickname  | string | the nick name of producer       |
-| url       | string | the url of producer             |
-| location  | uint64 | the location number of producer |
-| active    | bool   | if producer has confirmed       |
-| votes     | string | the votes currently held        |
-| ip        | string | the ip address of producer      |
+| name        | type   | description                              |
+| ----------- | ------ | ---------------------------------------- |
+| publickey   | string | the public key of producer               |
+| nickname    | string | the nick name of producer                |
+| url         | string | the url of producer                      |
+| location    | uint64 | the location number of producer          |
+| active      | bool   | if producer has confirmed                |
+| votes       | string | the votes currently held                 |
+| ip          | string | the ip address of producer               |
+| totalvotes  | string | the total votes of producers             |
+| totalcounts | uint64 | the total counts of registered producers |
 
 named arguments sample:
 
@@ -937,7 +939,8 @@ result sample:
         "ip": "127.0.0.1:20339"
       }
     ],
-    "total_votes": "5.21100000"
+    "totalvotes": "5.21100000",
+    "totalcounts": 10
   }
 }
 ```
