@@ -3,6 +3,7 @@
 const common = require("./common");
 
 const SCErrMainchainTxDuplicate = 45013
+const ErrInvalidMainchainTx  = 45022
 
 module.exports = async function(json_data, res) {
     try {
@@ -15,6 +16,7 @@ module.exports = async function(json_data, res) {
         let txprocessed = await common.contract.methods.txProcessed(mctxhash).call();
         if (txprocessed) {
             console.log("Mainchain Trasaction Hash already processed: " + mctxhash);
+
             console.log("============================================================");
             common.reterr(SCErrMainchainTxDuplicate, res);
             return;
@@ -42,7 +44,7 @@ module.exports = async function(json_data, res) {
         res.json({"result":sctxhash, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
     } catch (err) {
-        common.reterr("InvalidParams", res);
+        common.reterr(ErrInvalidMainchainTx, res);
         return;
     }
 }

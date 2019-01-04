@@ -26,8 +26,8 @@ module.exports = async function(json_data, res) {
             }
             txlog["crosschainassets"].push({
                 "crosschainaddress": log["returnValues"]["_addr"],
-                "crosschainamount": String(BigInt(log["returnValues"]["_amount"]) / BigInt("10000000000")),
-                "outputamount":String((BigInt(log["returnValues"]["_amount"])+ BigInt(costamount)) / BigInt(10000000000))
+                "crosschainamount": String((log["returnValues"]["_amount"]- costamount) / 1e18),
+                "outputamount":String(log["returnValues"]["_amount"] / 1e18)
             });
             outputindex++;
         }
