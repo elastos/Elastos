@@ -305,14 +305,14 @@ func (w *spvwallet) sendTransaction(params httputil.Params) (interface{}, error)
 	return nil, w.SendTransaction(tx)
 }
 
-func NewWallet() (*spvwallet, error) {
+func NewWallet(dataDir string) (*spvwallet, error) {
 	// Initialize headers db
-	headers, err := headers.NewDatabase()
+	headers, err := headers.NewDatabase(dataDir)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sqlite.NewDatabase()
+	db, err := sqlite.NewDatabase(dataDir)
 	if err != nil {
 		return nil, err
 	}

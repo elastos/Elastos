@@ -15,7 +15,7 @@ var Version string
 
 func main() {
 	url := fmt.Sprint("http://127.0.0.1:", config.JsonRpcPort, "/spvwallet")
-	wallet.RunClient(Version, url, getSystemAssetId())
+	wallet.RunClient(Version, dataDir, url, getSystemAssetId())
 }
 
 func getSystemAssetId() common.Uint256 {

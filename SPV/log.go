@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
 	"github.com/elastos/Elastos.ELA.SPV/peer"
@@ -18,14 +19,12 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/server"
 )
 
-const LogPath = "./logs-spv/"
-
 // log is a logger that is initialized with no output filters.  This
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
 	fileWriter = elalog.NewFileWriter(
-		LogPath,
+		filepath.Join(dataDir, "logs"),
 		config.MaxPerLogSize,
 		config.MaxLogsSize,
 	)

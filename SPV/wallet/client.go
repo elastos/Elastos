@@ -12,8 +12,8 @@ import (
 	"github.com/urfave/cli"
 )
 
-func RunClient(version, rpcUrl string, assetId common.Uint256) {
-	client.Setup(rpcUrl, assetId)
+func RunClient(version, dataDir, rpcUrl string, assetId common.Uint256) {
+	client.Setup(dataDir, rpcUrl, assetId)
 
 	app := cli.NewApp()
 	app.Name = "ELASTOS SPV WALLET"

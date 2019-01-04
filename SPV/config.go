@@ -12,6 +12,8 @@ import (
 )
 
 const (
+	dataDir = "./data"
+
 	ConfigFilename = "./config.json"
 )
 

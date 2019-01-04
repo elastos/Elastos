@@ -21,6 +21,7 @@ import (
 )
 
 var (
+	dataPath   string
 	jsonRpcUrl string
 	sysAssetId common.Uint256
 )
@@ -35,7 +36,8 @@ type Wallet struct {
 	*Keystore
 }
 
-func Setup(rpcUrl string, assetId common.Uint256) {
+func Setup(dataDir, rpcUrl string, assetId common.Uint256) {
+	dataPath = dataDir
 	jsonRpcUrl = rpcUrl
 	sysAssetId = assetId
 }
@@ -46,7 +48,7 @@ func Create(password []byte) error {
 		return err
 	}
 
-	db, err := database.New()
+	db, err := database.New(dataPath)
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func Create(password []byte) error {
 }
 
 func Open() (*Wallet, error) {
-	db, err := database.New()
+	db, err := database.New(dataPath)
 	if err != nil {
 		return nil, err
 	}
