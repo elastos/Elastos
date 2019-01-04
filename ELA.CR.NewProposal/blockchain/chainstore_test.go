@@ -225,7 +225,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	txn.Outputs = []*types.Output{{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyPlege1,
 	}}
@@ -274,7 +274,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	txn.Outputs = []*types.Output{{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyPlege3,
 	}}
