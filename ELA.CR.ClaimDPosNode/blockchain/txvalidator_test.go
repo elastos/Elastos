@@ -434,7 +434,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	publicKeyDeposit1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyDeposit1,
 	}}
@@ -472,7 +472,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	publicKeyDeposit2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyDeposit2,
 	}}
@@ -487,19 +487,19 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		ProgramHash: *publicKeyDeposit1,
 	}}
 	err = CheckRegisterProducerTransaction(txn)
-	s.EqualError(err, "the deposit coin is insufficient")
+	s.EqualError(err, "producer deposit amount is insufficient")
 
 	// Multi deposit addresses
 	txn.Outputs = []*types.Output{
 		&types.Output{
 			AssetID:     common.Uint256{},
-			Value:       5000,
+			Value:       5000 * 100000000,
 			OutputLock:  0,
 			ProgramHash: *publicKeyDeposit1,
 		},
 		&types.Output{
 			AssetID:     common.Uint256{},
-			Value:       5000,
+			Value:       5000 * 100000000,
 			OutputLock:  0,
 			ProgramHash: *publicKeyDeposit1,
 		}}

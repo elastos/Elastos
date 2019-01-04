@@ -13,7 +13,7 @@ print(pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee
-local amount = 0.2
+local amount = 5000
 local fee = 0.001
 
 -- deposit params
