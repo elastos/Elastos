@@ -42,6 +42,9 @@
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
+#ifdef HAVE_LIBGEN_H
+#include <libgen.h>
+#endif
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
 #ifndef ntohll
@@ -896,18 +899,28 @@ ElaFileTransfer *ela_filetransfer_new(ElaCarrier *w, const char *address,
     }
 
     if (fileinfo) {
-        ft->files[0].filename = strdup(fileinfo->filename);
+        char *filename;
+
+        filename = basename((char *)fileinfo->filename);
+        if (!filename) {
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            deref(ft);
+            return NULL;
+        }
+
+        filename = strdup(filename);
+        if (!filename) {
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+            deref(ft);
+            return NULL;
+        }
+
+        ft->files[0].filename = filename;
         ft->files[0].filesz = fileinfo->size;
         ft->files[0].userdata = fileinfo->userdata;
         ft->files[0].state = FileTransferState_standby;
         ft->files[0].channel = -1;
         strcpy(ft->files[0].fileid, fileid);
-
-        if (!ft->files[0].filename) {
-            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-            deref(ft);
-            return NULL;
-        }
     }
 
     ft->session = ela_session_new(w, address);
@@ -1104,6 +1117,7 @@ int ela_filetransfer_add(ElaFileTransfer *ft, const ElaFileTransferInfo *fileinf
     char cookie[sizeof(ElaFileTransferInfo) + 64] = { 0 };
     char fileid[ELA_MAX_FILE_ID_LEN + 1] = { 0 };
     FileTransferItem *item;
+    char *filename;
 
     if (!ft || !fileinfo) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -1144,14 +1158,22 @@ int ela_filetransfer_add(ElaFileTransfer *ft, const ElaFileTransferInfo *fileinf
     else
         ela_filetransfer_fileid(fileid, sizeof(fileid));
 
-    strcpy(item->fileid, fileid);
-    item->filename = strdup(fileinfo->filename);
-    item->filesz = fileinfo->size;
+    filename = basename((char *)fileinfo->filename);
+    if (!filename) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
 
-    if (!item->filename) {
+    filename = strdup(filename);
+    if (!filename) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
     }
+
+    strcpy(item->fileid, fileid);
+    item->filename = filename;
+    item->filesz = fileinfo->size;
+    item->userdata = fileinfo->userdata;
 
     sprintf(cookie, "%s %s %s %llu", bundle_prefix, fileinfo->filename,
             fileid, _LLUV(item->filesz));
