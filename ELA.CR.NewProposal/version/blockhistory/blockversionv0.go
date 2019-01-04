@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 )
 
 var originalArbitrators = []string{
@@ -42,6 +43,10 @@ func (b *BlockVersionV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 func (b *BlockVersionV0) GetProducersDesc() ([][]byte, error) {
 	if len(originalArbitrators) == 0 {
 		return nil, errors.New("arbiters not configured")
+	}
+
+	if len(config.Parameters.Arbiters) != 0 {
+		originalArbitrators = config.Parameters.Arbiters
 	}
 
 	arbitersByte := make([][]byte, 0)
