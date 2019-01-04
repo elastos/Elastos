@@ -887,7 +887,7 @@ result:
 | active      | bool   | if producer has confirmed                |
 | votes       | string | the votes currently held                 |
 | ip          | string | the ip address of producer               |
-| totalvotes  | string | the total votes of producers             |
+| totalvotes  | string | the total votes of registered producers  |
 | totalcounts | uint64 | the total counts of registered producers |
 
 named arguments sample:
