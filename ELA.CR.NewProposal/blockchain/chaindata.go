@@ -25,8 +25,17 @@ func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 	if err := WriteUint64(value, sysFee); err != nil {
 		return err
 	}
-	if err := b.Trim(value); err != nil {
+	if err := b.Header.Serialize(value); err != nil {
 		return err
+	}
+	if err := WriteUint32(value, uint32(len(b.Transactions))); err != nil {
+		return err
+	}
+	for _, tx := range b.Transactions {
+		txHash := tx.Hash()
+		if err := txHash.Serialize(value); err != nil {
+			return errors.New("Block item transaction hash serialize failed, " + err.Error())
+		}
 	}
 
 	c.BatchPut(key.Bytes(), value.Bytes())

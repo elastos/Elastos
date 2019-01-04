@@ -100,13 +100,12 @@ type Transaction struct {
 	Fee            common.Fixed64
 	FeePerKB       common.Fixed64
 
-	hash *common.Uint256
+	txHash *common.Uint256
 }
 
 func (tx *Transaction) String() string {
-	hash := tx.Hash()
 	return fmt.Sprint("Transaction: {\n\t",
-		"Hash: ", hash.String(), "\n\t",
+		"Hash: ", tx.hash().String(), "\n\t",
 		"Version: ", tx.Version, "\n\t",
 		"TxType: ", tx.TxType.Name(), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
@@ -301,14 +300,18 @@ func (tx *Transaction) GetSize() int {
 	return buf.Len()
 }
 
+func (tx *Transaction) hash() common.Uint256 {
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+	return common.Uint256(common.Sha256D(buf.Bytes()))
+}
+
 func (tx *Transaction) Hash() common.Uint256 {
-	if tx.hash == nil {
-		buf := new(bytes.Buffer)
-		tx.SerializeUnsigned(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
-		tx.hash = &hash
+	if tx.txHash == nil {
+		txHash := tx.hash()
+		tx.txHash = &txHash
 	}
-	return *tx.hash
+	return *tx.txHash
 }
 
 func (tx *Transaction) IsIllegalProposalTx() bool {
@@ -357,12 +360,6 @@ func (tx *Transaction) IsRechargeToSideChainTx() bool {
 
 func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
-}
-
-func NewTrimmedTx(hash common.Uint256) *Transaction {
-	tx := new(Transaction)
-	tx.hash, _ = common.Uint256FromBytes(hash[:])
-	return tx
 }
 
 // Payload define the func for loading the payload data
