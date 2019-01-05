@@ -13,7 +13,6 @@ macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 	option(${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}})
 endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
-option_with_default(SPV_EXPORT_JNI "SPV export java native interface for android" OFF)
 set(SPV_PLATFORM_ANDROID "Android" CACHE INTERNAL "SPV platform" FORCE)
 set(SPV_PLATFORM_IOS "IOS" CACHE INTERNAL "SPV platform" FORCE)
 
@@ -48,7 +47,6 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS arm64-v8a armeabi-v7a armeabi x86 x86_64)
 elseif(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 	message(STATUS "Build spv for IOS")
-	set(IOS_PLATFORM OS)
 	set(IOS_DEPLOYMENT_TARGET 10.0)
 	set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/platforms/ios/cmake/Toolchains/iOS.cmake)
 endif()
@@ -136,16 +134,12 @@ add_subdirectory(ThirdParty)
 add_subdirectory(Core)
 add_subdirectory(SDK)
 add_subdirectory(Interface)
-if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID} AND SPV_EXPORT_JNI)
-	add_subdirectory(Java)
-endif()
 
 include_directories(
 	${OTHER_INC_DIRS}
 	${ThirdParty_INC_DIRS}
 	${SPVCORE_INC_DIRS}
 	${SPVSDK_INC_DIRS}
-	${SPVJNI_INC_DIRS}
 	${INTERFACE_INC_DIRS}
 	${FRUIT_INC_DIRS}
 )
@@ -154,7 +148,6 @@ set(SPVSDK_OBJECT_TARGET spvsdk_object)
 
 add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
-	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
 add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)

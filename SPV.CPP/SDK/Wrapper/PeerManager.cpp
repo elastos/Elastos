@@ -4,6 +4,8 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <Core/BRWallet.h>
+#include <Core/BRTransaction.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -28,6 +30,13 @@ namespace Elastos {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
 					listener->lock()->syncStarted();
+				}
+			}
+
+			static void syncProgress(void *info, uint32_t currentHeight, uint32_t estimatedHeight) {
+				WeakListener *listener = (WeakListener *) info;
+				if (!listener->expired()) {
+					listener->lock()->syncProgress(currentHeight, estimatedHeight);
 				}
 			}
 
@@ -88,12 +97,16 @@ namespace Elastos {
 				return result;
 			}
 
-			static void txPublished(void *info, int error) {
+			static void txPublished(void *info, const UInt256 *hash, int error, const char *reason) {
 
 				WeakListener *listener = (WeakListener *) info;
-				if (!listener->expired()) {
+				nlohmann::json result;
+				result["Code"] = error;
+				result["Reason"] = std::string(reason);
+				const std::string txID = Utils::UInt256ToString(*hash, true);
 
-					listener->lock()->txPublished(error == 0 ? "" : strerror(error));
+				if (!listener->expired()) {
+					listener->lock()->txPublished(txID, result);
 				}
 			}
 
@@ -167,6 +180,7 @@ namespace Elastos {
 
 			BRPeerManagerSetCallbacks((BRPeerManager *) _manager, &_listener,
 									  syncStarted,
+									  syncProgress,
 									  syncStopped,
 									  txStatusUpdate,
 									  saveBlocks,
@@ -176,7 +190,8 @@ namespace Elastos {
 									  blockHeightIncreased,
 									  syncIsInactive,
 									  verifyDifficultyWrapper,
-									  loadBloomFilter);
+									  loadBloomFilter,
+									  publishTransactions);
 		}
 
 		PeerManager::~PeerManager() {
@@ -394,7 +409,8 @@ namespace Elastos {
 			addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, addrs, addrsCount);
 			utxosCount = BRWalletUTXOs(manager->wallet, utxos, utxosCount);
 			txCount = BRWalletTxUnconfirmedBefore(manager->wallet, transactions, txCount, blockHeight);
-			filter = BRBloomFilterNew(manager->fpRate, addrsCount + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
+			ELAWallet *elaWallet = (ELAWallet *)manager->wallet;
+			filter = BRBloomFilterNew(manager->fpRate, addrsCount + elaWallet->ListeningAddrs.size() + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
 									  BLOOM_UPDATE_ALL); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			for (size_t i = 0; i < addrsCount; i++) { // add addresses to watch for tx receiveing money to the wallet
@@ -409,7 +425,6 @@ namespace Elastos {
 
 			free(addrs);
 
-			ELAWallet *elaWallet = (ELAWallet *)manager->wallet;
 			for (size_t i = 0; i < elaWallet->ListeningAddrs.size(); ++i) {
 				UInt168 hash = UINT168_ZERO;
 
@@ -425,7 +440,9 @@ namespace Elastos {
 
 				UInt256Set(o, utxos[i].hash);
 				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-				if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o, sizeof(o));
+				if (!BRBloomFilterContainsData(filter, o, sizeof(o))) {
+					BRBloomFilterInsertData(filter, o, sizeof(o));
+				}
 			}
 
 			free(utxos);
@@ -440,7 +457,9 @@ namespace Elastos {
 						BRWalletContainsAddress(manager->wallet, tx->outputs[input->index].address)) {
 						UInt256Set(o, input->txHash);
 						UInt32SetLE(&o[sizeof(UInt256)], input->index);
-						if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o,sizeof(o));
+						if (! BRBloomFilterContainsData(filter, o, sizeof(o))) {
+							BRBloomFilterInsertData(filter, o,sizeof(o));
+						}
 					}
 				}
 			}
@@ -451,6 +470,12 @@ namespace Elastos {
 			// TODO: XXX if already synced, recursively add inputs of unconfirmed receives
 
 			manager->peerMessages->BRPeerSendFilterloadMessage(peer, filter);
+		}
+
+		void PeerManager::publishTransactions(BRPeerManager *manager, BRTransaction *tx[], size_t txCount) {
+			for (size_t i = 0; i < txCount; i++) {
+				BRPeerManagerPublishTx(manager, tx[i], manager->info, txPublished);
+			}
 		}
 
 	}

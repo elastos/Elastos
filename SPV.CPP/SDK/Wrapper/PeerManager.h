@@ -38,6 +38,8 @@ namespace Elastos {
 				// func syncStarted()
 				virtual void syncStarted() = 0;
 
+				virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) = 0;
+
 				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
 
@@ -54,7 +56,7 @@ namespace Elastos {
 				virtual bool networkIsReachable() = 0;
 
 				// Called on publishTransaction
-				virtual void txPublished(const std::string &error) = 0;
+				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
 
@@ -138,6 +140,8 @@ namespace Elastos {
 								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock, const std::string &netType);
 
 			static void loadBloomFilter(BRPeerManager *manager, BRPeer *peer);
+
+			static void publishTransactions(BRPeerManager *manager, BRTransaction *tx[], size_t txCount);
 
 		private:
 			ELAPeerManager *_manager;

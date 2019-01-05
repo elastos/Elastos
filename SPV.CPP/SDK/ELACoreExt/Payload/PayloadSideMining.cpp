@@ -74,8 +74,8 @@ namespace Elastos {
 		nlohmann::json PayloadSideMining::toJson() const {
 			nlohmann::json j;
 
-			j["SideBlockHash"] = Utils::UInt256ToString(_sideBlockHash);
-			j["SideGenesisHash"] = Utils::UInt256ToString(_sideGenesisHash);
+			j["SideBlockHash"] = Utils::UInt256ToString(_sideBlockHash, true);
+			j["SideGenesisHash"] = Utils::UInt256ToString(_sideGenesisHash, true);
 			j["BlockHeight"] = _blockHeight;
 			j["SignedData"] = Utils::encodeHex(_signedData);
 
@@ -83,8 +83,8 @@ namespace Elastos {
 		}
 
 		void PayloadSideMining::fromJson(const nlohmann::json &j) {
-			_sideBlockHash = Utils::UInt256FromString(j["SideBlockHash"].get<std::string>());
-			_sideGenesisHash = Utils::UInt256FromString(j["SideGenesisHash"].get<std::string>());
+			_sideBlockHash = Utils::UInt256FromString(j["SideBlockHash"].get<std::string>(), true);
+			_sideGenesisHash = Utils::UInt256FromString(j["SideGenesisHash"].get<std::string>(), true);
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_signedData = Utils::decodeHex(j["SignedData"].get<std::string>());
 		}

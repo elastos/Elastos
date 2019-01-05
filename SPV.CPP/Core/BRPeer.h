@@ -58,6 +58,9 @@
 extern "C" {
 #endif
 
+#define BTC_SERVICES_NODE_NETWORK 0x01
+#define BTC_SERVICES_NODE_BLOOM   0x02
+
 //#define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
 //#define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
 //#define SERVICES_NODE_BCASH   0x20 // https://github.com/Bitcoin-UAHF/spec/blob/master/uahf-technical-spec.md
@@ -139,7 +142,7 @@ void BRPeerSetCallbacks(BRPeer *peer, void *info,
                         void (*relayedPeers)(void *info, const BRPeer peers[], size_t peersCount),
                         void (*relayedTx)(void *info, BRTransaction *tx),
                         void (*hasTx)(void *info, UInt256 txHash),
-                        void (*rejectedTx)(void *info, UInt256 txHash, uint8_t code),
+                        void (*rejectedTx)(void *info, UInt256 txHash, uint8_t code, const char *reason),
                         void (*relayedBlock)(void *info, BRMerkleBlock *block),
                         void (*relayedPingMsg)(void *info),
                         void (*notfound)(void *info, const UInt256 txHashes[], size_t txCount,

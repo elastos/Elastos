@@ -148,12 +148,12 @@ namespace Elastos {
 			CMBlock data = stream.getBuffer();
 
 			UInt256 hash = tx->getHash();
-			std::string hashStr = Utils::UInt256ToString(hash);
+			std::string hashStr = Utils::UInt256ToString(hash, true);
 			std::string remark = _wallet->GetRemark(hashStr);
 			tx->setRemark(remark);
 
 			TransactionEntity txEntity(data, tx->getBlockHeight(),
-									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
+									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash(), true));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -192,6 +192,13 @@ namespace Elastos {
 						  [](PeerManager::Listener *listener) {
 							  listener->syncStarted();
 						  });
+		}
+
+		void WalletManager::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
+						  [&currentHeight, &estimatedHeight](PeerManager::Listener *listener) {
+				listener->syncProgress(currentHeight, estimatedHeight);
+			});
 		}
 
 		void WalletManager::syncStopped(const std::string &error) {
@@ -292,10 +299,10 @@ namespace Elastos {
 			return reachable;
 		}
 
-		void WalletManager::txPublished(const std::string &error) {
+		void WalletManager::txPublished(const std::string &hash, const nlohmann::json &result) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&error](PeerManager::Listener *listener) {
-							  listener->txPublished(error);
+						  [&hash, &result](PeerManager::Listener *listener) {
+							  listener->txPublished(hash, result);
 						  });
 		}
 
