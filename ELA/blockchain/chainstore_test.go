@@ -543,7 +543,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 3. Run PersistVoteProducer
-	if err := testChainStore.PersistVoteOutput(output); err != nil {
+	if err := testChainStore.persistVoteOutputs([]*types.Output{output}, []*types.Output{}); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
@@ -557,7 +557,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 5. Run PersistVoteProducer
-	if err := testChainStore.PersistVoteOutput(output); err != nil {
+	if err := testChainStore.persistVoteOutputs([]*types.Output{output}, []*types.Output{}); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
@@ -571,7 +571,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 7. Run PersistVoteProducer
-	if err := testChainStore.PersistVoteOutput(output2); err != nil {
+	if err := testChainStore.persistVoteOutputs([]*types.Output{output2}, []*types.Output{}); err != nil {
 		t.Error("PersistRegisterProducer failed")
 	}
 	if err := testChainStore.persistVoteOutputForMempool(output2); err != nil {
@@ -641,7 +641,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 2. Run PersistCancelVoteOutput
-	if err := testChainStore.PersistCancelVoteOutput(output); err != nil {
+	if err := testChainStore.persistVoteOutputs([]*types.Output{}, []*types.Output{output}); err != nil {
 		t.Error("PersistCancelVoteOutput failed")
 	}
 	if err := testChainStore.persistCancelVoteOutputForMempool(output); err != nil {
@@ -655,7 +655,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 4. Run PersistCancelVoteOutput
-	if err := testChainStore.PersistCancelVoteOutput(output2); err != nil {
+	if err := testChainStore.persistVoteOutputs([]*types.Output{}, []*types.Output{output2}); err != nil {
 		t.Error("PersistCancelVoteOutput failed")
 	}
 	if err := testChainStore.persistCancelVoteOutputForMempool(output2); err != nil {

@@ -305,6 +305,8 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 }
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
+	voteOutputs := make([]*Output, 0)
+	cancelVoteOutputs := make([]*Output, 0)
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err
@@ -341,9 +343,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
-					if err := c.PersistVoteOutput(output); err != nil {
-						return err
-					}
+					voteOutputs = append(voteOutputs, output)
 				}
 			}
 			for _, input := range txn.Inputs {
@@ -353,9 +353,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				}
 				output := transaction.Outputs[input.Previous.Index]
 				if output.OutputType == VoteOutput {
-					if err = c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
+					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
 		}
@@ -375,10 +373,16 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			}
 		}
 	}
+	if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
+	voteOutputs := make([]*Output, 0)
+	cancelVoteOutputs := make([]*Output, 0)
 	for _, txn := range b.Transactions {
 		if err := c.RollbackTransaction(txn); err != nil {
 			return err
@@ -410,9 +414,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
-					if err := c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
+					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
 			for _, input := range txn.Inputs {
@@ -422,12 +424,13 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				}
 				output := transaction.Outputs[input.Previous.Index]
 				if output.OutputType == VoteOutput {
-					if err = c.PersistVoteOutput(output); err != nil {
-						return err
-					}
+					voteOutputs = append(voteOutputs, output)
 				}
 			}
 		}
+	}
+	if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
+		return err
 	}
 
 	return nil
