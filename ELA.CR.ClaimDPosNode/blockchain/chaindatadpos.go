@@ -217,6 +217,8 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 			return err
 		}
 
+		voteOutputs := make([]*Output, 0)
+		cancelVoteOutputs := make([]*Output, 0)
 		for _, tx := range block.Transactions {
 			if tx.TxType == RegisterProducer {
 				if err = c.PersistRegisterProducer(tx.Payload.(*PayloadRegisterProducer)); err != nil {
@@ -231,9 +233,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
 				for _, output := range tx.Outputs {
 					if output.OutputType == VoteOutput {
-						if err = c.PersistVoteOutput(output); err != nil {
-							return err
-						}
+						voteOutputs = append(voteOutputs, output)
 					}
 				}
 				for _, input := range tx.Inputs {
@@ -243,12 +243,13 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 					}
 					output := transaction.Outputs[input.Previous.Index]
 					if output.OutputType == VoteOutput {
-						if err = c.PersistCancelVoteOutput(output); err != nil {
-							return err
-						}
+						cancelVoteOutputs = append(cancelVoteOutputs, output)
 					}
 				}
 			}
+		}
+		if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -336,37 +337,69 @@ func (c *ChainStore) persistUpdateProducerForMempool(payload *PayloadUpdateProdu
 	return nil
 }
 
-func (c *ChainStore) PersistVoteOutput(output *Output) error {
-	stake, err := output.Value.Bytes()
-	if err != nil {
-		return err
-	}
+func (c *ChainStore) persistVoteOutputs(outputs []*Output, cancelOutputs []*Output) error {
+	voteProducerMap := make(map[string]Fixed64)
+	for _, output := range outputs {
+		pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+		if !ok {
+			continue
+		}
 
-	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
-	if !ok {
-		return errors.New("[PersistVoteOutput] invalid output payload")
-	}
-
-	for _, vote := range pyaload.Contents {
-		if vote.VoteType == outputpayload.Delegate {
-			for _, candidate := range vote.Candidates {
-				// add vote to database
-				key := []byte{byte(vote.VoteType)}
-				k := append(key, candidate...)
-				oldStake, err := c.getVoteByPublicKey(vote.VoteType, candidate)
-				if err != nil {
-					c.Put(k, stake)
-				} else {
-					votes := output.Value + oldStake
-					votesBytes, err := votes.Bytes()
-					if err != nil {
-						return err
+		for _, vote := range pyaload.Contents {
+			if vote.VoteType == outputpayload.Delegate {
+				for _, candidate := range vote.Candidates {
+					if value, ok := voteProducerMap[BytesToHexString(candidate)]; ok {
+						voteProducerMap[BytesToHexString(candidate)] = value + output.Value
+					} else {
+						voteProducerMap[BytesToHexString(candidate)] = output.Value
 					}
-					c.Put(k, votesBytes)
 				}
+			} else {
+				// todo persist other vote
 			}
+		}
+	}
+
+	for _, output := range cancelOutputs {
+		pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+		if !ok {
+			continue
+		}
+
+		for _, vote := range pyaload.Contents {
+			if vote.VoteType == outputpayload.Delegate {
+				for _, candidate := range vote.Candidates {
+					if value, ok := voteProducerMap[BytesToHexString(candidate)]; ok {
+						voteProducerMap[BytesToHexString(candidate)] = value - output.Value
+					} else {
+						voteProducerMap[BytesToHexString(candidate)] = -output.Value
+					}
+				}
+			} else {
+				// todo persist other vote
+			}
+		}
+	}
+
+	for k, v := range voteProducerMap {
+		stake, err := v.Bytes()
+		if err != nil {
+			return err
+		}
+		// add vote to database
+		key := []byte{byte(outputpayload.Delegate)}
+		candidate, _ := HexStringToBytes(k)
+		k := append(key, candidate...)
+		oldStake, err := c.getVoteByPublicKey(outputpayload.Delegate, candidate)
+		if err != nil {
+			c.Put(k, stake)
 		} else {
-			// todo persist other vote
+			votes := v + oldStake
+			votesBytes, err := votes.Bytes()
+			if err != nil {
+				return err
+			}
+			c.Put(k, votesBytes)
 		}
 	}
 
@@ -389,38 +422,6 @@ func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
 			}
 		} else {
 			// todo persist other vote
-		}
-	}
-
-	return nil
-}
-
-func (c *ChainStore) PersistCancelVoteOutput(output *Output) error {
-	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
-	if !ok {
-		return errors.New("[PersistVoteOutput] invalid output payload")
-	}
-
-	for _, vote := range pyaload.Contents {
-		if vote.VoteType == outputpayload.Delegate {
-			for _, candidate := range vote.Candidates {
-				// subtract vote to database
-				key := []byte{byte(vote.VoteType)}
-				k := append(key, candidate...)
-				oldStake, err := c.getVoteByPublicKey(vote.VoteType, candidate)
-				if err != nil {
-					return nil
-				} else {
-					votes := oldStake - output.Value
-					votesBytes, err := votes.Bytes()
-					if err != nil {
-						return err
-					}
-					c.Put(k, votesBytes)
-				}
-			}
-		} else {
-			// todo canel other vote
 		}
 	}
 
