@@ -76,6 +76,7 @@ set(LIBS
 set(DEPS
     ela-carrier
     ela-session
+    ela-filetransfer
     libcrystal
     libconfig
     CUnit)
