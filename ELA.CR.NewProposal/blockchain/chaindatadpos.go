@@ -337,15 +337,15 @@ func (c *ChainStore) persistUpdateProducerForMempool(payload *PayloadUpdateProdu
 	return nil
 }
 
-func (c *ChainStore) persistVoteOutputs(outputs []*Output, cancelOutputs []*Output) error {
+func (c *ChainStore) persistVoteOutputs(voteOutputs []*Output, cancelVoteOutputs []*Output) error {
 	voteProducerMap := make(map[string]Fixed64)
-	for _, output := range outputs {
-		pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	for _, output := range voteOutputs {
+		payload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
 		if !ok {
 			continue
 		}
 
-		for _, vote := range pyaload.Contents {
+		for _, vote := range payload.Contents {
 			if vote.VoteType == outputpayload.Delegate {
 				for _, candidate := range vote.Candidates {
 					if value, ok := voteProducerMap[BytesToHexString(candidate)]; ok {
@@ -360,13 +360,13 @@ func (c *ChainStore) persistVoteOutputs(outputs []*Output, cancelOutputs []*Outp
 		}
 	}
 
-	for _, output := range cancelOutputs {
-		pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	for _, output := range cancelVoteOutputs {
+		payload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
 		if !ok {
 			continue
 		}
 
-		for _, vote := range pyaload.Contents {
+		for _, vote := range payload.Contents {
 			if vote.VoteType == outputpayload.Delegate {
 				for _, candidate := range vote.Candidates {
 					if value, ok := voteProducerMap[BytesToHexString(candidate)]; ok {
