@@ -173,15 +173,23 @@ func  clientAllowed(r *http.Request) (bool) {
 		}
 
 		for _, cfgIp := range Parameters.RpcConfiguration.WhiteIpList {
+			//WhiteIpList have 0.0.0.0  allow all ip in
+			if cfgIp == "0.0.0.0" {
+				return  true
+			}
 			if cfgIp == remoteIp {
 				return  true
 			}
+
 		}
 	}
 	return false
 }
 
 func  checkAuth(r *http.Request) (bool,  error) {
+	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0)  {
+		return true,  nil
+	}
 	authHeader := r.Header["Authorization"]
 	if len(authHeader) <= 0 {
 		log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
