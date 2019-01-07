@@ -19,6 +19,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
@@ -246,6 +247,24 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 
 	log.Debug("AddBlock called finished and Pow.MsgBlock.MapNewBlock has been deleted completely")
 	log.Info(auxPow, blockHash)
+	return ResponsePack(Success, true)
+}
+
+func SubmitSidechainIllegalData(param Params) map[string]interface{} {
+	rawHex, ok := param.String("illegaldata")
+	if !ok {
+		return ResponsePack(InvalidParams, "parameter illegaldata not found")
+	}
+
+	var data SidechainIllegalData
+	buf, _ := common.HexStringToBytes(rawHex)
+	if err := data.DeserializeUnsigned(bytes.NewReader(buf)); err != nil {
+		log.Debug("[json-rpc:SubmitSidechainIllegalData] illegaldata deserialization failed", rawHex)
+		return ResponsePack(InternalError, "illegaldata deserialization failed")
+	}
+
+	events.Notify(events.ETSidechainIllegalEvidenceReceived, data)
+
 	return ResponsePack(Success, true)
 }
 
