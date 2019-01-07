@@ -23,7 +23,8 @@ namespace Elastos {
 					const nlohmann::json &sidechainAmounts,
 					const nlohmann::json &sidechainIndices,
 					const std::string &memo,
-					const std::string &remark);
+					const std::string &remark,
+					bool useVotedUTXO = false);
 
 			virtual nlohmann::json CreateVoteProducerTransaction(
 					uint64_t stake,
@@ -47,8 +48,6 @@ namespace Elastos {
 			virtual nlohmann::json GetBasicInfo() const;
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
-			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 		};
 

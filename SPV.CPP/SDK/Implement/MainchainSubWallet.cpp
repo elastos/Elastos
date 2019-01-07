@@ -9,7 +9,6 @@
 #include <SDK/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Checker/MainchainTransactionChecker.h>
-#include <SDK/Plugin/Transaction/Completer/MainchainTransactionCompleter.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 
 #include <vector>
@@ -37,7 +36,8 @@ namespace Elastos {
 																	const nlohmann::json &sidechainAmounts,
 																	const nlohmann::json &sidechainIndices,
 																	const std::string &memo,
-																	const std::string &remark) {
+																	const std::string &remark,
+																	bool useVotedUTXO) {
 			ParamChecker::checkJsonArray(sidechainAccounts, 1, "Side chain accounts");
 			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");
 			ParamChecker::checkJsonArray(sidechainIndices, 1, "Side chain indices");
@@ -48,16 +48,16 @@ namespace Elastos {
 				std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
 				std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t >>();
 
-				ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
-											 Error::DepositParam, "Invalid deposit parameters of side chain");
+				ParamChecker::checkParam(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
+										 Error::DepositParam, "Invalid deposit parameters of side chain");
 
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "side chain message error: " + std::string(e.what()));
+				ParamChecker::throwParamException(Error::JsonFormatError, "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress,
-																 Asset::GetELAAssetID(), remark, memo);
+			TransactionPtr tx = SubWallet::CreateTx(fromAddress, toAddress, amount,
+													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
 			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
 
@@ -83,10 +83,19 @@ namespace Elastos {
 			}
 			PayloadPtr payload = PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates));
 
-			TransactionPtr tx = _walletManager->getWallet()->createTransaction("", stake, CreateAddress(),
-																			   Asset::GetELAAssetID(), "", "");
+			TransactionPtr tx = SubWallet::CreateTx("", CreateAddress(), stake,
+													Asset::GetELAAssetID(), "", "", false);
 
 			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
+
+			const std::vector<TransactionInput> &inputs = tx->getInputs();
+
+			TransactionPtr txInput = _walletManager->getWallet()->transactionForHash(inputs[0].getTransctionHash());
+
+			ParamChecker::checkLogic(txInput == nullptr, Error::GetTransactionInput, "Get tx input error");
+			ParamChecker::checkLogic(txInput->getOutputs().size() <= inputs[0].getIndex(), Error::GetTransactionInput,
+									 "Input index larger than output size.");
+			const UInt168 &inputProgramHash = txInput->getOutputs()[inputs[0].getIndex()].getProgramHash();
 
 			tx->setVersion(Transaction::TxVersion::V09);
 			tx->setTransactionType(Transaction::TransferAsset);
@@ -94,11 +103,47 @@ namespace Elastos {
 			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
 			outputs[0].SetPayload(payload);
 
+			for (size_t i = 0; i < outputs.size(); ++i) {
+				outputs[i].setProgramHash(inputProgramHash);
+			}
+
 			return tx->toJson();
 		}
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
-			return nlohmann::json();
+			WalletPtr wallet = _walletManager->getWallet();
+			std::vector<UTXO> utxos = wallet->getAllUTXOsSafe();
+			nlohmann::json j;
+
+			for (size_t i = 0; i < utxos.size(); ++i) {
+				TransactionPtr tx = wallet->transactionForHash(utxos[i].hash);
+				if (tx->getVersion() != Transaction::TxVersion::V09 ||
+					tx->getTransactionType() != Transaction::TransferAsset) {
+					continue;
+				}
+
+				const std::vector<TransactionOutput> &outputs = tx->getOutputs();
+				std::for_each(outputs.cbegin(), outputs.cend(), [&j](const TransactionOutput &o) {
+					if (o.GetType() == TransactionOutput::Type::VoteOutput) {
+						const PayloadVote *pv = dynamic_cast<const PayloadVote *>(o.GetPayload().get());
+						if (pv && pv->GetVoteType() == PayloadVote::Type::Delegate) {
+							uint64_t stake = o.getAmount();
+							const std::vector<CMBlock> &candidates = pv->GetCandidates();
+							std::for_each(candidates.cbegin(), candidates.cend(),
+										  [&j, &stake](const CMBlock &candidate) {
+											  std::string c = Utils::encodeHex(candidate);
+											  if (j.find(c) != j.end()) {
+												  j[c] += stake;
+											  } else {
+												  j[c] = stake;
+											  }
+										  });
+						}
+					}
+				});
+			}
+
+			return j;
 		}
 
 		nlohmann::json MainchainSubWallet::ExportProducerKeystore(const std::string &backupPasswd,
@@ -107,7 +152,50 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
-			return nlohmann::json();
+			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->getAllTransactions();
+			nlohmann::json j;
+
+			j["Registered"] = false;
+			j["Info"] = nlohmann::json();
+			for (size_t i = 0; i < allTxs.size(); ++i) {
+				if (allTxs[i]->getTransactionType() == Transaction::RegisterProducer) {
+					const PayloadRegisterProducer *pr = dynamic_cast<const PayloadRegisterProducer *>(allTxs[i]->getPayload());
+					if (pr) {
+						nlohmann::json info;
+
+						info["PublicKey"] = Utils::encodeHex(pr->GetPublicKey());
+						info["NickName"] = pr->GetNickName();
+						info["URL"] = pr->GetUrl();
+						info["Location"] = pr->GetLocation();
+						info["Address"] = pr->GetAddress();
+
+						j["Registered"] = true;
+						j["Info"] = info;
+					}
+				} else if (allTxs[i]->getTransactionType() == Transaction::UpdateProducer) {
+					const PayloadUpdateProducer *pu = dynamic_cast<const PayloadUpdateProducer *>(allTxs[i]->getPayload());
+					if (pu) {
+						nlohmann::json info;
+
+						info["PublicKey"] = Utils::encodeHex(pu->GetPublicKey());
+						info["NickName"] = pu->GetNickName();
+						info["URL"] = pu->GetUrl();
+						info["Location"] = pu->GetLocation();
+						info["Address"] = pu->GetAddress();
+
+						j["Registered"] = true;
+						j["Info"] = info;
+					}
+				} else if (allTxs[i]->getTransactionType() == Transaction::CancelProducer) {
+					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->getPayload());
+					if (pc) {
+						j["Registered"] = false;
+						j["Info"] = nlohmann::json();
+					}
+				}
+			}
+
+			return j;
 		}
 
 
@@ -118,14 +206,6 @@ namespace Elastos {
 				checker.Check();
 			} else
 				SubWallet::verifyRawTransaction(transaction);
-		}
-
-		TransactionPtr MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			if (transaction->getTransactionType() == Transaction::TransferCrossChainAsset) {
-				MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-				return completer.Complete(actualFee);
-			} else
-				return SubWallet::completeTransaction(transaction, actualFee);
 		}
 
 		nlohmann::json MainchainSubWallet::GetBasicInfo() const {

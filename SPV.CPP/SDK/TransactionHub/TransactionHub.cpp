@@ -140,11 +140,11 @@ namespace Elastos {
 			return balance;
 		}
 
-		uint64_t TransactionHub::getBalance(const UInt256 &assetID) const {
+		uint64_t TransactionHub::getBalance(const UInt256 &assetID, AssetTransactions::BalanceType type) const {
 			uint64_t result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-				result = _transactions.Get(assetID)->GetBalance();
+				result = _transactions.Get(assetID)->GetBalance(type);
 			}
 			return result;
 		}
@@ -195,10 +195,15 @@ namespace Elastos {
 			return filterAddress == fromAddress;
 		}
 
+		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO) {
+			_transactions.UpdateTxFee(tx, fee, fromAddress, useVotedUTXO, boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
+		}
+
 		TransactionPtr
 		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t amount,
-								  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
-								  const std::string &memo) {
+										  const std::string &toAddress, uint64_t fee,
+										  const UInt256 &assetID, const std::string &memo,
+										  const std::string &remark, bool useVotedUTXO) {
 			UInt168 u168Address = UINT168_ZERO;
 			ParamChecker::checkCondition(!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress),
 										 Error::CreateTransaction, "Invalid spender address " + fromAddress);
@@ -208,10 +213,11 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> outputs;
 
-			outputs.push_back(TransactionOutput(amount, toAddress, assetID));
+			outputs.emplace_back(amount, toAddress, assetID);
 
-			TransactionPtr result = _transactions.CreateTxForOutputs(outputs, fromAddress,
-																	 boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
+			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress,
+																 fee, useVotedUTXO,
+																 boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
 			if (result != nullptr) {
 				result->setRemark(remark);
 
@@ -251,7 +257,7 @@ namespace Elastos {
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 				// TODO heropan check here balanceChanged(_balance);
-				uint64_t balance = getBalance(transaction->GetAssetID());
+				uint64_t balance = getBalance(transaction->GetAssetID(), AssetTransactions::BalanceType::Total);
 				txAdded(transaction);
 				balanceChanged(balance);
 			}
@@ -272,7 +278,7 @@ namespace Elastos {
 												notifyUser, recommendRescan);
 			}
 
-			uint64_t balance = getBalance(removedAssetID);
+			uint64_t balance = getBalance(removedAssetID, AssetTransactions::BalanceType::Total);
 			balanceChanged(balance);
 			txDeleted(removedTransactions, removedAssetID, notifyUser, recommendRescan);
 		}
@@ -290,7 +296,7 @@ namespace Elastos {
 
 			if (!hashes.empty()) txUpdated(hashes, _blockHeight, timestamp);
 			// TODO fix balance later
-			if (needsUpdate) balanceChanged(0);
+//			if (needsUpdate) balanceChanged(0);
 		}
 
 		TransactionPtr TransactionHub::transactionForHash(const UInt256 &transactionHash) {
@@ -611,7 +617,7 @@ namespace Elastos {
 			if (count > 0) {
 				txUpdated(hashes, TX_UNCONFIRMED, 0);
 				// TODO fix later
-				balanceChanged(0);
+//				balanceChanged(0);
 			}
 		}
 

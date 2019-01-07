@@ -84,7 +84,7 @@ namespace Elastos {
 			// int BRWalletAddressIsUsed(BRWallet *wallet, const char *addr);
 			bool addressIsUsed(const std::string &address);
 
-			uint64_t getBalance(const UInt256 &assetID) const;
+			uint64_t getBalance(const UInt256 &assetID, AssetTransactions::BalanceType type) const;
 
 			uint64_t getTotalSent(const UInt256 &assetID) const;
 
@@ -98,10 +98,13 @@ namespace Elastos {
 
 			uint64_t getDefaultFeePerKb();
 
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO);
+
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t amount,
-							  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
-							  const std::string &memo);
+							  const std::string &toAddress, uint64_t fee,
+							  const UInt256 &assetID, const std::string &memo,
+							  const std::string &remark, bool useVotedUTXO);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 

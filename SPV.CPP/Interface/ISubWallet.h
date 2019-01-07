@@ -14,6 +14,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		enum BalanceType {
+			Ordinary,
+			Voted,
+			Total,
+		};
+
 		class ISubWallet {
 		public:
 			/**
@@ -63,7 +69,7 @@ namespace Elastos {
 			 * Get sum of balances of all addresses.
 			 * @return sum of balances.
 			 */
-			virtual uint64_t GetBalance() = 0;
+			virtual uint64_t GetBalance(BalanceType type = Ordinary) = 0;
 
 			/**
 			 * Get balance of only the specified address.
@@ -114,7 +120,8 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
-					const std::string &remark) = 0;
+					const std::string &remark,
+					bool useVotedUTXO = false) = 0;
 
 			/**
 			 * Create a multi-sign transaction and return the content of transaction in json format.
@@ -128,7 +135,8 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
 
 			/**
 			 * Calculate transaction fee by content of transaction.
@@ -148,7 +156,9 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json UpdateTransactionFee(
 					const nlohmann::json &transactionJson,
-					uint64_t fee) = 0;
+					uint64_t fee,
+					const std::string &fromAddress,
+					bool useVotedUTXO = false) = 0;
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.

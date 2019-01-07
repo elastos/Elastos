@@ -53,6 +53,9 @@ namespace Elastos {
 				BalanceNotEnough,
 				JsonFormatError,
 				VoteStakeError,
+				GetTransactionInput,
+				InvalidTransaction,
+				GetUnusedAddress,
 				Other = 29999,
 			} Code;
 		}

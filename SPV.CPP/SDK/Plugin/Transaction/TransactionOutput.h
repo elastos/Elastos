@@ -49,6 +49,8 @@ namespace Elastos {
 
 			std::string getAddress() const;
 
+			void SetAddress(const std::string &address);
+
 			uint64_t getAmount() const;
 
 			void setAmount(uint64_t amount);

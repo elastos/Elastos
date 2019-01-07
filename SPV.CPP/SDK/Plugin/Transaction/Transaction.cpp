@@ -12,6 +12,10 @@
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "Payload/PayloadTransferAsset.h"
 #include "Payload/PayloadRegisterIdentification.h"
+#include "Payload/PayloadRegisterProducer.h"
+#include "Payload/PayloadCancelProducer.h"
+#include "Payload/PayloadUpdateProducer.h"
+#include "Payload/PayloadReturnDepositCoin.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/TransactionHub/TransactionHub.h>
@@ -160,12 +164,34 @@ namespace Elastos {
 			return _outputs;
 		}
 
+		void Transaction::SetOutputs(const std::vector<TransactionOutput> &outputs) {
+			_outputs = outputs;
+		}
+
+		void Transaction::AddOutput(const TransactionOutput &output) {
+			_outputs.push_back(output);
+		}
+
 		const std::vector<TransactionInput> &Transaction::getInputs() const {
 			return _inputs;
 		}
 
 		std::vector<TransactionInput>& Transaction::getInputs() {
 			return _inputs;
+		}
+
+		void Transaction::AddInput(const TransactionInput &input) {
+			_inputs.push_back(input);
+		}
+
+		bool Transaction::ContainInput(const UInt256 &hash, uint32_t n) const {
+			for (size_t i = 0; i < _inputs.size(); ++i) {
+				if (UInt256Eq(&_inputs[i].getTransctionHash(), &hash) && n == _inputs[i].getIndex()) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		std::vector<std::string> Transaction::getOutputAddresses() {
@@ -211,7 +237,7 @@ namespace Elastos {
 
 		void Transaction::removeChangeOutput() {
 			if (_outputs.size() > 1) {
-				_outputs.erase(_outputs.begin() + 1);
+				_outputs.erase(_outputs.begin() + _outputs.size() - 1);
 			}
 		}
 
@@ -741,13 +767,21 @@ namespace Elastos {
 				//_payload = boost::shared_ptr<PayloadDeploy>(new PayloadDeploy());
 			} else if (type == SideChainPow) {
 				_payload = PayloadPtr(new PayloadSideMining());
-			} else if (type == RechargeToSideChain) {
+			} else if (type == RechargeToSideChain) { // side chain payload
 				_payload = PayloadPtr(new PayloadRechargeToSideChain());
 			} else if (type == WithdrawFromSideChain) {
 				_payload = PayloadPtr(new PayloadWithDrawAsset());
 			} else if (type == TransferCrossChainAsset) {
 				_payload = PayloadPtr(new PayloadTransferCrossChainAsset());
-			} else if (type == RegisterIdentification) {
+			} else if (type == RegisterProducer) {
+				_payload = PayloadPtr(new PayloadRegisterProducer());
+			} else if (type == CancelProducer) {
+				_payload = PayloadPtr(new PayloadCancelProducer());
+			} else if (type == UpdateProducer) {
+				_payload = PayloadPtr(new PayloadUpdateProducer());
+			} else if (type == ReturnDepositCoin) {
+				_payload = PayloadPtr(new PayloadReturnDepositCoin());
+			} else if (type == RegisterIdentification) { // ID chain payload
 				_payload = PayloadPtr(new PayloadRegisterIdentification());
 			}
 		}

@@ -108,7 +108,7 @@ namespace Elastos {
 		IPayload &PayloadSideMining::operator=(const IPayload &payload) {
 			try {
 				const PayloadSideMining &payloadSideMining = dynamic_cast<const PayloadSideMining &>(payload);
-				operator=(payload);
+				operator=(payloadSideMining);
 			} catch (const std::bad_cast &e) {
 				Log::error("payload is not instance of PayloadSideMining");
 			}

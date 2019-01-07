@@ -45,7 +45,7 @@ namespace Elastos {
 				IllegalVoteEvidence     = 0x0e,
 				IllegalBlockEvidence    = 0x0f,
 
-				RegisterIdentification  = 0xFF,
+				RegisterIdentification  = 0xFF, // will refactor later
 				TypeMaxCount
 			};
 
@@ -87,9 +87,17 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> &getOutputs();
 
+			void SetOutputs(const std::vector<TransactionOutput> &outputs);
+
+			void AddOutput(const TransactionOutput &output);
+
 			const std::vector<TransactionInput> &getInputs() const;
 
 			std::vector<TransactionInput> &getInputs();
+
+			void AddInput(const TransactionInput &input);
+
+			bool ContainInput(const UInt256 &hash, uint32_t n) const;
 
 			std::vector<std::string> getOutputAddresses();
 

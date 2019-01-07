@@ -43,7 +43,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBalanceInfo();
 
-			virtual uint64_t GetBalance();
+			virtual uint64_t GetBalance(BalanceType type = Ordinary);
 
 			virtual uint64_t GetBalanceWithAddress(const std::string &address);
 
@@ -61,13 +61,15 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
-					const std::string &remark);
+					const std::string &remark,
+					bool useVotedUTXO = false);
 
 			virtual nlohmann::json CreateMultiSignTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					const std::string &memo);
+					const std::string &memo,
+					bool useVotedUTXO = false);
 
 			virtual uint64_t CalculateTransactionFee(
 					const nlohmann::json &rawTransaction,
@@ -75,7 +77,9 @@ namespace Elastos {
 
 			virtual nlohmann::json UpdateTransactionFee(
 					const nlohmann::json &transactionJson,
-					uint64_t fee);
+					uint64_t fee,
+					const std::string &fromAddress,
+					bool useVotedUTXO = false);
 
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &rawTransaction,
@@ -151,15 +155,20 @@ namespace Elastos {
 					  const PluginType &pluginTypes,
 					  MasterWallet *parent);
 
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
+			virtual TransactionPtr CreateTx(
+				const std::string &fromAddress,
+				const std::string &toAddress,
+				uint64_t amount,
+				const UInt256 &assetID,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false) const;
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
 
 			void recover(int limitGap);
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
-			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid);
 

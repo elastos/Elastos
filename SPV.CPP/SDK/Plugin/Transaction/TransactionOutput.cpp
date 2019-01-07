@@ -74,6 +74,12 @@ namespace Elastos {
 			return Utils::UInt168ToAddress(_programHash);
 		}
 
+		void TransactionOutput::SetAddress(const std::string &address) {
+			if (!Utils::UInt168FromAddress(_programHash, address)) {
+				Log::error("address '{}' can't convert to program hash", address);
+			}
+		}
+
 		uint64_t TransactionOutput::getAmount() const {
 			return _amount;
 		}

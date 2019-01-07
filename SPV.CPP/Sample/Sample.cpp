@@ -167,15 +167,8 @@ static ISubWallet *GetSubWallet(MasterWalletManager *manager,
 	return nullptr;
 }
 
-static nlohmann::json CalculateFeeAndSign(ISubWallet *subWallet, const nlohmann::json &tx) {
-	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
-	nlohmann::json tmpTx = subWallet->UpdateTransactionFee(tx, fee);
-
-	return subWallet->SignTransaction(tmpTx, payPasswd);
-}
-
 static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) {
-	nlohmann::json signedTx = CalculateFeeAndSign(subWallet, tx);
+	nlohmann::json signedTx = subWallet->SignTransaction(tx, payPasswd);
 
 	nlohmann::json result = subWallet->PublishTransaction(signedTx);
 	logger->debug("published tx result -> {}", result.dump());
@@ -188,6 +181,9 @@ static void Transafer(MasterWalletManager *manager,
 	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
 
 	nlohmann::json tx = subWallet->CreateTransaction(from, to, amount, "memo", "remark");
+
+	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = subWallet->UpdateTransactionFee(tx, fee, from, false);
 
 	PublishTransaction(subWallet, tx);
 }
@@ -237,6 +233,9 @@ static void Deposit(MasterWalletManager *manager,
 
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
 
+	uint64_t fee = fromSubWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = fromSubWallet->UpdateTransactionFee(tx, fee, from, false);
+
 	PublishTransaction(fromSubWallet, tx);
 }
 
@@ -268,6 +267,9 @@ static void Withdraw(MasterWalletManager *manager,
 		from, amount, mainchainAccounts, mainchainAmounts, mainchainIndexs, "memo", "remark");
 
 	logger->debug("[{}:{}] withdraw {} to {}", fromMasterWalletID, fromSubWalletID, amount, mainchainAddress);
+
+	uint64_t fee = sidechainSubWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = sidechainSubWallet->UpdateTransactionFee(tx, fee, from);
 
 	PublishTransaction(sidechainSubWallet, tx);
 }
@@ -309,6 +311,9 @@ static void RegisterID(MasterWalletManager *manager,
 	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, "memo", "remark");
 
 	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
+
+	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = subWallet->UpdateTransactionFee(tx, fee, "");
 
 	PublishTransaction(subWallet, tx);
 }

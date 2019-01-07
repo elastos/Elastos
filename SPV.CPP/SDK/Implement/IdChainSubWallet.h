@@ -32,11 +32,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
-
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
-			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

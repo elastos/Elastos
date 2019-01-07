@@ -10,7 +10,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
-#include <SDK/Plugin/Transaction/Completer/IdchainTransactionCompleter.h>
 #include <SDK/Plugin/Transaction/Checker/IdchainTransactionChecker.h>
 
 #include <set>
@@ -49,49 +48,26 @@ namespace Elastos {
 		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
 											  const nlohmann::json &programJson, const std::string &memo,
 											  const std::string &remark) {
-			std::string toAddress = payloadJson["Id"].get<std::string>();
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, 0, _info.getMinFee(), memo, remark,
-												  Asset::GetELAAssetID()));
-
-			TransactionPtr transaction = createTransaction(txParam.get());
-			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create ID tx");
-
-			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload());
-			payloadIdChain->fromJson(payloadJson);
-
-			Program newProgram;
-			newProgram.fromJson(programJson);
-			transaction->addProgram(newProgram);
-
-			return transaction->toJson();
-		}
-
-		boost::shared_ptr<Transaction>
-		IdChainSubWallet::createTransaction(TxParam *param) const {
-			IdTxParam *idTxParam = dynamic_cast<IdTxParam *>(param);
-
-			if (idTxParam != nullptr) {
-				//todo create transaction without to address
-
-				TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
-																					param->getAmount(),
-																					param->getToAddress(),
-																					param->getAssetId(),
-																					param->getRemark(),
-																					param->getMemo());
-				if (!ptr) return nullptr;
-				ptr->setTransactionType(Transaction::RegisterIdentification);
-
-				const std::vector<TransactionOutput> &outList = ptr->getOutputs();
-				for (size_t i = 0; i < outList.size(); ++i) {
-					const_cast<TransactionOutput &>(outList[i]).setAssetId(param->getAssetId());
-				}
-
-				return ptr;
-			} else {
-				return SidechainSubWallet::createTransaction(param);
+			std::string toAddress;
+			Program program;
+			PayloadPtr payload = nullptr;
+			try {
+				toAddress = payloadJson["Id"].get<std::string>();
+				program.fromJson(programJson);
+				payload = PayloadPtr(new PayloadRegisterIdentification());
+				payload->fromJson(payloadJson);
+			} catch (const nlohmann::detail::exception &e) {
+				ParamChecker::throwParamException(Error::JsonFormatError,
+												  "Create id tx param error: " + std::string(e.what()));
 			}
+
+			TransactionPtr tx = SubWallet::CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark);
+
+			tx->setTransactionType(Transaction::RegisterIdentification, payload);
+
+			tx->addProgram(program);
+
+			return tx->toJson();
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
@@ -100,14 +76,6 @@ namespace Elastos {
 				checker.Check();
 			} else
 				SidechainSubWallet::verifyRawTransaction(transaction);
-		}
-
-		TransactionPtr IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			if (transaction->getTransactionType() == Transaction::RegisterIdentification) {
-				IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-				return completer.Complete(actualFee);
-			}
-			return SidechainSubWallet::completeTransaction(transaction, actualFee);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

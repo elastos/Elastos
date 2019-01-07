@@ -90,28 +90,22 @@ namespace Elastos {
 			return _utxos.GetUTXOs();
 		}
 
-		uint64_t AssetTransactions::GetBalance() const {
-			return _balance;
-		}
+		uint64_t AssetTransactions::GetBalance(BalanceType type) const {
+			if (type == BalanceType::Ordinary) {
+				return _balance - _votedBalance;
+			} else if (type == BalanceType::Voted) {
+				return _votedBalance;
+			}
 
-		void AssetTransactions::SetBalance(uint64_t balance) {
-			_balance = balance;
+			return _balance;
 		}
 
 		uint64_t AssetTransactions::GetTotalSent() const {
 			return _totalSent;
 		}
 
-		void AssetTransactions::SetTotalSent(uint64_t value) {
-			_totalSent = value;
-		}
-
 		uint64_t AssetTransactions::GetTotalReceived() const {
 			return _totalReceived;
-		}
-
-		void AssetTransactions::SetTotalReceived(uint64_t value) {
-			_totalReceived = value;
 		}
 
 		uint64_t AssetTransactions::GetFeePerKb() const {
@@ -140,7 +134,7 @@ namespace Elastos {
 
 		void AssetTransactions::UpdateBalance(uint32_t blockHeight) {
 			int isInvalid, isPending;
-			uint64_t balance = 0, prevBalance = 0;
+			uint64_t balance = 0, prevBalance = 0, votedBalance = 0;
 			time_t now = time(nullptr);
 			size_t i, j;
 
@@ -205,14 +199,20 @@ namespace Elastos {
 				if (tx->getBlockHeight() != TX_UNCONFIRMED) {
 					_subAccount->AddUsedAddrs(tx);
 
-					for (j = 0; j < tx->getOutputs().size(); j++) {
-						if (!tx->getOutputs()[j].getAddress().empty()) {
+					const std::vector<TransactionOutput> &outputs = tx->getOutputs();
+					for (j = 0; j < outputs.size(); j++) {
+						if (!outputs[j].getAddress().empty()) {
 
-							if (_subAccount->ContainsAddress(tx->getOutputs()[j].getAddress())) {
+							if (_subAccount->ContainsAddress(outputs[j].getAddress())) {
 								uint32_t confirms = tx->getBlockHeight() >= blockHeight ?
 									tx->getBlockHeight() - blockHeight + 1 : 0;
-								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, tx->getOutputs()[j].getAmount(), confirms);
-								balance += tx->getOutputs()[j].getAmount();
+								bool isVote = tx->getVersion() == Transaction::TxVersion::V09 &&
+									outputs[j].GetType() == TransactionOutput::Type::VoteOutput;
+								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms, isVote);
+								balance += outputs[j].getAmount();
+								if (isVote) {
+									votedBalance += outputs[j].getAmount();
+								}
 							}
 						}
 					}
@@ -223,6 +223,9 @@ namespace Elastos {
 					if (!_spentOutputs.Constains(_utxos[j - 1].hash)) continue;
 					const TransactionPtr &t = _allTx.Get(_utxos[j - 1].hash);
 					balance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+					if (t->getOutputs()[_utxos[j - 1].n].GetType() == TransactionOutput::Type::VoteOutput) {
+						votedBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+					}
 					_utxos.RemoveAt(j - 1);
 				}
 
@@ -234,6 +237,7 @@ namespace Elastos {
 
 			assert(_balanceHist.size() == _transactions.size());
 			_balance = balance;
+			_votedBalance = votedBalance;
 		}
 
 		bool AssetTransactions::Exist(const TransactionPtr &tx) {
@@ -248,9 +252,185 @@ namespace Elastos {
 			return _allTx.Get(hash);
 		}
 
+		TransactionPtr AssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
+									  const std::string &fromAddress, uint64_t fee, bool useVotedUTXO,
+									  const boost::function<bool(const std::string &, const std::string &)> &filter) {
+			TransactionPtr txn = TransactionPtr(new Transaction);
+			uint64_t totalOutputAmount = 0, totalInputAmount = 0;
+
+			for (size_t i = 0; i < outputs.size(); ++i) {
+				totalOutputAmount += outputs[i].getAmount();
+			}
+			txn->SetOutputs(outputs);
+
+			_lockable->Lock();
+
+			_utxos.SortBaseOnOutputAmount(totalOutputAmount, _feePerKb);
+
+			for (size_t i = 0; i < _utxos.size(); ++i) {
+				if (!useVotedUTXO && _utxos[i].isVote) {
+					Log::debug("skip voted utxo: {}, n: {}", Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n);
+					continue;
+				}
+
+				const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
+				if (!txInput || _utxos[i].n >= txInput->getOutputs().size())
+					continue;
+
+				if (filter && !fromAddress.empty() &&
+					!filter(fromAddress, txInput->getOutputs()[_utxos[i].n].getAddress())) {
+					continue;
+				}
+
+				if (_utxos[i].confirms < 2) {
+					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
+							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
+					continue;
+				}
+				txn->AddInput(TransactionInput(_utxos[i].hash, _utxos[i].n));
+
+				if (txn->getSize() > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					_lockable->Unlock();
+					txn = nullptr;
+					ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
+												 "Tx size too large, amount should less than " +
+												 std::to_string(totalInputAmount - fee), totalInputAmount - fee);
+
+					_lockable->Lock();
+					break;
+				}
+
+				totalInputAmount += txInput->getOutputs()[_utxos[i].n].getAmount();
+
+				if (totalInputAmount >= totalOutputAmount + fee) {
+					break;
+				}
+			}
+
+			_lockable->Unlock();
+
+			if (txn != nullptr) {
+				txn->setFee(fee);
+			}
+
+			if (txn) {
+				ParamChecker::checkLogic(txn->getOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
+				ParamChecker::checkLogic(totalInputAmount < totalOutputAmount + fee, Error::BalanceNotEnough,
+										 "Available balance is not enough");
+				if (totalInputAmount > totalOutputAmount + fee) {
+					UInt256 assetID = txn->getOutputs()[0].getAssetId();
+					std::vector<Address> addresses = _subAccount->UnusedAddresses(1, 1);
+					ParamChecker::checkCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed.");
+					uint64_t changeAmount = totalInputAmount - totalOutputAmount - fee;
+					TransactionOutput changeOutput(changeAmount, addresses[0].stringify(), assetID);
+					txn->AddOutput(changeOutput);
+				}
+			}
+
+			return txn;
+		}
+
+		void AssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
+											const boost::function<bool(const std::string &, const std::string &)> &filter) {
+			uint64_t totalInputAmount = 0, totalOutputAmount = 0, changeAmount = 0, newChangeAmount = 0;
+			std::vector<TransactionOutput> &outputs = tx->getOutputs();
+			std::vector<TransactionInput> &inputs = tx->getInputs();
+
+			ParamChecker::checkParam(outputs.size() == 0, Error::InvalidTransaction, "No output in tx");
+
+			for (size_t i = 0; i < inputs.size(); ++i) {
+				const TransactionPtr txInput = _allTx.Get(inputs[i].getTransctionHash());
+				if (txInput) {
+					totalInputAmount += txInput->getOutputs()[inputs[i].getIndex()].getAmount();
+				}
+			}
+
+			for (size_t i = 0; i < outputs.size(); ++i) {
+				totalOutputAmount += outputs[i].getAmount();
+			}
+
+			if (outputs.size() > 1) {
+				changeAmount = outputs.back().getAmount();
+				totalOutputAmount -= changeAmount;
+			}
+
+			if (fee == totalInputAmount - totalOutputAmount - changeAmount) {
+				Log::debug("Update with same fee, never mind.");
+				return;
+			}
+
+			if (totalInputAmount < totalOutputAmount + fee) {
+				_lockable->Lock();
+				for (size_t i = 0; i < _utxos.size(); ++i) {
+					if (!useVotedUTXO && _utxos[i].isVote) {
+						Log::debug("skip voted utxo: {}, n: {}", Utils::UInt256ToString(_utxos[i].hash, true),
+								   _utxos[i].n);
+						continue;
+					}
+
+					if (tx->ContainInput(_utxos[i].hash, _utxos[i].n)) {
+						continue;
+					}
+
+					const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
+					if (!txInput || _utxos[i].n >= txInput->getOutputs().size())
+						continue;
+
+					if (filter && !fromAddress.empty() &&
+						!filter(fromAddress, txInput->getOutputs()[_utxos[i].n].getAddress())) {
+						continue;
+					}
+
+					if (_utxos[i].confirms < 2) {
+						Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
+								  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
+						continue;
+					}
+					tx->AddInput(TransactionInput(_utxos[i].hash, _utxos[i].n));
+
+					if (tx->getSize() > TX_MAX_SIZE) { // transaction size-in-bytes too large
+						_lockable->Unlock();
+						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
+													 "Tx size too large, amount should less than " +
+													 std::to_string(totalInputAmount - fee), totalInputAmount - fee);
+
+						_lockable->Lock();
+						break;
+					}
+
+					totalInputAmount += txInput->getOutputs()[_utxos[i].n].getAmount();
+
+					if (totalInputAmount >= totalOutputAmount + fee) {
+						break;
+					}
+				}
+				_lockable->Unlock();
+
+				ParamChecker::checkLogic(totalInputAmount < totalOutputAmount + fee, Error::BalanceNotEnough,
+										 "Available balance is not enough");
+			}
+
+			newChangeAmount = totalInputAmount - totalOutputAmount - fee;
+			if (newChangeAmount > 0) {
+				if (outputs.size() > 1) {
+					outputs.back().setAmount(newChangeAmount);
+				} else {
+					UInt256 assetID = outputs[0].getAssetId();
+					std::vector<Address> addresses = _subAccount->UnusedAddresses(1, 1);
+					ParamChecker::checkCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed.");
+					outputs.emplace_back(newChangeAmount, addresses[0].stringify(), assetID);
+				}
+			} else {
+				tx->removeChangeOutput();
+			}
+			tx->setFee(fee);
+		}
+
+#if 0
 		TransactionPtr
 		AssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
 											  const std::string &fromAddress,
+											  bool useVotedUTXO,
 											  const boost::function<bool(const std::string &,
 																		 const std::string &)> &filter) {
 			TransactionPtr transaction = TransactionPtr(new Transaction);
@@ -272,6 +452,12 @@ namespace Elastos {
 			// TODO: use up UTXOs received from any of the output scripts that this transaction sends funds to, to mitigate an
 			//       attacker double spending and requesting a refund
 			for (i = 0; i < _utxos.size(); i++) {
+
+				if (!useVotedUTXO && _utxos[i].isVote) {
+					Log::debug("skip voted utxo: {}, n: {}", Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n);
+					continue;
+				}
+
 				const TransactionPtr &tx = _allTx.Get(_utxos[i].hash);
 				if (!tx || _utxos[i].n >= tx->getOutputs().size()) continue;
 				if (filter && !fromAddress.empty() &&
@@ -376,6 +562,7 @@ namespace Elastos {
 
 			return transaction;
 		}
+#endif
 
 		uint64_t AssetTransactions::getMinOutputAmount() {
 			uint64_t amount;
@@ -716,13 +903,29 @@ namespace Elastos {
 			return result;
 		}
 
-		TransactionPtr GroupedAssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-																	const std::string &fromAddress,
-																	const boost::function<bool(const std::string &,
-																							   const std::string &)> &filter) {
+		TransactionPtr
+		GroupedAssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
+												 const std::string &fromAddress,
+												 uint64_t fee, bool useVotedUTXO,
+												 const boost::function<bool(const std::string &, const std::string &)> &filter) {
 			UInt256 assetID = GetUniqueAssetID(outputs);
-			return _groupedTransactions[assetID]->CreateTxForOutputs(outputs, fromAddress, filter);
+			return _groupedTransactions[assetID]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, filter);
 		}
+
+		void GroupedAssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
+												   const boost::function<bool(const std::string &, const std::string &)> &filter) {
+			UInt256 assetID = GetUniqueAssetID(tx->getOutputs());
+			_groupedTransactions[assetID]->UpdateTxFee(tx, fee, fromAddress, useVotedUTXO, filter);
+		}
+
+//		TransactionPtr GroupedAssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
+//																	const std::string &fromAddress,
+//																	bool useVotedUTXO,
+//																	const boost::function<bool(const std::string &,
+//																							   const std::string &)> &filter) {
+//			UInt256 assetID = GetUniqueAssetID(outputs);
+//			return _groupedTransactions[assetID]->CreateTxForOutputs(outputs, fromAddress, useVotedUTXO, filter);
+//		}
 
 		TransactionPtr GroupedAssetTransactions::TransactionForHash(const UInt256 &transactionHash) {
 			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();

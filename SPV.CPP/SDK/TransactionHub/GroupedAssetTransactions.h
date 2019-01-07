@@ -18,7 +18,15 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+
 		class AssetTransactions {
+		public:
+			enum BalanceType {
+				Ordinary,
+				Voted,
+				Total,
+			};
+
 		public:
 			AssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount,
 							  const std::vector<std::string> &listeningAddrs);
@@ -45,7 +53,7 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs() const;
 
-			uint64_t GetBalance() const;
+			uint64_t GetBalance(BalanceType type = Ordinary) const;
 
 			void SetBalance(uint64_t balance);
 
@@ -67,10 +75,18 @@ namespace Elastos {
 
 			void UpdateBalance(uint32_t blockHeight);
 
-			TransactionPtr
-			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-							   const std::string &fromAddress,
-							   const boost::function<bool(const std::string &, const std::string &)> &filter);
+			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
+										  uint64_t fee, bool useVotedUTXO,
+										  const boost::function<bool(const std::string &, const std::string &)> &filter);
+
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
+							 const boost::function<bool(const std::string &, const std::string &)> &filter);
+
+//			TransactionPtr
+//			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
+//							   const std::string &fromAddress,
+//							   bool useVotedUTXO,
+//							   const boost::function<bool(const std::string &, const std::string &)> &filter);
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
@@ -99,7 +115,7 @@ namespace Elastos {
 		private:
 			typedef ElementSet<TransactionPtr> TransactionSet;
 			std::vector<TransactionPtr> _transactions;
-			uint64_t _balance, _totalSent, _totalReceived, _feePerKb;
+			uint64_t _balance, _votedBalance, _totalSent, _totalReceived, _feePerKb;
 			UTXOList _utxos;
 			UTXOList _spentOutputs;
 			TransactionSet _allTx, _invalidTx, _pendingTx;
@@ -140,10 +156,18 @@ namespace Elastos {
 
 			const AssetTransactionsPtr &Get(const UInt256 &assetID) const;
 
-			TransactionPtr
-			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-							   const std::string &fromAddress,
-							   const boost::function<bool(const std::string &, const std::string &)> &filter);
+			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
+										  uint64_t fee, bool useVotedUTXO,
+										  const boost::function<bool(const std::string &, const std::string &)> &filter);
+
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
+							 const boost::function<bool(const std::string &, const std::string &)> &filter);
+
+//			TransactionPtr
+//			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
+//							   const std::string &fromAddress,
+//							   bool useVotedUTXO,
+//							   const boost::function<bool(const std::string &, const std::string &)> &filter);
 
 			TransactionPtr TransactionForHash(const UInt256 &transactionHash);
 
