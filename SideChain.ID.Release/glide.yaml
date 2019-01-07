@@ -2,14 +2,15 @@ package: github.com/elastos/Elastos.ELA.SideChain.ID
 import:
 - package: github.com/golang/crypto
 - package: github.com/golang/sys
-- package: github.com/AlexpanXX/fsnotify
+- package: github.com/elastos/Elastos.ELA
+  version: b74a971f9e30e4a46bfbc997974cec045e5d00c6
+- package: github.com/elastos/Elastos.ELA.SPV
+  version: 5c5ed81a1ec12a4056c372b7b2606d845f504159
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: dev
+  version: ecd37b1aff1e0ea6286b7ddffb9b48d250c9c90e
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: dev
-- package: github.com/gorilla/websocket
+  version: fe590d15c7312bdd51c46c2fdc15557d91fb1082
 - package: github.com/mattn/go-sqlite3
-- package: github.com/pborman/uuid
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb

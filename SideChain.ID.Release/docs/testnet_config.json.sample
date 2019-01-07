@@ -1,0 +1,37 @@
+{
+  "Configuration": {
+    "Magic": 201812151,
+    "SpvMagic": 2018001,
+    "SeedList": [
+      "did-testnet-001.elastos.org:21608",
+      "did-testnet-002.elastos.org:21608",
+      "did-testnet-003.elastos.org:21608",
+      "did-testnet-004.elastos.org:21608",
+      "did-testnet-005.elastos.org:21608"
+    ],
+    "SpvSeedList": [
+      "node-testnet-002.elastos.org:21866",
+      "node-testnet-003.elastos.org:21866",
+      "node-testnet-004.elastos.org:21866"
+    ],
+    "ExchangeRate": 1.0,
+    "MinCrossChainTxFee": 10000,
+    "HttpRestPort": 21604,
+    "HttpWsPort": 21605,
+    "HttpJsonPort": 21606,
+    "NodePort": 21608,
+    "PrintLevel": 1,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "DisableTxFilters": true,
+    "MainChainFoundationAddress": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+    "FoundationAddress": "8NRxtbMKScEWzW8gmPDGUZ8LSzm688nkZZ",
+    "PowConfiguration": {
+      "PayToAddr": "ESHtMtd4v4247fBn3KcDG4pfoCtz51Q6nZ",
+      "AutoMining": false,
+      "MinerInfo": "DID",
+      "MinTxFee": 100,
+      "InstantBlock": false
+    }
+  }
+}

@@ -9,13 +9,13 @@ build/
 .idea/
 .log
 .DS_Store
-/Logs/*
-/SPVLogs/*
-/Chain/*
+/data_regt/*
+/data_test/*
 /Chain_UnitTest/*
 /glide.lock
 vendor/*
-/side
+/did
 *.json
 *.bin
 *.db
+/elastos_did/*
