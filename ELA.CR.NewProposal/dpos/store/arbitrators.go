@@ -164,6 +164,22 @@ func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num >= a.cfg.ArbitratorsCount-a.cfg.MajorityCount
 }
 
+func (a *Arbitrators) GetActiveDposPeers() (result map[string]string) {
+	peers, err := a.cfg.Store.GetDirectPeers()
+	if err == nil {
+		log.Warn("get direct peers from data base error")
+		return result
+	}
+
+	for _, v := range peers {
+		if v.Sequence > 0 {
+			pk := common.BytesToHexString(v.PublicKey)
+			result[pk] = v.Address
+		}
+	}
+	return result
+}
+
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 	if a.isNewElection() {
 		if err := a.changeCurrentArbitrators(); err != nil {
