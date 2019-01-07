@@ -61,6 +61,7 @@ func StartRPCServer() {
 	mainMux["votestatus"] = VoteStatus
 	// for cross-chain arbiter
 	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
+	mainMux["getactivedpospeers"] = GetActiveDposPeers
 
 	err := http.ListenAndServe(":"+strconv.Itoa(config.Parameters.HttpJsonPort), nil)
 	if err != nil {

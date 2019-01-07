@@ -268,6 +268,11 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
+func GetActiveDposPeers(params Params) map[string]interface{} {
+	peers := blockchain.DefaultLedger.Arbitrators.GetActiveDposPeers()
+	return ResponsePack(Success, peers)
+}
+
 func GetInfo(param Params) map[string]interface{} {
 	RetVal := struct {
 		Version       int    `json:"version"`
