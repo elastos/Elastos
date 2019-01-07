@@ -314,6 +314,10 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.hash
 }
 
+func (tx *Transaction) IsIllegalTypeTx() bool {
+	return tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsIllegalBlockTx() || tx.IsSidechainIllegalDataTx()
+}
+
 func (tx *Transaction) IsIllegalProposalTx() bool {
 	return tx.TxType == IllegalProposalEvidence
 }
