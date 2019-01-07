@@ -107,6 +107,7 @@ type ArbiterConfiguration struct {
 	MaxConnections   int      `json:"MaxConnections"`
 	MajorityCount    uint32   `json:"MajorityCount"`
 	OriginArbiters   []string `json:"OriginArbiters"`
+	CRCArbiters      []string `json:"CRCArbiters"`
 	ArbitratorsCount uint32   `json:"ArbitratorsCount"`
 	CandidatesCount  uint32   `json:"CandidatesCount"`
 }

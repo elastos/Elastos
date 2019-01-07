@@ -70,6 +70,9 @@ var MainNetParams = Params{
 		"02fa3e0d14e0e93ca41c3c0f008679e417cf2adb6375dd4bbbee9ed8e8db606a56",
 		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 	},
+	CRCArbiters: [][]byte{
+		//todo add CRC arbiters
+	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
 	TargetTimespan:     24 * time.Hour,  // 24 hours
@@ -102,6 +105,9 @@ var TestNetParams = Params{
 		"03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
+	},
+	CRCArbiters: [][]byte{
+		//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
@@ -153,6 +159,9 @@ type Params struct {
 
 	// OriginArbiters defines the original arbiters producing the block.
 	OriginArbiters []string
+
+	// CRCArbiters defines the fixed CRC arbiters producing the block.
+	CRCArbiters [][]byte
 
 	// PowLimit defines the highest allowed proof of work value for a block
 	// as a uint256.
