@@ -72,8 +72,26 @@ func loadConfigParams() *config.ConfigParams {
 	if len(cfg.ArbiterConfiguration.OriginArbiters) > 0 {
 		activeNetParams.OriginArbiters = cfg.ArbiterConfiguration.OriginArbiters
 	}
+	if len(cfg.ArbiterConfiguration.CRCArbiters) > 0 {
+		arbiters, err := convertArbitrators(cfg.ArbiterConfiguration.CRCArbiters)
+		if err != nil {
+			activeNetParams.CRCArbiters = arbiters
+		}
+	}
 
 	return &config.Parameters
+}
+
+func convertArbitrators(arbiters []string) (result [][]byte, err error) {
+	for _, v := range arbiters {
+		arbiterByte, err := common.HexStringToBytes(v)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, arbiterByte)
+	}
+
+	return result, nil
 }
 
 var configTemplate = config.Configuration{

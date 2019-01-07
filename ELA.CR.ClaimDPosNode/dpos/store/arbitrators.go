@@ -19,6 +19,7 @@ type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
 	MajorityCount    uint32
+	CRCArbitrators   [][]byte
 	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
 	ChainStore       blockchain.IChainStore
@@ -213,16 +214,18 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 		return err
 	}
 
-	if uint32(len(producers)) < a.cfg.ArbitratorsCount {
-		return errors.New("Producers count less than arbitrators count.")
+	normalArbitratorsCount := a.cfg.ArbitratorsCount - uint32(len(a.cfg.CRCArbitrators))
+	if uint32(len(producers)) < normalArbitratorsCount {
+		return errors.New("producers count less than arbitrators count")
 	}
 
-	a.nextArbitrators = producers[:a.cfg.ArbitratorsCount]
+	a.nextArbitrators = producers[:normalArbitratorsCount]
+	a.nextCandidates = append(a.nextCandidates, a.cfg.CRCArbitrators...)
 
-	if uint32(len(producers)) < a.cfg.ArbitratorsCount+a.cfg.CandidatesCount {
-		a.nextCandidates = producers[a.cfg.ArbitratorsCount:]
+	if uint32(len(producers)) < normalArbitratorsCount+a.cfg.CandidatesCount {
+		a.nextCandidates = producers[normalArbitratorsCount:]
 	} else {
-		a.nextCandidates = producers[a.cfg.ArbitratorsCount : a.cfg.ArbitratorsCount+a.cfg.CandidatesCount]
+		a.nextCandidates = producers[normalArbitratorsCount : normalArbitratorsCount+a.cfg.CandidatesCount]
 	}
 
 	a.cfg.Store.SaveNextArbitrators(a)

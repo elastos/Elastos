@@ -93,6 +93,7 @@ func main() {
 		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
 		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		CRCArbitrators:   activeNetParams.CRCArbiters,
 		Versions:         versions,
 		Store:            dposStore,
 		ChainStore:       chainStore,
