@@ -21,4 +21,6 @@ type Arbitrators interface {
 
 	HasArbitersMajorityCount(num uint32) bool
 	HasArbitersMinorityCount(num uint32) bool
+
+	GetActiveDposPeers() map[string]string
 }
