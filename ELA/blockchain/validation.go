@@ -27,6 +27,7 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 			if err := checkCrossChainSignatures(*program, data); err != nil {
 				return err
 			}
+			continue
 		}
 
 		codeHash := common.ToCodeHash(program.Code)
@@ -155,7 +156,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := signatures[i:i+crypto.SignatureScriptLength][1:]
+		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
 		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
