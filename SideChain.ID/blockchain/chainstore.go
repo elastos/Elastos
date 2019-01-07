@@ -3,79 +3,78 @@ package blockchain
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
+	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type IDChainStore struct {
-	blockchain.ChainStore
+	*blockchain.ChainStore
 }
 
-func NewChainStore() (blockchain.IChainStore, error) {
-	chainStore, err := blockchain.NewChainStore()
+func NewChainStore(genesisBlock *types.Block, dataPath string) (*IDChainStore, error) {
+	chainStore, err := blockchain.NewChainStore(dataPath, genesisBlock)
 	if err != nil {
 		return nil, err
 	}
 
 	store := &IDChainStore{
-		ChainStore: *chainStore,
+		ChainStore: chainStore,
 	}
-	store.Init()
 
-	go store.Loop()
+	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
 
 	return store, nil
 }
 
-func (c *IDChainStore) Init() {
-	c.PersistTransactions = c.PersistTransactionsImpl
-}
-
-func (c *IDChainStore) PersistTransactionsImpl(b *ucore.Block) error {
+func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
+		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == ucore.RegisterAsset {
-			regPayload := txn.Payload.(*ucore.PayloadRegisterAsset)
-			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
+
+		if txn.TxType == types.RegisterAsset {
+			regPayload := txn.Payload.(*types.PayloadRegisterAsset)
+			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
-		if txn.TxType == ucore.RechargeToSideChain {
-			rechargePayload := txn.Payload.(*ucore.PayloadRechargeToSideChain)
-			hash, err := rechargePayload.GetMainchainTxHash()
+
+		if txn.TxType == types.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}
-			c.PersistMainchainTx(*hash)
+			c.PersistMainchainTx(batch, *hash)
 		}
-		if txn.TxType == core.RegisterIdentification {
-			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
+
+		if txn.TxType == id.RegisterIdentification {
+			regPayload := txn.Payload.(*id.PayloadRegisterIdentification)
 			for _, content := range regPayload.Contents {
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.PersistRegisterIdentificationTx(buf.Bytes(), txn.Hash())
+				c.PersistRegisterIdentificationTx(batch, buf.Bytes(), txn.Hash())
 			}
 		}
 	}
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(idKey []byte, txHash Uint256) {
-	key := []byte{byte(blockchain.IX_IDENTIFICATION)}
+func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
+	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
 	// PUT VALUE
-	c.BatchPut(key, txHash.Bytes())
+	batch.Put(key, txHash.Bytes())
 }
 
 func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
-	key := []byte{byte(blockchain.IX_IDENTIFICATION)}
+	key := []byte{byte(blockchain.IX_Identification)}
 	data, err := c.Get(append(key, idKey...))
 	if err != nil {
 		return nil, err
