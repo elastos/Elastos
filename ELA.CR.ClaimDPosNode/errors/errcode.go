@@ -65,6 +65,7 @@ var ErrMap = map[ErrCode]string{
 	ErrDoubleSpend:           "INTERNAL ERROR, ErrDoubleSpend",
 	ErrTransactionDuplicate:  "INTERNAL ERROR, ErrTransactionDuplicate",
 	ErrSidechainTxDuplicate:  "INTERNAL ERROR, ErrSidechainTxDuplicate",
+	ErrProducerProcessing:    "INTERNAL ERROR, ErrProducerProcessing",
 	ErrXmitFail:              "INTERNAL ERROR, ErrXmitFail",
 	ErrTransactionSize:       "INTERNAL ERROR, ErrTransactionSize",
 	ErrUnknownReferredTx:     "INTERNAL ERROR, ErrUnknownReferredTx",

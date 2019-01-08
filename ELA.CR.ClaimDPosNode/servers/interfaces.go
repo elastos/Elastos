@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -925,6 +926,7 @@ type Producer struct {
 	Active    bool   `json:"active"`
 	Votes     string `json:"votes"`
 	IP        string `json:"ip"`
+	Index     uint64 `json:"index"`
 }
 
 type Producers struct {
@@ -945,7 +947,7 @@ func ListProducers(param Params) map[string]interface{} {
 		return ResponsePack(Error, "not found producer")
 	}
 	var ps []Producer
-	for _, p := range producers {
+	for i, p := range producers {
 		var active bool
 		pk := common.BytesToHexString(p.PublicKey)
 		state := chain.DefaultLedger.Store.GetProducerStatus(pk)
@@ -961,8 +963,8 @@ func ListProducers(param Params) map[string]interface{} {
 			Active:    active,
 			Votes:     vote.String(),
 			IP:        p.Address,
+			Index:     uint64(i),
 		}
-
 		ps = append(ps, producer)
 	}
 
@@ -988,7 +990,14 @@ func ListProducers(param Params) map[string]interface{} {
 func ProducerStatus(param Params) map[string]interface{} {
 	publicKey, ok := param.String("publickey")
 	if !ok {
-		return ResponsePack(InvalidParams, "publicKey not found.")
+		return ResponsePack(InvalidParams, "public key not found")
+	}
+	publicKeyBytes, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid public key")
+	}
+	if _, err = contract.PublicKeyToStandardProgramHash(publicKeyBytes); err != nil {
+		return ResponsePack(InvalidParams, "invalid public key bytes")
 	}
 	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(publicKey))
 }
@@ -996,7 +1005,7 @@ func ProducerStatus(param Params) map[string]interface{} {
 func VoteStatus(param Params) map[string]interface{} {
 	address, ok := param.String("address")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "address not found")
 	}
 
 	programHash, err := common.Uint168FromAddress(address)

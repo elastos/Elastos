@@ -880,13 +880,14 @@ result:
 
 | name        | type   | description                              |
 | ----------- | ------ | ---------------------------------------- |
-| publickey   | string | the public key of producer               |
-| nickname    | string | the nick name of producer                |
-| url         | string | the url of producer                      |
-| location    | uint64 | the location number of producer          |
+| publickey   | string | the public key of the producer           |
+| nickname    | string | the nick name of the producer            |
+| url         | string | the url of the producer                  |
+| location    | uint64 | the location number of the producer      |
 | active      | bool   | if producer has confirmed                |
 | votes       | string | the votes currently held                 |
-| ip          | string | the ip address of producer               |
+| ip          | string | the ip address of the producer           |
+| index       | uint64 | the index of the producer                |
 | totalvotes  | string | the total votes of registered producers  |
 | totalcounts | uint64 | the total counts of registered producers |
 
