@@ -23,7 +23,7 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 
 func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.ArbitratorsCount
+	originArbitratorsCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
 	arbitrators := make([][]byte, 0)
 	for _, v := range originalArbitrators {
@@ -38,7 +38,7 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
+	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionV0TestSuite) TestAssignCoinbaseTxRewards() {

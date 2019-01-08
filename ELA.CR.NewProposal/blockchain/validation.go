@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -123,8 +122,8 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n || n != int(config.Parameters.ArbiterConfiguration.ArbitratorsCount) ||
-		m <= int(config.Parameters.ArbiterConfiguration.MajorityCount) {
+	if m < 1 || m > n || n != int(DefaultLedger.Arbitrators.GetArbitersCount()) ||
+		m <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseCrossChainScript(code)
