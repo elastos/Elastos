@@ -90,7 +90,7 @@ func main() {
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := store.NewArbitrators(&store.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		ArbitratorsCount: config.Parameters.ArbiterConfiguration.NormalArbitratorsCount + uint32(len(activeNetParams.CRCArbiters)),
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
 		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
 		CRCArbitrators:   activeNetParams.CRCArbiters,

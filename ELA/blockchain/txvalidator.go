@@ -910,8 +910,7 @@ func CheckSidechainIllegalEvidenceTransaction(txn *Transaction) error {
 		return err
 	}
 
-	//fixme change MajorityCount to MajorityCrosschainCount
-	if uint32(len(payload.Signs)) <= config.Parameters.ArbiterConfiguration.MajorityCount {
+	if len(payload.Signs) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("insufficient signs count")
 	}
 
@@ -1009,8 +1008,8 @@ func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposal
 	signers := d.Evidence.Signers
 	compareSigners := d.CompareEvidence.Signers
 
-	if uint32(len(signers)) < config.Parameters.ArbiterConfiguration.MajorityCount ||
-		uint32(len(compareSigners)) < config.Parameters.ArbiterConfiguration.MajorityCount {
+	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) ||
+		len(compareSigners) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("Signers count less than dpos required majority count")
 	}
 

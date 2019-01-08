@@ -28,7 +28,7 @@ func (s *blockVersionTestSuite) SetupTest() {
 
 func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.ArbitratorsCount
+	originArbitratorsCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -44,7 +44,7 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 		arbitrators = append(arbitrators, a)
 	}
 
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = 5
+	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = 5
 	chainStore := &blockchain.ChainStoreMock{
 		RegisterProducers: []*payload.PayloadRegisterProducer{
 			{
@@ -79,7 +79,7 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
+	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
