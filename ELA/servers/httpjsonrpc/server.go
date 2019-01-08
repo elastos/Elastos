@@ -165,28 +165,42 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 func  clientAllowed(r *http.Request) (bool) {
 	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
+	log.Debugf("RemoteAddr %v \n", Parameters.RpcConfiguration.WhiteIpList )
 
 	if  colonIndex := strings.LastIndex(r.RemoteAddr, ":") ; colonIndex >= 0 {
 		remoteIp := r.RemoteAddr[:colonIndex]
+		log.Debugf("remoteIp %s \n", remoteIp)
+
 		if remoteIp == "127.0.0.1" {
 			return  true
 		}
 
 		for _, cfgIp := range Parameters.RpcConfiguration.WhiteIpList {
 			//WhiteIpList have 0.0.0.0  allow all ip in
+			log.Debugf("cfgIp %v \n", cfgIp )
+
 			if cfgIp == "0.0.0.0" {
+				log.Debugf("cfgIp == 0.0.0.0 clientAllowed ------ \n")
+
 				return  true
 			}
 			if cfgIp == remoteIp {
+				log.Debugf("cfgIp ==remoteIp  %s \n", remoteIp)
+
 				return  true
 			}
 
 		}
 	}
+	log.Debugf("RemoteAddr clientAllowed failure %s \n", r.RemoteAddr)
+
 	return false
 }
 
 func  checkAuth(r *http.Request) (bool,  error) {
+
+	log.Warnf("checkAuth PowConfiguration %+v" , Parameters.RpcConfiguration)
+
 	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0)  {
 		return true,  nil
 	}
