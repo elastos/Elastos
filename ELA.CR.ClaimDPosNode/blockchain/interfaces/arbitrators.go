@@ -19,6 +19,8 @@ type Arbitrators interface {
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
 
+	GetArbitersCount() uint32
+	GetArbitersMajorityCount() uint32
 	HasArbitersMajorityCount(num uint32) bool
 	HasArbitersMinorityCount(num uint32) bool
 

@@ -30,6 +30,14 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) GetArbitersCount() uint32 {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) GetArbitersMajorityCount() uint32 {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) GetActiveDposPeers() map[string]string {
 	panic("implement me")
 }

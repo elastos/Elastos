@@ -9,10 +9,16 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/events"
+)
+
+const (
+	DposMajorityRatioNumerator   = float64(2)
+	DposMajorityRatioDenominator = float64(3)
 )
 
 type ArbitratorsConfig struct {
@@ -156,6 +162,14 @@ func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 		a.DutyChangedCount, offset)
 }
 
+func (a *Arbitrators) GetArbitersCount() uint32 {
+	return a.cfg.ArbitratorsCount
+}
+
+func (a *Arbitrators) GetArbitersMajorityCount() uint32 {
+	return a.cfg.MajorityCount
+}
+
 func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
 	return num > a.cfg.MajorityCount
 }
@@ -291,8 +305,13 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 }
 
 func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
+	if cfg.MajorityCount == 0 {
+		minSignCount := float64(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount) * DposMajorityRatioNumerator / DposMajorityRatioDenominator
+		cfg.MajorityCount = uint32(minSignCount)
+	}
+
 	if cfg.MajorityCount > cfg.ArbitratorsCount {
-		return nil, fmt.Errorf("Majority count should less or equal than arbitrators count.")
+		return nil, fmt.Errorf("majority count should less or equal than arbitrators count")
 	}
 	return &Arbitrators{cfg: *cfg}, nil
 }

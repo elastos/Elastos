@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
@@ -25,7 +24,7 @@ func CheckConfirm(confirm *DPosProposalVoteSlot) error {
 		signers[vote.Signer] = struct{}{}
 	}
 
-	if len(signers) < int(config.Parameters.ArbiterConfiguration.MajorityCount) {
+	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("[onConfirm] signers less than majority count")
 	}
 

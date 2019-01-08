@@ -138,8 +138,8 @@ func (b *blockCurrent) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([
 
 func (b *blockCurrent) GetProducersDesc() ([][]byte, error) {
 	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
-	if uint32(len(producersInfo)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
-		return nil, errors.New("producers count less than min arbitrators count.")
+	if uint32(len(producersInfo)) < config.Parameters.ArbiterConfiguration.NormalArbitratorsCount {
+		return nil, errors.New("producers count less than min arbitrators count")
 	}
 
 	result := make([][]byte, 0)
@@ -170,8 +170,8 @@ func (b *blockCurrent) AssignCoinbaseTxRewards(block *types.Block, totalReward c
 
 func (b *blockCurrent) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
 	arbitratorsHashes := b.cfg.Arbitrators.GetArbitratorsProgramHashes()
-	if uint32(len(arbitratorsHashes)) < config.Parameters.ArbiterConfiguration.ArbitratorsCount {
-		return 0, errors.New("Current arbitrators count less than required arbitrators count.")
+	if uint32(len(arbitratorsHashes)) < blockchain.DefaultLedger.Arbitrators.GetArbitersCount() {
+		return 0, errors.New("current arbitrators count less than required arbitrators count")
 	}
 	candidatesHashes := b.cfg.Arbitrators.GetCandidatesProgramHashes()
 
