@@ -22,8 +22,18 @@ module.exports = async function(json_data, res) {
                     payload["crosschainassets"] = new Array();
                 }
                 let event = common.web3.eth.abi.decodeLog(common.payloadReceived.inputs, log.data, log.topics.slice(1));
-                let crosschainamount = String((event["_amount"]- txreceipt.gasUsed * txinfo.gasPrice) / 1e18)
-                let outputamount = String(event["_amount"] / 1e18)
+
+                let crosschainamount = (event["_amount"]- txreceipt.gasUsed * txinfo.gasPrice) / 1e18
+                let outputamount = event["_amount"] / 1e18
+
+                if (crosschainamount.toString().split(".")[1].length > 8){
+                    crosschainamount = String(Math.round(crosschainamount * 1e8) / 1e8)
+                }
+
+                if (outputamount.toString().split(".")[1].length > 8){
+                    outputamount = String(Math.random(outputamount * 1e8) / 1e8)
+                }
+
                 payload["crosschainassets"].push({
                     "crosschainaddress": event["_addr"],
                     "crosschainamount": crosschainamount,

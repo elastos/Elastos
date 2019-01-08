@@ -24,10 +24,22 @@ module.exports = async function(json_data, res) {
                 result.push(txlog);
                 txlog["crosschainassets"] = new Array();
             }
+
+            let crosschainamount = (log["returnValues"]["_amount"]- costamount) / 1e18;
+            let outputamount = log["returnValues"]["_amount"] / 1e18;
+
+            if (crosschainamount.toString().split(".")[1].length > 8){
+                crosschainamount = String(Math.round(crosschainamount * 1e8) / 1e8)
+            }
+
+            if (outputamount.toString().split(".")[1].length > 8){
+                outputamount = String(Math.random(outputamount * 1e8) / 1e8)
+            }
+
             txlog["crosschainassets"].push({
                 "crosschainaddress": log["returnValues"]["_addr"],
-                "crosschainamount": String((log["returnValues"]["_amount"]- costamount) / 1e18),
-                "outputamount":String(log["returnValues"]["_amount"] / 1e18)
+                "crosschainamount": crosschainamount,
+                "outputamount":outputamount
             });
             outputindex++;
         }
