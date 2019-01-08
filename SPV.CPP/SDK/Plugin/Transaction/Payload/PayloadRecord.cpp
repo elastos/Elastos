@@ -65,7 +65,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRecord::toJson() const {
+		nlohmann::json PayloadRecord::toJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["RecordType"] = _recordType;
@@ -74,7 +74,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRecord::fromJson(const nlohmann::json &j) {
+		void PayloadRecord::fromJson(const nlohmann::json &j, uint8_t version) {
 			_recordType = j["RecordType"].get<std::string>();
 			_recordData = Utils::decodeHex(j["RecordData"].get<std::string>());
 		}

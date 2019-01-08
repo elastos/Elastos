@@ -120,7 +120,7 @@ namespace Elastos {
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
-					entity.Asset = buff;
+					asset.Asset = buff;
 #else
 					std::string str((const char *) pdata, len);
 					asset.Asset = Utils::decodeHex(str);
@@ -163,7 +163,7 @@ namespace Elastos {
 				CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
-					entity.Asset = buff;
+					asset.Asset = buff;
 #else
 				std::string str((const char *) pdata, len);
 				asset.Asset = Utils::decodeHex(str);

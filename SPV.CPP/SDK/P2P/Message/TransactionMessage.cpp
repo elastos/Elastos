@@ -34,7 +34,7 @@ namespace Elastos {
 				return false;
 			} else {
 				txHash = tx->getHash();
-				_peer->debug("got tx: %s", Utils::UInt256ToString(txHash, true));
+				_peer->debug("got tx: {}", Utils::UInt256ToString(txHash, true));
 
 				FireRelayedTx(tx);
 
@@ -50,7 +50,7 @@ namespace Elastos {
 				}
 			}
 
-			return false;
+			return true;
 		}
 
 		void TransactionMessage::Send(const SendMessageParameter &param) {

@@ -221,7 +221,7 @@ namespace Elastos {
 					}
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
-					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
+//					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
 					socket = _socket;
 				}
 

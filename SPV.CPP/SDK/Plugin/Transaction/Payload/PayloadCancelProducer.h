@@ -22,13 +22,19 @@ namespace Elastos {
 
 			void SetPublicKey(const CMBlock &key);
 
+			void SetSignature(const CMBlock &signature);
+
+			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+
+			bool DeserializeUnsigned(ByteStream &istream, uint8_t version);
+
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json toJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual void fromJson(const nlohmann::json &, uint8_t version);
 
 			virtual IPayload &operator=(const IPayload &payload);
 
@@ -36,6 +42,7 @@ namespace Elastos {
 
 		private:
 			CMBlock _publicKey;
+			CMBlock _signature;
 		};
 
 	}

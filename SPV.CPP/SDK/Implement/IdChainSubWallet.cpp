@@ -55,7 +55,7 @@ namespace Elastos {
 				toAddress = payloadJson["Id"].get<std::string>();
 				program.fromJson(programJson);
 				payload = PayloadPtr(new PayloadRegisterIdentification());
-				payload->fromJson(payloadJson);
+				payload->fromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ParamChecker::throwParamException(Error::JsonFormatError,
 												  "Create id tx param error: " + std::string(e.what()));
@@ -88,7 +88,7 @@ namespace Elastos {
 										  transaction->getPayload());
 								  callback->OnTransactionStatusChanged(txHash,
 										  SubWalletCallback::convertToString(SubWalletCallback::Added),
-										  payload->toJson(), 0);
+										  payload->toJson(0), 0);
 							  });
 			} else {
 				SubWallet::onTxAdded(transaction);
@@ -110,7 +110,7 @@ namespace Elastos {
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
 								  callback->OnTransactionStatusChanged(reversedId, SubWalletCallback::convertToString(
-										  SubWalletCallback::Updated), payload->toJson(), confirm);
+										  SubWalletCallback::Updated), payload->toJson(0), confirm);
 							  });
 			} else {
 				SubWallet::onTxUpdated(hash, blockHeight, timeStamp);

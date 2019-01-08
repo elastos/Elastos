@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_PAYLOADISSUETOKEN_H
 #define __ELASTOS_SDK_PAYLOADISSUETOKEN_H
 
+#include <Core/BRInt.h>
 #include "IPayload.h"
 
 namespace Elastos {
@@ -12,6 +13,12 @@ namespace Elastos {
 
 		class PayloadRechargeToSideChain :
 				public IPayload {
+		public:
+			enum Version {
+				V0,
+				V1,
+			};
+
 		public:
 			PayloadRechargeToSideChain();
 
@@ -25,9 +32,9 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json toJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void fromJson(const nlohmann::json &jsonData, uint8_t version);
 
 			virtual IPayload &operator=(const IPayload &payload);
 
@@ -36,6 +43,7 @@ namespace Elastos {
 		private:
 			CMBlock _merkeProof;
 			CMBlock _mainChainTransaction;
+			UInt256 _mainChainTxHash;
 		};
 	}
 }

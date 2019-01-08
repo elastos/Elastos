@@ -555,7 +555,7 @@ namespace Elastos {
 
 			jsonData["Type"] = (uint8_t) _type;
 			jsonData["PayloadVersion"] = _payloadVersion;
-			jsonData["PayLoad"] = _payload->toJson();
+			jsonData["PayLoad"] = _payload->toJson(_payloadVersion);
 
 			std::vector<nlohmann::json> attributesJson(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); ++i) {
@@ -609,7 +609,7 @@ namespace Elastos {
 				if (_payload == nullptr) {
 					Log::error("_payload is nullptr when convert from json");
 				} else {
-					_payload->fromJson(jsonData["PayLoad"]);
+					_payload->fromJson(jsonData["PayLoad"], _payloadVersion);
 				}
 
 				std::vector<nlohmann::json> attributesJson = jsonData["Attributes"];

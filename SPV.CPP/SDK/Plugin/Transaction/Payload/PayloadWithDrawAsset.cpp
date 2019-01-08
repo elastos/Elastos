@@ -93,7 +93,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadWithDrawAsset::toJson() const {
+		nlohmann::json PayloadWithDrawAsset::toJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["BlockHeight"] = _blockHeight;
@@ -108,7 +108,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadWithDrawAsset::fromJson(const nlohmann::json &j) {
+		void PayloadWithDrawAsset::fromJson(const nlohmann::json &j, uint8_t version) {
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_genesisBlockAddress = j["GenesisBlockAddress"].get<std::string>();
 

@@ -76,7 +76,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadVote::toJson() const {
+		nlohmann::json PayloadVote::toJson(uint8_t version) const {
 			nlohmann::json j;
 			j["VoteType"] = _voteType;
 			std::vector<std::string> candidates;
@@ -88,7 +88,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadVote::fromJson(const nlohmann::json &j) {
+		void PayloadVote::fromJson(const nlohmann::json &j, uint8_t version) {
 			_voteType = j["VoteType"];
 			std::vector<std::string> candidates;
 			candidates = j["Candidates"].get<std::vector<std::string>>();

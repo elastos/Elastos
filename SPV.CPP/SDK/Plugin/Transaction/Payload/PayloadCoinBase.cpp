@@ -43,13 +43,13 @@ namespace Elastos {
 			return istream.readVarBytes(_coinBaseData);
 		}
 
-		nlohmann::json PayloadCoinBase::toJson() const {
+		nlohmann::json PayloadCoinBase::toJson(uint8_t version) const {
 			nlohmann::json j;
 			j["CoinBaseData"] = Utils::encodeHex(_coinBaseData);
 			return j;
 		}
 
-		void PayloadCoinBase::fromJson(const nlohmann::json &j) {
+		void PayloadCoinBase::fromJson(const nlohmann::json &j, uint8_t version) {
 			_coinBaseData = Utils::decodeHex(j["CoinBaseData"].get<std::string>());
 
 		}

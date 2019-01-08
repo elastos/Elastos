@@ -82,7 +82,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterAsset::toJson() const {
+		nlohmann::json PayloadRegisterAsset::toJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["Asset"] = _asset.toJson();
@@ -92,7 +92,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRegisterAsset::fromJson(const nlohmann::json &j) {
+		void PayloadRegisterAsset::fromJson(const nlohmann::json &j, uint8_t version) {
 			_asset.fromJson(j["Asset"]);
 			_amount = j["Amount"].get<uint64_t>();
 			_controller = Utils::UInt168FromString(j["Controller"].get<std::string>());

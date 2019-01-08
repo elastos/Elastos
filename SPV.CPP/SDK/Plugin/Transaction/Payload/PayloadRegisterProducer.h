@@ -38,13 +38,17 @@ namespace Elastos {
 
 			void SetAddress(const std::string &address);
 
+			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+
+			bool DeserializeUnsigned(ByteStream &istream, uint8_t version);
+
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json toJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual void fromJson(const nlohmann::json &, uint8_t version);
 
 			virtual IPayload &operator=(const IPayload &payload);
 
@@ -56,6 +60,7 @@ namespace Elastos {
 			std::string _url;
 			uint64_t _location;
 			std::string _address;
+			CMBlock _signature;
 		};
 
 	}

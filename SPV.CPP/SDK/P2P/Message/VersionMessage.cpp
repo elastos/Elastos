@@ -49,7 +49,7 @@ namespace Elastos {
 				_peer->error("malformed version message, parse port fail");
 				return false;
 			}
-			_peer->SetPort(port);
+//			_peer->SetPort(port);
 
 			uint64_t nonce = 0;
 			if (!stream.readUint64(nonce)) {

@@ -29,22 +29,47 @@ namespace Elastos {
 			_publicKey = key;
 		}
 
-		void PayloadCancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
+		void PayloadCancelProducer::SetSignature(const CMBlock &signature) {
+			_signature = signature;
+		}
+
+		void PayloadCancelProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.writeVarBytes(_publicKey);
 		}
 
-		bool PayloadCancelProducer::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadCancelProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
 			return istream.readVarBytes(_publicKey);
 		}
 
-		nlohmann::json PayloadCancelProducer::toJson() const {
+		void PayloadCancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
+			SerializeUnsigned(ostream, version);
+			ostream.writeVarBytes(_signature);
+		}
+
+		bool PayloadCancelProducer::Deserialize(ByteStream &istream, uint8_t version) {
+			if (!DeserializeUnsigned(istream, version)) {
+				Log::error("Deserialize: cancel producer payload read unsigned");
+				return false;
+			}
+
+			if (!istream.readVarBytes(_signature)) {
+				Log::error("Deserialize: cancel producer payload read signature");
+				return false;
+			}
+
+			return true;
+		}
+
+		nlohmann::json PayloadCancelProducer::toJson(uint8_t version) const {
 			nlohmann::json j;
 			j["PublicKey"] = Utils::encodeHex(_publicKey);
+			j["Signature"] = Utils::encodeHex(_signature);
 			return j;
 		}
 
-		void PayloadCancelProducer::fromJson(const nlohmann::json &j) {
+		void PayloadCancelProducer::fromJson(const nlohmann::json &j, uint8_t version) {
 			_publicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
+			_signature = Utils::decodeHex(j["Signature"].get<std::string>());
 		}
 
 		IPayload &PayloadCancelProducer::operator=(const IPayload &payload) {
@@ -60,6 +85,7 @@ namespace Elastos {
 
 		PayloadCancelProducer &PayloadCancelProducer::operator=(const PayloadCancelProducer &payload) {
 			_publicKey.Memcpy(payload._publicKey);
+			_signature.Memcpy(payload._signature);
 			return *this;
 		}
 

@@ -890,11 +890,11 @@ namespace Elastos {
 
 					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
 					// we do not reset connect failure count yet incase this request times out
-					if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
+//					if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
 						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(), UINT256_ZERO));
-					} else {
-						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), UINT256_ZERO));
-					}
+//					} else {
+//						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), UINT256_ZERO));
+//					}
 				} else { // we're already synced
 					_connectFailureCount = 0; // reset connect failure count
 					loadMempools();
@@ -1008,6 +1008,7 @@ namespace Elastos {
 			time_t now = time(NULL);
 			bool willReconnect = false;
 			size_t peersCount;
+			std::vector<PeerInfo> save;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -1044,16 +1045,19 @@ namespace Elastos {
 				// remove peers more than 3 hours old, or until there are only 1000 left
 				while (peers.size() > 1000 && _peers.back().Timestamp + 3 * 60 * 60 < now) peersCount--;
 				_peers.resize(peersCount);
+				for (size_t i = 0; i < _peers.size(); ++i) {
+					save.push_back(_peers[i]);
+				}
 			}
 
 			// peer relaying is complete when we receive <1000
-			if (peers.size() > 1 && peers.size() < 1000) {
-				peer->info("save {} peers", peers.size());
-				for (size_t i = 0; i < peers.size(); i++) {
-					peer->info("peer[{}] = {}, timestamp = {}, port = {}, services = {}", i, peers[i].GetHost(),
-							   peers[i].Timestamp, peers[i].Port, peers[i].Services);
+			if (save.size() > 1 && save.size() < 1000) {
+				peer->info("save {} peers", save.size());
+				for (size_t i = 0; i < save.size(); i++) {
+					peer->info("peer[{}] = {}, timestamp = {}, port = {}, services = {}", i, save[i].GetHost(),
+							   save[i].Timestamp, save[i].Port, save[i].Services);
 				}
-				fireSavePeers(true, _peers);
+				fireSavePeers(true, save);
 			}
 
 			if (willReconnect) {
@@ -1453,7 +1457,7 @@ namespace Elastos {
 					}
 				}
 
-				saveBlocks.reserve(saveCount);
+				saveBlocks.clear();
 
 				for (i = 0, b = block; b && i < saveCount; i++) {
 					assert(b->getHeight() != BLOCK_UNKNOWN_HEIGHT); // verify all blocks to be saved are in the chain
@@ -1463,12 +1467,19 @@ namespace Elastos {
 				}
 
 				// make sure the set of blocks to be saved starts at a difficulty interval
-				j = (i > 0) ? saveBlocks[i - 1]->getHeight() % BLOCK_DIFFICULTY_INTERVAL : 0;
-				if (j > 0) i -= (i > BLOCK_DIFFICULTY_INTERVAL - j) ? BLOCK_DIFFICULTY_INTERVAL - j : i;
-				assert(i == 0 || (saveBlocks[i - 1]->getHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0);
+				j = (saveBlocks.size() > 0) ? saveBlocks.back()->getHeight() % BLOCK_DIFFICULTY_INTERVAL : 0;
+				if (j > 0) {
+					if (saveBlocks.size() > BLOCK_DIFFICULTY_INTERVAL - j) {
+						saveBlocks.resize(saveBlocks.size() - (BLOCK_DIFFICULTY_INTERVAL - j));
+					} else {
+						saveBlocks.clear();
+					}
+				}
+				assert(saveBlocks.size() == 0 || (saveBlocks.back()->getHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0);
 			}
 
-			if (i > 0) fireSaveBlocks(i > 1, saveBlocks);
+			if (saveBlocks.size() > 0)
+				fireSaveBlocks(saveBlocks.size() > 1, saveBlocks);
 
 			if (block && block->getHeight() != BLOCK_UNKNOWN_HEIGHT && block->getHeight() >= peer->GetLastBlock()) {
 				fireTxStatusUpdate(); // notify that transaction confirmations may have changed

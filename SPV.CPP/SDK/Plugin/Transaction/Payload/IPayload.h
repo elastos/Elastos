@@ -22,8 +22,8 @@ namespace Elastos {
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const = 0;
 			virtual bool Deserialize(ByteStream &istream, uint8_t version) = 0;
 
-			virtual nlohmann::json toJson() const = 0;
-			virtual void fromJson(const nlohmann::json &) = 0;
+			virtual nlohmann::json toJson(uint8_t version) const = 0;
+			virtual void fromJson(const nlohmann::json &, uint8_t version) = 0;
 
 			virtual bool isValid() const;
 

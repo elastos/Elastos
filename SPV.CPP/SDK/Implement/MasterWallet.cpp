@@ -485,7 +485,7 @@ namespace Elastos {
 		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
 			PayloadRegisterIdentification payload;
 			nlohmann::json payLoadJson = nlohmann::json::parse(message);
-			payload.fromJson(payLoadJson);
+			payload.fromJson(payLoadJson, 0);
 
 			ByteStream ostream;
 			payload.Serialize(ostream, 0);

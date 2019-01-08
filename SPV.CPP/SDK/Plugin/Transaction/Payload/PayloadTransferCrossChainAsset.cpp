@@ -117,7 +117,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadTransferCrossChainAsset::toJson() const {
+		nlohmann::json PayloadTransferCrossChainAsset::toJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["CrossChainAddress"] = _crossChainAddress;
@@ -127,7 +127,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &j) {
+		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &j, uint8_t version) {
 			_crossChainAddress = j["CrossChainAddress"].get<std::vector<std::string>>();
 			_outputIndex = j["OutputIndex"].get<std::vector<uint64_t>>();
 			_crossChainAmount = j["CrossChainAmount"].get<std::vector<uint64_t >>();

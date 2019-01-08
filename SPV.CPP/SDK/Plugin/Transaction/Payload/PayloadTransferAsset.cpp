@@ -28,11 +28,11 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadTransferAsset::toJson() const {
+		nlohmann::json PayloadTransferAsset::toJson(uint8_t version) const {
 			return nlohmann::json ();
 		}
 
-		void PayloadTransferAsset::fromJson(const nlohmann::json &jsonData) {
+		void PayloadTransferAsset::fromJson(const nlohmann::json &jsonData, uint8_t version) {
 
 		}
 

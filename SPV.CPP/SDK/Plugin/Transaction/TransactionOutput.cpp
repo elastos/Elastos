@@ -234,7 +234,7 @@ namespace Elastos {
 			if (txVersion >= Transaction::TxVersion::V09) {
 				j["OutputType"] = _outputType;
 				j["PayloadVersion"] = _payloadVersion;
-				j["Payload"] = _payload->toJson();
+				j["Payload"] = _payload->toJson(_payloadVersion);
 			}
 
 			return j;
@@ -249,7 +249,7 @@ namespace Elastos {
 
 				_payload = PayloadPtr(new PayloadVote());
 
-				_payload->fromJson(j["Payload"]);
+				_payload->fromJson(j["Payload"], _payloadVersion);
 			}
 		}
 
