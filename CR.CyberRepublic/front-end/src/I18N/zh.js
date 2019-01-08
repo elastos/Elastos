@@ -103,6 +103,16 @@ const zh = {
     'home.organizers.action_2': '查看我可以参与的活动和任务',
     'home.summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
+    'home.box_1.title': "What is CR?",
+    'home.box_1.description': "Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss...",
+    'home.box_2.title': "What is CRC?",
+    'home.box_2.description': "CRC is Cyber Republic Consensus.",
+    'home.box_3.title': "Constitution",
+    'home.box_3.description': "CR is a DAO, anyone from anywhere can build it together.",
+    'home.explanation_1.part_1': 'Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss, alongside other like-minded individuals doing fulfilling, impactful work which is composed of self-selected tasks.',
+    'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
+    'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
+    'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
 
     // Pop-up Announcement
     'popup.changes.title': 'Cyber Republic的重要公告',

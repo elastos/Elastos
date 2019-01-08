@@ -1,141 +1,109 @@
 import React from 'react';
 import StandardPage from '../StandardPage';
-import _ from 'lodash'
+import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
-
+import _ from 'lodash'
 import './style.scss'
 
-import { Col, Row, Icon, Button, Carousel } from 'antd'
-import Footer from '@/module/layout/Footer/Container'
-import moment from 'moment/moment'
+import { Row , Col } from 'antd'
 
 export default class extends StandardPage {
 
+    constructor(props) {
+        super(props)
+        
+        this.state = {
+            selectedBox: 0,
+        }
+    }
+
     componentDidMount() {
-        // this.props.getTasks()
     }
 
     componentWillUnmount() {
-        // this.props.resetTasks()
     }
 
-    ord_renderContent(){
+    switchToBox(box) {
+        this.setState({
+            selectedBox: box
+        })
+    }
 
-        const backdropStyle = {
-            backgroundImage: `url('/assets/images/cr_banner.png')`
-        }
+    ord_renderContent() {
+        const selectedBox = this.state.selectedBox;
+        const title = I18N.get('home.box_' + (selectedBox + 1).toString() + '.title')
+        const description1 = I18N.get('home.explanation_' + (selectedBox + 1).toString() + '.part_1')
+        const description2 = I18N.get('home.explanation_' + (selectedBox + 1).toString() + '.part_2')
 
         return (
-            <Row className="c_Home">
-                <div className="d_topBackdrop" style={backdropStyle}>
-                    <div className="d_topBackdrop_title">
-                        {I18N.get('home.title')}
-                        {/* Elastos - Cyber Republic */}
-                    </div>
+            <div className="c_Home">
+                <div className="decoration-1">
+                    <img className="upper-left" src="/assets/images/training_mini_connector.png"/>
                 </div>
-                <div className="horizGap"/>
-                <Row className="d_rowHome">
-                    <Col xs={{span: 24}} md={{span: 16}} className="d_developer">
-                        <h3>
-                            {I18N.get('home.developers')}
-                            {/* Developers */}
-                        </h3>
-                        <h4>
-                            {I18N.get('home.developers.help_1')}
-                            {/* Write code, find bugs, earn ELA */}
-                        </h4>
-
-                        <p className="mobile-left-align">
-                            {I18N.get('home.developers.help_2')}
-                            {/* Earn ELA for contributing to the Elastos ecosystem through
-                            everything  */}
-                            <br/>
-                            {I18N.get('home.developers.help_3')}
-                            {/* from example apps to enterprise App development. */}
-                            <br/>
-                            <br/>
-                            {I18N.get('home.developers.help_4')}
-                            {/* You can also earn ELA for finding bugs and submitting issues. */}
-                        </p>
-
-                        <div>
-                            <Button onClick={() => this.props.history.push('/developer')}>
-                                {I18N.get('home.developers.action')}
-                                {/* Yes I am interested in Developing for Elastos */}
-                            </Button>
-                            {/* <Button onClick={this.notDeveloper.bind(this)}>No I am not a developer</Button> */}
+                <Row className="top-section" type="flex" justify="center" gutter={32}>
+                    <Col xs={24} sm={24} md={5}>
+                        <div className="box box-hover" onClick={this.switchToBox.bind(this, 0)}>
+                            <h3>{I18N.get('home.box_1.title')}</h3>
+                            <p className="synthese">{I18N.get('home.box_1.description')}</p>
                         </div>
-                        <br/>
-                        <br/>
-                        <br/>
+                        <div className={"cuttoff-box" + (selectedBox === 0 ? '' : 'cutoff-box-hidden')}>
+                            <div className="decoration-arrow"></div>
+                        </div>
                     </Col>
-                    <Col md={{span: 6}} className="mobile-hide" style={{textAlign: 'left'}}>
-                        <Icon type="api" className="icon-home"/>
+                    <Col xs={24} sm={24} md={5}>
+                        <div className="box box-hover" onClick={this.switchToBox.bind(this, 1)}>
+                            <h3>{I18N.get('home.box_2.title')}</h3>
+                            <p className="synthese">{I18N.get('home.box_2.description')}</p>
+                        </div>
+                        <div className={"cuttoff-box" + (selectedBox === 1 ? '' : 'cutoff-box-hidden')}>
+                            <div className="decoration-arrow"></div>
+                        </div>
                     </Col>
-                </Row>
-
-                <div className="horizGap"/>
-
-                <Row className="d_rowHome white">
-                    <div className="horizGap"/>
-                    <Col span={10} className="mobile-hide" style={{textAlign: 'right'}}>
-                        <Icon type="share-alt" className="icon-home"/>
+                    <Col xs={24} sm={24} md={5}>
+                        <div className="box">
+                            <h3>{I18N.get('home.box_3.title')}</h3>
+                            <p className="synthese">{I18N.get('home.box_3.description')}</p>
+                        </div>
+                        <div className={"cuttoff-box" + (selectedBox === 2 ? '' : 'cutoff-box-hidden')}>
+                            <div className="decoration-arrow"></div>
+                        </div>
                     </Col>
-                    <Col xs={{span: 24}} md={{span: 12}} className="d_organizer">
-                        <h3>
-                            {I18N.get('home.organizers')}
-                            {/* Organizers & Contributors */}
-                        </h3>
-                        <h4>
-                            {I18N.get('home.organizers.help_1')}
-                            {/* Help organize meetups and promote Elastos */}
-                        </h4>
-
-                        <p className="mobile-left-align">
-                            {I18N.get('home.organizers.help_2')}
-                            {/* Whether you're already part of the community or want to join, */}
-                            <br/>
-                            {I18N.get('home.organizers.help_3')}
-                            {/* we reward you for various things you do to promote Elastos
-                            either online, locally or worldwide. */}
-                            <br/>
-                            <br/>
-                            {I18N.get('home.organizers.help_4')}
-                            {/* You can also earn ELA for referring potential contributors. */}
-                        </p>
-
-                        <Button className="mobile-hide" onClick={() => this.props.history.push('/community')}>
-                            {I18N.get('home.organizers.action_1')}
-                            {/* Apply to be an Organizer */}
-                        </Button>
-                        <Button className="mobile-hide" onClick={() => this.props.history.push('/social')}>
-                            {I18N.get('home.organizers.action_2')}
-                            {/* View Events & Tasks I can contribute to */}
-                        </Button>
-
-                        <br/>
-                        <br/>
-                        <br/>
-                    </Col>
-                    <div className="horizGap"/>
-                </Row>
-                <div className="horizGap"/>
-
-                <div className="entryContainer">
-
-                    <div className="textContainer">
-                        {I18N.get('home.summary_1')}
-                        {/* We are a diverse democratic group of leaders, developers, organizers and designers */}
-                        <br/>
-                        {I18N.get('home.summary_2')}
-                        {/* formed to promote Elastos in our communities. Membership is open to everyone. */}
+                    <div className="decoration-2">
+                        <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
                     </div>
-                    <div className="bar bar1"/>
-                    <div className="bar bar2"/>
+                </Row>
+                <div className="mid-section">
+                    <div className="inner-box">
+                        <div className="decoration-3">
+                            <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
+                        </div>
+                        <h3>{title}</h3>                        
+                        <p className="synthese">{description1}</p>
+                        <p className="synthese">{description2}</p>
+                    </div>
+                    <div className="rectangle-1"></div>
+                    <div className="rectangle-2"></div>
+                    <div className="rectangle-3"></div>
                 </div>
-
-                <Footer />
-            </Row>
+                <div className="stay-updated">
+                    <div className="form-wrap footer-email">
+                        <p>{I18N.get('landing.footer.note')}</p>
+                        <form id="footer-form" className="signup-form" name="mailing-list" action="https://cyberrepublic.us19.list-manage.com/subscribe/post-json?u=acb5b0ce41bfe293d881da424&id=272f303492"
+                            method="get">
+                            <div className="email-wrap">
+                                <input type="email" name="EMAIL" data-type="req" placeholder={I18N.get('landing.footer.email')}/>
+                                <button type="submit" className="arrow-submit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 34">
+                                        <polygon points="0 0 0 33.487 16.744 16.744 0 0" style={{fill: '#1de9b6'}}/>
+                                        <polygon points="0 24.579 7.835 16.744 0 8.91 0 24.579" className="small-tri"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <Footer/>
+            </div>
         );
     }
 }
