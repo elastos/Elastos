@@ -39,6 +39,7 @@ typedef struct EasyFile {
 
     FILE                    *fp;
     char                    fileid[ELA_MAX_FILE_ID_LEN + 1];
+    char                    filename[PATH_MAX];
     uint64_t                filesz;
     uint64_t                offset;
 

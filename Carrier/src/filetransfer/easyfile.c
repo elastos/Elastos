@@ -55,6 +55,7 @@
 #include "easyfile.h"
 
 #define TAG "File: "
+#define TMP_EXTENSION  ".ft~part"
 
 static
 void notify_state_changed_cb(ElaFileTransfer *ft, FileTransferConnection state,
@@ -217,6 +218,17 @@ bool notify_data_cb(ElaFileTransfer *ft, const char *fileid, const uint8_t *data
                                 strerror(file->sys_errno));
         return true;
     } else {
+        if (file->offset == file->filesz) {
+            char tmp[PATH_MAX] = {0};
+
+            fclose(file->fp);
+            file->fp = NULL;
+
+            strcpy(tmp, file->filename);
+            strcat(tmp, TMP_EXTENSION);
+            rename(tmp, file->filename);
+        }
+
         if (file->callbacks.received)
             file->callbacks.received(file->offset, file->filesz, file->callbacks_context);
 
@@ -354,11 +366,22 @@ int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
     }
 
     p = realpath(filename, path);
+    if (p) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST));
+        return -1;
+    }
+
     if (!p && errno != ENOENT) {
         ela_set_error(ELA_SYS_ERROR(errno));
         return -1;
     }
 
+    if (strlen(path) + strlen(TMP_EXTENSION) >= PATH_MAX) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    strcat(path, TMP_EXTENSION);
     memset(&st, 0, sizeof(st));
     rc = stat(path, &st);
     if (rc < 0 && errno != ENOENT) {
@@ -376,8 +399,8 @@ int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
     file->callbacks_context = context;
     file->filesz = 0;
     file->offset = st.st_size;
-
-    file->fp = fopen(path, "wb");
+    strncpy(file->filename, path, strrchr(path, '.') - path);
+    file->fp = fopen(path, "ab");
     if (!file->fp) {
         ela_set_error(ELA_SYS_ERROR(errno));
         deref(file);
