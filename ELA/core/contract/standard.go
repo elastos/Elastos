@@ -49,5 +49,5 @@ func PublicKeyToStandardCodeHash(pubKey []byte) (*common.Uint160, error) {
 		return nil, err
 	}
 
-	return contract.ToCodeHash()
+	return contract.ToCodeHash(), nil
 }

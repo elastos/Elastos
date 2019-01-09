@@ -3,6 +3,7 @@ package blockchain
 import (
 	"bytes"
 	"errors"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -57,14 +58,14 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 
-	producerVotes    map[string]*ProducerInfo
-	producerAddress  map[string]string // key: address  value: public key
+	producerVotes    map[string]*ProducerInfo // key: public key
+	producerAddress  map[string]string        // key: address  value: public key
 	dirty            map[outputpayload.VoteType]bool
 	orderedProducers []*PayloadRegisterProducer
 }
 
-func NewChainStore(filePath string, genesisBlock *Block) (IChainStore, error) {
-	db, err := NewLevelDB(filePath)
+func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
+	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +447,6 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debugf("transaction header + hash: %x", key)
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -456,7 +456,6 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debugf("transaction tx data: %x", value)
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -466,31 +465,40 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
-	bHash, err := c.Get(append(prefix, hash.Bytes()...))
+	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
 
-	reader := bytes.NewReader(bHash)
+	r := bytes.NewReader(data)
 
 	// first 8 bytes is sys_fee
-	_, err = ReadUint64(reader)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deserialize block data
-	if err := b.FromTrimmedData(reader); err != nil {
+	if err := b.Header.Deserialize(r); err != nil {
 		return nil, err
 	}
 
-	// Deserialize transaction
-	for i, txn := range b.Transactions {
-		tmp, _, err := c.GetTransaction(txn.Hash())
+	//Transactions
+	count, err := ReadUint32(r)
+	if err != nil {
+		return nil, err
+	}
+	b.Transactions = make([]*Transaction, count)
+	for i := range b.Transactions {
+		var hash Uint256
+		if err := hash.Deserialize(r); err != nil {
+			return nil, err
+		}
+		tx, _, err := c.GetTransaction(hash)
 		if err != nil {
 			return nil, err
 		}
-		b.Transactions[i] = tmp
+		b.Transactions[i] = tx
 	}
 
 	return b, nil
@@ -511,7 +519,7 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.currentBlockHeight = b.Header.Height - 1
 	c.mu.Unlock()
 
-	return nil
+	return c.rollbackForMempool(b)
 }
 
 func (c *ChainStore) persist(b *Block) error {
@@ -534,7 +542,11 @@ func (c *ChainStore) persist(b *Block) error {
 	if err := c.PersistCurrentBlock(b); err != nil {
 		return err
 	}
-	return c.BatchCommit()
+	if err := c.BatchCommit(); err != nil {
+		return err
+	}
+
+	return c.persistForMempool(b)
 }
 
 func (c *ChainStore) SaveBlock(b *Block) error {
@@ -659,23 +671,7 @@ func (c *ChainStore) GetHeight() uint32 {
 }
 
 func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
-	var b = new(Block)
-	prefix := []byte{byte(DATAHeader)}
-	blockData, err := c.Get(append(prefix, hash.Bytes()...))
-	if err != nil {
-		return false
-	}
-
-	r := bytes.NewReader(blockData)
-
-	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
-	if err != nil {
-		return false
-	}
-
-	// Deserialize block data
-	err = b.FromTrimmedData(r)
+	b, err := c.GetBlock(*hash)
 	if err != nil {
 		return false
 	}

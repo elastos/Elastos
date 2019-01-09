@@ -1,12 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"os"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -15,6 +17,8 @@ const (
 	luaCoinBaseTypeName      = "coinbase"
 	luaTransferAssetTypeName = "transferasset"
 	luaRegisterProducerName  = "registerproducer"
+	luaUpdateProducerName    = "updateproducer"
+	luaCancelProducerName    = "cancelproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 )
 
@@ -107,6 +111,84 @@ func transferassetGet(L *lua.LState) int {
 	return 0
 }
 
+func RegisterUpdateProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaUpdateProducerName)
+	L.SetGlobal("updateproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newUpdateProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), updateProducerMethods))
+}
+
+// Constructor
+func newUpdateProducer(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	nickName := L.ToString(2)
+	url := L.ToString(3)
+	location := L.ToInt64(4)
+	address := L.ToString(5)
+	client := checkClient(L, 6)
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer public key")
+		os.Exit(1)
+	}
+	updateProducer := &payload.PayloadUpdateProducer{
+		PublicKey: []byte(publicKey),
+		NickName:  nickName,
+		Url:       url,
+		Location:  uint64(location),
+		Address:   address,
+	}
+
+	upSignBuf := new(bytes.Buffer)
+	err = updateProducer.SerializeUnsigned(upSignBuf, payload.PayloadUpdateProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	updateProducer.Signature = rpSig
+
+	ud := L.NewUserData()
+	ud.Value = updateProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaUpdateProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkUpdateProducer(L *lua.LState, idx int) *payload.PayloadUpdateProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.PayloadUpdateProducer); ok {
+		return v
+	}
+	L.ArgError(1, "PayloadUpdateProducer expected")
+	return nil
+}
+
+var updateProducerMethods = map[string]lua.LGFunction{
+	"get": updateProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func updateProducerGet(L *lua.LState) int {
+	p := checkUpdateProducer(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
 // Registers my person type to given L.
 func RegisterRegisterProducerType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaRegisterProducerName)
@@ -124,6 +206,7 @@ func newRegisterProducer(L *lua.LState) int {
 	url := L.ToString(3)
 	location := L.ToInt64(4)
 	address := L.ToString(5)
+	client := checkClient(L, 6)
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -137,6 +220,25 @@ func newRegisterProducer(L *lua.LState) int {
 		Location:  uint64(location),
 		Address:   address,
 	}
+
+	rpSignBuf := new(bytes.Buffer)
+	err = registerProducer.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	registerProducer.Signature = rpSig
+
 	ud := L.NewUserData()
 	ud.Value = registerProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaRegisterProducerName))
@@ -163,6 +265,76 @@ var registerProducerMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func registerProducerGet(L *lua.LState) int {
 	p := checkRegisterProducer(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterCancelProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCancelProducerName)
+	L.SetGlobal("cancelproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCancelProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), cancelProducerMethods))
+}
+
+// Constructor
+func newCancelProducer(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	client := checkClient(L, 2)
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer public key")
+		os.Exit(1)
+	}
+	cancelProducer := &payload.PayloadCancelProducer{
+		PublicKey: []byte(publicKey),
+	}
+
+	cpSignBuf := new(bytes.Buffer)
+	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc, err := client.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), cpSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	cancelProducer.Signature = rpSig
+
+	ud := L.NewUserData()
+	ud.Value = cancelProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCancelProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkCancelProducer(L *lua.LState, idx int) *payload.PayloadCancelProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.PayloadCancelProducer); ok {
+		return v
+	}
+	L.ArgError(1, "PayloadCancelProducer expected")
+	return nil
+}
+
+var cancelProducerMethods = map[string]lua.LGFunction{
+	"get": cancelProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func cancelProducerGet(L *lua.LState) int {
+	p := checkCancelProducer(L, 1)
 	fmt.Println(p)
 
 	return 0
