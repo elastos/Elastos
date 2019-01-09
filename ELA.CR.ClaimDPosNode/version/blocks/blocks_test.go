@@ -26,7 +26,7 @@ func (s *blockVersionTestSuite) SetupTest() {
 	s.Version = &blockCurrent{}
 }
 
-func (s *blockVersionTestSuite) TestGetProducersDesc() {
+func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 	originLedger := blockchain.DefaultLedger
 	originArbitratorsCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
@@ -66,13 +66,13 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 		Store: chainStore,
 	}
 
-	producers, err := s.Version.GetProducersDesc()
+	producers, err := s.Version.GetNormalArbitratorsDesc()
 	s.Error(err, "arbitrators count does not match config value")
 
 	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
 		&payload.PayloadRegisterProducer{PublicKey: arbitrators[4]},
 	)
-	producers, err = s.Version.GetProducersDesc()
+	producers, err = s.Version.GetNormalArbitratorsDesc()
 	s.NoError(err)
 	for i := range producers {
 		s.Equal(arbitrators[i], producers[i])
