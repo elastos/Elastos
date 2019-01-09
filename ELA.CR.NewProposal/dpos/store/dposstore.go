@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
@@ -24,8 +25,8 @@ type DposStore struct {
 	quit chan struct{}
 }
 
-func NewDposStore(filePath string) (*DposStore, error) {
-	db, err := NewLevelDB(filePath)
+func NewDposStore(dataDir string) (*DposStore, error) {
+	db, err := NewLevelDB(filepath.Join(dataDir, "dpos"))
 	if err != nil {
 		return nil, err
 	}

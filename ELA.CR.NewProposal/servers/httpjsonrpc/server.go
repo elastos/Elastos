@@ -1,16 +1,21 @@
 package httpjsonrpc
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/errors"
+	elaErr "github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/servers"
 )
 
@@ -63,6 +68,8 @@ func StartRPCServer() {
 	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
 	mainMux["getactivedpospeers"] = GetActiveDposPeers
 
+	mainMux["estimatesmartfee"] = EstimateSmartFee
+
 	rpcServeMux := http.NewServeMux()
 	server := http.Server{
 		Handler:      rpcServeMux,
@@ -70,7 +77,7 @@ func StartRPCServer() {
 		WriteTimeout: 15 * time.Second,
 	}
 	rpcServeMux.HandleFunc("/", Handle)
-	l, _ := net.Listen("tcp4",  ":" + strconv.Itoa(config.Parameters.HttpJsonPort))
+	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
 	err := server.Serve(l)
 	if err != nil {
 		log.Fatal("ListenAndServe error: ", err.Error())
@@ -81,6 +88,12 @@ func StartRPCServer() {
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
 func Handle(w http.ResponseWriter, r *http.Request) {
 	//JSON RPC commands should be POSTs
+	isClientAllowed := clientAllowed(r)
+	if !isClientAllowed {
+		log.Warn("HTTP Client ip is not allowd")
+		http.Error(w, "Client ip is not allowd", http.StatusNetworkAuthenticationRequired)
+		return
+	}
 	if r.Method != "POST" {
 		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
 		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
@@ -89,6 +102,13 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header["Content-Type"][0] != "application/json" {
 		http.Error(w, "need content type to be application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	isCheckAuthOk, err := checkAuth(r)
+	if !isCheckAuthOk {
+		log.Warn(err.Error())
+		http.Error(w, err.Error(), http.StatusNetworkAuthenticationRequired)
 		return
 	}
 
@@ -133,7 +153,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 	response := method(params)
 	var data []byte
-	if response["Error"] != errors.ErrCode(0) {
+	if response["Error"] != elaErr.ErrCode(0) {
 		data, _ = json.Marshal(map[string]interface{}{
 			"jsonrpc": "2.0",
 			"result":  nil,
@@ -156,7 +176,56 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, message string) {
+func clientAllowed(r *http.Request) bool {
+	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
+
+	if colonIndex := strings.LastIndex(r.RemoteAddr, ":"); colonIndex >= 0 {
+		remoteIp := r.RemoteAddr[:colonIndex]
+		if remoteIp == "127.0.0.1" {
+			return true
+		}
+
+		for _, cfgIp := range config.Parameters.RpcConfiguration.WhiteIpList {
+			//WhiteIpList have 0.0.0.0  allow all ip in
+			if cfgIp == "0.0.0.0" {
+				return true
+			}
+			if cfgIp == remoteIp {
+				return true
+			}
+
+		}
+	}
+	return false
+}
+
+func checkAuth(r *http.Request) (bool, error) {
+	if (config.Parameters.RpcConfiguration.User == config.Parameters.RpcConfiguration.Pass) && (len(config.Parameters.RpcConfiguration.User) == 0) {
+		return true, nil
+	}
+	authHeader := r.Header["Authorization"]
+	if len(authHeader) <= 0 {
+		log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
+		return false, errors.New("checkAuth failure Authorization empty")
+	}
+
+	authSha256 := sha256.Sum256([]byte(authHeader[0]))
+
+	login := config.Parameters.RpcConfiguration.User + ":" + config.Parameters.RpcConfiguration.Pass
+	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(login))
+	cfgAuthSha256 := sha256.Sum256([]byte(auth))
+
+	resultCmp := subtle.ConstantTimeCompare(authSha256[:], cfgAuthSha256[:])
+	if resultCmp == 1 {
+		return true, nil
+	}
+
+	// Request's auth doesn't match  user
+	log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
+	return false, errors.New("checkAuth failure Authorization username or password error")
+}
+
+func RPCError(w http.ResponseWriter, httpStatus int, code elaErr.ErrCode, message string) {
 	data, _ := json.Marshal(map[string]interface{}{
 		"jsonrpc": "2.0",
 		"result":  nil,
@@ -197,6 +266,10 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "addresses")
 	case "getreceivedbyaddress":
 		return FromArray(params, "address")
+	case "getblockbyheight":
+		return FromArray(params, "height")
+	case "estimatesmartfee":
+		return FromArray(params, "confirmations")
 	default:
 		return Params{}
 	}

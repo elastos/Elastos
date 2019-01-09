@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	ConfigFilename = "./config.json"
+	configFilename = "./config.json"
+	rootDir = "elastos"
+	dataDir = rootDir+"/data"
 )
 
 var (
@@ -22,7 +24,7 @@ var (
 )
 
 func loadConfigFile() *config.Configuration {
-	file, err := ioutil.ReadFile(ConfigFilename)
+	file, err := ioutil.ReadFile(configFilename)
 	if err != nil {
 		return &configTemplate
 	}

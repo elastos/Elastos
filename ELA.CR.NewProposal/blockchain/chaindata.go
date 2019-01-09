@@ -25,8 +25,17 @@ func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 	if err := WriteUint64(value, sysFee); err != nil {
 		return err
 	}
-	if err := b.Trim(value); err != nil {
+	if err := b.Header.Serialize(value); err != nil {
 		return err
+	}
+	if err := WriteUint32(value, uint32(len(b.Transactions))); err != nil {
+		return err
+	}
+	for _, tx := range b.Transactions {
+		txHash := tx.Hash()
+		if err := txHash.Serialize(value); err != nil {
+			return errors.New("Block item transaction hash serialize failed, " + err.Error())
+		}
 	}
 
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -296,6 +305,8 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 }
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
+	voteOutputs := make([]*Output, 0)
+	cancelVoteOutputs := make([]*Output, 0)
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err
@@ -332,9 +343,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
-					if err := c.PersistVoteOutput(output); err != nil {
-						return err
-					}
+					voteOutputs = append(voteOutputs, output)
 				}
 			}
 			for _, input := range txn.Inputs {
@@ -344,9 +353,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				}
 				output := transaction.Outputs[input.Previous.Index]
 				if output.OutputType == VoteOutput {
-					if err = c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
+					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
 		}
@@ -371,10 +378,16 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			}
 		}
 	}
+	if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
+	voteOutputs := make([]*Output, 0)
+	cancelVoteOutputs := make([]*Output, 0)
 	for _, txn := range b.Transactions {
 		if err := c.RollbackTransaction(txn); err != nil {
 			return err
@@ -406,9 +419,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
-					if err := c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
+					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
 			for _, input := range txn.Inputs {
@@ -418,12 +429,13 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				}
 				output := transaction.Outputs[input.Previous.Index]
 				if output.OutputType == VoteOutput {
-					if err = c.PersistVoteOutput(output); err != nil {
-						return err
-					}
+					voteOutputs = append(voteOutputs, output)
 				}
 			}
 		}
+	}
+	if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
+		return err
 	}
 
 	return nil
