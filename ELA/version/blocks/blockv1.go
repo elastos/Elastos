@@ -135,20 +135,24 @@ func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward com
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) * 0.75
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
+	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
 
 	realDposReward := common.Fixed64(0)
 	for _, v := range arbitratorsHashes {
+		reward := individualBlockConfirmReward + individualProducerReward
+		if b.cfg.Arbitrators.IsCRCArbitratorProgramHash(v) {
+			reward = individualBlockConfirmReward
+		}
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:       config.ELAAssetID,
-			Value:         individualBlockConfirmReward + individualProducerReward,
+			Value:         reward,
 			ProgramHash:   *v,
 			OutputType:    types.DefaultOutput,
 			OutputPayload: &outputpayload.DefaultOutput{},
 		})
 
-		realDposReward += individualBlockConfirmReward + individualProducerReward
+		realDposReward += reward
 	}
 
 	for _, v := range candidatesHashes {

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"sync"
@@ -43,12 +44,23 @@ type Arbitrators struct {
 	nextArbitrators [][]byte
 	nextCandidates  [][]byte
 
+	crcArbitratorsProgramHashes map[common.Uint168]interface{}
+
 	lock sync.Mutex
 }
 
 func (a *Arbitrators) Start() error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
+
+	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
+	for _, v := range a.cfg.CRCArbitrators {
+		hash, err := contract.PublicKeyToStandardProgramHash(v)
+		if err != nil {
+			return err
+		}
+		a.crcArbitratorsProgramHashes[*hash] = nil
+	}
 
 	block, err := a.cfg.ChainStore.GetBlock(a.cfg.ChainStore.GetCurrentBlockHash())
 	if err != nil {
@@ -136,6 +148,20 @@ func (a *Arbitrators) GetNextCandidates() [][]byte {
 	defer a.lock.Unlock()
 
 	return a.nextCandidates
+}
+
+func (a *Arbitrators) IsCRCArbitrator(pubKey []byte) bool {
+	for _, v := range a.cfg.CRCArbitrators {
+		if bytes.Equal(pubKey, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *Arbitrators) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
+	_, ok := a.crcArbitratorsProgramHashes[*hash]
+	return ok
 }
 
 func (a *Arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {

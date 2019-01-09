@@ -13,6 +13,9 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 
+	IsCRCArbitrator(pubKey []byte) bool
+	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
+
 	GetArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168
 
