@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/urfave/cli"
 	"strconv"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	cliCommon "github.com/elastos/Elastos.ELA/cli/common"
+	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/urfave/cli"
 )
 
 func NewCommand() *cli.Command {
@@ -38,7 +39,7 @@ func rollbackBlockchain(context *cli.Context) error {
 		fmt.Println("get height error:", err)
 		return err
 	}
-	store, err := blockchain.NewLevelDB("Chain")
+	store, err := blockchain.NewLevelDB("elastos/data/chain")
 	if err != nil {
 		fmt.Println("connect leveldb failed! Please check wether there is already a ela process running.", err)
 	}

@@ -35,7 +35,7 @@ type Arbitrator interface {
 
 type arbitrator struct {
 	enableViewLoop bool
-	network        *dposNetwork
+	network        *network
 	dposManager    manager.DposManager
 }
 

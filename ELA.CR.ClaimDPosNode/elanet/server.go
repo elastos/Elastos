@@ -713,7 +713,7 @@ func (s *server) Stop() error {
 // NewServer returns a new elanet server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func NewServer(cfg *Config) (*server, error) {
+func NewServer(dataDir string, cfg *Config) (*server, error) {
 	services := defaultServices
 	params := cfg.ChainParams
 	if params.DisableTxFilters {
@@ -735,6 +735,7 @@ func NewServer(cfg *Config) (*server, error) {
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
 	)
+	svrCfg.DataDir = dataDir
 
 	s := server{
 		chain:     cfg.Chain,
