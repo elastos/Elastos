@@ -16,6 +16,7 @@ const (
 	GenesisHeightVersion = uint32(0)
 	HeightVersion1       = uint32(88812)
 	HeightVersion2       = uint32(1008812) //fixme edit height later
+	HeightVersion3       = uint32(1108812)
 )
 
 type TxCheckMethod func(txs.TxVersion) error
@@ -81,15 +82,26 @@ func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Tran
 	})
 }
 
-func (h *heightVersions) GetProducersDesc(block *types.Block) ([][]byte, error) {
+func (h *heightVersions) GetNormalArbitratorsDesc(block *types.Block) ([][]byte, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
 	v := h.findBlockVersion(&info, block)
 	if v == nil {
-		return nil, fmt.Errorf("[GetProducersDesc] Block height %d can not support block version %d", block.Height, block.Version)
+		return nil, fmt.Errorf("[GetNormalArbitratorsDesc] Block height %d can not support block version %d", block.Height, block.Version)
 	}
-	return v.GetProducersDesc()
+	return v.GetNormalArbitratorsDesc()
+}
+
+func (h *heightVersions) GetCandidatesDesc(block *types.Block) ([][]byte, error) {
+	heightKey := h.findLastAvailableHeightKey(block.Height)
+	info := h.versions[heightKey]
+
+	v := h.findBlockVersion(&info, block)
+	if v == nil {
+		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", block.Height, block.Version)
+	}
+	return v.GetCandidatesDesc()
 }
 
 func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {

@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -56,7 +55,7 @@ func (a *Arbitrators) Start() error {
 		return err
 	}
 	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) == 0 {
-		if a.currentArbitrators, err = a.cfg.Versions.GetProducersDesc(block); err != nil {
+		if a.currentArbitrators, err = a.cfg.Versions.GetNormalArbitratorsDesc(block); err != nil {
 			return err
 		}
 	} else {
@@ -239,24 +238,18 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
-	producers, err := a.cfg.Versions.GetProducersDesc(block)
+	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block)
 	if err != nil {
 		return err
 	}
+	a.nextArbitrators = producers
+	a.nextArbitrators = append(a.nextArbitrators, a.cfg.CRCArbitrators...)
 
-	normalArbitratorsCount := a.cfg.ArbitratorsCount - uint32(len(a.cfg.CRCArbitrators))
-	if uint32(len(producers)) < normalArbitratorsCount {
-		return errors.New("producers count less than arbitrators count")
+	candidates, err := a.cfg.Versions.GetCandidatesDesc(block)
+	if err != nil {
+		return err
 	}
-
-	a.nextArbitrators = producers[:normalArbitratorsCount]
-	a.nextCandidates = append(a.nextCandidates, a.cfg.CRCArbitrators...)
-
-	if uint32(len(producers)) < normalArbitratorsCount+a.cfg.CandidatesCount {
-		a.nextCandidates = producers[normalArbitratorsCount:]
-	} else {
-		a.nextCandidates = producers[normalArbitratorsCount : normalArbitratorsCount+a.cfg.CandidatesCount]
-	}
+	a.nextCandidates = candidates
 
 	a.cfg.Store.SaveNextArbitrators(a)
 	return nil

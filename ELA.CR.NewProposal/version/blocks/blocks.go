@@ -7,7 +7,8 @@ import (
 
 type BlockVersion interface {
 	GetVersion() uint32
-	GetProducersDesc() ([][]byte, error)
+	GetNormalArbitratorsDesc() ([][]byte, error)
+	GetCandidatesDesc() ([][]byte, error)
 	AddDposBlock(block *types.DposBlock) (bool, bool, error)
 	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error
 	CheckConfirmedBlockOnFork(block *types.Block) error

@@ -409,50 +409,50 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckTxHasNoPrograms() {
 	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 }
 
-func (s *heightVersionTestSuit) TestHeightVersions_GetProducersDesc() {
+func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 	var err error
 
 	blockV1_h1 := &types.Block{Header: types.Header{Version: 1, Height: s.Height1}}
 	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
 	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
 
-	_, err = s.Version.GetProducersDesc(blockV1_h1)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_GetProducersDesc", versionsMsg)
+	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetProducersDesc(blockV1_h2)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_GetProducersDesc", versionsMsg)
+	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetProducersDesc(blockV1_h3)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3)
 	s.Error(err, "height 3 do not support block v1")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	_, err = s.Version.GetProducersDesc(blockV2_h1)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1)
 	s.Error(err, "height 1 do not support block v2")
 
-	_, err = s.Version.GetProducersDesc(blockV2_h2)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2)
 	s.NoError(err)
-	s.Equal("blockVersionTest2_GetProducersDesc", versionsMsg)
+	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetProducersDesc(blockV2_h3)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3)
 	s.NoError(err)
-	s.Equal("blockVersionTest2_GetProducersDesc", versionsMsg)
+	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
 	blockVMax_h1 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height1}}
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	_, err = s.Version.GetProducersDesc(blockVMax_h1)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1)
 	s.Error(err, "height 1 do not support block vmax")
 
-	_, err = s.Version.GetProducersDesc(blockVMax_h2)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2)
 	s.Error(err, "height 1 do not support block vmax")
 
-	_, err = s.Version.GetProducersDesc(blockVMax_h3)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3)
 	s.Error(err, "height 1 do not support block vmax")
 }
 
@@ -743,8 +743,8 @@ func (v *txBlockTest1) GetVersion() uint32 {
 	return 1
 }
 
-func (v *txBlockTest1) GetProducersDesc() ([][]byte, error) {
-	versionsMsg = "blockVersionTest1_GetProducersDesc"
+func (v *txBlockTest1) GetNormalArbitratorsDesc() ([][]byte, error) {
+	versionsMsg = "blockVersionTest1_GetNormalArbitratorsDesc"
 	return nil, nil
 }
 
@@ -775,8 +775,8 @@ func (v *txBlockTest2) GetVersion() uint32 {
 	return 2
 }
 
-func (v *txBlockTest2) GetProducersDesc() ([][]byte, error) {
-	versionsMsg = "blockVersionTest2_GetProducersDesc"
+func (v *txBlockTest2) GetNormalArbitratorsDesc() ([][]byte, error) {
+	versionsMsg = "blockVersionTest2_GetNormalArbitratorsDesc"
 	return nil, nil
 }
 

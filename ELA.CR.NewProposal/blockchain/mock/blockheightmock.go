@@ -61,7 +61,7 @@ func (b *BlockHeightMock) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Tra
 	return nil
 }
 
-func (b *BlockHeightMock) GetProducersDesc(block *types.Block) ([][]byte, error) {
+func (b *BlockHeightMock) GetNormalArbitratorsDesc(block *types.Block) ([][]byte, error) {
 	return b.Producers, nil
 }
 
