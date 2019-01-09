@@ -21,7 +21,7 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 	s.Version = &blockV0{}
 }
 
-func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
+func (s *blockVersionV0TestSuite) TestGetNormalArbitratorsDesc() {
 	originLedger := blockchain.DefaultLedger
 	originArbitratorsCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
@@ -31,7 +31,7 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 		arbitrators = append(arbitrators, a)
 	}
 
-	producers, err := s.Version.GetProducersDesc()
+	producers, err := s.Version.GetNormalArbitratorsDesc()
 	s.NoError(err)
 	for i := range producers {
 		s.Equal(arbitrators[i], producers[i])
