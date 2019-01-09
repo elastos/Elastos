@@ -9,8 +9,11 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
+const PayloadCancelProducerVersion byte = 0x00
+
 type PayloadCancelProducer struct {
 	PublicKey []byte
+	Signature []byte
 }
 
 func (a *PayloadCancelProducer) Data(version byte) []byte {
@@ -22,17 +25,46 @@ func (a *PayloadCancelProducer) Data(version byte) []byte {
 }
 
 func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
+	err := a.SerializeUnsigned(w, version)
+	if err != nil {
+		return err
+	}
+
+	err = common.WriteVarBytes(w, a.Signature)
+	if err != nil {
+		return errors.New("[PayloadCancelProducer], Signature serialize failed")
+	}
+
+	return nil
+}
+
+func (a *PayloadCancelProducer) SerializeUnsigned(w io.Writer, version byte) error {
 	err := common.WriteVarBytes(w, a.PublicKey)
 	if err != nil {
-		return errors.New("[PayloadCancelProducer], Serialize failed.")
+		return errors.New("[PayloadCancelProducer], Serialize failed")
 	}
 	return nil
 }
 
 func (a *PayloadCancelProducer) Deserialize(r io.Reader, version byte) error {
+	err := a.DeserializeUnsigned(r, version)
+	if err != nil {
+		return err
+	}
+	sig, err := common.ReadVarBytes(r, crypto.SignatureLength, "signature")
+	if err != nil {
+		return errors.New("[PayloadCancelProducer], Signature deserialize failed")
+	}
+
+	a.Signature = sig
+
+	return nil
+}
+
+func (a *PayloadCancelProducer) DeserializeUnsigned(r io.Reader, version byte) error {
 	pk, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
-		return errors.New("[PayloadCancelProducer], Deserialize failed.")
+		return errors.New("[PayloadCancelProducer], Deserialize failed")
 	}
 	a.PublicKey = pk
 	return err

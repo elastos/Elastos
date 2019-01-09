@@ -429,7 +429,7 @@ func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
 func (s *transactionSuite) TestTransaction_SpecificSample() {
 	// update producer transaction deserialize sample
 	byteReader := new(bytes.Buffer)
-	updateProducerByteStr := "090B0021037F3CAEDE72447B6082C1E8F7705FFD1ED6E24F348130D34CBC7C0A35C9E993F507646F6E676C65690B7A68697A616F64616A69650C000000000000000831322E302E302E310100133331373237383934343537373235363832383201FE52A99C9CA67307BCEB50BA0A7D2E05E4461954FB34FCF29FBBEA7F7F08CB2800000000000001B037DB964A231458D2D6FFD5EA18944C4F90E63D547C5D3B9874DF66A4EAD0A300743BA40B00000000000000214FFBC4FB3B3C30A626A3B298BFA392A0121D42490000000000014140821CF72B20045AF7D29ABF9269825CE11B9BFC57BE2ED0DF71EACB61927F86238A8A022FE502DCC7F2B0FE20C854034B84AE43F65D08A4BDF5ACBA6ECF076EAD2321037F3CAEDE72447B6082C1E8F7705FFD1ED6E24F348130D34CBC7C0A35C9E993F5AC"
+	updateProducerByteStr := "090b0021034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c09656c615f74657374310d656c615f74657374312e6f726754b60100000000000931302e31302e302e3240a85aedec5444f8603788a0720f98e860168afcb0e82168cd1a29995a8fffba23d4ef1487b6eee4b145a660e017a5e9401c285550d2deac44b968a17c954465a600018dc8831894f8d5bcecd4b03848900d72ed756380a5bc1940f2b7368b5e3919090100ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300d414000000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141404c214698b25a1e23b5c933eb3a9f05ed83ae5fd36f8f82a90462a1d06eaac656c303f8aa1817ba7b18b5de21df1d504c86e4cc5113081bfded4088dcef2011852321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
 	updateProducerByte, _ := common.HexStringToBytes(updateProducerByteStr)
 	byteReader.Write(updateProducerByte)
 	txn := &Transaction{}
@@ -473,14 +473,14 @@ func assertOldVersionTxEqual(oldVersion bool, suite *suite.Suite, first, second 
 
 	suite.Equal(attrNum, len(first.Attributes))
 	suite.Equal(attrNum, len(second.Attributes))
-	for i := 0; i < attrNum; i ++ {
+	for i := 0; i < attrNum; i++ {
 		suite.Equal(first.Attributes[i].Usage, second.Attributes[i].Usage)
 		suite.True(bytes.Equal(first.Attributes[i].Data, second.Attributes[i].Data))
 	}
 
 	suite.Equal(programNum, len(first.Programs))
 	suite.Equal(programNum, len(second.Programs))
-	for i := 0; i < programNum; i ++ {
+	for i := 0; i < programNum; i++ {
 		suite.True(bytes.Equal(first.Programs[i].Code, second.Programs[i].Code))
 		suite.True(bytes.Equal(first.Programs[i].Parameter, second.Programs[i].Parameter))
 	}

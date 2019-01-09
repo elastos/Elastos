@@ -8,13 +8,13 @@ import (
 )
 
 const (
-	OutputPath = "./ArbiterLogs/" // The log files output path
+	dposLogDir = "elastos/logs/dpos/"
 )
 
 var logger *elaLog.Logger
 
 func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = elaLog.NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	logger = elaLog.NewLogger(dposLogDir, level, maxPerLogSizeMb, maxLogsSizeMb)
 	connmgr.UseLogger(logger)
 	peer.UseLogger(logger)
 	p2p.UseLogger(logger)

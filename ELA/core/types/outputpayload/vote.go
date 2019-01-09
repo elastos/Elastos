@@ -30,11 +30,11 @@ type VoteContent struct {
 	Candidates [][]byte
 }
 
-func (vc *VoteContent) Serialize(w io.Writer) error {
+func (vc *VoteContent) Serialize(w io.Writer, version byte) error {
 	if _, err := w.Write([]byte{byte(vc.VoteType)}); err != nil {
 		return err
 	}
-	if err := common.WriteUint32(w, uint32(len(vc.Candidates))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(vc.Candidates))); err != nil {
 		return err
 	}
 	for _, candidate := range vc.Candidates {
@@ -46,19 +46,19 @@ func (vc *VoteContent) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (vc *VoteContent) Deserialize(r io.Reader) error {
+func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 	voteType, err := common.ReadBytes(r, 1)
 	if err != nil {
 		return err
 	}
 	vc.VoteType = VoteType(voteType[0])
 
-	candidatesCount, err := common.ReadUint32(r)
+	candidatesCount, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	for i := uint32(0); i < candidatesCount; i++ {
+	for i := uint64(0); i < candidatesCount; i++ {
 		candidate, err := common.ReadVarBytes(r, crypto.COMPRESSEDLEN, "producer")
 		if err != nil {
 			return err
@@ -88,11 +88,11 @@ func (o *VoteOutput) Serialize(w io.Writer) error {
 	if _, err := w.Write([]byte{byte(o.Version)}); err != nil {
 		return err
 	}
-	if err := common.WriteUint32(w, uint32(len(o.Contents))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(o.Contents))); err != nil {
 		return err
 	}
 	for _, content := range o.Contents {
-		if err := content.Serialize(w); err != nil {
+		if err := content.Serialize(w, o.Version); err != nil {
 			return err
 		}
 	}
@@ -106,14 +106,14 @@ func (o *VoteOutput) Deserialize(r io.Reader) error {
 	}
 	o.Version = version[0]
 
-	contentsCount, err := common.ReadUint32(r)
+	contentsCount, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	for i := uint32(0); i < contentsCount; i++ {
+	for i := uint64(0); i < contentsCount; i++ {
 		var content VoteContent
-		if err := content.Deserialize(r); err != nil {
+		if err := content.Deserialize(r, o.Version); err != nil {
 			return err
 		}
 		o.Contents = append(o.Contents, content)
@@ -144,10 +144,6 @@ func (o *VoteOutput) Validate() error {
 		// only use Delegate as a vote type for now
 		if content.VoteType != Delegate {
 			return errors.New("invalid vote type")
-		}
-
-		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
-			return errors.New("invalid public key length")
 		}
 
 		candidateMap := make(map[string]struct{})
