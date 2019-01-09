@@ -13,7 +13,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"crypto/subtle"
-	"strings"
+	"net"
 )
 
 //an instance of the multiplexer
@@ -81,6 +81,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Client ip is not allowd", http.StatusNetworkAuthenticationRequired)
 		return
 	}
+	
 	if r.Method != "POST" {
 		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
 		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
@@ -163,37 +164,43 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func  clientAllowed(r *http.Request) (bool) {
-	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
-	log.Debugf("RemoteAddr %v \n", Parameters.RpcConfiguration.WhiteIpList )
+func  clientAllowed(req *http.Request) (bool) {
+	log.Debugf("RemoteAddr %s \n", req.RemoteAddr)
+	log.Debugf("WhiteIpList %v \n", Parameters.RpcConfiguration.WhiteIpList )
 
-	if  colonIndex := strings.LastIndex(r.RemoteAddr, ":") ; colonIndex >= 0 {
-		remoteIp := r.RemoteAddr[:colonIndex]
-		log.Debugf("remoteIp %s \n", remoteIp)
+	//this ipAbbr  may be  ::1 when request is localhost
+	ipAbbr, _, err := net.SplitHostPort(req.RemoteAddr)
+	if err != nil {
+		log.Errorf("RemoteAddr clientAllowed SplitHostPort failure %s \n", req.RemoteAddr)
+		return false
 
-		if remoteIp == "127.0.0.1" {
+	}
+	//after ParseIP ::1 chg to 0:0:0:0:0:0:0:1 the true ip
+	remoteIp := net.ParseIP(ipAbbr)
+	log.Debugf("RemoteAddr clientAllowed remoteIp %s \n", remoteIp.String())
+
+
+	if remoteIp == nil {
+		log.Errorf("clientAllowed ParseIP ipAbbr %s failure  \n", ipAbbr)
+		return false
+	}
+
+	if remoteIp.IsLoopback(){
+		log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
+		return  true
+	}
+
+	for _, cfgIp := range Parameters.RpcConfiguration.WhiteIpList {
+		//WhiteIpList have 0.0.0.0  allow all ip in
+		if cfgIp == "0.0.0.0" {
+			return  true
+		}
+		if cfgIp == remoteIp.String() {
 			return  true
 		}
 
-		for _, cfgIp := range Parameters.RpcConfiguration.WhiteIpList {
-			//WhiteIpList have 0.0.0.0  allow all ip in
-			log.Debugf("cfgIp %v \n", cfgIp )
-
-			if cfgIp == "0.0.0.0" {
-				log.Debugf("cfgIp == 0.0.0.0 clientAllowed ------ \n")
-
-				return  true
-			}
-			if cfgIp == remoteIp {
-				log.Debugf("cfgIp ==remoteIp  %s \n", remoteIp)
-
-				return  true
-			}
-
-		}
 	}
-	log.Debugf("RemoteAddr clientAllowed failure %s \n", r.RemoteAddr)
-
+	log.Debugf("RemoteAddr clientAllowed failure %s \n", req.RemoteAddr)
 	return false
 }
 
