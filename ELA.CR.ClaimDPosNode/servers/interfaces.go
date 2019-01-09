@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
@@ -14,12 +13,13 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/elanet"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
@@ -27,13 +27,14 @@ import (
 )
 
 var (
-	Chain       *blockchain.BlockChain
-	Store       blockchain.IChainStore
-	TxMemPool   *mempool.TxPool
-	Pow         *pow.Service
-	Server      elanet.Server
-	Arbiters    interfaces.Arbitrators
-	Versions    interfaces.HeightVersions
+	Chain     *blockchain.BlockChain
+	Store     blockchain.IChainStore
+	TxMemPool *mempool.TxPool
+	Pow       *pow.Service
+	Server    elanet.Server
+	Arbiter   *dpos.Arbitrator
+	Arbiters  interfaces.Arbitrators
+	Versions  interfaces.HeightVersions
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -251,6 +252,10 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 }
 
 func SubmitSidechainIllegalData(param Params) map[string]interface{} {
+	if Arbiter == nil {
+		return ResponsePack(InternalError, "arbiter disabled")
+	}
+
 	rawHex, ok := param.String("illegaldata")
 	if !ok {
 		return ResponsePack(InvalidParams, "parameter illegaldata not found")
@@ -263,7 +268,7 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, "illegaldata deserialization failed")
 	}
 
-	events.Notify(events.ETSidechainIllegalEvidenceReceived, data)
+	Arbiter.OnSidechainIllegalEvidenceReceived(&data)
 
 	return ResponsePack(Success, true)
 }

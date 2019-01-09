@@ -28,25 +28,20 @@ type ArbitratorConfig struct {
 	Broadcast         func(msg p2p.Message)
 }
 
-type Arbitrator interface {
-	Start()
-	Stop() error
-}
-
-type arbitrator struct {
+type Arbitrator struct {
 	enableViewLoop bool
 	network        *network
 	dposManager    manager.DposManager
 }
 
-func (a *arbitrator) Start() {
+func (a *Arbitrator) Start() {
 	a.network.Start()
 	go a.dposManager.Recover()
 
 	go a.changeViewLoop()
 }
 
-func (a *arbitrator) Stop() error {
+func (a *Arbitrator) Stop() error {
 	a.enableViewLoop = false
 
 	if err := a.network.Stop(); err != nil {
@@ -56,33 +51,33 @@ func (a *arbitrator) Stop() error {
 	return nil
 }
 
-func (a *arbitrator) OnIllegalBlockReceived(payload *types.PayloadIllegalBlock) {
+func (a *Arbitrator) OnIllegalBlockReceived(payload *types.PayloadIllegalBlock) {
 	log.Info("[OnIllegalBlockReceived] listener received block")
 	if payload.CoinType != types.ELACoin {
 		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
 	}
 }
 
-func (a *arbitrator) OnSidechainIllegalEvidenceReceived(data *types.SidechainIllegalData) {
+func (a *Arbitrator) OnSidechainIllegalEvidenceReceived(data *types.SidechainIllegalData) {
 	log.Info("[OnSidechainIllegalEvidenceReceived] listener received sidechain illegal evidence")
 	a.network.PostSidechainIllegalDataTask(data)
 }
 
-func (a *arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
+func (a *Arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
-func (a *arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (a *Arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *arbitrator) OnNewElection(arbiters [][]byte) {
+func (a *Arbitrator) OnNewElection(arbiters [][]byte) {
 	a.network.UpdatePeers(arbiters)
 }
 
-func (a *arbitrator) changeViewLoop() {
+func (a *Arbitrator) changeViewLoop() {
 	for a.enableViewLoop {
 		a.network.PostChangeViewTask()
 
@@ -90,7 +85,7 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
+func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
 		cfg.Params.MaxLogsSize)
 
@@ -145,7 +140,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 	cfg.Store.StartEventRecord()
 	cfg.Store.StartArbitratorsRecord()
 
-	a := arbitrator{
+	a := Arbitrator{
 		enableViewLoop: true,
 		dposManager:    dposManager,
 		network:        network,
@@ -162,9 +157,6 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 
 		case events.ETNewArbiterElection:
 			a.OnNewElection(e.Data.([][]byte))
-
-		case events.ETSidechainIllegalEvidenceReceived:
-			a.OnSidechainIllegalEvidenceReceived(e.Data.(*types.SidechainIllegalData))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)

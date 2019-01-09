@@ -142,6 +142,7 @@ func main() {
 		}
 		defer arbitrator.Stop()
 		arbitrator.Start()
+		servers.Arbiter = arbitrator
 	}
 
 	servers.Chain = chain
