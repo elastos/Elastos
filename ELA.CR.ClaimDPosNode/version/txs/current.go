@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
@@ -38,7 +39,7 @@ func (v *txCurrent) CheckOutputPayload(txType types.TxType, output *types.Output
 		}
 	}
 
-	return  output.OutputPayload.Validate()
+	return output.OutputPayload.Validate()
 }
 
 func (v *txCurrent) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
@@ -60,24 +61,30 @@ func (v *txCurrent) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, 
 	arbitratorsHashes := v.cfg.Arbitrators.GetArbitratorsProgramHashes()
 	candidatesHashes := v.cfg.Arbitrators.GetCandidatesProgramHashes()
 	if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
-		return errors.New("Coinbase output count not match.")
+		return errors.New("coinbase output count not match")
 	}
 
 	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
 	totalBlockConfirmReward := float64(dposTotalReward) * 0.25
 	totalTopProducersReward := float64(dposTotalReward) * 0.75
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(len(arbitratorsHashes)+len(candidatesHashes))))
+	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
 
-	for _, v := range arbitratorsHashes {
+	for _, hash := range arbitratorsHashes {
 
-		amount, ok := outputAddressMap[*v]
+		amount, ok := outputAddressMap[*hash]
 		if !ok {
-			return errors.New("Unknown dpos reward address.")
+			return errors.New("unknown dpos reward address")
 		}
 
-		if amount != individualProducerReward+individualBlockConfirmReward {
-			return errors.New("Incorrect dpos reward amount.")
+		if v.cfg.Arbitrators.IsCRCArbitratorProgramHash(hash) {
+			if amount != individualBlockConfirmReward {
+				return errors.New("incorrect dpos reward amount")
+			}
+		} else {
+			if amount != individualProducerReward+individualBlockConfirmReward {
+				return errors.New("incorrect dpos reward amount")
+			}
 		}
 	}
 
@@ -85,11 +92,11 @@ func (v *txCurrent) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, 
 
 		amount, ok := outputAddressMap[*v]
 		if !ok {
-			return errors.New("Unknown dpos reward address.")
+			return errors.New("unknown dpos reward address")
 		}
 
 		if amount != individualProducerReward {
-			return errors.New("Incorrect dpos reward amount.")
+			return errors.New("incorrect dpos reward amount")
 		}
 	}
 
