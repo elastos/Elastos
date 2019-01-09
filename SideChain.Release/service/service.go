@@ -890,6 +890,52 @@ func (s *HttpService) GetWithdrawTransactionByHash(param http.Params) (interface
 	return txWithdraw, nil
 }
 
+type SidechainIllegalDataInfo struct {
+	IllegalType     uint8  `json:"illegaltype"`
+	Height          uint32 `json:"height"`
+	IllegalSigner   string `json:"illegalsigner"`
+	Evidence        string `json:"evidence"`
+	CompareEvidence string `json:"compareevidence"`
+}
+
+func (s *HttpService) GetIllegalEvidenceByHeight(param http.Params) (interface{}, error) {
+	height, ok := param.Uint("height")
+	if !ok {
+		return nil, http.NewError(int(InvalidParams), "height parameter should be a positive integer")
+	}
+
+	hash, err := s.cfg.Chain.GetBlockHash(uint32(height))
+	if err != nil {
+		return nil, newError(UnknownBlock)
+
+	}
+	_, err = s.cfg.Chain.GetBlockByHash(hash)
+	if err != nil {
+		return nil, newError(UnknownBlock)
+	}
+
+	// todo get illegal evidences in block
+
+	result := make([]*SidechainIllegalDataInfo, 0)
+	return result, nil
+}
+
+func (s *HttpService) CheckIllegalEvidence(param http.Params) (interface{}, error) {
+	evidence, ok := param["evidence"]
+	if !ok {
+		return nil, http.NewError(int(InvalidParams), "no evidence")
+	}
+	e := new(SidechainIllegalDataInfo)
+	if err := Unmarshal(evidence, e); err != nil {
+		log.Error("[CheckIllegalEvidence] received invalid evidence")
+		return false, err
+	}
+
+	// todo check illegal evidence
+
+	return false, nil
+}
+
 func Unmarshal(result interface{}, target interface{}) error {
 	data, err := json.Marshal(result)
 	if err != nil {
