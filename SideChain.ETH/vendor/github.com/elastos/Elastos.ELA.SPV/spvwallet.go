@@ -32,15 +32,91 @@ type spvwallet struct {
 	filter *sdk.AddrFilter
 }
 
-// Batch returns a TxBatch instance for transactions batch
-// commit, this can get better performance when commit a bunch
-// of transactions within a block.
-func (w *spvwallet) Batch() database.TxBatch {
-	return &txBatch{
-		db:     w.db,
-		batch:  w.db.Batch(),
-		filter: w.getAddrFilter(),
+func (w *spvwallet) putTx(batch sqlite.DataBatch, utx util.Transaction,
+	height uint32) (bool, error) {
+
+	tx := utx.(*sutil.Tx)
+	txId := tx.Hash()
+	hits := 0
+
+	// Check if any UTXOs within this wallet have been spent.
+	for _, input := range tx.Inputs {
+		// Move UTXO to STXO
+		op := util.NewOutPoint(input.Previous.TxID, input.Previous.Index)
+		utxo, _ := w.db.UTXOs().Get(op)
+		// Skip if no match.
+		if utxo == nil {
+			continue
+		}
+
+		err := batch.STXOs().Put(sutil.NewSTXO(utxo, height, txId))
+		if err != nil {
+			return false, nil
+		}
+		hits++
 	}
+
+	// Check if there are any output to this wallet address.
+	for index, output := range tx.Outputs {
+		// Filter address
+		if w.getAddrFilter().ContainAddr(output.ProgramHash) {
+			var lockTime = output.OutputLock
+			if tx.TxType == core.CoinBase {
+				lockTime = height + 100
+			}
+			utxo := sutil.NewUTXO(txId, height, index, output.Value, lockTime, output.ProgramHash)
+			err := batch.UTXOs().Put(utxo)
+			if err != nil {
+				return false, err
+			}
+			hits++
+		}
+	}
+
+	// If no hits, no need to save transaction
+	if hits == 0 {
+		return true, nil
+	}
+
+	// Save transaction
+	err := batch.Txs().Put(util.NewTx(tx, height))
+	if err != nil {
+		return false, err
+	}
+
+	return false, nil
+}
+
+// PutTxs persists the main chain transactions into database and can be
+// queried by GetTxs(height).  Returns the false positive transaction count
+// and error.
+func (w *spvwallet) PutTxs(txs []util.Transaction, height uint32) (uint32, error) {
+	fps := uint32(0)
+	batch := w.db.Batch()
+	defer batch.Rollback()
+	for _, tx := range txs {
+		fp, err := w.putTx(batch, tx, height)
+		if err != nil {
+			return 0, err
+		}
+		if fp {
+			fps++
+		}
+	}
+	if err := batch.Commit(); err != nil {
+		return 0, err
+	}
+	return fps, nil
+}
+
+// PutForkTxs persists the fork chain transactions into database with the
+// fork block hash and can be queried by GetForkTxs(hash).
+func (w *spvwallet) PutForkTxs(txs []util.Transaction, hash *common.Uint256) error {
+	ftxs := make([]*util.Tx, 0, len(txs))
+	for _, tx := range txs {
+		ftxs = append(ftxs, util.NewTx(tx, 0))
+	}
+	return w.db.Txs().PutForkTxs(ftxs, hash)
 }
 
 // HaveTx returns if the transaction already saved in database
@@ -50,20 +126,50 @@ func (w *spvwallet) HaveTx(txId *common.Uint256) (bool, error) {
 	return tx != nil, err
 }
 
-// GetTxs returns all transactions within the given height.
-func (w *spvwallet) GetTxs(height uint32) ([]*util.Tx, error) {
-	return nil, nil
+// GetTxs returns all transactions in main chain within the given height.
+func (w *spvwallet) GetTxs(height uint32) ([]util.Transaction, error) {
+	txs, err := w.db.Txs().GetAllFrom(height)
+	if err != nil {
+		return nil, err
+	}
+
+	utxs := make([]util.Transaction, 0, len(txs))
+	for _, tx := range txs {
+		wtx := newTransaction()
+		if err := wtx.Deserialize(bytes.NewReader(tx.RawData)); err != nil {
+			return nil, err
+		}
+		utxs = append(utxs, wtx)
+	}
+	return utxs, nil
 }
 
-// RemoveTxs delete all transactions on the given height.  Return
-// how many transactions are deleted from database.
-func (w *spvwallet) RemoveTxs(height uint32) (int, error) {
-	batch := w.db.Batch()
-	err := batch.RollbackHeight(height)
+// GetForkTxs returns all transactions within the fork block hash.
+func (w *spvwallet) GetForkTxs(hash *common.Uint256) ([]util.Transaction, error) {
+	ftxs, err := w.db.Txs().GetForkTxs(hash)
 	if err != nil {
-		return 0, batch.Rollback()
+		return nil, err
 	}
-	return 0, batch.Commit()
+
+	txs := make([]util.Transaction, 0, len(ftxs))
+	for _, ftx := range ftxs {
+		tx := newTransaction()
+		if err := tx.Deserialize(bytes.NewReader(ftx.RawData)); err != nil {
+			return nil, err
+		}
+		txs = append(txs, tx)
+	}
+	return txs, nil
+}
+
+// DelTxs remove all transactions in main chain within the given height.
+func (w *spvwallet) DelTxs(height uint32) error {
+	batch := w.db.Batch()
+	defer batch.Rollback()
+	if err := batch.RollbackHeight(height); err != nil {
+		return err
+	}
+	return batch.Commit()
 }
 
 // Clear delete all data in database.
@@ -154,90 +260,6 @@ func (w *spvwallet) BlockCommitted(block *util.Block) {
 	// TODO
 }
 
-type txBatch struct {
-	db     sqlite.DataStore
-	batch  sqlite.DataBatch
-	filter *sdk.AddrFilter
-}
-
-// PutTx add a store transaction operation into batch, and return
-// if it is a false positive and error.
-func (b *txBatch) PutTx(utx util.Transaction, height uint32) (bool, error) {
-	tx := utx.(*sutil.Tx)
-	txId := tx.Hash()
-	hits := 0
-
-	// Check if any UTXOs within this wallet have been spent.
-	for _, input := range tx.Inputs {
-		// Move UTXO to STXO
-		op := util.NewOutPoint(input.Previous.TxID, input.Previous.Index)
-		utxo, _ := b.db.UTXOs().Get(op)
-		// Skip if no match.
-		if utxo == nil {
-			continue
-		}
-
-		err := b.batch.STXOs().Put(sutil.NewSTXO(utxo, height, txId))
-		if err != nil {
-			return false, nil
-		}
-		hits++
-	}
-
-	// Check if there are any output to this wallet address.
-	for index, output := range tx.Outputs {
-		// Filter address
-		if b.filter.ContainAddr(output.ProgramHash) {
-			var lockTime = output.OutputLock
-			if tx.TxType == core.CoinBase {
-				lockTime = height + 100
-			}
-			utxo := sutil.NewUTXO(txId, height, index, output.Value, lockTime, output.ProgramHash)
-			err := b.batch.UTXOs().Put(utxo)
-			if err != nil {
-				return false, err
-			}
-			hits++
-		}
-	}
-
-	// If no hits, no need to save transaction
-	if hits == 0 {
-		return true, nil
-	}
-
-	// Save transaction
-	err := b.batch.Txs().Put(util.NewTx(tx, height))
-	if err != nil {
-		return false, err
-	}
-
-	return false, nil
-}
-
-// DelTx add a delete transaction operation into batch.
-func (b *txBatch) DelTx(txId *common.Uint256) error {
-	return b.batch.Txs().Del(txId)
-}
-
-// DelTxs add a delete transactions on given height operation.
-func (b *txBatch) DelTxs(height uint32) error {
-	// Delete transactions is used when blockchain doing rollback, this not
-	// only delete the transactions on the given height, and also restore
-	// STXOs and remove UTXOs within these transactions.
-	return b.batch.RollbackHeight(height)
-}
-
-// Rollback cancel all operations in current batch.
-func (b *txBatch) Rollback() error {
-	return b.batch.Rollback()
-}
-
-// Commit the added transactions into database.
-func (b *txBatch) Commit() error {
-	return b.batch.Commit()
-}
-
 // Functions for RPC service.
 func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error) {
 	addrStr, ok := params.String("addr")
@@ -296,7 +318,7 @@ func NewWallet() (*spvwallet, error) {
 	w := spvwallet{
 		db: db,
 	}
-	chainStore := database.NewDefaultChainDB(headers, &w)
+	chainStore := database.NewChainDB(headers, &w)
 
 	// Initialize spv service
 	w.IService, err = sdk.NewService(

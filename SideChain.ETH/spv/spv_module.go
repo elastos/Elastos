@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 
-	"github.com/boltdb/bolt"
+	"github.com/syndtr/goleveldb/leveldb"
 	"strings"
 )
 
@@ -159,18 +159,13 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 }
 
 func savePayloadInfo(elaTx core.Transaction) error {
-	db, err := bolt.Open(filepath.Join(dataDir, "spv_transaction_info.db"), 0644, &bolt.Options{InitialMmapSize: 5000000})
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer db.Close()
+	err = db.Put([]byte(elaTx.Hash().String()), []byte(common.BytesToHexString(elaTx.Payload.Data(elaTx.PayloadVersion))), nil)
 
-	err = db.Update(func(tx *bolt.Tx) error {
-		tx.CreateBucketIfNotExists([]byte("payload"))
-		b := tx.Bucket([]byte("payload"))
-		err = b.Put([]byte(elaTx.Hash().String()), []byte(common.BytesToHexString(elaTx.Payload.Data(elaTx.PayloadVersion))))
-		return err
-	})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -178,26 +173,25 @@ func savePayloadInfo(elaTx core.Transaction) error {
 }
 
 func FindPayloadByTransactionHash(transactionHash string) string {
-	var data = []byte("0")
-	if transactionHash != "" {
-		transactionHash = strings.Replace(transactionHash, "0x", "", 1)
-		db, err := bolt.Open(filepath.Join(dataDir, "spv_transaction_info.db"), 0644, &bolt.Options{InitialMmapSize: 5000000})
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer func() { db.Close() }()
-
-		db.View(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte("payload"))
-			if b == nil {
-				return errors.New("No payload Bucket found")
-			}
-			v := b.Get([]byte(transactionHash))
-			if v != nil {
-				data = v
-			}
-			return nil
-		})
+	if transactionHash == "" {
+		return "0"
 	}
-	return string(data)
+
+	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
+	if err != nil {
+		fmt.Println(err)
+		return "0"
+	}
+	defer db.Close()
+
+	v, err := db.Get([]byte(transactionHash), nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "0"
+	}
+
+	return string(v)
+
 }

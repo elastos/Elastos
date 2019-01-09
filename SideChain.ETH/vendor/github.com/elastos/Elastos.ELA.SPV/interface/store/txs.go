@@ -15,6 +15,7 @@ import (
 var (
 	BKTTxs       = []byte("T")
 	BKTHeightTxs = []byte("H")
+	BKTForkTxs   = []byte("F")
 )
 
 // Ensure txs implement Txs interface.
@@ -102,11 +103,52 @@ func getTxIds(data []byte) (txIds []*common.Uint256) {
 	data = data[2:]
 	for i := uint16(0); i < count; i++ {
 		var txId common.Uint256
-		copy(txId[:], data[i*common.UINT256SIZE:(i+1)*common.UINT256SIZE])
+		copy(txId[:], data[i*32:(i+1)*32])
 		txIds = append(txIds, &txId)
 	}
 
 	return txIds
+}
+
+func (t *txs) PutForkTxs(txs []*util.Tx, hash *common.Uint256) error {
+	t.Lock()
+	defer t.Unlock()
+
+	buf := new(bytes.Buffer)
+	if err := common.WriteUint16(buf, uint16(len(txs))); err != nil {
+		return err
+	}
+	for _, tx := range txs {
+		if err := tx.Serialize(buf); err != nil {
+			return err
+		}
+	}
+	return t.db.Put(toKey(BKTForkTxs, hash.Bytes()...), buf.Bytes(), nil)
+}
+
+func (t *txs) GetForkTxs(hash *common.Uint256) ([]*util.Tx, error) {
+	t.RLock()
+	defer t.RUnlock()
+
+	data, err := t.db.Get(toKey(BKTForkTxs, hash.Bytes()...), nil)
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewReader(data)
+	count, err := common.ReadUint16(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	txs := make([]*util.Tx, count)
+	for i := range txs {
+		var utx util.Tx
+		if err := utx.Deserialize(buf); err != nil {
+			return nil, err
+		}
+		txs[i] = &utx
+	}
+	return txs, nil
 }
 
 func (t *txs) GetAll() (txs []*util.Tx, err error) {
@@ -163,9 +205,9 @@ func delTxId(data []byte, hash *common.Uint256) []byte {
 	data = data[2:]
 	for i := uint16(0); i < count; i++ {
 		var txId common.Uint256
-		copy(txId[:], data[i*common.UINT256SIZE:(i+1)*common.UINT256SIZE])
+		copy(txId[:], data[i*32:(i+1)*32])
 		if txId.IsEqual(*hash) {
-			data = append(data[0:i*common.UINT256SIZE], data[(i+1)*common.UINT256SIZE:]...)
+			data = append(data[0:i*32], data[(i+1)*32:]...)
 			break
 		}
 	}

@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"bytes"
 	"database/sql"
 	"math"
 	"sync"
@@ -12,11 +13,16 @@ import (
 )
 
 const CreateTxsDB = `CREATE TABLE IF NOT EXISTS Txs(
-				Hash BLOB NOT NULL PRIMARY KEY,
-				Height INTEGER NOT NULL,
-				Timestamp INTEGER NOT NULL,
-				RawData BLOB NOT NULL
-			);`
+					Hash BLOB NOT NULL PRIMARY KEY,
+					Height INTEGER NOT NULL,
+					Timestamp INTEGER NOT NULL,
+					RawData BLOB NOT NULL
+				);
+				CREATE TABLE IF NOT EXISTS ForkTxs(
+					Hash BLOB NOT NULL PRIMARY KEY,
+					Num INTEGER NOT NULL,
+					RawData BLOB NOT NULL
+				);`
 
 // Ensure txs implement Txs interface.
 var _ Txs = (*txs)(nil)
@@ -117,6 +123,49 @@ func (t *txs) Del(txId *common.Uint256) error {
 
 	_, err := t.Exec("DELETE FROM Txs WHERE Hash=?", txId.Bytes())
 	return err
+}
+
+// PutForkTxs persists the fork chain transactions into database with the
+// fork block hash and can be queried by GetForkTxs(hash).
+func (t *txs) PutForkTxs(txs []*util.Tx, hash *common.Uint256) error {
+	t.Lock()
+	defer t.Unlock()
+
+	buf := new(bytes.Buffer)
+	for _, tx := range txs {
+		if err := tx.Serialize(buf); err != nil {
+			return err
+		}
+	}
+
+	_, err := t.Exec(`INSERT OR REPLACE INTO ForkTxs(Hash, Num, RawData) VALUES(?,?,?)`,
+		hash.Bytes(), len(txs), buf.Bytes())
+	return err
+}
+
+// GetForkTxs returns all transactions within the fork block hash.
+func (t *txs) GetForkTxs(hash *common.Uint256) ([]*util.Tx, error) {
+	t.RLock()
+	defer t.RUnlock()
+
+	row := t.QueryRow(`SELECT Num, RawData FROM ForkTxs WHERE Hash=?`,
+		hash.Bytes())
+	var num int
+	var data []byte
+	if err := row.Scan(&num, &data); err != nil {
+		return nil, err
+	}
+
+	txs := make([]*util.Tx, num)
+	buf := bytes.NewReader(data)
+	for i := range txs {
+		var utx util.Tx
+		if err := utx.Deserialize(buf); err != nil {
+			return nil, err
+		}
+		txs[i] = &utx
+	}
+	return txs, nil
 }
 
 func (t *txs) Batch() TxsBatch {

@@ -114,10 +114,10 @@ func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeig
 		return newTip, reorg, 0, 0, err
 	}
 
-	// Rollback block chain to fork point.
+	// Process block chain reorganize.
 	log.Infof("REORG!!! At block %d, Wiped out %d blocks",
 		bestHeader.Height, bestHeader.Height-commonAncestor.Height)
-	err = b.db.Rollback(commonAncestor)
+	err = b.db.ProcessReorganize(commonAncestor, bestHeader, header)
 	if err != nil {
 		return newTip, reorg, 0, 0, err
 	}

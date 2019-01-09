@@ -16,15 +16,10 @@ type ChainStore interface {
 	// false positive transactions are and error.
 	CommitBlock(block *util.Block, newTip bool) (fps uint32, err error)
 
-	// Rollback delete all transactions after the reorg point,
-	// it is used when blockchain reorganized.
-	Rollback(reorg *util.Header) error
+	// ProcessReorganize switch chain data to the new best chain.
+	ProcessReorganize(commonAncestor, prevTip, newTip *util.Header) error
 }
 
-func NewHeadersOnlyChainDB(db Headers) ChainStore {
-	return &headersOnlyChainDB{db: db}
-}
-
-func NewDefaultChainDB(h Headers, t TxsDB) ChainStore {
-	return &defaultChainDB{h: h, t: t}
+func NewChainDB(h Headers, t TxsDB) ChainStore {
+	return &chainDB{h: h, t: t}
 }

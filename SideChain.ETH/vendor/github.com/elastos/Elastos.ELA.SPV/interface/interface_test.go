@@ -73,8 +73,6 @@ func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
-func (l *TxListener) Rollback(height uint32) {}
-
 func TestGetListenerKey(t *testing.T) {
 	var key1, key2 common.Uint256
 	listener := &TxListener{
