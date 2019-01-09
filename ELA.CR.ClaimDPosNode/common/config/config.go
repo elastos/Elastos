@@ -61,9 +61,14 @@ type PowConfiguration struct {
 }
 
 type RpcConfiguration struct {
-	User         string               `json:"User"`
-	Pass         string               `json:"Pass"`
-	WhiteIpList  []string             `json:"WhiteIpList"`
+	User        string   `json:"User"`
+	Pass        string   `json:"Pass"`
+	WhiteIpList []string `json:"WhiteIpList"`
+}
+
+type CRCArbitratorConfigItem struct {
+	PublicKey string `json:"PublicKey"`
+	IP        string `json:"PublicKey"`
 }
 
 type Configuration struct {
@@ -103,21 +108,21 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	Name                   string   `json:"Name"`
-	Magic                  uint32   `json:"Magic"`
-	NodePort               uint16   `json:"NodePort"`
-	ProtocolVersion        uint32   `json:"ProtocolVersion"`
-	Services               uint64   `json:"Services"`
-	PrintLevel             uint8    `json:"PrintLevel"`
-	SignTolerance          uint64   `json:"SignTolerance"`
-	MaxLogsSize            int64    `json:"MaxLogsSize"`
-	MaxPerLogSize          int64    `json:"MaxPerLogSize"`
-	MaxConnections         int      `json:"MaxConnections"`
-	MajorityCount          uint32   `json:"MajorityCount"`
-	OriginArbiters         []string `json:"OriginArbiters"`
-	CRCArbiters            []string `json:"CRCArbiters"`
-	NormalArbitratorsCount uint32   `json:"NormalArbitratorsCount"`
-	CandidatesCount        uint32   `json:"CandidatesCount"`
+	Name                   string              `json:"Name"`
+	Magic                  uint32              `json:"Magic"`
+	NodePort               uint16              `json:"NodePort"`
+	ProtocolVersion        uint32              `json:"ProtocolVersion"`
+	Services               uint64                    `json:"Services"`
+	PrintLevel             uint8                     `json:"PrintLevel"`
+	SignTolerance          uint64                    `json:"SignTolerance"`
+	MaxLogsSize            int64                     `json:"MaxLogsSize"`
+	MaxPerLogSize          int64                     `json:"MaxPerLogSize"`
+	MaxConnections         int                       `json:"MaxConnections"`
+	MajorityCount          uint32                    `json:"MajorityCount"`
+	OriginArbiters         []string                  `json:"OriginArbiters"`
+	CRCArbiters            []CRCArbitratorConfigItem `json:"CRCArbiters"`
+	NormalArbitratorsCount uint32                    `json:"NormalArbitratorsCount"`
+	CandidatesCount        uint32                    `json:"CandidatesCount"`
 }
 
 type Seed struct {

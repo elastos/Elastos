@@ -25,7 +25,7 @@ type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
 	MajorityCount    uint32
-	CRCArbitrators   [][]byte
+	CRCArbitrators   []config.CRCArbitratorParams
 	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
 	ChainStore       blockchain.IChainStore
@@ -55,7 +55,7 @@ func (a *Arbitrators) Start() error {
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
 	for _, v := range a.cfg.CRCArbitrators {
-		hash, err := contract.PublicKeyToStandardProgramHash(v)
+		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
 		if err != nil {
 			return err
 		}
@@ -152,7 +152,7 @@ func (a *Arbitrators) GetNextCandidates() [][]byte {
 
 func (a *Arbitrators) IsCRCArbitrator(pubKey []byte) bool {
 	for _, v := range a.cfg.CRCArbitrators {
-		if bytes.Equal(pubKey, v) {
+		if bytes.Equal(pubKey, v.PublicKey) {
 			return true
 		}
 	}
@@ -269,7 +269,9 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 		return err
 	}
 	a.nextArbitrators = producers
-	a.nextArbitrators = append(a.nextArbitrators, a.cfg.CRCArbitrators...)
+	for _, v := range a.cfg.CRCArbitrators {
+		a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+	}
 
 	candidates, err := a.cfg.Versions.GetCandidatesDesc(block)
 	if err != nil {
