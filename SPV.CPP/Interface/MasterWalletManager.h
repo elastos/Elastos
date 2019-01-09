@@ -36,7 +36,7 @@ namespace Elastos {
 			 * @param language specify mnemonic language.
 			 * @return a random mnemonic.
 			 */
-			virtual std::string GenerateMnemonic(const std::string &language);
+			virtual std::string GenerateMnemonic(const std::string &language) const;
 
 			/**
 			 * Get public key for creating multi sign wallet with phrase.
@@ -44,14 +44,14 @@ namespace Elastos {
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return public key as expected.
 			 */
-			virtual std::string GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword);
+			virtual std::string GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) const;
 
 			/**
 			 * Get public key for creating multi sign wallet with private key.
 			 * @param privKey private key to do the sign job of related multi-sign accounts.
 			 * @return public key as expected.
 			 */
-			virtual std::string GetMultiSignPubKey(const std::string &privKey);
+			virtual std::string GetMultiSignPubKey(const std::string &privKey) const;
 
 			/**
 			 * Create a new master wallet by mnemonic and phrase password, or return existing master wallet if current master wallet manager has the master wallet id.
@@ -197,7 +197,7 @@ namespace Elastos {
 			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &payPassword);
+					const std::string &payPassword) const;
 
 			/**
 			 * Export mnemonic of the master wallet.
@@ -207,7 +207,7 @@ namespace Elastos {
 			 */
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,
-					const std::string &payPassword);
+					const std::string &payPassword) const;
 
 			virtual std::string GetVersion() const;
 

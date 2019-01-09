@@ -16,11 +16,11 @@ namespace Elastos {
 		public:
 			virtual ~SidechainSubWallet();
 
-			virtual nlohmann::json GetBalanceInfo(const std::string &assetID);
+			virtual nlohmann::json GetBalanceInfo(const std::string &assetID) const;
 
-			virtual uint64_t GetBalance(const std::string &assetID);
+			virtual uint64_t GetBalance(const std::string &assetID) const;
 
-			virtual uint64_t GetBalanceWithAddress(const std::string &assetID, const std::string &address);
+			virtual uint64_t GetBalanceWithAddress(const std::string &assetID, const std::string &address) const;
 
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,

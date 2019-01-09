@@ -81,11 +81,11 @@ namespace Elastos {
 			return _walletManager;
 		}
 
-		nlohmann::json SubWallet::GetBalanceInfo() {
+		nlohmann::json SubWallet::GetBalanceInfo() const {
 			return _walletManager->getWallet()->GetBalanceInfo(Asset::GetELAAssetID());
 		}
 
-		uint64_t SubWallet::GetBalance(BalanceType type) {
+		uint64_t SubWallet::GetBalance(BalanceType type) const {
 			return _walletManager->getWallet()->getBalance(Asset::GetELAAssetID(), AssetTransactions::BalanceType(type));
 		}
 
@@ -94,7 +94,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
-												uint32_t count) {
+												uint32_t count) const {
 			nlohmann::json j;
 			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
 			if (start >= addresses.size()) {
@@ -109,8 +109,8 @@ namespace Elastos {
 			return j;
 		}
 
-		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address) {
-			return _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address);
+		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address, BalanceType type) const {
+			return _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address, AssetTransactions::BalanceType(type));
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
@@ -142,7 +142,7 @@ namespace Elastos {
 			return tx->toJson();
 		}
 
-		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
+		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) const {
 			const WalletPtr &wallet = _walletManager->getWallet();
 
 			std::vector<TransactionPtr> allTxs = wallet->getAllTransactions();
@@ -303,7 +303,7 @@ namespace Elastos {
 			checker.Check();
 		}
 
-		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) {
+		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const {
 
 			if (addressOrTxid.empty()) {
 				return true;
@@ -434,7 +434,7 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json SubWallet::GetTransactionSignedSigners(const nlohmann::json &rawTransaction) {
+		nlohmann::json SubWallet::GetTransactionSignedSigners(const nlohmann::json &rawTransaction) const {
 			nlohmann::json result;
 			MultiSignSubAccount *subAccount = dynamic_cast<MultiSignSubAccount *>(_subAccount.get());
 			if (subAccount != nullptr) {

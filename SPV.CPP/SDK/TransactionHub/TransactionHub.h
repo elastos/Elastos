@@ -67,7 +67,7 @@ namespace Elastos {
 
 			std::string GetRemark(const std::string &txHash);
 
-			uint64_t GetBalanceWithAddress(const UInt256 &assetID, const std::string &address);
+			uint64_t GetBalanceWithAddress(const UInt256 &assetID, const std::string &address, AssetTransactions::BalanceType type) const;
 
 			// returns the first unused external address
 			std::string getReceiveAddress() const;
@@ -139,7 +139,7 @@ namespace Elastos {
 
 			void UpdateBalance();
 
-			std::vector<UTXO> getUTXOsSafe(const UInt256 &assetID);
+			std::vector<UTXO> getUTXOsSafe(const UInt256 &assetID) const;
 
 			std::vector<UTXO> getAllUTXOsSafe();
 

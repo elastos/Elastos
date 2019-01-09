@@ -137,9 +137,9 @@ namespace Elastos {
 			return _info;
 		}
 
-		std::string IdAgentImpl::GetPublicKey(const std::string &id) {
+		std::string IdAgentImpl::GetPublicKey(const std::string &id) const {
 			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
-			return _info.Ids[id].PublicKey;
+			return _info.Ids.find(id)->second.PublicKey;
 		}
 
 	}

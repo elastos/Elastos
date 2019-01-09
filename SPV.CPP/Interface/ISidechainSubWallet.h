@@ -22,14 +22,14 @@ namespace Elastos {
 			 * @param assetID asset hex code from asset hash.
 			 * @return balances of all addresses in json format.
 			 */
-			virtual nlohmann::json GetBalanceInfo(const std::string &assetID) = 0;
+			virtual nlohmann::json GetBalanceInfo(const std::string &assetID) const = 0;
 
 			/**
 			 * Get sum of balances of all addresses.
 			 * @param assetID asset hex code from asset hash.
 			 * @return sum of balances.
 			 */
-			virtual uint64_t GetBalance(const std::string &assetID) = 0;
+			virtual uint64_t GetBalance(const std::string &assetID) const = 0;
 
 			/**
 			 * Get balance of only the specified address.
@@ -37,7 +37,7 @@ namespace Elastos {
 			 * @param address is one of addresses created by current sub wallet.
 			 * @return balance of specified address.
 			 */
-			virtual uint64_t GetBalanceWithAddress(const std::string &assetID, const std::string &address) = 0;
+			virtual uint64_t GetBalanceWithAddress(const std::string &assetID, const std::string &address) const = 0;
 
 			/**
 			 * Create a normal transaction and return the content of transaction in json format.

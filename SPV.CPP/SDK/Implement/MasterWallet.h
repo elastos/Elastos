@@ -75,7 +75,7 @@ namespace Elastos {
 
 			virtual void DestroyWallet(ISubWallet *wallet);
 
-			virtual std::string GetPublicKey();
+			virtual std::string GetPublicKey() const;
 
 			virtual std::string Sign(
 					const std::string &message,
@@ -86,9 +86,9 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
-			virtual bool IsAddressValid(const std::string &address);
+			virtual bool IsAddressValid(const std::string &address) const;
 
-			virtual std::vector<std::string> GetSupportedChains();
+			virtual std::vector<std::string> GetSupportedChains() const;
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -111,7 +111,7 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetAllIds() const;
 
-			virtual std::string GetPublicKey(const std::string &id);
+			virtual std::string GetPublicKey(const std::string &id) const;
 
 		protected:
 
@@ -243,7 +243,7 @@ namespace Elastos {
 
 			virtual void stopPeerManager(SubWallet *wallet);
 
-			void tryInitCoinConfig();
+			void tryInitCoinConfig() const;
 
 			void initSubWalletsPubKeyMap(const std::string &payPassword);
 
@@ -257,7 +257,7 @@ namespace Elastos {
 			std::string _id;
 			std::string _rootPath;
 
-			CoinConfigReader _coinConfigReader;
+			mutable CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 

@@ -21,6 +21,15 @@ if(NOT DEFINED SPV_PLATFORM)
 endif()
 set_property(CACHE SPV_PLATFORM PROPERTY STRINGS ${SPV_PLATFORM_ANDROID} ${SPV_PLATFORM_IOS} Host)
 
+execute_process(
+	COMMAND git describe --dirty --always --tags
+	COMMAND tr -d "\n"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
+)
+
+message(STATUS "SPV version ${SPVSDK_VERSION_MESSAGE}")
+
 if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 	message(STATUS "Build spv for android")
 
@@ -71,13 +80,6 @@ project(SPVSDK)
 
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
-
-execute_process(
-	COMMAND git describe --dirty --always --tags
-	COMMAND tr -d "\n"
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
-)
 
 if(NOT DEFINED SPDLOG_LEVEL)
 	set(SPDLOG_LEVEL info CACHE STRING "Android ABI (architecture)" FORCE)

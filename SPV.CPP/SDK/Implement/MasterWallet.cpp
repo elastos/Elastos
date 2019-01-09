@@ -320,7 +320,7 @@ namespace Elastos {
 			delete walletInner;
 		}
 
-		std::string MasterWallet::GetPublicKey() {
+		std::string MasterWallet::GetPublicKey() const {
 			return _localStore.Account()->GetPublicKey();
 		}
 
@@ -512,7 +512,7 @@ namespace Elastos {
 			return _idAgentImpl->GetAllIds();
 		}
 
-		std::string MasterWallet::GetPublicKey(const std::string &id) {
+		std::string MasterWallet::GetPublicKey(const std::string &id) const {
 			return _idAgentImpl->GetPublicKey(id);
 		}
 
@@ -526,16 +526,16 @@ namespace Elastos {
 				wallet->StopP2P();
 		}
 
-		bool MasterWallet::IsAddressValid(const std::string &address) {
+		bool MasterWallet::IsAddressValid(const std::string &address) const {
 			return Address::isValidAddress(address);
 		}
 
-		std::vector<std::string> MasterWallet::GetSupportedChains() {
+		std::vector<std::string> MasterWallet::GetSupportedChains() const {
 			tryInitCoinConfig();
 			return _coinConfigReader.GetAllChainId();
 		}
 
-		void MasterWallet::tryInitCoinConfig() {
+		void MasterWallet::tryInitCoinConfig() const {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = _rootPath;
 				configPath /= COIN_COINFIG_FILE;

@@ -60,11 +60,11 @@ namespace Elastos {
 						  });
 		}
 
-		std::string MasterWalletManager::GenerateMnemonic(const std::string &language) {
+		std::string MasterWalletManager::GenerateMnemonic(const std::string &language) const {
 			return MasterWallet::GenerateMnemonic(language, _rootPath);
 		}
 
-		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) {
+		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) const {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			Mnemonic mnemonic = Mnemonic(boost::filesystem::path(_rootPath));
@@ -86,7 +86,7 @@ namespace Elastos {
 			return Utils::encodeHex(key.getPubkey());
 		}
 
-		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) {
+		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) const {
 			CMBlock privKeyHex = Utils::decodeHex(privKey);
 			ParamChecker::checkCondition(privKeyHex.GetSize() != sizeof(UInt256), Error::PubKeyFormat,
 										 "Private key length do not as expected");
@@ -296,7 +296,7 @@ namespace Elastos {
 
 		nlohmann::json
 		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													  const std::string &payPassword) {
+													  const std::string &payPassword) const {
 
 			ParamChecker::checkPassword(backupPassword, "Backup");
 
@@ -305,7 +305,7 @@ namespace Elastos {
 		}
 
 		std::string
-		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
+		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) const {
 
 			ParamChecker::checkParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
 			ParamChecker::checkPassword(payPassword, "Pay");

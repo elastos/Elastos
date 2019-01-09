@@ -89,7 +89,7 @@ namespace Elastos {
 			 * Get public key of the root private key belongs to the master wallet.
 			 * @return public key of the root private key
 			 */
-			virtual std::string GetPublicKey() = 0;
+			virtual std::string GetPublicKey() const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.
@@ -118,13 +118,13 @@ namespace Elastos {
 			 * @param address to be verified.
 			 * @return True if valid, otherwise return false.
 			 */
-			virtual bool IsAddressValid(const std::string &address) = 0;
+			virtual bool IsAddressValid(const std::string &address) const = 0;
 
 			/**
 			 * Get all chain ids of supported chains.
 			 * @return a list of chain id.
 			 */
-			virtual std::vector<std::string> GetSupportedChains() = 0;
+			virtual std::vector<std::string> GetSupportedChains() const = 0;
 
 			/**
 			 * Change pay password which encrypted private key and other important data in memory.

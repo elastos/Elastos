@@ -22,7 +22,7 @@ namespace Elastos {
 		class AssetTransactions {
 		public:
 			enum BalanceType {
-				Ordinary,
+				Default,
 				Voted,
 				Total,
 			};
@@ -53,17 +53,11 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs() const;
 
-			uint64_t GetBalance(BalanceType type = Ordinary) const;
-
-			void SetBalance(uint64_t balance);
+			uint64_t GetBalance(BalanceType type = Default) const;
 
 			uint64_t GetTotalSent() const;
 
-			void SetTotalSent(uint64_t value);
-
 			uint64_t GetTotalReceived() const;
-
-			void SetTotalReceived(uint64_t value);
 
 			uint64_t GetFeePerKb() const;
 

@@ -69,7 +69,7 @@ namespace Elastos {
 			return _txRemarkMap[txHash];
 		}
 
-		std::vector<UTXO> TransactionHub::getUTXOsSafe(const UInt256 &assetID) {
+		std::vector<UTXO> TransactionHub::getUTXOsSafe(const UInt256 &assetID) const {
 			std::vector<UTXO> result;
 
 			{
@@ -91,46 +91,55 @@ namespace Elastos {
 		}
 
 		nlohmann::json TransactionHub::GetBalanceInfo(const UInt256 &assetID) {
-			std::vector<UTXO> _utxos = getUTXOsSafe(assetID);
-			nlohmann::json j;
-			std::map<std::string, uint64_t> addressesBalanceMap;
+			std::vector<UTXO> utxos = getUTXOsSafe(assetID);
+			nlohmann::json j, jDefault, jVoted;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 
-				for (size_t i = 0; i < _utxos.size(); ++i) {
-					if (!_transactions[assetID]->Exist(_utxos[i].hash)) continue;
+				for (size_t i = 0; i < utxos.size(); ++i) {
+					if (!_transactions[assetID]->Exist(utxos[i].hash))
+						continue;
 
-					const TransactionPtr &t = _transactions[assetID]->GetExistTransaction(_utxos[i].hash);
-					if (addressesBalanceMap.find(t->getOutputs()[_utxos[i].n].getAddress()) !=
-						addressesBalanceMap.end()) {
-						addressesBalanceMap[t->getOutputs()[_utxos[i].n].getAddress()] += t->getOutputs()[_utxos[i].n].getAmount();
+					const TransactionPtr &t = _transactions[assetID]->GetExistTransaction(utxos[i].hash);
+					TransactionOutput o = t->getOutputs()[utxos[i].n];
+					if (o.GetType() == TransactionOutput::Type::VoteOutput) {
+						if (jVoted.find(o.getAddress()) != jVoted.end()) {
+							jVoted[o.getAddress()] += o.getAmount();
+						} else {
+							jVoted[o.getAddress()] = o.getAmount();
+						}
 					} else {
-						addressesBalanceMap[t->getOutputs()[_utxos[i].n].getAddress()] = t->getOutputs()[_utxos[i].n].getAmount();
+						if (jDefault.find(o.getAddress()) != jDefault.end()) {
+							jDefault[o.getAddress()] += o.getAmount();
+						} else {
+							jDefault[o.getAddress()] = o.getAmount();
+						}
 					}
 				}
 			}
 
-			std::vector<nlohmann::json> balances;
-			std::for_each(addressesBalanceMap.begin(), addressesBalanceMap.end(),
-						  [&addressesBalanceMap, &balances](const std::map<std::string, uint64_t>::value_type &item) {
-							  nlohmann::json balanceKeyValue;
-							  balanceKeyValue[item.first] = item.second;
-							  balances.push_back(balanceKeyValue);
-						  });
+			j["Default"] = jDefault;
+			j["Voted"] = jVoted;
 
-			j["Balances"] = balances;
 			return j;
 		}
 
-		uint64_t TransactionHub::GetBalanceWithAddress(const UInt256 &assetID, const std::string &address) {
+		uint64_t TransactionHub::GetBalanceWithAddress(const UInt256 &assetID, const std::string &address,
+													   AssetTransactions::BalanceType type) const {
 			std::vector<UTXO> utxos = getUTXOsSafe(assetID);
 			uint64_t balance = 0;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				for (size_t i = 0; i < utxos.size(); ++i) {
-					const TransactionPtr &t = _transactions[assetID]->GetExistTransaction(utxos[i].hash);
-					if (t == nullptr) continue;
+					const TransactionPtr &t = _transactions.Get(assetID)->GetExistTransaction(utxos[i].hash);
+					if (t == nullptr || (type == AssetTransactions::Default &&
+						t->getOutputs()[utxos[i].n].GetType() != TransactionOutput::Type::Default) ||
+						(type == AssetTransactions::Voted &&
+						t->getOutputs()[utxos[i].n].GetType() != TransactionOutput::Type::VoteOutput)) {
+						continue;
+					}
+
 					if (t->getOutputs()[utxos[i].n].getAddress() == address) {
 						balance += t->getOutputs()[utxos[i].n].getAmount();
 					}
@@ -445,7 +454,7 @@ namespace Elastos {
 
 		std::vector<std::string> TransactionHub::getAllAddresses() {
 
-			std::vector<Address> addrs = _subAccount->GetAllAddresses(INT64_MAX);
+			std::vector<Address> addrs = _subAccount->GetAllAddresses(size_t(-1));
 
 			std::vector<std::string> results;
 			for (int i = 0; i < addrs.size(); i++) {

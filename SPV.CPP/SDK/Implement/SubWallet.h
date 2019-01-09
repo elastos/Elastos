@@ -41,16 +41,16 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual nlohmann::json GetBalanceInfo();
+			virtual nlohmann::json GetBalanceInfo() const;
 
-			virtual uint64_t GetBalance(BalanceType type = Ordinary);
+			virtual uint64_t GetBalance(BalanceType type = Default) const;
 
-			virtual uint64_t GetBalanceWithAddress(const std::string &address);
+			virtual uint64_t GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
 
 			virtual std::string CreateAddress();
 
 			virtual nlohmann::json GetAllAddress(uint32_t start,
-												 uint32_t count);
+												 uint32_t count) const;
 
 			virtual void AddCallback(ISubWalletCallback *subCallback);
 
@@ -86,7 +86,7 @@ namespace Elastos {
 					const std::string &payPassword);
 
 			virtual nlohmann::json GetTransactionSignedSigners(
-					const nlohmann::json &rawTransaction);
+					const nlohmann::json &rawTransaction) const;
 
 			virtual nlohmann::json PublishTransaction(
 					const nlohmann::json &rawTransaction);
@@ -94,7 +94,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid);
+					const std::string &addressOrTxid) const;
 
 			virtual std::string Sign(
 					const std::string &message,
@@ -170,7 +170,7 @@ namespace Elastos {
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
-			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid);
+			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
 			virtual void fireTransactionStatusChanged(const std::string &txid,
 													  const std::string &status,

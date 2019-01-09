@@ -15,7 +15,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		enum BalanceType {
-			Ordinary,
+			Default,
 			Voted,
 			Total,
 		};
@@ -63,20 +63,20 @@ namespace Elastos {
 			 * Get balances of all addresses in json format.
 			 * @return balances of all addresses in json format.
 			 */
-			virtual nlohmann::json GetBalanceInfo() = 0;
+			virtual nlohmann::json GetBalanceInfo() const = 0;
 
 			/**
-			 * Get sum of balances of all addresses.
+			 * Get sum of balances of all addresses according to balance type.
 			 * @return sum of balances.
 			 */
-			virtual uint64_t GetBalance(BalanceType type = Ordinary) = 0;
+			virtual uint64_t GetBalance(BalanceType type = Default) const = 0;
 
 			/**
 			 * Get balance of only the specified address.
 			 * @param address is one of addresses created by current sub wallet.
 			 * @return balance of specified address.
 			 */
-			virtual uint64_t GetBalanceWithAddress(const std::string &address) = 0;
+			virtual uint64_t GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const = 0;
 
 			/**
 			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
@@ -92,7 +92,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetAllAddress(
 					uint32_t start,
-					uint32_t count) = 0;
+					uint32_t count) const = 0;
 
 			/**
 			 * Add a sub wallet callback object listened to current sub wallet.
@@ -182,7 +182,7 @@ namespace Elastos {
 			 * }
 			 */
 			virtual nlohmann::json GetTransactionSignedSigners(
-					const nlohmann::json &rawTransaction) = 0;
+					const nlohmann::json &rawTransaction) const = 0;
 
 			/**
 			 * Send a transaction by p2p network.
@@ -203,7 +203,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid) = 0;
+					const std::string &addressOrTxid) const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.

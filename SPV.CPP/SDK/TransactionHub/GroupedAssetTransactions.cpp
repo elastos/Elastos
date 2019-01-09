@@ -91,7 +91,7 @@ namespace Elastos {
 		}
 
 		uint64_t AssetTransactions::GetBalance(BalanceType type) const {
-			if (type == BalanceType::Ordinary) {
+			if (type == BalanceType::Default) {
 				return _balance - _votedBalance;
 			} else if (type == BalanceType::Voted) {
 				return _votedBalance;

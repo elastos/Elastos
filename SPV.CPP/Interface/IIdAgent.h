@@ -66,7 +66,7 @@ namespace Elastos {
 			 * @param id specify id address
 			 * @return public key in hex string format.
 			 */
-			virtual std::string GetPublicKey(const std::string &id) = 0;
+			virtual std::string GetPublicKey(const std::string &id) const = 0;
 		};
 
 	}

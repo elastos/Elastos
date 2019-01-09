@@ -52,7 +52,7 @@ namespace Elastos {
 
 			const IdAgentInfo &GetIdAgentInfo() const;
 
-			std::string GetPublicKey(const std::string &id);
+			std::string GetPublicKey(const std::string &id) const;
 
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);

@@ -91,16 +91,16 @@ namespace Elastos {
 			return tx->toJson();
 		}
 
-		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) {
+		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) const {
 			return _walletManager->getWallet()->GetBalanceInfo(Utils::UInt256FromString(assetID, true));
 		}
 
-		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) {
+		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) const {
 			return _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID, true), AssetTransactions::Total);
 		}
 
-		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) {
-			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID, true), address);
+		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
+			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID, true), address, AssetTransactions::Total);
 		}
 
 		nlohmann::json SidechainSubWallet::GetAllSupportedAssets() const {
