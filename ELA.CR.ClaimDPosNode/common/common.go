@@ -5,23 +5,27 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"sort"
 
 	"golang.org/x/crypto/ripemd160"
 )
 
-func ToCodeHash(code []byte) (*Uint160, error) {
+func ToCodeHash(code []byte) *Uint160 {
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
 	md160.Write(hash[:])
-	codeHashBytes := md160.Sum(nil)
+	sum := Uint160{}
+	copy(sum[:], md160.Sum(nil))
+	return &sum
+}
 
-	codeHash, err := Uint160FromBytes(codeHashBytes)
-	if err != nil {
-		return nil, errors.New("[Common] , ToCodeHash err.")
-	}
-	return &codeHash, nil
+func ToProgramHash(prefix byte, code []byte) *Uint168 {
+	hash := sha256.Sum256(code)
+	md160 := ripemd160.New()
+	md160.Write(hash[:])
+	sum := Uint168{}
+	copy(sum[:], md160.Sum([]byte{prefix}))
+	return &sum
 }
 
 func SortProgramHashByCodeHash(hashes []Uint168) {

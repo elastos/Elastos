@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
@@ -13,7 +14,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -27,13 +27,13 @@ import (
 )
 
 var (
-	Chain     *blockchain.BlockChain
-	Store     blockchain.IChainStore
-	TxMemPool *mempool.TxPool
-	Pow       *pow.Service
-	Server    elanet.Server
-	Arbiters  interfaces.Arbitrators
-	Versions  interfaces.HeightVersions
+	Chain       *blockchain.BlockChain
+	Store       blockchain.IChainStore
+	TxMemPool   *mempool.TxPool
+	Pow         *pow.Service
+	Server      elanet.Server
+	Arbiters    interfaces.Arbitrators
+	Versions    interfaces.HeightVersions
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -880,18 +880,20 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 type Producer struct {
-	Address  string `json:"address"`
-	Nickname string `json:"nickname"`
-	Url      string `json:"url"`
-	Location uint64 `json:"location"`
-	Active   bool   `json:"active"`
-	Votes    string `json:"votes"`
-	IP       string `json:"ip"`
+	PublicKey string `json:"publickey"`
+	Nickname  string `json:"nickname"`
+	Url       string `json:"url"`
+	Location  uint64 `json:"location"`
+	Active    bool   `json:"active"`
+	Votes     string `json:"votes"`
+	IP        string `json:"ip"`
+	Index     uint64 `json:"index"`
 }
 
 type Producers struct {
-	Producers  []Producer `json:"producers"`
-	TotalVotes string     `json:"total_votes"`
+	Producers   []Producer `json:"producers"`
+	TotalVotes  string     `json:"totalvotes"`
+	TotalCounts uint64     `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -906,31 +908,24 @@ func ListProducers(param Params) map[string]interface{} {
 		return ResponsePack(Error, "not found producer")
 	}
 	var ps []Producer
-	for _, p := range producers {
-		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
-		if err != nil {
-			return ResponsePack(Error, "invalid public key")
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return ResponsePack(Error, "invalid program hash")
-		}
+	for i, p := range producers {
 		var active bool
-		state := Store.GetProducerStatus(addr)
+		pk := common.BytesToHexString(p.PublicKey)
+		state := Store.GetProducerStatus(pk)
 		if state == blockchain.ProducerRegistered {
 			active = true
 		}
 		vote := Store.GetProducerVote(p.PublicKey)
 		producer := Producer{
-			Address:  addr,
-			Nickname: p.NickName,
-			Url:      p.Url,
-			Location: p.Location,
-			Active:   active,
-			Votes:    vote.String(),
-			IP:       p.Address,
+			PublicKey: pk,
+			Nickname:  p.NickName,
+			Url:       p.Url,
+			Location:  p.Location,
+			Active:    active,
+			Votes:     vote.String(),
+			IP:        p.Address,
+			Index:     uint64(i),
 		}
-
 		ps = append(ps, producer)
 	}
 
@@ -938,30 +933,40 @@ func ListProducers(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i := start; i < limit && i < int64(len(ps)); i++ {
 		resultPs = append(resultPs, ps[i])
+	}
+	for i := 0; i < len(ps); i++ {
 		v, _ := common.StringToFixed64(ps[i].Votes)
 		totalVotes += *v
 	}
 
 	result := &Producers{
-		Producers:  resultPs,
-		TotalVotes: totalVotes.String(),
+		Producers:   resultPs,
+		TotalVotes:  totalVotes.String(),
+		TotalCounts: uint64(len(producers)),
 	}
 
 	return ResponsePack(Success, result)
 }
 
 func ProducerStatus(param Params) map[string]interface{} {
-	address, ok := param.String("address")
+	publicKey, ok := param.String("publickey")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "public key not found")
 	}
-	return ResponsePack(Success, Store.GetProducerStatus(address))
+	publicKeyBytes, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid public key")
+	}
+	if _, err = contract.PublicKeyToStandardProgramHash(publicKeyBytes); err != nil {
+		return ResponsePack(InvalidParams, "invalid public key bytes")
+	}
+	return ResponsePack(Success, Store.GetProducerStatus(publicKey))
 }
 
 func VoteStatus(param Params) map[string]interface{} {
 	address, ok := param.String("address")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "address not found")
 	}
 
 	programHash, err := common.Uint168FromAddress(address)
@@ -975,30 +980,36 @@ func VoteStatus(param Params) map[string]interface{} {
 
 	var total common.Fixed64
 	var voting common.Fixed64
-	status := true
 	for _, unspent := range unspents[config.ELAAssetID] {
-		if unspent.Index == 0 {
-			tx, height, err := Store.GetTransaction(unspent.TxID)
-			if err != nil {
-				return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
-			}
-			if tx.Outputs[unspent.Index].OutputType == VoteOutput {
-				voting += unspent.Value
-			}
-			bHash, err := Store.GetBlockHash(height)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
-			header, err := Store.GetHeader(bHash)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
+		tx, _, err := Store.GetTransaction(unspent.TxID)
+		if err != nil {
+			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+		}
+		if tx.Outputs[unspent.Index].OutputType == VoteOutput {
+			voting += unspent.Value
+		}
+		total += unspent.Value
+	}
 
-			if Store.GetHeight()-header.Height < 6 {
+	status := true
+	for _, t := range TxMemPool.GetTxsInPool() {
+		for _, i := range t.Inputs {
+			tx, _, err := Store.GetTransaction(i.Previous.TxID)
+			if err != nil {
+				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
+			}
+			if tx.Outputs[i.Previous.Index].ProgramHash.IsEqual(*programHash) {
 				status = false
 			}
 		}
-		total += unspent.Value
+		for _, o := range t.Outputs {
+			if o.OutputType == VoteOutput && o.ProgramHash.IsEqual(*programHash) {
+				status = false
+			}
+		}
+		if !status {
+			break
+		}
 	}
 
 	type voteInfo struct {
@@ -1011,6 +1022,31 @@ func VoteStatus(param Params) map[string]interface{} {
 		Voting:  voting.String(),
 		Pending: status,
 	})
+}
+
+func EstimateSmartFee(param Params) map[string]interface{} {
+	confirm, ok := param.Int("confirmations")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called confirmations")
+	}
+	if confirm > 25 {
+		return ResponsePack(InvalidParams, "support only 25 confirmations at most")
+	}
+	var FeeRate = 10000 //basic fee rate 10000 sela per KB
+	var count = 0
+
+	// TODO just return fixed transaction fee for now, we didn't have that much
+	// transactions in a block yet.
+
+	return ResponsePack(Success, GetFeeRate(count, int(confirm))*FeeRate)
+}
+
+func GetFeeRate(count int, confirm int) int {
+	gap := count - confirm
+	if gap < 0 {
+		gap = -1
+	}
+	return gap + 2
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {
@@ -1055,10 +1091,12 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Url = object.Url
 		obj.Location = object.Location
 		obj.Address = object.Address
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
@@ -1069,6 +1107,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Url = object.Url
 		obj.Location = object.Location
 		obj.Address = object.Address
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}
 	return nil

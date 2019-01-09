@@ -3,7 +3,7 @@ package crypto
 import (
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type MerkleTree struct {
@@ -12,7 +12,7 @@ type MerkleTree struct {
 }
 
 type MerkleTreeNode struct {
-	Hash  Uint256
+	Hash  common.Uint256
 	Left  *MerkleTreeNode
 	Right *MerkleTreeNode
 }
@@ -22,7 +22,7 @@ func (t *MerkleTreeNode) IsLeaf() bool {
 }
 
 //use []Uint256 to create a new MerkleTree
-func NewMerkleTree(hashes []Uint256) (*MerkleTree, error) {
+func NewMerkleTree(hashes []common.Uint256) (*MerkleTree, error) {
 	if len(hashes) == 0 {
 		return nil, errors.New("NewMerkleTree input no item error.")
 	}
@@ -42,7 +42,7 @@ func NewMerkleTree(hashes []Uint256) (*MerkleTree, error) {
 }
 
 //Generate the leaves nodes
-func generateLeaves(hashes []Uint256) []*MerkleTreeNode {
+func generateLeaves(hashes []common.Uint256) []*MerkleTreeNode {
 	var leaves []*MerkleTreeNode
 	for _, d := range hashes {
 		node := &MerkleTreeNode{
@@ -76,9 +76,9 @@ func levelUp(nodes []*MerkleTreeNode) []*MerkleTreeNode {
 }
 
 //input a []uint256, create a MerkleTree & calc the root hash
-func ComputeRoot(hashes []Uint256) (Uint256, error) {
+func ComputeRoot(hashes []common.Uint256) (common.Uint256, error) {
 	if len(hashes) == 0 {
-		return Uint256{}, errors.New("NewMerkleTree input no item error.")
+		return common.Uint256{}, errors.New("NewMerkleTree input no item error.")
 	}
 	if len(hashes) == 1 {
 		return hashes[0], nil
@@ -87,10 +87,10 @@ func ComputeRoot(hashes []Uint256) (Uint256, error) {
 	return tree.Root.Hash, nil
 }
 
-func ComputeParent(left Uint256, right Uint256) Uint256 {
+func ComputeParent(left common.Uint256, right common.Uint256) common.Uint256 {
 	// Concatenate the left and right nodes
 	var sha [64]byte
 	copy(sha[:32], left[:])
 	copy(sha[32:], right[:])
-	return Uint256(Sha256D(sha[:]))
+	return common.Uint256(common.Sha256D(sha[:]))
 }

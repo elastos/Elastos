@@ -45,7 +45,7 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	}
 
 	config.Parameters.ArbiterConfiguration.ArbitratorsCount = 5
-	chainStore := &mock.ChainStoreMock{
+	chainStore := &blockchain.ChainStoreMock{
 		RegisterProducers: []*payload.PayloadRegisterProducer{
 			{
 				PublicKey: arbitrators[0],
@@ -62,22 +62,21 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 		},
 	}
 	s.NotEmpty(chainStore)
-	//fixme uncommon when ChainStoreMock is done
-	//blockchain.DefaultLedger = &blockchain.Ledger{
-	//	Store: chainStore,
-	//}
-	//
-	//producers, err := s.Version.GetProducersDesc()
-	//s.Error(err, "arbitrators count does not match config value")
-	//
-	//chainStore.RegisterProducers = append(chainStore.RegisterProducers,
-	//	&payload.PayloadRegisterProducer{PublicKey: arbitrators[4]},
-	//)
-	//producers, err = s.Version.GetProducersDesc()
-	//s.NoError(err)
-	//for i := range producers {
-	//	s.Equal(arbitrators[i], producers[i])
-	//}
+	blockchain.DefaultLedger = &blockchain.Ledger{
+		Store: chainStore,
+	}
+
+	producers, err := s.Version.GetProducersDesc()
+	s.Error(err, "arbitrators count does not match config value")
+
+	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
+		&payload.PayloadRegisterProducer{PublicKey: arbitrators[4]},
+	)
+	producers, err = s.Version.GetProducersDesc()
+	s.NoError(err)
+	for i := range producers {
+		s.Equal(arbitrators[i], producers[i])
+	}
 
 	blockchain.DefaultLedger = originLedger
 	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
@@ -130,9 +129,7 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 			CurrentArbitratorsPrograms: arbitratorHashes,
 			CurrentCandidatesPrograms:  candidateHashes,
 		},
-		Blockchain: &blockchain.BlockChain{
-			AssetID: common.Uint256{},
-		},
+		Blockchain: &blockchain.BlockChain{},
 	}
 
 	//reward can be exactly division
