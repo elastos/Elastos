@@ -39,9 +39,6 @@ const (
 
 	// ETNewArbiterElection indicates to start the next arbiters election.
 	ETNewArbiterElection
-
-	// ETNewArbiterElection indicates a sidechain illegal evidence was received.
-	ETSidechainIllegalEvidenceReceived
 )
 
 // notificationTypeStrings is a map of notification types back to their constant
@@ -54,7 +51,6 @@ var notificationTypeStrings = map[EventType]string{
 	ETNewBlockReceived:                 "ETNewBlockReceived",
 	ETConfirmReceived:                  "ETConfirmReceived",
 	ETNewArbiterElection:               "ETNewArbiterElection",
-	ETSidechainIllegalEvidenceReceived: "ETSidechainIllegalEvidenceReceived",
 }
 
 // String returns the EventType in human-readable form.
