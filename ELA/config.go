@@ -13,8 +13,8 @@ import (
 
 const (
 	configFilename = "./config.json"
-	rootDir = "elastos"
-	dataDir = rootDir+"/data"
+	rootDir        = "elastos"
+	dataDir        = rootDir + "/data"
 )
 
 var (
@@ -84,13 +84,13 @@ func loadConfigParams() *config.ConfigParams {
 	return &config.Parameters
 }
 
-func convertArbitrators(arbiters []string) (result [][]byte, err error) {
+func convertArbitrators(arbiters []config.CRCArbitratorConfigItem) (result []config.CRCArbitratorParams, err error) {
 	for _, v := range arbiters {
-		arbiterByte, err := common.HexStringToBytes(v)
+		arbiterByte, err := common.HexStringToBytes(v.PublicKey)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, arbiterByte)
+		result = append(result, config.CRCArbitratorParams{PublicKey: arbiterByte, IP: v.IP})
 	}
 
 	return result, nil
