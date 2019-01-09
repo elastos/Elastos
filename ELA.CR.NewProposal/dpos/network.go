@@ -37,7 +37,7 @@ type messageItem struct {
 	Message elap2p.Message
 }
 
-type dposNetwork struct {
+type network struct {
 	listener           manager.NetworkEventListener
 	currentHeight      uint32
 	account            account.DposAccount
@@ -57,7 +57,7 @@ type dposNetwork struct {
 	sidechainIllegalEvidence chan *types.SidechainIllegalData
 }
 
-func (n *dposNetwork) Initialize(dnConfig manager.DposNetworkConfig) {
+func (n *network) Initialize(dnConfig manager.DposNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {
 		for _, p := range peers {
@@ -76,7 +76,7 @@ func (n *dposNetwork) Initialize(dnConfig manager.DposNetworkConfig) {
 	}
 }
 
-func (n *dposNetwork) Start() {
+func (n *network) Start() {
 	n.p2pServer.Start()
 
 	n.UpdateProducersInfo()
@@ -105,7 +105,7 @@ func (n *dposNetwork) Start() {
 	}()
 }
 
-func (n *dposNetwork) UpdateProducersInfo() {
+func (n *network) UpdateProducersInfo() {
 	log.Info("[UpdateProducersInfo] start")
 	defer log.Info("[UpdateProducersInfo] end")
 	connectionInfoMap := n.getProducersConnectionInfo()
@@ -138,7 +138,7 @@ func (n *dposNetwork) UpdateProducersInfo() {
 	n.saveDirectPeers()
 }
 
-func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
+func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
 	result = make(map[string]p2p.PeerAddr)
 	producers := blockchain.DefaultLedger.Store.GetRegisteredProducers()
 	for _, v := range producers {
@@ -155,12 +155,12 @@ func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAd
 	return result
 }
 
-func (n *dposNetwork) Stop() error {
+func (n *network) Stop() error {
 	n.quit <- true
 	return n.p2pServer.Stop()
 }
 
-func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
+func (n *network) UpdatePeers(arbitrators [][]byte) error {
 	log.Info("[UpdatePeers] arbitrators:", arbitrators)
 	for _, v := range arbitrators {
 		pubKey := common.BytesToHexString(v)
@@ -181,16 +181,16 @@ func (n *dposNetwork) UpdatePeers(arbitrators [][]byte) error {
 	return nil
 }
 
-func (n *dposNetwork) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
+func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
 	return n.p2pServer.SendMessageToPeer(id, msg)
 }
 
-func (n *dposNetwork) BroadcastMessage(msg elap2p.Message) {
+func (n *network) BroadcastMessage(msg elap2p.Message) {
 	log.Info("[BroadcastMessage] current connected peers:", len(n.getValidPeers()))
 	n.p2pServer.BroadcastMessage(msg)
 }
 
-func (n *dposNetwork) ChangeHeight(height uint32) error {
+func (n *network) ChangeHeight(height uint32) error {
 	if height < n.currentHeight {
 		return errors.New("Changing height lower than current height")
 	}
@@ -225,7 +225,7 @@ func (n *dposNetwork) ChangeHeight(height uint32) error {
 	return nil
 }
 
-func (n *dposNetwork) GetActivePeer() *peer.PID {
+func (n *network) GetActivePeer() *peer.PID {
 	peers := n.p2pServer.ConnectedPeers()
 	log.Info("[GetActivePeer] current connected peers:", len(peers))
 	if len(peers) == 0 {
@@ -240,27 +240,27 @@ func (n *dposNetwork) GetActivePeer() *peer.PID {
 	return &id
 }
 
-func (n *dposNetwork) PostChangeViewTask() {
+func (n *network) PostChangeViewTask() {
 	n.changeViewChan <- true
 }
 
-func (n *dposNetwork) PostBlockReceivedTask(b *types.Block, confirmed bool) {
+func (n *network) PostBlockReceivedTask(b *types.Block, confirmed bool) {
 	n.blockReceivedChan <- blockItem{b, confirmed}
 }
 
-func (n *dposNetwork) PostIllegalBlocksTask(i *types.DposIllegalBlocks) {
+func (n *network) PostIllegalBlocksTask(i *types.DposIllegalBlocks) {
 	n.illegalBlocksEvidence <- i
 }
 
-func (n *dposNetwork) PostSidechainIllegalDataTask(s *types.SidechainIllegalData) {
+func (n *network) PostSidechainIllegalDataTask(s *types.SidechainIllegalData) {
 	n.sidechainIllegalEvidence <- s
 }
 
-func (n *dposNetwork) PostConfirmReceivedTask(p *types.DPosProposalVoteSlot) {
+func (n *network) PostConfirmReceivedTask(p *types.DPosProposalVoteSlot) {
 	n.confirmReceivedChan <- p
 }
 
-func (n *dposNetwork) getValidPeers() (result []p2p.PeerAddr) {
+func (n *network) getValidPeers() (result []p2p.PeerAddr) {
 	result = make([]p2p.PeerAddr, 0)
 	for _, v := range n.directPeers {
 		if v.NeedConnect {
@@ -270,17 +270,17 @@ func (n *dposNetwork) getValidPeers() (result []p2p.PeerAddr) {
 	return result
 }
 
-func (n *dposNetwork) notifyFlag(flag p2p.NotifyFlag) {
+func (n *network) notifyFlag(flag p2p.NotifyFlag) {
 	if flag == p2p.NFBadNetwork {
 		n.listener.OnBadNetwork()
 	}
 }
 
-func (n *dposNetwork) handleMessage(pid peer.PID, msg elap2p.Message) {
+func (n *network) handleMessage(pid peer.PID, msg elap2p.Message) {
 	n.messageQueue <- &messageItem{pid, msg}
 }
 
-func (n *dposNetwork) processMessage(msgItem *messageItem) {
+func (n *network) processMessage(msgItem *messageItem) {
 	m := msgItem.Message
 	switch m.CMD() {
 	case msg.CmdReceivedProposal:
@@ -368,7 +368,7 @@ func (n *dposNetwork) processMessage(msgItem *messageItem) {
 	}
 }
 
-func (n *dposNetwork) saveDirectPeers() {
+func (n *network) saveDirectPeers() {
 	var peers []*interfaces.DirectPeers
 	for k, v := range n.directPeers {
 		if !v.NeedConnect {
@@ -387,33 +387,33 @@ func (n *dposNetwork) saveDirectPeers() {
 	n.store.SaveDirectPeers(peers)
 }
 
-func (n *dposNetwork) changeView() {
+func (n *network) changeView() {
 	n.listener.OnChangeView()
 }
 
-func (n *dposNetwork) blockReceived(b *types.Block, confirmed bool) {
+func (n *network) blockReceived(b *types.Block, confirmed bool) {
 	n.listener.OnBlockReceived(b, confirmed)
 }
 
-func (n *dposNetwork) confirmReceived(p *types.DPosProposalVoteSlot) {
+func (n *network) confirmReceived(p *types.DPosProposalVoteSlot) {
 	n.listener.OnConfirmReceived(p)
 }
 
-func (n *dposNetwork) illegalBlocksReceived(i *types.DposIllegalBlocks) {
+func (n *network) illegalBlocksReceived(i *types.DposIllegalBlocks) {
 	n.listener.OnIllegalBlocksReceived(i)
 }
 
-func (n *dposNetwork) sidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+func (n *network) sidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
 	n.BroadcastMessage(&msg.SidechainIllegalData{Data: *s})
 	n.listener.OnSidechainIllegalEvidenceReceived(s)
 }
 
-func (n *dposNetwork) getCurrentHeight(pid peer.PID) uint64 {
+func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 	return uint64(n.proposalDispatcher.CurrentHeight())
 }
 
-func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*dposNetwork, error) {
-	network := &dposNetwork{
+func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*network, error) {
+	network := &network{
 		listener:                 listener,
 		directPeers:              make(map[string]*PeerItem),
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file

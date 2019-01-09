@@ -60,6 +60,12 @@ type PowConfiguration struct {
 	ActiveNet  string `json:"ActiveNet"`
 }
 
+type RpcConfiguration struct {
+	User         string               `json:"User"`
+	Pass         string               `json:"Pass"`
+	WhiteIpList  []string             `json:"WhiteIpList"`
+}
+
 type Configuration struct {
 	Magic                uint32               `json:"Magic"`
 	FoundationAddress    string               `json:"FoundationAddress"`
@@ -90,8 +96,10 @@ type Configuration struct {
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
 	MaxBlockSize         int                  `json:"MaxBlockSize"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
+	Arbiters             []string             `json:"Arbiters"`
 	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
+	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 }
 
 type ArbiterConfiguration struct {

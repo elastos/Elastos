@@ -3,24 +3,26 @@ package errors
 type ErrCode int
 
 const (
-	Error                    ErrCode = -1
-	Success                  ErrCode = 0
-	ErrInvalidInput          ErrCode = 45003
-	ErrInvalidOutput         ErrCode = 45004
-	ErrAssetPrecision        ErrCode = 45005
-	ErrTransactionBalance    ErrCode = 45006
-	ErrAttributeProgram      ErrCode = 45007
-	ErrTransactionSignature  ErrCode = 45008
-	ErrTransactionPayload    ErrCode = 45009
-	ErrDoubleSpend           ErrCode = 45010
-	ErrTransactionDuplicate  ErrCode = 45011
-	ErrSidechainTxDuplicate  ErrCode = 45012
-	ErrXmitFail              ErrCode = 45014
-	ErrTransactionSize       ErrCode = 45015
-	ErrUnknownReferredTx     ErrCode = 45016
-	ErrIneffectiveCoinbase   ErrCode = 45018
-	ErrUTXOLocked            ErrCode = 45019
-	ErrSideChainPowConsensus ErrCode = 45020
+	Error                     ErrCode = -1
+	Success                   ErrCode = 0
+	ErrInvalidInput           ErrCode = 45003
+	ErrInvalidOutput          ErrCode = 45004
+	ErrAssetPrecision         ErrCode = 45005
+	ErrTransactionBalance     ErrCode = 45006
+	ErrAttributeProgram       ErrCode = 45007
+	ErrTransactionSignature   ErrCode = 45008
+	ErrTransactionPayload     ErrCode = 45009
+	ErrDoubleSpend            ErrCode = 45010
+	ErrTransactionDuplicate   ErrCode = 45011
+	ErrSidechainTxDuplicate   ErrCode = 45012
+	ErrProducerProcessing     ErrCode = 45013
+	ErrXmitFail               ErrCode = 45014
+	ErrTransactionSize        ErrCode = 45015
+	ErrUnknownReferredTx      ErrCode = 45016
+	ErrIneffectiveCoinbase    ErrCode = 45018
+	ErrUTXOLocked             ErrCode = 45019
+	ErrSideChainPowConsensus  ErrCode = 45020
+	ErrReturnDepositConsensus ErrCode = 45021
 
 	SessionExpired       ErrCode = 41001
 	IllegalDataFormat    ErrCode = 41003
@@ -63,6 +65,7 @@ var ErrMap = map[ErrCode]string{
 	ErrDoubleSpend:           "INTERNAL ERROR, ErrDoubleSpend",
 	ErrTransactionDuplicate:  "INTERNAL ERROR, ErrTransactionDuplicate",
 	ErrSidechainTxDuplicate:  "INTERNAL ERROR, ErrSidechainTxDuplicate",
+	ErrProducerProcessing:    "INTERNAL ERROR, ErrProducerProcessing",
 	ErrXmitFail:              "INTERNAL ERROR, ErrXmitFail",
 	ErrTransactionSize:       "INTERNAL ERROR, ErrTransactionSize",
 	ErrUnknownReferredTx:     "INTERNAL ERROR, ErrUnknownReferredTx",

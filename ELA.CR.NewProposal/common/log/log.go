@@ -47,13 +47,11 @@ var (
 )
 
 const (
-	OutputPath            = "./Logs/" // The log files output path
-	calldepth             = 2
-	KBSize                = int64(1024)
-	MBSize                = KBSize * 1024
-	GBSize                = MBSize * 1024
-	defaultPerLogFileSize = 20 * MBSize
-	defaultLogsFolderSize = 5 * GBSize
+	calldepth = 2
+
+	defaultDir                  = "elastos/logs/node/"
+	defaultPerLogFileSize int64 = 20 * elalog.MBSize
+	defaultLogsFolderSize int64 = 5 * elalog.GBSize
 )
 
 func GetGID() uint64 {
@@ -84,10 +82,10 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 	var logsFolderSize = defaultLogsFolderSize
 
 	if maxPerLogSizeMb != 0 {
-		perLogFileSize = maxPerLogSizeMb * MBSize
+		perLogFileSize = maxPerLogSizeMb * elalog.MBSize
 	}
 	if maxLogsSizeMb != 0 {
-		logsFolderSize = maxLogsSizeMb * MBSize
+		logsFolderSize = maxLogsSizeMb * elalog.MBSize
 	}
 
 	writer := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
@@ -100,7 +98,7 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 }
 
 func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
-	logger = NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	logger = NewLogger(defaultDir, level, maxPerLogSizeMb, maxLogsSizeMb)
 	return logger
 }
 

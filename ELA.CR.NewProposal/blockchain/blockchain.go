@@ -972,13 +972,11 @@ func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
 
 	// Handle orphan blocks.
 	prevHash := blockHeader.Previous
-	if !prevHash.IsEqual(EmptyHash) {
-		if !b.BlockExists(&prevHash) {
-			log.Debugf("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
-			b.AddOrphanBlock(block)
+	if !prevHash.IsEqual(EmptyHash) && !b.BlockExists(&prevHash) {
+		log.Debugf("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
+		b.AddOrphanBlock(block)
 
-			return false, true, nil
-		}
+		return false, true, nil
 	}
 
 	// The block has passed all context independent checks and appears sane

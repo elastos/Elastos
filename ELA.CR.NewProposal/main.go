@@ -57,7 +57,7 @@ func main() {
 	ledger := blockchain.Ledger{}
 
 	var dposStore interfaces.IDposStore
-	chainStore, err := blockchain.NewChainStore("Chain",
+	chainStore, err := blockchain.NewChainStore(dataDir,
 		activeNetParams.GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
@@ -65,7 +65,7 @@ func main() {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	dposStore, err = store.NewDposStore("Dpos_Data")
+	dposStore, err = store.NewDposStore(dataDir)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -105,7 +105,7 @@ func main() {
 	ledger.Arbitrators = arbiters // fixme
 
 	log.Info("Start the P2P networks")
-	server, err := elanet.NewServer(&elanet.Config{
+	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:        chain,
 		ChainParams:  activeNetParams,
 		Versions:     versions,

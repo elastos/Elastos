@@ -17,7 +17,7 @@ local asset_id = m.get_asset_id()
 local amount = 0.2
 local fee = 0.001
 local vote_type = 0
-local vote_candidates = {'DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD'}
+local vote_candidates = {'034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c'}
 
 -- payload
 local ta = transferasset.new()
