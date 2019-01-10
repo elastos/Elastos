@@ -108,7 +108,7 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
 
 static void bootstrap_destroy(void *p)
 {
-    BootstrapNode *node = (BootstrapNode *)p;
+    DhtBootstrapNode *node = (DhtBootstrapNode *)p;
 
     if (!node)
         return;
@@ -181,9 +181,9 @@ void load_config(const char *config_file)
     get_str(&cfg, "robot.host", NULL, global_config.robot.host, sizeof(global_config.robot.host));
     sprintf(global_config.robot.port, "%d", get_int(&cfg, "robot.port", 7237));
 
-    bootstraps = config_lookup(&cfg, "bootstraps");
+    bootstraps = config_lookup(&cfg, "dht_bootstraps");
     if (!bootstraps) {
-        fprintf(stderr, "Missing bootstraps section.\n");
+        fprintf(stderr, "Missing dht_bootstraps section.\n");
         config_destroy(&cfg);
         free_bootstraps(&global_config);
         exit(-1);
@@ -191,15 +191,15 @@ void load_config(const char *config_file)
 
     entries = config_setting_length(bootstraps);
     if (entries <= 0) {
-        fprintf(stderr, "Empty bootstraps option.\n");
+        fprintf(stderr, "Empty dht_bootstraps option.\n");
         config_destroy(&cfg);
         free_bootstraps(&global_config);
         exit(-1);
     }
 
     global_config.bootstraps_size = entries;
-    global_config.bootstraps = (BootstrapNode **)calloc(1, global_config.bootstraps_size *
-                                                  sizeof(BootstrapNode *));
+    global_config.bootstraps = (DhtBootstrapNode **)calloc(1, global_config.bootstraps_size *
+                                                  sizeof(DhtBootstrapNode *));
     if (!global_config.bootstraps) {
         fprintf(stderr, "Out of memory.\n");
         config_destroy(&cfg);
@@ -208,9 +208,9 @@ void load_config(const char *config_file)
     }
 
     for (i = 0; i < entries; i++) {
-        BootstrapNode *node;
+        DhtBootstrapNode *node;
 
-        node = rc_zalloc(sizeof(BootstrapNode), bootstrap_destroy);
+        node = rc_zalloc(sizeof(DhtBootstrapNode), bootstrap_destroy);
         if (!node) {
             fprintf(stderr, "Out of memory.\n");
             config_destroy(&cfg);

@@ -51,19 +51,28 @@ static void config_destructor(void *p)
     if (config->datadir)
         free(config->datadir);
 
-    if (config->bootstraps) {
+    if (config->dht_bootstraps) {
         int i;
 
-        for (i = 0; i < config->bootstraps_size; i++)
-            deref(config->bootstraps[i]);
+        for (i = 0; i < config->dht_bootstraps_size; i++)
+            deref(config->dht_bootstraps[i]);
 
-        free(config->bootstraps);
+        free(config->dht_bootstraps);
+    }
+
+    if (config->hive_bootstraps) {
+        int i;
+
+        for (i = 0; i < config->hive_bootstraps_size; i++)
+            deref(config->hive_bootstraps[i]);
+
+        free(config->hive_bootstraps);
     }
 }
 
-static void bootstrap_destructor(void *p)
+static void dht_bootstrap_destructor(void *p)
 {
-    BootstrapNode *node = (BootstrapNode *)p;
+    DhtBootstrapNode *node = (DhtBootstrapNode *)p;
 
     if (!node)
         return;
@@ -79,6 +88,23 @@ static void bootstrap_destructor(void *p)
 
     if (node->public_key)
         free((void *)node->public_key);
+}
+
+static void hive_bootstrap_destructor(void *p)
+{
+    HiveBootstrapNode *node = (HiveBootstrapNode *)p;
+
+    if (!node)
+        return;
+
+    if (node->ipv4)
+        free((void *)node->ipv4);
+
+    if (node->ipv6)
+        free((void *)node->ipv6);
+
+    if (node->port)
+        free((void *)node->port);
 }
 
 static void qualified_path(const char *path, const char *ref, char *qualified)
@@ -146,9 +172,9 @@ ShellConfig *load_config(const char *config_file)
         config->datadir = strdup(path);
     }
 
-    setting = config_lookup(&cfg, "bootstraps");
+    setting = config_lookup(&cfg, "dht_bootstraps");
     if (!setting) {
-        fprintf(stderr, "Missing bootstraps section.\n");
+        fprintf(stderr, "Missing dht_bootstraps section.\n");
         config_destroy(&cfg);
         deref(config);
         return NULL;
@@ -156,16 +182,16 @@ ShellConfig *load_config(const char *config_file)
 
     entries = config_setting_length(setting);
     if (entries <= 0) {
-        fprintf(stderr, "Empty bootstraps option.\n");
+        fprintf(stderr, "Empty dht_bootstraps option.\n");
         config_destroy(&cfg);
         deref(config);
         return NULL;
     }
 
-    config->bootstraps_size = entries;
-    config->bootstraps = (BootstrapNode **)calloc(1, config->bootstraps_size *
-                                                  sizeof(BootstrapNode *));
-    if (!config->bootstraps) {
+    config->dht_bootstraps_size = entries;
+    config->dht_bootstraps = (DhtBootstrapNode **)calloc(1, config->dht_bootstraps_size *
+                                                  sizeof(DhtBootstrapNode *));
+    if (!config->dht_bootstraps) {
         fprintf(stderr, "Out of memory.\n");
         config_destroy(&cfg);
         deref(config);
@@ -173,9 +199,9 @@ ShellConfig *load_config(const char *config_file)
     }
 
     for (i = 0; i < entries; i++) {
-        BootstrapNode *node;
+        DhtBootstrapNode *node;
 
-        node = rc_zalloc(sizeof(BootstrapNode), bootstrap_destructor);
+        node = rc_zalloc(sizeof(DhtBootstrapNode), dht_bootstrap_destructor);
         if (!node) {
             fprintf(stderr, "Out of memory.\n");
             config_destroy(&cfg);
@@ -210,7 +236,68 @@ ShellConfig *load_config(const char *config_file)
         else
             node->public_key = NULL;
 
-        config->bootstraps[i] = node;
+        config->dht_bootstraps[i] = node;
+    }
+
+    setting = config_lookup(&cfg, "hive_bootstraps");
+    if (!setting) {
+        fprintf(stderr, "Missing hive_bootstraps section.\n");
+        config_destroy(&cfg);
+        deref(config);
+        return NULL;
+    }
+
+    entries = config_setting_length(setting);
+    if (entries <= 0) {
+        fprintf(stderr, "Empty hive_bootstraps option.\n");
+        config_destroy(&cfg);
+        deref(config);
+        return NULL;
+    }
+
+    config->hive_bootstraps_size = entries;
+    config->hive_bootstraps = (HiveBootstrapNode **)calloc(1, config->hive_bootstraps_size *
+                                                           sizeof(HiveBootstrapNode *));
+    if (!config->hive_bootstraps) {
+        fprintf(stderr, "Out of memory.\n");
+        config_destroy(&cfg);
+        deref(config);
+        return NULL;
+    }
+
+    for (i = 0; i < entries; i++) {
+        HiveBootstrapNode *node;
+
+        node = rc_zalloc(sizeof(HiveBootstrapNode), hive_bootstrap_destructor);
+        if (!node) {
+            fprintf(stderr, "Out of memory.\n");
+            config_destroy(&cfg);
+            deref(config);
+            return NULL;
+        }
+
+        config_setting_t *bs = config_setting_get_elem(setting, i);
+
+        rc = config_setting_lookup_string(bs, "ipv4", &stropt);
+        if (rc && *stropt)
+            node->ipv4 = (const char *)strdup(stropt);
+        else
+            node->ipv4 = NULL;
+
+        rc = config_setting_lookup_string(bs, "ipv6", &stropt);
+        if (rc && *stropt)
+            node->ipv6 = (const char *)strdup(stropt);
+        else
+            node->ipv6 = NULL;
+
+        rc = config_setting_lookup_int(bs, "port", &intopt);
+        if (rc && intopt) {
+            sprintf(number, "%d", intopt);
+            node->port = (const char *)strdup(number);
+        } else
+            node->port = NULL;
+
+        config->hive_bootstraps[i] = node;
     }
 
     config_destroy(&cfg);

@@ -1,0 +1,42 @@
+diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/CMakeLists.txt Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/CMakeLists.txt
+--- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/CMakeLists.txt	2019-02-27 01:34:58.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/CMakeLists.txt	2019-03-11 11:45:40.000000000 +0800
+@@ -20,6 +20,7 @@
+ # Find curl
+ find_package(CURL REQUIRED)
+ include_directories(${CURL_INCLUDE_DIRS})
++add_definitions(-DCURL_STATICLIB)
+ 
+ # Find "JSON for Modern C++" (nlohmann/json.hpp)
+ include_directories("include/hive")
+@@ -78,4 +79,6 @@
+ endif()
+ 
+ # Samples
++if(BUILD_SAMPLE)
+ add_subdirectory(samples)
++endif()
+diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/include/hive/nlohmann/json.hpp Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/include/hive/nlohmann/json.hpp
+--- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/include/hive/nlohmann/json.hpp	2019-02-27 01:34:58.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/include/hive/nlohmann/json.hpp	2019-03-11 11:24:36.000000000 +0800
+@@ -125,7 +125,7 @@
+     #endif
+ #elif defined(__GNUC__) && !(defined(__ICC) || defined(__INTEL_COMPILER))
+     #if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40900
+-        #error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
++        //#error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
+     #endif
+ #endif
+ 
+diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/src/c-api/dstorec.cc Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/src/c-api/dstorec.cc
+--- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/src/c-api/dstorec.cc	2019-02-27 01:34:58.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/src/c-api/dstorec.cc	2019-03-11 11:24:36.000000000 +0800
+@@ -17,7 +17,7 @@
+     auto ds = new DStore{host_rand, 9095};
+ 
+     // Please replace this line
+-    std::string uid = "uid-00ec6a5e-a36d-4313-a579-5ce46be3eadb";
++    std::string uid = "uid-b19ee72b-cf64-47b0-8c05-22365d052f5d";
+     ds->set_sender_UID(uid);
+ 
+     return reinterpret_cast<DStoreC *>(ds);

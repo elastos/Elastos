@@ -37,7 +37,7 @@ typedef struct {
     char *datadir;
 
     int bootstraps_size;
-    BootstrapNode **bootstraps;
+    DhtBootstrapNode **bootstraps;
 } SpeedtestConfig;
 
 SpeedtestConfig *load_config(const char *config_file);

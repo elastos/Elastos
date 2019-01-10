@@ -32,6 +32,8 @@
 #include "dht_callbacks.h"
 #include "dht.h"
 
+#include "dstore_wrapper.h"
+
 #define MAX_IPV4_ADDRESS_LEN (15)
 #define MAX_IPV6_ADDRESS_LEN (47)
 
@@ -41,30 +43,45 @@ typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
 
-typedef struct BootstrapNodeBuf {
+typedef struct DhtBootstrapNodeBuf {
     char ipv4[MAX_IPV4_ADDRESS_LEN + 1];
     char ipv6[MAX_IPV6_ADDRESS_LEN + 1];
     uint16_t port;
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
-} BootstrapNodeBuf;
+} DhtBootstrapNodeBuf;
+
+typedef struct HiveBootstrapNodeBuf {
+    char ipv4[MAX_IPV4_ADDRESS_LEN + 1];
+    char ipv6[MAX_IPV6_ADDRESS_LEN + 1];
+    uint16_t port;
+} HiveBootstrapNodeBuf;
 
 typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
-    int bootstraps_size;
-    BootstrapNodeBuf *bootstraps;
+    int dht_bootstraps_size;
+    DhtBootstrapNodeBuf *dht_bootstraps;
+    int hive_bootstraps_size;
+    HiveBootstrapNodeBuf *hive_bootstraps;
 } Preferences;
 
-typedef enum FriendEventType {
-    FriendEventType_Added,
-    FriendEventType_Removed
-} FriendEventType;
+typedef struct EventBase EventBase;
+struct EventBase {
+    void (*handle)(EventBase *, ElaCarrier *);
+    list_entry_t le;
+};
 
 typedef struct FriendEvent {
-    list_entry_t le;
-    FriendEventType type;
+    EventBase base;
     ElaFriendInfo fi;
 } FriendEvent;
+
+typedef struct OfflineMsgEvent {
+    EventBase base;
+    char from[ELA_MAX_ID_LEN + 1];
+    size_t len;
+    uint8_t content[0];
+} OfflineMsgEvent;
 
 struct ElaCarrier {
     pthread_mutex_t ext_mutex;
@@ -92,6 +109,8 @@ struct ElaCarrier {
 
     list_t *friend_events; // for friend_added/removed.
     hashtable_t *friends;
+
+    DStoreWrapper *dstorectx;
 
     hashtable_t *tcallbacks;
     hashtable_t *thistory;

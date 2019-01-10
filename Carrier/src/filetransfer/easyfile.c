@@ -254,7 +254,7 @@ static void easyfile_destroy(void *p)
     EasyFile *file = (EasyFile *)p;
 
 #if 0
-    if (file->ft)  {
+    if (file->ft) {
         ela_filetransfer_close(file->ft);
         file->ft = NULL;
     }

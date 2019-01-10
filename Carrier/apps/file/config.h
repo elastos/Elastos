@@ -35,7 +35,7 @@ typedef struct {
     char *datadir;
 
     int bootstraps_size;
-    BootstrapNode **bootstraps;
+    DhtBootstrapNode **bootstraps;
 } filecfg_t;
 
 filecfg_t *load_config(const char *config_file);

@@ -2289,22 +2289,40 @@ int main(int argc, char *argv[])
 
     opts.udp_enabled = cfg->udp_enabled;
     opts.persistent_location = cfg->datadir;
-    opts.bootstraps_size = cfg->bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
+    opts.dht_bootstraps_size = cfg->dht_bootstraps_size;
+    opts.dht_bootstraps = (DhtBootstrapNode *)calloc(1, sizeof(DhtBootstrapNode) * opts.dht_bootstraps_size);
+    if (!opts.dht_bootstraps) {
         fprintf(stderr, "out of memory.");
         deref(cfg);
         return -1;
     }
 
-    for (i = 0 ; i < cfg->bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = cfg->bootstraps[i];
+    for (i = 0 ; i < cfg->dht_bootstraps_size; i++) {
+        DhtBootstrapNode *b = &opts.dht_bootstraps[i];
+        DhtBootstrapNode *node = cfg->dht_bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
         b->port = node->port;
         b->public_key = node->public_key;
+    }
+
+    opts.hive_bootstraps_size = cfg->hive_bootstraps_size;
+    opts.hive_bootstraps = (HiveBootstrapNode *)calloc(1, sizeof(HiveBootstrapNode) * opts.hive_bootstraps_size);
+    if (!opts.hive_bootstraps) {
+        fprintf(stderr, "out of memory.");
+        deref(cfg);
+        free(opts.dht_bootstraps);
+        return -1;
+    }
+
+    for (i = 0 ; i < cfg->hive_bootstraps_size; i++) {
+        HiveBootstrapNode *b = &opts.hive_bootstraps[i];
+        HiveBootstrapNode *node = cfg->hive_bootstraps[i];
+
+        b->ipv4 = node->ipv4;
+        b->ipv6 = node->ipv6;
+        b->port = node->port;
     }
 
     memset(&callbacks, 0, sizeof(callbacks));
@@ -2328,7 +2346,8 @@ int main(int argc, char *argv[])
 
     w = ela_new(&opts, &callbacks, NULL);
     deref(cfg);
-    free(opts.bootstraps);
+    free(opts.dht_bootstraps);
+    free(opts.hive_bootstraps);
 
     if (!w) {
         output("Error create carrier instance: 0x%x\n", ela_get_error());

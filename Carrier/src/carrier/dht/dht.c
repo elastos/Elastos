@@ -873,6 +873,15 @@ void dht_self_get_secret_key(DHT *dht, uint8_t *secret_key)
     tox_self_get_secret_key(tox, secret_key);
 }
 
+void dht_self_get_public_key(DHT *dht, uint8_t *public_key)
+{
+    Tox *tox = dht->tox;
+
+    assert(tox);
+
+    tox_self_get_public_key(tox, public_key);
+}
+
 void dht_self_set_status(DHT *dht, int status)
 {
     Tox *tox = dht->tox;

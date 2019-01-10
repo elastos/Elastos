@@ -19,29 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef __DSOTRE_WRAPPER_H__
+#define __DSOTRE_WRAPPER_H__
 
-#ifndef __SHELL_CONFIG_H__
-#define __SHELL_CONFIG_H__
+#include <stdlib.h>
 
-#include <stdbool.h>
+typedef struct ElaCarrier ElaCarrier;
+typedef struct DStoreWrapper DStoreWrapper;
 
-#include <ela_carrier.h>
+typedef void (*DStoreOnMsgCallback)(ElaCarrier *carrier,
+                                    const char *from,
+                                    const uint8_t *message, size_t len);
 
-typedef struct {
-    bool udp_enabled;
+DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb);
+void dstore_wrapper_destroy(DStoreWrapper *ds);
 
-    int loglevel;
-    char *logfile;
+ssize_t dstore_send_msg(DStoreWrapper *, const char *to, const void *, size_t);
 
-    char *datadir;
-
-    int dht_bootstraps_size;
-    DhtBootstrapNode **dht_bootstraps;
-
-    int hive_bootstraps_size;
-    HiveBootstrapNode **hive_bootstraps;
-} ShellConfig;
-
-ShellConfig *load_config(const char *config_file);
-
-#endif /* __SHELL_CONFIG_H__ */
+#endif //__DSOTRE_WRAPPER_H__

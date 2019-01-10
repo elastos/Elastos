@@ -1196,17 +1196,17 @@ int main(int argc, char *argv[])
 
     opts.udp_enabled = cfg->udp_enabled;
     opts.persistent_location = cfg->datadir;
-    opts.bootstraps_size = cfg->bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
+    opts.dht_bootstraps_size = cfg->bootstraps_size;
+    opts.dht_bootstraps = (DhtBootstrapNode *)calloc(1, sizeof(DhtBootstrapNode) * opts.dht_bootstraps_size);
+    if (!opts.dht_bootstraps) {
         vlogE("Out of memory.");
         deref(cfg);
         return -1;
     }
 
     for (i = 0 ; i < cfg->bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = cfg->bootstraps[i];
+        DhtBootstrapNode *b = &opts.dht_bootstraps[i];
+        DhtBootstrapNode *node = cfg->bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
@@ -1222,7 +1222,7 @@ int main(int argc, char *argv[])
 
     w = ela_new(&opts, &callbacks, &fctx);
     deref(cfg);
-    free(opts.bootstraps);
+    free(opts.dht_bootstraps);
 
     if (!w) {
         vlogE("Creating carrier instance error (0x%x).", ela_get_error());

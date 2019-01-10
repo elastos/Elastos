@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic push
@@ -168,7 +169,7 @@ typedef struct ElaCarrier ElaCarrier;
  * to connect with. The bootstrap nodes help Carrier nodes be connected to
  * the others with more higher possibilities.
  */
-typedef struct BootstrapNode {
+typedef struct DhtBootstrapNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -195,7 +196,28 @@ typedef struct BootstrapNode {
      * The length of public key is about 45 bytes.
      */
     const char *public_key;
-} BootstrapNode;
+} DhtBootstrapNode;
+
+typedef struct HiveBootstrapNode {
+    /**
+     * \~English
+     * The ip address supported with ipv4 protocol.
+     */
+    const char *ipv4;
+
+    /**
+     * \~English
+     * The ip address supported with ipv6 protocol.
+     */
+    const char *ipv6;
+
+    /**
+     * \~English
+     * The ip port.
+     * The default value is 9094.
+     */
+    const char *port;
+} HiveBootstrapNode;
 
 /**
  * \~English
@@ -227,17 +249,31 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The total number of bootstrap nodes to connect.
+     * The total number of DHT bootstrap nodes to connect.
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
-    size_t bootstraps_size;
+    size_t dht_bootstraps_size;
 
     /**
      * \~English
-     * The array of bootstrap nodes.
+     * The array of DHT bootstrap nodes.
      */
-    BootstrapNode *bootstraps;
+    DhtBootstrapNode *dht_bootstraps;
+
+    /**
+     * \~English
+     * The total number of Hive bootstrap nodes to connect.
+     * There must have at least one bootstrap node for the very first time
+     * to create carrier instance.
+     */
+    size_t hive_bootstraps_size;
+
+    /**
+     * \~English
+     * The array of Hive bootstrap nodes.
+     */
+    HiveBootstrapNode *hive_bootstraps;
 } ElaOptions;
 
 /**

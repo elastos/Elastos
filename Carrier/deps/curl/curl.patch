@@ -1,0 +1,129 @@
+diff -ruN curl-7.64.0/lib/config-win32.h curl-7.64.0-mod/lib/config-win32.h
+--- curl-7.64.0/lib/config-win32.h	2018-12-17 15:03:06.000000000 +0800
++++ curl-7.64.0-mod/lib/config-win32.h	2019-03-06 17:20:53.000000000 +0800
+@@ -740,4 +740,6 @@
+ #  define ENABLE_IPV6 1
+ #endif
+ 
++#define HTTP_ONLY
++
+ #endif /* HEADER_CURL_CONFIG_WIN32_H */
+diff -ruN curl-7.64.0/winbuild/Makefile.vc curl-7.64.0-mod/winbuild/Makefile.vc
+--- curl-7.64.0/winbuild/Makefile.vc	2018-10-27 18:00:54.000000000 +0800
++++ curl-7.64.0-mod/winbuild/Makefile.vc	2019-03-06 17:59:39.000000000 +0800
+@@ -198,55 +198,55 @@
+ SSH2     = static
+ !ENDIF
+ 
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-vc$(VC)-$(MACHINE)
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-vc$(VC)-$(MACHINE)
+ 
+-!IF "$(DEBUG)"=="yes"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-debug
+-!ELSE
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-release
+-!ENDIF
+-
+-!IF "$(AS_DLL)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-dll
+-!ELSE
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-static
+-!ENDIF
+-
+-!IF "$(USE_SSL)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ssl-$(SSL)
+-!ENDIF
+-
+-!IF "$(USE_MBEDTLS)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-mbedtls-$(MBEDTLS)
+-!ENDIF
+-
+-!IF "$(USE_CARES)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-cares-$(CARES)
+-!ENDIF
+-
+-!IF "$(USE_ZLIB)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-zlib-$(ZLIB)
+-!ENDIF
+-
+-!IF "$(USE_SSH2)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ssh2-$(SSH2)
+-!ENDIF
+-
+-!IF "$(USE_IPV6)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ipv6
+-!ENDIF
+-
+-!IF "$(USE_SSPI)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-sspi
+-!ENDIF
+-
+-!IF "$(USE_WINSSL)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-winssl
+-!ENDIF
+-
+-!IF "$(USE_NGHTTP2)"=="true"
+-CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-nghttp2-$(NGHTTP2)
+-!ENDIF
++#!IF "$(DEBUG)"=="yes"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-debug
++#!ELSE
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-release
++#!ENDIF
++
++#!IF "$(AS_DLL)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-dll
++#!ELSE
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-static
++#!ENDIF
++
++#!IF "$(USE_SSL)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ssl-$(SSL)
++#!ENDIF
++
++#!IF "$(USE_MBEDTLS)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-mbedtls-$(MBEDTLS)
++#!ENDIF
++
++#!IF "$(USE_CARES)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-cares-$(CARES)
++#!ENDIF
++
++#!IF "$(USE_ZLIB)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-zlib-$(ZLIB)
++#!ENDIF
++
++#!IF "$(USE_SSH2)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ssh2-$(SSH2)
++#!ENDIF
++
++#!IF "$(USE_IPV6)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ipv6
++#!ENDIF
++
++#!IF "$(USE_SSPI)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-sspi
++#!ENDIF
++
++#!IF "$(USE_WINSSL)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-winssl
++#!ENDIF
++
++#!IF "$(USE_NGHTTP2)"=="true"
++#CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-nghttp2-$(NGHTTP2)
++#!ENDIF
+ 
+ !MESSAGE configuration name: $(CONFIG_NAME_LIB)
+ 
+diff -ruN curl-7.64.0/winbuild/MakefileBuild.vc curl-7.64.0-mod/winbuild/MakefileBuild.vc
+--- curl-7.64.0/winbuild/MakefileBuild.vc	2019-02-05 22:00:12.000000000 +0800
++++ curl-7.64.0-mod/winbuild/MakefileBuild.vc	2019-03-06 17:19:34.000000000 +0800
+@@ -502,7 +502,7 @@
+ 
+ EXE_OBJS = $(CURL_OBJS) $(CURL_DIROBJ)\curl.res
+ 
+-all : $(TARGET) $(PROGRAM_NAME)
++all : $(TARGET)
+ 
+ package: $(TARGET)
+ 	@cd $(DIRDIST)

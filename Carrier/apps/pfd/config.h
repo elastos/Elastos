@@ -46,7 +46,7 @@ typedef struct {
     bool udp_enabled;
 
     size_t bootstraps_size;
-    BootstrapNode **bootstraps;
+    DhtBootstrapNode **bootstraps;
 
     int loglevel;
     char *logfile;

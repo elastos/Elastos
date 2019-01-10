@@ -49,6 +49,7 @@ if(${CMAKE_CROSSCOMPILING})
         set(XDK_STRIP ${CMAKE_STRIP})
 
         # Cross compilation flags
+        set(XDK_CPP_FLAGS "-isysroot ${CMAKE_OSX_SYSROOT} ${IOS_ARCH_FLAGS}")
         set(XDK_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${CMAKE_C_FLAGS}")
         set(XDK_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
         set(XDK_C_LINK_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_LINK_FLAGS_INIT}")
@@ -99,6 +100,9 @@ if(${CMAKE_CROSSCOMPILING})
         "CFLAGS=${XDK_C_FLAGS}"
         "CXXFLAGS=${XDK_CXX_FLAGS}"
         "LDFLAGS=${XDK_C_LINK_FLAGS}")
+    if(IOS)
+        set(CONFIGURE_ARGS_INIT ${CONFIGURE_ARGS_INIT} "CPPFLAGS=${XDK_CPP_FLAGS}")
+    endif()
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${CMAKE_C_FLAGS}")
 

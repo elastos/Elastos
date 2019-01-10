@@ -72,6 +72,7 @@
 #include "elacp.h"
 #include "dht.h"
 #include "tassemblies.h"
+#include "dstore_wrapper.h"
 
 #define TURN_SERVER_PORT                ((uint16_t)3478)
 #define TURN_SERVER_USER_SUFFIX         "auth.tox"
@@ -1015,8 +1016,11 @@ static void ela_destroy(void *argv)
     if (w->pref.data_location)
         free(w->pref.data_location);
 
-    if (w->pref.bootstraps)
-        free(w->pref.bootstraps);
+    if (w->pref.dht_bootstraps)
+        free(w->pref.dht_bootstraps);
+
+    if (w->pref.hive_bootstraps)
+        free(w->pref.hive_bootstraps);
 
     if (w->tassembly_irsps)
         deref(w->tassembly_irsps);
@@ -1039,6 +1043,52 @@ static void ela_destroy(void *argv)
     pthread_mutex_destroy(&w->ext_mutex);
 
     dht_kill(&w->dht);
+}
+
+static void handle_offline_msg(EventBase *event, ElaCarrier *w)
+{
+    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+
+    ElaCP *cp;
+
+    cp = elacp_decode(ev->content, ev->len);
+    if (!cp) {
+        vlogE("Carrier: Invalid DHT message, dropped.");
+        return;
+    }
+
+    if (elacp_get_type(cp) != ELACP_TYPE_MESSAGE) {
+        vlogE("Carrier: Unknown DHT message, dropped.");
+        return;
+    }
+
+    if (!elacp_get_extension(cp) && ela_is_friend(w, ev->from) &&
+        w->callbacks.friend_message)
+        w->callbacks.friend_message(w, ev->from, elacp_get_raw_data(cp),
+                                    elacp_get_raw_data_length(cp),
+                                    w->context);
+}
+
+static void notify_offline_msg(ElaCarrier *w, const char *from,
+                               const uint8_t *msg, size_t len)
+{
+    OfflineMsgEvent *event;
+
+    assert(w);
+    assert(from && *from);
+    assert(msg);
+    assert(len);
+
+    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
+    if (event) {
+        strcpy(event->from, from);
+        memcpy(event->content, msg, len);
+        event->len = len;
+        event->base.le.data = event;
+        event->base.handle = handle_offline_msg;
+        list_push_tail(w->friend_events, &event->base.le);
+        deref(event);
+    }
 }
 
 ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
@@ -1067,38 +1117,38 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->pref.udp_enabled = opts->udp_enabled;
     w->pref.data_location = strdup(opts->persistent_location);
-    w->pref.bootstraps_size = opts->bootstraps_size;
+    w->pref.dht_bootstraps_size = opts->dht_bootstraps_size;
 
-    w->pref.bootstraps = (BootstrapNodeBuf *)calloc(1, sizeof(BootstrapNodeBuf)
-                         * opts->bootstraps_size);
-    if (!w->pref.bootstraps) {
+    w->pref.dht_bootstraps = (DhtBootstrapNodeBuf *)calloc(1, sizeof(DhtBootstrapNodeBuf)
+                         * opts->dht_bootstraps_size);
+    if (!w->pref.dht_bootstraps) {
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
     }
 
-    for (i = 0; i < opts->bootstraps_size; i++) {
-        BootstrapNode *b = &opts->bootstraps[i];
-        BootstrapNodeBuf *bi = &w->pref.bootstraps[i];
+    for (i = 0; i < opts->dht_bootstraps_size; i++) {
+        DhtBootstrapNode *b = &opts->dht_bootstraps[i];
+        DhtBootstrapNodeBuf *bi = &w->pref.dht_bootstraps[i];
         char *endptr = NULL;
         ssize_t len;
 
         if (b->ipv4 && strlen(b->ipv4) > MAX_IPV4_ADDRESS_LEN) {
-            vlogE("Carrier: Bootstrap ipv4 address (%s) too long", b->ipv4);
+            vlogE("Carrier: DHT bootstrap ipv4 address (%s) too long", b->ipv4);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
 
         if (b->ipv6 && strlen(b->ipv6) > MAX_IPV6_ADDRESS_LEN) {
-            vlogE("Carrier: Bootstrap ipv4 address (%s) too long", b->ipv6);
+            vlogE("Carrier: DHT bootstrap ipv4 address (%s) too long", b->ipv6);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
 
         if (!b->ipv4 && !b->ipv6) {
-            vlogE("Carrier: Bootstrap ipv4 and ipv6 address both empty");
+            vlogE("Carrier: DHT bootstrap ipv4 and ipv6 address both empty");
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1111,7 +1161,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
         bi->port = (int)strtol(b->port, &endptr, 10);
         if (*endptr) {
-            vlogE("Carrier: Invalid bootstrap port value (%s)", b->port);
+            vlogE("Carrier: Invalid DHT bootstrap port value (%s)", b->port);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1120,7 +1170,57 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         len = base58_decode(b->public_key, strlen(b->public_key), bi->public_key,
                             sizeof(bi->public_key));
         if (len != DHT_PUBLIC_KEY_SIZE) {
-            vlogE("Carrier: Invalid bootstrap public key (%s)", b->public_key);
+            vlogE("Carrier: Invalid DHT bootstrap public key (%s)", b->public_key);
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+    }
+
+    w->pref.hive_bootstraps_size = opts->hive_bootstraps_size;
+    w->pref.hive_bootstraps = (HiveBootstrapNodeBuf *)calloc(1, sizeof(HiveBootstrapNodeBuf)
+                                                             * opts->hive_bootstraps_size);
+    if (!w->pref.hive_bootstraps) {
+        deref(w);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return NULL;
+    }
+
+    for (i = 0; i < opts->hive_bootstraps_size; i++) {
+        HiveBootstrapNode *b = &opts->hive_bootstraps[i];
+        HiveBootstrapNodeBuf *bi = &w->pref.hive_bootstraps[i];
+        char *endptr = NULL;
+        ssize_t len;
+
+        if (b->ipv4 && strlen(b->ipv4) > MAX_IPV4_ADDRESS_LEN) {
+            vlogE("Carrier: Hive bootstrap ipv4 address (%s) too long", b->ipv4);
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (b->ipv6 && strlen(b->ipv6) > MAX_IPV6_ADDRESS_LEN) {
+            vlogE("Carrier: Hive bootstrap ipv4 address (%s) too long", b->ipv6);
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (!b->ipv4 && !b->ipv6) {
+            vlogE("Carrier: Hive bootstrap ipv4 and ipv6 address both empty");
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (b->ipv4)
+            strcpy(bi->ipv4, b->ipv4);
+        if (b->ipv6)
+            strcpy(bi->ipv6, b->ipv6);
+
+        bi->port = (int)strtol(b->port, &endptr, 10);
+        if (*endptr) {
+            vlogE("Carrier: Invalid Hive bootstrap port value (%s)", b->port);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1222,6 +1322,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         w->context = context;
     }
 
+    w->dstorectx = dstore_wrapper_create(w, &notify_offline_msg);
+
     vlogI("Carrier: Carrier node created.");
 
     return w;
@@ -1232,6 +1334,11 @@ void ela_kill(ElaCarrier *w)
     if (!w) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return;
+    }
+
+    if (w->dstorectx) {
+        dstore_wrapper_destroy(w->dstorectx);
+        w->dstorectx = NULL;
     }
 
     if (w->running) {
@@ -1486,6 +1593,14 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
     elacp_free(cp);
 }
 
+static void handle_friend_added_event(EventBase *event, ElaCarrier *w)
+{
+    FriendEvent *ev = (FriendEvent *)event;
+
+    if (w->callbacks.friend_added)
+        w->callbacks.friend_added(w, &ev->fi, w->context);
+}
+
 static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
 {
     FriendEvent *event;
@@ -1497,13 +1612,26 @@ static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
 
     event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
     if (event) {
-        event->type = FriendEventType_Added;
         memcpy(&event->fi, fi, sizeof(*fi));
-
-        event->le.data = event;
-        list_push_tail(w->friend_events, &event->le);
+        event->base.le.data = event;
+        event->base.handle = handle_friend_added_event;
+        list_push_tail(w->friend_events, &event->base.le);
         deref(event);
     }
+}
+
+static void handle_friend_removed_event(EventBase *event, ElaCarrier *w)
+{
+    FriendEvent *ev = (FriendEvent *)event;
+
+    if (ev->fi.status == ElaConnectionStatus_Connected &&
+        w->callbacks.friend_connection)
+        w->callbacks.friend_connection(w, ev->fi.user_info.userid,
+                                       ElaConnectionStatus_Disconnected,
+                                       w->context);
+
+    if (w->callbacks.friend_removed)
+        w->callbacks.friend_removed(w, ev->fi.user_info.userid, w->context);
 }
 
 static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
@@ -1517,39 +1645,11 @@ static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
 
     event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
     if (event) {
-        event->type = FriendEventType_Removed;
         memcpy(&event->fi, fi, sizeof(*fi));
-
-        event->le.data = event;
-        list_push_tail(w->friend_events, &event->le);
+        event->base.le.data = event;
+        event->base.handle = handle_friend_removed_event;
+        list_push_tail(w->friend_events, &event->base.le);
         deref(event);
-    }
-}
-
-static void do_friend_event(ElaCarrier *w, FriendEvent *event)
-{
-    assert(w);
-    assert(event);
-
-    switch(event->type) {
-    case FriendEventType_Added:
-        if (w->callbacks.friend_added)
-            w->callbacks.friend_added(w, &event->fi, w->context);
-        break;
-
-    case FriendEventType_Removed:
-        if (event->fi.status == ElaConnectionStatus_Connected &&
-            w->callbacks.friend_connection)
-            w->callbacks.friend_connection(w, event->fi.user_info.userid,
-                                           ElaConnectionStatus_Disconnected,
-                                           w->context);
-
-        if (w->callbacks.friend_removed)
-            w->callbacks.friend_removed(w, event->fi.user_info.userid, w->context);
-        break;
-
-    default:
-        assert(0);
     }
 }
 
@@ -1561,7 +1661,7 @@ static void do_friend_events(ElaCarrier *w)
 redo_events:
     list_iterate(events, &it);
     while (list_iterator_has_next(&it)) {
-        FriendEvent *event;
+        EventBase *event;
         int rc;
 
         rc = list_iterator_next(&it, (void **)&event);
@@ -1571,7 +1671,7 @@ redo_events:
         if (rc == -1)
             goto redo_events;
 
-        do_friend_event(w, event);
+        event->handle(event, w);
         list_iterator_remove(&it);
 
         deref(event);
@@ -2169,8 +2269,8 @@ static void connect_to_bootstraps(ElaCarrier *w)
 {
     int i;
 
-    for (i = 0; i < w->pref.bootstraps_size; i++) {
-        BootstrapNodeBuf *bi = &w->pref.bootstraps[i];
+    for (i = 0; i < w->pref.dht_bootstraps_size; i++) {
+        DhtBootstrapNodeBuf *bi = &w->pref.dht_bootstraps[i];
         char id[ELA_MAX_ID_LEN + 1] = {0};
         size_t id_len = sizeof(id);
         int rc;
@@ -2890,13 +2990,21 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
     }
 
     rc = dht_friend_message(&w->dht, friend_number, data, data_len);
-    free(data);
-
-    if (rc < 0) {
+    if (!rc) {
+        free(data);
+        return 0;
+    } else if (!w->dstorectx) {
+        free(data);
         ela_set_error(rc);
         return -1;
     }
 
+    ssize_t ret = dstore_send_msg(w->dstorectx, to, data, data_len);
+    free(data);
+    if (ret < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
     return 0;
 }
 

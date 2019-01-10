@@ -58,7 +58,8 @@ set(SRC
     dht/dht.c
     elacp.c
     ela_carrier.c
-    ela_error.c)
+    ela_error.c
+    dstore_wrapper.c)
 
 set(HEADERS
     ela_carrier.h)
@@ -101,7 +102,8 @@ endif()
 set(LIBS
     crystal
     toxcore
-    flatccrt)
+    flatccrt
+    hive)
 
 if(WIN32)
     set(LIBS
@@ -123,6 +125,9 @@ if(ENABLE_STATIC)
 
     target_compile_definitions(elacarrier-static PRIVATE CARRIER_STATIC CRYSTAL_STATIC)
     set_target_properties(elacarrier-static PROPERTIES OUTPUT_NAME elacarrier)
+    if(WIN32)
+        set_target_properties(elacarrier-static PROPERTIES LINK_FLAGS /FORCE:MULTIPLE)
+    endif()
     add_dependencies(elacarrier-static elacp_generated_h)
 
     add_dependencies(ela-carrier elacarrier-static)
@@ -138,6 +143,9 @@ if(ENABLE_SHARED)
 
     target_compile_definitions(elacarrier-shared PRIVATE CARRIER_DYNAMIC CRYSTAL_DYNAMIC)
     set_target_properties(elacarrier-shared PROPERTIES OUTPUT_NAME elacarrier)
+    if(WIN32)
+        set_target_properties(elacarrier-shared PROPERTIES LINK_FLAGS /FORCE:MULTIPLE)
+    endif()
     target_link_libraries(elacarrier-shared ${LIBS} ${SYSTEM_LIBS})
     add_dependencies(elacarrier-shared elacp_generated_h)
 
