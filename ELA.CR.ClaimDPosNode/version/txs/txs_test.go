@@ -23,7 +23,7 @@ type txVersionTestSuite struct {
 }
 
 func (s *txVersionTestSuite) SetupTest() {
-	s.Version = &txCurrent{}
+	s.Version = &txV2{}
 }
 
 func (s *txVersionTestSuite) TestCheckOutputPayload() {

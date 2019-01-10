@@ -10,19 +10,19 @@ import (
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
-// Ensure txCurrent implement the TxVersion interface.
-var _ TxVersion = (*txCurrent)(nil)
+// Ensure txV2 implement the TxVersion interface.
+var _ TxVersion = (*txV2)(nil)
 
-// txCurrent represent the current transaction version.
-type txCurrent struct {
+// txV2 represent the current transaction version.
+type txV2 struct {
 	*txV1
 }
 
-func (v *txCurrent) GetVersion() byte {
+func (v *txV2) GetVersion() byte {
 	return 9
 }
 
-func (v *txCurrent) CheckOutputPayload(txType types.TxType, output *types.Output) error {
+func (v *txV2) CheckOutputPayload(txType types.TxType, output *types.Output) error {
 	// Vote information can only be placed in TransferAsset transaction.
 	if txType == types.TransferAsset {
 		switch output.OutputType {
@@ -42,7 +42,7 @@ func (v *txCurrent) CheckOutputPayload(txType types.TxType, output *types.Output
 	return output.OutputPayload.Validate()
 }
 
-func (v *txCurrent) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
+func (v *txV2) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
 	minerReward := tx.Outputs[1].Value
 	if common.Fixed64(minerReward) < common.Fixed64(float64(totalReward)*0.35) {
 		return errors.New("Reward to miner in coinbase < 35%")
@@ -51,7 +51,7 @@ func (v *txCurrent) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward 
 	return nil
 }
 
-func (v *txCurrent) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
+func (v *txV2) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
 	outputAddressMap := make(map[common.Uint168]common.Fixed64)
 
 	for i := 2; i < len(coinbase.Outputs); i++ {
@@ -103,7 +103,7 @@ func (v *txCurrent) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, 
 	return nil
 }
 
-func (v *txCurrent) CheckTxHasNoPrograms(tx *types.Transaction) error {
+func (v *txV2) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	if len(tx.Programs) != 0 {
 		return errors.New("Transaction should have no programs.")
 	}
@@ -111,6 +111,6 @@ func (v *txCurrent) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	return nil
 }
 
-func NewTxCurrent(cfg *verconf.Config) *txCurrent {
-	return &txCurrent{NewTxV1(cfg)}
+func NewTxV2(cfg *verconf.Config) *txV2 {
+	return &txV2{NewTxV1(cfg)}
 }

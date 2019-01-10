@@ -23,7 +23,7 @@ type blockVersionTestSuite struct {
 }
 
 func (s *blockVersionTestSuite) SetupTest() {
-	s.Version = &blockCurrent{}
+	s.Version = &blockV2{}
 }
 
 func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
