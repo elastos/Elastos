@@ -26,9 +26,9 @@ const prodEnv = {
 const stagingEnv = {
     NODE_ENV: JSON.stringify('staging'),
     PLATFORM_ENV: JSON.stringify('web'),
-    SERVER_URL: JSON.stringify('http://staging.cyberrepublic.org:3000'),
-    FORUM_URL: JSON.stringify('http://staging.cyberrepublic.org:3100'),
-    SSO_URL: JSON.stringify('http://staging.cyberrepublic.org:3100/session/sso_login'),
+    SERVER_URL: JSON.stringify('http://18.136.60.61:3000'),
+    FORUM_URL: JSON.stringify('http://18.136.60.61:3100'),
+    SSO_URL: JSON.stringify('http://18.136.60.61:3100/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION)
 };
 
