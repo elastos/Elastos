@@ -6,19 +6,19 @@ import (
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
-// Ensure blockCurrent implement the BlockVersion interface.
-var _ BlockVersion = (*blockCurrent)(nil)
+// Ensure blockV2 implement the BlockVersion interface.
+var _ BlockVersion = (*blockV2)(nil)
 
-// blockCurrent represent the current block version.
-type blockCurrent struct {
+// blockV2 represent the current block version.
+type blockV2 struct {
 	*blockV1
 }
 
-func (b *blockCurrent) GetVersion() uint32 {
+func (b *blockV2) GetVersion() uint32 {
 	return 2
 }
 
-func (b *blockCurrent) GetNormalArbitratorsDesc() ([][]byte, error) {
+func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
 	resultCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
 	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
@@ -33,7 +33,7 @@ func (b *blockCurrent) GetNormalArbitratorsDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func (b *blockCurrent) GetCandidatesDesc() ([][]byte, error) {
+func (b *blockV2) GetCandidatesDesc() ([][]byte, error) {
 	startIndex := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
 	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
@@ -48,6 +48,6 @@ func (b *blockCurrent) GetCandidatesDesc() ([][]byte, error) {
 	return result, nil
 }
 
-func NewBlockCurrent(cfg *verconf.Config) *blockCurrent {
-	return &blockCurrent{&blockV1{cfg: cfg}}
+func NewBlockV2(cfg *verconf.Config) *blockV2 {
+	return &blockV2{&blockV1{cfg: cfg}}
 }
