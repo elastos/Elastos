@@ -418,10 +418,12 @@ func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
 		if vote.VoteType == outputpayload.Delegate {
 			for _, candidate := range vote.Candidates {
 				c.mu.Lock()
-				c.producerVotes[BytesToHexString(candidate)].Vote += output.Value
-				c.dirty[vote.VoteType] = true
+				if _, ok := c.producerVotes[BytesToHexString(candidate)]; ok {
+					c.producerVotes[BytesToHexString(candidate)].Vote += output.Value
+				}
 				c.mu.Unlock()
 			}
+			c.dirty[outputpayload.Delegate] = true
 		} else {
 			// todo persist other vote
 		}
