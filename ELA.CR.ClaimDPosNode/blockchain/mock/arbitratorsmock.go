@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
@@ -30,7 +31,7 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
-func (a *ArbitratorsMock) IsCRCArbitrator(pubKey []byte) bool {
+func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbitratorParams {
 	panic("implement me")
 }
 
