@@ -313,40 +313,39 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
+		switch txn.TxType {
+		case RegisterAsset:
 			regPayload := txn.Payload.(*PayloadRegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
 			}
-		}
-		if txn.TxType == RegisterProducer {
+		case RegisterProducer:
 			rPayload := txn.Payload.(*PayloadRegisterProducer)
 			rProducers = append(rProducers, rPayload)
 			err := c.persistRegisterProducer(rPayload)
 			if err != nil {
 				return err
 			}
-		}
-		if txn.TxType == CancelProducer {
+		case CancelProducer:
 			cPayload := txn.Payload.(*PayloadCancelProducer)
 			cProducers = append(cProducers, cPayload)
 			err := c.persistCancelProducer(cPayload)
 			if err != nil {
 				return err
 			}
-		}
-		if txn.TxType == UpdateProducer {
+		case UpdateProducer:
 			if err := c.persistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
+		case TransferAsset:
+			if txn.Version < TxVersion09 {
+				break
+			}
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					voteOutputs = append(voteOutputs, output)
@@ -362,18 +361,15 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
-		}
-		if txn.TxType == IllegalProposalEvidence {
+		case IllegalProposalEvidence:
 			if err := c.persistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == IllegalVoteEvidence {
+		case IllegalVoteEvidence:
 			if err := c.persistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == IllegalBlockEvidence {
+		case IllegalBlockEvidence:
 			if err := c.persistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
 				return err
 			}
@@ -398,20 +394,22 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 		if err := c.rollbackTransaction(txn); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
+		switch txn.TxType {
+		case RegisterAsset:
 			if err := c.rollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				if err := c.rollbackSidechainTx(hash); err != nil {
 					return err
 				}
 			}
-		}
-		if !rollbackedProducer && (txn.TxType == CancelProducer || txn.TxType == UpdateProducer) {
+		case CancelProducer, UpdateProducer:
+			if rollbackedProducer {
+				break
+			}
 			if err := c.clearRegisteredProducer(); err != nil {
 				return err
 			}
@@ -419,15 +417,19 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				return err
 			}
 			rollbackedProducer = true
-		}
-		if txn.TxType == RegisterProducer && !rollbackedProducer {
+		case RegisterProducer:
+			if rollbackedProducer {
+				break
+			}
 			rPayload := txn.Payload.(*PayloadRegisterProducer)
 			rProducers = append(rProducers, rPayload)
 			if err := c.rollbackRegisterProducer(rPayload); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 && !rollbackedProducer {
+		case TransferAsset:
+			if txn.Version < TxVersion09 || rollbackedProducer {
+				break
+			}
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					voteOutputs = append(voteOutputs, output)
