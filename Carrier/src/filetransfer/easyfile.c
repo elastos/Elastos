@@ -391,7 +391,7 @@ int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
 
     file = (EasyFile *)rc_zalloc(sizeof(*file), easyfile_destroy);
     if (!file) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
     }
 
