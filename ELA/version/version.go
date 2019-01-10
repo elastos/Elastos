@@ -11,11 +11,11 @@ import (
 func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 	txV0 := txs.NewTxV0(cfg)
 	txV1 := txs.NewTxV1(cfg)
-	txCurrent := txs.NewTxCurrent(cfg)
+	txMax := txs.NewTxV2(cfg)
 
 	blockV0 := blocks.NewBlockV0(cfg)
 	blockV1 := blocks.NewBlockV1(cfg)
-	blockCurrent := blocks.NewBlockCurrent(cfg)
+	blockMax := blocks.NewBlockV2(cfg)
 
 	versions := heights.NewHeightVersions(
 		map[uint32]heights.VersionInfo{
@@ -34,14 +34,14 @@ func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 			heights.HeightVersion2: {
 				9,
 				1,
-				map[byte]txs.TxVersion{txCurrent.GetVersion(): txCurrent},
+				map[byte]txs.TxVersion{txMax.GetVersion(): txMax},
 				map[uint32]blocks.BlockVersion{blockV1.GetVersion(): blockV1},
 			},
 			heights.HeightVersion3: {
 				9,
 				2,
-				map[byte]txs.TxVersion{txCurrent.GetVersion(): txCurrent},
-				map[uint32]blocks.BlockVersion{blockCurrent.GetVersion(): blockCurrent},
+				map[byte]txs.TxVersion{txMax.GetVersion(): txMax},
+				map[uint32]blocks.BlockVersion{blockMax.GetVersion(): blockMax},
 			},
 		},
 	)
