@@ -19,7 +19,11 @@ func (e *evidenceCache) AddEvidence(evidence types.DposIllegalData) {
 func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 	necessaryEvidences := make(map[common.Uint256]interface{})
 	for k, v := range e.evidences {
-		if v.GetBlockHeight()+WaitHeightTolerance <= block.Height {
+		tolerance := WaitHeightTolerance
+		if v.Type() != types.IllegalBlock {
+			tolerance = 0
+		}
+		if v.GetBlockHeight()+tolerance <= block.Height {
 			necessaryEvidences[k] = nil
 		}
 	}
