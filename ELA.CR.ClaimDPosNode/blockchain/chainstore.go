@@ -465,7 +465,7 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	return reference, nil
 }
 
-func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
+func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
@@ -557,22 +557,22 @@ func (c *ChainStore) rollback(b *Block) error {
 
 func (c *ChainStore) persist(b *Block) error {
 	c.NewBatch()
-	if err := c.PersistTrimmedBlock(b); err != nil {
+	if err := c.persistTrimmedBlock(b); err != nil {
 		return err
 	}
-	if err := c.PersistBlockHash(b); err != nil {
+	if err := c.persistBlockHash(b); err != nil {
 		return err
 	}
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspendUTXOs(b); err != nil {
+	if err := c.persistUnspendUTXOs(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspend(b); err != nil {
+	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
-	if err := c.PersistCurrentBlock(b); err != nil {
+	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
 	if err := c.BatchCommit(); err != nil {
@@ -875,7 +875,7 @@ func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
 	if !ok {
 		return
 	}
-	if err := c.PersistIllegalBlock(illegalBlock); err != nil {
+	if err := c.persistIllegalBlock(illegalBlock); err != nil {
 		log.Error("Persist illegal block tx error: ", err.Error())
 	}
 	if illegalBlock.CoinType == ELACoin {
