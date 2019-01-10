@@ -205,6 +205,9 @@ func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProdu
 
 func (c *ChainStore) rollbackCancelOrUpdateProducer() error {
 	height := c.currentBlockHeight
+
+	voteOutputs := make([]*Output, 0)
+	cancelVoteOutputs := make([]*Output, 0)
 	for i := uint32(0); i <= height; i++ {
 		hash, err := c.GetBlockHash(height)
 		if err != nil {
@@ -215,20 +218,20 @@ func (c *ChainStore) rollbackCancelOrUpdateProducer() error {
 			return err
 		}
 
-		voteOutputs := make([]*Output, 0)
-		cancelVoteOutputs := make([]*Output, 0)
 		for _, tx := range block.Transactions {
-			if tx.TxType == RegisterProducer {
+			switch tx.TxType {
+			case RegisterProducer:
 				if err = c.persistRegisterProducer(tx.Payload.(*PayloadRegisterProducer)); err != nil {
 					return err
 				}
-			}
-			if tx.TxType == UpdateProducer {
+			case UpdateProducer:
 				if err = c.persistUpdateProducer(tx.Payload.(*PayloadUpdateProducer)); err != nil {
 					return err
 				}
-			}
-			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
+			case TransferAsset:
+				if tx.Version < TxVersion09 {
+					break
+				}
 				for _, output := range tx.Outputs {
 					if output.OutputType == VoteOutput {
 						voteOutputs = append(voteOutputs, output)
@@ -266,33 +269,34 @@ func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
 		}
 
 		for _, tx := range block.Transactions {
-			if tx.TxType == RegisterProducer {
+			switch tx.TxType {
+			case RegisterProducer:
 				if err = c.persistRegisterProducerForMempool(tx.Payload.(*PayloadRegisterProducer)); err != nil {
 					return err
 				}
-			}
-			if tx.TxType == UpdateProducer {
+			case UpdateProducer:
 				if err = c.persistUpdateProducerForMempool(tx.Payload.(*PayloadUpdateProducer)); err != nil {
 					return err
 				}
-			}
-			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
-				for _, output := range tx.Outputs {
-					if output.OutputType == VoteOutput {
-						if err = c.persistVoteOutputForMempool(output); err != nil {
-							return err
+			case TransferAsset:
+				if tx.Version >= TxVersion09 {
+					for _, output := range tx.Outputs {
+						if output.OutputType == VoteOutput {
+							if err = c.persistVoteOutputForMempool(output); err != nil {
+								return err
+							}
 						}
 					}
-				}
-				for _, input := range tx.Inputs {
-					transaction, _, err := c.GetTransaction(input.Previous.TxID)
-					if err != nil {
-						return err
-					}
-					output := transaction.Outputs[input.Previous.Index]
-					if output.OutputType == VoteOutput {
-						if err = c.persistCancelVoteOutputForMempool(output); err != nil {
+					for _, input := range tx.Inputs {
+						transaction, _, err := c.GetTransaction(input.Previous.TxID)
+						if err != nil {
 							return err
+						}
+						output := transaction.Outputs[input.Previous.Index]
+						if output.OutputType == VoteOutput {
+							if err = c.persistCancelVoteOutputForMempool(output); err != nil {
+								return err
+							}
 						}
 					}
 				}
