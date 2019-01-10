@@ -206,7 +206,7 @@ func  clientAllowed(req *http.Request) (bool) {
 
 func  checkAuth(r *http.Request) (bool,  error) {
 
-	log.Warnf("checkAuth PowConfiguration %+v" , Parameters.RpcConfiguration)
+	log.Debugf("checkAuth PowConfiguration %+v" , Parameters.RpcConfiguration)
 
 	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0)  {
 		return true,  nil
