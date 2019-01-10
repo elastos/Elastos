@@ -59,6 +59,7 @@ struct CarrierContextExtra {
     char gfrom[ELA_MAX_ID_LEN + 1];
     char groupid[ELA_MAX_ID_LEN + 1];
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
+    char recv_file[ELA_MAX_FILE_NAME_LEN + 1];
 };
 
 static CarrierContextExtra extra = {
@@ -70,7 +71,8 @@ static CarrierContextExtra extra = {
     .gcookie_len = 0,
     .gfrom  = {0},
     .groupid = {0},
-    .fileid = {0}
+    .fileid = {0},
+    .recv_file = {"ReceivedFile"}
 };
 
 static void print_user_info(const ElaUserInfo* info)
@@ -408,8 +410,6 @@ static ElaFileTransferInfo ft_info = {
 static Condition DEFINE_COND(friend_status_cond);
 static Condition DEFINE_COND(cond);
 static Condition DEFINE_COND(group_cond);
-
-static CarrierContextExtra extra;
 
 CarrierContext carrier_context = {
     .cbs = &callbacks,
