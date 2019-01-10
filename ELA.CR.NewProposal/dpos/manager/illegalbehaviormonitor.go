@@ -25,10 +25,7 @@ type IllegalBehaviorMonitor interface {
 	IsLegalVote(v *types.DPosProposalVote) (*types.DPosProposalVote, bool)
 	SendSidechainIllegalEvidenceTransaction(evidence *types.SidechainIllegalData)
 
-	AddProposalEvidence(evidence *types.DposIllegalProposals)
-	AddVoteEvidence(evidence *types.DposIllegalVotes)
-	AddBlockEvidence(evidence *types.DposIllegalBlocks)
-	AddSidechainEvidence(evidence *types.SidechainIllegalData)
+	AddEvidence(evidence types.DposIllegalData)
 }
 
 type illegalBehaviorMonitor struct {
@@ -39,19 +36,7 @@ type illegalBehaviorMonitor struct {
 	manager       DposManager
 }
 
-func (i *illegalBehaviorMonitor) AddBlockEvidence(evidence *types.DposIllegalBlocks) {
-	i.evidenceCache.AddEvidence(evidence)
-}
-
-func (i *illegalBehaviorMonitor) AddProposalEvidence(evidence *types.DposIllegalProposals) {
-	i.evidenceCache.AddEvidence(evidence)
-}
-
-func (i *illegalBehaviorMonitor) AddVoteEvidence(evidence *types.DposIllegalVotes) {
-	i.evidenceCache.AddEvidence(evidence)
-}
-
-func (i *illegalBehaviorMonitor) AddSidechainEvidence(evidence *types.SidechainIllegalData) {
+func (i *illegalBehaviorMonitor) AddEvidence(evidence types.DposIllegalData) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 
@@ -103,7 +88,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPo
 		},
 	}
 
-	i.AddProposalEvidence(evidences)
+	i.AddEvidence(evidences)
 	i.sendIllegalProposalTransaction(evidences)
 
 	m := &dmsg.IllegalProposals{Proposals: *evidences}
@@ -186,7 +171,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosPro
 		},
 	}
 
-	i.AddVoteEvidence(evidences)
+	i.AddEvidence(evidences)
 	i.sendIllegalVoteTransaction(evidences)
 
 	m := &dmsg.IllegalVotes{Votes: *evidences}

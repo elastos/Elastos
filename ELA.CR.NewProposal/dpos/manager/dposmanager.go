@@ -303,19 +303,19 @@ func (d *dposManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 }
 
 func (d *dposManager) OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals) {
-	d.illegalMonitor.AddProposalEvidence(proposals)
+	d.illegalMonitor.AddEvidence(proposals)
 }
 
 func (d *dposManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes) {
-	d.illegalMonitor.AddVoteEvidence(votes)
+	d.illegalMonitor.AddEvidence(votes)
 }
 
 func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
-	d.illegalMonitor.AddBlockEvidence(i)
+	d.illegalMonitor.AddEvidence(i)
 }
 
 func (d *dposManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
-	d.illegalMonitor.AddSidechainEvidence(s)
+	d.illegalMonitor.AddEvidence(s)
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
