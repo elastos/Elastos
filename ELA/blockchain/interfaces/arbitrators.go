@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 )
 
 type Arbitrators interface {
@@ -13,7 +14,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 
-	IsCRCArbitrator(pubKey []byte) bool
+	GetCRCArbitrators() []config.CRCArbitratorParams
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 
 	GetArbitratorsProgramHashes() []*common.Uint168

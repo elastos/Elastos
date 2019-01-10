@@ -1,7 +1,6 @@
 package store
 
 import (
-	"bytes"
 	"fmt"
 	"sort"
 	"sync"
@@ -150,18 +149,13 @@ func (a *Arbitrators) GetNextCandidates() [][]byte {
 	return a.nextCandidates
 }
 
-func (a *Arbitrators) IsCRCArbitrator(pubKey []byte) bool {
-	for _, v := range a.cfg.CRCArbitrators {
-		if bytes.Equal(pubKey, v.PublicKey) {
-			return true
-		}
-	}
-	return false
-}
-
 func (a *Arbitrators) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
 	_, ok := a.crcArbitratorsProgramHashes[*hash]
 	return ok
+}
+
+func (a *Arbitrators) GetCRCArbitrators() []config.CRCArbitratorParams {
+	return a.cfg.CRCArbitrators
 }
 
 func (a *Arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
