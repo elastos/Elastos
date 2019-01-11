@@ -22,7 +22,7 @@ export default class extends Base {
             .populate('subscribers', sanitizeWithEmail)
 
         if (commentable) {
-            const updateObj = {
+            const updateObj: any = {
                 comments: commentable.comments || [],
                 subscribers: commentable.subscribers || []
             }
@@ -32,6 +32,11 @@ export default class extends Base {
                 createdBy: this.currentUser,
                 createdAt
             })
+            // increase commentsNum if defined in its schema
+            if (!_.isUndefined(commentable.commentsNum)) updateObj.commentsNum = updateObj.comments.length
+
+            // increase activeness if defined in its schema
+            if (!_.isUndefined(commentable.activeness)) updateObj.activeness = commentable.activeness + 1
 
             const mentions = comment.match(/@\w+/g)
             if (mentions) {
