@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -21,7 +22,7 @@ func CheckConfirm(confirm *DPosProposalVoteSlot) error {
 			return errors.New("[onConfirm] confirm contain invalid vote")
 		}
 
-		signers[vote.Signer] = struct{}{}
+		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
 	}
 
 	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
@@ -45,8 +46,7 @@ func CheckBlockWithConfirmation(block *Block, confirm *DPosProposalVoteSlot) err
 func IsProposalValid(proposal *DPosProposal) bool {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
-		pubStr := common.BytesToHexString(a)
-		if pubStr == proposal.Sponsor {
+		if bytes.Equal(a, proposal.Sponsor) {
 			isArbiter = true
 		}
 	}
@@ -54,11 +54,7 @@ func IsProposalValid(proposal *DPosProposal) bool {
 		return false
 	}
 
-	publicKey, err := common.HexStringToBytes(proposal.Sponsor)
-	if err != nil {
-		return false
-	}
-	pubKey, err := crypto.DecodePoint(publicKey)
+	pubKey, err := crypto.DecodePoint(proposal.Sponsor)
 	if err != nil {
 		return false
 	}
@@ -73,8 +69,7 @@ func IsProposalValid(proposal *DPosProposal) bool {
 func IsVoteValid(vote *DPosProposalVote) bool {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
-		pubStr := common.BytesToHexString(a)
-		if pubStr == vote.Signer {
+		if bytes.Equal(a, vote.Signer) {
 			isArbiter = true
 		}
 	}
@@ -82,11 +77,7 @@ func IsVoteValid(vote *DPosProposalVote) bool {
 		return false
 	}
 
-	publicKey, err := common.HexStringToBytes(vote.Signer)
-	if err != nil {
-		return false
-	}
-	pubKey, err := crypto.DecodePoint(publicKey)
+	pubKey, err := crypto.DecodePoint(vote.Signer)
 	if err != nil {
 		return false
 	}

@@ -204,11 +204,7 @@ func (b *blockV1) generateBlockEvidence(block *types.Block) (*types.BlockEvidenc
 func (b *blockV1) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([][]byte, error) {
 	result := make([][]byte, 0)
 	for _, v := range confirm.Votes {
-		data, err := common.HexStringToBytes(v.Signer)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, data)
+		result = append(result, v.Signer)
 	}
 	return result, nil
 }

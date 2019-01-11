@@ -96,11 +96,16 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (Arbitrator, error) {
 
 	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
-		log.Error("Init dpos account error")
+		log.Error("init dpos account error")
 		return nil, err
 	}
 
-	dposManager := manager.NewManager(cfg.Params.Name, cfg.Arbitrators)
+	pubKey, err := common.HexStringToBytes(cfg.Params.PublicKey)
+	if err != nil {
+		log.Error("init dpos account error")
+		return nil, err
+	}
+	dposManager := manager.NewManager(pubKey, cfg.Arbitrators)
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)

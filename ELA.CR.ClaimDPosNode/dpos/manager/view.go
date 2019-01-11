@@ -47,7 +47,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	if offset > 0 {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
-		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
+		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.PublicKey
 		log.Info("current onduty arbiter:", currentArbiter)
 
 		v.listener.OnViewChanged(v.isDposOnDuty)

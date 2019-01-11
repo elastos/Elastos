@@ -1,6 +1,8 @@
 package manager
 
 import (
+	"bytes"
+
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
@@ -183,7 +185,7 @@ func (i *illegalBehaviorMonitor) isProposalsIllegal(first, second *types.DPosPro
 		return false
 	}
 
-	if first.Sponsor != second.Sponsor || first.ViewOffset != second.ViewOffset {
+	if !bytes.Equal(first.Sponsor, second.Sponsor) || first.ViewOffset != second.ViewOffset {
 		return false
 	}
 
@@ -217,7 +219,7 @@ func (i *illegalBehaviorMonitor) IsLegalVote(v *types.DPosProposalVote) (*types.
 }
 
 func (i *illegalBehaviorMonitor) isVotesIllegal(first, second *types.DPosProposalVote) bool {
-	if first.Signer != second.Signer {
+	if !bytes.Equal(first.Signer, second.Signer) {
 		return false
 	}
 
