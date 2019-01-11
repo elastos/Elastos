@@ -10,6 +10,8 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
+const ProducerConfirmations = 6
+
 func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -40,7 +42,7 @@ func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
 		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
 			continue
 		}
-		if c.currentBlockHeight-p.RegHeight < 6 {
+		if c.currentBlockHeight-p.RegHeight+1 < ProducerConfirmations {
 			continue
 		}
 		result = append(result, p.Payload)
@@ -104,7 +106,7 @@ func (c *ChainStore) GetProducerStatus(publicKey string) ProducerState {
 	defer c.mu.Unlock()
 
 	if p, ok := c.producerVotes[publicKey]; ok {
-		if c.currentBlockHeight-p.RegHeight >= 6 {
+		if c.currentBlockHeight-p.RegHeight+1 >= ProducerConfirmations {
 			return ProducerRegistered
 		} else {
 			return ProducerRegistering
