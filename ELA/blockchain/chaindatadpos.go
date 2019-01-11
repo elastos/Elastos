@@ -97,13 +97,13 @@ func (c *ChainStore) persistRegisterProducer(payload *PayloadRegisterProducer) e
 	return nil
 }
 
-func (c *ChainStore) persistRegisterProducerForMempool(payload *PayloadRegisterProducer) error {
+func (c *ChainStore) persistRegisterProducerForMempool(payload *PayloadRegisterProducer, height uint32) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	pk := BytesToHexString(payload.PublicKey)
 	c.producerVotes[pk] = &ProducerInfo{
 		Payload:   payload,
-		RegHeight: c.currentBlockHeight,
+		RegHeight: height,
 		Vote:      Fixed64(0),
 	}
 	programHash, err := contract.PublicKeyToStandardProgramHash(payload.PublicKey)
@@ -257,9 +257,13 @@ func (c *ChainStore) rollbackCancelOrUpdateProducer() error {
 }
 
 func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
+	return c.reloadProducersFromChainForMempool()
+}
+
+func (c *ChainStore) reloadProducersFromChainForMempool() error {
 	height := c.currentBlockHeight
-	for i := uint32(0); i <= height; i++ {
-		hash, err := c.GetBlockHash(height)
+	for i := uint32(1); i <= height; i++ {
+		hash, err := c.GetBlockHash(i)
 		if err != nil {
 			return err
 		}
@@ -267,41 +271,7 @@ func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
 		if err != nil {
 			return err
 		}
-
-		for _, tx := range block.Transactions {
-			switch tx.TxType {
-			case RegisterProducer:
-				if err = c.persistRegisterProducerForMempool(tx.Payload.(*PayloadRegisterProducer)); err != nil {
-					return err
-				}
-			case UpdateProducer:
-				if err = c.persistUpdateProducerForMempool(tx.Payload.(*PayloadUpdateProducer)); err != nil {
-					return err
-				}
-			case TransferAsset:
-				if tx.Version >= TxVersion09 {
-					for _, output := range tx.Outputs {
-						if output.OutputType == VoteOutput {
-							if err = c.persistVoteOutputForMempool(output); err != nil {
-								return err
-							}
-						}
-					}
-					for _, input := range tx.Inputs {
-						transaction, _, err := c.GetTransaction(input.Previous.TxID)
-						if err != nil {
-							return err
-						}
-						output := transaction.Outputs[input.Previous.Index]
-						if output.OutputType == VoteOutput {
-							if err = c.persistCancelVoteOutputForMempool(output); err != nil {
-								return err
-							}
-						}
-					}
-				}
-			}
-		}
+		c.persistForMempool(block)
 	}
 	return nil
 }
@@ -668,20 +638,22 @@ func (c *ChainStore) getCancelProducerHeight(publicKey []byte) (uint32, error) {
 
 func (c *ChainStore) rollbackForMempool(b *Block) error {
 	for _, txn := range b.Transactions {
-		if txn.TxType == RegisterProducer {
+		switch txn.TxType {
+		case RegisterProducer:
 			regPayload := txn.Payload.(*PayloadRegisterProducer)
 			if err := c.rollbackRegisterProducerForMempool(regPayload); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == CancelProducer || txn.TxType == UpdateProducer {
+		case CancelProducer, UpdateProducer:
 			c.clearRegisteredProducerForMempool()
 			if err := c.rollbackCancelOrUpdateProducerForMempool(); err != nil {
 				return err
 			}
 			return nil
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
+		case TransferAsset:
+			if txn.Version < TxVersion09 {
+				break
+			}
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					if err := c.persistCancelVoteOutputForMempool(output); err != nil {
@@ -709,24 +681,23 @@ func (c *ChainStore) rollbackForMempool(b *Block) error {
 
 func (c *ChainStore) persistForMempool(b *Block) error {
 	for _, txn := range b.Transactions {
-		if txn.TxType == RegisterProducer {
-			err := c.persistRegisterProducerForMempool(txn.Payload.(*PayloadRegisterProducer))
-			if err != nil {
+		switch txn.TxType {
+		case RegisterProducer:
+			if err := c.persistRegisterProducerForMempool(txn.Payload.(*PayloadRegisterProducer), b.Height); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == CancelProducer {
-			err := c.persistCancelProducerForMempool(txn.Payload.(*PayloadCancelProducer))
-			if err != nil {
+		case CancelProducer:
+			if err := c.persistCancelProducerForMempool(txn.Payload.(*PayloadCancelProducer)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == UpdateProducer {
+		case UpdateProducer:
 			if err := c.persistUpdateProducerForMempool(txn.Payload.(*PayloadUpdateProducer)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
+		case TransferAsset:
+			if txn.Version < TxVersion09 {
+				break
+			}
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					if err := c.persistVoteOutputForMempool(output); err != nil {
@@ -746,8 +717,7 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 					}
 				}
 			}
-		}
-		if txn.TxType == IllegalProposalEvidence || txn.TxType == IllegalVoteEvidence || txn.TxType == IllegalBlockEvidence {
+		case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence:
 			c.setDirty(outputpayload.Delegate)
 		}
 	}
