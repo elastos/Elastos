@@ -132,7 +132,7 @@ var configTemplate = config.Configuration{
 	},
 	EnableArbiter: false,
 	ArbiterConfiguration: config.ArbiterConfiguration{
-		Name:                   "test",
+		PublicKey:              "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
 		Magic:                  7630403,
 		NodePort:               30338,
 		ProtocolVersion:        0,

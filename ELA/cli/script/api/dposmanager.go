@@ -55,13 +55,13 @@ func newDposManager(L *lua.LState) int {
 		return 0
 	}
 
-	dposManager := NewManager(arbitratorsPublicKeys[index], a)
+	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
+	dposManager := NewManager(pub, a)
 	mockManager := &manager{
 		DposManager: dposManager,
 	}
 
 	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[index])
-	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
 	pubKey, _ := crypto.DecodePoint(pub)
 	mockManager.Account = account.NewDposAccountFromExisting(&account2.Account{
 		PrivateKey: priKey,

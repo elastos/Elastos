@@ -109,7 +109,7 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	Name                   string                    `json:"Name"`
+	PublicKey              string                    `json:"PublicKey"`
 	Magic                  uint32                    `json:"Magic"`
 	NodePort               uint16                    `json:"NodePort"`
 	ProtocolVersion        uint32                    `json:"ProtocolVersion"`
@@ -154,7 +154,7 @@ type ConfigParams struct {
 }
 
 func (config *Configuration) GetArbiterID() []byte {
-	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
+	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.PublicKey)
 	if err != nil || len(publicKey) != 33 {
 		log.Fatalf("get arbiter public key error %v", err)
 		os.Exit(1)

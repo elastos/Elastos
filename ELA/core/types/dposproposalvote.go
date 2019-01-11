@@ -11,7 +11,7 @@ import (
 type DPosProposalVote struct {
 	ProposalHash common.Uint256
 
-	Signer string
+	Signer []byte
 	Accept bool
 	Sign   []byte
 
@@ -32,7 +32,7 @@ func (v *DPosProposalVote) SerializeUnsigned(w io.Writer) error {
 		return err
 	}
 
-	if err := common.WriteVarString(w, v.Signer); err != nil {
+	if err := common.WriteVarBytes(w, v.Signer); err != nil {
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (v *DPosProposalVote) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	signer, err := common.ReadVarString(r)
+	signer, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return err
 	}

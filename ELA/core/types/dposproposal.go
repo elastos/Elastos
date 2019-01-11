@@ -9,7 +9,7 @@ import (
 )
 
 type DPosProposal struct {
-	Sponsor    string //todo [merge] replace with public key
+	Sponsor    []byte
 	BlockHash  common.Uint256
 	ViewOffset uint32
 	Sign       []byte
@@ -27,7 +27,7 @@ func (p *DPosProposal) Data() []byte {
 }
 
 func (p *DPosProposal) SerializeUnsigned(w io.Writer) error {
-	if err := common.WriteVarString(w, p.Sponsor); err != nil {
+	if err := common.WriteVarBytes(w, p.Sponsor); err != nil {
 		return err
 	}
 	if err := p.BlockHash.Serialize(w); err != nil {
@@ -44,7 +44,7 @@ func (p *DPosProposal) Serialize(w io.Writer) error {
 }
 
 func (p *DPosProposal) DeserializeUnSigned(r io.Reader) error {
-	sponsor, err := common.ReadVarString(r)
+	sponsor, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -75,7 +76,7 @@ type AbnormalRecovering interface {
 type DposManager interface {
 	NetworkEventListener
 
-	GetPublicKey() string
+	GetPublicKey() []byte
 	GetBlockCache() *ConsensusBlockCache
 	GetArbitrators() interfaces.Arbitrators
 
@@ -97,7 +98,7 @@ type DposManager interface {
 }
 
 type dposManager struct {
-	publicKey  string
+	publicKey  []byte
 	blockCache *ConsensusBlockCache
 
 	handler        DposHandlerSwitch
@@ -116,9 +117,9 @@ func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, 
 	return d.blockPool.AppendConfirm(confirm)
 }
 
-func NewManager(name string, arbitrators interfaces.Arbitrators) DposManager {
+func NewManager(publicKey []byte, arbitrators interfaces.Arbitrators) DposManager {
 	m := &dposManager{
-		publicKey:   name,
+		publicKey:   publicKey,
 		blockCache:  &ConsensusBlockCache{},
 		arbitrators: arbitrators,
 	}
@@ -150,7 +151,7 @@ func (d *dposManager) Broadcast(msg p2p.Message) {
 	d.broadcast(msg)
 }
 
-func (d *dposManager) GetPublicKey() string {
+func (d *dposManager) GetPublicKey() []byte {
 	return d.publicKey
 }
 
@@ -334,7 +335,7 @@ func (d *dposManager) changeHeight() {
 	}
 
 	currentArbiter := d.arbitrators.GetOnDutyArbitrator()
-	onDuty := d.publicKey == common.BytesToHexString(currentArbiter)
+	onDuty := bytes.Equal(d.publicKey, currentArbiter)
 
 	if onDuty {
 		log.Info("[onDutyArbitratorChanged] not onduty -> onduty")

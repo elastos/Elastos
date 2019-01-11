@@ -144,7 +144,7 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 	rawData := new(bytes.Buffer)
 	proposal.Serialize(rawData)
 	proposalEvent := log.ProposalEvent{
-		Proposal:     proposal.Sponsor,
+		Proposal:     common.BytesToHexString(proposal.Sponsor),
 		BlockHash:    proposal.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
@@ -186,7 +186,7 @@ func (p *proposalDispatcher) FinishProposal() {
 	p.FinishConsensus()
 
 	proposalEvent := log.ProposalEvent{
-		Proposal:  proposal,
+		Proposal:  common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
 		Result:    true,
@@ -441,7 +441,7 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: vote.Signer, ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
 	p.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
@@ -468,7 +468,7 @@ func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: vote.Signer, ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
 	p.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
