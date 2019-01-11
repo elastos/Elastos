@@ -10,7 +10,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
@@ -101,7 +101,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		}
 
 		if txn.IsWithdrawFromSideChainTx() {
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
 			for _, hash := range witPayload.SideChainTransactionHashes {

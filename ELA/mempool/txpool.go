@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -155,7 +155,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 
 				//delete sidechain tx list
 				if tx.TxType == WithdrawFromSideChain {
-					payload, ok := tx.Payload.(*PayloadWithdrawFromSideChain)
+					payload, ok := tx.Payload.(*payload.WithdrawFromSideChain)
 					if !ok {
 						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
 					}
@@ -167,21 +167,21 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				// delete producer
 				var producerPubKey string
 				if tx.TxType == RegisterProducer {
-					payload, ok := tx.Payload.(*ProducerInfo)
+					payload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
 					producerPubKey = BytesToHexString(payload.PublicKey)
 				}
 				if tx.TxType == UpdateProducer {
-					payload, ok := tx.Payload.(*ProducerInfo)
+					payload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
 					producerPubKey = BytesToHexString(payload.PublicKey)
 				}
 				if tx.TxType == CancelProducer {
-					payload, ok := tx.Payload.(*PayloadCancelProducer)
+					payload, ok := tx.Payload.(*payload.CancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
@@ -217,7 +217,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrSidechainTxDuplicate
 		}
 	} else if txn.IsRegisterProducerTx() {
-		payload, ok := txn.Payload.(*ProducerInfo)
+		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 		}
@@ -226,7 +226,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrProducerProcessing
 		}
 	} else if txn.IsUpdateProducerTx() {
-		payload, ok := txn.Payload.(*ProducerInfo)
+		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 		}
@@ -235,7 +235,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrProducerProcessing
 		}
 	} else if txn.IsCancelProducerTx() {
-		payload, ok := txn.Payload.(*PayloadCancelProducer)
+		payload, ok := txn.Payload.(*payload.CancelProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 		}
@@ -301,7 +301,7 @@ func (mp *TxPool) IsDuplicateSidechainTx(sidechainTxHash Uint256) bool {
 
 //check and add to sidechain tx pool
 func (mp *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
-	withPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
+	withPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("convert the payload of withdraw tx failed")
 	}
@@ -333,10 +333,10 @@ func (mp *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 
 	for _, v := range mp.txnList {
 		if v.TxType == SideChainPow {
-			oldPayload := v.Payload.Data(SideChainPowPayloadVersion)
+			oldPayload := v.Payload.Data(payload.SideChainPowVersion)
 			oldGenesisHashData := oldPayload[32:64]
 
-			newPayload := txn.Payload.Data(SideChainPowPayloadVersion)
+			newPayload := txn.Payload.Data(payload.SideChainPowVersion)
 			newGenesisHashData := newPayload[32:64]
 
 			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
@@ -356,7 +356,7 @@ func (mp *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 	for _, txn := range txs {
 		if txn.IsWithdrawFromSideChainTx() {
-			withPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			withPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 			for _, hash := range withPayload.SideChainTransactionHashes {
 				tx, ok := mp.sidechainTxList[hash]
 				if ok {
@@ -367,7 +367,7 @@ func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 						mp.delInputUTXOList(input)
 					}
 					//delete sidechain tx map
-					payload, ok := tx.Payload.(*PayloadWithdrawFromSideChain)
+					payload, ok := tx.Payload.(*payload.WithdrawFromSideChain)
 					if !ok {
 						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
 					}
@@ -428,7 +428,7 @@ func (mp *TxPool) delInputUTXOList(input *Input) {
 }
 
 func (mp *TxPool) addSidechainTx(txn *Transaction) {
-	witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+	witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 	for _, hash := range witPayload.SideChainTransactionHashes {
 		mp.sidechainTxList[hash] = txn
 	}

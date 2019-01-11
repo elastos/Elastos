@@ -66,7 +66,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 
 func (s *txValidatorTestSuite) TestCheckTransactionInput() {
 	// coinbase transaction
-	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	tx := NewCoinBaseTransaction(new(payload.CoinBase), 0)
 	tx.Inputs[0].Previous.Index = math.MaxUint16
 	err := CheckTransactionInput(tx)
 	s.NoError(err)
@@ -111,7 +111,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionInput() {
 
 func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// coinbase
-	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	tx := NewCoinBaseTransaction(new(payload.CoinBase), 0)
 	tx.Outputs = []*types.Output{
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
@@ -257,7 +257,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 func (s *txValidatorTestSuite) TestCheckTransactionPayload() {
 	// normal
 	tx := new(types.Transaction)
-	payload := &payload.PayloadRegisterAsset{
+	payload := &payload.RegisterAsset{
 		Asset: payload.Asset{
 			Name:      "ELA",
 			Precision: 0x08,
@@ -292,7 +292,7 @@ func (s *txValidatorTestSuite) TestCheckDuplicateSidechainTx() {
 	// 1. Generate the ill withdraw transaction which have duplicate sidechain tx
 	txn := new(types.Transaction)
 	txn.TxType = types.WithdrawFromSideChain
-	txn.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -315,7 +315,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	// single output
 
 	outputValue1 := common.Fixed64(100 * s.ELA)
-	deposit := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	deposit := NewCoinBaseTransaction(new(payload.CoinBase), 0)
 	deposit.Outputs = []*types.Output{
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
 	}
@@ -354,7 +354,7 @@ func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 	// 1. Generate a side chain pow transaction
 	txn := new(types.Transaction)
 	txn.TxType = types.SideChainPow
-	txn.Payload = &payload.PayloadSideChainPow{
+	txn.Payload = &payload.SideChainPow{
 		SideBlockHash:   common.Uint256{1, 1, 1},
 		SideGenesisHash: common.Uint256{2, 2, 2},
 		BlockHeight:     uint32(10),
@@ -375,9 +375,9 @@ func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 
 	//3. Sign transaction by arbitrator1
 	buf := new(bytes.Buffer)
-	txn.Payload.Serialize(buf, payload.SideChainPowPayloadVersion)
+	txn.Payload.Serialize(buf, payload.SideChainPowVersion)
 	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
-	txn.Payload.(*payload.PayloadSideChainPow).SignedData = signature
+	txn.Payload.(*payload.SideChainPow).SignedData = signature
 
 	//4. Run CheckSideChainPowConsensus
 	s.NoError(CheckSideChainPowConsensus(txn, arbitrator1), "TestCheckSideChainPowConsensus failed.")
@@ -647,7 +647,7 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.CancelProducer
-	cancelPayload := &payload.PayloadCancelProducer{
+	cancelPayload := &payload.CancelProducer{
 		PublicKey: publicKey1,
 	}
 	txn.Payload = cancelPayload

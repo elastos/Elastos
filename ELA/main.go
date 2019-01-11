@@ -98,6 +98,9 @@ func main() {
 		Store:            dposStore,
 		ChainStore:       chainStore,
 	})
+	if err != nil {
+		printErrorAndExit(err)
+	}
 	if err = arbiters.Start(); err != nil {
 		printErrorAndExit(err)
 	}

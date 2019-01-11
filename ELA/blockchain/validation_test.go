@@ -353,7 +353,7 @@ func newMultiAccount(num int, t *testing.T) *multiAccount {
 func buildTx() *types.Transaction {
 	tx := new(types.Transaction)
 	tx.TxType = types.TransferAsset
-	tx.Payload = new(payload.PayloadTransferAsset)
+	tx.Payload = new(payload.TransferAsset)
 	tx.Inputs = randomInputs()
 	tx.Outputs = randomOutputs()
 	return tx

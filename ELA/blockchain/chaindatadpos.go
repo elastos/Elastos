@@ -134,7 +134,7 @@ func (c *ChainStore) rollbackRegisterProducerForMempool(payload *payload.Produce
 	return nil
 }
 
-func (c *ChainStore) PersistCancelProducer(payload *payload.PayloadCancelProducer) error {
+func (c *ChainStore) PersistCancelProducer(payload *payload.CancelProducer) error {
 	// remove from DPOSProducers
 	key := []byte{byte(DPOSProducers)}
 	var publicKeys [][]byte
@@ -183,7 +183,7 @@ func (c *ChainStore) PersistCancelProducer(payload *payload.PayloadCancelProduce
 	return nil
 }
 
-func (c *ChainStore) persistCancelProducerForMempool(payload *payload.PayloadCancelProducer) error {
+func (c *ChainStore) persistCancelProducerForMempool(payload *payload.CancelProducer) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	_, ok := c.producerVotes[BytesToHexString(payload.PublicKey)]
@@ -738,7 +738,7 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 			}
 		}
 		if txn.TxType == CancelProducer {
-			err := c.persistCancelProducerForMempool(txn.Payload.(*payload.PayloadCancelProducer))
+			err := c.persistCancelProducerForMempool(txn.Payload.(*payload.CancelProducer))
 			if err != nil {
 				return err
 			}

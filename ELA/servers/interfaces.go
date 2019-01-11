@@ -409,7 +409,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
-		MinerInfo:         string(block.Transactions[0].Payload.(*payload.PayloadCoinBase).CoinbaseData[:]),
+		MinerInfo:         string(block.Transactions[0].Payload.(*payload.CoinBase).Content[:]),
 	}
 }
 
@@ -1056,24 +1056,24 @@ func GetFeeRate(count int, confirm int) int {
 
 func getPayloadInfo(p Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *payload.PayloadCoinBase:
+	case *payload.CoinBase:
 		obj := new(CoinbaseInfo)
-		obj.CoinbaseData = string(object.CoinbaseData)
+		obj.CoinbaseData = string(object.Content)
 		return obj
-	case *payload.PayloadRegisterAsset:
+	case *payload.RegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = common.BytesToHexString(common.BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *payload.PayloadSideChainPow:
+	case *payload.SideChainPow:
 		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
 		obj.SideGenesisHash = object.SideGenesisHash.String()
 		obj.SignedData = common.BytesToHexString(object.SignedData)
 		return obj
-	case *payload.PayloadWithdrawFromSideChain:
+	case *payload.WithdrawFromSideChain:
 		obj := new(WithdrawFromSideChainInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.GenesisBlockAddress = object.GenesisBlockAddress
@@ -1081,14 +1081,14 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.SideChainTransactionHashes = append(obj.SideChainTransactionHashes, hash.String())
 		}
 		return obj
-	case *payload.PayloadTransferCrossChainAsset:
+	case *payload.TransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.CrossChainAddresses = object.CrossChainAddresses
 		obj.OutputIndexes = object.OutputIndexes
 		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
-	case *payload.PayloadTransferAsset:
-	case *payload.PayloadRecord:
+	case *payload.TransferAsset:
+	case *payload.Record:
 	case *payload.ProducerInfo:
 		obj := new(ProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
@@ -1098,7 +1098,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Address = object.Address
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
-	case *payload.PayloadCancelProducer:
+	case *payload.CancelProducer:
 		obj := new(CancelProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)

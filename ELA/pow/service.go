@@ -105,9 +105,9 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 	tx := &types.Transaction{
 		Version:        version,
 		TxType:         types.CoinBase,
-		PayloadVersion: payload.PayloadCoinBaseVersion,
-		Payload: &payload.PayloadCoinBase{
-			CoinbaseData: []byte(pow.MinerInfo),
+		PayloadVersion: payload.CoinBaseVersion,
+		Payload: &payload.CoinBase{
+			Content: []byte(pow.MinerInfo),
 		},
 		Inputs: []*types.Input{
 			{
