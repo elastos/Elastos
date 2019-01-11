@@ -1261,7 +1261,18 @@ const en = {
     'user.skillset.BUSINESS_PLANS': 'Business Plans',
     'user.skillset.LEGAL_CONSULTING': 'Legal Consulting',
     'user.skillset.FINANCIAL_CONSULTING': 'Financial Consulting',
-    'user.skillset.PRESENTATION': 'Business Presentations'
+    'user.skillset.PRESENTATION': 'Business Presentations',
+
+    // Council & Secretariat
+    'cs.incumbent': 'INCUMBENT',
+    'cs.council': 'COUNCIL',
+    'cs.secretariat': 'SECRETARIAT',
+    'cs.secretariat.general': 'SECRETARIAT GENERAL',
+    'cs.secretariat.staff': 'SECRETARIAT STAFF',
+    'cs.rule.tile': 'Rules For Council',
+    'cs.rule.show.click': 'Click',
+    'cs.rule.show.here': 'here',
+    'cs.rule.show.view': 'to view the rules for council',
 };
 
 // lang mappings
