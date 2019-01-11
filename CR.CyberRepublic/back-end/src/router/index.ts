@@ -12,6 +12,7 @@ import taskCandidate from './task_candidate';
 import teamCandidate from './team_candidate';
 import community from './community';
 import submission from './submission';
+import suggestion from './suggestion';
 import cvote from './cvote';
 
 import upload from './upload';
@@ -93,6 +94,7 @@ router.use('/teamCandidate', teamCandidate)
 router.use('/community', community);
 router.use('/upload', upload);
 router.use('/submission', submission);
+router.use('/suggestion', suggestion);
 router.use('/cvote', cvote);
 router.use('/sso', sso);
 
