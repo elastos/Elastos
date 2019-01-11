@@ -105,13 +105,14 @@ type Configuration struct {
 	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
 	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
+	HeightVersions       []uint32             `json:"HeightVersions"`
 }
 
 type ArbiterConfiguration struct {
-	Name                   string              `json:"Name"`
-	Magic                  uint32              `json:"Magic"`
-	NodePort               uint16              `json:"NodePort"`
-	ProtocolVersion        uint32              `json:"ProtocolVersion"`
+	Name                   string                    `json:"Name"`
+	Magic                  uint32                    `json:"Magic"`
+	NodePort               uint16                    `json:"NodePort"`
+	ProtocolVersion        uint32                    `json:"ProtocolVersion"`
 	Services               uint64                    `json:"Services"`
 	PrintLevel             uint8                     `json:"PrintLevel"`
 	SignTolerance          uint64                    `json:"SignTolerance"`
