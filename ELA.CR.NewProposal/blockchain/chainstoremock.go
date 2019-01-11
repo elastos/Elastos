@@ -7,20 +7,20 @@ import (
 )
 
 type ChainStoreMock struct {
-	RegisterProducers    []*payload.PayloadRegisterProducer
+	RegisterProducers    []*payload.ProducerInfo
 	BlockHeight          uint32
 	CancelProducerHeight uint32
 }
 
-func (c *ChainStoreMock) GetRegisteredProducers() []*payload.PayloadRegisterProducer {
+func (c *ChainStoreMock) GetRegisteredProducers() []*payload.ProducerInfo {
 	return c.RegisterProducers
 }
 
-func (c *ChainStoreMock) GetActiveRegisteredProducers() []*payload.PayloadRegisterProducer {
+func (c *ChainStoreMock) GetActiveRegisteredProducers() []*payload.ProducerInfo {
 	return c.RegisterProducers
 }
 
-func (c *ChainStoreMock) GetRegisteredProducersSorted() ([]*payload.PayloadRegisterProducer, error) {
+func (c *ChainStoreMock) GetRegisteredProducersSorted() ([]*payload.ProducerInfo, error) {
 	panic("implement me")
 }
 

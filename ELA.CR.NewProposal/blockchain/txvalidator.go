@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/errors"
@@ -215,7 +215,7 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	return Success
 }
 
-func getProducerPublicKeys(producers []*PayloadRegisterProducer) [][]byte {
+func getProducerPublicKeys(producers []*payload.ProducerInfo) [][]byte {
 	var publicKeys [][]byte
 	for _, p := range producers {
 		publicKeys = append(publicKeys, p.PublicKey)
@@ -537,23 +537,22 @@ func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
 
 func CheckTransactionPayload(txn *Transaction) error {
 	switch pld := txn.Payload.(type) {
-	case *PayloadRegisterAsset:
-		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
+	case *payload.PayloadRegisterAsset:
+		if pld.Asset.Precision < payload.MinPrecision || pld.Asset.Precision > payload.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
 		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
-	case *PayloadTransferAsset:
-	case *PayloadRecord:
-	case *PayloadCoinBase:
-	case *PayloadSideChainPow:
-	case *PayloadWithdrawFromSideChain:
-	case *PayloadTransferCrossChainAsset:
-	case *PayloadRegisterProducer:
-	case *PayloadCancelProducer:
-	case *PayloadUpdateProducer:
-	case *PayloadReturnDepositCoin:
+	case *payload.PayloadTransferAsset:
+	case *payload.PayloadRecord:
+	case *payload.PayloadCoinBase:
+	case *payload.PayloadSideChainPow:
+	case *payload.PayloadWithdrawFromSideChain:
+	case *payload.PayloadTransferCrossChainAsset:
+	case *payload.ProducerInfo:
+	case *payload.PayloadCancelProducer:
+	case *payload.PayloadReturnDepositCoin:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -563,7 +562,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 //validate the transaction of duplicate sidechain transaction
 func CheckDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
-		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+		witPayload := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
 		existingHashs := make(map[common.Uint256]struct{})
 		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
@@ -576,7 +575,7 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 }
 
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
-	payloadSideChainPow, ok := txn.Payload.(*PayloadSideChainPow)
+	payloadSideChainPow, ok := txn.Payload.(*payload.PayloadSideChainPow)
 	if !ok {
 		return errors.New("Side mining transaction has invalid payload")
 	}
@@ -587,7 +586,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	}
 
 	buf := new(bytes.Buffer)
-	err = payloadSideChainPow.Serialize(buf, SideChainPowPayloadVersion)
+	err = payloadSideChainPow.Serialize(buf, payload.SideChainPowPayloadVersion)
 	if err != nil {
 		return err
 	}
@@ -601,7 +600,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 }
 
 func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
-	witPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
+	witPayload, ok := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
 	}
@@ -621,7 +620,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Inp
 }
 
 func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
-	payloadObj, ok := txn.Payload.(*PayloadTransferCrossChainAsset)
+	payloadObj, ok := txn.Payload.(*payload.PayloadTransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
 	}
@@ -681,55 +680,55 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 }
 
 func CheckRegisterProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadRegisterProducer)
+	info, ok := txn.Payload.(*payload.ProducerInfo)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
-	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.PublicKey)
+	height, err := DefaultLedger.Store.GetCancelProducerHeight(info.PublicKey)
 	if err == nil {
 		return fmt.Errorf("invalid producer, canceled at height: %d", height)
 	}
 
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(info.PublicKey)
 	if err != nil {
 		return errors.New("invalid public key")
 	}
-	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
 		return err
 	}
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.PublicKey, info.PublicKey) {
 			return errors.New("duplicated public key")
 		}
-		if p.NickName == payload.NickName {
+		if p.NickName == info.NickName {
 			return errors.New("duplicated nick name")
 		}
 	}
 
 	// check url
-	if err = checkStringField(payload.Url, "Url"); err != nil {
+	if err = checkStringField(info.Url, "Url"); err != nil {
 		return err
 	}
 
 	// check ip
-	if err = checkStringField(payload.Address, "IP"); err != nil {
+	if err = checkStringField(info.Address, "IP"); err != nil {
 		return err
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(info.PublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadRegisterProducerVersion)
+	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
@@ -755,29 +754,29 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 }
 
 func CheckCancelProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadCancelProducer)
+	cancelProducer, ok := txn.Payload.(*payload.PayloadCancelProducer)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(cancelProducer.PublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadCancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(signedBuf, payload.PayloadCancelProducerVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), cancelProducer.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
 
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.PublicKey, cancelProducer.PublicKey) {
 			return nil
 		}
 	}
@@ -785,37 +784,37 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 }
 
 func CheckUpdateProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadUpdateProducer)
+	info, ok := txn.Payload.(*payload.ProducerInfo)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
 	// check nick name
-	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(payload.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url"); err != nil {
 		return err
 	}
 
 	// check ip
-	if err := checkStringField(payload.Address, "Ip"); err != nil {
+	if err := checkStringField(info.Address, "Ip"); err != nil {
 		return err
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(info.PublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadUpdateProducerVersion)
+	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
@@ -825,9 +824,9 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	hasProducer := false
 	keepNickName := false
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.PublicKey, info.PublicKey) {
 			hasProducer = true
-			keepNickName = p.NickName == payload.NickName
+			keepNickName = p.NickName == info.NickName
 			break
 		}
 	}
@@ -837,7 +836,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 
 	if !keepNickName {
 		for _, p := range producers {
-			if p.NickName == payload.NickName {
+			if p.NickName == info.NickName {
 				return errors.New("duplicated nick name")
 			}
 		}

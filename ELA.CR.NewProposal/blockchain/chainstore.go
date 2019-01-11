@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 type ProducerState byte
 
 type ProducerInfo struct {
-	Payload   *PayloadRegisterProducer
+	Payload   *payload.ProducerInfo
 	RegHeight uint32
 	Vote      Fixed64
 }
@@ -61,7 +61,7 @@ type ChainStore struct {
 	producerVotes    map[string]*ProducerInfo // key: public key
 	producerAddress  map[string]string        // key: address  value: public key
 	dirty            map[outputpayload.VoteType]bool
-	orderedProducers []*PayloadRegisterProducer
+	orderedProducers []*payload.ProducerInfo
 }
 
 func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
@@ -78,7 +78,7 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		producerVotes:      make(map[string]*ProducerInfo),
 		producerAddress:    make(map[string]string),
 		dirty:              make(map[outputpayload.VoteType]bool),
-		orderedProducers:   make([]*PayloadRegisterProducer, 0),
+		orderedProducers:   make([]*payload.ProducerInfo, 0),
 	}
 
 	go s.taskHandler()
@@ -131,11 +131,11 @@ func (c *ChainStore) initProducerVotes() error {
 		return err
 	}
 	for _, pk := range publicKeys {
-		height, payload, err := c.getProducerInfo(pk)
+		height, pld, err := c.getProducerInfo(pk)
 		if err != nil {
 			return err
 		}
-		p, ok := payload.(*PayloadRegisterProducer)
+		p, ok := pld.(*payload.ProducerInfo)
 		if !ok {
 			return errors.New("invalid register producer payload")
 		}
@@ -333,7 +333,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
+func (c *ChainStore) PersistAsset(assetID Uint256, asset payload.Asset) error {
 	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
@@ -354,8 +354,8 @@ func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	return nil
 }
 
-func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	asset := new(Asset)
+func (c *ChainStore) GetAsset(hash Uint256) (*payload.Asset, error) {
+	asset := new(payload.Asset)
 	prefix := []byte{byte(STInfo)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
@@ -811,8 +811,8 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	return nil
 }
 
-func (c *ChainStore) GetAssets() map[Uint256]*Asset {
-	assets := make(map[Uint256]*Asset)
+func (c *ChainStore) GetAssets() map[Uint256]*payload.Asset {
+	assets := make(map[Uint256]*payload.Asset)
 
 	iter := c.NewIterator([]byte{byte(STInfo)})
 	for iter.Next() {
@@ -824,7 +824,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		assetid.Deserialize(rk)
 		log.Debugf("[GetAssets] assetid: %x", assetid.Bytes())
 
-		asset := new(Asset)
+		asset := new(payload.Asset)
 		r := bytes.NewReader(iter.Value())
 		asset.Deserialize(r)
 
