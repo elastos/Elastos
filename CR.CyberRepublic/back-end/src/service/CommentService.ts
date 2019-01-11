@@ -96,7 +96,7 @@ export default class extends Base {
             .populate('createdBy')
 
         if (commentable) {
-            if (_.map(commentable.subscribers, (sub) => sub._id.toString()).includes(this.currentUser._id.toString())) {
+            if (_.map(commentable.subscribers, (sub) => sub.user.toString()).includes(this.currentUser._id.toString())) {
                 return
             }
 
