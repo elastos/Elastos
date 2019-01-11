@@ -25,16 +25,13 @@ module.exports = async function(json_data, res) {
                 txlog["crosschainassets"] = new Array();
             }
 
-            let crosschainamount = (log["returnValues"]["_amount"]- costamount) / 1e18;
-            let outputamount = log["returnValues"]["_amount"] / 1e18;
+            let crosschainamount = String((log["returnValues"]["_amount"]- costamount) / 1e18);
+            let outputamount = String(log["returnValues"]["_amount"] / 1e18);
 
-            if (crosschainamount.toString().split(".")[1].length > 8){
-                crosschainamount = String(Math.round(crosschainamount * 1e8) / 1e8)
-            }
 
-            if (outputamount.toString().split(".")[1].length > 8){
-                outputamount = String(Math.round(outputamount * 1e8) / 1e8)
-            }
+            crosschainamount = crosschainamount.substring(0,crosschainamount.lastIndexOf('.')+9);
+            outputamount = outputamount.substring(0,outputamount.lastIndexOf('.')+9);
+
 
             txlog["crosschainassets"].push({
                 "crosschainaddress": log["returnValues"]["_addr"],
