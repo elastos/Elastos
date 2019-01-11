@@ -16,7 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/elanet"
 	. "github.com/elastos/Elastos.ELA/errors"
@@ -409,7 +409,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
-		MinerInfo:         string(block.Transactions[0].Payload.(*PayloadCoinBase).CoinbaseData[:]),
+		MinerInfo:         string(block.Transactions[0].Payload.(*payload.PayloadCoinBase).CoinbaseData[:]),
 	}
 }
 
@@ -1056,24 +1056,24 @@ func GetFeeRate(count int, confirm int) int {
 
 func getPayloadInfo(p Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *PayloadCoinBase:
+	case *payload.PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *PayloadRegisterAsset:
+	case *payload.PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = common.BytesToHexString(common.BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideChainPow:
+	case *payload.PayloadSideChainPow:
 		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
 		obj.SideGenesisHash = object.SideGenesisHash.String()
 		obj.SignedData = common.BytesToHexString(object.SignedData)
 		return obj
-	case *PayloadWithdrawFromSideChain:
+	case *payload.PayloadWithdrawFromSideChain:
 		obj := new(WithdrawFromSideChainInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.GenesisBlockAddress = object.GenesisBlockAddress
@@ -1081,16 +1081,16 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.SideChainTransactionHashes = append(obj.SideChainTransactionHashes, hash.String())
 		}
 		return obj
-	case *PayloadTransferCrossChainAsset:
+	case *payload.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.CrossChainAddresses = object.CrossChainAddresses
 		obj.OutputIndexes = object.OutputIndexes
 		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
-	case *PayloadTransferAsset:
-	case *PayloadRecord:
-	case *PayloadRegisterProducer:
-		obj := new(RegisterProducerInfo)
+	case *payload.PayloadTransferAsset:
+	case *payload.PayloadRecord:
+	case *payload.ProducerInfo:
+		obj := new(ProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
@@ -1098,20 +1098,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Address = object.Address
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
-	case *PayloadCancelProducer:
+	case *payload.PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
 		obj.PublicKey = common.BytesToHexString(object.PublicKey)
-		obj.Signature = common.BytesToHexString(object.Signature)
-		return obj
-	case *PayloadUpdateProducer:
-		obj := &UpdateProducerInfo{
-			new(RegisterProducerInfo),
-		}
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
-		obj.NickName = object.NickName
-		obj.Url = object.Url
-		obj.Location = object.Location
-		obj.Address = object.Address
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 var FoundationAddress Uint168
@@ -30,7 +30,7 @@ func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 //Note: the later version will support the mutiLedger.So this func mybe expired later.
 
 //Get the Asset from store.
-func (l *Ledger) GetAsset(assetID Uint256) (*Asset, error) {
+func (l *Ledger) GetAsset(assetID Uint256) (*payload.Asset, error) {
 	asset, err := l.Store.GetAsset(assetID)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetAsset failed with assetID =" + assetID.String())

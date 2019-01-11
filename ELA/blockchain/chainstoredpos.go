@@ -7,16 +7,16 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
+func (c *ChainStore) GetRegisteredProducers() []*payload.ProducerInfo {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	illProducers := c.getIllegalProducers()
 
-	result := make([]*PayloadRegisterProducer, 0)
+	result := make([]*payload.ProducerInfo, 0)
 
 	for _, p := range c.producerVotes {
 		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
@@ -28,13 +28,13 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	return result
 }
 
-func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
+func (c *ChainStore) GetActiveRegisteredProducers() []*payload.ProducerInfo {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	illProducers := c.getIllegalProducers()
 
-	result := make([]*PayloadRegisterProducer, 0)
+	result := make([]*payload.ProducerInfo, 0)
 
 	for _, p := range c.producerVotes {
 		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
@@ -49,7 +49,7 @@ func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
 	return result
 }
 
-func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer, error) {
+func (c *ChainStore) GetRegisteredProducersSorted() ([]*payload.ProducerInfo, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -71,7 +71,7 @@ func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer,
 			return ivalue > jvalue
 		})
 
-		producers := make([]*PayloadRegisterProducer, 0)
+		producers := make([]*payload.ProducerInfo, 0)
 		illProducers := c.getIllegalProducers()
 		for _, p := range producersInfo {
 			if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {

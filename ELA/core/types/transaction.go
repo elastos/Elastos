@@ -402,11 +402,11 @@ func GetPayload(txType TxType) (Payload, error) {
 	case TransferCrossChainAsset:
 		p = new(PayloadTransferCrossChainAsset)
 	case RegisterProducer:
-		p = new(PayloadRegisterProducer)
+		p = new(ProducerInfo)
 	case CancelProducer:
 		p = new(PayloadCancelProducer)
 	case UpdateProducer:
-		p = new(PayloadUpdateProducer)
+		p = new(ProducerInfo)
 	case ReturnDepositCoin:
 		p = new(PayloadReturnDepositCoin)
 	case IllegalProposalEvidence:

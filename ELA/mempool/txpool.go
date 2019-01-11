@@ -167,14 +167,14 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				// delete producer
 				var producerPubKey string
 				if tx.TxType == RegisterProducer {
-					payload, ok := tx.Payload.(*PayloadRegisterProducer)
+					payload, ok := tx.Payload.(*ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
 					producerPubKey = BytesToHexString(payload.PublicKey)
 				}
 				if tx.TxType == UpdateProducer {
-					payload, ok := tx.Payload.(*PayloadUpdateProducer)
+					payload, ok := tx.Payload.(*ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
@@ -217,7 +217,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrSidechainTxDuplicate
 		}
 	} else if txn.IsRegisterProducerTx() {
-		payload, ok := txn.Payload.(*PayloadRegisterProducer)
+		payload, ok := txn.Payload.(*ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 		}
@@ -226,7 +226,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrProducerProcessing
 		}
 	} else if txn.IsUpdateProducerTx() {
-		payload, ok := txn.Payload.(*PayloadUpdateProducer)
+		payload, ok := txn.Payload.(*ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 		}

@@ -134,7 +134,7 @@ func newUpdateProducer(L *lua.LState) int {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
 	}
-	updateProducer := &payload.PayloadUpdateProducer{
+	updateProducer := &payload.ProducerInfo{
 		PublicKey: []byte(publicKey),
 		NickName:  nickName,
 		Url:       url,
@@ -143,7 +143,7 @@ func newUpdateProducer(L *lua.LState) int {
 	}
 
 	upSignBuf := new(bytes.Buffer)
-	err = updateProducer.SerializeUnsigned(upSignBuf, payload.PayloadUpdateProducerVersion)
+	err = updateProducer.SerializeUnsigned(upSignBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -168,12 +168,12 @@ func newUpdateProducer(L *lua.LState) int {
 	return 1
 }
 
-func checkUpdateProducer(L *lua.LState, idx int) *payload.PayloadUpdateProducer {
+func checkUpdateProducer(L *lua.LState, idx int) *payload.ProducerInfo {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadUpdateProducer); ok {
+	if v, ok := ud.Value.(*payload.ProducerInfo); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadUpdateProducer expected")
+	L.ArgError(1, "ProducerInfo expected")
 	return nil
 }
 
@@ -213,7 +213,7 @@ func newRegisterProducer(L *lua.LState) int {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
 	}
-	registerProducer := &payload.PayloadRegisterProducer{
+	registerProducer := &payload.ProducerInfo{
 		PublicKey: []byte(publicKey),
 		NickName:  nickName,
 		Url:       url,
@@ -222,7 +222,7 @@ func newRegisterProducer(L *lua.LState) int {
 	}
 
 	rpSignBuf := new(bytes.Buffer)
-	err = registerProducer.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err = registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -247,14 +247,14 @@ func newRegisterProducer(L *lua.LState) int {
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *PayloadRegisterProducer and
-// returns this *PayloadRegisterProducer.
-func checkRegisterProducer(L *lua.LState, idx int) *payload.PayloadRegisterProducer {
+// Checks whether the first lua argument is a *LUserData with *ProducerInfo and
+// returns this *ProducerInfo.
+func checkRegisterProducer(L *lua.LState, idx int) *payload.ProducerInfo {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadRegisterProducer); ok {
+	if v, ok := ud.Value.(*payload.ProducerInfo); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadRegisterProducer expected")
+	L.ArgError(1, "ProducerInfo expected")
 	return nil
 }
 
