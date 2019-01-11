@@ -8,7 +8,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -124,40 +123,7 @@ func (c *ChainStore) loop() {
 }
 
 func (c *ChainStore) InitProducerVotes() error {
-	publicKeys, err := c.getRegisteredProducers()
-	if err != nil {
-		return err
-	}
-	for _, pk := range publicKeys {
-		height, payload, err := c.getProducerInfo(pk)
-		if err != nil {
-			return err
-		}
-		p, ok := payload.(*PayloadRegisterProducer)
-		if !ok {
-			return errors.New("invalid register producer payload")
-		}
-
-		vote, _ := c.getVoteByPublicKey(outputpayload.Delegate, pk)
-		c.producerVotes[BytesToHexString(pk)] = &ProducerInfo{
-			Payload:   p,
-			RegHeight: height,
-			Vote:      vote,
-		}
-		programHash, err := contract.PublicKeyToStandardProgramHash(pk)
-		if err != nil {
-			return err
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return err
-		}
-		c.producerAddress[addr] = BytesToHexString(pk)
-		for _, t := range outputpayload.VoteTypes {
-			c.dirty[t] = true
-		}
-	}
-	return nil
+	return c.reloadProducersFromChainForMempool()
 }
 
 func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {

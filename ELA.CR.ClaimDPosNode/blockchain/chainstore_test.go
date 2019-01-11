@@ -157,7 +157,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		t.Error("persistRegisterProducer failed:", err.Error())
 	}
 	testChainStore.BatchCommit()
-	if err = testChainStore.persistRegisterProducerForMempool(payload1); err != nil {
+	if err = testChainStore.persistRegisterProducerForMempool(payload1, 1); err != nil {
 		t.Error("persistRegisterProducerForMempool failed:", err.Error())
 	}
 
@@ -166,7 +166,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 		t.Error("persistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
-	if err := testChainStore.persistRegisterProducerForMempool(payload2); err != nil {
+	if err := testChainStore.persistRegisterProducerForMempool(payload2, 2); err != nil {
 		t.Error("persistRegisterProducerForMempool failed")
 	}
 
@@ -538,7 +538,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 		t.Error("persistRegisterProducer failed")
 	}
 	testChainStore.BatchCommit()
-	if err := testChainStore.persistRegisterProducerForMempool(payload2); err != nil {
+	if err := testChainStore.persistRegisterProducerForMempool(payload2, 2); err != nil {
 		t.Error("persistRegisterProducerForMempool failed")
 	}
 
