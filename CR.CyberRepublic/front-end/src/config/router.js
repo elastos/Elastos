@@ -47,9 +47,13 @@ import ProfileSubmissionsPage from '@/module/page/profile/submissions/Container'
 import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
 import ProfileCommunitiesPage from '@/module/page/profile/communities/Container'
 import ProfileSubmissionDetailPage from '@/module/page/profile/submission_detail/Container'
+import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Container'
 
 import MemberPage from '@/module/page/member/Container'
 
+// admin pages
+import TeamListPage from '../module/page/admin/teams/TeamListPage';
+import AdminSuggestionPage from '../module/page/admin/suggestion/list/Container';
 import AdminUsersPage from '@/module/page/admin/users/Container'
 import AdminProfileDetailPage from '@/module/page/admin/profile_detail/Container'
 import AdminFormsPage from '@/module/page/admin/forms/Container'
@@ -71,10 +75,6 @@ import FormAnniversaryVideo from '@/module/page/form_ext/anni2018_video/Containe
 // external forms
 import FormTraining1Page from '@/module/page/form_ext/training_1/Container'
 
-
-// admin team page
-import TeamListPage from '../module/page/admin/teams/TeamListPage';
-
 // council
 import CouncilSecretariatPage from '../module/page/council_secretariat/Container';
 import CouncilPage from '../module/page/council/Container';
@@ -84,6 +84,11 @@ import CouncilDetailPage from '../module/page/council/detail/Container';
 import CVoteCreatePage from '@/module/page/CVote/create/Container';
 import CVoteListPage from '@/module/page/CVote/list/Container';
 import CVoteEditPage from '@/module/page/CVote/edit/Container';
+
+// suggestion
+import SuggestionListPage from '@/module/page/suggestion/list/Container'
+import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
+
 
 import NotFound from '@/module/page/error/NotFound'
 
@@ -231,6 +236,19 @@ export default [
         page: TermsPage
     },
     /*
+     ********************************************************************************
+     * Suggestion page
+     ********************************************************************************
+     */
+    {
+        path: '/suggestion',
+        page: SuggestionListPage
+    }, {
+        path: '/suggestion/:id',
+        page: SuggestionDetailPage
+    },
+
+    /*
     ********************************************************************************
     * Profile page
     ********************************************************************************
@@ -298,6 +316,10 @@ export default [
     {
         path: '/crcles-detail/:circleId',
         page: CircleDetailPage
+    },
+    {
+        path: '/profile/suggestion',
+        page: ProfileSuggestionListPage
     },
     /*
     ********************************************************************************
@@ -367,6 +389,10 @@ export default [
     {
         path: '/admin/community/:community/country/:country/region/:region',
         page: CommunityDetailPage
+    },
+    {
+        path: '/admin/suggestion',
+        page: AdminSuggestionPage
     },
     /*
     ********************************************************************************

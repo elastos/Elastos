@@ -14,7 +14,9 @@ services:
     container_name: ebp-backend
     image: ebp-backend
     build: .
-    command: npm run start:staging
+    command: >
+      sh -c "npm install &&
+             npm run start:staging"
     volumes:
       - ./index.ts:/app/index.ts
       - ./src:/app/src

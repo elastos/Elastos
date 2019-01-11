@@ -30,6 +30,7 @@ const en = {
     '0109': 'Submissions',
     '0110': 'Blog',
     'navigation.programs': 'Programs',
+    'navagation.suggestion': 'Suggestions',
 
     '0200': 'Profile',
     '0201': 'Login',
@@ -64,6 +65,7 @@ const en = {
     '1304': 'Issues',
     '1305': 'Forms',
     '1306': 'Projects',
+    'admin.suggestion': 'Suggestions',
 
     // Profile navigator
     '2300': 'My Profile',
@@ -73,6 +75,7 @@ const en = {
     '2304': 'My Communities',
     '2305': 'My Projects',
     '2306': 'Communities',
+    'profile.suggestion': 'My Suggestions',
 
     'login.success': 'Login Successful',
 
@@ -103,6 +106,16 @@ const en = {
     'home.organizers.action_2': 'View Events & Tasks I can contribute to',
     'home.summary_1': 'We are a diverse democratic group of leaders, developers, organizers and designers',
     'home.summary_2': 'formed to promote Elastos in our communities. Membership is open to everyone.',
+    'home.box_1.title': "What is CR?",
+    'home.box_1.description': "Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss...",
+    'home.box_2.title': "What is CRC?",
+    'home.box_2.description': "CRC is Cyber Republic Consensus.",
+    'home.box_3.title': "Constitution",
+    'home.box_3.description': "CR is a DAO, anyone from anywhere can build it together.",
+    'home.explanation_1.part_1': 'Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss, alongside other like-minded individuals doing fulfilling, impactful work which is composed of self-selected tasks.',
+    'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
+    'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
+    'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
 
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',
@@ -193,6 +206,46 @@ const en = {
     'user.edit.form.section.social': 'Social',
     'user.follow': 'Follow',
     'user.unfollow': 'Unfollow',
+
+    // suggestion
+    'suggestion.nodata': 'No Data',
+    'suggestion.befirst': 'Be the first one to create a suggestion',
+    'suggestion.subject': 'Subject',
+    'suggestion.title': 'Suggestions',
+    'suggestion.add': 'Add a Suggestion',
+    'suggestion.sort': 'Sort by',
+    'suggestion.likes': 'Likes',
+    'suggestion.views': 'Views',
+    'suggestion.activeness': 'Activeness',
+    'suggestion.owner': 'Owner',
+    'suggestion.dateAdded': 'Date Added',
+    'suggestion.postedBy': 'Posted By',
+    'suggestion.follow': 'Follow',
+    'suggestion.reportAbuse': 'Report Abuse',
+    'suggestion.translate': 'Translate in English',
+    'suggestion.councilMember': 'Council Member',
+    'suggestion.copy': 'COPY',
+    'suggestion.back': 'Back',
+    'suggestion.viewAll': 'View All',
+    'suggestion.mySuggestions': 'My Suggestions',
+    'suggestion.all': 'All',
+    'suggestion.addedByMe': 'Added by me',
+    'suggestion.commentedByMe': 'Commented by me',
+    'suggestion.subscribed': 'Followed',
+    'suggestion.followed': 'Followed',
+    'suggestion.summary': 'Summary',
+    'suggestion.dislikes': 'Dislikes',
+    'suggestion.comments': 'Comments',
+    'suggestion.created': 'Created',
+    'suggestion.archived': 'Archived',
+    'suggestion.search': 'Search',
+    'suggestion.cancel': 'Cancel',
+    'suggestion.submit': 'Submit',
+    // suggestion error
+    'suggestion.create.error.titleRequired': 'Suggestion title is required',
+    'suggestion.create.error.descriptionRequired': 'Suggestion description is required',
+    'suggestion.create.error.titleTooShort': 'Suggestion title is too short',
+    'suggestion.create.error.descriptionTooShort': 'Suggestion description is too short',
 
     // Developer
     'developer.breadcrumb.developers': 'Community',

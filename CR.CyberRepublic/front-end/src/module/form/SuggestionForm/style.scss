@@ -1,0 +1,27 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.c_SuggestionForm {
+  .title {
+    font-size: 42px;
+    margin-bottom: 30px;
+  }
+  @media only screen and (min-width: 576px) {
+    .ant-col-sm-12 {
+      width: 100%;
+    }
+  }
+  .ql-toolbar.ql-snow {
+    text-align: left;
+  }
+  .form-title #title {
+    border-radius: 0;
+  }
+  .form-desc {
+    background: white;
+  }
+  .form-actions {}
+  .ant-btn.cr-btn-primary {
+    margin-left: 10px;
+  }
+}

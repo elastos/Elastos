@@ -27,9 +27,14 @@ module.exports = merge(common, {
                 use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'],
             },
             {
-                test: /\.(eot|svg|ttf|woff|woff2)$/,
+                test: /\.svg$/,
                 exclude: /node_modules/,
-                use: ['url-loader'],
+                use: ['@svgr/webpack', 'url-loader']
+            },
+            {
+                test: /\.(eot|ttf|woff|woff2)$/,
+                exclude: /node_modules/,
+                use: 'url-loader'
             },
             {
                 test: /\.js$/,

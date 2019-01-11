@@ -1,0 +1,61 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.p_SuggestionList {
+  margin-left: 108px;
+  margin-top: 50px;
+  margin-bottom: 80px;
+  .title {
+    font-size: 96px;
+  }
+  .header-actions-container {
+    margin-bottom: 40px;
+  }
+  .ant-btn {
+    border: 0;
+    border-radius: 0;
+  }
+  .btn-create-suggestion .ant-btn {
+    background: $cr_btn_primary;
+    color: white;
+    cursor: pointer;
+  }
+  .ant-btn-group .ant-btn.selected {
+    border: 0;
+    color: black;
+    border-bottom: 9px solid $cr_primary_highlight;
+  }
+  .ant-btn-group > .ant-btn:first-child:not(:last-child), .ant-btn-group > span:first-child:not(:last-child) > .ant-btn {
+    border-radius: 0;
+  }
+  .list-container {
+    margin-bottom: 40px;
+  }
+  .item-container {
+    padding: 30px 0;
+    &:not(:last-child) {
+      border-bottom: 1px solid #E5E5E5;
+    }
+  }
+  .title-link {
+    font-size: 20px;
+    color: rgba(0, 0, 0, 0.65);
+    transition: all 0.3s;
+    text-decoration: none;
+    margin-top: 8px;
+    margin-bottom: 30px;
+    display: block;
+    &:hover {
+      color: $link_color;
+    }
+  }
+  .cr-pagination {
+    text-align: center;
+  }
+}
+
+.cr-icon-group {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
