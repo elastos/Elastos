@@ -537,22 +537,22 @@ func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
 
 func CheckTransactionPayload(txn *Transaction) error {
 	switch pld := txn.Payload.(type) {
-	case *payload.PayloadRegisterAsset:
+	case *payload.RegisterAsset:
 		if pld.Asset.Precision < payload.MinPrecision || pld.Asset.Precision > payload.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
 		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
-	case *payload.PayloadTransferAsset:
-	case *payload.PayloadRecord:
-	case *payload.PayloadCoinBase:
-	case *payload.PayloadSideChainPow:
-	case *payload.PayloadWithdrawFromSideChain:
-	case *payload.PayloadTransferCrossChainAsset:
+	case *payload.TransferAsset:
+	case *payload.Record:
+	case *payload.CoinBase:
+	case *payload.SideChainPow:
+	case *payload.WithdrawFromSideChain:
+	case *payload.TransferCrossChainAsset:
 	case *payload.ProducerInfo:
-	case *payload.PayloadCancelProducer:
-	case *payload.PayloadReturnDepositCoin:
+	case *payload.CancelProducer:
+	case *payload.ReturnDepositCoin:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -562,7 +562,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 //validate the transaction of duplicate sidechain transaction
 func CheckDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
-		witPayload := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
+		witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 		existingHashs := make(map[common.Uint256]struct{})
 		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
@@ -575,7 +575,7 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 }
 
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
-	payloadSideChainPow, ok := txn.Payload.(*payload.PayloadSideChainPow)
+	payloadSideChainPow, ok := txn.Payload.(*payload.SideChainPow)
 	if !ok {
 		return errors.New("Side mining transaction has invalid payload")
 	}
@@ -586,7 +586,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	}
 
 	buf := new(bytes.Buffer)
-	err = payloadSideChainPow.Serialize(buf, payload.SideChainPowPayloadVersion)
+	err = payloadSideChainPow.Serialize(buf, payload.SideChainPowVersion)
 	if err != nil {
 		return err
 	}
@@ -600,7 +600,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 }
 
 func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
-	witPayload, ok := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
+	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
 	}
@@ -620,7 +620,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Inp
 }
 
 func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
-	payloadObj, ok := txn.Payload.(*payload.PayloadTransferCrossChainAsset)
+	payloadObj, ok := txn.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
 	}
@@ -754,7 +754,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 }
 
 func CheckCancelProducerTransaction(txn *Transaction) error {
-	cancelProducer, ok := txn.Payload.(*payload.PayloadCancelProducer)
+	cancelProducer, ok := txn.Payload.(*payload.CancelProducer)
 	if !ok {
 		return errors.New("invalid payload")
 	}
@@ -765,7 +765,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(signedBuf, payload.PayloadCancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(signedBuf, payload.CancelProducerVersion)
 	if err != nil {
 		return err
 	}

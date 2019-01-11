@@ -8,7 +8,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const (
@@ -388,27 +388,27 @@ func GetPayload(txType TxType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:
-		p = new(PayloadCoinBase)
+		p = new(payload.CoinBase)
 	case RegisterAsset:
-		p = new(PayloadRegisterAsset)
+		p = new(payload.RegisterAsset)
 	case TransferAsset:
-		p = new(PayloadTransferAsset)
+		p = new(payload.TransferAsset)
 	case Record:
-		p = new(PayloadRecord)
+		p = new(payload.Record)
 	case SideChainPow:
-		p = new(PayloadSideChainPow)
+		p = new(payload.SideChainPow)
 	case WithdrawFromSideChain:
-		p = new(PayloadWithdrawFromSideChain)
+		p = new(payload.WithdrawFromSideChain)
 	case TransferCrossChainAsset:
-		p = new(PayloadTransferCrossChainAsset)
+		p = new(payload.TransferCrossChainAsset)
 	case RegisterProducer:
-		p = new(ProducerInfo)
+		p = new(payload.ProducerInfo)
 	case CancelProducer:
-		p = new(PayloadCancelProducer)
+		p = new(payload.CancelProducer)
 	case UpdateProducer:
-		p = new(ProducerInfo)
+		p = new(payload.ProducerInfo)
 	case ReturnDepositCoin:
-		p = new(PayloadReturnDepositCoin)
+		p = new(payload.ReturnDepositCoin)
 	case IllegalProposalEvidence:
 		p = new(PayloadIllegalProposal)
 	case IllegalVoteEvidence:

@@ -8,13 +8,13 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type PayloadTransferCrossChainAsset struct {
+type TransferCrossChainAsset struct {
 	CrossChainAddresses []string
 	OutputIndexes       []uint64
 	CrossChainAmounts   []common.Fixed64
 }
 
-func (a *PayloadTransferCrossChainAsset) Data(version byte) []byte {
+func (a *TransferCrossChainAsset) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := a.Serialize(buf, version); err != nil {
 		return []byte{0}
@@ -23,13 +23,13 @@ func (a *PayloadTransferCrossChainAsset) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (a *PayloadTransferCrossChainAsset) Serialize(w io.Writer, version byte) error {
+func (a *TransferCrossChainAsset) Serialize(w io.Writer, version byte) error {
 	if len(a.CrossChainAddresses) != len(a.OutputIndexes) || len(a.OutputIndexes) != len(a.CrossChainAmounts) {
 		return errors.New("Invalid cross chain asset")
 	}
 
 	if err := common.WriteVarUint(w, uint64(len(a.CrossChainAddresses))); err != nil {
-		return errors.New("PayloadTransferCrossChainAsset length serialize failed")
+		return errors.New("TransferCrossChainAsset length serialize failed")
 	}
 
 	for i := 0; i < len(a.CrossChainAddresses); i++ {
@@ -50,10 +50,10 @@ func (a *PayloadTransferCrossChainAsset) Serialize(w io.Writer, version byte) er
 	return nil
 }
 
-func (a *PayloadTransferCrossChainAsset) Deserialize(r io.Reader, version byte) error {
+func (a *TransferCrossChainAsset) Deserialize(r io.Reader, version byte) error {
 	length, err := common.ReadVarUint(r, 0)
 	if err != nil {
-		return errors.New("PayloadTransferCrossChainAsset length deserialize failed")
+		return errors.New("TransferCrossChainAsset length deserialize failed")
 	}
 
 	for i := uint64(0); i < length; i++ {
