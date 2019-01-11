@@ -30,7 +30,7 @@ export default createContainer(Component, (state) => {
                 submissionState.subscribed_submissions.push(submission)
             }
 
-            if (submission.createdBy._id === state.user.current_user_id) {
+            if (_.get(submission, 'createdBy._id') === state.user.current_user_id) {
                 submissionState.owned_submissions.push(submission)
             }
         }
