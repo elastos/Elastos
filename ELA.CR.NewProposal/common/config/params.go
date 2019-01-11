@@ -81,6 +81,12 @@ var MainNetParams = Params{
 	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
+	HeightVersions: []uint32{
+		0,
+		88812,
+		1008812, //fixme edit height later
+		1108812, //fixme edit height later
+	},
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -117,6 +123,12 @@ var TestNetParams = Params{
 	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
+	HeightVersions: []uint32{
+		0,
+		0,
+		1008812, //fixme edit height later
+		1108812, //fixme edit height later
+	},
 }
 
 // RegNetParams defines the network parameters for the regression test network.
@@ -132,6 +144,12 @@ var RegNetParams = Params{
 	RewardPerBlock:     rewardPerBlock(1 * time.Second),
 	CoinbaseMaturity:   100,
 	MinTransactionFee:  100,
+	HeightVersions: []uint32{
+		0,
+		0,
+		1008812, //fixme edit height later
+		1108812, //fixme edit height later
+	},
 }
 
 // CRCArbitratorParam defines parameters about arbitrators consensus and direct connection
@@ -205,6 +223,9 @@ type Params struct {
 
 	// MinTransactionFee defines the minimum fee of a transaction.
 	MinTransactionFee int64
+
+	// Define height versions about block chain
+	HeightVersions []uint32
 }
 
 func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {

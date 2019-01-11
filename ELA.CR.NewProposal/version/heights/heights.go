@@ -12,13 +12,6 @@ import (
 	"github.com/elastos/Elastos.ELA/version/txs"
 )
 
-const (
-	GenesisHeightVersion = uint32(0)
-	HeightVersion1       = uint32(88812)
-	HeightVersion2       = uint32(1008812) //fixme edit height later
-	HeightVersion3       = uint32(1108812)
-)
-
 type TxCheckMethod func(txs.TxVersion) error
 type BlockCheckMethod func(blocks.BlockVersion) (bool, bool, error)
 type BlockConfirmCheckMethod func(blocks.BlockVersion) (bool, bool, error)
@@ -31,8 +24,9 @@ type VersionInfo struct {
 }
 
 type heightVersions struct {
-	versions      map[uint32]VersionInfo
-	sortedHeights []uint32
+	txVersionBoundary uint32
+	versions          map[uint32]VersionInfo
+	sortedHeights     []uint32
 }
 
 func (h *heightVersions) GetDefaultTxVersion(blockHeight uint32) byte {
@@ -149,7 +143,7 @@ func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx 
 	info := h.versions[heightKey]
 
 	txVersion := h.findTxVersion(blockHeight, &info, tx)
-	if txVersion == nil && blockHeight < HeightVersion2 {
+	if txVersion == nil && blockHeight < h.txVersionBoundary {
 		txVersion = info.CompatibleTxVersions[info.DefaultTxVersion]
 	}
 
@@ -203,10 +197,11 @@ func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
 	return h.sortedHeights[len(h.sortedHeights)-1]
 }
 
-func NewHeightVersions(versions map[uint32]VersionInfo) interfaces.HeightVersions {
+func NewHeightVersions(versions map[uint32]VersionInfo, txVersionBoundary uint32) interfaces.HeightVersions {
 	h := &heightVersions{
-		versions:      versions,
-		sortedHeights: []uint32{},
+		versions:          versions,
+		sortedHeights:     []uint32{},
+		txVersionBoundary: txVersionBoundary,
 	}
 
 	var sortedHeights sort.IntSlice
