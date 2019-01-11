@@ -33,7 +33,7 @@ module.exports = async function(json_data, res) {
             }
 
             if (outputamount.toString().split(".")[1].length > 8){
-                outputamount = String(Math.random(outputamount * 1e8) / 1e8)
+                outputamount = String(Math.round(outputamount * 1e8) / 1e8)
             }
 
             txlog["crosschainassets"].push({
