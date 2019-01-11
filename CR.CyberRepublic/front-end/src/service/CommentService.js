@@ -118,4 +118,20 @@ export default class extends BaseService {
 
         return rs
     }
+    async subscribeWithoutRedux(type, id) {
+        const rs = await api_request({
+            path: `/api/${type}/${id}/subscribe`,
+            method: 'post',
+            data: {}
+        })
+        return rs
+    }
+    async unsubscribeWithoutRedux(type, id) {
+        const rs = await api_request({
+            path: `/api/${type}/${id}/unsubscribe`,
+            method: 'post',
+            data: {}
+        })
+        return rs
+    }
 }
