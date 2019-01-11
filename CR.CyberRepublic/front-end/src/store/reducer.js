@@ -7,6 +7,7 @@ import team from './redux/team'
 import community from './redux/community'
 import member from './redux/member'
 import submission from './redux/submission'
+import suggestion from './redux/suggestion'
 import council from './redux/council'
 import language from './redux/language'
 
@@ -31,6 +32,7 @@ export default combineReducers({
     community: community.getReducer(),
     member: member.getReducer(),
     submission: submission.getReducer(),
+    suggestion: suggestion.getReducer(),
     council: council.getReducer(),
     language: language.getReducer()
 })
