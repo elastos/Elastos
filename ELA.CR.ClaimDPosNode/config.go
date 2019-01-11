@@ -80,6 +80,9 @@ func loadConfigParams() *config.ConfigParams {
 			activeNetParams.CRCArbiters = arbiters
 		}
 	}
+	if len(cfg.HeightVersions) > 0 {
+		activeNetParams.HeightVersions = cfg.HeightVersions
+	}
 
 	return &config.Parameters
 }
