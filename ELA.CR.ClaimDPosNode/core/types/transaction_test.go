@@ -219,7 +219,7 @@ func (s *transactionSuite) TestTransferCrossChainAsset_SerializeDeserialize() {
 
 func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(RegisterProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
-	txn.Payload = &payload.PayloadRegisterProducer{
+	txn.Payload = &payload.ProducerInfo{
 		PublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 		NickName:  strconv.FormatUint(rand.Uint64(), 10),
 		Url:       strconv.FormatUint(rand.Uint64(), 10),
@@ -235,8 +235,8 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 
-	p1 := txn.Payload.(*payload.PayloadRegisterProducer)
-	p2 := txn2.Payload.(*payload.PayloadRegisterProducer)
+	p1 := txn.Payload.(*payload.ProducerInfo)
+	p2 := txn2.Payload.(*payload.ProducerInfo)
 
 	s.True(bytes.Equal(p1.PublicKey, p2.PublicKey))
 	s.Equal(p1.NickName, p2.NickName)
@@ -267,7 +267,7 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 
 func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(UpdateProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
-	txn.Payload = &payload.PayloadUpdateProducer{
+	txn.Payload = &payload.ProducerInfo{
 		PublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 		NickName:  strconv.FormatUint(rand.Uint64(), 10),
 		Url:       strconv.FormatUint(rand.Uint64(), 10),
@@ -283,8 +283,8 @@ func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 
-	p1 := txn.Payload.(*payload.PayloadUpdateProducer)
-	p2 := txn2.Payload.(*payload.PayloadUpdateProducer)
+	p1 := txn.Payload.(*payload.ProducerInfo)
+	p2 := txn2.Payload.(*payload.ProducerInfo)
 
 	s.True(bytes.Equal(p1.PublicKey, p2.PublicKey))
 	s.Equal(p1.NickName, p2.NickName)

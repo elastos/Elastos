@@ -7,7 +7,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 // key: DATAHeader || block hash
@@ -312,31 +312,31 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			return err
 		}
 		if txn.TxType == RegisterAsset {
-			regPayload := txn.Payload.(*PayloadRegisterAsset)
+			regPayload := txn.Payload.(*payload.PayloadRegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
 		if txn.TxType == WithdrawFromSideChain {
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
 			}
 		}
 		if txn.TxType == RegisterProducer {
-			err := c.PersistRegisterProducer(txn.Payload.(*PayloadRegisterProducer))
+			err := c.PersistRegisterProducer(txn.Payload.(*payload.ProducerInfo))
 			if err != nil {
 				return err
 			}
 		}
 		if txn.TxType == CancelProducer {
-			err := c.PersistCancelProducer(txn.Payload.(*PayloadCancelProducer))
+			err := c.PersistCancelProducer(txn.Payload.(*payload.PayloadCancelProducer))
 			if err != nil {
 				return err
 			}
 		}
 		if txn.TxType == UpdateProducer {
-			if err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
+			if err := c.PersistUpdateProducer(txn.Payload.(*payload.ProducerInfo)); err != nil {
 				return err
 			}
 		}
@@ -398,7 +398,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 			}
 		}
 		if txn.TxType == WithdrawFromSideChain {
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				if err := c.RollbackSidechainTx(hash); err != nil {
 					return err
@@ -406,7 +406,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 			}
 		}
 		if txn.TxType == RegisterProducer {
-			regPayload := txn.Payload.(*PayloadRegisterProducer)
+			regPayload := txn.Payload.(*payload.ProducerInfo)
 			if err := c.RollbackRegisterProducer(regPayload); err != nil {
 				return err
 			}

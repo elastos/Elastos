@@ -126,7 +126,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	//privateKayStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	nickName1 := "nickname 1"
-	payload1 := &payload.PayloadRegisterProducer{
+	payload1 := &payload.ProducerInfo{
 		PublicKey: publicKey1,
 		NickName:  nickName1,
 		Url:       "http://www.test.com",
@@ -138,7 +138,7 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName2 := "nickname 2"
-	payload2 := &payload.PayloadRegisterProducer{
+	payload2 := &payload.ProducerInfo{
 		PublicKey: publicKey2,
 		NickName:  nickName2,
 		Url:       "http://www.test.com",
@@ -210,7 +210,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	//CheckRegisterProducerTransaction
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	txn.Payload = &payload.PayloadRegisterProducer{
+	txn.Payload = &payload.ProducerInfo{
 		PublicKey: publicKey1,
 		NickName:  "nickname 1",
 		Url:       "http://www.test.com",
@@ -233,8 +233,8 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err := CheckRegisterProducerTransaction(txn)
 	assert.EqualError(t, err, "duplicated public key")
 
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey3
-	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 1"
+	txn.Payload.(*payload.ProducerInfo).PublicKey = publicKey3
+	txn.Payload.(*payload.ProducerInfo).NickName = "nickname 1"
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr3),
 		Parameter: nil,
@@ -244,10 +244,10 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err = CheckRegisterProducerTransaction(txn)
 	assert.EqualError(t, err, "duplicated nick name")
 
-	rpPayload, _ := txn.Payload.(*payload.PayloadRegisterProducer)
+	rpPayload, _ := txn.Payload.(*payload.ProducerInfo)
 	rpPayload.NickName = "nickname 3"
 	rpSignBuf := new(bytes.Buffer)
-	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	assert.NoError(t, err)
 	rpSig, err := crypto.Sign(privateKey3, rpSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -258,7 +258,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	//CheckUpdateProducerTransaction
 	txn.TxType = types.UpdateProducer
-	txn.Payload = &payload.PayloadUpdateProducer{
+	txn.Payload = &payload.ProducerInfo{
 		PublicKey: publicKey3,
 		NickName:  "nickname 3",
 		Url:       "http://www.test.com",
@@ -282,11 +282,11 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err = CheckUpdateProducerTransaction(txn)
 	assert.EqualError(t, err, "invalid producer")
 
-	updatePayload, _ := txn.Payload.(*payload.PayloadUpdateProducer)
+	updatePayload, _ := txn.Payload.(*payload.ProducerInfo)
 	updatePayload.PublicKey = publicKey1
 	updatePayload.NickName = "nickname 1"
 	updateSignBuf := new(bytes.Buffer)
-	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	assert.NoError(t, err)
 	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -304,7 +304,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	updatePayload.NickName = "nickname 2"
 	updateSignBuf = new(bytes.Buffer)
-	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	assert.NoError(t, err)
 	updateSig, err = crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -316,7 +316,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	updatePayload.NickName = "nickname 3"
 	updateSignBuf = new(bytes.Buffer)
-	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	assert.NoError(t, err)
 	sig4, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -435,7 +435,7 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName1 := "nickname 1"
 	ip1 := "168.192.1.1"
-	payload1 := &payload.PayloadUpdateProducer{
+	payload1 := &payload.ProducerInfo{
 		PublicKey: publicKey2,
 		NickName:  nickName1,
 		Url:       "http://www.test.com",
@@ -525,7 +525,7 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	nickName2 := "nickname 2"
-	payload2 := &payload.PayloadRegisterProducer{
+	payload2 := &payload.ProducerInfo{
 		PublicKey: publicKey2,
 		NickName:  nickName2,
 		Url:       "http://www.test.com",

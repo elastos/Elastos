@@ -46,7 +46,7 @@ func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 
 	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = 5
 	chainStore := &blockchain.ChainStoreMock{
-		RegisterProducers: []*payload.PayloadRegisterProducer{
+		RegisterProducers: []*payload.ProducerInfo{
 			{
 				PublicKey: arbitrators[0],
 			},
@@ -70,7 +70,7 @@ func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 	s.Error(err, "arbitrators count does not match config value")
 
 	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
-		&payload.PayloadRegisterProducer{PublicKey: arbitrators[4]},
+		&payload.ProducerInfo{PublicKey: arbitrators[4]},
 	)
 	producers, err = s.Version.GetNormalArbitratorsDesc()
 	s.NoError(err)

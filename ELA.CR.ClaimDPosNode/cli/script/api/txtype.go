@@ -56,12 +56,10 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.PayloadTransferAsset)
 	case *payload.PayloadRecord:
 		pload, _ = ud.Value.(*payload.PayloadRecord)
-	case *payload.PayloadRegisterProducer:
-		pload, _ = ud.Value.(*payload.PayloadRegisterProducer)
+	case *payload.ProducerInfo:
+		pload, _ = ud.Value.(*payload.ProducerInfo)
 	case *payload.PayloadCancelProducer:
 		pload, _ = ud.Value.(*payload.PayloadCancelProducer)
-	case *payload.PayloadUpdateProducer:
-		pload, _ = ud.Value.(*payload.PayloadUpdateProducer)
 	case *payload.PayloadReturnDepositCoin:
 		pload, _ = ud.Value.(*payload.PayloadReturnDepositCoin)
 	default:

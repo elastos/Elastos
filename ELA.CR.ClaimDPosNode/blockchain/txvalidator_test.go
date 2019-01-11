@@ -410,7 +410,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	rpPayload := &payload.PayloadRegisterProducer{
+	rpPayload := &payload.ProducerInfo{
 		PublicKey: publicKey1,
 		NickName:  "nickname 1",
 		Url:       "http://www.elastos_test.com",
@@ -418,7 +418,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		Address:   "127.0.0.1:20338",
 	}
 	rpSignBuf := new(bytes.Buffer)
-	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	rpSig, err := crypto.Sign(privateKey1, rpSignBuf.Bytes())
 	s.NoError(err)
@@ -442,18 +442,18 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	s.NoError(err)
 
 	// Give an invalid public key in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = errPublicKey
+	txn.Payload.(*payload.ProducerInfo).PublicKey = errPublicKey
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid public key")
 
 	// Invalidates the signature in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey2
+	txn.Payload.(*payload.ProducerInfo).PublicKey = publicKey2
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
 	// Give an invalid url in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
-	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
+	txn.Payload.(*payload.ProducerInfo).PublicKey = publicKey1
+	txn.Payload.(*payload.ProducerInfo).Url = ""
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Field Url has invalid string length.")
 
@@ -461,7 +461,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	rpPayload.PublicKey = publicKey1
 	rpPayload.Url = "www.test.com"
 	rpSignBuf = new(bytes.Buffer)
-	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	rpSig, err = crypto.Sign(privateKey1, rpSignBuf.Bytes())
 	s.NoError(err)
@@ -596,7 +596,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	updatePayload := &payload.PayloadUpdateProducer{
+	updatePayload := &payload.ProducerInfo{
 		PublicKey: publicKey1,
 		NickName:  "",
 		Url:       "",
@@ -627,7 +627,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	updatePayload.PublicKey = publicKey1
 	updateSignBuf := new(bytes.Buffer)
-	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	s.NoError(err)

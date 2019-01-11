@@ -158,7 +158,7 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
-type RegisterProducerInfo struct {
+type ProducerInfo struct {
 	PublicKey string `json:"publickey"`
 	NickName  string `json:"nickname"`
 	Url       string `json:"url"`
@@ -170,10 +170,6 @@ type RegisterProducerInfo struct {
 type CancelProducerInfo struct {
 	PublicKey string `json:"publickey"`
 	Signature string `json:"signature"`
-}
-
-type UpdateProducerInfo struct {
-	*RegisterProducerInfo
 }
 
 type UTXOInfo struct {
