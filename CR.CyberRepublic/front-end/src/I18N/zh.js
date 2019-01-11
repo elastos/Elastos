@@ -31,6 +31,7 @@ const zh = {
     '0110': '博客',
     'navigation.programs': '项目',
     'navagation.suggestion': 'Suggestions',
+    'navagation.council': 'Council & Secreariat',
 
     '0200': '简介',
     '0201': '登录',
@@ -1313,7 +1314,18 @@ const zh = {
     'user.skillset.BUSINESS_PLANS': '商业计划',
     'user.skillset.LEGAL_CONSULTING': '法律咨询',
     'user.skillset.FINANCIAL_CONSULTING': '金融咨询',
-    'user.skillset.PRESENTATION': '商务演示'
+    'user.skillset.PRESENTATION': '商务演示',
+
+    // Council & Secretariat
+    'cs.incumbent': 'INCUMBENT',
+    'cs.council': 'COUNCIL',
+    'cs.secretariat': 'SECRETARIAT',
+    'cs.secretariat.general': 'SECRETARIAT GENERAL',
+    'cs.secretariat.staff': 'SECRETARIAT STAFF',
+    'cs.rule.tile': 'Rules For Council',
+    'cs.rule.show.click': 'Click',
+    'cs.rule.show.here': 'here',
+    'cs.rule.show.view': 'to view the rules for council',
 }
 
 // lang mappings

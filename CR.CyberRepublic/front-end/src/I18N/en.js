@@ -31,6 +31,7 @@ const en = {
     '0110': 'Blog',
     'navigation.programs': 'Programs',
     'navagation.suggestion': 'Suggestions',
+    'navagation.council': 'Council & Secreariat',
 
     '0200': 'Profile',
     '0201': 'Login',

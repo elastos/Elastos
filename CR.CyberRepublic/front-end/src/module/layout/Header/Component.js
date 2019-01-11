@@ -222,6 +222,10 @@ export default class extends BaseComponent {
                         {I18N.get('popup.changes.title')}
                     </Menu.Item>
 
+                    <Menu.Item className="c_MenuItem link" key="council-secretariat">
+                        {I18N.get('navagation.council')}
+                    </Menu.Item>
+
                     <Menu.Item className="c_MenuItem link" key="suggestion">
                         {I18N.get('navagation.suggestion')}
                     </Menu.Item>
@@ -345,6 +349,7 @@ export default class extends BaseComponent {
             'contact',
             'slack',
             'suggestion',
+            'council-secretariat',
             'council'
         ], key)) {
 
