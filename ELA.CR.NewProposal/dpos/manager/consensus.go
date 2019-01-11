@@ -1,13 +1,12 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -26,8 +25,8 @@ type Consensus interface {
 	IsOnDuty() bool
 	SetOnDuty(onDuty bool)
 
-	IsArbitratorOnDuty(arbitrator string) bool
-	GetOnDutyArbitrator() string
+	IsArbitratorOnDuty(arbitrator []byte) bool
+	GetOnDutyArbitrator() []byte
 
 	StartConsensus(b *types.Block)
 	ProcessBlock(b *types.Block)
@@ -82,13 +81,12 @@ func (c *consensus) IsReady() bool {
 	return c.consensusStatus == consensusReady
 }
 
-func (c *consensus) IsArbitratorOnDuty(arbitrator string) bool {
-	return c.GetOnDutyArbitrator() == arbitrator
+func (c *consensus) IsArbitratorOnDuty(arbitrator []byte) bool {
+	return bytes.Equal(c.GetOnDutyArbitrator(), arbitrator)
 }
 
-func (c *consensus) GetOnDutyArbitrator() string {
-	a := c.manager.GetArbitrators().GetNextOnDutyArbitrator(c.viewOffset)
-	return common.BytesToHexString(a)
+func (c *consensus) GetOnDutyArbitrator() []byte {
+	return c.manager.GetArbitrators().GetNextOnDutyArbitrator(c.viewOffset)
 }
 
 func (c *consensus) StartConsensus(b *types.Block) {

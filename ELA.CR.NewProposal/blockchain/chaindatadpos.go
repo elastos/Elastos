@@ -604,13 +604,13 @@ func (c *ChainStore) PersistSidechainIllegalEvidence(payload *PayloadSidechainIl
 
 func (c *ChainStore) PersistIllegalProposal(payload *PayloadIllegalProposal) error {
 	return c.persistIllegalPayload(func() []string {
-		return []string{payload.Evidence.Proposal.Sponsor}
+		return []string{BytesToHexString(payload.Evidence.Proposal.Sponsor)}
 	})
 }
 
 func (c *ChainStore) PersistIllegalVote(payload *PayloadIllegalVote) error {
 	return c.persistIllegalPayload(func() []string {
-		return []string{payload.Evidence.Vote.Signer}
+		return []string{BytesToHexString(payload.Evidence.Vote.Signer)}
 	})
 }
 

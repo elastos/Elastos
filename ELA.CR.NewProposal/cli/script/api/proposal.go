@@ -25,9 +25,9 @@ func newProposal(L *lua.LState) int {
 	offset := uint32(L.ToInt(3))
 
 	hash, _ := common.Uint256FromHexString(blockHash)
-
+	pk, _ := common.HexStringToBytes(sponsor)
 	proposal := &types.DPosProposal{
-		Sponsor:    sponsor,
+		Sponsor:    pk,
 		BlockHash:  *hash,
 		ViewOffset: offset,
 		Sign:       nil,

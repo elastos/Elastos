@@ -932,7 +932,7 @@ func checkDposIllegalProposals(d *DposIllegalProposals) error {
 		return errors.New("proposals can not be same")
 	}
 
-	if d.Evidence.Proposal.Sponsor != d.CompareEvidence.Proposal.Sponsor {
+	if !bytes.Equal(d.Evidence.Proposal.Sponsor, d.CompareEvidence.Proposal.Sponsor) {
 		return errors.New("should be same sponsor")
 	}
 
@@ -961,7 +961,7 @@ func checkDposIllegalVotes(d *DposIllegalVotes) error {
 		return errors.New("votes can not be same")
 	}
 
-	if d.Evidence.Vote.Signer != d.CompareEvidence.Vote.Signer {
+	if !bytes.Equal(d.Evidence.Vote.Signer, d.CompareEvidence.Vote.Signer) {
 		return errors.New("should be same signer")
 	}
 
@@ -1110,7 +1110,7 @@ func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, er
 func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
 	result := make(map[string]interface{})
 	for _, v := range confirm.Votes {
-		result[v.Signer] = nil
+		result[common.BytesToHexString(v.Signer)] = nil
 	}
 	return result
 }

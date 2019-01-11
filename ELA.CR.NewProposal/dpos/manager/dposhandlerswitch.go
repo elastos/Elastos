@@ -74,7 +74,7 @@ func (h *dposHandlerSwitch) Initialize(dispatcher ProposalDispatcher, consensus 
 	h.proposalDispatcher = dispatcher
 	h.consensus = consensus
 	currentArbiter := h.manager.GetArbitrators().GetNextOnDutyArbitrator(h.consensus.GetViewOffset())
-	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
+	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.PublicKey
 	h.SwitchTo(isDposOnDuty)
 }
 
@@ -103,7 +103,7 @@ func (h *dposHandlerSwitch) StartNewProposal(p types.DPosProposal) {
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
 	proposalEvent := log.ProposalEvent{
-		Proposal:     p.Sponsor,
+		Proposal:     common.BytesToHexString(p.Sponsor),
 		BlockHash:    p.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: p.Hash(),
@@ -117,7 +117,7 @@ func (h *dposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.currentHandler.ChangeView(firstBlockHash)
 
 	viewEvent := log.ViewEvent{
-		OnDutyArbitrator: h.consensus.GetOnDutyArbitrator(),
+		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
 		StartTime:        time.Now(),
 		Offset:           h.consensus.GetViewOffset(),
 		Height:           h.proposalDispatcher.CurrentHeight(),
@@ -150,7 +150,7 @@ func (h *dposHandlerSwitch) ProcessAcceptVote(id peer.PID, p types.DPosProposalV
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: p.Signer, ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
 	h.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
@@ -159,7 +159,7 @@ func (h *dposHandlerSwitch) ProcessRejectVote(id peer.PID, p types.DPosProposalV
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: p.Signer, ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
 	h.eventMonitor.OnVoteArrived(&voteEvent)
 }
 
