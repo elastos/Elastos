@@ -8,6 +8,7 @@ import Community from './Community';
 import User_Community from './User_Community';
 import Task_Candidate from './Task_Candidate';
 import Submission from './Submission';
+import Suggestion from './Suggestion';
 import CVote from './CVote';
 
 import Log from './Log';
@@ -96,6 +97,7 @@ export default class {
         this.db.User_Community = new User_Community(db);
         this.db.Log = new Log(db);
         this.db.Submission = new Submission(db);
+        this.db.Suggestion = new Suggestion(db);
         this.db.CVote = new CVote(db);
     }
 

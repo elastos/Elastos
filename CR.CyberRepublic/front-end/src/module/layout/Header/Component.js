@@ -222,6 +222,10 @@ export default class extends BaseComponent {
                         {I18N.get('popup.changes.title')}
                     </Menu.Item>
 
+                    <Menu.Item className="c_MenuItem link" key="suggestion">
+                        {I18N.get('navagation.suggestion')}
+                    </Menu.Item>
+
                     <SubMenu title={I18N.get('navigation.programs')} onClick={this.clickItem.bind(this)}
                         className="c_SubMenuItem c_MenuItem link" selectedKeys={this.getSelectedKeys()} mode="horizontal">
                         <Menu.Item className="c_MenuItem link" key="cr100">
@@ -340,6 +344,7 @@ export default class extends BaseComponent {
             'faq',
             'contact',
             'slack',
+            'suggestion',
             'council'
         ], key)) {
 

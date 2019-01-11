@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import {constant} from "../util";
+import { constant } from '../util';
 
 export default class {
-    constructor(){
+    constructor() {
         this.reducers = {};
         this.actions = {};
         this.types = this.buildTypes();
@@ -12,37 +12,37 @@ export default class {
 
     getPathName() {
         const userDefineTypes = this.defineTypes()
-        if(!_.isArray(userDefineTypes) || !_.isString(userDefineTypes[0])){
-            throw new Error('invalid redux types definition : '+userDefineTypes)
+        if (!_.isArray(userDefineTypes) || !_.isString(userDefineTypes[0])) {
+            throw new Error('invalid redux types definition : ' + userDefineTypes)
         }
 
         return userDefineTypes[0]
     }
 
-    buildTypes(){
+    buildTypes() {
         const userDefineTypes = this.defineTypes();
-        if(!_.isArray(userDefineTypes) || !_.isString(userDefineTypes[0])){
-            throw new Error('invalid redux types definition : '+userDefineTypes);
+        if (!_.isArray(userDefineTypes) || !_.isString(userDefineTypes[0])) {
+            throw new Error('invalid redux types definition : ' + userDefineTypes);
         }
 
         const pathName = userDefineTypes[0];
         const types = {};
-        _.each(this.defineDefaultState(), (value, key)=>{
+        _.each(this.defineDefaultState(), (value, key) => {
 
             // this adds a [field]_update action
             const update_key = `${key}_update`;
             types[update_key] = `${pathName}/${key}_update`;
-            this.reducers[update_key] = (state, param)=>{
+            this.reducers[update_key] = (state, param) => {
                 return {
                     ...state,
                     [key]: _.isArray(param)
                         ? param
                         : _.isObject(param)
-                            ? _.merge({}, state[key], param||{})
+                            ? _.merge({}, state[key], param || {})
                             : param
                 };
             };
-            this.actions[update_key] = (param)=>{
+            this.actions[update_key] = (param) => {
                 return {
                     type: update_key,
                     param: {
@@ -56,13 +56,13 @@ export default class {
             // the field to the default state
             const reset_key = `${key}_reset`;
             types[reset_key] = `${pathName}/${key}_reset`;
-            this.reducers[reset_key] = (state)=>{
+            this.reducers[reset_key] = (state) => {
                 return {
                     ...state,
                     [key]: this.defineDefaultState()[key]
                 };
             };
-            this.actions[reset_key] = ()=>{
+            this.actions[reset_key] = () => {
                 return {
                     type: reset_key,
                     param: {
@@ -72,16 +72,16 @@ export default class {
             };
         });
 
-        return _.extend(types, constant(userDefineTypes[0], userDefineTypes[1]||[]));
+        return _.extend(types, constant(userDefineTypes[0], userDefineTypes[1] || []));
     }
 
-    buildReducer(){
+    buildReducer() {
         const pathName = this.getPathName()
         _.extend(this.reducers, this.defineReducers());
-        return (state=this.defineDefaultState(), action)=>{
+        return (state = this.defineDefaultState(), action) => {
             const type = action.type;
             if (!action.param || action.param.pathname === pathName) {
-                if(this.types[type] && this.reducers[type]){
+                if (this.types[type] && this.reducers[type]) {
                     return this.reducers[type](state, _.has(action.param, 'key') ? action.param.key : action.param)
                 }
             }
@@ -89,25 +89,25 @@ export default class {
             return state;
         };
     }
-    buildActions(){
+    buildActions() {
         const userDefineActions = this.defineActions();
         _.extend(this.actions, userDefineActions);
     }
-    getReducer(){
+    getReducer() {
         return this._reducer;
     }
 
-    defineDefaultState(){
+    defineDefaultState() {
         return {};
     }
 
-    defineTypes(){
+    defineTypes() {
         return [];
     }
-    defineActions(){
+    defineActions() {
         return {};
     }
-    defineReducers(){
+    defineReducers() {
         return {};
     }
 };
