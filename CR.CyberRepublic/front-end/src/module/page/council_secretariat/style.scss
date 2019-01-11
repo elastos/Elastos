@@ -78,6 +78,10 @@ $maxWithContent: 860px;
       .members {
         margin-top: 110px;
         margin-right: -20px;
+
+        @media only screen and (max-width: $mobile-width) {
+          margin-right: 0px;
+        }
       }
     }
 
@@ -109,6 +113,10 @@ $maxWithContent: 860px;
         margin-top: 100px;
         margin-right: -40px;
         margin-left: 40px;
+
+        @media only screen and (max-width: $mobile-width) {
+          margin-right: 0px;
+        }
       }
     }
   }
@@ -116,6 +124,10 @@ $maxWithContent: 860px;
   .member {
     position: relative;
     margin: 80px 0px;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin: 130px 0px;
+    }
 
     .small-rect {
       position: absolute;
@@ -160,6 +172,10 @@ $maxWithContent: 860px;
     margin-bottom: 100px;
     margin-top: 30px;
 
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+    }
+
     .title {
       font-family: "komu-a",sans-serif;
       line-height: normal;
@@ -201,6 +217,10 @@ $maxWithContent: 860px;
   .ebp-wrap {
     padding: 0;
     background-color: #031E28;
+
+    @media only screen and (max-width: $mobile-width) {
+      padding-left: 20px;
+    }
   }
 
   .lower-section {
@@ -278,7 +298,7 @@ $maxWithContent: 860px;
     .circle-top2 {
       position: absolute;
       top: 10%;
-      right: 32%;
+      right: 28%;
 
       @media only screen and (max-width: $mobile-width) {
         bottom: 68%;
