@@ -2,17 +2,17 @@ package payload
 
 import "io"
 
-type PayloadTransferAsset struct{}
+type TransferAsset struct{}
 
-func (a *PayloadTransferAsset) Data(version byte) []byte {
+func (a *TransferAsset) Data(version byte) []byte {
 	//TODO: implement TransferAsset.Data()
 	return []byte{0}
 }
 
-func (a *PayloadTransferAsset) Serialize(w io.Writer, version byte) error {
+func (a *TransferAsset) Serialize(w io.Writer, version byte) error {
 	return nil
 }
 
-func (a *PayloadTransferAsset) Deserialize(r io.Reader, version byte) error {
+func (a *TransferAsset) Deserialize(r io.Reader, version byte) error {
 	return nil
 }

@@ -33,8 +33,8 @@ func RegisterCoinBaseType(L *lua.LState) {
 // Constructor
 func newCoinBase(L *lua.LState) int {
 	data, _ := hex.DecodeString(L.ToString(1))
-	cb := &payload.PayloadCoinBase{
-		CoinbaseData: data,
+	cb := &payload.CoinBase{
+		Content: data,
 	}
 	ud := L.NewUserData()
 	ud.Value = cb
@@ -44,14 +44,14 @@ func newCoinBase(L *lua.LState) int {
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *PayloadCoinBase and
-// returns this *PayloadCoinBase.
-func checkCoinBase(L *lua.LState, idx int) *payload.PayloadCoinBase {
+// Checks whether the first lua argument is a *LUserData with *CoinBase and
+// returns this *CoinBase.
+func checkCoinBase(L *lua.LState, idx int) *payload.CoinBase {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadCoinBase); ok {
+	if v, ok := ud.Value.(*payload.CoinBase); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadCoinBase expected")
+	L.ArgError(1, "CoinBase expected")
 	return nil
 }
 
@@ -79,7 +79,7 @@ func RegisterTransferAssetType(L *lua.LState) {
 
 // Constructor
 func newTransferAsset(L *lua.LState) int {
-	ta := &payload.PayloadTransferAsset{}
+	ta := &payload.TransferAsset{}
 	ud := L.NewUserData()
 	ud.Value = ta
 	L.SetMetatable(ud, L.GetTypeMetatable(luaTransferAssetTypeName))
@@ -88,14 +88,14 @@ func newTransferAsset(L *lua.LState) int {
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *PayloadTransferAsset and
-// returns this *PayloadTransferAsset.
-func checkTransferAsset(L *lua.LState, idx int) *payload.PayloadTransferAsset {
+// Checks whether the first lua argument is a *LUserData with *TransferAsset and
+// returns this *TransferAsset.
+func checkTransferAsset(L *lua.LState, idx int) *payload.TransferAsset {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadTransferAsset); ok {
+	if v, ok := ud.Value.(*payload.TransferAsset); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadTransferAsset expected")
+	L.ArgError(1, "TransferAsset expected")
 	return nil
 }
 
@@ -289,12 +289,12 @@ func newCancelProducer(L *lua.LState) int {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
 	}
-	cancelProducer := &payload.PayloadCancelProducer{
+	cancelProducer := &payload.CancelProducer{
 		PublicKey: []byte(publicKey),
 	}
 
 	cpSignBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.CancelProducerVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -319,12 +319,12 @@ func newCancelProducer(L *lua.LState) int {
 	return 1
 }
 
-func checkCancelProducer(L *lua.LState, idx int) *payload.PayloadCancelProducer {
+func checkCancelProducer(L *lua.LState, idx int) *payload.CancelProducer {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadCancelProducer); ok {
+	if v, ok := ud.Value.(*payload.CancelProducer); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadCancelProducer expected")
+	L.ArgError(1, "CancelProducer expected")
 	return nil
 }
 
@@ -351,7 +351,7 @@ func RegisterReturnDepositCoinType(L *lua.LState) {
 
 // Constructor
 func newReturnDepositCoin(L *lua.LState) int {
-	registerProducer := &payload.PayloadReturnDepositCoin{}
+	registerProducer := &payload.ReturnDepositCoin{}
 	ud := L.NewUserData()
 	ud.Value = registerProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaReturnDepositCoinName))
@@ -360,14 +360,14 @@ func newReturnDepositCoin(L *lua.LState) int {
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *PayloadReturnDepositCoin and
-// returns this *PayloadReturnDepositCoin.
-func checkReturnDepositCoin(L *lua.LState, idx int) *payload.PayloadReturnDepositCoin {
+// Checks whether the first lua argument is a *LUserData with *ReturnDepositCoin and
+// returns this *ReturnDepositCoin.
+func checkReturnDepositCoin(L *lua.LState, idx int) *payload.ReturnDepositCoin {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.PayloadReturnDepositCoin); ok {
+	if v, ok := ud.Value.(*payload.ReturnDepositCoin); ok {
 		return v
 	}
-	L.ArgError(1, "PayloadReturnDepositCoin expected")
+	L.ArgError(1, "ReturnDepositCoin expected")
 	return nil
 }
 

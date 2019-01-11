@@ -327,11 +327,11 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	//CheckCancelProducerTransaction
 	txn.TxType = types.CancelProducer
-	cancelPayload := &payload.PayloadCancelProducer{
+	cancelPayload := &payload.CancelProducer{
 		PublicKey: publicKey3,
 	}
 	cpSignBuf := new(bytes.Buffer)
-	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.CancelProducerVersion)
 	assert.NoError(t, err)
 	cpSig, err := crypto.Sign(privateKey3, cpSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -348,7 +348,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	cancelPayload.PublicKey = publicKey1
 	cpSignBuf = new(bytes.Buffer)
-	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.CancelProducerVersion)
 	assert.NoError(t, err)
 	cpSig, err = crypto.Sign(privateKey1, cpSignBuf.Bytes())
 	assert.NoError(t, err)
@@ -388,7 +388,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	// addr: EZ3fDKreg82nAgzJPPWd3ZFXRhcAKkgqWk
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	payload1 := &payload.PayloadCancelProducer{
+	payload1 := &payload.CancelProducer{
 		PublicKey: publicKey1,
 	}
 
@@ -705,7 +705,7 @@ func TestCheckAssetPrecision(t *testing.T) {
 	register := &types.Transaction{
 		TxType:         types.RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &payload.PayloadRegisterAsset{
+		Payload: &payload.RegisterAsset{
 			Asset:  asset,
 			Amount: 0 * 100000000,
 		},

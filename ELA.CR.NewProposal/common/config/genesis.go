@@ -17,7 +17,7 @@ var (
 	elaAsset = types.Transaction{
 		TxType:         types.RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &payload.PayloadRegisterAsset{
+		Payload: &payload.RegisterAsset{
 			Asset: payload.Asset{
 				Name:      "ELA",
 				Precision: 0x08,
@@ -45,8 +45,8 @@ func GenesisBlock(foundation *common.Uint168) *types.Block {
 	coinBase := types.Transaction{
 		Version:        0,
 		TxType:         types.CoinBase,
-		PayloadVersion: payload.PayloadCoinBaseVersion,
-		Payload:        &payload.PayloadCoinBase{},
+		PayloadVersion: payload.CoinBaseVersion,
+		Payload:        &payload.CoinBase{},
 		Attributes:     []*types.Attribute{&attrNonce},
 		Inputs: []*types.Input{
 			{

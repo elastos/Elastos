@@ -77,7 +77,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	// 1. Generate a withdraw transaction
 	txn1 := new(types.Transaction)
 	txn1.TxType = types.WithdrawFromSideChain
-	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn1.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -92,7 +92,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(types.Transaction)
 	txn2.TxType = types.WithdrawFromSideChain
-	txn2.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn2.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -127,7 +127,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	// 1. Generate some withdraw transactions
 	txn1 := new(types.Transaction)
 	txn1.TxType = types.WithdrawFromSideChain
-	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn1.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -138,7 +138,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	txn2 := new(types.Transaction)
 	txn2.TxType = types.WithdrawFromSideChain
-	txn2.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn2.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -148,7 +148,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	txn3 := new(types.Transaction)
 	txn3.TxType = types.WithdrawFromSideChain
-	txn3.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn3.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -193,7 +193,7 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 
 	txn1 := new(types.Transaction)
 	txn1.TxType = types.SideChainPow
-	txn1.Payload = &payload.PayloadSideChainPow{
+	txn1.Payload = &payload.SideChainPow{
 		SideBlockHash:   sideBlockHash1,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
@@ -207,7 +207,7 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 
 	txn2 := new(types.Transaction)
 	txn2.TxType = types.SideChainPow
-	txn2.Payload = &payload.PayloadSideChainPow{
+	txn2.Payload = &payload.SideChainPow{
 		SideBlockHash:   sideBlockHash2,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
@@ -237,7 +237,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	// 1. Generate a withdraw transaction
 	txn1 := new(types.Transaction)
 	txn1.TxType = types.WithdrawFromSideChain
-	txn1.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn1.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -290,7 +290,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx1 := new(types.Transaction)
 	tx1.TxType = types.TransferAsset
 	tx1.PayloadVersion = 0
-	tx1.Payload = &payload.PayloadTransferAsset{}
+	tx1.Payload = &payload.TransferAsset{}
 	var attribute1 *types.Attribute
 	attribute1 = &types.Attribute{
 		Usage: types.Nonce,
@@ -307,7 +307,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx2 := new(types.Transaction)
 	tx2.TxType = types.TransferAsset
 	tx2.PayloadVersion = 0
-	tx2.Payload = &payload.PayloadTransferAsset{}
+	tx2.Payload = &payload.TransferAsset{}
 	var attribute2 *types.Attribute
 	attribute2 = &types.Attribute{
 		Usage: types.Nonce,
@@ -384,7 +384,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	//two mock transactions again, they have some identical sidechain hashes
 	tx3 := new(types.Transaction)
 	tx3.TxType = types.WithdrawFromSideChain
-	tx3.Payload = &payload.PayloadWithdrawFromSideChain{
+	tx3.Payload = &payload.WithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash2},
 	}
 	tx3.Inputs = []*types.Input{
@@ -398,7 +398,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 	tx4 := new(types.Transaction)
 	tx4.TxType = types.WithdrawFromSideChain
-	tx4.Payload = &payload.PayloadWithdrawFromSideChain{
+	tx4.Payload = &payload.WithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash4},
 	}
 	tx4.Inputs = []*types.Input{
@@ -412,7 +412,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 	tx5 := new(types.Transaction)
 	tx5.TxType = types.WithdrawFromSideChain
-	tx5.Payload = &payload.PayloadWithdrawFromSideChain{
+	tx5.Payload = &payload.WithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash2, sideBlockHash5},
 	}
 	tx5.Inputs = []*types.Input{
@@ -426,7 +426,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 	tx6 := new(types.Transaction)
 	tx6.TxType = types.WithdrawFromSideChain
-	tx6.Payload = &payload.PayloadWithdrawFromSideChain{
+	tx6.Payload = &payload.WithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash3},
 	}
 	tx6.Inputs = []*types.Input{
@@ -513,7 +513,7 @@ func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
 		}
 	}
 	if tx.TxType == types.WithdrawFromSideChain {
-		payload := tx.Payload.(*payload.PayloadWithdrawFromSideChain)
+		payload := tx.Payload.(*payload.WithdrawFromSideChain)
 		for _, hash := range payload.SideChainTransactionHashes {
 			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx != nil {
 				return fmt.Errorf("has sidechain hash in sidechain list pool" + hash.String())
@@ -533,7 +533,7 @@ func isTransactionExisted(pool *TxPool, tx *types.Transaction) error {
 		}
 	}
 	if tx.TxType == types.WithdrawFromSideChain {
-		payload := tx.Payload.(*payload.PayloadWithdrawFromSideChain)
+		payload := tx.Payload.(*payload.WithdrawFromSideChain)
 		for _, hash := range payload.SideChainTransactionHashes {
 			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx == nil {
 				return fmt.Errorf("does not have sidechain hash in sidechain list pool" + hash.String())

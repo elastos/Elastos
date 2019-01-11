@@ -268,7 +268,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 }
 
 func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TxType) *types.Transaction {
-	txPayload := &payload.PayloadTransferAsset{}
+	txPayload := &payload.TransferAsset{}
 	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
 	attributes := make([]*types.Attribute, 0)
 	attributes = append(attributes, &txAttr)
