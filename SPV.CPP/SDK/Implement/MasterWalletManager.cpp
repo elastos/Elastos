@@ -83,7 +83,7 @@ namespace Elastos {
 			var_clean(&masterKey);
 			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 
-			return Utils::encodeHex(key.getPubkey());
+			return Utils::encodeHex(key.GetPublicKey());
 		}
 
 		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) const {
@@ -98,7 +98,7 @@ namespace Elastos {
 			var_clean(&secret);
 			memset(privKeyHex, 0, privKeyHex.GetSize());
 
-			return Utils::encodeHex(key.getPubkey());
+			return Utils::encodeHex(key.GetPublicKey());
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(

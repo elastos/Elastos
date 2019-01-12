@@ -29,6 +29,10 @@ namespace Elastos {
 			memset(_key.get(), 0, sizeof(BRKey));
 		}
 
+		Key::Key(const Key &key) {
+			operator=(key);
+		}
+
 		Key::Key(BRKey *brkey) {
 			_key = boost::shared_ptr<BRKey>(brkey);
 
@@ -57,6 +61,17 @@ namespace Elastos {
 			}
 		}
 
+		Key::~Key() {
+			var_clean(&_key->secret);
+		}
+
+		Key &Key::operator=(const Elastos::ElaWallet::Key &key) {
+			_key->secret = key._key->secret;
+			memcpy(_key->pubKey, key._key->pubKey, sizeof(_key->pubKey));
+			_key->compressed = key._key->compressed;
+			return *this;
+		}
+
 		std::string Key::toString() const {
 			return Utils::UInt256ToString(_key->secret);
 		}
@@ -69,20 +84,17 @@ namespace Elastos {
 			return _key->secret;
 		}
 
-		CMBlock Key::getPubkey() const {
-			CMBlock result;
+		CMBlock Key::GetPublicKey() const {
 			int len = getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
 			if (len != 33 && len != 65) {
 				Log::error("Invalid public key length");
-				return result;
+				return CMBlock();
 			}
 
-			result.SetMemFixed(_key->pubKey, len);
-
-			return result;
+			return CMBlock(_key->pubKey, len);
 		}
 
-		bool Key::setPubKey(const CMBlock pubKey) {
+		bool Key::SetPublicKey(const CMBlock &pubKey) {
 			ParamChecker::checkCondition(pubKey.GetSize() != 33 && pubKey.GetSize() != 65, Error::PubKeyLength,
 										 "Invaid public key length");
 
@@ -193,7 +205,6 @@ namespace Elastos {
 		const UInt160 Key::hashTo160() {
 			UInt160 hash = UINT160_ZERO;
 			size_t len = getCompressed() ? 33 : 65;
-			CMBlock pubKey = getPubkey();
 			BRHash160(&hash, _key->pubKey, len);
 			return hash;
 		}

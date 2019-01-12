@@ -47,6 +47,7 @@ namespace Elastos {
 				generator.SetCoinInfo(_info);
 				generator.SetParentAccount(_parent->_localStore.Account());
 				generator.SetMasterPubKey(_parent->GetMasterPubKey(_info.getChainId()));
+				generator.SetVotePubKey(_parent->_localStore.GetVotePublicKey(_info.getChainId()));
 				_subAccount = SubAccountPtr(generator.Generate());
 
 				_info.setChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));
@@ -64,6 +65,7 @@ namespace Elastos {
 			_walletManager->registerPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
+			wallet->SetWalletID(_parent->GetId() + ":" + GetChainId());
 			if (info.getFeePerKb() > 0) {
 				wallet->setFeePerKb(Asset::GetELAAssetID(), info.getFeePerKb());
 			}
@@ -126,13 +128,8 @@ namespace Elastos {
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
 													uint64_t amount, const UInt256 &assetID, const std::string &memo,
 													const std::string &remark, bool useVotedUTXO) const {
-			WalletPtr wallet = _walletManager->getWallet();
-			TransactionPtr tx = wallet->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
-														  assetID, memo, remark, useVotedUTXO);
-
-			ParamChecker::checkLogic(tx == nullptr, Error::CreateTransaction, "create tx error.");
-
-			return tx;
+			return _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
+																  assetID, memo, remark, useVotedUTXO);
 		};
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
@@ -284,7 +281,7 @@ namespace Elastos {
 
 		nlohmann::json
 		SubWallet::UpdateTransactionFee(const nlohmann::json &transactionJson, uint64_t fee,
-										const std::string &fromAddress, bool useVotedUTXO) {
+										const std::string &fromAddress) {
 			if (fee <= _info.getMinFee()) {
 				return transactionJson;
 			}
@@ -293,7 +290,7 @@ namespace Elastos {
 			tx->fromJson(transactionJson);
 
 			WalletPtr wallet = _walletManager->getWallet();
-			wallet->UpdateTxFee(tx, fee, fromAddress, useVotedUTXO);
+			wallet->UpdateTxFee(tx, fee, fromAddress);
 
 			return tx->toJson();
 		}

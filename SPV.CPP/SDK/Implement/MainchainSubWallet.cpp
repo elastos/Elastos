@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "MainchainSubWallet.h"
+#include "MasterWallet.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
@@ -56,20 +57,171 @@ namespace Elastos {
 				ParamChecker::throwParamException(Error::JsonFormatError, "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = SubWallet::CreateTx(fromAddress, toAddress, amount,
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
 													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
-
-			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
 
 			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
 
 			return tx->toJson();
 		}
 
-		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &publicKeys) {
-			VoteProducerTxParam txParam;
+		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
+			const std::string &publicKey,
+			const std::string &nickName,
+			const std::string &url,
+			const std::string &ipAddress,
+			uint64_t location,
+			const std::string &payPasswd) const {
 
+			ParamChecker::checkPassword(payPasswd, "Generate payload");
+			size_t pubKeyLen = publicKey.size() >> 1;
+			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
+									 "Public key length should be 33 or 65 bytes");
+
+			PayloadRegisterProducer pr;
+			pr.SetPublicKey(Utils::decodeHex(publicKey));
+			pr.SetNickName(nickName);
+			pr.SetUrl(url);
+			pr.SetAddress(ipAddress);
+			pr.SetLocation(location);
+
+			ByteStream ostream;
+			pr.SerializeUnsigned(ostream, 0);
+			CMBlock prUnsigned = ostream.getBuffer();
+
+			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			pr.SetSignature(key.compactSign(prUnsigned));
+
+			return pr.toJson(0);
+		}
+
+		nlohmann::json MainchainSubWallet::GenerateCancelProducerPayload(
+			const std::string &publicKey,
+			const std::string &payPasswd) const {
+
+			ParamChecker::checkPassword(payPasswd, "Generate payload");
+			size_t pubKeyLen = publicKey.size() >> 1;
+			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
+									 "Public key length should be 33 or 65 bytes");
+
+			PayloadCancelProducer pc;
+			pc.SetPublicKey(Utils::decodeHex(publicKey));
+
+			ByteStream ostream;
+			pc.SerializeUnsigned(ostream, 0);
+			CMBlock pcUnsigned = ostream.getBuffer();
+
+			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			pc.SetSignature(key.compactSign(pcUnsigned));
+
+			return pc.toJson(0);
+		}
+
+		nlohmann::json MainchainSubWallet::CreateRegisterProducerTransaction(
+			const std::string &fromAddress,
+			const nlohmann::json &payload,
+			uint64_t amount,
+			const std::string &memo,
+			bool useVotedUTXO) {
+
+			ParamChecker::checkParam(amount < 500000000000, Error::PubKeyLength, "Producer deposit amount is insufficient");
+
+			PayloadRegisterProducer *payloadRegisterProducer = new PayloadRegisterProducer();
+			try {
+				payloadRegisterProducer->fromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+			}
+			PayloadPtr iPayload = PayloadPtr(payloadRegisterProducer);
+
+			Key key;
+			key.SetPublicKey(payloadRegisterProducer->GetPublicKey());
+			std::string toAddress = key.keyToAddress(ELA_RETURN_DEPOSIT);
+
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
+													Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+
+			tx->setTransactionType(Transaction::RegisterProducer, iPayload);
+
+			return tx->toJson();
+		}
+
+		nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(
+			const std::string &fromAddress,
+			const nlohmann::json &payload,
+			const std::string &memo,
+			bool useVotedUTXO) {
+
+			PayloadUpdateProducer *payloadUpdateProducer = new PayloadUpdateProducer();
+			try {
+				payloadUpdateProducer->fromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+			}
+			PayloadPtr iPayload = PayloadPtr(payloadUpdateProducer);
+
+			std::string toAddress = CreateAddress();
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+
+			tx->setTransactionType(Transaction::UpdateProducer, iPayload);
+
+			if (tx->getOutputs().size() > 1) {
+				tx->getOutputs().erase(tx->getOutputs().begin());
+			}
+
+			return tx->toJson();
+		}
+
+		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(
+			const std::string &fromAddress,
+			const nlohmann::json &payload,
+			const std::string &memo,
+			bool useVotedUTXO) {
+
+			PayloadCancelProducer *payloadCancelProducer = new PayloadCancelProducer();
+			try {
+				payloadCancelProducer->fromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+			}
+			PayloadPtr iPayload = PayloadPtr(payloadCancelProducer);
+
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(),
+										 memo, "", useVotedUTXO);
+
+			tx->setTransactionType(Transaction::CancelProducer, iPayload);
+
+			if (tx->getOutputs().size() > 1) {
+				tx->getOutputs().erase(tx->getOutputs().begin());
+			}
+
+			return tx->toJson();
+		}
+
+		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(const std::string &memo) {
+
+			Key key;
+			key.SetPublicKey(_subAccount->GetVotePublicKey());
+			std::string fromAddress = key.keyToAddress(ELA_RETURN_DEPOSIT);
+
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(), memo, "");
+
+			tx->setTransactionType(Transaction::ReturnDepositCoin);
+
+			if (tx->getOutputs().size() > 1) {
+				tx->getOutputs().erase(tx->getOutputs().begin());
+			}
+
+			return tx->toJson();
+		}
+
+		std::string MainchainSubWallet::GetPublicKeyForVote() const {
+			return Utils::encodeHex(_subAccount->GetVotePublicKey());
+		}
+
+		nlohmann::json
+		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &publicKeys,
+														  const std::string &memo, bool useVotedUTXO) {
 			ParamChecker::checkJsonArray(publicKeys, 1, "Candidates public keys");
 			ParamChecker::checkParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
@@ -83,10 +235,7 @@ namespace Elastos {
 			}
 			PayloadPtr payload = PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates));
 
-			TransactionPtr tx = SubWallet::CreateTx("", CreateAddress(), stake,
-													Asset::GetELAAssetID(), "", "", false);
-
-			ParamChecker::checkCondition(tx == nullptr, Error::CreateTransaction, "Create tx error");
+			TransactionPtr tx = CreateTx("", CreateAddress(), stake, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
 
 			const std::vector<TransactionInput> &inputs = tx->getInputs();
 
@@ -97,7 +246,6 @@ namespace Elastos {
 									 "Input index larger than output size.");
 			const UInt168 &inputProgramHash = txInput->getOutputs()[inputs[0].getIndex()].getProgramHash();
 
-			tx->setVersion(Transaction::TxVersion::V09);
 			tx->setTransactionType(Transaction::TransferAsset);
 			std::vector<TransactionOutput> &outputs = tx->getOutputs();
 			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
@@ -158,6 +306,10 @@ namespace Elastos {
 			j["Registered"] = false;
 			j["Info"] = nlohmann::json();
 			for (size_t i = 0; i < allTxs.size(); ++i) {
+				if (allTxs[i]->getBlockHeight() == TX_UNCONFIRMED) {
+					continue;
+				}
+
 				if (allTxs[i]->getTransactionType() == Transaction::RegisterProducer) {
 					const PayloadRegisterProducer *pr = dynamic_cast<const PayloadRegisterProducer *>(allTxs[i]->getPayload());
 					if (pr) {

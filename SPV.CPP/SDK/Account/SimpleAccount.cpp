@@ -21,7 +21,7 @@ namespace Elastos {
 			UInt256 secret;
 			memcpy(secret.u8, keyData, keyData.GetSize());
 			key.setSecret(secret, true);
-			_publicKey = Utils::encodeHex(key.getPubkey());
+			_publicKey = Utils::encodeHex(key.GetPublicKey());
 
 			memset(keyData, 0, keyData.GetSize());
 			var_clean(&secret);
@@ -100,7 +100,7 @@ namespace Elastos {
 
 		std::string SimpleAccount::GetAddress() const {
 			Key key;
-			key.setPubKey(Utils::decodeHex(_publicKey));
+			key.SetPublicKey(Utils::decodeHex(_publicKey));
 			return key.address();
 		}
 

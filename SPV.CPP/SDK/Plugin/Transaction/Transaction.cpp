@@ -261,7 +261,12 @@ namespace Elastos {
 		}
 
 		bool Transaction::isSigned() const {
-			if (_type == Type::TransferAsset || _type == Type::TransferCrossChainAsset) {
+			if (_type == Type::TransferAsset ||
+				_type == Type::TransferCrossChainAsset ||
+				_type == Type::RegisterProducer ||
+				_type == Type::CancelProducer ||
+				_type == Type::UpdateProducer ||
+				_type == Type::ReturnDepositCoin) {
 				if (_programs.size() <= 0) {
 					return false;
 				}

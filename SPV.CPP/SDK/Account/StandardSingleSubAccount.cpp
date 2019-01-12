@@ -14,11 +14,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		StandardSingleSubAccount::StandardSingleSubAccount(const MasterPubKey &masterPubKey, IAccount *account,
+		StandardSingleSubAccount::StandardSingleSubAccount(const MasterPubKey &masterPubKey,
+														   const CMBlock &votePubKey,
+														   IAccount *account,
 														   uint32_t coinIndex) :
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
+				_votePublicKey = votePubKey;
 		}
 
 		Key StandardSingleSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
@@ -42,7 +45,7 @@ namespace Elastos {
 			Key key;
 
 			pubKey.Resize(len);
-			key.setPubKey(pubKey);
+			key.SetPublicKey(pubKey);
 
 			if (addrsCount > 0)
 				address.emplace_back(key.address());
@@ -63,5 +66,23 @@ namespace Elastos {
 			result.push_back(key);
 			return result;
 		}
+
+		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+			UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
+
+			UInt256 chainCode;
+
+			BRKey brKey;
+			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
+								_coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
+			Key key(brKey);
+
+			var_clean(&seed);
+			var_clean(&chainCode);
+			var_clean(&brKey.secret);
+
+			return key;
+		}
+
 	}
 }

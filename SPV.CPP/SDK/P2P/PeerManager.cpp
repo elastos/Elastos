@@ -649,22 +649,32 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->getHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
+			UInt168 hash = UINT168_ZERO;
+			CMBlock hashData;
+
+			std::string voteDepositAddress = _wallet->GetVoteDepositAddress();
 			std::vector<std::string> addrs = _wallet->getAllAddresses();
 			std::vector<UTXO> utxos = _wallet->getAllUTXOsSafe();
 			uint32_t blockHeight = (_lastBlock->getHeight() > 100) ? _lastBlock->getHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
 			BloomFilterPtr filter = BloomFilterPtr(
-					new BloomFilter(_fpRate, addrs.size() + _wallet->getListeningAddrs().size() +
+					new BloomFilter(_fpRate, 1 + addrs.size() + _wallet->getListeningAddrs().size() +
 											 utxos.size() + transactions.size() + 100,
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
+			if (!voteDepositAddress.empty()) {
+				BRAddressHash168(&hash, voteDepositAddress.c_str());
+				hashData.SetMemFixed(hash.u8, sizeof(hash));
+				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
+					filter->insertData(hashData);
+				}
+			}
+
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				UInt168 hash = UINT168_ZERO;
 				BRAddressHash168(&hash, addrs[i].c_str());
-				CMBlock hashData(sizeof(hash));
-				memcpy(hashData, hash.u8, sizeof(hash));
+				hashData.SetMemFixed(hash.u8, sizeof(hash));
 
 				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
 					filter->insertData(hashData);
@@ -672,10 +682,8 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < _wallet->getListeningAddrs().size(); ++i) {
-				UInt168 hash = UINT168_ZERO;
 				BRAddressHash168(&hash, _wallet->getListeningAddrs()[i].c_str());
-				CMBlock hashData(sizeof(hash));
-				memcpy(hashData, hash.u8, sizeof(hash));
+				hashData.SetMemFixed(hash.u8, sizeof(hash));
 
 				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
 					filter->insertData(hashData);
@@ -1654,6 +1662,10 @@ namespace Elastos {
 
 		void PeerManager::SetPeers(const std::vector<PeerInfo> &peers) {
 			_peers = peers;
+		}
+
+		const std::string &PeerManager::GetID() const {
+			return _wallet->GetWalletID();
 		}
 
 		void PeerManager::updateBloomFilter() {

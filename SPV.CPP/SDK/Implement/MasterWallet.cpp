@@ -548,15 +548,23 @@ namespace Elastos {
 			tryInitCoinConfig();
 
 			MasterPubKeyMap subWalletsPubKeyMap;
+			VotePubKeyMap votePubKeyMap;
 			typedef std::map<std::string, uint32_t> IdIndexMap;
 			IdIndexMap idIndexMap = _coinConfigReader.GetChainIdsAndIndices();
 			std::for_each(idIndexMap.begin(), idIndexMap.end(),
-						  [this, &subWalletsPubKeyMap, &payPassword](const IdIndexMap::value_type &item) {
+						  [this, &subWalletsPubKeyMap, &votePubKeyMap, &payPassword](const IdIndexMap::value_type &item) {
 							  subWalletsPubKeyMap[item.first] = SubAccountGenerator::GenerateMasterPubKey(
 									  _localStore.Account(),
 									  item.second, payPassword);
+							  if (item.first == "ELA") {
+								  votePubKeyMap[item.first] = SubAccountGenerator::GenerateVotePubKey(
+									  _localStore.Account(), item.second, payPassword);
+							  } else {
+								  votePubKeyMap[item.first] = CMBlock();
+							  }
 						  });
 			_localStore.SetMasterPubKeyMap(subWalletsPubKeyMap);
+			_localStore.SetVotePublicKeyMap(votePubKeyMap);
 		}
 
 		void MasterWallet::restoreLocalStore() {

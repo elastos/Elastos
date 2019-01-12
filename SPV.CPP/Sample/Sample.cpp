@@ -183,7 +183,7 @@ static void Transafer(MasterWalletManager *manager,
 	nlohmann::json tx = subWallet->CreateTransaction(from, to, amount, "memo", "remark");
 
 	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = subWallet->UpdateTransactionFee(tx, fee, from, false);
+	tx = subWallet->UpdateTransactionFee(tx, fee, from);
 
 	PublishTransaction(subWallet, tx);
 }
@@ -234,7 +234,7 @@ static void Deposit(MasterWalletManager *manager,
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
 
 	uint64_t fee = fromSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = fromSubWallet->UpdateTransactionFee(tx, fee, from, false);
+	tx = fromSubWallet->UpdateTransactionFee(tx, fee, from);
 
 	PublishTransaction(fromSubWallet, tx);
 }
@@ -337,7 +337,7 @@ static void InitWallets(MasterWalletManager *manager) {
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
-			std::string walletID = "(" + masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainId() + ")";
+			std::string walletID = masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainId();
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			logger->debug("[{}:{}] all addresses -> {}",
 						  masterWallets[i]->GetId(), subWallets[j]->GetChainId(),

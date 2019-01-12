@@ -65,6 +65,21 @@ namespace Elastos {
 			_subWalletsPubKeyMap = map;
 		}
 
+		const VotePubKeyMap &MasterWalletStore::GetVotePublicKeyMap() const {
+			return _votePublicKeyMap;
+		}
+
+		const CMBlock &MasterWalletStore::GetVotePublicKey(const std::string &chainID) const {
+			if (_votePublicKeyMap.find(chainID) == _votePublicKeyMap.end())
+				return CMBlock();
+
+			return _votePublicKeyMap[chainID];
+		}
+
+		void MasterWalletStore::SetVotePublicKeyMap(const VotePubKeyMap &map) {
+			_votePublicKeyMap = map;
+		}
+
 		const IdAgentInfo &MasterWalletStore::GetIdAgentInfo() const {
 			return _idAgentInfo;
 		}
@@ -105,6 +120,12 @@ namespace Elastos {
 				masterPubKey[it->first] = Utils::encodeHex(stream.getBuffer());
 			}
 			j["MasterPubKey"] = masterPubKey;
+
+			nlohmann::json votePubKey;
+			for (VotePubKeyMap::const_iterator it = p.GetVotePublicKeyMap().cbegin(); it != p.GetVotePublicKeyMap().cend(); ++it) {
+				votePubKey[it->first] = Utils::encodeHex(it->second);
+			}
+			j["VotePublicKey"] = votePubKey;
 		}
 
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
@@ -129,6 +150,13 @@ namespace Elastos {
 				masterPubKeyMap[it.key()] = masterPubKey;
 			}
 			p.SetMasterPubKeyMap(masterPubKeyMap);
+
+			VotePubKeyMap votePubKeyMap;
+			nlohmann::json votePubKeyJson = j["VotePublicKey"];
+			for (nlohmann::json::iterator it = votePubKeyJson.begin(); it != votePubKeyJson.end(); ++it) {
+				votePubKeyMap[it.key()] = Utils::decodeHex(it.value());
+			}
+			p.SetVotePublicKeyMap(votePubKeyMap);
 		}
 
 		IAccount *MasterWalletStore::Account() const {

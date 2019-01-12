@@ -40,8 +40,47 @@ namespace Elastos {
 					const std::string &remark,
 					bool useVotedUTXO = false) = 0;
 
+			virtual nlohmann::json GenerateProducerPayload(
+				const std::string &publicKey,
+				const std::string &nickName,
+				const std::string &url,
+				const std::string &ipAddress,
+				uint64_t location,
+				const std::string &payPasswd) const = 0;
+
+			virtual nlohmann::json GenerateCancelProducerPayload(
+				const std::string &publicKey,
+				const std::string &payPasswd) const = 0;
+
+			virtual nlohmann::json CreateRegisterProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				uint64_t amount,
+				const std::string &memo,
+				bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json CreateUpdateProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json CreateCancelProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &emmo,
+				bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json CreateRetrieveDepositTransaction(
+				const std::string &memo) = 0;
+
+			virtual std::string GetPublicKeyForVote() const = 0;
+
 			virtual nlohmann::json CreateVoteProducerTransaction(
-					uint64_t stake, const nlohmann::json &pubicKeys) = 0;
+					uint64_t stake,
+					const nlohmann::json &pubicKeys,
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
 
 			virtual	nlohmann::json GetVotedProducerList() const = 0;
 

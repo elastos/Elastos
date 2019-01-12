@@ -27,7 +27,10 @@ namespace Elastos {
 
 			virtual std::string GetMainAccountPublicKey() const;
 
+			virtual const CMBlock &GetVotePublicKey() const;
+
 		protected:
+			CMBlock _votePublicKey;
 			IAccount *_parentAccount;
 			MasterPubKey _masterPubKey;
 			uint32_t _coinIndex;

@@ -38,6 +38,10 @@ namespace Elastos {
 
 			void SetAddress(const std::string &address);
 
+			const CMBlock &GetSignature() const;
+
+			void SetSignature(const CMBlock &signature);
+
 			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
 
 			bool DeserializeUnsigned(ByteStream &istream, uint8_t version);

@@ -21,15 +21,19 @@ namespace Elastos {
 		public:
 			Key();
 
+			Key(const Key &key);
+
 			Key(BRKey *brkey);
 
 			Key(const BRKey &brkey);
 
 			Key(const std::string &privKey);
 
-			Key(const CMBlock &privKey);
-
 			Key(const UInt256 &secret, bool compressed);
+
+			~Key();
+
+			Key &operator=(const Key &key);
 
 			virtual std::string toString() const;
 
@@ -37,9 +41,9 @@ namespace Elastos {
 
 			UInt256 getSecret() const;
 
-			CMBlock getPubkey() const;
+			CMBlock GetPublicKey() const;
 
-			bool setPubKey(const CMBlock pubKey);
+			bool SetPublicKey(const CMBlock &pubKey);
 
 			bool getCompressed() const;
 

@@ -56,6 +56,8 @@ namespace Elastos {
 				GetTransactionInput,
 				InvalidTransaction,
 				GetUnusedAddress,
+				AccountNotSupportVote,
+				WalletNotContainTx,
 				Other = 29999,
 			} Code;
 		}

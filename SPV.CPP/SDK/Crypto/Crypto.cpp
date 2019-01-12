@@ -71,7 +71,11 @@ namespace Elastos {
 			/* Provide any AAD data. This can be called zero or one times as
 			 * required
 			 */
-			if (1 != EVP_EncryptUpdate(ctx, NULL, &len, adata.GetSize() == 0 ? (const unsigned char *) "" : adata, adata.GetSize())) {
+			const unsigned char *padata = (const unsigned char *)std::string("").c_str();
+			if (adata.GetSize() > 0) {
+				padata = adata;
+			}
+			if (1 != EVP_EncryptUpdate(ctx, NULL, &len, padata, adata.GetSize())) {
 				Log::error("Encrypt: Provide any AAD data");
 				EVP_CIPHER_CTX_free(ctx);
 				return false;
@@ -168,7 +172,11 @@ namespace Elastos {
 			/* Provide any AAD data. This can be called zero or more times as
 			 * required
 			 */
-			if (1 != EVP_DecryptUpdate(ctx, NULL, &len, adata.GetSize() == 0 ? (const unsigned char *)"" : adata, adata.GetSize())) {
+			const unsigned char *padata = (const unsigned char *)std::string("").c_str();
+			if (adata.GetSize() > 0) {
+				padata = adata;
+			}
+			if (1 != EVP_DecryptUpdate(ctx, NULL, &len, padata, adata.GetSize())) {
 				Log::error("Decrypt: provide any AAD data");
 				EVP_CIPHER_CTX_free(ctx);
 				return false;

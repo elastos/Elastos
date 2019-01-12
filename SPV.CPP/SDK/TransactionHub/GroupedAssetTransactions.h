@@ -70,11 +70,9 @@ namespace Elastos {
 			void UpdateBalance(uint32_t blockHeight);
 
 			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
-										  uint64_t fee, bool useVotedUTXO,
-										  const boost::function<bool(const std::string &, const std::string &)> &filter);
+										  uint64_t fee, bool useVotedUTXO);
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
-							 const boost::function<bool(const std::string &, const std::string &)> &filter);
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress);
 
 //			TransactionPtr
 //			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
@@ -151,11 +149,9 @@ namespace Elastos {
 			const AssetTransactionsPtr &Get(const UInt256 &assetID) const;
 
 			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
-										  uint64_t fee, bool useVotedUTXO,
-										  const boost::function<bool(const std::string &, const std::string &)> &filter);
+										  uint64_t fee, bool useVotedUTXO);
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO,
-							 const boost::function<bool(const std::string &, const std::string &)> &filter);
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress);
 
 //			TransactionPtr
 //			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,

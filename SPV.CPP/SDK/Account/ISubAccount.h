@@ -20,6 +20,18 @@ namespace Elastos {
 		class Lockable;
 		class Wallet;
 
+		namespace BIP32 {
+			enum Account {
+				Default,
+				Vote
+			};
+
+			enum Change {
+				External,
+				Internal
+			};
+		}
+
 		class ISubAccount {
 		public:
 			virtual ~ISubAccount() {}
@@ -50,6 +62,11 @@ namespace Elastos {
 			virtual bool IsAddressUsed(const Address &address) const = 0;
 
 			virtual void ClearUsedAddresses() = 0;
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd) = 0;
+
+			virtual const CMBlock &GetVotePublicKey() const = 0;
+
 		};
 
 		typedef boost::shared_ptr<ISubAccount> SubAccountPtr;

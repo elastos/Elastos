@@ -33,11 +33,11 @@ namespace Elastos {
 		}
 
 		void UTXOList::AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms) {
-			_utxos.emplace_back(input.getTransctionHash(), input.getIndex(), amount, confirms, false);
+			_utxos.emplace_back(input.getTransctionHash(), input.getIndex(), amount, confirms);
 		}
 
-		void UTXOList::AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms, bool isVote) {
-			_utxos.emplace_back(hash, index, amount, confirms, isVote);
+		void UTXOList::AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {
+			_utxos.emplace_back(hash, index, amount, confirms);
 		}
 
 		void UTXOList::RemoveAt(size_t index) {

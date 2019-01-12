@@ -62,6 +62,14 @@ namespace Elastos {
 			_address = address;
 		}
 
+		const CMBlock &PayloadRegisterProducer::GetSignature() const {
+			return _signature;
+		}
+
+		void PayloadRegisterProducer::SetSignature(const CMBlock &signature) {
+			_signature = signature;
+		}
+
 		void PayloadRegisterProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.writeVarBytes(_publicKey);
 			ostream.writeVarString(_nickName);

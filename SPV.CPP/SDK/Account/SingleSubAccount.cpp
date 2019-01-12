@@ -70,6 +70,12 @@ namespace Elastos {
 		bool SingleSubAccount::ContainsAddress(const Address &address) const {
 			return address.IsEqual(GetParent()->GetAddress());
 		}
+
+		Key SingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+			ParamChecker::throwLogicException(Error::AccountNotSupportVote, "This account do not support vote");
+			return Key();
+		}
+
 	}
 }
 

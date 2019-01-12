@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_MULTISIGNACCOUNT_H__
 #define __ELASTOS_SDK_MULTISIGNACCOUNT_H__
 
-#include "IAccount.h"
-#include "StandardAccount.h"
+#include <SDK/Account/IAccount.h>
+#include <SDK/Common/Mstream.h>
 
 #include <vector>
 

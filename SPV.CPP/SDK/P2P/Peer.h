@@ -257,74 +257,74 @@ namespace Elastos {
 
 			template<typename Arg1, typename... Args>
 			inline void trace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::trace(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::trace(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void debug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::debug(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::debug(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::info(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::info(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void warn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::warn(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::warn(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void error(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::error(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::error(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void critical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
+				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::critical(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
+				Log::critical(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename T>
 			inline void trace(const T &msg) {
-				Log::trace("{}:{} {}", getHost(), GetPort(), msg);
+				Log::trace("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void debug(const T &msg) {
-				Log::debug("{}:{} {}", getHost(), GetPort(), msg);
+				Log::debug("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void info(const T &msg) {
-				Log::info("{}:{} {}", getHost(), GetPort(), msg);
+				Log::info("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void warn(const T &msg) {
-				Log::warn("{}:{} {}", getHost(), GetPort(), msg);
+				Log::warn("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void error(const T &msg) {
-				Log::error("{}:{} {}", getHost(), GetPort(), msg);
+				Log::error("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void critical(const T &msg) {
-				Log::critical("{}:{} {}", getHost(), GetPort(), msg);
+				Log::critical("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
 			}
 
 		private:
@@ -344,6 +344,7 @@ namespace Elastos {
 
 			PeerInfo _info;
 
+			std::string _managerID;
 			uint32_t _magicNumber;
 			mutable std::string _host;
 			ConnectStatus _status;

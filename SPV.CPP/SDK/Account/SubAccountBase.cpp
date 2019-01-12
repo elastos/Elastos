@@ -41,5 +41,9 @@ namespace Elastos {
 			return _parentAccount->GetPublicKey();
 		}
 
+		const CMBlock &SubAccountBase::GetVotePublicKey() const {
+			return _votePublicKey;
+		}
+
 	}
 }

@@ -54,7 +54,7 @@ namespace Elastos {
 				ParamChecker::throwParamException(Error::JsonFormatError, "main chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = SubWallet::CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount,
+			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount,
 													Asset::GetELAAssetID(), remark, memo);
 			ParamChecker::checkLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
@@ -87,7 +87,7 @@ namespace Elastos {
 											  uint64_t amount, const std::string &assetID, const std::string &memo,
 											  const std::string &remark) {
 			UInt256 asset = Utils::UInt256FromString(assetID, true);
-			TransactionPtr tx = SubWallet::CreateTx(fromAddress, toAddress, amount, asset, memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, asset, memo, remark);
 			return tx->toJson();
 		}
 

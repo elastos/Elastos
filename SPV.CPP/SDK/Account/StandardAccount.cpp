@@ -39,14 +39,14 @@ namespace Elastos {
 			Utils::Encrypt(_encryptedKey, secret, payPassword);
 
 			Key key(masterKey);
-			_publicKey = Utils::encodeHex(key.getPubkey());
+			_publicKey = Utils::encodeHex(key.GetPublicKey());
 
 			//init id chain derived master public key
 			BRKey idMasterKey;
 			UInt256 idChainCode;
 			BRBIP32PrivKeyPath(&idMasterKey, &idChainCode, &seed, sizeof(seed), 1, 0 | BIP32_HARD);
 			Key wrapperKey(idMasterKey.secret, idMasterKey.compressed);
-			_masterIDPubKey = MasterPubKey(wrapperKey.getPubkey(), idChainCode);
+			_masterIDPubKey = MasterPubKey(wrapperKey.GetPublicKey(), idChainCode);
 
 			var_clean(&seed);
 			var_clean(&masterKey.secret);
@@ -84,7 +84,7 @@ namespace Elastos {
 
 		std::string StandardAccount::GetAddress() const {
 			Key key;
-			key.setPubKey(Utils::decodeHex(_publicKey));
+			key.SetPublicKey(Utils::decodeHex(_publicKey));
 			return key.address();
 		}
 

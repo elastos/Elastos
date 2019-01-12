@@ -61,7 +61,7 @@ namespace Elastos {
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = SubWallet::CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark);
 
 			tx->setTransactionType(Transaction::RegisterIdentification, payload);
 

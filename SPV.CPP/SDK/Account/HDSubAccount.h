@@ -14,7 +14,8 @@ namespace Elastos {
 
 		class HDSubAccount : public SubAccountBase {
 		public:
-			HDSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex);
+			HDSubAccount(const MasterPubKey &masterPubKey, const CMBlock &votePubKey,
+						 IAccount *account, uint32_t coinIndex);
 
 			virtual nlohmann::json GetBasicInfo() const;
 
@@ -38,6 +39,8 @@ namespace Elastos {
 			virtual bool IsAddressUsed(const Address &address) const;
 
 			virtual void ClearUsedAddresses();
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
 		private:
 

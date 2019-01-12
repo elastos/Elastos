@@ -14,18 +14,21 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		HDSubAccount::HDSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex) :
+		HDSubAccount::HDSubAccount(const MasterPubKey &masterPubKey, const CMBlock &votePubKey,
+								   IAccount *account, uint32_t coinIndex) :
 				SubAccountBase(account) {
 				_coinIndex = coinIndex;
 				_masterPubKey = masterPubKey;
+				_votePublicKey = votePubKey;
 		}
 
 		void HDSubAccount::InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) {
 			_lock = lock;
 
-			for (size_t i = 0; transactions.size(); i++) {
-				if (!transactions[i]->isSigned()) continue;
-				AddUsedAddrs(transactions[i]);
+			for (size_t i = 0; i < transactions.size(); i++) {
+				if (transactions[i]->isSigned()) {
+					AddUsedAddrs(transactions[i]);
+				}
 			}
 
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
@@ -164,7 +167,8 @@ namespace Elastos {
 				CMBlock publicKey(len);
 				memcpy(publicKey, pubKey, len);
 
-				if (!key.setPubKey(publicKey)) break;
+				if (!key.SetPublicKey(publicKey))
+					break;
 				Address address = KeyToAddress(key.getRaw());
 				if (address.IsEqual(Address::None))
 					break;
@@ -208,6 +212,23 @@ namespace Elastos {
 
 		void HDSubAccount::ClearUsedAddresses() {
 			usedAddrs.clear();
+		}
+
+		Key HDSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+			UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
+
+			UInt256 chainCode;
+
+			BRKey brKey;
+			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
+							   _coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
+			Key key(brKey);
+
+			var_clean(&seed);
+			var_clean(&chainCode);
+			var_clean(&brKey.secret);
+
+			return key;
 		}
 
 	}

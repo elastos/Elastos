@@ -13,6 +13,7 @@
 #include <SDK/Common/ParamChecker.h>
 
 #include <Core/BRCrypto.h>
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -37,7 +38,7 @@ namespace Elastos {
 					if (_masterPubKey == nullptr)
 						return new SingleSubAccount(_parentAccount);
 					else
-						return new StandardSingleSubAccount(*_masterPubKey, _parentAccount, _coinInfo.getIndex());
+						return new StandardSingleSubAccount(*_masterPubKey, _votePubKey, _parentAccount, _coinInfo.getIndex());
 				} else {
 					if (_masterPubKey == nullptr)
 						return GenerateFromCoinInfo(_parentAccount, _coinInfo);
@@ -76,12 +77,12 @@ namespace Elastos {
 			_resultChainCode = Utils::UInt256FromString(coinInfo.getChainCode());
 			_resultPubKey = Utils::decodeHex(coinInfo.getPublicKey());
 
-			return new HDSubAccount(masterPubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(masterPubKey, _votePubKey, account, _coinInfo.getIndex());
 		}
 
 		ISubAccount *
 		SubAccountGenerator::GenerateFromHDPath(IAccount *account, uint32_t coinIndex) {
-			return new HDSubAccount(*_masterPubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(*_masterPubKey, _votePubKey, account, _coinInfo.getIndex());
 		}
 
 		void SubAccountGenerator::SetMasterPubKey(const MasterPubKeyPtr &masterPubKey) {
@@ -90,6 +91,10 @@ namespace Elastos {
 				_resultPubKey = _masterPubKey->getPubKey();
 				_resultChainCode = _masterPubKey->getChainCode();
 			}
+		}
+
+		void SubAccountGenerator::SetVotePubKey(const CMBlock &pubKey) {
+			_votePubKey = pubKey;
 		}
 
 		MasterPubKeyPtr SubAccountGenerator::GenerateMasterPubKey(IAccount *account, uint32_t coinIndex,
@@ -114,5 +119,28 @@ namespace Elastos {
 
 			return MasterPubKeyPtr(new MasterPubKey(key, chainCode));
 		}
+
+		CMBlock SubAccountGenerator::GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd) {
+			std::string votePubKey;
+			Key key;
+
+			if (account->GetType() == "Standard") {
+				UInt512 seed = account->DeriveSeed(payPasswd);
+
+				UInt256 chainCode;
+
+				BRKey brKey;
+				BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
+								   coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
+				key = Key(brKey);
+
+				var_clean(&seed);
+				var_clean(&chainCode);
+				var_clean(&brKey.secret);
+			}
+
+			return key.GetPublicKey();
+		}
+
 	}
 }

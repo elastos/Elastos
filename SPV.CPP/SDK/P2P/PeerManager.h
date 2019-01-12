@@ -161,6 +161,8 @@ namespace Elastos {
 
 			void SetPeers(const std::vector<PeerInfo> &peers);
 
+			const std::string &GetID() const;
+
 		public:
 			virtual void OnConnected(const PeerPtr &peer);
 

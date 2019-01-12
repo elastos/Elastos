@@ -42,7 +42,7 @@ namespace Elastos {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 
 			Key wrapperKey(key.secret, key.compressed);
-			CMBlock pubKey = wrapperKey.getPubkey();
+			CMBlock pubKey = wrapperKey.GetPublicKey();
 
 			memcpy(_masterPubKey->pubKey, pubKey, pubKey.GetSize());
 			_masterPubKey->chainCode = chainCode;

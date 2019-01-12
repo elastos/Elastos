@@ -78,8 +78,7 @@ namespace Elastos {
 			virtual nlohmann::json UpdateTransactionFee(
 					const nlohmann::json &transactionJson,
 					uint64_t fee,
-					const std::string &fromAddress,
-					bool useVotedUTXO = false);
+					const std::string &fromAddress);
 
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &rawTransaction,

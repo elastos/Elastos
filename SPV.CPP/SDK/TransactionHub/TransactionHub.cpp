@@ -34,9 +34,11 @@ namespace Elastos {
 				_transactions(this, subAccount) {
 
 			_transactions.UpdateAssets(assetArray);
-			_transactions.InitWithTransactions(txArray);
 
 			_subAccount->InitAccount(txArray, this);
+
+			_transactions.InitWithTransactions(txArray);
+
 			UpdateBalance();
 
 			assert(listener != nullptr);
@@ -200,12 +202,8 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		bool TransactionHub::AddressFilter(const std::string &fromAddress, const std::string &filterAddress) {
-			return filterAddress == fromAddress;
-		}
-
-		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, bool useVotedUTXO) {
-			_transactions.UpdateTxFee(tx, fee, fromAddress, useVotedUTXO, boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
+		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress) {
+			_transactions.UpdateTxFee(tx, fee, fromAddress);
 		}
 
 		TransactionPtr
@@ -224,9 +222,7 @@ namespace Elastos {
 
 			outputs.emplace_back(amount, toAddress, assetID);
 
-			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress,
-																 fee, useVotedUTXO,
-																 boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
+			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
 			if (result != nullptr) {
 				result->setRemark(remark);
 
@@ -463,6 +459,18 @@ namespace Elastos {
 			return results;
 		}
 
+		std::string TransactionHub::GetVoteDepositAddress() const {
+			CMBlock publicKey = _subAccount->GetVotePublicKey();
+			if (publicKey.GetSize() == 0) {
+				return std::string();
+			}
+
+			Key key;
+			key.SetPublicKey(publicKey);
+
+			return key.keyToAddress(ELA_RETURN_DEPOSIT);
+		}
+
 		bool TransactionHub::containsAddress(const std::string &address) {
 			bool result;
 			{
@@ -548,6 +556,14 @@ namespace Elastos {
 												  notifyUser, recommendRescan);
 				}
 			}
+		}
+
+		const std::string &TransactionHub::GetWalletID() const {
+			return _walletID;
+		}
+
+		void TransactionHub::SetWalletID(const std::string &walletID) {
+			_walletID = walletID;
 		}
 
 		uint32_t TransactionHub::getBlockHeight() const {

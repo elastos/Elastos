@@ -90,25 +90,24 @@
  *	}
  */
 
-template<class T, class SIZETYPE=size_t>
+template<class T>
 class CMemBlock {
 public:
-	typedef SIZETYPE size_type;
-public:
 	CMemBlock() {
-		pValue = new Value((size_type) 0);
+		pValue = new Value(0);
 		pValue->AddRef();
 	}
 
-	CMemBlock(int size) {
-		pValue = new Value(size_type(size));
+	template <class size_type>
+	CMemBlock(const void *buf, size_type len) {
+		size_t l = size_t(len);
+		pValue = new Value(l);
+		memcpy(pValue->data, buf, l);
 		pValue->AddRef();
 	}
 
+	template<class size_type>
 	CMemBlock(size_type size) {
-#ifdef USE_VARY_MACRO
-		__glibcxx_requires_subscript(size);
-#endif
 		pValue = new Value(size);
 		pValue->AddRef();
 	}
@@ -156,7 +155,7 @@ public:
 
 	CMemBlock operator+(const CMemBlock &mem) const {
 		CMemBlock ret;
-		size_type l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
+		size_t l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
 		ret.Resize(l);
 		memcpy(ret, nullptr != pValue ? pValue->data : 0, sizeof(T) * (nullptr != pValue ? pValue->_len : 0));
 		memcpy(ret + (nullptr != pValue ? pValue->_len : 0), nullptr != mem.pValue ? mem.pValue->data : 0,
@@ -167,7 +166,7 @@ public:
 
 	CMemBlock operator+(CMemBlock &mem) const {
 		CMemBlock ret;
-		size_type l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
+		size_t l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
 		ret.Resize(l);
 		memcpy(ret, nullptr != pValue ? pValue->data : 0, sizeof(T) * (nullptr != pValue ? pValue->_len : 0));
 		memcpy(ret + (nullptr != pValue ? pValue->_len : 0), nullptr != mem.pValue ? mem.pValue->data : 0,
@@ -178,10 +177,10 @@ public:
 
 	CMemBlock &operator+=(const CMemBlock &mem) {
 		if (nullptr == pValue) {
-			pValue = new Value((size_type) 0);
+			pValue = new Value(0);
 			pValue->AddRef();
 		}
-		size_type l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
+		size_t l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
 		pValue->Resize(l);
 		memcpy(pValue->data + pValue->_len, nullptr != mem.pValue ? mem.pValue->data : 0,
 			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
@@ -191,10 +190,10 @@ public:
 
 	CMemBlock &operator+=(CMemBlock &mem) {
 		if (nullptr == pValue) {
-			pValue = new Value((size_type) 0);
+			pValue = new Value(0);
 			pValue->AddRef();
 		}
-		size_type l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
+		size_t l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
 		pValue->Resize(l);
 		memcpy(pValue->data + pValue->_len, nullptr != mem.pValue ? mem.pValue->data : 0,
 			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
@@ -232,37 +231,36 @@ public:
 			pValue->Clear();
 	}
 
+	template <class size_type>
 	void DelAt(size_type st) {
 		if (nullptr != pValue)
 			pValue->DelAt(st);
 	}
 
-	size_type SetMem(T *pV, size_type len) {
+	template <class size_type>
+	size_t SetMem(T *pV, size_type len) {
 		return nullptr != pValue ? pValue->SetMem(pV, len) : 0;
 	}
 
-	template <class Type>
-	size_type SetMemFixed(const Type *pV, size_type len) {
+	template <class Type, class size_type>
+	size_t SetMemFixed(const Type *pV, size_type len) {
 		return nullptr != pValue ? pValue->SetMemFixed((const T *)pV, len) : 0;
 	}
 
-	size_type Resize(int size) {
-		return Resize(size_type(size));
-	}
-
-	size_type Resize(size_type size) {
+	template <class size_type>
+	size_t Resize(size_type size) {
 		return nullptr != pValue ? pValue->Resize(size) : 0;
 	}
 
-	size_type push_back(T &t) {
+	size_t push_back(T &t) {
 		return nullptr != pValue ? pValue->push_back(t) : 0;
 	}
 
-	size_type GetSize() const {
+	size_t GetSize() const {
 		return nullptr != pValue ? pValue->GetSize() : 0;
 	}
 
-	size_type GetSize() {
+	size_t GetSize() {
 		return nullptr != pValue ? pValue->GetSize() : 0;
 	}
 
@@ -319,47 +317,21 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
-	T *operator+(int off) const {
-		return operator+(size_type(off));
-	}
-
-	T *operator+(int off) {
-		return operator+(size_type(off));
-	}
-
-	T *operator+(size_type off) const {
-#ifdef USE_VARY_MACRO
-		__glibcxx_requires_subscript(off);
-#endif
+	T *operator+(size_t off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(size_type off) {
-#ifdef USE_VARY_MACRO
-		__glibcxx_requires_subscript(off);
-#endif
+	T *operator+(size_t off) {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T &operator[](int off) const {
-		return operator[](size_type(off));
-	}
-
-	T &operator[](int off) {
-		return operator[](size_type(off));
-	}
-
+	template <class size_type>
 	T &operator[](size_type off) const {
-#ifdef USE_VARY_MACRO
-		__glibcxx_requires_subscript(off);
-#endif
 		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
 	}
 
+	template <class size_type>
 	T &operator[](size_type off) {
-#ifdef USE_VARY_MACRO
-		__glibcxx_requires_subscript(off);
-#endif
 		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
 	}
 
@@ -367,12 +339,12 @@ private:
 	class Value {
 		bool fixed;
 	public:
-		size_type AddRef() {
+		size_t AddRef() {
 			__sync_fetch_and_add(&_ref, 1);
 			return _ref;
 		}
 
-		size_type Release() {
+		size_t Release() {
 			__sync_fetch_and_sub(&_ref, 1);
 			if (0 == _ref) {
 				delete this;
@@ -382,13 +354,15 @@ private:
 			}
 		}
 
+		template <class size_type>
 		Value(size_type size) {
+			size_t s = size_t(size);
 			fixed = false;
 
 			_ref = 0;
-			if (0 < size) {
-				data = (T *) malloc(size * sizeof(T));
-				_len = size;
+			if (0 < s) {
+				data = (T *) malloc(s * sizeof(T));
+				_len = s;
 			} else {
 				data = 0;
 				_len = 0;
@@ -402,7 +376,7 @@ private:
 
 		void Zero() {
 			if (nullptr != data && _len > 0) {
-				for (size_type l = 0; l < _len; l++) {
+				for (size_t l = 0; l < _len; l++) {
 					data[l] = 0;
 				}
 			}
@@ -417,14 +391,16 @@ private:
 			_len = 0;
 		}
 
+		template <class size_type>
 		void DelAt(size_type st) {
+			size_t at = size_t(st);
 			if (nullptr != data && _len > 0) {
-				if (0 <= st && st < _len) {
+				if (0 <= at && at < _len) {
 					T *p = (T *) malloc((_len - 1) * sizeof(T));
-					for (size_type i = 0; i < _len; i++) {
-						if (i < st) {
+					for (size_t i = 0; i < _len; i++) {
+						if (i < at) {
 							p[i] = data[i];
-						} else if (i > st) {
+						} else if (i > at) {
 							p[i - 1] = data[i];
 						}
 					}
@@ -436,37 +412,41 @@ private:
 			}
 		}
 
-		size_type SetMem(T *pV, size_type len) {
+		template <class size_type>
+		size_t SetMem(T *pV, size_type len) {
 			if (nullptr != data && !fixed)
 				free(data);
 			data = pV;
 			fixed = false;
-			_len = len;
+			_len = size_t(len);
 			return _len;
 		}
 
-		size_type SetMemFixed(const T *pV, size_type len) {
+		template <class size_type>
+		size_t SetMemFixed(const T *pV, size_type len) {
 			if (nullptr != data && !fixed)
 				free(data);
 			data = const_cast<T *>(pV);
 			fixed = true;
-			_len = len;
+			_len = size_t(len);
 			return _len;
 		}
 
-		size_type Resize(size_type size) {
-			if (size == _len)
-				return size;
-			if (0 < size) {
-				T *t = (T *) malloc(size * sizeof(T));
+		template <class size_type>
+		size_t Resize(size_type size) {
+			size_t s = size_t(size);
+			if (s == _len)
+				return s;
+			if (0 < s) {
+				T *t = (T *) malloc(s * sizeof(T));
 				if (nullptr != data) {
-					size_type lt = _len > size ? size : _len;
+					size_t lt = _len > s ? s : _len;
 					memcpy(t, data, lt * sizeof(T));
 					if (!fixed) free(data);
 				}
 				data = t;
 				fixed = false;
-				_len = size;
+				_len = s;
 			} else {
 				if (nullptr != data) {
 					if (!fixed) free(data);
@@ -478,25 +458,15 @@ private:
 			return _len;
 		}
 
-		size_type push_back(T &t) {
-			T *pt = (T *) malloc((_len + 1) * sizeof(T));
-			memcpy(pt, data, _len * sizeof(T));
-			if (nullptr != data && !fixed) free(data);
-			data = pt;
-			fixed = false;
-			data[_len++] = t;
-			return _len;
-		}
-
-		size_type GetSize() {
+		size_t GetSize() {
 			return _len;
 		}
 
 		void Reverse() {
 			if (nullptr != data && 0 < _len) {
-				size_type id = _len / 2;
+				size_t id = _len / 2;
 				T tmp;
-				for (size_type i = 0; i < id; i++) {
+				for (size_t i = 0; i < id; i++) {
 					tmp = data[i];
 					data[i] = data[_len - (i + 1)];
 					data[_len - (i + 1)] = tmp;
@@ -504,15 +474,15 @@ private:
 			}
 		}
 
-		size_type _ref;
+		size_t _ref;
 		T *data;
-		size_type _len;
+		size_t _len;
 	};
 
 	Value *pValue;
 };
 
-typedef CMemBlock<uint8_t, size_t> CMBlock;
+typedef CMemBlock<uint8_t> CMBlock;
 
 
 #endif

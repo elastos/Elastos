@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 #define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
+#include <SDK/Account/MultiSignAccount.h>
+
 #include <vector>
 #include <map>
-
-#include "MultiSignAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {

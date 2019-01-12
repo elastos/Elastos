@@ -12,13 +12,16 @@ namespace Elastos {
 
 		class StandardSingleSubAccount : public SingleSubAccount {
 		public:
-			StandardSingleSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex);
+			StandardSingleSubAccount(const MasterPubKey &masterPubKey, const CMBlock &votePubKey,
+									 IAccount *account, uint32_t coinIndex);
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
 			virtual std::string GetMainAccountPublicKey() const;
 
 			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const;
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
 		protected:
 			virtual WrapperList<Key, BRKey>
