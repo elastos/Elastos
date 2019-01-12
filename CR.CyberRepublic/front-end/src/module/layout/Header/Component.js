@@ -241,8 +241,8 @@ export default class extends BaseComponent {
                         </Menu.Item>
                     </SubMenu>
 
-                    <Menu.Item className="c_MenuItem link" key="council">
-                        {I18N.get('council.0001')}
+                    <Menu.Item className="c_MenuItem link" key="proposals">
+                        {I18N.get('council.voting.proposalList')}
                     </Menu.Item>
 
                     <Menu.Item className="c_MenuItem link" key="blog">
@@ -330,7 +330,7 @@ export default class extends BaseComponent {
             'social',
             'leader',
             'community',
-            'council',
+            'proposals',
             'directory',
             'account',
             'tasks',
@@ -345,7 +345,6 @@ export default class extends BaseComponent {
             'contact',
             'slack',
             'suggestion',
-            'council'
         ], key)) {
 
             if (key === 'landing') {

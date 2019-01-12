@@ -1,14 +1,15 @@
 import React from 'react'
+import _ from 'lodash'
+import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Table, Tooltip, Row, Col, Button,
+  Table, Row, Col, Button,
 } from 'antd'
 import I18N from '@/I18N'
-import config from '@/config'
 import { LANGUAGES } from '@/config/constant'
+import VoteStats from '../stats/Component'
 
 import './style.scss'
-import moment from 'moment/moment'
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -57,16 +58,8 @@ export default class extends BaseComponent {
         dataIndex: 'proposedBy',
       },
       {
-        title: `${I18N.get('council.voting.voteBy')} Kevin Zhang`,
-        render: (id, item) => this.voteDataByUser('Kevin Zhang', item),
-      },
-      {
-        title: `${I18N.get('council.voting.voteBy')} Fay Li`,
-        render: (id, item) => this.voteDataByUser('Fay Li', item),
-      },
-      {
-        title: `${I18N.get('council.voting.voteBy')} Yipeng Su`,
-        render: (id, item) => this.voteDataByUser('Yipeng Su', item),
+        title: I18N.get('council.voting.voteByCouncil'),
+        render: (id, item) => this.voteDataByUser(item),
       },
       {
         title: I18N.get('council.voting.status'),
@@ -86,23 +79,22 @@ export default class extends BaseComponent {
       })
     }
 
-
+    const createBtn = this.props.isCouncil && (
+      <Button style={{ width: '100%' }} onClick={this.toCreate} size="large" type="ebp" htmlType="submit" className="d_btn">
+          Create New Proposal
+      </Button>
+    )
     return (
       <div className="p-cvote-list ebp-wrap">
         <div className="d_box">
           <Row>
             <Col span={8}>
-              <h3 style={{ textAlign: 'left' }}>
+              <h3 style={{ textAlign: 'left' }} className="komu-a cr-title-with-icon">
                 {I18N.get('council.voting.proposalList')}
               </h3>
             </Col>
             <Col span={8} offset={8}>
-              {this.props.isCouncil
-                            && (
-                            <Button style={{ width: '100%' }} onClick={this.toCreate.bind(this)} size="large" type="ebp" htmlType="submit" className="d_btn">
-                                Create New Proposal
-                            </Button>
-                            )}
+              {createBtn}
             </Col>
           </Row>
           <Table
@@ -135,22 +127,21 @@ export default class extends BaseComponent {
     this.ord_loading();
   }
 
-  ord_checkLogin(isLogin) {
-
-  }
-
-  voteDataByUser(u, data) {
-    const map = data.vote_map;
+  voteDataByUser = (data) => {
+    const voteText = {
+      undefined: 'Undecided',
+      support: 'Yes',
+      reject: 'No',
+    }
+    const voteMap = data.vote_map;
     if (!data.vote_map) {
       // fix error in finding index of undefined
       return ''
     }
-    if (!map[u]) {
-      return '';
-    }
-    const temp = map[u];
-    if (temp === 'support') return 'Y';
-    if (temp === 'reject') return 'N';
-    return '';
+    const voteArr = _.map(voteMap, value => voteText[value.toLowerCase()])
+    const supportNum = _.countBy(voteArr).Yes || 0
+    const proposalAgreed = supportNum > 50
+    const percentage = (supportNum / voteArr.length).toString() && `${(supportNum / voteArr.length).toFixed(1).toString()}%`
+    return <VoteStats percentage={percentage} values={voteArr} yes={proposalAgreed} />
   }
 }

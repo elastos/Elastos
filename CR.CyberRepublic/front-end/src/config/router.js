@@ -430,7 +430,7 @@ export default [
 
     // council
     {
-        path : '/council',
+        path : '/proposals',
         page : CouncilPage
     },
     {

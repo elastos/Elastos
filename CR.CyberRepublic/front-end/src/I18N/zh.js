@@ -618,6 +618,7 @@ const zh = {
     'council.voting.type': '类型',
     'council.voting.author': '提案人',
     'council.voting.voteBy': '投票人',
+    'council.voting.voteByCouncil': '委员会投票结果',
     'council.voting.status': '状态',
     'council.voting.createdAt': '创建日期',
 

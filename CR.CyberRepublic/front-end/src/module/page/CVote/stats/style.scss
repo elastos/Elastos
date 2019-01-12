@@ -1,0 +1,29 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.c_VoteStatus {
+  .vote-status-list {
+    display: flex;
+  }
+  .vote-status-item {
+    flex-basis: 33.3%;
+    height: 14px;
+    box-sizing: border-box;
+    margin-right: 1px;
+    &.undecided {
+      background: #CED6E3;
+    }
+    &.yes {
+      background: $cr_primary_highlight;
+    }
+    &.no {
+      background: #BE1313;
+    }
+  }
+  .vote-status-text {
+    color: #CED6E3;
+    &.agreed {
+      color: #008D85;
+    }
+  }
+}
