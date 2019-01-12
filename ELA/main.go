@@ -107,7 +107,7 @@ func main() {
 
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
-		pwd, err = password.GetPassword()
+		pwd, err = password.GetFlagPassword()
 		if err != nil {
 			goto ERROR
 		}
