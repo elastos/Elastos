@@ -87,7 +87,7 @@ export default class extends Base {
         // if we are not querying only published records, we need to be an admin
         // TODO: write a test for this
         if (param.published !== true) {
-            if (!this.isLoggedIn() || !this.isAdmin()) {
+            if (!this.isLoggedIn() || !(this.isAdmin() || this.isCouncil())) {
                 throw 'cvoteservice.list - unpublished proposals only visible to admin';
             }
         } else {
