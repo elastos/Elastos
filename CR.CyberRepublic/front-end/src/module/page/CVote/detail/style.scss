@@ -1,0 +1,89 @@
+@import "@/style/color";
+
+.c_CVoteDetail {
+  padding: 0 50px 80px;
+  width: 80vw;
+  margin: 80px auto 0;
+  background: #ffffff;
+  text-align: left;
+  .content {
+    margin-top: 50px;
+  }
+  .subtitle-container {
+    display: flex;
+    font-size: 20px;
+    color: rgba(3, 30, 40, 0.4);
+  }
+  .subtitle-item {
+    &:not(:first-child) {
+      padding-left: 30px;
+    }
+    &:not(:last-child) {
+      border-right: 1px solid #E5E5E5;
+      padding-right: 30px;
+    }
+    .text {
+      font-size: 11px;
+    }
+    .value {
+    }
+  }
+  .vote-btn-group {
+    display: flex;
+    margin-top: 60px;
+    margin-bottom: 60px;
+  }
+  .ant-btn {
+    border-radius: 0 !important;
+    margin-right: 30px;
+    box-sizing: border-box;
+    flex: 1 0 210px;
+  }
+  .ant-btn.ant-btn-primary {
+    color: white;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn-primary:hover, .ant-btn-primary:focus {
+    color: #fff;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn.ant-btn-danger {
+    color: white;
+    background-color: #BE1313;
+    border: none;
+  }
+  .ant-btn-danger:hover, .ant-btn-danger:focus {
+    color: #fff;
+    background-color: #BE1313;
+    border: none;
+  }
+  .d_item {
+    .ant-form-item-children {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .d_btn {
+    width: 100%;
+    background: #66bda3;
+    color: #fff;
+    border-color: #009999;
+  }
+
+  input:read-only,
+  textarea:read-only {
+    cursor: not-allowed;
+  }
+
+  .cvoteStatus {
+    color: $cr_dark_color;
+    font-weight: 600;
+  }
+  .ant-tabs-nav-scroll{
+    text-align: center;
+  }
+
+}

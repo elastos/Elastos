@@ -75,7 +75,7 @@ class C extends BaseComponent {
             await this.props.updateCVote(param)
             message.success(I18N.get('from.CVoteForm.message.updated.success'))
             this.ord_loading(false)
-            this.props.history.push('/council')
+            this.props.history.push('/proposals')
           } catch (e) {
             message.error(e.message)
             this.ord_loading(false)
@@ -85,7 +85,7 @@ class C extends BaseComponent {
             await this.props.createCVote(param)
             message.success(I18N.get('from.CVoteForm.message.create.success'))
             this.ord_loading(false)
-            this.props.history.push('/council')
+            this.props.history.push('/proposals')
           } catch (e) {
             message.error(e.message)
             this.ord_loading(false)
@@ -525,7 +525,7 @@ class C extends BaseComponent {
         }).then(() => {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
           this.ord_loading(false)
-          this.props.history.push('/council')
+          this.props.history.push('/proposals')
         }).catch((e) => {
           message.error(e.message)
           this.ord_loading(false)

@@ -8,6 +8,7 @@ import {
 import I18N from '@/I18N'
 import { LANGUAGES } from '@/config/constant'
 import VoteStats from '../stats/Component'
+import { CVOTE_RESULT_TEXT } from '@/constant'
 
 import './style.scss'
 
@@ -110,7 +111,7 @@ export default class extends BaseComponent {
   }
 
   toDetail(id) {
-    this.props.history.push(`/cvote/edit/${id}`);
+    this.props.history.push(`/cvote/${id}`);
   }
 
   toCreate() {
@@ -128,17 +129,12 @@ export default class extends BaseComponent {
   }
 
   voteDataByUser = (data) => {
-    const voteText = {
-      undefined: 'Undecided',
-      support: 'Yes',
-      reject: 'No',
-    }
     const voteMap = data.vote_map;
     if (!data.vote_map) {
       // fix error in finding index of undefined
       return ''
     }
-    const voteArr = _.map(voteMap, value => voteText[value.toLowerCase()])
+    const voteArr = _.map(voteMap, value => CVOTE_RESULT_TEXT[value.toLowerCase()])
     const supportNum = _.countBy(voteArr).Yes || 0
     const proposalAgreed = supportNum > 50
     const percentage = (supportNum / voteArr.length).toString() && `${(supportNum / voteArr.length).toFixed(1).toString()}%`

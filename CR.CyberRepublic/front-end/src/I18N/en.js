@@ -620,6 +620,7 @@ const en = {
     'council.voting.author': 'Author',
     'council.voting.voteBy': 'Vote By',
     'council.voting.voteByCouncil': 'Votes by Council Members',
+    'council.voting.councilMembersVotes': 'Council Members Votes',
     'council.voting.status': 'Status',
     'council.voting.createdAt': 'Created',
 
@@ -630,6 +631,10 @@ const en = {
     'council.voting.type.support': 'Support',
     'council.voting.type.reject': 'Reject',
     'council.voting.type.abstention': 'Abstention',
+
+    'council.voting.btnText.yes': 'Vote Yes',
+    'council.voting.btnText.no': 'Oppose with a Reason',
+    'council.voting.btnText.abstention': 'Discard',
 
     // Landing
     'landing.elastos': 'Elastos',

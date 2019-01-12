@@ -177,7 +177,21 @@ export const USER_AVATAR_DEFAULT = '/assets/images/user_blurred_white.png'
 export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
+// council vote
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
+
+export const CVOTE_RESULT_TEXT = {
+  undefined: 'Undecided',
+  support: 'Yes',
+  reject: 'No',
+  abstention: 'Discarded',
+}
+
+export const CVOTE_TYPE = {
+  1: 'New Motion',
+  2: 'Motion Against',
+  3: 'Anything Else',
+}
 
 export const USER_SKILLSET = {
     BUSINESS: create(['VIRTUAL_ASSISTANT', 'DATA_ENTRY', 'MARKET_RESEARCH', 'BUSINESS_PLANS',

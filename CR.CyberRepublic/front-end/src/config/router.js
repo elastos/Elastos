@@ -83,6 +83,7 @@ import CouncilDetailPage from '../module/page/council/detail/Container';
 import CVoteCreatePage from '@/module/page/CVote/create/Container';
 import CVoteListPage from '@/module/page/CVote/list/Container';
 import CVoteEditPage from '@/module/page/CVote/edit/Container';
+import CVoteDetailPage from '@/module/page/CVote/detail/Container';
 
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
@@ -448,6 +449,10 @@ export default [
     {
         path : '/cvote/list',
         page : CVoteListPage
+    },
+    {
+        path : '/cvote/:id',
+        page : CVoteDetailPage
     },
     {
         path : '/cvote/edit/:id',

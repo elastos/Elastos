@@ -17,7 +17,7 @@ export default ({ data, hideAuthor, postedByText }) => {
   )
 
   return (
-    <div className="c_SuggestionMeta">
+    <div className="c_Meta">
       <span>{`#${displayId}`}</span>
       {authorNode}
       <span>{moment(createdAt).format('MMM D, YYYY')}</span>
