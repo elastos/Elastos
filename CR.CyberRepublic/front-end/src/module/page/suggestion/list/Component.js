@@ -69,9 +69,13 @@ export default class extends StandardPage {
     const actionsNode = this.renderHeaderActions()
     const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
-    let listNode = loading ? loadingNode : this.renderList()
-    if (_.isEmpty(dataList) && !loading) {
-      listNode = <div className="center">{I18N.get('suggestion.befirst')}</div>
+    let listNode = loadingNode
+    if (!loading) {
+      if (_.isEmpty(dataList)) {
+        listNode = <div className="center">{I18N.get('suggestion.befirst')}</div>
+      } else {
+        listNode = this.renderList()
+      }
     }
     return (
       <div>

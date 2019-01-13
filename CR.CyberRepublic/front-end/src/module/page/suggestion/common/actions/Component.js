@@ -57,7 +57,7 @@ export default class extends BaseComponent {
     const dislikeClass = isDisliked ? 'selected' : ''
     const likeNode = (
       <IconText
-        component={<LikeIcon />}
+        component={!!LikeIcon && <LikeIcon />}
         text={likesNum}
         onClick={() => this.handleClick({ callback: like, param: _id, state: 'isLiked' })}
         className={likeClass}
@@ -66,7 +66,7 @@ export default class extends BaseComponent {
 
     const dislikeNode = (
       <IconText
-        component={<DislikeIcon />}
+        component={!!DislikeIcon && <DislikeIcon />}
         text={dislikesNum}
         onClick={() => this.handleClick({ callback: dislike, param: _id, state: 'isDisliked' })}
         className={dislikeClass}
@@ -75,15 +75,13 @@ export default class extends BaseComponent {
 
     const commentNode = (
       <div className="cr-icon-group">
-        <IconText component={<CommentIcon />} text={commentsNum} />
+        <IconText component={!!CommentIcon && <CommentIcon />} text={commentsNum} />
       </div>
     )
 
     const viewsNode = (
       <div className="cr-icon-group self-right">
-        {viewsNum}
-        {' '}
-        {I18N.get('suggestion.views').toLowerCase()}
+        {`${viewsNum} ${I18N.get('suggestion.views').toLowerCase()}`}
       </div>
     )
 
@@ -108,7 +106,7 @@ export default class extends BaseComponent {
     const content = (
       <div className="popover-actions">
         <IconText
-          component={<FollowIcon />}
+          component={!!FollowIcon && <FollowIcon />}
           text={I18N.get('suggestion.follow')}
           onClick={() => this.handleClick({
             callback: subscribeCallback, param: _id, state: 'isSubscribed', before: true,
@@ -116,7 +114,7 @@ export default class extends BaseComponent {
           className={`follow-icon ${isSubscribed ? 'selected' : ''}`}
         />
         <IconText
-          component={<FlagIcon />}
+          component={!!FlagIcon && <FlagIcon />}
           text={I18N.get('suggestion.reportAbuse')}
           onClick={() => this.handleClick({ callback: reportAbuse, param: _id, state: 'isAbused' })}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
