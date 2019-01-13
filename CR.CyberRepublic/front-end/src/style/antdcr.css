@@ -3509,19 +3509,6 @@ mark {
 .ant-btn > span + .anticon {
   margin-left: 8px;
 }
-.ant-btn-clicked:after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  bottom: -1px;
-  right: -1px;
-  border-radius: inherit;
-  border: 0 solid #43af92;
-  opacity: 0.4;
-  animation: buttonEffect 0.4s;
-  display: block;
-}
 .ant-btn-danger.ant-btn-clicked:after {
   border-color: #f5222d;
 }

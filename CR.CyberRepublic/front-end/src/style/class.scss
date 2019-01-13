@@ -221,3 +221,32 @@ h3.with-gizmo:before {
   padding-left: 10px;
   background: url(/assets/images/bg-square-sm.png) 0 10px no-repeat;
 }
+
+.cr-strikethrough {
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  border: 0;
+  color: black;
+  &:focus, &:active {
+    color: inherit;
+  }
+  /* keeps it from wrapping across multiple lines */
+  &:after {
+    content: "";
+    /* required property */
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    /* adjust as necessary, depending on line thickness */
+    /* or use calc() if you don't need to support IE8: */
+    height: 100%;
+    /* 4px = half the line thickness */
+    // height: calc(50% - 4px);
+    width: 100%;
+    // border-top: 9px solid $cr_primary_highlight;
+    border-bottom: 9px solid $cr_primary_highlight;
+    z-index: -1;
+  }
+}

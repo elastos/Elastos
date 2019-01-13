@@ -145,7 +145,7 @@ export default class extends StandardPage {
               <Button
                 key={value}
                 onClick={() => this.onSortByChanged(value)}
-                className={(this.state.sortBy === value && 'selected') || ''}
+                className={(this.state.sortBy === value && 'cr-strikethrough') || ''}
               >
                 {SORT_BY_TEXT[value]}
               </Button>
