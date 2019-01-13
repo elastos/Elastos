@@ -83,6 +83,7 @@ export default class extends BaseComponent {
     const query = {
       page,
       results,
+      createdBy: this.props.currentUserId,
     }
 
     return query
