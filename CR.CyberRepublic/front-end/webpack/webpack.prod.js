@@ -85,7 +85,26 @@ module.exports = merge(common, {
             {
                 oneOf: [
                     {
-                        test: /\.(png|svg|jpg|gif)$/,
+                        test: /\.svg$/,
+                        exclude: /node_modules/,
+                        include: resolve('src'),
+                        use: [
+                            {
+                                loader: '@svgr/webpack',
+                            },
+                            {
+                                loader: 'file-loader',
+                                options: {
+                                    limit: 10000,
+                                    name: '[name].[hash:8].[ext]',
+                                    publicPath: '/static/media',
+                                    outputPath: 'static/media',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        test: /\.(png|jpg|gif)$/,
                         include: resolve('src'),
                         loader: 'file-loader',
                         options: {
