@@ -18,6 +18,7 @@ const zh = {
     '0009': '常见问题',
     '0010': '联系方式',
     '0011': '论坛',
+    '0012': 'Home',
 
     '0100': '开发者',
     '0101': '活动',
@@ -115,6 +116,8 @@ const zh = {
     'home.explanation_1.part_2': 'Cyber Republic 正在努力地创造工作自由。',
     'home.explanation_2.part_1': '共识：亦来云采用了POW / DPOS 混合共识模型。每年4%的通胀将分配如下：35%将奖励给POW矿工，35%将奖励给DPOS节点，剩下30%将作为Cyber Republic开发亦来云生态的基金。',
     'home.explanation_2.part_2': 'Cyber Republic 是由协助开发亦来云生态系统的社区 is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
+    'home.explanation_3.part_1': 'Fill out',
+    'home.explanation_3.part_2': 'Fill out',
 
     // Pop-up Announcement
     'popup.changes.title': 'Cyber Republic的重要公告',
