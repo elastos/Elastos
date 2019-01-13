@@ -213,7 +213,7 @@ const zh = {
     'suggestion.title': '建议',
     'suggestion.add': '添加一项建议',
     'suggestion.sort': '排序方式',
-    'suggestion.likes': '点赞数',
+    'suggestion.likes': '点赞量',
     'suggestion.views': '浏览量',
     'suggestion.activeness': '活跃度',
     'suggestion.owner': '提议人',
