@@ -18,6 +18,7 @@ const zh = {
     '0009': '常见问题',
     '0010': '联系方式',
     '0011': '论坛',
+    '0012': 'Home',
 
     '0100': '开发者',
     '0101': '活动',
@@ -113,6 +114,8 @@ const zh = {
     'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
     'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
     'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
+    'home.explanation_3.part_1': 'Fill out',
+    'home.explanation_3.part_2': 'Fill out',
 
     // Pop-up Announcement
     'popup.changes.title': 'Cyber Republic的重要公告',
