@@ -51,7 +51,8 @@ export default class extends StandardPage {
                         <div className="big-rect">
                             <div className="content">
                                 <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                                <span className="self-intro">Kevin Zhang is our Head of the Elastos Global Developers Community, he is based in Silicon Valley.<br />
+He was the CTO and Chief System Architect Global of iHealth Labs.</span>
                             </div>
                         </div>
                     </Col>
@@ -59,8 +60,8 @@ export default class extends StandardPage {
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                                <h3 className="name">Yipeng Su</h3>
+                                <span className="self-intro">Yipeng Su is the Chief Architect of Elastos core team.</span>
                             </div>
                         </div>
                     </Col>
@@ -68,8 +69,9 @@ export default class extends StandardPage {
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                                <h3 className="name">Feng Zhang</h3>
+                                <span className="self-intro">Feng Zhang is the lawyer of Beijing Jincheng Tongda Law Firm, he is also the guest professor and part-time master supervisor of Shanghai
+institute of political science and law, and he is also the guest editor of Shanghai Notarization magazine.</span>
                             </div>
                         </div>
                     </Col>
@@ -87,31 +89,13 @@ export default class extends StandardPage {
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                                <h3 className="name">Rebecca Zhu</h3>
+                                <span className="self-intro">Rebecca Zhu is Project Director of the Elastos Foundation.</span>
                             </div>
                         </div>
                     </Col>
                 </Row>
-                <div className="title">{I18N.get('cs.secretariat.staff')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
+                {/*<div className="title">{I18N.get('cs.secretariat.staff')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
                 <Row className="members">
                     <Col lg={8} md={8} sm={24} className="member">
                         <div className="small-rect"></div>
@@ -122,25 +106,7 @@ export default class extends StandardPage {
                             </div>
                         </div>
                     </Col>
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                </Row>
+                </Row>*/}
             </div>
         )
     }
