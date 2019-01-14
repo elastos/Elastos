@@ -3,17 +3,14 @@ import Component from './Component'
 import I18N from '@/I18N'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
+import { USER_ROLE, COUNCIL_MEMBER_IDS, COUNCIL_MEMBERS } from '@/constant'
 
 
 export default createContainer(Component, state => ({
   user: state.user,
   isLogin: state.user.is_login,
   static: {
-    voter: [
-      { value: 'Yipeng Su' },
-      { value: 'Feng Zhang' },
-      { value: 'Kevin Zhang' },
-    ],
+    voter: COUNCIL_MEMBERS,
     select_type: [
       { name: I18N.get('council.voting.type.newMotion'), code: 1 },
       { name: I18N.get('council.voting.type.motionAgainst'), code: 2 },
@@ -25,14 +22,7 @@ export default createContainer(Component, state => ({
       { name: 'Abstention', value: 'abstention' },
     ],
   },
-  isCouncil: [
-    // TOTO: add zhangfeng
-    '5b28be2784f6f900350d30b9',
-    '5b367c128f23a70035d35425',
-    '5bcf21f030826d68a940b017',
-    '5b4c3ba6450ff10035954c80',
-
-  ].indexOf(state.user.current_user_id) >= 0,
+  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0,
 }), () => ({
   async getData(id) {
     const d = await api_request({

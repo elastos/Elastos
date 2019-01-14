@@ -1,19 +1,13 @@
 import { createContainer, api_request } from '@/util'
 import Component from './Component'
+import { COUNCIL_MEMBER_IDS } from '@/constant'
 
 export default createContainer(Component, state => ({
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
 
   // TODO: this should be dynamic
-  isCouncil: [
-
-    '5b28be2784f6f900350d30b9',
-    '5b367c128f23a70035d35425',
-    '5bcf21f030826d68a940b017',
-    '5b4c3ba6450ff10035954c80',
-
-  ].indexOf(state.user.current_user_id) >= 0,
+  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0,
   language: state.language.language,
 }), () => ({
 
