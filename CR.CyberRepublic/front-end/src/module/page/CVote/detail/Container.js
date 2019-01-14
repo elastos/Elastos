@@ -1,14 +1,14 @@
-import { createContainer, goPath, api_request } from '@/util'
+import { createContainer, api_request } from '@/util'
 import Component from './Component'
 import I18N from '@/I18N'
-import UserService from '@/service/UserService'
-import { message } from 'antd'
 import { USER_ROLE, COUNCIL_MEMBER_IDS, COUNCIL_MEMBERS } from '@/constant'
 
 
 export default createContainer(Component, state => ({
   user: state.user,
+  currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
+  isSecretary: state.user.role === USER_ROLE.SECRETARY || state.user.role === USER_ROLE.ADMIN,
   static: {
     voter: COUNCIL_MEMBERS,
     select_type: [
