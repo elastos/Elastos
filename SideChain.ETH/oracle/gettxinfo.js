@@ -26,9 +26,6 @@ module.exports = async function(json_data, res) {
                 let crosschainamount = String((event["_amount"]- txreceipt.gasUsed * txinfo.gasPrice) / 1e18);
                 let outputamount = String(event["_amount"] / 1e18);
 
-                crosschainamount = crosschainamount.substring(0,crosschainamount.lastIndexOf('.')+9);
-                outputamount = outputamount.substring(0,outputamount.lastIndexOf('.')+9);
-
                 payload["crosschainassets"].push({
                     "crosschainaddress": event["_addr"],
                     "crosschainamount": crosschainamount,
