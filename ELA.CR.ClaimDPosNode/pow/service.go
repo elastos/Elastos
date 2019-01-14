@@ -20,7 +20,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 )
 
@@ -85,13 +84,11 @@ type Service struct {
 	preTime         time.Time
 	currentAuxBlock *types.Block
 
-	blockChan chan common.Uint256
 	wg        sync.WaitGroup
 	quit      chan struct{}
 
 	lock          sync.Mutex
 	lastBlock     *types.Block
-	needBroadCast bool
 }
 
 func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, error) {
@@ -351,13 +348,6 @@ func (pow *Service) SolveBlock(msgBlock *types.Block, lastBlockHash *common.Uint
 		case <-ticker.C:
 			log.Info("five second countdown ends. Re-generate block.")
 			return false
-		case hash := <-pow.blockChan:
-			log.Info("new block received, hash:", hash, " ledger has been changed. Re-generate block.")
-			pow.needBroadCast = true
-			if pow.versions.GetDefaultBlockVersion(msgBlock.Height) != 1 ||
-				lastBlockHash == nil || !lastBlockHash.IsEqual(hash) {
-				return false
-			}
 		default:
 			// Non-blocking select to fall through
 		}
@@ -383,7 +373,6 @@ func (pow *Service) Start() {
 	pow.quit = make(chan struct{})
 	pow.wg.Add(1)
 	pow.started = true
-	pow.needBroadCast = true
 
 	go pow.cpuMining()
 }
@@ -437,19 +426,6 @@ out:
 		if pow.SolveBlock(msgBlock, &hash) {
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
-			pow.lock.Lock()
-			if !pow.needBroadCast {
-				hash := <-pow.blockChan
-				if !hash.IsEqual(pow.lastBlock.Hash()) {
-					pow.needBroadCast = true
-					pow.lock.Unlock()
-					continue
-				}
-			}
-			pow.needBroadCast = false
-			pow.lock.Unlock()
-
-			time.Sleep(time.Second * 1)
 
 			inMainChain, isOrphan, err := pow.versions.AddDposBlock(&types.DposBlock{
 				BlockFlag: true,
@@ -541,15 +517,6 @@ func NewService(cfg *Config) *Service {
 		blockPool:      blockPool{mapNewBlock: make(map[common.Uint256]*types.Block)},
 		lastBlock:      block,
 	}
-
-	events.Subscribe(func(e *events.Event) {
-		switch e.Type {
-		case events.ETBlockConnected:
-			if pow.started {
-				pow.blockChan <- e.Data.(*types.Block).Hash()
-			}
-		}
-	})
 
 	return pow
 }
