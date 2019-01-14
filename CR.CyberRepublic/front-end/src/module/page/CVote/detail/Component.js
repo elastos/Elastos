@@ -236,7 +236,7 @@ class C extends StandardPage {
 
   showUpdateNotesModal = () => {
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.title'),
+      title: I18N.get('council.voting.confirm.updateNotes'),
       content: <TextArea onChange={this.onNotesChanged} />,
       okText: I18N.get('from.CVoteForm.modal.confirm'),
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
@@ -316,24 +316,17 @@ class C extends StandardPage {
         reasonMap.push(`${name}|${data.reason_map[name]}`)
         reasonMapZh.push(`${name}|${data.reason_zh_map[name]}`)
       }
-      // x3.push(`${name}|${values[`reason_zh_${name}`]}`)
     })
-    // vote_map: "Yipeng Su|undefined,Fay Li|undefined,Kevin Zhang|abstention"
     param.vote_map = voteMap.join(',')
     if (reason) param.reason_map = reasonMap.join(',')
     if (reasonZh) param.reason_zh_map = reasonMapZh.join(',')
 
-    // x2.push(`${name}|${values[`reason_${name}`]}`)
-    // x3.push(`${name}|${values[`reason_zh_${name}`]}`)
-
-    console.log(param)
     this.ord_loading(true)
     try {
       await updateCVote(param)
       message.success(I18N.get('from.CVoteForm.message.updated.success'))
       this.refetch()
       this.ord_loading(false)
-      // this.props.history.push('/proposals')
     } catch (e) {
       message.error(e.message)
       this.ord_loading(false)
@@ -354,14 +347,12 @@ class C extends StandardPage {
   }
 
   onReasonChanged = (e) => {
-    console.log('reason is: ', e.target.value)
     this.setState({ reason: e.target.value })
   }
 
   showVoteYesModal = () => {
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.title'),
-      // content: <TextArea onChange={this.onReasonChanged} />,
+      title: I18N.get('from.CVoteForm.modal.voteYes'),
       okText: I18N.get('from.CVoteForm.modal.confirm'),
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
       onOk: () => this.voteYes(),
@@ -370,8 +361,7 @@ class C extends StandardPage {
 
   showVoteAbstentionModal = () => {
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.title'),
-      // content: <TextArea onChange={this.onReasonChanged} />,
+      title: I18N.get('from.CVoteForm.modal.voteAbstention'),
       okText: I18N.get('from.CVoteForm.modal.confirm'),
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
       onOk: () => this.voteAbstention(),
@@ -381,7 +371,7 @@ class C extends StandardPage {
   showVoteOpposeModal = () => {
     const { reason } = this.state
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.title'),
+      title: I18N.get('from.CVoteForm.modal.voteNo'),
       content: <TextArea onChange={this.onReasonChanged} />,
       okText: I18N.get('from.CVoteForm.modal.confirm'),
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
@@ -393,7 +383,7 @@ class C extends StandardPage {
     const id = _.get(this.props.match, 'params.id')
 
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.title'),
+      title: I18N.get('council.voting.confirm.complete'),
       content: '',
       okText: I18N.get('from.CVoteForm.modal.confirm'),
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
@@ -405,7 +395,6 @@ class C extends StandardPage {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
           this.refetch()
           this.ord_loading(false)
-          // this.props.history.push('/proposals')
         }).catch((e) => {
           message.error(e.message)
           this.ord_loading(false)
