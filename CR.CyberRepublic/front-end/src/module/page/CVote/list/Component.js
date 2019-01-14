@@ -80,21 +80,37 @@ export default class extends BaseComponent {
       })
     }
 
+    const statusIndicator = (
+      <div className="vote-status-list indicator">
+        <span className="vote-status-item yes" />
+        <span> Yes</span>
+        <span className="vote-status-item no" />
+        <span> No</span>
+        <span className="vote-status-item abstained" />
+        <span> Abstained</span>
+        <span className="vote-status-item undecided" />
+        <span> Undecided</span>
+      </div>
+    )
+
     const createBtn = this.props.isCouncil && (
-      <Button style={{ width: '100%' }} onClick={this.toCreate} size="large" type="ebp" htmlType="submit" className="d_btn">
+      <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
           Create New Proposal
       </Button>
     )
     return (
       <div className="p-cvote-list ebp-wrap">
         <div className="d_box">
-          <Row>
+          <Row className="header">
             <Col span={8}>
-              <h3 style={{ textAlign: 'left' }} className="komu-a cr-title-with-icon">
+              <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
                 {I18N.get('council.voting.proposalList')}
               </h3>
             </Col>
-            <Col span={8} offset={8}>
+            <Col span={8}>
+              {statusIndicator}
+            </Col>
+            <Col span={8}>
               {createBtn}
             </Col>
           </Row>
@@ -114,7 +130,7 @@ export default class extends BaseComponent {
     this.props.history.push(`/cvote/${id}`);
   }
 
-  toCreate() {
+  toCreate = () => {
     this.props.history.push('/cvote/create');
   }
 
@@ -136,8 +152,9 @@ export default class extends BaseComponent {
     }
     const voteArr = _.map(voteMap, value => CVOTE_RESULT_TEXT[value.toLowerCase()])
     const supportNum = _.countBy(voteArr).Yes || 0
-    const proposalAgreed = supportNum > 50
-    const percentage = (supportNum / voteArr.length).toString() && `${(supportNum / voteArr.length).toFixed(1).toString()}%`
-    return <VoteStats percentage={percentage} values={voteArr} yes={proposalAgreed} />
+    const percentage = supportNum * 100 / voteArr.length
+    const proposalAgreed = percentage > 50
+    const percentageStr = percentage.toString() && `${percentage.toFixed(1).toString()}%`
+    return <VoteStats percentage={percentageStr} values={voteArr} yes={proposalAgreed} />
   }
 }
