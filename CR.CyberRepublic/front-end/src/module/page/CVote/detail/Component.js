@@ -168,10 +168,12 @@ class C extends StandardPage {
 
   renderNotes() {
     const { notes, notes_zh } = this.state.data
+    if (!notes && !notes_zh) return null
     return (
-      <div className="content">
-        <p>{notes}</p>
-        <p>{notes_zh}</p>
+      <div className="content notes">
+        <h4 className="notes-title">{I18N.get('council.voting.btnText.notesSecretary')}</h4>
+        <p className="notes-content">{notes}</p>
+        <p className="notes-content">{notes_zh}</p>
       </div>
     )
   }
