@@ -126,5 +126,9 @@ func (c *ChainStore) GetCancelProducerHeight(publicKey []byte) (uint32, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	return c.getCancelProducerHeight(publicKey)
+	height, ok := c.canceledProducers[BytesToHexString(publicKey)]
+	if !ok {
+		return 0, errors.New("not found canceled producer")
+	}
+	return height, nil
 }

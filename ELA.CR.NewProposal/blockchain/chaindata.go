@@ -305,10 +305,6 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 }
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
-	voteOutputs := make([]*Output, 0)
-	cancelVoteOutputs := make([]*Output, 0)
-	rProducers := make([]*PayloadRegisterProducer, 0)
-	cProducers := make([]*PayloadCancelProducer, 0)
 	for _, txn := range b.Transactions {
 		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
 			return err
@@ -324,43 +320,6 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
 			}
-		case RegisterProducer:
-			rPayload := txn.Payload.(*PayloadRegisterProducer)
-			rProducers = append(rProducers, rPayload)
-			err := c.persistRegisterProducer(rPayload)
-			if err != nil {
-				return err
-			}
-		case CancelProducer:
-			cPayload := txn.Payload.(*PayloadCancelProducer)
-			cProducers = append(cProducers, cPayload)
-			err := c.persistCancelProducer(cPayload)
-			if err != nil {
-				return err
-			}
-		case UpdateProducer:
-			if err := c.persistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
-				return err
-			}
-		case TransferAsset:
-			if txn.Version < TxVersion09 {
-				break
-			}
-			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
-					voteOutputs = append(voteOutputs, output)
-				}
-			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					cancelVoteOutputs = append(cancelVoteOutputs, output)
-				}
-			}
 		case IllegalProposalEvidence:
 			if err := c.persistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
 				return err
@@ -375,21 +334,11 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 			}
 		}
 	}
-	if err := c.persistProducers(rProducers, cProducers); err != nil {
-		return err
-	}
-	if err := c.persistVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
-		return err
-	}
 
 	return nil
 }
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
-	rollbackedProducer := false
-	voteOutputs := make([]*Output, 0)
-	cancelVoteOutputs := make([]*Output, 0)
-	rProducers := make([]*PayloadRegisterProducer, 0)
 	for _, txn := range b.Transactions {
 		if err := c.rollbackTransaction(txn); err != nil {
 			return err
@@ -406,56 +355,8 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 					return err
 				}
 			}
-		case CancelProducer, UpdateProducer:
-			if rollbackedProducer {
-				break
-			}
-			if err := c.clearRegisteredProducer(); err != nil {
-				return err
-			}
-			if err := c.rollbackCancelOrUpdateProducer(); err != nil {
-				return err
-			}
-			rollbackedProducer = true
-		case RegisterProducer:
-			if rollbackedProducer {
-				break
-			}
-			rPayload := txn.Payload.(*PayloadRegisterProducer)
-			rProducers = append(rProducers, rPayload)
-			if err := c.rollbackRegisterProducer(rPayload); err != nil {
-				return err
-			}
-		case TransferAsset:
-			if txn.Version < TxVersion09 || rollbackedProducer {
-				break
-			}
-			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
-					voteOutputs = append(voteOutputs, output)
-				}
-			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					cancelVoteOutputs = append(cancelVoteOutputs, output)
-				}
-			}
 		}
 	}
-	if !rollbackedProducer {
-		if err := c.rollbackProducers(rProducers); err != nil {
-			return err
-		}
-		if err := c.rollbackVoteOutputs(voteOutputs, cancelVoteOutputs); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
