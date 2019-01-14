@@ -450,8 +450,8 @@ func GenerateBlockTransactions(cfg *Config, msgBlock *types.Block, coinBaseTx *t
 			continue
 		}
 
-		fee := cfg.TxFeeHelper.GetTxFee(tx, cfg.ChainParams.ElaAssetId)
-		if fee != tx.Fee {
+		fee, err := cfg.TxFeeHelper.GetTxFee(tx, cfg.ChainParams.ElaAssetId)
+		if err != nil || fee != tx.Fee {
 			continue
 		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)

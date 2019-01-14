@@ -33,7 +33,7 @@ type Config struct {
 	Validator      *Validator
 	CheckTxSanity  func(*types.Transaction) error
 	CheckTxContext func(*types.Transaction) error
-	GetTxFee       func(tx *types.Transaction, assetId Uint256) Fixed64
+	GetTxFee       func(tx *types.Transaction, assetId Uint256) (Fixed64, error)
 }
 
 type BlockChain struct {
@@ -781,7 +781,11 @@ func (b *BlockChain) CheckBlockContext(block *types.Block) error {
 			continue
 		}
 		// Calculate transaction fee
-		totalTxFee += b.cfg.GetTxFee(tx, b.chainParams.ElaAssetId)
+		fee, err := b.cfg.GetTxFee(tx, b.chainParams.ElaAssetId)
+		if err != nil {
+			continue
+		}
+		totalTxFee += fee
 	}
 	// Reward in coinbase must match total transaction fee
 	if rewardInCoinbase != totalTxFee {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -15,37 +15,53 @@ import (
 type FeeHelper struct {
 	chainParams *config.Params
 	chainStore  *blockchain.ChainStore
+	spvService  *spv.Service
 }
 
 func NewFeeHelper(cfg *Config) *FeeHelper {
 	return &FeeHelper{
 		chainStore:  cfg.ChainStore,
 		chainParams: cfg.ChainParams,
+		spvService:  cfg.SpvService,
 	}
 }
 
-func (h *FeeHelper) GetTxFee(tx *types.Transaction, assetId common.Uint256) common.Fixed64 {
+func (h *FeeHelper) GetTxFee(tx *types.Transaction, assetId common.Uint256) (common.Fixed64, error) {
 	feeMap, err := h.GetTxFeeMap(tx)
 	if err != nil {
-		return 0
+		return 0, err
 	}
 
-	return feeMap[assetId]
+	return feeMap[assetId], nil
 }
 
 func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]common.Fixed64, error) {
 	feeMap := make(map[common.Uint256]common.Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
-		depositPayload := tx.Payload.(*types.PayloadRechargeToSideChain)
-		mainChainTransaction := new(core.Transaction)
-		reader := bytes.NewReader(depositPayload.MainChainTransaction)
-		if err := mainChainTransaction.Deserialize(reader); err != nil {
-			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")
+		var mainChainTransaction *core.Transaction
+		depositPayload, ok := tx.Payload.(*types.PayloadRechargeToSideChain)
+		if !ok {
+			return nil, errors.New("invalid recharge to side chain transaction payload")
+		}
+		if tx.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
+			mainChainTransaction = new(core.Transaction)
+			reader := bytes.NewReader(depositPayload.MainChainTransaction)
+			if err := mainChainTransaction.Deserialize(reader); err != nil {
+				return nil, errors.New("main chain transaction deserialize failed")
+			}
+		} else if tx.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
+			var err error
+			mainChainTransaction, err = h.spvService.GetTransaction(&depositPayload.MainChainTransactionHash)
+			if err != nil {
+				return nil, errors.New("invalid main chain transaction payload")
+			}
 		}
 
-		crossChainPayload := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
-
+		crossChainPayload, ok := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
+		if !ok {
+			return nil, errors.New("invalid transfer cross chain asset transaction payload")
+		}
 		for _, v := range tx.Outputs {
 			for i := 0; i < len(crossChainPayload.CrossChainAddresses); i++ {
 				targetAddress, err := v.ProgramHash.ToAddress()
