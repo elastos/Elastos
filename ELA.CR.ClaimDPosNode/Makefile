@@ -3,7 +3,7 @@ BUILD =go build -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go vers
 
 all:
 	$(BUILD) -o ela log.go config.go main.go
-	$(BUILD) cli/main/ela-cli.go
+	$(BUILD) -o ela-cli cli/config.go cli/ela-cli.go
 
 cli:
 	$(BUILD) cli/main/ela-cli.go
