@@ -128,6 +128,12 @@ export const TASK_CANDIDATE_CATEGORY = {
 }
 
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED']);
+export const CVOTE_RESULT = {
+    SUPPORT: 'support',
+    REJECT: 'reject',
+    ABSTENTION: 'abstention',
+    UNDECIDED: 'undecided',
+};
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
 export const USER_SKILLSET = {

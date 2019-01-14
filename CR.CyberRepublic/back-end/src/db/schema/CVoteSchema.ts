@@ -1,6 +1,22 @@
-import {Schema} from "mongoose";
-import {constant} from "../../constant";
+import { Schema } from 'mongoose'
+import { constant } from '../../constant'
+import * as _ from 'lodash'
 
+
+export const CVoteResultSchema = {
+    voterId: {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+        required: true
+    },
+    value: {
+        type: String,
+        emun: _.values(constant.CVOTE_RESULT),
+        default: constant.CVOTE_RESULT.UNDECIDED
+    },
+    reason: String,
+    reason_zh: String
+}
 
 export const CVote = {
     title : {
@@ -42,6 +58,7 @@ export const CVote = {
     notes_zh : {
         type : String
     },
+    voteResult: [CVoteResultSchema],
     vote_map : Object,
     reason_map : Object,
     reason_zh_map : Object,
@@ -54,6 +71,7 @@ export const CVote = {
     },
 
     status : {
-        type : String
+        type : String,
+        enum: _.values(constant.CVOTE_STATUS)
     }
-};
+}
