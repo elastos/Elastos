@@ -180,6 +180,13 @@ export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 // council vote
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
 
+export const CVOTE_RESULT = {
+  SUPPORT: 'support',
+  REJECT: 'reject',
+  ABSTENTION: 'abstention',
+  UNDECIDED: 'undecided',
+};
+
 export const CVOTE_RESULT_TEXT = {
   undefined: 'Undecided',
   support: 'Yes',
