@@ -57,10 +57,11 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 
-	producerVotes    map[string]*ProducerInfo // key: public key
-	producerAddress  map[string]string        // key: address  value: public key
-	dirty            map[outputpayload.VoteType]bool
-	orderedProducers []*PayloadRegisterProducer
+	producerVotes     map[string]*ProducerInfo // key: public key
+	producerAddress   map[string]string        // key: address  value: public key
+	dirty             map[outputpayload.VoteType]bool
+	canceledProducers map[string]uint32 // key: public key value: height
+	orderedProducers  []*PayloadRegisterProducer
 }
 
 func NewChainStore(filePath string) (IChainStore, error) {
@@ -77,6 +78,7 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		producerVotes:      make(map[string]*ProducerInfo),
 		producerAddress:    make(map[string]string),
 		dirty:              make(map[outputpayload.VoteType]bool),
+		canceledProducers:  make(map[string]uint32),
 		orderedProducers:   make([]*PayloadRegisterProducer, 0),
 	}
 
