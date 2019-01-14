@@ -200,6 +200,15 @@ export default class extends Base {
     public async getById(id): Promise<any>{
         const db_cvote = this.getDBModel('CVote');
         const rs = await db_cvote.findOne({_id : id});
+        const db_user = this.getDBModel('User');
+        const councilMembers = await db_user.find({_id : { $in: constant.COUNCIL_MEMBER_IDS }});
+        const avatar_map = {}
+
+        _.each(councilMembers, user => {
+            const name: string = constant.COUNCIL_MEMBERS[user._id.toString()]
+            avatar_map[name] = user.profile.avatar
+        })
+        rs.avatar_map = avatar_map
         return rs;
     }
 
@@ -345,13 +354,7 @@ export default class extends Base {
     }
 
     private isCouncil() {
-        return [
-
-            '5b28be2784f6f900350d30b9',
-            '5bcf21f030826d68a940b017',
-            '5b4c3ba6450ff10035954c80'
-
-        ].indexOf(this.currentUser._id.toString()) >= 0
+        return constant.COUNCIL_MEMBER_IDS.indexOf(this.currentUser._id.toString()) >= 0
     }
 
 }

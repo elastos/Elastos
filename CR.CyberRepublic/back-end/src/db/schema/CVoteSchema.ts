@@ -60,6 +60,7 @@ export const CVote = {
     },
     voteResult: [CVoteResultSchema],
     vote_map : Object,
+    avatar_map : Object,
     reason_map : Object,
     reason_zh_map : Object,
     createdBy: {type: Schema.Types.ObjectId, ref: 'users'},
