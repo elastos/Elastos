@@ -15,7 +15,7 @@ type SidechainIllegalEvidence struct {
 type SidechainIllegalData struct {
 	IllegalType         IllegalDataType
 	Height              uint32
-	IllegalSigner       string
+	IllegalSigner       []byte
 	Evidence            SidechainIllegalEvidence
 	CompareEvidence     SidechainIllegalEvidence
 	GenesisBlockAddress string
@@ -57,7 +57,7 @@ func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer) error {
 		return err
 	}
 
-	if err := common.WriteVarString(w, s.IllegalSigner); err != nil {
+	if err := common.WriteVarBytes(w, s.IllegalSigner); err != nil {
 		return err
 	}
 
@@ -106,7 +106,7 @@ func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	if s.IllegalSigner, err = common.ReadVarString(r); err != nil {
+	if s.IllegalSigner, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "public key"); err != nil {
 		return err
 	}
 

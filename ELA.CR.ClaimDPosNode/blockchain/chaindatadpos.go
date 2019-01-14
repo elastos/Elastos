@@ -598,7 +598,7 @@ func (c *ChainStore) PersistIllegalBlock(illegalBlocks *PayloadIllegalBlock) err
 
 func (c *ChainStore) PersistSidechainIllegalEvidence(payload *PayloadSidechainIllegalData) error {
 	return c.persistIllegalPayload(func() []string {
-		return []string{payload.IllegalSigner}
+		return []string{BytesToHexString(payload.IllegalSigner)}
 	})
 }
 
