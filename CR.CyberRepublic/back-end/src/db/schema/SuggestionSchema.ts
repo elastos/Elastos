@@ -55,14 +55,14 @@ export const Suggestion = {
     status: {
         type: String,
         uppercase: true,
-        enum: _.keys(constant.SUGGESTION_STATUS),
+        enum: _.values(constant.SUGGESTION_STATUS),
         default: constant.SUGGESTION_STATUS.ACTIVE,
     },
     // constant.SUGGESTION_ABUSED_STATUS: REPORTED, HANDLED
     abusedStatus: {
         type: String,
         uppercase: true,
-        enum: _.keys(constant.SUGGESTION_ABUSED_STATUS)
+        enum: _.values(constant.SUGGESTION_ABUSED_STATUS)
     },
     subscribers: [SubscriberSchema],
     // subscribersNum: {
