@@ -5493,20 +5493,6 @@ textarea.ant-input {
 .ant-btn > span + .anticon {
   margin-left: 8px;
 }
-.ant-btn-clicked:after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  bottom: -1px;
-  right: -1px;
-  border-radius: inherit;
-  border: 0 solid #1890ff;
-  opacity: 0.4;
-  -webkit-animation: buttonEffect .4s;
-          animation: buttonEffect .4s;
-  display: block;
-}
 .ant-btn-danger.ant-btn-clicked:after {
   border-color: #f5222d;
 }

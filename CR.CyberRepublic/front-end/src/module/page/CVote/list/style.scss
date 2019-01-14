@@ -1,10 +1,41 @@
+@import "@/style/variable";
+@import "@/style/color";
+
 .p-cvote-list{
-    text-align: center;
-  
-    .d_box {
-      padding: 0 50px 80px;
-      width: 80vw;
-      margin: 80px auto 0;
-      background: #ffffff;
+  text-align: center;
+
+  .d_box {
+    padding: 0 50px 80px;
+    width: 80vw;
+    margin: 80px auto 0;
+    background: #ffffff;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+  }
+  .vote-status-list {
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+  }
+  .vote-status-item {
+    flex: 0 0 10px;
+    height: 10px;
+    box-sizing: border-box;
+    margin-right: 1px;
+    margin-left: 5px;
+    &.undecided {
+      background: #EFEFEF;
     }
+    &.abstained {
+      background: #CED6E3;
+    }
+    &.yes {
+      background: $cr_primary_highlight;
+    }
+    &.no {
+      background: #BE1313;
+    }
+  }
 }

@@ -622,16 +622,39 @@ const zh = {
     'council.voting.type': '类型',
     'council.voting.author': '提案人',
     'council.voting.voteBy': '投票人',
+    'council.voting.voteByCouncil': '委员会投票结果',
+    'council.voting.councilMembersVotes': 'Council Members Votes',
     'council.voting.status': '状态',
     'council.voting.createdAt': '创建日期',
 
     'council.voting.type.newMotion': '新动议',
     'council.voting.type.motionAgainst': '反对动议',
     'council.voting.type.anythingElse': '其它事宜',
-
     'council.voting.type.support': '支持',
     'council.voting.type.reject': '拒绝',
     'council.voting.type.abstention': '弃权',
+    'council.voting.type.undecided': 'Undecided',
+    'council.voting.ifConflicted': 'Potential Conflict with Existing Constitution',
+
+    'council.voting.btnText.yes': 'Vote Yes',
+    'council.voting.btnText.no': 'Oppose with a Reason',
+    'council.voting.btnText.abstention': 'Abstain',
+    'council.voting.btnText.notesSecretary': 'Notes from Secretary',
+    'council.voting.btnText.editProposal': 'Edit this proposal',
+    'council.voting.btnText.completeProposal': 'Complete this proposal',
+    'council.voting.btnText.saveChanges': 'Save changes',
+
+    'council.voting.modal.complete': 'Are you sure to complete this proposal?',
+    'council.voting.modal.updateNotes': 'Notes from Secretary',
+    'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
+    'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
+    'council.voting.modal.voteNo': 'Reason for Opposing',
+    'council.voting.modal.confirm': 'Confirm',
+    'council.voting.modal.cancel': 'Cancel',
+
+    'council.voting.voteResult.yes': 'Vote Yes',
+    'council.voting.voteResult.opposed': 'Opposed',
+    'council.voting.voteResult.abstention': 'Abstained',
 
     // Landing
     'landing.elastos': 'Elastos',

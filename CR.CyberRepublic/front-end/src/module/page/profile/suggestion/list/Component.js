@@ -146,7 +146,7 @@ export default class extends ProfilePage {
               <Button
                 key={value}
                 onClick={() => this.onFilterChanged(value)}
-                className={(this.state.filter === value && 'selected') || ''}
+                className={(this.state.filter === value && 'cr-strikethrough') || ''}
               >
                 {FILTERS_TEXT[key]}
               </Button>
