@@ -7,7 +7,7 @@ import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE } from '@/constant'
-import MetaComponent from '@/module/shared/Meta/Container'
+import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
 
