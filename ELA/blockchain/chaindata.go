@@ -342,7 +342,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		}
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					voteOutputs = append(voteOutputs, output)
 				}
 			}
@@ -352,7 +352,7 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 					return err
 				}
 				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
@@ -418,7 +418,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 		}
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					cancelVoteOutputs = append(cancelVoteOutputs, output)
 				}
 			}
@@ -428,7 +428,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 					return err
 				}
 				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					voteOutputs = append(voteOutputs, output)
 				}
 			}

@@ -62,11 +62,11 @@ func (v *txV1) CheckVoteProducerOutputs(outputs []*types.Output, references map[
 	}
 
 	for _, o := range outputs {
-		if o.OutputType == types.VoteOutput {
+		if o.Type == types.OTVote {
 			if _, ok := programHashes[o.ProgramHash]; !ok {
 				return errors.New("Invalid vote output")
 			}
-			payload, ok := o.OutputPayload.(*outputpayload.VoteOutput)
+			payload, ok := o.Payload.(*outputpayload.VoteOutput)
 			if !ok {
 				return errors.New("Invalid vote output payload")
 			}

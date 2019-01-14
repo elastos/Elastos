@@ -159,7 +159,7 @@ func (s *txVersionV0TestSuite) TestCheckCoinbaseArbitratorsReward() {
 func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 	outputs := []*types.Output{
 		{
-			OutputType: types.DefaultOutput,
+			Type: types.OTNone,
 		},
 	}
 	references := make(map[*types.Input]*types.Output)
@@ -171,9 +171,9 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 	producers := [][]byte{candidate}
 	hash, _ := contract.PublicKeyToStandardProgramHash(candidate)
 	outputs = append(outputs, &types.Output{
-		OutputType:  types.VoteOutput,
+		Type:        types.OTVote,
 		ProgramHash: *hash,
-		OutputPayload: &outputpayload.VoteOutput{
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{

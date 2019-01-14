@@ -488,8 +488,8 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  types.VoteOutput,
-		OutputPayload: &outputpayload.VoteOutput{
+		Type:        types.OTVote,
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -508,8 +508,8 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  types.VoteOutput,
-		OutputPayload: &outputpayload.VoteOutput{
+		Type:        types.OTVote,
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -605,8 +605,8 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  types.VoteOutput,
-		OutputPayload: &outputpayload.VoteOutput{
+		Type:        types.OTVote,
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -625,8 +625,8 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		Value:       stake1,
 		OutputLock:  0,
 		ProgramHash: *programHash1,
-		OutputType:  types.VoteOutput,
-		OutputPayload: &outputpayload.VoteOutput{
+		Type:        types.OTVote,
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -662,7 +662,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		t.Error("persistCancelVoteOutputForMempool failed")
 	}
 
-	// 5. Check Vote
+	// 5. Check OTVote
 	vote2 := testChainStore.GetProducerVote(publicKey2)
 	if vote2 != 0 {
 		t.Error("GetProducerVote failed")

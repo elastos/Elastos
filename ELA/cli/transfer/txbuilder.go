@@ -195,12 +195,12 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		}
 
 		txOutput := &types.Output{
-			AssetID:       *account.SystemAssetID,
-			ProgramHash:   *receiver,
-			Value:         *output.Amount,
-			OutputLock:    lockedUntil,
-			OutputType:    types.DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
+			AssetID:     *account.SystemAssetID,
+			ProgramHash: *receiver,
+			Value:       *output.Amount,
+			OutputLock:  lockedUntil,
+			Type:        types.OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
 		}
 		totalOutputAmount += *output.Amount
 		txOutputs = append(txOutputs, txOutput)
@@ -248,12 +248,12 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 			break
 		} else if *amount > totalOutputAmount {
 			change := &types.Output{
-				AssetID:       *account.SystemAssetID,
-				Value:         *amount - totalOutputAmount,
-				OutputLock:    uint32(0),
-				ProgramHash:   *spender,
-				OutputType:    types.DefaultOutput,
-				OutputPayload: &outputpayload.DefaultOutput{},
+				AssetID:     *account.SystemAssetID,
+				Value:       *amount - totalOutputAmount,
+				OutputLock:  uint32(0),
+				ProgramHash: *spender,
+				Type:        types.OTNone,
+				Payload:     &outputpayload.DefaultOutput{},
 			}
 			txOutputs = append(txOutputs, change)
 			totalOutputAmount = 0
