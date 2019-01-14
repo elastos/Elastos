@@ -95,7 +95,7 @@ import NotFound from '@/module/page/error/NotFound'
 export default [
     {
         path: '/',
-        page: LandingPage
+        page: HomePage
     },
     {
         path: '/home',
