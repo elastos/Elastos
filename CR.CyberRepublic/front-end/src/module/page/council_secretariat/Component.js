@@ -18,7 +18,7 @@ export default class extends StandardPage {
     }
 
     linkToRule() {
-        this.props.history.push('/')
+        this.props.history.push('/constitution')
     }
 
     ord_renderContent () {
@@ -44,15 +44,17 @@ export default class extends StandardPage {
     buildIncumbent() {
         return (
             <div className="incumbent">
-                <div className="title">{I18N.get('cs.incumbent')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
+                <div className="title">
+                    {I18N.get('cs.incumbent')}
+                    {/*<span className="title_1st"><Divider className="line" type="vertical" />1ST</span>*/}
+                </div>
                 <Row className="members">
                     <Col lg={8} md={8} sm={24} className="member">
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin Zhang is our Head of the Elastos Global Developers Community, he is based in Silicon Valley.<br />
-He was the CTO and Chief System Architect Global of iHealth Labs.</span>
+                                <h3 className="name">{I18N.get('cs.kevin.name')}</h3>
+                                <span className="self-intro">{I18N.get('cs.kevin.intro')}</span>
                             </div>
                         </div>
                     </Col>
@@ -60,8 +62,8 @@ He was the CTO and Chief System Architect Global of iHealth Labs.</span>
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Yipeng Su</h3>
-                                <span className="self-intro">Yipeng Su is the Chief Architect of Elastos core team.</span>
+                                <h3 className="name">{I18N.get('cs.yipeng.name')}</h3>
+                                <span className="self-intro">{I18N.get('cs.yipeng.intro')}</span>
                             </div>
                         </div>
                     </Col>
@@ -69,9 +71,8 @@ He was the CTO and Chief System Architect Global of iHealth Labs.</span>
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Feng Zhang</h3>
-                                <span className="self-intro">Feng Zhang is the lawyer of Beijing Jincheng Tongda Law Firm, he is also the guest professor and part-time master supervisor of Shanghai
-institute of political science and law, and he is also the guest editor of Shanghai Notarization magazine.</span>
+                                <h3 className="name">{I18N.get('cs.feng.name')}</h3>
+                                <span className="self-intro">{I18N.get('cs.feng.intro')}</span>
                             </div>
                         </div>
                     </Col>
@@ -83,14 +84,17 @@ institute of political science and law, and he is also the guest editor of Shang
     buildSecretariat() {
         return (
             <div className="secretariat">
-                <div className="title">{I18N.get('cs.secretariat.general')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
+                <div className="title">
+                    {I18N.get('cs.secretariat.general')}
+                    {/*<span className="title_1st"><Divider className="line" type="vertical" />1ST</span>*/}
+                </div>
                 <Row className="members">
                     <Col lg={8} md={8} sm={24} className="member">
                         <div className="small-rect"></div>
                         <div className="big-rect">
                             <div className="content">
-                                <h3 className="name">Rebecca Zhu</h3>
-                                <span className="self-intro">Rebecca Zhu is Project Director of the Elastos Foundation.</span>
+                                <h3 className="name">{I18N.get('cs.rebecca.name')}</h3>
+                                <span className="self-intro">{I18N.get('cs.rebecca.intro')}</span>
                             </div>
                         </div>
                     </Col>
