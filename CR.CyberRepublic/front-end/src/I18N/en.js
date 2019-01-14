@@ -18,6 +18,7 @@ const en = {
     '0009': 'FAQ',
     '0010': 'Contact',
     '0011': 'Forum',
+    '0012': 'Home',
 
     '0100': 'Developers',
     '0101': 'Events',
@@ -31,6 +32,7 @@ const en = {
     '0110': 'Blog',
     'navigation.programs': 'Programs',
     'navagation.suggestion': 'Suggestions',
+    'navagation.council': 'Council & Secreariat',
 
     '0200': 'Profile',
     '0201': 'Login',
@@ -116,6 +118,8 @@ const en = {
     'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
     'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
     'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
+    'home.explanation_3.part_1': 'Fill out',
+    'home.explanation_3.part_2': 'Fill out',
 
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',
@@ -1336,7 +1340,26 @@ const en = {
     'user.skillset.BUSINESS_PLANS': 'Business Plans',
     'user.skillset.LEGAL_CONSULTING': 'Legal Consulting',
     'user.skillset.FINANCIAL_CONSULTING': 'Financial Consulting',
-    'user.skillset.PRESENTATION': 'Business Presentations'
+    'user.skillset.PRESENTATION': 'Business Presentations',
+
+    // Council & Secretariat
+    'cs.incumbent': 'INCUMBENT',
+    'cs.council': 'COUNCIL',
+    'cs.secretariat': 'SECRETARIAT',
+    'cs.secretariat.general': 'SECRETARIAT GENERAL',
+    'cs.secretariat.staff': 'SECRETARIAT STAFF',
+    'cs.rule.tile': 'Rules For Council',
+    'cs.rule.show.click': 'Click',
+    'cs.rule.show.here': 'here',
+    'cs.rule.show.view': 'to view the rules for council',
+    'cs.kevin.name': 'Kevin Zhang',
+    'cs.kevin.intro': 'Head of Elastos Global Adoption Team, based in Silicon Valley',
+    'cs.yipeng.name': 'Yipeng Su',
+    'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
+    'cs.feng.name': 'Feng Zhang',
+    'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+    'cs.rebecca.name': 'Rebecca Zhu',
+    'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
 };
 
 // lang mappings

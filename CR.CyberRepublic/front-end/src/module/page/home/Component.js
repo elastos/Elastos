@@ -11,7 +11,7 @@ export default class extends StandardPage {
 
     constructor(props) {
         super(props)
-        
+
         this.state = {
             selectedBox: 0,
         }
@@ -40,44 +40,54 @@ export default class extends StandardPage {
                 <div className="decoration-1">
                     <img className="upper-left" src="/assets/images/training_mini_connector.png"/>
                 </div>
+                <div className="decoration-slashed-left">
+                    <img src="/assets/images/training_green_slashed_box.png"/>
+                </div>
+                <div className="decoration-square">
+                    <div className="big-square"></div>
+                    <div className="small-square"></div>
+                </div>
                 <Row className="top-section" type="flex" justify="center" gutter={32}>
-                    <Col xs={24} sm={24} md={5}>
-                        <div className="box box-hover" onClick={this.switchToBox.bind(this, 0)}>
+                    <Col className={'box-wrap ' + (selectedBox === 0 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
+                        <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_1.title')}</h3>
-                            <p className="synthese">{I18N.get('home.box_1.description')}</p>
+                            <p className={"synthese" + (selectedBox === 0 ? ' selected-text' : 0)}>{I18N.get('home.box_1.description')}</p>
                         </div>
-                        <div className={"cuttoff-box" + (selectedBox === 0 ? '' : 'cutoff-box-hidden')}>
-                            <div className="decoration-arrow"></div>
+                        <div className="container">
+                            <div className={"cuttoff-box" + (selectedBox === 0 ? '' : ' cutoff-box-hidden')}></div>
                         </div>
+                        <img className={"arrow" + (selectedBox === 0 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
-                    <Col xs={24} sm={24} md={5}>
-                        <div className="box box-hover" onClick={this.switchToBox.bind(this, 1)}>
+                    <Col className={'box-wrap ' + (selectedBox === 1 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 1)}>
+                        <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_2.title')}</h3>
-                            <p className="synthese">{I18N.get('home.box_2.description')}</p>
+                            <p className={"synthese" + (selectedBox === 1 ? ' selected-text' : '')}>{I18N.get('home.box_2.description')}</p>
                         </div>
-                        <div className={"cuttoff-box" + (selectedBox === 1 ? '' : 'cutoff-box-hidden')}>
-                            <div className="decoration-arrow"></div>
+                        <div className="container">
+                            <div className={"cuttoff-box" + (selectedBox === 1 ? '' : ' cutoff-box-hidden')}></div>
                         </div>
+                        <img className={"arrow" + (selectedBox === 1 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
-                    <Col xs={24} sm={24} md={5}>
-                        <div className="box">
+                    <Col className={'box-wrap ' + (selectedBox === 2 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 2)}>
+                        <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_3.title')}</h3>
-                            <p className="synthese">{I18N.get('home.box_3.description')}</p>
+                            <p className={"synthese" + (selectedBox === 2 ? ' selected-text' : '')}>{I18N.get('home.box_3.description')}</p>
                         </div>
-                        <div className={"cuttoff-box" + (selectedBox === 2 ? '' : 'cutoff-box-hidden')}>
-                            <div className="decoration-arrow"></div>
+                        <div className="container">
+                            <div className={"cuttoff-box" + (selectedBox === 2 ? '' : ' cutoff-box-hidden')}></div>
                         </div>
+                        <img className={"arrow" + (selectedBox === 2 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
+                </Row>
+                <div className="mid-section">
                     <div className="decoration-2">
                         <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
                     </div>
-                </Row>
-                <div className="mid-section">
                     <div className="inner-box">
                         <div className="decoration-3">
                             <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
                         </div>
-                        <h3>{title}</h3>                        
+                        <h3>{title}</h3>
                         <p className="synthese">{description1}</p>
                         <p className="synthese">{description2}</p>
                     </div>
