@@ -1030,7 +1030,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		total += unspent.Value
 	}
 
-	status := true
+	pending := false
 	for _, t := range ServerNode.GetTransactionPool(false) {
 		for _, i := range t.Inputs {
 			tx, _, err := chain.DefaultLedger.Store.GetTransaction(i.Previous.TxID)
@@ -1038,15 +1038,15 @@ func VoteStatus(param Params) map[string]interface{} {
 				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
 			}
 			if tx.Outputs[i.Previous.Index].ProgramHash.IsEqual(*programHash) {
-				status = false
+				pending = true
 			}
 		}
 		for _, o := range t.Outputs {
 			if o.OutputType == VoteOutput && o.ProgramHash.IsEqual(*programHash) {
-				status = false
+				pending = true
 			}
 		}
-		if !status {
+		if !pending {
 			break
 		}
 	}
@@ -1059,7 +1059,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	return ResponsePack(Success, &voteInfo{
 		Total:   total.String(),
 		Voting:  voting.String(),
-		Pending: status,
+		Pending: pending,
 	})
 }
 

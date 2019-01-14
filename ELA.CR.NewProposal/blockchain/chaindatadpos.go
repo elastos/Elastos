@@ -695,24 +695,27 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 				return err
 			}
 		case TransferAsset:
+			for _, input := range txn.Inputs {
+				transaction, _, err := c.GetTransaction(input.Previous.TxID)
+				if err != nil {
+					return err
+				}
+				if transaction.Version < TxVersion09 {
+					continue
+				}
+				output := transaction.Outputs[input.Previous.Index]
+				if output.OutputType == VoteOutput {
+					if err = c.persistCancelVoteOutputForMempool(output); err != nil {
+						return err
+					}
+				}
+			}
 			if txn.Version < TxVersion09 {
 				break
 			}
 			for _, output := range txn.Outputs {
 				if output.OutputType == VoteOutput {
 					if err := c.persistVoteOutputForMempool(output); err != nil {
-						return err
-					}
-				}
-			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					if err = c.persistCancelVoteOutputForMempool(output); err != nil {
 						return err
 					}
 				}
