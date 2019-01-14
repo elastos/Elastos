@@ -172,6 +172,6 @@ export const DB_EXCLUDED_FIELDS = {
 
 export const DB_SELECTED_FIELDS = {
     USER: {
-        NAME: 'profile.firstName profile.lastName'
+        NAME: 'profile.firstName profile.lastName username'
     },
 }

@@ -184,9 +184,8 @@ export default class extends StandardPage {
 
   renderItem = (data) => {
     const href = `/suggestion/${data._id}`
-    const author = `${_.get(data, 'createdBy.profile.firstName')} ${_.get(data, 'createdBy.profile.lastName')}`
-    const actionsNode = this.renderActionsNode({ ...data, author })
-    const metaNode = this.renderMetaNode({ ...data, author })
+    const actionsNode = this.renderActionsNode(data)
+    const metaNode = this.renderMetaNode(data)
     const title = <a href={href} className="title-link">{data.title}</a>
     return (
       <div key={data._id} className="item-container">
