@@ -18,7 +18,7 @@ export default class extends StandardPage {
     }
 
     linkToRule() {
-        this.props.history.push('/')
+        this.props.history.push('/constitution')
     }
 
     ord_renderContent () {
