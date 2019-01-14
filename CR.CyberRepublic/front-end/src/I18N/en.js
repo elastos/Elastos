@@ -627,14 +627,30 @@ const en = {
     'council.voting.type.newMotion': 'New Motion',
     'council.voting.type.motionAgainst': 'Motion Against',
     'council.voting.type.anythingElse': 'Anything Else',
-
-    'council.voting.type.support': 'Support',
-    'council.voting.type.reject': 'Reject',
-    'council.voting.type.abstention': 'Abstention',
+    'council.voting.type.support': 'Yes',
+    'council.voting.type.reject': 'No',
+    'council.voting.type.abstention': 'Abstained',
+    'council.voting.ifConflicted': 'Potential Conflict with Existing Constitution',
 
     'council.voting.btnText.yes': 'Vote Yes',
     'council.voting.btnText.no': 'Oppose with a Reason',
-    'council.voting.btnText.abstention': 'Discard',
+    'council.voting.btnText.abstention': 'Abstain',
+    'council.voting.btnText.notesSecretary': 'Notes from Secretary',
+    'council.voting.btnText.editProposal': 'Edit this proposal',
+    'council.voting.btnText.completeProposal': 'Complete this proposal',
+    'council.voting.btnText.saveChanges': 'Save changes',
+
+    'council.voting.modal.complete': 'Are you sure to complete this proposal?',
+    'council.voting.modal.updateNotes': 'Notes from Secretary',
+    'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
+    'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
+    'council.voting.modal.voteNo': 'Reason for Opposing',
+    'council.voting.modal.confirm': 'Confirm',
+    'council.voting.modal.cancel': 'Cancel',
+
+    'council.voting.voteResult.yes': 'Vote Yes',
+    'council.voting.voteResult.opposed': 'Opposed',
+    'council.voting.voteResult.abstention': 'Abstained',
 
     // Landing
     'landing.elastos': 'Elastos',
