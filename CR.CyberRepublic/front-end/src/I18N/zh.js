@@ -633,6 +633,7 @@ const zh = {
     'council.voting.type.support': '支持',
     'council.voting.type.reject': '拒绝',
     'council.voting.type.abstention': '弃权',
+    'council.voting.type.undecided': 'Undecided',
     'council.voting.ifConflicted': 'Potential Conflict with Existing Constitution',
 
     'council.voting.btnText.yes': 'Vote Yes',

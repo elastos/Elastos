@@ -634,6 +634,7 @@ const en = {
     'council.voting.type.support': 'Yes',
     'council.voting.type.reject': 'No',
     'council.voting.type.abstention': 'Abstained',
+    'council.voting.type.undecided': 'Undecided',
     'council.voting.ifConflicted': 'Potential Conflict with Existing Constitution',
 
     'council.voting.btnText.yes': 'Vote Yes',

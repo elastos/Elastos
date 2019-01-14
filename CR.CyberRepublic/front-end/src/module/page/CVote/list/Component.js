@@ -83,13 +83,13 @@ export default class extends BaseComponent {
     const statusIndicator = (
       <div className="vote-status-list indicator">
         <span className="vote-status-item yes" />
-        <span> Yes</span>
+        <span>{I18N.get('council.voting.type.support')}</span>
         <span className="vote-status-item no" />
-        <span> No</span>
+        <span>{I18N.get('council.voting.type.reject')}</span>
         <span className="vote-status-item abstained" />
-        <span> Abstained</span>
+        <span>{I18N.get('council.voting.type.abstention')}</span>
         <span className="vote-status-item undecided" />
-        <span> Undecided</span>
+        <span>{I18N.get('council.voting.type.undecided')}</span>
       </div>
     )
 
