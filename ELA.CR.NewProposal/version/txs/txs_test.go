@@ -35,8 +35,8 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					{
@@ -53,8 +53,8 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					{
@@ -69,8 +69,8 @@ func (s *txVersionTestSuite) TestCheckOutputPayload() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					{
@@ -230,7 +230,7 @@ func (s *txVersionTestSuite) TestCheckCoinbaseArbitratorsReward() {
 func (s *txVersionTestSuite) TestCheckVoteProducerOutputs() {
 	outputs := []*types.Output{
 		{
-			OutputType: types.DefaultOutput,
+			Type: types.OTNone,
 		},
 	}
 	references := make(map[*types.Input]*types.Output)
@@ -247,9 +247,9 @@ func (s *txVersionTestSuite) TestCheckVoteProducerOutputs() {
 	hashByte, _ := common.HexStringToBytes(hashStr)
 	hash, _ := common.Uint168FromBytes(hashByte)
 	outputs = append(outputs, &types.Output{
-		OutputType:  types.VoteOutput,
+		Type:        types.OTVote,
 		ProgramHash: *hash,
-		OutputPayload: &outputpayload.VoteOutput{
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -267,9 +267,9 @@ func (s *txVersionTestSuite) TestCheckVoteProducerOutputs() {
 	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 
 	outputs = append(outputs, &types.Output{
-		OutputType:  types.VoteOutput,
+		Type:        types.OTVote,
 		ProgramHash: *hash,
-		OutputPayload: &outputpayload.VoteOutput{
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{

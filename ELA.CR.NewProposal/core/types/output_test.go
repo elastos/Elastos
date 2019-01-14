@@ -24,8 +24,8 @@ func TestOutput_Serialize(t *testing.T) {
 		Value:       100000,
 		OutputLock:  0,
 		ProgramHash: *recipient,
-		OutputType:  VoteOutput,
-		OutputPayload: &outputpayload.VoteOutput{
+		Type:        OTVote,
+		Payload: &outputpayload.VoteOutput{
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{

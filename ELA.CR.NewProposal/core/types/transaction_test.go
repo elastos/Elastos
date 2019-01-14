@@ -467,7 +467,7 @@ func assertOldVersionTxEqual(oldVersion bool, suite *suite.Suite, first, second 
 		suite.True(first.Outputs[i].ProgramHash.IsEqual(second.Outputs[i].ProgramHash))
 
 		if !oldVersion {
-			suite.Equal(first.Outputs[i].OutputType, second.Outputs[i].OutputType)
+			suite.Equal(first.Outputs[i].Type, second.Outputs[i].Type)
 		}
 	}
 
@@ -513,16 +513,16 @@ func randomOldVersionTransaction(oldVersion bool, txType byte, inputNum, outputN
 
 	for i := 0; i < outputNum; i++ {
 		output := &Output{
-			AssetID:       *randomUint256(),
-			Value:         common.Fixed64(rand.Int63()),
-			OutputLock:    rand.Uint32(),
-			ProgramHash:   *randomUint168(),
-			OutputType:    0,
-			OutputPayload: nil,
+			AssetID:     *randomUint256(),
+			Value:       common.Fixed64(rand.Int63()),
+			OutputLock:  rand.Uint32(),
+			ProgramHash: *randomUint168(),
+			Type:        0,
+			Payload:     nil,
 		}
 		if !oldVersion {
-			output.OutputType = DefaultOutput
-			output.OutputPayload = &outputpayload.DefaultOutput{}
+			output.Type = OTNone
+			output.Payload = &outputpayload.DefaultOutput{}
 		}
 		txn.Outputs = append(txn.Outputs, output)
 	}

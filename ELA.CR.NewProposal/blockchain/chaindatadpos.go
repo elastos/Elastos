@@ -232,7 +232,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 			}
 			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
 				for _, output := range tx.Outputs {
-					if output.OutputType == VoteOutput {
+					if output.Type == OTVote {
 						voteOutputs = append(voteOutputs, output)
 					}
 				}
@@ -242,7 +242,7 @@ func (c *ChainStore) RollbackCancelOrUpdateProducer() error {
 						return err
 					}
 					output := transaction.Outputs[input.Previous.Index]
-					if output.OutputType == VoteOutput {
+					if output.Type == OTVote {
 						cancelVoteOutputs = append(cancelVoteOutputs, output)
 					}
 				}
@@ -280,7 +280,7 @@ func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
 			}
 			if tx.TxType == TransferAsset && tx.Version >= TxVersion09 {
 				for _, output := range tx.Outputs {
-					if output.OutputType == VoteOutput {
+					if output.Type == OTVote {
 						if err = c.persistVoteOutputForMempool(output); err != nil {
 							return err
 						}
@@ -292,7 +292,7 @@ func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
 						return err
 					}
 					output := transaction.Outputs[input.Previous.Index]
-					if output.OutputType == VoteOutput {
+					if output.Type == OTVote {
 						if err = c.persistCancelVoteOutputForMempool(output); err != nil {
 							return err
 						}
@@ -340,7 +340,7 @@ func (c *ChainStore) persistUpdateProducerForMempool(payload *payload.ProducerIn
 func (c *ChainStore) persistVoteOutputs(voteOutputs []*Output, cancelVoteOutputs []*Output) error {
 	voteProducerMap := make(map[string]Fixed64)
 	for _, output := range voteOutputs {
-		payload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+		payload, ok := output.Payload.(*outputpayload.VoteOutput)
 		if !ok {
 			continue
 		}
@@ -361,7 +361,7 @@ func (c *ChainStore) persistVoteOutputs(voteOutputs []*Output, cancelVoteOutputs
 	}
 
 	for _, output := range cancelVoteOutputs {
-		payload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+		payload, ok := output.Payload.(*outputpayload.VoteOutput)
 		if !ok {
 			continue
 		}
@@ -407,7 +407,7 @@ func (c *ChainStore) persistVoteOutputs(voteOutputs []*Output, cancelVoteOutputs
 }
 
 func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
-	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	pyaload, ok := output.Payload.(*outputpayload.VoteOutput)
 	if !ok {
 		return errors.New("[PersistVoteOutput] invalid output payload")
 	}
@@ -429,7 +429,7 @@ func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
 }
 
 func (c *ChainStore) persistCancelVoteOutputForMempool(output *Output) error {
-	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
+	pyaload, ok := output.Payload.(*outputpayload.VoteOutput)
 	if !ok {
 		return errors.New("[PersistVoteOutput] invalid output payload")
 	}
@@ -705,7 +705,7 @@ func (c *ChainStore) rollbackForMempool(b *Block) error {
 		}
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					if err := c.persistCancelVoteOutputForMempool(output); err != nil {
 						return err
 					}
@@ -717,7 +717,7 @@ func (c *ChainStore) rollbackForMempool(b *Block) error {
 					return err
 				}
 				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					if err = c.persistVoteOutputForMempool(output); err != nil {
 						return err
 					}
@@ -750,7 +750,7 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 		}
 		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
 			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					if err := c.persistVoteOutputForMempool(output); err != nil {
 						return err
 					}
@@ -762,7 +762,7 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 					return err
 				}
 				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
+				if output.Type == OTVote {
 					if err = c.persistCancelVoteOutputForMempool(output); err != nil {
 						return err
 					}

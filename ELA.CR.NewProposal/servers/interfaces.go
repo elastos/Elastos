@@ -62,8 +62,8 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		outputs[i].Address = address
 		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
-		outputs[i].OutputType = uint32(v.OutputType)
-		outputs[i].OutputPayload = getOutputPayloadInfo(v.OutputPayload)
+		outputs[i].OutputType = uint32(v.Type)
+		outputs[i].OutputPayload = getOutputPayloadInfo(v.Payload)
 	}
 
 	attributes := make([]AttributeInfo, len(tx.Attributes))
@@ -990,7 +990,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
 		}
-		if tx.Outputs[unspent.Index].OutputType == VoteOutput {
+		if tx.Outputs[unspent.Index].Type == OTVote {
 			voting += unspent.Value
 		}
 		total += unspent.Value
@@ -1008,7 +1008,7 @@ func VoteStatus(param Params) map[string]interface{} {
 			}
 		}
 		for _, o := range t.Outputs {
-			if o.OutputType == VoteOutput && o.ProgramHash.IsEqual(*programHash) {
+			if o.Type == OTVote && o.ProgramHash.IsEqual(*programHash) {
 				status = false
 			}
 		}

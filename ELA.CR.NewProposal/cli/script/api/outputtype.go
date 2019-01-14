@@ -65,12 +65,12 @@ func newTxOutput(L *lua.LState) int {
 	}
 
 	output := &types.Output{
-		AssetID:       assetID,
-		Value:         common.Fixed64(value),
-		OutputLock:    0,
-		ProgramHash:   *programHash,
-		OutputType:    types.OutputType(outputType),
-		OutputPayload: outputPayload,
+		AssetID:     assetID,
+		Value:       common.Fixed64(value),
+		OutputLock:  0,
+		ProgramHash: *programHash,
+		Type:        types.OutputType(outputType),
+		Payload:     outputPayload,
 	}
 
 	ud := L.NewUserData()
@@ -128,7 +128,7 @@ func checkDefaultOutput(L *lua.LState, idx int) *outputpayload.DefaultOutput {
 	if v, ok := ud.Value.(*outputpayload.DefaultOutput); ok {
 		return v
 	}
-	L.ArgError(1, "DefaultOutput expected")
+	L.ArgError(1, "OTNone expected")
 	return nil
 }
 
@@ -143,7 +143,7 @@ func defaultOutputGet(L *lua.LState) int {
 	return 0
 }
 
-// Vote Output Payload
+// OTVote Output Payload
 func RegisterVoteOutputType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaVoteOutputTypeName)
 	L.SetGlobal("voteoutput", mt)
@@ -187,7 +187,7 @@ func checkVoteOutput(L *lua.LState, idx int) *outputpayload.VoteOutput {
 	if v, ok := ud.Value.(*outputpayload.VoteOutput); ok {
 		return v
 	}
-	L.ArgError(1, "VoteOutput expected")
+	L.ArgError(1, "OTVote expected")
 	return nil
 }
 
@@ -202,7 +202,7 @@ func voteOutputGet(L *lua.LState) int {
 	return 0
 }
 
-// Vote Content
+// OTVote Content
 func RegisterVoteContentType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaVoteContentTypeName)
 	L.SetGlobal("votecontent", mt)
