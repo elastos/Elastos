@@ -12,7 +12,7 @@ export default createContainer(Component, state => ({
   static: {
     voter: [
       { value: 'Yipeng Su' },
-      { value: 'Fay Li' },
+      { value: 'Feng Zhang' },
       { value: 'Kevin Zhang' },
     ],
     select_type: [
