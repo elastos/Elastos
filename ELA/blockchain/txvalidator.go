@@ -896,11 +896,7 @@ func CheckSidechainIllegalEvidenceTransaction(txn *Transaction) error {
 		return errors.New("invalid type")
 	}
 
-	pkBuf, err := common.HexStringToBytes(payload.IllegalSigner)
-	if err != nil {
-		return err
-	}
-	_, err = crypto.DecodePoint(pkBuf)
+	_, err := crypto.DecodePoint(payload.IllegalSigner)
 	if err != nil {
 		return err
 	}
