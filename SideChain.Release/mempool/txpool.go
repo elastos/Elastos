@@ -50,6 +50,12 @@ func New(cfg *Config) *TxPool {
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
 func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
+	p.Lock()
+	defer p.Unlock()
+	return p.appendToTxPool(tx)
+}
+
+func (p *TxPool) appendToTxPool(tx *types.Transaction) error {
 	//verify transaction with Concurrency
 	if err := p.validator.CheckTransactionSanity(tx); err != nil {
 		return err
@@ -58,7 +64,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 		return err
 	}
 	//verify transaction by p with lock
-	if err := p.VerifyTransactionWithTxnPool(tx); err != nil {
+	if err := p.verifyTransactionWithTxnPool(tx); err != nil {
 		return err
 	}
 
@@ -73,9 +79,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 	tx.FeePerKB = tx.Fee * 1000 / common.Fixed64(len(buf.Bytes()))
 
 	//add the transaction to process scope
-	p.Lock()
 	p.txnList[tx.Hash()] = tx
-	p.Unlock()
 
 	// Notify transaction accepted.
 	events.Notify(events.ETTransactionAccepted, tx)
@@ -106,6 +110,8 @@ func (p *TxPool) GetTxsInPool() map[common.Uint256]*types.Transaction {
 
 //clean the trasaction Pool with committed block.
 func (p *TxPool) CleanSubmittedTransactions(block *types.Block) error {
+	p.Lock()
+	defer p.Unlock()
 	p.cleanTransactionList(block.Transactions)
 	p.cleanUTXOList(block.Transactions)
 	p.cleanMainchainTx(block.Transactions)
@@ -116,11 +122,15 @@ func (p *TxPool) CleanSubmittedTransactions(block *types.Block) error {
 func (p *TxPool) GetTransaction(hash common.Uint256) *types.Transaction {
 	p.RLock()
 	defer p.RUnlock()
+	return p.getTransaction(hash)
+}
+
+func (p *TxPool) getTransaction(hash common.Uint256) *types.Transaction {
 	return p.txnList[hash]
 }
 
 //verify transaction with txnpool
-func (p *TxPool) VerifyTransactionWithTxnPool(txn *types.Transaction) error {
+func (p *TxPool) verifyTransactionWithTxnPool(txn *types.Transaction) error {
 	if txn.IsRechargeToSideChainTx() {
 		// check if the recharge transaction includes duplicate mainchain tx in p
 		if err := p.verifyDuplicateMainchainTx(txn); err != nil {
@@ -166,6 +176,8 @@ func (p *TxPool) verifyDoubleSpend(tx *types.Transaction) error {
 }
 
 func (p *TxPool) IsDuplicateMainchainTx(mainchainTxHash common.Uint256) bool {
+	p.RLock()
+	defer p.RUnlock()
 	_, ok := p.mainchainTxList[mainchainTxHash]
 	if ok {
 		return true
@@ -217,7 +229,7 @@ func (p *TxPool) cleanTransactionList(txns []*types.Transaction) error {
 	}
 
 	log.Debugf("[cleanTransactionList] %d cleaned,  Remains %d in TxPool",
-		cleaned, p.GetTransactionCount())
+		cleaned, p.getTransactionCount())
 	return nil
 }
 
@@ -248,8 +260,6 @@ func (p *TxPool) cleanMainchainTx(txs []*types.Transaction) {
 }
 
 func (p *TxPool) delFromTxList(txId common.Uint256) bool {
-	p.Lock()
-	defer p.Unlock()
 	if _, ok := p.txnList[txId]; !ok {
 		return false
 	}
@@ -258,8 +268,6 @@ func (p *TxPool) delFromTxList(txId common.Uint256) bool {
 }
 
 func (p *TxPool) copyTxList() map[common.Uint256]*types.Transaction {
-	p.RLock()
-	defer p.RUnlock()
 	txnMap := make(map[common.Uint256]*types.Transaction, len(p.txnList))
 	for txnId, txn := range p.txnList {
 		txnMap[txnId] = txn
@@ -267,21 +275,15 @@ func (p *TxPool) copyTxList() map[common.Uint256]*types.Transaction {
 	return txnMap
 }
 
-func (p *TxPool) GetTransactionCount() int {
-	p.RLock()
-	defer p.RUnlock()
+func (p *TxPool) getTransactionCount() int {
 	return len(p.txnList)
 }
 
 func (p *TxPool) getInputUTXOList(input *types.Input) *types.Transaction {
-	p.RLock()
-	defer p.RUnlock()
 	return p.inputUTXOList[input.ReferKey()]
 }
 
 func (p *TxPool) addInputUTXOList(tx *types.Transaction, input *types.Input) bool {
-	p.Lock()
-	defer p.Unlock()
 	id := input.ReferKey()
 	_, ok := p.inputUTXOList[id]
 	if ok {
@@ -293,8 +295,6 @@ func (p *TxPool) addInputUTXOList(tx *types.Transaction, input *types.Input) boo
 }
 
 func (p *TxPool) delInputUTXOList(input *types.Input) bool {
-	p.Lock()
-	defer p.Unlock()
 	id := input.ReferKey()
 	_, ok := p.inputUTXOList[id]
 	if !ok {
@@ -305,8 +305,6 @@ func (p *TxPool) delInputUTXOList(input *types.Input) bool {
 }
 
 func (p *TxPool) addMainchainTx(txn *types.Transaction) {
-	p.Lock()
-	defer p.Unlock()
 	rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 	hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 	if err != nil {
@@ -316,8 +314,6 @@ func (p *TxPool) addMainchainTx(txn *types.Transaction) {
 }
 
 func (p *TxPool) delMainchainTx(hash common.Uint256) bool {
-	p.Lock()
-	defer p.Unlock()
 	_, ok := p.mainchainTxList[hash]
 	if !ok {
 		return false
@@ -327,12 +323,14 @@ func (p *TxPool) delMainchainTx(hash common.Uint256) bool {
 }
 
 func (p *TxPool) MaybeAcceptTransaction(txn *types.Transaction) error {
+	p.Lock()
+	defer p.Unlock()
 	txHash := txn.Hash()
 
 	// Don't accept the transaction if it already exists in the p.  This
 	// applies to orphan transactions as well.  This check is intended to
 	// be a quick check to weed out duplicates.
-	if txn := p.GetTransaction(txHash); txn != nil {
+	if txn := p.txnList[txHash]; txn != nil {
 		return fmt.Errorf("already have transaction")
 	}
 
@@ -341,7 +339,7 @@ func (p *TxPool) MaybeAcceptTransaction(txn *types.Transaction) error {
 		return fmt.Errorf("transaction is an individual coinbase")
 	}
 
-	if err := p.AppendToTxPool(txn); err != nil {
+	if err := p.appendToTxPool(txn); err != nil {
 		if e, ok := err.(*RuleError); ok {
 			log.Infof("rule error when adding transaction pool, "+
 				"error %s, desc %s", e.ErrorCode, e.Description)
@@ -353,6 +351,8 @@ func (p *TxPool) MaybeAcceptTransaction(txn *types.Transaction) error {
 }
 
 func (p *TxPool) RemoveTransaction(txn *types.Transaction) {
+	p.Lock()
+	defer p.Unlock()
 	txHash := txn.Hash()
 	for i := range txn.Outputs {
 		input := types.Input{
