@@ -158,7 +158,7 @@ func (s *txVersionV1TestSuite) TestCheckCoinbaseArbitratorsReward() {
 func (s *txVersionV1TestSuite) TestCheckVoteProducerOutputs() {
 	outputs := []*types.Output{
 		{
-			OutputType: types.DefaultOutput,
+			Type: types.OTNone,
 		},
 	}
 	references := make(map[*types.Input]*types.Output)
@@ -175,9 +175,9 @@ func (s *txVersionV1TestSuite) TestCheckVoteProducerOutputs() {
 	hashByte, _ := common.HexStringToBytes(hashStr)
 	hash, _ := common.Uint168FromBytes(hashByte)
 	outputs = append(outputs, &types.Output{
-		OutputType:  types.VoteOutput,
+		Type:        types.OTVote,
 		ProgramHash: *hash,
-		OutputPayload: &outputpayload.VoteOutput{
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
@@ -195,9 +195,9 @@ func (s *txVersionV1TestSuite) TestCheckVoteProducerOutputs() {
 	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 
 	outputs = append(outputs, &types.Output{
-		OutputType:  types.VoteOutput,
+		Type:        types.OTVote,
 		ProgramHash: *hash,
-		OutputPayload: &outputpayload.VoteOutput{
+		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{

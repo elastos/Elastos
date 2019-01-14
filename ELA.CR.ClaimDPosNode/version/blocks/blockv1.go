@@ -145,11 +145,11 @@ func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward com
 		}
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       config.ELAAssetID,
-			Value:         reward,
-			ProgramHash:   *v,
-			OutputType:    types.DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
+			AssetID:     config.ELAAssetID,
+			Value:       reward,
+			ProgramHash: *v,
+			Type:        types.OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
 		})
 
 		realDposReward += reward
@@ -158,11 +158,11 @@ func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward com
 	for _, v := range candidatesHashes {
 
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:       config.ELAAssetID,
-			Value:         individualProducerReward,
-			ProgramHash:   *v,
-			OutputType:    types.DefaultOutput,
-			OutputPayload: &outputpayload.DefaultOutput{},
+			AssetID:     config.ELAAssetID,
+			Value:       individualProducerReward,
+			ProgramHash: *v,
+			Type:        types.OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
 		})
 
 		realDposReward += individualProducerReward

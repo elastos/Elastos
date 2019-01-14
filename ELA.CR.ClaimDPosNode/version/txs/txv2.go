@@ -23,23 +23,23 @@ func (v *txV2) GetVersion() byte {
 }
 
 func (v *txV2) CheckOutputPayload(txType types.TxType, output *types.Output) error {
-	// Vote information can only be placed in TransferAsset transaction.
+	// OTVote information can only be placed in TransferAsset transaction.
 	if txType == types.TransferAsset {
-		switch output.OutputType {
-		case types.DefaultOutput:
-		case types.VoteOutput:
+		switch output.Type {
+		case types.OTNone:
+		case types.OTVote:
 		default:
 			return errors.New("transaction type dose not match the output payload type")
 		}
 	} else {
-		switch output.OutputType {
-		case types.DefaultOutput:
+		switch output.Type {
+		case types.OTNone:
 		default:
 			return errors.New("transaction type dose not match the output payload type")
 		}
 	}
 
-	return output.OutputPayload.Validate()
+	return output.Payload.Validate()
 }
 
 func (v *txV2) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {

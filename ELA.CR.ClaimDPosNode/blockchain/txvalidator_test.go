@@ -523,8 +523,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -541,8 +541,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -557,8 +557,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -574,13 +574,13 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	}
 
 	// 2. Check output payload
-	err := outputs[0].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err := outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
 	s.NoError(err)
 
-	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err = outputs[1].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "invalid public key count")
 
-	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err = outputs[2].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "duplicate candidate")
 }
 
