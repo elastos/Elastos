@@ -149,6 +149,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		RPCError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
 		return
 	}
+	log.Debug("RPC method:", requestMethod)
 	log.Debug("RPC params:", params)
 
 	response := method(params)
