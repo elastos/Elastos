@@ -218,6 +218,10 @@ export default class extends BaseComponent {
                 <Menu onClick={this.clickItem.bind(this)} className="c_Header_Menu pull-right"
                     selectedKeys={this.getSelectedKeys()} mode="horizontal">
 
+                    <Menu.Item className="c_MenuItem link" key="landing">
+                        {I18N.get('0012')}
+                    </Menu.Item>
+
                     <Menu.Item className="c_MenuItem link" key="notice">
                         {I18N.get('popup.changes.title')}
                     </Menu.Item>

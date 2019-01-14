@@ -1330,6 +1330,14 @@ const en = {
     'cs.rule.show.click': 'Click',
     'cs.rule.show.here': 'here',
     'cs.rule.show.view': 'to view the rules for council',
+    'cs.kevin.name': 'Kevin Zhang',
+    'cs.kevin.intro': 'Head of Elastos Global Adoption Team, based in Silicon Valley',
+    'cs.yipeng.name': 'Yipeng Su',
+    'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
+    'cs.feng.name': 'Feng Zhang',
+    'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+    'cs.rebecca.name': 'Rebecca Zhu',
+    'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
 };
 
 // lang mappings

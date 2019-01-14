@@ -79,6 +79,8 @@ export default class extends BaseComponent {
                 let forumLink = `${process.env.FORUM_URL}/login`;
                 window.open(forumLink, '_blank');
             }
+        } else if (key === 'landing') {
+            this.props.history.push('/')
         }
     }
 
@@ -111,6 +113,9 @@ export default class extends BaseComponent {
                             {I18N.get('0102')}
                         </Menu.Item>
                         */}
+                        <Menu.Item key="landing">
+                            {I18N.get('0012')}
+                        </Menu.Item>
                         <Menu.Item key="developer/learn">
                             {I18N.get('developer.learn')}
                         </Menu.Item>
