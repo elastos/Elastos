@@ -6,8 +6,10 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import MetaComponent from '@/module/shared/Meta/Container'
 import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE } from '@/constant'
+import MetaComponent from '@/module/shared/Meta/Container'
+import VoteResultComponent from '../common/vote_result/Component'
+import Footer from '@/module/layout/Footer/Container'
 
 import './style.scss'
 
@@ -63,58 +65,22 @@ class C extends StandardPage {
     const notesNode = this.renderNotes()
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
-    const voteDetailNode = this.renderVoteDetail()
+    const voteDetailNode = this.renderVoteResults()
     return (
-      <div className="c_CVoteDetail">
-        {metaNode}
-        {titleNode}
-        {subTitleNode}
-        {contentNode}
-        {notesNode}
-        {voteActionsNode}
-        {adminActionsNode}
-        {voteDetailNode}
+      <div>
+        <div className="p_CVoteDetail">
+          {metaNode}
+          {titleNode}
+          {subTitleNode}
+          {contentNode}
+          {notesNode}
+          {voteActionsNode}
+          {adminActionsNode}
+          {voteDetailNode}
+        </div>
+        <Footer />
       </div>
     )
-  }
-
-  async handleSubmit(e) {
-    e.preventDefault()
-
-    const s = this.props.static
-    this.props.form.validateFields(async (err, values) => {
-      if (!err) {
-        // console.log(' ===> ', values)
-
-        const param = {}
-        const x1 = []
-        const x2 = []
-        const x3 = []
-        _.each(s.voter, (n) => {
-          const name = n.value
-          x1.push(`${name}|${values[`vote_${name}`]}`)
-          x2.push(`${name}|${values[`reason_${name}`]}`)
-          x3.push(`${name}|${values[`reason_zh_${name}`]}`)
-        })
-        // vote_map: "Yipeng Su|undefined,Fay Li|undefined,Kevin Zhang|abstention"
-        param.vote_map = x1.join(',')
-        param.reason_map = x2.join(',')
-        param.reason_zh_map = x3.join(',')
-
-        // console.log(param)
-        this.ord_loading(true)
-        try {
-          param._id = this.props.edit
-          await this.props.updateCVote(param)
-          message.success(I18N.get('from.CVoteForm.message.updated.success'))
-          this.ord_loading(false)
-          this.props.history.push('/proposals')
-        } catch (e) {
-          message.error(e.message)
-          this.ord_loading(false)
-        }
-      }
-    })
   }
 
   renderMeta() {
@@ -236,10 +202,10 @@ class C extends StandardPage {
 
   showUpdateNotesModal = () => {
     Modal.confirm({
-      title: I18N.get('council.voting.confirm.updateNotes'),
+      title: I18N.get('council.voting.modal.updateNotes'),
       content: <TextArea onChange={this.onNotesChanged} />,
-      okText: I18N.get('from.CVoteForm.modal.confirm'),
-      cancelText: I18N.get('from.CVoteForm.modal.cancel'),
+      okText: I18N.get('council.voting.modal.confirm'),
+      cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.updateNotes(),
     })
   }
@@ -269,24 +235,27 @@ class C extends StandardPage {
     history.push(`/cvote/edit/${id}`)
   }
 
-  renderVoteDetail() {
-    const { vote_map: voteMap } = this.state.data
+  renderVoteResults() {
+    const { vote_map: voteMap, avatar_map: avatarMap } = this.state.data
     const stats = _.reduce(voteMap, (prev, value, key) => {
+      const userObj = { name: key, avatar: avatarMap[key] }
       if (prev[value]) {
-        prev[value].push(key)
+        prev[value].push(userObj)
         return prev
       }
-      return _.extend(prev, { [value]: [key] })
+      return _.extend(prev, { [value]: [userObj] })
     }, {})
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
-      const avatars = _.map(statArr, (value, index) => <span key={index}>{value}</span>)
-      return (
-        <div key={key}>
-          <span>{CVOTE_RESULT_TEXT[key]}</span>
-          <span>{avatars}</span>
-        </div>
-      )
+      const users = _.map(statArr, stat => ({ name: stat.name, avatar: stat.avatar }))
+      const label = CVOTE_RESULT_TEXT[key]
+      const type = key
+      const props = {
+        users,
+        type,
+        label,
+      }
+      return <VoteResultComponent {...props} key={key} />
     })
     return (
       <div>
@@ -305,9 +274,8 @@ class C extends StandardPage {
     const voteMap = []
     const reasonMap = []
     const reasonMapZh = []
-    _.each(voter, (voterInfo) => {
-      const name = voterInfo.value
-      if (voterInfo.id === currentUserId) {
+    _.each(voter, (name, voterId) => {
+      if (voterId === currentUserId) {
         voteMap.push(`${name}|${vote}`)
         reasonMap.push(`${name}|${reason || data.reason_map[name]}`)
         reasonMapZh.push(`${name}|${reasonZh || data.reason_zh_map[name]}`)
@@ -352,18 +320,18 @@ class C extends StandardPage {
 
   showVoteYesModal = () => {
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.voteYes'),
-      okText: I18N.get('from.CVoteForm.modal.confirm'),
-      cancelText: I18N.get('from.CVoteForm.modal.cancel'),
+      title: I18N.get('council.voting.modal.voteYes'),
+      okText: I18N.get('council.voting.modal.confirm'),
+      cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.voteYes(),
     })
   }
 
   showVoteAbstentionModal = () => {
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.voteAbstention'),
-      okText: I18N.get('from.CVoteForm.modal.confirm'),
-      cancelText: I18N.get('from.CVoteForm.modal.cancel'),
+      title: I18N.get('council.voting.modal.voteAbstention'),
+      okText: I18N.get('council.voting.modal.confirm'),
+      cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.voteAbstention(),
     })
   }
@@ -371,10 +339,10 @@ class C extends StandardPage {
   showVoteOpposeModal = () => {
     const { reason } = this.state
     Modal.confirm({
-      title: I18N.get('from.CVoteForm.modal.voteNo'),
+      title: I18N.get('council.voting.modal.voteNo'),
       content: <TextArea onChange={this.onReasonChanged} />,
-      okText: I18N.get('from.CVoteForm.modal.confirm'),
-      cancelText: I18N.get('from.CVoteForm.modal.cancel'),
+      okText: I18N.get('council.voting.modal.confirm'),
+      cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.voteOppose({ reason }),
     })
   }
@@ -383,10 +351,10 @@ class C extends StandardPage {
     const id = _.get(this.props.match, 'params.id')
 
     Modal.confirm({
-      title: I18N.get('council.voting.confirm.complete'),
+      title: I18N.get('council.voting.modal.complete'),
       content: '',
-      okText: I18N.get('from.CVoteForm.modal.confirm'),
-      cancelText: I18N.get('from.CVoteForm.modal.cancel'),
+      okText: I18N.get('council.voting.modal.confirm'),
+      cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => {
         this.ord_loading(true)
         this.props.finishCVote({

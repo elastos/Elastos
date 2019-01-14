@@ -16,12 +16,14 @@ export const USER_ROLE = {
 // '5b28be2784f6f900350d30b9', // Kevin Zhang
 // '5bcf21f030826d68a940b017', //  Yipeng Su
 // '5b4c3ba6450ff10035954c80', // Feng zhu
-export const COUNCIL_MEMBERS = [
-    { value: 'Yipeng Su', id: '5bcf21f030826d68a940b017' },
-    { value: 'Feng Zhang', id: '5c2f5a15f13d65008969be61' },
-    { value: 'Kevin Zhang', id: '5b28be2784f6f900350d30b9' },
-]
-export const COUNCIL_MEMBER_IDS = _.map(COUNCIL_MEMBERS, member => member.id)
+export const COUNCIL_MEMBERS = {
+    '5bcf21f030826d68a940b017': 'Yipeng Su',
+    '5c2f5a15f13d65008969be61': 'Feng Zhang',
+    '5b28be2784f6f900350d30b9': 'Kevin Zhang',
+}
+
+export const COUNCIL_MEMBER_IDS = _.keys(COUNCIL_MEMBERS)
+
 export const ADMIN_MEMBER_IDS = [
     ...COUNCIL_MEMBER_IDS,
     '5b4c3ba6450ff10035954c80'
@@ -207,7 +209,7 @@ export const CVOTE_RESULT_TEXT = {
   undefined: 'Undecided',
   support: 'Yes',
   reject: 'No',
-  abstention: 'Discarded',
+  abstention: 'Abstained',
 }
 
 export const CVOTE_TYPE = {
