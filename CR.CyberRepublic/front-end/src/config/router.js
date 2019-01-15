@@ -434,10 +434,10 @@ export default [
         path : '/council',
         page : CouncilPage
     },
-    {
-        path : '/council-secretariat',
-        page : CouncilSecretariatPage
-    },
+    // {
+    //     path : '/council-secretariat',
+    //     page : CouncilSecretariatPage
+    // },
     {
         path : '/council/list',
         page : CouncilListPage

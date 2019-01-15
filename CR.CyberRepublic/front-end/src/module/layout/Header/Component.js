@@ -222,13 +222,13 @@ export default class extends BaseComponent {
                         {I18N.get('0012')}
                     </Menu.Item>
 
-                    <Menu.Item className="c_MenuItem link" key="notice">
+                    {/* <Menu.Item className="c_MenuItem link" key="notice">
                         {I18N.get('popup.changes.title')}
-                    </Menu.Item>
+                    </Menu.Item> */}
 
-                    <Menu.Item className="c_MenuItem link" key="council-secretariat">
+                    {/* <Menu.Item className="c_MenuItem link" key="council-secretariat">
                         {I18N.get('navagation.council')}
-                    </Menu.Item>
+                    </Menu.Item> */}
 
                     <Menu.Item className="c_MenuItem link" key="suggestion">
                         {I18N.get('navagation.suggestion')}
