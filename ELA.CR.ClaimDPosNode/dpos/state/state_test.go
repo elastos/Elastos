@@ -583,3 +583,60 @@ func TestState_GetHistory(t *testing.T) {
 	}
 
 }
+
+func TestState_IsUnusedNickname(t *testing.T) {
+	state := NewState()
+
+	// Create 10 producers info.
+	producers := make([]*payload.ProducerInfo, 10)
+	for i, p := range producers {
+		p = &payload.ProducerInfo{
+			PublicKey: make([]byte, 33),
+		}
+		for j := range p.PublicKey {
+			p.PublicKey[j] = byte(i)
+		}
+		p.NickName = fmt.Sprintf("Producer-%d", i+1)
+		producers[i] = p
+	}
+
+	// Register each producer on one height.
+	for i, p := range producers {
+		tx := mockRegisterProducerTx(p)
+		state.ProcessTransactions([]*types.Transaction{tx}, uint32(i+1))
+	}
+
+	for i := range producers {
+		if !assert.Equal(t, false, state.IsUnusedNickname(
+			fmt.Sprintf("Producer-%d", i+1))) {
+			t.FailNow()
+		}
+	}
+
+	// Change producer-1 nickname to Updated.
+	producers[0].NickName = "Updated"
+	tx := mockUpdateProducerTx(producers[0])
+	state.ProcessTransactions([]*types.Transaction{tx}, 11)
+	p := state.getProducer(producers[0].PublicKey)
+	if !assert.Equal(t, "Updated", p.info.NickName) {
+		t.FailNow()
+	}
+
+	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-1")) {
+		t.FailNow()
+	}
+
+	// Cancel producer-2, see if nickname change to unused.
+	tx = mockCancelProducerTx(producers[1].PublicKey)
+	state.ProcessTransactions([]*types.Transaction{tx}, 12)
+	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-2")) {
+		t.FailNow()
+	}
+
+	// Make producer-3 illegal, see if nickname change to unused.
+	tx = mockIllegalBlockTx(producers[2].PublicKey)
+	state.ProcessIllegalBlockEvidence(tx.Payload)
+	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-3")) {
+		t.FailNow()
+	}
+}
