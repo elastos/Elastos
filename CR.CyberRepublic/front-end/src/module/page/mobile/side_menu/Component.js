@@ -32,6 +32,8 @@ export default class extends BaseComponent {
             'about',
             'faq',
             'contact',
+            'suggestion',
+            'council-secretariat',
             'council'
         ], key)) {
             this.props.history.push('/' + ev.key)
@@ -77,6 +79,8 @@ export default class extends BaseComponent {
                 let forumLink = `${process.env.FORUM_URL}/login`;
                 window.open(forumLink, '_blank');
             }
+        } else if (key === 'landing') {
+            this.props.history.push('/')
         }
     }
 
@@ -109,11 +113,20 @@ export default class extends BaseComponent {
                             {I18N.get('0102')}
                         </Menu.Item>
                         */}
+                        <Menu.Item key="landing">
+                            {I18N.get('0012')}
+                        </Menu.Item>
                         <Menu.Item key="developer/learn">
                             {I18N.get('developer.learn')}
                         </Menu.Item>
                         <Menu.Item key="teams">
                             {I18N.get('0005')}
+                        </Menu.Item>
+                        <Menu.Item key="council-secretariat">
+                            {I18N.get('navagation.council')}
+                        </Menu.Item>
+                        <Menu.Item key="suggestion">
+                            {I18N.get('navagation.suggestion')}
                         </Menu.Item>
                         <Menu.Item key="council">
                             {I18N.get('council.0001')}

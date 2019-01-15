@@ -28,7 +28,7 @@ export default abstract class {
         }, this.rejectFields());
     }
 
-    private buildSchema(){
+    protected buildSchema(){
         const schema = new mongoose.Schema(_.extend({
             createdAt: {
                 type: Date,

@@ -231,7 +231,7 @@ class C extends BaseComponent {
             }
 
             const fn = getFieldDecorator('vote_'+name, {
-                initialValue : edit ? data.vote_map[name] : (fullName !== name ? '-1' : 'support')
+                initialValue : edit ? _.get(data, 'vote_map.name') : (fullName !== name ? '-1' : 'support')
             })
             const el = (
                 <Select {...publicDisabled} {...tmp} size="large">
@@ -259,7 +259,7 @@ class C extends BaseComponent {
             }
 
             const fn = getFieldDecorator('reason_'+name, {
-                initialValue : edit ? data.reason_map[name] : '',
+                initialValue : edit ? _.get(data, 'vote_map.name') : '',
                 rules : [
                     {},
                     {
@@ -565,10 +565,10 @@ class C extends BaseComponent {
         let ss = data.status || 'processing...'
         _.each(s.voter, (item)=>{
             const name = item.value
-            if (data.vote_map[name] === 'support'){
+            if (_.get(data, 'vote_map.name') === 'support'){
                 n++
             }
-            else if (data.vote_map[name] === 'reject'){
+            else if (_.get(data, 'vote_map.name') === 'reject'){
                 en++
             }
             else {

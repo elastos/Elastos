@@ -1,12 +1,37 @@
 @import "../../../style/variable";
 @import "../../../style/color";
 
+$color_background: #F6F9FD;
+
 .c_Home {
   position: relative;
 
   .top-section {
     position: relative;
     padding-top: 100px;
+    max-width: 1000px;
+    margin: 0 auto !important;
+
+    .box-wrap {
+      position: relative;
+
+      .arrow {
+        position: absolute;
+        bottom: -75px;
+        z-index: 1;
+        left: 45%;
+
+        @media only screen and (max-width: $mobile-width) {
+          top: calc(46px + (3.8em/2));
+          left: 0;
+          transform: rotate(270deg);
+        }
+      }
+
+      .arrow-hidden {
+        display: none;
+      }
+    }
 
     .box {
       margin: 0 auto;
@@ -14,8 +39,8 @@
 
       h3 {
         text-transform: uppercase;
-        color: #1de9b6;
-        font-size: 4em;
+        color: #031E28;
+        font-size: 3.8em;
       }
       p {
         color: black;
@@ -25,7 +50,7 @@
     }
     .box-hover:hover {
       cursor: pointer;
-        
+
       h3 {
         text-decoration: underline;
       }
@@ -37,9 +62,16 @@
       bottom: -30px;
       left: 15px;
       z-index: 2;
-      background: white;
+      background: $color_background;
       @media only screen and (max-width: $mobile-width) {
         display: none;
+      }
+    }
+    .selected-box {
+      background: $color_background;
+
+      h3 {
+        color: #1DE9B6;
       }
     }
     .cutoff-box-hidden {
@@ -66,7 +98,7 @@
         font-size: 4em;
       }
       p {
-        color: #F6F9FD;
+        color: $color_background;
         font-weight: 200;
         font-size: 30px;
       }
@@ -100,11 +132,85 @@
       width: 100%;
     }
   }
+  .mid-section.constitution {
+    padding: 100px 5% 200px 5%;
+
+    .row {
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      @media only screen and (max-width: $mobile-width) {
+        flex-flow: row wrap;
+      }
+    }
+    .col {
+      position: relative;
+      flex: 1;
+      margin: $gap_1 $gap_1;
+      background: #172C3B;
+      padding: $gap_0 $gap_2;
+    }
+    .col:hover {
+      background: rgba(23, 44, 59, 0.527);
+      cursor: pointer;
+      h3 {
+        text-decoration: underline;
+      }
+    }
+    h3 {
+      color: white;
+      text-transform: uppercase;
+      font-size: 42px;
+      line-height: 42px;
+    }
+    p {
+      color: #F6F9FD;
+      opacity: 0.9;
+      margin-bottom: $gap_3;
+    }
+    .date {
+      position: absolute;
+      bottom: 16px;
+      left: 10px;
+      color: #F6F9FD;
+      opacity: 0.9;
+    }
+    .order-num {
+      position: absolute;
+      bottom: -16px;
+      right: 10px;
+      color: #434D72;
+      font-size: 5em;
+    }
+  }
+  .decoration-slashed-left {
+    position: absolute;
+    top: 18%;
+    left: 0;
+  }
+  .decoration-square {
+    position: absolute;
+    right: 50px;
+    top: 32px;
+
+    .big-square {
+      width: 55px;
+      height: 54px;
+      background: #F6F9FD;
+    }
+    .small-square {
+      position: absolute;
+      width: 34px;
+      right: -32px;
+      height: 34px;
+      background: #F6F9FD;
+    }
+  }
   .decoration-1 {
     position: absolute;
-    top: 5%;
+    top: 125px;
     left: 0;
-    
+
     @media only screen and (max-width: $mobile-width) {
       top: 50px;
       left: -40px;
@@ -112,7 +218,7 @@
   }
   .decoration-2 {
     position: absolute;
-    bottom: -5%;
+    top: -25px;
     left: 0;
 
     @media only screen and (max-width: $mobile-width) {
@@ -124,7 +230,7 @@
     position: absolute;
     bottom: 10%;
     right: -29px;
-    
+
     @media only screen and (max-width: $mobile-width) {
       bottom: 25px;
       z-index: 1;

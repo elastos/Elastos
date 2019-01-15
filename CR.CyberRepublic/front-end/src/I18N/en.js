@@ -31,6 +31,8 @@ const en = {
     '0109': 'Submissions',
     '0110': 'Blog',
     'navigation.programs': 'Programs',
+    'navagation.suggestion': 'Suggestions',
+    'navagation.council': 'Council & Secreariat',
 
     '0200': 'Profile',
     '0201': 'Login',
@@ -65,6 +67,7 @@ const en = {
     '1304': 'Issues',
     '1305': 'Forms',
     '1306': 'Projects',
+    'admin.suggestion': 'Suggestions',
 
     // Profile navigator
     '2300': 'My Profile',
@@ -74,6 +77,7 @@ const en = {
     '2304': 'My Communities',
     '2305': 'My Projects',
     '2306': 'Communities',
+    'profile.suggestion': 'My Suggestions',
 
     'login.success': 'Login Successful',
 
@@ -114,8 +118,15 @@ const en = {
     'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
     'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
     'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
-    'home.explanation_3.part_1': 'Fill out',
-    'home.explanation_3.part_2': 'Fill out',
+    'home.explanation_3.box_1.title': 'Elastos Cyber Republic Constitution',
+    'home.explanation_3.box_1.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_2.title': 'Elastos Cyber Republic Council Founding Document',
+    'home.explanation_3.box_2.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_3.title': 'Elastos Cyber Republic Voting Rules',
+    'home.explanation_3.box_3.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_4.title': 'Elastos Cyber Republic Council Conflict of Interest Policy',
+    'home.explanation_3.box_4.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.date': 'Dec 13, 2018',
 
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',
@@ -206,6 +217,46 @@ const en = {
     'user.edit.form.section.social': 'Social',
     'user.follow': 'Follow',
     'user.unfollow': 'Unfollow',
+
+    // suggestion
+    'suggestion.nodata': 'No Data',
+    'suggestion.befirst': 'Be the first one to create a suggestion',
+    'suggestion.subject': 'Subject',
+    'suggestion.title': 'Suggestions',
+    'suggestion.add': 'Add a Suggestion',
+    'suggestion.sort': 'Sort by',
+    'suggestion.likes': 'Likes',
+    'suggestion.views': 'Views',
+    'suggestion.activeness': 'Activeness',
+    'suggestion.owner': 'Owner',
+    'suggestion.dateAdded': 'Date Added',
+    'suggestion.postedBy': 'Posted By',
+    'suggestion.follow': 'Follow',
+    'suggestion.reportAbuse': 'Report Abuse',
+    'suggestion.translate': 'Translate in English',
+    'suggestion.councilMember': 'Council Member',
+    'suggestion.copy': 'COPY',
+    'suggestion.back': 'Back',
+    'suggestion.viewAll': 'View All',
+    'suggestion.mySuggestions': 'My Suggestions',
+    'suggestion.all': 'All',
+    'suggestion.addedByMe': 'Added by me',
+    'suggestion.commentedByMe': 'Commented by me',
+    'suggestion.subscribed': 'Followed',
+    'suggestion.followed': 'Followed',
+    'suggestion.summary': 'Summary',
+    'suggestion.dislikes': 'Dislikes',
+    'suggestion.comments': 'Comments',
+    'suggestion.created': 'Created',
+    'suggestion.archived': 'Archived',
+    'suggestion.search': 'Search',
+    'suggestion.cancel': 'Cancel',
+    'suggestion.submit': 'Submit',
+    // suggestion error
+    'suggestion.create.error.titleRequired': 'Suggestion title is required',
+    'suggestion.create.error.descriptionRequired': 'Suggestion description is required',
+    'suggestion.create.error.titleTooShort': 'Suggestion title is too short',
+    'suggestion.create.error.descriptionTooShort': 'Suggestion description is too short',
 
     // Developer
     'developer.breadcrumb.developers': 'Community',
@@ -1274,7 +1325,26 @@ const en = {
     'user.skillset.BUSINESS_PLANS': 'Business Plans',
     'user.skillset.LEGAL_CONSULTING': 'Legal Consulting',
     'user.skillset.FINANCIAL_CONSULTING': 'Financial Consulting',
-    'user.skillset.PRESENTATION': 'Business Presentations'
+    'user.skillset.PRESENTATION': 'Business Presentations',
+
+    // Council & Secretariat
+    'cs.incumbent': 'INCUMBENT',
+    'cs.council': 'COUNCIL',
+    'cs.secretariat': 'SECRETARIAT',
+    'cs.secretariat.general': 'SECRETARIAT GENERAL',
+    'cs.secretariat.staff': 'SECRETARIAT STAFF',
+    'cs.rule.tile': 'Rules For Council',
+    'cs.rule.show.click': 'Click',
+    'cs.rule.show.here': 'here',
+    'cs.rule.show.view': 'to view the rules for council',
+    'cs.kevin.name': 'Kevin Zhang',
+    'cs.kevin.intro': 'Head of Elastos Global Adoption Team, based in Silicon Valley',
+    'cs.yipeng.name': 'Yipeng Su',
+    'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
+    'cs.feng.name': 'Feng Zhang',
+    'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+    'cs.rebecca.name': 'Rebecca Zhu',
+    'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
 };
 
 // lang mappings

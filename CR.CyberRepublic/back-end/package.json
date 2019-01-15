@@ -40,6 +40,7 @@
     "mailgun-js": "^0.18.0",
     "moment": "^2.22.1",
     "mongoose": "^5.1.0",
+    "mongoose-plugin-autoinc": "^1.1.9",
     "morgan": "^1.9.0",
     "newrelic": "^4.8.0",
     "querystring": "^0.2.0",
