@@ -83,7 +83,7 @@ export default abstract class {
         if(this.needLogin){
             if(!this.session.user){
                 this.res.sendStatus(401);
-                return false;
+                return this.result(0, { code: 401, message: 'Please login'});
             }
         }
 
