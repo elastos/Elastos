@@ -43,7 +43,7 @@ export default class extends BaseComponent {
 
         return (
             <div>
-                <PopupNotificationUpdate/>
+                {/* <PopupNotificationUpdate/> */}
                 {this.ord_renderPage(p)}
             </div>
         )
