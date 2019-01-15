@@ -88,6 +88,7 @@ type State struct {
 	canceledProducers map[string]*Producer
 	illegalProducers  map[string]*Producer
 	votes             map[string]*types.Output
+	nicknames         map[string]struct{}
 	history           *history
 }
 
@@ -214,6 +215,14 @@ func (s *State) IsIllegalProducer(publicKey []byte) bool {
 	return ok
 }
 
+// IsUnusedNickname returns if a nickname is unused.
+func (s *State) IsUnusedNickname(nickname string) bool {
+	s.mtx.RLock()
+	_, ok := s.nicknames[nickname]
+	s.mtx.RUnlock()
+	return !ok
+}
+
 // ProcessTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update producers
 // state and votes according to transactions content.
@@ -278,11 +287,14 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 // registerProducer handles the register producer transaction, returns if this
 // registration is valid.
 func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
+	nickname := payload.NickName
 	key := hex.EncodeToString(payload.PublicKey)
 	s.history.append(height, func() {
+		s.nicknames[nickname] = struct{}{}
 		s.pendingProducers[key] =
 			&Producer{info: *payload, registerHeight: height, votes: 0}
 	}, func() {
+		delete(s.nicknames, nickname)
 		delete(s.pendingProducers, key)
 	})
 }
@@ -293,9 +305,13 @@ func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 	producer := s.getProducer(info.PublicKey)
 	producerInfo := producer.info
 	s.history.append(height, func() {
+		delete(s.nicknames, producerInfo.NickName)
 		producer.info = *info
+		s.nicknames[info.NickName] = struct{}{}
 	}, func() {
+		delete(s.nicknames, info.NickName)
 		producer.info = producerInfo
+		delete(s.nicknames, producerInfo.NickName)
 	})
 }
 
@@ -309,11 +325,13 @@ func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
 		producer.cancelHeight = height
 		s.canceledProducers[key] = producer
 		delete(s.activityProducers, key)
+		delete(s.nicknames, producer.info.NickName)
 	}, func() {
 		producer.state = Activate
 		producer.cancelHeight = 0
 		s.activityProducers[key] = producer
 		delete(s.canceledProducers, key)
+		s.nicknames[producer.info.NickName] = struct{}{}
 	})
 }
 
@@ -428,10 +446,12 @@ func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
 				producer.state = FoundBad
 				s.illegalProducers[key] = producer
 				delete(s.activityProducers, key)
+				delete(s.nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Activate
 				s.activityProducers[key] = producer
 				delete(s.illegalProducers, key)
+				s.nicknames[producer.info.NickName] = struct{}{}
 			})
 			continue
 		}
@@ -441,10 +461,12 @@ func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
 				producer.state = FoundBad
 				s.illegalProducers[key] = producer
 				delete(s.canceledProducers, key)
+				delete(s.nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Canceled
 				s.canceledProducers[key] = producer
 				delete(s.illegalProducers, key)
+				s.nicknames[producer.info.NickName] = struct{}{}
 			})
 			continue
 		}
@@ -513,6 +535,7 @@ func NewState() *State {
 		canceledProducers: make(map[string]*Producer),
 		illegalProducers:  make(map[string]*Producer),
 		votes:             make(map[string]*types.Output),
+		nicknames:         make(map[string]struct{}),
 		history:           newHistory(maxHistoryCapacity),
 	}
 }

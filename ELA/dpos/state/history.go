@@ -175,6 +175,14 @@ func (h *history) rollback(height uint32) error {
 			" at most rollback to %d", height, limitHeight)
 	}
 
+	// rollback and reset tempChanges before rollback.
+	if len(h.tempChanges) > 0 {
+		for _, change := range h.tempChanges {
+			change.rollback()
+		}
+		h.tempChanges = nil
+	}
+
 	// rollback from last history.
 	for h.height > height {
 		h.changes[len(h.changes)-1].rollback()
