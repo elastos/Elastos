@@ -118,8 +118,15 @@ const en = {
     'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
     'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
     'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
-    'home.explanation_3.part_1': 'Fill out',
-    'home.explanation_3.part_2': 'Fill out',
+    'home.explanation_3.box_1.title': 'Elastos Cyber Republic Constitution',
+    'home.explanation_3.box_1.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_2.title': 'Elastos Cyber Republic Council Founding Document',
+    'home.explanation_3.box_2.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_3.title': 'Elastos Cyber Republic Voting Rules',
+    'home.explanation_3.box_3.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_4.title': 'Elastos Cyber Republic Council Conflict of Interest Policy',
+    'home.explanation_3.box_4.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.date': 'Dec 13, 2018',
 
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',

@@ -29,6 +29,18 @@ export default class extends StandardPage {
         })
     }
 
+    redirectToConstitution(link) {
+        if (link == 1) {
+            this.props.history.push('/constitution');
+        } else if (link == 2) {
+            this.props.history.push('/constitution');
+        } else if (link == 3) {
+            this.props.history.push('/constitution');
+        } else {
+            this.props.history.push('/constitution');
+        }
+    }
+
     ord_renderContent() {
         const selectedBox = this.state.selectedBox;
         const title = I18N.get('home.box_' + (selectedBox + 1).toString() + '.title')
@@ -39,9 +51,6 @@ export default class extends StandardPage {
             <div className="c_Home">
                 <div className="decoration-1">
                     <img className="upper-left" src="/assets/images/training_mini_connector.png"/>
-                </div>
-                <div className="decoration-slashed-left">
-                    <img src="/assets/images/training_green_slashed_box.png"/>
                 </div>
                 <div className="decoration-square">
                     <div className="big-square"></div>
@@ -79,6 +88,7 @@ export default class extends StandardPage {
                         <img className={"arrow" + (selectedBox === 2 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
                 </Row>
+                {selectedBox !== 2 ? (
                 <div className="mid-section">
                     <div className="decoration-2">
                         <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
@@ -94,7 +104,46 @@ export default class extends StandardPage {
                     <div className="rectangle-1"></div>
                     <div className="rectangle-2"></div>
                     <div className="rectangle-3"></div>
-                </div>
+                </div>) : (
+                <div className="mid-section constitution">
+                    <div className="row">
+                        <div className="col" onClick={this.redirectToConstitution.bind(this, 1)}>
+                            <div>
+                                <h3>{I18N.get('home.explanation_3.box_1.title')}</h3>
+                                <p>{I18N.get('home.explanation_3.box_1.text')}</p>
+                                <span className="date">{I18N.get('home.explanation_3.date')}</span>
+                                <div className="komu-a order-num">01</div>
+                            </div>
+                        </div>
+                        <div className="col" onClick={this.redirectToConstitution.bind(this, 2)}>
+                            <div>
+                                <h3>{I18N.get('home.explanation_3.box_2.title')}</h3>
+                                <p>{I18N.get('home.explanation_3.box_2.text')}</p>
+                                <span className="date">{I18N.get('home.explanation_3.date')}</span>
+                                <div className="komu-a order-num">02</div>
+                            </div>
+                        </div>
+                        <div className="col" onClick={this.redirectToConstitution.bind(this, 3)}>
+                            <div>
+                                <h3>{I18N.get('home.explanation_3.box_3.title')}</h3>
+                                <p>{I18N.get('home.explanation_3.box_3.text')}</p>
+                                <span className="date">{I18N.get('home.explanation_3.date')}</span>
+                                <div className="komu-a order-num">03</div>
+                            </div>
+                        </div>
+                        <div className="col" onClick={this.redirectToConstitution.bind(this, 4)}>
+                            <div>
+                                <h3>{I18N.get('home.explanation_3.box_4.title')}</h3>
+                                <p>{I18N.get('home.explanation_3.box_4.text')}</p>
+                                <span className="date">{I18N.get('home.explanation_3.date')}</span>
+                                <div className="komu-a order-num">04</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="rectangle-1"></div>
+                    <div className="rectangle-2"></div>
+                    <div className="rectangle-3"></div>
+                </div>)}
                 <div className="stay-updated">
                     <div className="form-wrap footer-email">
                         <p>{I18N.get('landing.footer.note')}</p>

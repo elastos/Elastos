@@ -17,9 +17,15 @@ $color_background: #F6F9FD;
 
       .arrow {
         position: absolute;
-        bottom: -60px;
+        bottom: -75px;
         z-index: 1;
         left: 45%;
+
+        @media only screen and (max-width: $mobile-width) {
+          top: calc(46px + (3.8em/2));
+          left: 0;
+          transform: rotate(270deg);
+        }
       }
 
       .arrow-hidden {
@@ -126,6 +132,57 @@ $color_background: #F6F9FD;
       width: 100%;
     }
   }
+  .mid-section.constitution {
+    padding: 100px 5% 200px 5%;
+
+    .row {
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      @media only screen and (max-width: $mobile-width) {
+        flex-flow: row wrap;
+      }
+    }
+    .col {
+      position: relative;
+      flex: 1;
+      margin: $gap_1 $gap_1;
+      background: #172C3B;
+      padding: $gap_0 $gap_2;
+    }
+    .col:hover {
+      background: rgba(23, 44, 59, 0.527);
+      cursor: pointer;
+      h3 {
+        text-decoration: underline;
+      }
+    }
+    h3 {
+      color: white;
+      text-transform: uppercase;
+      font-size: 42px;
+      line-height: 42px;
+    }
+    p {
+      color: #F6F9FD;
+      opacity: 0.9;
+      margin-bottom: $gap_3;
+    }
+    .date {
+      position: absolute;
+      bottom: 16px;
+      left: 10px;
+      color: #F6F9FD;
+      opacity: 0.9;
+    }
+    .order-num {
+      position: absolute;
+      bottom: -16px;
+      right: 10px;
+      color: #434D72;
+      font-size: 5em;
+    }
+  }
   .decoration-slashed-left {
     position: absolute;
     top: 18%;
@@ -151,7 +208,7 @@ $color_background: #F6F9FD;
   }
   .decoration-1 {
     position: absolute;
-    top: 3%;
+    top: 125px;
     left: 0;
 
     @media only screen and (max-width: $mobile-width) {
@@ -161,7 +218,7 @@ $color_background: #F6F9FD;
   }
   .decoration-2 {
     position: absolute;
-    bottom: -5%;
+    top: -25px;
     left: 0;
 
     @media only screen and (max-width: $mobile-width) {
