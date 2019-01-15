@@ -12,14 +12,17 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	clicom "github.com/elastos/Elastos.ELA/cli/common"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	log2 "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/version"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -139,19 +142,26 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(logLevel, 0, 0)
 	log2.Init(logLevel, 0, 0)
 
-	versions := version.NewVersions(nil)
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", nil)
+	verconf := &verconf.Config{
+		ChainParams: &config.MainNetParams,
+	}
+	versions := version.NewVersions(verconf)
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.MainNetParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	chain, err := blockchain.New(chainStore, nil, versions, nil)
+	var interrupt = signal.NewInterrupt()
+	chain, err := blockchain.New(chainStore, &config.MainNetParams, versions, interrupt.C)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
+	ledger := blockchain.Ledger{}
+	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Arbitrators = arbitrators
+	blockchain.DefaultLedger.Store = chainStore
 
 	return 1
 }
