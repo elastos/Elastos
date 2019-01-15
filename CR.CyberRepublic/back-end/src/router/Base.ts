@@ -62,7 +62,7 @@ export default abstract class {
     public async main(): Promise<any> {
         try{
             if(!await this.validate()){
-                return false;
+                return this.result(-1, { code: 401, message: 'Please login'});
             }
 
             this.db = await DB.create();
@@ -83,7 +83,7 @@ export default abstract class {
         if(this.needLogin){
             if(!this.session.user){
                 this.res.sendStatus(401);
-                return this.result(0, { code: 401, message: 'Please login'});
+                return false;
             }
         }
 
