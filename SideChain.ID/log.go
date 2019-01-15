@@ -17,8 +17,8 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
+	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 )
 
 const (
