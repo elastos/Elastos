@@ -136,12 +136,14 @@ export default class extends BaseComponent {
 
   async componentDidMount() {
     this.ord_loading(true);
+    try {
+      const list = await this.props.listData({}, this.props.canCreate);
+      this.setState({ list });
+    } catch (error) {
+      // do sth
+    }
 
-    const list = await this.props.listData({}, this.props.canCreate);
-
-    this.setState({ list });
-
-    this.ord_loading();
+    this.ord_loading(false);
   }
 
   voteDataByUser = (data) => {
