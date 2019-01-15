@@ -27,7 +27,7 @@ export default class extends Base {
         }
 
         if (!this.canManageProposal()) {
-            throw 'cvoteservice.create - not Council or Secretary'
+            throw 'cvoteservice.create - not council or secretary'
         }
 
         const db_cvote = this.getDBModel('CVote');
