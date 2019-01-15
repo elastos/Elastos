@@ -113,6 +113,9 @@ func (c *ChainStore) persistUpdateProducerForMempool(payload *PayloadUpdateProdu
 }
 
 func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
 	if !ok {
 		return errors.New("[PersistVoteOutput] invalid output payload")
@@ -121,11 +124,9 @@ func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
 	for _, vote := range pyaload.Contents {
 		if vote.VoteType == outputpayload.Delegate {
 			for _, candidate := range vote.Candidates {
-				c.mu.Lock()
 				if _, ok := c.producerVotes[BytesToHexString(candidate)]; ok {
 					c.producerVotes[BytesToHexString(candidate)].Vote += output.Value
 				}
-				c.mu.Unlock()
 			}
 			c.dirty[outputpayload.Delegate] = true
 		} else {
@@ -137,6 +138,9 @@ func (c *ChainStore) persistVoteOutputForMempool(output *Output) error {
 }
 
 func (c *ChainStore) persistCancelVoteOutputForMempool(output *Output) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	pyaload, ok := output.OutputPayload.(*outputpayload.VoteOutput)
 	if !ok {
 		return errors.New("[PersistVoteOutput] invalid output payload")
@@ -145,11 +149,11 @@ func (c *ChainStore) persistCancelVoteOutputForMempool(output *Output) error {
 	for _, vote := range pyaload.Contents {
 		if vote.VoteType == outputpayload.Delegate {
 			for _, candidate := range vote.Candidates {
-				c.mu.Lock()
-				c.producerVotes[BytesToHexString(candidate)].Vote -= output.Value
-				c.dirty[vote.VoteType] = true
-				c.mu.Unlock()
+				if _, ok := c.producerVotes[BytesToHexString(candidate)]; ok {
+					c.producerVotes[BytesToHexString(candidate)].Vote -= output.Value
+				}
 			}
+			c.dirty[vote.VoteType] = true
 		} else {
 			// todo canel other vote
 		}
@@ -281,6 +285,9 @@ func (c *ChainStore) getIllegalProducers() map[string]struct{} {
 
 func (c *ChainStore) persistForMempool(b *Block) error {
 	for _, txn := range b.Transactions {
+		if err := c.persistForVoteInputs(txn); err != nil {
+			return err
+		}
 		switch txn.TxType {
 		case RegisterProducer:
 			if err := c.persistRegisterProducerForMempool(txn.Payload.(*PayloadRegisterProducer), b.Height); err != nil {
@@ -295,21 +302,6 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 				return err
 			}
 		case TransferAsset:
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				if transaction.Version < TxVersion09 {
-					continue
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					if err = c.persistCancelVoteOutputForMempool(output); err != nil {
-						return err
-					}
-				}
-			}
 			if txn.Version < TxVersion09 {
 				break
 			}
@@ -327,8 +319,33 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 	return nil
 }
 
+func (c *ChainStore) persistForVoteInputs(tx *Transaction) error {
+	if tx.TxType == CoinBase {
+		return nil
+	}
+	for _, input := range tx.Inputs {
+		transaction, _, err := c.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return err
+		}
+		if transaction.Version < TxVersion09 {
+			continue
+		}
+		output := transaction.Outputs[input.Previous.Index]
+		if output.OutputType == VoteOutput {
+			if err = c.persistCancelVoteOutputForMempool(output); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (c *ChainStore) rollbackForMempool(b *Block) error {
 	for _, txn := range b.Transactions {
+		if err := c.rollbackForVoteInputs(txn); err != nil {
+			return err
+		}
 		switch txn.TxType {
 		case RegisterProducer:
 			regPayload := txn.Payload.(*PayloadRegisterProducer)
@@ -352,20 +369,27 @@ func (c *ChainStore) rollbackForMempool(b *Block) error {
 					}
 				}
 			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					if err = c.persistVoteOutputForMempool(output); err != nil {
-						return err
-					}
-				}
-			}
 		}
 	}
 
+	return nil
+}
+
+func (c *ChainStore) rollbackForVoteInputs(tx *Transaction) error {
+	for _, input := range tx.Inputs {
+		transaction, _, err := c.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return err
+		}
+		if transaction.Version < TxVersion09 {
+			continue
+		}
+		output := transaction.Outputs[input.Previous.Index]
+		if output.OutputType == VoteOutput {
+			if err = c.persistVoteOutputForMempool(output); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
