@@ -8,7 +8,8 @@ export const USER_ROLE = {
     MEMBER : 'MEMBER',
     LEADER : 'LEADER',
     ADMIN : 'ADMIN',
-    COUNCIL: 'COUNCIL'
+    COUNCIL: 'COUNCIL',
+    SECRETARY: 'SECRETARY',
 }
 
 // council related
@@ -210,6 +211,7 @@ export const CVOTE_RESULT_TEXT = {
   support: 'Yes',
   reject: 'No',
   abstention: 'Abstained',
+  '-1': 'Undecided',
 }
 
 export const CVOTE_TYPE = {

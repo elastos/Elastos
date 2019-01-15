@@ -222,6 +222,7 @@ class C extends StandardPage {
         notes,
       })
       message.success(I18N.get('from.CVoteForm.message.note.update.success'))
+      this.refetch()
       this.ord_loading(false)
     } catch (error) {
       message.error(error.message)

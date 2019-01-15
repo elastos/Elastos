@@ -3,12 +3,14 @@ import Component from './Component'
 import I18N from '@/I18N'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
-import { ADMIN_MEMBER_IDS } from '@/constant'
+import { COUNCIL_MEMBER_IDS, USER_ROLE } from '@/constant'
 
 
 export default createContainer(Component, state => ({
   user: state.user,
   isLogin: state.user.is_login,
+  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.COUNCIL,
+  canCreate: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.COUNCIL || state.user.role === USER_ROLE.SECRETARY,
   static: {
     voter: [
       { value: 'Yipeng Su' },
@@ -26,7 +28,6 @@ export default createContainer(Component, state => ({
       { name: 'Abstention', value: 'abstention' },
     ],
   },
-  isCouncil: ADMIN_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0,
 }), () => ({
   async createCVote(param) {
     const rs = await api_request({

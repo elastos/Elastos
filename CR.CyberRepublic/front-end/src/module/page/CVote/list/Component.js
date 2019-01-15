@@ -73,7 +73,7 @@ export default class extends BaseComponent {
       },
     ]
 
-    if (this.props.isCouncil) {
+    if (this.props.canCreate) {
       columns.splice(1, 0, {
         dataIndex: 'published',
         render: (published, item, index) => (published ? <i className="fas fa-eye" /> : <i className="far fa-eye-slash" />),
@@ -93,7 +93,7 @@ export default class extends BaseComponent {
       </div>
     )
 
-    const createBtn = this.props.isCouncil && (
+    const createBtn = this.props.canCreate && (
       <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
           Create New Proposal
       </Button>
@@ -137,7 +137,7 @@ export default class extends BaseComponent {
   async componentDidMount() {
     this.ord_loading(true);
 
-    const list = await this.props.listData({}, this.props.isCouncil);
+    const list = await this.props.listData({}, this.props.canCreate);
 
     this.setState({ list });
 
@@ -150,7 +150,7 @@ export default class extends BaseComponent {
       // fix error in finding index of undefined
       return ''
     }
-    const voteArr = _.map(voteMap, value => CVOTE_RESULT_TEXT[value.toLowerCase()])
+    const voteArr = _.map(voteMap, value => ((value === '-1' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
     const supportNum = _.countBy(voteArr).Yes || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50

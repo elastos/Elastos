@@ -9,6 +9,7 @@ export default createContainer(Component, state => ({
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
   isSecretary: state.user.role === USER_ROLE.SECRETARY || state.user.role === USER_ROLE.ADMIN,
+  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.SECRETARY.COUNCIL,
   static: {
     voter: COUNCIL_MEMBERS,
     select_type: [
@@ -22,7 +23,6 @@ export default createContainer(Component, state => ({
       { name: 'Abstention', value: 'abstention' },
     ],
   },
-  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0,
 }), () => ({
   async getData(id) {
     const d = await api_request({

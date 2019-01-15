@@ -98,7 +98,7 @@ class C extends BaseComponent {
   getInputProps(data) {
     const edit = this.props.edit
     const role = this.props.user.role
-    const isCouncil = this.props.isCouncil
+    const canCreate = this.props.canCreate
 
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
 
@@ -107,7 +107,7 @@ class C extends BaseComponent {
     const councilNotOwnerReadOnly = {}
     const councilNotOwnerDisabled = {}
 
-    if (!isCouncil) {
+    if (!canCreate) {
       publicReadonly.readOnly = true
       publicDisabled.disabled = true
     } else if (edit && (data.createdBy !== this.user.current_user_id || _.includes(['FINAL', 'DEFERRED'], data.status))) {
@@ -423,9 +423,9 @@ class C extends BaseComponent {
             <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>
             <Row>
               <Col offset={6} span={12}>
-                {this.props.isCouncil && this.renderSubmitButton()}
-                {this.props.isCouncil && this.renderFinishButton()}
-                {this.props.isCouncil && this.renderUpdateNoteButton()}
+                {this.props.canCreate && this.renderSubmitButton()}
+                {this.props.canCreate && this.renderFinishButton()}
+                {this.props.canCreate && this.renderUpdateNoteButton()}
               </Col>
             </Row>
           </TabPane>
@@ -480,7 +480,7 @@ class C extends BaseComponent {
     const edit = this.props.edit
     const role = this.props.user.role
     const data = this.props.data
-    if (!this.isLogin || !_.includes(['ADMIN', 'SECRETARY'], role)) {
+    if (!this.props.canCreate) {
       return (
         <h4 style={{ color: '#f00' }}>{I18N.get('from.CVoteForm.text.onlycouncil')}</h4>
       )
