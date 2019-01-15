@@ -362,7 +362,7 @@ export default class extends Base {
     }
 
     private canManageProposal() {
-        return this.isCouncil() || this.isSecretary() || this.isAdmin()
+        return this.isCouncil() || this.isSecretary()
     }
 
 }
