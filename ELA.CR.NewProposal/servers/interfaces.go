@@ -25,6 +25,10 @@ import (
 
 const (
 	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
+
+	MixedUTXO  utxoType = 0x00
+	VoteUTXO   utxoType = 0x01
+	NormalUTXO utxoType = 0x02
 )
 
 var ServerNode Noder
@@ -33,6 +37,8 @@ var LocalPow *pow.PowService
 var preChainHeight uint64
 var preTime int64
 var currentAuxBlock *Block
+
+type utxoType byte
 
 func ToReversedString(hash common.Uint256) string {
 	return common.BytesToHexString(common.BytesReverse(hash[:]))
@@ -736,6 +742,19 @@ func ListUnspent(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need addresses in an array!")
 	}
+	utxoType := MixedUTXO
+	if t, ok := param.String("utxotype"); ok {
+		switch t {
+		case "mixed":
+			utxoType = MixedUTXO
+		case "vote":
+			utxoType = VoteUTXO
+		case "normal":
+			utxoType = NormalUTXO
+		default:
+			return ResponsePack(InvalidParams, "invalid utxotype")
+		}
+	}
 	for _, address := range addresses {
 		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
@@ -751,6 +770,13 @@ func ListUnspent(param Params) map[string]interface{} {
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+			}
+			if utxoType == VoteUTXO && (tx.Version < TxVersion09 ||
+				tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].OutputType != VoteOutput) {
+				continue
+			}
+			if utxoType == NormalUTXO && tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].OutputType == VoteOutput {
+				continue
 			}
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
