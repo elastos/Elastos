@@ -18,7 +18,7 @@ import (
 
 const (
 	// MinDepositAmount is the minimum deposit as a producer.
-	MinDepositAmount = 5000
+	MinDepositAmount = 5000 * 100000000
 	// DepositLockupBlocks indicates how many blocks need to wait when cancel producer was triggered, and can submit return deposit coin request.
 	DepositLockupBlocks = 2160
 	MaxStringLength     = 100
