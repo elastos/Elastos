@@ -1,10 +1,12 @@
 import {TASK_STATUS, CVOTE_STATUS} from '@/constant'
 import council from './zh/council'
 import getting_started from './en/getting_started';
+import constitution from './zh/constitution';
 
 const zh = {
     council,
     getting_started,
+    constitution,
     // Header
     '0000': 'ALPHA版本',
     '0001': '奖励计划',
@@ -1367,6 +1369,13 @@ const zh = {
     'cs.feng.intro': '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
     'cs.rebecca.name': '朱凤',
     'cs.rebeca.intro': '亦来云基金会项目总监，常驻北京',
+
+    // ConstitutionNavigator
+    'counstitution.menu1': '01 Elastos Cyber Republic Constitution',
+    'counstitution.menu2': '02 Elastos Cyber Republic Council Founding Document',
+    'counstitution.menu3': '03 Elastos Cyber Republic Voting Rules',
+    'counstitution.menu4': '04 Elastos Cyber Republic Council Conflict of Interest Policy',
+    'counstitution.title': 'Elastos Cyber Republic Constitution',
 }
 
 // lang mappings

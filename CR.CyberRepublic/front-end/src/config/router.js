@@ -89,7 +89,7 @@ import CVoteDetailPage from '@/module/page/CVote/detail/Container';
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
-
+import ConstitutionPage from '@/module/page/constitution/Container'
 
 import NotFound from '@/module/page/error/NotFound'
 
@@ -101,6 +101,10 @@ export default [
     {
         path: '/home',
         page: HomePage
+    },
+    {
+        path: '/constitution',
+        page: ConstitutionPage
     },
     {
         path: '/sso/login',

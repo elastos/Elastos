@@ -4,7 +4,7 @@ import Footer from '@/module/layout/Footer/Container'
 import {TEAM_TYPE, TEAM_SUBCATEGORY} from '@/constant'
 import I18N from '@/I18N'
 import './style.scss'
-import { Col, Row, Card, Button, message, Spin, Avatar, Modal, Icon, Divider } from 'antd'
+import { Col, Row, Divider } from 'antd'
 import _ from 'lodash'
 import numeral from 'numeral'
 
