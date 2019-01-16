@@ -18,7 +18,10 @@ export default class extends BaseComponent {
 
     handleMenuClick(item, key, keyPath) {
         const lookup = {
-            communities: '/admin/community'
+            'constitution/1': '/constitution/1',
+            'constitution/2': '/constitution/2',
+            'constitution/3': '/constitution/3',
+            'constitution/4': '/constitution/4'
         }
 
         const route = lookup[item.key]
@@ -36,16 +39,16 @@ export default class extends BaseComponent {
                         onClick={this.handleMenuClick.bind(this)}
                         mode="inline"
                     >
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/1">
                             {I18N.get('counstitution.menu1')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/2">
                             {I18N.get('counstitution.menu2')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/3">
                             {I18N.get('counstitution.menu3')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/4">
                             {I18N.get('counstitution.menu4')}
                         </Menu.Item>
                     </Menu>
@@ -56,16 +59,16 @@ export default class extends BaseComponent {
                         onClick={this.handleMenuClick.bind(this)}
                         mode="horizontal"
                     >
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/1">
                             {I18N.get('counstitution.menu1')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/2">
                             {I18N.get('counstitution.menu2')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/3">
                             {I18N.get('counstitution.menu3')}
                         </Menu.Item>
-                        <Menu.Item key="">
+                        <Menu.Item key="constitution/4">
                             {I18N.get('counstitution.menu4')}
                         </Menu.Item>
                     </Menu>

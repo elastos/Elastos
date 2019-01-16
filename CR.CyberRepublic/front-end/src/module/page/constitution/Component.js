@@ -19,7 +19,8 @@ export default class extends StandardPage {
     }
 
     ord_renderContent () {
-        const text = I18N.get('constitution.text');
+        const id = this.props.id
+        const text = I18N.get(`council.article.${id}`);
 
         return (
             <div>
@@ -32,19 +33,19 @@ export default class extends StandardPage {
                             <MediaQuery maxWidth={720}>
                                 <Row>
                                     <Col className="wrap-box-navigator">
-                                        <Navigator selectedItem={'profileInfo'} />
+                                        <Navigator selectedItem={`constitution/${id}`} />
                                     </Col>
                                 </Row>
                             </MediaQuery>
                             <Row>
                                 <MediaQuery minWidth={720}>
                                     <Col span={4} className="admin-left-column wrap-box-navigator">
-                                        <Navigator selectedItem={'profileInfo'} />
+                                        <Navigator selectedItem={`constitution/${id}`} />
                                     </Col>
                                 </MediaQuery>
                                 <Col xs={{span: 24}} md={{span: 20}} className="c_ProfileContainer wrap-box-user">
                                     <div className="content">
-                                        <h1 className="title">{I18N.get('counstitution.title')}</h1>
+                                        <h1 className="title">{I18N.get(`counstitution.title${id}`)}</h1>
                                         <span dangerouslySetInnerHTML={{__html : text}}></span>
                                     </div>
                                 </Col>

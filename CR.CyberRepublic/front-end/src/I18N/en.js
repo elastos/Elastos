@@ -1377,7 +1377,10 @@ const en = {
     'counstitution.menu2': '02 Elastos Cyber Republic Council Founding Document',
     'counstitution.menu3': '03 Elastos Cyber Republic Voting Rules',
     'counstitution.menu4': '04 Elastos Cyber Republic Council Conflict of Interest Policy',
-    'counstitution.title': 'Elastos Cyber Republic Constitution',
+    'counstitution.title1': 'Elastos Cyber Republic Constitution',
+    'counstitution.title2': 'Elastos Cyber Republic Council Founding Document',
+    'counstitution.title3': 'Elastos Cyber Republic Voting Rules',
+    'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy',
 };
 
 // lang mappings

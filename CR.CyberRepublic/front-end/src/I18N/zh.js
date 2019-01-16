@@ -1372,11 +1372,14 @@ const zh = {
     'cs.rebeca.intro': '亦来云基金会项目总监，常驻北京',
 
     // ConstitutionNavigator
-    'counstitution.menu1': '01 Elastos Cyber Republic Constitution',
-    'counstitution.menu2': '02 Elastos Cyber Republic Council Founding Document',
-    'counstitution.menu3': '03 Elastos Cyber Republic Voting Rules',
-    'counstitution.menu4': '04 Elastos Cyber Republic Council Conflict of Interest Policy',
-    'counstitution.title': 'Elastos Cyber Republic Constitution',
+    'counstitution.menu1': '01 亦来云Cyber Republic章程',
+    'counstitution.menu2': '02 亦来云Cyber Republic委员会创始文件',
+    'counstitution.menu3': '03 亦来云Cyber Republic投票规则',
+    'counstitution.menu4': '04 亦来云Cyber Republic委员会利益和分歧协调政策',
+    'counstitution.title1': '亦来云Cyber Republic章程',
+    'counstitution.title2': '亦来云Cyber Republic委员会创始文件',
+    'counstitution.title3': '亦来云Cyber Republic投票规则',
+    'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策',
 }
 
 // lang mappings

@@ -103,7 +103,7 @@ export default [
         page: HomePage
     },
     {
-        path: '/constitution',
+        path: '/constitution/:id',
         page: ConstitutionPage
     },
     {
