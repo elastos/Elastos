@@ -819,14 +819,18 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	hasProducer := false
 	keepNickName := false
+	keepNodePublicKey := false
 	for _, p := range producers {
 		if bytes.Equal(p.OwnPublicKey, payload.OwnPublicKey) {
-			hasProducer = true
-			keepNickName = p.NickName == payload.NickName
-			break
-		}
-		if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
-			return errors.New("duplicated producer node")
+			if !hasProducer {
+				hasProducer = true
+			}
+			if !keepNickName {
+				keepNickName = p.NickName == payload.NickName
+			}
+			if !keepNodePublicKey {
+				keepNodePublicKey = bytes.Equal(p.NodePublicKey, payload.NodePublicKey)
+			}
 		}
 	}
 	if !hasProducer {
@@ -837,6 +841,13 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 		for _, p := range producers {
 			if p.NickName == payload.NickName {
 				return errors.New("duplicated nick name")
+			}
+		}
+	}
+	if !keepNodePublicKey {
+		for _, p := range producers {
+			if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
+				return errors.New("duplicated producer node")
 			}
 		}
 	}
