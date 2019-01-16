@@ -249,7 +249,7 @@ export default class extends BaseComponent {
                         </Menu.Item>
                     </SubMenu>
 
-                    <Menu.Item className="c_MenuItem link" key="constitution">
+                    <Menu.Item className="c_MenuItem link" key="constitution/1">
                         {I18N.get('navagation.constitution')}
                     </Menu.Item>
 
@@ -354,7 +354,7 @@ export default class extends BaseComponent {
             'slack',
             'suggestion',
             'council-secretariat',
-            'constitution',
+            'constitution/1',
             'council'
         ], key)) {
 
