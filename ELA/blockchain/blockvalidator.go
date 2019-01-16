@@ -78,6 +78,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
 	existingSideTxs := make(map[Uint256]struct{})
+	existingProducer := make(map[string]struct{})
 	existingProducerNode := make(map[string]struct{})
 	for _, txn := range transactions {
 		txID := txn.Hash()
@@ -119,9 +120,16 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 				return errors.New("[PowCheckBlockSanity] invalid register producer payload")
 			}
 
+			producer := BytesToHexString(producerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
+
 			producerNode := BytesToHexString(producerPayload.NodePublicKey)
 			// Check for duplicate producer node in a block
-			if _, exists := existingProducerNode[BytesToHexString(producerPayload.NodePublicKey)]; exists {
+			if _, exists := existingProducerNode[producerNode]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
@@ -132,6 +140,13 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid update producer payload")
 			}
+
+			producer := BytesToHexString(producerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
 
 			producerNode := BytesToHexString(producerPayload.NodePublicKey)
 			// Check for duplicate producer node in a block

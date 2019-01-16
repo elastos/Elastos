@@ -166,29 +166,29 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 				}
 
 				// delete producer
-				var producerPubKey string
 				if tx.TxType == RegisterProducer {
 					payload, ok := tx.Payload.(*PayloadRegisterProducer)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
+					pool.delProducer(BytesToHexString(payload.OwnerPublicKey))
+					pool.delProducerNode(BytesToHexString(payload.NodePublicKey))
 				}
 				if tx.TxType == UpdateProducer {
 					payload, ok := tx.Payload.(*PayloadUpdateProducer)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
+					pool.delProducer(BytesToHexString(payload.OwnerPublicKey))
+					pool.delProducerNode(BytesToHexString(payload.NodePublicKey))
 				}
 				if tx.TxType == CancelProducer {
 					payload, ok := tx.Payload.(*PayloadCancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
+					pool.delProducer(BytesToHexString(payload.OwnerPublicKey))
 				}
-				pool.delProducer(producerPubKey)
 
 				deleteCount++
 			}
