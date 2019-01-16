@@ -12,8 +12,8 @@ import (
 const PayloadCancelProducerVersion byte = 0x00
 
 type PayloadCancelProducer struct {
-	OwnPublicKey []byte
-	Signature    []byte
+	OwnerPublicKey []byte
+	Signature      []byte
 }
 
 func (a *PayloadCancelProducer) Data(version byte) []byte {
@@ -39,7 +39,7 @@ func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadCancelProducer) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.OwnPublicKey)
+	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
 		return errors.New("[PayloadCancelProducer], Serialize failed")
 	}
@@ -66,6 +66,6 @@ func (a *PayloadCancelProducer) DeserializeUnsigned(r io.Reader, version byte) e
 	if err != nil {
 		return errors.New("[PayloadCancelProducer], Deserialize failed")
 	}
-	a.OwnPublicKey = pk
+	a.OwnerPublicKey = pk
 	return err
 }

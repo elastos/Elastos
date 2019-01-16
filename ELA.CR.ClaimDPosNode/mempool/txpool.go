@@ -172,21 +172,21 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnPublicKey)
+					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
 				}
 				if tx.TxType == UpdateProducer {
 					payload, ok := tx.Payload.(*PayloadUpdateProducer)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnPublicKey)
+					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
 				}
 				if tx.TxType == CancelProducer {
 					payload, ok := tx.Payload.(*PayloadCancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.OwnPublicKey)
+					producerPubKey = BytesToHexString(payload.OwnerPublicKey)
 				}
 				pool.delProducer(producerPubKey)
 
@@ -223,7 +223,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -236,7 +236,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -249,7 +249,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -328,12 +328,12 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func (pool *TxPool) verifyDuplicateProducer(ownPublicKey string) error {
-	_, ok := pool.producerList[ownPublicKey]
+func (pool *TxPool) verifyDuplicateProducer(ownerPublicKey string) error {
+	_, ok := pool.producerList[ownerPublicKey]
 	if ok {
 		return errors.New("this producer in being processed")
 	}
-	pool.addProducer(ownPublicKey)
+	pool.addProducer(ownerPublicKey)
 
 	return nil
 }

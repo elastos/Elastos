@@ -945,15 +945,15 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 type Producer struct {
-	OwnPublicKey  string `json:"ownpublickey"`
-	NodePublicKey string `json:"nodepublickey"`
-	Nickname      string `json:"nickname"`
-	Url           string `json:"url"`
-	Location      uint64 `json:"location"`
-	Active        bool   `json:"active"`
-	Votes         string `json:"votes"`
-	IP            string `json:"ip"`
-	Index         uint64 `json:"index"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	Nickname       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	Active         bool   `json:"active"`
+	Votes          string `json:"votes"`
+	IP             string `json:"ip"`
+	Index          uint64 `json:"index"`
 }
 
 type Producers struct {
@@ -976,22 +976,22 @@ func ListProducers(param Params) map[string]interface{} {
 	var ps []Producer
 	for i, p := range producers {
 		var active bool
-		pk := common.BytesToHexString(p.OwnPublicKey)
+		pk := common.BytesToHexString(p.OwnerPublicKey)
 		state := chain.DefaultLedger.Store.GetProducerStatus(pk)
 		if state == chain.ProducerRegistered {
 			active = true
 		}
-		vote := chain.DefaultLedger.Store.GetProducerVote(p.OwnPublicKey)
+		vote := chain.DefaultLedger.Store.GetProducerVote(p.OwnerPublicKey)
 		producer := Producer{
-			OwnPublicKey:  pk,
-			NodePublicKey: common.BytesToHexString(p.NodePublicKey),
-			Nickname:      p.NickName,
-			Url:           p.Url,
-			Location:      p.Location,
-			Active:        active,
-			Votes:         vote.String(),
-			IP:            p.Address,
-			Index:         uint64(i),
+			OwnerPublicKey: pk,
+			NodePublicKey:  common.BytesToHexString(p.NodePublicKey),
+			Nickname:       p.NickName,
+			Url:            p.Url,
+			Location:       p.Location,
+			Active:         active,
+			Votes:          vote.String(),
+			IP:             p.Address,
+			Index:          uint64(i),
 		}
 		ps = append(ps, producer)
 	}
@@ -1161,7 +1161,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadRecord:
 	case *PayloadRegisterProducer:
 		obj := new(RegisterProducerInfo)
-		obj.OwnPublicKey = common.BytesToHexString(object.OwnPublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
@@ -1171,14 +1171,14 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
-		obj.PublicKey = common.BytesToHexString(object.OwnPublicKey)
+		obj.PublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
 			new(RegisterProducerInfo),
 		}
-		obj.OwnPublicKey = common.BytesToHexString(object.OwnPublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url

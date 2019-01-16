@@ -127,12 +127,12 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	nickName1 := "nickname 1"
 	payload1 := &payload.PayloadRegisterProducer{
-		OwnPublicKey:  publicKey1,
-		NodePublicKey: publicKey1,
-		NickName:      nickName1,
-		Url:           "http://www.test.com",
-		Location:      1,
-		Address:       "127.0.0.1",
+		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
+		NickName:       nickName1,
+		Url:            "http://www.test.com",
+		Location:       1,
+		Address:        "127.0.0.1",
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -140,12 +140,12 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName2 := "nickname 2"
 	payload2 := &payload.PayloadRegisterProducer{
-		OwnPublicKey:  publicKey2,
-		NodePublicKey: publicKey2,
-		NickName:      nickName2,
-		Url:           "http://www.test.com",
-		Location:      2,
-		Address:       "127.0.0.1",
+		OwnerPublicKey: publicKey2,
+		NodePublicKey:  publicKey2,
+		NickName:       nickName2,
+		Url:            "http://www.test.com",
+		Location:       2,
+		Address:        "127.0.0.1",
 	}
 
 	// 2. Should have no producer in db
@@ -173,13 +173,13 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	if producers[0].NickName != nickName1 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[0].OwnPublicKey, publicKey1) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey1) {
 		t.Error("GetRegisteredProducers failed")
 	}
 	if producers[1].NickName != nickName2 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[1].OwnPublicKey, publicKey2) {
+	if !bytes.Equal(producers[1].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
 }
@@ -209,11 +209,11 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
 	txn.Payload = &payload.PayloadRegisterProducer{
-		OwnPublicKey: publicKey1,
-		NickName:     "nickname 1",
-		Url:          "http://www.test.com",
-		Location:     1,
-		Address:      "127.0.0.1:20338",
+		OwnerPublicKey: publicKey1,
+		NickName:       "nickname 1",
+		Url:            "http://www.test.com",
+		Location:       1,
+		Address:        "127.0.0.1:20338",
 	}
 
 	txn.Programs = []*program.Program{{
@@ -231,7 +231,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err := CheckRegisterProducerTransaction(txn)
 	assert.EqualError(t, err, "duplicated public key")
 
-	txn.Payload.(*payload.PayloadRegisterProducer).OwnPublicKey = publicKey3
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey3
 	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 1"
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr3),
@@ -269,13 +269,13 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	//CheckUpdateProducerTransaction
 	txn.TxType = types.UpdateProducer
 	txn.Payload = &payload.PayloadUpdateProducer{
-		OwnPublicKey:  publicKey3,
-		NodePublicKey: publicKey3,
-		NickName:      "nickname 3",
-		Url:           "http://www.test.com",
-		Location:      1,
-		Address:       "127.0.0.1:20338",
-		Signature:     rpSig,
+		OwnerPublicKey: publicKey3,
+		NodePublicKey:  publicKey3,
+		NickName:       "nickname 3",
+		Url:            "http://www.test.com",
+		Location:       1,
+		Address:        "127.0.0.1:20338",
+		Signature:      rpSig,
 	}
 
 	txn.Programs = []*program.Program{{
@@ -294,7 +294,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	assert.EqualError(t, err, "invalid producer")
 
 	updatePayload, _ := txn.Payload.(*payload.PayloadUpdateProducer)
-	updatePayload.OwnPublicKey = publicKey1
+	updatePayload.OwnerPublicKey = publicKey1
 	updatePayload.NickName = "nickname 1"
 	updateSignBuf := new(bytes.Buffer)
 	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadUpdateProducerVersion)
@@ -351,7 +351,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	//CheckCancelProducerTransaction
 	txn.TxType = types.CancelProducer
 	cancelPayload := &payload.PayloadCancelProducer{
-		OwnPublicKey: publicKey3,
+		OwnerPublicKey: publicKey3,
 	}
 	cpSignBuf := new(bytes.Buffer)
 	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
@@ -369,7 +369,7 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	err = CheckCancelProducerTransaction(txn)
 	assert.EqualError(t, err, "invalid producer")
 
-	cancelPayload.OwnPublicKey = publicKey1
+	cancelPayload.OwnerPublicKey = publicKey1
 	cpSignBuf = new(bytes.Buffer)
 	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
 	assert.NoError(t, err)
@@ -412,7 +412,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	payload1 := &payload.PayloadCancelProducer{
-		OwnPublicKey: publicKey1,
+		OwnerPublicKey: publicKey1,
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -435,7 +435,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	if producers[0].NickName != nickName2 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[0].OwnPublicKey, publicKey2) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
 }
@@ -452,11 +452,11 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	nickName1 := "nickname 1"
 	ip1 := "168.192.1.1"
 	payload1 := &payload.PayloadUpdateProducer{
-		OwnPublicKey: publicKey2,
-		NickName:     nickName1,
-		Url:          "http://www.test.com",
-		Location:     2,
-		Address:      ip1,
+		OwnerPublicKey: publicKey2,
+		NickName:       nickName1,
+		Url:            "http://www.test.com",
+		Location:       2,
+		Address:        ip1,
 	}
 
 	// 2. Run RegisterProducer
@@ -471,7 +471,7 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	}
 
 	// 4. Check payload
-	if !bytes.Equal(producers[0].OwnPublicKey, publicKey2) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
 	if producers[0].NickName != nickName1 {
@@ -538,11 +538,11 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	nickName2 := "nickname 2"
 	payload2 := &payload.PayloadRegisterProducer{
-		OwnPublicKey: publicKey2,
-		NickName:     nickName2,
-		Url:          "http://www.test.com",
-		Location:     1,
-		Address:      "127.0.0.1",
+		OwnerPublicKey: publicKey2,
+		NickName:       nickName2,
+		Url:            "http://www.test.com",
+		Location:       1,
+		Address:        "127.0.0.1",
 	}
 
 	// 2. Run RegisterProducer
