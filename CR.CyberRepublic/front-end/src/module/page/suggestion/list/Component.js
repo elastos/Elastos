@@ -25,11 +25,10 @@ const SORT_BY = {
 }
 
 const SORT_BY_TEXT = {
-  likesNum: 'Likes',
-  viewsNum: 'Views',
-  activeness: 'Activeness',
-  createdAt: 'Date Added',
-
+  likesNum: I18N.get('suggestion.likes'),
+  viewsNum: I18N.get('suggestion.views'),
+  activeness: I18N.get('suggestion.activeness'),
+  createdAt: I18N.get('suggestion.dateAdded'),
 }
 
 /**
