@@ -249,9 +249,13 @@ export default class extends BaseComponent {
                         </Menu.Item>
                     </SubMenu>
 
-                    <Menu.Item className="c_MenuItem link" key="constitution/1">
-                        {I18N.get('navagation.constitution')}
+                    <Menu.Item className="c_MenuItem link" key="proposals">
+                        {I18N.get('council.voting.proposalList')}
                     </Menu.Item>
+
+                    {/* <Menu.Item className="c_MenuItem link" key="constitution/1">
+                        {I18N.get('navagation.constitution')}
+                    </Menu.Item> */}
 
                     <Menu.Item className="c_MenuItem link" key="blog">
                         {I18N.get('0110')}
