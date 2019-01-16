@@ -109,21 +109,23 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	PublicKey              string                    `json:"PublicKey"`
-	Magic                  uint32                    `json:"Magic"`
-	NodePort               uint16                    `json:"NodePort"`
-	ProtocolVersion        uint32                    `json:"ProtocolVersion"`
-	Services               uint64                    `json:"Services"`
-	PrintLevel             uint8                     `json:"PrintLevel"`
-	SignTolerance          uint64                    `json:"SignTolerance"`
-	MaxLogsSize            int64                     `json:"MaxLogsSize"`
-	MaxPerLogSize          int64                     `json:"MaxPerLogSize"`
-	MaxConnections         int                       `json:"MaxConnections"`
-	MajorityCount          uint32                    `json:"MajorityCount"`
-	OriginArbiters         []string                  `json:"OriginArbiters"`
-	CRCArbiters            []CRCArbitratorConfigItem `json:"CRCArbiters"`
-	NormalArbitratorsCount uint32                    `json:"NormalArbitratorsCount"`
-	CandidatesCount        uint32                    `json:"CandidatesCount"`
+	PublicKey                string                    `json:"PublicKey"`
+	Magic                    uint32                    `json:"Magic"`
+	NodePort                 uint16                    `json:"NodePort"`
+	ProtocolVersion          uint32                    `json:"ProtocolVersion"`
+	Services                 uint64                    `json:"Services"`
+	PrintLevel               uint8                     `json:"PrintLevel"`
+	SignTolerance            uint64                    `json:"SignTolerance"`
+	MaxLogsSize              int64                     `json:"MaxLogsSize"`
+	MaxPerLogSize            int64                     `json:"MaxPerLogSize"`
+	MaxConnections           int                       `json:"MaxConnections"`
+	MajorityCount            uint32                    `json:"MajorityCount"`
+	OriginArbiters           []string                  `json:"OriginArbiters"`
+	CRCArbiters              []CRCArbitratorConfigItem `json:"CRCArbiters"`
+	NormalArbitratorsCount   uint32                    `json:"NormalArbitratorsCount"`
+	CandidatesCount          uint32                    `json:"CandidatesCount"`
+	EmergencyTriggerTimeSpan uint32                    `json:"EmergencyTriggerTimeSpan"`
+	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
 }
 
 type Seed struct {
