@@ -2,9 +2,8 @@ package store
 
 import (
 	"bytes"
-	"time"
-
 	"errors"
+
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -14,6 +13,12 @@ import (
 type persistDutyChangedCountTask struct {
 	count uint32
 	reply chan bool
+}
+
+type persistEmergencyDataTask struct {
+	started bool
+	time    uint32
+	reply   chan bool
 }
 
 type persistCurrentArbitratorsTask struct {
@@ -38,28 +43,22 @@ out:
 	for {
 		select {
 		case t := <-s.taskCh:
-			now := time.Now()
 			switch task := t.(type) {
 			case *persistDutyChangedCountTask:
 				s.handlePersistDposDutyChangedCount(task.count)
 				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle dpos duty changed count exetime: %g", tcall)
+			case *persistEmergencyDataTask:
+				s.handlePersistEmergencyData(task.started, task.time)
+				task.reply <- true
 			case *persistCurrentArbitratorsTask:
 				s.handlePersistCurrentArbiters(task.arbiters)
 				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist current arbiters exetime: %g", tcall)
 			case *persistNextArbitratorsTask:
 				s.handlePersistNextArbiters(task.arbiters)
 				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist next arbiters exetime: %g", tcall)
 			case *persistDirectPeersTask:
 				s.handlePersistDirectPeers(task.peers)
 				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle persist current arbiters exetime: %g", tcall)
 			}
 
 		case <-s.quit:
@@ -75,24 +74,34 @@ func (s *DposStore) StartArbitratorsRecord() {
 }
 
 func (s *DposStore) handlePersistDposDutyChangedCount(count uint32) {
-	s.SaveDposDutyChangedCount(count)
+	s.saveDposDutyChangedCount(count)
+}
+
+func (s *DposStore) handlePersistEmergencyData(started bool, time uint32) {
+	s.saveEmergencyData(started, time)
 }
 
 func (s *DposStore) handlePersistCurrentArbiters(a *Arbitrators) {
-	s.SaveCurrentArbitrators(a)
+	s.saveCurrentArbitrators(a)
 }
 
 func (s *DposStore) handlePersistNextArbiters(a *Arbitrators) {
-	s.SaveNextArbitrators(a)
+	s.saveNextArbitrators(a)
 }
 
 func (s *DposStore) handlePersistDirectPeers(p []*interfaces.DirectPeers) {
-	s.SaveDirectPeers(p)
+	s.saveDirectPeers(p)
 }
 
 func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	reply := make(chan bool)
 	s.taskCh <- &persistDutyChangedCountTask{count: c, reply: reply}
+	<-reply
+}
+
+func (s *DposStore) SaveEmergencyData(started bool, time uint32) {
+	reply := make(chan bool)
+	s.taskCh <- &persistEmergencyDataTask{started: started, time: time, reply: reply}
 	<-reply
 }
 
@@ -141,6 +150,10 @@ func (s *DposStore) GetArbitrators(a interfaces.Arbitrators) error {
 	}
 
 	if arbiters.nextCandidates, err = s.getNextCandidates(); err != nil {
+		return err
+	}
+
+	if arbiters.emergency.emergencyStarted, arbiters.emergency.emergencyStartTime, err = s.getEmergencyData(); err != nil {
 		return err
 	}
 	return nil
@@ -192,6 +205,16 @@ func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 	batch := s.db.NewBatch()
 	if err := s.persistDposDutyChangedCount(batch, count); err != nil {
 		log.Fatal("[persistDposDutyChangedCount]: error to persist dpos duty changed count:", err.Error())
+		return
+	}
+	batch.Commit()
+}
+
+func (s *DposStore) saveEmergencyData(started bool, time uint32) {
+	log.Debugf("saveEmergencyData()")
+	batch := s.db.NewBatch()
+	if err := s.persistEmergencyData(batch, started, time); err != nil {
+		log.Fatal("[persistEmergencyData]: error to persist dpos emergency data:", err.Error())
 		return
 	}
 	batch.Commit()

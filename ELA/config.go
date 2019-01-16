@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -132,18 +133,20 @@ var configTemplate = config.Configuration{
 	},
 	EnableArbiter: false,
 	ArbiterConfiguration: config.ArbiterConfiguration{
-		PublicKey:              "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
-		Magic:                  7630403,
-		NodePort:               30338,
-		ProtocolVersion:        0,
-		Services:               0,
-		PrintLevel:             1,
-		SignTolerance:          5,
-		MaxLogsSize:            0,
-		MaxPerLogSize:          0,
-		MaxConnections:         100,
-		NormalArbitratorsCount: 5,
-		CandidatesCount:        0,
-		MajorityCount:          0,
+		PublicKey:                "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
+		Magic:                    7630403,
+		NodePort:                 30338,
+		ProtocolVersion:          0,
+		Services:                 0,
+		PrintLevel:               1,
+		SignTolerance:            5,
+		MaxLogsSize:              0,
+		MaxPerLogSize:            0,
+		MaxConnections:           100,
+		NormalArbitratorsCount:   5,
+		CandidatesCount:          0,
+		MajorityCount:            0,
+		EmergencyTriggerTimeSpan: uint32((time.Hour * 1) / time.Second),
+		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 	},
 }
