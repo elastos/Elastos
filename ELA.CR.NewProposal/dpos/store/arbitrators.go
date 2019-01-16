@@ -28,6 +28,7 @@ type ArbitratorsConfig struct {
 	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
 	ChainStore       blockchain.IChainStore
+	Emergency        EmergencyConfig
 }
 
 type Arbitrators struct {
@@ -44,6 +45,8 @@ type Arbitrators struct {
 	nextCandidates  [][]byte
 
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
+
+	emergency *emergencyMechanism
 
 	lock sync.Mutex
 }
@@ -214,22 +217,38 @@ func (a *Arbitrators) GetActiveDposPeers() (result map[string]string) {
 }
 
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
-	if a.isNewElection() {
-		if err := a.changeCurrentArbitrators(); err != nil {
-			log.Error("Change current arbitrators error: ", err)
-			return
+
+	if !a.emergency.TryEnterEmergency(block.Timestamp) {
+		if a.isNewElection() {
+			if err := a.changeCurrentArbitrators(); err != nil {
+				log.Error("Change current arbitrators error: ", err)
+				return
+			}
+
+			if err := a.updateNextArbitrators(block); err != nil {
+				log.Error("Update arbitrators error: ", err)
+				return
+			}
+
+			events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+
+		} else {
+			a.DutyChangedCount++
+			a.saveDposRelated()
 		}
-
-		if err := a.updateNextArbitrators(block); err != nil {
-			log.Error("Update arbitrators error: ", err)
-			return
-		}
-
-		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
-
 	} else {
-		a.DutyChangedCount++
-		a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
+		if err := a.ForceChange(); err != nil {
+			panic("initialize crc arbitrators error when enter emergency state")
+		}
+	}
+
+	a.emergency.ResetBlockTime(block.Timestamp)
+}
+
+func (a *Arbitrators) saveDposRelated() {
+	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
+	if a.emergency.IsRunning() {
+		a.cfg.Store.SaveEmergencyData(a.emergency.emergencyStarted, a.emergency.emergencyStartTime)
 	}
 }
 
@@ -252,26 +271,40 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 	}
 
 	a.DutyChangedCount = 0
-	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
+	a.saveDposRelated()
 
 	return nil
 }
 
 func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
-	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block)
-	if err != nil {
-		return err
-	}
-	a.nextArbitrators = producers
-	for _, v := range a.cfg.CRCArbitrators {
-		a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
-	}
+	a.emergency.TryLeaveEmergency()
 
-	candidates, err := a.cfg.Versions.GetCandidatesDesc(block)
-	if err != nil {
-		return err
+	if !a.emergency.IsRunning() {
+		producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block)
+		if err != nil {
+			return err
+		}
+
+		a.nextArbitrators = producers
+		for _, v := range a.cfg.CRCArbitrators {
+			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+		}
+
+		candidates, err := a.cfg.Versions.GetCandidatesDesc(block)
+		if err != nil {
+			return err
+		}
+		a.nextCandidates = candidates
+
+		return nil
+	} else {
+		a.nextArbitrators = [][]byte{}
+		for _, v := range a.cfg.CRCArbitrators {
+			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+		}
+		a.nextCandidates = [][]byte{}
+		return nil
 	}
-	a.nextCandidates = candidates
 
 	a.cfg.Store.SaveNextArbitrators(a)
 	return nil
@@ -328,5 +361,5 @@ func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
 	if cfg.MajorityCount > cfg.ArbitratorsCount {
 		return nil, fmt.Errorf("majority count should less or equal than arbitrators count")
 	}
-	return &Arbitrators{cfg: *cfg}, nil
+	return &Arbitrators{cfg: *cfg, emergency: &emergencyMechanism{cfg: cfg.Emergency}}, nil
 }

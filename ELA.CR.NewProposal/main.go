@@ -97,6 +97,10 @@ func main() {
 		Versions:         versions,
 		Store:            dposStore,
 		ChainStore:       chainStore,
+		Emergency: store.EmergencyConfig{
+			EmergencyTriggerTimeSpan: config.Parameters.ArbiterConfiguration.EmergencyTriggerTimeSpan,
+			EmergencyDuration:        config.Parameters.ArbiterConfiguration.EmergencyDuration,
+		},
 	})
 	if err != nil {
 		printErrorAndExit(err)

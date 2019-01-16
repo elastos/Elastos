@@ -46,7 +46,9 @@
       "MaxConnections": 100,
       "MajorityCount": 0,
       "NormalArbitratorsCount": 5,
-      "CandidatesCount": 0
+      "CandidatesCount": 0,
+      "EmergencyTriggerTimeSpan": 3600,
+      "EmergencyDuration": 604800
     },
     "RpcConfiguration": {
       "User": "ElaUser",
