@@ -1,10 +1,12 @@
 import {TASK_STATUS, TASK_TYPE, CVOTE_STATUS} from '@/constant'
 import council from './en/council';
 import getting_started from './en/getting_started';
+import constitution from './en/constitution';
 
 const en = {
     council,
     getting_started,
+    constitution,
     // Header
     '0000': 'ALPHA',
     '0001': 'Bounty Programs',
@@ -33,6 +35,7 @@ const en = {
     'navigation.programs': 'Programs',
     'navagation.suggestion': 'Suggestions',
     'navagation.council': 'Council & Secreariat',
+    'navagation.constitution': 'Constitution',
 
     '0200': 'Profile',
     '0201': 'Login',
@@ -1368,6 +1371,16 @@ const en = {
     'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
     'cs.rebecca.name': 'Rebecca Zhu',
     'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
+
+    // ConstitutionNavigator
+    'counstitution.menu1': '01 Elastos Cyber Republic Constitution',
+    'counstitution.menu2': '02 Elastos Cyber Republic Council Founding Document',
+    'counstitution.menu3': '03 Elastos Cyber Republic Voting Rules',
+    'counstitution.menu4': '04 Elastos Cyber Republic Council Conflict of Interest Policy',
+    'counstitution.title1': 'Elastos Cyber Republic Constitution',
+    'counstitution.title2': 'Elastos Cyber Republic Council Founding Document',
+    'counstitution.title3': 'Elastos Cyber Republic Voting Rules',
+    'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy',
 };
 
 // lang mappings

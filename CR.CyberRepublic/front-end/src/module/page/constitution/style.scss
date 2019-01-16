@@ -1,0 +1,31 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+.c_ProfileContainer {
+  padding-left: 10px;
+  background: url(/assets/images/bg-square-sm.png) no-repeat;
+
+  .content {
+    margin-top: 20px;
+    margin-right: 50px;
+    margin-left: 20px;
+    font-family: "synthese",sans-serif;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-right: 10px;
+      margin-left: 10px;
+    }
+
+    .title {
+      font-family: "komu-a", sans-serif;
+      line-height: normal;
+      font-size: 50px;
+      color: #031E28;
+    }
+
+    ol {
+      margin-left: 50px;
+    }
+  }
+}

@@ -35,6 +35,7 @@ export default class extends BaseComponent {
             'suggestion',
             'proposals',
             'council-secretariat',
+            'constitution/1',
             'council'
         ], key)) {
             this.props.history.push('/' + ev.key)
@@ -134,6 +135,9 @@ export default class extends BaseComponent {
                         </Menu.Item>
                         <Menu.Item key="proposals">
                             {I18N.get('council.voting.proposalList')}
+                        </Menu.Item>
+                        <Menu.Item key="constitution/1">
+                            {I18N.get('navagation.constitution')}
                         </Menu.Item>
                         <Menu.Item key="blog">
                             {I18N.get('0110')}

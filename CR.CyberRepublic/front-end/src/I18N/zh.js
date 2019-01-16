@@ -1,10 +1,12 @@
 import {TASK_STATUS, CVOTE_STATUS} from '@/constant'
 import council from './zh/council'
 import getting_started from './en/getting_started';
+import constitution from './zh/constitution';
 
 const zh = {
     council,
     getting_started,
+    constitution,
     // Header
     '0000': 'ALPHA版本',
     '0001': '奖励计划',
@@ -33,6 +35,7 @@ const zh = {
     'navigation.programs': '项目',
     'navagation.suggestion': '建议',
     'navagation.council': '委员会&秘书处',
+    'navagation.constitution': '宪法',
 
     '0200': '简介',
     '0201': '登录',
@@ -1367,6 +1370,16 @@ const zh = {
     'cs.feng.intro': '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
     'cs.rebecca.name': '朱凤',
     'cs.rebecca.intro': '亦来云基金会项目总监，常驻北京',
+
+    // ConstitutionNavigator
+    'counstitution.menu1': '01 亦来云Cyber Republic章程',
+    'counstitution.menu2': '02 亦来云Cyber Republic委员会创始文件',
+    'counstitution.menu3': '03 亦来云Cyber Republic投票规则',
+    'counstitution.menu4': '04 亦来云Cyber Republic委员会利益和分歧协调政策',
+    'counstitution.title1': '亦来云Cyber Republic章程',
+    'counstitution.title2': '亦来云Cyber Republic委员会创始文件',
+    'counstitution.title3': '亦来云Cyber Republic投票规则',
+    'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策',
 }
 
 // lang mappings
