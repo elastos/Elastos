@@ -12,13 +12,13 @@ import (
 const PayloadRegisterProducerVersion byte = 0x00
 
 type PayloadRegisterProducer struct {
-	OwnPublicKey  []byte
-	NodePublicKey []byte
-	NickName      string
-	Url           string
-	Location      uint64
-	Address       string
-	Signature     []byte
+	OwnerPublicKey []byte
+	NodePublicKey  []byte
+	NickName       string
+	Url            string
+	Location       uint64
+	Address        string
+	Signature      []byte
 }
 
 func (a *PayloadRegisterProducer) Data(version byte) []byte {
@@ -44,7 +44,7 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.OwnPublicKey)
+	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
 		return errors.New("[PayloadRegisterProducer], OwnerPublicKey serialize failed")
 	}
@@ -92,9 +92,9 @@ func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) DeserializeUnsigned(r io.Reader, version byte) error {
-	ownPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
+	ownerPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], OwnPublicKey deserialize failed")
+		return errors.New("[PayloadRegisterProducer], OwnerPublicKey deserialize failed")
 	}
 
 	nodePublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "node public key")
@@ -122,7 +122,7 @@ func (a *PayloadRegisterProducer) DeserializeUnsigned(r io.Reader, version byte)
 		return errors.New("[PayloadRegisterProducer], Address deserialize failed")
 	}
 
-	a.OwnPublicKey = ownPublicKey
+	a.OwnerPublicKey = ownerPublicKey
 	a.NodePublicKey = nodePublicKey
 	a.NickName = nickName
 	a.Url = url

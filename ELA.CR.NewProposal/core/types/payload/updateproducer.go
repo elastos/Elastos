@@ -12,13 +12,13 @@ import (
 const PayloadUpdateProducerVersion byte = 0x00
 
 type PayloadUpdateProducer struct {
-	OwnPublicKey  []byte
-	NodePublicKey []byte
-	NickName      string
-	Url           string
-	Location      uint64
-	Address       string
-	Signature     []byte
+	OwnerPublicKey []byte
+	NodePublicKey  []byte
+	NickName       string
+	Url            string
+	Location       uint64
+	Address        string
+	Signature      []byte
 }
 
 func (a *PayloadUpdateProducer) Data(version byte) []byte {
@@ -44,7 +44,7 @@ func (a *PayloadUpdateProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadUpdateProducer) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.OwnPublicKey)
+	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
 		return errors.New("[PayloadUpdateProducer], Own public key serialize failed")
 	}
@@ -92,7 +92,7 @@ func (a *PayloadUpdateProducer) Deserialize(r io.Reader, version byte) error {
 }
 
 func (a *PayloadUpdateProducer) DeserializeUnsigned(r io.Reader, version byte) error {
-	ownPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
+	ownerPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
 	if err != nil {
 		return errors.New("[PayloadUpdateProducer], own public key deserialize failed")
 	}
@@ -122,7 +122,7 @@ func (a *PayloadUpdateProducer) DeserializeUnsigned(r io.Reader, version byte) e
 		return errors.New("[PayloadUpdateProducer], Address deserialize failed")
 	}
 
-	a.OwnPublicKey = ownPublicKey
+	a.OwnerPublicKey = ownerPublicKey
 	a.NodePublicKey = nodePublicKey
 	a.NickName = nickName
 	a.Url = url
@@ -134,21 +134,11 @@ func (a *PayloadUpdateProducer) DeserializeUnsigned(r io.Reader, version byte) e
 
 func ConvertToRegisterProducerPayload(update *PayloadUpdateProducer) *PayloadRegisterProducer {
 	return &PayloadRegisterProducer{
-		OwnPublicKey:  update.OwnPublicKey,
-		NodePublicKey: update.NodePublicKey,
-		NickName:      update.NickName,
-		Url:           update.Url,
-		Location:      update.Location,
-		Address:       update.Address,
-	}
-}
-
-func ConvertToUpdateProducerPayload(register *PayloadRegisterProducer) *PayloadUpdateProducer {
-	return &PayloadUpdateProducer{
-		OwnPublicKey: register.OwnPublicKey,
-		NickName:     register.NickName,
-		Url:          register.Url,
-		Location:     register.Location,
-		Address:      register.Address,
+		OwnerPublicKey: update.OwnerPublicKey,
+		NodePublicKey:  update.NodePublicKey,
+		NickName:       update.NickName,
+		Url:            update.Url,
+		Location:       update.Location,
+		Address:        update.Address,
 	}
 }

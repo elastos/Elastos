@@ -15,13 +15,13 @@ import (
 func (c *ChainStore) persistRegisterProducerForMempool(payload *PayloadRegisterProducer, height uint32) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	pk := BytesToHexString(payload.OwnPublicKey)
+	pk := BytesToHexString(payload.OwnerPublicKey)
 	c.producerVotes[pk] = &ProducerInfo{
 		Payload:   payload,
 		RegHeight: height,
 		Vote:      Fixed64(0),
 	}
-	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnPublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnerPublicKey)
 	if err != nil {
 		return err
 	}
@@ -39,13 +39,13 @@ func (c *ChainStore) persistRegisterProducerForMempool(payload *PayloadRegisterP
 func (c *ChainStore) rollbackRegisterProducerForMempool(payload *PayloadRegisterProducer) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	_, ok := c.producerVotes[BytesToHexString(payload.OwnPublicKey)]
+	_, ok := c.producerVotes[BytesToHexString(payload.OwnerPublicKey)]
 	if !ok {
 		return errors.New("[rollbackRegisterProducer], Not found producer in mempool.")
 	}
-	delete(c.producerVotes, BytesToHexString(payload.OwnPublicKey))
+	delete(c.producerVotes, BytesToHexString(payload.OwnerPublicKey))
 
-	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnPublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnerPublicKey)
 	if err != nil {
 		return err
 	}
@@ -61,13 +61,13 @@ func (c *ChainStore) rollbackRegisterProducerForMempool(payload *PayloadRegister
 func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProducer) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	_, ok := c.producerVotes[BytesToHexString(payload.OwnPublicKey)]
+	_, ok := c.producerVotes[BytesToHexString(payload.OwnerPublicKey)]
 	if !ok {
 		return errors.New("[persistCancelProducer], Not found producer in mempool.")
 	}
-	delete(c.producerVotes, BytesToHexString(payload.OwnPublicKey))
+	delete(c.producerVotes, BytesToHexString(payload.OwnerPublicKey))
 
-	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnPublicKey)
+	programHash, err := contract.PublicKeyToStandardProgramHash(payload.OwnerPublicKey)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProdu
 		return err
 	}
 	delete(c.producerAddress, addr)
-	c.canceledProducers[BytesToHexString(payload.OwnPublicKey)] = c.currentBlockHeight
+	c.canceledProducers[BytesToHexString(payload.OwnerPublicKey)] = c.currentBlockHeight
 	c.dirty[outputpayload.Delegate] = true
 	return nil
 }
@@ -104,7 +104,7 @@ func (c *ChainStore) reloadProducersFromChainForMempool() error {
 func (c *ChainStore) persistUpdateProducerForMempool(payload *PayloadUpdateProducer) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	info, ok := c.producerVotes[BytesToHexString(payload.OwnPublicKey)]
+	info, ok := c.producerVotes[BytesToHexString(payload.OwnerPublicKey)]
 	if !ok {
 		return errors.New("[persistCancelProducer], Not found producer in mempool.")
 	}

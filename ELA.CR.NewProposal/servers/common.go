@@ -159,13 +159,13 @@ type WithdrawFromSideChainInfo struct {
 }
 
 type RegisterProducerInfo struct {
-	OwnPublicKey  string `json:"ownpublickey"`
-	NodePublicKey string `json:"nodepublickey"`
-	NickName      string `json:"nickname"`
-	Url           string `json:"url"`
-	Location      uint64 `json:"location"`
-	Address       string `json:"address"`
-	Signature     string `json:"signature"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	NickName       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	Address        string `json:"address"`
+	Signature      string `json:"signature"`
 }
 
 type CancelProducerInfo struct {

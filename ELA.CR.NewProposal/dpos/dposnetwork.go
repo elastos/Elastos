@@ -139,14 +139,14 @@ func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAd
 	result = make(map[string]p2p.PeerAddr)
 	producers := blockchain.DefaultLedger.Store.GetRegisteredProducers()
 	for _, v := range producers {
-		if len(v.OwnPublicKey) != 33 {
+		if len(v.OwnerPublicKey) != 33 {
 			log.Warn("[getProducersConnectionInfo] invalid public key")
 			continue
 		}
 
 		pid := peer.PID{}
-		copy(pid[:], v.OwnPublicKey)
-		result[common.BytesToHexString(v.OwnPublicKey)] = p2p.PeerAddr{PID: pid, Addr: v.Address}
+		copy(pid[:], v.OwnerPublicKey)
+		result[common.BytesToHexString(v.OwnerPublicKey)] = p2p.PeerAddr{PID: pid, Addr: v.Address}
 	}
 
 	return result
