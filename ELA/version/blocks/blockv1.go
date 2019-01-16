@@ -75,7 +75,7 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 		},
 	}
 
-	if err := blockchain.CheckDposIllegalBlocks(&illegalBlocks.DposIllegalBlocks); err != nil {
+	if err := b.cfg.Chain.CheckDposIllegalBlocks(&illegalBlocks.DposIllegalBlocks); err != nil {
 		return err
 	}
 

@@ -18,7 +18,6 @@ import (
 
 type TxPool struct {
 	sync.RWMutex
-	txnCnt          uint64                   // count
 	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
@@ -49,12 +48,13 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		return ErrIneffectiveCoinbase
 	}
 
-	//verify transaction with Concurrency
-	if errCode := blockchain.CheckTransactionSanity(blockchain.DefaultLedger.Blockchain.GetHeight()+1, tx); errCode != Success {
+	chain := blockchain.DefaultLedger.Blockchain
+	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
+	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx); errCode != Success {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash().String())
 		return errCode
 	}
-	if errCode := blockchain.CheckTransactionContext(blockchain.DefaultLedger.Blockchain.GetHeight()+1, tx); errCode != Success {
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx); errCode != Success {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash().String())
 		return errCode
 	}

@@ -81,7 +81,7 @@ func main() {
 	}
 	versions := version.NewVersions(&verconf)
 	ledger.HeightVersions = versions // fixme
-	chain, err := blockchain.New(chainStore, activeNetParams, versions)
+	chain, err := blockchain.New(chainStore, activeNetParams, versions, interrupt.C)
 	if err != nil {
 		printErrorAndExit(err)
 	}

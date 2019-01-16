@@ -6,23 +6,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-// IChainStoreDpos provides func for dpos
-type IChainStoreDpos interface {
-	GetRegisteredProducers() []*payload.ProducerInfo
-	GetActiveRegisteredProducers() []*payload.ProducerInfo
-	GetRegisteredProducersSorted() ([]*payload.ProducerInfo, error)
-	GetProducerVote(publicKey []byte) Fixed64
-	GetProducerStatus(publicKey string) ProducerState
-
-	SaveIllegalBlock(illegalBlocks *PayloadIllegalBlock) error
-	GetIllegalProducers() map[string]struct{}
-	GetCancelProducerHeight(publicKey []byte) (uint32, error)
-}
-
 // IChainStore provides func with store package.
 type IChainStore interface {
-	IChainStoreDpos
-
 	SaveBlock(b *Block) error
 	GetBlock(hash Uint256) (*Block, error)
 	GetBlockHash(height uint32) (Uint256, error)

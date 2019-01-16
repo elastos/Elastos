@@ -9,18 +9,12 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const (
 	TaskChanCap = 4
-
-	ProducerUnRegistered ProducerState = 0x00
-	ProducerRegistered   ProducerState = 0x01
-	ProducerRegistering  ProducerState = 0x02
 )
 
 type ProducerState byte
@@ -57,11 +51,6 @@ type ChainStore struct {
 	mu sync.RWMutex // guard the following var
 
 	currentBlockHeight uint32
-
-	producerVotes    map[string]*ProducerInfo // key: public key
-	producerAddress  map[string]string        // key: address  value: public key
-	dirty            map[outputpayload.VoteType]bool
-	orderedProducers []*payload.ProducerInfo
 }
 
 func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
@@ -75,10 +64,6 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		currentBlockHeight: 0,
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
-		producerVotes:      make(map[string]*ProducerInfo),
-		producerAddress:    make(map[string]string),
-		dirty:              make(map[outputpayload.VoteType]bool),
-		orderedProducers:   make([]*payload.ProducerInfo, 0),
 	}
 
 	go s.taskHandler()
@@ -123,43 +108,6 @@ func (c *ChainStore) taskHandler() {
 			return
 		}
 	}
-}
-
-func (c *ChainStore) initProducerVotes() error {
-	publicKeys, err := c.getRegisteredProducers()
-	if err != nil {
-		return err
-	}
-	for _, pk := range publicKeys {
-		height, pld, err := c.getProducerInfo(pk)
-		if err != nil {
-			return err
-		}
-		p, ok := pld.(*payload.ProducerInfo)
-		if !ok {
-			return errors.New("invalid register producer payload")
-		}
-
-		vote, _ := c.getVoteByPublicKey(outputpayload.Delegate, pk)
-		c.producerVotes[BytesToHexString(pk)] = &ProducerInfo{
-			Payload:   p,
-			RegHeight: height,
-			Vote:      vote,
-		}
-		programHash, err := contract.PublicKeyToStandardProgramHash(pk)
-		if err != nil {
-			return err
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return err
-		}
-		c.producerAddress[addr] = BytesToHexString(pk)
-		for _, t := range outputpayload.VoteTypes {
-			c.dirty[t] = true
-		}
-	}
-	return nil
 }
 
 func (c *ChainStore) init(genesisBlock *Block) error {
@@ -214,7 +162,7 @@ func (c *ChainStore) init(genesisBlock *Block) error {
 	var blockHash Uint256
 	blockHash.Deserialize(r)
 	c.currentBlockHeight, err = ReadUint32(r)
-	return c.initProducerVotes()
+	return err
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
@@ -519,7 +467,7 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.currentBlockHeight = b.Header.Height - 1
 	c.mu.Unlock()
 
-	return c.rollbackForMempool(b)
+	return nil
 }
 
 func (c *ChainStore) persist(b *Block) error {
@@ -542,11 +490,7 @@ func (c *ChainStore) persist(b *Block) error {
 	if err := c.PersistCurrentBlock(b); err != nil {
 		return err
 	}
-	if err := c.BatchCommit(); err != nil {
-		return err
-	}
-
-	return c.persistForMempool(b)
+	return c.BatchCommit()
 }
 
 func (c *ChainStore) SaveBlock(b *Block) error {

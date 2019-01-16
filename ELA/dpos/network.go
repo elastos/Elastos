@@ -140,14 +140,15 @@ func (n *network) UpdateProducersInfo() {
 
 func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
 	result = make(map[string]p2p.PeerAddr)
-	producers := blockchain.DefaultLedger.Store.GetRegisteredProducers()
-	for _, v := range producers {
-		pid, err := n.convertToPID(v.PublicKey)
+	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
+	for _, p := range producers {
+		pid, err := n.convertToPID(p.Info().PublicKey)
 		if err != nil {
 			log.Warn(err)
 			continue
 		}
-		result[common.BytesToHexString(v.PublicKey)] = p2p.PeerAddr{PID: *pid, Addr: v.Address}
+		result[common.BytesToHexString(p.Info().PublicKey)] =
+			p2p.PeerAddr{PID: *pid, Addr: p.Info().Address}
 	}
 
 	for _, v := range blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators() {

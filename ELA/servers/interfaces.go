@@ -3,9 +3,11 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
+	"sort"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -18,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -908,27 +911,20 @@ func ListProducers(param Params) map[string]interface{} {
 		limit = math.MaxInt64
 	}
 
-	producers, err := Store.GetRegisteredProducersSorted()
-	if err != nil {
-		return ResponsePack(Error, "not found producer")
-	}
+	producers := Chain.GetState().GetProducers()
+	sort.Slice(producers, func(i, j int) bool {
+		return producers[i].Votes() > producers[j].Votes()
+	})
 	var ps []Producer
 	for i, p := range producers {
-		var active bool
-		pk := common.BytesToHexString(p.PublicKey)
-		state := Store.GetProducerStatus(pk)
-		if state == blockchain.ProducerRegistered {
-			active = true
-		}
-		vote := Store.GetProducerVote(p.PublicKey)
 		producer := Producer{
-			PublicKey: pk,
-			Nickname:  p.NickName,
-			Url:       p.Url,
-			Location:  p.Location,
-			Active:    active,
-			Votes:     vote.String(),
-			IP:        p.Address,
+			PublicKey: hex.EncodeToString(p.Info().PublicKey),
+			Nickname:  p.Info().NickName,
+			Url:       p.Info().Url,
+			Location:  p.Info().Location,
+			Active:    p.State() == state.Activate,
+			Votes:     p.Votes().String(),
+			IP:        p.Info().Address,
 			Index:     uint64(i),
 		}
 		ps = append(ps, producer)
@@ -965,7 +961,11 @@ func ProducerStatus(param Params) map[string]interface{} {
 	if _, err = contract.PublicKeyToStandardProgramHash(publicKeyBytes); err != nil {
 		return ResponsePack(InvalidParams, "invalid public key bytes")
 	}
-	return ResponsePack(Success, Store.GetProducerStatus(publicKey))
+	producer := Chain.GetState().GetProducer(publicKeyBytes)
+	if producer == nil {
+		return ResponsePack(InvalidParams, "unknown producer public key")
+	}
+	return ResponsePack(Success, producer.State().String())
 }
 
 func VoteStatus(param Params) map[string]interface{} {

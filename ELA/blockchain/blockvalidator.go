@@ -87,7 +87,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(block.Height, txn); errCode != Success {
+		if errCode := b.CheckTransactionSanity(block.Height, txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -130,7 +130,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
-		if errCode := CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
+		if errCode := b.CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 

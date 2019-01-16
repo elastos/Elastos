@@ -226,6 +226,10 @@ type Params struct {
 
 	// Define height versions about block chain
 	HeightVersions []uint32
+
+	// DPOSStartHeight indicates the height of DPOS consensus begins.
+	// TODO set default value for this field in different active net.
+	DPOSStartHeight uint32
 }
 
 func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {

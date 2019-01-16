@@ -193,7 +193,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		if !blockchain.IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-		if errCode := blockchain.CheckTransactionContext(nextBlockHeight, tx); errCode != errors.Success {
+		if errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx); errCode != errors.Success {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}

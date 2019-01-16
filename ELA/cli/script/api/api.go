@@ -145,7 +145,7 @@ func initLedger(L *lua.LState) int {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	chain, err := blockchain.New(chainStore, nil, versions)
+	chain, err := blockchain.New(chainStore, nil, versions, nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
