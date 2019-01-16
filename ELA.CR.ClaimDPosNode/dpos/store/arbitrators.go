@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"sort"
 	"sync"
 
@@ -23,7 +22,6 @@ const (
 type ArbitratorsConfig struct {
 	ArbitratorsCount uint32
 	CandidatesCount  uint32
-	MajorityCount    uint32
 	CRCArbitrators   []config.CRCArbitratorParams
 	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
@@ -185,19 +183,25 @@ func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 }
 
 func (a *Arbitrators) GetArbitersCount() uint32 {
-	return a.cfg.ArbitratorsCount
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	return a.getArbitersCount()
 }
 
 func (a *Arbitrators) GetArbitersMajorityCount() uint32 {
-	return a.cfg.MajorityCount
+	a.lock.Lock()
+	minSignCount := float64(a.getArbitersCount()) * DposMajorityRatioNumerator / DposMajorityRatioDenominator
+	a.lock.Unlock()
+
+	return uint32(minSignCount)
 }
 
 func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
-	return num > a.cfg.MajorityCount
+	return num > a.GetArbitersMajorityCount()
 }
 
 func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
-	return num >= a.cfg.ArbitratorsCount-a.cfg.MajorityCount
+	return num >= a.cfg.ArbitratorsCount-a.GetArbitersMajorityCount()
 }
 
 func (a *Arbitrators) GetActiveDposPeers() (result map[string]string) {
@@ -330,6 +334,10 @@ func (a *Arbitrators) sortArbitrators() error {
 	return nil
 }
 
+func (a *Arbitrators) getArbitersCount() uint32 {
+	return uint32(len(a.GetArbitrators()))
+}
+
 func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
 	for index, v := range a.currentArbitrators {
@@ -353,13 +361,5 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 }
 
 func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
-	if cfg.MajorityCount == 0 {
-		minSignCount := float64(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount) * DposMajorityRatioNumerator / DposMajorityRatioDenominator
-		cfg.MajorityCount = uint32(minSignCount)
-	}
-
-	if cfg.MajorityCount > cfg.ArbitratorsCount {
-		return nil, fmt.Errorf("majority count should less or equal than arbitrators count")
-	}
 	return &Arbitrators{cfg: *cfg, emergency: &emergencyMechanism{cfg: cfg.Emergency}}, nil
 }
