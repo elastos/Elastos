@@ -34,8 +34,7 @@ namespace Elastos {
 			virtual const PeerManagerPtr &getPeerManager();
 
 		public: //override from Wallet
-			// func balanceChanged(_ balance: UInt64)
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
 			// func txAdded(_ tx: BRTxRef)
 			virtual void onTxAdded(const TransactionPtr &transaction);
@@ -181,7 +180,7 @@ namespace Elastos {
 		public:
 			WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener);
 
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
@@ -198,7 +197,7 @@ namespace Elastos {
 		public:
 			WrappedExecutorTransactionHubListener(TransactionHub::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

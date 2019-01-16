@@ -39,7 +39,9 @@ namespace Elastos {
 
 		class UTXOList {
 		public:
-			bool Constains(const UInt256 &hash) const;
+			bool Contains(const UTXO &o) const;
+
+			bool Contains(const UInt256 &hash, uint32_t n) const;
 
 			UTXO &operator[](size_t i);
 

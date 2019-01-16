@@ -11,6 +11,7 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Checker/MainchainTransactionChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <Config.h>
 
 #include <vector>
 #include <map>
@@ -67,6 +68,7 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
 			const std::string &publicKey,
+			const std::string &nodePublicKey,
 			const std::string &nickName,
 			const std::string &url,
 			const std::string &ipAddress,
@@ -80,6 +82,7 @@ namespace Elastos {
 
 			PayloadRegisterProducer pr;
 			pr.SetPublicKey(Utils::decodeHex(publicKey));
+			pr.SetNodePublicKey(Utils::decodeHex(nodePublicKey));
 			pr.SetNickName(nickName);
 			pr.SetUrl(url);
 			pr.SetAddress(ipAddress);
@@ -124,7 +127,10 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-			ParamChecker::checkParam(amount < 500000000000, Error::PubKeyLength, "Producer deposit amount is insufficient");
+#ifndef SPVSDK_DEBUG
+			ParamChecker::checkParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
+									 "Producer deposit amount is insufficient");
+#endif
 
 			PayloadRegisterProducer *payloadRegisterProducer = new PayloadRegisterProducer();
 			try {
@@ -292,11 +298,6 @@ namespace Elastos {
 			}
 
 			return j;
-		}
-
-		nlohmann::json MainchainSubWallet::ExportProducerKeystore(const std::string &backupPasswd,
-																  const std::string &payPasswd) const {
-			return nlohmann::json();
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {

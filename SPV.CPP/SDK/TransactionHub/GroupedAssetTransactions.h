@@ -84,7 +84,7 @@ namespace Elastos {
 
 			std::vector<UInt256> SetTxUnconfirmedAfter(uint32_t blockHeight);
 
-			bool TransactionIsValid(const TransactionPtr &transaction);
+			bool TransactionIsValid(const TransactionPtr &tx);
 
 			bool RegisterTransaction(const TransactionPtr &transaction, uint32_t blockHeight, bool &wasAdded);
 
@@ -96,8 +96,7 @@ namespace Elastos {
 
 			bool WalletContainsTx(const TransactionPtr &tx);
 
-			std::vector<UInt256> UpdateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight,
-									uint32_t lastBlockHeight, uint32_t timestamp);
+			bool UpdateTransactions(const TransactionPtr &tx, bool &updated, uint32_t blockHeight, uint32_t timestamp);
 
 		private:
 			uint64_t getMinOutputAmount();
@@ -167,8 +166,11 @@ namespace Elastos {
 								   std::vector<UInt256> &removedTransactions, UInt256 &removedAssetID, bool &notifyUser,
 								   bool &recommendRescan);
 
-			std::vector<UInt256> UpdateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight,
-									uint32_t lastBlockHeight, uint32_t timestamp);
+			std::vector<UInt256> UpdateTransactions(const std::vector<UInt256> &txHashes,
+													std::vector<UInt256> &updatedHashes,
+													uint32_t blockHeight, uint32_t timestamp);
+
+			void UpdateBalance(const std::vector<UInt256> &needUpdateAssets, uint32_t blockHeight);
 
 			bool WalletContainsTx(const TransactionPtr &tx);
 

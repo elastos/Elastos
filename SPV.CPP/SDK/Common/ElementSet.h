@@ -21,6 +21,10 @@ namespace Elastos {
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
 					return UInt256Eq(&hash, &e->getHash()) == 1;
 				});
+
+				if (it == _elements.end())
+					return nullptr;
+
 				return *it;
 			}
 

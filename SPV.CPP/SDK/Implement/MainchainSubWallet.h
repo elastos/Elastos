@@ -28,6 +28,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GenerateProducerPayload(
 				const std::string &publicKey,
+				const std::string &nodePublicKey,
 				const std::string &nickName,
 				const std::string &url,
 				const std::string &ipAddress,
@@ -69,9 +70,6 @@ namespace Elastos {
 					bool useVotedUTXO = false);
 
 			virtual	nlohmann::json GetVotedProducerList() const;
-
-			virtual nlohmann::json ExportProducerKeystore(const std::string &backupPasswd,
-														  const std::string &payPasswd) const;
 
 			virtual nlohmann::json GetRegisteredProducerInfo() const;
 

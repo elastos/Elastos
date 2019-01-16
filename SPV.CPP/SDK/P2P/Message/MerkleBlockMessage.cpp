@@ -50,7 +50,8 @@ namespace Elastos {
 				_peer->error("got merkleblock message before loading a filter");
 				return false;
 			} else {
-				std::vector<UInt256> txHashes = block->MerkleBlockTxHashes();
+				std::vector<UInt256> txHashes;
+				block->MerkleBlockTxHashes(txHashes);
 
 				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive
 					if (_peer->KnownTxHashSet().Contains(txHashes[i - 1])) continue;

@@ -261,6 +261,10 @@ namespace Elastos {
 
 			void loadBloomFilterDone(const PeerPtr &peer, int success);
 
+			void updateFilterRerequestDone(const PeerPtr &peer, int success);
+
+			void updateFilterLoadDone(const PeerPtr &peer, int success);
+
 			void updateFilterPingDone(const PeerPtr &peer, int success);
 
 			void mempoolDone(const PeerPtr &peer, int success);
@@ -271,7 +275,7 @@ namespace Elastos {
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _enableReconnect;
+			bool _syncSucceeded, _enableReconnect, _needGetAddr;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;

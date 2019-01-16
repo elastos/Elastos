@@ -46,7 +46,7 @@ namespace Elastos {
 			 */
 			virtual void OnBlockSyncStopped() = 0;
 
-			virtual void OnBalanceChanged(uint64_t balance) = 0;
+			virtual void OnBalanceChanged(const std::string &asset, uint64_t balance) = 0;
 
 			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
 

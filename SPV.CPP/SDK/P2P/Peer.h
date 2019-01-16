@@ -139,6 +139,8 @@ namespace Elastos {
 
 			void SendMessage(const CMBlock &message, const std::string &type);
 
+			void RerequestBlocks(const UInt256 &fromBlock);
+
 			void scheduleDisconnect(double time);
 
 			bool NeedsFilterUpdate() const;

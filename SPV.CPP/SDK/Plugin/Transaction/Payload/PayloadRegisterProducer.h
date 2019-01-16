@@ -22,6 +22,10 @@ namespace Elastos {
 
 			void SetPublicKey(const CMBlock &key);
 
+			const CMBlock &GetNodePublicKey() const;
+
+			void SetNodePublicKey(const CMBlock &key);
+
 			const std::string &GetNickName() const;
 
 			void SetNickName(const std::string &name);
@@ -60,6 +64,7 @@ namespace Elastos {
 
 		private:
 			CMBlock _publicKey;
+			CMBlock _nodePublicKey;
 			std::string _nickName;
 			std::string _url;
 			uint64_t _location;

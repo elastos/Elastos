@@ -106,10 +106,10 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged(uint64_t balance) {
+		void SpvService::balanceChanged(const UInt256 &asset, uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&balance](TransactionHub::Listener *listener) {
-							  listener->balanceChanged(balance);
+						  [&asset, &balance](TransactionHub::Listener *listener) {
+							  listener->balanceChanged(asset, balance);
 						  });
 		}
 

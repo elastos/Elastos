@@ -110,7 +110,7 @@ namespace Elastos {
 			virtual std::string GetPublicKey() const;
 
 		protected: //implement Wallet::Listener
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

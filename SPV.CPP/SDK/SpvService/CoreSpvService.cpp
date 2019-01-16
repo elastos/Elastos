@@ -58,7 +58,7 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		void CoreSpvService::balanceChanged(uint64_t balance) {
+		void CoreSpvService::balanceChanged(const UInt256 &asset, uint64_t balance) {
 
 		}
 
@@ -438,9 +438,9 @@ namespace Elastos {
 				_listener(listener) {
 		}
 
-		void WrappedExceptionTransactionHubListener::balanceChanged(uint64_t balance) {
+		void WrappedExceptionTransactionHubListener::balanceChanged(const UInt256 &asset, uint64_t balance) {
 			try {
-				_listener->balanceChanged(balance);
+				_listener->balanceChanged(asset, balance);
 			}
 			catch (std::exception ex) {
 				Log::error("Wallet callback (balanceChanged) error: {}", ex.what());
@@ -497,10 +497,10 @@ namespace Elastos {
 				_executor(executor) {
 		}
 
-		void WrappedExecutorTransactionHubListener::balanceChanged(uint64_t balance) {
-			_executor->execute(Runnable([this, balance]() -> void {
+		void WrappedExecutorTransactionHubListener::balanceChanged(const UInt256 &asset, uint64_t balance) {
+			_executor->execute(Runnable([this, asset, balance]() -> void {
 				try {
-					_listener->balanceChanged(balance);
+					_listener->balanceChanged(asset, balance);
 				}
 				catch (std::exception ex) {
 					Log::error("Wallet callback (balanceChanged) error: {}", ex.what());

@@ -71,7 +71,7 @@ namespace Elastos {
 
 			virtual std::string getBlockType() const { return "";}
 
-			std::vector<UInt256> MerkleBlockTxHashes() const;
+			size_t MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const;
 
 		protected:
 			void serializeNoAux(ByteStream &ostream) const;
@@ -84,7 +84,7 @@ namespace Elastos {
 
 			UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
 
-			std::vector<UInt256> merkleBlockTxHashesR(size_t &hashIdx, size_t &flagIdx, int depth) const;
+			size_t merkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx, int depth) const;
 
 			int ceilLog2(int x) const;
 

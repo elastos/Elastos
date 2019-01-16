@@ -150,6 +150,12 @@ namespace Elastos {
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
+			if (peers.size() == 0) {
+				_needGetAddr = true;
+			} else {
+				_needGetAddr = false;
+			}
+
 			_peers = peers;
 			sortPeers();
 
@@ -552,6 +558,7 @@ namespace Elastos {
 
 						PingParameter pingParameter;
 						pingParameter.callback = boost::bind(&PeerManager::publishTxInivDone, this, peer, _1);
+						pingParameter.lastBlockHeight = _lastBlock->getHeight();
 						peer->SendMessage(MSG_PING, pingParameter);
 					}
 				}
@@ -852,6 +859,7 @@ namespace Elastos {
 					publishPendingTx(peer);
 					PingParameter pingParameter;
 					pingParameter.callback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
 			} else { // select the peer with the lowest ping time to download the chain from if we're behind
@@ -871,14 +879,6 @@ namespace Elastos {
 					_downloadPeer->Disconnect();
 				}
 
-				bool havePendingTx = false;
-				for (size_t i = 0; i < _publishedTx.size(); ++i) {
-					if (_publishedTx[i].HasCallback()) {
-						havePendingTx = true;
-						break;
-					}
-				}
-
 				_downloadPeer = peer;
 				_syncSucceeded = false;
 				_keepAliveTimestamp = time(nullptr);
@@ -888,7 +888,8 @@ namespace Elastos {
 				loadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->getHeight());
 				publishPendingTx(peer);
-				if (!havePendingTx) {
+				if (_needGetAddr) {
+					_needGetAddr = false;
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
 
@@ -1268,7 +1269,8 @@ namespace Elastos {
 			MerkleBlockPtr b, b2, prev, next;
 			uint32_t txTime = 0;
 			std::vector<MerkleBlockPtr> saveBlocks;
-			std::vector<UInt256> txHashes = block->MerkleBlockTxHashes();
+			std::vector<UInt256> txHashes;
+			block->MerkleBlockTxHashes(txHashes);
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -1431,7 +1433,8 @@ namespace Elastos {
 							   b->getHeight() > b2->getHeight()) { // set transaction heights for new main chain
 							uint32_t height = b->getHeight(), timestamp = b->getTimestamp();
 
-							txHashes = b->MerkleBlockTxHashes();
+							txHashes.clear();
+							b->MerkleBlockTxHashes(txHashes);
 							b = _blocks.Get(b->getPrevBlockHash());
 							if (b) timestamp = timestamp / 2 + b->getTimestamp() / 2;
 							if (txHashes.size() > 0)
@@ -1677,7 +1680,39 @@ namespace Elastos {
 				// wait for pong so we're sure to include any tx already sent by the peer in the updated filter
 				PingParameter pingParameter;
 				pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, _downloadPeer, _1);
+				pingParameter.lastBlockHeight = _lastBlock->getHeight();
 				_downloadPeer->SendMessage(MSG_PING, pingParameter);
+			}
+		}
+
+		void PeerManager::updateFilterRerequestDone(const PeerPtr &peer, int success) {
+			if (!success) return;
+
+			boost::mutex::scoped_lock scopedLock(lock);
+			if ((peer->GetFlags() & PEER_FLAG_NEEDSUPDATE) == 0) {
+				peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(), UINT256_ZERO));
+			}
+		}
+
+		void PeerManager::updateFilterLoadDone(const PeerPtr &peer, int success) {
+			if (!success) return;
+
+			peer->info("update filter load done");
+			boost::mutex::scoped_lock scopedLock(lock);
+			peer->SetNeedsFilterUpdate(false);
+			peer->SetFlags(peer->GetFlags() & (uint8_t)(~PEER_FLAG_NEEDSUPDATE));
+
+			if (_lastBlock->getHeight() < _estimatedHeight) { // if syncing, rerequest blocks
+				_downloadPeer->RerequestBlocks(_lastBlock->getHash());
+				PingParameter pingParameter;
+				pingParameter.callback = boost::bind(&PeerManager::updateFilterRerequestDone, this, _downloadPeer, _1);
+				pingParameter.lastBlockHeight = _lastBlock->getHeight();
+				_downloadPeer->SendMessage(MSG_PING, pingParameter);
+			} else {
+				MempoolParameter mempoolParameter;
+				mempoolParameter.KnownTxHashes = {};
+				mempoolParameter.CompletionCallback = boost::function<void(int)>();
+				peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
 			}
 		}
 
@@ -1692,16 +1727,17 @@ namespace Elastos {
 			if (_lastBlock->getHeight() < _estimatedHeight) { // if we're syncing, only update download peer
 				if (_downloadPeer) {
 					loadBloomFilter(_downloadPeer);
-					pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, _downloadPeer,
-														 _1);
+					pingParameter.callback = boost::bind(&PeerManager::updateFilterLoadDone, this, _downloadPeer, _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					_downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
 				}
 			} else {
 				for (size_t i = _connectedPeers.size(); i > 0; i--) {
 					if (_connectedPeers[i - 1]->GetConnectStatus() != Peer::Connected) continue;
-					pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this,
+					pingParameter.callback = boost::bind(&PeerManager::updateFilterLoadDone, this,
 														 _connectedPeers[i - 1],
 														 _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					loadBloomFilter(peer);
 					_downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
 				}
@@ -1847,6 +1883,7 @@ namespace Elastos {
 					publishPendingTx(peer);
 					PingParameter pingParameter;
 					pingParameter.callback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					peer->SendMessage(MSG_PING, pingParameter);
 				} else {
 					MempoolParameter mempoolParameter;
@@ -1908,6 +1945,7 @@ namespace Elastos {
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {
 					PingParameter pingParameter;
 					pingParameter.callback = boost::bind(&PeerManager::requestUnrelayedTxGetDataDone, this, peer, _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
 			} else peer->SetFlags(peer->GetFlags() | PEER_FLAG_SYNCED);
@@ -1932,6 +1970,7 @@ namespace Elastos {
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {
 					PingParameter pingParameter;
 					pingParameter.callback = boost::bind(&PeerManager::requestUnrelayedTxGetDataDone, this, peer, _1);
+					pingParameter.lastBlockHeight = _lastBlock->getHeight();
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
 			} else peer->SetFlags(peer->GetFlags() | PEER_FLAG_SYNCED);

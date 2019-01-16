@@ -12,12 +12,24 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		bool UTXOList::Constains(const UInt256 &hash) const {
-			std::vector<UTXO>::const_iterator itr = std::find_if(_utxos.begin(), _utxos.end(),
-																 [&hash](const UTXO &h) {
-																	 return UInt256Eq(&hash, &h.hash) == 1;
-																 });
-			return itr != _utxos.end();
+		bool UTXOList::Contains(const UTXO &o) const {
+			for (size_t i = 0; i < _utxos.size(); ++i) {
+				if (UInt256Eq(&o.hash, &_utxos[i].hash) && _utxos[i].n == o.n) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		bool UTXOList::Contains(const UInt256 &hash, uint32_t n) const {
+			for (size_t i = 0; i < _utxos.size(); ++i) {
+				if (UInt256Eq(&hash, &_utxos[i].hash) && _utxos[i].n == n) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		UTXO &UTXOList::operator[](size_t i) {

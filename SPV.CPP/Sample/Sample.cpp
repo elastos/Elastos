@@ -62,8 +62,8 @@ public:
 		logger->debug("{} OnBlockSyncStopped", _walletID);
 	}
 
-	virtual void OnBalanceChanged(uint64_t balance) {
-		logger->debug("{} OnBalanceChanged ----> {}", _walletID, balance);
+	virtual void OnBalanceChanged(const std::string &asset, uint64_t balance) {
+		logger->debug("{} OnBalanceChanged ----> {} = {}", _walletID, asset, balance);
 	}
 
 	virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
@@ -331,7 +331,7 @@ static void InitWallets(MasterWalletManager *manager) {
 		masterWallets.push_back(masterWallet);
 
 		masterWallet->CreateSubWallet(gMainchainSubWalletID);
-		masterWallet->CreateSubWallet(gSidechainSubWalletID);
+//		masterWallet->CreateSubWallet(gSidechainSubWalletID);
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
@@ -412,8 +412,8 @@ int main(int argc, char *argv[]) {
 			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
 			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
 
-			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
-			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
+//			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
+//			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
 		} else {
 			sleep(1);
 		}

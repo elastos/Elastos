@@ -10,6 +10,7 @@
 #include <SDK/P2P/Peer.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/P2P/PeerManager.h>
 
 #include <Core/BRArray.h>
 #include <float.h>
@@ -127,6 +128,7 @@ namespace Elastos {
 						_peer->info("got initial mempool response");
 						PingParameter pingParameter;
 						pingParameter.callback = _peer->getMemPoolCallback();
+						pingParameter.lastBlockHeight = _peer->getPeerManager()->GetLastBlockHeight();
 						_peer->SendMessage(MSG_PING, pingParameter);
 						_peer->resetMemPool();
 					}

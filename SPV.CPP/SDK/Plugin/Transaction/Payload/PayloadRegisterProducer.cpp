@@ -30,6 +30,14 @@ namespace Elastos {
 			_publicKey = key;
 		}
 
+		const CMBlock &PayloadRegisterProducer::GetNodePublicKey() const {
+			return _nodePublicKey;
+		}
+
+		void PayloadRegisterProducer::SetNodePublicKey(const CMBlock &key) {
+			_nodePublicKey = key;
+		}
+
 		const std::string &PayloadRegisterProducer::GetNickName() const {
 			return _nickName;
 		}
@@ -72,6 +80,7 @@ namespace Elastos {
 
 		void PayloadRegisterProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.writeVarBytes(_publicKey);
+			ostream.writeVarBytes(_nodePublicKey);
 			ostream.writeVarString(_nickName);
 			ostream.writeVarString(_url);
 			ostream.writeUint64(_location);
@@ -81,6 +90,10 @@ namespace Elastos {
 		bool PayloadRegisterProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
 			if (!istream.readVarBytes(_publicKey)) {
 				Log::error("Deserialize: read public key");
+				return false;
+			}
+			if (!istream.readVarBytes(_nodePublicKey)) {
+				Log::error("Deserialize: read node public key");
 				return false;
 			}
 			if (!istream.readVarString(_nickName)) {

@@ -58,6 +58,7 @@ namespace Elastos {
 				GetUnusedAddress,
 				AccountNotSupportVote,
 				WalletNotContainTx,
+				VoteDepositAmountInsufficient,
 				Other = 29999,
 			} Code;
 		}

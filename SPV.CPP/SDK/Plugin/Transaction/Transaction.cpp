@@ -246,18 +246,9 @@ namespace Elastos {
 		}
 
 		size_t Transaction::getSize() {
-			size_t size;
-			size = 8 + BRVarIntSize(_inputs.size()) + BRVarIntSize(_outputs.size());
-
-			for (size_t i = 0; _inputs.size(); i++) {
-				size += _inputs[i].getSize();
-			}
-
-			for (size_t i = 0; _outputs.size(); i++) {
-				size += _outputs[i].GetSize();
-			}
-
-			return size;
+			ByteStream ostream;
+			Serialize(ostream);
+			return ostream.getBuffer().GetSize();
 		}
 
 		bool Transaction::isSigned() const {

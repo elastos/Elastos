@@ -257,15 +257,14 @@ namespace Elastos {
 			return true;
 		}
 
-		std::vector<UInt256> MerkleBlockBase::MerkleBlockTxHashes() const {
+		size_t MerkleBlockBase::MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const {
 			size_t hashIdx = 0, flagIdx = 0;
 
-			return merkleBlockTxHashesR(hashIdx, flagIdx, 0);
+			return merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, 0);
 		}
 
-		std::vector<UInt256> MerkleBlockBase::merkleBlockTxHashesR(size_t &hashIdx, size_t &flagIdx,
+		size_t MerkleBlockBase::merkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx,
 																   int depth) const {
-			std::vector<UInt256> txHashes;
 			uint8_t flag;
 
 			if (flagIdx / 8 < _flags.size() && hashIdx < _hashes.size()) {
@@ -279,12 +278,12 @@ namespace Elastos {
 
 					hashIdx++;
 				} else {
-					merkleBlockTxHashesR(hashIdx, flagIdx, depth + 1); // left branch
-					merkleBlockTxHashesR(hashIdx, flagIdx, depth + 1); // right branch
+					merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // left branch
+					merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // right branch
 				}
 			}
 
-			return txHashes;
+			return txHashes.size();
 		}
 
 		int MerkleBlockBase::ceilLog2(int x) const {

@@ -69,7 +69,7 @@ namespace Elastos {
 			_peer->SetStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
 
 			_peer->addPongCallback(pingParameter.callback);
-			UInt64SetLE(msg, _peer->getPeerManager()->GetLastBlockHeight());
+			UInt64SetLE(msg, pingParameter.lastBlockHeight);
 
 			CMBlock msgBlock(sizeof(msg));
 			memcpy(msgBlock, msg, sizeof(msg));

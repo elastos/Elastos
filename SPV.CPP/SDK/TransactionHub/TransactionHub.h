@@ -37,7 +37,7 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				virtual void balanceChanged(uint64_t balance) = 0;
+				virtual void balanceChanged(const UInt256 &asset, uint64_t balance) = 0;
 
 				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
@@ -118,7 +118,7 @@ namespace Elastos {
 
 			void removeTransaction(const UInt256 &transactionHash);
 
-			void updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight,
+			void updateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight,
 									uint32_t timestamp);
 
 			TransactionPtr transactionForHash(const UInt256 &transactionHash);
@@ -167,7 +167,7 @@ namespace Elastos {
 
 			uint64_t WalletFeeForTx(const TransactionPtr &tx);
 
-			void balanceChanged(uint64_t balance);
+			void balanceChanged(const UInt256 &asset, uint64_t balance);
 
 			void txAdded(const TransactionPtr &tx);
 

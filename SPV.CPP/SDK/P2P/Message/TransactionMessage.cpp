@@ -59,7 +59,7 @@ namespace Elastos {
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
 			CMBlock buf = stream.getBuffer();
-			_peer->info("sending tx: tx hash = %s", Utils::UInt256ToString(txParam.tx->getHash(), true));
+			_peer->info("sending tx: tx hash = {}", Utils::UInt256ToString(txParam.tx->getHash(), true));
 			SendMessage(stream.getBuffer(), Type());
 		}
 

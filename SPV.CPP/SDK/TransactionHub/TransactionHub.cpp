@@ -22,6 +22,7 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <cstdlib>
+#include <Interface/ISubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -32,6 +33,8 @@ namespace Elastos {
 					   const boost::shared_ptr<Listener> &listener) :
 				_subAccount(subAccount),
 				_transactions(this, subAccount) {
+
+			_blockHeight = 0;
 
 			_transactions.UpdateAssets(assetArray);
 
@@ -261,10 +264,9 @@ namespace Elastos {
 				// when a wallet address is used in a transaction, generate a new address to replace it
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-				// TODO heropan check here balanceChanged(_balance);
 				uint64_t balance = getBalance(transaction->GetAssetID(), AssetTransactions::BalanceType::Total);
 				txAdded(transaction);
-				balanceChanged(balance);
+//				balanceChanged(transaction->GetAssetID(), balance);
 			}
 
 			return r;
@@ -284,24 +286,29 @@ namespace Elastos {
 			}
 
 			uint64_t balance = getBalance(removedAssetID, AssetTransactions::BalanceType::Total);
-			balanceChanged(balance);
+			balanceChanged(removedAssetID, balance);
 			txDeleted(removedTransactions, removedAssetID, notifyUser, recommendRescan);
 		}
 
-		void TransactionHub::updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t height,
-										uint32_t timestamp) {
-			std::vector<UInt256> hashes;
-			int needsUpdate = 0;
+		void TransactionHub::updateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight,
+												uint32_t timestamp) {
+			std::vector<UInt256> updatedHashes;
+			std::vector<UInt256> needUpdateAssets;
 
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-				if (height > _blockHeight) _blockHeight = height;
-				hashes = _transactions.UpdateTransactions(transactionsHashes, height, _blockHeight, timestamp);
+				if (blockHeight != TX_UNCONFIRMED && blockHeight > _blockHeight) _blockHeight = blockHeight;
+				needUpdateAssets = _transactions.UpdateTransactions(txHashes, updatedHashes, blockHeight, timestamp);
+				_transactions.UpdateBalance(needUpdateAssets, _blockHeight);
 			}
 
-			if (!hashes.empty()) txUpdated(hashes, _blockHeight, timestamp);
-			// TODO fix balance later
-//			if (needsUpdate) balanceChanged(0);
+			if (!updatedHashes.empty())
+				txUpdated(updatedHashes, blockHeight, timestamp);
+
+			for (size_t i = 0; i < needUpdateAssets.size(); ++i) {
+				uint64_t balance = _transactions.Get(needUpdateAssets[i])->GetBalance(AssetTransactions::Total);
+				balanceChanged(needUpdateAssets[i], balance);
+			}
 		}
 
 		TransactionPtr TransactionHub::transactionForHash(const UInt256 &transactionHash) {
@@ -524,10 +531,9 @@ namespace Elastos {
 			});
 		}
 
-		// TODO fix later
-		void TransactionHub::balanceChanged(uint64_t balance) {
+		void TransactionHub::balanceChanged(const UInt256 &asset, uint64_t balance) {
 			if (!_listener.expired()) {
-				_listener.lock()->balanceChanged(balance);
+				_listener.lock()->balanceChanged(asset, balance);
 			}
 		}
 
@@ -627,22 +633,28 @@ namespace Elastos {
 		}
 
 		void TransactionHub::SetTxUnconfirmedAfter(uint32_t blockHeight) {
-			size_t count;
 			std::vector<UInt256> hashes;
+			std::vector<UInt256> needUpdateAssets;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				_blockHeight = blockHeight;
-				_transactions.ForEach([&hashes, blockHeight](const UInt256 &key, const AssetTransactionsPtr &value) {
+				_transactions.ForEach([&needUpdateAssets, &hashes, blockHeight](const UInt256 &key, const AssetTransactionsPtr &value) {
 					std::vector<UInt256> temp = value->SetTxUnconfirmedAfter(blockHeight);
+					if (temp.size() > 0) {
+						needUpdateAssets.push_back(key);
+					}
 					hashes.insert(hashes.end(), temp.begin(), temp.end());
 				});
 			}
 
-			if (count > 0) {
+			if (hashes.size() > 0) {
 				txUpdated(hashes, TX_UNCONFIRMED, 0);
-				// TODO fix later
-//				balanceChanged(0);
+			}
+
+			for (size_t i = 0; i < needUpdateAssets.size(); ++i) {
+				uint64_t balance = _transactions.Get(needUpdateAssets[i])->GetBalance(AssetTransactions::Total);
+				balanceChanged(needUpdateAssets[i], balance);
 			}
 		}
 

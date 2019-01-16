@@ -56,7 +56,7 @@ namespace Elastos {
 
 			virtual std::string getBlockType() const = 0;
 
-			virtual std::vector<UInt256> MerkleBlockTxHashes() const = 0;
+			virtual size_t MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const = 0;
 		};
 
 		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;

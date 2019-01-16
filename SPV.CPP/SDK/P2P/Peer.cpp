@@ -233,6 +233,19 @@ namespace Elastos {
 			}
 		}
 
+		void Peer::RerequestBlocks(const UInt256 &fromBlock) {
+			size_t i = _knownBlockHashes.size();
+
+			while (i > 0 && ! UInt256Eq(&(_knownBlockHashes[i - 1]), &fromBlock)) i--;
+
+			if (i > 0) {
+				_knownBlockHashes.erase(_knownBlockHashes.begin(), _knownBlockHashes.begin() + i - 1);
+				info("re-requesting {} block(s)", _knownBlockHashes.size());
+				GetDataParameter getDataParameter({}, _knownBlockHashes);
+				SendMessage(MSG_GETDATA, getDataParameter);
+			}
+		}
+
 		void Peer::scheduleDisconnect(double seconds) {
 			struct timeval tv;
 
@@ -334,6 +347,7 @@ namespace Elastos {
 							info("done waiting for mempool response");
 							PingParameter pingParameter;
 							pingParameter.callback = _mempoolCallback;
+							pingParameter.lastBlockHeight = _manager->GetLastBlockHeight();
 							SendMessage(MSG_PING, pingParameter);
 							_mempoolCallback = PeerCallback();
 							_mempoolTime = DBL_MAX;
@@ -452,7 +466,7 @@ namespace Elastos {
 		bool Peer::acceptMessage(const CMBlock &msg, const std::string &type) {
 			bool r = false;
 
-			if (_currentBlock != nullptr && MSG_TX == type) { // if we receive a non-tx message, merkleblock is done
+			if (_currentBlock != nullptr && MSG_TX != type) { // if we receive a non-tx message, merkleblock is done
 				this->error("incomplete merkleblock {}, expected {} more tx, got {}",
 							Utils::UInt256ToString(_currentBlock->getHash(), true),
 							_currentBlockTxHashes.size(), type);

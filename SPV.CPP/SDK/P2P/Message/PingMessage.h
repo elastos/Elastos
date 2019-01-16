@@ -14,6 +14,7 @@ namespace Elastos {
 
 		struct PingParameter : public SendMessageParameter {
 			boost::function<void (int)> callback;
+			uint64_t lastBlockHeight;
 		};
 
 		class PingMessage :
