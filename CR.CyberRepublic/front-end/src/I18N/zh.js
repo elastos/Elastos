@@ -236,7 +236,7 @@ const zh = {
     'suggestion.follow': '关注',
     'suggestion.reportAbuse': '举报滥用',
     'suggestion.translate': '翻译成英语',
-    'suggestion.councilMember': '理事会成员',
+    'suggestion.councilMember': '委员会成员',
     'suggestion.copy': '复制',
     'suggestion.back': '返回',
     'suggestion.viewAll': '查看所有',
@@ -305,7 +305,7 @@ const zh = {
     'developer.cr100.submit_whitepaper': '提交白皮书',
     'developer.cr100.welcome.1': '本计划暂时中止，并很快会变成一组特别的提案。当新的Cyber Republic BETA版启动时，每个团队将优先向新选举产生的7人CR委员会推介他们的提案。',
     'developer.cr100.welcome.2': '我们仍然重视在ALPHA版本期间已提交提案的每个人和每个团队，并对大家都经历过的疲惫与痛苦深感歉意。新的CR秘书团队将尽一切努力与这些团队联系并确保他们得到一对一的回应。\n',
-    'developer.cr100.welcome.3': '欢迎加入我们的新论坛，提出您的建议并讨论CR的未来将于2018年12月31日',
+    'developer.cr100.welcome.3': '欢迎加入我们于2018年12月31日上线的新论坛，在那里提出您的建议并讨论CR的未来。',
     'developer.cr100.welcome.title': 'Cyber Republic 100',
     'developer.cr100.disclaimer': '上面描述的项目可能会发生变化，仅作为示例使用',
     'developer.cr100.disclaimer.title': '免责声明',
@@ -1369,7 +1369,7 @@ const zh = {
     'cs.feng.name': '张烽',
     'cs.feng.intro': '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
     'cs.rebecca.name': '朱凤',
-    'cs.rebeca.intro': '亦来云基金会项目总监，常驻北京',
+    'cs.rebecca.intro': '亦来云基金会项目总监，常驻北京',
 
     // ConstitutionNavigator
     'counstitution.menu1': '01 亦来云Cyber Republic章程',
