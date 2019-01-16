@@ -165,9 +165,9 @@ func (h *history) seekTo(height uint32) error {
 	return nil
 }
 
-// rollback restores state to height-1, and remove all histories after height.
+// rollbackTo restores state to height, and remove all histories after height.
 // If no enough histories to rollback return error.
-func (h *history) rollback(height uint32) error {
+func (h *history) rollbackTo(height uint32) error {
 	// check whether history is enough for rollback
 	limitHeight := h.height - uint32(len(h.changes))
 	if height < limitHeight {
