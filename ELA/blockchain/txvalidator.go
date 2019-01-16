@@ -210,7 +210,7 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 func getProducerPublicKeys(producers []*PayloadRegisterProducer) [][]byte {
 	var publicKeys [][]byte
 	for _, p := range producers {
-		publicKeys = append(publicKeys, p.PublicKey)
+		publicKeys = append(publicKeys, p.OwnPublicKey)
 	}
 	return publicKeys
 }
@@ -678,14 +678,14 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.PublicKey)
+	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.OwnPublicKey)
 	if err == nil {
 		return fmt.Errorf("invalid producer, canceled at height: %d", height)
 	}
 
 	// check public key and nick name
 	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hash, err := contract.PublicKeyToDepositProgramHash(payload.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(payload.OwnPublicKey)
 	if err != nil {
 		return errors.New("invalid public key")
 	}
@@ -693,7 +693,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		return err
 	}
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.OwnPublicKey, payload.OwnPublicKey) {
 			return errors.New("duplicated public key")
 		}
 		if p.NickName == payload.NickName {
@@ -712,7 +712,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(payload.OwnPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -753,7 +753,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(payload.OwnPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -769,7 +769,7 @@ func CheckCancelProducerTransaction(txn *Transaction) error {
 
 	producers := DefaultLedger.Store.GetRegisteredProducers()
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.OwnPublicKey, payload.OwnPublicKey) {
 			return nil
 		}
 	}
@@ -798,7 +798,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.PublicKey)
+	publicKey, err := DecodePoint(payload.OwnPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -817,7 +817,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	hasProducer := false
 	keepNickName := false
 	for _, p := range producers {
-		if bytes.Equal(p.PublicKey, payload.PublicKey) {
+		if bytes.Equal(p.OwnPublicKey, payload.OwnPublicKey) {
 			hasProducer = true
 			keepNickName = p.NickName == payload.NickName
 			break
