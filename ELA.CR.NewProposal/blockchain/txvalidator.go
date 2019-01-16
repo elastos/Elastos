@@ -699,6 +699,9 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 		if p.NickName == payload.NickName {
 			return errors.New("duplicated nick name")
 		}
+		if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
+			return errors.New("duplicated producer node")
+		}
 	}
 
 	// check url
@@ -821,6 +824,9 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 			hasProducer = true
 			keepNickName = p.NickName == payload.NickName
 			break
+		}
+		if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
+			return errors.New("duplicated producer node")
 		}
 	}
 	if !hasProducer {
