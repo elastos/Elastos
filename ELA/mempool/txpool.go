@@ -22,10 +22,11 @@ type TxPool struct {
 	txnCnt  uint64                   // count
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
-	inputUTXOList   map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
-	producerList    map[string]struct{}
-	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	Listeners       map[protocol.TxnPoolListener]interface{}
+	inputUTXOList     map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
+	producerList      map[string]struct{}
+	nodePublicKeyList map[string]struct{}
+	sidechainTxList   map[Uint256]*Transaction // sidechain tx pool
+	Listeners         map[protocol.TxnPoolListener]interface{}
 }
 
 func (pool *TxPool) Init() {
@@ -36,6 +37,7 @@ func (pool *TxPool) Init() {
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
 	pool.producerList = make(map[string]struct{})
+	pool.nodePublicKeyList = make(map[string]struct{})
 	pool.sidechainTxList = make(map[Uint256]*Transaction)
 	pool.Listeners = make(map[protocol.TxnPoolListener]interface{})
 }
@@ -225,6 +227,10 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
+		if err := pool.verifyDuplicateProducerNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
+		}
 	} else if txn.IsUpdateProducerTx() {
 		payload, ok := txn.Payload.(*PayloadUpdateProducer)
 		if !ok {
@@ -233,6 +239,10 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
+		}
+		if err := pool.verifyDuplicateProducerNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
 		}
 	} else if txn.IsCancelProducerTx() {
 		payload, ok := txn.Payload.(*PayloadCancelProducer)
@@ -318,12 +328,12 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func (pool *TxPool) verifyDuplicateProducer(publicKey string) error {
-	_, ok := pool.producerList[publicKey]
+func (pool *TxPool) verifyDuplicateProducer(ownPublicKey string) error {
+	_, ok := pool.producerList[ownPublicKey]
 	if ok {
 		return errors.New("this producer in being processed")
 	}
-	pool.addProducer(publicKey)
+	pool.addProducer(ownPublicKey)
 
 	return nil
 }
@@ -340,6 +350,31 @@ func (pool *TxPool) delProducer(publicKey string) bool {
 		return false
 	}
 	delete(pool.producerList, publicKey)
+	return true
+}
+
+func (pool *TxPool) verifyDuplicateProducerNode(nodePublicKey string) error {
+	_, ok := pool.nodePublicKeyList[nodePublicKey]
+	if ok {
+		return errors.New("this producer node in being processed")
+	}
+	pool.addProducerNode(nodePublicKey)
+
+	return nil
+}
+
+func (pool *TxPool) addProducerNode(nodePublicKey string) {
+	pool.Lock()
+	defer pool.Unlock()
+	pool.nodePublicKeyList[nodePublicKey] = struct{}{}
+}
+
+func (pool *TxPool) delProducerNode(nodePublicKey string) bool {
+	_, ok := pool.nodePublicKeyList[nodePublicKey]
+	if !ok {
+		return false
+	}
+	delete(pool.nodePublicKeyList, nodePublicKey)
 	return true
 }
 
