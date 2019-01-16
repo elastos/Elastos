@@ -65,8 +65,6 @@ type Configuration struct {
 	HttpWsPort           int                  `json:"HttpWsPort"`
 	WsHeartbeatInterval  time.Duration        `json:"WsHeartbeatInterval"`
 	HttpJsonPort         int                  `json:"HttpJsonPort"`
-	OauthServerUrl       string               `json:"OauthServerUrl"`
-	NoticeServerUrl      string               `json:"NoticeServerUrl"`
 	NodePort             uint16               `json:"NodePort"`
 	NodeOpenPort         uint16               `json:"NodeOpenPort"`
 	PrintLevel           uint8                `json:"PrintLevel"`
