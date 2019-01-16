@@ -227,7 +227,7 @@ const en = {
     'suggestion.sort': 'Sort by',
     'suggestion.likes': 'Likes',
     'suggestion.views': 'Views',
-    'suggestion.activeness': 'Activeness',
+    'suggestion.activeness': 'Popularity',
     'suggestion.owner': 'Owner',
     'suggestion.dateAdded': 'Date Added',
     'suggestion.postedBy': 'Posted By',
