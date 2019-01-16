@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
@@ -31,6 +32,7 @@ var (
 type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
+	state       *state.State
 	versions    interfaces.HeightVersions
 	GenesisHash Uint256
 
@@ -58,7 +60,7 @@ type BlockChain struct {
 }
 
 func New(db IChainStore, chainParams *config.Params,
-	versions interfaces.HeightVersions) (*BlockChain, error) {
+	versions interfaces.HeightVersions, interrupt <-chan struct{}) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -66,6 +68,7 @@ func New(db IChainStore, chainParams *config.Params,
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
+		state:               state.NewState(),
 		versions:            versions,
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
@@ -106,7 +109,42 @@ func New(db IChainStore, chainParams *config.Params,
 		chain.BestChain = node
 	}
 
-	return &chain, nil
+	return &chain, chain.initializeProducersState(interrupt)
+}
+
+// initializeProducersState go through all blocks since the start of DPOS
+// consensus to initialize producers and votes state.
+func (b *BlockChain) initializeProducersState(interrupt <-chan struct{}) (err error) {
+	bestHeight := b.db.GetHeight()
+	done := make(chan struct{})
+	go func() {
+		for i := b.chainParams.DPOSStartHeight; i < bestHeight; i++ {
+			hash, e := b.db.GetBlockHash(i)
+			if e != nil {
+				err = e
+				break
+			}
+			block, e := b.db.GetBlock(hash)
+			if e != nil {
+				err = e
+				break
+			}
+			b.state.ProcessTransactions(block.Transactions, block.Height)
+		}
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-done:
+	case <-interrupt:
+	}
+	return err
+}
+
+// GetState returns the DPOS state instance that stores producers and votes
+// information.
+func (b *BlockChain) GetState() *state.State {
+	return b.state
 }
 
 func (b *BlockChain) GetHeight() uint32 {
@@ -181,8 +219,8 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 	return b.db.GetCurrentBlockHash()
 }
 
-func (b *BlockChain) SaveIllegalBlock(payload *PayloadIllegalBlock) error {
-	return b.db.SaveIllegalBlock(payload)
+func (b *BlockChain) ProcessIllegalBlock(payload *PayloadIllegalBlock) {
+	b.state.ProcessIllegalBlockEvidence(payload)
 }
 
 type OrphanBlock struct {

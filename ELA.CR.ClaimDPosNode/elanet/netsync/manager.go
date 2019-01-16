@@ -685,11 +685,7 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 	case events.ETTransactionAccepted:
 		tx := event.Data.(*types.Transaction)
 		if tx.IsIllegalBlockTx() {
-			// Save the payload into database.
-			err := sm.chain.SaveIllegalBlock(tx.Payload.(*types.PayloadIllegalBlock))
-			if err != nil {
-				log.Warnf("Illegal transaction persist failed, %s", err)
-			}
+			sm.chain.ProcessIllegalBlock(tx.Payload.(*types.PayloadIllegalBlock))
 		}
 
 	// A block has been accepted into the block chain.  Relay it to other

@@ -2,6 +2,8 @@ package blocks
 
 import (
 	"errors"
+	"sort"
+
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
@@ -21,14 +23,18 @@ func (b *blockV2) GetVersion() uint32 {
 func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
 	resultCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
-	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
-	if uint32(len(producersInfo)) < resultCount {
+	producers := b.cfg.Chain.GetState().GetActiveProducers()
+	if uint32(len(producers)) < resultCount {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
 
+	sort.Slice(producers, func(i, j int) bool {
+		return producers[i].Votes() > producers[j].Votes()
+	})
+
 	result := make([][]byte, resultCount)
 	for i := uint32(0); i < resultCount; i++ {
-		result[i] = producersInfo[i].PublicKey
+		result[i] = producers[i].Info().PublicKey
 	}
 	return result, nil
 }
@@ -36,14 +42,18 @@ func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
 func (b *blockV2) GetCandidatesDesc() ([][]byte, error) {
 	startIndex := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
-	producersInfo := b.cfg.ChainStore.GetRegisteredProducers()
-	if uint32(len(producersInfo)) < startIndex {
+	producers := b.cfg.Chain.GetState().GetActiveProducers()
+	if uint32(len(producers)) < startIndex {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
 
+	sort.Slice(producers, func(i, j int) bool {
+		return producers[i].Votes() > producers[j].Votes()
+	})
+
 	result := make([][]byte, 0)
-	for i := startIndex; i < uint32(len(producersInfo)) && i < startIndex+config.Parameters.ArbiterConfiguration.CandidatesCount; i++ {
-		result = append(result, producersInfo[i].PublicKey)
+	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.Parameters.ArbiterConfiguration.CandidatesCount; i++ {
+		result = append(result, producers[i].Info().PublicKey)
 	}
 	return result, nil
 }
