@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
@@ -86,7 +87,7 @@ func (c *ChainStore) rollbackCancelOrUpdateProducerForMempool() error {
 
 func (c *ChainStore) reloadProducersFromChainForMempool() error {
 	height := c.currentBlockHeight
-	for i := uint32(1); i <= height; i++ {
+	for i := config.Parameters.VoteHeight; i <= height; i++ {
 		hash, err := c.GetBlockHash(i)
 		if err != nil {
 			return err

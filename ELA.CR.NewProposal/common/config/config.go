@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/version/heights"
 )
 
 const (
@@ -40,9 +41,9 @@ type PowConfiguration struct {
 }
 
 type RpcConfiguration struct {
-	User         string               `json:"User"`
-	Pass         string               `json:"Pass"`
-	WhiteIpList  []string             `json:"WhiteIpList"`
+	User        string   `json:"User"`
+	Pass        string   `json:"Pass"`
+	WhiteIpList []string `json:"WhiteIpList"`
 }
 
 type Configuration struct {
@@ -75,6 +76,7 @@ type Configuration struct {
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
 	MaxBlockSize         int                  `json:"MaxBlockSize"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
+	VoteHeight           uint32               `json:"VoteHeight"`
 	Arbiters             []string             `json:"Arbiters"`
 	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
@@ -125,6 +127,7 @@ type configParams struct {
 
 func init() {
 	var config ConfigFile
+	config.ConfigFile.VoteHeight = heights.HeightVersion1
 
 	if _, err := os.Stat(DefaultConfigFilename); os.IsNotExist(err) {
 		config.ConfigFile = configTemplate
