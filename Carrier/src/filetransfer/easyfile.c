@@ -154,7 +154,7 @@ static void *sending_file_routine(void *args)
 
         if (file->callbacks.sent)
             file->callbacks.sent(offset, file->filesz, file->callbacks_context);
-    } while(offset < file->filesz);
+    } while (offset < file->filesz);
 
     return NULL;
 }
@@ -227,12 +227,18 @@ bool notify_data_cb(ElaFileTransfer *ft, const char *fileid, const uint8_t *data
             strcpy(tmp, file->filename);
             strcat(tmp, TMP_EXTENSION);
             rename(tmp, file->filename);
+
+            ela_filetransfer_close(file->ft);
         }
 
         if (file->callbacks.received)
             file->callbacks.received(file->offset, file->filesz, file->callbacks_context);
 
-        return (file->offset < file->filesz);
+        /*
+         * a hack for preventing multiplexer from notifying about channel
+         * close when ela_filetransfer_close() has been called. (TODO)
+         */
+        return true;
     }
 }
 

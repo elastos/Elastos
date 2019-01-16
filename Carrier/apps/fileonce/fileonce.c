@@ -72,10 +72,11 @@
 
 const char *hello_pin = "fileonce_greetings";
 
-typedef struct filectx  filectx_t;
+typedef struct filectx filectx_t;
 
 struct filectx {
     ElaCarrier *carrier;
+    bool in_progress;
     char path[PATH_MAX];
 
     bool receiver;
@@ -95,6 +96,7 @@ static void file_state_changed(FileTransferConnection state, void *context)
     switch(state) {
         case FileTransferConnection_connecting:
             printf("fileonce is connecting to %s...\n", fctx->friendid);
+            fctx->in_progress = true;
             break;
 
         case FileTransferConnection_connected:
@@ -128,7 +130,6 @@ static void file_sent(size_t length, uint64_t totalsz, void *context)
     if (length == totalsz) {
         printf("\nfileonce has sent file [%s] to friend [%s]. total size: %llu.\n",
                fctx->path, fctx->friendid, (unsigned long long)totalsz);
-        ela_kill(fctx->carrier);
     }
 }
 
@@ -146,7 +147,6 @@ static void file_received(size_t length, uint64_t totalsz, void *context)
     if (length == totalsz) {
         printf("\nfileonce has received file [%s] from friend [%s]. total size: %llu.\n",
                fctx->path, fctx->friendid, (unsigned long long)totalsz);
-        ela_kill(fctx->carrier);
     }
 }
 
@@ -180,7 +180,8 @@ static void connection_callback(ElaCarrier *w, ElaConnectionStatus status,
 
         case ElaConnectionStatus_Disconnected:
             vlogD("Self carrier node disconnected from carrier network.");
-            ela_kill(w);
+            if (!fctx->in_progress)
+                ela_kill(w);
             break;
 
         default:
@@ -212,7 +213,8 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
 
         case ElaConnectionStatus_Disconnected:
             vlogD("Friend %s disconnected from carrier network.", friendid);
-            ela_kill(w);
+            if (!fctx->in_progress)
+                ela_kill(w);
             break;
 
         default:
