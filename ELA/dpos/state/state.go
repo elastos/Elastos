@@ -486,12 +486,12 @@ func (s *State) ProcessIllegalBlockEvidence(payload types.Payload) {
 	s.history.commit(0)
 }
 
-// Rollback restores the database state to the given height, if no enough
+// RollbackTo restores the database state to the given height, if no enough
 // history to rollback to return error.
-func (s *State) Rollback(height uint32) error {
+func (s *State) RollbackTo(height uint32) error {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	return s.history.rollback(height)
+	return s.history.rollbackTo(height)
 }
 
 // GetHistory returns a history state instance storing the producers and votes

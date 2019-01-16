@@ -429,7 +429,7 @@ func TestState_Rollback(t *testing.T) {
 		t.FailNow()
 	}
 
-	err := state.Rollback(9)
+	err := state.RollbackTo(9)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
