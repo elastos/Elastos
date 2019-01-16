@@ -35,6 +35,7 @@ const zh = {
     'navigation.programs': '项目',
     'navagation.suggestion': '建议',
     'navagation.council': '委员会&秘书处',
+    'navagation.constitution': '宪法',
 
     '0200': '简介',
     '0201': '登录',
