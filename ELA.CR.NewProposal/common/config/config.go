@@ -119,7 +119,6 @@ type ArbiterConfiguration struct {
 	MaxLogsSize              int64                     `json:"MaxLogsSize"`
 	MaxPerLogSize            int64                     `json:"MaxPerLogSize"`
 	MaxConnections           int                       `json:"MaxConnections"`
-	MajorityCount            uint32                    `json:"MajorityCount"`
 	OriginArbiters           []string                  `json:"OriginArbiters"`
 	CRCArbiters              []CRCArbitratorConfigItem `json:"CRCArbiters"`
 	NormalArbitratorsCount   uint32                    `json:"NormalArbitratorsCount"`

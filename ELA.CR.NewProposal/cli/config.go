@@ -113,7 +113,6 @@ var configTemplate = config.Configuration{
 		MaxConnections:         100,
 		NormalArbitratorsCount: 5,
 		CandidatesCount:        0,
-		MajorityCount:          0,
 	},
 }
 
