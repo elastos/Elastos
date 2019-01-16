@@ -220,11 +220,11 @@ func (s *transactionSuite) TestTransferCrossChainAsset_SerializeDeserialize() {
 func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(RegisterProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadRegisterProducer{
-		PublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		NickName:  strconv.FormatUint(rand.Uint64(), 10),
-		Url:       strconv.FormatUint(rand.Uint64(), 10),
-		Location:  rand.Uint64(),
-		Address:   strconv.FormatUint(rand.Uint64(), 10),
+		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		NickName:     strconv.FormatUint(rand.Uint64(), 10),
+		Url:          strconv.FormatUint(rand.Uint64(), 10),
+		Location:     rand.Uint64(),
+		Address:      strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -238,7 +238,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadRegisterProducer)
 	p2 := txn2.Payload.(*payload.PayloadRegisterProducer)
 
-	s.True(bytes.Equal(p1.PublicKey, p2.PublicKey))
+	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
@@ -248,7 +248,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(CancelProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadCancelProducer{
-		PublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -262,17 +262,17 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadCancelProducer)
 	p2 := txn2.Payload.(*payload.PayloadCancelProducer)
 
-	s.True(bytes.Equal(p1.PublicKey, p2.PublicKey))
+	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
 }
 
 func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(UpdateProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadUpdateProducer{
-		PublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		NickName:  strconv.FormatUint(rand.Uint64(), 10),
-		Url:       strconv.FormatUint(rand.Uint64(), 10),
-		Location:  rand.Uint64(),
-		Address:   strconv.FormatUint(rand.Uint64(), 10),
+		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		NickName:     strconv.FormatUint(rand.Uint64(), 10),
+		Url:          strconv.FormatUint(rand.Uint64(), 10),
+		Location:     rand.Uint64(),
+		Address:      strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -286,7 +286,7 @@ func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadUpdateProducer)
 	p2 := txn2.Payload.(*payload.PayloadUpdateProducer)
 
-	s.True(bytes.Equal(p1.PublicKey, p2.PublicKey))
+	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
@@ -429,7 +429,7 @@ func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
 func (s *transactionSuite) TestTransaction_SpecificSample() {
 	// update producer transaction deserialize sample
 	byteReader := new(bytes.Buffer)
-	updateProducerByteStr := "090b0021034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c09656c615f74657374310d656c615f74657374312e6f726754b60100000000000931302e31302e302e3240a85aedec5444f8603788a0720f98e860168afcb0e82168cd1a29995a8fffba23d4ef1487b6eee4b145a660e017a5e9401c285550d2deac44b968a17c954465a600018dc8831894f8d5bcecd4b03848900d72ed756380a5bc1940f2b7368b5e3919090100ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300d414000000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141404c214698b25a1e23b5c933eb3a9f05ed83ae5fd36f8f82a90462a1d06eaac656c303f8aa1817ba7b18b5de21df1d504c86e4cc5113081bfded4088dcef2011852321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
+	updateProducerByteStr := "090b0021034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c2103c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c309656c615f74657374310d656c615f74657374312e6f726754b60100000000000931302e31302e302e3240920d8e769640b8494cfdf7c5581982c329485c8d3083db7d3079de104dc0dc650d8592a5e1d70f5c24f72b3f29b0625dc6348e375b13c3c48992d398d9f5d9ac000146f1d8002115ce89423ab29f26ede6ef1b813642cbf3c4c15b919b41d6d9f7760100ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300d414000000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141408fc0c3de6198c3ec4e9ab8a7748208d79a554c9d1ef84edec23c444495b651deb7a8796ac49e31f1d2598207d216c05496b35d7f75a22c55272223995781bb402321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
 	updateProducerByte, _ := common.HexStringToBytes(updateProducerByteStr)
 	byteReader.Write(updateProducerByte)
 	txn := &Transaction{}

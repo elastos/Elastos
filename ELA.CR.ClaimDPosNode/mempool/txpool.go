@@ -170,21 +170,21 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					producerPubKey = BytesToHexString(payload.OwnPublicKey)
 				}
 				if tx.TxType == UpdateProducer {
 					payload, ok := tx.Payload.(*PayloadUpdateProducer)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					producerPubKey = BytesToHexString(payload.OwnPublicKey)
 				}
 				if tx.TxType == CancelProducer {
 					payload, ok := tx.Payload.(*PayloadCancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					producerPubKey = BytesToHexString(payload.OwnPublicKey)
 				}
 				pool.delProducer(producerPubKey)
 
@@ -221,7 +221,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -230,7 +230,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -239,7 +239,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := pool.verifyDuplicateProducer(BytesToHexString(payload.OwnPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}

@@ -12,12 +12,13 @@ import (
 const PayloadRegisterProducerVersion byte = 0x00
 
 type PayloadRegisterProducer struct {
-	PublicKey []byte
-	NickName  string
-	Url       string
-	Location  uint64
-	Address   string
-	Signature []byte
+	OwnPublicKey  []byte
+	NodePublicKey []byte
+	NickName      string
+	Url           string
+	Location      uint64
+	Address       string
+	Signature     []byte
 }
 
 func (a *PayloadRegisterProducer) Data(version byte) []byte {
@@ -43,9 +44,14 @@ func (a *PayloadRegisterProducer) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.PublicKey)
+	err := common.WriteVarBytes(w, a.OwnPublicKey)
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], PublicKey serialize failed")
+		return errors.New("[PayloadRegisterProducer], OwnerPublicKey serialize failed")
+	}
+
+	err = common.WriteVarBytes(w, a.NodePublicKey)
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], NodePublicKey serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.NickName)
@@ -86,9 +92,14 @@ func (a *PayloadRegisterProducer) Deserialize(r io.Reader, version byte) error {
 }
 
 func (a *PayloadRegisterProducer) DeserializeUnsigned(r io.Reader, version byte) error {
-	publicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
+	ownPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
 	if err != nil {
-		return errors.New("[PayloadRegisterProducer], PublicKey deserialize failed")
+		return errors.New("[PayloadRegisterProducer], OwnPublicKey deserialize failed")
+	}
+
+	nodePublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "node public key")
+	if err != nil {
+		return errors.New("[PayloadRegisterProducer], NodePublicKey deserialize failed")
 	}
 
 	nickName, err := common.ReadVarString(r)
@@ -111,7 +122,8 @@ func (a *PayloadRegisterProducer) DeserializeUnsigned(r io.Reader, version byte)
 		return errors.New("[PayloadRegisterProducer], Address deserialize failed")
 	}
 
-	a.PublicKey = publicKey
+	a.OwnPublicKey = ownPublicKey
+	a.NodePublicKey = nodePublicKey
 	a.NickName = nickName
 	a.Url = url
 	a.Location = location

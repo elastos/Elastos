@@ -21,7 +21,7 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	result := make([]*PayloadRegisterProducer, 0)
 
 	for _, p := range c.producerVotes {
-		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+		if _, ok := illProducers[BytesToHexString(p.Payload.OwnPublicKey)]; ok {
 			continue
 		}
 		result = append(result, p.Payload)
@@ -39,7 +39,7 @@ func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
 	result := make([]*PayloadRegisterProducer, 0)
 
 	for _, p := range c.producerVotes {
-		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+		if _, ok := illProducers[BytesToHexString(p.Payload.OwnPublicKey)]; ok {
 			continue
 		}
 		if c.currentBlockHeight-p.RegHeight+1 < ProducerConfirmations {
@@ -68,7 +68,7 @@ func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer,
 			ivalue := producersInfo[i].Vote
 			jvalue := producersInfo[j].Vote
 			if ivalue == jvalue {
-				return bytes.Compare(producersInfo[i].Payload.PublicKey, producersInfo[j].Payload.PublicKey) > 0
+				return bytes.Compare(producersInfo[i].Payload.OwnPublicKey, producersInfo[j].Payload.OwnPublicKey) > 0
 			}
 			return ivalue > jvalue
 		})
@@ -76,7 +76,7 @@ func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer,
 		producers := make([]*PayloadRegisterProducer, 0)
 		illProducers := c.getIllegalProducers()
 		for _, p := range producersInfo {
-			if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+			if _, ok := illProducers[BytesToHexString(p.Payload.OwnPublicKey)]; ok {
 				continue
 			}
 			producers = append(producers, p.Payload)
