@@ -48,16 +48,16 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	chainStore := &blockchain.ChainStoreMock{
 		RegisterProducers: []*payload.PayloadRegisterProducer{
 			{
-				OwnPublicKey: arbitrators[0],
+				OwnerPublicKey: arbitrators[0],
 			},
 			{
-				OwnPublicKey: arbitrators[1],
+				OwnerPublicKey: arbitrators[1],
 			},
 			{
-				OwnPublicKey: arbitrators[2],
+				OwnerPublicKey: arbitrators[2],
 			},
 			{
-				OwnPublicKey: arbitrators[3],
+				OwnerPublicKey: arbitrators[3],
 			},
 		},
 	}
@@ -70,7 +70,7 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	s.Error(err, "arbitrators count does not match config value")
 
 	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
-		&payload.PayloadRegisterProducer{OwnPublicKey: arbitrators[4]},
+		&payload.PayloadRegisterProducer{OwnerPublicKey: arbitrators[4]},
 	)
 	producers, err = s.Version.GetProducersDesc()
 	s.NoError(err)

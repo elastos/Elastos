@@ -122,7 +122,7 @@ func RegisterUpdateProducerType(L *lua.LState) {
 
 // Constructor
 func newUpdateProducer(L *lua.LState) int {
-	ownPublicKeyStr := L.ToString(1)
+	ownerPublicKeyStr := L.ToString(1)
 	nodePublicKeyStr := L.ToString(2)
 	nickName := L.ToString(3)
 	url := L.ToString(4)
@@ -130,7 +130,7 @@ func newUpdateProducer(L *lua.LState) int {
 	address := L.ToString(6)
 	client := checkClient(L, 7)
 
-	ownPublicKey, err := common.HexStringToBytes(ownPublicKeyStr)
+	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
 	if err != nil {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
@@ -142,12 +142,12 @@ func newUpdateProducer(L *lua.LState) int {
 	}
 
 	updateProducer := &payload.PayloadUpdateProducer{
-		OwnPublicKey:  []byte(ownPublicKey),
-		NodePublicKey: []byte(nodePublicKey),
-		NickName:      nickName,
-		Url:           url,
-		Location:      uint64(location),
-		Address:       address,
+		OwnerPublicKey: []byte(ownerPublicKey),
+		NodePublicKey:  []byte(nodePublicKey),
+		NickName:       nickName,
+		Url:            url,
+		Location:       uint64(location),
+		Address:        address,
 	}
 
 	upSignBuf := new(bytes.Buffer)
@@ -209,7 +209,7 @@ func RegisterRegisterProducerType(L *lua.LState) {
 
 // Constructor
 func newRegisterProducer(L *lua.LState) int {
-	ownPublicKeyStr := L.ToString(1)
+	ownerPublicKeyStr := L.ToString(1)
 	nodePublicKeyStr := L.ToString(2)
 	nickName := L.ToString(3)
 	url := L.ToString(4)
@@ -217,7 +217,7 @@ func newRegisterProducer(L *lua.LState) int {
 	address := L.ToString(6)
 	client := checkClient(L, 7)
 
-	ownPublicKey, err := common.HexStringToBytes(ownPublicKeyStr)
+	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
 	if err != nil {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
@@ -229,12 +229,12 @@ func newRegisterProducer(L *lua.LState) int {
 	}
 
 	registerProducer := &payload.PayloadRegisterProducer{
-		OwnPublicKey:  []byte(ownPublicKey),
-		NodePublicKey: []byte(nodePublicKey),
-		NickName:      nickName,
-		Url:           url,
-		Location:      uint64(location),
-		Address:       address,
+		OwnerPublicKey: []byte(ownerPublicKey),
+		NodePublicKey:  []byte(nodePublicKey),
+		NickName:       nickName,
+		Url:            url,
+		Location:       uint64(location),
+		Address:        address,
 	}
 
 	rpSignBuf := new(bytes.Buffer)
@@ -306,7 +306,7 @@ func newCancelProducer(L *lua.LState) int {
 		os.Exit(1)
 	}
 	cancelProducer := &payload.PayloadCancelProducer{
-		OwnPublicKey: []byte(publicKey),
+		OwnerPublicKey: []byte(publicKey),
 	}
 
 	cpSignBuf := new(bytes.Buffer)

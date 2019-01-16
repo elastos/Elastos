@@ -220,11 +220,11 @@ func (s *transactionSuite) TestTransferCrossChainAsset_SerializeDeserialize() {
 func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(RegisterProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadRegisterProducer{
-		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		NickName:     strconv.FormatUint(rand.Uint64(), 10),
-		Url:          strconv.FormatUint(rand.Uint64(), 10),
-		Location:     rand.Uint64(),
-		Address:      strconv.FormatUint(rand.Uint64(), 10),
+		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		NickName:       strconv.FormatUint(rand.Uint64(), 10),
+		Url:            strconv.FormatUint(rand.Uint64(), 10),
+		Location:       rand.Uint64(),
+		Address:        strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -238,7 +238,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadRegisterProducer)
 	p2 := txn2.Payload.(*payload.PayloadRegisterProducer)
 
-	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
+	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
@@ -248,7 +248,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(CancelProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadCancelProducer{
-		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -262,17 +262,17 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadCancelProducer)
 	p2 := txn2.Payload.(*payload.PayloadCancelProducer)
 
-	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
+	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
 }
 
 func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(UpdateProducer), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.PayloadUpdateProducer{
-		OwnPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		NickName:     strconv.FormatUint(rand.Uint64(), 10),
-		Url:          strconv.FormatUint(rand.Uint64(), 10),
-		Location:     rand.Uint64(),
-		Address:      strconv.FormatUint(rand.Uint64(), 10),
+		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		NickName:       strconv.FormatUint(rand.Uint64(), 10),
+		Url:            strconv.FormatUint(rand.Uint64(), 10),
+		Location:       rand.Uint64(),
+		Address:        strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -286,7 +286,7 @@ func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	p1 := txn.Payload.(*payload.PayloadUpdateProducer)
 	p2 := txn2.Payload.(*payload.PayloadUpdateProducer)
 
-	s.True(bytes.Equal(p1.OwnPublicKey, p2.OwnPublicKey))
+	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
