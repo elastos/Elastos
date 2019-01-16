@@ -745,6 +745,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
 		return err
 	}
 
+	// Rollback state memory DB
+	b.state.RollbackTo(block.Height - 1)
+
 	// Put block in the side chain cache.
 	node.InMainChain = false
 	b.BlockCache[*node.Hash] = block
@@ -783,6 +786,9 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 	if err != nil {
 		return err
 	}
+
+	// Synchronize state memory DB
+	b.state.ProcessTransactions(block.Transactions, block.Height)
 
 	// Add the new node to the memory main chain indices for faster
 	// lookups.
