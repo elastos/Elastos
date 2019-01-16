@@ -226,7 +226,7 @@ const zh = {
     'suggestion.sort': '排序方式',
     'suggestion.likes': '点赞量',
     'suggestion.views': '浏览量',
-    'suggestion.activeness': '活跃度',
+    'suggestion.activeness': '欢迎度',
     'suggestion.owner': '提议人',
     'suggestion.dateAdded': '添加日期',
     'suggestion.postedBy': '发布者',
