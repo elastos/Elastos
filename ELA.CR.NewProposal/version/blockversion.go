@@ -145,7 +145,7 @@ func (b *BlockVersionMain) GetProducersDesc() ([][]byte, error) {
 
 	result := make([][]byte, 0)
 	for i := uint32(0); i < uint32(len(producersInfo)); i++ {
-		result = append(result, producersInfo[i].PublicKey)
+		result = append(result, producersInfo[i].OwnPublicKey)
 	}
 	return result, nil
 }

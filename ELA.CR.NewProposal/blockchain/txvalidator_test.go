@@ -412,11 +412,11 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
 	rpPayload := &payload.PayloadRegisterProducer{
-		PublicKey: publicKey1,
-		NickName:  "nickname 1",
-		Url:       "http://www.elastos_test.com",
-		Location:  1,
-		Address:   "127.0.0.1:20338",
+		OwnPublicKey: publicKey1,
+		NickName:     "nickname 1",
+		Url:          "http://www.elastos_test.com",
+		Location:     1,
+		Address:      "127.0.0.1:20338",
 	}
 	rpSignBuf := new(bytes.Buffer)
 	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
@@ -443,23 +443,23 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	s.NoError(err)
 
 	// Give an invalid public key in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = errPublicKey
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnPublicKey = errPublicKey
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid public key")
 
 	// Invalidates the signature in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey2
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnPublicKey = publicKey2
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
 	// Give an invalid url in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey1
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnPublicKey = publicKey1
 	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
 	err = CheckRegisterProducerTransaction(txn)
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
-	rpPayload.PublicKey = publicKey1
+	rpPayload.OwnPublicKey = publicKey1
 	rpPayload.Url = "www.test.com"
 	rpSignBuf = new(bytes.Buffer)
 	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
@@ -598,11 +598,11 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
 	updatePayload := &payload.PayloadUpdateProducer{
-		PublicKey: publicKey1,
-		NickName:  "",
-		Url:       "",
-		Location:  1,
-		Address:   "",
+		OwnPublicKey: publicKey1,
+		NickName:     "",
+		Url:          "",
+		Location:     1,
+		Address:      "",
 	}
 	txn.Payload = updatePayload
 
@@ -620,13 +620,13 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Ip has invalid string length.")
 
 	updatePayload.Address = "127.0.0.1:20338"
-	updatePayload.PublicKey = errPublicKey
+	updatePayload.OwnPublicKey = errPublicKey
 	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid public key in payload")
 
-	updatePayload.PublicKey = publicKey2
+	updatePayload.OwnPublicKey = publicKey2
 	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid signature in payload")
 
-	updatePayload.PublicKey = publicKey1
+	updatePayload.OwnPublicKey = publicKey1
 	updateSignBuf := new(bytes.Buffer)
 	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
 	s.NoError(err)
@@ -649,7 +649,7 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	txn := new(types.Transaction)
 	txn.TxType = types.CancelProducer
 	cancelPayload := &payload.PayloadCancelProducer{
-		PublicKey: publicKey1,
+		OwnPublicKey: publicKey1,
 	}
 	txn.Payload = cancelPayload
 
@@ -658,10 +658,10 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	cancelPayload.PublicKey = errPublicKey
+	cancelPayload.OwnPublicKey = errPublicKey
 	s.EqualError(CheckCancelProducerTransaction(txn), "invalid public key in payload")
 
-	cancelPayload.PublicKey = publicKey2
+	cancelPayload.OwnPublicKey = publicKey2
 	s.EqualError(CheckCancelProducerTransaction(txn), "invalid signature in payload")
 }
 
