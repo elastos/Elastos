@@ -223,6 +223,42 @@ func (s *State) IsUnusedNickname(nickname string) bool {
 	return !ok
 }
 
+// IsDPOSTransaction returns if a transaction will change the producers and
+// votes state.
+func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+
+	switch tx.TxType {
+	// Transactions will changes the producers state.
+	case types.RegisterProducer, types.UpdateProducer, types.CancelProducer,
+		types.IllegalProposalEvidence, types.IllegalVoteEvidence,
+		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
+		return true
+
+	// Transactions will change the votes state.
+	case types.TransferAsset:
+		if tx.Version >= types.TxVersion09 {
+			// Votes to producers.
+			for _, output := range tx.Outputs {
+				if output.Type == types.OTVote {
+					return true
+				}
+			}
+
+			// Cancel votes.
+			for _, input := range tx.Inputs {
+				_, ok := s.votes[input.ReferKey()]
+				if ok {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
 // ProcessTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update producers
 // state and votes according to transactions content.
