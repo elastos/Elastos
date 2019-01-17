@@ -1,6 +1,7 @@
 package state
 
 import (
+	"crypto/rand"
 	"fmt"
 	"testing"
 
@@ -58,6 +59,23 @@ func mockVoteTx(publicKeys [][]byte) *types.Transaction {
 		Version: types.TxVersion09,
 		TxType:  types.TransferAsset,
 		Outputs: []*types.Output{output},
+	}
+}
+
+// mockVoteTx creates a cancel vote transaction with the previous vote
+// transaction.
+func mockCancelVoteTx(tx *types.Transaction) *types.Transaction {
+	inputs := make([]*types.Input, len(tx.Outputs))
+	for i := range tx.Outputs {
+		inputs[i] = &types.Input{
+			Previous: *types.NewOutPoint(tx.Hash(), uint16(i)),
+		}
+	}
+
+	return &types.Transaction{
+		Version: types.TxVersion09,
+		TxType:  types.TransferAsset,
+		Inputs:  inputs,
 	}
 }
 
@@ -637,6 +655,60 @@ func TestState_IsUnusedNickname(t *testing.T) {
 	tx = mockIllegalBlockTx(producers[2].PublicKey)
 	state.ProcessIllegalBlockEvidence(tx.Payload)
 	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-3")) {
+		t.FailNow()
+	}
+}
+
+func TestState_IsDPOSTransaction(t *testing.T) {
+	state := NewState()
+
+	producer := &payload.ProducerInfo{
+		PublicKey: make([]byte, 33),
+		NickName:  "Producer",
+	}
+	rand.Read(producer.PublicKey)
+
+	tx := mockRegisterProducerTx(producer)
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
+		t.FailNow()
+	}
+	state.ProcessTransactions([]*types.Transaction{tx}, 1)
+	for i := uint32(1); i < 10; i++ {
+		state.ProcessTransactions(nil, i)
+	}
+
+	tx = mockUpdateProducerTx(producer)
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
+		t.FailNow()
+	}
+
+	tx = mockCancelProducerTx(producer.PublicKey)
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
+		t.FailNow()
+	}
+
+	tx = mockVoteTx([][]byte{producer.PublicKey})
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
+		t.FailNow()
+	}
+	state.ProcessTransactions([]*types.Transaction{tx}, 10)
+	p := state.getProducer(producer.PublicKey)
+	if !assert.Equal(t, common.Fixed64(100), p.votes) {
+		t.FailNow()
+	}
+
+	tx = mockCancelVoteTx(tx)
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
+		t.FailNow()
+	}
+	state.ProcessTransactions([]*types.Transaction{tx}, 11)
+	p = state.getProducer(producer.PublicKey)
+	if !assert.Equal(t, common.Fixed64(0), p.votes) {
+		t.FailNow()
+	}
+
+	tx = mockIllegalBlockTx(producer.PublicKey)
+	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
 		t.FailNow()
 	}
 }
