@@ -202,8 +202,6 @@ namespace Elastos {
 				return ELA_IDCHAIN_ADDRESS;
 			} else if (signType == ELA_DESTROY) {
 				return ELA_DESTROY_ADDRESS;
-			} else if (signType == ELA_RETURN_DEPOSIT) {
-				return ELA_PREFIX_DEPOSIT;
 			} else {
 				ParamChecker::checkCondition(true, Error::SignType, "Unknown sign type");
 			}

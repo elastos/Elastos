@@ -63,9 +63,7 @@ namespace Elastos {
 
 			std::string address() const;
 
-			std::string keyToAddress(const int signType) const;
-
-			UInt168 keyToUInt168BySignType(const int signType);
+			std::string keyToAddress(int signType) const;
 
 			std::string keyToRedeemScript(int signType) const;
 

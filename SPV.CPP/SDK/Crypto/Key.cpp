@@ -178,28 +178,24 @@ namespace Elastos {
 			return keyToAddress(ELA_STANDARD);
 		}
 
-		std::string Key::keyToAddress(const int signType) const {
+		std::string Key::keyToAddress(int signType) const {
+			int signTypeBak = signType;
+
+			if (signType == ELA_RETURN_DEPOSIT) {
+				signType = ELA_STANDARD;
+			}
+
 			std::string redeedScript = keyToRedeemScript(signType);
 
 			UInt168 hash = Utils::codeToProgramHash(redeedScript);
 
+			if (signTypeBak == ELA_RETURN_DEPOSIT) {
+				hash.u8[0] = ELA_PREFIX_DEPOSIT;
+			}
+
 			std::string address = Utils::UInt168ToAddress(hash);
 
 			return address;
-		}
-
-		UInt168 Key::keyToUInt168BySignType(const int signType) {
-			UInt168 uInt168 = hashTo168();
-			if (signType == ELA_STANDARD) {
-				uInt168.u8[0] = ELA_STAND_ADDRESS;
-			} else if (signType == ELA_MULTISIG) {
-				uInt168.u8[0] = ELA_MULTISIG_ADDRESS;
-			} else if (signType == ELA_CROSSCHAIN) {
-				uInt168.u8[0] = ELA_CROSSCHAIN_ADDRESS;
-			} else if (signType == ELA_IDCHAIN) {
-				uInt168.u8[0] = ELA_IDCHAIN_ADDRESS;
-			}
-			return uInt168;
 		}
 
 		const UInt160 Key::hashTo160() {
