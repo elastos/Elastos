@@ -50,10 +50,10 @@ func (sl *SessionList) NewSession(conn *websocket.Conn) *Session {
 }
 
 func (sl *SessionList) CloseSession(session *Session) {
-	sl.RLock()
+	sl.Lock()
 	delete(sl.list, session.id)
 	session.conn.Close()
-	sl.RUnlock()
+	sl.Unlock()
 }
 
 func (sl *SessionList) ForEach(closure func(*Session)) {
