@@ -130,7 +130,9 @@ func (o *VoteOutput) Validate() error {
 	if o == nil {
 		return errors.New("vote output payload is nil")
 	}
-
+	if o.Version != byte(0) {
+		return errors.New("invalid vote version")
+	}
 	typeMap := make(map[VoteType]struct{})
 	for _, content := range o.Contents {
 		if _, exists := typeMap[content.VoteType]; exists {

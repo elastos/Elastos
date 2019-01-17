@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/rand"
 	"sync"
@@ -139,38 +140,20 @@ func (n *network) UpdateProducersInfo() {
 }
 
 func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
-	result = make(map[string]p2p.PeerAddr)
 	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
+	result = make(map[string]p2p.PeerAddr)
 	for _, p := range producers {
-		pid, err := n.convertToPID(p.Info().PublicKey)
-		if err != nil {
-			log.Warn(err)
+		if len(p.Info().OwnerPublicKey) != 33 {
+			log.Warn("[getProducersConnectionInfo] invalid public key")
 			continue
 		}
-		result[common.BytesToHexString(p.Info().PublicKey)] =
-			p2p.PeerAddr{PID: *pid, Addr: p.Info().Address}
-	}
-
-	for _, v := range blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators() {
-		pid, err := n.convertToPID(v.PublicKey)
-		if err != nil {
-			log.Warn(err)
-			continue
-		}
-		result[common.BytesToHexString(v.PublicKey)] = p2p.PeerAddr{PID: *pid, Addr: v.IP}
+		pid := peer.PID{}
+		copy(pid[:], p.Info().OwnerPublicKey)
+		result[hex.EncodeToString(p.Info().OwnerPublicKey)] =
+			p2p.PeerAddr{PID: pid, Addr: p.Info().Address}
 	}
 
 	return result
-}
-
-func (n *network) convertToPID(pubKey []byte) (*peer.PID, error) {
-	if len(pubKey) != 33 {
-		return nil, errors.New("[getProducersConnectionInfo] invalid public key")
-	}
-
-	pid := &peer.PID{}
-	copy(pid[:], pubKey)
-	return pid, nil
 }
 
 func (n *network) Stop() error {

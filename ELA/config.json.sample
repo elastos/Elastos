@@ -32,6 +32,7 @@
       "MinTxFee": 100,
       "ActiveNet": "TestNet"
     },
+    "VoteHeight": 100,
     "EnableArbiter": false,
     "ArbiterConfiguration": {
       "Name": "",
