@@ -220,9 +220,20 @@ func (a *Arbitrators) GetActiveDposPeers() (result map[string]string) {
 	return result
 }
 
+func (a *Arbitrators) TryEnterEmergency(blockTime uint32) (result bool) {
+	result = a.emergency.TryEnterEmergency(blockTime)
+
+	if result {
+		if err := a.ForceChange(); err != nil {
+			panic("initialize crc arbitrators error when enter emergency state, details: " + err.Error())
+		}
+	}
+	return result
+}
+
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 
-	if !a.emergency.TryEnterEmergency(block.Timestamp) {
+	if !a.TryEnterEmergency(block.Timestamp) {
 		if a.isNewElection() {
 			if err := a.changeCurrentArbitrators(); err != nil {
 				log.Error("Change current arbitrators error: ", err)
@@ -239,10 +250,6 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 		} else {
 			a.DutyChangedCount++
 			a.saveDposRelated()
-		}
-	} else {
-		if err := a.ForceChange(); err != nil {
-			panic("initialize crc arbitrators error when enter emergency state")
 		}
 	}
 

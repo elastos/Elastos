@@ -63,7 +63,13 @@ func (v *view) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) 
 }
 
 func (v *view) TryChangeView(viewOffset *uint32) bool {
-	if time.Now().After(v.viewStartTime.Add(v.signTolerance)) {
+
+	now := time.Now()
+	if now.After(v.viewStartTime.Add(v.signTolerance)) {
+		if v.arbitrators.TryEnterEmergency(uint32(now.Unix())) {
+			log.Info("[TryChangeView] arbitrators emergency started")
+			return false
+		}
 		log.Info("[TryChangeView] succeed")
 		v.ChangeView(viewOffset)
 		return true
