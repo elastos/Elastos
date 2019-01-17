@@ -121,7 +121,9 @@ namespace Elastos {
 
 		class GroupedAssetTransactions {
 		public:
-			GroupedAssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount);
+			GroupedAssetTransactions(Lockable *lockable, const std::vector<Asset> &assetArray,
+									 const std::vector<TransactionPtr> &txns,
+									 const SubAccountPtr &subAccount);
 
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
 

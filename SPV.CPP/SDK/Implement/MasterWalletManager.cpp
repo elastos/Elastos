@@ -377,7 +377,7 @@ namespace Elastos {
 #if defined(__ANDROID__)
 			Log::setPattern("%v");
 #else
-			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %n: %v");
+			Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 #endif
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));

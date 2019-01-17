@@ -32,11 +32,9 @@ namespace Elastos {
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Listener> &listener) :
 				_subAccount(subAccount),
-				_transactions(this, subAccount) {
+				_transactions(this, assetArray, txArray, subAccount) {
 
 			_blockHeight = 0;
-
-			_transactions.UpdateAssets(assetArray);
 
 			_subAccount->InitAccount(txArray, this);
 
@@ -525,7 +523,6 @@ namespace Elastos {
 		}
 
 		void TransactionHub::UpdateBalance() {
-			_subAccount->ClearUsedAddresses();
 			_transactions.ForEach([this](const UInt256 &key, const AssetTransactionsPtr &value) {
 				value->UpdateBalance(_blockHeight);
 			});

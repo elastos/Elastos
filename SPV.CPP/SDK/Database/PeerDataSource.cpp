@@ -56,7 +56,7 @@ namespace Elastos {
 
 			CMBlock addr;
 			addr.SetMemFixed(&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
 #else
 			std::string str = Utils::encodeHex(addr);
@@ -125,7 +125,7 @@ namespace Elastos {
 					// address
 					const uint8_t *paddr = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
 					memcpy(peer.address.u8, paddr, len);
 #else

@@ -70,6 +70,7 @@ namespace Elastos {
 		}
 
 		void AssetTransactions::Append(const TransactionPtr &transaction) {
+			_allTx.Insert(transaction);
 			_transactions.push_back(transaction);
 			SortTransaction();
 		}
@@ -125,7 +126,7 @@ namespace Elastos {
 			_spentOutputs.Clear();
 			_invalidTx.Clear();
 			_pendingTx.Clear();
-
+			_subAccount->ClearUsedAddresses();
 		}
 
 		void AssetTransactions::UpdateBalance(uint32_t blockHeight) {
@@ -666,7 +667,6 @@ namespace Elastos {
 					// TODO: verify signatures when possible
 					// TODO: handle tx replacement with input sequence numbers
 					//       (for now, replacements appear invalid until confirmation)
-					_allTx.Insert(transaction);
 					Append(transaction);
 					UpdateBalance(blockHeight);
 					wasAdded = true;
@@ -819,9 +819,18 @@ namespace Elastos {
 			return needsUpdate;
 		}
 
-		GroupedAssetTransactions::GroupedAssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount) :
+		GroupedAssetTransactions::GroupedAssetTransactions(Lockable *lockable, const std::vector<Asset> &assetArray,
+														   const std::vector<TransactionPtr> &txns,
+														   const SubAccountPtr &subAccount) :
 				_lockable(lockable),
 				_subAccount(subAccount) {
+
+			UpdateAssets(assetArray);
+
+			for (size_t i = 0; i < txns.size(); ++i) {
+				if (!txns[i]->isSigned() || WalletContainsTx(txns[i])) continue;
+				Append(txns[i]);
+			}
 
 		}
 
@@ -960,9 +969,6 @@ namespace Elastos {
 
 				needsUpdate = false;
 				for (size_t i = 0; i < txHashes.size(); ++i) {
-					if ("f0336e385e4a0fbd60d7b67fcf30c1f8833ce10a181b8b0d83845a38a81768ee" == Utils::UInt256ToString(txHashes[i], true)) {
-						Log::debug("updating tx {}", Utils::UInt256ToString(txHashes[i], true));
-					}
 					const TransactionPtr &tx = it->second->GetExistTransaction(txHashes[i]);
 					if (!tx || (tx->getBlockHeight() == blockHeight && tx->getTimestamp() == timestamp))
 						continue;

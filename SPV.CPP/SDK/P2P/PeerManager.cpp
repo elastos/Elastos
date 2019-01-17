@@ -1110,7 +1110,7 @@ namespace Elastos {
 						peer->scheduleDisconnect(PROTOCOL_TIMEOUT);
 					}
 
-					if (_wallet->getTransactionAmountSent(tx) > 0 &&
+					if (_syncSucceeded && _wallet->getTransactionAmountSent(tx) > 0 &&
 						_wallet->transactionIsValid(tx)) {
 						addTxToPublishList(tx, Peer::PeerPubTxCallback());  // add valid send tx to mempool
 					}
@@ -1300,7 +1300,7 @@ namespace Elastos {
 						peer->warn(
 							"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 							_fpRate, _lastBlock->getHeight() + 1 - _filterUpdateHeight);
-//						peer->Disconnect();
+						peer->Disconnect();
 					} else if (_lastBlock->getHeight() + 500 < peer->GetLastBlock() &&
 							   _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
 						updateBloomFilter(); // rebuild bloom filter when it starts to degrade

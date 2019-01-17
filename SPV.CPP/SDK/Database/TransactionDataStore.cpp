@@ -48,7 +48,7 @@ namespace Elastos {
 					ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 												 "Prepare sql " + ss.str());
 
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 					_sqlite->bindBlob(stmt, 1, transactionEntity.buff, nullptr);
 #else
 					std::string str = Utils::encodeHex(transactionEntity.buff);
@@ -85,7 +85,7 @@ namespace Elastos {
 											 "Prepare sql " + ss.str());
 
 				_sqlite->bindText(stmt, 1, transactionEntity.txHash, nullptr);
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 				_sqlite->bindBlob(stmt, 2, transactionEntity.buff, nullptr);
 #else
 				std::string str = Utils::encodeHex(transactionEntity.buff);
@@ -169,7 +169,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 1);
 
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
@@ -261,7 +261,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 0);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 0);
 
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);

@@ -116,7 +116,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 2);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 2);
 
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
@@ -159,7 +159,7 @@ namespace Elastos {
 				const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 				size_t len = (size_t) _sqlite->columnBytes(stmt, 1);
 
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 				CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
@@ -191,7 +191,7 @@ namespace Elastos {
 
 			_sqlite->bindText(stmt, 1, asset.AssetID, nullptr);
 			_sqlite->bindInt64(stmt, 2, asset.Amount);
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 3, asset.Asset, nullptr);
 #else
 			std::string str = Utils::encodeHex(asset.Asset);
@@ -224,7 +224,7 @@ namespace Elastos {
 										 "Prepare sql " + ss.str());
 
 			_sqlite->bindInt64(stmt, 1, asset.Amount);
-#ifdef NDEBUG
+#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 2, asset.Asset, nullptr);
 #else
 			std::string str = Utils::encodeHex(asset.Asset);

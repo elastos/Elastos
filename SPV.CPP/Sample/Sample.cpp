@@ -372,7 +372,7 @@ int main(int argc, char *argv[]) {
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
 
 	logger->set_level(spdlog::level::level_enum::debug);
-	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n: %v");
+	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 
 	MasterWalletManager *manager = new MasterWalletManager(rootPath);
 	if (manager == nullptr) {
