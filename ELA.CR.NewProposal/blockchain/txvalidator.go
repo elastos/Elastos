@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -113,6 +114,12 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	case IllegalSidechainEvidence:
 		if err := b.checkSidechainIllegalEvidenceTransaction(txn); err != nil {
 			log.Warn("[CheckSidechainIllegalEvidenceTransaction],", err)
+			return ErrTransactionPayload
+		}
+
+	case InactiveArbitrators:
+		if err := b.checkInactiveArbitrators(txn); err != nil {
+			log.Warn("[checkInactiveArbitrators],", err)
 			return ErrTransactionPayload
 		}
 
@@ -286,7 +293,7 @@ func checkTransactionInput(txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() || txn.IsSidechainIllegalDataTx() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("illegal transactions must has no input")
 		}
@@ -351,7 +358,7 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() || txn.IsSidechainIllegalDataTx() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -470,24 +477,32 @@ func checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 }
 
 func checkAttributeProgram(blockHeight uint32, tx *Transaction) error {
-	// Coinbase and illegal transactions do not check attribute and program
-	if tx.IsCoinBaseTx() {
+	switch tx.TxType {
+	case CoinBase:
+		// Coinbase and illegal transactions do not check attribute and program
 		return DefaultLedger.HeightVersions.CheckTxHasNoPrograms(blockHeight, tx)
-	}
-
-	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsSidechainIllegalDataTx() {
+	case IllegalSidechainEvidence:
+		fallthrough
+	case IllegalProposalEvidence:
+		fallthrough
+	case IllegalVoteEvidence:
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
 			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
 		}
 		return nil
-	}
-
-	if tx.IsIllegalBlockTx() {
+	case IllegalBlockEvidence:
 		if len(tx.Programs) != 1 {
 			return errors.New("illegal block transactions should have one and only one program")
 		}
 		if len(tx.Attributes) != 0 {
 			return errors.New("illegal block transactions should have no programs")
+		}
+	case InactiveArbitrators:
+		if len(tx.Programs) != 1 {
+			return errors.New("inactive arbitrators transactions should have one and only one program")
+		}
+		if len(tx.Attributes) != 1 {
+			return errors.New("inactive arbitrators transactions should have one and only one arbitrator")
 		}
 	}
 
@@ -902,6 +917,79 @@ func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) 
 
 	//todo get arbitrators by payload.Height and verify each sign in signs
 
+	return nil
+}
+
+func (b *BlockChain) checkInactiveArbitrators(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.InactiveArbitrators)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	crcArbitrators := map[string]interface{}{}
+	for _, v := range DefaultLedger.Arbitrators.GetCRCArbitrators() {
+		crcArbitrators[common.BytesToHexString(v.PublicKey)] = nil
+	}
+
+	arbitrators := map[string]interface{}{}
+	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
+		arbitrators[common.BytesToHexString(v)] = nil
+	}
+
+	if _, exists := crcArbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
+		return errors.New("sponsor is not belong to CRC arbitrators")
+	}
+
+	for _, v := range p.Arbitrators {
+		if _, exists := crcArbitrators[common.BytesToHexString(v)]; exists {
+			return errors.New("inactive arbitrator should belong to CRC arbitrators")
+		}
+		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists {
+			return errors.New("inactive arbitrator is not belong to CRC arbitrators")
+		}
+	}
+
+	signedData := new(bytes.Buffer)
+	if err := p.SerializeUnsigned(signedData, payload.PayloadInactiveArbitratorsVersion); err != nil {
+		return err
+	}
+	sponsorPk, err := crypto.DecodePoint(p.Sponsor)
+	if err != nil {
+		return err
+	}
+	if err := crypto.Verify(*sponsorPk, signedData.Bytes(), p.Sign); err != nil {
+		return err
+	}
+
+	if err := b.checkInactiveArbitratorsSignatures(txn.Programs[0], crcArbitrators); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkInactiveArbitratorsSignatures(program *program.Program, crcArbitrators map[string]interface{}) error {
+	code := program.Code
+	// Get N parameter
+	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
+	// Get M parameter
+	m := int(code[0]) - crypto.PUSH1 + 1
+
+	crcArbitratorsCount := len(crcArbitrators)
+	minSignCount := crcArbitratorsCount * 2 / 3
+	if m < 1 || m > n || n != crcArbitratorsCount || m <= minSignCount {
+		return errors.New("invalid multi sign script code")
+	}
+	publicKeys, err := crypto.ParseMultisigScript(code)
+	if err != nil {
+		return err
+	}
+
+	for _, pk := range publicKeys {
+		if _, exists := crcArbitrators[common.BytesToHexString(pk)]; !exists {
+			return errors.New("invalid multi sign public key")
+		}
+	}
 	return nil
 }
 
