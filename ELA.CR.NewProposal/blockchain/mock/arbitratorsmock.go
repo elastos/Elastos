@@ -31,6 +31,10 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) TryEnterEmergency(blockTime uint32) bool {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbitratorParams {
 	panic("implement me")
 }
