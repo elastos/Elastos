@@ -25,11 +25,12 @@ export default class extends Base {
     return await this.model.save(doc)
   }
 
-  public async list(param: any): Promise<Document> {
-    // TODO: sort by likes, created, activeness
+  public async list(param: any): Promise<Object> {
+    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search'])
     const cursor = this.model.getDBInstance()
-      .find(_.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search']))
+      .find(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+    const totalCursor = this.model.getDBInstance().find(query).count()
 
     if (param.sortBy) {
       const sortObject = {}
@@ -43,8 +44,13 @@ export default class extends Base {
       cursor.skip(results * (page - 1)).limit(results)
     }
 
-    const result = await cursor
-    return result
+    const list = await cursor
+    const total = await totalCursor
+
+    return {
+      list,
+      total,
+    }
   }
 
   public async show(param: any): Promise<Document> {

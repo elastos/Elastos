@@ -35,7 +35,7 @@ export default class extends Base {
       const currentUserId = new ObjectId(param.profileListFor)
       // make sure this is the logged in user
       if (this.session.userId !== currentUserId.toString()) {
-        throw 'submission.list API - profileListFor does not match session.userId'
+        throw 'suggestion.list API - profileListFor does not match session.userId'
       }
 
       param.$or = []
@@ -50,12 +50,8 @@ export default class extends Base {
       }
     }
 
-    const list = await service.list(param)
-    const total = await service.getDBModel('Suggestion').count()
+    const result = await service.list(param)
 
-    return this.result(1, {
-      list,
-      total
-    })
+    return this.result(1, result)
   }
 }

@@ -168,7 +168,7 @@ export default class extends StandardPage {
     let result = loadingNode
     if (!loading) {
       if (_.isEmpty(dataList)) {
-        result = <div className="center">{I18N.get('suggestion.befirst')}</div>
+        result = <div className="center">{I18N.get('suggestion.nodata')}</div>
       } else {
         result = _.map(dataList, data => this.renderItem(data))
       }
