@@ -34,7 +34,7 @@ func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
 
 	result := make([][]byte, resultCount)
 	for i := uint32(0); i < resultCount; i++ {
-		result[i] = producers[i].Info().PublicKey
+		result[i] = producers[i].Info().NodePublicKey
 	}
 	return result, nil
 }
@@ -53,7 +53,7 @@ func (b *blockV2) GetCandidatesDesc() ([][]byte, error) {
 
 	result := make([][]byte, 0)
 	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.Parameters.ArbiterConfiguration.CandidatesCount; i++ {
-		result = append(result, producers[i].Info().PublicKey)
+		result = append(result, producers[i].Info().NodePublicKey)
 	}
 	return result, nil
 }

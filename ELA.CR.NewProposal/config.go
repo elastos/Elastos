@@ -146,4 +146,9 @@ var configTemplate = config.Configuration{
 		CandidatesCount:        0,
 		MajorityCount:          0,
 	},
+	RpcConfiguration : config.RpcConfiguration{
+		User:       "",
+		Pass:       "" ,
+		WhiteIpList:[]string{"127.0.0.1"},
+	},
 }

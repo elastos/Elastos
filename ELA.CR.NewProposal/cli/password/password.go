@@ -43,25 +43,25 @@ func GetConfirmedPassword() ([]byte, error) {
 	return first, nil
 }
 
-// GetPassword gets node's wallet password from command line or user input
-func GetAccountPassword() ([]byte, error) {
-	var passwd []byte
+// GetFlagPassword gets node's wallet password from command line or user input
+func GetFlagPassword() ([]byte, error) {
+	var password []byte
 	var err error
 	if len(os.Args) == 1 {
-		passwd, err = GetPassword()
+		password, err = GetPassword()
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		var pstr string
-		flag.StringVar(&pstr, "p", "", "wallet password")
+		var p string
+		flag.StringVar(&p, "p", "", "wallet password")
 		flag.Parse()
-		if pstr == "" {
-			fmt.Println("Invaild parameter, use '-p <password>' to specify a not nil wallet password.")
+		if p == "" {
+			fmt.Println("Invalid parameter, use '-p <password>' to specify a not nil wallet password.")
 			os.Exit(1)
 		}
-		passwd = []byte(pstr)
+		password = []byte(p)
 	}
 
-	return passwd, nil
+	return password, nil
 }

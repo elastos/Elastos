@@ -18,14 +18,15 @@ local fee = 0.001
 
 -- deposit params
 local deposit_address = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
-local deposit_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
-local deposit_nick_name = "ela_test"
-local deposit_url = "ela_test.org"
-local deposit_local = "112211"
-local deposit_host = "127.0.0.1"
+local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+local node_publickey = "029628ed890a25295a91817669dd9e35b4d792d51503c7eb4190b01a26e1a48fba"
+local nick_name = "ela_test"
+local url = "ela_test.org"
+local location = "112211"
+local host_address = "127.0.0.1"
 
 -- register producer payload: publickey, nickname, url, local, host, wallet
-local rp_payload = registerproducer.new(deposit_publickey, deposit_nick_name, deposit_url, deposit_local, deposit_host, wallet)
+local rp_payload = registerproducer.new(own_publickey, node_publickey, nick_name, url, location, host_address, wallet)
 print(rp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

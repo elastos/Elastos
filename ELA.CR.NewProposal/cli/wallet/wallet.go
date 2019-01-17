@@ -31,16 +31,18 @@ func getConfirmedPassword(passwd string) []byte {
 }
 
 func createWallet(name string, password string) error {
-	var err error
-	var passwd []byte
+	var p []byte
 	if password == "" {
-		passwd, err = pwd.GetConfirmedPassword()
+		var err error
+		p, err = pwd.GetConfirmedPassword()
 		if err != nil {
 			return err
 		}
+	} else {
+		p = []byte(password)
 	}
 
-	client, err := account.Create(name, passwd)
+	client, err := account.Create(name, p)
 	if err != nil {
 		return err
 	}

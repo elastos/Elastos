@@ -65,15 +65,15 @@ func TestChainStore_RollbackSidechainTx(t *testing.T) {
 	}
 
 	// 2. Run Rollback
-	err = testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err = testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}
 
-	// Need batch commit here because RollbackSidechainTx use BatchDelete
+	// Need batch commit here because rollbackSidechainTx use BatchDelete
 	testChainStore.BatchCommit()
 
-	// 3. Verify RollbackSidechainTx
+	// 3. Verify rollbackSidechainTx
 	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should been deleted")
@@ -178,7 +178,7 @@ func TestChainStoreDone(t *testing.T) {
 		t.Error("Chainstore init failed")
 	}
 
-	err := testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err := testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}

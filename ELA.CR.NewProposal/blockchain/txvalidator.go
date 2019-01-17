@@ -20,7 +20,7 @@ import (
 
 const (
 	// MinDepositAmount is the minimum deposit as a producer.
-	MinDepositAmount = 5000
+	MinDepositAmount = 5000 * 100000000
 
 	// DepositLockupBlocks indicates how many blocks need to wait when cancel
 	// producer was triggered, and can submit return deposit coin request.
@@ -215,7 +215,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 func getProducerPublicKeys(producers []*state.Producer) [][]byte {
 	var publicKeys [][]byte
 	for _, p := range producers {
-		publicKeys = append(publicKeys, p.Info().PublicKey)
+		publicKeys = append(publicKeys, p.Info().OwnerPublicKey)
 	}
 	return publicKeys
 }
@@ -696,22 +696,25 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	hash, err := contract.PublicKeyToDepositProgramHash(info.PublicKey)
+	hash, err := contract.PublicKeyToDepositProgramHash(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key")
 	}
 
-	if p := b.state.GetProducer(info.PublicKey); p != nil {
+	// FIXME check duplication of owner.
+
+	// check duplication of node.
+	if p := b.state.GetProducer(info.NodePublicKey); p != nil {
 		return fmt.Errorf("producer already registered")
 	}
 
-	// check nickname usage.
+	// check duplication of nickname.
 	if !b.state.IsUnusedNickname(info.NickName) {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(info.PublicKey)
+	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -751,12 +754,12 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	if p := b.state.GetProducer(cancelProducer.PublicKey); p == nil {
+	if p := b.state.GetProducer(cancelProducer.OwnerPublicKey); p == nil {
 		return errors.New("canceling unknown producer")
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(cancelProducer.PublicKey)
+	publicKey, err := DecodePoint(cancelProducer.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -779,7 +782,8 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	if p := b.state.GetProducer(info.PublicKey); p == nil {
+	producer := b.state.GetProducer(info.OwnerPublicKey)
+	if producer == nil {
 		return errors.New("updating unknown producer")
 	}
 
@@ -804,7 +808,7 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(info.PublicKey)
+	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
@@ -816,6 +820,16 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
+	}
+
+	// FIXME Check new nickname duplication
+	if info.NickName != producer.Info().NickName {
+
+	}
+
+	// FIXME Check new node public key duplication
+	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) {
+
 	}
 
 	return nil
