@@ -884,18 +884,19 @@ parameters:
 
 result:
 
-| name        | type   | description                              |
-| ----------- | ------ | ---------------------------------------- |
-| publickey   | string | the public key of the producer           |
-| nickname    | string | the nick name of the producer            |
-| url         | string | the url of the producer                  |
-| location    | uint64 | the location number of the producer      |
-| active      | bool   | if producer has confirmed                |
-| votes       | string | the votes currently held                 |
-| ip          | string | the ip address of the producer           |
-| index       | uint64 | the index of the producer                |
-| totalvotes  | string | the total votes of registered producers  |
-| totalcounts | uint64 | the total counts of registered producers |
+| name           | type   | description                              |
+| -------------- | ------ | ---------------------------------------- |
+| ownerpublickey | string | the owner public key of producer         |
+| nodepublickey  | string | the node public key of the producer      |
+| nickname       | string | the nick name of the producer            |
+| url            | string | the url of the producer                  |
+| location       | uint64 | the location number of the producer      |
+| active         | bool   | if producer has confirmed                |
+| votes          | string | the votes currently held                 |
+| ip             | string | the ip address of the producer           |
+| index          | uint64 | the index of the producer                |
+| totalvotes     | string | the total votes of registered producers  |
+| totalcounts    | uint64 | the total counts of registered producers |
 
 named arguments sample:
 
@@ -919,31 +920,37 @@ result sample:
   "result": {
     "producers": [
       {
-        "publickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb",
+        "ownerpublickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb",
+        "nodepublickey": "0237a5fb316caf7587e052125585b135361be533d74b5a094a68c64c47ccd1e1eb",
         "nickname": "elastos1",
         "url": "http://www.elastos1.com",
         "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "ip": "127.0.0.1:20339"
+        "ip": "127.0.0.1:20339",
+        "index": 0
       },
       {
-        "publickey": "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
+        "ownerpublickey": "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
+        "nodepublickey": "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
         "nickname": "elastos2",
         "url": "http://www.elastos2.com",
         "location": 402,
         "active": true,
         "votes": "2.10000000",
-        "ip": "127.0.0.1:20339"
+        "ip": "127.0.0.1:20339",
+        "index": 1
       },
       {
-        "publickey": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+        "ownerpublickey": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+        "nodepublickey": "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
         "nickname": "elastos3",
         "url": "http://www.elastos3.com",
         "location": 403,
         "active": true,
         "votes": "0",
-        "ip": "127.0.0.1:20339"
+        "ip": "127.0.0.1:20339",
+        "index": 2
       }
     ],
     "totalvotes": "5.21100000",
@@ -957,9 +964,9 @@ result sample:
 description: show producer status
 parameters:
 
-| name    | type   | description                  |
-| ------- | ------ | ---------------------------- |
-| publickey | string | the public key of producer |
+| name      | type   | description                  |
+| --------- | ------ | ---------------------------- |
+| publickey | string | the public key of producer   |
 
 result:
 
