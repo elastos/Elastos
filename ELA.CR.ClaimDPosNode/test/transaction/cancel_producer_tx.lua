@@ -16,10 +16,10 @@ local asset_id = m.get_asset_id()
 local fee = 0.001
 
 -- deposit params
-local deposit_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 
 -- cancel producer payload: publickey, wallet
-local cp_payload = cancelproducer.new(deposit_publickey, wallet)
+local cp_payload = cancelproducer.new(own_publickey, wallet)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
