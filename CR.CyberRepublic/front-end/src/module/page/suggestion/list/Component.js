@@ -61,21 +61,13 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { dataList, loading } = this.props;
-    const loadingNode = <div className="center"><Spin size="large" /></div>
     const headerNode = this.renderHeader()
     const addButtonNode = this.renderAddButton()
     const actionsNode = this.renderHeaderActions()
     const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
-    let listNode = loadingNode
-    if (!loading) {
-      if (_.isEmpty(dataList)) {
-        listNode = <div className="center">{I18N.get('suggestion.befirst')}</div>
-      } else {
-        listNode = this.renderList()
-      }
-    }
+    const listNode = this.renderList()
+
     return (
       <div>
         <div className="p_SuggestionList">
@@ -170,9 +162,18 @@ export default class extends StandardPage {
   }
 
   renderList() {
-    const { dataList } = this.props
-    const result = _.map(dataList, data => this.renderItem(data))
+    const { dataList, loading } = this.props;
+    const loadingNode = <div className="center"><Spin size="large" /></div>
     const paginationNode = this.renderPagination()
+    let result = loadingNode
+    if (!loading) {
+      if (_.isEmpty(dataList)) {
+        result = <div className="center">{I18N.get('suggestion.befirst')}</div>
+      } else {
+        result = _.map(dataList, data => this.renderItem(data))
+      }
+    }
+
     return (
       <div>
         <div className="list-container">{result}</div>
