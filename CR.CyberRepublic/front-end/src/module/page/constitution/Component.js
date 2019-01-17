@@ -23,7 +23,7 @@ export default class extends StandardPage {
         const text = I18N.get(`council.article.${id}`);
 
         return (
-            <div>
+            <div style={{marginTop: 80}}>
                 <div className="ebp-header-divider">
 
                 </div>
@@ -43,7 +43,7 @@ export default class extends StandardPage {
                                         <Navigator selectedItem={`constitution/${id}`} />
                                     </Col>
                                 </MediaQuery>
-                                <Col xs={{span: 24}} md={{span: 20}} className="c_ProfileContainer wrap-box-user">
+                                <Col xs={{span: 24}} md={{span: 20}} className="c_ConstitutionContainer wrap-box-user">
                                     <div className="content">
                                         <h1 className="title">{I18N.get(`counstitution.title${id}`)}</h1>
                                         <span dangerouslySetInnerHTML={{__html : text}}></span>

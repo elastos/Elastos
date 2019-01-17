@@ -1,12 +1,10 @@
 import {TASK_STATUS, TASK_TYPE, CVOTE_STATUS} from '@/constant'
 import council from './en/council';
 import getting_started from './en/getting_started';
-import constitution from './en/constitution';
 
 const en = {
     council,
     getting_started,
-    constitution,
     // Header
     '0000': 'ALPHA',
     '0001': 'Bounty Programs',

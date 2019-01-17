@@ -1,12 +1,10 @@
 import {TASK_STATUS, CVOTE_STATUS} from '@/constant'
 import council from './zh/council'
 import getting_started from './en/getting_started';
-import constitution from './zh/constitution';
 
 const zh = {
     council,
     getting_started,
-    constitution,
     // Header
     '0000': 'ALPHA版本',
     '0001': '奖励计划',
