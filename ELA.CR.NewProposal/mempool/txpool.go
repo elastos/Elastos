@@ -21,7 +21,8 @@ type TxPool struct {
 	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	producerList    map[string]struct{}
+	ownerPublicKeys map[string]struct{}
+	nodePublicKeys  map[string]struct{}
 }
 
 //append transaction to txnpool when check ok.
@@ -165,29 +166,29 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				}
 
 				// delete producer
-				var producerPubKey string
 				if tx.TxType == RegisterProducer {
 					payload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
+					mp.delNodePublicKey(BytesToHexString(payload.NodePublicKey))
 				}
 				if tx.TxType == UpdateProducer {
 					payload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
+					mp.delNodePublicKey(BytesToHexString(payload.NodePublicKey))
 				}
 				if tx.TxType == CancelProducer {
 					payload, ok := tx.Payload.(*payload.CancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
-					producerPubKey = BytesToHexString(payload.PublicKey)
+					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
 				}
-				delete(mp.producerList, producerPubKey)
 
 				deleteCount++
 			}
@@ -221,25 +222,33 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := mp.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
+		}
+		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
 		}
 	} else if txn.IsUpdateProducerTx() {
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := mp.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
+		}
+		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
 		}
 	} else if txn.IsCancelProducerTx() {
 		payload, ok := txn.Payload.(*payload.CancelProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 		}
-		if err := mp.verifyDuplicateProducer(BytesToHexString(payload.PublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -317,14 +326,40 @@ func (mp *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func (mp *TxPool) verifyDuplicateProducer(publicKey string) error {
-	_, ok := mp.producerList[publicKey]
+func (mp *TxPool) verifyDuplicateOwner(ownerPublicKey string) error {
+	_, ok := mp.ownerPublicKeys[ownerPublicKey]
 	if ok {
 		return errors.New("this producer in being processed")
 	}
-	mp.producerList[publicKey] = struct{}{}
+	mp.addOwnerPublicKey(ownerPublicKey)
 
 	return nil
+}
+
+func (mp *TxPool) addOwnerPublicKey(publicKey string) {
+	mp.ownerPublicKeys[publicKey] = struct{}{}
+}
+
+func (mp *TxPool) delOwnerPublicKey(publicKey string) {
+	delete(mp.ownerPublicKeys, publicKey)
+}
+
+func (mp *TxPool) verifyDuplicateNode(nodePublicKey string) error {
+	_, ok := mp.nodePublicKeys[nodePublicKey]
+	if ok {
+		return errors.New("this producer node in being processed")
+	}
+	mp.addNodePublicKey(nodePublicKey)
+
+	return nil
+}
+
+func (mp *TxPool) addNodePublicKey(nodePublicKey string) {
+	mp.nodePublicKeys[nodePublicKey] = struct{}{}
+}
+
+func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
+	delete(mp.nodePublicKeys, nodePublicKey)
 }
 
 // check and replace the duplicate sidechainpow tx
@@ -472,5 +507,7 @@ func NewTxPool() *TxPool {
 		inputUTXOList:   make(map[string]*Transaction),
 		txnList:         make(map[Uint256]*Transaction),
 		sidechainTxList: make(map[Uint256]*Transaction),
+		ownerPublicKeys: make(map[string]struct{}),
+		nodePublicKeys:  make(map[string]struct{}),
 	}
 }

@@ -26,8 +26,8 @@ type OutputInfo struct {
 	Address       string            `json:"address"`
 	AssetID       string            `json:"assetid"`
 	OutputLock    uint32            `json:"outputlock"`
-	OutputType    uint32            `json:"outputtype"`
-	OutputPayload OutputPayloadInfo `json:"outputpayload"`
+	OutputType    uint32            `json:"type"`
+	OutputPayload OutputPayloadInfo `json:"payload"`
 }
 
 type OutputPayloadInfo interface{}
@@ -159,12 +159,13 @@ type WithdrawFromSideChainInfo struct {
 }
 
 type ProducerInfo struct {
-	PublicKey string `json:"publickey"`
-	NickName  string `json:"nickname"`
-	Url       string `json:"url"`
-	Location  uint64 `json:"location"`
-	Address   string `json:"address"`
-	Signature string `json:"signature"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	NickName       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	Address        string `json:"address"`
+	Signature      string `json:"signature"`
 }
 
 type CancelProducerInfo struct {

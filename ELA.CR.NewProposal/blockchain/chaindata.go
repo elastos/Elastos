@@ -12,7 +12,7 @@ import (
 
 // key: DATAHeader || block hash
 // value: sysfee(8bytes) || trimmed block
-func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
+func (c *ChainStore) persistTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
@@ -56,7 +56,7 @@ func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 
 // key: DATABlockHash || height
 // value: block hash
-func (c *ChainStore) PersistBlockHash(b *Block) error {
+func (c *ChainStore) persistBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -86,7 +86,7 @@ func (c *ChainStore) RollbackBlockHash(b *Block) error {
 
 // key: SYSCurrentBlock
 // value: current block hash || height
-func (c *ChainStore) PersistCurrentBlock(b *Block) error {
+func (c *ChainStore) persistCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYSCurrentBlock))
 
@@ -120,7 +120,7 @@ func (c *ChainStore) RollbackCurrentBlock(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
+func (c *ChainStore) persistUnspendUTXOs(b *Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
@@ -306,16 +306,18 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
+		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
+
+		switch txn.TxType {
+		case RegisterAsset:
 			regPayload := txn.Payload.(*payload.RegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
@@ -328,28 +330,27 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.RollbackTransaction(txn); err != nil {
+		if err := c.rollbackTransaction(txn); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
-			if err := c.RollbackAsset(txn.Hash()); err != nil {
+		switch txn.TxType {
+		case RegisterAsset:
+			if err := c.rollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
-				if err := c.RollbackSidechainTx(hash); err != nil {
+				if err := c.rollbackSidechainTx(hash); err != nil {
 					return err
 				}
 			}
 		}
 	}
-
 	return nil
 }
 
-func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
+func (c *ChainStore) rollbackTransaction(txn *Transaction) error {
 
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATATransaction))
@@ -362,7 +363,7 @@ func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackAsset(assetID Uint256) error {
+func (c *ChainStore) rollbackAsset(assetID Uint256) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(STInfo))
 	if err := assetID.Serialize(key); err != nil {
@@ -373,7 +374,7 @@ func (c *ChainStore) RollbackAsset(assetID Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
+func (c *ChainStore) rollbackSidechainTx(sidechainTxHash Uint256) error {
 	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
@@ -381,7 +382,7 @@ func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspend(b *Block) error {
+func (c *ChainStore) persistUnspend(b *Block) error {
 	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {

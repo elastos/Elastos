@@ -109,7 +109,7 @@ result:(verbosity=1)
 | confirmations     | integer       | confirmations                                                                                                                   |
 | size              | integer       | the size of a block in bytes                                                                                                    |
 | strippedsize      | integer       | equals to size                                                                                                                  |
-| weight            | integer       | This block’s weight                                                                                                            |
+| weight            | integer       | This block’s weight                                                                                                             |
 | height            | integer       | the height of block                                                                                                             |
 | version           | integer       | block header's version                                                                                                          |
 | versionhex        | string        | block header's version in hex format                                                                                            |
@@ -294,9 +294,10 @@ results:
 | txid       | string  | transaction id                               |
 | hash       | string  | transaction id                               |
 | size       | integer | transaction size                             |
-| vsize      | integer | The virtual transaction size, equals to size | version | integer | The transaction format version number |
-| locktime   | integer | The transaction’s locktime                  |
-| sequence   | integer | The transaction’s sequence number           |
+| vsize      | integer | The virtual transaction size, equals to size |
+| version    | integer | The transaction format version number        |
+| locktime   | integer | The transaction’s locktime                   |
+| sequence   | integer | The transaction’s sequence number            |
 | vin        | array   | input utxo vector of this transaction        |
 | n          | integer | index of utxo outputs                        |
 | vout       | array   | output utxo vector of this transaction       |
@@ -440,13 +441,18 @@ result sample:
 
 #### listunspent
 
-description: list all utxo of given addresses 
+description: list all utxo of given addresses
 
 parameters:
 
-| name      | type          | description |
-| --------- | ------------- | ----------- |
-| addresses | array[string] | addresses   |
+| name      | type          | description   |
+| --------- | ------------- | ------------- |
+| addresses | array[string] | addresses     |
+| utxotype  | string        | the utxo type |
+
+if set utxotype to "mixed" or not set will get all utxos ignore the type
+if set utxotype to "vote" will get vote utxos
+if set utxotype to "normal" will get normal utxos without vote
 
 result:
 please see below

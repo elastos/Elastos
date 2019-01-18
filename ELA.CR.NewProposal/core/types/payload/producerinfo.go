@@ -12,12 +12,13 @@ import (
 const ProducerInfoVersion byte = 0x00
 
 type ProducerInfo struct {
-	PublicKey []byte
-	NickName  string
-	Url       string
-	Location  uint64
-	Address   string
-	Signature []byte
+	OwnerPublicKey []byte
+	NodePublicKey  []byte
+	NickName       string
+	Url            string
+	Location       uint64
+	Address        string
+	Signature      []byte
 }
 
 func (a *ProducerInfo) Data(version byte) []byte {
@@ -43,30 +44,36 @@ func (a *ProducerInfo) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *ProducerInfo) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.PublicKey)
+	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
-		return errors.New("[ProducerInfo], PublicKey serialize failed")
+		return errors.New("[ProducerInfo], owner publicKey serialize failed")
+	}
+
+	err = common.WriteVarBytes(w, a.NodePublicKey)
+	if err != nil {
+		return errors.New("[ProducerInfo], node publicKey serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.NickName)
 	if err != nil {
-		return errors.New("[ProducerInfo], NickName serialize failed")
+		return errors.New("[ProducerInfo], nickname serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.Url)
 	if err != nil {
-		return errors.New("[ProducerInfo], Url serialize failed")
+		return errors.New("[ProducerInfo], url serialize failed")
 	}
 
 	err = common.WriteUint64(w, a.Location)
 	if err != nil {
-		return errors.New("[ProducerInfo], Location serialize failed")
+		return errors.New("[ProducerInfo], location serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.Address)
 	if err != nil {
-		return errors.New("[ProducerInfo], Address serialize failed")
+		return errors.New("[ProducerInfo], address serialize failed")
 	}
+
 	return nil
 }
 
@@ -75,47 +82,45 @@ func (a *ProducerInfo) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	sig, err := common.ReadVarBytes(r, crypto.SignatureLength, "signature")
+	a.Signature, err = common.ReadVarBytes(r, crypto.SignatureLength, "signature")
 	if err != nil {
-		return errors.New("[ProducerInfo], Signature deserialize failed")
+		return errors.New("[ProducerInfo], signature deserialize failed")
 	}
-
-	a.Signature = sig
 
 	return nil
 }
 
 func (a *ProducerInfo) DeserializeUnsigned(r io.Reader, version byte) error {
-	publicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
+	var err error
+	a.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "own public key")
 	if err != nil {
-		return errors.New("[ProducerInfo], PublicKey deserialize failed")
+		return errors.New("[ProducerInfo], owner publicKey deserialize failed")
 	}
 
-	nickName, err := common.ReadVarString(r)
+	a.NodePublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "node public key")
 	if err != nil {
-		return errors.New("[ProducerInfo], NickName deserialize failed")
+		return errors.New("[ProducerInfo], node publicKey deserialize failed")
 	}
 
-	url, err := common.ReadVarString(r)
+	a.NickName, err = common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[ProducerInfo], Url deserialize failed")
+		return errors.New("[ProducerInfo], nickName deserialize failed")
 	}
 
-	location, err := common.ReadUint64(r)
+	a.Url, err = common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[ProducerInfo], Location deserialize failed")
+		return errors.New("[ProducerInfo], url deserialize failed")
 	}
 
-	addr, err := common.ReadVarString(r)
+	a.Location, err = common.ReadUint64(r)
 	if err != nil {
-		return errors.New("[ProducerInfo], Address deserialize failed")
+		return errors.New("[ProducerInfo], location deserialize failed")
 	}
 
-	a.PublicKey = publicKey
-	a.NickName = nickName
-	a.Url = url
-	a.Location = location
-	a.Address = addr
+	a.Address, err = common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[ProducerInfo], address deserialize failed")
+	}
 
 	return nil
 }
