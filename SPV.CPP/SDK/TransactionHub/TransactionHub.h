@@ -63,6 +63,8 @@ namespace Elastos {
 
 			void SetWalletID(const std::string &walletID);
 
+			void SetBlockHeight(uint32_t height);
+
 			uint32_t getBlockHeight() const;
 
 			nlohmann::json GetBalanceInfo(const UInt256 &assetID);

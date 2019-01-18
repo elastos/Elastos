@@ -53,17 +53,17 @@ namespace Elastos {
 					off += sizeof(uint64_t);
 					PeerInfo p(address, port, timestamp, services);
 
-					_peer->debug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
+					_peer->info("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
 								 i, p.GetHost(), p.Timestamp, p.Port, p.Services);
 
 					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
-						(p.Services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK)
+						(p.Services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK) {
+						_peer->warn("drop peers[{}]: skip peers that don't carry full blocks", i);
 						continue; // skip peers that don't carry full blocks
-					if (!p.IsIPv4())
-						continue; // ignore IPv6 for now
-					if (p.IsIPv4() &&
+					}
+					if (!p.IsIPv4() || (p.IsIPv4() &&
 						p.Address.u8[12] == 127 && p.Address.u8[13] == 0 &&
-						p.Address.u8[14] == 0 && p.Address.u8[15] == 1) {
+						p.Address.u8[14] == 0 && p.Address.u8[15] == 1)) {
 						_peer->warn("drop peers[{}]", i);
 						continue;
 					}

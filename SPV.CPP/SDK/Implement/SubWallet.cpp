@@ -315,7 +315,7 @@ namespace Elastos {
 			const WalletPtr &wallet = _walletManager->getWallet();
 			for (size_t i = 0; i < transaction->getInputs().size(); ++i) {
 				const TransactionPtr &tx = wallet->transactionForHash(transaction->getInputs()[i].getTransctionHash());
-				if (tx->getOutputs()[transaction->getInputs()[i].getIndex()].getAddress() == addressOrTxid) {
+				if (tx && tx->getOutputs()[transaction->getInputs()[i].getIndex()].getAddress() == addressOrTxid) {
 					return true;
 				}
 			}

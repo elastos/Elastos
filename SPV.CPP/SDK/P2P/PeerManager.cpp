@@ -208,6 +208,8 @@ namespace Elastos {
 					}
 				}
 			}
+			_wallet->SetBlockHeight(_lastBlock->getHeight());
+			_wallet->UpdateBalance();
 		}
 
 		PeerManager::~PeerManager() {
@@ -1353,6 +1355,7 @@ namespace Elastos {
 
 					_blocks.Insert(block);
 					_lastBlock = block;
+					_wallet->SetBlockHeight(_lastBlock->getHeight());
 					fireBlockHeightIncreased(block->getHeight());
 
 					if (txHashes.size() > 0)
@@ -1442,6 +1445,7 @@ namespace Elastos {
 						}
 
 						_lastBlock = block;
+						_wallet->SetBlockHeight(_lastBlock->getHeight());
 						for (int k = 1; k <= block->getHeight() - b2->getHeight(); ++k) {
 							fireBlockHeightIncreased(b2->getHeight() + k);
 						}
@@ -1888,8 +1892,7 @@ namespace Elastos {
 				} else {
 					MempoolParameter mempoolParameter;
 					mempoolParameter.KnownTxHashes = _publishedTxHashes;
-					mempoolParameter.CompletionCallback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer,
-																	  _1);
+					mempoolParameter.CompletionCallback = boost::bind(&PeerManager::mempoolDone, this, peer, _1);
 					peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
 				}
 			}

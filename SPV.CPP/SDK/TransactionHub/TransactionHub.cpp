@@ -40,8 +40,6 @@ namespace Elastos {
 
 			_transactions.InitWithTransactions(txArray);
 
-			UpdateBalance();
-
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
@@ -354,7 +352,7 @@ namespace Elastos {
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX - 1) r = 1; // check for replace-by-fee
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX &&
 						transaction->getLockTime() < TX_MAX_LOCK_HEIGHT &&
-						transaction->getLockTime() > _blockHeight + 1)
+						transaction->getLockTime() > height + 1)
 						r = 1; // future lockTime
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX && transaction->getLockTime() > now)
 						r = 1; // future lockTime
@@ -540,11 +538,11 @@ namespace Elastos {
 			}
 		}
 
-		void TransactionHub::txUpdated(const std::vector<UInt256> &txHashes, uint32_t _blockHeight, uint32_t timestamp) {
+		void TransactionHub::txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp) {
 			if (!_listener.expired()) {
 				// Invoke the callback for each of txHashes.
 				for (size_t i = 0; i < txHashes.size(); i++) {
-					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), _blockHeight, timestamp);
+					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), blockHeight, timestamp);
 				}
 			}
 		}
@@ -567,6 +565,11 @@ namespace Elastos {
 
 		void TransactionHub::SetWalletID(const std::string &walletID) {
 			_walletID = walletID;
+		}
+
+		void TransactionHub::SetBlockHeight(uint32_t height) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_blockHeight = height;
 		}
 
 		uint32_t TransactionHub::getBlockHeight() const {
