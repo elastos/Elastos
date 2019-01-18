@@ -24,10 +24,7 @@ const (
 	STInfo DataEntryPrefix = 0xc0
 
 	// DPOS
-	DPOSProducers       DataEntryPrefix = 0xd0
-	DPOSVoteProducer    DataEntryPrefix = 0xd1
-	DPOSCancelProducer  DataEntryPrefix = 0xd2
-	DPOSIllegalProducer DataEntryPrefix = 0xd3
+	DPOSIllegalProducer DataEntryPrefix = 0xd1
 
 	//CONFIG
 	CFGVersion DataEntryPrefix = 0xf0

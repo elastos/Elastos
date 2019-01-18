@@ -705,6 +705,15 @@ func ListUnspent(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need addresses in an array!")
 	}
+	utxoType := "mixed"
+	if t, ok := param.String("utxotype"); ok {
+		switch t {
+		case "mixed", "vote", "normal":
+			utxoType = t
+		default:
+			return ResponsePack(InvalidParams, "invalid utxotype")
+		}
+	}
 	for _, address := range addresses {
 		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
@@ -720,6 +729,13 @@ func ListUnspent(param Params) map[string]interface{} {
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+			}
+			if utxoType == "vote" && (tx.Version < TxVersion09 ||
+				tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type != OTVote) {
+				continue
+			}
+			if utxoType == "normal" && tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type == OTVote {
+				continue
 			}
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
@@ -888,14 +904,15 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 type Producer struct {
-	PublicKey string `json:"publickey"`
-	Nickname  string `json:"nickname"`
-	Url       string `json:"url"`
-	Location  uint64 `json:"location"`
-	Active    bool   `json:"active"`
-	Votes     string `json:"votes"`
-	IP        string `json:"ip"`
-	Index     uint64 `json:"index"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	Nickname       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	Active         bool   `json:"active"`
+	Votes          string `json:"votes"`
+	IP             string `json:"ip"`
+	Index          uint64 `json:"index"`
 }
 
 type Producers struct {
@@ -918,14 +935,15 @@ func ListProducers(param Params) map[string]interface{} {
 	var ps []Producer
 	for i, p := range producers {
 		producer := Producer{
-			PublicKey: hex.EncodeToString(p.Info().PublicKey),
-			Nickname:  p.Info().NickName,
-			Url:       p.Info().Url,
-			Location:  p.Info().Location,
-			Active:    p.State() == state.Activate,
-			Votes:     p.Votes().String(),
-			IP:        p.Info().Address,
-			Index:     uint64(i),
+			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
+			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
+			Nickname:       p.Info().NickName,
+			Url:            p.Info().Url,
+			Location:       p.Info().Location,
+			Active:         p.State() == state.Activate,
+			Votes:          p.Votes().String(),
+			IP:             p.Info().Address,
+			Index:          uint64(i),
 		}
 		ps = append(ps, producer)
 	}
@@ -996,7 +1014,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		total += unspent.Value
 	}
 
-	status := true
+	pending := false
 	for _, t := range TxMemPool.GetTxsInPool() {
 		for _, i := range t.Inputs {
 			tx, _, err := Store.GetTransaction(i.Previous.TxID)
@@ -1004,15 +1022,15 @@ func VoteStatus(param Params) map[string]interface{} {
 				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
 			}
 			if tx.Outputs[i.Previous.Index].ProgramHash.IsEqual(*programHash) {
-				status = false
+				pending = true
 			}
 		}
 		for _, o := range t.Outputs {
 			if o.Type == OTVote && o.ProgramHash.IsEqual(*programHash) {
-				status = false
+				pending = true
 			}
 		}
-		if !status {
+		if !pending {
 			break
 		}
 	}
@@ -1025,7 +1043,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	return ResponsePack(Success, &voteInfo{
 		Total:   total.String(),
 		Voting:  voting.String(),
-		Pending: status,
+		Pending: pending,
 	})
 }
 
@@ -1091,7 +1109,8 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *payload.Record:
 	case *payload.ProducerInfo:
 		obj := new(ProducerInfo)
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
@@ -1100,7 +1119,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *payload.CancelProducer:
 		obj := new(CancelProducerInfo)
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.PublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}

@@ -148,4 +148,9 @@ var configTemplate = config.Configuration{
 		EmergencyTriggerTimeSpan: uint32((time.Hour * 1) / time.Second),
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 	},
+	RpcConfiguration : config.RpcConfiguration{
+		User:       "",
+		Pass:       "" ,
+		WhiteIpList:[]string{"127.0.0.1"},
+	},
 }
