@@ -1,6 +1,7 @@
 package state
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"sync"
@@ -80,9 +81,10 @@ func (p *Producer) Votes() common.Fixed64 {
 const maxHistoryCapacity = 10
 
 // State is a memory database storing DPOS producers state, like pending
-// producers active producers and there votes.
+// producers active producers and their votes.
 type State struct {
 	mtx               sync.RWMutex
+	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
 	pendingProducers  map[string]*Producer
 	activityProducers map[string]*Producer
 	canceledProducers map[string]*Producer
@@ -92,9 +94,24 @@ type State struct {
 	history           *history
 }
 
-// getProducer returns a producer if public key matches any registered producer.
-func (s *State) getProducer(publicKey []byte) *Producer {
+// getProducerKey returns the producer's owner public key string, whether the
+// given public key is the producer's node public key or owner public key.
+func (s *State) getProducerKey(publicKey []byte) string {
 	key := hex.EncodeToString(publicKey)
+
+	// If the given public key is node public key, get the producer's owner
+	// public key.
+	if owner, ok := s.nodeOwnerKeys[key]; ok {
+		return owner
+	}
+
+	return key
+}
+
+// getProducer returns a producer with the producer's node public key or it's
+// owner public key, if no matches return nil.
+func (s *State) getProducer(publicKey []byte) *Producer {
+	key := s.getProducerKey(publicKey)
 	if producer, ok := s.activityProducers[key]; ok {
 		return producer
 	}
@@ -110,8 +127,32 @@ func (s *State) getProducer(publicKey []byte) *Producer {
 	return nil
 }
 
-// GetProducer returns a producer if public key matches any registered producer,
-// including canceled and illegal producers.
+// updateProducerInfo updates the producer's info with value compare, any change
+// will be updated.
+func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload.ProducerInfo) {
+	producer := s.getProducer(origin.OwnerPublicKey)
+
+	// compare and update node nickname.
+	if origin.NickName != update.NickName {
+		delete(s.nicknames, origin.NickName)
+		s.nicknames[update.NickName] = struct{}{}
+	}
+
+	// compare and update node public key, we only query pending and active node
+	// because canceled and illegal node can not be updated.
+	if !bytes.Equal(origin.NodePublicKey, update.NodePublicKey) {
+		oldKey := hex.EncodeToString(origin.NodePublicKey)
+		newKey := hex.EncodeToString(update.NodePublicKey)
+		delete(s.nodeOwnerKeys, oldKey)
+		s.nodeOwnerKeys[newKey] = hex.EncodeToString(origin.OwnerPublicKey)
+	}
+
+	producer.info = *update
+}
+
+// GetProducer returns a producer with the producer's node public key or it's
+// owner public key including canceled and illegal producers.  If no matches
+// return nil.
 func (s *State) GetProducer(publicKey []byte) *Producer {
 	s.mtx.RLock()
 	producer := s.getProducer(publicKey)
@@ -183,7 +224,7 @@ func (s *State) GetIllegalProducers() []*Producer {
 // public key.
 func (s *State) IsPendingProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.pendingProducers[hex.EncodeToString(publicKey)]
+	_, ok := s.pendingProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -192,7 +233,7 @@ func (s *State) IsPendingProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsActiveProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.activityProducers[hex.EncodeToString(publicKey)]
+	_, ok := s.activityProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -201,7 +242,7 @@ func (s *State) IsActiveProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsCanceledProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.canceledProducers[hex.EncodeToString(publicKey)]
+	_, ok := s.canceledProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -210,17 +251,26 @@ func (s *State) IsCanceledProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsIllegalProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.illegalProducers[hex.EncodeToString(publicKey)]
+	_, ok := s.illegalProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
 
-// IsUnusedNickname returns if a nickname is unused.
-func (s *State) IsUnusedNickname(nickname string) bool {
+// NicknameExists returns if a nickname is exists.
+func (s *State) NicknameExists(nickname string) bool {
 	s.mtx.RLock()
 	_, ok := s.nicknames[nickname]
 	s.mtx.RUnlock()
-	return !ok
+	return ok
+}
+
+// ProducerExists returns if a producer is exists by it's node public key or
+// owner public key.
+func (s *State) ProducerExists(publicKey []byte) bool {
+	s.mtx.RLock()
+	producer := s.getProducer(publicKey)
+	s.mtx.RUnlock()
+	return producer != nil
 }
 
 // IsDPOSTransaction returns if a transaction will change the producers and
@@ -245,13 +295,13 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 					return true
 				}
 			}
+		}
 
-			// Cancel votes.
-			for _, input := range tx.Inputs {
-				_, ok := s.votes[input.ReferKey()]
-				if ok {
-					return true
-				}
+		// Cancel votes.
+		for _, input := range tx.Inputs {
+			_, ok := s.votes[input.ReferKey()]
+			if ok {
+				return true
 			}
 		}
 	}
@@ -320,39 +370,36 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	}
 }
 
-// registerProducer handles the register producer transaction, returns if this
-// registration is valid.
+// registerProducer handles the register producer transaction.
 func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	nickname := payload.NickName
-	key := hex.EncodeToString(payload.OwnerPublicKey)
+	nodeKey := hex.EncodeToString(payload.NodePublicKey)
+	ownerKey := hex.EncodeToString(payload.OwnerPublicKey)
+	producer := Producer{info: *payload, registerHeight: height, votes: 0}
+
 	s.history.append(height, func() {
 		s.nicknames[nickname] = struct{}{}
-		s.pendingProducers[key] =
-			&Producer{info: *payload, registerHeight: height, votes: 0}
+		s.nodeOwnerKeys[nodeKey] = ownerKey
+		s.pendingProducers[ownerKey] = &producer
 	}, func() {
 		delete(s.nicknames, nickname)
-		delete(s.pendingProducers, key)
+		delete(s.nodeOwnerKeys, nodeKey)
+		delete(s.pendingProducers, ownerKey)
 	})
 }
 
-// updateProducer handles the update producer transaction, returns if this
-// update is valid.
+// updateProducer handles the update producer transaction.
 func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 	producer := s.getProducer(info.OwnerPublicKey)
 	producerInfo := producer.info
 	s.history.append(height, func() {
-		delete(s.nicknames, producerInfo.NickName)
-		producer.info = *info
-		s.nicknames[info.NickName] = struct{}{}
+		s.updateProducerInfo(&producerInfo, info)
 	}, func() {
-		delete(s.nicknames, info.NickName)
-		producer.info = producerInfo
-		delete(s.nicknames, producerInfo.NickName)
+		s.updateProducerInfo(info, &producerInfo)
 	})
 }
 
-// cancelProducer handles the cancel producer transaction, returns if this
-// cancel is valid.
+// cancelProducer handles the cancel producer transaction.
 func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
 	key := hex.EncodeToString(payload.OwnerPublicKey)
 	producer := s.getProducer(payload.OwnerPublicKey)
@@ -365,8 +412,8 @@ func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
 	}, func() {
 		producer.state = Activate
 		producer.cancelHeight = 0
-		s.activityProducers[key] = producer
 		delete(s.canceledProducers, key)
+		s.activityProducers[key] = producer
 		s.nicknames[producer.info.NickName] = struct{}{}
 	})
 }
@@ -383,19 +430,18 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 				s.processVoteOutput(output, height)
 			}
 		}
+	}
 
-		// Cancel votes.
-		for _, input := range tx.Inputs {
-			output, ok := s.votes[input.ReferKey()]
-			if ok {
-				s.processVoteCancel(output, height)
-			}
+	// Cancel votes.
+	for _, input := range tx.Inputs {
+		output, ok := s.votes[input.ReferKey()]
+		if ok {
+			s.processVoteCancel(output, height)
 		}
 	}
 }
 
-// processVoteOutput takes a transaction output with vote payload, validate the
-// payload and increase producers votes.
+// processVoteOutput takes a transaction output with vote payload.
 func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	payload := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range payload.Contents {
@@ -566,6 +612,7 @@ func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 // NewState returns a new State instance.
 func NewState() *State {
 	return &State{
+		nodeOwnerKeys:     make(map[string]string),
 		pendingProducers:  make(map[string]*Producer),
 		activityProducers: make(map[string]*Producer),
 		canceledProducers: make(map[string]*Producer),
