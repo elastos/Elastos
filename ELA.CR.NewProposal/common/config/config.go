@@ -47,7 +47,7 @@ type PowConfiguration struct {
 type RpcConfiguration struct {
 	User        string   `json:"User"`
 	Pass        string   `json:"Pass"`
-	WhiteIpList []string `json:"WhiteIpList"`
+	WhiteIPList []string `json:"WhiteIPList"`
 }
 
 type Configuration struct {
