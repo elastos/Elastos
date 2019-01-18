@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -696,20 +697,18 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	hash, err := contract.PublicKeyToDepositProgramHash(info.OwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid public key")
-	}
-
-	// FIXME check duplication of owner.
-
 	// check duplication of node.
-	if p := b.state.GetProducer(info.NodePublicKey); p != nil {
+	if b.state.ProducerExists(info.NodePublicKey) {
 		return fmt.Errorf("producer already registered")
 	}
 
+	// check duplication of owner.
+	if b.state.ProducerExists(info.OwnerPublicKey) {
+		return fmt.Errorf("producer owner already registered")
+	}
+
 	// check duplication of nickname.
-	if !b.state.IsUnusedNickname(info.NickName) {
+	if b.state.NicknameExists(info.NickName) {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
@@ -729,6 +728,10 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check the deposit coin
+	hash, err := contract.PublicKeyToDepositProgramHash(info.OwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid public key")
+	}
 	var depositCount int
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
@@ -803,8 +806,16 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check nickname usage.
-	if !b.state.IsUnusedNickname(info.NickName) {
-		return fmt.Errorf("nick name %s already inuse", info.NickName)
+	if producer.Info().NickName != info.NickName &&
+		b.state.NicknameExists(info.NickName) {
+		return fmt.Errorf("nick name %s already exist", info.NickName)
+	}
+
+	// check node public key duplication
+	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
+		b.state.ProducerExists(info.NodePublicKey) {
+		return fmt.Errorf("producer %s already exist",
+			hex.EncodeToString(info.NodePublicKey))
 	}
 
 	// check signature
@@ -820,16 +831,6 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
-	}
-
-	// FIXME Check new nickname duplication
-	if info.NickName != producer.Info().NickName {
-
-	}
-
-	// FIXME Check new node public key duplication
-	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) {
-
 	}
 
 	return nil

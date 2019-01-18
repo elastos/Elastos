@@ -37,7 +37,7 @@ func mockCancelProducerTx(publicKey []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.CancelProducer,
 		Payload: &payload.CancelProducer{
-			PublicKey: publicKey,
+			OwnerPublicKey: publicKey,
 		},
 	}
 }
@@ -104,11 +104,13 @@ func TestState_ProcessTransaction(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -132,15 +134,21 @@ func TestState_ProcessTransaction(t *testing.T) {
 
 	// Test update producer.
 	producers[0].NickName = "Updated"
+	nodePublicKey := make([]byte, 33)
+	rand.Read(nodePublicKey)
+	producers[0].NodePublicKey = nodePublicKey
 	tx := mockUpdateProducerTx(producers[0])
 	state.ProcessTransactions([]*types.Transaction{tx}, 11)
-	p := state.getProducer(producers[0].PublicKey)
+	p := state.getProducer(producers[0].NodePublicKey)
+	if !assert.NotNil(t, p) {
+		t.FailNow()
+	}
 	if !assert.Equal(t, "Updated", p.info.NickName) {
 		t.FailNow()
 	}
 
 	// Test cancel producer.
-	tx = mockCancelProducerTx(producers[0].PublicKey)
+	tx = mockCancelProducerTx(producers[0].OwnerPublicKey)
 	state.ProcessTransactions([]*types.Transaction{tx}, 12)
 	// at this point, we have 1 canceled, 4 pending, 5 active and 9 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
@@ -159,7 +167,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 	// Test vote producer.
 	publicKeys := make([][]byte, 5)
 	for i, p := range producers[1:6] {
-		publicKeys[i] = p.PublicKey
+		publicKeys[i] = p.OwnerPublicKey
 	}
 	tx = mockVoteTx(publicKeys)
 	state.ProcessTransactions([]*types.Transaction{tx}, 13)
@@ -172,7 +180,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 	}
 
 	// Test illegal producer.
-	tx = mockIllegalBlockTx(producers[1].PublicKey)
+	tx = mockIllegalBlockTx(producers[1].OwnerPublicKey)
 	state.ProcessTransactions([]*types.Transaction{tx}, 14)
 	// at this point, we have 1 canceled, 2 pending, 6 active, 1 illegal and 8 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
@@ -199,11 +207,13 @@ func TestState_ProcessTransactions(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 100)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -235,7 +245,7 @@ func TestState_ProcessTransactions(t *testing.T) {
 	}
 	state.ProcessTransactions(txs, 11)
 	for i := range txs {
-		p := state.getProducer(producers[i].PublicKey)
+		p := state.getProducer(producers[i].NodePublicKey)
 		if !assert.Equal(t, fmt.Sprintf("Updated-%d", i), p.info.NickName) {
 			t.FailNow()
 		}
@@ -244,7 +254,7 @@ func TestState_ProcessTransactions(t *testing.T) {
 	// Cancel 10 producers.
 	txs = make([]*types.Transaction, 10)
 	for i := range txs {
-		txs[i] = mockCancelProducerTx(producers[i].PublicKey)
+		txs[i] = mockCancelProducerTx(producers[i].OwnerPublicKey)
 	}
 	state.ProcessTransactions(txs, 12)
 	// at this point, we have 10 canceled, 40 pending, 50 active and 90 in total producers.
@@ -264,7 +274,7 @@ func TestState_ProcessTransactions(t *testing.T) {
 	// Vote 10 producers for 10 times.
 	publicKeys := make([][]byte, 10)
 	for i, p := range producers[10:20] {
-		publicKeys[i] = p.PublicKey
+		publicKeys[i] = p.OwnerPublicKey
 	}
 	txs = make([]*types.Transaction, 10)
 	for i := range txs {
@@ -281,7 +291,7 @@ func TestState_ProcessTransactions(t *testing.T) {
 	// Illegal 10 producers.
 	txs = make([]*types.Transaction, 10)
 	for i := range txs {
-		txs[i] = mockIllegalBlockTx(producers[10+i].PublicKey)
+		txs[i] = mockIllegalBlockTx(producers[10+i].OwnerPublicKey)
 	}
 	state.ProcessTransactions(txs, 14)
 	// at this point, we have 10 canceled, 20 pending, 60 active, 10 illegal and 80 in total producers.
@@ -304,16 +314,18 @@ func TestState_ProcessTransactions(t *testing.T) {
 	// Mixed transactions 1 register, 2 cancel, 3 updates, 4 votes, 5 illegals.
 	txs = make([]*types.Transaction, 15)
 	info := &payload.ProducerInfo{
-		PublicKey: make([]byte, 33),
+		OwnerPublicKey: make([]byte, 33),
+		NodePublicKey:  make([]byte, 33),
 	}
-	for i := range info.PublicKey {
-		info.PublicKey[i] = byte(101)
+	for i := range info.OwnerPublicKey {
+		info.OwnerPublicKey[i] = byte(101)
 	}
+	rand.Read(info.NodePublicKey)
 	info.NickName = "Producer-101"
 	txs[0] = mockRegisterProducerTx(info)
 
 	for i := 0; i < 2; i++ {
-		txs[1+i] = mockCancelProducerTx(producers[20+i].PublicKey)
+		txs[1+i] = mockCancelProducerTx(producers[20+i].OwnerPublicKey)
 	}
 
 	for i := 0; i < 3; i++ {
@@ -322,14 +334,14 @@ func TestState_ProcessTransactions(t *testing.T) {
 
 	publicKeys = make([][]byte, 4)
 	for i, p := range producers[40:44] {
-		publicKeys[i] = p.PublicKey
+		publicKeys[i] = p.OwnerPublicKey
 	}
 	for i := 0; i < 4; i++ {
 		txs[6+i] = mockVoteTx(publicKeys)
 	}
 
 	for i := 0; i < 5; i++ {
-		txs[10+i] = mockIllegalBlockTx(producers[50+i].PublicKey)
+		txs[10+i] = mockIllegalBlockTx(producers[50+i].OwnerPublicKey)
 	}
 	state.ProcessTransactions(txs, 15)
 	// at this point, we have 12 canceled, 11 pending, 63 active, 15 illegal and 74 in total producers.
@@ -368,11 +380,13 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -385,7 +399,7 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 	// At this point, we have 6 pending, 4 active and 10 in total producers.
 
 	// Make producer 0 illegal.
-	tx := mockIllegalBlockTx(producers[0].PublicKey)
+	tx := mockIllegalBlockTx(producers[0].OwnerPublicKey)
 	state.ProcessIllegalBlockEvidence(tx.Payload)
 	// At this point, we have 6 pending, 3 active 1 illegal and 9 in total producers.
 	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
@@ -422,11 +436,13 @@ func TestState_Rollback(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -471,11 +487,13 @@ func TestState_GetHistory(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -489,22 +507,28 @@ func TestState_GetHistory(t *testing.T) {
 
 	// Test update producer.
 	producers[0].NickName = "Updated"
+	nodePublicKey := make([]byte, 33)
+	rand.Read(nodePublicKey)
+	producers[0].NodePublicKey = nodePublicKey
 	tx := mockUpdateProducerTx(producers[0])
 	state.ProcessTransactions([]*types.Transaction{tx}, 11)
-	p := state.getProducer(producers[0].PublicKey)
+	p := state.getProducer(producers[0].NodePublicKey)
+	if !assert.NotNil(t, p) {
+		t.FailNow()
+	}
 	if !assert.Equal(t, "Updated", p.info.NickName) {
 		t.FailNow()
 	}
 
 	// Test cancel producer.
-	tx = mockCancelProducerTx(producers[0].PublicKey)
+	tx = mockCancelProducerTx(producers[0].OwnerPublicKey)
 	state.ProcessTransactions([]*types.Transaction{tx}, 12)
 	// At this point, we have 1 canceled, 4 pending, 5 active and 9 in total producers.
 
 	// Test vote producer.
 	publicKeys := make([][]byte, 5)
 	for i, p := range producers[1:6] {
-		publicKeys[i] = p.PublicKey
+		publicKeys[i] = p.OwnerPublicKey
 	}
 	tx = mockVoteTx(publicKeys)
 	state.ProcessTransactions([]*types.Transaction{tx}, 13)
@@ -516,7 +540,7 @@ func TestState_GetHistory(t *testing.T) {
 	}
 
 	// Test illegal producer.
-	tx = mockIllegalBlockTx(producers[1].PublicKey)
+	tx = mockIllegalBlockTx(producers[1].OwnerPublicKey)
 	state.ProcessTransactions([]*types.Transaction{tx}, 14)
 	// At this point, we have 1 canceled, 2 pending, 6 active, 1 illegal and 8 in total producers.
 
@@ -602,18 +626,20 @@ func TestState_GetHistory(t *testing.T) {
 
 }
 
-func TestState_IsUnusedNickname(t *testing.T) {
+func TestState_NicknameExists(t *testing.T) {
 	state := NewState()
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			PublicKey: make([]byte, 33),
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
 		}
-		for j := range p.PublicKey {
-			p.PublicKey[j] = byte(i)
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
 		}
+		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -625,7 +651,7 @@ func TestState_IsUnusedNickname(t *testing.T) {
 	}
 
 	for i := range producers {
-		if !assert.Equal(t, false, state.IsUnusedNickname(
+		if !assert.Equal(t, true, state.NicknameExists(
 			fmt.Sprintf("Producer-%d", i+1))) {
 			t.FailNow()
 		}
@@ -633,28 +659,88 @@ func TestState_IsUnusedNickname(t *testing.T) {
 
 	// Change producer-1 nickname to Updated.
 	producers[0].NickName = "Updated"
+	nodePublicKey := make([]byte, 33)
+	rand.Read(nodePublicKey)
+	producers[0].NodePublicKey = nodePublicKey
 	tx := mockUpdateProducerTx(producers[0])
 	state.ProcessTransactions([]*types.Transaction{tx}, 11)
-	p := state.getProducer(producers[0].PublicKey)
+	p := state.getProducer(producers[0].NodePublicKey)
+	if !assert.NotNil(t, p) {
+		t.FailNow()
+	}
 	if !assert.Equal(t, "Updated", p.info.NickName) {
 		t.FailNow()
 	}
 
-	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-1")) {
+	if !assert.Equal(t, false, state.NicknameExists("Producer-1")) {
 		t.FailNow()
 	}
 
 	// Cancel producer-2, see if nickname change to unused.
-	tx = mockCancelProducerTx(producers[1].PublicKey)
+	tx = mockCancelProducerTx(producers[1].OwnerPublicKey)
 	state.ProcessTransactions([]*types.Transaction{tx}, 12)
-	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-2")) {
+	if !assert.Equal(t, false, state.NicknameExists("Producer-2")) {
 		t.FailNow()
 	}
 
 	// Make producer-3 illegal, see if nickname change to unused.
-	tx = mockIllegalBlockTx(producers[2].PublicKey)
+	tx = mockIllegalBlockTx(producers[2].OwnerPublicKey)
 	state.ProcessIllegalBlockEvidence(tx.Payload)
-	if !assert.Equal(t, true, state.IsUnusedNickname("Producer-3")) {
+	if !assert.Equal(t, false, state.NicknameExists("Producer-3")) {
+		t.FailNow()
+	}
+}
+
+func TestState_ProducerExists(t *testing.T) {
+	state := NewState()
+
+	// Create 10 producers info.
+	producers := make([]*payload.ProducerInfo, 10)
+	for i, p := range producers {
+		p = &payload.ProducerInfo{
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
+		}
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
+		}
+		rand.Read(p.NodePublicKey)
+		p.NickName = fmt.Sprintf("Producer-%d", i+1)
+		producers[i] = p
+	}
+
+	// Register each producer on one height.
+	for i, p := range producers {
+		tx := mockRegisterProducerTx(p)
+		state.ProcessTransactions([]*types.Transaction{tx}, uint32(i+1))
+	}
+
+	for _,p := range producers {
+		if !assert.Equal(t, true, state.ProducerExists(p.NodePublicKey)) {
+			t.FailNow()
+		}
+		if !assert.Equal(t, true, state.ProducerExists(p.OwnerPublicKey)) {
+			t.FailNow()
+		}
+	}
+
+	// Change producer node public key
+	oldPublicKey := producers[0].NodePublicKey
+	producers[0].NodePublicKey = make([]byte, 33)
+	rand.Read(producers[0].NodePublicKey)
+	tx := mockUpdateProducerTx(producers[0])
+	state.ProcessTransactions([]*types.Transaction{tx}, 11)
+	if !assert.Equal(t, true, state.ProducerExists(producers[0].NodePublicKey)) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, false, state.ProducerExists(oldPublicKey)) {
+		t.FailNow()
+	}
+
+	// Canceled producer also existed.
+	tx = mockCancelProducerTx(producers[0].OwnerPublicKey)
+	state.ProcessTransactions([]*types.Transaction{tx}, 12)
+	if !assert.Equal(t, true, state.ProducerExists(producers[0].OwnerPublicKey)) {
 		t.FailNow()
 	}
 }
@@ -663,10 +749,12 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 	state := NewState()
 
 	producer := &payload.ProducerInfo{
-		PublicKey: make([]byte, 33),
-		NickName:  "Producer",
+		OwnerPublicKey: make([]byte, 33),
+		NodePublicKey:  make([]byte, 33),
+		NickName:       "Producer",
 	}
-	rand.Read(producer.PublicKey)
+	rand.Read(producer.OwnerPublicKey)
+	rand.Read(producer.NodePublicKey)
 
 	tx := mockRegisterProducerTx(producer)
 	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
@@ -682,17 +770,17 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 		t.FailNow()
 	}
 
-	tx = mockCancelProducerTx(producer.PublicKey)
+	tx = mockCancelProducerTx(producer.OwnerPublicKey)
 	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
 		t.FailNow()
 	}
 
-	tx = mockVoteTx([][]byte{producer.PublicKey})
+	tx = mockVoteTx([][]byte{producer.OwnerPublicKey})
 	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
 		t.FailNow()
 	}
 	state.ProcessTransactions([]*types.Transaction{tx}, 10)
-	p := state.getProducer(producer.PublicKey)
+	p := state.getProducer(producer.NodePublicKey)
 	if !assert.Equal(t, common.Fixed64(100), p.votes) {
 		t.FailNow()
 	}
@@ -702,12 +790,12 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 		t.FailNow()
 	}
 	state.ProcessTransactions([]*types.Transaction{tx}, 11)
-	p = state.getProducer(producer.PublicKey)
+	p = state.getProducer(producer.OwnerPublicKey)
 	if !assert.Equal(t, common.Fixed64(0), p.votes) {
 		t.FailNow()
 	}
 
-	tx = mockIllegalBlockTx(producer.PublicKey)
+	tx = mockIllegalBlockTx(producer.OwnerPublicKey)
 	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
 		t.FailNow()
 	}
