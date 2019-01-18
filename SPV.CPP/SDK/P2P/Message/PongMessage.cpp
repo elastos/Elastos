@@ -51,7 +51,10 @@ namespace Elastos {
 		}
 
 		void PongMessage::Send(const SendMessageParameter &param) {
-
+			const PongParameter &pongParameter = dynamic_cast<const PongParameter &>(param);
+			ByteStream stream;
+			stream.writeUint64(pongParameter.lastBlockHeight);
+			_peer->SendMessage(stream.getBuffer(), Type());
 		}
 
 		std::string PongMessage::Type() const {

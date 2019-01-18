@@ -10,6 +10,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		struct PongParameter : public SendMessageParameter {
+			uint64_t lastBlockHeight;
+		};
+
 		class PongMessage :
 				public Message {
 		public:

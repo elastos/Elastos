@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PingMessage.h"
+#include "PongMessage.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/P2P/Peer.h>
@@ -33,10 +34,11 @@ namespace Elastos {
 				_peer->info("got ping");
 				bool needRelayPing = false;
 				PeerManager *manager = _peer->getPeerManager();
-				CMBlock message(sizeof(uint64_t));
 
-				uint64_t height = manager->GetLastBlockHeight();
-				memcpy(message, &height, message.GetSize());
+				PongParameter pongParameter;
+				pongParameter.lastBlockHeight = manager->GetLastBlockHeight();
+				_peer->SendMessage(MSG_PONG, pongParameter);
+
 				if (manager->getConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
 					time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
 
@@ -51,7 +53,6 @@ namespace Elastos {
 					}
 				}
 
-				_peer->SendMessage(message, MSG_PONG);
 				if (needRelayPing)
 					FireRelayedPingMsg();
 			}
@@ -60,7 +61,7 @@ namespace Elastos {
 		}
 
 		void PingMessage::Send(const SendMessageParameter &param) {
-			uint8_t msg[sizeof(uint64_t)];
+			ByteStream stream;
 			struct timeval tv;
 
 			gettimeofday(&tv, nullptr);
@@ -69,11 +70,10 @@ namespace Elastos {
 			_peer->SetStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
 
 			_peer->addPongCallback(pingParameter.callback);
-			UInt64SetLE(msg, pingParameter.lastBlockHeight);
 
-			CMBlock msgBlock(sizeof(msg));
-			memcpy(msgBlock, msg, sizeof(msg));
-			_peer->SendMessage(msgBlock, MSG_PING);
+			stream.writeUint64(pingParameter.lastBlockHeight);
+
+			_peer->SendMessage(stream.getBuffer(), MSG_PING);
 		}
 
 		std::string PingMessage::Type() const {
