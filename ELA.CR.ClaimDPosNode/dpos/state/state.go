@@ -324,7 +324,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 // registration is valid.
 func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	nickname := payload.NickName
-	key := hex.EncodeToString(payload.PublicKey)
+	key := hex.EncodeToString(payload.OwnerPublicKey)
 	s.history.append(height, func() {
 		s.nicknames[nickname] = struct{}{}
 		s.pendingProducers[key] =
@@ -338,7 +338,7 @@ func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 // updateProducer handles the update producer transaction, returns if this
 // update is valid.
 func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
-	producer := s.getProducer(info.PublicKey)
+	producer := s.getProducer(info.OwnerPublicKey)
 	producerInfo := producer.info
 	s.history.append(height, func() {
 		delete(s.nicknames, producerInfo.NickName)
@@ -354,8 +354,8 @@ func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 // cancelProducer handles the cancel producer transaction, returns if this
 // cancel is valid.
 func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
-	key := hex.EncodeToString(payload.PublicKey)
-	producer := s.getProducer(payload.PublicKey)
+	key := hex.EncodeToString(payload.OwnerPublicKey)
+	producer := s.getProducer(payload.OwnerPublicKey)
 	s.history.append(height, func() {
 		producer.state = Canceled
 		producer.cancelHeight = height
