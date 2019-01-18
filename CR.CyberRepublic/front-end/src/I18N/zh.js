@@ -109,16 +109,21 @@ const zh = {
     'home.organizers.action_2': '查看我可以参与的活动和任务',
     'home.summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
     'home.summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
-    'home.box_1.title': "什么是Cyber Republic？",
-    'home.box_1.description': "一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。",
-    'home.box_2.title': "什么是Cyber Republic委员会？",
-    'home.box_2.description': "民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。",
-    'home.box_3.title': "什么是Cyber Republic章程？",
-    'home.box_3.description': "Cyber Republic是一个去中心化的自治组织，其章程用于管理社区成员的行为并保护其平台的公正性。",
-    'home.explanation_1.part_1': 'Cyber Republic为积极主动的个体提供了一生难得的机会：远程工作，没有老板，与其他志同道合的人一起自主选择任务，来完成充实而有影响力的工作。',
-    'home.explanation_1.part_2': 'Cyber Republic 正在努力地创造工作自由。',
-    'home.explanation_2.part_1': '共识：亦来云采用了POW / DPOS 混合共识模型。每年4%的通胀将分配如下：35%将奖励给POW矿工，35%将奖励给DPOS节点，剩下30%将作为Cyber Republic开发亦来云生态的基金。',
-    'home.explanation_2.part_2': 'Cyber Republic 是由协助开发亦来云生态系统的热心成员组成的社区。',
+
+    'home.box_1.title': '什么是Cyber Republic？',
+    'home.box_1.description': '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
+
+    'home.explanation_1.part_1': '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
+    'home.explanation_1.part_2': '',
+
+    'home.box_2.title': '什么是Cyber Republic委员会？',
+    'home.box_2.description': '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
+
+    'home.explanation_2.part_1': '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
+    'home.explanation_2.part_2': '',
+
+    'home.box_3.title': '什么是Cyber Republic章程？',
+    'home.box_3.description': 'Cyber Republic是一个去中心化的自治组织，其章程用于管理社区成员的行为并保护其平台的公正性。',
     'home.explanation_3.box_1.title': '亦来云Cyber Republic章程',
     'home.explanation_3.box_1.text': '规定了Cyber Republic所有成员应当维护的权利、遵守的规则和规范行为的道德准则。',
     'home.explanation_3.box_2.title': '亦来云Cyber Republic委员会创始文件',
@@ -127,7 +132,7 @@ const zh = {
     'home.explanation_3.box_3.text': '描述了在Cyber Republic及其子社区内实施变更，分配资金和批准提案的流程。',
     'home.explanation_3.box_4.title': '亦来云Cyber Republic委员会利益冲突政策',
     'home.explanation_3.box_4.text': 'Cyber Republic委员会成员必须全心全意地致力于Cyber Republic及其子社区的宣传推广。他们目前担任的其他职位可能不应与之产生冲突。',
-    'home.explanation_3.date': '2018年12月13日',
+    'home.explanation_3.date': '',
 
     // Pop-up Announcement
     'popup.changes.title': 'Cyber Republic的重要公告',
