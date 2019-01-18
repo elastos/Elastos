@@ -1,19 +1,20 @@
 package httpjsonrpc
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
+
 	. "github.com/elastos/Elastos.ELA/common/config"
-	"errors"
 	"github.com/elastos/Elastos.ELA/common/log"
 	elaErr "github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/servers"
-	"crypto/sha256"
-	"encoding/base64"
-	"crypto/subtle"
-	"net"
 )
 
 //an instance of the multiplexer
@@ -76,12 +77,12 @@ func StartRPCServer() {
 func Handle(w http.ResponseWriter, r *http.Request) {
 	//JSON RPC commands should be POSTs
 	isClientAllowed := clientAllowed(r)
-	if !isClientAllowed{
+	if !isClientAllowed {
 		log.Warn("HTTP Client ip is not allowd")
 		http.Error(w, "Client ip is not allowd", http.StatusNetworkAuthenticationRequired)
 		return
 	}
-	
+
 	if r.Method != "POST" {
 		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
 		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
@@ -93,7 +94,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isCheckAuthOk,  err := checkAuth(r)
+	isCheckAuthOk, err := checkAuth(r)
 	if !isCheckAuthOk {
 		log.Warn(err.Error())
 		http.Error(w, err.Error(), http.StatusNetworkAuthenticationRequired)
@@ -164,9 +165,9 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func  clientAllowed(req *http.Request) (bool) {
+func clientAllowed(req *http.Request) bool {
 	log.Debugf("RemoteAddr %s \n", req.RemoteAddr)
-	log.Debugf("WhiteIpList %v \n", Parameters.RpcConfiguration.WhiteIpList )
+	log.Debugf("WhiteIPList %v \n", Parameters.RpcConfiguration.WhiteIPList)
 
 	//this ipAbbr  may be  ::1 when request is localhost
 	ipAbbr, _, err := net.SplitHostPort(req.RemoteAddr)
@@ -179,24 +180,23 @@ func  clientAllowed(req *http.Request) (bool) {
 	remoteIp := net.ParseIP(ipAbbr)
 	log.Debugf("RemoteAddr clientAllowed remoteIp %s \n", remoteIp.String())
 
-
 	if remoteIp == nil {
 		log.Errorf("clientAllowed ParseIP ipAbbr %s failure  \n", ipAbbr)
 		return false
 	}
 
-	if remoteIp.IsLoopback(){
+	if remoteIp.IsLoopback() {
 		log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
-		return  true
+		return true
 	}
 
-	for _, cfgIp := range Parameters.RpcConfiguration.WhiteIpList {
-		//WhiteIpList have 0.0.0.0  allow all ip in
+	for _, cfgIp := range Parameters.RpcConfiguration.WhiteIPList {
+		//WhiteIPList have 0.0.0.0  allow all ip in
 		if cfgIp == "0.0.0.0" {
-			return  true
+			return true
 		}
 		if cfgIp == remoteIp.String() {
-			return  true
+			return true
 		}
 
 	}
@@ -204,33 +204,33 @@ func  clientAllowed(req *http.Request) (bool) {
 	return false
 }
 
-func  checkAuth(r *http.Request) (bool,  error) {
+func checkAuth(r *http.Request) (bool, error) {
 
-	log.Debugf("checkAuth PowConfiguration %+v" , Parameters.RpcConfiguration)
+	log.Debugf("checkAuth PowConfiguration %+v", Parameters.RpcConfiguration)
 
-	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0)  {
-		return true,  nil
+	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0) {
+		return true, nil
 	}
 	authHeader := r.Header["Authorization"]
 	if len(authHeader) <= 0 {
 		log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-		return false , errors.New("checkAuth failure Authorization empty")
+		return false, errors.New("checkAuth failure Authorization empty")
 	}
 
 	authSha256 := sha256.Sum256([]byte(authHeader[0]))
 
 	login := Parameters.RpcConfiguration.User + ":" + Parameters.RpcConfiguration.Pass
-	auth  := "Basic " + base64.StdEncoding.EncodeToString([]byte(login))
+	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(login))
 	cfgAuthSha256 := sha256.Sum256([]byte(auth))
 
 	resultCmp := subtle.ConstantTimeCompare(authSha256[:], cfgAuthSha256[:])
 	if resultCmp == 1 {
-		return true,  nil
+		return true, nil
 	}
 
 	// Request's auth doesn't match  user
 	log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-	return false,  errors.New("checkAuth failure Authorization username or password error")
+	return false, errors.New("checkAuth failure Authorization username or password error")
 }
 
 func RPCError(w http.ResponseWriter, httpStatus int, code elaErr.ErrCode, message string) {

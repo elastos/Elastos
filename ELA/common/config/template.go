@@ -48,6 +48,6 @@ var configTemplate = Configuration{
 	RpcConfiguration: RpcConfiguration{
 		User:        "",
 		Pass:        "",
-		WhiteIpList: []string{"127.0.0.1"},
+		WhiteIPList: []string{"127.0.0.1"},
 	},
 }
