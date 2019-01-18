@@ -93,9 +93,9 @@ func main() {
 		goto ERROR
 	}
 	store.InitArbitrators(store.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		ArbitratorsCount: config.ArbitratorsCount,
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		MajorityCount:    config.MajorityCount,
 		Store:            dposStore,
 	})
 	if err = blockchain.DefaultLedger.Arbitrators.StartUp(); err != nil {
@@ -105,7 +105,7 @@ func main() {
 	log.Info("Start the P2P networks")
 	noder = node.InitLocalNode()
 
-	if config.Parameters.EnableArbiter {
+	if config.EnableArbiter {
 		log.Info("Start the manager")
 		pwd, err = password.GetFlagPassword()
 		if err != nil {

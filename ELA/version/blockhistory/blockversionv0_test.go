@@ -7,7 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/stretchr/testify/suite"
 )
@@ -24,7 +23,6 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 
 func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.ArbitratorsCount
 
 	arbitrators := make([][]byte, 0)
 	for _, v := range originalArbitrators {
@@ -39,7 +37,6 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionV0TestSuite) TestAssignCoinbaseTxRewards() {
