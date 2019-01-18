@@ -15,9 +15,10 @@ export default createContainer(Component, (state, ownProps) => {
 
   return {
     async getCurrentUser() {
+      const userId = _.get(ownProps, 'user._id')
       try {
-        if (!_.isEmpty(ownProps)) {
-          await userService.getMember(_.get(ownProps, 'user._id'))
+        if (userId) {
+          await userService.getMember(userId)
         } else {
           await userService.getCurrentUser()
         }
