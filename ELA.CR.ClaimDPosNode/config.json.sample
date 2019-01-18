@@ -49,7 +49,7 @@
     "RpcConfiguration": {
       "User": "ElaUser",
       "Pass": "Ela123" ,
-      "WhiteIpList":[
+      "WhiteIPList":[
         "0.0.0.0"
       ]
     }
