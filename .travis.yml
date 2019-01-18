@@ -179,18 +179,21 @@ install:
 
       if [[ "$ANDROID_ABI" == "" ]]; then
         if [[ "$RASPBERRRIPI" != "" ]]; then
-          cd /tmp && git clone https://github.com/raspberrypi/tools.git raspberrypitools;
+          cd /tmp;
+          git clone https://github.com/raspberrypi/tools.git raspberrypitools;
           export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
-          cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-          tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+          wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+          tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
           export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
         fi
       else
-        echo y | sdkmanager 'ndk-bundle';
-        export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle;
-        cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-        tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+        cd /tmp;
+        wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+        tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
         export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+        wget -q https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip;
+        unzip -q android-ndk-r16b-linux-x86_64.zip;
+        export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
       fi
     else
       ulimit -c unlimited;
