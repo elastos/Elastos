@@ -84,22 +84,27 @@ import CouncilDetailPage from '../module/page/council/detail/Container';
 import CVoteCreatePage from '@/module/page/CVote/create/Container';
 import CVoteListPage from '@/module/page/CVote/list/Container';
 import CVoteEditPage from '@/module/page/CVote/edit/Container';
+import CVoteDetailPage from '@/module/page/CVote/detail/Container';
 
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
-
+import ConstitutionPage from '@/module/page/constitution/Container'
 
 import NotFound from '@/module/page/error/NotFound'
 
 export default [
     {
         path: '/',
-        page: LandingPage
+        page: HomePage
     },
     {
         path: '/home',
         page: HomePage
+    },
+    {
+        path: '/constitution/:id',
+        page: ConstitutionPage
     },
     {
         path: '/sso/login',
@@ -431,7 +436,7 @@ export default [
 
     // council
     {
-        path : '/council',
+        path : '/proposals',
         page : CouncilPage
     },
     // {
@@ -453,6 +458,10 @@ export default [
     {
         path : '/cvote/list',
         page : CVoteListPage
+    },
+    {
+        path : '/cvote/:id',
+        page : CVoteDetailPage
     },
     {
         path : '/cvote/edit/:id',

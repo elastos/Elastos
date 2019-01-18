@@ -128,6 +128,12 @@ export const TASK_CANDIDATE_CATEGORY = {
 }
 
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED']);
+export const CVOTE_RESULT = {
+    SUPPORT: 'support',
+    REJECT: 'reject',
+    ABSTENTION: 'abstention',
+    UNDECIDED: 'undecided',
+};
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
 export const USER_SKILLSET = {
@@ -175,3 +181,10 @@ export const DB_SELECTED_FIELDS = {
         NAME: 'profile.firstName profile.lastName username'
     },
 }
+
+export const COUNCIL_MEMBERS = {
+    '5bcf21f030826d68a940b017': 'Yipeng Su',
+    '5c2f5a15f13d65008969be61': 'Feng Zhang',
+    '5b28be2784f6f900350d30b9': 'Kevin Zhang',
+}
+export const COUNCIL_MEMBER_IDS = _.keys(COUNCIL_MEMBERS)

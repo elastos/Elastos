@@ -30,15 +30,7 @@ export default class extends StandardPage {
     }
 
     redirectToConstitution(link) {
-        if (link == 1) {
-            this.props.history.push('/constitution');
-        } else if (link == 2) {
-            this.props.history.push('/constitution');
-        } else if (link == 3) {
-            this.props.history.push('/constitution');
-        } else {
-            this.props.history.push('/constitution');
-        }
+        this.props.history.push(`/constitution/${link}`)
     }
 
     ord_renderContent() {

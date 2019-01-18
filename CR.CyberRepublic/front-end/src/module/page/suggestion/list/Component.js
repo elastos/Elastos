@@ -25,11 +25,10 @@ const SORT_BY = {
 }
 
 const SORT_BY_TEXT = {
-  likesNum: 'Likes',
-  viewsNum: 'Views',
-  activeness: 'Activeness',
-  createdAt: 'Date Added',
-
+  likesNum: I18N.get('suggestion.likes'),
+  viewsNum: I18N.get('suggestion.views'),
+  activeness: I18N.get('suggestion.activeness'),
+  createdAt: I18N.get('suggestion.dateAdded'),
 }
 
 /**
@@ -62,21 +61,13 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { dataList, loading } = this.props;
-    const loadingNode = <div className="center"><Spin size="large" /></div>
     const headerNode = this.renderHeader()
     const addButtonNode = this.renderAddButton()
     const actionsNode = this.renderHeaderActions()
     const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
-    let listNode = loadingNode
-    if (!loading) {
-      if (_.isEmpty(dataList)) {
-        listNode = <div className="center">{I18N.get('suggestion.befirst')}</div>
-      } else {
-        listNode = this.renderList()
-      }
-    }
+    const listNode = this.renderList()
+
     return (
       <div>
         <div className="p_SuggestionList">
@@ -149,7 +140,7 @@ export default class extends StandardPage {
               <Button
                 key={value}
                 onClick={() => this.onSortByChanged(value)}
-                className={(this.state.sortBy === value && 'selected') || ''}
+                className={(this.state.sortBy === value && 'cr-strikethrough') || ''}
               >
                 {SORT_BY_TEXT[value]}
               </Button>
@@ -171,9 +162,18 @@ export default class extends StandardPage {
   }
 
   renderList() {
-    const { dataList } = this.props
-    const result = _.map(dataList, data => this.renderItem(data))
+    const { dataList, loading } = this.props;
+    const loadingNode = <div className="center"><Spin size="large" /></div>
     const paginationNode = this.renderPagination()
+    let result = loadingNode
+    if (!loading) {
+      if (_.isEmpty(dataList)) {
+        result = <div className="center">{I18N.get('suggestion.nodata')}</div>
+      } else {
+        result = _.map(dataList, data => this.renderItem(data))
+      }
+    }
+
     return (
       <div>
         <div className="list-container">{result}</div>

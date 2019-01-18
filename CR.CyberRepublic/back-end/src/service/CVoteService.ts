@@ -6,7 +6,7 @@ import {validate, utilCrypto, mail} from '../utility';
 import * as moment from 'moment';
 
 // TODO: this needs to be improved
-const map_key = ['Kevin Zhang', 'Fay Li', 'Yipeng Su'];
+const map_key = ['Kevin Zhang', 'Feng Zhang', 'Yipeng Su'];
 
 let tm = null;
 
@@ -26,8 +26,8 @@ export default class extends Base {
             throw 'cvoteservice.create - must be logged in';
         }
 
-        if (!this.isCouncil()) {
-            throw 'cvoteservice.create - not council'
+        if (!this.canManageProposal()) {
+            throw 'cvoteservice.create - not council or secretary'
         }
 
         const db_cvote = this.getDBModel('CVote');
@@ -87,7 +87,7 @@ export default class extends Base {
         // if we are not querying only published records, we need to be an admin
         // TODO: write a test for this
         if (param.published !== true) {
-            if (!this.isLoggedIn() || !this.isAdmin()) {
+            if (!this.isLoggedIn() || !this.canManageProposal()) {
                 throw 'cvoteservice.list - unpublished proposals only visible to admin';
             }
         } else {
@@ -126,7 +126,7 @@ export default class extends Base {
             throw 'cvoteservice.update - invalid current user';
         }
 
-        if (!this.isCouncil()) {
+        if (!this.canManageProposal()) {
             throw 'cvoteservice.update - not council'
         }
 
@@ -181,7 +181,7 @@ export default class extends Base {
         if(!cur){
             throw 'invalid proposal id';
         }
-        if (!this.isCouncil()) {
+        if (!this.canManageProposal()) {
             throw 'cvoteservice.finishById - not council'
         }
         if(_.includes([constant.CVOTE_STATUS.FINAL], cur.status)){
@@ -200,6 +200,15 @@ export default class extends Base {
     public async getById(id): Promise<any>{
         const db_cvote = this.getDBModel('CVote');
         const rs = await db_cvote.findOne({_id : id});
+        const db_user = this.getDBModel('User');
+        const councilMembers = await db_user.find({_id : { $in: constant.COUNCIL_MEMBER_IDS }});
+        const avatar_map = {}
+
+        _.each(councilMembers, user => {
+            const name: string = constant.COUNCIL_MEMBERS[user._id.toString()]
+            avatar_map[name] = user.profile.avatar
+        })
+        rs.avatar_map = avatar_map
         return rs;
     }
 
@@ -267,7 +276,7 @@ export default class extends Base {
         if(!cur){
             throw 'invalid proposal id';
         }
-        if (!this.isCouncil()) {
+        if (!this.canManageProposal()) {
             throw 'cvoteservice.updateNote - not council'
         }
         if(this.currentUser.role !== constant.USER_ROLE.SECRETARY){
@@ -345,14 +354,15 @@ export default class extends Base {
     }
 
     private isCouncil() {
-        return [
+        return constant.COUNCIL_MEMBER_IDS.indexOf(this.currentUser._id.toString()) >= 0 || this.currentUser.role === constant.USER_ROLE.COUNCIL
+    }
 
-            '5b28be2784f6f900350d30b9',
-            '5b367c128f23a70035d35425',
-            '5bcf21f030826d68a940b017',
-            '5b4c3ba6450ff10035954c80'
+    private isSecretary() {
+        return this.currentUser.role === constant.USER_ROLE.SECRETARY
+    }
 
-        ].indexOf(this.currentUser._id.toString()) >= 0
+    private canManageProposal() {
+        return this.isCouncil() || this.isSecretary()
     }
 
 }

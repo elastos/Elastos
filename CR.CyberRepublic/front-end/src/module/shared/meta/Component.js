@@ -7,11 +7,7 @@ import './style.scss'
 
 export default ({ data, hideAuthor, postedByText }) => {
   const { displayId, createdAt } = data;
-  let name = `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}`
-  if (name === ' ') {
-    name = _.get(data, 'createdBy.username')
-  }
-  const author = data.author || name
+  const author = data.author || `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}` || data.username
   const authorNode = hideAuthor ? '' : (
     <span>
       {postedByText || I18N.get('suggestion.postedBy')}
@@ -21,7 +17,7 @@ export default ({ data, hideAuthor, postedByText }) => {
   )
 
   return (
-    <div className="c_SuggestionMeta">
+    <div className="c_Meta">
       <span>{`#${displayId}`}</span>
       {authorNode}
       <span>{moment(createdAt).format('MMM D, YYYY')}</span>

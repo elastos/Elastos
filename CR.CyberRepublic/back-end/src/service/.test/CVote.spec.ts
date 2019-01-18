@@ -58,7 +58,7 @@ describe('Tests for CVote', () => {
                 }
             ))
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.create - not council')
+            expect(err).to.be.equal('cvoteservice.create - not council or secretary')
         }
 
     })
@@ -77,7 +77,7 @@ describe('Tests for CVote', () => {
                 }
             ))
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.create - not council')
+            expect(err).to.be.equal('cvoteservice.create - not council or secretary')
         }
 
     })
