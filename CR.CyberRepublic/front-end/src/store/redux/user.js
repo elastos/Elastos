@@ -8,6 +8,7 @@ class UserRedux extends BaseRedux {
     defineDefaultState() {
         return {
             loading: false,
+            avatar_loading: false,
 
             is_login: false,
             is_leader: false,

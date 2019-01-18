@@ -111,6 +111,8 @@ export default class extends BaseService {
     async getCurrentUser() {
         const userRedux = this.store.getRedux('user')
 
+        this.dispatch(userRedux.actions.avatar_loading_update(true))
+
         const data = await api_request({
             path: '/api/user/current_user'
         })
@@ -136,6 +138,7 @@ export default class extends BaseService {
 
         this.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
         this.dispatch(userRedux.actions.loading_update(false))
+        this.dispatch(userRedux.actions.avatar_loading_update(false))
 
         return data
     }
@@ -144,6 +147,10 @@ export default class extends BaseService {
     async getMember(userId, options = {}) {
         let path = `/api/user/public/${userId}`
         const memberRedux = this.store.getRedux('member')
+        const userRedux = this.store.getRedux('user')
+
+        this.dispatch(userRedux.actions.avatar_loading_update(true))
+
         await this.dispatch(memberRedux.actions.loading_update(true))
 
         if (options.admin) {
@@ -157,6 +164,8 @@ export default class extends BaseService {
 
         await this.dispatch(memberRedux.actions.detail_update(result))
         await this.dispatch(memberRedux.actions.loading_update(false))
+
+        this.dispatch(userRedux.actions.avatar_loading_update(false))
 
         return result
     }
