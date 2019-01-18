@@ -25,6 +25,10 @@ const (
 	LogDir     = "logs"
 	NodeDir    = "node"
 	ArbiterDir = "arbiter"
+
+	MajorityCount    = 3
+	ArbitratorsCount = 5
+	EnableArbiter    = false
 )
 
 var (
@@ -78,25 +82,22 @@ type Configuration struct {
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
 	VoteHeight           uint32               `json:"VoteHeight"`
 	Arbiters             []string             `json:"Arbiters"`
-	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
 	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 }
 
 type ArbiterConfiguration struct {
-	Name             string `json:"Name"`
-	Magic            uint32 `json:"Magic"`
-	NodePort         uint16 `json:"NodePort"`
-	ProtocolVersion  uint32 `json:"ProtocolVersion"`
-	Services         uint64 `json:"Services"`
-	PrintLevel       uint8  `json:"PrintLevel"`
-	SignTolerance    uint64 `json:"SignTolerance"`
-	MaxLogsSize      int64  `json:"MaxLogsSize"`
-	MaxPerLogSize    int64  `json:"MaxPerLogSize"`
-	MaxConnections   int    `json:"MaxConnections"`
-	MajorityCount    uint32 `json:"MajorityCount"`
-	ArbitratorsCount uint32 `json:"ArbitratorsCount"`
-	CandidatesCount  uint32 `json:"CandidatesCount"`
+	Name            string `json:"Name"`
+	Magic           uint32 `json:"Magic"`
+	NodePort        uint16 `json:"NodePort"`
+	ProtocolVersion uint32 `json:"ProtocolVersion"`
+	Services        uint64 `json:"Services"`
+	PrintLevel      uint8  `json:"PrintLevel"`
+	SignTolerance   uint64 `json:"SignTolerance"`
+	MaxLogsSize     int64  `json:"MaxLogsSize"`
+	MaxPerLogSize   int64  `json:"MaxPerLogSize"`
+	MaxConnections  int    `json:"MaxConnections"`
+	CandidatesCount uint32 `json:"CandidatesCount"`
 }
 
 type Seed struct {

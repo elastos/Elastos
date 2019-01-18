@@ -33,7 +33,6 @@
       "ActiveNet": "TestNet"
     },
     "VoteHeight": 100,
-    "EnableArbiter": false,
     "ArbiterConfiguration": {
       "Name": "",
       "Magic": 7630403,
@@ -45,8 +44,6 @@
       "MaxLogsSize": 0,
       "MaxPerLogSize": 0,
       "MaxConnections": 100,
-      "MajorityCount": 3,
-      "ArbitratorsCount": 5,
       "CandidatesCount": 0
     },
     "RpcConfiguration": {

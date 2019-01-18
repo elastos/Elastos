@@ -984,8 +984,8 @@ func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposal
 	signers := d.Evidence.Signers
 	compareSigners := d.CompareEvidence.Signers
 
-	if uint32(len(signers)) < config.Parameters.ArbiterConfiguration.MajorityCount ||
-		uint32(len(compareSigners)) < config.Parameters.ArbiterConfiguration.MajorityCount {
+	if uint32(len(signers)) < config.MajorityCount ||
+		uint32(len(compareSigners)) < config.MajorityCount {
 		return errors.New("Signers count less than dpos required majority count")
 	}
 

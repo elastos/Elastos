@@ -1074,7 +1074,7 @@ func VoteStatus(param Params) map[string]interface{} {
 				pending = true
 			}
 		}
-		if !pending {
+		if pending {
 			break
 		}
 	}
