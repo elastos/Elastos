@@ -677,6 +677,7 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
 	sp.AssociateConnection(conn)
+	s.addrManager.AddAddress(sp.NA(), sp.NA())
 	go s.peerDoneHandler(sp)
 }
 
@@ -1211,6 +1212,12 @@ func newServer(origCfg *Config) (*server, error) {
 	// Startup persistent peers.
 	for _, addr := range cfg.SeedPeers {
 		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add seed peer addresses into addr manager
+		err = s.addrManager.AddAddressByIP(netAddr.String())
 		if err != nil {
 			return nil, err
 		}
