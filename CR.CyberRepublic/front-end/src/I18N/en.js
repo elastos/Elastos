@@ -109,25 +109,31 @@ const en = {
     'home.organizers.action_2': 'View Events & Tasks I can contribute to',
     'home.summary_1': 'We are a diverse democratic group of leaders, developers, organizers and designers',
     'home.summary_2': 'formed to promote Elastos in our communities. Membership is open to everyone.',
-    'home.box_1.title': "What is CR?",
-    'home.box_1.description': "Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss...",
-    'home.box_2.title': "What is CRC?",
-    'home.box_2.description': "CRC is Cyber Republic Consensus.",
-    'home.box_3.title': "Constitution",
-    'home.box_3.description': "CR is a DAO, anyone from anywhere can build it together.",
-    'home.explanation_1.part_1': 'Cyber Republic presents the motivated individual with the opportunity of a lifetime: to work remotely, without a boss, alongside other like-minded individuals doing fulfilling, impactful work which is composed of self-selected tasks.',
-    'home.explanation_1.part_2': 'Cyber Republic is working freely to create freedom.',
-    'home.explanation_2.part_1': 'Consensus. Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.',
-    'home.explanation_2.part_2': 'Cyber Republic. The Cyber Republic is the engaged community of Elastos ethusiasts who help develop the Elastos Ecosystem.',
+
+    'home.box_1.title': 'What is Cyber Republic?',
+    'home.box_1.description': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers working together to promote Elastos in our communities. Membership is open to all.',
+
+    'home.explanation_1.part_1': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers working together to promote Elastos in our communities. Membership is open to all.',
+    'home.explanation_1.part_2': '',
+
+    'home.box_2.title': 'What is the Cyber Republic Council?',
+    'home.box_2.description': 'A democratically elected group of 3 individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+
+    'home.explanation_2.part_1': 'A democratically elected group of 3 individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+    'home.explanation_2.part_2': '',
+
+    'home.box_3.title': 'What is the Cyber Republic Constitution?',
+    'home.box_3.description': 'The Cyber Republic is a decentralized autonomous organization, and its Constitution serves to govern the actions of its members and protects the integrity of its platform.',
+
     'home.explanation_3.box_1.title': 'Elastos Cyber Republic Constitution',
-    'home.explanation_3.box_1.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_1.text': 'The set of rights, rules, and a code of ethics by which all members of the Cyber Republic uphold, abide, and conduct themselves.',
     'home.explanation_3.box_2.title': 'Elastos Cyber Republic Council Founding Document',
-    'home.explanation_3.box_2.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_2.text': 'An abstract that takes care to lay out the vision and establish the value set underneath which the Cyber Republic will operate and grow.',
     'home.explanation_3.box_3.title': 'Elastos Cyber Republic Voting Rules',
-    'home.explanation_3.box_3.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
+    'home.explanation_3.box_3.text': 'These rules delineate the process of effecting changes, allocating funds, and approving proposals within the Cyber Republic and its sub-communities.',
     'home.explanation_3.box_4.title': 'Elastos Cyber Republic Council Conflict of Interest Policy',
-    'home.explanation_3.box_4.text': 'This is an Alpha version of this document. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.',
-    'home.explanation_3.date': 'Dec 13, 2018',
+    'home.explanation_3.box_4.text': 'Members of the Cyber Republic Council must be dedicated fully to the propagation of the Cyber Republic and its sub-communities. Other positions they presently hold may not create conflicting incentives thereof.',
+    'home.explanation_3.date': '',
 
     // Pop-up Announcement
     'popup.changes.title': 'Important CR Announcement',

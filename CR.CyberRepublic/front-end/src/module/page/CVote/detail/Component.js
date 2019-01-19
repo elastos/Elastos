@@ -250,7 +250,7 @@ class C extends StandardPage {
     const detail = _.map(stats, (statArr, key) => {
       const users = _.map(statArr, stat => ({ name: stat.name, avatar: stat.avatar }))
       const label = CVOTE_RESULT_TEXT[key]
-      const type = key
+      const type = label.toLowerCase()
       const props = {
         users,
         type,

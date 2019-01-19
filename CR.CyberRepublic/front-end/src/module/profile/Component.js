@@ -225,9 +225,6 @@ export default class extends BaseComponent {
         const p_avatar = {
             showUploadList: false,
             customRequest: (info) => {
-                this.setState({
-                    avatar_loading: true
-                })
 
                 upload_file(info.file).then(async (d) => {
                     await this.props.updateUser(this.props.currentUserId, {
@@ -240,9 +237,6 @@ export default class extends BaseComponent {
 
                     await this.props.getCurrentUser()
 
-                    this.setState({
-                        avatar_loading: false
-                    })
                 })
             }
         }
@@ -255,7 +249,7 @@ export default class extends BaseComponent {
                         showUploadList={false}
                         {...p_avatar}
                     >
-                        {this.state.avatar_loading
+                        {this.props.avatar_loading
                             ? (
                                 <div>
                                     <Icon type="loading"/>

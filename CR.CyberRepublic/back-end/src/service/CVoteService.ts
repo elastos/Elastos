@@ -5,9 +5,6 @@ import {constant} from '../constant';
 import {validate, utilCrypto, mail} from '../utility';
 import * as moment from 'moment';
 
-// TODO: this needs to be improved
-const map_key = ['Kevin Zhang', 'Feng Zhang', 'Yipeng Su'];
-
 let tm = null;
 
 const restrictedFields = {

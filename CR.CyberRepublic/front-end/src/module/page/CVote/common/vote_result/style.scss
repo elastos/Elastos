@@ -11,16 +11,16 @@
     margin-right: 50px;
     width: 90px;
   }
-  .support {
+  .yes {
     border-left: 10px solid #008D85;
   }
-  .reject {
+  .no {
     border-left: 10px solid #BE1313;
   }
-  .abstention {
+  .abstained {
     border-left: 10px solid #C4C4C4;
   }
-  .undefined {  // undecided
+  .undecided {  // undecided
     border-left: 10px solid #EFEFEF;
   }
   .voter-list {
