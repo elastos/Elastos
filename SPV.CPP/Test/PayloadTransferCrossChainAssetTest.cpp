@@ -91,9 +91,9 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 
 		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
-		nlohmann::json jsonData = p1.toJson();
+		nlohmann::json jsonData = p1.toJson(0);
 
-		p2.fromJson(jsonData);
+		p2.fromJson(jsonData, 0);
 
 		verifyPayload(p1, p2);
 	}

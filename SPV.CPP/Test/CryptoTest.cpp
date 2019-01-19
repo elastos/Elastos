@@ -46,7 +46,8 @@ TEST_CASE("Encrypt and decrypt", "[Crypto]") {
 		REQUIRE(plaintext != plainResult);
 
 		cipherText.clear();
-		REQUIRE(Crypto::Encrypt(cipherText, "", passwd, salt, iv, adata, ks == 128 ? true : false));
+		plaintext = "";
+		REQUIRE(Crypto::Encrypt(cipherText, plaintext, passwd, salt, iv, adata, ks == 128 ? true : false));
 
 		plaintext.clear();
 		REQUIRE(Crypto::Decrypt(plaintext, cipherText, passwd, salt, iv, adata, ks == 128 ? true : false));

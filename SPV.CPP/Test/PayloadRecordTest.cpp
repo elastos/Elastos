@@ -29,9 +29,9 @@ TEST_CASE("PayloadRecord test", "PayloadRecord") {
 	SECTION("to json and from json") {
 		PayloadRecord p1(getRandString(20), getRandCMBlock(50)), p2;
 
-		nlohmann::json p1Json = p1.toJson();
+		nlohmann::json p1Json = p1.toJson(0);
 
-		p2.fromJson(p1Json);
+		p2.fromJson(p1Json, 0);
 
 		REQUIRE(p1.getRecordType() == p2.getRecordType());
 		REQUIRE(p1.getRecordData() == p2.getRecordData());

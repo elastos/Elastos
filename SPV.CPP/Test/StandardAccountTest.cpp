@@ -28,7 +28,7 @@ TEST_CASE("Derive id public and private key", "[Id agent]") {
 		pubKey.Resize(len);
 
 		Key key;
-		key.setPubKey(pubKey);
+		key.SetPublicKey(pubKey);
 		std::string pubId = key.keyToAddress(ELA_IDCHAIN);
 
 		UInt512 seed = account.DeriveSeed(payPassword);
@@ -56,7 +56,7 @@ TEST_CASE("Derive public and private key", "[HD wallet]") {
 							   coinIndex | BIP32_HARD, 0 | BIP32_HARD, 0, 0);
 
 			Key key(brKey);
-			CMBlock pubkey = key.getPubkey();
+			CMBlock pubkey = key.GetPublicKey();
 			var_clean(&chainCode);
 			var_clean(&seed);
 			REQUIRE("EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh" == key.address());

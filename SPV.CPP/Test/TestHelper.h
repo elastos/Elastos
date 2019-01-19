@@ -11,6 +11,7 @@
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -106,17 +107,17 @@ namespace Elastos {
 				output.setOutputLock(getRandUInt32());
 				output.setProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
-					output.SetType(TransactionOutput::Type::VoteOutput);
-					output.SetPayloadVersion(0);
-					std::vector<CMBlock> candidates;
-					for (size_t i = 0; i < 50; ++i) {
-						candidates.push_back(getRandCMBlock(33));
+					output.SetType(TransactionOutput::Type(i % 2));
+					if (output.GetType() == TransactionOutput::VoteOutput) {
+						std::vector<CMBlock> candidates;
+						for (size_t i = 0; i < 50; ++i) {
+							candidates.push_back(getRandCMBlock(33));
+						}
+						PayloadVote::VoteContent vc(PayloadVote::Delegate, candidates);
+						output.SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
+					} else {
+						output.SetPayload(OutputPayloadPtr(new PayloadDefault()));
 					}
-					output.SetPayload(PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates)));
-				} else {
-					output.SetType(TransactionOutput::Type::Default);
-					output.SetPayloadVersion(0);
-					output.SetPayload(nullptr);
 				}
 				tx.addOutput(output);
 			}
@@ -170,20 +171,32 @@ namespace Elastos {
 				REQUIRE(o2.getAmount() == o1.getAmount());
 
 				REQUIRE(o1.GetType() == o2.GetType());
-				REQUIRE(o1.GetPayloadVersion() == o2.GetPayloadVersion());
-				PayloadPtr p1 = o1.GetPayload();
-				PayloadPtr p2 = o2.GetPayload();
-				if (p1 != nullptr && p2 != nullptr) {
-					const PayloadVote &pv1 = dynamic_cast<const PayloadVote &>(*p1);
-					const PayloadVote &pv2 = dynamic_cast<const PayloadVote &>(*p2);
+				OutputPayloadPtr p1 = o1.GetPayload();
+				OutputPayloadPtr p2 = o2.GetPayload();
+				if (o1.GetType() == TransactionOutput::VoteOutput) {
+					const PayloadVote *pv1 = dynamic_cast<const PayloadVote *>(p1.get());
+					const PayloadVote *pv2 = dynamic_cast<const PayloadVote *>(p2.get());
+					REQUIRE(pv1 != nullptr);
+					REQUIRE(pv2 != nullptr);
+					const std::vector<PayloadVote::VoteContent> &vc1 = pv1->GetVoteContent();
+					const std::vector<PayloadVote::VoteContent> &vc2 = pv2->GetVoteContent();
+					REQUIRE(vc1.size() == vc2.size());
 
-					REQUIRE(pv1.GetVoteType() == pv2.GetVoteType());
-					REQUIRE(pv1.GetCandidates().size() == pv2.GetCandidates().size());
-					for (size_t j = 0; j < pv1.GetCandidates().size(); ++j) {
-						REQUIRE((pv1.GetCandidates()[j] == pv2.GetCandidates()[j]));
+					for (size_t j = 0; j < vc1.size(); ++j) {
+						REQUIRE(vc1[j].type == vc2[j].type);
+						const std::vector<CMBlock> &cand1 = vc1[j].candidates;
+						const std::vector<CMBlock> &cand2 = vc2[j].candidates;
+
+						REQUIRE(cand1.size() == cand2.size());
+						for (size_t k = 0; k < cand1.size(); ++k) {
+							REQUIRE(cand1[k] == cand2[k]);
+						}
 					}
 				} else {
-					REQUIRE(p1 == p2);
+					const PayloadDefault *pd1 = dynamic_cast<const PayloadDefault *>(p1.get());
+					const PayloadDefault *pd2 = dynamic_cast<const PayloadDefault *>(p2.get());
+					REQUIRE(pd1 != nullptr);
+					REQUIRE(pd2 != nullptr);
 				}
 			}
 

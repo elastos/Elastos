@@ -61,9 +61,9 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
 		ByteStream stream;
 
-		nlohmann::json p1Json = p1.toJson();
+		nlohmann::json p1Json = p1.toJson(0);
 
-		p2.fromJson(p1Json);
+		p2.fromJson(p1Json, 0);
 
 		Asset asset1 = p1.getAsset();
 		Asset asset2 = p2.getAsset();

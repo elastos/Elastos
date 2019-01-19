@@ -53,7 +53,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		std::string str = rawJson.dump();
 
 		PayloadRegisterIdentification payload;
-		REQUIRE_NOTHROW(payload.fromJson(rawJson));
+		REQUIRE_NOTHROW(payload.fromJson(rawJson, 0));
 	}
 
 	SECTION("Convert from and to json") {
@@ -77,10 +77,10 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		content2.Values.push_back(item2);
 		payload.addContent(content2);
 
-		nlohmann::json j = payload.toJson();
+		nlohmann::json j = payload.toJson(0);
 
 		PayloadRegisterIdentification payload2;
-		payload2.fromJson(j);
+		payload2.fromJson(j, 0);
 
 		REQUIRE(payload.getId() == payload2.getId());
 

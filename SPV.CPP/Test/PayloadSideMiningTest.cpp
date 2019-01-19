@@ -41,9 +41,9 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 		p1.SetBlockHeight(getRandUInt32());
 		p1.SetSignedData(getRandCMBlock(100));
 
-		nlohmann::json p1Json = p1.toJson();
+		nlohmann::json p1Json = p1.toJson(0);
 
-		p2.fromJson(p1Json);
+		p2.fromJson(p1Json, 0);
 
 		REQUIRE(UInt256Eq(&p1.GetSideBlockHash(), &p2.GetSideBlockHash()));
 		REQUIRE(UInt256Eq(&p1.GetSideGenesisHash(), &p2.GetSideGenesisHash()));

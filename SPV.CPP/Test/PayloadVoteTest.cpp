@@ -14,90 +14,107 @@ using namespace Elastos::ElaWallet;
 TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 
 	SECTION("Serialize and deserialize") {
-		std::vector<CMBlock> candidates;
+		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			candidates.push_back(getRandCMBlock(33));
+			std::vector<CMBlock> candidates;
+			for (size_t c = 0; c < 10; c++) {
+				candidates.push_back(getRandCMBlock(33));
+			}
+			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
-
-		PayloadVote p1(PayloadVote::Type::Delegate, candidates), p2;
+		PayloadVote p1(voteContent), p2;
 
 		ByteStream stream;
-		p1.Serialize(stream, 0);
+		p1.Serialize(stream);
 
 		stream.setPosition(0);
-		REQUIRE(p2.Deserialize(stream, 0));
+		REQUIRE(p2.Deserialize(stream));
 
-		REQUIRE(p1.GetVoteType() == p2.GetVoteType());
-		REQUIRE(p1.GetCandidates().size() == p2.GetCandidates().size());
-		for (size_t i = 0; i < p1.GetCandidates().size(); ++i) {
-			REQUIRE((p1.GetCandidates()[i] == p2.GetCandidates()[i]));
+		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		REQUIRE(vc1.size() == vc2.size());
+		for (size_t i = 0; i < vc1.size(); ++i) {
+			REQUIRE(vc1[i].type == vc2[i].type);
+			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
+			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
+				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			}
 		}
 	}
 
 	SECTION("to json and from json") {
-		std::vector<CMBlock> candidates;
+		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			candidates.push_back(getRandCMBlock(33));
+			std::vector<CMBlock> candidates;
+			for (size_t c = 0; c < 10; c++) {
+				candidates.push_back(getRandCMBlock(33));
+			}
+			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
-
-		PayloadVote p1(PayloadVote::Type::CRC, candidates), p2;
+		PayloadVote p1(voteContent), p2;
 
 		nlohmann::json p1Json = p1.toJson();
 		REQUIRE_NOTHROW(p2.fromJson(p1Json));
 
-		REQUIRE(p1.GetVoteType() == p2.GetVoteType());
-		REQUIRE(p1.GetCandidates().size() == p2.GetCandidates().size());
-		for (size_t i = 0; i < p1.GetCandidates().size(); ++i) {
-			REQUIRE((p1.GetCandidates()[i] == p2.GetCandidates()[i]));
+		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		REQUIRE(vc1.size() == vc2.size());
+		for (size_t i = 0; i < vc1.size(); ++i) {
+			REQUIRE(vc1[i].type == vc2[i].type);
+			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
+			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
+				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			}
 		}
 	}
 
 	SECTION("operator= test") {
-		std::vector<CMBlock> candidates;
+		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			candidates.push_back(getRandCMBlock(33));
+			std::vector<CMBlock> candidates;
+			for (size_t c = 0; c < 10; c++) {
+				candidates.push_back(getRandCMBlock(33));
+			}
+			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
-
-		PayloadVote p1(PayloadVote::Type::Delegate, candidates), p2;
+		PayloadVote p1(voteContent), p2;
 
 		p2 = p1;
 
-		REQUIRE(p1.GetVoteType() == p2.GetVoteType());
-		REQUIRE(p1.GetCandidates().size() == p2.GetCandidates().size());
-		for (size_t i = 0; i < p1.GetCandidates().size(); ++i) {
-			REQUIRE((p1.GetCandidates()[i] == p2.GetCandidates()[i]));
+		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		REQUIRE(vc1.size() == vc2.size());
+		for (size_t i = 0; i < vc1.size(); ++i) {
+			REQUIRE(vc1[i].type == vc2[i].type);
+			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
+			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
+				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			}
 		}
-
-		PayloadPtr ptr1(new PayloadVote(PayloadVote::Type::CRC, candidates));
-		PayloadPtr ptr2(new PayloadVote());
-
-		*ptr2 = *ptr1;
-
-		PayloadVote *pv1 = dynamic_cast<PayloadVote *>(ptr1.get());
-		PayloadVote *pv2 = dynamic_cast<PayloadVote *>(ptr2.get());
-
-		REQUIRE(pv1->GetVoteType() == pv2->GetVoteType());
-		REQUIRE(pv1->GetCandidates().size() == pv2->GetCandidates().size());
-		for (size_t i = 0; i < pv1->GetCandidates().size(); ++i) {
-			REQUIRE((pv1->GetCandidates()[i] == pv2->GetCandidates()[i]));
-		}
-
 	}
 
 	SECTION("copy construct test") {
-		std::vector<CMBlock> candidates;
+		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			candidates.push_back(getRandCMBlock(33));
+			std::vector<CMBlock> candidates;
+			for (size_t c = 0; c < 10; c++) {
+				candidates.push_back(getRandCMBlock(33));
+			}
+			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
-
-		PayloadVote p1(PayloadVote::Type::Delegate, candidates);
+		PayloadVote p1(voteContent);
 
 		PayloadVote p2(p1);
 
-		REQUIRE(p1.GetVoteType() == p2.GetVoteType());
-		REQUIRE(p1.GetCandidates().size() == p2.GetCandidates().size());
-		for (size_t i = 0; i < p1.GetCandidates().size(); ++i) {
-			REQUIRE((p1.GetCandidates()[i] == p2.GetCandidates()[i]));
+		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		REQUIRE(vc1.size() == vc2.size());
+		for (size_t i = 0; i < vc1.size(); ++i) {
+			REQUIRE(vc1[i].type == vc2[i].type);
+			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
+			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
+				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			}
 		}
 	}
 

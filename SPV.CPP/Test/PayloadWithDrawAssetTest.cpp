@@ -50,9 +50,9 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 		}
 		p1.setSideChainTransacitonHash(hashes);
 
-		nlohmann::json j = p1.toJson();
+		nlohmann::json j = p1.toJson(0);
 
-		p2.fromJson(j);
+		p2.fromJson(j, 0);
 
 		REQUIRE(p1.getBlockHeight() == p2.getBlockHeight());
 		REQUIRE(p1.getGenesisBlockAddress() == p2.getGenesisBlockAddress());

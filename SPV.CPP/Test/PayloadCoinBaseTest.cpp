@@ -28,8 +28,8 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 	SECTION("to json and from json") {
 		PayloadCoinBase p1(getRandCMBlock(50)), p2;
 
-		nlohmann::json p1Json = p1.toJson();
-		p2.fromJson(p1Json);
+		nlohmann::json p1Json = p1.toJson(0);
+		p2.fromJson(p1Json, 0);
 
 		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
 	}
