@@ -50,7 +50,6 @@ namespace Elastos {
 
 			assert(!_id.empty());
 			assert(!_contents.empty());
-//			assert(_sign.GetSize() > 0);
 
 			ostream.writeVarString(_id);
 			ostream.writeVarBytes(_sign);

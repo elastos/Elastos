@@ -810,6 +810,13 @@ namespace Elastos {
 			return (tx == this || UInt256Eq(&_txHash, &tx->getHash()));
 		}
 
+		uint32_t Transaction::GetConfirms(uint32_t walletBlockHeight) const {
+			if (_blockHeight == TX_UNCONFIRMED)
+				return 0;
+
+			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
+		}
+
 		UInt256 Transaction::GetAssetID() const {
 			UInt256 result = UINT256_ZERO;
 			if (!_outputs.empty())

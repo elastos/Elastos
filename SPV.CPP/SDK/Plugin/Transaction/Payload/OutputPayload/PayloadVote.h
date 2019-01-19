@@ -5,50 +5,59 @@
 #ifndef __ELASTOS_SDK_OUTPUT_PAYLOADVOTE_H
 #define __ELASTOS_SDK_OUTPUT_PAYLOADVOTE_H
 
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 
 namespace Elastos {
 	namespace ElaWallet {
-		class PayloadVote :
-			public IPayload {
+
+
+		class PayloadVote : public IOutputPayload {
 		public:
 			enum Type {
 				Delegate,
 				CRC,
+				Max,
+			};
+
+			struct VoteContent {
+				VoteContent() : type(Type::Delegate) {
+				}
+
+				VoteContent(Type t, const std::vector<CMBlock> &c) : type(t), candidates(c) {
+				}
+
+				Type type;
+				std::vector<CMBlock> candidates;
 			};
 
 		public:
 			PayloadVote();
 
-			PayloadVote(const Type &type, const std::vector<CMBlock> &candidates);
+			PayloadVote(const std::vector<VoteContent> &voteContents);
 
 			PayloadVote(const PayloadVote &payload);
 
 			~PayloadVote();
 
-			void SetVoteType(const Type &type);
+			void SetVoteContent(const std::vector<VoteContent> &voteContent);
 
-			const Type &GetVoteType() const;
+			const std::vector<VoteContent> &GetVoteContent() const;
 
-			void SetCandidates(const std::vector<CMBlock> &candidates);
+			virtual void Serialize(ByteStream &ostream) const;
 
-			const std::vector<CMBlock> &GetCandidates() const;
+			virtual bool Deserialize(ByteStream &istream);
 
-			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
+			virtual nlohmann::json toJson() const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual void fromJson(const nlohmann::json &jsonData);
 
-			virtual nlohmann::json toJson(uint8_t version) const;
-
-			virtual void fromJson(const nlohmann::json &jsonData, uint8_t version);
-
-			virtual IPayload &operator=(const IPayload &payload);
+			virtual IOutputPayload &operator=(const IOutputPayload &payload);
 
 			virtual PayloadVote &operator=(const PayloadVote &payload);
 
 		private:
-			Type _voteType;
-			std::vector<CMBlock> _candidates;
+			uint8_t _version;
+			std::vector<VoteContent> _content;
 		};
 	}
 }

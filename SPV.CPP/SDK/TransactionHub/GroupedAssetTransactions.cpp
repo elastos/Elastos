@@ -250,9 +250,12 @@ namespace Elastos {
 		}
 
 		TransactionPtr AssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
-									  const std::string &fromAddress, uint64_t fee, bool useVotedUTXO) {
+														 const std::string &fromAddress, uint64_t fee,
+														 bool useVotedUTXO,
+														 uint32_t blockHeight) {
 			TransactionPtr txn = TransactionPtr(new Transaction);
 			uint64_t totalOutputAmount = 0, totalInputAmount = 0;
+			uint32_t confirms;
 			size_t i;
 
 			txn->setVersion(Transaction::TxVersion::V09);
@@ -276,9 +279,10 @@ namespace Elastos {
 						continue;
 					}
 
-					if (_utxos[i].confirms < 2) {
+					confirms = txInput->GetConfirms(blockHeight);
+					if (confirms < 2) {
 						Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-								  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
+								  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
 						continue;
 					}
 					txn->AddInput(TransactionInput(_utxos[i].hash, _utxos[i].n));
@@ -305,9 +309,10 @@ namespace Elastos {
 					continue;
 				}
 
-				if (_utxos[i].confirms < 2) {
+				uint32_t confirms = txInput->GetConfirms(blockHeight);
+				if (confirms < 2) {
 					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
+							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
 					continue;
 				}
 				txn->AddInput(TransactionInput(_utxos[i].hash, _utxos[i].n));
@@ -346,9 +351,11 @@ namespace Elastos {
 			return txn;
 		}
 
-		void AssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress) {
+		void AssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress,
+											uint32_t blockHeight) {
 			uint64_t totalInputAmount = 0, totalOutputAmount = 0, changeAmount = 0, newChangeAmount = 0;
 			size_t i;
+			uint32_t confirms;
 			std::vector<TransactionOutput> &outputs = tx->getOutputs();
 			std::vector<TransactionInput> &inputs = tx->getInputs();
 
@@ -398,9 +405,10 @@ namespace Elastos {
 					continue;
 				}
 
-				if (_utxos[i].confirms < 2) {
+				confirms = txInput->GetConfirms(blockHeight);
+				if (confirms < 2) {
 					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
+							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
 					continue;
 				}
 				tx->AddInput(TransactionInput(_utxos[i].hash, _utxos[i].n));
@@ -912,14 +920,16 @@ namespace Elastos {
 		TransactionPtr
 		GroupedAssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
 												 const std::string &fromAddress,
-												 uint64_t fee, bool useVotedUTXO) {
+												 uint64_t fee, bool useVotedUTXO,
+												 uint32_t blockHeight) {
 			UInt256 assetID = GetUniqueAssetID(outputs);
-			return _groupedTransactions[assetID]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
+			return _groupedTransactions[assetID]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, blockHeight);
 		}
 
-		void GroupedAssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress) {
+		void GroupedAssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress,
+												   uint32_t blockHeight) {
 			UInt256 assetID = GetUniqueAssetID(tx->getOutputs());
-			_groupedTransactions[assetID]->UpdateTxFee(tx, fee, fromAddress);
+			_groupedTransactions[assetID]->UpdateTxFee(tx, fee, fromAddress, blockHeight);
 		}
 
 //		TransactionPtr GroupedAssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,

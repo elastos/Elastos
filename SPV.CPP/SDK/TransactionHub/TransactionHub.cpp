@@ -202,7 +202,7 @@ namespace Elastos {
 		}
 
 		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress) {
-			_transactions.UpdateTxFee(tx, fee, fromAddress);
+			_transactions.UpdateTxFee(tx, fee, fromAddress, _blockHeight);
 		}
 
 		TransactionPtr
@@ -221,7 +221,7 @@ namespace Elastos {
 
 			outputs.emplace_back(amount, toAddress, assetID);
 
-			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
+			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, _blockHeight);
 			if (result != nullptr) {
 				result->setRemark(remark);
 

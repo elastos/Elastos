@@ -194,8 +194,8 @@ namespace Elastos {
 		uint32_t Utils::getAddressTypeBySignType(const int signType) {
 			if (signType == ELA_STANDARD) {
 				return ELA_STAND_ADDRESS;
-//			} else if (signType == ELA_MULTISIG) {
-//				return ELA_MULTISIG_ADDRESS;
+			} else if (signType == ELA_MULTISIG) {
+				return ELA_MULTISIG_ADDRESS;
 			} else if (signType == ELA_CROSSCHAIN) {
 				return ELA_CROSSCHAIN_ADDRESS;
 			} else if (signType == ELA_IDCHAIN) {

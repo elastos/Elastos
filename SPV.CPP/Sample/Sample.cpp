@@ -188,6 +188,35 @@ static void Transafer(MasterWalletManager *manager,
 	PublishTransaction(subWallet, tx);
 }
 
+static void Vote(MasterWalletManager *manager,
+				 const std::string &masterWalletID, const std::string &subWalletID,
+				 uint64_t stake, const nlohmann::json &publicKeys) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, "from spv cpp sample", false);
+	logger->debug("tx = {}", tx.dump());
+
+	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, 10000);
+	logger->debug("fee = {}", fee);
+	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void GetVotedList(MasterWalletManager *manager,
+						 const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+
+	logger->debug("voted list = {}", mainchainSubWallet->GetVotedProducerList().dump());
+}
+
 static void Deposit(MasterWalletManager *manager,
 					const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
 					const std::string &toMasterWalletID, const std::string &toSubWalletID,
@@ -370,6 +399,7 @@ static void GetBalance(MasterWalletManager *manager,
 int main(int argc, char *argv[]) {
 
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
+	bool voteDone = true;
 
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
@@ -384,7 +414,11 @@ int main(int argc, char *argv[]) {
 
 
 	while(1) {
-		if (ELASyncSucceed && IDChainSyncSucceed) {
+		if (ELASyncSucceed) {
+			sleep(10);
+			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
+			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
+
 			if (!transferDone) {
 				Transafer(manager, gMasterWalletID, gMainchainSubWalletID,
 						  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
@@ -395,6 +429,25 @@ int main(int argc, char *argv[]) {
 				Deposit(manager, gMasterWalletID, gMainchainSubWalletID, gMasterWalletID, gSidechainSubWalletID,
 						"", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
 				depositDone = true;
+			}
+
+			if (!voteDone) {
+				Vote(manager, gMasterWalletID, gMainchainSubWalletID, 100000000,
+					 {"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d"});
+				voteDone = true;
+			}
+
+			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);
+			sleep(60);
+		} else if (IDChainSyncSucceed) {
+			sleep(10);
+			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
+			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
+
+			if (!transferDone) {
+				Transafer(manager, gMasterWalletID, gSidechainSubWalletID,
+						  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+				transferDone = true;
 			}
 
 			if (!withdrawDone) {
@@ -409,11 +462,6 @@ int main(int argc, char *argv[]) {
 			}
 
 			sleep(60);
-			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
-			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
-
-//			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
-//			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
 		} else {
 			sleep(1);
 		}

@@ -167,12 +167,10 @@ namespace Elastos {
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
 				uint32_t confirms = 0;
-				uint32_t txBlockHeight = transactions[i]->getBlockHeight();
 				uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
+				std::string hash = Utils::UInt256ToString(transactions[i]->getHash(), true);
 
-				if (txBlockHeight != TX_UNCONFIRMED) {
-					confirms = lastBlockHeight >= txBlockHeight ? lastBlockHeight - txBlockHeight + 1 : 0;
-				}
+				confirms = transactions[i]->GetConfirms(lastBlockHeight);
 
 				jsonList[i] = transactions[i]->GetSummary(_walletManager->getWallet(), confirms, !addressOrTxid.empty());
 			}

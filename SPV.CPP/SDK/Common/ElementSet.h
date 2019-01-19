@@ -29,7 +29,11 @@ namespace Elastos {
 			}
 
 			bool Contains(const T &tx) const {
-				return _elements.find(tx) != _elements.end();
+				if (_elements.find(tx) != _elements.end()) {
+					return true;
+				}
+
+				return Contains(tx->getHash());
 			}
 
 			bool Contains(const UInt256 &hash) const {
@@ -42,6 +46,10 @@ namespace Elastos {
 
 			void Insert(const T &tx) {
 				_elements.insert(tx);
+			}
+
+			size_t Size() {
+				return _elements.size();
 			}
 
 			void Remove(const T &tx) {

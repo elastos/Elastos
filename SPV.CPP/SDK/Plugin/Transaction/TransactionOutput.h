@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <Core/BRInt.h>
 
@@ -32,10 +32,10 @@ namespace Elastos {
 			TransactionOutput(const TransactionOutput &output);
 
 			TransactionOutput(uint64_t amount, const std::string &toAddress, const UInt256 &assetID = Asset::GetELAAssetID(),
-							  Type type = Default, const PayloadPtr &payload = nullptr);
+							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			TransactionOutput(uint64_t amount, const UInt168 &programHash, const UInt256 &assetID = Asset::GetELAAssetID(),
-							  Type type = Default, const PayloadPtr &payload = nullptr);
+							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
 
@@ -71,15 +71,13 @@ namespace Elastos {
 
 			void SetType(const Type &type);
 
-			const uint8_t &GetPayloadVersion() const;
+			const OutputPayloadPtr &GetPayload() const;
 
-			void SetPayloadVersion(const uint8_t &payloadVersion);
+			OutputPayloadPtr &GetPayload();
 
-			const PayloadPtr &GetPayload() const;
+			void SetPayload(const OutputPayloadPtr &payload);
 
-			PayloadPtr &GetPayload();
-
-			void SetPayload(const PayloadPtr &payload);
+			OutputPayloadPtr GeneratePayload(const Type &type);
 
 			virtual nlohmann::json toJson() const;
 
@@ -99,8 +97,7 @@ namespace Elastos {
 
 			Type _outputType;
 
-			uint8_t _payloadVersion;
-			PayloadPtr _payload;
+			OutputPayloadPtr _payload;
 		};
 
 		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;

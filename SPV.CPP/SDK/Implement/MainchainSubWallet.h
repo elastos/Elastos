@@ -64,6 +64,7 @@ namespace Elastos {
 			virtual std::string GetPublicKeyForVote() const;
 
 			virtual nlohmann::json CreateVoteProducerTransaction(
+					const std::string &fromAddress,
 					uint64_t stake,
 					const nlohmann::json &publicKeys,
 					const std::string &memo,

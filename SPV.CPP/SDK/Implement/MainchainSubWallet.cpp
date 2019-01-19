@@ -226,22 +226,25 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &publicKeys,
+		MainchainSubWallet::CreateVoteProducerTransaction(const std::string &fromAddress,
+														  uint64_t stake, const nlohmann::json &publicKeys,
 														  const std::string &memo, bool useVotedUTXO) {
 			ParamChecker::checkJsonArray(publicKeys, 1, "Candidates public keys");
 			ParamChecker::checkParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
-			std::vector<CMBlock> candidates;
+			PayloadVote::VoteContent voteContent;
+			voteContent.type = PayloadVote::Type::Delegate;
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
 				if (!(*it).is_string()) {
 					ParamChecker::throwParamException(Error::Code::JsonFormatError, "Vote produce public keys is not string");
 				}
 
-				candidates.push_back(Utils::decodeHex((*it).get<std::string>()));
+				voteContent.candidates.push_back(Utils::decodeHex((*it).get<std::string>()));
 			}
-			PayloadPtr payload = PayloadPtr(new PayloadVote(PayloadVote::Type::Delegate, candidates));
 
-			TransactionPtr tx = CreateTx("", CreateAddress(), stake, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
+
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
 
 			const std::vector<TransactionInput> &inputs = tx->getInputs();
 
@@ -268,34 +271,43 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->getWallet();
 			std::vector<UTXO> utxos = wallet->getAllUTXOsSafe();
 			nlohmann::json j;
+			std::map<std::string, uint64_t> votedList;
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
 				TransactionPtr tx = wallet->transactionForHash(utxos[i].hash);
-				if (tx->getVersion() != Transaction::TxVersion::V09 ||
+				if (!tx || utxos[i].n >= tx->getOutputs().size() ||
+					tx->getOutputs()[utxos[i].n].GetType() != TransactionOutput::VoteOutput ||
+					tx->getVersion() != Transaction::TxVersion::V09 ||
 					tx->getTransactionType() != Transaction::TransferAsset) {
 					continue;
 				}
 
-				const std::vector<TransactionOutput> &outputs = tx->getOutputs();
-				std::for_each(outputs.cbegin(), outputs.cend(), [&j](const TransactionOutput &o) {
-					if (o.GetType() == TransactionOutput::Type::VoteOutput) {
-						const PayloadVote *pv = dynamic_cast<const PayloadVote *>(o.GetPayload().get());
-						if (pv && pv->GetVoteType() == PayloadVote::Type::Delegate) {
-							uint64_t stake = o.getAmount();
-							const std::vector<CMBlock> &candidates = pv->GetCandidates();
-							std::for_each(candidates.cbegin(), candidates.cend(),
-										  [&j, &stake](const CMBlock &candidate) {
-											  std::string c = Utils::encodeHex(candidate);
-											  if (j.find(c) != j.end()) {
-												  j[c] += stake;
-											  } else {
-												  j[c] = stake;
-											  }
-										  });
-						}
-					}
-				});
+				const TransactionOutput &output = tx->getOutputs()[utxos[i].n];
+				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output.GetPayload().get());
+				if (pv == nullptr) {
+					continue;
+				}
+
+				uint64_t stake = output.getAmount();
+				const std::vector<PayloadVote::VoteContent> &voteContents = pv->GetVoteContent();
+				std::for_each(voteContents.cbegin(), voteContents.cend(),
+							  [&votedList, &stake](const PayloadVote::VoteContent &vc) {
+								  if (vc.type == PayloadVote::Type::Delegate) {
+									  std::for_each(vc.candidates.cbegin(), vc.candidates.cend(),
+													[&votedList, &stake](const CMBlock &candidate) {
+														std::string c = Utils::encodeHex(candidate);
+														if (votedList.find(c) != votedList.end()) {
+															votedList[c] += stake;
+														} else {
+															votedList[c] = stake;
+														}
+													});
+								  }
+							  });
+
 			}
+
+			j = votedList;
 
 			return j;
 		}

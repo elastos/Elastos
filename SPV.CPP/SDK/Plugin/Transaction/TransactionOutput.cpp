@@ -10,12 +10,13 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Crypto/Key.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 #include <Core/BRTransaction.h>
 
 #include <iostream>
 #include <cstring>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -25,9 +26,8 @@ namespace Elastos {
 				_amount(0),
 				_outputLock(0),
 				_programHash(UINT168_ZERO),
-				_outputType(Type::Default),
-				_payloadVersion(0),
-				_payload(nullptr) {
+				_outputType(Type::Default) {
+			_payload = GeneratePayload(_outputType);
 		}
 
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
@@ -36,35 +36,36 @@ namespace Elastos {
 			_programHash = output.getProgramHash();
 			_outputLock = output.getOutputLock();
 			_outputType = output.GetType();
-			_payloadVersion = output.GetPayloadVersion();
-			if (_outputType == VoteOutput) {
-				_payload = PayloadPtr(new PayloadVote());
-				*_payload = *output.GetPayload();
-			} else {
-				_payload = nullptr;
-			}
+			_payload = GeneratePayload(_outputType);
+			*_payload = *output.GetPayload();
 		}
 
 		TransactionOutput::TransactionOutput(uint64_t a, const std::string &addr, const UInt256 &assetID,
-											 Type type, const PayloadPtr &payload) :
+											 Type type, const OutputPayloadPtr &payload) :
 			_amount(a),
 			_outputLock(0),
-			_outputType(type),
-			_payloadVersion(0) {
+			_outputType(type) {
 			_assetId = assetID;
 			Utils::UInt168FromAddress(_programHash, addr);
-			_payload = payload;
+			if (payload == nullptr) {
+				_payload = GeneratePayload(_outputType);
+			} else {
+				_payload = payload;
+			}
 		}
 
 		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash, const UInt256 &assetID,
-											 Type type, const PayloadPtr &payload) :
+											 Type type, const OutputPayloadPtr &payload) :
 			_amount(a),
 			_outputLock(0),
-			_outputType(type),
-			_payloadVersion(0) {
+			_outputType(type) {
 			_assetId = assetID;
 			_programHash = programHash;
-			_payload = payload;
+			if (payload == nullptr) {
+				_payload = GeneratePayload(_outputType);
+			} else {
+				_payload = payload;
+			}
 		}
 
 		TransactionOutput::~TransactionOutput() {
@@ -124,8 +125,7 @@ namespace Elastos {
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				ostream.writeUint8(_outputType);
-				ostream.writeUint8(_payloadVersion);
-				_payload->Serialize(ostream, _payloadVersion);
+				_payload->Serialize(ostream);
 			}
 		}
 
@@ -143,14 +143,9 @@ namespace Elastos {
 				}
 				_outputType = static_cast<Type>(outputType);
 
-				if (!istream.readUint8(_payloadVersion)) {
-					Log::error("tx output deserialize payload version error");
-					return false;
-				}
+				_payload = GeneratePayload(_outputType);
 
-				_payload = PayloadPtr(new PayloadVote());
-
-				if (!_payload->Deserialize(istream, _payloadVersion)) {
+				if (!_payload->Deserialize(istream)) {
 					Log::error("tx output deserialize payload error");
 					return false;
 				}
@@ -191,24 +186,35 @@ namespace Elastos {
 			_outputType = type;
 		}
 
-		const uint8_t &TransactionOutput::GetPayloadVersion() const {
-			return _payloadVersion;
-		}
-
-		void TransactionOutput::SetPayloadVersion(const uint8_t &payloadVersion) {
-			_payloadVersion = payloadVersion;
-		}
-
-		const PayloadPtr &TransactionOutput::GetPayload() const {
+		const OutputPayloadPtr &TransactionOutput::GetPayload() const {
 			return _payload;
 		}
 
-		PayloadPtr &TransactionOutput::GetPayload() {
+		OutputPayloadPtr &TransactionOutput::GetPayload() {
 			return _payload;
 		}
 
-		void TransactionOutput::SetPayload(const PayloadPtr &payload) {
+		void TransactionOutput::SetPayload(const OutputPayloadPtr &payload) {
 			_payload = payload;
+		}
+
+		OutputPayloadPtr TransactionOutput::GeneratePayload(const Type &type) {
+			OutputPayloadPtr payload;
+
+			switch (type) {
+				case Default:
+					payload = OutputPayloadPtr(new PayloadDefault());
+					break;
+				case VoteOutput:
+					payload = OutputPayloadPtr(new PayloadVote());
+					break;
+
+				default:
+					payload = nullptr;
+					break;
+			}
+
+			return payload;
 		}
 
 		nlohmann::json TransactionOutput::toJson() const {
@@ -233,8 +239,7 @@ namespace Elastos {
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				j["OutputType"] = _outputType;
-				j["PayloadVersion"] = _payloadVersion;
-				j["Payload"] = _payload->toJson(_payloadVersion);
+				j["Payload"] = _payload->toJson();
 			}
 
 			return j;
@@ -245,11 +250,8 @@ namespace Elastos {
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				_outputType = j["OutputType"];
-				_payloadVersion = j["PayloadVersion"];
-
-				_payload = PayloadPtr(new PayloadVote());
-
-				_payload->fromJson(j["Payload"], _payloadVersion);
+				_payload = GeneratePayload(_outputType);
+				_payload->fromJson(j["Payload"]);
 			}
 		}
 

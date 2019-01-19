@@ -69,10 +69,12 @@ namespace Elastos {
 
 			void UpdateBalance(uint32_t blockHeight);
 
-			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
-										  uint64_t fee, bool useVotedUTXO);
+			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs,
+										  const std::string &fromAddress,
+										  uint64_t fee, bool useVotedUTXO,
+										  uint32_t blockHeight);
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress);
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, uint32_t blockHeight);
 
 //			TransactionPtr
 //			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
@@ -150,9 +152,9 @@ namespace Elastos {
 			const AssetTransactionsPtr &Get(const UInt256 &assetID) const;
 
 			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const std::string &fromAddress,
-										  uint64_t fee, bool useVotedUTXO);
+										  uint64_t fee, bool useVotedUTXO, uint32_t blockHeight);
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress);
+			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress, uint32_t blockHeight);
 
 //			TransactionPtr
 //			CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,

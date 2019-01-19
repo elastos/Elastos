@@ -187,6 +187,8 @@ namespace Elastos {
 
 			bool IsEqual(const Transaction *tx) const;
 
+			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
+
 		private:
 
 			void reinit();

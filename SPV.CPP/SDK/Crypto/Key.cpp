@@ -30,6 +30,8 @@ namespace Elastos {
 		}
 
 		Key::Key(const Key &key) {
+			_key = boost::shared_ptr<BRKey>(new BRKey);
+
 			operator=(key);
 		}
 
@@ -65,7 +67,7 @@ namespace Elastos {
 			var_clean(&_key->secret);
 		}
 
-		Key &Key::operator=(const Elastos::ElaWallet::Key &key) {
+		Key &Key::operator=(const Key &key) {
 			_key->secret = key._key->secret;
 			memcpy(_key->pubKey, key._key->pubKey, sizeof(_key->pubKey));
 			_key->compressed = key._key->compressed;

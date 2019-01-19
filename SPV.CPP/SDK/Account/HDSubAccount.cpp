@@ -48,7 +48,7 @@ namespace Elastos {
 		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 										   const std::string &payPassword) {
 			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, wallet, transaction);
-			ParamChecker::checkCondition(!transaction->sign(keyList, 0), Error::Sign,
+			ParamChecker::checkCondition(!transaction->sign(keyList, wallet), Error::Sign,
 										 "Transaction Sign error!");
 		}
 
@@ -60,12 +60,12 @@ namespace Elastos {
 
 			Log::info("SubWallet signTransaction begin get indices.");
 
-			_lock->Lock();
 			for (i = 0; i < transaction->getInputs().size(); i++) {
 				const TransactionInput &txInput = transaction->getInputs()[i];
 				const TransactionPtr &tx = wallet->transactionForHash(txInput.getTransctionHash());
 				Address inputAddr = tx->getOutputs()[txInput.getIndex()].getAddress();
 
+				_lock->Lock();
 				for (j = (uint32_t) internalChain.size(); j > 0; j--) {
 					if (inputAddr.IsEqual(internalChain[j - 1])) {
 						internalIdx[internalCount++] = j - 1;
@@ -77,8 +77,8 @@ namespace Elastos {
 						externalIdx[externalCount++] = j - 1;
 					}
 				}
+				_lock->Unlock();
 			}
-			_lock->Unlock();
 
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
 

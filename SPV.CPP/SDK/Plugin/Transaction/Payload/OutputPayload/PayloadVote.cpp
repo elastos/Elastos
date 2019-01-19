@@ -10,12 +10,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 		PayloadVote::PayloadVote() :
-			_voteType(PayloadVote::Type::Delegate) {
+			_version(0) {
 		}
 
-		PayloadVote::PayloadVote(const PayloadVote::Type &type, const std::vector <CMBlock> &candidates) :
-			_voteType(type),
-			_candidates(candidates) {
+		PayloadVote::PayloadVote(const std::vector<VoteContent> &voteContents) :
+			_content(voteContents),
+			_version(0) {
 		}
 
 		PayloadVote::PayloadVote(const PayloadVote &payload){
@@ -26,80 +26,104 @@ namespace Elastos {
 
 		}
 
-		void PayloadVote::SetVoteType(const PayloadVote::Type &type) {
-			_voteType = type;
+		void PayloadVote::SetVoteContent(const std::vector<VoteContent> &voteContent){
+			_content = voteContent;
 		}
 
-		const PayloadVote::Type &PayloadVote::GetVoteType() const {
-			return _voteType;
+		const std::vector<PayloadVote::VoteContent> &PayloadVote::GetVoteContent() const {
+			return _content;
 		}
 
-		void PayloadVote::SetCandidates(const std::vector<CMBlock> &candidates) {
-			_candidates = candidates;
-		}
+		void PayloadVote::Serialize(ByteStream &ostream) const {
+			ostream.writeUint8(_version);
 
-		const std::vector<CMBlock> &PayloadVote::GetCandidates() const {
-			return _candidates;
-		}
-
-		void PayloadVote::Serialize(ByteStream &ostream, uint8_t version) const {
-			ostream.writeUint8(_voteType);
-			ostream.writeVarUint(_candidates.size());
-			for (size_t i = 0; i < _candidates.size(); ++i) {
-				ostream.writeVarBytes(_candidates[i]);
-			}
-		}
-
-		bool PayloadVote::Deserialize(ByteStream &istream, uint8_t version) {
-			uint8_t voteType = 0;
-			if (!istream.readUint8(voteType)) {
-				Log::error("payload vote deserialize type error");
-				return false;
-			}
-			_voteType = static_cast<Type>(voteType);
-
-			size_t candidateCount = 0;
-			if (!istream.readVarUint(candidateCount)) {
-				Log::error("payload vote deserialize candidate count error");
-				return false;
-			}
-
-			_candidates.clear();
-			for (size_t i = 0; i < candidateCount; ++i) {
-				CMBlock candidate;
-				if (!istream.readVarBytes(candidate)) {
-					Log::error("payload vote deserialize candidate[{}] error", i);
+			ostream.writeVarUint(_content.size());
+			for (size_t i = 0; i < _content.size(); ++i) {
+				ostream.writeUint8(_content[i].type);
+				const std::vector<CMBlock> &candidates = _content[i].candidates;
+				ostream.writeVarUint(candidates.size());
+				for (size_t j = 0; j < candidates.size(); ++j) {
+					ostream.writeVarBytes(candidates[j]);
 				}
-				_candidates.push_back(candidate);
+			}
+		}
+
+		bool PayloadVote::Deserialize(ByteStream &istream) {
+			if (!istream.readUint8(_version)) {
+				Log::error("payload vote deserialize version error");
+				return false;
+			}
+
+			size_t contentCount = 0;
+			if (!istream.readVarUint(contentCount)) {
+				Log::error("payload vote deserialize content count error");
+				return false;
+			}
+
+			_content.clear();
+			for (size_t i = 0; i < contentCount; ++i) {
+				uint8_t type;
+				if (!istream.readUint8(type)) {
+					Log::error("payload vote deserialize type error");
+					return false;
+				}
+				size_t candidateCount = 0;
+				if (!istream.readVarUint(candidateCount)) {
+					Log::error("payload vote deserialize candidate count error");
+					return false;
+				}
+
+				std::vector<CMBlock> candidates;
+				for (size_t j = 0; j < candidateCount; ++j) {
+					CMBlock candidate;
+					if (!istream.readVarBytes(candidate)) {
+						Log::error("payload vote deserialize candidate error");
+						return false;
+					}
+					candidates.push_back(candidate);
+				}
+
+				_content.emplace_back(Type(type), candidates);
 			}
 
 			return true;
 		}
 
-		nlohmann::json PayloadVote::toJson(uint8_t version) const {
+		nlohmann::json PayloadVote::toJson() const {
 			nlohmann::json j;
-			j["VoteType"] = _voteType;
-			std::vector<std::string> candidates;
-			for (size_t i = 0; i < _candidates.size(); ++i) {
-				candidates.push_back(Utils::encodeHex(_candidates[i]));
+			j["Version"] = _version;
+			std::vector<nlohmann::json> voteContent;
+			for (size_t i = 0; i < _content.size(); ++i) {
+				nlohmann::json content;
+				content["Type"] = _content[i].type;
+				std::vector<std::string> candidates;
+				for (size_t j = 0; j < _content[i].candidates.size(); ++j) {
+					candidates.push_back(Utils::encodeHex(_content[i].candidates[j]));
+				}
+				content["Candidates"] = candidates;
+				voteContent.push_back(content);
 			}
-			j["Candidates"] = candidates;
+			j["VoteContent"] = voteContent;
 
 			return j;
 		}
 
-		void PayloadVote::fromJson(const nlohmann::json &j, uint8_t version) {
-			_voteType = j["VoteType"];
-			std::vector<std::string> candidates;
-			candidates = j["Candidates"].get<std::vector<std::string>>();
-			_candidates.clear();
-			for (size_t i = 0; i < candidates.size(); ++i) {
-				CMBlock candidate = Utils::decodeHex(candidates[i]);
-				_candidates.push_back(candidate);
+		void PayloadVote::fromJson(const nlohmann::json &j) {
+			_version = j["Version"];
+			_content.clear();
+			nlohmann::json voteContent = j["VoteContent"];
+			for (nlohmann::json::iterator it = voteContent.begin(); it != voteContent.end(); ++it) {
+				Type type = (*it)["Type"];
+				std::vector<CMBlock> candidates;
+				nlohmann::json candidatesJson = (*it)["Candidates"];
+				for (nlohmann::json::iterator cit = candidatesJson.begin(); cit != candidatesJson.end(); ++cit) {
+					candidates.push_back(Utils::decodeHex(*cit));
+				}
+				_content.emplace_back(type, candidates);
 			}
 		}
 
-		IPayload &PayloadVote::operator=(const IPayload &payload) {
+		IOutputPayload &PayloadVote::operator=(const IOutputPayload &payload) {
 			try {
 				const PayloadVote &payloadVote = dynamic_cast<const PayloadVote &>(payload);
 				operator=(payloadVote);
@@ -111,11 +135,8 @@ namespace Elastos {
 		}
 
 		PayloadVote& PayloadVote::operator=(const PayloadVote &payload) {
-			_voteType = payload._voteType;
-			_candidates.resize(payload._candidates.size());
-			for (size_t i = 0; i < _candidates.size(); ++i) {
-				_candidates[i].Memcpy(payload._candidates[i]);
-			}
+			_version = payload._version;
+			_content = payload._content;
 
 			return *this;
 		}

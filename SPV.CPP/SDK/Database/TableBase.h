@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TABLEBASE_H__
 
 #include "Sqlite.h"
+#include <Config.h>
 
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
