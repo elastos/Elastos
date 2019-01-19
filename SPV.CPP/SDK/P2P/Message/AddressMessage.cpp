@@ -6,6 +6,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/P2P/Peer.h>
+#include <SDK/Common/Utils.h>
 
 #include <Core/BRAddress.h>
 #include <Core/BRArray.h>
@@ -49,8 +50,6 @@ namespace Elastos {
 					off += sizeof(UInt128);
 					uint16_t port = UInt16GetLE(&msg[off]);
 					off += sizeof(uint16_t);
-					uint64_t id = UInt64GetLE(&msg[off]);
-					off += sizeof(uint64_t);
 					PeerInfo p(address, port, timestamp, services);
 
 					_peer->info("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
