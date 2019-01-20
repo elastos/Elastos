@@ -5,7 +5,7 @@ import {
   Form,
   Input,
   Button,
-  Radio,
+  Icon,
   Modal,
 } from 'antd'
 import I18N from '@/I18N'
@@ -25,6 +25,7 @@ class C extends BaseComponent {
 
     this.state = {
       isTranslateModalOpen: false,
+      showRules: false
     }
   }
   //   componentDidMount() {
@@ -142,12 +143,47 @@ class C extends BaseComponent {
 
   renderHeader() {
     return (
-      <h2 className="title komu-a">{this.props.header || I18N.get('suggestion.add').toUpperCase()}</h2>
+      <div>
+        <h2 className="title komu-a">
+          {this.props.header || I18N.get('suggestion.add').toUpperCase()}
+        </h2>
+
+        <h5>
+          <a onClick={() => {this.setState({showRules: true})}}>
+            Rules and Guidelines <Icon type="question-circle"/>
+          </a>
+        </h5>
+      </div>
+    )
+  }
+
+  renderRules() {
+    return (
+      <div>
+        <h4>
+          There is no guarantee a suggestion will be selected by the council
+        </h4>
+
+        <p>
+          Suggestions that are popular are more likely to receive a response by a council
+          member.
+        </p>
+
+        <p>
+          The primary criteria is the suggestion must
+        </p>
+
+        <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>Close</Button>
+        <div class="clearfix">
+          <br/>
+        </div>
+      </div>
     )
   }
 
   ord_render() {
     const headerNode = this.renderHeader()
+    const rulesNode = this.renderRules()
     const p = this.getInputProps()
 
     const formItemLayout = {
@@ -184,9 +220,12 @@ class C extends BaseComponent {
     return (
       <div className="c_SuggestionForm">
         {headerNode}
-        <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
-          {formContent}
-        </Form>
+        {this.state.showRules ?
+          rulesNode :
+          <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
+            {formContent}
+          </Form>
+        }
         {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
         {/* {translationModal} */}
       </div>
