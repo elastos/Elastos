@@ -1,10 +1,9 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
 type evidenceCache struct {
