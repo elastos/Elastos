@@ -21,7 +21,7 @@ $color_background: #F6F9FD;
         z-index: 1;
         left: 45%;
 
-        @media only screen and (max-width: $mobile-width) {
+        @media only screen and (max-width: $lg-width) {
           top: calc(46px + (3.8em/2));
           left: 0;
           transform: rotate(270deg);
@@ -63,7 +63,7 @@ $color_background: #F6F9FD;
       left: 15px;
       z-index: 2;
       background: $color_background;
-      @media only screen and (max-width: $mobile-width) {
+      @media only screen and (max-width: $lg-width) {
         display: none;
       }
     }
@@ -102,7 +102,7 @@ $color_background: #F6F9FD;
         font-weight: 200;
         font-size: 30px;
       }
-      @media only screen and (max-width: $mobile-width) {
+      @media only screen and (max-width: $lg-width) {
         padding: 50px 10px 50px 10px;
 
         h3 {
@@ -139,7 +139,7 @@ $color_background: #F6F9FD;
       display: flex;
       align-items: stretch;
       overflow: hidden;
-      @media only screen and (max-width: $mobile-width) {
+      @media only screen and (max-width: $lg-width) {
         flex-flow: row wrap;
       }
     }
@@ -211,7 +211,7 @@ $color_background: #F6F9FD;
     top: 125px;
     left: 0;
 
-    @media only screen and (max-width: $mobile-width) {
+    @media only screen and (max-width: $lg-width) {
       top: 50px;
       left: -40px;
     }
@@ -221,7 +221,7 @@ $color_background: #F6F9FD;
     top: -25px;
     left: 0;
 
-    @media only screen and (max-width: $mobile-width) {
+    @media only screen and (max-width: $lg-width) {
       bottom: -29px;
       z-index: 1;
     }
@@ -231,7 +231,7 @@ $color_background: #F6F9FD;
     bottom: 10%;
     right: -29px;
 
-    @media only screen and (max-width: $mobile-width) {
+    @media only screen and (max-width: $lg-width) {
       bottom: 25px;
       z-index: 1;
     }
@@ -243,7 +243,7 @@ $color_background: #F6F9FD;
     .signup-form {
       width: 380px;
 
-      @media only screen and (max-width: $mobile-width) {
+      @media only screen and (max-width: $lg-width) {
         margin: 0 25px;
       }
     }
@@ -274,7 +274,7 @@ $color_background: #F6F9FD;
       color: #1de9b6;
       font-size: 17px;
       margin-top: 18px;
-      @media only screen and (max-width: $mobile-width) {
+      @media only screen and (max-width: $lg-width) {
         margin: 0 auto;
       }
     }

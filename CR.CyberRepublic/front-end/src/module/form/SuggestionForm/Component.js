@@ -2,6 +2,8 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import {
+  Row,
+  Col,
   Form,
   Input,
   Button,
@@ -143,17 +145,20 @@ class C extends BaseComponent {
 
   renderHeader() {
     return (
-      <div>
-        <h2 className="title komu-a">
-          {this.props.header || I18N.get('suggestion.add').toUpperCase()}
-        </h2>
-
-        <h5>
-          <a onClick={() => {this.setState({showRules: true})}}>
-            Rules and Guidelines <Icon type="question-circle"/>
-          </a>
-        </h5>
-      </div>
+      <Row>
+        <Col span={18}>
+          <h2 className="title komu-a">
+            {this.props.header || I18N.get('suggestion.add').toUpperCase()}
+          </h2>
+        </Col>
+        <Col span={6}>
+          <h5 className="alignRight">
+            <a onClick={() => {this.setState({showRules: true})}}>
+              Rules and Guidelines <Icon type="question-circle"/>
+            </a>
+          </h5>
+        </Col>
+      </Row>
     )
   }
 
@@ -169,8 +174,19 @@ class C extends BaseComponent {
           member.
         </p>
 
+        <h5>
+          Rules
+        </h5>
+
+        <ol>
+          <li>Must be related to Cyber Republic as either a policy change, project or specific deliverable</li>
+          <li>Describe why you think this suggestion would benefit the Elastos ecosystem</li>
+          <li>Must have an educated estimate of cost and expected return on investment</li>
+        </ol>
+
         <p>
-          The primary criteria is the suggestion must
+          Requests for information from Elastos Foundation or specific CR members are not permitted and outside of the scope of
+          the Cyber Republic Consensus program, for these matters please contact the Community Manager.
         </p>
 
         <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>Close</Button>
