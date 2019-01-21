@@ -1,9 +1,10 @@
 package store
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
 	"io"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type ConditionalAction func() error
