@@ -147,6 +147,7 @@ var configTemplate = config.Configuration{
 		CandidatesCount:          0,
 		EmergencyTriggerTimeSpan: uint32((time.Hour * 1) / time.Second),
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
+		InactivePercentage:       0.1,
 	},
 	RpcConfiguration : config.RpcConfiguration{
 		User:       "",

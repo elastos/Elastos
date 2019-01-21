@@ -240,3 +240,7 @@ func (h *dposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	log.Info("OnViewChanged, onduty, getBlock from first block hash:", firstBlockHash)
 	h.ChangeView(&firstBlockHash)
 }
+
+func (h *dposHandlerSwitch) OnEnterEmergency() {
+	h.SwitchTo(bytes.Equal(h.manager.GetPublicKey(), blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()))
+}

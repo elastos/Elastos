@@ -11,6 +11,7 @@ import (
 
 type ViewListener interface {
 	OnViewChanged(isOnDuty bool)
+	OnEnterEmergency()
 }
 
 type view struct {
@@ -68,6 +69,7 @@ func (v *view) TryChangeView(viewOffset *uint32) bool {
 	if now.After(v.viewStartTime.Add(v.signTolerance)) {
 		if v.arbitrators.TryEnterEmergency(uint32(now.Unix())) {
 			log.Info("[TryChangeView] arbitrators emergency started")
+			v.listener.OnEnterEmergency()
 			return false
 		}
 		log.Info("[TryChangeView] succeed")

@@ -31,6 +31,14 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) IsCRCArbitrator(pk []byte) bool {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) GetLastConfirmedBlockTimeStamp() uint32 {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) TryEnterEmergency(blockTime uint32) bool {
 	panic("implement me")
 }

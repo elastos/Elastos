@@ -366,6 +366,18 @@ func (n *network) processMessage(msgItem *messageItem) {
 		if processed {
 			n.listener.OnSidechainIllegalEvidenceReceived(&msgSidechainIllegal.Data)
 		}
+	case elap2p.CmdTx:
+		msgTx, processed := m.(*elamsg.Tx)
+		if processed {
+			if tx, ok := msgTx.Serializable.(*types.Transaction); ok && tx.IsInactiveArbitrators() {
+				n.listener.OnInactiveArbitratorsReceived(tx)
+			}
+		}
+	case msg.CmdResponseInactiveArbitrators:
+		msgResponse, processed := m.(*msg.ResponseInactiveArbitrators)
+		if processed {
+			n.listener.OnResponseInactiveArbitratorsReceived(&msgResponse.Tx, msgResponse.Signer, msgResponse.Sign)
+		}
 	}
 }
 
