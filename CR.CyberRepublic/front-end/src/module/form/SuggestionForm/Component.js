@@ -154,7 +154,7 @@ class C extends BaseComponent {
         <Col span={6}>
           <h5 className="alignRight">
             <a onClick={() => {this.setState({showRules: true})}}>
-              Rules and Guidelines <Icon type="question-circle"/>
+              {I18N.get('suggestion.rules.guidelines')} <Icon type="question-circle"/>
             </a>
           </h5>
         </Col>
@@ -166,30 +166,28 @@ class C extends BaseComponent {
     return (
       <div>
         <h4>
-          There is no guarantee a suggestion will be selected by the council
+          {I18N.get('suggestion.rules.guarantee')}
         </h4>
 
         <p>
-          Suggestions that are popular are more likely to receive a response by a council
-          member.
+          {I18N.get('suggestion.rules.response')}
         </p>
 
         <h5>
-          Rules
+          {I18N.get('suggestion.rules')}
         </h5>
 
         <ol>
-          <li>Must be related to Cyber Republic as either a policy change, project or specific deliverable</li>
-          <li>Describe why you think this suggestion would benefit the Elastos ecosystem</li>
-          <li>Must have an educated estimate of cost and expected return on investment</li>
+          <li>{I18N.get('suggestion.rules.1')}</li>
+          <li>{I18N.get('suggestion.rules.2')}</li>
+          <li>{I18N.get('suggestion.rules.3')}</li>
         </ol>
 
         <p>
-          Requests for information from Elastos Foundation or specific CR members are not permitted and outside of the scope of
-          the Cyber Republic Consensus program, for these matters please contact the Community Manager.
+          {I18N.get('suggestion.rules.infoRequest')}
         </p>
 
-        <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>Close</Button>
+        <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>{I18N.get('suggestion.back')}</Button>
         <div class="clearfix">
           <br/>
         </div>
