@@ -277,7 +277,7 @@ namespace Elastos {
 				TransactionPtr tx = wallet->transactionForHash(utxos[i].hash);
 				if (!tx || utxos[i].n >= tx->getOutputs().size() ||
 					tx->getOutputs()[utxos[i].n].GetType() != TransactionOutput::VoteOutput ||
-					tx->getVersion() != Transaction::TxVersion::V09 ||
+					tx->getVersion() < Transaction::TxVersion::V09 ||
 					tx->getTransactionType() != Transaction::TransferAsset) {
 					continue;
 				}
