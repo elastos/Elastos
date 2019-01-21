@@ -15,6 +15,7 @@ type Arbitrators interface {
 	GetNextCandidates() [][]byte
 
 	GetCRCArbitrators() []config.CRCArbitratorParams
+	IsCRCArbitrator(pk []byte) bool
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 
 	GetArbitratorsProgramHashes() []*common.Uint168
@@ -30,4 +31,5 @@ type Arbitrators interface {
 
 	GetActiveDposPeers() map[string]string
 	TryEnterEmergency(blockTime uint32) bool
+	GetLastConfirmedBlockTimeStamp() uint32
 }

@@ -7,10 +7,15 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
@@ -35,12 +40,28 @@ type ProposalDispatcher interface {
 	ProcessVote(v types.DPosProposalVote, accept bool)
 	AddPendingVote(v types.DPosProposalVote)
 
+	//abnormal
 	OnAbnormalStateDetected()
 	RequestAbnormalRecovering()
 	TryAppendAndBroadcastConfirmBlockMsg() bool
+
+	//inactive arbitrators
+	OnInactiveArbitratorsReceived(tx *types.Transaction)
+	OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signer []byte, sign []byte)
+}
+
+type ProposalDispatcherConfig struct {
+	store.EventStoreAnalyzerConfig
+	EventMonitor *log.EventMonitor
+	Consensus    Consensus
+	Network      DposNetwork
+	Manager      DposManager
+	Account      account.DposAccount
 }
 
 type proposalDispatcher struct {
+	cfg ProposalDispatcherConfig
+
 	processingBlock    *types.Block
 	processingProposal *types.DPosProposal
 	acceptVotes        map[common.Uint256]types.DPosProposalVote
@@ -48,12 +69,10 @@ type proposalDispatcher struct {
 	pendingProposals   map[common.Uint256]types.DPosProposal
 	pendingVotes       map[common.Uint256]types.DPosProposalVote
 
+	processingInactiveArbitratorTx *types.Transaction
+
+	eventAnalyzer  *store.EventStoreAnalyzer
 	illegalMonitor IllegalBehaviorMonitor
-	eventMonitor   *log.EventMonitor
-	consensus      Consensus
-	network        DposNetwork
-	manager        DposManager
-	account        account.DposAccount
 }
 
 func (p *proposalDispatcher) OnAbnormalStateDetected() {
@@ -63,12 +82,12 @@ func (p *proposalDispatcher) OnAbnormalStateDetected() {
 func (p *proposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
 	msgItem := &dmsg.RequestConsensus{Height: height}
-	peerID := p.network.GetActivePeer()
+	peerID := p.cfg.Network.GetActivePeer()
 	if peerID == nil {
 		log.Error("[RequestAbnormalRecovering] can not find active peer")
 		return
 	}
-	p.network.SendMessageToPeer(*peerID, msgItem)
+	p.cfg.Network.SendMessageToPeer(*peerID, msgItem)
 }
 
 func (p *proposalDispatcher) GetProcessingBlock() *types.Block {
@@ -123,23 +142,23 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 	}
 	p.processingBlock = b
 
-	p.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
-	proposal := types.DPosProposal{Sponsor: p.manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.consensus.GetViewOffset()}
+	p.cfg.Network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+	proposal := types.DPosProposal{Sponsor: p.cfg.Manager.GetPublicKey(), BlockHash: b.Hash(), ViewOffset: p.cfg.Consensus.GetViewOffset()}
 	var err error
-	proposal.Sign, err = p.account.SignProposal(&proposal)
+	proposal.Sign, err = p.cfg.Account.SignProposal(&proposal)
 	if err != nil {
 		log.Error("[StartProposal] start proposal failed:", err.Error())
 		return
 	}
 
-	log.Info("[StartProposal] sponsor:", p.manager.GetPublicKey())
+	log.Info("[StartProposal] sponsor:", p.cfg.Manager.GetPublicKey())
 
 	m := &dmsg.Proposal{
 		Proposal: proposal,
 	}
 
 	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", dmsg.GetMessageHash(m))
-	p.network.BroadcastMessage(m)
+	p.cfg.Network.BroadcastMessage(m)
 
 	rawData := new(bytes.Buffer)
 	proposal.Serialize(rawData)
@@ -149,10 +168,8 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
 		RawData:      rawData.Bytes(),
-		Result:       false,
-	}
-	p.eventMonitor.OnProposalArrived(&proposalEvent)
-
+		Result:       false,}
+	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
 	p.acceptProposal(proposal)
 }
 
@@ -191,7 +208,7 @@ func (p *proposalDispatcher) FinishProposal() {
 		EndTime:   time.Now(),
 		Result:    true,
 	}
-	p.eventMonitor.OnProposalFinished(&proposalEvent)
+	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 }
 
 func (p *proposalDispatcher) CleanProposals(changeView bool) {
@@ -232,17 +249,17 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 		return
 	}
 
-	if !p.consensus.IsArbitratorOnDuty(d.Sponsor) {
-		currentArbiter := p.manager.GetArbitrators().GetNextOnDutyArbitrator(p.consensus.GetViewOffset())
-		log.Info("viewOffset:", p.consensus.GetViewOffset(), "current arbiter:",
+	if !p.cfg.Consensus.IsArbitratorOnDuty(d.Sponsor) {
+		currentArbiter := p.cfg.Manager.GetArbitrators().GetNextOnDutyArbitrator(p.cfg.Consensus.GetViewOffset())
+		log.Info("viewOffset:", p.cfg.Consensus.GetViewOffset(), "current arbiter:",
 			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
 		return
 	}
 
-	currentBlock, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
-	if !ok || !p.consensus.IsRunning() {
+	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
+	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
 		log.Info("Received pending proposal.")
 		return
@@ -274,11 +291,11 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	p.manager.Broadcast(msg.NewBlock(&types.DposBlock{
+	p.cfg.Manager.Broadcast(msg.NewBlock(&types.DposBlock{
 		ConfirmFlag: true,
 		Confirm:     currentVoteSlot,
 	}))
-	inMainChain, isOrphan, err := p.manager.AppendConfirm(currentVoteSlot)
+	inMainChain, isOrphan, err := p.cfg.Manager.AppendConfirm(currentVoteSlot)
 	if err != nil || !inMainChain || isOrphan {
 		log.Error("[AppendConfirm] err:", err.Error())
 		return false
@@ -289,7 +306,7 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 
 func (p *proposalDispatcher) OnBlockAdded(b *types.Block) {
 
-	if p.consensus.IsRunning() {
+	if p.cfg.Consensus.IsRunning() {
 		for k, v := range p.pendingProposals {
 			if v.BlockHash.IsEqual(b.Hash()) {
 				p.ProcessProposal(v)
@@ -301,13 +318,13 @@ func (p *proposalDispatcher) OnBlockAdded(b *types.Block) {
 }
 
 func (p *proposalDispatcher) FinishConsensus() {
-	if p.consensus.IsRunning() {
+	if p.cfg.Consensus.IsRunning() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
 		c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
-		p.eventMonitor.OnConsensusFinished(&c)
-		p.consensus.SetReady()
+		p.cfg.EventMonitor.OnConsensusFinished(&c)
+		p.cfg.Consensus.SetReady()
 		p.CleanProposals(false)
 	}
 }
@@ -375,6 +392,74 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
+func (p *proposalDispatcher) OnInactiveArbitratorsReceived(tx *types.Transaction) {
+	var err error
+	if err = blockchain.CheckInactiveArbitrators(tx); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] check tx error, details: ", err.Error())
+		return
+	}
+
+	inactivePayload := tx.Payload.(*payload.InactiveArbitrators)
+	if !p.cfg.Consensus.IsArbitratorOnDuty(inactivePayload.Sponsor) {
+		log.Warn("[OnInactiveArbitratorsReceived] sender is not on duty")
+		return
+	}
+
+	if !p.processingInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
+		p.processingInactiveArbitratorTx = tx
+	}
+
+	response := &dmsg.ResponseInactiveArbitrators{
+		Tx:     *tx,
+		Signer: p.cfg.Manager.GetPublicKey(),
+	}
+	if response.Sign, err = p.cfg.Account.SignTx(tx); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] sign response message error, details: ", err.Error())
+	}
+	p.cfg.Network.BroadcastMessage(response)
+}
+
+func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signer []byte, sign []byte) {
+	if !p.processingInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown inactive arbitrators transaction")
+		return
+	}
+
+	if !p.cfg.Arbitrators.IsCRCArbitrator(signer) {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] signer is not a CRC member")
+		return
+	}
+
+	data := new(bytes.Buffer)
+	if err := tx.SerializeUnsigned(data); err != nil {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] transaction serialize error, details: ", err)
+		return
+	}
+
+	pk, err := crypto.DecodePoint(signer)
+	if err != nil {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] decode signer error, details: ", err)
+		return
+	}
+
+	if err := crypto.Verify(*pk, data.Bytes(), sign); err != nil {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] sign verify error, details: ", err)
+		return
+	}
+
+	pro := p.processingInactiveArbitratorTx.Programs[0]
+	buf := new(bytes.Buffer)
+	buf.Write(pro.Parameter)
+	buf.Write(sign)
+	pro.Parameter = buf.Bytes()
+
+	crcArbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbitrators())
+	minSignCount := int(float64(crcArbitratorsCount) * blockchain.DposMajorityRatioNumerator / blockchain.DposMajorityRatioDenominator)
+	if len(pro.Parameter)/crypto.SignatureLength > minSignCount {
+		p.cfg.Manager.AppendToTxnPool(p.processingInactiveArbitratorTx)
+	}
+}
+
 func (p *proposalDispatcher) alreadyExistVote(v types.DPosProposalVote) bool {
 	_, ok := p.acceptVotes[v.Hash()]
 	if ok {
@@ -399,7 +484,7 @@ func (p *proposalDispatcher) countAcceptedVote(v types.DPosProposalVote) {
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes[v.Hash()] = v
 
-		if p.manager.GetArbitrators().HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
+		if p.cfg.Manager.GetArbitrators().HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
 			log.Info("Collect majority signs, finish proposal.")
 			p.FinishProposal()
 		}
@@ -414,9 +499,9 @@ func (p *proposalDispatcher) countRejectedVote(v types.DPosProposalVote) {
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes[v.Hash()] = v
 
-		if p.manager.GetArbitrators().HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
+		if p.cfg.Manager.GetArbitrators().HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
 			p.CleanProposals(true)
-			p.consensus.ChangeView()
+			p.cfg.Consensus.ChangeView()
 		}
 	}
 }
@@ -426,9 +511,9 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 	defer log.Info("[acceptProposal] end")
 
 	p.setProcessingProposal(d)
-	vote := types.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: true}
+	vote := types.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.cfg.Manager.GetPublicKey(), Accept: true}
 	var err error
-	vote.Sign, err = p.account.SignVote(&vote)
+	vote.Sign, err = p.cfg.Account.SignVote(&vote)
 	if err != nil {
 		log.Error("[acceptProposal] sign failed")
 		return
@@ -436,21 +521,21 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 	voteMsg := &dmsg.Vote{Command: dmsg.CmdAcceptVote, Vote: vote}
 	p.ProcessVote(vote, true)
 
-	p.network.BroadcastMessage(voteMsg)
+	p.cfg.Network.BroadcastMessage(voteMsg)
 	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
-	p.eventMonitor.OnVoteArrived(&voteEvent)
+	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 	p.setProcessingProposal(d)
 
-	vote := types.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.manager.GetPublicKey(), Accept: false}
+	vote := types.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.cfg.Manager.GetPublicKey(), Accept: false}
 	var err error
-	vote.Sign, err = p.account.SignVote(&vote)
+	vote.Sign, err = p.cfg.Account.SignVote(&vote)
 	if err != nil {
 		log.Error("[rejectProposal] sign failed")
 		return
@@ -458,18 +543,18 @@ func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 	msg := &dmsg.Vote{Command: dmsg.CmdRejectVote, Vote: vote}
 	log.Info("[rejectProposal] send rej_vote msg:", dmsg.GetMessageHash(msg))
 
-	_, ok := p.manager.GetBlockCache().TryGetValue(d.BlockHash)
+	_, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok {
 		log.Error("[rejectProposal] can't find block")
 		return
 	}
 	p.ProcessVote(vote, false)
-	p.network.BroadcastMessage(msg)
+	p.cfg.Network.BroadcastMessage(msg)
 
 	rawData := new(bytes.Buffer)
 	vote.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
-	p.eventMonitor.OnVoteArrived(&voteEvent)
+	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
 func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
@@ -483,25 +568,99 @@ func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
 }
 
-func NewDispatcherAndIllegalMonitor(consensus Consensus, eventMonitor *log.EventMonitor, network DposNetwork, manager DposManager, dposAccount account.DposAccount) (ProposalDispatcher, IllegalBehaviorMonitor) {
+func (p *proposalDispatcher) createInactiveArbitrators() (*types.Transaction, error) {
+	var err error
+
+	inactivePayload := &payload.InactiveArbitrators{Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
+	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
+	for _, v := range inactiveArbitrators {
+		var pk []byte
+		pk, err = common.HexStringToBytes(v)
+		if err != nil {
+			return nil, err
+		}
+		inactivePayload.Arbitrators = append(inactivePayload.Arbitrators, pk)
+	}
+	inactivePayload.Sign, err = p.cfg.Account.SignInactiveArbitratorsPayload(inactivePayload)
+
+	con := contract.Contract{HashPrefix: contract.PrefixMultiSig}
+	if con.Code, err = p.createCRCArbitratorsRedeemScript(); err != nil {
+		return nil, err
+	}
+
+	var programHash *common.Uint168
+	if programHash, err = con.ToProgramHash(); err != nil {
+		return nil, err
+	}
+
+	tx := &types.Transaction{
+		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(p.processingBlock.Height)),
+		TxType:         types.InactiveArbitrators,
+		PayloadVersion: payload.PayloadInactiveArbitratorsVersion,
+		Payload:        inactivePayload,
+		Attributes: []*types.Attribute{{
+			Usage: types.Script,
+			Data:  programHash.Bytes(),
+		}},
+		LockTime: 0,
+		Outputs:  []*types.Output{},
+		Inputs:   []*types.Input{},
+		Fee:      0,
+	}
+
+	var sign []byte
+	if sign, err = p.cfg.Account.SignTx(tx); err != nil {
+		return nil, err
+	}
+	tx.Programs = []*program.Program{
+		{
+			Code:      con.Code,
+			Parameter: sign,
+		},
+	}
+
+	return tx, nil
+}
+
+func (p *proposalDispatcher) createCRCArbitratorsRedeemScript() ([]byte, error) {
+	if len(p.cfg.Arbitrators.GetArbitrators()) != len(p.cfg.Arbitrators.GetCRCArbitrators()) {
+		return nil, errors.New("current arbitrators count error, expect equal than count of crc arbitrators")
+	}
+
+	var pks []*crypto.PublicKey
+	for _, v := range p.cfg.Arbitrators.GetArbitrators() {
+		pk, err := crypto.DecodePoint(v)
+		if err != nil {
+			return nil, err
+		}
+		pks = append(pks, pk)
+	}
+
+	crcArbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
+	minSignCount := uint(float64(crcArbitratorsCount) * blockchain.DposMajorityRatioNumerator / blockchain.DposMajorityRatioDenominator)
+	return crypto.CreateMultiSignRedeemScript(minSignCount+1, pks)
+}
+
+func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispatcher, IllegalBehaviorMonitor) {
 	p := &proposalDispatcher{
+		cfg:                cfg,
 		processingBlock:    nil,
 		processingProposal: nil,
 		acceptVotes:        make(map[common.Uint256]types.DPosProposalVote),
 		rejectedVotes:      make(map[common.Uint256]types.DPosProposalVote),
 		pendingProposals:   make(map[common.Uint256]types.DPosProposal),
 		pendingVotes:       make(map[common.Uint256]types.DPosProposalVote),
-		eventMonitor:       eventMonitor,
-		consensus:          consensus,
-		network:            network,
-		manager:            manager,
-		account:            dposAccount,
+		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
+			InactivePercentage: cfg.InactivePercentage,
+			Store:              cfg.Store,
+			Arbitrators:        cfg.Arbitrators.(*store.Arbitrators),
+		}),
 	}
 	i := &illegalBehaviorMonitor{
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*types.DPosProposal),
 		evidenceCache:   evidenceCache{make(map[common.Uint256]types.DposIllegalData)},
-		manager:         manager,
+		manager:         cfg.Manager,
 	}
 	p.illegalMonitor = i
 	return p, i

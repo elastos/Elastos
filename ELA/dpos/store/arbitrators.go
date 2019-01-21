@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"sort"
 	"sync"
 
@@ -12,11 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/events"
-)
-
-const (
-	DposMajorityRatioNumerator   = float64(2)
-	DposMajorityRatioDenominator = float64(3)
 )
 
 type ArbitratorsConfig struct {
@@ -155,6 +151,15 @@ func (a *Arbitrators) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
 	return ok
 }
 
+func (a *Arbitrators) IsCRCArbitrator(pk []byte) bool {
+	for _, v := range a.cfg.CRCArbitrators {
+		if bytes.Equal(v.PublicKey, pk) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *Arbitrators) GetCRCArbitrators() []config.CRCArbitratorParams {
 	return a.cfg.CRCArbitrators
 }
@@ -190,7 +195,7 @@ func (a *Arbitrators) GetArbitersCount() uint32 {
 
 func (a *Arbitrators) GetArbitersMajorityCount() uint32 {
 	a.lock.Lock()
-	minSignCount := float64(a.getArbitersCount()) * DposMajorityRatioNumerator / DposMajorityRatioDenominator
+	minSignCount := float64(a.getArbitersCount()) * blockchain.DposMajorityRatioNumerator / blockchain.DposMajorityRatioDenominator
 	a.lock.Unlock()
 
 	return uint32(minSignCount)
@@ -231,6 +236,10 @@ func (a *Arbitrators) TryEnterEmergency(blockTime uint32) (result bool) {
 	return result
 }
 
+func (a *Arbitrators) GetLastConfirmedBlockTimeStamp() uint32 {
+	return a.emergency.GetEmergencyData().LastConfirmedBlockTimeStamp
+}
+
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 
 	if !a.TryEnterEmergency(block.Timestamp) {
@@ -259,7 +268,8 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 func (a *Arbitrators) saveDposRelated() {
 	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
 	if a.emergency.IsRunning() {
-		a.cfg.Store.SaveEmergencyData(a.emergency.emergencyStarted, a.emergency.emergencyStartTime)
+		data := a.emergency.GetEmergencyData()
+		a.cfg.Store.SaveEmergencyData(data.EmergencyStarted, data.EmergencyStartTime, data.LastConfirmedBlockTimeStamp)
 	}
 }
 

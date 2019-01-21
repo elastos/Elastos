@@ -66,6 +66,8 @@ type NetworkEventListener interface {
 	OnConfirmReceived(p *types.DPosProposalVoteSlot)
 	OnIllegalBlocksReceived(i *types.DposIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData)
+	OnInactiveArbitratorsReceived(tx *types.Transaction)
+	OnResponseInactiveArbitratorsReceived(tx *types.Transaction, Signer []byte, Sign []byte)
 }
 
 type AbnormalRecovering interface {
@@ -97,6 +99,11 @@ type DposManager interface {
 	Broadcast(msg p2p.Message)
 }
 
+type DposManagerConfig struct {
+	PublicKey   []byte
+	Arbitrators interfaces.Arbitrators
+}
+
 type dposManager struct {
 	publicKey  []byte
 	blockCache *ConsensusBlockCache
@@ -117,11 +124,11 @@ func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, 
 	return d.blockPool.AppendConfirm(confirm)
 }
 
-func NewManager(publicKey []byte, arbitrators interfaces.Arbitrators) DposManager {
+func NewManager(cfg DposManagerConfig) DposManager {
 	m := &dposManager{
-		publicKey:   publicKey,
+		publicKey:   cfg.PublicKey,
 		blockCache:  &ConsensusBlockCache{},
-		arbitrators: arbitrators,
+		arbitrators: cfg.Arbitrators,
 	}
 	m.blockCache.Reset()
 
@@ -318,6 +325,14 @@ func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
 func (d *dposManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
 	d.illegalMonitor.AddEvidence(s)
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
+}
+
+func (d *dposManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
+	d.dispatcher.OnInactiveArbitratorsReceived(tx)
+}
+
+func (d *dposManager) OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signers []byte, signs []byte) {
+	d.dispatcher.OnResponseInactiveArbitratorsReceived(tx, signers, signs)
 }
 
 func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {

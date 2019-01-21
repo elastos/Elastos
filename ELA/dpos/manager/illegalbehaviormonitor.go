@@ -76,8 +76,8 @@ func (i *illegalBehaviorMonitor) IsLegalProposal(p *types.DPosProposal) (*types.
 }
 
 func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPosProposal) {
-	firstBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(first.BlockHash)
-	secondBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(second.BlockHash)
+	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(first.BlockHash)
+	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(second.BlockHash)
 
 	evidences := &types.DposIllegalProposals{
 		Evidence: types.ProposalEvidence{
@@ -94,7 +94,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPo
 	i.sendIllegalProposalTransaction(evidences)
 
 	m := &dmsg.IllegalProposals{Proposals: *evidences}
-	i.dispatcher.network.BroadcastMessage(m)
+	i.dispatcher.cfg.Network.BroadcastMessage(m)
 }
 
 func (i *illegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types.DposIllegalProposals) {
@@ -157,8 +157,8 @@ func (i *illegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.Dpo
 func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosProposalVote) {
 	firstProposal, _ := i.cachedProposals[first.ProposalHash]
 	secondProposal, _ := i.cachedProposals[second.ProposalHash]
-	firstBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(firstProposal.BlockHash)
-	secondBlock, _ := i.dispatcher.manager.GetBlockCache().TryGetValue(secondProposal.BlockHash)
+	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(firstProposal.BlockHash)
+	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(secondProposal.BlockHash)
 
 	evidences := &types.DposIllegalVotes{
 		Evidence: types.VoteEvidence{
@@ -177,7 +177,7 @@ func (i *illegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosPro
 	i.sendIllegalVoteTransaction(evidences)
 
 	m := &dmsg.IllegalVotes{Votes: *evidences}
-	i.dispatcher.network.BroadcastMessage(m)
+	i.dispatcher.cfg.Network.BroadcastMessage(m)
 }
 
 func (i *illegalBehaviorMonitor) isProposalsIllegal(first, second *types.DPosProposal) bool {
@@ -189,8 +189,8 @@ func (i *illegalBehaviorMonitor) isProposalsIllegal(first, second *types.DPosPro
 		return false
 	}
 
-	firstBlock, foundFirst := i.dispatcher.manager.GetBlockCache().TryGetValue(first.BlockHash)
-	secondBlock, foundSecond := i.dispatcher.manager.GetBlockCache().TryGetValue(second.BlockHash)
+	firstBlock, foundFirst := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(first.BlockHash)
+	secondBlock, foundSecond := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(second.BlockHash)
 	if !foundFirst || !foundSecond {
 		return false
 	}

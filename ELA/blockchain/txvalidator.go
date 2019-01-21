@@ -30,6 +30,12 @@ const (
 
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
+
+	// Numerator of dpos majority ratio
+	DposMajorityRatioNumerator = float64(2)
+
+	// Denominator of dpos majority ratio
+	DposMajorityRatioDenominator = float64(3)
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -118,8 +124,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		}
 
 	case InactiveArbitrators:
-		if err := b.checkInactiveArbitrators(txn); err != nil {
-			log.Warn("[checkInactiveArbitrators],", err)
+		if err := CheckInactiveArbitrators(txn); err != nil {
+			log.Warn("[CheckInactiveArbitrators],", err)
 			return ErrTransactionPayload
 		}
 
@@ -920,7 +926,7 @@ func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) 
 	return nil
 }
 
-func (b *BlockChain) checkInactiveArbitrators(txn *Transaction) error {
+func CheckInactiveArbitrators(txn *Transaction) error {
 	p, ok := txn.Payload.(*payload.InactiveArbitrators)
 	if !ok {
 		return errors.New("invalid payload")
@@ -961,14 +967,14 @@ func (b *BlockChain) checkInactiveArbitrators(txn *Transaction) error {
 		return err
 	}
 
-	if err := b.checkInactiveArbitratorsSignatures(txn.Programs[0], crcArbitrators); err != nil {
+	if err := checkInactiveArbitratorsSignatures(txn.Programs[0], crcArbitrators); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (b *BlockChain) checkInactiveArbitratorsSignatures(program *program.Program, crcArbitrators map[string]interface{}) error {
+func checkInactiveArbitratorsSignatures(program *program.Program, crcArbitrators map[string]interface{}) error {
 	code := program.Code
 	// Get N parameter
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
@@ -976,7 +982,7 @@ func (b *BlockChain) checkInactiveArbitratorsSignatures(program *program.Program
 	m := int(code[0]) - crypto.PUSH1 + 1
 
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := crcArbitratorsCount * 2 / 3
+	minSignCount := int(float64(crcArbitratorsCount) * DposMajorityRatioNumerator / DposMajorityRatioDenominator)
 	if m < 1 || m > n || n != crcArbitratorsCount || m <= minSignCount {
 		return errors.New("invalid multi sign script code")
 	}
