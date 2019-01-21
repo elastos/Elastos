@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/elastos/Elastos.ELA/common"
 )
@@ -51,25 +52,26 @@ func (e *evidenceCache) Reset(block *types.Block) {
 
 func (e *evidenceCache) tryGetEvidenceHash(tx *types.Transaction) (common.Uint256, bool) {
 	var hash common.Uint256
-	result := false
+	result := true
 
 	switch tx.TxType {
 	case types.IllegalProposalEvidence:
 		proposalPayload := tx.Payload.(*types.PayloadIllegalProposal)
 		hash = proposalPayload.Hash()
-		result = true
 	case types.IllegalVoteEvidence:
 		votePayload := tx.Payload.(*types.PayloadIllegalVote)
 		hash = votePayload.Hash()
-		result = true
 	case types.IllegalBlockEvidence:
 		blockPayload := tx.Payload.(*types.PayloadIllegalBlock)
 		hash = blockPayload.Hash()
-		result = true
 	case types.IllegalSidechainEvidence:
 		sidechainPayload := tx.Payload.(*types.PayloadSidechainIllegalData)
 		hash = sidechainPayload.Hash()
-		result = true
+	case types.InactiveArbitrators:
+		inactiveArbitrators := tx.Payload.(*payload.InactiveArbitrators)
+		hash = inactiveArbitrators.Hash()
+	default:
+		result = false
 	}
 
 	return hash, result

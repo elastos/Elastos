@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -56,7 +57,7 @@ func newDposManager(L *lua.LState) int {
 	}
 
 	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
-	dposManager := NewManager(pub, a)
+	dposManager := NewManager(DposManagerConfig{PublicKey: pub, Arbitrators: a})
 	mockManager := &manager{
 		DposManager: dposManager,
 	}
@@ -74,7 +75,18 @@ func newDposManager(L *lua.LState) int {
 	mockManager.Handler = NewHandler(n, dposManager, mockManager.EventMonitor)
 
 	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
-	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(mockManager.Consensus, mockManager.EventMonitor, n, dposManager, mockManager.Account)
+	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(ProposalDispatcherConfig{
+		EventMonitor: mockManager.EventMonitor,
+		Consensus:    mockManager.Consensus,
+		Network:      n,
+		Manager:      dposManager,
+		Account:      mockManager.Account,
+		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
+			InactivePercentage: config.Parameters.ArbiterConfiguration.InactivePercentage,
+			Store:              nil,
+			Arbitrators:        a,
+		},
+	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
 
 	mockManager.Peer = mock.NewPeerMock()

@@ -100,7 +100,10 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		log.Error("init dpos account error")
 		return nil, err
 	}
-	dposManager := manager.NewManager(pubKey, cfg.Arbitrators)
+	dposManager := manager.NewManager(manager.DposManagerConfig{
+		PublicKey:   pubKey,
+		Arbitrators: cfg.Arbitrators,
+	})
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
@@ -127,7 +130,18 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 	dposHandlerSwitch := manager.NewHandler(network, dposManager, eventMonitor)
 
 	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
+	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(manager.ProposalDispatcherConfig{
+		EventMonitor: eventMonitor,
+		Consensus:    consensus,
+		Network:      network,
+		Manager:      dposManager,
+		Account:      dposAccount,
+		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
+			InactivePercentage: config.Parameters.ArbiterConfiguration.InactivePercentage,
+			Store:              cfg.Store,
+			Arbitrators:        cfg.Arbitrators,
+		},
+	})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus,

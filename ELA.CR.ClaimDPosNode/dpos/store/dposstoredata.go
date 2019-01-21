@@ -22,23 +22,20 @@ func (s *DposStore) getDposDutyChangedCount() (uint32, error) {
 	return 0, nil
 }
 
-func (s *DposStore) getEmergencyData() (started bool, time uint32, err error) {
+func (s *DposStore) getEmergencyData() (*EmergencyData, error) {
 	key := []byte{byte(DPOSEmergencyData)}
-	data, err := s.db.Get(key)
+	value, err := s.db.Get(key)
 	if err == nil {
-		r := bytes.NewReader(data)
-
-		var startedValue uint8
-		if startedValue, err = common.ReadUint8(r); err != nil {
-			return started, time, err
+		r := bytes.NewReader(value)
+		data := &EmergencyData{}
+		if err = data.Deserialize(r); err != nil {
+			return nil, err
 		}
-		started = startedValue == 1
 
-		time, err = common.ReadUint32(r)
-		return started, time, err
+		return data, nil
 	}
 
-	return started, time, err
+	return nil, err
 }
 
 func (s *DposStore) getCurrentArbitrators() ([][]byte, error) {
@@ -146,16 +143,11 @@ func (s *DposStore) persistDposDutyChangedCount(batch Batch, count uint32) error
 	return nil
 }
 
-func (s *DposStore) persistEmergencyData(batch Batch, started bool, time uint32) error {
+func (s *DposStore) persistEmergencyData(batch Batch, data *EmergencyData) error {
 	key := []byte{byte(DPOSEmergencyData)}
 
 	value := new(bytes.Buffer)
-	startedValue := uint8(0)
-	if started {
-		startedValue = 1
-	}
-	common.WriteUint8(value, startedValue)
-	common.WriteUint32(value, time)
+	data.Serialize(value)
 
 	batch.Put(key, value.Bytes())
 	return nil

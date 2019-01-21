@@ -16,9 +16,8 @@ type persistDutyChangedCountTask struct {
 }
 
 type persistEmergencyDataTask struct {
-	started bool
-	time    uint32
-	reply   chan bool
+	data  EmergencyData
+	reply chan bool
 }
 
 type persistCurrentArbitratorsTask struct {
@@ -48,7 +47,7 @@ out:
 				s.handlePersistDposDutyChangedCount(task.count)
 				task.reply <- true
 			case *persistEmergencyDataTask:
-				s.handlePersistEmergencyData(task.started, task.time)
+				s.handlePersistEmergencyData(&task.data)
 				task.reply <- true
 			case *persistCurrentArbitratorsTask:
 				s.handlePersistCurrentArbiters(task.arbiters)
@@ -77,8 +76,8 @@ func (s *DposStore) handlePersistDposDutyChangedCount(count uint32) {
 	s.saveDposDutyChangedCount(count)
 }
 
-func (s *DposStore) handlePersistEmergencyData(started bool, time uint32) {
-	s.saveEmergencyData(started, time)
+func (s *DposStore) handlePersistEmergencyData(data *EmergencyData) {
+	s.saveEmergencyData(data)
 }
 
 func (s *DposStore) handlePersistCurrentArbiters(a *Arbitrators) {
@@ -99,9 +98,9 @@ func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	<-reply
 }
 
-func (s *DposStore) SaveEmergencyData(started bool, time uint32) {
+func (s *DposStore) SaveEmergencyData(started bool, startTime, confirmedTime uint32) {
 	reply := make(chan bool)
-	s.taskCh <- &persistEmergencyDataTask{started: started, time: time, reply: reply}
+	s.taskCh <- &persistEmergencyDataTask{data: EmergencyData{started, startTime, confirmedTime}, reply: reply}
 	<-reply
 }
 
@@ -153,9 +152,11 @@ func (s *DposStore) GetArbitrators(a interfaces.Arbitrators) error {
 		return err
 	}
 
-	if arbiters.emergency.emergencyStarted, arbiters.emergency.emergencyStartTime, err = s.getEmergencyData(); err != nil {
+	var data *EmergencyData
+	if data, err = s.getEmergencyData(); err != nil {
 		return err
 	}
+	arbiters.emergency.data = *data
 	return nil
 }
 
@@ -210,10 +211,10 @@ func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 	batch.Commit()
 }
 
-func (s *DposStore) saveEmergencyData(started bool, time uint32) {
+func (s *DposStore) saveEmergencyData(data *EmergencyData) {
 	log.Debugf("saveEmergencyData()")
 	batch := s.db.NewBatch()
-	if err := s.persistEmergencyData(batch, started, time); err != nil {
+	if err := s.persistEmergencyData(batch, data); err != nil {
 		log.Fatal("[persistEmergencyData]: error to persist dpos emergency data:", err.Error())
 		return
 	}
