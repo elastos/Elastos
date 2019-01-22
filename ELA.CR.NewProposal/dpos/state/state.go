@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 // ProducerState represents the state of a producer.
@@ -24,6 +27,10 @@ const (
 	// 6 blocks.
 	Activate
 
+	// Inactivate indicates the producer has been inactive for a period which shall
+	// be punished and will be activate later
+	Inactivate
+
 	// Canceled indicates the producer was canceled.
 	Canceled
 
@@ -33,7 +40,8 @@ const (
 
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
-var producerStateStrings = []string{"Pending", "Activate", "Canceled", "FoundBad"}
+var producerStateStrings = []string{"Pending", "Activate", "Inactivate",
+	"Canceled", "FoundBad"}
 
 func (ps ProducerState) String() string {
 	if int(ps) < len(producerStateStrings) {
@@ -49,6 +57,8 @@ type Producer struct {
 	state          ProducerState
 	registerHeight uint32
 	cancelHeight   uint32
+	inactiveRounds uint32
+	inactiveSince  uint32
 	votes          common.Fixed64
 }
 
@@ -87,6 +97,7 @@ type State struct {
 	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
 	pendingProducers  map[string]*Producer
 	activityProducers map[string]*Producer
+	inactiveProducers map[string]*Producer
 	canceledProducers map[string]*Producer
 	illegalProducers  map[string]*Producer
 	votes             map[string]*types.Output
@@ -214,6 +225,16 @@ func (s *State) GetIllegalProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.illegalProducers))
 	for _, producer := range s.illegalProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+func (s *State) GetInactiveProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.inactiveProducers))
+	for _, producer := range s.inactiveProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
@@ -375,7 +396,8 @@ func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	nickname := payload.NickName
 	nodeKey := hex.EncodeToString(payload.NodePublicKey)
 	ownerKey := hex.EncodeToString(payload.OwnerPublicKey)
-	producer := Producer{info: *payload, registerHeight: height, votes: 0}
+	producer := Producer{info: *payload, registerHeight: height, votes: 0,
+		inactiveRounds: 0, inactiveSince: math.MaxUint32}
 
 	s.history.append(height, func() {
 		s.nicknames[nickname] = struct{}{}
@@ -568,6 +590,101 @@ func (s *State) ProcessIllegalBlockEvidence(payload types.Payload) {
 	s.history.commit(0)
 }
 
+// ProcessInactiveArbiters count inactive rounds of arbitrators, and put into
+// inactive map if over than a sequence of three on duty rounds
+func (s *State) ProcessInactiveArbiters(blockHeight uint32, arbitrators []string) {
+
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	s.countArbitratorsInactivity(blockHeight, arbitrators)
+	s.tryLeaveInactiveMode(blockHeight)
+
+	// Commit changes here if no errors found.
+	s.history.commit(blockHeight)
+}
+
+// tryLeaveInactiveMode for inactive arbitrators to try leaving inactive mode if
+// over the inactive duration
+func (s *State) tryLeaveInactiveMode(blockHeight uint32) {
+	tryLeaveInactive := func(key string, producer *Producer) {
+		s.history.append(blockHeight, func() {
+			if blockHeight > producer.inactiveSince+
+				config.Parameters.ArbiterConfiguration.InactiveDuration {
+
+				producer.state = Activate
+				s.activityProducers[key] = producer
+				delete(s.inactiveProducers, key)
+			}
+		}, func() {
+			if blockHeight <= producer.inactiveSince+
+				config.Parameters.ArbiterConfiguration.InactiveDuration {
+
+				producer.state = Inactivate
+				s.inactiveProducers[key] = producer
+				delete(s.activityProducers, key)
+			}
+		})
+	}
+
+	for k, v := range s.inactiveProducers {
+		tryLeaveInactive(k, v)
+	}
+}
+
+// countArbitratorsInactivity count arbitrators inactive rounds,
+// and change to inactive if more than "MaxAllowedInactiveRounds"
+func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) {
+
+	countInactiveRounds := func(key string, producer *Producer) {
+		s.history.append(height, func() {
+
+			if producer.state == Activate {
+
+				if producer.inactiveRounds == 0 {
+					producer.inactiveSince = height
+				}
+				producer.inactiveRounds++
+
+				if producer.inactiveRounds >=
+					config.Parameters.ArbiterConfiguration.MaxAllowedInactiveRounds {
+
+					producer.state = Inactivate
+					s.inactiveProducers[key] = producer
+					delete(s.activityProducers, key)
+				}
+			}
+		}, func() {
+
+			if producer.state == Inactivate {
+				producer.inactiveRounds--
+
+				if producer.inactiveRounds <
+					config.Parameters.ArbiterConfiguration.MaxAllowedInactiveRounds {
+
+					producer.state = Activate
+					s.activityProducers[key] = producer
+					delete(s.inactiveProducers, key)
+				}
+			} else if producer.state == Activate {
+
+				producer.inactiveRounds--
+				if producer.inactiveRounds == 0 {
+					producer.inactiveSince = math.MaxUint32
+				}
+			}
+		})
+	}
+
+	for _, v := range arbitrators {
+		if _, ok := s.activityProducers[v]; ok {
+			countInactiveRounds(v, s.activityProducers[v])
+		} else {
+			log.Warn("unknown active producer: ", v)
+		}
+	}
+}
+
 // RollbackTo restores the database state to the given height, if no enough
 // history to rollback to return error.
 func (s *State) RollbackTo(height uint32) error {
@@ -591,6 +708,7 @@ func (s *State) GetHistory(height uint32) (*State, error) {
 	state := State{
 		pendingProducers:  make(map[string]*Producer),
 		activityProducers: make(map[string]*Producer),
+		inactiveProducers: make(map[string]*Producer),
 		canceledProducers: make(map[string]*Producer),
 		illegalProducers:  make(map[string]*Producer),
 	}
@@ -615,6 +733,7 @@ func NewState() *State {
 		nodeOwnerKeys:     make(map[string]string),
 		pendingProducers:  make(map[string]*Producer),
 		activityProducers: make(map[string]*Producer),
+		inactiveProducers: make(map[string]*Producer),
 		canceledProducers: make(map[string]*Producer),
 		illegalProducers:  make(map[string]*Producer),
 		votes:             make(map[string]*types.Output),
