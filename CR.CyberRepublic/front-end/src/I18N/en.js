@@ -268,12 +268,16 @@ const en = {
 
   // suggestion rules
   'suggestion.rules': 'Rules',
-  'suggestion.rules.guidelines': 'Rules and Guidelines',
+  'suggestion.rules.guidelines': 'Guidelines',
+  'suggestion.rules.guidelines.1': 'You may suggest your company, team or self as the candidate for the proposal, this is at the discretion of the council member who picks up the suggestion',
+  'suggestion.rules.guidelines.2': 'Describe why you think this suggestion would benefit the Elastos ecosystem',
+  'suggestion.rules.guidelines.3': 'Describe a reasonable timeline for the proper execution of the suggestion',
+  'suggestion.rules.rulesAndGuidelines': 'Rules and Guidelines',
   'suggestion.rules.guarantee': 'There is no guarantee a suggestion will be selected by the council',
   'suggestion.rules.response': 'Suggestions that are popular are more likely to receive a response by a council member.',
   'suggestion.rules.1': 'Must be related to Cyber Republic as either a policy change, project or specific deliverable',
-  'suggestion.rules.2': 'Describe why you think this suggestion would benefit the Elastos ecosystem',
-  'suggestion.rules.3': 'Must have an educated estimate of cost and expected return on investment',
+  'suggestion.rules.2': 'Spamming suggestions will not be tolerated, please wait a reasonable time before modifying and resubmitting',
+  'suggestion.rules.3': 'If there is a deliverable, it must have an educated estimate of cost and expected return on investment',
   'suggestion.rules.infoRequest': 'Requests for information from Elastos Foundation or specific CR members are not permitted and outside of the scope of the Cyber Republic Consensus program, for these matters please contact the Community Manager.',
 
   // Developer

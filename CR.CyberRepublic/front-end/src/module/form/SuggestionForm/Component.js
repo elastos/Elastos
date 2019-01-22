@@ -154,7 +154,7 @@ class C extends BaseComponent {
         <Col span={6}>
           <h5 className="alignRight">
             <a onClick={() => {this.setState({showRules: true})}}>
-              {I18N.get('suggestion.rules.guidelines')} <Icon type="question-circle"/>
+              {I18N.get('suggestion.rules.rulesAndGuidelines')} <Icon type="question-circle"/>
             </a>
           </h5>
         </Col>
@@ -173,9 +173,19 @@ class C extends BaseComponent {
           {I18N.get('suggestion.rules.response')}
         </p>
 
-        <h5>
+        <h4>
+          {I18N.get('suggestion.rules.guidelines')}
+        </h4>
+
+        <ol>
+          <li>{I18N.get('suggestion.rules.guidelines.1')}</li>
+          <li>{I18N.get('suggestion.rules.guidelines.2')}</li>
+          <li>{I18N.get('suggestion.rules.guidelines.3')}</li>
+        </ol>
+
+        <h4>
           {I18N.get('suggestion.rules')}
-        </h5>
+        </h4>
 
         <ol>
           <li>{I18N.get('suggestion.rules.1')}</li>
