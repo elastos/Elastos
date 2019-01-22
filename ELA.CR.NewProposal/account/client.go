@@ -7,18 +7,16 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"os/signal"
 	"sort"
 	"sync"
-	"syscall"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
@@ -185,7 +183,7 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 		FileStore: FileStore{path: path},
 	}
 
-	go client.ProcessSignals()
+	go client.HandleInterrupt()
 
 	passwordKey := crypto.ToAesKey(password)
 	if create {
@@ -392,30 +390,13 @@ func (cl *ClientImpl) verifyPasswordKey(passwordKey []byte) bool {
 	return true
 }
 
-func (cl *ClientImpl) ProcessSignals() {
-	clientSignalHandler := func(signal os.Signal, v interface{}) {
-		switch signal {
-		case syscall.SIGINT:
-			log.Info("Caught interrupt signal, program exits.")
-		case syscall.SIGTERM:
-			log.Info("Caught termination signal, program exits.")
-		}
+func (cl *ClientImpl) HandleInterrupt() {
+	interrupt := signal.NewInterrupt()
+	select {
+	case <-interrupt.C:
 		// hold the mutex lock to prevent any wallet db changes
 		cl.FileStore.Lock()
 		os.Exit(0)
-	}
-	signalSet := signalset.New()
-	signalSet.Register(syscall.SIGINT, clientSignalHandler)
-	signalSet.Register(syscall.SIGTERM, clientSignalHandler)
-	sigChan := make(chan os.Signal, MaxSignalQueueLen)
-	signal.Notify(sigChan)
-	for {
-		select {
-		case sig := <-sigChan:
-			signalSet.Handle(sig, nil)
-		default:
-			time.Sleep(time.Second)
-		}
 	}
 }
 
