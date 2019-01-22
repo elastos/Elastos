@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MaxVoteProducersPerTransaction = 50
+	MaxVoteProducersPerTransaction = 36
 )
 
 const (
