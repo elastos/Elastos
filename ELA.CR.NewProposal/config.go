@@ -149,9 +149,9 @@ var configTemplate = config.Configuration{
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		InactivePercentage:       0.1,
 	},
-	RpcConfiguration : config.RpcConfiguration{
-		User:       "",
-		Pass:       "" ,
-		WhiteIpList:[]string{"127.0.0.1"},
+	RpcConfiguration: config.RpcConfiguration{
+		User:        "",
+		Pass:        "",
+		WhiteIPList: []string{"127.0.0.1"},
 	},
 }
