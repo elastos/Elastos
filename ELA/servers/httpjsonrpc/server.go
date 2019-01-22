@@ -5,7 +5,6 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -105,10 +104,9 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isCheckAuthOk, err := checkAuth(r)
+	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
-		log.Warn(err.Error())
-		http.Error(w, err.Error(), http.StatusNetworkAuthenticationRequired)
+		http.Error(w, "client authenticate failed", http.StatusNetworkAuthenticationRequired)
 		return
 	}
 
@@ -178,9 +176,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func clientAllowed(r *http.Request) bool {
-	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
-	log.Debugf("WhiteIpList %v \n", config.Parameters.RpcConfiguration.WhiteIpList)
-
 	//this ipAbbr  may be  ::1 when request is localhost
 	ipAbbr, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
@@ -190,7 +185,6 @@ func clientAllowed(r *http.Request) bool {
 	}
 	//after ParseIP ::1 chg to 0:0:0:0:0:0:0:1 the true ip
 	remoteIp := net.ParseIP(ipAbbr)
-	log.Debugf("RemoteAddr clientAllowed remoteIp %s \n", remoteIp.String())
 
 	if remoteIp == nil {
 		log.Errorf("clientAllowed ParseIP ipAbbr %s failure  \n", ipAbbr)
@@ -202,7 +196,7 @@ func clientAllowed(r *http.Request) bool {
 		return true
 	}
 
-	for _, cfgIp := range config.Parameters.RpcConfiguration.WhiteIpList {
+	for _, cfgIp := range config.Parameters.RpcConfiguration.WhiteIPList {
 		//WhiteIpList have 0.0.0.0  allow all ip in
 		if cfgIp == "0.0.0.0" {
 			return true
@@ -212,22 +206,17 @@ func clientAllowed(r *http.Request) bool {
 		}
 
 	}
-	log.Debugf("RemoteAddr clientAllowed failure %s \n", r.RemoteAddr)
 	return false
 }
 
-func checkAuth(r *http.Request) (bool, error) {
-
-	log.Debugf("checkAuth PowConfiguration %+v", config.Parameters.RpcConfiguration)
-
+func checkAuth(r *http.Request) bool {
 	if (config.Parameters.RpcConfiguration.User == config.Parameters.RpcConfiguration.Pass) &&
 		(len(config.Parameters.RpcConfiguration.User) == 0) {
-		return true, nil
+		return true
 	}
 	authHeader := r.Header["Authorization"]
 	if len(authHeader) <= 0 {
-		log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-		return false, errors.New("checkAuth failure Authorization empty")
+		return false
 	}
 
 	authSha256 := sha256.Sum256([]byte(authHeader[0]))
@@ -238,12 +227,11 @@ func checkAuth(r *http.Request) (bool, error) {
 
 	resultCmp := subtle.ConstantTimeCompare(authSha256[:], cfgAuthSha256[:])
 	if resultCmp == 1 {
-		return true, nil
+		return true
 	}
 
 	// Request's auth doesn't match  user
-	log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-	return false, errors.New("checkAuth failure Authorization username or password error")
+	return false
 }
 
 func RPCError(w http.ResponseWriter, httpStatus int, code elaErr.ErrCode, message string) {
