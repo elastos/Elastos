@@ -18,6 +18,7 @@ const mapState = (state) => {
     total: state.suggestion.all_suggestions_total,
     currentUserId,
     filter: state.suggestion.filter || {},
+    isLogin: state.user.is_login,
   }
 
   return suggestionState
