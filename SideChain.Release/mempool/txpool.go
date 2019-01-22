@@ -52,7 +52,14 @@ func New(cfg *Config) *TxPool {
 func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 	p.Lock()
 	defer p.Unlock()
-	return p.appendToTxPool(tx)
+	if err := p.appendToTxPool(tx); err != nil {
+		return err
+	}
+
+	// Notify transaction accepted.
+	events.Notify(events.ETTransactionAccepted, tx)
+
+	return nil
 }
 
 func (p *TxPool) appendToTxPool(tx *types.Transaction) error {
@@ -80,9 +87,6 @@ func (p *TxPool) appendToTxPool(tx *types.Transaction) error {
 
 	//add the transaction to process scope
 	p.txnList[tx.Hash()] = tx
-
-	// Notify transaction accepted.
-	events.Notify(events.ETTransactionAccepted, tx)
 
 	return nil
 }
