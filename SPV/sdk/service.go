@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"time"
 
@@ -136,19 +135,7 @@ func (s *service) start() {
 }
 
 func (s *service) updateFilter() *bloom.Filter {
-	addresses, outpoints := s.cfg.GetFilterData()
-	elements := uint32(len(addresses) + len(outpoints))
-
-	filter := bloom.NewFilter(elements, rand.Uint32(), 0)
-	for _, address := range addresses {
-		filter.Add(address.Bytes())
-	}
-
-	for _, op := range outpoints {
-		filter.Add(op.Bytes())
-	}
-
-	return filter
+	return s.cfg.GetFilter()
 }
 
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {

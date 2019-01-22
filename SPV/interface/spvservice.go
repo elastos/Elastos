@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"time"
 
@@ -87,7 +88,7 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
-		GetFilterData:  service.GetFilterData,
+		GetFilter:      service.GetFilter,
 		StateNotifier:  service,
 	}
 
@@ -181,13 +182,13 @@ func (s *spvservice) HeaderStore() database.Headers {
 	return s.headers
 }
 
-func (s *spvservice) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
-	ops, err := s.db.Ops().GetAll()
-	if err != nil {
-		log.Error("[SPV_SERVICE] GetData error ", err)
+func (s *spvservice) GetFilter() *bloom.Filter {
+	addrs := s.db.Addrs().GetAll()
+	filter := bloom.NewFilter(uint32(len(addrs)), math.MaxUint32, 0)
+	for _, address := range addrs {
+		filter.Add(address.Bytes())
 	}
-
-	return s.db.Addrs().GetAll(), ops
+	return filter
 }
 
 func (s *spvservice) putTx(batch store.DataBatch, utx util.Transaction,
