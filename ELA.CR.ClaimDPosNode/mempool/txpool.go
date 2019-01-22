@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
@@ -113,6 +114,7 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	mp.cleanTransactions(block.Transactions)
 	mp.cleanSidechainTx(block.Transactions)
 	mp.cleanSideChainPowTx()
+	mp.cleanCanceledProducer(block.Transactions)
 	mp.Unlock()
 }
 
@@ -167,27 +169,27 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 
 				// delete producer
 				if tx.TxType == RegisterProducer {
-					payload, ok := tx.Payload.(*payload.ProducerInfo)
+					rpPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
-					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
-					mp.delNodePublicKey(BytesToHexString(payload.NodePublicKey))
+					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
+					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
 				}
 				if tx.TxType == UpdateProducer {
-					payload, ok := tx.Payload.(*payload.ProducerInfo)
+					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
-					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
-					mp.delNodePublicKey(BytesToHexString(payload.NodePublicKey))
+					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
+					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
 				}
 				if tx.TxType == CancelProducer {
-					payload, ok := tx.Payload.(*payload.CancelProducer)
+					cpPayload, ok := tx.Payload.(*payload.CancelProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
-					mp.delOwnerPublicKey(BytesToHexString(payload.OwnerPublicKey))
+					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
 				}
 
 				deleteCount++
@@ -197,6 +199,58 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 	log.Debug(fmt.Sprintf("[cleanTransactionList],transaction %d in block, %d in transaction pool before, %d deleted,"+
 		" Remains %d in TxPool",
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
+}
+
+func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
+	for _, txn := range txs {
+		if txn.TxType == CancelProducer {
+			cpPayload, ok := txn.Payload.(*payload.CancelProducer)
+			if !ok {
+				return errors.New("invalid cancel producer payload")
+			}
+			if err := mp.cleanVoteAndUpdateProducer(cpPayload.OwnerPublicKey); err != nil {
+				log.Error(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
+	for _, txn := range mp.txnList {
+		if txn.TxType == TransferAsset {
+			for _, output := range txn.Outputs {
+				if output.Type == OTVote {
+					opPayload, ok := output.Payload.(*outputpayload.VoteOutput)
+					if !ok {
+						return errors.New("invalid vote output payload")
+					}
+					for _, content := range opPayload.Contents {
+						if content.VoteType == outputpayload.Delegate {
+							for _, pubKey := range content.Candidates {
+								if bytes.Equal(ownerPublicKey, pubKey) {
+									mp.removeTransaction(txn)
+								}
+							}
+						}
+					}
+				}
+			}
+		} else if txn.TxType == UpdateProducer {
+			upPayload, ok := txn.Payload.(*payload.ProducerInfo)
+			if !ok {
+				return errors.New("invalid update producer payload")
+			}
+			if bytes.Equal(upPayload.OwnerPublicKey, ownerPublicKey) {
+				mp.removeTransaction(txn)
+				mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
+				mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
+			}
+		}
+	}
+
+	return nil
 }
 
 //get the transaction by hash

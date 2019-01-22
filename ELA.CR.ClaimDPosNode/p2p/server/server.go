@@ -129,7 +129,6 @@ type serverPeer struct {
 	isWhitelisted  bool
 	knownAddresses map[string]struct{}
 	banScore       connmgr.DynamicBanScore
-	quit           chan struct{}
 }
 
 // newServerPeer returns a new IPeer instance. The peer needs to be set by
@@ -139,7 +138,6 @@ func newServerPeer(s *server, isPersistent bool) *serverPeer {
 		server:         s,
 		persistent:     isPersistent,
 		knownAddresses: make(map[string]struct{}),
-		quit:           make(chan struct{}),
 	}
 }
 
@@ -676,8 +674,9 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
+	s.addrManager.AddAddress(sp.NA(), sp.NA())
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -695,8 +694,8 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp.Peer = p
 	sp.connReq = c
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 	s.addrManager.Attempt(sp.NA())
 }
 
@@ -710,7 +709,6 @@ func (s *server) peerDoneHandler(sp *serverPeer) {
 	if sp.VersionKnown() && s.cfg.OnDonePeer != nil {
 		s.cfg.OnDonePeer(sp)
 	}
-	close(sp.quit)
 }
 
 // peerHandler is used to handle peer operations such as adding and removing
@@ -1211,6 +1209,12 @@ func newServer(origCfg *Config) (*server, error) {
 	// Startup persistent peers.
 	for _, addr := range cfg.SeedPeers {
 		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add seed peer addresses into addr manager
+		err = s.addrManager.AddAddressByIP(netAddr.String())
 		if err != nil {
 			return nil, err
 		}

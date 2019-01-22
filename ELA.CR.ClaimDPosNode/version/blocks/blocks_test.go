@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -28,7 +27,6 @@ func (s *blockVersionTestSuite) SetupTest() {
 
 func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -44,7 +42,6 @@ func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 		arbitrators = append(arbitrators, a)
 	}
 
-	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = 5
 	chainStore := &blockchain.ChainStoreMock{
 		RegisterProducers: []*payload.ProducerInfo{
 			{
@@ -79,7 +76,6 @@ func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
 	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.NormalArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {

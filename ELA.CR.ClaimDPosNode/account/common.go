@@ -46,7 +46,7 @@ func GetCorssChainSigners(code []byte) ([]*common.Uint160, error) {
 
 	var signers []*common.Uint160
 	for _, publicKey := range publicKeys {
-		hash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		hash, err := contract.PublicKeyToStandardCodeHash(publicKey[1:])
 		if err != nil {
 			return nil, err
 		}
