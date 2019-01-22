@@ -8,6 +8,7 @@ import { COUNCIL_MEMBERS, COUNCIL_MEMBER_IDS, USER_ROLE } from '@/constant'
 export default createContainer(Component, state => ({
   user: state.user,
   isLogin: state.user.is_login,
+  isSecretary: state.user.role === USER_ROLE.SECRETARY,
   isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.COUNCIL,
   canCreate: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.COUNCIL || state.user.role === USER_ROLE.SECRETARY,
   static: {

@@ -116,7 +116,7 @@ class C extends BaseComponent {
     }
 
     const secretaryDisabled = { readOnly: true }
-    if (this.props.user.current_user_id === '5b4c3ba6450ff10035954c80') {
+    if (this.props.isSecretary) {
       delete secretaryDisabled.readOnly
     }
 
