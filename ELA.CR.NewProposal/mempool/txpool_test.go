@@ -59,7 +59,6 @@ func TestTxPoolInit(t *testing.T) {
 	store.InitArbitrators(store.ArbitratorsConfig{
 		ArbitratorsCount: config.Parameters.ArbiterConfiguration.NormalArbitratorsCount,
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
 		Store:            dposStore,
 	})
 

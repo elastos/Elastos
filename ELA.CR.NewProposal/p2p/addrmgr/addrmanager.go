@@ -139,6 +139,10 @@ const (
 	// will consider evicting an address.
 	minBadDays = 7
 
+	// getAddrMin is the minimum addresses that we will send in response
+	// to a getAddr
+	getAddrMin = 10
+
 	// getAddrMax is the most addresses that we will send in response
 	// to a getAddr (in practise the most addresses we will return from a
 	// call to AddressCache()).
@@ -630,6 +634,9 @@ func (a *AddrManager) AddressCache() []*p2p.NetAddress {
 	}
 
 	numAddresses := addrIndexLen * getAddrPercent / 100
+	if numAddresses <= getAddrMin {
+		numAddresses = min(getAddrMin, addrIndexLen)
+	}
 	if numAddresses > getAddrMax {
 		numAddresses = getAddrMax
 	}
@@ -936,6 +943,14 @@ func (a *AddrManager) AddLocalAddress(na *p2p.NetAddress, priority AddressPriori
 		}
 	}
 	return nil
+}
+
+// min returns the smaller of x or y.
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 // getReachabilityFrom returns the relative reachability of the provided local
