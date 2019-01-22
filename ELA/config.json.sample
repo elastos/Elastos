@@ -48,7 +48,10 @@
       "NormalArbitratorsCount": 5,
       "CandidatesCount": 0,
       "EmergencyTriggerTimeSpan": 3600,
-      "EmergencyDuration": 604800
+      "EmergencyDuration": 604800,
+      "InactivePercentage": 0.1,
+      "MaxAllowedInactiveRounds": 3,
+      "InactiveDuration": 604800
     },
     "RpcConfiguration": {
       "User": "ElaUser",

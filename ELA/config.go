@@ -148,6 +148,8 @@ var configTemplate = config.Configuration{
 		EmergencyTriggerTimeSpan: uint32((time.Hour * 1) / time.Second),
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		InactivePercentage:       0.1,
+		MaxAllowedInactiveRounds: 3,
+		InactiveDuration:         uint32((time.Hour * 24 * 7) / time.Second),
 	},
 	RpcConfiguration: config.RpcConfiguration{
 		User:        "",
