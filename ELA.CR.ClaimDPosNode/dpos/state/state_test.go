@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -715,7 +716,7 @@ func TestState_ProducerExists(t *testing.T) {
 		state.ProcessTransactions([]*types.Transaction{tx}, uint32(i+1))
 	}
 
-	for _,p := range producers {
+	for _, p := range producers {
 		if !assert.Equal(t, true, state.ProducerExists(p.NodePublicKey)) {
 			t.FailNow()
 		}
@@ -799,4 +800,72 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 	if !assert.Equal(t, true, state.IsDPOSTransaction(tx)) {
 		t.FailNow()
 	}
+}
+
+func TestState_ProcessInactiveArbiters(t *testing.T) {
+	params := config.Parameters
+	config.Parameters = config.ConfigParams{
+		Configuration: &config.Configuration{
+			ArbiterConfiguration: config.ArbiterConfiguration{
+				MaxAllowedInactiveRounds: 3,
+				InactiveDuration:         10,
+			},
+		},
+	}
+
+	state := NewState()
+	state.activityProducers["A"] = &Producer{state: Activate,
+		info: payload.ProducerInfo{NickName: "A"}}
+	state.activityProducers["B"] = &Producer{state: Activate,
+		info: payload.ProducerInfo{NickName: "B"}}
+	state.activityProducers["C"] = &Producer{state: Activate,
+		info: payload.ProducerInfo{NickName: "C"}}
+
+	if !assert.Equal(t, 3, len(state.GetActiveProducers())) ||
+		!assert.Equal(t, 0, len(state.GetInactiveProducers())) {
+		t.FailNow()
+	}
+
+	// test normal processing
+	state.ProcessInactiveArbiters(1, []string{"A", "B"})
+	state.ProcessInactiveArbiters(2, []string{"A", "C"})
+	state.ProcessInactiveArbiters(3, []string{"A"})
+
+	if !assert.Equal(t, 2, len(state.GetActiveProducers())) ||
+		!assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
+		!assert.Equal(t, "A", state.GetInactiveProducers()[0].info.NickName) {
+		t.FailNow()
+	}
+
+	// test rollback
+	if !assert.NoError(t, state.RollbackTo(2)) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, 3, len(state.GetActiveProducers())) ||
+		!assert.Equal(t, 0, len(state.GetInactiveProducers())) {
+		t.FailNow()
+	}
+
+	// continue to processing blocks
+	state.ProcessInactiveArbiters(3, []string{"B"})
+	state.ProcessInactiveArbiters(4, []string{"B"})
+
+	if !assert.Equal(t, 2, len(state.GetActiveProducers())) ||
+		!assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
+		!assert.Equal(t, "B", state.GetInactiveProducers()[0].info.NickName) {
+		t.FailNow()
+	}
+
+	// test leave inactive mode
+	for i := uint32(0); i < config.Parameters.ArbiterConfiguration.
+		InactiveDuration+1; i++ {
+		state.ProcessInactiveArbiters(i+5, []string{})
+	}
+
+	if !assert.Equal(t, 3, len(state.GetActiveProducers())) ||
+		!assert.Equal(t, 0, len(state.GetInactiveProducers())) {
+		t.FailNow()
+	}
+
+	config.Parameters = params
 }
