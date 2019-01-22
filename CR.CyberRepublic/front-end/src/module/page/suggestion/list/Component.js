@@ -121,8 +121,12 @@ export default class extends StandardPage {
   }
 
   showCreateForm = () => {
+    const { isLogin, history } = this.props;
+    const { showForm } = this.state
+    if (!isLogin) history.push('/login')
+
     this.setState({
-      showForm: !this.state.showForm,
+      showForm: !showForm,
     })
   }
 
