@@ -24,6 +24,9 @@ const (
 )
 
 const (
+	// FlagNode indicates node is a full node.
+	FlagNode = 1
+
 	OpenService = 1 << 2
 )
 
