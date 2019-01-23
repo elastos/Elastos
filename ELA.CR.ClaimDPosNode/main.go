@@ -81,7 +81,7 @@ func main() {
 	}
 	versions := version.NewVersions(&verconf)
 	ledger.HeightVersions = versions // fixme
-	chain, err := blockchain.New(chainStore, activeNetParams, versions, interrupt.C)
+	chain, err := blockchain.New(chainStore, activeNetParams, versions)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -109,6 +109,11 @@ func main() {
 	}
 	verconf.Arbitrators = arbiters
 	ledger.Arbitrators = arbiters // fixme
+
+	// initialize producer state after arbiters has initialized
+	if err = chain.InitializeProducersState(interrupt.C); err != nil {
+		printErrorAndExit(err)
+	}
 
 	log.Info("Start the P2P networks")
 	server, err := elanet.NewServer(dataDir, &elanet.Config{

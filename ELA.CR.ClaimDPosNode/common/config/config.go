@@ -124,9 +124,11 @@ type ArbiterConfiguration struct {
 	CandidatesCount          uint32                    `json:"CandidatesCount"`
 	EmergencyTriggerTimeSpan uint32                    `json:"EmergencyTriggerTimeSpan"`
 	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
+	EmergencyInactivePenalty common.Fixed64            `json:"EmergencyInactivePenalty"`
 	InactivePercentage       float64                   `json:"InactivePercentage"`
 	MaxAllowedInactiveRounds uint32                    `json:"MaxAllowedInactiveRounds"`
 	InactiveDuration         uint32                    `json:"InactiveDuration"`
+	InactivePenalty          common.Fixed64            `json:"InactivePenalty"`
 }
 
 type Seed struct {
