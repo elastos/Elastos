@@ -139,6 +139,7 @@ type Peer struct {
 
 	flagsMtx           sync.Mutex // protects the peer flags below
 	na                 *p2p.NetAddress
+	naFilter           p2p.NAFilter
 	id                 uint64
 	services           uint64
 	versionKnown       bool
@@ -239,6 +240,26 @@ func (p *Peer) NA() *p2p.NetAddress {
 	p.flagsMtx.Unlock()
 
 	return na
+}
+
+// SetNAFilter set a NetAddress filter to the peer.
+//
+// This function is safe for concurrent access.
+func (p *Peer) SetNAFilter(filter p2p.NAFilter) {
+	p.flagsMtx.Lock()
+	p.naFilter = filter
+	p.flagsMtx.Unlock()
+}
+
+// NAFilter returns the peer network address filter.
+//
+// This function is safe for concurrent access.
+func (p *Peer) NAFilter() p2p.NAFilter {
+	p.flagsMtx.Lock()
+	filter := p.naFilter
+	p.flagsMtx.Unlock()
+
+	return filter
 }
 
 // Addr returns the peer address.
