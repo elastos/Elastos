@@ -4,10 +4,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	. "github.com/elastos/Elastos.ELA/protocol"
-
 	"github.com/elastos/Elastos.ELA/p2p"
+	. "github.com/elastos/Elastos.ELA/protocol"
 )
 
 const (
@@ -23,9 +23,9 @@ const (
 )
 
 type KnownAddress struct {
-	srcAddr        *p2p.NetAddress
-	lastattempt    time.Time
-	attempts       int
+	srcAddr     *p2p.NetAddress
+	lastattempt time.Time
+	attempts    int
 }
 
 type KnownAddressList struct {
@@ -193,7 +193,29 @@ func (al *KnownAddressList) RandSelectAddresses() []*p2p.NetAddress {
 
 	addrs := make([]*p2p.NetAddress, 0, MaxOutBoundCount)
 	for _, ka := range al.List {
-		addrs = append(addrs, ka.srcAddr)
+		na := *ka.srcAddr
+		addrs = append(addrs, &na)
+
+		if len(addrs) >= MaxOutBoundCount {
+			break
+		}
+	}
+
+	return addrs
+}
+
+func (al *KnownAddressList) RandOpenAddresses() []*p2p.NetAddress {
+	al.RLock()
+	defer al.RUnlock()
+
+	addrs := make([]*p2p.NetAddress, 0, MaxOutBoundCount)
+	for _, ka := range al.List {
+		if ka.srcAddr.Services&OpenService != OpenService {
+			continue
+		}
+		na := *ka.srcAddr
+		na.Port = config.Parameters.NodeOpenPort
+		addrs = append(addrs, &na)
 
 		if len(addrs) >= MaxOutBoundCount {
 			break

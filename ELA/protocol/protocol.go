@@ -75,6 +75,8 @@ type Noder interface {
 	Addr() string
 	IP() net.IP
 	NetAddress() *p2p.NetAddress
+	SetNAFilter(filter p2p.NAFilter)
+	NAFilter() p2p.NAFilter
 	Port() uint16
 	IsExternal() bool
 	HttpInfoPort() int
