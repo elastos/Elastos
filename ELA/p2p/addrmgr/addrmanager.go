@@ -664,9 +664,12 @@ func (a *AddrManager) reset() {
 	for i := range a.addrNew {
 		a.addrNew[i] = make(map[string]*KnownAddress)
 	}
+	a.nNew = 0
+
 	for i := range a.addrTried {
 		a.addrTried[i] = list.New()
 	}
+	a.nTried = 0
 }
 
 // HostToNetAddress returns a netaddress given a host address.  If the address
