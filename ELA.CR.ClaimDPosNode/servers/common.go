@@ -169,8 +169,8 @@ type RegisterProducerInfo struct {
 }
 
 type CancelProducerInfo struct {
-	PublicKey string `json:"publickey"`
-	Signature string `json:"signature"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	Signature      string `json:"signature"`
 }
 
 type UpdateProducerInfo struct {
