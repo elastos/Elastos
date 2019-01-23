@@ -363,7 +363,7 @@ func (cm *ConnManager) NewConnReq() {
 		return
 	}
 
-	c := &ConnReq{}
+	c := &ConnReq{Addr: &net.TCPAddr{}}
 	atomic.StoreUint64(&c.id, atomic.AddUint64(&cm.connReqCount, 1))
 
 	// Submit a request of a pending connection attempt to the connection

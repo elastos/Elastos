@@ -178,11 +178,6 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 // used to negotiate the protocol version details as well as kick start
 // the communications.
 func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
-	// Signal the new peer.
-	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
-	}
-
 	// Update the address manager and request known addresses from the
 	// remote peer for outbound connections.  This is skipped when running
 	// on the simulation test network since it is only intended to connect
@@ -211,6 +206,11 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
+
+	// Signal the new peer.
+	if sp.server.cfg.OnNewPeer != nil {
+		sp.server.cfg.OnNewPeer(sp)
+	}
 }
 
 // OnGetAddr is invoked when a peer receives a getaddr message and is used
@@ -729,6 +729,25 @@ func (s *server) peerHandler() {
 		outboundGroups:  make(map[string]int),
 	}
 
+	// Startup persistent peers.
+	for _, addr := range s.cfg.SeedPeers {
+		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			continue
+		}
+
+		// Add seed peer addresses into addr manager
+		err = s.addrManager.AddAddressByIP(netAddr.String())
+		if err != nil {
+			continue
+		}
+
+		go s.connManager.Connect(&connmgr.ConnReq{
+			Addr:      netAddr,
+			Permanent: true,
+		})
+	}
+
 	go s.connManager.Start()
 
 out:
@@ -1205,25 +1224,6 @@ func newServer(origCfg *Config) (*server, error) {
 		return nil, err
 	}
 	s.connManager = cmgr
-
-	// Startup persistent peers.
-	for _, addr := range cfg.SeedPeers {
-		netAddr, err := addrStringToNetAddr(addr)
-		if err != nil {
-			return nil, err
-		}
-
-		// Add seed peer addresses into addr manager
-		err = s.addrManager.AddAddressByIP(netAddr.String())
-		if err != nil {
-			return nil, err
-		}
-
-		go s.connManager.Connect(&connmgr.ConnReq{
-			Addr:      netAddr,
-			Permanent: true,
-		})
-	}
 
 	return &s, nil
 }
