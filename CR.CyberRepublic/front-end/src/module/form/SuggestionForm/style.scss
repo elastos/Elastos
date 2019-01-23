@@ -23,6 +23,11 @@
   }
   .form-desc {
     background: white;
+    height: 300px;
+
+    .ql-container {
+      height: 245px;
+    }
   }
   .form-actions {}
   .ant-btn.cr-btn-primary {

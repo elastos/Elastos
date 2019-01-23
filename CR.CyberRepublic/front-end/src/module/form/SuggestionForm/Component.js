@@ -104,7 +104,7 @@ class C extends BaseComponent {
         { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
         { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
       ],
-      initialValue: '',
+      initialValue: ''
     })
 
     return {
@@ -153,7 +153,7 @@ class C extends BaseComponent {
         </Col>
         <Col span={6}>
           <h5 className="alignRight">
-            <a onClick={() => {this.setState({showRules: true})}}>
+            <a onClick={() => {this.setState({showRules: !this.state.showRules})}}>
               {I18N.get('suggestion.rules.rulesAndGuidelines')} <Icon type="question-circle"/>
             </a>
           </h5>
