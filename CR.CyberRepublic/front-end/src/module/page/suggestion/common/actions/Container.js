@@ -14,6 +14,7 @@ const mapState = (state) => {
   const suggestionState = {
     ...state.suggestion,
     currentUserId,
+    isLogin: state.user.is_login,
   }
 
   return suggestionState

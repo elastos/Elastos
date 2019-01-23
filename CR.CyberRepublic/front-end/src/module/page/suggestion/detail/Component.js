@@ -8,6 +8,9 @@ import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 import Footer from '@/module/layout/Footer/Container'
 
+import MediaQuery from 'react-responsive'
+import { LG_WIDTH } from '@/config/constant'
+
 import './style.scss'
 
 export default class extends StandardPage {
@@ -42,15 +45,34 @@ export default class extends StandardPage {
     return (
       <div>
         <div className="p_SuggestionDetail">
-          <Row gutter={24}>
-            <Col span={15}>
-              {detailNode}
-              {/* {translationBtn} */}
-              {actionsNode}
-              {commentNode}
-            </Col>
-            <Col span={9}>{mySuggestionNode}</Col>
-          </Row>
+          <MediaQuery maxWidth={LG_WIDTH}>
+            <Row>
+              <Col>
+                {detailNode}
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                {actionsNode}
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                {commentNode}
+              </Col>
+            </Row>
+          </MediaQuery>
+          <MediaQuery minWidth={LG_WIDTH+1}>
+            <Row gutter={24}>
+              <Col span={15}>
+                {detailNode}
+                {/* {translationBtn} */}
+                {actionsNode}
+                {commentNode}
+              </Col>
+              <Col span={9}>{mySuggestionNode}</Col>
+            </Row>
+          </MediaQuery>
         </div>
         <Footer />
       </div>

@@ -135,18 +135,12 @@ export default class extends Base {
         let doc:any = {}
 
         if (this.isExpired(cur) || _.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.DEFERRED], cur.status)) {
-
-            if (cur.published === param.published) {
-                throw 'cvoteservice.update - proposal finished or deferred, can not edit anymore';
-
-            } else {
-
+            if (cur.published !== param.published) {
                 // if published is changed, we let it pass if published is changed, but only that field
                 doc = {
                     published: param.published
                 }
             }
-
         } else {
             doc = _.omit(param, restrictedFields.update)
 
@@ -163,6 +157,9 @@ export default class extends Base {
                 doc.reason_zh_map = this.param_metadata(param.reason_zh_map)
             }
         }
+
+        // always allow secretary to edit notes
+        if (param.notes) doc.notes = param.notes
 
         const cvote = await db_cvote.update({_id : param._id}, doc);
 

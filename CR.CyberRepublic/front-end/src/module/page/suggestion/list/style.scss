@@ -47,6 +47,11 @@
   .cr-pagination {
     text-align: center;
   }
+
+  @media only screen and (max-width: $lg-width) {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
 }
 
 .cr-icon-group {

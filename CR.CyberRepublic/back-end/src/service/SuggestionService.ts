@@ -60,10 +60,22 @@ export default class extends Base {
         $inc: { viewsNum: 1, activeness: 1 }
       })
     }
-
-    return this.model.getDBInstance()
+    const doc = await this.model.getDBInstance()
       .findById(_id)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+
+    if (_.isEmpty(doc.comments)) return doc
+
+    for (const comment of doc.comments) {
+      for (const thread of comment) {
+        await this.model.getDBInstance().populate(thread, {
+          path: 'createdBy',
+          select: constant.DB_SELECTED_FIELDS.USER.NAME
+        })
+      }
+    }
+
+    return doc
   }
 
   // like or unlike

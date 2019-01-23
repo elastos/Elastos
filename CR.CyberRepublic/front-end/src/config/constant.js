@@ -6,6 +6,7 @@ export const MIN_LENGTH_PASSWORD = 8;
 // Responsive layout
 export const MAX_WIDTH_MOBILE = 768;
 export const MIN_WIDTH_PC = 769;
+export const LG_WIDTH = 992;
 
 export const EMPOWER_MAX_BUSINESS = 4;
 export const EMPOWER_MAX_MARKETING = 4;

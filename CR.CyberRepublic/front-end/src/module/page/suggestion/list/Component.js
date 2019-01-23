@@ -12,7 +12,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 
 import MediaQuery from 'react-responsive'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
+import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
 
 import './style.scss'
 
@@ -22,13 +22,6 @@ const SORT_BY = {
   activeness: 'activeness',
   createdAt: 'createdAt',
 
-}
-
-const SORT_BY_TEXT = {
-  likesNum: I18N.get('suggestion.likes'),
-  viewsNum: I18N.get('suggestion.views'),
-  activeness: I18N.get('suggestion.activeness'),
-  createdAt: I18N.get('suggestion.dateAdded'),
 }
 
 /**
@@ -72,16 +65,37 @@ export default class extends StandardPage {
       <div>
         <div className="p_SuggestionList">
           {headerNode}
-          <Row gutter={24}>
-            <Col span={15}>{actionsNode}</Col>
-            <Col span={9}>{addButtonNode}</Col>
-          </Row>
-          <Row gutter={24}>
-            <Col span={15}>
-              {listNode}
-            </Col>
-            <Col span={9}>{mySuggestionNode}</Col>
-          </Row>
+          <MediaQuery maxWidth={LG_WIDTH}>
+            <Row>
+              <Col>
+                {addButtonNode}
+                {mySuggestionNode}
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <br/>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                {actionsNode}
+                {listNode}
+              </Col>
+            </Row>
+          </MediaQuery>
+          <MediaQuery minWidth={LG_WIDTH+1}>
+            <Row gutter={24}>
+              <Col span={15}>{actionsNode}</Col>
+              <Col span={9}>{addButtonNode}</Col>
+            </Row>
+            <Row gutter={24}>
+              <Col span={15}>
+                {listNode}
+              </Col>
+              <Col span={9}>{mySuggestionNode}</Col>
+            </Row>
+          </MediaQuery>
           {createForm}
         </div>
         <Footer />
@@ -107,8 +121,12 @@ export default class extends StandardPage {
   }
 
   showCreateForm = () => {
+    const { isLogin, history } = this.props;
+    const { showForm } = this.state
+    if (!isLogin) history.push('/login')
+
     this.setState({
-      showForm: !this.state.showForm,
+      showForm: !showForm,
     })
   }
 
@@ -119,9 +137,17 @@ export default class extends StandardPage {
   }
 
   renderHeaderActions() {
+
+    const SORT_BY_TEXT = {
+        likesNum: I18N.get('suggestion.likes'),
+        viewsNum: I18N.get('suggestion.views'),
+        activeness: I18N.get('suggestion.activeness'),
+        createdAt: I18N.get('suggestion.dateAdded'),
+    }
+
     return (
       <div className="header-actions-container">
-        <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
+        <MediaQuery maxWidth={LG_WIDTH}>
           <Select
             name="type"
             onChange={this.onSortByChanged}
@@ -134,7 +160,7 @@ export default class extends StandardPage {
             ))}
           </Select>
         </MediaQuery>
-        <MediaQuery minWidth={MIN_WIDTH_PC}>
+        <MediaQuery minWidth={LG_WIDTH+1}>
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button

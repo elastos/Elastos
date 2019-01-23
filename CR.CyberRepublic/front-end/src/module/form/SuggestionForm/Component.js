@@ -2,10 +2,12 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import {
+  Row,
+  Col,
   Form,
   Input,
   Button,
-  Radio,
+  Icon,
   Modal,
 } from 'antd'
 import I18N from '@/I18N'
@@ -25,6 +27,7 @@ class C extends BaseComponent {
 
     this.state = {
       isTranslateModalOpen: false,
+      showRules: false
     }
   }
   //   componentDidMount() {
@@ -101,7 +104,7 @@ class C extends BaseComponent {
         { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
         { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
       ],
-      initialValue: '',
+      initialValue: ''
     })
 
     return {
@@ -142,12 +145,69 @@ class C extends BaseComponent {
 
   renderHeader() {
     return (
-      <h2 className="title komu-a">{this.props.header || I18N.get('suggestion.add').toUpperCase()}</h2>
+      <Row>
+        <Col span={18}>
+          <h2 className="title komu-a">
+            {this.props.header || I18N.get('suggestion.add').toUpperCase()}
+          </h2>
+        </Col>
+        <Col span={6}>
+          <h5 className="alignRight">
+            <a onClick={() => {this.setState({showRules: !this.state.showRules})}}>
+              {I18N.get('suggestion.rules.rulesAndGuidelines')} <Icon type="question-circle"/>
+            </a>
+          </h5>
+        </Col>
+      </Row>
+    )
+  }
+
+  renderRules() {
+    return (
+      <div>
+        <h4>
+          {I18N.get('suggestion.rules.guarantee')}
+        </h4>
+
+        <p>
+          {I18N.get('suggestion.rules.response')}
+        </p>
+
+        <h4>
+          {I18N.get('suggestion.rules.guidelines')}
+        </h4>
+
+        <ol>
+          <li>{I18N.get('suggestion.rules.guidelines.1')}</li>
+          <li>{I18N.get('suggestion.rules.guidelines.2')}</li>
+          <li>{I18N.get('suggestion.rules.guidelines.3')}</li>
+        </ol>
+
+        <h4>
+          {I18N.get('suggestion.rules')}
+        </h4>
+
+        <ol>
+          <li>{I18N.get('suggestion.rules.1')}</li>
+          <li>{I18N.get('suggestion.rules.2')}</li>
+          <li>{I18N.get('suggestion.rules.3')}</li>
+        </ol>
+
+        <p>
+          {I18N.get('suggestion.rules.infoRequest')}
+        </p>
+
+        <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>{I18N.get('suggestion.back')}</Button>
+        <div class="clearfix">
+          <br/>
+        </div>
+      </div>
     )
   }
 
   ord_render() {
     const headerNode = this.renderHeader()
+    const rulesNode = this.renderRules()
     const p = this.getInputProps()
 
     const formItemLayout = {
@@ -184,9 +244,12 @@ class C extends BaseComponent {
     return (
       <div className="c_SuggestionForm">
         {headerNode}
-        <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
-          {formContent}
-        </Form>
+        {this.state.showRules ?
+          rulesNode :
+          <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
+            {formContent}
+          </Form>
+        }
         {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
         {/* {translationModal} */}
       </div>

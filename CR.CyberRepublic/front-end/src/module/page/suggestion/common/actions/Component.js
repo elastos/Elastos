@@ -132,10 +132,13 @@ export default class extends BaseComponent {
   // before param is used to setState before api request which will cause rerendering
   // and get error of setState on unmounted component
   handleClick = async ({ callback, param, state }) => {
-    const { refetch } = this.props
+    const { refetch, isLogin, history } = this.props
     const {
       isLiked, isDisliked, isAbused, likesNum, dislikesNum,
     } = this.state
+
+    if (!isLogin) history.push('/login')
+
     if ((state === 'isAbused' && isAbused)
         || (state === 'isLiked' && isDisliked)
         || (state === 'isDisliked' && isLiked)) {
