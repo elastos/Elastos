@@ -105,6 +105,14 @@ func (n *nodeMock) NetAddress() *p2p.NetAddress {
 	panic("implement me")
 }
 
+func (n *nodeMock) SetNAFilter(filter p2p.NAFilter) {
+	panic("implement me")
+}
+
+func (n *nodeMock) NAFilter() p2p.NAFilter {
+	panic("implement me")
+}
+
 func (n *nodeMock) Port() uint16 {
 	panic("implement me")
 }
