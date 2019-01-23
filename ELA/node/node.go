@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-	"github.com/elastos/Elastos.ELA/mempool"
 	"math/rand"
 	"net"
 	"sync"
@@ -17,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
@@ -49,22 +49,22 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	state      int32         // node state
-	lastActive time.Time     // The lastActive of node
-	id         uint64        // The nodes's id
-	version    uint32        // The network protocol the node used
-	services   uint64        // The services the node supplied
-	relay      bool          // The relay capability of the node (merge into capability flag)
-	height     uint64        // The node latest block height
-	external   bool          // Indicate if this is an external node
-	txnCnt     uint64        // The transactions be transmit by this node
-	rxTxnCnt   uint64        // The transaction received by this node
-	link                     // The link status and information
-	neighbours               // The neighbor node connect with currently node except itself
-	mempool.TxPool           // Unconfirmed transaction pool
-	mempool.BlockPool        // Unconfirmed block pool
-	idCache                  // The buffer to store the id of the items which already be processed
-	filter     *bloom.Filter // The bloom filter of a spv node
+	state             int32         // node state
+	lastActive        time.Time     // The lastActive of node
+	id                uint64        // The nodes's id
+	version           uint32        // The network protocol the node used
+	services          uint64        // The services the node supplied
+	relay             bool          // The relay capability of the node (merge into capability flag)
+	height            uint64        // The node latest block height
+	external          bool          // Indicate if this is an external node
+	txnCnt            uint64        // The transactions be transmit by this node
+	rxTxnCnt          uint64        // The transaction received by this node
+	link                            // The link status and information
+	neighbours                      // The neighbor node connect with currently node except itself
+	mempool.TxPool                  // Unconfirmed transaction pool
+	mempool.BlockPool               // Unconfirmed block pool
+	idCache                         // The buffer to store the id of the items which already be processed
+	filter            *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -138,6 +138,7 @@ func InitLocalNode() protocol.Noder {
 	LocalNode = &node{
 		id:                 rand.New(rand.NewSource(time.Now().Unix())).Uint64(),
 		version:            protocol.ProtocolVersion,
+		services:           protocol.FlagNode | protocol.OpenService,
 		relay:              true,
 		SyncBlkReqSem:      MakeSemaphore(protocol.MaxSyncHdrReq),
 		RequestedBlockList: make(map[Uint256]time.Time),
@@ -149,8 +150,8 @@ func InitLocalNode() protocol.Noder {
 		},
 	}
 
-	if Parameters.OpenService {
-		LocalNode.services |= protocol.OpenService
+	if !Parameters.OpenService {
+		LocalNode.services &^= protocol.OpenService
 	}
 
 	LocalNode.neighbours.init()
