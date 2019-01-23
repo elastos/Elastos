@@ -10,15 +10,14 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/protocol"
-
-	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 const (
@@ -65,6 +64,7 @@ type node struct {
 	mempool.BlockPool               // Unconfirmed block pool
 	idCache                         // The buffer to store the id of the items which already be processed
 	filter            *bloom.Filter // The bloom filter of a spv node
+	naFilter          p2p.NAFilter
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -298,6 +298,14 @@ func (node *node) Addr() string {
 
 func (node *node) IP() net.IP {
 	return node.ip
+}
+
+func (node *node) SetNAFilter(filter p2p.NAFilter) {
+	node.naFilter = filter
+}
+
+func (node *node) NAFilter() p2p.NAFilter {
+	return node.naFilter
 }
 
 func (node *node) WaitForSyncFinish(interrupt <-chan struct{}) {

@@ -136,6 +136,9 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 
 	node.SetState(protocol.ESTABLISHED)
 
+	// Set NAFilter for node.
+	node.SetNAFilter(&nodeNAFilter{})
+
 	// Finish handshake
 	LocalNode.RemoveFromHandshakeQueue(node)
 	LocalNode.RemoveFromConnectingList(node.Addr())
@@ -170,19 +173,20 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	var addrs []*p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsExternal() {
-		for _, addr := range LocalNode.RandSelectAddresses() {
-			if addr.Services&protocol.OpenService == protocol.OpenService {
-				addrs = append(addrs,
-					&p2p.NetAddress{
-						addr.Timestamp,
-						addr.Services,
-						addr.IP,
-						config.Parameters.NodeOpenPort,
-					})
-			}
-		}
+		addrs = LocalNode.RandOpenAddresses()
 	} else {
 		addrs = LocalNode.RandSelectAddresses()
+	}
+
+	// Filter addresses if NAFilter not nil.
+	if h.node.NAFilter() != nil {
+		addrFiltered := make([]*p2p.NetAddress, 0, len(addrs))
+		for _, na := range addrs {
+			if h.node.NAFilter().Filter(na) {
+				addrFiltered = append(addrFiltered, na)
+			}
+		}
+		addrs = addrFiltered
 	}
 
 	repeatNum := 0
