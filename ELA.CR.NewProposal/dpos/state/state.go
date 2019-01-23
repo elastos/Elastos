@@ -59,6 +59,7 @@ type Producer struct {
 	cancelHeight   uint32
 	inactiveRounds uint32
 	inactiveSince  uint32
+	penalty        common.Fixed64
 	votes          common.Fixed64
 }
 
@@ -85,6 +86,10 @@ func (p *Producer) CancelHeight() uint32 {
 // Votes returns the votes of the producer.
 func (p *Producer) Votes() common.Fixed64 {
 	return p.votes
+}
+
+func (p *Producer) Penalty() common.Fixed64 {
+	return p.penalty
 }
 
 // maxHistoryCapacity indicates the maximum capacity of change history.
@@ -396,8 +401,14 @@ func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	nickname := payload.NickName
 	nodeKey := hex.EncodeToString(payload.NodePublicKey)
 	ownerKey := hex.EncodeToString(payload.OwnerPublicKey)
-	producer := Producer{info: *payload, registerHeight: height, votes: 0,
-		inactiveRounds: 0, inactiveSince: math.MaxUint32}
+	producer := Producer{
+		info:           *payload,
+		registerHeight: height,
+		votes:          0,
+		inactiveRounds: 0,
+		inactiveSince:  math.MaxUint32,
+		penalty:        common.Fixed64(0),
+	}
 
 	s.history.append(height, func() {
 		s.nicknames[nickname] = struct{}{}
@@ -652,6 +663,9 @@ func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) 
 					producer.state = Inactivate
 					s.inactiveProducers[key] = producer
 					delete(s.activityProducers, key)
+
+					producer.penalty +=
+						config.Parameters.ArbiterConfiguration.InactivePenalty
 				}
 			}
 		}, func() {
@@ -665,6 +679,14 @@ func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) 
 					producer.state = Activate
 					s.activityProducers[key] = producer
 					delete(s.inactiveProducers, key)
+
+					if producer.penalty <
+						config.Parameters.ArbiterConfiguration.InactivePenalty {
+						producer.penalty = common.Fixed64(0)
+					} else {
+						producer.penalty -=
+							config.Parameters.ArbiterConfiguration.InactivePenalty
+					}
 				}
 			} else if producer.state == Activate {
 

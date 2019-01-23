@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -60,7 +61,7 @@ type BlockChain struct {
 }
 
 func New(db IChainStore, chainParams *config.Params,
-	versions interfaces.HeightVersions, interrupt <-chan struct{}) (*BlockChain, error) {
+	versions interfaces.HeightVersions) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -109,12 +110,12 @@ func New(db IChainStore, chainParams *config.Params,
 		chain.BestChain = node
 	}
 
-	return &chain, chain.initializeProducersState(interrupt)
+	return &chain, nil
 }
 
-// initializeProducersState go through all blocks since the start of DPOS
+// InitializeProducersState go through all blocks since the start of DPOS
 // consensus to initialize producers and votes state.
-func (b *BlockChain) initializeProducersState(interrupt <-chan struct{}) (err error) {
+func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err error) {
 	bestHeight := b.db.GetHeight()
 	done := make(chan struct{})
 	go func() {
@@ -130,6 +131,10 @@ func (b *BlockChain) initializeProducersState(interrupt <-chan struct{}) (err er
 				break
 			}
 			b.state.ProcessTransactions(block.Transactions, block.Height)
+			if e = b.processInactiveArbitrators(block); e != nil {
+				err = e
+				break
+			}
 		}
 		done <- struct{}{}
 	}()
@@ -789,6 +794,9 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 
 	// Synchronize state memory DB
 	b.state.ProcessTransactions(block.Transactions, block.Height)
+	if err := b.processInactiveArbitrators(block); err != nil {
+		return err
+	}
 
 	// Add the new node to the memory main chain indices for faster
 	// lookups.
@@ -807,6 +815,48 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 	events.Notify(events.ETBlockConnected, block)
 
 	return nil
+}
+
+func (b *BlockChain) processInactiveArbitrators(block *Block) error {
+	confirm, err := b.db.GetConfirm(block.Hash())
+	if err != nil {
+		return err
+	}
+
+	inactiveArbitrators := b.parseInactiveArbitrators(
+		DefaultLedger.Arbitrators, confirm)
+
+	b.state.ProcessInactiveArbiters(block.Height, inactiveArbitrators)
+	return nil
+}
+
+func (b *BlockChain) parseInactiveArbitrators(a interfaces.Arbitrators,
+	confirm *DPosProposalVoteSlot) (result []string) {
+
+	if bytes.Equal(a.GetOnDutyArbitrator(), confirm.Proposal.Sponsor) {
+
+		arSequence := a.GetArbitrators()
+		arSequence = append(arSequence, arSequence...)
+
+		start := a.GetOnDutyArbitrator()
+		stop := confirm.Proposal.Sponsor
+		reachedStart := false
+		for i := 0; i < len(arSequence)-1; i++ {
+			if bytes.Equal(start, arSequence[i]) {
+				reachedStart = true
+			}
+
+			if reachedStart {
+				if bytes.Equal(stop, arSequence[i]) {
+					break
+				}
+
+				result = append(result, BytesToHexString(arSequence[i]))
+			}
+		}
+	}
+
+	return result
 }
 
 func (b *BlockChain) HaveBlock(hash *Uint256) (bool, error) {
