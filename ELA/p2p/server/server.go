@@ -234,6 +234,17 @@ func (sp *serverPeer) OnGetAddr(_ *peer.Peer, msg *msg.GetAddr) {
 	// Get the current known addresses from the address manager.
 	addrCache := sp.server.addrManager.AddressCache()
 
+	// Filter addresses if peer NAFilter not nil.
+	if sp.NAFilter() != nil {
+		addrFiltered := make([]*p2p.NetAddress, 0, len(addrCache))
+		for _, na := range addrCache {
+			if sp.NAFilter().Filter(na) {
+				addrFiltered = append(addrFiltered, na)
+			}
+		}
+		addrCache = addrFiltered
+	}
+
 	// Push the addresses.
 	sp.pushAddrMsg(addrCache)
 }
