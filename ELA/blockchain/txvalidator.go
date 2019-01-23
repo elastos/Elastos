@@ -866,6 +866,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction) error {
 		if b.db.GetHeight()-p.CancelHeight() < DepositLockupBlocks {
 			return errors.New("return deposit does not meet the lockup limit")
 		}
+		// todo use p.Penalty() to restrict deposit amount
 	}
 	return nil
 }

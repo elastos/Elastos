@@ -809,17 +809,18 @@ func TestState_ProcessInactiveArbiters(t *testing.T) {
 			ArbiterConfiguration: config.ArbiterConfiguration{
 				MaxAllowedInactiveRounds: 3,
 				InactiveDuration:         10,
+				InactivePenalty:          100 * 100000000,
 			},
 		},
 	}
 
 	state := NewState()
-	state.activityProducers["A"] = &Producer{state: Activate,
-		info: payload.ProducerInfo{NickName: "A"}}
-	state.activityProducers["B"] = &Producer{state: Activate,
-		info: payload.ProducerInfo{NickName: "B"}}
-	state.activityProducers["C"] = &Producer{state: Activate,
-		info: payload.ProducerInfo{NickName: "C"}}
+	pa := &Producer{state: Activate, info: payload.ProducerInfo{NickName: "A"}}
+	pb := &Producer{state: Activate, info: payload.ProducerInfo{NickName: "B"}}
+	pc := &Producer{state: Activate, info: payload.ProducerInfo{NickName: "C"}}
+	state.activityProducers["A"] = pa
+	state.activityProducers["B"] = pb
+	state.activityProducers["C"] = pc
 
 	if !assert.Equal(t, 3, len(state.GetActiveProducers())) ||
 		!assert.Equal(t, 0, len(state.GetInactiveProducers())) {
@@ -831,9 +832,16 @@ func TestState_ProcessInactiveArbiters(t *testing.T) {
 	state.ProcessInactiveArbiters(2, []string{"A", "C"})
 	state.ProcessInactiveArbiters(3, []string{"A"})
 
+	//todo test inactive penalty
 	if !assert.Equal(t, 2, len(state.GetActiveProducers())) ||
 		!assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
 		!assert.Equal(t, "A", state.GetInactiveProducers()[0].info.NickName) {
+		t.FailNow()
+	}
+
+	if !assert.Equal(t, config.Parameters.ArbiterConfiguration.InactivePenalty, pa.penalty) ||
+		!assert.Equal(t, common.Fixed64(0), pb.penalty) ||
+		!assert.Equal(t, common.Fixed64(0), pc.penalty) {
 		t.FailNow()
 	}
 
@@ -846,6 +854,12 @@ func TestState_ProcessInactiveArbiters(t *testing.T) {
 		t.FailNow()
 	}
 
+	if !assert.Equal(t, common.Fixed64(0), pa.penalty) ||
+		!assert.Equal(t, common.Fixed64(0), pb.penalty) ||
+		!assert.Equal(t, common.Fixed64(0), pc.penalty) {
+		t.FailNow()
+	}
+
 	// continue to processing blocks
 	state.ProcessInactiveArbiters(3, []string{"B"})
 	state.ProcessInactiveArbiters(4, []string{"B"})
@@ -853,6 +867,12 @@ func TestState_ProcessInactiveArbiters(t *testing.T) {
 	if !assert.Equal(t, 2, len(state.GetActiveProducers())) ||
 		!assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
 		!assert.Equal(t, "B", state.GetInactiveProducers()[0].info.NickName) {
+		t.FailNow()
+	}
+
+	if !assert.Equal(t, common.Fixed64(0), pa.penalty) ||
+		!assert.Equal(t, config.Parameters.ArbiterConfiguration.InactivePenalty, pb.penalty) ||
+		!assert.Equal(t, common.Fixed64(0), pc.penalty) {
 		t.FailNow()
 	}
 
