@@ -104,7 +104,7 @@ func (s *DposStore) eventLoop() {
 out:
 	for {
 		select {
-		case t := <-s.taskCh:
+		case t := <-s.eventCh:
 			now := time.Now()
 			switch task := t.(type) {
 			case *addConsensusEventTask:
@@ -226,7 +226,7 @@ func (s *DposStore) AddConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &addConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -247,7 +247,7 @@ func (s *DposStore) UpdateConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &updateConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -270,7 +270,7 @@ func (s *DposStore) AddProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &addProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -293,7 +293,7 @@ func (s *DposStore) UpdateProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &updateProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -321,7 +321,7 @@ func (s *DposStore) AddVoteEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addVoteEventTask{event: e, reply: reply}
+	s.eventCh <- &addVoteEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -365,7 +365,7 @@ func (s *DposStore) AddViewEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addViewEventTask{event: e, reply: reply}
+	s.eventCh <- &addViewEventTask{event: e, reply: reply}
 	<-reply
 	return nil
 }
