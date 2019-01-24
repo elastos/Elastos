@@ -6,10 +6,9 @@
 
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Base58.h>
 
-#include <Core/BRBase58.h>
 #include <Core/BRBech32.h>
-#include <Core/BRAddress.h>
 
 #define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 
@@ -33,97 +32,53 @@ namespace Elastos {
 		}
 
 		bool Address::isValid() {
-			bool res = Address::isValidAddress(_s);
-			return res;
-		}
-
-		CMBlock Address::getPubKeyScript() {
-			size_t pubKeyLen = BRAddressScriptPubKey(NULL, 0, _s);
-			CMBlock data(pubKeyLen);
-			BRAddressScriptPubKey(data, pubKeyLen, _s);
-
-			return data;
-		}
-
-		int Address::getSignType() const {
-			const char *addr = _s;
-			uint8_t data[42];
-			if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-				if (data[0] == ELA_STAND_ADDRESS) {
-					return ELA_STANDARD;
-				} else if (data[0] == ELA_CROSSCHAIN_ADDRESS) {
-					return ELA_CROSSCHAIN;
-				} else if (data[0] == ELA_MULTISIG_ADDRESS) {
-					return ELA_MULTISIG;
-				} else if (data[0] == ELA_IDCHAIN_ADDRESS) {
-					return ELA_IDCHAIN;
-				} else if (data[0] == ELA_DESTROY_ADDRESS) {
-					return ELA_DESTROY;
-				} else {
-					ParamChecker::checkCondition(true, Error::Address, "Unknown address type");
-				}
-		    } else {
-				ParamChecker::checkCondition(true, Error::Address, "Invalid address");
-		    }
-		    return -1;
+			return Address::isValidAddress(_s);
 		}
 
 		std::string Address::stringify() const {
 			return _s;
 		}
 
-		bool Address::isValidAddress(const std::string &address) {
-			bool r = false;
-			if (address.size() <= 1) {
-				return r;
-			}
-			const char *addr = address.c_str();
-			uint8_t data[42];
+		bool Address::isValidAddress(const std::string &addr) {
+			bool valid = false;
 
-			if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-				r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS ||
-					 data[0] == ELA_MULTISIG_ADDRESS || data[0] == ELA_IDCHAIN_ADDRESS);
-#if BITCOIN_TESTNET
-				r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS ||
-				data[0] == ELA_MULTISIG_ADDRESS || data[0] == ELA_IDCHAIN_ADDRESS);
-#endif
+			CMBlock programHash = Base58::CheckDecode(addr);
+			if (programHash.GetSize() == 21) {
+				valid = programHash[0] == PrefixStandard ||
+					programHash[0] == PrefixCrossChain ||
+					programHash[0] == PrefixMultiSign ||
+					programHash[0] == PrefixIDChain ||
+					programHash[0] == PrefixDeposit;
 			}
 
-		    if (r == 0 && strcmp(address.c_str(), ELA_SIDECHAIN_DESTROY_ADDR) == 0) {
-		    	r = 1;
-		    }
+			if (!valid && addr == ELA_SIDECHAIN_DESTROY_ADDR) {
+				valid = true;
+			}
 
-			return r;
+			return valid;
 		}
 
-		bool Address::UInt168IsValid(const UInt168 &u168) {
-			if (UInt168IsZero(&u168) == true) {
+		bool Address::UInt168IsValid(const UInt168 &u) {
+			if (UInt168IsZero(&u)) {
 				return true;
 			}
-			int prefix = u168.u8[0];
-			if (prefix != ELA_STAND_ADDRESS && prefix != ELA_MULTISIG_ADDRESS && prefix != ELA_CROSSCHAIN_ADDRESS &&
-				prefix != ELA_IDCHAIN_ADDRESS) {
-				return false;
-			}
-			return true;
+
+			return u.u8[0] == PrefixStandard ||
+				   u.u8[0] == PrefixCrossChain ||
+				   u.u8[0] == PrefixMultiSign ||
+				   u.u8[0] == PrefixIDChain ||
+				   u.u8[0] == PrefixDeposit;
 		}
 
-		bool Address::isValidIdAddress(const std::string &address) {
-			bool r = false;
-			if (address.size() <= 1) {
-				return r;
-			}
-			const char *addr = address.c_str();
-			uint8_t data[42];
+		bool Address::isValidIdAddress(const std::string &addr) {
+			bool valid = false;
 
-			if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-				r = data[0] == ELA_IDCHAIN_ADDRESS;
-#if BITCOIN_TESTNET
-				r = data[0] == ELA_IDCHAIN_ADDRESS;
-#endif
+			CMBlock programHash = Base58::CheckDecode(addr);
+			if (programHash.GetSize() == 21) {
+				valid = programHash[0] == PrefixIDChain;
 			}
 
-			return r;
+			return valid;
 		}
 
 		bool Address::isValidProgramHash(const UInt168 &u168, const Transaction::Type &type) {

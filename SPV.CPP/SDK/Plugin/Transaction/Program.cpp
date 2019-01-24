@@ -61,20 +61,17 @@ namespace Elastos {
 				ParamChecker::checkCondition(_parameter.GetSize() / SignatureScriptLength > n,
 											 Error::MultiSign, "Invalid signatures, too many signatures");
 
-				CMBlock hashData = transaction->GetShaData();
-				UInt256 md;
-				memcpy(md.u8, hashData, sizeof(UInt256));
+				UInt256 md = transaction->GetShaData();
 
-				for (int i = 0; i < _parameter.GetSize(); i += SignatureScriptLength) {
+				Key key;
+				ByteStream stream(_parameter);
+				CMBlock signature;
+				while (stream.readVarBytes(signature)) {
 					bool verified = false;
-					CMBlock signature(SignatureScriptLength);
-					memcpy(signature, &_parameter[i], SignatureScriptLength);
-
-					for (std::vector<std::string>::iterator signerIt = signers.begin();
-						 signerIt != signers.end(); ++signerIt) {
-
-						verified |= Key::verifyByPublicKey(*signerIt, md, signature);
-						if (verified) break;
+					for (int i = 0; i < signers.size(); ++i) {
+						key.SetPubKey(Utils::decodeHex(signers[i]));
+						if (key.Verify(md, signature))
+							verified = true;
 					}
 
 					ParamChecker::checkCondition(!verified, Error::MultiSign, "Not matched signers.");

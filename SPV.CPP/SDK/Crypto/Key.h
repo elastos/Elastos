@@ -7,27 +7,48 @@
 
 #include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/CMemBlock.h>
+#include <SDK/Common/BigNum.h>
 
-#include <Core/BRKey.h>
+#include <Core/BRInt.h>
 
+#include <BigIntegerLibrary.hh>
 #include <boost/shared_ptr.hpp>
 #include <openssl/obj_mac.h>
+#include <openssl/ec.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Key :
-				public Wrapper<BRKey> {
+#define BITCOIN_PRIVKEY      128
+#define BITCOIN_PRIVKEY_TEST 239
+
+		enum SignType {
+			SignTypeInvalid    = 0,
+			SignTypeStandard   = 0xAC,
+			SignTypeMultiSign  = 0xAE,
+			SignTypeCrossChain = 0xAF,
+			SignTypeIDChain    = 0xAD,
+			SignTypeDestroy    = 0xAA,
+		};
+
+		enum Prefix {
+			PrefixStandard   = 0x21,
+			PrefixMultiSign  = 0x12,
+			PrefixCrossChain = 0x4B,
+			PrefixDeposit    = 0x1F,
+			PrefixIDChain    = 0x67,
+			PrefixDestroy    = 0,
+		};
+
+		struct ECPoint {
+			uint8_t p[33];
+		};
+
+		class Key {
 		public:
 			Key();
 
 			Key(const Key &key);
-
-			Key(BRKey *brkey);
-
-			Key(const BRKey &brkey);
-
-			Key(const std::string &privKey);
 
 			Key(const UInt256 &secret, bool compressed);
 
@@ -35,54 +56,57 @@ namespace Elastos {
 
 			Key &operator=(const Key &key);
 
-			virtual std::string toString() const;
+			bool SetPubKey(const CMBlock &pubKey);
 
-			virtual BRKey *getRaw() const;
+			std::string PrivKey() const;
 
-			UInt256 getSecret() const;
+			CMBlock PubKey();
 
-			CMBlock GetPublicKey() const;
+			const UInt256 &GetSecret() const;
 
-			bool SetPublicKey(const CMBlock &pubKey);
+			bool SetSecret(const UInt256 &secret, bool compressed);
 
-			bool getCompressed() const;
+			bool PrivKeyIsValid(const std::string &privKey) const;
 
-			std::string getPrivKey() const;
+			bool SetPrivKey(const std::string &privKey);
 
-			bool setSecret(const UInt256 &data, bool compressed);
+			SignType PrefixToSignType(Prefix prefix) const;
 
-			bool setPrivKey(const std::string &privKey);
+			CMBlock MultiSignRedeemScript(uint8_t m, const std::vector<std::string> &pubKeys);
 
-			CMBlock compactSign(const CMBlock &data) const;
+			CMBlock RedeemScript(Prefix prefix) const;
 
-			std::string compactSign(const std::string &message) const;
+			static UInt168 CodeToProgramHash(Prefix prefix, const CMBlock &code);
 
-			CMBlock encryptNative(const CMBlock &data, const CMBlock &nonce) const;
+			std::string GetAddress(Prefix prefix) const;
 
-			CMBlock decryptNative(const CMBlock &data, const CMBlock &nonce) const;
+			CMBlock Sign(const UInt256 &md) const;
 
-			std::string address() const;
+			CMBlock Sign(const std::string &message) const;
 
-			std::string keyToAddress(int signType) const;
+			CMBlock Sign(const CMBlock &message) const;
 
-			std::string keyToRedeemScript(int signType) const;
+			bool Verify(const std::string &message, const CMBlock &signature) const;
 
-			const UInt160 hashTo160();
+			bool Verify(const UInt256 &md, const CMBlock &signature) const;
 
-			const UInt168 hashTo168();
-
-		public:
-
-			static bool verifyByPublicKey(const std::string &publicKey, const std::string &message,
-										  const std::string &signature);
-
-			static bool verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
-			                              const CMBlock &signature);
+			bool PubKeyIsValid(const void *pubKey, size_t len) const;
 
 		private:
+			bool PubKeyEmpty() const;
+
+			void GeneratePubKey() const;
+
+			void Clean();
+
+			bool Compare(const CMBlock &a, const CMBlock &b) const;
+
+			BigNum PubKeyDecodePointX(const CMBlock &pubKey) const;
 
 		private:
-			boost::shared_ptr<BRKey> _key;
+			UInt256 _secret;
+			mutable uint8_t _pubKey[65];
+			mutable bool _compressed;
 		};
 
 		typedef boost::shared_ptr<Key> KeyPtr;

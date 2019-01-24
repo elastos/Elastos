@@ -17,14 +17,6 @@ namespace Elastos {
 			return _parentAccount;
 		}
 
-		Address SubAccountBase::KeyToAddress(const BRKey *key) const {
-			BRKey *brKey = new BRKey;
-			memcpy(brKey, key, sizeof(BRKey));
-
-			Key keyPtr(brKey);
-			return keyPtr.address();
-		}
-
 		void SubAccountBase::InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) {
 
 		}

@@ -724,6 +724,7 @@ namespace Elastos {
 				} else {
 					for (size_t i = _transactions.size(); i > 0; i--) {
 						if (!_transactions[i - 1]->IsEqual(tx.get())) continue;
+						removedAssetID = tx->GetAssetID();
 						_transactions.erase(_transactions.begin() + i - 1);
 						break;
 					}
@@ -743,10 +744,6 @@ namespace Elastos {
 						}
 					}
 
-					if (tx->getTransactionType() == Transaction::RegisterAsset) {
-						PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
-						removedAssetID = registerAsset->getAsset().GetHash();
-					}
 					removedTransactions.push_back(transactionHash);
 				}
 				removed = true;

@@ -17,11 +17,12 @@ namespace Elastos {
 			CMBlock keyData = Utils::decodeHex(privKey);
 			Utils::Encrypt(_encryptedKey, keyData, payPassword);
 
-			Key key;
+			assert(keyData.GetSize() == sizeof(UInt256));
+
 			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize());
-			key.setSecret(secret, true);
-			_publicKey = Utils::encodeHex(key.GetPublicKey());
+			memcpy(secret.u8, keyData, keyData.GetSize() < sizeof(UInt256) ? keyData.GetSize() : sizeof(UInt256));
+			Key key(secret, true);
+			_publicKey = Utils::encodeHex(key.PubKey());
 
 			memset(keyData, 0, keyData.GetSize());
 			var_clean(&secret);
@@ -35,10 +36,9 @@ namespace Elastos {
 			CMBlock keyData;
 			ParamChecker::CheckDecrypt(!Utils::Decrypt(keyData, GetEncryptedKey(), payPassword));
 
-			Key key;
 			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize());
-			key.setSecret(secret, true);
+			memcpy(secret.u8, keyData, keyData.GetSize() < sizeof(UInt256) ? keyData.GetSize() : sizeof(UInt256));
+			Key key(secret, true);
 
 			memset(keyData, 0, keyData.GetSize());
 			var_clean(&secret);
@@ -100,8 +100,8 @@ namespace Elastos {
 
 		std::string SimpleAccount::GetAddress() const {
 			Key key;
-			key.SetPublicKey(Utils::decodeHex(_publicKey));
-			return key.address();
+			key.SetPubKey(Utils::decodeHex(_publicKey));
+			return key.GetAddress(PrefixStandard);
 		}
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {

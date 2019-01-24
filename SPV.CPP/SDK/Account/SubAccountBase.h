@@ -23,8 +23,6 @@ namespace Elastos {
 
 			virtual void ClearUsedAddresses();
 
-			Address KeyToAddress(const BRKey *key) const;
-
 			virtual std::string GetMainAccountPublicKey() const;
 
 			virtual const CMBlock &GetVotePublicKey() const;

@@ -15,8 +15,6 @@
 #include <SDK/Account/SubAccountGenerator.h>
 
 #include <Core/BRTransaction.h>
-#include <Core/BRTransaction.h>
-#include <Core/BRKey.h>
 #include <Core/BRArray.h>
 
 #include <algorithm>
@@ -186,7 +184,7 @@ namespace Elastos {
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
 
 			Key key = _subAccount->DeriveMainAccountKey(payPassword);
-			return key.compactSign(message);
+			return Utils::encodeHex(key.Sign(message));
 		}
 
 		nlohmann::json

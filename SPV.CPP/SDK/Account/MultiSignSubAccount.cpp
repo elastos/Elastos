@@ -5,6 +5,7 @@
 #include "MultiSignSubAccount.h"
 
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Utils.h>
 #include <SDK/Plugin/Transaction/Program.h>
 
 #include <Core/BRAddress.h>
@@ -26,7 +27,7 @@ namespace Elastos {
 											 const std::string &payPassword) {
 			if (transaction->getPrograms().empty()) {
 				Program program;
-				program.setCode(_multiSignAccount->GenerateRedeemScript());
+				program.setCode(_multiSignAccount->GetRedeemScript());
 				transaction->addProgram(program);
 			}
 
@@ -39,12 +40,9 @@ namespace Elastos {
 				stream.writeBytes(program.getParameter(), program.getParameter().GetSize());
 			}
 
-			CMBlock shaData = transaction->GetShaData();
-			CMBlock signData = DeriveMainAccountKey(payPassword).compactSign(shaData);
-			uint8_t buff[65];
-			memset(buff, 0, 65);
-			memcpy(buff, signData, signData.GetSize());
-			stream.writeBytes(buff, 65);
+			UInt256 md = transaction->GetShaData();
+			CMBlock signData = DeriveMainAccountKey(payPassword).Sign(md);
+			stream.writeVarBytes(signData);
 
 			program.setParameter(stream.getBuffer());
 		}
@@ -65,23 +63,22 @@ namespace Elastos {
 				if (code[code.GetSize() - 1] == ELA_MULTISIG) {
 					std::vector<std::string> result;
 
+					Key key;
 					uint8_t m, n;
 					std::vector<std::string> signers;
 					Program::ParseMultiSignRedeemScript(code, m, n, signers);
 
-					CMBlock hashData = transaction->GetShaData();
-					UInt256 md;
-					memcpy(md.u8, hashData, sizeof(UInt256));
+					UInt256 md = transaction->GetShaData();
 
-					for (int i = 0; i < parameter.GetSize(); i += SignatureScriptLength) {
-						CMBlock signature(SignatureScriptLength);
-						memcpy(signature, &parameter[i], SignatureScriptLength);
+					ByteStream stream(parameter);
+					CMBlock signature;
+					while (stream.readVarBytes(signature)) {
+						for (int i = 0; i < signers.size(); ++i) {
+							key.SetPubKey(Utils::decodeHex(signers[i]));
 
-						for (std::vector<std::string>::iterator signerIt = signers.begin();
-							 signerIt != signers.end(); ++signerIt) {
-
-							if (Key::verifyByPublicKey(*signerIt, md, signature))
-								result.push_back(*signerIt);
+							if (key.Verify(md, signature)) {
+								result.push_back(signers[i]);
+							}
 						}
 					}
 

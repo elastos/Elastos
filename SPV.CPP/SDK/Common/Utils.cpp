@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Log.h"
 #include "Base64.h"
+#include "Base58.h"
 
 #include <SDK/Crypto/Crypto.h>
 
@@ -157,6 +158,13 @@ namespace Elastos {
 			return true;
 		}
 
+		bool Utils::Encrypt(std::string &ctBase64, const void *data, size_t len, const std::string &passwd) {
+			CMBlock buf;
+			buf.SetMemFixed(data, len);
+
+			return Encrypt(ctBase64, buf, passwd);
+		}
+
 		bool Utils::Encrypt(std::string &ctBase64, const CMBlock &data, const std::string &passwd) {
 			std::string saltBase64 = "ZRVja4LFrFY=";
 			std::string ivBase64 = "n2JUTJ0/yrLdCDPfIcqAzw==";
@@ -173,56 +181,25 @@ namespace Elastos {
 
 		std::string Utils::UInt168ToAddress(const UInt168 &u) {
 			UInt256 hash = UINT256_ZERO;
-			size_t uSize = sizeof(UInt168);
 
-			BRSHA256_2(&hash, u.u8, uSize);
+			BRSHA256_2(&hash, u.u8, sizeof(u));
 
-			size_t dataLen = uSize + 4;
-			uint8_t data[sizeof(UInt168) + 4] = {0};
-			memcpy(data, u.u8, uSize);
-			memcpy(data + uSize, hash.u8, 4);
+			CMBlock data(sizeof(UInt168) + 4);
+			memcpy(data, u.u8, sizeof(u));
+			memcpy(data + sizeof(u), hash.u8, 4);
 
-			BRAddress result;
-			BRBase58Encode(result.s, sizeof(result.s), data, dataLen);
-			return result.s;
+			return Base58::Encode(data);
 		}
 
 		bool Utils::UInt168FromAddress(UInt168 &u, const std::string &address) {
-			return 0 != BRAddressHash168(&u, address.c_str());
-		}
-
-		uint32_t Utils::getAddressTypeBySignType(const int signType) {
-			if (signType == ELA_STANDARD) {
-				return ELA_STAND_ADDRESS;
-			} else if (signType == ELA_MULTISIG) {
-				return ELA_MULTISIG_ADDRESS;
-			} else if (signType == ELA_CROSSCHAIN) {
-				return ELA_CROSSCHAIN_ADDRESS;
-			} else if (signType == ELA_IDCHAIN) {
-				return ELA_IDCHAIN_ADDRESS;
-			} else if (signType == ELA_DESTROY) {
-				return ELA_DESTROY_ADDRESS;
-			} else {
-				ParamChecker::checkCondition(true, Error::SignType, "Unknown sign type");
+			CMBlock programHash = Base58::CheckDecode(address);
+			if (programHash.GetSize() != sizeof(UInt168)) {
+				return false;
 			}
-			return 0;
-		}
 
-		UInt168 Utils::codeToProgramHash(const std::string &redeemScript) {
-			return codeToProgramHash(Utils::decodeHex(redeemScript));
-		}
+			memcpy(u.u8, programHash, programHash.GetSize());
 
-		UInt168 Utils::codeToProgramHash(const CMBlock &redeemScript) {
-			UInt160 hash = UINT160_ZERO;
-			size_t len = redeemScript.GetSize();
-			BRHash160(&hash, redeemScript, len);
-			int signType = redeemScript[len - 1];
-			uint32_t addressType = Utils::getAddressTypeBySignType(signType);
-
-			UInt168 uInt168 = UINT168_ZERO;
-			memcpy(&uInt168.u8[1], &hash.u8[0], sizeof(hash.u8));
-			uInt168.u8[0] = addressType;
-			return uInt168;
+			return true;
 		}
 
 		CMBlock Utils::GetRandom(size_t bits) {

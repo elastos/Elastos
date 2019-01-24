@@ -44,7 +44,7 @@ namespace Elastos {
 
 		private:
 
-			WrapperList<Key, BRKey> DeriveAccountAvailableKeys(const std::string &payPassword,
+			std::vector<Key> DeriveAccountAvailableKeys(const std::string &payPassword,
 															   const boost::shared_ptr<TransactionHub> &wallet,
 															   const TransactionPtr &transaction);
 

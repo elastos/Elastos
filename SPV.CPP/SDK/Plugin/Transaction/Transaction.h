@@ -127,8 +127,6 @@ namespace Elastos {
 
 			bool isSigned() const;
 
-			bool sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<TransactionHub> &wallet);
-
 			UInt256 getReverseHash();
 
 			virtual nlohmann::json toJson() const;
@@ -177,7 +175,7 @@ namespace Elastos {
 
 			void serializeUnsigned(ByteStream &ostream) const;
 
-			CMBlock GetShaData() const;
+			UInt256 GetShaData() const;
 
 			UInt256 GetAssetID() const;
 
@@ -189,11 +187,12 @@ namespace Elastos {
 
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
 
+			bool Sign(const std::vector<Key> &keys, const boost::shared_ptr<TransactionHub> &wallet);
+
 		private:
 
 			void reinit();
 
-			bool transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<TransactionHub> &wallet);
 
 		private:
 			bool _isRegistered;

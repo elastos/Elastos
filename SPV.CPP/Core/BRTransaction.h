@@ -25,7 +25,7 @@
 #ifndef BRTransaction_h
 #define BRTransaction_h
 
-#include "BRKey.h"
+//#include "BRKey.h"
 #include "BRInt.h"
 #include <stddef.h>
 #include <inttypes.h>
@@ -132,7 +132,7 @@ int BRTransactionIsSigned(const BRTransaction *tx);
 // adds signatures to any inputs with NULL signatures that can be signed with any keys
 // forkId is 0 for bitcoin, 0x40 for b-cash, 0x4f for b-gold
 // returns true if tx is signed
-int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCount);
+//int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCount);
 
 // true if tx meets IsStandard() rules: https://bitcoin.org/en/developer-guide#standard-transactions
 int BRTransactionIsStandard(const BRTransaction *tx);

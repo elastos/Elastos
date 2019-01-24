@@ -7,8 +7,10 @@
 #include "catch.hpp"
 
 #include <SDK/Common/Utils.h>
-#include <Core/BRAddress.h>
 #include <SDK/Account/StandardAccount.h>
+#include <SDK/BIPs/BIP32Sequence.h>
+
+#include <Core/BRAddress.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -22,21 +24,18 @@ TEST_CASE("Derive id public and private key", "[Id agent]") {
 	SECTION("Address derived from public and private key should be same") {
 		StandardAccount account("Data", mnemonic, phrasePassword, payPassword);
 
-		const MasterPubKey &publicKey = account.GetIDMasterPubKey();
-		CMBlock pubKey(65);
-		size_t len = BRBIP32PubKey(pubKey, pubKey.GetSize(), *publicKey.getRaw(), 1, 0);
-		pubKey.Resize(len);
+		const MasterPubKey &mpk = account.GetIDMasterPubKey();
+
+		CMBlock pubKey = BIP32Sequence::PubKey(mpk, 1, 0);
 
 		Key key;
-		key.SetPublicKey(pubKey);
-		std::string pubId = key.keyToAddress(ELA_IDCHAIN);
+		key.SetPubKey(pubKey);
+		std::string pubId = key.GetAddress(PrefixIDChain);
 
 		UInt512 seed = account.DeriveSeed(payPassword);
-		BRKey rawPrivKey;
 		UInt256 chainCode;
-		BRBIP32PrivKeyPath(&rawPrivKey, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, 1, 0);
-		Key privKey(rawPrivKey);
-		std::string privId = privKey.keyToAddress(ELA_IDCHAIN);
+		key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 0 | BIP32_HARD, 1, 0);
+		std::string privId = key.GetAddress(PrefixIDChain);
 
 		REQUIRE(pubId == privId);
 	}
@@ -51,15 +50,11 @@ TEST_CASE("Derive public and private key", "[HD wallet]") {
 			StandardAccount account("Data", mnemonic, "", "payPassword");
 			UInt512 seed = account.DeriveSeed(payPassword);
 			UInt256 chainCode;
-			BRKey brKey;
-			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-							   coinIndex | BIP32_HARD, 0 | BIP32_HARD, 0, 0);
-
-			Key key(brKey);
-			CMBlock pubkey = key.GetPublicKey();
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+												 coinIndex | BIP32_HARD, 0 | BIP32_HARD, 0, 0);
 			var_clean(&chainCode);
 			var_clean(&seed);
-			REQUIRE("EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh" == key.address());
+			REQUIRE("EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh" == key.GetAddress(PrefixStandard));
 		}
 	}
 }

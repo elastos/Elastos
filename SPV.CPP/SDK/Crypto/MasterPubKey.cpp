@@ -10,77 +10,63 @@
 #include <SDK/Common/ByteStream.h>
 
 #include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRBIP32Sequence.h>
 #include <Core/BRCrypto.h>
-#include <Core/BRBIP32Sequence.h>
 
 #include <cstring>
 
 namespace Elastos {
 	namespace ElaWallet {
 		MasterPubKey::MasterPubKey() {
-			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-			*_masterPubKey = BR_MASTER_PUBKEY_NONE;
+			_fingerPrint = 0;
+			memset(_chainCode.u8, 0, sizeof(_chainCode));
+			memset(_pubKey, 0, sizeof(_pubKey));
 		}
 
-		MasterPubKey::MasterPubKey(const std::string &phrase, const std::string &phrasePassword) {
-			UInt512 seed = UINT512_ZERO;
-			const char *phrasePass = phrasePassword.empty() ? nullptr : phrasePassword.c_str();
-			BRBIP39DeriveKey(seed.u8, phrase.c_str(), phrasePass);
-			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey(BRBIP32MasterPubKey(&seed, sizeof(seed))));
-			var_clean(&seed);
+		MasterPubKey::MasterPubKey(const MasterPubKey &masterPubKey) {
+			operator=(masterPubKey);
 		}
 
 		MasterPubKey::MasterPubKey(const CMBlock &pubKey, const UInt256 &chainCode) {
-			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-
-			memcpy(_masterPubKey->pubKey, pubKey, pubKey.GetSize());
-			_masterPubKey->chainCode = chainCode;
+			_fingerPrint = 0;
+			memset(_pubKey, 0, sizeof(_pubKey));
+			if (pubKey.GetSize() > 33) {
+				Log::error("Master public key length too large");
+			} else {
+				memcpy(_pubKey, pubKey, pubKey.GetSize());
+			}
+			_chainCode = chainCode;
 		}
 
-		MasterPubKey::MasterPubKey(const BRKey &key, const UInt256 &chainCode) {
-			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-
-			Key wrapperKey(key.secret, key.compressed);
-			CMBlock pubKey = wrapperKey.GetPublicKey();
-
-			memcpy(_masterPubKey->pubKey, pubKey, pubKey.GetSize());
-			_masterPubKey->chainCode = chainCode;
-			_masterPubKey->fingerPrint = wrapperKey.hashTo160().u32[0];
+		MasterPubKey::~MasterPubKey() {
+			Clean();
 		}
 
-		MasterPubKey::MasterPubKey(const BRMasterPubKey &pubKey) {
-			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-			*_masterPubKey = pubKey;
-		}
+		MasterPubKey& MasterPubKey::operator=(const MasterPubKey &masterPubKey) {
+			_fingerPrint = masterPubKey._fingerPrint;
+			memcpy(_pubKey, masterPubKey._pubKey, sizeof(_pubKey));
+			_chainCode = masterPubKey._chainCode;
 
-		std::string MasterPubKey::toString() const {
-			//todo complete me
-			return "";
-		}
-
-		BRMasterPubKey *MasterPubKey::getRaw() const {
-			return _masterPubKey.get();
+			return *this;
 		}
 
 		void MasterPubKey::Serialize(ByteStream &stream) const {
-			stream.writeUint32(_masterPubKey->fingerPrint);
-			stream.writeBytes(&_masterPubKey->chainCode, sizeof(_masterPubKey->chainCode));
-			stream.writeBytes(_masterPubKey->pubKey, sizeof(_masterPubKey->pubKey));
+			stream.writeUint32(_fingerPrint);
+			stream.writeBytes(&_chainCode, sizeof(_chainCode));
+			stream.writeBytes(_pubKey, sizeof(_pubKey));
 		}
 
 		bool MasterPubKey::Deserialize(ByteStream &stream) {
-			if (!stream.readUint32(_masterPubKey->fingerPrint)) {
+			if (!stream.readUint32(_fingerPrint)) {
 				Log::error("MasterPubKey deserialize fingerPrint fail");
 				return false;
 			}
 
-			if (!stream.readBytes(&_masterPubKey->chainCode, sizeof(_masterPubKey->chainCode))) {
+			if (!stream.readBytes(&_chainCode, sizeof(_chainCode))) {
 				Log::error("MasterPubKey deserialize chainCode fail");
 				return false;
 			}
 
-			if (!stream.readBytes(_masterPubKey->pubKey, sizeof(_masterPubKey->pubKey))) {
+			if (!stream.readBytes(_pubKey, sizeof(_pubKey))) {
 				Log::error("MasterPubKey deserialize pubkey fail");
 				return false;
 			}
@@ -88,19 +74,48 @@ namespace Elastos {
 			return true;
 		}
 
-		uint32_t MasterPubKey::getFingerPrint() const {
-			return _masterPubKey->fingerPrint;
+		void MasterPubKey::SetFingerPrint(uint32_t fingerPrint) {
+			_fingerPrint = fingerPrint;
 		}
 
-		CMBlock MasterPubKey::getPubKey() const {
-			CMBlock ret(33);
-			memcpy(ret, _masterPubKey->pubKey, 33);
-
-			return ret;
+		uint32_t MasterPubKey::GetFingerPrint() const {
+			return _fingerPrint;
 		}
 
-		const UInt256& MasterPubKey::getChainCode() const {
-			return _masterPubKey->chainCode;
+		void MasterPubKey::SetPubKey(const CMBlock &pubKey) {
+			if (pubKey.GetSize() > sizeof(_pubKey)) {
+				Log::error("Public key length too large");
+			} else {
+				memset(_pubKey, 0, sizeof(_pubKey));
+				memcpy(_pubKey, pubKey, pubKey.GetSize());
+			}
+		}
+
+		CMBlock MasterPubKey::GetPubKey() const {
+			return CMBlock(_pubKey, sizeof(_pubKey));
+		}
+
+		void MasterPubKey::SetChainCode(const UInt256 &chainCode) {
+			_chainCode = chainCode;
+		}
+
+		const UInt256& MasterPubKey::GetChainCode() const {
+			return _chainCode;
+		}
+
+		void MasterPubKey::Clean() {
+			memset(_pubKey, 0, sizeof(_pubKey));
+			memset(_chainCode.u8, 0, sizeof(_chainCode));
+			_fingerPrint = 0;
+		}
+
+		bool MasterPubKey::Empty() const {
+			uint8_t empty[sizeof(_pubKey)];
+			memset(empty, 0, sizeof(empty));
+			UInt256 zero = UINT256_ZERO;
+
+			return memcmp(_pubKey, empty, sizeof(_pubKey)) == 0 &&
+				   UInt256Eq(&_chainCode, &zero) && _fingerPrint == 0;
 		}
 
 	}

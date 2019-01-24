@@ -17,6 +17,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define ELA_SIDECHAIN_DESTROY_ADDR "1111111111111111111114oLvT2"
+
 		class Address {
 		public:
 			Address();
@@ -28,10 +30,6 @@ namespace Elastos {
 			bool operator== (const std::string &address) const;
 
 			bool isValid();
-
-			CMBlock getPubKeyScript();
-
-			int getSignType() const;
 
 			std::string stringify() const;
 

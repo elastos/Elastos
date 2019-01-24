@@ -5,11 +5,8 @@
 #ifndef __ELASTOS_SDK_MASTERPUBKEY_H__
 #define __ELASTOS_SDK_MASTERPUBKEY_H__
 
-#include "Key.h"
-
 #include <SDK/Common/ByteStream.h>
-
-#include <Core/BRBIP32Sequence.h>
+#include <Core/BRInt.h>
 
 #include <string>
 #include <vector>
@@ -18,36 +15,43 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class MasterPubKey :
-			public Wrapper<BRMasterPubKey> {
+		class MasterPubKey {
 		public:
 
 			MasterPubKey();
 
-			MasterPubKey(const std::string &phrase, const std::string &phrasePassword = "");
+			MasterPubKey(const MasterPubKey &masterPubKey);
 
 			MasterPubKey(const CMBlock &pubKey, const UInt256 &chainCode);
 
-			MasterPubKey(const BRKey &key, const UInt256 &chainCode);
+			~MasterPubKey();
 
-			explicit MasterPubKey(const BRMasterPubKey &pubKey);
-
-			virtual std::string toString() const;
-
-			virtual BRMasterPubKey *getRaw() const;
+			MasterPubKey &operator=(const MasterPubKey &masterPubKey);
 
 			void Serialize(ByteStream &stream) const;
 
 			bool Deserialize(ByteStream &stream);
 
-			uint32_t getFingerPrint() const;
+			void SetFingerPrint(uint32_t fingerPrint);
 
-			CMBlock getPubKey() const;
+			uint32_t GetFingerPrint() const;
 
-			const UInt256 &getChainCode() const;
+			void SetPubKey(const CMBlock &pubKey);
+
+			CMBlock GetPubKey() const;
+
+			void SetChainCode(const UInt256 &chainCode);
+
+			const UInt256 &GetChainCode() const;
+
+			void Clean();
+
+			bool Empty() const;
 
 		private:
-			boost::shared_ptr<BRMasterPubKey> _masterPubKey;
+			uint32_t _fingerPrint;
+			UInt256 _chainCode;
+			uint8_t _pubKey[33];
 		};
 
 		typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;

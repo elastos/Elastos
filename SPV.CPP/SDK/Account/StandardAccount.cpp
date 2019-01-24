@@ -6,6 +6,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
 #include <Core/BRBIP39Mnemonic.h>
@@ -31,25 +32,20 @@ namespace Elastos {
 			//init master public key and private key
 			UInt512 seed = DeriveSeed(payPassword);
 
-			BRKey masterKey;
-			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
+			Key key = BIP32Sequence::APIAuthKey(&seed, sizeof(seed));
 
-			CMBlock secret(sizeof(UInt256));
-			secret.SetMemFixed(masterKey.secret.u8, sizeof(masterKey.secret));
-			Utils::Encrypt(_encryptedKey, secret, payPassword);
+			const UInt256 &secret = key.GetSecret();
+			Utils::Encrypt(_encryptedKey, &secret, sizeof(secret), payPassword);
 
-			Key key(masterKey);
-			_publicKey = Utils::encodeHex(key.GetPublicKey());
+			_publicKey = Utils::encodeHex(key.PubKey());
 
 			//init id chain derived master public key
-			BRKey idMasterKey;
-			UInt256 idChainCode;
-			BRBIP32PrivKeyPath(&idMasterKey, &idChainCode, &seed, sizeof(seed), 1, 0 | BIP32_HARD);
-			Key wrapperKey(idMasterKey.secret, idMasterKey.compressed);
-			_masterIDPubKey = MasterPubKey(wrapperKey.GetPublicKey(), idChainCode);
+			UInt256 chainCode;
+			Key IDMasterKey = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 1, 0 | BIP32_HARD);
+			_masterIDPubKey = MasterPubKey(IDMasterKey.PubKey(), chainCode);
 
 			var_clean(&seed);
-			var_clean(&masterKey.secret);
+			var_clean(&chainCode);
 			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 		}
 
@@ -84,8 +80,8 @@ namespace Elastos {
 
 		std::string StandardAccount::GetAddress() const {
 			Key key;
-			key.SetPublicKey(Utils::decodeHex(_publicKey));
-			return key.address();
+			key.SetPubKey(Utils::decodeHex(_publicKey));
+			return key.GetAddress(PrefixStandard);
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const StandardAccount &p) {
@@ -106,8 +102,8 @@ namespace Elastos {
 			j["PhrasePassword"] = p.GetEncryptedPhrasePassword();
 			j["Language"] = p.GetLanguage();
 			j["PublicKey"] = p.GetPublicKey();
-			j["IDChainCode"] = Utils::UInt256ToString(p.GetIDMasterPubKey().getChainCode());
-			j["IDMasterKeyPubKey"] = Utils::encodeHex(p.GetIDMasterPubKey().getPubKey());
+			j["IDChainCode"] = Utils::UInt256ToString(p.GetIDMasterPubKey().GetChainCode());
+			j["IDMasterKeyPubKey"] = Utils::encodeHex(p.GetIDMasterPubKey().GetPubKey());
 		}
 
 		void from_json(const nlohmann::json &j, StandardAccount &p) {
@@ -143,7 +139,7 @@ namespace Elastos {
 			Key key;
 			UInt256 secret;
 			memcpy(secret.u8, keyData, keyData.GetSize());
-			key.setSecret(secret, true);
+			key.SetSecret(secret, true);
 
 			return key;
 		}

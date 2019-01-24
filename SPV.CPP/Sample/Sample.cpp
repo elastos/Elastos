@@ -209,6 +209,46 @@ static void Vote(MasterWalletManager *manager,
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
+static void RegisterProducer(MasterWalletManager *manager,
+							 const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string nodePubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string nickName = "heropan";
+	std::string url = "heropan.com";
+	std::string ipAddress = "127.0.0.1";
+	uint64_t location = 86;
+
+	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
+																		 location, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, 500000000000 + 10000,
+																			  "heropan register producer");
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void GetRegisteredProducerInfo(MasterWalletManager *manager,
+									  const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json info = mainchainSubWallet->GetRegisteredProducerInfo();
+	logger->debug("registered producer info = {}", info.dump());
+}
+
 static void GetVotedList(MasterWalletManager *manager,
 						 const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
@@ -351,8 +391,8 @@ static void InitWallets(MasterWalletManager *manager) {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-		masterWallet = ImportWalletWithMnemonic(manager);
-//		masterWallet = ImportWalletWithKeystore(manager);
+//		masterWallet = ImportWalletWithMnemonic(manager);
+		masterWallet = ImportWalletWithKeystore(manager);
 //		masterWallet = NewWalletWithMnemonic(manager);
 //		masterWallet = NewReadOnlyMultiSignWallet(manager);
 //		masterWallet = NewMultiSignWalletWithMnemonic(manager);
@@ -399,7 +439,7 @@ static void GetBalance(MasterWalletManager *manager,
 int main(int argc, char *argv[]) {
 
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
-	bool voteDone = true;
+	bool voteDone = true, registerProducer = true;
 
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
@@ -415,7 +455,7 @@ int main(int argc, char *argv[]) {
 
 	while(1) {
 		if (ELASyncSucceed) {
-			sleep(10);
+			sleep(20);
 			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
 			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
 
@@ -437,7 +477,13 @@ int main(int argc, char *argv[]) {
 				voteDone = true;
 			}
 
+			if (!registerProducer) {
+				RegisterProducer(manager, gMasterWalletID, gMainchainSubWalletID);
+				registerProducer = true;
+			}
+
 			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);
+			GetRegisteredProducerInfo(manager, gMasterWalletID, gMainchainSubWalletID);
 			sleep(60);
 		} else if (IDChainSyncSucceed) {
 			sleep(10);

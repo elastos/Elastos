@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_IMASTERWALLET_H__
 
 #include "ISubWallet.h"
+#include "IIdAgent.h"
 
 namespace Elastos {
 	namespace ElaWallet {

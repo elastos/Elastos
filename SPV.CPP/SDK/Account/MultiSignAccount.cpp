@@ -82,22 +82,6 @@ namespace Elastos {
 			return _me->GetIDMasterPubKey();
 		}
 
-		bool MultiSignAccount::Compare(const std::string &a, const std::string &b) const {
-			secp256k1_pubkey pk;
-
-			CMBlock cbA = Utils::decodeHex(a);
-			ParamChecker::checkCondition(0 == BRKeyPubKeyDecode(&pk, cbA, cbA.GetSize()), Error::PubKeyFormat,
-										 "Public key decode error");
-			BigInteger bigIntA = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
-
-			CMBlock cbB = Utils::decodeHex(b);
-			ParamChecker::checkCondition(0 == BRKeyPubKeyDecode(&pk, cbB, cbB.GetSize()), Error::PubKeyFormat,
-										 "Public key decode error");
-			BigInteger bigIntB = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
-
-			return bigIntA <= bigIntB;
-		}
-
 		void MultiSignAccount::checkSigners() const {
 			ParamChecker::checkCondition(_me == nullptr, Error::WrongAccountType,
 										 "Readonly account do not support this operation.");
@@ -105,43 +89,32 @@ namespace Elastos {
 
 		std::string MultiSignAccount::GetAddress() const {
 			if (_address.empty()) {
-				// redeem script -> program hash
-				UInt168 programHash = Utils::codeToProgramHash(GenerateRedeemScript());
+				Key key;
+				std::vector<std::string> pubKeys = _coSigners;
+				if (_me != nullptr)
+					pubKeys.push_back(_me->GetPublicKey());
 
+				const CMBlock &code = GetRedeemScript();
+				// redeem script -> program hash
+				UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
 				// program hash -> address
 				_address = Utils::UInt168ToAddress(programHash);
 			}
+
 			return _address;
 		}
 
-		CMBlock MultiSignAccount::GenerateRedeemScript() const {
-			std::set<std::string> uniqueSigners(_coSigners.begin(), _coSigners.end());
-			if (_me != nullptr)
-				uniqueSigners.insert(_me->GetPublicKey());
+		const CMBlock &MultiSignAccount::GetRedeemScript() const {
+			if (_redeemScript.GetSize() == 0) {
+				Key key;
+				std::vector<std::string> pubKeys = _coSigners;
+				if (_me != nullptr)
+					pubKeys.push_back(_me->GetPublicKey());
 
-			ParamChecker::checkCondition(uniqueSigners.size() < _requiredSignCount, Error::MultiSignersCount,
-										 "Required sign count greater than signers");
-
-			ParamChecker::checkCondition(uniqueSigners.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
-										 "Signers should less than 205.");
-
-			std::vector<std::string> sortedSigners(uniqueSigners.begin(), uniqueSigners.end());
-
-			std::sort(sortedSigners.begin(), sortedSigners.end(),
-					  boost::bind(&MultiSignAccount::Compare, this, _1, _2));
-
-			ByteStream stream;
-			stream.writeUint8(uint8_t(OP_1 + _requiredSignCount - 1));
-			for (size_t i = 0; i < sortedSigners.size(); i++) {
-				CMBlock pubKey = Utils::decodeHex(sortedSigners[i]);
-				stream.writeUint8(uint8_t(pubKey.GetSize()));
-				stream.writeBytes(pubKey, pubKey.GetSize());
+				_redeemScript = key.MultiSignRedeemScript(_requiredSignCount, pubKeys);
 			}
 
-			stream.writeUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
-			stream.writeUint8(ELA_MULTISIG);
-
-			return stream.getBuffer();
+			return _redeemScript;
 		}
 
 		void to_json(nlohmann::json &j, const MultiSignAccount &p) {

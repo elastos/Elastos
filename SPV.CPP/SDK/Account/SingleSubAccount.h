@@ -36,9 +36,8 @@ namespace Elastos {
 			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
 		protected:
-			virtual WrapperList<Key, BRKey>
-			DeriveAccountAvailableKeys(const std::string &payPassword,
-									   const TransactionPtr &transaction);
+			virtual std::vector<Key> DeriveAccountAvailableKeys(const std::string &payPassword,
+																const TransactionPtr &transaction);
 		};
 
 	}

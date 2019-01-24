@@ -45,6 +45,8 @@ namespace Elastos {
 
 			static bool Decrypt(std::string &data, const std::string &ctBase64, const std::string &passwd);
 
+			static bool Encrypt(std::string &ctBase64, const void *data, size_t len, const std::string &passwd);
+
 			static bool Encrypt(std::string &ctBase64, const CMBlock &data, const std::string &passwd);
 
 			static bool Decrypt(CMBlock &data, const std::string &ctBase64, const std::string &passwd);
@@ -55,28 +57,9 @@ namespace Elastos {
 
 			static CMBlock decodeHex(const std::string &s);
 
-			static std::string convertToString(const CMBlock &data) {
-				char p[data.GetSize()];
-				memcpy(p, data, data.GetSize());
-				std::string ret(p, data.GetSize());
-				return ret;
-			}
-
-			static CMBlock convertToMemBlock(const std::string &str) {
-				CMBlock result(str.size());
-				memcpy(result, str.c_str(), str.size());
-				return result;
-			}
-
 			static std::string UInt168ToAddress(const UInt168 &u);
 
 			static bool UInt168FromAddress(UInt168 &u, const std::string &address);
-
-			static uint32_t getAddressTypeBySignType(const int signType);
-
-			static UInt168 codeToProgramHash(const std::string &redeemScript);
-
-			static UInt168 codeToProgramHash(const CMBlock &redeemScript);
 
 			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
 

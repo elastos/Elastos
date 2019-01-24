@@ -93,7 +93,7 @@ namespace Elastos {
 			CMBlock prUnsigned = ostream.getBuffer();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
-			pr.SetSignature(key.compactSign(prUnsigned));
+			pr.SetSignature(key.Sign(prUnsigned));
 
 			return pr.toJson(0);
 		}
@@ -115,7 +115,7 @@ namespace Elastos {
 			CMBlock pcUnsigned = ostream.getBuffer();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
-			pc.SetSignature(key.compactSign(pcUnsigned));
+			pc.SetSignature(key.Sign(pcUnsigned));
 
 			return pc.toJson(0);
 		}
@@ -127,10 +127,8 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-#ifndef SPVSDK_DEBUG
 			ParamChecker::checkParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
-#endif
 
 			PayloadRegisterProducer *payloadRegisterProducer = new PayloadRegisterProducer();
 			try {
@@ -141,8 +139,8 @@ namespace Elastos {
 			PayloadPtr iPayload = PayloadPtr(payloadRegisterProducer);
 
 			Key key;
-			key.SetPublicKey(payloadRegisterProducer->GetPublicKey());
-			std::string toAddress = key.keyToAddress(ELA_RETURN_DEPOSIT);
+			key.SetPubKey(payloadRegisterProducer->GetPublicKey());
+			std::string toAddress = key.GetAddress(PrefixDeposit);
 
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
 													Asset::GetELAAssetID(), memo, "", useVotedUTXO);
@@ -207,8 +205,8 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(const std::string &memo) {
 
 			Key key;
-			key.SetPublicKey(_subAccount->GetVotePublicKey());
-			std::string fromAddress = key.keyToAddress(ELA_RETURN_DEPOSIT);
+			key.SetPubKey(_subAccount->GetVotePublicKey());
+			std::string fromAddress = key.GetAddress(PrefixDeposit);
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(), memo, "");
 

@@ -13,6 +13,7 @@
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/ELAPlugin.h>
 #include <SDK/Plugin/IDPlugin.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 #include <Interface/MasterWalletManager.h>
 #include <Config.h>
 
@@ -74,16 +75,13 @@ namespace Elastos {
 
 			UInt512 seed;
 			BRBIP39DeriveKey(&seed, standardPhrase.c_str(), phrasePassword.c_str());
-			BRKey masterKey;
-			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
 
-			Key key(masterKey);
+			Key key = BIP32Sequence::APIAuthKey(&seed, sizeof(seed));
 
 			var_clean(&seed);
-			var_clean(&masterKey);
 			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 
-			return Utils::encodeHex(key.GetPublicKey());
+			return Utils::encodeHex(key.PubKey());
 		}
 
 		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) const {
@@ -93,12 +91,12 @@ namespace Elastos {
 			Key key;
 			UInt256 secret;
 			memcpy(secret.u8, privKeyHex, sizeof(secret));
-			key.setSecret(secret, true);
+			key.SetSecret(secret, true);
 
 			var_clean(&secret);
 			memset(privKeyHex, 0, privKeyHex.GetSize());
 
-			return Utils::encodeHex(key.GetPublicKey());
+			return Utils::encodeHex(key.PubKey());
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(

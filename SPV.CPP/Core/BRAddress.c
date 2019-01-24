@@ -396,11 +396,9 @@ int BRAddressIsValid(const char *addr)
     assert(addr != NULL);
 
     if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
-        data[0] == ELA_IDCHAIN_ADDRESS);
+        r = (data[0] == BITCOIN_PUBKEY_ADDRESS || data[0] == BITCOIN_SCRIPT_ADDRESS);
 #if BITCOIN_TESTNET
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
-        data[0] == ELA_IDCHAIN_ADDRESS);
+        r = (data[0] == BITCOIN_PUBKEY_ADDRESS_TEST || data[0] == BITCOIN_PUBKEY_ADDRESS_TEST);
 #endif
     }
     else if (BRBech32Decode(hrp, data, addr) > 2) {
@@ -408,10 +406,6 @@ int BRAddressIsValid(const char *addr)
 #if BITCOIN_TESTNET
         r = (strcmp(hrp, "tb") == 0 && (data[0] != OP_0 || data[1] == 20 || data[1] == 32));
 #endif
-    }
-
-    if (r == 0 && strcmp(addr, ELA_SIDECHAIN_DESTROY_ADDR) == 0) {
-        r = 1;
     }
 
     return r;

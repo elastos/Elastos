@@ -10,10 +10,11 @@
 #include "StandardSingleSubAccount.h"
 
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
-#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -88,8 +89,8 @@ namespace Elastos {
 		void SubAccountGenerator::SetMasterPubKey(const MasterPubKeyPtr &masterPubKey) {
 			_masterPubKey = masterPubKey;
 			if (_masterPubKey != nullptr) {
-				_resultPubKey = _masterPubKey->getPubKey();
-				_resultChainCode = _masterPubKey->getChainCode();
+				_resultPubKey = _masterPubKey->GetPubKey();
+				_resultChainCode = _masterPubKey->GetChainCode();
 			}
 		}
 
@@ -103,21 +104,18 @@ namespace Elastos {
 			if (account->GetType() == "MultiSign") {
 				MultiSignAccount *multiSignAccount = static_cast<MultiSignAccount *>(account);
 				if ("Simple" == multiSignAccount->GetInnerAccount()->GetType()) {
-					Key prvKey = account->DeriveKey(payPassword);
-					return MasterPubKeyPtr(new MasterPubKey(*prvKey.getRaw(), chainCode));
+					Key key = account->DeriveKey(payPassword);
+					return MasterPubKeyPtr(new MasterPubKey(key.PubKey(), chainCode));
 				}
 			}
 
 			UInt512 seed = account->DeriveSeed(payPassword);
-			BRKey key;
-			BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-							   coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 44 | BIP32_HARD,
+												 coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+
 			var_clean(&seed);
 
-			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
-			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-
-			return MasterPubKeyPtr(new MasterPubKey(key, chainCode));
+			return MasterPubKeyPtr(new MasterPubKey(key.PubKey(), chainCode));
 		}
 
 		CMBlock SubAccountGenerator::GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd) {
@@ -126,20 +124,16 @@ namespace Elastos {
 
 			if (account->GetType() == "Standard") {
 				UInt512 seed = account->DeriveSeed(payPasswd);
-
 				UInt256 chainCode;
-
-				BRKey brKey;
-				BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-								   coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
-				key = Key(brKey);
+				key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5,
+												 44 | BIP32_HARD, coinIndex | BIP32_HARD,
+												 BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
 
 				var_clean(&seed);
 				var_clean(&chainCode);
-				var_clean(&brKey.secret);
 			}
 
-			return key.GetPublicKey();
+			return key.PubKey();
 		}
 
 	}

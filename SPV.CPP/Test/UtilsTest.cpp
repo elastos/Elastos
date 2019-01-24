@@ -10,7 +10,7 @@
 #include <Core/BRInt.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <Core/BRAddress.h>
+#include <SDK/Base/Address.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -54,7 +54,7 @@ TEST_CASE("Utils test", "[Utils]") {
 		UInt168 expectedHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");
 		std::string redeemScript = "21022c9652d3ad5cc065aa9147dc2ad022f80001e8ed233de20f352950d351d472b7ac";
 
-		UInt168 hash = Utils::codeToProgramHash(redeemScript);
+		UInt168 hash = Key::CodeToProgramHash(PrefixStandard, Utils::decodeHex(redeemScript));
 
 		REQUIRE(UInt168Eq(&hash, &expectedHash) == 1);
 

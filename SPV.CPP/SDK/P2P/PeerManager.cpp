@@ -19,6 +19,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/arith_uint256.h>
 #include <SDK/Base/BloomFilter.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRArray.h>
 #include <Core/BRChainParams.h>

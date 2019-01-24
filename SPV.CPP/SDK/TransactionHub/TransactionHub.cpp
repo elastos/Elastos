@@ -15,8 +15,7 @@
 #include <Core/BRBIP39Mnemonic.h>
 #include <Core/BRArray.h>
 #include <Core/BRTransaction.h>
-#include <Core/BRAddress.h>
-#include <Core/BRBIP32Sequence.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/function.hpp>
@@ -225,13 +224,11 @@ namespace Elastos {
 			if (result != nullptr) {
 				result->setRemark(remark);
 
-				result->addAttribute(
-						Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
+				result->addAttribute(Attribute(Attribute::Nonce, CMBlock(std::to_string(std::rand()))));
 				if (!memo.empty())
-					result->addAttribute(Attribute(Attribute::Memo, Utils::convertToMemBlock(memo)));
+					result->addAttribute(Attribute(Attribute::Memo, CMBlock(memo)));
 				if (result->getTransactionType() == Transaction::TransferCrossChainAsset)
-					result->addAttribute(
-							Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
+					result->addAttribute( Attribute(Attribute::Confirmations, CMBlock(std::to_string(1))));
 			}
 
 			return result;
@@ -469,9 +466,9 @@ namespace Elastos {
 			}
 
 			Key key;
-			key.SetPublicKey(publicKey);
+			key.SetPubKey(publicKey);
 
-			return key.keyToAddress(ELA_RETURN_DEPOSIT);
+			return key.GetAddress(PrefixDeposit);
 		}
 
 		bool TransactionHub::containsAddress(const std::string &address) {

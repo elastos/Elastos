@@ -7,255 +7,464 @@
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Base58.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
-#include <Core/BRKey.h>
-#include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRBIP32Sequence.h>
-#include <Core/BRBase58.h>
-#include <Core/BRBIP38Key.h>
 #include <Core/BRCrypto.h>
 #include <Core/BRAddress.h>
 
-#include <secp256k1.h>
 #include <cstring>
+#include <boost/bind.hpp>
+#include <openssl/ec.h>
+#include <openssl/bn.h>
+#include <openssl/obj_mac.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		Key::Key() {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			memset(_key.get(), 0, sizeof(BRKey));
+			_secret = UINT256_ZERO;
+			memset(_pubKey, 0, sizeof(_pubKey));
+			_compressed = false;
 		}
 
 		Key::Key(const Key &key) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-
 			operator=(key);
 		}
 
-		Key::Key(BRKey *brkey) {
-			_key = boost::shared_ptr<BRKey>(brkey);
-
-			getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
-		}
-
-		Key::Key(const BRKey &brkey) {
-			_key = boost::shared_ptr<BRKey>(new BRKey());
-			*_key = brkey;
-
-			getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
-		}
-
-		Key::Key(const std::string &privKey) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			assert(!privKey.empty());
-			if (!setPrivKey(privKey)) {
-				Log::error("Failed to set PrivKey");
-			}
-		}
-
 		Key::Key(const UInt256 &secret, bool compressed) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			if (!setSecret(secret, compressed)) {
-				Log::error("Failed to set Sercret");
-			}
+			SetSecret(secret, compressed);
 		}
 
 		Key::~Key() {
-			var_clean(&_key->secret);
+			Clean();
 		}
 
 		Key &Key::operator=(const Key &key) {
-			_key->secret = key._key->secret;
-			memcpy(_key->pubKey, key._key->pubKey, sizeof(_key->pubKey));
-			_key->compressed = key._key->compressed;
+			_secret = key._secret;
+			memcpy(_pubKey, key._pubKey, sizeof(_pubKey));
+			_compressed = key._compressed;
 			return *this;
 		}
 
-		std::string Key::toString() const {
-			return Utils::UInt256ToString(_key->secret);
+		bool Key::SetPubKey(const CMBlock &pubKey) {
+			Clean();
+			memcpy(_pubKey, pubKey, pubKey.GetSize() < sizeof(_pubKey) ? pubKey.GetSize() : sizeof(_pubKey));
+			_compressed = (pubKey.GetSize() <= 33);
+
+			return PubKeyIsValid(_pubKey, pubKey.GetSize());
 		}
 
-		BRKey *Key::getRaw() const {
-			return _key.get();
-		}
+		// writes the WIF private key to privKey and returns the number of bytes writen, or pkLen needed if privKey is NULL
+		// returns empty std::string() on failure
+		std::string Key::PrivKey() const {
+			CMBlock data(34);
+			std::string privKey;
 
-		UInt256 Key::getSecret() const {
-			return _key->secret;
-		}
+//			if (secp256k1_ec_seckey_verify(_ctx, _secret.u8)) {
+				data[0] = BITCOIN_PRIVKEY;
+#if BITCOIN_TESTNET
+				data[0] = BITCOIN_PRIVKEY_TEST;
+#endif
 
-		CMBlock Key::GetPublicKey() const {
-			int len = getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
-			if (len != 33 && len != 65) {
-				Log::error("Invalid public key length");
-				return CMBlock();
-			}
+				UInt256Set(&data[1], _secret);
+				if (_compressed)
+					data[33] = 0x01;
+				else
+					data.Resize(33);
+				privKey = Base58::CheckEncode(data);
+				mem_clean(data, data.GetSize());
+//			}
 
-			return CMBlock(_key->pubKey, len);
-		}
-
-		bool Key::SetPublicKey(const CMBlock &pubKey) {
-			ParamChecker::checkCondition(pubKey.GetSize() != 33 && pubKey.GetSize() != 65, Error::PubKeyLength,
-										 "Invaid public key length");
-
-			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
-			_key->compressed = (pubKey.GetSize() <= 33);
-			return true;
-		}
-
-		bool Key::getCompressed() const {
-			return _key->compressed != 0;
-		}
-
-		/*
-		 * writes the WIF private key to privKey and returns the number of bytes writen,
-		 * or pkLen needed if privKey is NULL
-		 * returns 0 on failure
-		 */
-		std::string Key::getPrivKey() const {
-			size_t privKeyLen = (size_t) BRKeyPrivKey(_key.get(), nullptr, 0);
-			char privKey[privKeyLen];
-			BRKeyPrivKey(_key.get(), privKey, privKeyLen);
 			return privKey;
 		}
 
+		CMBlock Key::PubKey() {
+			if (PubKeyEmpty()) {
+				GeneratePubKey();
+			}
+
+			size_t size = _compressed ? 33 : 65;
+
+			return CMBlock(_pubKey, size);
+		}
+
+		const UInt256 &Key::GetSecret() const {
+			return _secret;
+		}
+
+		// assigns secret to key and returns true on success
+		bool Key::SetSecret(const UInt256 &secret, bool compressed) {
+			memset(_pubKey, 0, sizeof(_pubKey));
+			_secret = secret;
+			_compressed = compressed;
+
+			GeneratePubKey();
+
+			return true;
+		}
+
+		// returns true if privKey is a valid private key
+		// supported formats are wallet import format (WIF), mini private key format, or hex string
+		bool Key::PrivKeyIsValid(const std::string &privKey) const {
+			size_t strLen;
+			bool r;
+
+			CMBlock data = Base58::CheckDecode(privKey);
+			strLen = privKey.length();
+
+			if (data.GetSize() == 33 || data.GetSize() == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
+#if BITCOIN_TESTNET
+				r = (data[0] == BITCOIN_PRIVKEY_TEST);
+#else
+				r = (data[0] == BITCOIN_PRIVKEY);
+#endif
+			} else if ((strLen == 30 || strLen == 22) && privKey[0] == 'S') { // mini private key format
+				char s[strLen + 2];
+
+				strncpy(s, privKey.c_str(), sizeof(s));
+				s[sizeof(s) - 2] = '?';
+				BRSHA256(data, s, sizeof(s) - 1);
+				mem_clean(s, sizeof(s));
+				r = (data[0] == 0);
+			} else { // hex encoded key
+				r = (strspn(privKey.c_str(), "0123456789ABCDEFabcdef") == 64);
+			}
+
+			mem_clean(data, data.GetSize());
+			return r;
+		}
+
+		// assigns privKey to key and returns true on success
+		// privKey must be wallet import format (WIF), mini private key format, or hex string
+		bool Key::SetPrivKey(const std::string &privKey) {
+			uint8_t version = BITCOIN_PRIVKEY;
+			bool r = false;
+
+#if BITCOIN_TESTNET
+			version = BITCOIN_PRIVKEY_TEST;
+#endif
+
+			// mini private key format
+			if ((privKey.length() == 30 || privKey.length() == 22) && privKey[0] == 'S') {
+				if (! PrivKeyIsValid(privKey)) return 0;
+				UInt256 secret;
+				BRSHA256(&secret, privKey.c_str(), privKey.length());
+				r = SetSecret(secret, 0);
+				mem_clean(&secret, sizeof(secret));
+			} else {
+				CMBlock data = Base58::CheckDecode(privKey);
+				if (data.GetSize() == 0 || data.GetSize() == 28) {
+					data = Base58::Decode(privKey);
+				}
+
+				if (data.GetSize() < sizeof(UInt256) || data.GetSize() > sizeof(UInt256) + 2) { // treat as hex string
+					data = Utils::decodeHex(privKey);
+				}
+
+				if ((data.GetSize() == sizeof(UInt256) + 1 || data.GetSize() == sizeof(UInt256) + 2) && data[0] == version) {
+					r = SetSecret(*(UInt256 *)&data[1], (data.GetSize() == sizeof(UInt256) + 2));
+				} else if (data.GetSize() == sizeof(UInt256)) {
+					r = SetSecret(*(UInt256 *)data, 0);
+				}
+				mem_clean(data, data.GetSize());
+			}
+
+			return r;
+		}
+
+		SignType Key::PrefixToSignType(Prefix prefix) const {
+			SignType type;
+
+			switch (prefix) {
+				case PrefixStandard:
+				case PrefixDeposit:
+					type = SignTypeStandard;
+					break;
+				case PrefixCrossChain:
+					type = SignTypeCrossChain;
+					break;
+				case PrefixMultiSign:
+					type = SignTypeMultiSign;
+					break;
+				case PrefixIDChain:
+					type = SignTypeIDChain;
+					break;
+				case PrefixDestroy:
+					type = SignTypeDestroy;
+					break;
+				default:
+					type = SignTypeInvalid;
+					break;
+			}
+
+			return type;
+		}
+
 		/*
-		 * assigns privKey to key and returns true on success
-		 * privKey must be wallet import format (WIF), mini private key format, or hex string
+		 * m / n
+		 * n = pubKeys.size()
 		 */
-		bool Key::setPrivKey(const std::string &privKey) {
-			if (BRKeySetPrivKey(_key.get(), privKey.c_str()) == 0) {
-				Log::error("Invalid privKey");
-				return false;
+		CMBlock Key::MultiSignRedeemScript(uint8_t m, const std::vector<std::string> &pubKeys) {
+			std::set<std::string> uniqueSigners(pubKeys.begin(), pubKeys.end());
+
+			ParamChecker::checkCondition(uniqueSigners.size() < m, Error::MultiSignersCount,
+										 "Required sign count greater than signers");
+
+			ParamChecker::checkCondition(uniqueSigners.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
+										 "Signers should less than 205.");
+
+			std::vector<CMBlock> sortedSigners;
+			std::for_each(uniqueSigners.begin(), uniqueSigners.end(), [&sortedSigners](const std::string &pubKey) {
+				sortedSigners.push_back(Utils::decodeHex(pubKey));
+			});
+
+			std::sort(sortedSigners.begin(), sortedSigners.end(),
+					  boost::bind(&Key::Compare, this, _1, _2));
+
+			ByteStream stream;
+			stream.writeUint8(uint8_t(OP_1 + m - 1));
+			for (size_t i = 0; i < sortedSigners.size(); i++) {
+				stream.writeUint8(uint8_t(sortedSigners[i].GetSize()));
+				stream.writeBytes(sortedSigners[i], sortedSigners[i].GetSize());
 			}
 
-			return 0 != getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
+			stream.writeUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
+			stream.writeUint8(SignTypeMultiSign);
+
+			return stream.getBuffer();
 		}
 
-		bool Key::setSecret(const UInt256 &secret, bool compressed) {
-			if (BRKeySetSecret(_key.get(), &secret, compressed) == 0) {
-				Log::error("Invalid privKey");
-				return false;
+		CMBlock Key::RedeemScript(Prefix prefix) const {
+			if (PubKeyEmpty()) {
+				GeneratePubKey();
 			}
 
-			return 0 != getPubKeyFromPrivKey(_key->pubKey, sizeof(_key->pubKey), &_key->secret);
+			uint8_t size = (uint8_t)(_compressed ? 33 : 65);
+
+			ByteStream stream(size + 2);
+
+			stream.writeUint8(size);
+			stream.writeBytes(_pubKey, size);
+			stream.writeUint8(PrefixToSignType(prefix));
+
+			return stream.getBuffer();
 		}
 
-		CMBlock Key::compactSign(const CMBlock &data) const {
+		UInt168 Key::CodeToProgramHash(Prefix prefix, const CMBlock &code) {
+			UInt160 hash = UINT160_ZERO;
+			BRHash160(&hash, code, code.GetSize());
 
+			UInt168 programHash = UINT168_ZERO;
+			memcpy(&programHash.u8[1], &hash.u8[0], sizeof(hash.u8));
+			programHash.u8[0] = prefix;
+
+			return programHash;
+		}
+
+		std::string Key::GetAddress(Prefix prefix) const {
+			CMBlock redeemScript = RedeemScript(prefix);
+			UInt168 programHash = CodeToProgramHash(prefix, redeemScript);
+			return Utils::UInt168ToAddress(programHash);
+		}
+
+		CMBlock Key::Sign(const UInt256 &md) const {
 			CMBlock signedData;
-			signedData.Resize(65);
-			ECDSA65Sign_sha256(&_key->secret, sizeof(_key->secret), (const UInt256 *) &data[0], signedData,
-							   signedData.GetSize());
+			signedData.Resize(64);
+			memset(signedData, 0, signedData.GetSize());
+
+			EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			if (key) {
+				BIGNUM *bnPrivKey = BN_bin2bn((const unsigned char *) &_secret, sizeof(_secret), nullptr);
+				if (bnPrivKey) {
+					if (1 == EC_KEY_set_private_key(key, bnPrivKey)) {
+						ECDSA_SIG *sig = ECDSA_do_sign((unsigned char *)&md, sizeof(md), key);
+						if (nullptr != sig) {
+							const BIGNUM *r = nullptr;
+							const BIGNUM *s = nullptr;
+							ECDSA_SIG_get0(sig, &r, &s);
+							if (BN_num_bits(r) <= 256 && BN_num_bits(s) <= 256) {
+								uint8_t arrBin[256];
+								int len = BN_bn2bin(r, arrBin);
+								memcpy(&signedData[32 - len], arrBin, len);
+								len = BN_bn2bin(s, arrBin);
+								memcpy(&signedData[32 + (32 - len)], arrBin, len);
+							}
+							ECDSA_SIG_free(sig);
+						}
+					}
+					BN_free(bnPrivKey);
+				}
+				EC_KEY_free(key);
+			}
+
+			if (signedData.GetSize() == 0) {
+				Log::error("Sign error");
+			}
+
 			return signedData;
 		}
 
-		std::string Key::compactSign(const std::string &message) const {
-			CMBlock md(sizeof(UInt256));
-			BRSHA256(md, message.c_str(), message.size());
-
-			CMBlock signedData = compactSign(md);
-			return Utils::encodeHex(signedData);
+		CMBlock Key::Sign(const std::string &message) const {
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+			return Sign(md);
 		}
 
-		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
-			CMBlock out(16 + data.GetSize());
-			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.GetSize(), _key.get(), nonce,
-														   data, data.GetSize(), nullptr, 0);
-			return out;
+		CMBlock Key::Sign(const CMBlock &message) const {
+			UInt256 md;
+			BRSHA256(&md, message, message.GetSize());
+			return Sign(md);
 		}
 
-		CMBlock Key::decryptNative(const CMBlock &data, const CMBlock &nonce) const {
-			CMBlock out(1024);
-			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.GetSize(), _key.get(), nonce,
-														   data, data.GetSize(), nullptr, 0);
-			out.Resize(outSize);
-			return out;
-		}
-
-
-		std::string Key::address() const {
-			return keyToAddress(ELA_STANDARD);
-		}
-
-		std::string Key::keyToAddress(int signType) const {
-			int signTypeBak = signType;
-
-			if (signType == ELA_RETURN_DEPOSIT) {
-				signType = ELA_STANDARD;
-			}
-
-			std::string redeedScript = keyToRedeemScript(signType);
-
-			UInt168 hash = Utils::codeToProgramHash(redeedScript);
-
-			if (signTypeBak == ELA_RETURN_DEPOSIT) {
-				hash.u8[0] = ELA_PREFIX_DEPOSIT;
-			}
-
-			std::string address = Utils::UInt168ToAddress(hash);
-
-			return address;
-		}
-
-		const UInt160 Key::hashTo160() {
-			UInt160 hash = UINT160_ZERO;
-			size_t len = getCompressed() ? 33 : 65;
-			BRHash160(&hash, _key->pubKey, len);
-			return hash;
-		}
-
-		const UInt168 Key::hashTo168() {
-			UInt168 hash = UINT168_ZERO;
-			size_t len;
-			int size = sizeof(hash);
-			hash.u8[size - 1] = ELA_STANDARD;
-			//todo add publicKey verify
-			if (true) {
-				BRHash168(&hash, _key->pubKey, len);
-			}
-			UInt168 uInt168 = UINT168_ZERO;
-			uInt168.u8[0] = ELA_STAND_ADDRESS;
-			memcpy(&uInt168.u8[1], &hash.u8[0], sizeof(hash.u8) - 1);
-			return uInt168;
-		}
-
-		bool Key::verifyByPublicKey(const std::string &publicKey, const std::string &message,
-									const std::string &signature) {
-			CMBlock signatureData = Utils::decodeHex(signature);
-
+		bool Key::Verify(const std::string &message, const CMBlock &signature) const {
 			UInt256 md;
 			BRSHA256(&md, message.c_str(), message.size());
 
-			return verifyByPublicKey(publicKey, md, signatureData);
+			return Verify(md, signature);
 		}
 
-		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
-									const CMBlock &signature) {
-			CMBlock pubKey = Utils::decodeHex(publicKey);
-			return ECDSA65Verify_sha256((uint8_t *) (void *) pubKey, pubKey.GetSize(), &messageDigest, signature,
-										signature.GetSize()) != 0;
-		}
+		bool Key::Verify(const UInt256 &md, const CMBlock &signature) const {
+			int pubKeyLen = _compressed ? 33 : 65;
+			bool result = false;
 
-		std::string Key::keyToRedeemScript(int signType) const {
-			if (signType == ELA_MULTISIG_ADDRESS) {
-				return "";
+			if (signature.GetSize() != 64) {
+				Log::error("Key verify error: signed data is not 64 bytes");
+				return false;
 			}
 
-			uint64_t size = (getCompressed()) ? 33 : 65;
+			BIGNUM *bnPubkey = BN_bin2bn(_pubKey, pubKeyLen, nullptr);
+			if (bnPubkey == nullptr) {
+				Log::error("Key verify error: get pubKey BN error");
+				return result;
+			}
 
-			ByteStream buff(size + 2);
+			EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			if (key != nullptr) {
+				const EC_GROUP *curve = EC_KEY_get0_group(key);
+				EC_POINT *ecPoint = EC_POINT_bn2point(curve, bnPubkey, nullptr, nullptr);
+				if (nullptr != ecPoint) {
+					if (1 == EC_KEY_set_public_key(key, ecPoint)) {
+						ECDSA_SIG *sig = ECDSA_SIG_new();
+						if (nullptr != sig) {
+							BIGNUM *r = BN_bin2bn(&signature[0], 32, nullptr);
+							BIGNUM *s = BN_bin2bn(&signature[32], 32, nullptr);
+							ECDSA_SIG_set0(sig, r, s);
+							if (1 == ECDSA_do_verify((uint8_t *)&md, sizeof(md), sig, key)) {
+								result = true;
+							}
+							ECDSA_SIG_free(sig);
+						}
+					}
+					EC_POINT_free(ecPoint);
+				}
+				EC_KEY_free(key);
+			}
 
-			buff.writeUint8((uint8_t) size);
+			BN_free(bnPubkey);
 
-			buff.writeBytes(_key->pubKey, size);
+			return result;
+		}
 
-			buff.writeUint8((uint8_t) signType);
+		bool Key::PubKeyIsValid(const void *pubKey, size_t len) const {
+			bool valid = false;
 
-			CMBlock script = buff.getBuffer();
-			return Utils::encodeHex(script, script.GetSize());
+			EC_POINT *pnt = nullptr;
+
+			BIGNUM *bnp = BN_bin2bn((const unsigned char *)pubKey, (int)len, nullptr);
+			if (bnp) {
+				EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+				if (key) {
+					EC_GROUP *curve = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+					if (curve) {
+						pnt = EC_POINT_bn2point(curve, bnp, nullptr, nullptr);
+						if (pnt) {
+							if (EC_KEY_set_public_key(key, pnt) && EC_KEY_check_key(key)) {
+								valid = true;
+							}
+							EC_POINT_free(pnt);
+						}
+						EC_GROUP_free(curve);
+					}
+
+					EC_KEY_free(key);
+				}
+				BN_free(bnp);
+			}
+
+			if (!pnt) {
+				Log::error("PubKey to point error");
+			}
+
+			return valid;
+		}
+
+		bool Key::PubKeyEmpty() const {
+			uint8_t empty[65];
+			memset(empty, 0, sizeof(empty));
+
+			return memcmp(_pubKey, empty, _compressed ? 33 : 65) == 0;
+		}
+
+		void Key::GeneratePubKey() const {
+			memset(_pubKey, 0, sizeof(_pubKey));
+			CMBlock pubKey = BIP32Sequence::PrivKeyToPubKey(_secret);
+			if (pubKey.GetSize() != 33 && pubKey.GetSize() != 65) {
+				Log::error("Invalid public key length");
+			} else {
+				memcpy(_pubKey, pubKey, pubKey.GetSize());
+			}
+
+			if (pubKey.GetSize() == 33) {
+				_compressed = true;
+			}
+		}
+
+		void Key::Clean() {
+			memset(_pubKey, 0, sizeof(_pubKey));
+			memset(_secret.u8, 0, sizeof(_secret));
+			_compressed = false;
+		}
+
+		bool Key::Compare(const CMBlock &a, const CMBlock &b) const {
+			BigNum bigIntA = PubKeyDecodePointX(a);
+			BigNum bigIntB = PubKeyDecodePointX(b);
+
+			return bigIntA <= bigIntB;
+		}
+
+		BigNum Key::PubKeyDecodePointX(const CMBlock &pubKey) const {
+			BigNum bigNum;
+
+			if (!PubKeyIsValid(pubKey, pubKey.GetSize())) {
+				Log::error("Invalid public key");
+				return bigNum;
+			}
+
+			EC_POINT *pnt = nullptr;
+
+			BIGNUM *bnp = BN_bin2bn(pubKey, pubKey.GetSize(), nullptr);
+			if (bnp) {
+				EC_GROUP *curve = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+				if (curve) {
+					pnt = EC_POINT_bn2point(curve, bnp, nullptr, nullptr);
+					if (pnt) {
+						BIGNUM *x = BN_new();
+						BIGNUM *y = BN_new();
+
+						if (1 == EC_POINT_get_affine_coordinates_GFp(curve, pnt, x, y, nullptr)) {
+							bigNum = x;
+						}
+						EC_POINT_free(pnt);
+					}
+					EC_GROUP_free(curve);
+				}
+				BN_free(bnp);
+			}
+
+			return bigNum;
 		}
 
 	}

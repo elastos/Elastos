@@ -275,45 +275,35 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<TransactionHub> &wallet) {
-			return transactionSign(keys, wallet);
-		}
+		bool Transaction::Sign(const std::vector<Key> &keys, const boost::shared_ptr<TransactionHub> &wallet) {
+			size_t i, keyIndex;
 
-		bool Transaction::transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<TransactionHub> &wallet) {
-			size_t i, j, keysCount = keys.size();
-			Address addrs[keysCount], address;
-
-			ParamChecker::checkCondition(keysCount <= 0, Error::Transaction,
+			ParamChecker::checkCondition(keys.size() <= 0, Error::Transaction,
 										 "Transaction sign key not found");
-			SPVLOG_DEBUG("tx sign with {} keys", keysCount);
 
-			for (i = 0; i < keysCount; i++) {
-				addrs[i] = Address::None;
-				std::string tempAddr = keys[i].address();
-				if (!tempAddr.empty()) {
-					addrs[i] = tempAddr;
-				}
-			}
-
+			ByteStream stream;
+			_programs.clear();
 			for (i = 0; i < _inputs.size(); i++) {
 				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
-				address = tx->getOutputs()[_inputs[i].getIndex()].getAddress();
+				const UInt168 &programHash = tx->getOutputs()[_inputs[i].getIndex()].getProgramHash();
 
-				for (j = 0; j < keysCount && !addrs[j].IsEqual(address); j++);
-				if (j >= keysCount) continue;
-				int signType = address.getSignType();
-				std::string redeemScript = keys[j].keyToRedeemScript(signType);
-				CMBlock code = Utils::decodeHex(redeemScript);
-				if (_type == Type::RegisterIdentification ||
-					i >= _programs.size()) {
-
-					Program newProgram;
-					newProgram.setCode(code);
-					_programs.push_back(newProgram);
+				// find the key for input
+				for (keyIndex = 0; keyIndex < keys.size(); ++keyIndex) {
+					CMBlock code = keys[i].RedeemScript(Prefix::PrefixStandard);
+					UInt168 keyProgramHash = keys[i].CodeToProgramHash(PrefixStandard, code);
+					if (memcmp(&programHash.u8[1], &keyProgramHash.u8[1], sizeof(UInt168) - 1) == 0)
+						break;
 				}
 
-				CMBlock signData = keys[j].compactSign(GetShaData());
-				_programs[i].setParameter(signData);
+				ParamChecker::checkLogic(keyIndex >= keys.size(), Error::Sign, "Cannot found key for input: " +
+					Utils::UInt256ToString(_inputs[i].getTransctionHash(), true));
+
+				CMBlock code = keys[keyIndex].RedeemScript(Prefix(programHash.u8[0]));
+				CMBlock signedData = keys[keyIndex].Sign(GetShaData());
+				stream.setPosition(0);
+				stream.writeVarBytes(signedData);
+
+				_programs.emplace_back(code, stream.getBuffer());
 			}
 
 			return isSigned();
@@ -740,12 +730,12 @@ namespace Elastos {
 			return summary;
 		}
 
-		CMBlock Transaction::GetShaData() const {
+		UInt256 Transaction::GetShaData() const {
 			ByteStream ostream;
 			serializeUnsigned(ostream);
 			CMBlock data = ostream.getBuffer();
-			CMBlock shaData(sizeof(UInt256));
-			BRSHA256(shaData, data, data.GetSize());
+			UInt256 shaData;
+			BRSHA256(&shaData, data, data.GetSize());
 			return shaData;
 		}
 

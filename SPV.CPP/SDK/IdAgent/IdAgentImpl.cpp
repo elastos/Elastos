@@ -9,6 +9,7 @@
 #include <SDK/Implement/MasterWallet.h>
 #include <SDK/Base/Address.h>
 #include <SDK/Account/StandardAccount.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRAddress.h>
 
@@ -69,16 +70,14 @@ namespace Elastos {
 			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
-			const MasterPubKey &publicKey = standardAccount->GetIDMasterPubKey();
-			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *publicKey.getRaw(),
-										 purpose, index)];
-			size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *publicKey.getRaw(), purpose, index);
+			const MasterPubKey &mpk = standardAccount->GetIDMasterPubKey();
 
-			BRKey rawKey;
-			BRKeySetPubKey(&rawKey, pubKey, len);
-			Key key(rawKey);
-			std::string id = key.keyToAddress(ELA_IDCHAIN);
-			item.PublicKey = Utils::encodeHex(pubKey, len);
+			CMBlock pubKey = BIP32Sequence::PubKey(mpk, purpose, index);
+
+			Key key;
+			key.SetPubKey(pubKey);
+			std::string id = key.GetAddress(PrefixIDChain);
+			item.PublicKey = Utils::encodeHex(pubKey);
 			_info.Ids[id] = item;
 
 			return id;
@@ -88,9 +87,14 @@ namespace Elastos {
 			return Address::isValidIdAddress(id);
 		}
 
+		CMBlock IdAgentImpl::Sign(const std::string &id, const CMBlock &data, const std::string &passwd) {
+			KeyPtr key = generateKey(id, passwd);
+			return key->Sign(data);
+		}
+
 		std::string IdAgentImpl::Sign(const std::string &id, const std::string &message, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return key->compactSign(message);
+			return Utils::encodeHex(key->Sign(message));
 		}
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {
@@ -110,10 +114,9 @@ namespace Elastos {
 										 "This account can not create ID");
 
 			UInt512 seed = standardAccount->DeriveSeed(password);
-			BRKey key;
 			UInt256 chainCode;
-			BRBIP32PrivKeyPath(&key, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, item.Purpose,
-							   item.Index);
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 0 | BIP32_HARD, item.Purpose,
+												 item.Index);
 			var_clean(&seed);
 			return KeyPtr(new Key(key));
 		}
@@ -130,7 +133,7 @@ namespace Elastos {
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return key->keyToRedeemScript(ELA_IDCHAIN);
+			return Utils::encodeHex(key->RedeemScript(PrefixIDChain));
 		}
 
 		const IdAgentInfo &IdAgentImpl::GetIdAgentInfo() const {

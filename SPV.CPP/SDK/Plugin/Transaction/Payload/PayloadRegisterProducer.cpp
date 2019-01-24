@@ -138,6 +138,7 @@ namespace Elastos {
 		nlohmann::json PayloadRegisterProducer::toJson(uint8_t version) const {
 			nlohmann::json j;
 			j["PublicKey"] = Utils::encodeHex(_publicKey);
+			j["NodePublicKey"] = Utils::encodeHex(_nodePublicKey);
 			j["NickName"] = _nickName;
 			j["Url"] = _url;
 			j["Location"] = _location;
@@ -148,6 +149,7 @@ namespace Elastos {
 
 		void PayloadRegisterProducer::fromJson(const nlohmann::json &j, uint8_t version) {
 			_publicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
+			_nodePublicKey = Utils::decodeHex(j["NodePublicKey"].get<std::string>());
 			_nickName = j["NickName"].get<std::string>();
 			_url = j["Url"].get<std::string>();
 			_location = j["Location"].get<uint64_t>();

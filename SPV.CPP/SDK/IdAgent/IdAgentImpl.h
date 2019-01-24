@@ -41,6 +41,8 @@ namespace Elastos {
 
 			bool IsIdValid(const std::string &id);
 
+			CMBlock Sign(const std::string &id, const CMBlock &data, const std::string &passwd);
+
 			std::string Sign(
 					const std::string &id,
 					const std::string &message,

@@ -23,10 +23,10 @@ namespace Elastos {
 			return _parentAccount->DeriveKey(payPassword);
 		}
 
-		WrapperList<Key, BRKey>
+		std::vector<Key>
 		SingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
 													 const Elastos::ElaWallet::TransactionPtr &transaction) {
-			WrapperList<Key, BRKey> result;
+			std::vector<Key> result;
 			result.push_back(_parentAccount->DeriveKey(payPassword));
 			return result;
 		}
@@ -34,8 +34,8 @@ namespace Elastos {
 		void
 		SingleSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 										  const std::string &payPassword) {
-			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, transaction);
-			ParamChecker::checkCondition(!transaction->sign(keyList, wallet), Error::Sign,
+			std::vector<Key> keys = DeriveAccountAvailableKeys(payPassword, transaction);
+			ParamChecker::checkCondition(!transaction->Sign(keys, wallet), Error::Sign,
 										 "Transaction Sign error!");
 		}
 

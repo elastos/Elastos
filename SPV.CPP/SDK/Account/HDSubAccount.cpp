@@ -8,6 +8,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
 
@@ -37,28 +38,27 @@ namespace Elastos {
 
 		Key HDSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			Key key;
 			UInt256 chainCode;
-			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
 			var_clean(&seed);
+			var_clean(&chainCode);
 			return key;
 		}
 
 		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 										   const std::string &payPassword) {
-			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, wallet, transaction);
-			ParamChecker::checkCondition(!transaction->sign(keyList, wallet), Error::Sign,
+			std::vector<Key> keys = DeriveAccountAvailableKeys(payPassword, wallet, transaction);
+			ParamChecker::checkCondition(!transaction->Sign(keys, wallet), Error::Sign,
 										 "Transaction Sign error!");
 		}
 
-		WrapperList<Key, BRKey>
+		std::vector<Key>
 		HDSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword, const WalletPtr &wallet,
 												 const TransactionPtr &transaction) {
-			uint32_t j, internalIdx[transaction->getInputs().size()], externalIdx[transaction->getInputs().size()];
-			size_t i, internalCount = 0, externalCount = 0;
-
-			Log::info("SubWallet signTransaction begin get indices.");
+			uint32_t index;
+			size_t i;
+			std::vector<uint32_t> indexInternal, indexExternal;
 
 			for (i = 0; i < transaction->getInputs().size(); i++) {
 				const TransactionInput &txInput = transaction->getInputs()[i];
@@ -66,15 +66,15 @@ namespace Elastos {
 				Address inputAddr = tx->getOutputs()[txInput.getIndex()].getAddress();
 
 				_lock->Lock();
-				for (j = (uint32_t) internalChain.size(); j > 0; j--) {
-					if (inputAddr.IsEqual(internalChain[j - 1])) {
-						internalIdx[internalCount++] = j - 1;
+				for (index = (uint32_t) internalChain.size(); index > 0; index--) {
+					if (inputAddr.IsEqual(internalChain[index - 1])) {
+						indexInternal.push_back(index - 1);
 					}
 				}
 
-				for (j = (uint32_t) externalChain.size(); j > 0; j--) {
-					if (inputAddr.IsEqual(externalChain[j - 1])) {
-						externalIdx[externalCount++] = j - 1;
+				for (index = (uint32_t) externalChain.size(); index > 0; index--) {
+					if (inputAddr.IsEqual(externalChain[index - 1])) {
+						indexExternal.push_back(index - 1);
 					}
 				}
 				_lock->Unlock();
@@ -82,27 +82,15 @@ namespace Elastos {
 
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
 
-			BRKey keys[internalCount + externalCount];
-			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _coinIndex,
-							   SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			BRBIP44PrivKeyList(&keys[internalCount], externalCount, &seed, sizeof(seed), _coinIndex,
-							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
+			std::vector<Key> keys =  BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
+																SEQUENCE_INTERNAL_CHAIN, indexInternal);
+			std::vector<Key> externalKeys = BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
+																	   SEQUENCE_EXTERNAL_CHAIN, indexExternal);
+
+			keys.insert(keys.end(), externalKeys.begin(), externalKeys.end());
 			var_clean(&seed);
 
-			Log::info("SubWallet signTransaction calculate private key list done.");
-			WrapperList<Key, BRKey> keyList;
-			if (transaction) {
-				Log::info("SubWallet signTransaction begin sign method.");
-				for (i = 0; i < internalCount + externalCount; ++i) {
-					Key key(keys[i].secret, keys[i].compressed);
-					keyList.push_back(key);
-				}
-
-				Log::info("SubWallet signTransaction end sign method.");
-			}
-
-			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
-			return keyList;
+			return keys;
 		}
 
 		nlohmann::json HDSubAccount::GetBasicInfo() const {
@@ -159,17 +147,12 @@ namespace Elastos {
 
 			std::vector<Address> addrs;
 			while (i + gapLimit > count) { // generate new addresses up to gapLimit
+				CMBlock pubKey = BIP32Sequence::PubKey(_masterPubKey, chain, count);
+
 				Key key;
+				key.SetPubKey(pubKey);
+				Address address = key.GetAddress(PrefixStandard);
 
-				uint8_t pubKey[BRBIP32PubKey(NULL, 0, *_masterPubKey.getRaw(), chain, count)];
-				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *_masterPubKey.getRaw(), chain, count);
-
-				CMBlock publicKey(len);
-				memcpy(publicKey, pubKey, len);
-
-				if (!key.SetPublicKey(publicKey))
-					break;
-				Address address = KeyToAddress(key.getRaw());
 				if (address.IsEqual(Address::None))
 					break;
 
@@ -216,17 +199,13 @@ namespace Elastos {
 
 		Key HDSubAccount::DeriveVoteKey(const std::string &payPasswd) {
 			UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
-
 			UInt256 chainCode;
 
-			BRKey brKey;
-			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
-			Key key(brKey);
-
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD,
+												 BIP32::External, 0);
 			var_clean(&seed);
 			var_clean(&chainCode);
-			var_clean(&brKey.secret);
 
 			return key;
 		}

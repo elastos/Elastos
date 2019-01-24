@@ -7,9 +7,9 @@
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
-#include <Core/BRKey.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -26,45 +26,51 @@ namespace Elastos {
 
 		Key StandardSingleSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			Key key;
 			UInt256 chainCode;
-			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+
 			var_clean(&seed);
+			var_clean(&chainCode);
+
 			return key;
 		}
 
 		std::string StandardSingleSubAccount::GetMainAccountPublicKey() const {
-			return Utils::encodeHex(_masterPubKey.getPubKey());
+			return Utils::encodeHex(_masterPubKey.GetPubKey());
 		}
 
 		std::vector<Address> StandardSingleSubAccount::GetAllAddresses(size_t addrsCount) const {
 			std::vector<Address> address;
-			CMBlock pubKey(65);
-			size_t len = BRBIP32PubKey(pubKey, pubKey.GetSize(), *_masterPubKey.getRaw(), 0, 0);
-			Key key;
 
-			pubKey.Resize(len);
-			key.SetPublicKey(pubKey);
+			CMBlock pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
+
+			Key key;
+			key.SetPubKey(pubKey);
 
 			if (addrsCount > 0)
-				address.emplace_back(key.address());
+				address.emplace_back(key.GetAddress(PrefixStandard));
 
 			return address;
 		}
 
-		WrapperList<Key, BRKey> StandardSingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
-																					 const TransactionPtr &transaction) {
-			WrapperList<Key, BRKey> result;
+		std::vector<Key> StandardSingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
+																			  const TransactionPtr &transaction) {
+			std::vector<Key> keys;
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
 			UInt256 chainCode;
-			BRKey brKey;
-			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD, SEQUENCE_EXTERNAL_CHAIN, 0);
-			Key key(brKey);
+
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD,
+												 SEQUENCE_EXTERNAL_CHAIN, 0);
+
 			var_clean(&seed);
-			result.push_back(key);
-			return result;
+			var_clean(&chainCode);
+
+			keys.push_back(key);
+
+			return keys;
 		}
 
 		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
@@ -72,14 +78,12 @@ namespace Elastos {
 
 			UInt256 chainCode;
 
-			BRKey brKey;
-			BRBIP32PrivKeyPath(&brKey, &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-								_coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
-			Key key(brKey);
+			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD,
+												 BIP32::External, 0);
 
 			var_clean(&seed);
 			var_clean(&chainCode);
-			var_clean(&brKey.secret);
 
 			return key;
 		}

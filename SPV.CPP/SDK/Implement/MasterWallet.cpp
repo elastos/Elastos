@@ -14,12 +14,10 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/BIPs/BIP32Sequence.h>
 #include <Config.h>
 
-#include <Core/BRKey.h>
-#include <Core/BRBIP32Sequence.h>
 #include <Core/BRChainParams.h>
-#include <Core/BRBase58.h>
 #include <Core/BRBIP39Mnemonic.h>
 #include <Core/BRCrypto.h>
 
@@ -420,14 +418,16 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 
 			Key key = _localStore.Account()->DeriveKey(payPassword);
-			return key.compactSign(message);
+			return Utils::encodeHex(key.Sign(message));
 		}
 
 		nlohmann::json
 		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
 
-			bool r = Key::verifyByPublicKey(publicKey, message, signature);
+			Key key;
+			key.SetPubKey(Utils::decodeHex(publicKey));
+			bool r = key.Verify(message, Utils::decodeHex(signature));
 			nlohmann::json jsonData;
 			jsonData["Result"] = r;
 			return jsonData;
@@ -489,10 +489,13 @@ namespace Elastos {
 
 			ByteStream ostream;
 			payload.Serialize(ostream, 0);
-			CMBlock payloadData = ostream.getBuffer();
 
 			nlohmann::json j;
-			j["Parameter"] = _idAgentImpl->Sign(id, Utils::convertToString(payloadData), password);
+			CMBlock signedData = _idAgentImpl->Sign(id, ostream.getBuffer(), password);
+
+			ostream.setPosition(0);
+			ostream.writeVarBytes(signedData);
+			j["Parameter"] = Utils::encodeHex(ostream.getBuffer());
 			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
 			return j;
 		}
