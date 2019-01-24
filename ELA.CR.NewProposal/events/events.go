@@ -2,7 +2,7 @@ package events
 
 import (
 	"fmt"
-	"sync"
+	"sync/atomic"
 )
 
 // EventType represents the type of a event message.
@@ -44,13 +44,13 @@ const (
 // notificationTypeStrings is a map of notification types back to their constant
 // names for pretty printing.
 var notificationTypeStrings = map[EventType]string{
-	ETBlockAccepted:                    "ETBlockAccepted",
-	ETBlockConnected:                   "ETBlockConnected",
-	ETBlockDisconnected:                "ETBlockDisconnected",
-	ETTransactionAccepted:              "ETTransactionAccepted",
-	ETNewBlockReceived:                 "ETNewBlockReceived",
-	ETConfirmReceived:                  "ETConfirmReceived",
-	ETNewArbiterElection:               "ETNewArbiterElection",
+	ETBlockAccepted:       "ETBlockAccepted",
+	ETBlockConnected:      "ETBlockConnected",
+	ETBlockDisconnected:   "ETBlockDisconnected",
+	ETTransactionAccepted: "ETTransactionAccepted",
+	ETNewBlockReceived:    "ETNewBlockReceived",
+	ETConfirmReceived:     "ETConfirmReceived",
+	ETNewArbiterElection:  "ETNewArbiterElection",
 }
 
 // String returns the EventType in human-readable form.
@@ -74,7 +74,7 @@ type Event struct {
 }
 
 var events struct {
-	mtx       sync.Mutex
+	notifies  int32
 	callbacks []EventCallback
 }
 
@@ -82,9 +82,7 @@ var events struct {
 // when various events take place. See the documentation on Event and
 // EventType for details on the types and contents of notifications.
 func Subscribe(callback EventCallback) {
-	events.mtx.Lock()
 	events.callbacks = append(events.callbacks, callback)
-	events.mtx.Unlock()
 }
 
 // Notify sends a notification with the passed type and data if the
@@ -93,9 +91,16 @@ func Subscribe(callback EventCallback) {
 func Notify(typ EventType, data interface{}) {
 	// Generate and send the notification.
 	n := Event{Type: typ, Data: data}
-	events.mtx.Lock()
+
+	// Detect multiple notifies to prevent deadlock.
+	if atomic.AddInt32(&events.notifies, 1) > 1 {
+		panic("multiple notifies detected")
+	}
+
 	for _, callback := range events.callbacks {
 		callback(&n)
 	}
-	events.mtx.Unlock()
+
+	// Reset notify count.
+	atomic.AddInt32(&events.notifies, -1)
 }
