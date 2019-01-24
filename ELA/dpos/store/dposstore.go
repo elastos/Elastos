@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
+type eventTask interface{}
 type persistTask interface{}
 
 // Ensure DposStore implement the IDposStore interface.
@@ -19,7 +20,8 @@ var _ interfaces.IDposStore = (*DposStore)(nil)
 type DposStore struct {
 	db Database
 
-	taskCh chan persistTask
+	eventCh   chan eventTask
+	persistCh chan persistTask
 
 	wg   sync.WaitGroup
 	quit chan struct{}
@@ -32,9 +34,10 @@ func NewDposStore(dataDir string) (*DposStore, error) {
 	}
 
 	s := DposStore{
-		db:     db,
-		taskCh: make(chan persistTask, MaxEvnetTaskNumber),
-		quit:   make(chan struct{}),
+		db:        db,
+		eventCh:   make(chan eventTask, MaxEvnetTaskNumber),
+		persistCh: make(chan persistTask, MaxEvnetTaskNumber),
+		quit:      make(chan struct{}),
 	}
 
 	return &s, nil
