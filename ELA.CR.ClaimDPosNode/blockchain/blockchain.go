@@ -818,6 +818,10 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 }
 
 func (b *BlockChain) processInactiveArbitrators(block *Block) error {
+	if b.versions.GetDefaultBlockVersion(block.Height) < 2 {
+		return nil
+	}
+
 	confirm, err := b.db.GetConfirm(block.Hash())
 	if err != nil {
 		return err
