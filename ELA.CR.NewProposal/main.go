@@ -59,7 +59,6 @@ func init() {
 }
 
 func startConsensus() {
-	servers.LocalPow = pow.NewPowService()
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.LocalPow.Start()
@@ -129,6 +128,7 @@ func main() {
 	servers.ServerNode = noder
 	servers.ServerNode.RegisterTxPoolListener(arbitrator)
 	servers.ServerNode.RegisterTxPoolListener(chainStore)
+	servers.LocalPow = pow.NewPowService()
 
 	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()
