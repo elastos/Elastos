@@ -19,7 +19,7 @@ deploy:
         - master
         - dev
         - /(release).{7}/
-script:
-  - go test -v ./...
-  - make client
-  - ./util.sh test
+#script:
+#  - go test -v ./...
+#  - make client
+#  - ./util.sh test
