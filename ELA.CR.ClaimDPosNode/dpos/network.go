@@ -60,6 +60,7 @@ type network struct {
 
 func (n *network) Initialize(dnConfig manager.DposNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
+	n.store = dnConfig.Store
 	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {
 		for _, p := range peers {
 			pid := peer.PID{}
@@ -228,7 +229,7 @@ func (n *network) ChangeHeight(height uint32) error {
 
 func (n *network) GetActivePeer() *peer.PID {
 	peers := n.p2pServer.ConnectedPeers()
-	log.Info("[GetActivePeer] current connected peers:", len(peers))
+	log.Debug("[GetActivePeer] current connected peers:", len(peers))
 	if len(peers) == 0 {
 		return nil
 	}

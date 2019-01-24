@@ -41,7 +41,7 @@ func (s *DposStore) arbiterLoop() {
 out:
 	for {
 		select {
-		case t := <-s.taskCh:
+		case t := <-s.persistCh:
 			switch task := t.(type) {
 			case *persistDutyChangedCountTask:
 				s.handlePersistDposDutyChangedCount(task.count)
@@ -94,20 +94,22 @@ func (s *DposStore) handlePersistDirectPeers(p []*interfaces.DirectPeers) {
 
 func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	reply := make(chan bool)
-	s.taskCh <- &persistDutyChangedCountTask{count: c, reply: reply}
+	s.persistCh <- &persistDutyChangedCountTask{count: c, reply: reply}
 	<-reply
 }
 
 func (s *DposStore) SaveEmergencyData(started bool, startTime, confirmedTime uint32) {
 	reply := make(chan bool)
-	s.taskCh <- &persistEmergencyDataTask{data: EmergencyData{started, startTime, confirmedTime}, reply: reply}
+	s.persistCh <- &persistEmergencyDataTask{data: EmergencyData{started, startTime,
+		confirmedTime}, reply: reply}
 	<-reply
 }
 
 func (s *DposStore) SaveCurrentArbitrators(a interfaces.Arbitrators) {
 	reply := make(chan bool)
 	if arbiters, ok := a.(*Arbitrators); ok {
-		s.taskCh <- &persistCurrentArbitratorsTask{arbiters: arbiters, reply: reply}
+		s.persistCh <- &persistCurrentArbitratorsTask{arbiters: arbiters,
+			reply: reply}
 		<-reply
 	}
 }
@@ -115,14 +117,14 @@ func (s *DposStore) SaveCurrentArbitrators(a interfaces.Arbitrators) {
 func (s *DposStore) SaveNextArbitrators(a interfaces.Arbitrators) {
 	reply := make(chan bool)
 	if arbiters, ok := a.(*Arbitrators); ok {
-		s.taskCh <- &persistNextArbitratorsTask{arbiters: arbiters, reply: reply}
+		s.persistCh <- &persistNextArbitratorsTask{arbiters: arbiters, reply: reply}
 		<-reply
 	}
 }
 
 func (s *DposStore) SaveDirectPeers(p []*interfaces.DirectPeers) {
 	reply := make(chan bool)
-	s.taskCh <- &persistDirectPeersTask{peers: p, reply: reply}
+	s.persistCh <- &persistDirectPeersTask{peers: p, reply: reply}
 	<-reply
 }
 
