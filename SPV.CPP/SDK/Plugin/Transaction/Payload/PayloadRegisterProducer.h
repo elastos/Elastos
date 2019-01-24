@@ -63,7 +63,7 @@ namespace Elastos {
 			PayloadRegisterProducer &operator=(const PayloadRegisterProducer &payload);
 
 		private:
-			CMBlock _publicKey;
+			CMBlock _ownerPublicKey;
 			CMBlock _nodePublicKey;
 			std::string _nickName;
 			std::string _url;

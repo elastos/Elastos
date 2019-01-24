@@ -23,11 +23,11 @@ namespace Elastos {
 		}
 
 		const CMBlock &PayloadRegisterProducer::GetPublicKey() const {
-			return _publicKey;
+			return _ownerPublicKey;
 		}
 
 		void PayloadRegisterProducer::SetPublicKey(const CMBlock &key) {
-			_publicKey = key;
+			_ownerPublicKey = key;
 		}
 
 		const CMBlock &PayloadRegisterProducer::GetNodePublicKey() const {
@@ -79,7 +79,7 @@ namespace Elastos {
 		}
 
 		void PayloadRegisterProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.writeVarBytes(_publicKey);
+			ostream.writeVarBytes(_ownerPublicKey);
 			ostream.writeVarBytes(_nodePublicKey);
 			ostream.writeVarString(_nickName);
 			ostream.writeVarString(_url);
@@ -88,7 +88,7 @@ namespace Elastos {
 		}
 
 		bool PayloadRegisterProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
-			if (!istream.readVarBytes(_publicKey)) {
+			if (!istream.readVarBytes(_ownerPublicKey)) {
 				Log::error("Deserialize: read public key");
 				return false;
 			}
@@ -137,7 +137,7 @@ namespace Elastos {
 
 		nlohmann::json PayloadRegisterProducer::toJson(uint8_t version) const {
 			nlohmann::json j;
-			j["PublicKey"] = Utils::encodeHex(_publicKey);
+			j["OwnerPublicKey"] = Utils::encodeHex(_ownerPublicKey);
 			j["NodePublicKey"] = Utils::encodeHex(_nodePublicKey);
 			j["NickName"] = _nickName;
 			j["Url"] = _url;
@@ -148,7 +148,7 @@ namespace Elastos {
 		}
 
 		void PayloadRegisterProducer::fromJson(const nlohmann::json &j, uint8_t version) {
-			_publicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
+			_ownerPublicKey = Utils::decodeHex(j["OwnerPublicKey"].get<std::string>());
 			_nodePublicKey = Utils::decodeHex(j["NodePublicKey"].get<std::string>());
 			_nickName = j["NickName"].get<std::string>();
 			_url = j["Url"].get<std::string>();
@@ -169,7 +169,7 @@ namespace Elastos {
 		}
 
 		PayloadRegisterProducer &PayloadRegisterProducer::operator=(const PayloadRegisterProducer &payload) {
-			_publicKey.Memcpy(payload._publicKey);
+			_ownerPublicKey.Memcpy(payload._ownerPublicKey);
 			_nickName = payload._nickName;
 			_url = payload._url;
 			_location = payload._location;

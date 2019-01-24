@@ -326,7 +326,8 @@ namespace Elastos {
 					if (pr) {
 						nlohmann::json info;
 
-						info["PublicKey"] = Utils::encodeHex(pr->GetPublicKey());
+						info["OwnerPublicKey"] = Utils::encodeHex(pr->GetPublicKey());
+						info["NodePublicKey"] = Utils::encodeHex(pr->GetNodePublicKey());
 						info["NickName"] = pr->GetNickName();
 						info["URL"] = pr->GetUrl();
 						info["Location"] = pr->GetLocation();
@@ -340,7 +341,8 @@ namespace Elastos {
 					if (pu) {
 						nlohmann::json info;
 
-						info["PublicKey"] = Utils::encodeHex(pu->GetPublicKey());
+						info["OwnerPublicKey"] = Utils::encodeHex(pu->GetPublicKey());
+						info["NodePublicKey"] = Utils::encodeHex(pu->GetNodePublicKey());
 						info["NickName"] = pu->GetNickName();
 						info["URL"] = pu->GetUrl();
 						info["Location"] = pu->GetLocation();
