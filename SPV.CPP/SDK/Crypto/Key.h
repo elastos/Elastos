@@ -11,7 +11,6 @@
 
 #include <Core/BRInt.h>
 
-#include <BigIntegerLibrary.hh>
 #include <boost/shared_ptr.hpp>
 #include <openssl/obj_mac.h>
 #include <openssl/ec.h>

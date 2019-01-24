@@ -13,8 +13,6 @@
 #include <Core/BRInt.h>
 #include <Core/BRAddress.h>
 
-#include <BigIntegerLibrary.hh>
-#include <secp256k1.h>
 #include <set>
 #include <boost/bind.hpp>
 

@@ -22,7 +22,6 @@
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRArray.h>
-#include <Core/BRChainParams.h>
 #include <Core/BRAddress.h>
 
 #include <netdb.h>

@@ -1,6 +1,3 @@
-[submodule "Core/secp256k1"]
-	path = SPV.CPP/Core/secp256k1
-	url = https://github.com/bitcoin-core/secp256k1.git
 [submodule "ThirdParty/spdlog"]
 	path = SPV.CPP/ThirdParty/spdlog
 	url = https://github.com/gabime/spdlog.git

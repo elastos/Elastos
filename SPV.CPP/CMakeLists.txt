@@ -134,8 +134,6 @@ add_subdirectory(Interface)
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1
-	${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1/include
 	${CMAKE_CURRENT_BINARY_DIR}
 	${ThirdParty_INC_DIRS}
 )
@@ -146,12 +144,12 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite fruit)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(spvsdk $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
+target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite fruit)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
@@ -176,7 +174,7 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 		unset(COMBIN_VERBOSE)
 	endif()
 
-	set(ALL_LIBRARIES $<TARGET_FILE:spvsdk>;$<TARGET_FILE:sqlite>;$<TARGET_FILE:bigint>)
+	set(ALL_LIBRARIES $<TARGET_FILE:spvsdk>;$<TARGET_FILE:sqlite>;$<TARGET_FILE:fruit>)
 	foreach(Boost_Library ${Boost_LIBRARIES})
 		set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:${Boost_Library}>)
 	endforeach()

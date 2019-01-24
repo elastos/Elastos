@@ -17,7 +17,6 @@
 #include <SDK/BIPs/BIP32Sequence.h>
 #include <Config.h>
 
-#include <Core/BRChainParams.h>
 #include <Core/BRBIP39Mnemonic.h>
 #include <Core/BRCrypto.h>
 
