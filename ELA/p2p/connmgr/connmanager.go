@@ -177,6 +177,7 @@ type ConnManager struct {
 	cfg            Config
 	wg             sync.WaitGroup
 	failedAttempts uint64
+	addresses      sync.Map
 	requests       chan interface{}
 	quit           chan struct{}
 }
@@ -283,6 +284,7 @@ out:
 					// connection.
 					connReq.updateState(ConnCanceled)
 					log.Debugf("Canceling: %v", connReq)
+					cm.addresses.Delete(connReq.Addr.String())
 					delete(pending, msg.id)
 					continue
 
@@ -292,6 +294,7 @@ out:
 				// disconnected and execute disconnection
 				// callback.
 				log.Debugf("Disconnected from %v", connReq)
+				cm.addresses.Delete(connReq.Addr.String())
 				delete(conns, msg.id)
 
 				if connReq.conn != nil {
@@ -338,6 +341,7 @@ out:
 				connReq.updateState(ConnFailing)
 				log.Debugf("Failed to connect to %v: %v",
 					connReq, msg.err)
+				cm.addresses.Delete(connReq.Addr.String())
 				cm.handleFailedConn(connReq)
 			}
 
@@ -359,7 +363,7 @@ func (cm *ConnManager) NewConnReq() {
 		return
 	}
 
-	c := &ConnReq{}
+	c := &ConnReq{Addr: &net.TCPAddr{}}
 	atomic.StoreUint64(&c.id, atomic.AddUint64(&cm.connReqCount, 1))
 
 	// Submit a request of a pending connection attempt to the connection
@@ -401,6 +405,13 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
+	// Do not connect to same address.
+	addr := c.Addr.String()
+	if _, ok := cm.addresses.Load(addr); ok {
+		return
+	}
+	cm.addresses.Store(addr, c.Addr)
+
 	if atomic.LoadUint64(&c.id) == 0 {
 		atomic.StoreUint64(&c.id, atomic.AddUint64(&cm.connReqCount, 1))
 

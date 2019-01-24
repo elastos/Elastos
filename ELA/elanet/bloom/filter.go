@@ -250,6 +250,16 @@ func (bf *Filter) matchTxAndUpdate(txn *types.Transaction) bool {
 	hash := txn.Hash()
 	matched := bf.matches(hash[:])
 
+	// Check if the filter is a side chain SPV filter
+	if bf.msg.Tweak == math.MaxUint32 {
+		for _, txOut := range txn.Outputs {
+			if bf.matches(txOut.ProgramHash[:]) {
+				return true
+			}
+		}
+		return false
+	}
+
 	for i, txOut := range txn.Outputs {
 		if !bf.matches(txOut.ProgramHash[:]) {
 			continue
