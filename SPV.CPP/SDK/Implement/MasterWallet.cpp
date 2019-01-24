@@ -614,6 +614,10 @@ namespace Elastos {
 			_localStore.Account()->ChangePassword(oldPassword, newPassword);
 		}
 
+		IIdAgent *MasterWallet::GetIIdAgent() {
+			return this;
+		}
+
 		void MasterWallet::initFromMultiSigners(const std::string &privKey, const std::string &payPassword,
 												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
 			if (privKey.empty())

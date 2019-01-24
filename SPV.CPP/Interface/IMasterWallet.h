@@ -133,6 +133,8 @@ namespace Elastos {
 			 * @param newPassword new pay password.
 			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
+
+			virtual IIdAgent *GetIIdAgent() = 0;
 		};
 
 	}
