@@ -7,7 +7,7 @@ import (
 	"time"
 
 	account2 "github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/cli/script/api/mock"
+	"github.com/elastos/Elastos.ELA/cmd/script/api/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"

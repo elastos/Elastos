@@ -2,7 +2,7 @@ package api
 
 import (
 	"bytes"
-	. "github.com/elastos/Elastos.ELA/cli/script/api/mock"
+	. "github.com/elastos/Elastos.ELA/cmd/script/api/mock"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
@@ -86,7 +86,7 @@ func networkPushConfirm(L *lua.LState) int {
 }
 
 func networkPushVote(L *lua.LState) int {
-	n := checkDposNetwork(L, 1, )
+	n := checkDposNetwork(L, 1)
 	puk := L.ToString(2)
 	vote := checkVote(L, 3)
 

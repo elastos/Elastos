@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	clicom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"

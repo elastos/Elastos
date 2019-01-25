@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	clicom "github.com/elastos/Elastos.ELA/cli/common"
+	clicom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
