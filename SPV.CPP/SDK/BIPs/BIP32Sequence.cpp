@@ -92,10 +92,13 @@ namespace Elastos {
 											const std::vector<uint32_t> &indexes) {
 			UInt256 chainCode;
 			uint32_t account = 0;
+			CMBlock seedData;
+
+			seedData.SetMemFixed(seed, seedLen);
 
 			std::vector<Key> keys;
 			for (int i = 0; i < indexes.size(); ++i) {
-				Key key = PrivKeyPath(chainCode, seed, 5, 44 | BIP32_HARD, coinType | BIP32_HARD, account | BIP32_HARD,
+				Key key = PrivKeyPath(chainCode, seedData, 5, 44 | BIP32_HARD, coinType | BIP32_HARD, account | BIP32_HARD,
 									  change, indexes[i]);
 				keys.push_back(key);
 			}
