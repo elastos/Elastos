@@ -973,7 +973,7 @@ namespace Elastos {
 					syncStopped();
 
 					// clear out stored peers so we get a fresh list from DNS on next connect attempt
-					_peers.clear();
+//					_peers.clear();
 					txError = ENOTCONN; // trigger any pending tx publish callbacks
 					willSave = 1;
 					peer->warn("sync failed");

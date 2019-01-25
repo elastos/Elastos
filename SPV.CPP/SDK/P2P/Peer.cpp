@@ -149,7 +149,7 @@ namespace Elastos {
 			if (_status == Peer::Disconnected || _waitingForNetwork) {
 				_status = Peer::Connecting;
 
-				if (0 && networkIsReachable()) { // delay until network is reachable
+				if (0 && !networkIsReachable()) { // delay until network is reachable
 					if (!_waitingForNetwork) info("waiting for network reachability");
 					_waitingForNetwork = 1;
 				} else {
@@ -158,20 +158,6 @@ namespace Elastos {
 					gettimeofday(&tv, NULL);
 					_disconnectTime = tv.tv_sec + (double) tv.tv_usec / 1000000 + CONNECT_TIMEOUT;
 
-//					if (pthread_attr_init(&attr) != 0) {
-//						error = ENOMEM;
-//						Log::traceWithTime("error creating thread");
-//						status = BRPeerStatusDisconnected;
-//						if (_listener) _listener->OnDisconnected(error);
-//					} else if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0 ||
-//							   pthread_attr_setstacksize(&attr, PTHREAD_STACK_SIZE) != 0 ||
-//							   pthread_create(&_thread, &attr, &Peer::peerThreadRoutine, this) != 0) {
-//						error = EAGAIN;
-//						Log::traceWithTime("error creating thread");
-//						pthread_attr_destroy(&attr);
-//						status = BRPeerStatusDisconnected;
-//						if (_listener) _listener->OnDisconnected(error);
-//					}
 					boost::thread workThread(boost::bind(&Peer::peerThreadRoutine, this));
 				}
 			}
