@@ -952,7 +952,7 @@ type Producer struct {
 	Location       uint64 `json:"location"`
 	Active         bool   `json:"active"`
 	Votes          string `json:"votes"`
-	IP             string `json:"ip"`
+	NetAddress     string `json:"netaddress"`
 	Index          uint64 `json:"index"`
 }
 
@@ -990,7 +990,7 @@ func ListProducers(param Params) map[string]interface{} {
 			Location:       p.Location,
 			Active:         active,
 			Votes:          vote.String(),
-			IP:             p.Address,
+			NetAddress:     p.NetAddress,
 			Index:          uint64(i),
 		}
 		ps = append(ps, producer)
@@ -1166,7 +1166,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.Address = object.Address
+		obj.NetAddress = object.NetAddress
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadCancelProducer:
@@ -1183,7 +1183,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.Address = object.Address
+		obj.NetAddress = object.NetAddress
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}

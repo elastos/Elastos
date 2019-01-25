@@ -146,7 +146,7 @@ func (n *dposNetwork) getProducersConnectionInfo() (result map[string]p2p.PeerAd
 
 		pid := peer.PID{}
 		copy(pid[:], v.OwnerPublicKey)
-		result[common.BytesToHexString(v.OwnerPublicKey)] = p2p.PeerAddr{PID: pid, Addr: v.Address}
+		result[common.BytesToHexString(v.OwnerPublicKey)] = p2p.PeerAddr{PID: pid, Addr: v.NetAddress}
 	}
 
 	return result

@@ -164,7 +164,7 @@ type RegisterProducerInfo struct {
 	NickName       string `json:"nickname"`
 	Url            string `json:"url"`
 	Location       uint64 `json:"location"`
-	Address        string `json:"address"`
+	NetAddress     string `json:"netaddress"`
 	Signature      string `json:"signature"`
 }
 
