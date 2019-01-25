@@ -67,8 +67,8 @@ type RpcConfiguration struct {
 }
 
 type CRCArbitratorConfigItem struct {
-	PublicKey string `json:"PublicKey"`
-	IP        string `json:"PublicKey"`
+	PublicKey  string `json:"PublicKey"`
+	NetAddress string `json:"NetAddress"`
 }
 
 type Configuration struct {
