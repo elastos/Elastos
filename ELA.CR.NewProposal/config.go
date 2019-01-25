@@ -81,6 +81,9 @@ func loadConfigParams() *config.ConfigParams {
 	}
 	if len(cfg.HeightVersions) > 0 {
 		activeNetParams.HeightVersions = cfg.HeightVersions
+		if len(cfg.HeightVersions) > 3 {
+			activeNetParams.DPOSStartHeight = cfg.HeightVersions[2]
+		}
 	}
 
 	return &config.Parameters
