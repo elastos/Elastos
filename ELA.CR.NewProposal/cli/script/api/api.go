@@ -152,7 +152,7 @@ func initLedger(L *lua.LState) int {
 	}
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.MainNetParams, versions)
+	chain, err := blockchain.New(chainStore, &config.MainNetParams, nil, versions)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}

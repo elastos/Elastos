@@ -87,6 +87,9 @@ var MainNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
+	MaxInactiveRounds: 3,
+	InactiveDuration:  10,
+	InactivePenalty:   100 * 100000000,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -129,6 +132,9 @@ var TestNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
+	MaxInactiveRounds: 3,
+	InactiveDuration:  10,
+	InactivePenalty:   100 * 100000000,
 }
 
 // RegNetParams defines the network parameters for the regression test network.
@@ -150,6 +156,9 @@ var RegNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
+	MaxInactiveRounds: 3,
+	InactiveDuration:  10,
+	InactivePenalty:   100 * 100000000,
 }
 
 // CRCArbitratorParam defines parameters about arbitrators consensus and direct connection
@@ -224,12 +233,23 @@ type Params struct {
 	// MinTransactionFee defines the minimum fee of a transaction.
 	MinTransactionFee int64
 
-	// Define height versions about block chain
+	// Define height versions about block chain.
 	HeightVersions []uint32
 
 	// DPOSStartHeight indicates the height of DPOS consensus begins.
 	// TODO set default value for this field in different active net.
 	DPOSStartHeight uint32
+
+	// InactiveDuration defines the duration blocks to set a producer as
+	// inactive.
+	InactiveDuration uint32
+
+	// MaxInactiveRounds defines the maximum inactive rounds before producer
+	// takes penalty.
+	MaxInactiveRounds uint32
+
+	// InactivePenalty defines the penalty amount the producer takes.
+	InactivePenalty common.Fixed64
 }
 
 func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {
