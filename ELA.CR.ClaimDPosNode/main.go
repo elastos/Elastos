@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/cli/password"
+	"github.com/elastos/Elastos.ELA/cmd/password"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"

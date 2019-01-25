@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/cli/script/api"
+	"github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/script/api"
 
 	"github.com/urfave/cli"
 	"github.com/yuin/gopher-lua"

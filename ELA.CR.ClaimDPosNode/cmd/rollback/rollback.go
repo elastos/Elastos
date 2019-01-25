@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	cliCommon "github.com/elastos/Elastos.ELA/cli/common"
+	cliCommon "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/urfave/cli"
