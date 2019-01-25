@@ -71,7 +71,7 @@ var MainNetParams = Params{
 		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 	},
 	CRCArbiters: []CRCArbitratorParams{
-		//todo add CRC arbiters
+	//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
@@ -113,7 +113,7 @@ var TestNetParams = Params{
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	},
 	CRCArbiters: []CRCArbitratorParams{
-		//todo add CRC arbiters
+	//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
@@ -154,8 +154,8 @@ var RegNetParams = Params{
 
 // CRCArbitratorParam defines parameters about arbitrators consensus and direct connection
 type CRCArbitratorParams struct {
-	PublicKey []byte
-	IP        string
+	PublicKey  []byte
+	NetAddress string
 }
 
 type Params struct {
