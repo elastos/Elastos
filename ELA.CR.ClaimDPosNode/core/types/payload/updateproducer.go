@@ -17,7 +17,7 @@ type PayloadUpdateProducer struct {
 	NickName       string
 	Url            string
 	Location       uint64
-	Address        string
+	NetAddress     string
 	Signature      []byte
 }
 
@@ -69,7 +69,7 @@ func (a *PayloadUpdateProducer) SerializeUnsigned(w io.Writer, version byte) err
 		return errors.New("[PayloadUpdateProducer], location serialize failed")
 	}
 
-	err = common.WriteVarString(w, a.Address)
+	err = common.WriteVarString(w, a.NetAddress)
 	if err != nil {
 		return errors.New("[PayloadUpdateProducer], address serialize failed")
 	}
@@ -127,7 +127,7 @@ func (a *PayloadUpdateProducer) DeserializeUnsigned(r io.Reader, version byte) e
 	a.NickName = nickName
 	a.Url = url
 	a.Location = location
-	a.Address = addr
+	a.NetAddress = addr
 
 	return nil
 }
@@ -139,6 +139,6 @@ func ConvertToRegisterProducerPayload(update *PayloadUpdateProducer) *PayloadReg
 		NickName:       update.NickName,
 		Url:            update.Url,
 		Location:       update.Location,
-		Address:        update.Address,
+		NetAddress:     update.NetAddress,
 	}
 }

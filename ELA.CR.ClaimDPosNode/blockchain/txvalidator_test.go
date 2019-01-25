@@ -416,7 +416,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		NickName:       "nickname 1",
 		Url:            "http://www.elastos_test.com",
 		Location:       1,
-		Address:        "127.0.0.1:20338",
+		NetAddress:     "127.0.0.1:20338",
 	}
 	rpSignBuf := new(bytes.Buffer)
 	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
@@ -602,7 +602,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		NickName:       "",
 		Url:            "",
 		Location:       1,
-		Address:        "",
+		NetAddress:     "",
 	}
 	txn.Payload = updatePayload
 
@@ -619,7 +619,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	updatePayload.Url = "www.elastos.org"
 	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Ip has invalid string length.")
 
-	updatePayload.Address = "127.0.0.1:20338"
+	updatePayload.NetAddress = "127.0.0.1:20338"
 	updatePayload.OwnerPublicKey = errPublicKey
 	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid public key in payload")
 
