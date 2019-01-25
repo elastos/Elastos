@@ -2,7 +2,9 @@ package events
 
 import (
 	"fmt"
-	"sync/atomic"
+	"sync"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 // EventType represents the type of a event message.
@@ -74,33 +76,49 @@ type Event struct {
 }
 
 var events struct {
-	notifies  int32
+	mtx       sync.Mutex
 	callbacks []EventCallback
 }
 
+// Define a map to detect recursive calls by mapping the caller's gid.
+var (
+	mutex    sync.Mutex
+	notifies = make(map[string]bool)
+)
+
 // Subscribe to block chain notifications. Registers a callback to be executed
-// when various events take place. See the documentation on Event and
-// EventType for details on the types and contents of notifications.
+// when various events take place. See the documentation on Event and EventType
+// for details on the types and contents of notifications.
 func Subscribe(callback EventCallback) {
+	events.mtx.Lock()
 	events.callbacks = append(events.callbacks, callback)
+	events.mtx.Unlock()
 }
 
-// Notify sends a notification with the passed type and data if the
-// caller requested notifications by providing a callback function in the call
-// to New.
+// Notify sends a notification with the passed type and data if the caller
+// requested notifications by providing a callback function in the call to New.
 func Notify(typ EventType, data interface{}) {
-	// Generate and send the notification.
-	n := Event{Type: typ, Data: data}
-
-	// Detect multiple notifies to prevent deadlock.
-	if atomic.AddInt32(&events.notifies, 1) > 1 {
-		panic("multiple notifies detected")
+	// Detect recursive notifies to prevent deadlock.
+	mutex.Lock()
+	gid := common.Goid()
+	if notifies[gid] {
+		panic("recursive notifies detected")
 	}
 
+	// Increase notify count for the goroutine.
+	notifies[gid] = true
+	mutex.Unlock()
+
+	// Generate and send the notification.
+	events.mtx.Lock()
+	n := Event{Type: typ, Data: data}
 	for _, callback := range events.callbacks {
 		callback(&n)
 	}
+	events.mtx.Unlock()
 
 	// Reset notify count.
-	atomic.AddInt32(&events.notifies, -1)
+	mutex.Lock()
+	delete(notifies, gid)
+	mutex.Unlock()
 }
