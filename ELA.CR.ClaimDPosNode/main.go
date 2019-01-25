@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"runtime"
 	"runtime/debug"
+	"strconv"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -27,6 +29,7 @@ import (
 	"github.com/elastos/Elastos.ELA/version"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 )
 
@@ -36,6 +39,10 @@ var (
 
 	// The go source code version at build.
 	GoVersion string
+
+	// printStateInterval is the interval to print out peer-to-peer network
+	// state.
+	printStateInterval = time.Minute
 )
 
 func main() {
@@ -186,6 +193,8 @@ func main() {
 		go httpnodeinfo.StartServer()
 	}
 
+	go printSyncState(chainStore, server)
+
 	waitForSyncFinish(server, interrupt.C)
 	if interrupt.Interrupted() {
 		return
@@ -219,5 +228,31 @@ out:
 		case <-interrupt:
 			break out
 		}
+	}
+}
+
+func printSyncState(db blockchain.IChainStore, server elanet.Server) {
+	statlog := elalog.NewBackend(logger.Writer()).Logger("STAT",
+		elalog.LevelInfo)
+
+	ticker := time.NewTicker(printStateInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		var buf bytes.Buffer
+		buf.WriteString("-> ")
+		buf.WriteString(strconv.FormatUint(uint64(db.GetHeight()), 10))
+		peers := server.ConnectedPeers()
+		buf.WriteString(" [")
+		for i, p := range peers {
+			buf.WriteString(strconv.FormatUint(uint64(p.ToPeer().Height()), 10))
+			buf.WriteString(" ")
+			buf.WriteString(p.ToPeer().String())
+			if i != len(peers)-1 {
+				buf.WriteString(", ")
+			}
+		}
+		buf.WriteString("]")
+		statlog.Info(buf.String())
 	}
 }
