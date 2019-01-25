@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -60,7 +59,7 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params,
+func New(db IChainStore, chainParams *config.Params, arbiters interfaces.Arbitrators,
 	versions interfaces.HeightVersions) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
@@ -69,7 +68,7 @@ func New(db IChainStore, chainParams *config.Params,
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
-		state:               state.NewState(),
+		state:               state.NewState(arbiters, chainParams),
 		versions:            versions,
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
@@ -130,11 +129,11 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err er
 				err = e
 				break
 			}
-			b.state.ProcessTransactions(block.Transactions, block.Height)
-			if e = b.processInactiveArbitrators(block); e != nil {
-				err = e
+			confirm, err := b.db.GetConfirm(block.Hash())
+			if err != nil {
 				break
 			}
+			b.state.ProcessBlock(block, confirm)
 		}
 		done <- struct{}{}
 	}()
@@ -792,10 +791,13 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 		return err
 	}
 
-	// Synchronize state memory DB
-	b.state.ProcessTransactions(block.Transactions, block.Height)
-	if err := b.processInactiveArbitrators(block); err != nil {
-		return err
+	if block.Height >= b.chainParams.DPOSStartHeight {
+		confirm, err := b.db.GetConfirm(block.Hash())
+		if err != nil {
+			return err
+		}
+		// Synchronize state memory DB.
+		b.state.ProcessBlock(block, confirm)
 	}
 
 	// Add the new node to the memory main chain indices for faster
@@ -815,52 +817,6 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 	events.Notify(events.ETBlockConnected, block)
 
 	return nil
-}
-
-func (b *BlockChain) processInactiveArbitrators(block *Block) error {
-	if b.versions.GetDefaultBlockVersion(block.Height) < 2 {
-		return nil
-	}
-
-	confirm, err := b.db.GetConfirm(block.Hash())
-	if err != nil {
-		return err
-	}
-
-	inactiveArbitrators := b.parseInactiveArbitrators(
-		DefaultLedger.Arbitrators, confirm)
-
-	b.state.ProcessInactiveArbiters(block.Height, inactiveArbitrators)
-	return nil
-}
-
-func (b *BlockChain) parseInactiveArbitrators(a interfaces.Arbitrators,
-	confirm *DPosProposalVoteSlot) (result []string) {
-
-	if bytes.Equal(a.GetOnDutyArbitrator(), confirm.Proposal.Sponsor) {
-
-		arSequence := a.GetArbitrators()
-		arSequence = append(arSequence, arSequence...)
-
-		start := a.GetOnDutyArbitrator()
-		stop := confirm.Proposal.Sponsor
-		reachedStart := false
-		for i := 0; i < len(arSequence)-1; i++ {
-			if bytes.Equal(start, arSequence[i]) {
-				reachedStart = true
-			}
-
-			if reachedStart {
-				if bytes.Equal(stop, arSequence[i]) {
-					break
-				}
-
-				result = append(result, BytesToHexString(arSequence[i]))
-			}
-		}
-	}
-
-	return result
 }
 
 func (b *BlockChain) HaveBlock(hash *Uint256) (bool, error) {

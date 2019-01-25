@@ -7,6 +7,7 @@ import (
 	"math"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -92,12 +93,23 @@ func (p *Producer) Penalty() common.Fixed64 {
 	return p.penalty
 }
 
-// maxHistoryCapacity indicates the maximum capacity of change history.
-const maxHistoryCapacity = 10
+const (
+	// maxHistoryCapacity indicates the maximum capacity of change history.
+	maxHistoryCapacity = 10
+
+	// snapshotInterval is the time interval to take a snapshot of the state.
+	snapshotInterval = 12
+
+	// maxSnapshots is the maximum newest snapshots keeps in memory.
+	maxSnapshots = 9
+)
 
 // State is a memory database storing DPOS producers state, like pending
 // producers active producers and their votes.
 type State struct {
+	arbiters    interfaces.Arbitrators
+	chainParams *config.Params
+
 	mtx               sync.RWMutex
 	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
 	pendingProducers  map[string]*Producer
@@ -108,6 +120,11 @@ type State struct {
 	votes             map[string]*types.Output
 	nicknames         map[string]struct{}
 	history           *history
+
+	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
+	// state every 12 blocks, and keeps at most 9 newest snapshots in memory.
+	snapshots [maxSnapshots]*State
+	cursor    int
 }
 
 // getProducerKey returns the producer's owner public key string, whether the
@@ -335,13 +352,64 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 	return false
 }
 
-// ProcessTransactions takes the transactions and the height when they have been
-// packed into a block.  Then loop through the transactions to update producers
-// state and votes according to transactions content.
-func (s *State) ProcessTransactions(txs []*types.Transaction, height uint32) {
+// ProcessBlock takes a block and it's confirm to update producers state and
+// votes accordingly.
+func (s *State) ProcessBlock(block *types.Block, confirm *types.DPosProposalVoteSlot) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
+	s.processTransactions(block.Transactions, block.Height)
+
+	if confirm != nil {
+		arbiters := s.getInactiveArbitrators(confirm)
+		s.countArbitratorsInactivity(block.Height, arbiters)
+		s.tryLeaveInactiveMode(block.Height)
+	}
+
+	// Take snapshot when snapshot point arrives.
+	if (block.Height-s.chainParams.DPOSStartHeight)%snapshotInterval == 0 {
+		s.cursor = s.cursor % maxSnapshots
+		s.snapshots[s.cursor] = s.snapshot()
+		s.cursor++
+	}
+
+	// Commit changes here if no errors found.
+	s.history.commit(block.Height)
+}
+
+// getInactiveArbitrators returns inactive arbiters from a confirm data.
+func (s *State) getInactiveArbitrators(confirm *types.DPosProposalVoteSlot) (result []string) {
+	if bytes.Equal(s.arbiters.GetOnDutyArbitrator(), confirm.Proposal.Sponsor) {
+
+		arSequence := s.arbiters.GetArbitrators()
+		arSequence = append(arSequence, arSequence...)
+
+		start := s.arbiters.GetOnDutyArbitrator()
+		stop := confirm.Proposal.Sponsor
+		reachedStart := false
+
+		for i := 0; i < len(arSequence)-1; i++ {
+			if bytes.Equal(start, arSequence[i]) {
+				reachedStart = true
+			}
+
+			if reachedStart {
+				if bytes.Equal(stop, arSequence[i]) {
+					break
+				}
+
+				result = append(result, hex.EncodeToString(arSequence[i]))
+			}
+		}
+	}
+
+	return result
+}
+
+// processTransactions takes the transactions and the height when they have been
+// packed into a block.  Then loop through the transactions to update producers
+// state and votes according to transactions content.
+func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	for _, tx := range txs {
 		s.processTransaction(tx, height)
 	}
@@ -365,9 +433,6 @@ func (s *State) ProcessTransactions(txs []*types.Transaction, height uint32) {
 			}
 		}
 	}
-
-	// Commit changes here if no errors found.
-	s.history.commit(height)
 }
 
 // processTransaction take a transaction and the height it has been packed into
@@ -601,35 +666,19 @@ func (s *State) ProcessIllegalBlockEvidence(payload types.Payload) {
 	s.history.commit(0)
 }
 
-// ProcessInactiveArbiters count inactive rounds of arbitrators, and put into
-// inactive map if over than a sequence of three on duty rounds
-func (s *State) ProcessInactiveArbiters(blockHeight uint32, arbitrators []string) {
-
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	s.countArbitratorsInactivity(blockHeight, arbitrators)
-	s.tryLeaveInactiveMode(blockHeight)
-
-	// Commit changes here if no errors found.
-	s.history.commit(blockHeight)
-}
-
 // tryLeaveInactiveMode for inactive arbitrators to try leaving inactive mode if
 // over the inactive duration
 func (s *State) tryLeaveInactiveMode(blockHeight uint32) {
 	tryLeaveInactive := func(key string, producer *Producer) {
 		s.history.append(blockHeight, func() {
-			if blockHeight > producer.inactiveSince+
-				config.Parameters.ArbiterConfiguration.InactiveDuration {
+			if blockHeight > producer.inactiveSince+s.chainParams.InactiveDuration {
 
 				producer.state = Activate
 				s.activityProducers[key] = producer
 				delete(s.inactiveProducers, key)
 			}
 		}, func() {
-			if blockHeight <= producer.inactiveSince+
-				config.Parameters.ArbiterConfiguration.InactiveDuration {
+			if blockHeight <= producer.inactiveSince+s.chainParams.InactiveDuration {
 
 				producer.state = Inactivate
 				s.inactiveProducers[key] = producer
@@ -643,8 +692,8 @@ func (s *State) tryLeaveInactiveMode(blockHeight uint32) {
 	}
 }
 
-// countArbitratorsInactivity count arbitrators inactive rounds,
-// and change to inactive if more than "MaxAllowedInactiveRounds"
+// countArbitratorsInactivity count arbitrators inactive rounds, and change to
+// inactive if more than "MaxInactiveRounds"
 func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) {
 
 	countInactiveRounds := func(key string, producer *Producer) {
@@ -657,15 +706,13 @@ func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) 
 				}
 				producer.inactiveRounds++
 
-				if producer.inactiveRounds >=
-					config.Parameters.ArbiterConfiguration.MaxAllowedInactiveRounds {
+				if producer.inactiveRounds >= s.chainParams.MaxInactiveRounds {
 
 					producer.state = Inactivate
 					s.inactiveProducers[key] = producer
 					delete(s.activityProducers, key)
 
-					producer.penalty +=
-						config.Parameters.ArbiterConfiguration.InactivePenalty
+					producer.penalty += s.chainParams.InactivePenalty
 				}
 			}
 		}, func() {
@@ -673,19 +720,16 @@ func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) 
 			if producer.state == Inactivate {
 				producer.inactiveRounds--
 
-				if producer.inactiveRounds <
-					config.Parameters.ArbiterConfiguration.MaxAllowedInactiveRounds {
+				if producer.inactiveRounds < s.chainParams.MaxInactiveRounds {
 
 					producer.state = Activate
 					s.activityProducers[key] = producer
 					delete(s.inactiveProducers, key)
 
-					if producer.penalty <
-						config.Parameters.ArbiterConfiguration.InactivePenalty {
+					if producer.penalty < s.chainParams.InactivePenalty {
 						producer.penalty = common.Fixed64(0)
 					} else {
-						producer.penalty -=
-							config.Parameters.ArbiterConfiguration.InactivePenalty
+						producer.penalty -= s.chainParams.InactivePenalty
 					}
 				}
 			} else if producer.state == Activate {
@@ -726,7 +770,12 @@ func (s *State) GetHistory(height uint32) (*State, error) {
 		return nil, err
 	}
 
-	// Make a copy of the state.
+	// Take a snapshot of the history.
+	return s.snapshot(), nil
+}
+
+// snapshot takes a snapshot of current state and returns the copy.
+func (s *State) snapshot() *State {
 	state := State{
 		pendingProducers:  make(map[string]*Producer),
 		activityProducers: make(map[string]*Producer),
@@ -736,22 +785,34 @@ func (s *State) GetHistory(height uint32) (*State, error) {
 	}
 	copyMap(state.pendingProducers, s.pendingProducers)
 	copyMap(state.activityProducers, s.activityProducers)
+	copyMap(state.inactiveProducers, s.inactiveProducers)
 	copyMap(state.canceledProducers, s.canceledProducers)
 	copyMap(state.illegalProducers, s.illegalProducers)
+	return &state
+}
 
-	return &state, nil
+// GetSnapshot returns a snapshot of the state according to the given height.
+func (s *State) GetSnapshot(height uint32) *State {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	offset := (s.history.height - height) / snapshotInterval
+	index := (s.cursor - 1 - int(offset) + maxSnapshots) % maxSnapshots
+	return s.snapshots[index]
 }
 
 // copyMap copy the src map's key, value pairs into dst map.
 func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 	for k, v := range src {
-		dst[k] = v
+		p := *v
+		dst[k] = &p
 	}
 }
 
 // NewState returns a new State instance.
-func NewState() *State {
+func NewState(arbiters interfaces.Arbitrators, chainParams *config.Params) *State {
 	return &State{
+		arbiters:          arbiters,
+		chainParams:       chainParams,
 		nodeOwnerKeys:     make(map[string]string),
 		pendingProducers:  make(map[string]*Producer),
 		activityProducers: make(map[string]*Producer),
