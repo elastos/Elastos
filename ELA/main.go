@@ -90,13 +90,7 @@ func main() {
 		BlockMemPool: blockMemPool,
 	}
 	versions := version.NewVersions(&verconf)
-	ledger.HeightVersions = versions // fixme
-	chain, err := blockchain.New(chainStore, activeNetParams, versions)
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	verconf.Chain = chain
-	ledger.Blockchain = chain          // fixme
+	ledger.HeightVersions = versions   // fixme
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := store.NewArbitrators(&store.ArbitratorsConfig{
@@ -119,6 +113,13 @@ func main() {
 	}
 	verconf.Arbitrators = arbiters
 	ledger.Arbitrators = arbiters // fixme
+
+	chain, err := blockchain.New(chainStore, activeNetParams, arbiters, versions)
+	if err != nil {
+		printErrorAndExit(err)
+	}
+	verconf.Chain = chain
+	ledger.Blockchain = chain // fixme
 
 	// initialize producer state after arbiters has initialized
 	if err = chain.InitializeProducersState(interrupt.C); err != nil {
