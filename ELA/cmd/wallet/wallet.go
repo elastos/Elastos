@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA/account"
-	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	pwd "github.com/elastos/Elastos.ELA/cli/password"
+	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	pwd "github.com/elastos/Elastos.ELA/cmd/password"
 	"github.com/urfave/cli"
 )
 
@@ -269,10 +269,6 @@ func NewCommand() *cli.Command {
 				Name:  "changepassword",
 				Usage: "change wallet password",
 			},
-			cli.BoolFlag{
-				Name:  "reset",
-				Usage: "reset wallet",
-			},
 			cli.StringFlag{
 				Name:  "name, n",
 				Usage: "wallet name",
@@ -300,6 +296,9 @@ func NewCommand() *cli.Command {
 			},
 		},
 		Action: walletAction,
+		Subcommands: []cli.Command{
+			*NewTransactionCommand(),
+		},
 		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
 			clicom.PrintError(c, err, "wallet")
 			return cli.NewExitError("", 1)

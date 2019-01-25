@@ -4,10 +4,10 @@ import (
 	"os"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/cli/rollback"
-	"github.com/elastos/Elastos.ELA/cli/script"
-	"github.com/elastos/Elastos.ELA/cli/transfer"
-	"github.com/elastos/Elastos.ELA/cli/wallet"
+	"github.com/elastos/Elastos.ELA/cmd/rollback"
+	"github.com/elastos/Elastos.ELA/cmd/script"
+	"github.com/elastos/Elastos.ELA/cmd/wallet"
+
 	"github.com/urfave/cli"
 )
 
@@ -25,7 +25,6 @@ func main() {
 	//commands
 	app.Commands = []cli.Command{
 		*wallet.NewCommand(),
-		*transfer.NewCommand(),
 		*script.NewCommand(),
 		*rollback.NewCommand(),
 	}

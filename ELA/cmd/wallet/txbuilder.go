@@ -1,4 +1,4 @@
-package transfer
+package wallet
 
 import (
 	"encoding/hex"
@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
-	clicom "github.com/elastos/Elastos.ELA/cli/common"
-	"github.com/elastos/Elastos.ELA/cli/password"
+	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/password"
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
