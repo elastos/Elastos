@@ -56,6 +56,9 @@ func main() {
 	// fixme remove singleton Ledger
 	ledger := blockchain.Ledger{}
 
+	// Initializes the foundation address
+	blockchain.FoundationAddress = activeNetParams.Foundation
+
 	var dposStore interfaces.IDposStore
 	chainStore, err := blockchain.NewChainStore(dataDir,
 		activeNetParams.GenesisBlock)

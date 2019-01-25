@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 )
@@ -68,7 +67,6 @@ func loadConfigParams() *config.ConfigParams {
 	activeNetParams.SeedList = cfg.SeedList
 	foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 	if err == nil {
-		blockchain.FoundationAddress = *foundation
 		activeNetParams.Foundation = *foundation
 		activeNetParams.GenesisBlock = config.GenesisBlock(foundation)
 	}
