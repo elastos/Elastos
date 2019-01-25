@@ -92,7 +92,7 @@ func convertArbitrators(arbiters []config.CRCArbitratorConfigItem) (result []con
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, config.CRCArbitratorParams{PublicKey: arbiterByte, IP: v.IP})
+		result = append(result, config.CRCArbitratorParams{PublicKey: arbiterByte, NetAddress: v.NetAddress})
 	}
 
 	return result, nil
