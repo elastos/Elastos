@@ -1,12 +1,11 @@
 package blocks
 
 import (
-	"github.com/elastos/Elastos.ELA/version/verconf"
-
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
 // Ensure blockV0 implement the BlockVersion interface.
