@@ -147,7 +147,7 @@ func newUpdateProducer(L *lua.LState) int {
 		NickName:       nickName,
 		Url:            url,
 		Location:       uint64(location),
-		Address:        address,
+		NetAddress:     address,
 	}
 
 	upSignBuf := new(bytes.Buffer)
@@ -234,7 +234,7 @@ func newRegisterProducer(L *lua.LState) int {
 		NickName:       nickName,
 		Url:            url,
 		Location:       uint64(location),
-		Address:        address,
+		NetAddress:     address,
 	}
 
 	rpSignBuf := new(bytes.Buffer)

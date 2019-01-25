@@ -710,7 +710,7 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check ip
-	if err = checkStringField(payload.Address, "IP"); err != nil {
+	if err = checkStringField(payload.NetAddress, "IP"); err != nil {
 		return err
 	}
 
@@ -796,7 +796,7 @@ func CheckUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check ip
-	if err := checkStringField(payload.Address, "Ip"); err != nil {
+	if err := checkStringField(payload.NetAddress, "Ip"); err != nil {
 		return err
 	}
 

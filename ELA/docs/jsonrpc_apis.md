@@ -893,7 +893,7 @@ result:
 | location       | uint64 | the location number of the producer      |
 | active         | bool   | if producer has confirmed                |
 | votes          | string | the votes currently held                 |
-| ip             | string | the ip address of the producer           |
+| netaddress     | string | the ip address and port of the producer  |
 | index          | uint64 | the index of the producer                |
 | totalvotes     | string | the total votes of registered producers  |
 | totalcounts    | uint64 | the total counts of registered producers |
@@ -927,7 +927,7 @@ result sample:
         "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "ip": "127.0.0.1:20339",
+        "netaddress": "127.0.0.1:20339",
         "index": 0
       },
       {
@@ -938,7 +938,7 @@ result sample:
         "location": 402,
         "active": true,
         "votes": "2.10000000",
-        "ip": "127.0.0.1:20339",
+        "netaddress": "127.0.0.1:20339",
         "index": 1
       },
       {
@@ -949,7 +949,7 @@ result sample:
         "location": 403,
         "active": true,
         "votes": "0",
-        "ip": "127.0.0.1:20339",
+        "netaddress": "127.0.0.1:20339",
         "index": 2
       }
     ],
