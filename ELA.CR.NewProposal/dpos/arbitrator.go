@@ -203,7 +203,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			block := e.Data.(*types.DposBlock)
 			a.OnBlockReceived(block.Block, block.ConfirmFlag)
 
-		case events.ETConfirmReceived:
+		case events.ETConfirmAccepted:
 			a.OnConfirmReceived(e.Data.(*types.DPosProposalVoteSlot))
 
 		case events.ETNewArbiterElection:
