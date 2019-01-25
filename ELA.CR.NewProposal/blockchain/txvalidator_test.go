@@ -617,7 +617,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Url has invalid string length.")
 
 	updatePayload.Url = "www.elastos.org"
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Ip has invalid string length.")
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NetAddress has invalid string length.")
 
 	updatePayload.NetAddress = "127.0.0.1:20338"
 	updatePayload.OwnerPublicKey = errPublicKey
