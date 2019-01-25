@@ -28,14 +28,12 @@ DECL_TESTSUITE(filetransfer_id_test)
 DECL_TESTSUITE(filetransfer_id_name_test)
 DECL_TESTSUITE(filetransfer_connect_test)
 DECL_TESTSUITE(filetransfer_base_test)
-DECL_TESTSUITE(filetransfer_file_test)
 
 #define DEFINE_FILETRANSFER_TESTSUITES \
     DEFINE_TESTSUITE(filetransfer_new_test), \
     DEFINE_TESTSUITE(filetransfer_id_test), \
     DEFINE_TESTSUITE(filetransfer_id_name_test), \
     DEFINE_TESTSUITE(filetransfer_connect_test), \
-    DEFINE_TESTSUITE(filetransfer_base_test), \
-    DEFINE_TESTSUITE(filetransfer_file_test)
+    DEFINE_TESTSUITE(filetransfer_base_test)
 
 #endif /* __API_FILETRANSFER_TEST_SUITES_H__ */
