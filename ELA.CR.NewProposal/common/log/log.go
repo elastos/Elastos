@@ -1,7 +1,6 @@
 package log
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -54,15 +54,6 @@ const (
 	defaultLogsFolderSize int64 = 5 * elalog.GBSize
 )
 
-func GetGID() uint64 {
-	var buf [64]byte
-	b := buf[:runtime.Stack(buf[:], false)]
-	b = bytes.TrimPrefix(b, []byte("goroutine "))
-	b = b[:bytes.IndexByte(b, ' ')]
-	n, _ := strconv.ParseUint(string(b), 10, 64)
-	return n
-}
-
 var logger *Logger
 
 func levelName(level uint8) string {
@@ -74,6 +65,7 @@ func levelName(level uint8) string {
 
 type Logger struct {
 	level  uint8 // The log print level
+	writer io.Writer
 	logger *log.Logger
 }
 
@@ -88,12 +80,13 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 		logsFolderSize = maxLogsSizeMb * elalog.MBSize
 	}
 
-	writer := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
+	fileWriter := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
+	logWriter := io.MultiWriter(os.Stdout, fileWriter)
 
 	return &Logger{
-		level: level,
-		logger: log.New(io.MultiWriter(os.Stdout, writer), "",
-			log.Ldate|log.Lmicroseconds),
+		level:  level,
+		writer: logWriter,
+		logger: log.New(logWriter, "", log.Ldate|log.Lmicroseconds),
 	}
 }
 
@@ -102,18 +95,21 @@ func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
 	return logger
 }
 
+func (l *Logger) Writer() io.Writer {
+	return l.writer
+}
+
 func (l *Logger) Output(level uint8, a ...interface{}) {
 	if l.level <= level {
-		gidStr := strconv.FormatUint(GetGID(), 10)
-		a = append([]interface{}{levelName(level), "GID", gidStr + ","}, a...)
+		a = append([]interface{}{levelName(level), "GID", common.Goid() + ","}, a...)
 		l.logger.Output(calldepth, fmt.Sprintln(a...))
 	}
 }
 
 func (l *Logger) Outputf(level uint8, format string, v ...interface{}) {
 	if l.level <= level {
-		v = append([]interface{}{levelName(level), "GID", GetGID()}, v...)
-		l.logger.Output(calldepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))
+		v = append([]interface{}{levelName(level), "GID", common.Goid()}, v...)
+		l.logger.Output(calldepth, fmt.Sprintf("%s %s %s, "+format+"\n", v...))
 	}
 }
 
