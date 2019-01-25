@@ -17,13 +17,10 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
-					const uint64_t amount,
-					const nlohmann::json &sidechainAccounts,
-					const nlohmann::json &sidechainAmounts,
-					const nlohmann::json &sidechainIndices,
+					const std::string &lockedAddress,
+					uint64_t Amount,
+					const std::string &sideChainAddress,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
 
 			virtual nlohmann::json GenerateProducerPayload(

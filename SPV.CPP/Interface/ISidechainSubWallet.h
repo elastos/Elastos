@@ -70,12 +70,9 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateWithdrawTransaction(
 					const std::string &fromAddress,
-					const uint64_t amount,
-					const nlohmann::json &mainchainAccounts,
-					const nlohmann::json &mainchainAmounts,
-					const nlohmann::json &mainchainIndexs,
-					const std::string &memo,
-					const std::string &remark) = 0;
+					uint64_t amount,
+					const std::string &mainChainAddress,
+					const std::string &memo) = 0;
 
 			/**
 			 * Get genesis address of the side chain, the address is a special address will be set to toAddress in CreateDepositTransaction.

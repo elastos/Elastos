@@ -831,6 +831,18 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			PeerPtr peer = peerPtr;
+
+			{
+				std::vector<UInt256> recoverHashes;
+				for (size_t i = _publishedTx.size(); i > 0; i--) {
+					if (!_publishedTx[i - 1].HasCallback()) {
+						peer->info("recover tx {} to known tx list of peer", Utils::UInt256ToString(_publishedTxHashes[i - 1]), true);
+						recoverHashes.push_back(_publishedTxHashes[i - 1]);
+					}
+				}
+				peer->AddKnownTxHashes(recoverHashes);
+			}
+
 			if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
 				peer->SetTimestamp(now); // sanity check
 
@@ -1232,8 +1244,11 @@ namespace Elastos {
 				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
 					if (UInt256Eq(&_publishedTxHashes[i - 1], &(tx->getHash()))) {
 						pubTx = _publishedTx[i - 1];
-						if (code != 0x12)
+						if (code != 0x12) {
 							_publishedTx[i - 1].ResetCallback();
+							_publishedTx.erase(_publishedTx.begin() + (i - 1));
+							_publishedTxHashes.erase(_publishedTxHashes.begin() + (i - 1));
+						}
 					}
 				}
 
@@ -1244,6 +1259,7 @@ namespace Elastos {
 					}
 
 					// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
+#if 0 // TODO enable this after node error code refactored.
 					if (code != REJECT_SPENT && _wallet->getTransactionAmountSent(tx) > 0) {
 						for (size_t i = 0; i <
 										   tx->getInputs().size(); i++) { // check that all inputs are confirmed before dropping peer
@@ -1256,6 +1272,7 @@ namespace Elastos {
 
 						if (tx != nullptr) peerMisbehaving(peer);
 					}
+#endif
 				}
 			}
 

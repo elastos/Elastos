@@ -30,32 +30,22 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(const std::string &fromAddress,
-																	 const uint64_t amount,
-																	 const nlohmann::json &mainchainAccounts,
-																	 const nlohmann::json &mainchainAmounts,
-																	 const nlohmann::json &mainchainIndexs,
-																	 const std::string &memo,
-																	 const std::string &remark) {
-			ParamChecker::checkJsonArray(mainchainAccounts, 1, "Main chain accounts");
-			ParamChecker::checkJsonArray(mainchainAmounts, 1, "Main chain amounts");
-			ParamChecker::checkJsonArray(mainchainIndexs, 1, "Main chain indexs");
-
+																	 uint64_t amount,
+																	 const std::string &mainChainAddress,
+																	 const std::string &memo) {
 			PayloadPtr payload = nullptr;
 			try {
-				std::vector<std::string> accounts = mainchainAccounts.get<std::vector<std::string>>();
-				std::vector<uint64_t> indexs = mainchainIndexs.get<std::vector<uint64_t>>();
-				std::vector<uint64_t> amounts = mainchainAmounts.get<std::vector<uint64_t>>();
-
-				ParamChecker::checkParam(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
-										 Error::WithdrawParam, "Invalid withdraw parameters of main chain");
+				std::vector<std::string> accounts = {mainChainAddress};
+				std::vector<uint64_t> indexs = {0};
+				std::vector<uint64_t> amounts = {amount};
 
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
 				ParamChecker::throwParamException(Error::JsonFormatError, "main chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount,
-													Asset::GetELAAssetID(), remark, memo);
+			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.getMinFee(),
+													Asset::GetELAAssetID(), memo, "");
 			ParamChecker::checkLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
 			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);

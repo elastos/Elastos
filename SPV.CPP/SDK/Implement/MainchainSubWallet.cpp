@@ -32,34 +32,24 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
-																	const std::string &toAddress,
-																	const uint64_t amount,
-																	const nlohmann::json &sidechainAccounts,
-																	const nlohmann::json &sidechainAmounts,
-																	const nlohmann::json &sidechainIndices,
+																	const std::string &lockedAddress,
+																	uint64_t amount,
+																	const std::string &sideChainAddress,
 																	const std::string &memo,
-																	const std::string &remark,
 																	bool useVotedUTXO) {
-			ParamChecker::checkJsonArray(sidechainAccounts, 1, "Side chain accounts");
-			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");
-			ParamChecker::checkJsonArray(sidechainIndices, 1, "Side chain indices");
-
 			PayloadPtr payload = nullptr;
 			try {
-				std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string >>();
-				std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
-				std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t >>();
-
-				ParamChecker::checkParam(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
-										 Error::DepositParam, "Invalid deposit parameters of side chain");
+				std::vector<std::string> accounts = {sideChainAddress};
+				std::vector<uint64_t> indexs = {0};
+				std::vector<uint64_t> amounts = {amount};
 
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
 				ParamChecker::throwParamException(Error::JsonFormatError, "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
-													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.getMinFee(),
+													Asset::GetELAAssetID(), memo, "", useVotedUTXO);
 
 			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
 

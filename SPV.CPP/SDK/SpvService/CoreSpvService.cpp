@@ -542,7 +542,7 @@ namespace Elastos {
 
 		void WrappedExecutorTransactionHubListener::onTxDeleted(
 				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
-			_executor->execute(Runnable([this, &hash, &assetID, notifyUser, recommendRescan]() -> void {
+			_executor->execute(Runnable([this, hash, assetID, notifyUser, recommendRescan]() -> void {
 				try {
 					_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 				}

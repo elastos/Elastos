@@ -71,7 +71,7 @@ public:
 	}
 
 	virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-		logger->debug("{} OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan", _walletID, recommendRescan);
+		logger->debug("{} OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan = {}", _walletID, hash, notifyUser, recommendRescan);
 	}
 
 private:
@@ -220,10 +220,10 @@ static void RegisterProducer(MasterWalletManager *manager,
 	}
 
 	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
-	std::string nodePubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string nodePubKey = "0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9";
 	std::string nickName = "heropan";
 	std::string url = "heropan.com";
-	std::string ipAddress = "127.0.0.1";
+	std::string ipAddress = "127.0.0.1:8080";
 	uint64_t location = 86;
 
 	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
@@ -231,6 +231,59 @@ static void RegisterProducer(MasterWalletManager *manager,
 
 	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, 500000000000 + 10000,
 																			  "heropan register producer");
+
+	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void UpdateProducer(MasterWalletManager *manager,
+						   const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string nodePubKey = mainchainSubWallet->GetPublicKey();
+	std::string nickName = "heropan";
+	std::string url = "heropan.com";
+	std::string ipAddress = "110.110.110.110";
+	uint64_t location = 86;
+
+	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
+																		 location, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateUpdateProducerTransaction("", payload, "heropan update producer");
+
+	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void CancelProducer(MasterWalletManager *manager,
+						   const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+
+	nlohmann::json payload = mainchainSubWallet->GenerateCancelProducerPayload(pubKey, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateCancelProducerTransaction("", payload, "heropan update producer");
+
+	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
+	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -287,18 +340,8 @@ static void Deposit(MasterWalletManager *manager,
 
 	std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
-	nlohmann::json sidechainAccounts;
-	sidechainAccounts.push_back(sidechainAddress);
-
-	nlohmann::json sidechainAmounts;
-	sidechainAmounts.push_back(amount);
-
-	nlohmann::json sidechainIndices;
-	sidechainIndices.push_back(0);
-
 	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
-		from, lockedAddress, amount, sidechainAccounts, sidechainAmounts,
-		sidechainIndices, "memo", "remark");
+		from, lockedAddress, amount, sidechainAddress, "memo");
 
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
 
@@ -323,17 +366,7 @@ static void Withdraw(MasterWalletManager *manager,
 		return ;
 	}
 
-	nlohmann::json mainchainAccounts;
-	mainchainAccounts.push_back(mainchainAddress);
-
-	nlohmann::json mainchainAmounts;
-	mainchainAmounts.push_back(amount);
-
-	nlohmann::json mainchainIndexs;
-	mainchainIndexs.push_back(0);
-
-	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
-		from, amount, mainchainAccounts, mainchainAmounts, mainchainIndexs, "memo", "remark");
+	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, "memo");
 
 	logger->debug("[{}:{}] withdraw {} to {}", fromMasterWalletID, fromSubWalletID, amount, mainchainAddress);
 
@@ -439,7 +472,7 @@ static void GetBalance(MasterWalletManager *manager,
 int main(int argc, char *argv[]) {
 
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
-	bool voteDone = true, registerProducer = true;
+	bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true;
 
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
@@ -480,6 +513,16 @@ int main(int argc, char *argv[]) {
 			if (!registerProducer) {
 				RegisterProducer(manager, gMasterWalletID, gMainchainSubWalletID);
 				registerProducer = true;
+			}
+
+			if (!updateProducer) {
+				UpdateProducer(manager, gMasterWalletID, gMainchainSubWalletID);
+				updateProducer = true;
+			}
+
+			if (!cancelProducer) {
+				CancelProducer(manager, gMasterWalletID, gMainchainSubWalletID);
+				cancelProducer = true;
 			}
 
 			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);
