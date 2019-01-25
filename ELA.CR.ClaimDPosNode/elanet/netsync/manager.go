@@ -352,17 +352,22 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		return
 	}
 
-	if bmsg.block.ConfirmFlag {
+	// If we get useless block then the peer is misbehaving.
+	if !bmsg.block.BlockFlag && !bmsg.block.ConfirmFlag {
+		log.Warnf("Received useless block from peer %s", peer)
+		peer.Disconnect()
+		return
+	}
+
+	// If we get a confirm, append to block pool.
+	if !bmsg.block.BlockFlag && bmsg.block.ConfirmFlag {
+		blockHash := bmsg.block.Confirm.Proposal.BlockHash
+		log.Debugf("Receive confirm for block %s", blockHash)
 		_, _, err := sm.blockMemPool.AppendConfirm(bmsg.block.Confirm)
 		if err != nil {
 			log.Warnf("Receive invalid confirm %s, %s from %s -- "+
 				"disconnecting", bmsg.block.Confirm.Hash, err, peer.Addr())
 		}
-		return
-	}
-
-	if !bmsg.block.BlockFlag {
-		// Ignore non-block message.
 		return
 	}
 
@@ -383,6 +388,8 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 
 	// Process the block to include validation, best chain selection, orphan
 	// handling, etc.
+	log.Debugf("Receive block %s at height %d", blockHash,
+		bmsg.block.Block.Height)
 	_, isOrphan, err := sm.versions.AddDposBlock(bmsg.block)
 	if err != nil {
 		reason := fmt.Sprintf("Rejected block %v from %s: %v", blockHash,
@@ -690,7 +697,7 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 
 	// A block has been accepted into the block chain.  Relay it to other
 	// peers.
-	case events.ETBlockAccepted:
+	case events.ETBlockAccepted, events.ETConfirmAccepted:
 		// Don't relay if we are not current. Other peers that are
 		// current should already know about it.
 		if !sm.current() {

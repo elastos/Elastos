@@ -90,8 +90,8 @@ func (bm *BlockPool) appendConfirm(confirm *types.DPosProposalVoteSlot) (bool, b
 		return inMainChain, isOrphan, err
 	}
 
-	// notify new confirm received
-	events.Notify(events.ETConfirmReceived, confirm)
+	// notify new confirm accepted.
+	events.Notify(events.ETConfirmAccepted, confirm)
 
 	return inMainChain, isOrphan, nil
 }

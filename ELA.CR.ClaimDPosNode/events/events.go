@@ -36,8 +36,8 @@ const (
 	// ETNewBlockReceived indicates a new block was received.
 	ETNewBlockReceived
 
-	// ETConfirmReceived indicates a block confirmed message received.
-	ETConfirmReceived
+	// ETConfirmAccepted indicates a block confirmed message received.
+	ETConfirmAccepted
 
 	// ETNewArbiterElection indicates to start the next arbiters election.
 	ETNewArbiterElection
@@ -51,7 +51,7 @@ var notificationTypeStrings = map[EventType]string{
 	ETBlockDisconnected:   "ETBlockDisconnected",
 	ETTransactionAccepted: "ETTransactionAccepted",
 	ETNewBlockReceived:    "ETNewBlockReceived",
-	ETConfirmReceived:     "ETConfirmReceived",
+	ETConfirmAccepted:     "ETConfirmAccepted",
 	ETNewArbiterElection:  "ETNewArbiterElection",
 }
 
