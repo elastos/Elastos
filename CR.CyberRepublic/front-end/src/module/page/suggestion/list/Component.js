@@ -2,8 +2,10 @@ import React from 'react';
 import _ from 'lodash'
 import {
   Pagination, Modal, Button, Col, Row, Select, Spin,
-} from 'antd';
+} from 'antd'
+import URI from 'urijs'
 import I18N from '@/I18N'
+import { loginRedirectWithQuery } from '@/util'
 import StandardPage from '../../StandardPage';
 import Footer from '@/module/layout/Footer/Container'
 import MySuggestion from '../my_list/Container'
@@ -32,9 +34,11 @@ export default class extends StandardPage {
   constructor(props) {
     super(props)
 
+    const uri = URI(props.location.search || '')
+
     // we use the props from the redux store if its retained
     this.state = {
-      showForm: false,
+      showForm: uri.hasQuery('create'),
       isDropdownActionOpen: false,
       showMobile: false,
       sortBy: SORT_BY.likesNum,
@@ -123,8 +127,12 @@ export default class extends StandardPage {
   showCreateForm = () => {
     const { isLogin, history } = this.props;
     const { showForm } = this.state
-    if (!isLogin) history.push('/login')
-
+    if (!isLogin) {
+      const query = { create: true }
+      loginRedirectWithQuery({ query })
+      history.push('/login')
+      return
+    }
     this.setState({
       showForm: !showForm,
     })
