@@ -19,7 +19,11 @@ namespace Elastos {
 
 			virtual std::string GetMainAccountPublicKey() const;
 
+			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
+
 			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const;
+
+			virtual bool ContainsAddress(const Address &address) const;
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
@@ -27,6 +31,9 @@ namespace Elastos {
 			virtual std::vector<Key>
 			DeriveAccountAvailableKeys(const std::string &payPassword,
 									   const TransactionPtr &transaction);
+
+		private:
+			std::string GetAddress() const;
 		};
 
 	}
