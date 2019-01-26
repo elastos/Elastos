@@ -52,8 +52,8 @@ namespace Elastos {
 					off += sizeof(uint16_t);
 					PeerInfo p(address, port, timestamp, services);
 
-					_peer->info("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
-								 i, p.GetHost(), p.Timestamp, p.Port, p.Services);
+					_peer->info("peers[{}] = {}:{} timestamp = {}, services = {}",
+								 i, p.GetHost(), p.Port, p.Timestamp, p.Services);
 
 					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
 						(p.Services & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK) {

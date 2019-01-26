@@ -1049,10 +1049,15 @@ namespace Elastos {
 				for (size_t i = 0; i < _peers.size(); ++i) {
 					found = false;
 					for (size_t ui = 0; ui < uniquePeers.size(); ++ui) {
-						if (UInt128Eq(&_peers[i].Address, &uniquePeers[ui].Address)) {
+						if (_peers[i] == uniquePeers[ui]) {
 							found = true;
 							break;
 						}
+					}
+
+					if (_peers[i].Port != _chainParams.GetStandardPort()) {
+						peer->warn("drop peer[{}] = {}:{} port is not standard", i, _peers[i].GetHost(), _peers[i].Port);
+						continue;
 					}
 
 					if (!found) {
@@ -1077,8 +1082,8 @@ namespace Elastos {
 			if (save.size() > 1 && save.size() < 1000) {
 				peer->info("save {} peers", save.size());
 				for (size_t i = 0; i < save.size(); i++) {
-					peer->info("peer[{}] = {}, timestamp = {}, port = {}, services = {}", i, save[i].GetHost(),
-							   save[i].Timestamp, save[i].Port, save[i].Services);
+					peer->info("peer[{}] = {}:{}, timestamp = {}, services = {}", i, save[i].GetHost(),
+							   save[i].Port, save[i].Timestamp, save[i].Services);
 				}
 				fireSavePeers(true, save);
 			}
