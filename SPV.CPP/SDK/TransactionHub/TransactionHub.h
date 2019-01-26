@@ -15,7 +15,6 @@
 #include <SDK/Base/Address.h>
 #include <SDK/Common/ElementSet.h>
 #include <SDK/Crypto/MasterPubKey.h>
-#include <SDK/Wrapper/WrapperList.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/weak_ptr.hpp>

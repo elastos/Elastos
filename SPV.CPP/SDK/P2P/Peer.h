@@ -8,7 +8,6 @@
 #include "PeerInfo.h"
 #include "Message/Message.h"
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ElementSet.h>
 #include <SDK/Common/UInt256ValueSet.h>

@@ -9,7 +9,7 @@
 
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/P2P/PeerManager.h>
-#include <SDK/Wrapper/ChainParams.h>
+#include <SDK/SpvService/ChainParams.h>
 #include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/Account/ISubAccount.h>
 

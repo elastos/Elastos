@@ -11,7 +11,6 @@
 #include "TransactionInput.h"
 
 #include <SDK/Crypto/Key.h>
-#include <SDK/Wrapper/WrapperList.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 

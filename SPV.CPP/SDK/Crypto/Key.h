@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_KEY_H__
 #define __ELASTOS_SDK_KEY_H__
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Common/BigNum.h>
 

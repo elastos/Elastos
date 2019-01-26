@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_CHECKPOINT_H__
 #define __ELASTOS_SDK_CHECKPOINT_H__
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/Mstream.h>
 
 #include <Core/BRInt.h>

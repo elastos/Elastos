@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_ADDRESS_H__
 #define __ELASTOS_SDK_ADDRESS_H__
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 

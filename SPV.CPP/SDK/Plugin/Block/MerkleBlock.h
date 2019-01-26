@@ -9,7 +9,6 @@
 #include "AuxPow.h"
 #include "ELAMerkleBlock.h"
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Common/CMemBlock.h>
 
 #include <fruit/fruit.h>

@@ -13,8 +13,7 @@
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Base/Lockable.h>
 #include <SDK/Base/BloomFilter.h>
-#include <SDK/Wrapper/ChainParams.h>
-#include <SDK/Wrapper/WrapperList.h>
+#include <SDK/SpvService/ChainParams.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Registry.h>

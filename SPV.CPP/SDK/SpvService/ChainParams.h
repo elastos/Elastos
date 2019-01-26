@@ -5,9 +5,8 @@
 #ifndef __ELASTOS_SDK_CHAINPARAMS_H__
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/KeyStore/CoinConfig.h>
-#include <SDK/Wrapper/CheckPoint.h>
+#include <SDK/SpvService/CheckPoint.h>
 
 #include <boost/shared_ptr.hpp>
 #include <string>

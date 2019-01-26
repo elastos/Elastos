@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
 #include <SDK/Common/CMemBlock.h>
-#include <SDK/Wrapper/Wrapper.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
 #include <boost/shared_ptr.hpp>
