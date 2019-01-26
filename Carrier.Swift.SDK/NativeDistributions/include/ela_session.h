@@ -634,7 +634,7 @@ typedef struct ElaStreamCallbacks {
      * @param
      *      channel     [in] The current channel ID.
      * @param
-     *      data        [in] The received data.
+     *      data        [in] The received data(NULL if @len is zero).
      * @param
      *      len         [in] The received data length.
      * @param
@@ -965,9 +965,11 @@ int ela_stream_close_channel(ElaSession *session, int stream, int channel);
  * @param
  *      channel     [in] The channel ID.
  * @param
- *      data        [in] The outgoing data.
+ *      data        [in] The outgoing data(MUST be NULL if @len is zero).
  * @param
- *      len         [in] The outgoing data length.
+ *      len         [in] The outgoing data length(COULD be zero, the receiver
+ *                       will get ElaStreamCallbacks::channel_data callback with
+ *                       argument @len being zero).
  *
  * @return
  *      Sent bytes on success, or -1 if an error occurred.
