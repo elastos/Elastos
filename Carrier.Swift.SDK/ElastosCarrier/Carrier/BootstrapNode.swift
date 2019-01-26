@@ -25,58 +25,25 @@ import Foundation;
 @objc(ELABootstrapNode)
 public class BootstrapNode: NSObject {
 
-    private var _ipv4       : String?
-    private var _ipv6       : String?
-    private var _port       : String?
-    private var _publicKey  : String?
-
     /**
         Ipv4 address.
      */
-    public var ipv4: String?  {
-        set {
-            _ipv4 = newValue
-        }
-        get {
-            return _ipv4
-        }
-    }
+    public var ipv4: String?
 
     /**
         Ipv6 address.
      */
-    public var ipv6: String?  {
-        set {
-            _ipv6 = newValue
-        }
-        get {
-            return _ipv6
-        }
-    }
+    public var ipv6: String?
 
     /**
         Port.
      */
-    public var port: String?  {
-        set {
-            _port = newValue
-        }
-        get {
-            return _port
-        }
-    }
+    public var port: String?
 
     /**
         public address.
      */
-    public var publicKey: String?  {
-        set {
-            _publicKey = newValue
-        }
-        get {
-            return _publicKey
-        }
-    }
+    public var publicKey: String?
 
     internal static func format(_ node: BootstrapNode) -> String {
         return String(format: "ipv4[%@], ipv6[%@], port[%@], publicKey[%@]",

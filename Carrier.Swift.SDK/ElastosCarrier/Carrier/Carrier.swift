@@ -48,7 +48,7 @@ public class Carrier: NSObject {
     private  var didKill : Bool
     private  let semaph  : DispatchSemaphore
 
-    internal var delegate: CarrierDelegate?
+    internal weak var delegate: CarrierDelegate?
 
     internal var friends: [CarrierFriendInfo]
 
@@ -75,7 +75,7 @@ public class Carrier: NSObject {
     /// - Parameter id: The carrier id to be check
     ///
     /// - Returns: True if carrier id is valid, otherwise false
-    public static func isValidId(_ id: String) -> Bool {
+    public static func isValidUserId(_ id: String) -> Bool {
         return (Base58.decode(id)?.count == 32)
     }
 
@@ -84,11 +84,9 @@ public class Carrier: NSObject {
     /// - Parameter address: The carrier node address.
     ///
     /// - Returns: Valid Id if carrier node address is valid, otherwise nil
-    public static func getIdFromAddress(_ address: String) -> String? {
-        let addr = Base58.decode(address);
-
-        if addr?.count == 38 {
-            return Base58.encode(Array(addr!.prefix(32)))
+    public static func getUserIdFromAddress(_ address: String) -> String? {
+        if let addr = Base58.decode(address), addr.count == 38 {
+            return Base58.encode(Array(addr.prefix(32)))
         } else {
             return nil
         }
@@ -111,7 +109,7 @@ public class Carrier: NSObject {
     ///   - delegate: The delegate for carrier node to comply with
     ///
     /// - Throws: CarrierError
-    public static func initializeInstance(options: CarrierOptions,
+    public static func initializeSharedInstance(options: CarrierOptions,
                                    delegate: CarrierDelegate) throws {
         if (carrierInst == nil) {
             Log.d(TAG, "Attempt to create native carrier instance ...")
@@ -143,7 +141,7 @@ public class Carrier: NSObject {
     /// Get a carrier node singleton instance.
     ///
     /// - Returns: The carrier node instance or ni
-    public static func getInstance() -> Carrier? {
+    public static func sharedInstance() -> Carrier? {
         return carrierInst
     }
 
@@ -302,6 +300,17 @@ public class Carrier: NSObject {
         return nospam
     }
 
+    @objc(getSelfNospam:)
+    public func getSelfNospam(error: NSErrorPointer) -> UInt32 {
+        var nospam: UInt32 = 0
+        do {
+            nospam = try getSelfNospam()
+        } catch let aError as NSError {
+            error?.pointee = aError
+        }
+        return nospam
+    }
+
     /// Update self user information.
     ///
     /// After self user information changed, carrier node will update this
@@ -368,7 +377,6 @@ public class Carrier: NSObject {
     /// - Returns: The current presence status
     ///
     /// - Throws: CarrierError
-    //@objc(getSelfPresence:)
     public func getSelfPresence() throws -> CarrierPresenceStatus {
         var cpresence = CPresenceStatus_None
         let result = ela_get_self_presence(ccarrier, &cpresence)
@@ -381,6 +389,17 @@ public class Carrier: NSObject {
 
         let presence = convertCPresenceStatusToCarrierPresenceStatus(cpresence.rawValue)
         Log.d(Carrier.TAG, "Current self presence: \(presence)")
+        return presence
+    }
+
+    @objc(getSelfPresence:)
+    public func getSelfPresence(error: NSErrorPointer) -> CarrierPresenceStatus {
+        var presence : CarrierPresenceStatus = .None
+        do {
+            presence = try getSelfPresence()
+        } catch let aError as NSError {
+            error?.pointee = aError
+        }
         return presence
     }
 
@@ -587,6 +606,7 @@ public class Carrier: NSObject {
     ///   - msg: The message content defined by application in string type.
     ///
     /// - Throws: CarrierError
+    @objc(sendFriendMessage:message:error:)
     public func sendFriendMessage(to target: String, withMessage msg: String) throws {
         let result = target.withCString {(cto) in
             return msg.withCString { (cmsg) -> Int32 in
@@ -616,6 +636,7 @@ public class Carrier: NSObject {
     ///   - msg: The message content defined by application in Data type.
     ///
     /// - Throws: CarrierError
+    @objc(sendFriendMessage:data:error:)
     public func sendFriendMessage(to target: String, withData data: Data) throws {
         let result = target.withCString { (cto) in
             return data.withUnsafeBytes{ (cdata) -> Int32 in
@@ -779,7 +800,7 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    public func newGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+    public func createGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);
 
@@ -820,7 +841,7 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(joinGroup:createdBy:withCookie:delegate:)
+    @objc(joinGroupCreatedBy:withCookie:delegate:error:)
     public func joinGroup(createdBy friendId: String, withCookie cookie: Data,
                             delegate: CarrierGroupDelegate) throws -> CarrierGroup {
 
@@ -861,10 +882,9 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(leave:fromGroup:)
+    @objc(leaveGroup:error:)
     public func leaveGroup(from group: CarrierGroup) throws {
         let groupid = group.getId()
-        groups.removeValue(forKey: group.getId())
 
         let result = groupid.withCString() { (ptr) in
             return ela_leave_group(ccarrier, ptr)
@@ -873,10 +893,10 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Leave group \(groupid) error: 0x%X", errno)
-            groups[groupid] = group
             throw CarrierError.FromErrorCode(errno: errno)
         }
 
+        groups.removeValue(forKey: groupid)
         group.leave()
     }
 
@@ -888,6 +908,7 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
+    @objc(getGroups:)
     public func getGroups() throws -> [CarrierGroup] {
         var tempGroups = [CarrierGroup]()
         tempGroups.append(contentsOf: self.groups.values)

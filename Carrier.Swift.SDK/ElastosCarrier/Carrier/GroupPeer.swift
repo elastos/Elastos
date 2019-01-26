@@ -34,9 +34,6 @@ public class CarrierGroupPeer: NSObject {
     /// Elastos carrier peer name max length.
     public static let MAX_NAME_LEN: Int = 63
 
-    private var _userId   : String?
-    private var _name     : String?
-
     internal override init() {
         super.init()
     }
@@ -44,26 +41,12 @@ public class CarrierGroupPeer: NSObject {
     /**
         User ID.
      */
-    public internal(set) var userId: String?  {
-        set {
-            _userId = newValue
-        }
-        get {
-            return _userId
-        }
-    }
+    public internal(set) var userId: String?
 
     /**
         Nickname, also as display name.
      */
-    public var name: String? {
-        set {
-            _name = newValue
-        }
-        get {
-            return _name
-        }
-    }
+    public var name: String?
 
     internal static func format(_ info: CarrierGroupPeer) -> String {
         return String(format: "userId[%@], name[%@]",

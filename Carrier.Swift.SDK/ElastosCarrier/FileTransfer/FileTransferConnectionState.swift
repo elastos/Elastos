@@ -26,8 +26,8 @@ import Foundation
 ///
 /// The filetransfer connection state will be changed according to the phase of
 //  the filetransfer instance.
-@objc(ELACarrierFileTransferConnection)
-public enum CarrierFileTransferConnection: Int, CustomStringConvertible {
+@objc(ELACarrierFileTransferConnectionState)
+public enum CarrierFileTransferConnectionState: Int, CustomStringConvertible {
     /// The file transfer connection is initialized.
     case Initialized = 1
 
@@ -43,7 +43,7 @@ public enum CarrierFileTransferConnection: Int, CustomStringConvertible {
     /// The file transfer connection failed with some reason.
     case Error = 5
 
-    internal static func format(_ state: CarrierFileTransferConnection) -> String {
+    internal static func format(_ state: CarrierFileTransferConnectionState) -> String {
         var value: String
 
         switch state {
@@ -63,11 +63,11 @@ public enum CarrierFileTransferConnection: Int, CustomStringConvertible {
     }
 
     public var description: String {
-        return CarrierFileTransferConnection.format(self)
+        return CarrierFileTransferConnectionState.format(self)
     }
 }
 
 internal func convertCFileTransferConnectionToCarrierFileTransferConnection (
-        _ cstate : CFileTransferConnection) -> CarrierFileTransferConnection {
-    return CarrierFileTransferConnection(rawValue: Int(cstate.rawValue))!
+        _ cstate : CFileTransferConnection) -> CarrierFileTransferConnectionState {
+    return CarrierFileTransferConnectionState(rawValue: Int(cstate.rawValue))!
 }

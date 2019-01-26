@@ -34,9 +34,9 @@ public class CarrierGroup: NSObject {
     private static let MAX_ID_LEN: Int = 45
 
     internal var ccarrier: OpaquePointer?
-    internal var groupid : String;
+    internal var groupid : String
     private  var didLeave : Bool
-    var delegate: CarrierGroupDelegate?
+    weak var delegate: CarrierGroupDelegate?
 
     init(_ ccarrier: OpaquePointer!, _ groupid: String,
                  _ delegate: CarrierGroupDelegate) {
@@ -85,8 +85,8 @@ public class CarrierGroup: NSObject {
     /// - Throws:
     ///     CarrierError.
     ///
-    @objc(invite:withFriend:)
-    public func invite(withFriend friendId: String) throws {
+    @objc(inviteFriend:error:)
+    public func inviteFriend(_ friendId: String) throws {
         let result = groupid.withCString{ (cgroupid) -> Int32 in
             return friendId.withCString { (cfriendid) -> Int32 in
                 return ela_group_invite(ccarrier, cgroupid, cfriendid)
@@ -114,8 +114,8 @@ public class CarrierGroup: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(sendMessage:withData:)
-    public func sendMessage(withData data: Data) throws {
+    @objc(sendMessage:error:)
+    public func sendMessage(_ data: Data) throws {
         let result = groupid.withCString{ (cgroupid) -> Int32 in
             return data.withUnsafeBytes{ (cdata) -> Int32 in
                 return ela_group_send_message(ccarrier, cgroupid, cdata, data.count)
@@ -139,6 +139,7 @@ public class CarrierGroup: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
+    @objc(getTitle:)
     public func getTitle() throws -> String {
         let len = CarrierGroup.MAX_GROUP_TITLE_LEN + 1
         var data = Data(count: len)
@@ -169,8 +170,8 @@ public class CarrierGroup: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(setTitle:withNewValue:)
-    public func setTitle(newTitle: String) throws {
+    @objc(setTitle:error:)
+    public func setTitle(_ newTitle: String) throws {
         let result = groupid.withCString{ (cgroupid) -> Int32 in
             return newTitle.withCString{ (ctitle) -> Int32 in
                 return ela_group_set_title(ccarrier, cgroupid, ctitle)
@@ -235,7 +236,7 @@ public class CarrierGroup: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(getPeer:byPeerId:)
+    @objc(getPeerByPeerId:error:)
     public func getPeer(byPeerid peerId: String) throws -> CarrierGroupPeer {
         var cpeer = CGroupPeer()
         

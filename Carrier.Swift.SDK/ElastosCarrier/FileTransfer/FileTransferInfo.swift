@@ -35,51 +35,26 @@ public class CarrierFileTransferInfo: NSObject {
     /// Carrier transfer file ID max length.
     public static let MAX_FILE_ID_LEN = 45
 
-    private var _fileName : String?
-    private var _fileId   : String?
-    private var _fileSize : UInt64
-
     internal override init() {
-        _fileSize = 0
+        fileSize = 0
         super.init()
     }
     
     /**
         File name of file to transfer, without file path.
      */
-    public var fileName: String? {
-        set {
-            _fileName = newValue
-        }
-        get {
-            return _fileName
-        }
-    }
+    public var fileName: String?
 
     /**
         Unique fileid of file to transfer, which is being unique in a file
         transfer instance.
      */
-    public var fileId: String? {
-        set {
-            _fileId = newValue
-        }
-        get {
-            return _fileId
-        }
-    }
+    public var fileId: String?
 
     /**
         Total size of file to transfer.
      */
-    public var fileSize: UInt64 {
-        set {
-            _fileSize = newValue
-        }
-        get {
-            return _fileSize
-        }
-    } 
+    public var fileSize: UInt64
 
     internal static func format(_ fileinfo: CarrierFileTransferInfo) -> String {
         return String(format: "FileTransferInfo: filename[%@]," +

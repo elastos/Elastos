@@ -36,13 +36,9 @@ public class CarrierFriendInfo: CarrierUserInfo {
     /// carrier node presence max length.
     public static let MAX_USER_PRESENCE_LEN = 31
 
-    private var _label    : String?
-    private var _presence : CarrierPresenceStatus
-    private var _status   : CarrierConnectionStatus
-
     internal override init() {
-        _presence = CarrierPresenceStatus.None
-        _status   = CarrierConnectionStatus.Disconnected
+        presence = CarrierPresenceStatus.None
+        status   = CarrierConnectionStatus.Disconnected
         super.init()
     }
 
@@ -68,38 +64,17 @@ public class CarrierFriendInfo: CarrierUserInfo {
     /**
         Friend's presence status.
      */
-    public var status: CarrierConnectionStatus {
-        set {
-            _status = newValue
-        }
-        get {
-            return _status
-        }
-    }
+    public var status: CarrierConnectionStatus
 
     /**
         Label name for the friend.
      */
-    public var label: String? {
-        set {
-            _label = newValue
-        }
-        get {
-            return _label
-        }
-    }
+    public var label: String?
 
     /**
         Friend's presence status.
      */
-    public var presence: CarrierPresenceStatus {
-        set {
-            _presence = newValue
-        }
-        get {
-            return _presence
-        }
-    } 
+    public var presence: CarrierPresenceStatus
 
     internal static func format2(_ info: CarrierFriendInfo) -> String {
         return String(format: "FriendInfo: userInfo[%@], status[%@]," +

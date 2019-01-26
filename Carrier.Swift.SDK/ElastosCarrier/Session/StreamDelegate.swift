@@ -106,7 +106,7 @@ public protocol CarrierStreamDelegate {
     /// - Returns: True on success, or false if an error occurred.
     ///     If this callback return false, the channel will be closed
     ///     with CloseReason_Error.
-    @objc(carrierStream:didReceiveDataFromChannel:withData:) optional
+    @objc(carrierStream:didReceiveDataFromChannel:data:) optional
     func didReceiveChannelData(_ stream: CarrierStream,
                                _ channel: Int,
                                _ data: Data) -> Bool

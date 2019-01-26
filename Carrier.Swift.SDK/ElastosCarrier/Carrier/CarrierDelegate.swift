@@ -59,7 +59,7 @@ public protocol CarrierDelegate {
     ///   - carrier: Carrier node instance
     ///
     /// - Returns: Void
-    @objc(carrierDidBecomeReady:)
+    @objc(carrierDidBecomeReady:) optional
     func didBecomeReady(_ carrier: Carrier)
 
     /// Tell the delegate that current self user info has been changed.
@@ -170,10 +170,10 @@ public protocol CarrierDelegate {
     ///   - message: The message content
     ///
     /// - Returns: Void
-    @objc(carrier:didReceiveFriendMessage:withMessage:)optional
+    @objc(carrier:didReceiveFriendMessage:data:) optional
     func didReceiveFriendMessage(_ carrier: Carrier,
                                  _ from: String,
-                                 _ message: Data)
+                                 _ data: Data)
 
     /// Tell the delegate that an friend invite request has been received.
     ///

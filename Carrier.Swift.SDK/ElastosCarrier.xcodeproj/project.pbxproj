@@ -16,8 +16,8 @@
 		A35CE15E21BE0D7200AF4FE3 /* FileTransferInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */; };
 		A35CE16021BE413000AF4FE3 /* FileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */; };
 		A35CE16221BE41E500AF4FE3 /* FileTransferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16121BE41E500AF4FE3 /* FileTransferDelegate.swift */; };
-		A35CE16421BE45F300AF4FE3 /* FileTransferConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16321BE45F300AF4FE3 /* FileTransferConnection.swift */; };
-		A35CE16621BE59FA00AF4FE3 /* FileProgressDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16521BE59FA00AF4FE3 /* FileProgressDelegate.swift */; };
+		A35CE16421BE45F300AF4FE3 /* FileTransferConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16321BE45F300AF4FE3 /* FileTransferConnectionState.swift */; };
+		A35CE16621BE59FA00AF4FE3 /* FileTransferProgressDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16521BE59FA00AF4FE3 /* FileTransferProgressDelegate.swift */; };
 		A35CE16821BFAEE900AF4FE3 /* libelafiletrans.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A35CE16721BFAEE900AF4FE3 /* libelafiletrans.dylib */; };
 		A360378020161AAF001A666E /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
 		A38A7CC4214B6A9D0010D5EB /* libelasession.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */; };
@@ -76,8 +76,8 @@
 		A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferInfo.swift; sourceTree = "<group>"; };
 		A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransfer.swift; sourceTree = "<group>"; };
 		A35CE16121BE41E500AF4FE3 /* FileTransferDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferDelegate.swift; sourceTree = "<group>"; };
-		A35CE16321BE45F300AF4FE3 /* FileTransferConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferConnection.swift; sourceTree = "<group>"; };
-		A35CE16521BE59FA00AF4FE3 /* FileProgressDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileProgressDelegate.swift; sourceTree = "<group>"; };
+		A35CE16321BE45F300AF4FE3 /* FileTransferConnectionState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferConnectionState.swift; sourceTree = "<group>"; };
+		A35CE16521BE59FA00AF4FE3 /* FileTransferProgressDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferProgressDelegate.swift; sourceTree = "<group>"; };
 		A35CE16721BFAEE900AF4FE3 /* libelafiletrans.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelafiletrans.dylib; path = NativeDistributions/libs/libelafiletrans.dylib; sourceTree = "<group>"; };
 		A360377F20161AAF001A666E /* BootstrapNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootstrapNode.swift; path = Carrier/BootstrapNode.swift; sourceTree = "<group>"; };
 		A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelasession.dylib; path = NativeDistributions/libs/libelasession.dylib; sourceTree = "<group>"; };
@@ -156,8 +156,8 @@
 		A35CE15621BD428B00AF4FE3 /* FileTransfer */ = {
 			isa = PBXGroup;
 			children = (
-				A35CE16521BE59FA00AF4FE3 /* FileProgressDelegate.swift */,
-				A35CE16321BE45F300AF4FE3 /* FileTransferConnection.swift */,
+				A35CE16521BE59FA00AF4FE3 /* FileTransferProgressDelegate.swift */,
+				A35CE16321BE45F300AF4FE3 /* FileTransferConnectionState.swift */,
 				A35CE16121BE41E500AF4FE3 /* FileTransferDelegate.swift */,
 				A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */,
 				A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */,
@@ -431,7 +431,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A3B497EB2003763600420421 /* UserInfo.swift in Sources */,
-				A35CE16621BE59FA00AF4FE3 /* FileProgressDelegate.swift in Sources */,
+				A35CE16621BE59FA00AF4FE3 /* FileTransferProgressDelegate.swift in Sources */,
 				A3B498172003B3AF00420421 /* CarrierError.swift in Sources */,
 				A3B498092003B3A500420421 /* PortForwardingProtocol.swift in Sources */,
 				A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */,
@@ -447,7 +447,7 @@
 				A3B498112003B3A500420421 /* StreamState.swift in Sources */,
 				A3B498122003B3A500420421 /* Session.swift in Sources */,
 				A3B497E82003763600420421 /* LogLevel.swift in Sources */,
-				A35CE16421BE45F300AF4FE3 /* FileTransferConnection.swift in Sources */,
+				A35CE16421BE45F300AF4FE3 /* FileTransferConnectionState.swift in Sources */,
 				A360378020161AAF001A666E /* BootstrapNode.swift in Sources */,
 				A3B497F52003779300420421 /* CCarrier.swift in Sources */,
 				A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */,

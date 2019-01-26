@@ -50,7 +50,7 @@ private func onReady(_: OpaquePointer?, cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
 
-    handler.didBecomeReady(carrier)
+    handler.didBecomeReady?(carrier)
 }
 
 private func onSelfInfoChanged(_: OpaquePointer?,
@@ -216,7 +216,7 @@ private func onGroupConnected(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
     if (group != nil)  {
         let handler = group!.delegate!
 
-        handler.willBecomeConnected(group!)
+        handler.groupDidConnect?(group!)
     }
 }
 
@@ -233,7 +233,7 @@ private func onGroupMessage(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
         let from    = String(cString: cfrom!)
         let message = Data(bytes: cmsg!, count: length)
 
-        handler.didReceiveMessage?(group!, from, message)
+        handler.didReceiveGroupMessage?(group!, from, message)
     }
 }
 
@@ -252,7 +252,7 @@ private func onGroupTitle(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
         let from  = String(cString: cfrom!)
         let title = String(cString: ctitle!)
 
-        handler.titleDidChange?(group!, from, title)
+        handler.groupTitleDidChange?(group!, from, title)
     }
 }
 
@@ -271,7 +271,7 @@ private func onPeerName(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
         let from = String(cString: cfrom!)
         let name = String(cString: cname!)
 
-        handler.peerNameDidChange?(group!, from, name)
+        handler.groupPeerNameDidChange?(group!, from, name)
     }
 }
 
@@ -285,7 +285,7 @@ private func onPeerListChanged(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?
     if (group != nil)  {
         let handler = group!.delegate!
 
-        handler.peerListDidChange?(group!)
+        handler.groupPeerListDidChange?(group!)
     }
 }
 

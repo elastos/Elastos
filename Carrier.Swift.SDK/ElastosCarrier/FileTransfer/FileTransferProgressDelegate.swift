@@ -25,29 +25,29 @@ import Foundation
 /**
     The protocol to file transfer progress of upper layer
  */
-@objc(ELACarrierFileProgressDelegate)
-public protocol CarrierFileProgressDelegate {
+@objc(ELACarrierFileTransferProgressDelegate)
+public protocol CarrierFileTransferProgressDelegate {
 
     /// Tell the delegate that the state of carrier filetransfer has been changed.
     ///
     /// - Parameters:
     ///     - newState: Stream state defined in `CarrierStreamState`
-    @objc(CarrierFileTransferStateDidChange:) optional
-    func fileTransferStateDidChange(_ newState: CarrierFileTransferConnection)
+    @objc(fileTransferStateDidChange:) optional
+    func fileTransferStateDidChange(_ newState: CarrierFileTransferConnectionState)
 
     /// Tell the delegate that a block data of file has been sent.
     ///
     /// - Parameters:
     ///     - length:     The length of file data that has been sent
     ///     - totalSize:  The total size of file being transfered.
-    @objc(didSendDataWithLength:totalSize:) optional
-    func didSendData(length: UInt32, totalSize: UInt64)
+    @objc(fileTransferDidSendDataLength:totalSize:) optional
+    func fileTransferDidSendData(_ length: UInt32, _ totalSize: UInt64)
 
     /// Tell the delegate that a block data of file has been received.
     ///
     /// - Parameters:
     ///     - length:     The length of file data that has been sent
     ///     - totalSize:  The total size of file being transfered.
-    @objc(didReceiveDataWithLength:totalSize:)optional
-    func didReceiveData(length: UInt32, totalSize: UInt64)
+    @objc(fileTransferDidReceiveDataLength:totalSize:)optional
+    func fileTransferDidReceiveData(_ length: UInt32, _ totalSize: UInt64)
 }

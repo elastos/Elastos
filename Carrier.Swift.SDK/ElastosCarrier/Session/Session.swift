@@ -168,6 +168,7 @@ public class CarrierSession: NSObject {
         self.streams  = [Int: CarrierStream]()
         self.to = to
         self.didClose = false
+        super.init()
     }
 
     deinit {

@@ -52,115 +52,50 @@ public class CarrierUserInfo: NSObject {
     /// Elastos carrier user region max length.
     public static let MAX_REGION_LEN: Int = 127
 
-    private var _userId   : String?
-    private var _name     : String?
-    private var _briefDescription: String?
-    private var _hasAvatar: Bool
-    private var _gender   : String?
-    private var _phone    : String?
-    private var _email    : String?
-    private var _region   : String?
-
     internal override init() {
-        self._hasAvatar = false
+        self.hasAvatar = false
         super.init()
     }
 
     /**
         User ID.
      */
-    public internal(set) var userId: String?  {
-        set {
-            _userId = newValue
-        }
-        get {
-            return _userId
-        }
-    }
+    public internal(set) var userId: String?
 
     /**
         Nickname, also as display name.
      */
-    public var name: String? {
-        set {
-            _name = newValue
-        }
-        get {
-            return _name
-        }
-    }
+    public var name: String?
 
     /**
         User's brief description, also as what's up.
      */
-    public var briefDescription: String? {
-        set {
-            _briefDescription = newValue
-        }
-        get {
-            return _briefDescription
-        }
-    }
+    public var briefDescription: String?
 
     /**
         If user has avatar.
      */
-    public var hasAvatar: Bool {
-        set {
-            _hasAvatar = newValue
-        }
-        get {
-            return _hasAvatar
-        }
-    }
+    public var hasAvatar: Bool
 
     /**
         User's gender.
      */
-    public var gender: String? {
-        set {
-            _gender = newValue
-        }
-        get {
-            return _gender
-        }
-    }
+    public var gender: String?
 
     /**
         User's phone number.
      */
-    public var phone: String? {
-        set {
-            _phone = newValue
-        }
-        get {
-            return _phone
-        }
-    }
+    public var phone: String?
 
     /**
         User's email address.
      */
-    public var email: String? {
-        set {
-            _email = newValue
-        }
-        get {
-            return _email
-        }
-    }
+    public var email: String?
 
     /**
         User's region information.
      */
-    public var region: String? {
-        set {
-            _region = newValue
-        }
-        get {
-            return _region
-        }
-    }
+    public var region: String?
 
     internal static func format(_ info: CarrierUserInfo) -> String {
         return String(format: "userId[%@], name[%@], briefDescription[%@]," +

@@ -28,46 +28,26 @@ import Foundation
  */
 @objc(ELACarrierOptions)
 public class CarrierOptions: NSObject {
-    private var _persistentLocation: String?
-    private var _udpEnabled: Bool = true
 
-    private var _bootstrapNodes: [BootstrapNode]?
+    public override init() {
+        udpEnabled = true
+        super.init()
+    }
 
     /**
         The application defined persistent data location.
         The location must be set.
      */
-    public var persistentLocation: String? {
-        set {
-            _persistentLocation = newValue
-        }
-        get {
-            return _persistentLocation
-        }
-    }
+    public var persistentLocation: String?
 
     /**
         The option to decide to use udp transport or not. Setting this option
         to false will force Carrier node to use TCP only, which will
         potentially slow down the message to run through.
      */
-    public var udpEnabled: Bool {
-        set {
-            _udpEnabled = newValue
-        }
-        get {
-            return _udpEnabled
-        }
-    }
+    public var udpEnabled: Bool
 
-    public var bootstrapNodes: [BootstrapNode]? {
-        set {
-            _bootstrapNodes = newValue
-        }
-        get {
-            return _bootstrapNodes
-        }
-    }
+    public var bootstrapNodes: [BootstrapNode]?
 }
 
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {

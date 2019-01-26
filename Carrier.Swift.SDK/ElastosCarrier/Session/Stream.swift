@@ -29,25 +29,17 @@ import Foundation
 public class CarrierStream: NSObject {
 
     private var  csession: OpaquePointer
-    private var _streamId: Int
     private var      type: CarrierStreamType;
 
+    internal var streamId: Int
+    
     internal weak var delegate: CarrierStreamDelegate?
 
     internal init(_ csession: OpaquePointer, _ type: CarrierStreamType) {
         self.csession = csession
-        self._streamId = -1
+        self.streamId = -1
         self.type = type
-        self.csession  = csession
-    }
-
-    internal var streamId: Int {
-        set {
-            _streamId = newValue
-        }
-        get {
-            return _streamId
-        }
+        super.init()
     }
 
     /// Get the carrier stream type.
@@ -60,6 +52,7 @@ public class CarrierStream: NSObject {
 
     /// TODO: add getState
     
+    @objc(getTransportInfo:)
     public func getTransportInfo() throws -> CarrierTransportInfo {
         var cinfo = CTransportInfo()
         let result = ela_stream_get_transport_info(csession,

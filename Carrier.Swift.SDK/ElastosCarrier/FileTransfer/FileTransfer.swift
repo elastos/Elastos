@@ -23,30 +23,34 @@
 import Foundation
 
 @inline(__always)
-private func getDelegate(_ cctxt: UnsafeMutableRawPointer) -> CarrierFileProgressDelegate {
-    return Unmanaged<CarrierFileProgressDelegate>.fromOpaque(cctxt).takeUnretainedValue()
+private func getDelegate(_ cctxt: UnsafeMutableRawPointer) -> CarrierFileTransferProgressDelegate {
+    return Unmanaged<CarrierFileTransferProgressDelegate>.fromOpaque(cctxt).takeUnretainedValue()
 }
 
-func onStateChanged(cStatus: Int32, cctxt: UnsafeMutableRawPointer?)
+func onStateChanged(cState: Int32, cctxt: UnsafeMutableRawPointer?)
 {
     let handler = getDelegate(cctxt!)
-    let state = CarrierFileTransferConnection(rawValue: Int(cStatus))
+    let state = CarrierFileTransferConnectionState(rawValue: Int(cState))
 
     handler.fileTransferStateDidChange?(state!)
+
+    if state == .Closed || state == .Error {
+        Unmanaged<CarrierFileTransferProgressDelegate>.fromOpaque(cctxt!).release();
+    }
 }
 
 func onDataSent(length: UInt32, totalSize: UInt64, cctxt: UnsafeMutableRawPointer?)
 {
     let handler = getDelegate(cctxt!)
 
-    handler.didSendData?(length: length, totalSize: totalSize)
+    handler.fileTransferDidSendData?(length, totalSize)
 }
 
 func onDataReceived(length: UInt32, totalSize: UInt64, cctxt: UnsafeMutableRawPointer?)
 {
     let handler = getDelegate(cctxt!)
 
-    handler.didReceiveData?(length: length, totalSize: totalSize)
+    handler.fileTransferDidReceiveData?(length, totalSize)
 }
 
 @inline(__always) private func TAG() -> String { return "CarrierFileTransfer" }
@@ -67,6 +71,7 @@ public class CarrierFileTransfer: NSObject {
     init(_ address: String) {
         self.address = address
         self.didClose = false
+        super.init()
     }
 
     deinit {
@@ -101,7 +106,7 @@ public class CarrierFileTransfer: NSObject {
     /// - Parameters:
     ///     - fileName:    The file name
     @objc(acquireFileIdByFileName:error:)
-    public func acquireFileId(byFileName fileName: String) throws -> String {
+    public func acquireFileId(by fileName: String) throws -> String {
         let len  = CarrierFileTransfer.MAX_FILE_ID_LEN + 1
         var data = Data(count: len)
 
@@ -127,7 +132,7 @@ public class CarrierFileTransfer: NSObject {
     ///
     /// - Parameters:
     ///     - fileId:    The file identifier
-    @objc(acquireFileNameBy:error:)
+    @objc(acquireFileNameByFileId:error:)
     public func acquireFileName(by fileId: String) throws -> String {
         let len  = CarrierFileTransfer.MAX_FILE_NAME_LEN + 1
         var data = Data(count: len)
@@ -190,8 +195,8 @@ public class CarrierFileTransfer: NSObject {
     ///
     /// - Throws: CarrierError
     ///
-    @objc(addFileWithFileInfo:error:)
-    public func addFile(withFileInfo fileInfo: CarrierFileTransferInfo) throws {
+    @objc(addFile:error:)
+    public func addFile(_ fileInfo: CarrierFileTransferInfo) throws {
         var cfileInfo = convertCarrierFileTransferInfoToCFileTransferInfo(fileInfo)
 
         let result = ela_filetransfer_add(cfiletransfer, &cfileInfo)
@@ -323,14 +328,14 @@ public class CarrierFileTransfer: NSObject {
     public static func sendFile(_ carrier: Carrier,
                                 toAddress address: String,
                                 withFileName fileName: String,
-                                delegate: CarrierFileProgressDelegate) throws {
+                                delegate: CarrierFileTransferProgressDelegate) throws {
 
         var callbacks = CFileProgressCallbacks()
         callbacks.state_changed = onStateChanged
         callbacks.sent          = onDataSent
         callbacks.received      = onDataReceived
 
-        let cctxt = Unmanaged.passUnretained(delegate).toOpaque()
+        let cctxt = Unmanaged.passRetained(delegate).toOpaque()
 
         let result = address.withCString() { (cAddress) -> Int32 in
             return fileName.withCString() { (cFileName) -> Int32 in
@@ -350,14 +355,14 @@ public class CarrierFileTransfer: NSObject {
     public static func receiveFile(_ carrier: Carrier,
                                    fromAddress address: String,
                                    withFileName fileName: String,
-                                   delegate: CarrierFileProgressDelegate) throws {
+                                   delegate: CarrierFileTransferProgressDelegate) throws {
 
         var callbacks = CFileProgressCallbacks()
         callbacks.state_changed = onStateChanged
         callbacks.sent          = onDataSent
         callbacks.received      = onDataReceived
 
-        let cctxt = Unmanaged.passUnretained(delegate).toOpaque()
+        let cctxt = Unmanaged.passRetained(delegate).toOpaque()
 
         let result = address.withCString() { (cAddress) -> Int32 in
             return fileName.withCString() { (cFileName) -> Int32 in

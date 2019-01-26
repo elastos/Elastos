@@ -33,8 +33,9 @@ public protocol CarrierFileTransferDelegate {
     ///
     /// - Parameters:
     ///   - newState: Stream state defined in `CarrierStreamState`
-    @objc(carrierFileTransferStateDidChange:) optional
-    func fileTransferStateDidChange(_ newState: CarrierFileTransferConnection)
+    @objc(carrierFileTransfer:stateDidChange:) optional
+    func fileTransferStateDidChange(_ fileTransfer: CarrierFileTransfer,
+                                    _ newState: CarrierFileTransferConnectionState)
 
     /// Tell the delegate that the current filetransfer received an incoming
     /// file request packet.
@@ -43,8 +44,9 @@ public protocol CarrierFileTransferDelegate {
     ///   - fileId: The file identififer.
     ///   - fileName: The file name to transfer.
     ///   - fileSize: The total size of file.
-    @objc(didReceiveFileRequest:withFileName:size:) optional
-    func didReceiveFileRequest(_ fileId: String,
+    @objc(carrierFileTransfer:didReceiveFileRequestWithFileId:fileName:size:) optional
+    func didReceiveFileRequest(_ fileTransfer: CarrierFileTransfer,
+                               _ fileId: String,
                                _ fileName: String,
                                _ fileSize: UInt64)
 
@@ -54,8 +56,9 @@ public protocol CarrierFileTransferDelegate {
     /// - Parameters:
     ///   - fileId: The file identififer.
     ///   - stream: The offset of file where transfer begins.
-    @objc(didReceivePullRequest:withOffset:) optional
-    func didReceivePullRequest(_ fileId: String,
+    @objc(carrierFileTransfer:didReceivePullRequestWithFileId:offset:) optional
+    func didReceivePullRequest(_ fileTransfer: CarrierFileTransfer,
+                               _ fileId: String,
                                _ offset: UInt64)
 
     /// Tell the delegate that the current filetransfer received an incoming
@@ -67,24 +70,28 @@ public protocol CarrierFileTransferDelegate {
     ///
     /// - Returns:
     ///   TODO:
-    @objc(didReceiveData:withData:) optional
-    func didReceiveData(_ fileId: String, _ data: Data) -> Bool
+    @objc(carrierFileTransfer:didReceiveDataWithFileId:data:) optional
+    func didReceiveFileTransferData(_ fileTransfer: CarrierFileTransfer,
+                                    _ fileId: String,
+                                    _ data: Data) -> Bool
 
     /// Tell the delegate that the filetransfer should pend data sending to
     /// remote peer.
     ///
     /// - Parameters:
     ///   - fileId: The file identifier
-    @objc(fileTransferPending:) optional
-    func fileTransferPending(_ fileId: String)
+    @objc(carrierFileTransfer:pendingTransferFile:) optional
+    func fileTransferPending(_ fileTransfer: CarrierFileTransfer,
+                             _ fileId: String)
 
     /// Tell the delegate that the filetransfer should resume data pending
     /// to remote peer.
     ///
     /// - Parameters:
     ///   - fileId: The file identifier
-    @objc(fileTransferResumed:) optional
-    func fileTransferResumed(_ fileId: String)
+    @objc(carrierFileTransfer:resumedTransferFile:) optional
+    func fileTransferResumed(_ fileTransfer: CarrierFileTransfer,
+                             _ fileId: String)
 
     /// Tell the delegate that the current filetransfer received an incoming
     /// data packet.
@@ -92,7 +99,9 @@ public protocol CarrierFileTransferDelegate {
     /// - Parameters:
     ///   - fileId: The file identififer.
     ///   - data:   The received data.
-    @objc(fileTransferWillCancel:withReason::) optional
-    func fileTransferWillCancel(_ fileId: String, _ status: Int,
+    @objc(carrierFileTransfer:willCancelTransferFile:withReason::) optional
+    func fileTransferWillCancel(_ fileTransfer: CarrierFileTransfer,
+                                _ fileId: String,
+                                _ status: Int,
                                 _ reason: String)
 }

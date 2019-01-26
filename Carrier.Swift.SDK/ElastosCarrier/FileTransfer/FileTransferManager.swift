@@ -28,7 +28,7 @@ private func getCurrentFileTransfer(_ cctxt: UnsafeMutableRawPointer) -> Carrier
 }
 
 func onStateChanged(_ : OpaquePointer?,
-                    cStatus: Int32, cctxt: UnsafeMutableRawPointer?)
+                    cState: Int32, cctxt: UnsafeMutableRawPointer?)
 {
     let filetransfer = getCurrentFileTransfer(cctxt!)
 
@@ -36,9 +36,9 @@ func onStateChanged(_ : OpaquePointer?,
         return
     }
 
-    let state = CarrierFileTransferConnection(rawValue: Int(cStatus))!
+    let state = CarrierFileTransferConnectionState(rawValue: Int(cState))!
 
-    handler.fileTransferStateDidChange?(state)
+    handler.fileTransferStateDidChange?(filetransfer, state)
 }
 
 func onFileReceived(_ : OpaquePointer?,
@@ -55,7 +55,7 @@ func onFileReceived(_ : OpaquePointer?,
     let fileId   = String(cString: cFileId!)
     let fileName = String(cString: cFileName!)
 
-    handler.didReceiveFileRequest?(fileId, fileName, fileSize)
+    handler.didReceiveFileRequest?(filetransfer, fileId, fileName, fileSize)
 }
 
 func onPullReceived(_ :OpaquePointer?,
@@ -70,7 +70,7 @@ func onPullReceived(_ :OpaquePointer?,
 
     let fileId = String(cString: cFileId!)
 
-    handler.didReceivePullRequest?(fileId, offset)
+    handler.didReceivePullRequest?(filetransfer, fileId, offset)
 }
 
 func onDataReceived(_ : OpaquePointer?,
@@ -86,12 +86,12 @@ func onDataReceived(_ : OpaquePointer?,
 
     var result: Bool = true
 
-    autoreleasepool {
-        let fileId = String(cString: cFileId!)
-        let data = Data(bytes: cData, count: Int(cLength))
+    if (handler.didReceiveFileTransferData != nil) {
+        autoreleasepool {
+            let fileId = String(cString: cFileId!)
+            let data = Data(bytes: cData, count: Int(cLength))
 
-        if (handler.didReceiveData != nil) {
-            result = handler.didReceiveData!(fileId, data)
+            result = handler.didReceiveFileTransferData!(filetransfer, fileId, data)
         }
     }
 
@@ -110,7 +110,7 @@ func onPendReceived(_ : OpaquePointer?,
 
     let fileId = String(cString: cFileId!)
 
-    handler.fileTransferPending?(fileId)
+    handler.fileTransferPending?(filetransfer, fileId)
 }
 
 func onResumeReceived(_ : OpaquePointer?,
@@ -125,7 +125,7 @@ func onResumeReceived(_ : OpaquePointer?,
 
     let fileId = String(cString: cFileId!)
 
-    handler.fileTransferResumed?(fileId)
+    handler.fileTransferResumed?(filetransfer, fileId)
 }
 
 func onCancelReceived(_ : OpaquePointer?,
@@ -142,7 +142,7 @@ func onCancelReceived(_ : OpaquePointer?,
     let fileId = String(cString: cFileId!)
     let reason = String(cString: cReason!)
 
-    handler.fileTransferWillCancel?(fileId, Int(cStatus), reason)
+    handler.fileTransferWillCancel?(filetransfer, fileId, Int(cStatus), reason)
 }
 
 @inline(__always) private func TAG() -> String { return "FileTransferManager" }
@@ -171,8 +171,8 @@ public class CarrierFileTransferManager: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(getInstance:error:)
-    public static func InitializeInstance(carrier: Carrier) throws {
+    @objc(initializeSharedInstance:error:)
+    public static func initializeSharedInstance(carrier: Carrier) throws {
         if (filetransferManager != nil && filetransferManager!.carrier != carrier) {
             filetransferManager?.cleanup()
         }
@@ -203,9 +203,9 @@ public class CarrierFileTransferManager: NSObject {
     ///
     /// - Throws:
     ///     CarrierError
-    @objc(getInstance:usingHandler:error:)
-    public static func InitializeInstance(carrier: Carrier,
-                            handler: @escaping CarrierFileTransferConnectHandler) throws {
+    @objc(initializeSharedInstance:connectHandler:error:)
+    public static func initializeSharedInstance(carrier: Carrier,
+                       connectHandler handler: @escaping CarrierFileTransferConnectHandler) throws {
         if (filetransferManager != nil && filetransferManager!.carrier != carrier) {
             filetransferManager?.cleanup()
         }
@@ -237,6 +237,9 @@ public class CarrierFileTransferManager: NSObject {
                 throw CarrierError.FromErrorCode(errno: errno)
             }
 
+            filetransferManager.didCleanup = false
+            self.filetransferManager = filetransferManager
+
             Log.d(TAG(), "The native filetransfer manager initialized.")
         }
     }
@@ -244,13 +247,14 @@ public class CarrierFileTransferManager: NSObject {
     /// Get a carrier filetransfer manager instance.
     ///
     /// - Returns: The carrier filetransfer manager or nil
-    public static func getInstance() -> CarrierFileTransferManager? {
+    public static func sharedInstance() -> CarrierFileTransferManager? {
         return filetransferManager
     }
 
     private init(_ carrier: Carrier) {
         self.carrier = carrier
-        self.didCleanup = false
+        self.didCleanup = true
+        super.init()
     }
 
     deinit {
@@ -264,7 +268,7 @@ public class CarrierFileTransferManager: NSObject {
         if !didCleanup {
             Log.d(TAG(), "Begin clean up native carrier session manager ...")
 
-            ela_session_cleanup(carrier!.ccarrier)
+            ela_filetransfer_cleanup(carrier!.ccarrier)
             carrier = nil
             didCleanup = true
             CarrierFileTransferManager.filetransferManager = nil
@@ -286,9 +290,9 @@ public class CarrierFileTransferManager: NSObject {
     /// - Returns: The new CarrierFileTransfer
     ///
     /// - Throws: CarrierError
-    private func newFileTransfer(to address: String,
-                                withFileInfo fileInfo: CarrierFileTransferInfo?,
-                                delegate: CarrierFileTransferDelegate)
+    public func createFileTransfer(to address: String,
+                                   withFileInfo fileInfo: CarrierFileTransferInfo?,
+                                   delegate: CarrierFileTransferDelegate)
         throws -> CarrierFileTransfer {
 
         var cFileInfo: CFileTransferInfo?

@@ -34,7 +34,8 @@ public protocol CarrierGroupDelegate {
     ///   - group: Group group instance.
     ///
     /// - Returns: Void
-    func willBecomeConnected(_ group: CarrierGroup)
+    @objc(carrierGroupDidConnect:) optional
+    func groupDidConnect(_ group: CarrierGroup)
 
     /// Tell the delegate that an group message has been received.
     ///
@@ -44,36 +45,36 @@ public protocol CarrierGroupDelegate {
     ///   - message: The message content
     ///
     /// - Returns: Void
-    @objc(group:didReceiveMessage:withMessage:) optional
-    func didReceiveMessage(_ group: CarrierGroup,
-                           _ from: String,
-                           _ message: Data)
+    @objc(carrierGroup:didReceiveMessageFromPeer:data:) optional
+    func didReceiveGroupMessage(_ group: CarrierGroup,
+                                _ from: String,
+                                _ data: Data)
 
     /// Tell the delegate that group title has been changed.
     ///
     /// - Parameters:
     ///     - group: Carrier group instance
-    ///     - from: The peer who chang the group title
+    ///     - from: The peer who change the group title
     ///     - newTitle: The new group title
     ///
     /// - Returns: Void
-    @objc(group:titleDidChange:newTitle:) optional
-    func titleDidChange(_ group: CarrierGroup,
-                        _ from: String,
-                        _ newTitle: String)
+    @objc(carrierGroup:titleChangedByPeer:newTitle:) optional
+    func groupTitleDidChange(_ group: CarrierGroup,
+                             _ from: String,
+                             _ newTitle: String)
 
     /// Tell the delegate that group peer name has been changed.
     ///
     /// - Parameters:
     ///     - group: Carrier group instance
-    ///     - from: The peer who chang it's name
+    ///     - from: The peer who change it's name
     ///     - newName: The new peer name
     ///
     /// - Returns: Void
-    @objc(group:peerNameDidChange:newName:) optional
-    func peerNameDidChange(_ group: CarrierGroup,
-                           _ from: String,
-                           _ newName: String)
+    @objc(carrierGroup:peer:nameDidChange:) optional
+    func groupPeerNameDidChange(_ group: CarrierGroup,
+                                _ from: String,
+                                _ newName: String)
 
     /// Tell the delegate that group peer list has been changed.
     ///
@@ -81,6 +82,6 @@ public protocol CarrierGroupDelegate {
     ///     - group: Carrier group instance
     ///
     /// - Returns: Void
-    @objc(peerListDidChange:) optional
-    func peerListDidChange(_ group: CarrierGroup)
+    @objc(carrierGroupPeerListDidChange:) optional
+    func groupPeerListDidChange(_ group: CarrierGroup)
 }

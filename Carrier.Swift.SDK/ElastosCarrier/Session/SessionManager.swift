@@ -47,8 +47,8 @@ public class CarrierSessionManager: NSObject {
     ///   - options: The options to set for carrier session manager
     ///
     /// - Throws: CarrierError
-    @objc(getInstance:error:)
-    public static func InitializeInstance(carrier: Carrier) throws {
+    @objc(initializeSharedInstance:error:)
+    public static func initializeSharedInstance(carrier: Carrier) throws {
         if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
             sessionMgr!.cleanup()
         }
@@ -69,6 +69,7 @@ public class CarrierSessionManager: NSObject {
             guard result >= 0 else {
                 let errno = getErrorCode()
                 Log.e(TAG(), "Set session callback error: 0x%x", errno)
+                ela_session_cleanup(carrier.ccarrier)
                 throw CarrierError.FromErrorCode(errno: errno)
             }
 
@@ -88,9 +89,9 @@ public class CarrierSessionManager: NSObject {
     ///              request from friends.
     ///
     /// - Throws: CarrierError
-    @objc(getInstance:usingHandler:error:)
-    public static func InitializeInstance(carrier: Carrier,
-                        handler: @escaping CarrierSessionRequestHandler) throws {
+    @objc(initializeSharedInstance:sessionRequestHandler:error:)
+    public static func initializeSharedInstance(carrier: Carrier,
+                       sessionRequestHandler handler: @escaping CarrierSessionRequestHandler) throws {
         if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
             sessionMgr!.cleanup()
         }
@@ -145,13 +146,14 @@ public class CarrierSessionManager: NSObject {
     /// Get a carrier session manager instance.
     ///
     /// - Returns: The carrier session manager or nil
-    public static func getInstance() -> CarrierSessionManager? {
+    public static func sharedInstance() -> CarrierSessionManager? {
         return sessionMgr;
     }
 
     private init(_ carrier: Carrier) {
         self.carrier = carrier
         self.didCleanup = true
+        super.init()
     }
 
     deinit {
@@ -185,7 +187,7 @@ public class CarrierSessionManager: NSObject {
     /// - Returns: The new CarrierSession
     ///
     /// - Throws: CarrierError
-    public func newSession(to target: String)
+    public func createSession(to target: String)
         throws -> CarrierSession {
 
         let ctmp = target.withCString { (ptr) -> OpaquePointer? in
