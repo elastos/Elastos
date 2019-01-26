@@ -263,7 +263,7 @@ namespace Elastos {
 			_checkpoints.emplace_back(40320, "25ad2ec3bd7531301d367b4f7b1357e567665213c776744775fed7f80b9b0349", 1538398560, 545259519);
 			_checkpoints.emplace_back(42336, "18086d3158974bbc1a331b194e0580504ed76058d88da84fc446b0020b63c329", 1538663566, 545259519);
 			_standardPort = 21608;
-			_magicNumber = 201812151;
+			_magicNumber = 201901251;
 			_services = 0;
 			_targetTimeSpan = 86400;
 			_targetTimePerBlock = 120;
