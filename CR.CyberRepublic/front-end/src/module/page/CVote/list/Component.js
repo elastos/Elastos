@@ -99,18 +99,16 @@ export default class extends BaseComponent {
       </Button>
     )
     return (
-      <div className="p-cvote-list ebp-wrap">
+      <div className="p-cvote-list">
+        <h3 className="title komu-a cr-title-with-icon">
+          {I18N.get('council.voting.proposalList')}
+        </h3>
         <div className="d_box">
           <Row className="header">
-            <Col span={8}>
-              <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
-                {I18N.get('council.voting.proposalList')}
-              </h3>
-            </Col>
-            <Col span={8}>
+            <Col span={12}>
               {statusIndicator}
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               {createBtn}
             </Col>
           </Row>
