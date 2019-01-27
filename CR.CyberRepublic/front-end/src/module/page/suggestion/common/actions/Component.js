@@ -1,7 +1,9 @@
 import React from 'react';
 import _ from 'lodash'
 import { Popover, Icon } from 'antd';
+import URI from 'urijs'
 import I18N from '@/I18N'
+import { loginRedirectWithQuery } from '@/util'
 import { SUGGESTION_ABUSED_STATUS } from '@/constant'
 import BaseComponent from '@/model/BaseComponent'
 
@@ -46,10 +48,19 @@ export default class extends BaseComponent {
     }
   }
 
+  componentDidMount() {
+    const { location: { search }, isLogin, data: { _id } } = this.props
+    const uri = URI(search || '')
+    const { action } = URI.parseQuery(search || '')
+
+    if (!isLogin || !uri.hasQuery('id', _id) || !uri.hasQuery('action')) return
+
+    this.handleClick(action)
+  }
+
   ord_render() {
-    const { data, like, dislike } = this.props
+    const { data: { commentsNum, viewsNum } } = this.props
     const popoverActions = this.renderPopover()
-    const { commentsNum, viewsNum, _id } = data
     const {
       isLiked, isDisliked, likesNum, dislikesNum,
     } = this.state
@@ -59,7 +70,7 @@ export default class extends BaseComponent {
       <IconText
         component={!!LikeIcon && <LikeIcon />}
         text={likesNum}
-        onClick={() => this.handleClick({ callback: like, param: _id, state: 'isLiked' })}
+        onClick={() => this.handleClick('isLiked')}
         className={likeClass}
       />
     )
@@ -68,7 +79,7 @@ export default class extends BaseComponent {
       <IconText
         component={!!DislikeIcon && <DislikeIcon />}
         text={dislikesNum}
-        onClick={() => this.handleClick({ callback: dislike, param: _id, state: 'isDisliked' })}
+        onClick={() => this.handleClick('isDisliked')}
         className={dislikeClass}
       />
     )
@@ -98,25 +109,19 @@ export default class extends BaseComponent {
   }
 
   renderPopover() {
-    const {
-      subscribe, unsubscribe, reportAbuse, data: { _id },
-    } = this.props
     const { isSubscribed, isAbused } = this.state
-    const subscribeCallback = isSubscribed ? unsubscribe : subscribe
     const content = (
       <div className="popover-actions">
         <IconText
           component={!!FollowIcon && <FollowIcon />}
           text={I18N.get('suggestion.follow')}
-          onClick={() => this.handleClick({
-            callback: subscribeCallback, param: _id, state: 'isSubscribed', before: true,
-          })}
+          onClick={() => this.handleClick('isSubscribed')}
           className={`follow-icon ${isSubscribed ? 'selected' : ''}`}
         />
         <IconText
           component={!!FlagIcon && <FlagIcon />}
           text={I18N.get('suggestion.reportAbuse')}
-          onClick={() => this.handleClick({ callback: reportAbuse, param: _id, state: 'isAbused' })}
+          onClick={() => this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
       </div>
@@ -128,16 +133,39 @@ export default class extends BaseComponent {
     )
   }
 
-  // use setState for better UX
-  // before param is used to setState before api request which will cause rerendering
-  // and get error of setState on unmounted component
-  handleClick = async ({ callback, param, state }) => {
+  getActionParams(action) {
+    const {
+      like, dislike, subscribe, unsubscribe, reportAbuse, data: { _id },
+    } = this.props
+    const unsubOrSub = this.state.isSubscribed ? unsubscribe : subscribe
+    const actionMapping = {
+      isLiked: like,
+      isDisliked: dislike,
+      isSubscribed: unsubOrSub,
+      isAbused: reportAbuse,
+    }
+    const params = {
+      callback: actionMapping[action],
+      param: _id,
+      state: action,
+    }
+    return params
+  }
+
+  // use setState to change UI state for better UX
+  handleClick = async (action) => {
+    const { callback, param, state } = this.getActionParams(action)
     const { refetch, isLogin, history } = this.props
     const {
       isLiked, isDisliked, isAbused, likesNum, dislikesNum,
     } = this.state
 
-    if (!isLogin) history.push('/login')
+    if (!isLogin) {
+      const query = { action: state, id: param }
+      loginRedirectWithQuery({ query })
+      history.push('/login')
+      return
+    }
 
     if ((state === 'isAbused' && isAbused)
         || (state === 'isLiked' && isDisliked)
