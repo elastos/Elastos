@@ -16,13 +16,13 @@ type EventStoreAnalyzer struct {
 	cfg EventStoreAnalyzerConfig
 }
 
-func (e *EventStoreAnalyzer) ParseInactiveArbitrators(blockHeight uint32) (
+func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (
 	result []string) {
 
-	viewCount := e.getViewCountByHeight(blockHeight)
+	viewCount := e.getLastConsensusViewCount()
 
 	arbitratorsVoteCount := map[string]int{}
-	totalVotes := e.getVoteEventsByHeight(blockHeight)
+	totalVotes := e.getLastConsensusVoteEvents()
 	for _, v := range totalVotes {
 		if _, exists := arbitratorsVoteCount[v.Signer]; exists {
 			arbitratorsVoteCount[v.Signer] += 1
@@ -48,13 +48,12 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators(blockHeight uint32) (
 	return result
 }
 
-func (e *EventStoreAnalyzer) getViewCountByHeight(startTime uint32) uint32 {
+func (e *EventStoreAnalyzer) getLastConsensusViewCount() uint32 {
 	//todo complete me
-	//now := time.Now()
 	return 0
 }
 
-func (e *EventStoreAnalyzer) getVoteEventsByHeight(startTime uint32) []log.VoteEvent {
+func (e *EventStoreAnalyzer) getLastConsensusVoteEvents() []log.VoteEvent {
 	//todo complete me
 	return nil
 }

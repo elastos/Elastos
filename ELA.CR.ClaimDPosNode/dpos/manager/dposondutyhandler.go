@@ -4,6 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 
 	"github.com/elastos/Elastos.ELA/common"
 )
@@ -36,13 +37,16 @@ func (h *DposOnDutyHandler) StartNewProposal(p types.DPosProposal) {
 }
 
 func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
-	b, ok := h.manager.GetBlockCache().TryGetValue(*firstBlockHash)
-	if !ok {
-		log.Info("[OnViewChanged] get block failed for proposal")
-	} else {
-		log.Info("[OnViewChanged] start proposal")
-		h.proposalDispatcher.CleanProposals(true)
-		h.proposalDispatcher.StartProposal(b)
+
+	if !h.tryCreateInactiveArbitratorsTx() {
+		b, ok := h.manager.GetBlockCache().TryGetValue(*firstBlockHash)
+		if !ok {
+			log.Info("[OnViewChanged] get block failed for proposal")
+		} else {
+			log.Info("[OnViewChanged] start proposal")
+			h.proposalDispatcher.CleanProposals(true)
+			h.proposalDispatcher.StartProposal(b)
+		}
 	}
 }
 
@@ -61,4 +65,18 @@ func (h *DposOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 	}
 
 	return result
+}
+
+func (h *DposOnDutyHandler) tryCreateInactiveArbitratorsTx() bool {
+	if h.proposalDispatcher.HasEnteredEmergency() {
+		tx, err := h.proposalDispatcher.CreateInactiveArbitrators()
+		if err != nil {
+			log.Warn("[tryCreateInactiveArbitratorsTx] create tx error: ", err)
+			return false
+		}
+
+		h.network.BroadcastMessage(&msg.Tx{Serializable: tx})
+		return true
+	}
+	return false
 }

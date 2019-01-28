@@ -72,7 +72,8 @@ func newDposManager(L *lua.LState) int {
 	mockManager.EventMonitor = log.NewEventMoniter()
 	mockManager.EventMonitor.RegisterListener(&log.EventLogs{})
 
-	mockManager.Handler = NewHandler(n, dposManager, mockManager.EventMonitor)
+	mockManager.Handler = NewHandler(n, dposManager,
+		mockManager.EventMonitor, nil)
 
 	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
 	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(ProposalDispatcherConfig{
