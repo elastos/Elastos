@@ -258,7 +258,6 @@ namespace Elastos {
 			uint32_t confirms;
 			size_t i;
 
-			txn->setVersion(Transaction::TxVersion::V09);
 			for (size_t i = 0; i < outputs.size(); ++i) {
 				totalOutputAmount += outputs[i].getAmount();
 			}

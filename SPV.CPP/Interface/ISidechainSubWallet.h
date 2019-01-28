@@ -72,7 +72,8 @@ namespace Elastos {
 					const std::string &fromAddress,
 					uint64_t amount,
 					const std::string &mainChainAddress,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const std::string &remark) = 0;
 
 			/**
 			 * Get genesis address of the side chain, the address is a special address will be set to toAddress in CreateDepositTransaction.

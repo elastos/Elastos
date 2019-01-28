@@ -29,10 +29,13 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(const std::string &fromAddress,
-																	 uint64_t amount,
-																	 const std::string &mainChainAddress,
-																	 const std::string &memo) {
+		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(
+			const std::string &fromAddress,
+			uint64_t amount,
+			const std::string &mainChainAddress,
+			const std::string &memo,
+			const std::string &remark) {
+
 			PayloadPtr payload = nullptr;
 			try {
 				std::vector<std::string> accounts = {mainChainAddress};
@@ -45,7 +48,7 @@ namespace Elastos {
 			}
 
 			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.getMinFee(),
-													Asset::GetELAAssetID(), memo, "");
+													Asset::GetELAAssetID(), memo, remark);
 			ParamChecker::checkLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
 			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);

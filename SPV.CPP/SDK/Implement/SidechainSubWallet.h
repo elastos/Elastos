@@ -34,7 +34,8 @@ namespace Elastos {
 					const std::string &fromAddress,
 					uint64_t amount,
 					const std::string &mainChainAddress,
-					const std::string &memo);
+					const std::string &memo,
+					const std::string &remark);
 
 			virtual std::string GetGenesisAddress() const;
 

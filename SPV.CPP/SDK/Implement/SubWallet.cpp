@@ -126,8 +126,13 @@ namespace Elastos {
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
 													uint64_t amount, const UInt256 &assetID, const std::string &memo,
 													const std::string &remark, bool useVotedUTXO) const {
-			return _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
+			TransactionPtr tx = _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
 																  assetID, memo, remark, useVotedUTXO);
+			if (_info.getChainId() == "ELA") {
+				tx->setVersion(Transaction::TxVersion::V09);
+			}
+
+			return tx;
 		};
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
@@ -255,8 +260,8 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::CreateMultiSignTransaction(const std::string &fromAddress,
 															 const std::string &toAddress, uint64_t amount,
-															 const std::string &memo, bool useVotedUTXO) {
-			return CreateTransaction(fromAddress, toAddress, amount, memo, "", useVotedUTXO);
+															 const std::string &memo, const std::string &remark, bool useVotedUTXO) {
+			return CreateTransaction(fromAddress, toAddress, amount, memo, remark, useVotedUTXO);
 		}
 
 		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &rawTransaction,

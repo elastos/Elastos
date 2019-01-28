@@ -19,6 +19,7 @@
 
 using namespace Elastos::ElaWallet;
 
+static std::string memo = "";
 static const std::string gMasterWalletID = "WalletID";
 static const std::string gMainchainSubWalletID = "ELA";
 static const std::string gSidechainSubWalletID = "IdChain";
@@ -180,7 +181,7 @@ static void Transafer(MasterWalletManager *manager,
 
 	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
 
-	nlohmann::json tx = subWallet->CreateTransaction(from, to, amount, "memo", "remark");
+	nlohmann::json tx = subWallet->CreateTransaction(from, to, amount, memo, "transafer remark");
 
 	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
 	tx = subWallet->UpdateTransactionFee(tx, fee, from);
@@ -199,7 +200,7 @@ static void Vote(MasterWalletManager *manager,
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, "from spv cpp sample", false);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, memo, "from spv cpp sample", false);
 	logger->debug("tx = {}", tx.dump());
 
 	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, 10000);
@@ -230,7 +231,7 @@ static void RegisterProducer(MasterWalletManager *manager,
 																		 location, payPasswd);
 
 	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, 500000000000 + 10000,
-																			  "heropan register producer");
+																			  memo, "heropan register producer");
 
 	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
 	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
@@ -258,7 +259,7 @@ static void UpdateProducer(MasterWalletManager *manager,
 	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
 																		 location, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateUpdateProducerTransaction("", payload, "heropan update producer");
+	nlohmann::json tx = mainchainSubWallet->CreateUpdateProducerTransaction("", payload, memo, "heropan update producer");
 
 	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
 	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
@@ -280,7 +281,7 @@ static void CancelProducer(MasterWalletManager *manager,
 
 	nlohmann::json payload = mainchainSubWallet->GenerateCancelProducerPayload(pubKey, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateCancelProducerTransaction("", payload, "heropan update producer");
+	nlohmann::json tx = mainchainSubWallet->CreateCancelProducerTransaction("", payload, memo, "heropan update producer");
 
 	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
 	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
@@ -341,7 +342,7 @@ static void Deposit(MasterWalletManager *manager,
 	std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
 	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
-		from, lockedAddress, amount, sidechainAddress, "memo");
+		from, lockedAddress, amount, sidechainAddress, memo, "deposit remark");
 
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
 
@@ -366,7 +367,7 @@ static void Withdraw(MasterWalletManager *manager,
 		return ;
 	}
 
-	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, "memo");
+	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, memo, "with remark");
 
 	logger->debug("[{}:{}] withdraw {} to {}", fromMasterWalletID, fromSubWalletID, amount, mainchainAddress);
 
@@ -410,7 +411,7 @@ static void RegisterID(MasterWalletManager *manager,
 	payload["Sign"] = IDAgent->Sign(id, payload.dump(), payPasswd);;
 	nlohmann::json program = IDAgent->GenerateProgram(id, payload.dump(), payPasswd);
 
-	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, "memo", "remark");
+	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, memo, "remark");
 
 	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
 
@@ -433,7 +434,7 @@ static void InitWallets(MasterWalletManager *manager) {
 		masterWallets.push_back(masterWallet);
 
 		masterWallet->CreateSubWallet(gMainchainSubWalletID);
-//		masterWallet->CreateSubWallet(gSidechainSubWalletID);
+		masterWallet->CreateSubWallet(gSidechainSubWalletID);
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
@@ -528,7 +529,8 @@ int main(int argc, char *argv[]) {
 			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);
 			GetRegisteredProducerInfo(manager, gMasterWalletID, gMainchainSubWalletID);
 			sleep(60);
-		} else if (IDChainSyncSucceed) {
+		}
+		if (IDChainSyncSucceed) {
 			sleep(10);
 			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
 			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);

@@ -69,6 +69,7 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
+					const std::string &remark,
 					bool useVotedUTXO = false);
 
 			virtual uint64_t CalculateTransactionFee(

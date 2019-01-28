@@ -36,6 +36,7 @@ namespace Elastos {
 																	uint64_t amount,
 																	const std::string &sideChainAddress,
 																	const std::string &memo,
+																	const std::string &remark,
 																	bool useVotedUTXO) {
 			PayloadPtr payload = nullptr;
 			try {
@@ -49,7 +50,7 @@ namespace Elastos {
 			}
 
 			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.getMinFee(),
-													Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
 			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
 
@@ -115,6 +116,7 @@ namespace Elastos {
 			const nlohmann::json &payload,
 			uint64_t amount,
 			const std::string &memo,
+			const std::string &remark,
 			bool useVotedUTXO) {
 
 			ParamChecker::checkParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
@@ -133,7 +135,7 @@ namespace Elastos {
 			std::string toAddress = key.GetAddress(PrefixDeposit);
 
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
-													Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
 			tx->setTransactionType(Transaction::RegisterProducer, iPayload);
 
@@ -144,6 +146,7 @@ namespace Elastos {
 			const std::string &fromAddress,
 			const nlohmann::json &payload,
 			const std::string &memo,
+			const std::string &remark,
 			bool useVotedUTXO) {
 
 			PayloadUpdateProducer *payloadUpdateProducer = new PayloadUpdateProducer();
@@ -155,7 +158,7 @@ namespace Elastos {
 			PayloadPtr iPayload = PayloadPtr(payloadUpdateProducer);
 
 			std::string toAddress = CreateAddress();
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
 			tx->setTransactionType(Transaction::UpdateProducer, iPayload);
 
@@ -170,6 +173,7 @@ namespace Elastos {
 			const std::string &fromAddress,
 			const nlohmann::json &payload,
 			const std::string &memo,
+			const std::string &remark,
 			bool useVotedUTXO) {
 
 			PayloadCancelProducer *payloadCancelProducer = new PayloadCancelProducer();
@@ -181,7 +185,7 @@ namespace Elastos {
 			PayloadPtr iPayload = PayloadPtr(payloadCancelProducer);
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(),
-										 memo, "", useVotedUTXO);
+										 memo, remark, useVotedUTXO);
 
 			tx->setTransactionType(Transaction::CancelProducer, iPayload);
 
@@ -192,13 +196,15 @@ namespace Elastos {
 			return tx->toJson();
 		}
 
-		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(const std::string &memo) {
+		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
+			const std::string &memo,
+			const std::string &remark) {
 
 			Key key;
 			key.SetPubKey(_subAccount->GetVotePublicKey());
 			std::string fromAddress = key.GetAddress(PrefixDeposit);
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(), memo, "");
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(), memo, remark);
 
 			tx->setTransactionType(Transaction::ReturnDepositCoin);
 
@@ -214,9 +220,14 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(const std::string &fromAddress,
-														  uint64_t stake, const nlohmann::json &publicKeys,
-														  const std::string &memo, bool useVotedUTXO) {
+		MainchainSubWallet::CreateVoteProducerTransaction(
+			const std::string &fromAddress,
+			uint64_t stake,
+			const nlohmann::json &publicKeys,
+			const std::string &memo,
+			const std::string &remark,
+			bool useVotedUTXO) {
+
 			ParamChecker::checkJsonArray(publicKeys, 1, "Candidates public keys");
 			ParamChecker::checkParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
@@ -232,7 +243,7 @@ namespace Elastos {
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, "", useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
 			const std::vector<TransactionInput> &inputs = tx->getInputs();
 
