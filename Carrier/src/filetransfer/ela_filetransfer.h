@@ -603,50 +603,6 @@ int ela_filetransfer_set_userdata(ElaFileTransfer *filetransfer,
 CARRIER_API
 void *ela_filetransfer_get_userdata(ElaFileTransfer *ft, const char *fileid);
 
-/**
- * \~English
- * Carrier file progress callbacks.
- */
-typedef struct ElaFileProgressCallbacks {
-    /**
-     * \~English
-     * An application-defined function that handles file transfer connection
-     * state changed event.
-     *
-     * @param
-     *      state           [in] The file transfer connection state.
-     * @param
-     *      context         [in] The application defined context data.
-     */
-    void (*state_changed)(FileTransferConnection state, void *context);
-
-    /**
-     * \~English
-     * An application-defined function that handles file sent event.
-     *
-     * @param
-     *      length          [in] The amount of data sent.
-     * @param
-     *      totalsz         [in] The total mount of transfering file.
-     * @param
-     *      context         [in] The application defined context data.
-     */
-    void (*sent)(size_t length, uint64_t totalsz, void *context);
-
-    /**
-     * \~English
-     * An application-defined function that handles file received event.
-     *
-     * @param
-     *      length          [in] The amount of data sent.
-     * @param
-     *      totalsz         [in] The total mount of transferring file.
-     * @param
-     *      context         [in] The application defined context data.
-     */
-    void (*received)(size_t length, uint64_t totalsz, void *context);
-} ElaFileProgressCallbacks;
-
 #ifdef __cplusplus
 }
 #endif
