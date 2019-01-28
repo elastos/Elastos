@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -46,6 +47,7 @@ type dposHandlerSwitch struct {
 	consensus          Consensus
 	network            DposNetwork
 	manager            DposManager
+	arbitrators        interfaces.Arbitrators
 
 	onDutyHandler  *DposOnDutyHandler
 	normalHandler  *DposNormalHandler
@@ -56,11 +58,13 @@ type dposHandlerSwitch struct {
 	isAbnormal bool
 }
 
-func NewHandler(network DposNetwork, manager DposManager, monitor *log.EventMonitor) DposHandlerSwitch {
+func NewHandler(network DposNetwork, manager DposManager,
+	monitor *log.EventMonitor, arbitrators interfaces.Arbitrators) DposHandlerSwitch {
 	h := &dposHandlerSwitch{
 		network:      network,
 		manager:      manager,
 		eventMonitor: monitor,
+		arbitrators:  arbitrators,
 		isAbnormal:   false,
 	}
 
@@ -239,8 +243,4 @@ func (h *dposHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	}
 	log.Info("OnViewChanged, onduty, getBlock from first block hash:", firstBlockHash)
 	h.ChangeView(&firstBlockHash)
-}
-
-func (h *dposHandlerSwitch) OnEnterEmergency() {
-	h.SwitchTo(bytes.Equal(h.manager.GetPublicKey(), blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()))
 }

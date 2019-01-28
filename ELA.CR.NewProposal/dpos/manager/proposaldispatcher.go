@@ -50,6 +50,8 @@ type ProposalDispatcher interface {
 	OnInactiveArbitratorsReceived(tx *types.Transaction)
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256, signer []byte,
 		sign []byte)
+	CreateInactiveArbitrators() (*types.Transaction, error)
+	HasEnteredEmergency() bool
 }
 
 type ProposalDispatcherConfig struct {
@@ -231,18 +233,23 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
+	if p.HasEnteredEmergency() {
+		log.Info("enter emergency state, proposal will be discard")
+		return
+	}
+
 	if p.processingProposal != nil && d.BlockHash.IsEqual(p.processingProposal.Hash()) {
-		log.Info("Already processing processing")
+		log.Info("already processing processing")
 		return
 	}
 
 	if _, ok := p.pendingProposals[d.Hash()]; ok {
-		log.Info("Already have proposal, wait for processing")
+		log.Info("already have proposal, wait for processing")
 		return
 	}
 
 	if !blockchain.IsProposalValid(&d) {
-		log.Warn("Invalid proposal.")
+		log.Warn("invalid proposal.")
 		return
 	}
 
@@ -264,7 +271,7 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
-		log.Info("Received pending proposal.")
+		log.Info("received pending proposal")
 		return
 	} else {
 		p.TryStartSpeculatingProposal(currentBlock)
@@ -395,9 +402,21 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
+func (p *proposalDispatcher) HasEnteredEmergency() bool {
+	return p.CurrentHeight() > config.Parameters.HeightVersions[3] &&
+		p.cfg.Consensus.GetViewOffset() >= p.cfg.Arbitrators.GetArbitersCount()
+}
+
 func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
 	var err error
+
+	if !p.HasEnteredEmergency() {
+		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
+			" arbitrators transaction when normal view changing")
+		return
+	}
+
 	if err = blockchain.CheckInactiveArbitrators(tx,
 		p.cfg.ChainParams.InactiveEliminateCount); err != nil {
 		log.Warn("[OnInactiveArbitratorsReceived] check tx error, details: ",
@@ -462,8 +481,7 @@ func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	buf.Write(sign)
 	pro.Parameter = buf.Bytes()
 
-	crcArbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbitrators())
-	minSignCount := int(float64(crcArbitratorsCount) * 0.5)
+	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
 	if len(pro.Parameter)/crypto.SignatureLength > minSignCount {
 		p.cfg.Manager.AppendToTxnPool(p.processingInactiveArbitratorTx)
 	}
@@ -577,13 +595,13 @@ func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
 }
 
-func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
+func (p *proposalDispatcher) CreateInactiveArbitrators() (
 	*types.Transaction, error) {
 	var err error
 
 	inactivePayload := &payload.InactiveArbitrators{
 		Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
-	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators(blockHeight)
+	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
 	for _, v := range inactiveArbitrators {
 		var pk []byte
 		pk, err = common.HexStringToBytes(v)
@@ -629,6 +647,7 @@ func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
 		},
 	}
 
+	p.processingInactiveArbitratorTx = tx
 	return tx, nil
 }
 
