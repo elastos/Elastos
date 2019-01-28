@@ -405,11 +405,18 @@ func (s *service) onTx(sp *speer.Peer, msgTx util.Transaction) {
 }
 
 func (s *service) onNotFound(sp *speer.Peer, notFound *msg.NotFound) {
-	// Every thing we requested was came from this connected peer, so
-	// no reason it said I have some data you don't have and when you
-	// come to get it, it say oh I didn't have it.
-	log.Warnf("Peer %s is sending us notFound -- disconnecting", sp)
-	sp.Disconnect()
+	// Some times when we com to get a transaction, it has been cleared from
+	// peer's mempool, so we get this notfound message, in that case, we just
+	// ignore it.  But if we come to get blocks and get this message, then the
+	// peer is misbehaving, we disconnect it.
+	for _, iv := range notFound.InvList {
+		if iv.Type == msg.InvTypeTx {
+			continue
+		}
+
+		log.Warnf("Peer %s is sending us notFound -- disconnecting", sp)
+		sp.Disconnect()
+	}
 }
 
 func (s *service) onReject(sp *speer.Peer, reject *msg.Reject) {
