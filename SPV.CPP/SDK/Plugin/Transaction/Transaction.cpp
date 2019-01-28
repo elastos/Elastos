@@ -719,10 +719,11 @@ namespace Elastos {
 			summary["Timestamp"] = getTimestamp();
 			summary["Direction"] = direction;
 			summary["Amount"] = amount;
+			summary["Type"] = getTransactionType();
+			summary["Height"] = getBlockHeight();
 			if (detail) {
 				summary["Fee"] = fee;
 				summary["Remark"] = getRemark();
-				summary["Type"] = getTransactionType();
 				summary["Inputs"] = inputList;
 				summary["Outputs"] = outputList;
 			}
