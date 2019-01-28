@@ -317,14 +317,12 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 		}
 		a.nextCandidates = candidates
 
-		return nil
 	} else {
 		a.nextArbitrators = [][]byte{}
 		for _, v := range a.cfg.CRCArbitrators {
 			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
 		}
 		a.nextCandidates = [][]byte{}
-		return nil
 	}
 
 	a.cfg.Store.SaveNextArbitrators(a)
