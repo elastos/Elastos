@@ -21,8 +21,7 @@ set(SOURCES
     stream.c
     fileTransfer.c
     fileTransferManager.c
-    fileTransferUtils.c
-    easyFile.c)
+    fileTransferUtils.c)
 
 add_library(carrierjni SHARED ${SOURCES})
 

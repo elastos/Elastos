@@ -769,10 +769,6 @@ static JNINativeMethod gMethods[] = {
     {"native_cancel",    "("_J("String;I")_J("String;)Z"), (void*)cancelTransfer},
     {"native_pend",      "("_J("String;)Z"),               (void*)pendTransfer  },
     {"native_resume",    "("_J("String;)Z"),               (void*)resumeTransfer},
-    {"native_easy_send", "("_W("Carrier;")_J("String;")_J("String;")
-                         _F("FileProgressHandler;)Z"),     (void*)easyfile_send },
-    {"native_easy_recv", "("_W("Carrier;")_J("String;")_J("String;")
-                         _F("FileProgressHandler;)Z"),     (void*)easyfile_recv },
     {"get_error_code",   "()I",                            (void*)getErrorCode  }
 };
 

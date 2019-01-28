@@ -47,11 +47,6 @@ public class FileTransfer {
 	private native boolean native_pend(String fileId);
 	private native boolean native_resume(String fileId);
 
-	private	static native boolean native_easy_send(Carrier carrier, String to, String filename,
-												   FileProgressHandler handler);
-	private static native boolean native_easy_recv(Carrier carrier, String from, String filename,
-												   FileProgressHandler handler);
-
 	private static native int get_error_code();
 
 	private FileTransfer() {}
@@ -380,56 +375,6 @@ public class FileTransfer {
 			throw new IllegalArgumentException();
 
 		if (!native_resume(fileId))
-			throw CarrierException.fromErrorCode(get_error_code());
-	}
-
-	/**
-	 * Send a file to target friend.
-	 *
-	 * @param
-	 *      carrier         [in] Carrier node instance.
-	 * @param
-	 *      to	  	        [in] The target address.
-	 * @param
-	 *      filename        [in] The full name of file to transfer.
-	 * @param
-	 *      handler         [in] A handler that handles all events related to transferring the file.
-	 *
-	 * @throws
-	 * 		CarrierException
-	 */
-	public static void sendFile(Carrier carrier, String to, String filename,
-								FileProgressHandler handler) throws CarrierException {
-		if (carrier == null || to == null || to.isEmpty() || filename == null ||
-				filename.isEmpty() || handler == null)
-			throw new IllegalArgumentException();
-
-		if (!native_easy_send(carrier, to, filename, handler))
-			throw CarrierException.fromErrorCode(get_error_code());
-	}
-
-	/**
-	 * Receive a file from target friend.
-	 *
-	 * @param
-	 *      carrier         [in] Carrier node instance.
-	 * @param
-	 *      from 	        [in] The target address.
-	 * @param
-	 *      filename        [in] The full name of file to transfer.
-	 * @param
-	 *      handler	        [in] A handler that handles all events related to transferring the file.
-	 *
-	 * @throws
-	 * 		CarrierException
-	 */
-	public static void receiveFile(Carrier carrier, String from, String filename,
-								FileProgressHandler handler) throws CarrierException {
-		if (carrier == null || from == null || from.isEmpty() || filename == null ||
-				filename.isEmpty() || handler == null)
-			throw new IllegalArgumentException();
-
-		if (!native_easy_recv(carrier, from, filename, handler))
 			throw CarrierException.fromErrorCode(get_error_code());
 	}
 }
