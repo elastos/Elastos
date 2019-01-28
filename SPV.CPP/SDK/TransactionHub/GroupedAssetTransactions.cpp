@@ -833,7 +833,7 @@ namespace Elastos {
 			UpdateAssets(assetArray);
 
 			for (size_t i = 0; i < txns.size(); ++i) {
-				if (!txns[i]->isSigned() || WalletContainsTx(txns[i])) continue;
+				if (!txns[i]->isSigned() || WalletExistTx(txns[i])) continue;
 				Append(txns[i]);
 			}
 
@@ -1017,6 +1017,16 @@ namespace Elastos {
 				if (result) break;
 			}
 			return result;
+		}
+
+		bool GroupedAssetTransactions::WalletExistTx(const TransactionPtr &tx) {
+			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();
+				 it != _groupedTransactions.End(); ++it) {
+				if (it->second->Exist(tx))
+					return true;
+			}
+
+			return false;
 		}
 
 		void GroupedAssetTransactions::InitWithTransactions(const std::vector<TransactionPtr> &txArray) {

@@ -178,6 +178,8 @@ namespace Elastos {
 
 			bool WalletContainsTx(const TransactionPtr &tx);
 
+			bool WalletExistTx(const TransactionPtr &tx);
+
 			void InitWithTransactions(const std::vector<TransactionPtr> &txArray);
 
 			nlohmann::json GetAllSupportedAssets() const;
