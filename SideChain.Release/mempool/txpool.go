@@ -57,7 +57,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 	}
 
 	// Notify transaction accepted.
-	events.Notify(events.ETTransactionAccepted, tx)
+	go events.Notify(events.ETTransactionAccepted, tx)
 
 	return nil
 }
