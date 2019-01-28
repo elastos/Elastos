@@ -146,7 +146,6 @@ var configTemplate = config.Configuration{
 		MaxConnections:           100,
 		NormalArbitratorsCount:   5,
 		CandidatesCount:          0,
-		EmergencyTriggerTimeSpan: uint32((time.Hour * 1) / time.Second),
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		EmergencyInactivePenalty: 500 * 100000000,
 		InactivePercentage:       0.1,

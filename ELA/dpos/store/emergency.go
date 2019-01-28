@@ -2,7 +2,6 @@ package store
 
 import (
 	"io"
-	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
 )
@@ -10,15 +9,12 @@ import (
 type ConditionalAction func() error
 
 type EmergencyConfig struct {
-	EmergencyTriggerTimeSpan uint32
-	EmergencyDuration        uint32
+	EmergencyDuration uint32
 }
 
 type EmergencyData struct {
-	EmergencyStarted   bool
-	EmergencyStartTime uint32
-
-	LastConfirmedBlockTimeStamp uint32
+	EmergencyStarted     bool
+	EmergencyStartHeight uint32
 }
 
 type emergencyMechanism struct {
@@ -35,13 +31,10 @@ func (d *EmergencyData) Serialize(w io.Writer) error {
 		return err
 	}
 
-	if err := common.WriteUint32(w, d.EmergencyStartTime); err != nil {
+	if err := common.WriteUint32(w, d.EmergencyStartHeight); err != nil {
 		return err
 	}
 
-	if err := common.WriteUint32(w, d.LastConfirmedBlockTimeStamp); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -52,11 +45,10 @@ func (d *EmergencyData) Deserialize(r io.Reader) (err error) {
 	}
 	d.EmergencyStarted = startedValue == 1
 
-	if d.EmergencyStartTime, err = common.ReadUint32(r); err != nil {
+	if d.EmergencyStartHeight, err = common.ReadUint32(r); err != nil {
 		return err
 	}
 
-	d.LastConfirmedBlockTimeStamp, err = common.ReadUint32(r)
 	return err
 }
 
@@ -64,28 +56,25 @@ func (e *emergencyMechanism) IsRunning() bool {
 	return e.data.EmergencyStarted
 }
 
-func (e *emergencyMechanism) ResetBlockTime(blockTime uint32) {
-	e.data.LastConfirmedBlockTimeStamp = blockTime
-}
-
 func (e *emergencyMechanism) GetEmergencyData() *EmergencyData {
 	return &e.data
 }
 
-func (e *emergencyMechanism) TryEnterEmergency(blockTime uint32) bool {
-	if !e.data.EmergencyStarted && time.Now().After(time.Unix(int64(e.data.LastConfirmedBlockTimeStamp)+int64(e.cfg.EmergencyTriggerTimeSpan), 0)) {
+func (e *emergencyMechanism) TryEnterEmergency(blockHeight uint32) bool {
+	if !e.data.EmergencyStarted {
 		e.data.EmergencyStarted = true
-		e.data.EmergencyStartTime = blockTime
+		e.data.EmergencyStartHeight = blockHeight
 		return true
 	}
 
 	return false
 }
 
-func (e *emergencyMechanism) TryLeaveEmergency() bool {
-	if e.data.EmergencyStarted && time.Now().After(time.Unix(int64(e.data.EmergencyStartTime)+int64(e.cfg.EmergencyDuration), 0)) {
+func (e *emergencyMechanism) TryLeaveEmergency(blockHeight uint32) bool {
+	if e.data.EmergencyStarted &&
+		blockHeight > e.data.EmergencyStartHeight+e.cfg.EmergencyDuration {
 		e.data.EmergencyStarted = false
-		e.data.EmergencyStartTime = 0
+		e.data.EmergencyStartHeight = 0
 		return true
 	}
 	return false

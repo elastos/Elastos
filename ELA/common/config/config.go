@@ -122,7 +122,6 @@ type ArbiterConfiguration struct {
 	CRCArbiters              []CRCArbitratorConfigItem `json:"CRCArbiters"`
 	NormalArbitratorsCount   uint32                    `json:"NormalArbitratorsCount"`
 	CandidatesCount          uint32                    `json:"CandidatesCount"`
-	EmergencyTriggerTimeSpan uint32                    `json:"EmergencyTriggerTimeSpan"`
 	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
 	EmergencyInactivePenalty common.Fixed64            `json:"EmergencyInactivePenalty"`
 	InactivePercentage       float64                   `json:"InactivePercentage"`

@@ -98,10 +98,12 @@ func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	<-reply
 }
 
-func (s *DposStore) SaveEmergencyData(started bool, startTime, confirmedTime uint32) {
+func (s *DposStore) SaveEmergencyData(started bool, startHeight uint32) {
 	reply := make(chan bool)
-	s.persistCh <- &persistEmergencyDataTask{data: EmergencyData{started, startTime,
-		confirmedTime}, reply: reply}
+	s.persistCh <- &persistEmergencyDataTask{
+		data: EmergencyData{
+			started, startHeight},
+		reply: reply}
 	<-reply
 }
 
