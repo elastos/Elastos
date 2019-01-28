@@ -230,6 +230,7 @@ const zh = {
   'suggestion.befirst': '成为第一个提出建议的人',
   'suggestion.subject': '主题',
   'suggestion.title': '建议',
+  'suggestion.listTitle': '所有建议',
   'suggestion.add': '添加一项建议',
   'suggestion.sort': '排序方式',
   'suggestion.likes': '点赞量',
