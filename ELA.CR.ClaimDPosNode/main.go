@@ -101,7 +101,6 @@ func main() {
 		Store:            dposStore,
 		ChainStore:       chainStore,
 		Emergency: store.EmergencyConfig{
-			EmergencyTriggerTimeSpan: config.Parameters.ArbiterConfiguration.EmergencyTriggerTimeSpan,
 			EmergencyDuration:        config.Parameters.ArbiterConfiguration.EmergencyDuration,
 		},
 	})

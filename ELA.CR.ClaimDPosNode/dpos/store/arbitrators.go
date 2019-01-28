@@ -236,10 +236,6 @@ func (a *Arbitrators) TryEnterEmergency(blockTime uint32) (result bool) {
 	return result
 }
 
-func (a *Arbitrators) GetLastConfirmedBlockTimeStamp() uint32 {
-	return a.emergency.GetEmergencyData().LastConfirmedBlockTimeStamp
-}
-
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 
 	if !a.TryEnterEmergency(block.Timestamp) {
@@ -261,15 +257,14 @@ func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 			a.saveDposRelated()
 		}
 	}
-
-	a.emergency.ResetBlockTime(block.Timestamp)
 }
 
 func (a *Arbitrators) saveDposRelated() {
 	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
 	if a.emergency.IsRunning() {
 		data := a.emergency.GetEmergencyData()
-		a.cfg.Store.SaveEmergencyData(data.EmergencyStarted, data.EmergencyStartTime, data.LastConfirmedBlockTimeStamp)
+		a.cfg.Store.SaveEmergencyData(
+			data.EmergencyStarted, data.EmergencyStartHeight)
 	}
 }
 
@@ -298,7 +293,7 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
-	a.emergency.TryLeaveEmergency()
+	a.emergency.TryLeaveEmergency(block.Height)
 
 	if !a.emergency.IsRunning() {
 		producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block)

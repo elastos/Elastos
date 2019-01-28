@@ -568,11 +568,12 @@ func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
 }
 
-func (p *proposalDispatcher) createInactiveArbitrators() (*types.Transaction, error) {
+func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
+	*types.Transaction, error) {
 	var err error
 
 	inactivePayload := &payload.InactiveArbitrators{Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
-	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
+	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators(blockHeight)
 	for _, v := range inactiveArbitrators {
 		var pk []byte
 		pk, err = common.HexStringToBytes(v)

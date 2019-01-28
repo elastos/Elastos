@@ -31,5 +31,4 @@ type Arbitrators interface {
 
 	GetActiveDposPeers() map[string]string
 	TryEnterEmergency(blockTime uint32) bool
-	GetLastConfirmedBlockTimeStamp() uint32
 }
