@@ -13,7 +13,6 @@ const PayloadInactiveArbitratorsVersion byte = 0x00
 type InactiveArbitrators struct {
 	Sponsor     []byte
 	Arbitrators [][]byte
-	Sign        []byte
 
 	hash *common.Uint256
 }
@@ -26,19 +25,8 @@ func (i *InactiveArbitrators) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (i *InactiveArbitrators) Serialize(w io.Writer, version byte) error {
-	if err := i.SerializeUnsigned(w, version); err != nil {
-		return err
-	}
-
-	if err := common.WriteVarBytes(w, i.Sign); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (i *InactiveArbitrators) SerializeUnsigned(w io.Writer, version byte) error {
+func (i *InactiveArbitrators) Serialize(w io.Writer,
+	version byte) error {
 	if err := common.WriteVarBytes(w, i.Sponsor); err != nil {
 		return err
 	}
@@ -56,20 +44,10 @@ func (i *InactiveArbitrators) SerializeUnsigned(w io.Writer, version byte) error
 	return nil
 }
 
-func (i *InactiveArbitrators) Deserialize(r io.Reader, version byte) (err error) {
-	if err = i.DeserializeUnsigned(r, version); err != nil {
-		return err
-	}
-
-	if i.Sign, err = common.ReadVarBytes(r, crypto.SignatureLength, "sign data"); err != nil {
-		return err
-	}
-
-	return err
-}
-
-func (i *InactiveArbitrators) DeserializeUnsigned(r io.Reader, version byte) (err error) {
-	if i.Sponsor, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "public key"); err != nil {
+func (i *InactiveArbitrators) Deserialize(r io.Reader,
+	version byte) (err error) {
+	if i.Sponsor, err = common.ReadVarBytes(r, crypto.NegativeBigLength,
+		"public key"); err != nil {
 		return err
 	}
 
@@ -80,7 +58,8 @@ func (i *InactiveArbitrators) DeserializeUnsigned(r io.Reader, version byte) (er
 
 	i.Arbitrators = make([][]byte, count)
 	for u := uint64(0); u < count; u++ {
-		if i.Arbitrators[u], err = common.ReadVarBytes(r, crypto.NegativeBigLength, "public key"); err != nil {
+		if i.Arbitrators[u], err = common.ReadVarBytes(r,
+			crypto.NegativeBigLength, "public key"); err != nil {
 			return err
 		}
 	}
@@ -91,7 +70,7 @@ func (i *InactiveArbitrators) DeserializeUnsigned(r io.Reader, version byte) (er
 func (i *InactiveArbitrators) Hash() common.Uint256 {
 	if i.hash == nil {
 		buf := new(bytes.Buffer)
-		i.SerializeUnsigned(buf, PayloadInactiveArbitratorsVersion)
+		i.Serialize(buf, PayloadInactiveArbitratorsVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		i.hash = &hash
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -47,7 +48,8 @@ type ProposalDispatcher interface {
 
 	//inactive arbitrators
 	OnInactiveArbitratorsReceived(tx *types.Transaction)
-	OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signer []byte, sign []byte)
+	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256, signer []byte,
+		sign []byte)
 }
 
 type ProposalDispatcherConfig struct {
@@ -57,6 +59,7 @@ type ProposalDispatcherConfig struct {
 	Network      DposNetwork
 	Manager      DposManager
 	Account      account.DposAccount
+	ChainParams  *config.Params
 }
 
 type proposalDispatcher struct {
@@ -392,10 +395,13 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *proposalDispatcher) OnInactiveArbitratorsReceived(tx *types.Transaction) {
+func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
+	tx *types.Transaction) {
 	var err error
-	if err = blockchain.CheckInactiveArbitrators(tx); err != nil {
-		log.Warn("[OnInactiveArbitratorsReceived] check tx error, details: ", err.Error())
+	if err = blockchain.CheckInactiveArbitrators(tx,
+		p.cfg.ChainParams.InactiveEliminateCount); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] check tx error, details: ",
+			err.Error())
 		return
 	}
 
@@ -410,40 +416,43 @@ func (p *proposalDispatcher) OnInactiveArbitratorsReceived(tx *types.Transaction
 	}
 
 	response := &dmsg.ResponseInactiveArbitrators{
-		Tx:     *tx,
+		TxHash: tx.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(),
 	}
 	if response.Sign, err = p.cfg.Account.SignTx(tx); err != nil {
-		log.Warn("[OnInactiveArbitratorsReceived] sign response message error, details: ", err.Error())
+		log.Warn("[OnInactiveArbitratorsReceived] sign response message"+
+			" error, details: ", err.Error())
 	}
 	p.cfg.Network.BroadcastMessage(response)
 }
 
-func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signer []byte, sign []byte) {
-	if !p.processingInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
-		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown inactive arbitrators transaction")
-		return
-	}
+func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
+	txHash *common.Uint256, signer []byte, sign []byte) {
 
-	if !p.cfg.Arbitrators.IsCRCArbitrator(signer) {
-		log.Warn("[OnResponseInactiveArbitratorsReceived] signer is not a CRC member")
+	if !p.processingInactiveArbitratorTx.Hash().IsEqual(*txHash) {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown " +
+			"inactive arbitrators transaction")
 		return
 	}
 
 	data := new(bytes.Buffer)
-	if err := tx.SerializeUnsigned(data); err != nil {
-		log.Warn("[OnResponseInactiveArbitratorsReceived] transaction serialize error, details: ", err)
+	if err := p.processingInactiveArbitratorTx.SerializeUnsigned(
+		data); err != nil {
+		log.Warn("[OnResponseInactiveArbitratorsReceived] transaction "+
+			"serialize error, details: ", err)
 		return
 	}
 
 	pk, err := crypto.DecodePoint(signer)
 	if err != nil {
-		log.Warn("[OnResponseInactiveArbitratorsReceived] decode signer error, details: ", err)
+		log.Warn("[OnResponseInactiveArbitratorsReceived] decode signer "+
+			"error, details: ", err)
 		return
 	}
 
 	if err := crypto.Verify(*pk, data.Bytes(), sign); err != nil {
-		log.Warn("[OnResponseInactiveArbitratorsReceived] sign verify error, details: ", err)
+		log.Warn("[OnResponseInactiveArbitratorsReceived] sign verify "+
+			"error, details: ", err)
 		return
 	}
 
@@ -454,7 +463,7 @@ func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(tx *types.Tra
 	pro.Parameter = buf.Bytes()
 
 	crcArbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbitrators())
-	minSignCount := int(float64(crcArbitratorsCount) * blockchain.DposMajorityRatioNumerator / blockchain.DposMajorityRatioDenominator)
+	minSignCount := int(float64(crcArbitratorsCount) * 0.5)
 	if len(pro.Parameter)/crypto.SignatureLength > minSignCount {
 		p.cfg.Manager.AppendToTxnPool(p.processingInactiveArbitratorTx)
 	}
@@ -572,7 +581,8 @@ func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
 	*types.Transaction, error) {
 	var err error
 
-	inactivePayload := &payload.InactiveArbitrators{Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
+	inactivePayload := &payload.InactiveArbitrators{
+		Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
 	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators(blockHeight)
 	for _, v := range inactiveArbitrators {
 		var pk []byte
@@ -582,10 +592,9 @@ func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
 		}
 		inactivePayload.Arbitrators = append(inactivePayload.Arbitrators, pk)
 	}
-	inactivePayload.Sign, err = p.cfg.Account.SignInactiveArbitratorsPayload(inactivePayload)
 
 	con := contract.Contract{HashPrefix: contract.PrefixMultiSig}
-	if con.Code, err = p.createCRCArbitratorsRedeemScript(); err != nil {
+	if con.Code, err = p.createArbitratorsRedeemScript(); err != nil {
 		return nil, err
 	}
 
@@ -623,10 +632,7 @@ func (p *proposalDispatcher) createInactiveArbitrators(blockHeight uint32) (
 	return tx, nil
 }
 
-func (p *proposalDispatcher) createCRCArbitratorsRedeemScript() ([]byte, error) {
-	if len(p.cfg.Arbitrators.GetArbitrators()) != len(p.cfg.Arbitrators.GetCRCArbitrators()) {
-		return nil, errors.New("current arbitrators count error, expect equal than count of crc arbitrators")
-	}
+func (p *proposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 
 	var pks []*crypto.PublicKey
 	for _, v := range p.cfg.Arbitrators.GetArbitrators() {
@@ -637,8 +643,8 @@ func (p *proposalDispatcher) createCRCArbitratorsRedeemScript() ([]byte, error) 
 		pks = append(pks, pk)
 	}
 
-	crcArbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
-	minSignCount := uint(float64(crcArbitratorsCount) * blockchain.DposMajorityRatioNumerator / blockchain.DposMajorityRatioDenominator)
+	arbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
+	minSignCount := uint(float64(arbitratorsCount) * 0.5)
 	return crypto.CreateMultiSignRedeemScript(minSignCount+1, pks)
 }
 

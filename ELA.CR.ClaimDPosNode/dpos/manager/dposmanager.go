@@ -67,7 +67,8 @@ type NetworkEventListener interface {
 	OnIllegalBlocksReceived(i *types.DposIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData)
 	OnInactiveArbitratorsReceived(tx *types.Transaction)
-	OnResponseInactiveArbitratorsReceived(tx *types.Transaction, Signer []byte, Sign []byte)
+	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256,
+		Signer []byte, Sign []byte)
 }
 
 type AbnormalRecovering interface {
@@ -331,8 +332,9 @@ func (d *dposManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
 	d.dispatcher.OnInactiveArbitratorsReceived(tx)
 }
 
-func (d *dposManager) OnResponseInactiveArbitratorsReceived(tx *types.Transaction, signers []byte, signs []byte) {
-	d.dispatcher.OnResponseInactiveArbitratorsReceived(tx, signers, signs)
+func (d *dposManager) OnResponseInactiveArbitratorsReceived(
+	txHash *common.Uint256, signers []byte, signs []byte) {
+	d.dispatcher.OnResponseInactiveArbitratorsReceived(txHash, signers, signs)
 }
 
 func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
