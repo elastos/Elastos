@@ -99,7 +99,7 @@ export default class extends BaseComponent {
       </Button>
     )
     return (
-      <div className="p-cvote-list ebp-wrap">
+      <div className="p-cvote-list">
         <div className="d_box">
           <Row className="header">
             <Col span={8}>

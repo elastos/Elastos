@@ -2,9 +2,8 @@
 @import "@/style/color";
 
 .p_SuggestionList {
-  margin-left: 108px;
-  margin-top: 50px;
-  margin-bottom: 80px;
+  margin: 50px 108px 80px 108px;
+
   .title {
     font-size: 96px;
   }
@@ -31,6 +30,9 @@
     &:not(:last-child) {
       border-bottom: 1px solid #E5E5E5;
     }
+  }
+  .list-container .title {
+    font-size: 30px;
   }
   .title-link {
     font-size: 20px;
