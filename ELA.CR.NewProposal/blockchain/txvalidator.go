@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -124,7 +125,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		}
 
 	case InactiveArbitrators:
-		if err := CheckInactiveArbitrators(txn); err != nil {
+		if err := CheckInactiveArbitrators(txn,
+			b.chainParams.InactiveEliminateCount); err != nil {
 			log.Warn("[CheckInactiveArbitrators],", err)
 			return ErrTransactionPayload
 		}
@@ -927,15 +929,11 @@ func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) 
 	return nil
 }
 
-func CheckInactiveArbitrators(txn *Transaction) error {
+func CheckInactiveArbitrators(txn *Transaction,
+	inactiveArbitratorsCount uint32) error {
 	p, ok := txn.Payload.(*payload.InactiveArbitrators)
 	if !ok {
 		return errors.New("invalid payload")
-	}
-
-	crcArbitrators := map[string]interface{}{}
-	for _, v := range DefaultLedger.Arbitrators.GetCRCArbitrators() {
-		crcArbitrators[common.BytesToHexString(v.PublicKey)] = nil
 	}
 
 	arbitrators := map[string]interface{}{}
@@ -943,47 +941,40 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		arbitrators[common.BytesToHexString(v)] = nil
 	}
 
-	if _, exists := crcArbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
-		return errors.New("sponsor is not belong to CRC arbitrators")
+	if _, exists := arbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
+		return errors.New("sponsor is not belong to arbitrators")
 	}
 
+	if len(p.Arbitrators) != int(inactiveArbitratorsCount) {
+		return errors.New("number of arbitrators must be " +
+			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
+	}
 	for _, v := range p.Arbitrators {
-		if _, exists := crcArbitrators[common.BytesToHexString(v)]; exists {
-			return errors.New("inactive arbitrator should belong to CRC arbitrators")
-		}
 		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists {
-			return errors.New("inactive arbitrator is not belong to CRC arbitrators")
+			return errors.New("inactive arbitrator is not belong to CRC " +
+				"arbitrators")
 		}
 	}
 
-	signedData := new(bytes.Buffer)
-	if err := p.SerializeUnsigned(signedData, payload.PayloadInactiveArbitratorsVersion); err != nil {
-		return err
-	}
-	sponsorPk, err := crypto.DecodePoint(p.Sponsor)
-	if err != nil {
-		return err
-	}
-	if err := crypto.Verify(*sponsorPk, signedData.Bytes(), p.Sign); err != nil {
-		return err
-	}
-
-	if err := checkInactiveArbitratorsSignatures(txn.Programs[0], crcArbitrators); err != nil {
+	if err := checkInactiveArbitratorsSignatures(txn.Programs[0],
+		arbitrators); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func checkInactiveArbitratorsSignatures(program *program.Program, crcArbitrators map[string]interface{}) error {
+func checkInactiveArbitratorsSignatures(program *program.Program,
+	arbitrators map[string]interface{}) error {
+
 	code := program.Code
 	// Get N parameter
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
 
-	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) * DposMajorityRatioNumerator / DposMajorityRatioDenominator)
+	crcArbitratorsCount := len(arbitrators)
+	minSignCount := int(float64(crcArbitratorsCount) * 0.5)
 	if m < 1 || m > n || n != crcArbitratorsCount || m <= minSignCount {
 		return errors.New("invalid multi sign script code")
 	}
@@ -993,7 +984,7 @@ func checkInactiveArbitratorsSignatures(program *program.Program, crcArbitrators
 	}
 
 	for _, pk := range publicKeys {
-		if _, exists := crcArbitrators[common.BytesToHexString(pk)]; !exists {
+		if _, exists := arbitrators[common.BytesToHexString(pk)]; !exists {
 			return errors.New("invalid multi sign public key")
 		}
 	}

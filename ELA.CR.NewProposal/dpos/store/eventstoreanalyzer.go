@@ -31,18 +31,9 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators(blockHeight uint32) (
 		}
 	}
 
-	crcArbitrators := e.cfg.Arbitrators.GetCRCArbitrators()
-	crcArbitratorsMap := map[string]interface{}{}
-	for _, v := range crcArbitrators {
-		crcArbitratorsMap[common.BytesToHexString(v.PublicKey)] = nil
-	}
-
 	currentArbitrators := e.cfg.Arbitrators.GetArbitrators()
 	for _, v := range currentArbitrators {
 		hexPk := common.BytesToHexString(v)
-		if _, exists := crcArbitratorsMap[hexPk]; exists {
-			continue
-		}
 
 		if count, exists := arbitratorsVoteCount[hexPk]; exists {
 			voteRatio := float64(count) / float64(viewCount)
