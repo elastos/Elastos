@@ -36,6 +36,7 @@ const (
 	CmdFilterAdd   = "filteradd"
 	CmdFilterClear = "filterclear"
 	CmdFilterLoad  = "filterload"
+	CmdFilterAck   = "filterack"
 	CmdMerkleBlock = "merkleblock"
 	CmdReject      = "reject"
 	CmdTxFilter    = "txfilter"
