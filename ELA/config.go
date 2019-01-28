@@ -85,6 +85,22 @@ func loadConfigParams() *config.ConfigParams {
 			activeNetParams.DPOSStartHeight = cfg.HeightVersions[2]
 		}
 	}
+	if cfg.ArbiterConfiguration.InactiveDuration > 0 {
+		activeNetParams.InactiveDuration =
+			cfg.ArbiterConfiguration.InactiveDuration
+	}
+	if cfg.ArbiterConfiguration.MaxInactiveRounds > 0 {
+		activeNetParams.MaxInactiveRounds =
+			cfg.ArbiterConfiguration.MaxInactiveRounds
+	}
+	if cfg.ArbiterConfiguration.InactivePenalty > 0 {
+		activeNetParams.InactivePenalty =
+			cfg.ArbiterConfiguration.InactivePenalty
+	}
+	if cfg.ArbiterConfiguration.InactiveEliminateCount > 0 {
+		activeNetParams.InactiveEliminateCount =
+			cfg.ArbiterConfiguration.InactiveEliminateCount
+	}
 
 	return &config.Parameters
 }
@@ -149,9 +165,10 @@ var configTemplate = config.Configuration{
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		EmergencyInactivePenalty: 500 * 100000000,
 		InactivePercentage:       0.1,
-		MaxAllowedInactiveRounds: 3,
+		MaxInactiveRounds:        3,
 		InactiveDuration:         uint32((time.Hour * 24 * 7) / time.Second),
 		InactivePenalty:          100 * 100000000,
+		InactiveEliminateCount:   12,
 	},
 	RpcConfiguration: config.RpcConfiguration{
 		User:        "",

@@ -4,14 +4,13 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const ResponseInactiveArbitratorsLength = 32 + 33 + 64
 
 type ResponseInactiveArbitrators struct {
-	Tx     types.Transaction
+	TxHash common.Uint256
 	Signer []byte
 	Sign   []byte
 }
@@ -36,7 +35,7 @@ func (i *ResponseInactiveArbitrators) Serialize(w io.Writer) error {
 }
 
 func (i *ResponseInactiveArbitrators) SerializeUnsigned(w io.Writer) error {
-	if err := i.Tx.Serialize(w); err != nil {
+	if err := i.TxHash.Serialize(w); err != nil {
 		return err
 	}
 
@@ -58,7 +57,7 @@ func (i *ResponseInactiveArbitrators) Deserialize(r io.Reader) (err error) {
 }
 
 func (i *ResponseInactiveArbitrators) DeserializeUnsigned(r io.Reader) (err error) {
-	if err = i.Tx.Deserialize(r); err != nil {
+	if err = i.TxHash.Deserialize(r); err != nil {
 		return err
 	}
 
