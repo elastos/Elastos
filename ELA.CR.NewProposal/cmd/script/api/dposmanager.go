@@ -83,9 +83,9 @@ func newDposManager(L *lua.LState) int {
 		Manager:      dposManager,
 		Account:      mockManager.Account,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-			InactivePercentage: config.Parameters.ArbiterConfiguration.InactivePercentage,
-			Store:              nil,
-			Arbitrators:        a,
+			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
+			Store:                  nil,
+			Arbitrators:            a,
 		},
 	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)

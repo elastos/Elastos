@@ -1,15 +1,17 @@
 package store
 
 import (
+	"sort"
+
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 type EventStoreAnalyzerConfig struct {
-	InactivePercentage float64
-	Store              interfaces.IDposStore
-	Arbitrators        interfaces.Arbitrators
+	InactiveEliminateCount uint32
+	Store                  interfaces.IDposStore
+	Arbitrators            interfaces.Arbitrators
 }
 
 type EventStoreAnalyzer struct {
@@ -31,18 +33,32 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (
 		}
 	}
 
+	type sortItem struct {
+		Ratio float64
+		PK    string
+	}
+	var sortItems []sortItem
 	currentArbitrators := e.cfg.Arbitrators.GetArbitrators()
 	for _, v := range currentArbitrators {
 		hexPk := common.BytesToHexString(v)
 
+		ratio := float64(0)
 		if count, exists := arbitratorsVoteCount[hexPk]; exists {
-			voteRatio := float64(count) / float64(viewCount)
-			if voteRatio < e.cfg.InactivePercentage {
-				result = append(result, hexPk)
-			}
-		} else {
-			result = append(result, hexPk)
+			ratio = float64(count) / float64(viewCount)
 		}
+
+		sortItems = append(sortItems, sortItem{
+			Ratio: ratio,
+			PK:    hexPk,
+		})
+	}
+
+	sort.Slice(sortItems, func(i, j int) bool {
+		return sortItems[i].Ratio > sortItems[j].Ratio
+	})
+	for i := 0; i < len(sortItems) &&
+		i < int(e.cfg.InactiveEliminateCount); i++ {
+		result = append(result, sortItems[i].PK)
 	}
 
 	return result

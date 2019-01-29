@@ -51,7 +51,7 @@ type ProposalDispatcher interface {
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256, signer []byte,
 		sign []byte)
 	CreateInactiveArbitrators() (*types.Transaction, error)
-	HasEnteredEmergency() bool
+	HasViewChangedTimeOut() bool
 }
 
 type ProposalDispatcherConfig struct {
@@ -74,7 +74,8 @@ type proposalDispatcher struct {
 	pendingProposals   map[common.Uint256]types.DPosProposal
 	pendingVotes       map[common.Uint256]types.DPosProposalVote
 
-	processingInactiveArbitratorTx *types.Transaction
+	currentInactiveArbitratorTx   *types.Transaction
+	inactiveArbitratorsEliminated bool
 
 	eventAnalyzer  *store.EventStoreAnalyzer
 	illegalMonitor IllegalBehaviorMonitor
@@ -227,13 +228,18 @@ func (p *proposalDispatcher) CleanProposals(changeView bool) {
 	p.acceptVotes = make(map[common.Uint256]types.DPosProposalVote)
 	p.rejectedVotes = make(map[common.Uint256]types.DPosProposalVote)
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
+
+	if !changeView {
+		p.inactiveArbitratorsEliminated = false
+		p.currentInactiveArbitratorTx = nil
+	}
 }
 
 func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if p.HasEnteredEmergency() {
+	if p.HasViewChangedTimeOut() {
 		log.Info("enter emergency state, proposal will be discard")
 		return
 	}
@@ -402,8 +408,9 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *proposalDispatcher) HasEnteredEmergency() bool {
-	return p.CurrentHeight() > config.Parameters.HeightVersions[3] &&
+func (p *proposalDispatcher) HasViewChangedTimeOut() bool {
+	return !p.inactiveArbitratorsEliminated &&
+		p.CurrentHeight() > config.Parameters.HeightVersions[3] &&
 		p.cfg.Consensus.GetViewOffset() >= p.cfg.Arbitrators.GetArbitersCount()
 }
 
@@ -411,7 +418,7 @@ func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
 	var err error
 
-	if !p.HasEnteredEmergency() {
+	if !p.HasViewChangedTimeOut() {
 		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
 			" arbitrators transaction when normal view changing")
 		return
@@ -430,8 +437,21 @@ func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 		return
 	}
 
-	if !p.processingInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
-		p.processingInactiveArbitratorTx = tx
+	inactiveArbitratorsMap := make(map[string]interface{})
+	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
+		inactiveArbitratorsMap[v] = nil
+	}
+	for _, v := range inactivePayload.Arbitrators {
+		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
+			v)]; !exist {
+			log.Warn("[OnInactiveArbitratorsReceived] disagree with " +
+				"inactive arbitrators")
+			return
+		}
+	}
+
+	if !p.currentInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
+		p.currentInactiveArbitratorTx = tx
 	}
 
 	response := &dmsg.ResponseInactiveArbitrators{
@@ -448,14 +468,14 @@ func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signer []byte, sign []byte) {
 
-	if !p.processingInactiveArbitratorTx.Hash().IsEqual(*txHash) {
+	if !p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
 		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown " +
 			"inactive arbitrators transaction")
 		return
 	}
 
 	data := new(bytes.Buffer)
-	if err := p.processingInactiveArbitratorTx.SerializeUnsigned(
+	if err := p.currentInactiveArbitratorTx.SerializeUnsigned(
 		data); err != nil {
 		log.Warn("[OnResponseInactiveArbitratorsReceived] transaction "+
 			"serialize error, details: ", err)
@@ -475,16 +495,28 @@ func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
 		return
 	}
 
-	pro := p.processingInactiveArbitratorTx.Programs[0]
+	pro := p.currentInactiveArbitratorTx.Programs[0]
 	buf := new(bytes.Buffer)
 	buf.Write(pro.Parameter)
 	buf.Write(sign)
 	pro.Parameter = buf.Bytes()
 
+	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureLength)
+}
+
+func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
-	if len(pro.Parameter)/crypto.SignatureLength > minSignCount {
-		p.cfg.Manager.AppendToTxnPool(p.processingInactiveArbitratorTx)
+	if signCount > minSignCount {
+		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
+
+		// todo change current arbitrators and notify new election
+		//arbitrators := p.currentInactiveArbitratorTx.Payload.(*payload.
+		//	InactiveArbitrators).Arbitrators
+
+		p.inactiveArbitratorsEliminated = true
 	}
+
+	return false
 }
 
 func (p *proposalDispatcher) alreadyExistVote(v types.DPosProposalVote) bool {
@@ -647,7 +679,7 @@ func (p *proposalDispatcher) CreateInactiveArbitrators() (
 		},
 	}
 
-	p.processingInactiveArbitratorTx = tx
+	p.currentInactiveArbitratorTx = tx
 	return tx, nil
 }
 
@@ -677,9 +709,9 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispa
 		pendingProposals:   make(map[common.Uint256]types.DPosProposal),
 		pendingVotes:       make(map[common.Uint256]types.DPosProposalVote),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
-			InactivePercentage: cfg.InactivePercentage,
-			Store:              cfg.Store,
-			Arbitrators:        cfg.Arbitrators.(*store.Arbitrators),
+			InactiveEliminateCount: cfg.InactiveEliminateCount,
+			Store:                  cfg.Store,
+			Arbitrators:            cfg.Arbitrators.(*store.Arbitrators),
 		}),
 	}
 	i := &illegalBehaviorMonitor{
