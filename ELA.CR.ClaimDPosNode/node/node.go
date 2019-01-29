@@ -185,7 +185,7 @@ func (node *node) nodeHeartBeat() {
 	for {
 		log.Info("node heart beat")
 		for _, peer := range node.GetNeighborNodes() {
-			if time.Now().Sub(peer.GetLastActive()) > 10*time.Minute {
+			if time.Now().Sub(peer.GetLastActive()) > time.Minute {
 				log.Warn("does not update last active time for 10 minutes.")
 				peer.Disconnect()
 			}
