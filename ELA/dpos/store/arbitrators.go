@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
@@ -22,7 +23,7 @@ type ArbitratorsConfig struct {
 	Versions         interfaces.HeightVersions
 	Store            interfaces.IDposStore
 	ChainStore       blockchain.IChainStore
-	Emergency        EmergencyConfig
+	State            *state.State
 }
 
 type Arbitrators struct {
@@ -39,8 +40,6 @@ type Arbitrators struct {
 	nextCandidates  [][]byte
 
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
-
-	emergency *emergencyMechanism
 
 	lock sync.Mutex
 }
@@ -63,7 +62,8 @@ func (a *Arbitrators) Start() error {
 		return err
 	}
 	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) == 0 {
-		if a.currentArbitrators, err = a.cfg.Versions.GetNormalArbitratorsDesc(block); err != nil {
+		if a.currentArbitrators, err = a.cfg.Versions.
+			GetNormalArbitratorsDesc(block, 0); err != nil {
 			return err
 		}
 	} else {
@@ -225,47 +225,29 @@ func (a *Arbitrators) GetActiveDposPeers() (result map[string]string) {
 	return result
 }
 
-func (a *Arbitrators) TryEnterEmergency(blockTime uint32) (result bool) {
-	result = a.emergency.TryEnterEmergency(blockTime)
-
-	if result {
-		if err := a.ForceChange(); err != nil {
-			panic("initialize crc arbitrators error when enter emergency state, details: " + err.Error())
-		}
-	}
-	return result
-}
-
 func (a *Arbitrators) onChainHeightIncreased(block *types.Block) {
 
-	if !a.TryEnterEmergency(block.Timestamp) {
-		if a.isNewElection() {
-			if err := a.changeCurrentArbitrators(); err != nil {
-				log.Error("Change current arbitrators error: ", err)
-				return
-			}
-
-			if err := a.updateNextArbitrators(block); err != nil {
-				log.Error("Update arbitrators error: ", err)
-				return
-			}
-
-			events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
-
-		} else {
-			a.DutyChangedCount++
-			a.saveDposRelated()
+	if a.isNewElection() {
+		if err := a.changeCurrentArbitrators(); err != nil {
+			log.Error("Change current arbitrators error: ", err)
+			return
 		}
+
+		if err := a.updateNextArbitrators(block); err != nil {
+			log.Error("Update arbitrators error: ", err)
+			return
+		}
+
+		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+
+	} else {
+		a.DutyChangedCount++
+		a.saveDposRelated()
 	}
 }
 
 func (a *Arbitrators) saveDposRelated() {
 	a.cfg.Store.SaveDposDutyChangedCount(a.DutyChangedCount)
-	if a.emergency.IsRunning() {
-		data := a.emergency.GetEmergencyData()
-		a.cfg.Store.SaveEmergencyData(
-			data.EmergencyStarted, data.EmergencyStartHeight)
-	}
 }
 
 func (a *Arbitrators) isNewElection() bool {
@@ -293,32 +275,31 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
-	a.emergency.TryLeaveEmergency(block.Height)
 
-	if !a.emergency.IsRunning() {
-		producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block)
-		if err != nil {
-			return err
-		}
-
-		a.nextArbitrators = producers
-		for _, v := range a.cfg.CRCArbitrators {
+	crcCount := uint32(0)
+	a.nextArbitrators = make([][]byte, 0)
+	for _, v := range a.cfg.CRCArbitrators {
+		if !a.cfg.State.IsInactiveProducer(v.PublicKey) {
 			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+			crcCount++
 		}
-
-		candidates, err := a.cfg.Versions.GetCandidatesDesc(block)
-		if err != nil {
-			return err
-		}
-		a.nextCandidates = candidates
-
-	} else {
-		a.nextArbitrators = [][]byte{}
-		for _, v := range a.cfg.CRCArbitrators {
-			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
-		}
-		a.nextCandidates = [][]byte{}
 	}
+
+	count := config.Parameters.ArbiterConfiguration.
+		NormalArbitratorsCount + crcCount
+	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block, count)
+	if err != nil {
+		return err
+	}
+	for _, v := range producers {
+		a.nextArbitrators = append(a.nextArbitrators, v)
+	}
+
+	candidates, err := a.cfg.Versions.GetCandidatesDesc(block, count)
+	if err != nil {
+		return err
+	}
+	a.nextCandidates = candidates
 
 	a.cfg.Store.SaveNextArbitrators(a)
 	return nil
@@ -371,5 +352,5 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 }
 
 func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
-	return &Arbitrators{cfg: *cfg, emergency: &emergencyMechanism{cfg: cfg.Emergency}}, nil
+	return &Arbitrators{cfg: *cfg}, nil
 }

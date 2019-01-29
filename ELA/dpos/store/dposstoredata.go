@@ -22,22 +22,6 @@ func (s *DposStore) getDposDutyChangedCount() (uint32, error) {
 	return 0, nil
 }
 
-func (s *DposStore) getEmergencyData() (*EmergencyData, error) {
-	key := []byte{byte(DPOSEmergencyData)}
-	value, err := s.db.Get(key)
-	if err == nil {
-		r := bytes.NewReader(value)
-		data := &EmergencyData{}
-		if err = data.Deserialize(r); err != nil {
-			return nil, err
-		}
-
-		return data, nil
-	}
-
-	return nil, err
-}
-
 func (s *DposStore) getCurrentArbitrators() ([][]byte, error) {
 	var currentArbitrators [][]byte
 	key := []byte{byte(DPOSCurrentArbitrators)}
@@ -138,16 +122,6 @@ func (s *DposStore) persistDposDutyChangedCount(batch Batch, count uint32) error
 
 	value := new(bytes.Buffer)
 	common.WriteUint32(value, count)
-
-	batch.Put(key, value.Bytes())
-	return nil
-}
-
-func (s *DposStore) persistEmergencyData(batch Batch, data *EmergencyData) error {
-	key := []byte{byte(DPOSEmergencyData)}
-
-	value := new(bytes.Buffer)
-	data.Serialize(value)
 
 	batch.Put(key, value.Bytes())
 	return nil

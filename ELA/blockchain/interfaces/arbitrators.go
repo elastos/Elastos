@@ -30,5 +30,4 @@ type Arbitrators interface {
 	HasArbitersMinorityCount(num uint32) bool
 
 	GetActiveDposPeers() map[string]string
-	TryEnterEmergency(blockTime uint32) bool
 }

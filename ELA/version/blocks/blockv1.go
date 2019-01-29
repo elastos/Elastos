@@ -98,11 +98,12 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *blockV1) GetNormalArbitratorsDesc() ([][]byte, error) {
+func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+	[][]byte, error) {
 	return [][]byte{}, nil
 }
 
-func (b *blockV1) GetCandidatesDesc() ([][]byte, error) {
+func (b *blockV1) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
 	return [][]byte{}, nil
 }
 
