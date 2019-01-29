@@ -86,7 +86,7 @@ type Noder interface {
 	IsRelay() bool
 	IsCurrent() bool
 	AddNeighborNode(Noder)
-	DelNeighborNode(id uint64) (Noder, bool)
+	DelNeighborNode(id Noder) (Noder, bool)
 	Height() uint64
 	GetConn() net.Conn
 	Connected() bool
@@ -109,7 +109,6 @@ type Noder interface {
 	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
 	SendMessage(msg p2p.Message)
-	NodeEstablished(uid uint64) bool
 	GetTransaction(hash common.Uint256) *types.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64

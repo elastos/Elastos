@@ -271,7 +271,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
 	block := msgBlock.Serializable.(*types.Block)
 
 	hash := block.Hash()
-	if !LocalNode.IsNeighborNode(node.ID()) {
+	if !LocalNode.IsNeighborNode(node) {
 		log.Warn("receive block message from unknown peer")
 		node.Disconnect()
 		return
@@ -312,7 +312,7 @@ func (h *HandlerEIP001) onTx(msgTx *msg.Tx) {
 	node := h.base.node
 	tx := msgTx.Serializable.(*types.Transaction)
 
-	if !LocalNode.IsNeighborNode(node.ID()) {
+	if !LocalNode.IsNeighborNode(node) {
 		log.Warn("received transaction message from unknown peer")
 		node.Disconnect()
 		return

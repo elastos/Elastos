@@ -149,7 +149,7 @@ func (n *nodeMock) AddNeighborNode(protocol.Noder) {
 	panic("implement me")
 }
 
-func (n *nodeMock) DelNeighborNode(id uint64) (protocol.Noder, bool) {
+func (n *nodeMock) DelNeighborNode(id protocol.Noder) (protocol.Noder, bool) {
 	panic("implement me")
 }
 
@@ -235,10 +235,6 @@ func (n *nodeMock) BloomFilter() *bloom.Filter {
 }
 
 func (n *nodeMock) SendMessage(msg p2p.Message) {
-	panic("implement me")
-}
-
-func (n *nodeMock) NodeEstablished(uid uint64) bool {
 	panic("implement me")
 }
 

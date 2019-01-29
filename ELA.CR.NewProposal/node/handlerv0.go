@@ -203,7 +203,7 @@ func (h *HandlerV0) onBlock(msg *msg.Block) error {
 		blockHash = dposBlock.Block.Hash()
 		log.Debug("[onBlock] handlerV0 received block:", blockHash.String())
 
-		if !LocalNode.IsNeighborNode(node.ID()) {
+		if !LocalNode.IsNeighborNode(node) {
 			log.Debug("Received block message from unknown peer")
 			return fmt.Errorf("received block message from unknown peer")
 		}
