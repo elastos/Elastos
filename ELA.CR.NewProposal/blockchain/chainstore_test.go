@@ -421,7 +421,7 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	nickName2 := "nickname 2"
 
 	// 2. Run persistCancelProducer
-	if err := testChainStore.persistCancelProducerForMempool(payload1); err != nil {
+	if err := testChainStore.persistCancelProducerForMempool(payload1, 100); err != nil {
 		t.Error("persistCancelProducerForMempool failed")
 	}
 

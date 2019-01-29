@@ -58,7 +58,7 @@ func (c *ChainStore) rollbackRegisterProducerForMempool(payload *PayloadRegister
 	return nil
 }
 
-func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProducer) error {
+func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProducer, height uint32) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	_, ok := c.producerVotes[BytesToHexString(payload.OwnerPublicKey)]
@@ -76,7 +76,7 @@ func (c *ChainStore) persistCancelProducerForMempool(payload *PayloadCancelProdu
 		return err
 	}
 	delete(c.producerAddress, addr)
-	c.canceledProducers[BytesToHexString(payload.OwnerPublicKey)] = c.currentBlockHeight
+	c.canceledProducers[BytesToHexString(payload.OwnerPublicKey)] = height
 	c.dirty[outputpayload.Delegate] = true
 	return nil
 }
@@ -295,7 +295,7 @@ func (c *ChainStore) persistForMempool(b *Block) error {
 				return err
 			}
 		case CancelProducer:
-			if err := c.persistCancelProducerForMempool(txn.Payload.(*PayloadCancelProducer)); err != nil {
+			if err := c.persistCancelProducerForMempool(txn.Payload.(*PayloadCancelProducer), b.Height); err != nil {
 				return err
 			}
 		case UpdateProducer:
