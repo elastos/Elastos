@@ -743,7 +743,8 @@ func (v *txBlockTest1) GetVersion() uint32 {
 	return 1
 }
 
-func (v *txBlockTest1) GetNormalArbitratorsDesc() ([][]byte, error) {
+func (v *txBlockTest1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+	[][]byte, error) {
 	versionsMsg = "blockVersionTest1_GetNormalArbitratorsDesc"
 	return nil, nil
 }
@@ -775,7 +776,8 @@ func (v *txBlockTest2) GetVersion() uint32 {
 	return 2
 }
 
-func (v *txBlockTest2) GetNormalArbitratorsDesc() ([][]byte, error) {
+func (v *txBlockTest2) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+	[][]byte, error) {
 	versionsMsg = "blockVersionTest2_GetNormalArbitratorsDesc"
 	return nil, nil
 }

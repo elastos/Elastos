@@ -20,11 +20,11 @@ func (b *blockV2) GetVersion() uint32 {
 	return 2
 }
 
-func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
-	resultCount := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
+func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32) ([][]byte,
+	error) {
 
 	producers := b.cfg.Chain.GetState().GetActiveProducers()
-	if uint32(len(producers)) < resultCount {
+	if uint32(len(producers)) < arbitratorsCount {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
 
@@ -32,15 +32,14 @@ func (b *blockV2) GetNormalArbitratorsDesc() ([][]byte, error) {
 		return producers[i].Votes() > producers[j].Votes()
 	})
 
-	result := make([][]byte, resultCount)
-	for i := uint32(0); i < resultCount; i++ {
+	result := make([][]byte, arbitratorsCount)
+	for i := uint32(0); i < arbitratorsCount; i++ {
 		result[i] = producers[i].Info().NodePublicKey
 	}
 	return result, nil
 }
 
-func (b *blockV2) GetCandidatesDesc() ([][]byte, error) {
-	startIndex := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
+func (b *blockV2) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
 
 	producers := b.cfg.Chain.GetState().GetActiveProducers()
 	if uint32(len(producers)) < startIndex {
@@ -52,7 +51,8 @@ func (b *blockV2) GetCandidatesDesc() ([][]byte, error) {
 	})
 
 	result := make([][]byte, 0)
-	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.Parameters.ArbiterConfiguration.CandidatesCount; i++ {
+	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.
+		Parameters.ArbiterConfiguration.CandidatesCount; i++ {
 		result = append(result, producers[i].Info().NodePublicKey)
 	}
 	return result, nil

@@ -281,6 +281,15 @@ func (s *State) IsActiveProducer(publicKey []byte) bool {
 	return ok
 }
 
+// IsInactiveProducer returns if a producer is in inactivate list according to
+// the public key.
+func (s *State) IsInactiveProducer(publicKey []byte) bool {
+	s.mtx.RLock()
+	_, ok := s.inactiveProducers[s.getProducerKey(publicKey)]
+	s.mtx.RUnlock()
+	return ok
+}
+
 // IsCanceledProducer returns if a producer is in canceled list according to the
 // public key.
 func (s *State) IsCanceledProducer(publicKey []byte) bool {
@@ -623,7 +632,23 @@ func (s *State) processEmergencyInactiveArbitrators(
 		if _, ok := s.activityProducers[pkStr]; ok {
 			addEmergencyInactiveArbitrator(pkStr, s.activityProducers[pkStr])
 		} else {
-			log.Warn("unknown active producer: ", v)
+			if s.arbiters.IsCRCArbitrator(v) {
+				// add temporary producer obj for crc inactive arbitrator
+				producer := &Producer{
+					info: payload.ProducerInfo{
+						NodePublicKey: v,
+					},
+					registerHeight: height,
+					votes:          0,
+					inactiveRounds: 0,
+					inactiveSince:  math.MaxUint32,
+					penalty:        common.Fixed64(0),
+				}
+				addEmergencyInactiveArbitrator(pkStr, producer)
+
+			} else {
+				log.Warn("unknown active producer: ", v)
+			}
 		}
 	}
 
@@ -719,9 +744,18 @@ func (s *State) tryLeaveInactiveMode(blockHeight uint32) {
 	tryLeaveInactive := func(key string, producer *Producer) {
 		s.history.append(blockHeight, func() {
 			if blockHeight > producer.inactiveSince+s.chainParams.InactiveDuration {
+				pk, err := common.HexStringToBytes(key)
+				if err != nil {
+					log.Warn("[tryLeaveInactiveMode] convert to public key" +
+						" byte error")
+					return
+				}
 
 				producer.state = Activate
-				s.activityProducers[key] = producer
+
+				if !s.arbiters.IsCRCArbitrator(pk) {
+					s.activityProducers[key] = producer
+				}
 				delete(s.inactiveProducers, key)
 			}
 		}, func() {

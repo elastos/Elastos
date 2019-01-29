@@ -21,7 +21,7 @@ func (b *blockV0) GetVersion() uint32 {
 }
 
 func (b *blockV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators, _ := b.GetNormalArbitratorsDesc()
+	arbitrators, _ := b.GetNormalArbitratorsDesc(0)
 	height := b.cfg.ChainStore.GetHeight()
 	index := (height + offset) % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
@@ -33,7 +33,8 @@ func (b *blockV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *blockV0) GetNormalArbitratorsDesc() ([][]byte, error) {
+func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+	[][]byte, error) {
 	arbitersByte := make([][]byte, 0)
 	for _, arbiter := range b.cfg.ChainParams.OriginArbiters {
 		arbiterByte, err := common.HexStringToBytes(arbiter)
@@ -46,7 +47,7 @@ func (b *blockV0) GetNormalArbitratorsDesc() ([][]byte, error) {
 	return arbitersByte, nil
 }
 
-func (b *blockV0) GetCandidatesDesc() ([][]byte, error) {
+func (b *blockV0) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
 	return [][]byte{}, nil
 }
 

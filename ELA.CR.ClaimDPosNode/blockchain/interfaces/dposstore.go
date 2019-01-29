@@ -35,7 +35,6 @@ type IArbitratorsRecord interface {
 	StartArbitratorsRecord()
 	GetArbitrators(a Arbitrators) error
 	SaveDposDutyChangedCount(count uint32)
-	SaveEmergencyData(started bool, startHeight uint32)
 	SaveCurrentArbitrators(a Arbitrators)
 	SaveNextArbitrators(a Arbitrators)
 
