@@ -458,6 +458,10 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.IllegalProposalEvidence, types.IllegalVoteEvidence,
 		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
 		s.processIllegalEvidence(tx.Payload, height)
+
+	case types.InactiveArbitrators:
+		s.processEmergencyInactiveArbitrators(
+			tx.Payload.(*payload.InactiveArbitrators), height)
 	}
 }
 
@@ -586,6 +590,45 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
+// processEmergencyInactiveArbitrators change producer state according to
+// emergency inactive arbitrators
+func (s *State) processEmergencyInactiveArbitrators(
+	inactivePayload *payload.InactiveArbitrators, height uint32) {
+
+	addEmergencyInactiveArbitrator := func(key string, producer *Producer) {
+		s.history.append(height, func() {
+
+			producer.state = Inactivate
+			s.inactiveProducers[key] = producer
+			delete(s.activityProducers, key)
+
+			producer.penalty += s.chainParams.EmergencyInactivePenalty
+		}, func() {
+
+			producer.state = Activate
+			s.activityProducers[key] = producer
+			delete(s.inactiveProducers, key)
+
+			if producer.penalty < s.chainParams.EmergencyInactivePenalty {
+				producer.penalty = common.Fixed64(0)
+			} else {
+				producer.penalty -= s.chainParams.EmergencyInactivePenalty
+			}
+		})
+	}
+
+	for _, v := range inactivePayload.Arbitrators {
+		pkStr := common.BytesToHexString(v)
+
+		if _, ok := s.activityProducers[pkStr]; ok {
+			addEmergencyInactiveArbitrator(pkStr, s.activityProducers[pkStr])
+		} else {
+			log.Warn("unknown active producer: ", v)
+		}
+	}
+
+}
+
 // processIllegalEvidence takes the illegal evidence payload and change producer
 // state according to the evidence.
 func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
@@ -656,11 +699,15 @@ func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
 // ProcessIllegalBlockEvidence takes a illegal block payload and change the
 // producers state immediately.  This is a spacial case that can be handled
 // before it packed into a block.
-func (s *State) ProcessIllegalBlockEvidence(payload types.Payload) {
+func (s *State) ProcessSpecialTxPayload(p types.Payload) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
-	s.processIllegalEvidence(payload, 0)
+	if inactivePayload, ok := p.(*payload.InactiveArbitrators); ok {
+		s.processEmergencyInactiveArbitrators(inactivePayload, 0)
+	} else {
+		s.processIllegalEvidence(p, 0)
+	}
 
 	// Commit changes here if no errors found.
 	s.history.commit(0)
