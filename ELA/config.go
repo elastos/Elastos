@@ -97,6 +97,10 @@ func loadConfigParams() *config.ConfigParams {
 		activeNetParams.InactivePenalty =
 			cfg.ArbiterConfiguration.InactivePenalty
 	}
+	if cfg.ArbiterConfiguration.EmergencyInactivePenalty > 0 {
+		activeNetParams.EmergencyInactivePenalty =
+			cfg.ArbiterConfiguration.EmergencyInactivePenalty
+	}
 	if cfg.ArbiterConfiguration.InactiveEliminateCount > 0 {
 		activeNetParams.InactiveEliminateCount =
 			cfg.ArbiterConfiguration.InactiveEliminateCount
