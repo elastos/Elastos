@@ -61,6 +61,7 @@ type MessageFunc func(peer *Peer, msg p2p.Message)
 type Config struct {
 	Magic            uint32
 	ProtocolVersion  uint32
+	DefaultPort      uint16
 	Services         uint64
 	DisableRelayTx   bool
 	HostToNetAddress HostToNetAddrFunc
@@ -854,8 +855,8 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	nonce := p.cfg.GetVersionNonce()
 
 	// Version message.
-	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services, nonce,
-		p.cfg.BestHeight(), p.cfg.DisableRelayTx)
+	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.DefaultPort,
+		p.cfg.Services, nonce, p.cfg.BestHeight(), p.cfg.DisableRelayTx)
 
 	// Advertise the services flag
 	msg.Services = p.cfg.Services
