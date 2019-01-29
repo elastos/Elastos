@@ -221,7 +221,7 @@ func deCompress(yTilde int, xValue []byte, curve *elliptic.CurveParams) (*Public
 
 	yValue := curveSqrt(ySqare, curve)
 	if nil == yValue {
-		return nil, errors.New("Invalid point compression")
+		return nil, errors.New("invalid point compression")
 	}
 
 	yCoord := big.NewInt(0)
@@ -234,10 +234,9 @@ func deCompress(yTilde int, xValue []byte, curve *elliptic.CurveParams) (*Public
 }
 
 func DecodePoint(encodeData []byte) (*PublicKey, error) {
-	if nil == encodeData {
-		return nil, errors.New("The encodeData cann't be nil")
+	if len(encodeData) == 0 {
+		return nil, errors.New("the encodeData cann't be nil")
 	}
-
 	expectedLength := (algSet.EccParams.P.BitLen() + 7) / 8
 
 	switch encodeData[0] {
@@ -246,24 +245,27 @@ func DecodePoint(encodeData []byte) (*PublicKey, error) {
 
 	case 0x02, 0x03: //compressed
 		if len(encodeData) != expectedLength+1 {
-			return nil, errors.New("The encodeData format is error")
+			return nil, errors.New("the encodeData format is error")
 		}
 
 		yTilde := int(encodeData[0] & 1)
 		pubKey, err := deCompress(yTilde, encodeData[FLAGLEN:FLAGLEN+XORYVALUELEN],
 			&algSet.EccParams)
 		if nil != err {
-			return nil, errors.New("Invalid point encoding")
+			return nil, errors.New("invalid point encoding")
 		}
 		return pubKey, nil
 
 	case 0x04, 0x06, 0x07: //uncompressed
+		if len(encodeData) != NOCOMPRESSEDLEN {
+			return nil, errors.New("the encodeData format is error")
+		}
 		pubKeyX := new(big.Int).SetBytes(encodeData[FLAGLEN : FLAGLEN+XORYVALUELEN])
 		pubKeyY := new(big.Int).SetBytes(encodeData[FLAGLEN+XORYVALUELEN : NOCOMPRESSEDLEN])
 		return &PublicKey{pubKeyX, pubKeyY}, nil
 
 	default:
-		return nil, errors.New("The encodeData format is error")
+		return nil, errors.New("the encodeData format is error")
 	}
 }
 

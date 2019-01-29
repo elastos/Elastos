@@ -65,6 +65,7 @@ func StartRPCServer() {
 	mainMux["producerstatus"] = ProducerStatus
 	mainMux["votestatus"] = VoteStatus
 	mainMux["estimatesmartfee"] = EstimateSmartFee
+	mainMux["getdepositcoin"] = GetDepositCoin
 
 	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
