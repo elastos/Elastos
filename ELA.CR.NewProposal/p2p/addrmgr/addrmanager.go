@@ -923,6 +923,25 @@ func (a *AddrManager) Good(addr *p2p.NetAddress) {
 	a.addrNew[newBucket][rmkey] = rmka
 }
 
+// SetServices sets the services for the giiven address to the provided value.
+func (a *AddrManager) SetServices(addr *p2p.NetAddress, services uint64) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	ka := a.find(addr)
+	if ka == nil {
+		return
+	}
+
+	// Update the services if needed.
+	if ka.na.Services != services {
+		// ka.na is immutable, so replace it.
+		naCopy := *ka.na
+		naCopy.Services = services
+		ka.na = &naCopy
+	}
+}
+
 // AddLocalAddress adds na to the list of known local addresses to advertise
 // with the given priority.
 func (a *AddrManager) AddLocalAddress(na *p2p.NetAddress, priority AddressPriority) error {

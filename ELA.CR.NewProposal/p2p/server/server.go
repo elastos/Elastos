@@ -187,6 +187,10 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Outbound connections.
 	if !sp.Inbound() {
+		// Update the address manager with the advertised services for outbound
+		// connections in case they have changed.
+		addrManager.SetServices(sp.NA(), v.Services)
+
 		// Get address that best matches.
 		lna := addrManager.GetBestLocalAddress(sp.NA())
 		if addrmgr.IsRoutable(lna) {
@@ -202,6 +206,18 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 		// Mark the address as a known good address.
 		addrManager.Good(sp.NA())
+
+	} else { // Inbound connections.
+
+		// Create net address according to the version message.
+		na := p2p.NewNetAddressIPPort(sp.NA().IP, v.Port, v.Services)
+		log.Debugf("New inbound sp.NA %s, port %d, services %d, na %s",
+			sp.NA(), v.Port, v.Services, na)
+
+		// Filter and add valid net address to address manager.
+		if sp.NAFilter() != nil && sp.NAFilter().Filter(na) {
+			addrManager.AddAddress(na, na)
+		}
 	}
 
 	// Add valid peer to the server.
@@ -649,6 +665,7 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 	cfg := &peer.Config{
 		Magic:            sp.server.cfg.MagicNumber,
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
+		DefaultPort:      sp.server.cfg.DefaultPort,
 		Services:         sp.server.cfg.Services,
 		DisableRelayTx:   sp.server.cfg.DisableRelayTx,
 		HostToNetAddress: sp.server.addrManager.HostToNetAddress,
@@ -691,7 +708,6 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
 	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
-	s.addrManager.AddAddress(sp.NA(), sp.NA())
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
