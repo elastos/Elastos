@@ -512,10 +512,16 @@ func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 		blockchain.DefaultLedger.Blockchain.GetState().
 			ProcessSpecialTxPayload(p.currentInactiveArbitratorTx.Payload)
 		if err := p.cfg.Arbitrators.ForceChange(); err != nil {
-			log.Error("[tryEnterEmergencyState] force change arbitrators" +
+			log.Error("[tryEnterEmergencyState] force change arbitrators"+
 				" error: ", err.Error())
 			return false
 		}
+
+		p.illegalMonitor.SetInactiveArbitratorsTxHash(p.
+			currentInactiveArbitratorTx.Hash())
+		// we should clear existing blocks because they do not have inactive
+		// arbitrators tx
+		p.cfg.Manager.GetBlockCache().Reset()
 
 		p.inactiveArbitratorsEliminated = true
 		return true
