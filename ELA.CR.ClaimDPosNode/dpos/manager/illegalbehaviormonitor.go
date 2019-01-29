@@ -28,6 +28,7 @@ type IllegalBehaviorMonitor interface {
 	SendSidechainIllegalEvidenceTransaction(evidence *types.SidechainIllegalData)
 
 	AddEvidence(evidence types.DposIllegalData)
+	SetInactiveArbitratorsTxHash(hash common.Uint256)
 }
 
 type illegalBehaviorMonitor struct {
@@ -36,13 +37,33 @@ type illegalBehaviorMonitor struct {
 
 	evidenceCache evidenceCache
 	manager       DposManager
+
+	inactiveArbitratorsTxHash *common.Uint256
 }
 
 func (i *illegalBehaviorMonitor) AddEvidence(evidence types.DposIllegalData) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 
+func (i *illegalBehaviorMonitor) SetInactiveArbitratorsTxHash(
+	hash common.Uint256) {
+	i.inactiveArbitratorsTxHash = &hash
+}
+
 func (i *illegalBehaviorMonitor) IsBlockValid(block *types.Block) bool {
+	if i.inactiveArbitratorsTxHash != nil {
+		hasInactiveArbitratorsTx := false
+		for _, tx := range block.Transactions {
+			if tx.Hash().IsEqual(*i.inactiveArbitratorsTxHash) {
+				hasInactiveArbitratorsTx = true
+			}
+		}
+
+		if !hasInactiveArbitratorsTx {
+			return false
+		}
+	}
+
 	return i.evidenceCache.IsBlockValid(block)
 }
 
@@ -56,8 +77,12 @@ func (i *illegalBehaviorMonitor) Reset(changeView bool) {
 		i.cachedProposals[k] = &v
 	}
 
-	if !changeView && i.dispatcher.processingBlock != nil {
-		i.evidenceCache.Reset(i.dispatcher.processingBlock)
+	if !changeView {
+		if i.dispatcher.processingBlock != nil {
+			i.evidenceCache.Reset(i.dispatcher.processingBlock)
+		}
+
+		i.inactiveArbitratorsTxHash = nil
 	}
 }
 
