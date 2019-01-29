@@ -12,34 +12,34 @@ import (
 // The neighbor node list
 type neighbours struct {
 	sync.Mutex
-	List map[uint64]protocol.Noder
+	List map[protocol.Noder]struct{}
 }
 
 func (ns *neighbours) init() {
-	ns.List = make(map[uint64]protocol.Noder)
+	ns.List = make(map[protocol.Noder]struct{})
 }
 
 func (ns *neighbours) AddNeighborNode(node protocol.Noder) {
 	ns.Lock()
 	defer ns.Unlock()
-	ns.List[node.ID()] = node
+	ns.List[node] = struct{}{}
 }
 
-func (ns *neighbours) DelNeighborNode(id uint64) (protocol.Noder, bool) {
+func (ns *neighbours) DelNeighborNode(id protocol.Noder) (protocol.Noder, bool) {
 	ns.Lock()
 	defer ns.Unlock()
-	node, ok := ns.List[id]
+	_, ok := ns.List[id]
 	if ok == false {
 		return nil, false
 	}
 	delete(ns.List, id)
-	return node, true
+	return id, true
 }
 
 func (ns *neighbours) IsNeighborAddr(addr string) bool {
 	ns.Lock()
 	defer ns.Unlock()
-	for _, n := range ns.List {
+	for n := range ns.List {
 		if n.State() == protocol.ESTABLISHED {
 			if n.NetAddress().String() == addr {
 				return true
@@ -52,7 +52,7 @@ func (ns *neighbours) IsNeighborAddr(addr string) bool {
 func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 	ns.Lock()
 	defer ns.Unlock()
-	for _, node := range ns.List {
+	for node := range ns.List {
 		// Skip unestablished nodes
 		if node.State() != protocol.ESTABLISHED {
 			continue
@@ -70,28 +70,12 @@ func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 	return internal, total
 }
 
-func (ns *neighbours) NodeEstablished(id uint64) bool {
-	ns.Lock()
-	defer ns.Unlock()
-
-	node, ok := ns.List[id]
-	if ok == false {
-		return false
-	}
-
-	if node.State() != protocol.ESTABLISHED {
-		return false
-	}
-
-	return true
-}
-
 func (ns *neighbours) GetNeighbourAddresses() []*p2p.NetAddress {
 	ns.Lock()
 	defer ns.Unlock()
 
 	var addrs []*p2p.NetAddress
-	for _, n := range ns.List {
+	for n := range ns.List {
 		if n.State() != protocol.ESTABLISHED {
 			continue
 		}
@@ -123,7 +107,7 @@ func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
 	defer ns.Unlock()
 
 	nodes := make([]protocol.Noder, 0, len(ns.List))
-	for _, n := range ns.List {
+	for n := range ns.List {
 		if n.State() == protocol.ESTABLISHED {
 			node := n
 			nodes = append(nodes, node)
@@ -146,7 +130,7 @@ func (ns *neighbours) GetNeighbourCount() uint {
 func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
-	for _, n := range ns.List {
+	for n := range ns.List {
 		if n.State() == protocol.ESTABLISHED && n.IsExternal() {
 			return n
 		}
@@ -154,7 +138,7 @@ func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	return nil
 }
 
-func (ns *neighbours) IsNeighborNode(id uint64) bool {
+func (ns *neighbours) IsNeighborNode(id protocol.Noder) bool {
 	ns.Lock()
 	defer ns.Unlock()
 	_, ok := ns.List[id]
@@ -164,7 +148,7 @@ func (ns *neighbours) IsNeighborNode(id uint64) bool {
 func (ns *neighbours) GetSyncNode() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
-	for _, n := range ns.List {
+	for n := range ns.List {
 		if n.IsSyncHeaders() {
 			return n
 		}
@@ -177,7 +161,7 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 	defer ns.Unlock()
 
 	var best protocol.Noder
-	for _, nbr := range ns.List {
+	for nbr := range ns.List {
 		// Do not let external node become sync node
 		if nbr.State() != protocol.ESTABLISHED || nbr.IsExternal() {
 			continue
