@@ -3,6 +3,7 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -1088,6 +1089,39 @@ func VoteStatus(param Params) map[string]interface{} {
 		Total:   total.String(),
 		Voting:  voting.String(),
 		Pending: pending,
+	})
+}
+
+func GetDepositCoin(param Params) map[string]interface{} {
+	pk, ok := param.String("ownerpublickey")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called ownerpublickey")
+	}
+	pkBytes, err := hex.DecodeString(pk)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid publickey")
+	}
+	programHash, err := contract.PublicKeyToDepositProgramHash(pkBytes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid publickey to programHash")
+	}
+	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	var balance common.Fixed64 = 0
+	for _, u := range unspends {
+		for _, v := range u {
+			balance = balance + v.Value
+		}
+	}
+	var deducted common.Fixed64 = 0
+	//todo get deducted coin
+
+	type depositCoin struct {
+		Available string `json:"available"`
+		Deducted  string `json:"deducted"`
+	}
+	return ResponsePack(Success, &depositCoin{
+		Available: balance.String(),
+		Deducted:  deducted.String(),
 	})
 }
 
