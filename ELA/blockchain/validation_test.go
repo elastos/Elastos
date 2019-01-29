@@ -154,7 +154,7 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	fakeCode[2] = 0x01
 	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature}, data)
 	assert.Error(t, err, "[CheckMultisigSignature] invalid redeem script wrong public key")
-	assert.Equal(t, "The encodeData format is error", err.Error())
+	assert.Equal(t, "the encodeData format is error", err.Error())
 
 	// invalid signature length not match
 	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature[math.Intn(64):]}, data)

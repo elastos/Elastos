@@ -1076,3 +1076,45 @@ result sample:
   "result": 10000
 }
 ```
+
+#### getdepositcoin
+
+description: get deposit coin by owner public key.
+
+parameters:
+
+| name           | type   | description                    |
+| -------------- | ------ | ------------------------------ |
+| ownerpublickey | string | the ownerPublicKey of producer |
+
+result:
+
+| name      | type   | description                            |
+| --------- | ------ | -------------------------------------- |
+| available | string | the available deposit coin of producer |
+| deducted  | string | the deducted deposit coin of producer  |
+
+named arguments sample:
+
+```json
+{
+  "method": "getdepositcoin",
+  "params":{
+    "ownerpublickey": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "available": "3",
+    "deducted": "0"
+  }
+}
+```
