@@ -224,7 +224,7 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *PayloadIllegalBlock) {
-	b.state.ProcessIllegalBlockEvidence(payload)
+	b.state.ProcessSpecialTxPayload(payload)
 }
 
 type OrphanBlock struct {

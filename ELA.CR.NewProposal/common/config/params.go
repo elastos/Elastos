@@ -87,10 +87,12 @@ var MainNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:   1008812, //fixme edit height later
-	MaxInactiveRounds: 3,
-	InactiveDuration:  10,
-	InactivePenalty:   100 * 100000000,
+	DPOSStartHeight:          1008812, //fixme edit height later
+	MaxInactiveRounds:        3,
+	InactiveDuration:         10,
+	InactivePenalty:          100 * 100000000,
+	EmergencyInactivePenalty: 500 * 100000000,
+	InactiveEliminateCount:   12,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -133,10 +135,12 @@ var TestNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:   1008812, //fixme edit height later
-	MaxInactiveRounds: 3,
-	InactiveDuration:  10,
-	InactivePenalty:   100 * 100000000,
+	DPOSStartHeight:          1008812, //fixme edit height later
+	MaxInactiveRounds:        3,
+	InactiveDuration:         10,
+	InactivePenalty:          100 * 100000000,
+	EmergencyInactivePenalty: 500 * 100000000,
+	InactiveEliminateCount:   12,
 }
 
 // RegNetParams defines the network parameters for the regression test network.
@@ -158,10 +162,12 @@ var RegNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:   1008812, //fixme edit height later
-	MaxInactiveRounds: 3,
-	InactiveDuration:  10,
-	InactivePenalty:   100 * 100000000,
+	DPOSStartHeight:          1008812, //fixme edit height later
+	MaxInactiveRounds:        3,
+	InactiveDuration:         10,
+	InactivePenalty:          100 * 100000000,
+	EmergencyInactivePenalty: 500 * 100000000,
+	InactiveEliminateCount:   12,
 }
 
 // CRCArbitratorParam defines parameters about arbitrators consensus and direct connection
@@ -255,6 +261,10 @@ type Params struct {
 
 	// InactiveEliminateCount defines arbitrators count should be eliminated
 	InactiveEliminateCount uint32
+
+	// EmergencyInactivePenalty defines the penalty amount the emergency
+	// producer takes.
+	EmergencyInactivePenalty common.Fixed64
 }
 
 func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {
