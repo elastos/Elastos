@@ -124,7 +124,6 @@ type ArbiterConfiguration struct {
 	CandidatesCount          uint32                    `json:"CandidatesCount"`
 	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
 	EmergencyInactivePenalty common.Fixed64            `json:"EmergencyInactivePenalty"`
-	InactivePercentage       float64                   `json:"InactivePercentage"`
 	MaxInactiveRounds        uint32                    `json:"MaxInactiveRounds"`
 	InactiveDuration         uint32                    `json:"InactiveDuration"`
 	InactivePenalty          common.Fixed64            `json:"InactivePenalty"`
