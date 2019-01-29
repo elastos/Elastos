@@ -1135,11 +1135,17 @@ func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, comp
 		return nil, nil, err
 	}
 
-	if err := CheckConfirm(confirm); err != nil {
+	if err := ConfirmSanityCheck(confirm); err != nil {
+		return nil, nil, err
+	}
+	if err := ConfirmContextCheck(confirm); err != nil {
 		return nil, nil, err
 	}
 
-	if err := CheckConfirm(compareConfirm); err != nil {
+	if err := ConfirmSanityCheck(compareConfirm); err != nil {
+		return nil, nil, err
+	}
+	if err := ConfirmContextCheck(compareConfirm); err != nil {
 		return nil, nil, err
 	}
 

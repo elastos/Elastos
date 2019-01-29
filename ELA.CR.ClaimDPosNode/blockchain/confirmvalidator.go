@@ -3,47 +3,124 @@ package blockchain
 import (
 	"bytes"
 	"errors"
-	"fmt"
 
 	"github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-func CheckConfirm(confirm *DPosProposalVoteSlot) error {
-	if !IsProposalValid(&confirm.Proposal) {
-		return errors.New("[onConfirm] confirm contain invalid proposal")
+func ConfirmSanityCheck(confirm *DPosProposalVoteSlot) error {
+	if err := ProposalSanityCheck(&confirm.Proposal); err != nil {
+		return errors.New("[ConfirmSanityCheck] confirm contain invalid " +
+			"proposal: " + err.Error())
 	}
 
 	signers := make(map[string]struct{})
 	proposalHash := confirm.Proposal.Hash()
 	for _, vote := range confirm.Votes {
-		if !proposalHash.IsEqual(vote.ProposalHash) || !IsVoteValid(&vote) {
-			return errors.New("[onConfirm] confirm contain invalid vote")
+		if !proposalHash.IsEqual(vote.ProposalHash) {
+			return errors.New("[ConfirmSanityCheck] confirm contain " +
+				"invalid vote")
+		}
+
+		if err := VoteSanityCheck(&vote); err != nil {
+			return errors.New("[ConfirmSanityCheck] confirm contain invalid " +
+				"vote: " + err.Error())
 		}
 
 		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
 	}
 
-	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
-		return errors.New("[onConfirm] signers less than majority count")
+	if len(signers) <= int(DefaultLedger.Arbitrators.
+		GetArbitersMajorityCount()) {
+		return errors.New("[ConfirmSanityCheck] signers less than " +
+			"majority count")
 	}
 
 	return nil
 }
 
-func CheckBlockWithConfirmation(block *Block, confirm *DPosProposalVoteSlot) error {
-	if block.Hash() != confirm.Hash {
-		return errors.New("block confirmation validate failed")
+func ConfirmContextCheck(confirm *DPosProposalVoteSlot) error {
+	if err := ProposalContextCheck(&confirm.Proposal); err != nil {
+		return errors.New("[ConfirmContextCheck] confirm contain invalid " +
+			"proposal: " + err.Error())
 	}
 
-	// TODO need to implement
-	fmt.Println("CheckBlockWithConfirmation Tracer ...")
+	for _, vote := range confirm.Votes {
+		if err := VoteContextCheck(&vote); err != nil {
+			return errors.New("[ConfirmContextCheck] confirm contain invalid " +
+				"vote: " + err.Error())
+		}
+	}
+
+	return nil
+}
+
+func CheckBlockWithConfirmation(block *Block,
+	confirm *DPosProposalVoteSlot) error {
+	if block.Hash() != confirm.Hash {
+		return errors.New("[CheckBlockWithConfirmation] block " +
+			"confirmation validate failed")
+	}
+
+	var inactivePayload *payload.InactiveArbitrators
+	for _, tx := range block.Transactions {
+		if tx.IsInactiveArbitrators() {
+			inactivePayload = tx.Payload.(*payload.InactiveArbitrators)
+			break
+		}
+	}
+	if inactivePayload != nil {
+		DefaultLedger.Blockchain.state.ProcessSpecialTxPayload(inactivePayload)
+	}
+
+	if err := ConfirmContextCheck(confirm); err != nil {
+		// rollback to the state before this method
+		if e := DefaultLedger.Blockchain.state.RollbackTo(block.
+			Height - 1); e != nil {
+			panic("rollback fail when check block with confirmation")
+		}
+		return err
+	} else if inactivePayload != nil {
+		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
+			panic("force change fail when finding an inactive arbitrators" +
+				" transaction")
+		}
+	}
 
 	return nil
 }
 
 func IsProposalValid(proposal *DPosProposal) bool {
+	if err := ProposalSanityCheck(proposal); err != nil {
+		log.Warn("[ProposalSanityCheck] error: ", err.Error())
+		return false
+	}
+
+	if err := ProposalContextCheck(proposal); err != nil {
+		log.Warn("[ProposalContextCheck] error: ", err.Error())
+		return false
+	}
+
+	return true
+}
+
+func ProposalSanityCheck(proposal *DPosProposal) error {
+	pubKey, err := crypto.DecodePoint(proposal.Sponsor)
+	if err != nil {
+		return err
+	}
+	err = crypto.Verify(*pubKey, proposal.Data(), proposal.Sign)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ProposalContextCheck(proposal *DPosProposal) error {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		if bytes.Equal(a, proposal.Sponsor) {
@@ -51,22 +128,39 @@ func IsProposalValid(proposal *DPosProposal) bool {
 		}
 	}
 	if !isArbiter {
+		return errors.New("current arbitrators verify error")
+	}
+
+	return nil
+}
+
+func IsVoteValid(vote *DPosProposalVote) bool {
+	if err := VoteSanityCheck(vote); err != nil {
+		log.Warn("[VoteSanityCheck] error: ", err.Error())
 		return false
 	}
 
-	pubKey, err := crypto.DecodePoint(proposal.Sponsor)
-	if err != nil {
-		return false
-	}
-	err = crypto.Verify(*pubKey, proposal.Data(), proposal.Sign)
-	if err != nil {
+	if err := VoteContextCheck(vote); err != nil {
+		log.Warn("[VoteContextCheck] error: ", err.Error())
 		return false
 	}
 
 	return true
 }
 
-func IsVoteValid(vote *DPosProposalVote) bool {
+func VoteSanityCheck(vote *DPosProposalVote) error {
+	pubKey, err := crypto.DecodePoint(vote.Signer)
+	if err != nil {
+		return err
+	}
+	err = crypto.Verify(*pubKey, vote.Data(), vote.Sign)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func VoteContextCheck(vote *DPosProposalVote) error {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		if bytes.Equal(a, vote.Signer) {
@@ -74,17 +168,8 @@ func IsVoteValid(vote *DPosProposalVote) bool {
 		}
 	}
 	if !isArbiter {
-		return false
+		return errors.New("current arbitrators verify error")
 	}
 
-	pubKey, err := crypto.DecodePoint(vote.Signer)
-	if err != nil {
-		return false
-	}
-	err = crypto.Verify(*pubKey, vote.Data(), vote.Sign)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return nil
 }

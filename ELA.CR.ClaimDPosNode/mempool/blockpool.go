@@ -76,7 +76,7 @@ func (bm *BlockPool) appendConfirm(confirm *types.DPosProposalVoteSlot) (bool, b
 	}
 
 	// verify confirmation
-	if err := blockchain.CheckConfirm(confirm); err != nil {
+	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {
 		return false, false, err
 	}
 
