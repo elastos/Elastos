@@ -100,9 +100,6 @@ func main() {
 		Versions:         versions,
 		Store:            dposStore,
 		ChainStore:       chainStore,
-		Emergency: store.EmergencyConfig{
-			EmergencyDuration:        config.Parameters.ArbiterConfiguration.EmergencyDuration,
-		},
 	})
 	if err != nil {
 		printErrorAndExit(err)

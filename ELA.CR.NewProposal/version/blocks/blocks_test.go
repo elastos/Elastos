@@ -25,7 +25,8 @@ func (s *blockVersionTestSuite) SetupTest() {
 	s.Version = &blockV2{}
 }
 
-func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc() {
+func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc(
+	arbitratorsCount uint32) {
 	originLedger := blockchain.DefaultLedger
 
 	arbitratorsStr := []string{
