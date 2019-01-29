@@ -68,7 +68,7 @@ func (h *DposOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 }
 
 func (h *DposOnDutyHandler) tryCreateInactiveArbitratorsTx() bool {
-	if h.proposalDispatcher.HasEnteredEmergency() {
+	if h.proposalDispatcher.HasViewChangedTimeOut() {
 		tx, err := h.proposalDispatcher.CreateInactiveArbitrators()
 		if err != nil {
 			log.Warn("[tryCreateInactiveArbitratorsTx] create tx error: ", err)

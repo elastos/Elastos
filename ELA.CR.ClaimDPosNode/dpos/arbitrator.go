@@ -141,9 +141,9 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			Account:      dposAccount,
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-				InactivePercentage: config.Parameters.ArbiterConfiguration.InactivePercentage,
-				Store:              cfg.Store,
-				Arbitrators:        cfg.Arbitrators,
+				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
+				Store:                  cfg.Store,
+				Arbitrators:            cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
