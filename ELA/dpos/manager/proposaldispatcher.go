@@ -509,11 +509,16 @@ func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	if signCount > minSignCount {
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
 
-		// todo change current arbitrators and notify new election
-		//arbitrators := p.currentInactiveArbitratorTx.Payload.(*payload.
-		//	InactiveArbitrators).Arbitrators
+		blockchain.DefaultLedger.Blockchain.GetState().
+			ProcessSpecialTxPayload(p.currentInactiveArbitratorTx.Payload)
+		if err := p.cfg.Arbitrators.ForceChange(); err != nil {
+			log.Error("[tryEnterEmergencyState] force change arbitrators" +
+				" error: ", err.Error())
+			return false
+		}
 
 		p.inactiveArbitratorsEliminated = true
+		return true
 	}
 
 	return false
