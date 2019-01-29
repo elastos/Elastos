@@ -27,6 +27,8 @@ namespace Elastos {
 
 			virtual const CMBlock &GetVotePublicKey() const;
 
+			virtual bool IsDepositAddress(const Address &address) const;
+
 		protected:
 			CMBlock _votePublicKey;
 			IAccount *_parentAccount;

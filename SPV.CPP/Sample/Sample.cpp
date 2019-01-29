@@ -311,6 +311,20 @@ static void GetVotedList(MasterWalletManager *manager,
 	logger->debug("voted list = {}", mainchainSubWallet->GetVotedProducerList().dump());
 }
 
+static void RetrieveDeposit(MasterWalletManager *manager, const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json tx = mainchainSubWallet->CreateRetrieveDepositTransaction(500000000000, memo, "");
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
 static void Deposit(MasterWalletManager *manager,
 					const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
 					const std::string &toMasterWalletID, const std::string &toSubWalletID,
@@ -473,7 +487,7 @@ static void GetBalance(MasterWalletManager *manager,
 int main(int argc, char *argv[]) {
 
 	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
-	bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true;
+	bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
 
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
@@ -524,6 +538,11 @@ int main(int argc, char *argv[]) {
 			if (!cancelProducer) {
 				CancelProducer(manager, gMasterWalletID, gMainchainSubWalletID);
 				cancelProducer = true;
+			}
+
+			if (!retrieveDeposit) {
+				RetrieveDeposit(manager, gMasterWalletID, gMainchainSubWalletID);
+				retrieveDeposit = true;
 			}
 
 			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);

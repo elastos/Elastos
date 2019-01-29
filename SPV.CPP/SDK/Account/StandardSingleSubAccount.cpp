@@ -59,6 +59,14 @@ namespace Elastos {
 		}
 
 		bool StandardSingleSubAccount::ContainsAddress(const Address &address) const {
+			const CMBlock &producerPubKey = GetVotePublicKey();
+			if (producerPubKey.GetSize() > 0) {
+				Key key;
+				key.SetPubKey(GetVotePublicKey());
+				if (address.IsEqual(key.GetAddress(PrefixDeposit)))
+					return true;
+			}
+
 			return address.IsEqual(GetAddress());
 		}
 
@@ -72,10 +80,13 @@ namespace Elastos {
 												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD,
 												 SEQUENCE_EXTERNAL_CHAIN, 0);
 
+			Key producerKey = DeriveVoteKey(payPassword);
+
 			var_clean(&seed);
 			var_clean(&chainCode);
 
 			keys.push_back(key);
+			keys.push_back(producerKey);
 
 			return keys;
 		}

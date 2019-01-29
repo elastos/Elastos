@@ -286,13 +286,14 @@ namespace Elastos {
 			for (i = 0; i < _inputs.size(); i++) {
 				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
 				const UInt168 &programHash = tx->getOutputs()[_inputs[i].getIndex()].getProgramHash();
+				const std::string inputAddress = Utils::UInt168ToAddress(programHash);
 
 				// find the key for input
 				for (keyIndex = 0; keyIndex < keys.size(); ++keyIndex) {
-					CMBlock code = keys[i].RedeemScript(Prefix::PrefixStandard);
-					UInt168 keyProgramHash = keys[i].CodeToProgramHash(PrefixStandard, code);
-					if (memcmp(&programHash.u8[1], &keyProgramHash.u8[1], sizeof(UInt168) - 1) == 0)
+					if (keys[keyIndex].GetAddress(PrefixDeposit) == inputAddress ||
+						keys[keyIndex].GetAddress(PrefixStandard) == inputAddress) {
 						break;
+					}
 				}
 
 				ParamChecker::checkLogic(keyIndex >= keys.size(), Error::Sign, "Cannot found key for input: " +

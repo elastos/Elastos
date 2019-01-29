@@ -59,6 +59,7 @@ namespace Elastos {
 			uint32_t index;
 			size_t i;
 			std::vector<uint32_t> indexInternal, indexExternal;
+			std::vector<Key> keys;
 
 			for (i = 0; i < transaction->getInputs().size(); i++) {
 				const TransactionInput &txInput = transaction->getInputs()[i];
@@ -66,15 +67,19 @@ namespace Elastos {
 				Address inputAddr = tx->getOutputs()[txInput.getIndex()].getAddress();
 
 				_lock->Lock();
-				for (index = (uint32_t) internalChain.size(); index > 0; index--) {
-					if (inputAddr.IsEqual(internalChain[index - 1])) {
-						indexInternal.push_back(index - 1);
+				if (IsDepositAddress(inputAddr) && keys.empty()) {
+					keys.push_back(DeriveVoteKey(payPassword));
+				} else {
+					for (index = (uint32_t) internalChain.size(); index > 0; index--) {
+						if (inputAddr.IsEqual(internalChain[index - 1])) {
+							indexInternal.push_back(index - 1);
+						}
 					}
-				}
 
-				for (index = (uint32_t) externalChain.size(); index > 0; index--) {
-					if (inputAddr.IsEqual(externalChain[index - 1])) {
-						indexExternal.push_back(index - 1);
+					for (index = (uint32_t) externalChain.size(); index > 0; index--) {
+						if (inputAddr.IsEqual(externalChain[index - 1])) {
+							indexExternal.push_back(index - 1);
+						}
 					}
 				}
 				_lock->Unlock();
@@ -82,11 +87,12 @@ namespace Elastos {
 
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
 
-			std::vector<Key> keys =  BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
+			std::vector<Key> internalKeys = BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
 																SEQUENCE_INTERNAL_CHAIN, indexInternal);
 			std::vector<Key> externalKeys = BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
 																	   SEQUENCE_EXTERNAL_CHAIN, indexExternal);
 
+			keys.insert(keys.end(), internalKeys.begin(), internalKeys.end());
 			keys.insert(keys.end(), externalKeys.begin(), externalKeys.end());
 			var_clean(&seed);
 
@@ -190,6 +196,14 @@ namespace Elastos {
 		}
 
 		bool HDSubAccount::ContainsAddress(const Address &address) const {
+			const CMBlock &producerPubKey = GetVotePublicKey();
+			if (producerPubKey.GetSize() > 0) {
+				Key key;
+				key.SetPubKey(GetVotePublicKey());
+				if (address.IsEqual(key.GetAddress(PrefixDeposit)))
+					return true;
+			}
+
 			return allAddrs.find(address) != allAddrs.end();
 		}
 

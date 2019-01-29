@@ -60,6 +60,7 @@ namespace Elastos {
 				bool useVotedUTXO = false);
 
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
+				uint64_t amount,
 				const std::string &memo,
 				const std::string &remark);
 

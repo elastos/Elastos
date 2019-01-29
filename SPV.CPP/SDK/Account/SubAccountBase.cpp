@@ -37,5 +37,18 @@ namespace Elastos {
 			return _votePublicKey;
 		}
 
+		bool SubAccountBase::IsDepositAddress(const Address &address) const {
+			if (_votePublicKey.GetSize() == 0) {
+				return false;
+			}
+
+			Key key;
+			if (!key.SetPubKey(_votePublicKey)) {
+				return false;
+			}
+
+			return address.IsEqual(key.GetAddress(PrefixDeposit));
+		}
+
 	}
 }

@@ -197,6 +197,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
+			uint64_t amount,
 			const std::string &memo,
 			const std::string &remark) {
 
@@ -204,13 +205,9 @@ namespace Elastos {
 			key.SetPubKey(_subAccount->GetVotePublicKey());
 			std::string fromAddress = key.GetAddress(PrefixDeposit);
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(), memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
 
 			tx->setTransactionType(Transaction::ReturnDepositCoin);
-
-			if (tx->getOutputs().size() > 1) {
-				tx->getOutputs().erase(tx->getOutputs().begin());
-			}
 
 			return tx->toJson();
 		}

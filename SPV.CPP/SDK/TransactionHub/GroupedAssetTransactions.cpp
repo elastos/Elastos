@@ -200,9 +200,11 @@ namespace Elastos {
 					for (j = 0; j < outputs.size(); j++) {
 						if (!outputs[j].getAddress().empty()) {
 
-							if (_subAccount->ContainsAddress(outputs[j].getAddress())) {
-								uint32_t confirms = blockHeight >= tx->getBlockHeight() ?
-									blockHeight - tx->getBlockHeight() + 1 : 0;
+							uint32_t confirms = blockHeight >= tx->getBlockHeight() ?
+												blockHeight - tx->getBlockHeight() + 1 : 0;
+							if (_subAccount->IsDepositAddress(outputs[j].getAddress())) {
+								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
+							} else if (_subAccount->ContainsAddress(outputs[j].getAddress())) {
 								bool isVote = (tx->getVersion() == Transaction::TxVersion::V09 &&
 									outputs[j].GetType() == TransactionOutput::Type::VoteOutput);
 								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
@@ -219,9 +221,12 @@ namespace Elastos {
 				for (j = _utxos.size(); j > 0; j--) {
 					if (!_spentOutputs.Contains(_utxos[j - 1])) continue;
 					const TransactionPtr &t = _allTx.Get(_utxos[j - 1].hash);
-					balance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
-					if (t->getOutputs()[_utxos[j - 1].n].GetType() == TransactionOutput::Type::VoteOutput) {
-						votedBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+
+					if (!_subAccount->IsDepositAddress(t->getOutputs()[_utxos[j - 1].n].getAddress())) {
+						balance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+						if (t->getOutputs()[_utxos[j - 1].n].GetType() == TransactionOutput::Type::VoteOutput) {
+							votedBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+						}
 					}
 					_utxos.RemoveAt(j - 1);
 				}
@@ -298,7 +303,7 @@ namespace Elastos {
 				TransactionOutput o = txInput->getOutputs()[_utxos[i].n];
 
 				if (o.GetType() == TransactionOutput::Type::VoteOutput ||
-					(o.getAddress()[0] == 'D' && fromAddress != o.getAddress())) {
+					(_subAccount->IsDepositAddress(o.getAddress()) && fromAddress != o.getAddress())) {
 					Log::debug("skip utxo: {}, n: {}, addr: {}", Utils::UInt256ToString(_utxos[i].hash, true),
 							   _utxos[i].n, o.getAddress());
 					continue;
@@ -394,7 +399,7 @@ namespace Elastos {
 				TransactionOutput o = txInput->getOutputs()[_utxos[i].n];
 
 				if (o.GetType() == TransactionOutput::Type::VoteOutput ||
-					(o.getAddress()[0] == 'D' && fromAddress != o.getAddress())) {
+					(_subAccount->IsDepositAddress(o.getAddress()) && fromAddress != o.getAddress())) {
 					Log::debug("skip utxo: {}, n: {}, addr: {}", Utils::UInt256ToString(_utxos[i].hash, true),
 							   _utxos[i].n, o.getAddress());
 					continue;

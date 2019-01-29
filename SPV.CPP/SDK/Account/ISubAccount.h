@@ -59,6 +59,8 @@ namespace Elastos {
 
 			virtual bool ContainsAddress(const Address &address) const = 0;
 
+			virtual bool IsDepositAddress(const Address &address) const = 0;
+
 			virtual bool IsAddressUsed(const Address &address) const = 0;
 
 			virtual void ClearUsedAddresses() = 0;
