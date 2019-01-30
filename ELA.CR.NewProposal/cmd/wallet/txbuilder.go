@@ -12,8 +12,7 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
-	"github.com/elastos/Elastos.ELA/cmd/password"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -153,7 +152,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 	}
 
 	// Check from address
-	password, err := password.GetPassword()
+	password, err := cmdcom.GetPassword()
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +205,7 @@ func createTransaction_(fromAddress string, fee *common.Fixed64, lockedUntil uin
 		txOutputs = append(txOutputs, txOutput)
 	}
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", httputil.Params{
+	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "listunspent", httputil.Params{
 		"addresses": []string{fromAddress},
 	})
 	if err != nil {
