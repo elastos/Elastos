@@ -118,6 +118,17 @@ func (a *Arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	a.onChainHeightIncreased(block)
 }
 
+func (a *Arbitrators) IsArbitrator(pk []byte) bool {
+	arbitrators := a.GetArbitrators()
+
+	for _, v := range arbitrators {
+		if bytes.Equal(pk, v) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *Arbitrators) GetArbitrators() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
