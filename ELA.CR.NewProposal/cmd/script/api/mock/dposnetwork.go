@@ -198,5 +198,5 @@ func (n *network) FireConfirmReceived(p *types.DPosProposalVoteSlot) {
 }
 
 func (n *network) FireIllegalBlocksReceived(i *types.DposIllegalBlocks) {
-	n.listener.OnIllegalBlocksReceived(i)
+	n.listener.OnIllegalBlocksTxReceived(i)
 }

@@ -1,12 +1,15 @@
 package dpos
 
 import (
+	"bytes"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
@@ -30,6 +33,7 @@ type ArbitratorConfig struct {
 }
 
 type Arbitrator struct {
+	cfg            ArbitratorConfig
 	enableViewLoop bool
 	network        *network
 	dposManager    manager.DposManager
@@ -52,10 +56,38 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
-func (a *Arbitrator) OnIllegalBlockReceived(payload *types.PayloadIllegalBlock) {
-	log.Info("[OnIllegalBlockReceived] listener received block")
+func (a *Arbitrator) OnIllegalBlockTxReceived(payload *types.PayloadIllegalBlock) {
+	log.Info("[OnIllegalBlockTxReceived] listener received illegal block tx")
 	if payload.CoinType != types.ELACoin {
 		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+	}
+}
+
+func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
+	p *payload.InactiveArbitrators) {
+	log.Info("[OnInactiveArbitratorsTxReceived] listener received " +
+		"inactive arbitrators tx")
+
+	if !a.cfg.Arbitrators.IsArbitrator(a.dposManager.GetPublicKey()) {
+		isEmergencyCandidate := false
+
+		candidates := a.cfg.Arbitrators.GetCandidates()
+		for i := 0; i < len(candidates) && i < int(a.cfg.Params.
+			InactiveEliminateCount); i++ {
+			if bytes.Equal(candidates[i], a.dposManager.GetPublicKey()) {
+				isEmergencyCandidate = true
+			}
+		}
+
+		if isEmergencyCandidate {
+			blockchain.DefaultLedger.Blockchain.GetState().
+				ProcessSpecialTxPayload(p)
+
+			if err := a.cfg.Arbitrators.ForceChange(); err != nil {
+				log.Error("[OnInactiveArbitratorsTxReceived] force change "+
+					"arbitrators error: ", err)
+			}
+		}
 	}
 }
 
@@ -162,6 +194,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		enableViewLoop: true,
 		dposManager:    dposManager,
 		network:        network,
+		cfg:            cfg,
 	}
 
 	events.Subscribe(func(e *events.Event) {
@@ -179,7 +212,9 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)
 			if tx.IsIllegalBlockTx() {
-				a.OnIllegalBlockReceived(tx.Payload.(*types.PayloadIllegalBlock))
+				a.OnIllegalBlockTxReceived(tx.Payload.(*types.PayloadIllegalBlock))
+			} else if tx.IsInactiveArbitrators() {
+				a.OnInactiveArbitratorsTxReceived(tx.Payload.(*payload.InactiveArbitrators))
 			}
 		}
 	})

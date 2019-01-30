@@ -31,6 +31,10 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) IsCRCArbitrator(pk []byte) bool {
 	panic("implement me")
 }

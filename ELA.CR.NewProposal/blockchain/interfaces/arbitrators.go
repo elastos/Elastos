@@ -9,6 +9,7 @@ type Arbitrators interface {
 	Start() error
 	ForceChange() error
 
+	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
