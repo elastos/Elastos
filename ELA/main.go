@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/cmd/password"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -143,7 +143,7 @@ func main() {
 
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
-		pwd, err := password.GetFlagPassword()
+		pwd, err := cmdcom.GetFlagPassword()
 		if err != nil {
 			printErrorAndExit(err)
 		}

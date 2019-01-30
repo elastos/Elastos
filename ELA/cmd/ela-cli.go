@@ -2,8 +2,10 @@ package main
 
 import (
 	"os"
-	"sort"
 
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/info"
+	"github.com/elastos/Elastos.ELA/cmd/mine"
 	"github.com/elastos/Elastos.ELA/cmd/rollback"
 	"github.com/elastos/Elastos.ELA/cmd/script"
 	"github.com/elastos/Elastos.ELA/cmd/wallet"
@@ -25,11 +27,17 @@ func main() {
 	//commands
 	app.Commands = []cli.Command{
 		*wallet.NewCommand(),
+		*info.NewCommand(),
+		*mine.NewCommand(),
 		*script.NewCommand(),
 		*rollback.NewCommand(),
 	}
-	sort.Sort(cli.CommandsByName(app.Commands))
-	sort.Sort(cli.FlagsByName(app.Flags))
 
-	app.Run(os.Args)
+	//sort.Sort(cli.CommandsByName(app.Commands))
+	//sort.Sort(cli.FlagsByName(app.Flags))
+
+	if err := app.Run(os.Args); err != nil {
+		cmdcom.PrintErrorMsg(err.Error())
+		os.Exit(1)
+	}
 }

@@ -16,7 +16,7 @@ import (
 func NewCommand() *cli.Command {
 	return &cli.Command{
 		Name:        "rollback",
-		Usage:       "rollback blockchain data",
+		Usage:       "Rollback blockchain data",
 		Description: "With ela-cli rollback command, you could rollback blockchain data.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
