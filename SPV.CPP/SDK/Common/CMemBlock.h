@@ -22,8 +22,9 @@ public:
 	}
 
 	CMemBlock(const std::string &str) {
-		pValue = new Value(0);
-		pValue->SetMemFixed(str.c_str(), str.length());
+		pValue = new Value(str.length());
+		memcpy(pValue->data, str.c_str(), str.length());
+		pValue->AddRef();
 	}
 
 	template <class size_type>

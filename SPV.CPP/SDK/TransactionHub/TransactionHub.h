@@ -110,8 +110,7 @@ namespace Elastos {
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t amount,
 							  const std::string &toAddress, uint64_t fee,
-							  const UInt256 &assetID, const std::string &memo,
-							  const std::string &remark, bool useVotedUTXO);
+							  const UInt256 &assetID, bool useVotedUTXO);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 

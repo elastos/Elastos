@@ -207,8 +207,7 @@ namespace Elastos {
 		TransactionPtr
 		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t amount,
 										  const std::string &toAddress, uint64_t fee,
-										  const UInt256 &assetID, const std::string &memo,
-										  const std::string &remark, bool useVotedUTXO) {
+										  const UInt256 &assetID, bool useVotedUTXO) {
 			UInt168 u168Address = UINT168_ZERO;
 			ParamChecker::checkCondition(!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress),
 										 Error::CreateTransaction, "Invalid spender address " + fromAddress);
@@ -220,18 +219,7 @@ namespace Elastos {
 
 			outputs.emplace_back(amount, toAddress, assetID);
 
-			TransactionPtr result = _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, _blockHeight);
-			if (result != nullptr) {
-				result->setRemark(remark);
-
-				result->addAttribute(Attribute(Attribute::Nonce, CMBlock(std::to_string(std::rand()))));
-				if (!memo.empty())
-					result->addAttribute(Attribute(Attribute::Memo, CMBlock(memo)));
-				if (result->getTransactionType() == Transaction::TransferCrossChainAsset)
-					result->addAttribute( Attribute(Attribute::Confirmations, CMBlock(std::to_string(1))));
-			}
-
-			return result;
+			return _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, _blockHeight);
 		}
 
 		bool TransactionHub::containsTransaction(const TransactionPtr &transaction) {

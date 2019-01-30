@@ -127,9 +127,15 @@ namespace Elastos {
 													uint64_t amount, const UInt256 &assetID, const std::string &memo,
 													const std::string &remark, bool useVotedUTXO) const {
 			TransactionPtr tx = _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
-																  assetID, memo, remark, useVotedUTXO);
+																  assetID, useVotedUTXO);
 			if (_info.getChainId() == "ELA") {
 				tx->setVersion(Transaction::TxVersion::V09);
+			}
+			tx->setRemark(remark);
+
+			tx->addAttribute(Attribute(Attribute::Nonce, CMBlock(std::to_string(std::rand()))));
+			if (!memo.empty()) {
+				tx->addAttribute(Attribute(Attribute::Memo, CMBlock(memo)));
 			}
 
 			return tx;
