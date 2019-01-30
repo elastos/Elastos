@@ -51,7 +51,7 @@ type ProposalDispatcher interface {
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256, signer []byte,
 		sign []byte)
 	CreateInactiveArbitrators() (*types.Transaction, error)
-	HasViewChangedTimeOut() bool
+	IsViewChangedTimeOut() bool
 }
 
 type ProposalDispatcherConfig struct {
@@ -74,8 +74,8 @@ type proposalDispatcher struct {
 	pendingProposals   map[common.Uint256]types.DPosProposal
 	pendingVotes       map[common.Uint256]types.DPosProposalVote
 
-	currentInactiveArbitratorTx   *types.Transaction
-	inactiveArbitratorsEliminated bool
+	inactiveCountDown           ViewChangesCountDown
+	currentInactiveArbitratorTx *types.Transaction
 
 	eventAnalyzer  *store.EventStoreAnalyzer
 	illegalMonitor IllegalBehaviorMonitor
@@ -230,7 +230,7 @@ func (p *proposalDispatcher) CleanProposals(changeView bool) {
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
 
 	if !changeView {
-		p.inactiveArbitratorsEliminated = false
+		p.inactiveCountDown.Reset()
 		p.currentInactiveArbitratorTx = nil
 	}
 }
@@ -239,7 +239,7 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if p.HasViewChangedTimeOut() {
+	if p.IsViewChangedTimeOut() {
 		log.Info("enter emergency state, proposal will be discard")
 		return
 	}
@@ -408,17 +408,15 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *proposalDispatcher) HasViewChangedTimeOut() bool {
-	return !p.inactiveArbitratorsEliminated &&
-		p.CurrentHeight() > config.Parameters.HeightVersions[3] &&
-		p.cfg.Consensus.GetViewOffset() >= p.cfg.Arbitrators.GetArbitersCount()
+func (p *proposalDispatcher) IsViewChangedTimeOut() bool {
+	return p.inactiveCountDown.IsTimeOut()
 }
 
 func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
 	var err error
 
-	if !p.HasViewChangedTimeOut() {
+	if !p.IsViewChangedTimeOut() {
 		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
 			" arbitrators transaction when normal view changing")
 		return
@@ -523,7 +521,7 @@ func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 		// arbitrators tx
 		p.cfg.Manager.GetBlockCache().Reset()
 
-		p.inactiveArbitratorsEliminated = true
+		p.inactiveCountDown.SetEliminated()
 		return true
 	}
 
@@ -725,6 +723,14 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispa
 			Arbitrators:            cfg.Arbitrators.(*store.Arbitrators),
 		}),
 	}
+	p.inactiveCountDown = ViewChangesCountDown{
+		dispatcher:                    p,
+		consensus:                     cfg.Consensus,
+		arbitrators:                   cfg.Arbitrators,
+		timeoutRefactor:               0,
+		inactiveArbitratorsEliminated: false,
+	}
+
 	i := &illegalBehaviorMonitor{
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*types.DPosProposal),
