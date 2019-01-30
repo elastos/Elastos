@@ -86,7 +86,7 @@ type Noder interface {
 	IsRelay() bool
 	IsCurrent() bool
 	AddNeighborNode(Noder)
-	DelNeighborNode(id Noder) (Noder, bool)
+	DelNeighborNode(node Noder) (Noder, bool)
 	Height() uint64
 	GetConn() net.Conn
 	Connected() bool
