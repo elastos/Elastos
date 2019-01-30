@@ -25,15 +25,15 @@ func (ns *neighbours) AddNeighborNode(node protocol.Noder) {
 	ns.List[node] = struct{}{}
 }
 
-func (ns *neighbours) DelNeighborNode(id protocol.Noder) (protocol.Noder, bool) {
+func (ns *neighbours) DelNeighborNode(node protocol.Noder) (protocol.Noder, bool) {
 	ns.Lock()
 	defer ns.Unlock()
-	_, ok := ns.List[id]
+	_, ok := ns.List[node]
 	if ok == false {
 		return nil, false
 	}
-	delete(ns.List, id)
-	return id, true
+	delete(ns.List, node)
+	return node, true
 }
 
 func (ns *neighbours) IsNeighborAddr(addr string) bool {
@@ -138,10 +138,10 @@ func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	return nil
 }
 
-func (ns *neighbours) IsNeighborNode(id protocol.Noder) bool {
+func (ns *neighbours) IsNeighborNode(node protocol.Noder) bool {
 	ns.Lock()
 	defer ns.Unlock()
-	_, ok := ns.List[id]
+	_, ok := ns.List[node]
 	return ok
 }
 

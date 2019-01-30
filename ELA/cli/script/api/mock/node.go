@@ -149,7 +149,7 @@ func (n *nodeMock) AddNeighborNode(protocol.Noder) {
 	panic("implement me")
 }
 
-func (n *nodeMock) DelNeighborNode(id protocol.Noder) (protocol.Noder, bool) {
+func (n *nodeMock) DelNeighborNode(node protocol.Noder) (protocol.Noder, bool) {
 	panic("implement me")
 }
 
