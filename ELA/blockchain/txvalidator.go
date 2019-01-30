@@ -716,7 +716,7 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check ip
-	if err := checkStringField(info.Address, "IP"); err != nil {
+	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
 		return err
 	}
 
@@ -824,7 +824,7 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check ip
-	if err := checkStringField(info.Address, "Ip"); err != nil {
+	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
 		return err
 	}
 

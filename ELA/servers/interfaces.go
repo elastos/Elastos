@@ -942,7 +942,7 @@ func ListProducers(param Params) map[string]interface{} {
 			Location:       p.Info().Location,
 			Active:         p.State() == state.Activate,
 			Votes:          p.Votes().String(),
-			IP:             p.Info().Address,
+			IP:             p.Info().NetAddress,
 			Index:          uint64(i),
 		}
 		ps = append(ps, producer)
@@ -1114,7 +1114,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.Address = object.Address
+		obj.Address = object.NetAddress
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CancelProducer:

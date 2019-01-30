@@ -12,7 +12,7 @@ import (
 )
 
 type BlockPool struct {
-	chain *blockchain.BlockChain
+	Chain *blockchain.BlockChain
 
 	sync.RWMutex
 	blocks   map[common.Uint256]*types.Block
@@ -34,10 +34,10 @@ func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, er
 		return false, false, errors.New("duplicate block in pool")
 	}
 	// verify block
-	if err := bm.chain.CheckBlockSanity(block); err != nil {
+	if err := bm.Chain.CheckBlockSanity(block); err != nil {
 		return false, false, err
 	}
-	bm.AddToBlockMap(block)
+	bm.blocks[block.Hash()] = block
 
 	// add confirm
 	if dposBlock.ConfirmFlag {
@@ -120,10 +120,10 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 	}
 
 	log.Info("[ConfirmBlock] block height:", block.Height)
-	if !bm.chain.BlockExists(&hash) {
-		inMainChain, isOrphan, err := bm.chain.ProcessBlock(block)
+	if !bm.Chain.BlockExists(&hash) {
+		inMainChain, isOrphan, err := bm.Chain.ProcessBlock(block)
 		if err != nil {
-			return false, false, errors.New("add block failed," + err.Error())
+			return inMainChain, isOrphan, errors.New("add block failed," + err.Error())
 		}
 
 		if isOrphan || !inMainChain {
@@ -131,7 +131,7 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		}
 	}
 
-	err := bm.chain.AddConfirm(confirm)
+	err := bm.Chain.AddConfirm(confirm)
 	if err != nil {
 		return true, false, errors.New("add confirm failed")
 	}

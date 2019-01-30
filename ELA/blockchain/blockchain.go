@@ -791,15 +791,6 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 		return err
 	}
 
-	if block.Height >= b.chainParams.DPOSStartHeight {
-		confirm, err := b.db.GetConfirm(block.Hash())
-		if err != nil {
-			return err
-		}
-		// Synchronize state memory DB.
-		b.state.ProcessBlock(block, confirm)
-	}
-
 	// Add the new node to the memory main chain indices for faster
 	// lookups.
 	node.InMainChain = true
@@ -1055,7 +1046,16 @@ func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
 }
 
 func (b *BlockChain) processConfirm(confirm *DPosProposalVoteSlot) error {
-	return b.db.SaveConfirm(confirm)
+	if err := b.db.SaveConfirm(confirm); err != nil {
+		return err
+	}
+	block, err := b.db.GetBlock(confirm.Proposal.BlockHash)
+	if err != nil {
+		return err
+	}
+	// Synchronize state memory DB.
+	b.state.ProcessBlock(block, confirm)
+	return nil
 }
 
 func (b *BlockChain) DumpState() {
