@@ -98,9 +98,20 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
-	[][]byte, error) {
-	return [][]byte{}, nil
+func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32) ([][]byte, error) {
+	producers := config.Parameters.ArbiterConfiguration.CRCArbiters
+	if len(producers) == 0 {
+		return nil, errors.New("CRCArbiters is nil")
+	}
+	result := make([][]byte, len(producers))
+	for i, p := range producers {
+		pk, err := common.HexStringToBytes(p.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = pk
+	}
+	return result, nil
 }
 
 func (b *blockV1) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {

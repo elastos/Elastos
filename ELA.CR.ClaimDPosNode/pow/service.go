@@ -84,11 +84,11 @@ type Service struct {
 	preTime         time.Time
 	currentAuxBlock *types.Block
 
-	wg        sync.WaitGroup
-	quit      chan struct{}
+	wg   sync.WaitGroup
+	quit chan struct{}
 
-	lock          sync.Mutex
-	lastBlock     *types.Block
+	lock      sync.Mutex
+	lastBlock *types.Block
 }
 
 func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, error) {
@@ -309,15 +309,11 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
 
-				inMainChain, isOrphan, err := pow.versions.AddDposBlock(&types.DposBlock{
+				_, _, err := pow.versions.AddDposBlock(&types.DposBlock{
 					BlockFlag: true,
 					Block:     msgBlock,
 				})
 				if err != nil {
-					continue
-				}
-
-				if isOrphan || !inMainChain {
 					continue
 				}
 

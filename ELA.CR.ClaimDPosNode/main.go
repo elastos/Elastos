@@ -116,6 +116,7 @@ func main() {
 	}
 	verconf.Chain = chain
 	ledger.Blockchain = chain // fixme
+	blockMemPool.Chain = chain
 
 	// initialize producer state after arbiters has initialized
 	if err = chain.InitializeProducersState(interrupt.C); err != nil {
@@ -147,6 +148,7 @@ func main() {
 			EnableEventLog:    true,
 			EnableEventRecord: true,
 			Params:            cfg.ArbiterConfiguration,
+			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,
 			Store:             dposStore,
 			TxMemPool:         txMemPool,

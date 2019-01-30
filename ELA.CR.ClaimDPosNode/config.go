@@ -75,7 +75,7 @@ func loadConfigParams() *config.ConfigParams {
 	}
 	if len(cfg.ArbiterConfiguration.CRCArbiters) > 0 {
 		arbiters, err := convertArbitrators(cfg.ArbiterConfiguration.CRCArbiters)
-		if err != nil {
+		if err == nil {
 			activeNetParams.CRCArbiters = arbiters
 		}
 	}

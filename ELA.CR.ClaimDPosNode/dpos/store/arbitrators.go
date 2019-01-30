@@ -194,7 +194,7 @@ func (a *Arbitrators) GetOnDutyArbitrator() []byte {
 }
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.ChainStore.GetHeight(),
+	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.ChainStore.GetHeight()+1,
 		a.DutyChangedCount, offset)
 }
 
@@ -337,7 +337,7 @@ func (a *Arbitrators) sortArbitrators() error {
 }
 
 func (a *Arbitrators) getArbitersCount() uint32 {
-	return uint32(len(a.GetArbitrators()))
+	return uint32(len(a.currentArbitrators))
 }
 
 func (a *Arbitrators) updateArbitratorsProgramHashes() error {

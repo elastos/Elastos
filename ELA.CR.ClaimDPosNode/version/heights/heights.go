@@ -78,10 +78,10 @@ func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Tran
 
 func (h *heightVersions) GetNormalArbitratorsDesc(block *types.Block,
 	arbitratorsCount uint32) ([][]byte, error) {
-	heightKey := h.findLastAvailableHeightKey(block.Height)
+	heightKey := h.findLastAvailableHeightKey(block.Height + 1)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, block)
+	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
 	if v == nil {
 		return nil, fmt.Errorf("[GetNormalArbitratorsDesc] Block height %d can not support block version %d", block.Height, block.Version)
 	}
@@ -93,7 +93,7 @@ func (h *heightVersions) GetCandidatesDesc(block *types.Block,
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, block)
+	v := h.findBlockVersion(&info, block.Version)
 	if v == nil {
 		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", block.Height, block.Version)
 	}
@@ -163,7 +163,7 @@ func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMetho
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, block)
+	v := h.findBlockVersion(&info, block.Version)
 	if v == nil {
 		return false, false, fmt.Errorf("[checkBlock] Block height %d can not support block version %d", block.Height, block.Version)
 	}
@@ -177,7 +177,7 @@ func (h *heightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirm
 	heightKey := h.findLastAvailableHeightKey(dposBlock.Block.Height)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, dposBlock.Block)
+	v := h.findBlockVersion(&info, dposBlock.Block.Version)
 	if v == nil {
 		return false, false, fmt.Errorf("[checkBlockConfirm] Block height %d can not support block version %d",
 			dposBlock.Block.Height, dposBlock.Block.Version)
@@ -185,8 +185,8 @@ func (h *heightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirm
 	return blockConfirmFun(v)
 }
 
-func (h *heightVersions) findBlockVersion(info *VersionInfo, block *types.Block) blocks.BlockVersion {
-	return info.CompatibleBlockVersions[block.Version]
+func (h *heightVersions) findBlockVersion(info *VersionInfo, version uint32) blocks.BlockVersion {
+	return info.CompatibleBlockVersions[version]
 }
 
 func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
