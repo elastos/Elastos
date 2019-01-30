@@ -37,6 +37,8 @@ namespace Elastos {
 
 		typedef boost::shared_ptr<Peer> PeerPtr;
 
+#define time_after(a,b)  ((long)(b) - (long)(a) < 0)
+
 		class Peer : public boost::enable_shared_from_this<Peer> {
 		public:
 			enum ConnectStatus {

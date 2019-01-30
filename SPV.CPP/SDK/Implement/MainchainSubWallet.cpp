@@ -209,6 +209,10 @@ namespace Elastos {
 
 			tx->setTransactionType(Transaction::ReturnDepositCoin);
 
+			if (tx->getOutputs().size() > 1) {
+				tx->getOutputs().erase(tx->getOutputs().begin() + tx->getOutputs().size() - 1);
+			}
+
 			return tx->toJson();
 		}
 

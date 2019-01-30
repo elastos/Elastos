@@ -22,8 +22,6 @@ namespace Elastos {
 
 		}
 
-#define time_after(a,b)  ((long)(b) - (long)(a) < 0)
-
 		bool PingMessage::Accept(const CMBlock &msg) {
 			bool r = true;
 

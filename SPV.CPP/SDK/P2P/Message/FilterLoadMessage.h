@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_BLOOMFILTERMESSAGE_H__
-#define __ELASTOS_SDK_BLOOMFILTERMESSAGE_H__
+#ifndef __ELASTOS_SDK_FILTERLoadMESSAGE_H__
+#define __ELASTOS_SDK_FILTERLoadMESSAGE_H__
 
 #include "Message.h"
 #include <SDK/Base/BloomFilter.h>
@@ -11,13 +11,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct BloomFilterParameter : public SendMessageParameter {
+		struct FilterLoadParameter : public SendMessageParameter {
 			BloomFilterPtr Filter;
 		};
 
-		class BloomFilterMessage : public Message {
+		class FilterLoadMessage : public Message {
 		public:
-			explicit BloomFilterMessage(const MessagePeerPtr &peer);
+			explicit FilterLoadMessage(const MessagePeerPtr &peer);
 
 			virtual bool Accept(const CMBlock &msg);
 
@@ -30,4 +30,4 @@ namespace Elastos {
 	}
 }
 
-#endif //__ELASTOS_SDK_BLOOMFILTERMESSAGE_H__
+#endif //__ELASTOS_SDK_FILTELOADRMESSAGE_H__

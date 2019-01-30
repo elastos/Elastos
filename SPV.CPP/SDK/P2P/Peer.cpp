@@ -17,7 +17,7 @@
 #include "Message/MerkleBlockMessage.h"
 #include "Message/MempoolMessage.h"
 #include "Message/PongMessage.h"
-#include "Message/BloomFilterMessage.h"
+#include "Message/FilterLoadMessage.h"
 #include "Message/GetAddressMessage.h"
 #include "Message/HeadersMessage.h"
 #include "Message/RejectMessage.h"
@@ -443,7 +443,7 @@ namespace Elastos {
 			initSingleMessage(new MempoolMessage(shared_from_this()));
 			initSingleMessage(new PingMessage(shared_from_this()));
 			initSingleMessage(new PongMessage(shared_from_this()));
-			initSingleMessage(new BloomFilterMessage(shared_from_this()));
+			initSingleMessage(new FilterLoadMessage(shared_from_this()));
 			initSingleMessage(new MerkleBlockMessage(shared_from_this()));
 			initSingleMessage(new GetAddressMessage(shared_from_this()));
 			initSingleMessage(new RejectMessage(shared_from_this()));

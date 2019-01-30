@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BloomFilterMessage.h"
+#include "FilterLoadMessage.h"
 
 #include <SDK/P2P/Peer.h>
 #include <SDK/Base/BloomFilter.h>
@@ -11,26 +11,26 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		BloomFilterMessage::BloomFilterMessage(const MessagePeerPtr &peer) :
+		FilterLoadMessage::FilterLoadMessage(const MessagePeerPtr &peer) :
 			Message(peer) {
 
 		}
 
-		bool BloomFilterMessage::Accept(const CMBlock &msg) {
+		bool FilterLoadMessage::Accept(const CMBlock &msg) {
 			_peer->error("dropping {} message", Type());
 			return false;
 		}
 
-		void BloomFilterMessage::Send(const SendMessageParameter &param) {
-			const BloomFilterParameter &bloomFilterParameter = static_cast<const BloomFilterParameter &>(param);
+		void FilterLoadMessage::Send(const SendMessageParameter &param) {
+			const FilterLoadParameter &filterLoadParameter = static_cast<const FilterLoadParameter &>(param);
 			ByteStream stream;
-			bloomFilterParameter.Filter->Serialize(stream);
+			filterLoadParameter.Filter->Serialize(stream);
 			_peer->SetSentFilter(true);
 			_peer->SetSentMempool(false);
 			SendMessage(stream.getBuffer(), Type());
 		}
 
-		std::string BloomFilterMessage::Type() const {
+		std::string FilterLoadMessage::Type() const {
 			return MSG_FILTERLOAD;
 		}
 	}

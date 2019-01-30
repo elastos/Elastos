@@ -590,7 +590,7 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				_transactions.ForEach([&result, blockHeight](const UInt256 &key, const AssetTransactionsPtr &value) {
+				_transactions.ForEach([&result, &blockHeight](const UInt256 &key, const AssetTransactionsPtr &value) {
 					std::vector<TransactionPtr> temp = value->TxUnconfirmedBefore(blockHeight);
 					result.insert(result.end(), temp.begin(), temp.end());
 				});

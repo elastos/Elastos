@@ -270,7 +270,7 @@ namespace Elastos {
 
 			void requestUnrelayedTxGetDataDone(const PeerPtr &peer, int success);
 
-			void publishTxInivDone(const PeerPtr &peer, int success);
+			void publishTxInvDone(const PeerPtr &peer, int success);
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;

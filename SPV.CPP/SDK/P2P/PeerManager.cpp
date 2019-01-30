@@ -5,7 +5,7 @@
 #include "PeerManager.h"
 #include "Message/PingMessage.h"
 #include "Message/GetBlocksMessage.h"
-#include "Message/BloomFilterMessage.h"
+#include "Message/FilterLoadMessage.h"
 #include "Message/MempoolMessage.h"
 #include "Message/GetDataMessage.h"
 #include "Message/InventoryMessage.h"
@@ -559,7 +559,7 @@ namespace Elastos {
 						publishPendingTx(peer);
 
 						PingParameter pingParameter;
-						pingParameter.callback = boost::bind(&PeerManager::publishTxInivDone, this, peer, _1);
+						pingParameter.callback = boost::bind(&PeerManager::publishTxInvDone, this, peer, _1);
 						pingParameter.lastBlockHeight = _lastBlock->getHeight();
 						peer->SendMessage(MSG_PING, pingParameter);
 					}
@@ -725,7 +725,7 @@ namespace Elastos {
 
 			_bloomFilter = filter;
 			// TODO: XXX if already synced, recursively add inputs of unconfirmed receives
-			BloomFilterParameter bloomFilterParameter;
+			FilterLoadParameter bloomFilterParameter;
 			bloomFilterParameter.Filter = filter;
 			peer->SendMessage(MSG_FILTERLOAD, bloomFilterParameter);
 		}
@@ -2070,7 +2070,7 @@ namespace Elastos {
 			return 0;
 		}
 
-		void PeerManager::publishTxInivDone(const PeerPtr &peer, int success) {
+		void PeerManager::publishTxInvDone(const PeerPtr &peer, int success) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			requestUnrelayedTx(peer);
 		}
