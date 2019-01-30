@@ -56,7 +56,7 @@ func scriptAction(c *cli.Context) error {
 func NewCommand() *cli.Command {
 	return &cli.Command{
 		Name:        "script",
-		Usage:       "blockchain test via lua script.",
+		Usage:       "Test the blockchain via lua script",
 		Description: "With ela-cli test, you could test blockchain.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
