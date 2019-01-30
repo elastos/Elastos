@@ -194,8 +194,8 @@ func (node *node) nodeHeartBeat() {
 	}
 }
 
-func DisconnectNode(id protocol.Noder) {
-	if n, ok := LocalNode.DelNeighborNode(id); ok {
+func DisconnectNode(node protocol.Noder) {
+	if n, ok := LocalNode.DelNeighborNode(node); ok {
 		n.Disconnect()
 	}
 }
