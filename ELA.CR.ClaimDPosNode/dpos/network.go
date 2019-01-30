@@ -415,7 +415,7 @@ func (n *network) confirmReceived(p *types.DPosProposalVoteSlot) {
 }
 
 func (n *network) illegalBlocksReceived(i *types.DposIllegalBlocks) {
-	n.listener.OnIllegalBlocksReceived(i)
+	n.listener.OnIllegalBlocksTxReceived(i)
 }
 
 func (n *network) sidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {

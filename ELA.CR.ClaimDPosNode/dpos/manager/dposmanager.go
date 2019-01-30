@@ -64,7 +64,7 @@ type NetworkEventListener interface {
 
 	OnBlockReceived(b *types.Block, confirmed bool)
 	OnConfirmReceived(p *types.DPosProposalVoteSlot)
-	OnIllegalBlocksReceived(i *types.DposIllegalBlocks)
+	OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData)
 	OnInactiveArbitratorsReceived(tx *types.Transaction)
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256,
@@ -319,7 +319,7 @@ func (d *dposManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIlle
 	d.illegalMonitor.AddEvidence(votes)
 }
 
-func (d *dposManager) OnIllegalBlocksReceived(i *types.DposIllegalBlocks) {
+func (d *dposManager) OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks) {
 	d.illegalMonitor.AddEvidence(i)
 }
 
