@@ -224,7 +224,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 		NickName:       strconv.FormatUint(rand.Uint64(), 10),
 		Url:            strconv.FormatUint(rand.Uint64(), 10),
 		Location:       rand.Uint64(),
-		Address:        strconv.FormatUint(rand.Uint64(), 10),
+		NetAddress:     strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -242,7 +242,7 @@ func (s *transactionSuite) TestRegisterProducer_SerializeDeserialize() {
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
-	s.Equal(p1.Address, p2.Address)
+	s.Equal(p1.NetAddress, p2.NetAddress)
 }
 
 func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
@@ -272,7 +272,7 @@ func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 		NickName:       strconv.FormatUint(rand.Uint64(), 10),
 		Url:            strconv.FormatUint(rand.Uint64(), 10),
 		Location:       rand.Uint64(),
-		Address:        strconv.FormatUint(rand.Uint64(), 10),
+		NetAddress:     strconv.FormatUint(rand.Uint64(), 10),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -290,7 +290,7 @@ func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {
 	s.Equal(p1.NickName, p2.NickName)
 	s.Equal(p1.Url, p2.Url)
 	s.Equal(p1.Location, p2.Location)
-	s.Equal(p1.Address, p2.Address)
+	s.Equal(p1.NetAddress, p2.NetAddress)
 }
 
 func (s *transactionSuite) TestReturnDepositCoin_SerializeDeserialize() {

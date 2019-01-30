@@ -141,17 +141,28 @@ func (n *network) UpdateProducersInfo() {
 }
 
 func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
-	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
 	result = make(map[string]p2p.PeerAddr)
-	for _, p := range producers {
-		if len(p.Info().OwnerPublicKey) != 33 {
+	crcs := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
+	for _, c := range crcs {
+		if len(c.PublicKey) != 33 {
 			log.Warn("[getProducersConnectionInfo] invalid public key")
 			continue
 		}
 		pid := peer.PID{}
-		copy(pid[:], p.Info().OwnerPublicKey)
-		result[hex.EncodeToString(p.Info().OwnerPublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: p.Info().Address}
+		copy(pid[:], c.PublicKey)
+		result[hex.EncodeToString(c.PublicKey)] =
+			p2p.PeerAddr{PID: pid, Addr: c.NetAddress}
+	}
+	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
+	for _, p := range producers {
+		if len(p.Info().NodePublicKey) != 33 {
+			log.Warn("[getProducersConnectionInfo] invalid public key")
+			continue
+		}
+		pid := peer.PID{}
+		copy(pid[:], p.Info().NodePublicKey)
+		result[hex.EncodeToString(p.Info().NodePublicKey)] =
+			p2p.PeerAddr{PID: pid, Addr: p.Info().NetAddress}
 	}
 
 	return result
@@ -171,6 +182,20 @@ func (n *network) UpdatePeers(arbitrators [][]byte) error {
 		ad, ok := n.directPeers[pubKey]
 		if !ok {
 			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
+			n.peersLock.Unlock()
+			continue
+		}
+		ad.NeedConnect = true
+		ad.Sequence += uint32(len(arbitrators))
+		n.peersLock.Unlock()
+	}
+	for _, c := range blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators() {
+		pubKey := common.BytesToHexString(c.PublicKey)
+
+		n.peersLock.Lock()
+		ad, ok := n.directPeers[pubKey]
+		if !ok {
+			log.Error("Can not find crc arbitrator related connection information, arbitrator public key is: ", pubKey)
 			n.peersLock.Unlock()
 			continue
 		}

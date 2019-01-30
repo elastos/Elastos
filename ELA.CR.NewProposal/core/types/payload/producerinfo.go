@@ -17,7 +17,7 @@ type ProducerInfo struct {
 	NickName       string
 	Url            string
 	Location       uint64
-	Address        string
+	NetAddress     string
 	Signature      []byte
 }
 
@@ -69,7 +69,7 @@ func (a *ProducerInfo) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[ProducerInfo], location serialize failed")
 	}
 
-	err = common.WriteVarString(w, a.Address)
+	err = common.WriteVarString(w, a.NetAddress)
 	if err != nil {
 		return errors.New("[ProducerInfo], address serialize failed")
 	}
@@ -117,7 +117,7 @@ func (a *ProducerInfo) DeserializeUnsigned(r io.Reader, version byte) error {
 		return errors.New("[ProducerInfo], location deserialize failed")
 	}
 
-	a.Address, err = common.ReadVarString(r)
+	a.NetAddress, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[ProducerInfo], address deserialize failed")
 	}
