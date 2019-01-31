@@ -11,8 +11,7 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const doc = _.pick(param, ['name', 'desc', 'resourceType', 'route', 'httpMethod'])
-    console.log(doc, '----------')
+    const doc = _.pick(param, ['name', 'desc', 'resourceType', 'url', 'httpMethod'])
     // save the document
     return await this.model.save(doc)
   }
@@ -34,37 +33,17 @@ export default class extends Base {
   }
 
   public async show(param: any): Promise<Document> {
-    const { id: _id, incViewsNum } = param
-    if (incViewsNum === 'true') {
-      await this.model.findOneAndUpdate({ _id }, {
-        $inc: { viewsNum: 1, activeness: 1 }
-      })
-    }
+    const { id: _id } = param
     const doc = await this.model.getDBInstance()
       .findById(_id)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-
-    if (_.isEmpty(doc.comments)) return doc
-
-    for (const comment of doc.comments) {
-      for (const thread of comment) {
-        await this.model.getDBInstance().populate(thread, {
-          path: 'createdBy',
-          select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
-        })
-      }
-    }
 
     return doc
   }
 
-  // TODO
   public async update(param: any): Promise<Document> {
     // TODO: checkPermission admin
     const { id: _id } = param
-    const updateObject = {
-      status: constant.SUGGESTION_STATUS.ARCHIVED,
-    }
+    const updateObject = _.pick(param, ['name', 'desc', 'resourceType', 'url', 'httpMethod'])
     await this.model.findOneAndUpdate({ _id }, updateObject)
     return this.model.findById(_id)
   }
