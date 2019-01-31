@@ -19,6 +19,8 @@ import upload from './upload';
 
 import ping from './ping';
 import sso from './sso';
+import permission from './permission';
+import permissionRole from './permission_role';
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -31,11 +33,12 @@ import sso from './sso';
 export const middleware = async (req: Request, res: Response, next: NextFunction) => {
     // check token
     const token = req.headers['api-token'];
+    const DB = await db.create()
+
     if (token) {
         const json = JSON.parse(utilCrypto.decrypt(token.toString()));
         if (json.userId && json.expired && (json.expired - moment().unix() > 0)) {
             try {
-                const DB = await db.create()
                 const user = await DB.getModel('User').findOne({_id: json.userId})
                 // TODO: find better way to not send the salt back to the front-end
                 delete user._doc.salt
@@ -52,7 +55,6 @@ export const middleware = async (req: Request, res: Response, next: NextFunction
         // check session
         const session = req['session'];
         try {
-            const DB = await db.create()
             const user = await DB.getModel('User').findOne({_id: session.userId})
 
             if (user) {
@@ -84,6 +86,8 @@ router.use('/submission', submission);
 router.use('/suggestion', suggestion);
 router.use('/cvote', cvote);
 router.use('/sso', sso);
+router.use('/permission', permission);
+router.use('/permissionRole', permissionRole);
 
 router.use((req, res) => {
     return res.sendStatus(403);
