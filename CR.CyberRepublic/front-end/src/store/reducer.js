@@ -10,29 +10,31 @@ import submission from './redux/submission'
 import suggestion from './redux/suggestion'
 import council from './redux/council'
 import language from './redux/language'
+import permission from './redux/permission'
+import permissionRole from './redux/permissionRole'
 
 const default_state = {
-    init: false
+  init: false,
 };
 
 const appReducer = (state = default_state, action) => {
-    switch (action.type) {
+  // switch (action.type) {}
 
-    }
-
-    return state
+  return state
 }
 
 export default combineReducers({
-    app: appReducer,
-    router: routerReducer,
-    task: task.getReducer(),
-    user: user.getReducer(),
-    team: team.getReducer(),
-    community: community.getReducer(),
-    member: member.getReducer(),
-    submission: submission.getReducer(),
-    suggestion: suggestion.getReducer(),
-    council: council.getReducer(),
-    language: language.getReducer()
+  app: appReducer,
+  router: routerReducer,
+  task: task.getReducer(),
+  user: user.getReducer(),
+  team: team.getReducer(),
+  community: community.getReducer(),
+  member: member.getReducer(),
+  submission: submission.getReducer(),
+  suggestion: suggestion.getReducer(),
+  council: council.getReducer(),
+  language: language.getReducer(),
+  permission: permission.getReducer(),
+  permissionRole: permissionRole.getReducer(),
 })
