@@ -21,21 +21,25 @@ The authentication process of peer nodes utilizes the Elastos Decentralized ID (
 	- [2. Install Pre-Requirements](#2-install-pre-requirements)
 	- [3. Build to run on host (Ubuntu / Debian / Linux)](#3-build-to-run-on-host-ubuntu--debian--linux)
 	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests)
-	- [4. Cross-compilation for Android Platform](#4-cross-compilation-for-android-platform)
-	- [5. Cross-compilation for Raspberry Pi](#5-cross-compilation-for-raspberry-pi)
-- [Build on MacOS Host](#build-on-macos-host)
+	- [5. Cross-compilation for Android Platform](#5-cross-compilation-for-android-platform)
+- [Build on Raspberry Pi](#build-on-raspberry-pi)
 	- [1. Brief introduction](#1-brief-introduction-1)
 	- [2. Install Pre-Requirements](#2-install-pre-requirements-1)
 	- [3. Build to run on host](#3-build-to-run-on-host)
 	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests-1)
-	- [4. Cross-compilation for Android Platform](#4-cross-compilation-for-android-platform-1)
-	- [5. Cross-compilation for iOS Platform](#5-cross-compilation-for-ios-platform)
-- [Build on Windows Host](#build-on-windows-host)
+- [Build on MacOS Host](#build-on-macos-host)
 	- [1. Brief introduction](#1-brief-introduction-2)
+	- [2. Install Pre-Requirements](#2-install-pre-requirements-2)
+	- [3. Build to run on host](#3-build-to-run-on-host-1)
+	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests-2)
+	- [5. Cross-compilation for Android Platform](#5-cross-compilation-for-android-platform-1)
+	- [6. Cross-compilation for iOS Platform](#6-cross-compilation-for-ios-platform)
+- [Build on Windows Host](#build-on-windows-host)
+	- [1. Brief introduction](#1-brief-introduction-3)
 	- [2. Set up Environment](#2-set-up-environment)
-	- [2. Build to run on host](#2-build-to-run-on-host)
-	- [3. Run Elashell or Elatests](#3-run-elashell-or-elatests)
-- [Build API Docs](#build-api-docs)
+	- [3. Build to run on host](#3-build-to-run-on-host-2)
+	- [4. Run Elashell or Elatests](#4-run-elashell-or-elatests-3)
+- [Build API Docs](#build-api-documentation)
   - [Build on Ubuntu / Debian / Linux Host](#build-on-ubuntu--debian--linux-host-1)
 	- [1. Install Pre-Requirements](#1-install-pre-requirements)
 	- [2. Build](#2-build)
@@ -163,7 +167,7 @@ $ ./elatests.sh
 
 ***
 
-#### 4. Cross-compilation for Android Platform
+#### 5. Cross-compilation for Android Platform
 
 With CMake, Elastos Carrier can be cross-compiled to run on Android as a target platform, while compilation is carried out on Ubuntu / Debian / Linux host.
 
@@ -228,15 +232,31 @@ Note: If "make dist" fails due to missing permissions, use "sudo make dist" inst
 $ make dist
 ```
 
+## Build on Raspberry Pi
 
-#### 5. Cross-compilation for Raspberry Pi
+#### 1. Brief introduction
 
-With CMake, Elastos Carrier can be cross-compiled to run on Raspberry Pi (Raspbian OS) as a target platform, while compilation is carried out on Ubuntu / Debian / Linux host.
+With CMake, Elastos Carrier can be cross-compiled to run only on Raspberry Pi as target platform, while compilation is carried out on a Raspberry Pi host.
 
-**Prerequisite**: The Raspberry Pi Toolchain must be downloaded onto the host Linux based host.
+#### 2. Install Pre-Requirements
+
+To generate Makefiles by using **configure** or **cmake** and manage dependencies of the Carrier project, certain packages must be installed on the host before compilation.
+
+Run the following commands to install the prerequisite utilities:
+
 ```shell
-$ git clone https://github.com/raspberrypi/tools
+$ sudo apt-get update
+$ sudo apt-get install -f build-essential autoconf automake autopoint libtool flex bison libncurses5-dev cmake
 ```
+
+Download this repository using Git:
+```shell
+$ git clone https://github.com/elastos/Elastos.NET.Carrier.Native.SDK
+```
+
+#### 3. Build to run on host
+
+To compile the project from source code for the target to run on Raspberry Pi, carry out the following steps:
 
 
 Open a new terminal window.
@@ -254,34 +274,21 @@ $ cd build
 
 Create a new folder with the target platform name, then change directory.
 ```shell
-$ mkdir rpi
-$ cd rpi
+$ mkdir pi
+$ cd pi
 ```
 
-
-To generate the required Makefile in the current directory, please make sure to first replace 'YOUR-RASPBERRYPI-TOOLCHAIN-HOME' with the correct path to the previously downloaded Raspberry Pi Toolchain folder.
-
-Run the command with the correct option described above:
+Generate the Makefile in the current directory:<br/>
+Note: Please see custom options below.
 ```shell
-$ cmake -DRPI_TOOLCHAIN_HOME=YOUR-RASPBERRYPI-TOOLCHAIN-HOME -DCMAKE_TOOLCHAIN_FILE=../../cmake/RPiToolchain.cmake ../..
-
+$ cmake ../..
 ```
-
-
-Build the program: <br/>
-Note: If "make" fails due to missing permissions, use "sudo make" instead.
+***
+Optional (Generate the Makefile): To be able to build a distribution with a specific build type **Debug/Release**, as well as with customized install location of distributions, run the following commands:
 ```shell
-$ make
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
 ```
-
-
-
-Install the program: <br/>
-Note: If "make install" fails due to missing permissions, use "sudo make install" instead.
-```shell
-$ make install
-```
-
+***
 
 Create distribution package: <br/>
 Note: If "make dist" fails due to missing permissions, use "sudo make dist" instead.
@@ -290,6 +297,33 @@ $ make dist
 ```
 
 
+***
+#### 4. Run Elashell or Elatests
+
+Elashell is a fully functional, lightweight shell program that processes commands and returns the output to the terminal.
+Through Elashell, users may connect to other carrier nodes and exchange messages.
+
+Elatests is also a shell program, but with predefined commands, therefore no user interaction is necessary. The output for every command
+is displayed in the terminal for a simple evaluation of test results.
+
+To run elashell or elatests, first extract the distribution package created previously and enter the extracted folder.
+Then, change directory to the 'bin' folder.
+```shell
+$ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
+```
+
+Run Elashell:
+```shell
+$ ./elashell.sh
+```
+Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name. For the entire command list please see the [COMMANDS.md](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/COMMANDS.md) file.
+
+Or run Elatests:
+```shell
+$ ./elatests.sh
+```
+
+***
 
 ## Build on MacOS Host
 
@@ -409,7 +443,7 @@ $ ./elatests.sh
 
 ***
 
-#### 4. Cross-compilation for Android Platform
+#### 5. Cross-compilation for Android Platform
 
 Elastos Carrier cmake system also supports to build cross-compilation for android platform on macOS with android NDK toolchains of same requirement of minimum API level **21**.
 
@@ -477,7 +511,7 @@ $ make dist
 ```
 
 
-#### 5. Cross-compilation for iOS Platform
+#### 6. Cross-compilation for iOS Platform
 
 With CMake, Elastos Carrier can be cross-compiled to run on iOS as a target platform, while compilation is carried out on a MacOS host with XCode.
 
@@ -576,7 +610,7 @@ Additional tools are optional, some additional ones are installed by default wit
 After modifications, restarting of Visual Studio might be required.
 
 
-#### 2. Build to run on host
+#### 3. Build to run on host
 
 To compile the project from source code for the target to run on Windows, carry out the following steps:
 
@@ -628,7 +662,7 @@ Create distribution package:
 $ nmake dist
 ```
 
-#### 3. Run Elashell or Elatests
+#### 4. Run Elashell or Elatests
 
 Elashell is a fully functional, lightweight shell program that processes commands and returns the output to the terminal.
 Through Elashell, users may connect to other carrier nodes and exchange messages.
