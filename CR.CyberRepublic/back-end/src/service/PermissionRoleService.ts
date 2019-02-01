@@ -12,6 +12,11 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     // get param
     const doc = _.pick(param, ['role', 'resourceType', 'permissionId', 'isAllowed', 'httpMethod', 'url'])
+    const existedDoc = this.model.find(_.pick(param, ['role', 'resourceType', 'permissionId', 'httpMethod', 'url']))
+
+    // every permission role is unique
+    if (existedDoc) return existedDoc
+
     // save the document
     return await this.model.save(doc)
   }
@@ -44,8 +49,12 @@ export default class extends Base {
     // TODO: checkPermission admin
     const { id: _id } = param
     const updateObject = _.pick(param, ['role', 'resourceType', 'permissionId', 'isAllowed', 'httpMethod', 'url'])
-    await this.model.findOneAndUpdate({ _id }, updateObject)
-    return this.model.findById(_id)
+    if (_id !== 'undefined') {
+      await this.model.findOneAndUpdate({ _id }, updateObject)
+      return this.model.findById(_id)
+    } else {
+      return this.create(param)
+    }
   }
 
   public async delete(param: any): Promise<Document> {
