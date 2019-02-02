@@ -10,11 +10,10 @@ import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import List from '../list/Container'
 import {
-  USER_ROLE,
+  USER_ROLE_TO_TEXT,
 } from '@/constant'
 
 import '@/module/page/admin/admin.scss'
-import './style.scss'
 
 const TabPane = Tabs.TabPane
 
@@ -48,7 +47,7 @@ export default class extends AdminPage {
     const headerNode = this.renderHeader()
     return (
       <div>
-        <div className="p_AdminPermissionList">
+        <div className="p_AdminPermissionList ebp-wrap">
           <Row>
             <Col sm={24} md={4} className="wrap-box-navigator">
               <Navigator selectedItem="profileAdminPermissions" />
@@ -69,7 +68,7 @@ export default class extends AdminPage {
   }
 
   renderTabs() {
-    const roles = _.values(USER_ROLE)
+    const roles = _.keys(USER_ROLE_TO_TEXT)
     const { dataList } = this.props
     const accuData = _.reduce(dataList, (prev, curr) => {
       if (!_.isEmpty(prev[curr.resourceType])) {
@@ -78,7 +77,7 @@ export default class extends AdminPage {
       }
       return _.extend(prev, { [curr.resourceType]: [curr] })
     }, {})
-    const panes = _.map(roles, role => <TabPane tab={role} key={role}>{this.renderList(role, accuData)}</TabPane>)
+    const panes = _.map(roles, role => <TabPane tab={USER_ROLE_TO_TEXT[role]} key={role}>{this.renderList(role, accuData)}</TabPane>)
     return (
       <Tabs defaultActiveKey={roles[0]} onChange={this.callback}>
         {panes}
@@ -106,21 +105,24 @@ export default class extends AdminPage {
         dataListForRole,
         role,
         header: resourceType,
-        key: resourceType,
       }
-      return <List {...props} />
+      return (
+        <Col lg={8} md={12} sm={24} key= {resourceType}>
+          <List {...props} />
+        </Col>
+      )
     })
 
     return (
-      <div>
+      <Row gutter={16}>
         {nodes}
-      </div>
+      </Row>
     )
   }
 
   renderHeader() {
     return (
-      <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</h2>
+      <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('permission.title').toUpperCase()}</h2>
     )
   }
 
