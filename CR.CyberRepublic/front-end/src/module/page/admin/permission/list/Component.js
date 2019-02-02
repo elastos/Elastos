@@ -40,7 +40,7 @@ export default class extends BaseComponent {
   renderHeader() {
     return (
       <div className="cr-permission-header">
-        <h2 className="title komu-a">{this.props.header || I18N.get('suggestion.mySuggestions').toUpperCase()}</h2>
+        <h2 className="title komu-a">{this.props.header || I18N.get('permission.title').toUpperCase()}</h2>
       </div>
     )
   }
