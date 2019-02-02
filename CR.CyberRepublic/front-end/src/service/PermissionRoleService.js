@@ -70,8 +70,10 @@ export default class extends BaseService {
   }
 
   async update(doc) {
-    this.dispatch(this.selfRedux.actions.loading_update(true))
+    // do not dispatch to avoid to trigger the permission list re-render
+    // this.dispatch(this.selfRedux.actions.loading_update(true))
     const path = `${this.prefixPath}/${doc.id}/update`
+    this.abortFetch(path)
 
     const res = await api_request({
       path,
@@ -79,7 +81,7 @@ export default class extends BaseService {
       data: doc,
     })
 
-    this.dispatch(this.selfRedux.actions.loading_update(false))
+    // this.dispatch(this.selfRedux.actions.loading_update(false))
 
     return res
   }
