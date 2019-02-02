@@ -55,7 +55,7 @@ export default class extends AdminPage {
     const listNode = this.renderList()
     return (
       <div>
-        <div className="p_AdminSuggestionList">
+        <div className="p_AdminSuggestionList ebp-wrap">
           <Row>
             <Col sm={24} md={4} className="wrap-box-navigator">
               <Navigator selectedItem="profileAdminSuggestions" />
