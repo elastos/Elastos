@@ -8,24 +8,6 @@ import ListItem from '../listItem/Container'
 import './style.scss'
 
 export default class extends BaseComponent {
-  constructor(props) {
-    super(props)
-
-    // we use the props from the redux store if its retained
-    this.state = {
-      showMobile: false,
-      role: 'ADMIN',
-    }
-  }
-
-  // componentDidMount() {
-  //   this.refetch()
-  // }
-
-  // componentWillUnmount() {
-  //   this.props.resetAll()
-  // }
-
   ord_render() {
     const listNode = this.renderList()
     const headerNode = this.renderHeader()
@@ -55,7 +37,6 @@ export default class extends BaseComponent {
     const { dataListForRole, role } = this.props
     const { _id: id } = data
     const permissionRole = _.find(dataListForRole, perm => perm.permissionId === id)
-    // console.log(id, dataListForRole, permissionRole)
     const props = {
       permissionRole,
       permission: data,
@@ -63,27 +44,5 @@ export default class extends BaseComponent {
       key: id,
     }
     return <ListItem {...props} />
-  }
-
-  /**
-   * Builds the query from the current state
-   */
-  getQuery = () => {
-    const { role, resourceType } = this.props
-    const query = {
-      role,
-      resourceType,
-    }
-
-    return query
-  }
-
-  /**
-   * Refetch the data based on the current state retrieved from getQuery
-   */
-  refetch = () => {
-    const query = this.getQuery()
-    this.props.getList({ resourceType: query.resourceType })
-    this.props.getListForRole(query)
   }
 }

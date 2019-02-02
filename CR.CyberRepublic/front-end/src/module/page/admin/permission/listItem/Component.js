@@ -7,24 +7,6 @@ import BaseComponent from '@/model/BaseComponent'
 import { ListItem } from './style'
 
 export default class extends BaseComponent {
-  constructor(props) {
-    super(props)
-
-    // we use the props from the redux store if its retained
-    this.state = {
-      showMobile: false,
-      role: 'ADMIN',
-    }
-  }
-
-  // componentDidMount() {
-  //   this.refetch()
-  // }
-
-  // componentWillUnmount() {
-  //   this.props.resetAll()
-  // }
-
   ord_render() {
     const { permission } = this.props;
     const desc = <div className="desc">{permission.desc}</div>
