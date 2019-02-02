@@ -23,7 +23,7 @@ const protectRoles = (prefix: String, app: any, permissions: Array<any>) => {
           httpMethod,
           role: _.get(user, 'role')
         })
-        if (permissionRole) req['isAccessAllowed'] = _.get(permissionRole, 'isAllowed', false)
+        req['isAccessAllowed'] = _.get(permissionRole, 'isAllowed', false) // false if there is no permision defined for this role
         console.log('---------------- \n permissionRole is: ', permissionRole)
       } catch (err) {
         console.log('err happened: ', err)

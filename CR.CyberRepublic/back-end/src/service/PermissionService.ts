@@ -12,6 +12,10 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     // get param
     const doc = _.pick(param, ['name', 'desc', 'resourceType', 'url', 'httpMethod'])
+    const existedDoc = await this.model.findOne(_.pick(param, [ 'resourceType', 'url', 'httpMethod']))
+
+    // every permission role is unique
+    if (existedDoc) return existedDoc
     // save the document
     return await this.model.save(doc)
   }
