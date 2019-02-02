@@ -286,6 +286,9 @@ const en = {
   'suggestion.rules.3': 'If there is a deliverable, it must have an educated estimate of cost and expected return on investment',
   'suggestion.rules.infoRequest': 'Requests for information from Elastos Foundation or specific CR members are not permitted and outside of the scope of the Cyber Republic Consensus program, for these matters please contact the Community Manager.',
 
+  // Roles & Permissions
+  'permission.title': 'Roles & Permissions',
+
   // Developer
   'developer.breadcrumb.developers': 'Community',
   'developer.breadcrumb.search': 'Search',
