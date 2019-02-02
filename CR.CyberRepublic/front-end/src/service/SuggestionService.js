@@ -94,7 +94,7 @@ export default class extends BaseService {
         this.dispatch(this.selfRedux.actions.loading_update(true))
 
         const result = await api_request({
-            path: `/api/suggestion/${id}`,
+            path: `/api/suggestion/${id}/show`,
             method: 'get',
             data: { incViewsNum }
         })

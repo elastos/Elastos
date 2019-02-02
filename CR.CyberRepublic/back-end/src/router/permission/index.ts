@@ -17,7 +17,7 @@ export default Base.setRouter([
     method: 'get',
   },
   {
-    path: '/:id',
+    path: '/:id/show',
     router: show,
     method: 'get',
   },

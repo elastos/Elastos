@@ -56,7 +56,7 @@ export default class extends BaseService {
 
   async getDetail({ id }) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
-    const path = `${this.prefixPath}/${id}`
+    const path = `${this.prefixPath}/${id}/show`
 
     const result = await api_request({
       path,

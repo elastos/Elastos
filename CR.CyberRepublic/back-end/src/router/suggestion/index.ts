@@ -24,10 +24,15 @@ export default Base.setRouter([
     method: 'get',
   },
   {
-    path: '/:id',
+    path: '/:id/show',
     router: show,
     method: 'get',
   },
+  // {
+  //   path: '/:id/update',
+  //   router: update,
+  //   method: 'post',
+  // },
   {
     path: '/:id/like',
     router: like,
