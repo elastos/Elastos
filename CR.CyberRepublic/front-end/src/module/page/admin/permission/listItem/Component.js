@@ -4,7 +4,7 @@ import { Spin, Switch } from 'antd'
 import I18N from '@/I18N'
 import BaseComponent from '@/model/BaseComponent'
 
-import './style.scss'
+import { ListItem } from './style'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -30,10 +30,10 @@ export default class extends BaseComponent {
     const desc = <div className="desc">{permission.desc}</div>
     const switchNode = this.renderSwitch(permission)
     return (
-      <div key={permission._id} className="c_PermissionListItem">
+      <ListItem key={permission._id}>
         {desc}
         {switchNode}
-      </div>
+      </ListItem>
     )
   }
 
