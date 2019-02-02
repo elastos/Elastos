@@ -116,6 +116,11 @@ export default class extends BaseComponent {
                                     {I18N.get('2306')}
                                 </Menu.Item>
                             }
+                            {this.props.is_admin &&
+                                <Menu.Item key="profileAdminPermission">
+                                    {I18N.get('permission.title')}
+                                </Menu.Item>
+                            }
                         </Menu>
                     </Affix>
                 </MediaQuery>
