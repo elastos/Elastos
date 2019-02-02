@@ -24,11 +24,21 @@ export const ELASTOS_LINKS = {
 }
 
 export const USER_ROLE = {
-    MEMBER : 'MEMBER',
-    LEADER : 'LEADER',
     ADMIN : 'ADMIN',
     COUNCIL: 'COUNCIL',
     SECRETARY: 'SECRETARY',
+    CUSTOM : 'Custom',
+    MEMBER : 'MEMBER',
+    LEADER : 'LEADER',
+}
+
+export const USER_ROLE_TO_TEXT = {
+    ADMIN : 'Admin',
+    COUNCIL: 'Council',
+    SECRETARY: 'Secretary General',
+    CUSTOM : 'Custom',
+    MEMBER : 'User',
+    LEADER : 'Leader',
 }
 
 // council related
