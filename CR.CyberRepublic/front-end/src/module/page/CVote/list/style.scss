@@ -4,7 +4,9 @@
 .p-cvote-list{
   text-align: center;
   margin: 50px 108px 80px 108px;
-  
+  @media only screen and (max-width: $mobile-width) {
+    margin: 15px;
+  }
   .title {
     font-size: 96px;
     text-align: left;
