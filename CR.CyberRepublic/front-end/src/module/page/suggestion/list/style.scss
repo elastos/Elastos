@@ -7,6 +7,10 @@
   margin-bottom: 80px;
   .title {
     font-size: 96px;
+
+    @media only screen and (max-width: $mobile-width) {
+      font-size: 20vw;
+    }
   }
   .header-actions-container {
     margin-bottom: 40px;
