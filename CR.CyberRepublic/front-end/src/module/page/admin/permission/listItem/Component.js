@@ -27,7 +27,6 @@ export default class extends BaseComponent {
   }
 
   onChange = (checked, id) => {
-    console.log(`switch to ${checked}`);
     const { updateForRole, permission, role } = this.props
     const { _id: permissionId, resourceType, url, httpMethod } = permission
     const updateObject = {

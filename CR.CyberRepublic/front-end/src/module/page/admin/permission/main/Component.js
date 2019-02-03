@@ -63,10 +63,6 @@ export default class extends AdminPage {
     )
   }
 
-  callback(key) {
-    console.log(key);
-  }
-
   renderTabs() {
     const roles = _.keys(USER_ROLE_TO_TEXT)
     const { dataList } = this.props
@@ -79,7 +75,7 @@ export default class extends AdminPage {
     }, {})
     const panes = _.map(roles, role => <TabPane tab={USER_ROLE_TO_TEXT[role]} key={role}>{this.renderList(role, accuData)}</TabPane>)
     return (
-      <Tabs defaultActiveKey={roles[0]} onChange={this.callback}>
+      <Tabs defaultActiveKey={roles[0]}>
         {panes}
       </Tabs>
     )
@@ -96,10 +92,8 @@ export default class extends AdminPage {
   }
 
   renderList(role, accuData) {
-    console.log(accuData)
     const nodes = _.map(accuData, (dataList, resourceType) => {
       const dataListForRole = this.getDataListForRole(resourceType, role)
-      console.log('dataListForRole: ', dataListForRole)
       const props = {
         dataList,
         dataListForRole,
