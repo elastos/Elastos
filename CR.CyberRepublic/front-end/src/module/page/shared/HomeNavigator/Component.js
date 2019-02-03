@@ -32,6 +32,7 @@ export default class extends BaseComponent {
             profileCommunities: '/profile/communities',
             profileSuggestions: '/profile/suggestion',
             profileAdminSuggestions: '/admin/suggestion',
+            profileAdminPermission: '/admin/permission',
             forms: '/admin/forms',
             users: '/admin/users',
             communities: '/admin/community'

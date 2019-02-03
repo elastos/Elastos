@@ -50,7 +50,7 @@ export default class extends AdminPage {
         <div className="p_AdminPermissionList ebp-wrap">
           <Row>
             <Col sm={24} md={4} className="wrap-box-navigator">
-              <Navigator selectedItem="profileAdminPermissions" />
+              <Navigator selectedItem="profileAdminPermission" />
             </Col>
             <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
               {headerNode}
