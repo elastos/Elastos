@@ -23,6 +23,10 @@
 
   line-height: 1;
 
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0;
+  }
+
   .logo_own {
     width: 165px;
   }
