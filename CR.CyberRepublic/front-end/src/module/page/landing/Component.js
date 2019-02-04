@@ -4,6 +4,7 @@ import _ from 'lodash'
 import I18N from '@/I18N'
 import './style.scss'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
+import { CR_LINKS } from '@/constant'
 import Video from '@/module/shared/video/Container'
 import { Modal, Menu, Dropdown, Col, Row, List, Button, Select } from 'antd'
 import Footer from '@/module/layout/Footer/Container'
@@ -1288,17 +1289,17 @@ export default class extends StandardPage {
                             </ul>
 
                             <div className="social-icons">
-                                <a href="https://t.me/elastosgroup" target="_blank"><i className="fab fa-telegram fa-2x"/></a>
-                                <a href="https://github.com/cyber-republic" target="_blank"><i className="fab fa-github fa-2x"/></a>
-                                <a href="https://discord.gg/UG9j6kh" target="_blank"><i className="fab fa-discord fa-2x"/></a>
+                                <a href={CR_LINKS.TELEGRAM} target="_blank"><i className="fab fa-telegram fa-2x"/></a>
+                                <a href={CR_LINKS.GITHUB} target="_blank"><i className="fab fa-github fa-2x"/></a>
+                                <a href={`${process.env.FORUM_URL}/login`} target="_blank"><i className="fab fa-discord fa-2x"/></a>
                                 <br/>
-                                <a href="https://twitter.com/cyber__republic" target="_blank"><i className="fab fa-twitter fa-2x"/></a>
-                                <a href="https://www.facebook.com/ElastosCyberRepublic" target="_blank"><i className="fab fa-facebook fa-2x"/></a>
-                                <a href="https://www.reddit.com/r/CyberRepublic/" target="_blank"><i className="fab fa-reddit fa-2x"/></a>
+                                <a href={CR_LINKS.TWITTER} target="_blank"><i className="fab fa-twitter fa-2x"/></a>
+                                <a href={CR_LINKS.FACEBOOK}target="_blank"><i className="fab fa-facebook fa-2x"/></a>
+                                <a href={CR_LINKS.REDDIT} target="_blank"><i className="fab fa-reddit fa-2x"/></a>
                                 <br/>
-                                <a href="https://www.youtube.com/channel/UCjHthS-zJr0axZF5Iw8En-w" target="_blank"><i className="fab fa-youtube fa-2x"/></a>
-                                <a href="https://www.instagram.com/cyberrepublic/" target="_blank"><i className="fab fa-instagram fa-2x"/></a>
-                                <a href="https://www.linkedin.com/company/cyber-republic/" target="_blank"><i className="fab fa-linkedin fa-2x"/></a>
+                                <a href={CR_LINKS.YOUTUBE} target="_blank"><i className="fab fa-youtube fa-2x"/></a>
+                                <a href={CR_LINKS.INSTAGRAM} target="_blank"><i className="fab fa-instagram fa-2x"/></a>
+                                <a href={CR_LINKS.LINKEDIN} target="_blank"><i className="fab fa-linkedin fa-2x"/></a>
                             </div>
                         </div>
                     </div>
