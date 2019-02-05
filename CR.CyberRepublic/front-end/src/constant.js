@@ -4,6 +4,25 @@ const create = (list) => {
     return _.zipObject(list, list)
 }
 
+export const CR_LINKS = {
+    FACEBOOK: "https://www.facebook.com/ElastosCyberRepublic",
+    GITHUB: 'https://github.com/cyber-republic',
+    INSTAGRAM: 'https://www.instagram.com/cyberrepublic',
+    LINKEDIN: 'https://www.linkedin.com/company/cyber-republic',
+    REDDIT: 'https://www.reddit.com/r/CyberRepublic',
+    TELEGRAM: 'https://t.me/elastosgroup',
+    TWITTER: 'https://twitter.com/cyber__republic',
+    YOUTUBE: 'https://www.youtube.com/channel/UCjHthS-zJr0axZF5Iw8En-w',
+}
+
+export const ELASTOS_LINKS = {
+    EXPLORER: 'https://blockchain.elastos.org/status',
+    GITHUB: 'https://github.com/elastos',
+    NEWS: 'https://news.elastos.org',
+    WALLET: 'https://wallet.elastos.org',
+    WWW: 'https://www.elastos.org',
+}
+
 export const USER_ROLE = {
     MEMBER : 'MEMBER',
     LEADER : 'LEADER',

@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom'
 import './style.scss'
 import MediaQuery from 'react-responsive'
 import { Col, Row, Card, Button, Breadcrumb, Icon, Table, Input, Modal, Avatar, TreeSelect } from 'antd'
-import {MAX_WIDTH_MOBILE} from "../../../config/constant"
+import {  MAX_WIDTH_MOBILE } from "@/config/constant"
+import { CR_LINKS } from '@/constant'
 import { USER_AVATAR_DEFAULT, USER_SKILLSET, USER_PROFESSION } from '@/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import URI from 'urijs'
@@ -133,23 +134,23 @@ export default class extends StandardPage {
                             {I18N.get('0002')}
                         </h3>
                         <div className="info-panel-link">
-                            <a href="https://t.me/elastosgroup" target="_blank">
+                            <a href={CR_LINKS.TELEGRAM} target="_blank">
                                 Telegram
                             </a>
                         </div>
                         <div className="info-panel-link">
-                            <a href="https://twitter.com/cyber__republic" target="_blank">
+                            <a href={CR_LINKS.TWITTER} target="_blank">
                                 Twitter
                             </a>
                         </div>
                         <div className="info-panel-link">
-                            <a href="https://github.com/cyber-republic" target="_blank">
+                            <a href={CR_LINKS.GITHUB} target="_blank">
                                 GitHub
                             </a>
                         </div>
                         <div className="info-panel-link">
-                            <a href="javascript:void(0);">
-                                Forum (Coming Soon)
+                            <a href={`${process.env.FORUM_URL}/login`} target="_blank">
+                                Forum
                             </a>
                         </div>
                     </div>

@@ -90,14 +90,14 @@ export default class extends StandardPage {
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH+1}>
             <Row gutter={24}>
-              <Col span={15}>{actionsNode}</Col>
-              <Col span={9}>{addButtonNode}</Col>
+              <Col span={16}>{actionsNode}</Col>
+              <Col span={8}>{addButtonNode}</Col>
             </Row>
             <Row gutter={24}>
-              <Col span={15}>
+              <Col span={16}>
                 {listNode}
               </Col>
-              <Col span={9}>{mySuggestionNode}</Col>
+              <Col span={8}>{mySuggestionNode}</Col>
             </Row>
           </MediaQuery>
           {createForm}
@@ -221,7 +221,12 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <div className="list-container">{result}</div>
+        <div className="list-container">
+          <div>
+            <h2 className="title komu-a">{I18N.get('suggestion.listTitle').toUpperCase()}</h2>
+          </div>
+          {result}
+        </div>
         {paginationNode}
       </div>
     )

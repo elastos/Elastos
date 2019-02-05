@@ -94,25 +94,25 @@ export default class extends BaseComponent {
     )
 
     const createBtn = this.props.canCreate && (
-      <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-          Create New Proposal
-      </Button>
+      <Col lg={8} md={12} sm={24} xs={24}>
+        <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
+            Create New Proposal
+        </Button>
+      </Col>
     )
     return (
-      <div className="p-cvote-list ebp-wrap">
+      <div className="p-cvote-list">
         <div className="d_box">
-          <Row className="header">
-            <Col span={8}>
+          <Row type="flex" align="middle">
+            <Col lg={8} md={12} sm={24} xs={24}>
               <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
                 {I18N.get('council.voting.proposalList')}
               </h3>
             </Col>
-            <Col span={8}>
+            <Col lg={8} md={12} sm={24} xs={24}>
               {statusIndicator}
             </Col>
-            <Col span={8}>
-              {createBtn}
-            </Col>
+            {createBtn}
           </Row>
           <Table
             columns={columns}

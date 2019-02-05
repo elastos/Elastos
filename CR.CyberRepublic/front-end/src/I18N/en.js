@@ -230,6 +230,7 @@ const en = {
   'suggestion.befirst': 'Be the first one to create a suggestion',
   'suggestion.subject': 'Subject',
   'suggestion.title': 'Suggestions',
+  'suggestion.listTitle': 'All suggestions',
   'suggestion.add': 'Add a Suggestion',
   'suggestion.sort': 'Sort by',
   'suggestion.likes': 'Likes',
