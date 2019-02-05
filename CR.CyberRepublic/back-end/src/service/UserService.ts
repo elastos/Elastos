@@ -122,7 +122,13 @@ export default class extends Base {
             throw 'Access Denied'
         }
 
-        const user = await db_user.getDBInstance().findOne({_id: userId})
+        const user = await db_user.getDBInstance().findOne({
+            _id: userId,
+            $or: [
+                {banned: {$exists: false}},
+                {banned: false}
+            ]
+        })
             .select(selectFields)
             .populate('circles')
 
@@ -238,7 +244,11 @@ export default class extends Base {
         const isEmail = validate.email(query.username);
         return await db_user.getDBInstance().findOne({
             [isEmail ? 'email' : 'username']: query.username.toLowerCase(),
-            password: query.password
+            password: query.password,
+            $or: [
+                {banned: {$exists: false}},
+                {banned: false}
+            ]
         }).select(selectFields).populate('circles');
     }
 
