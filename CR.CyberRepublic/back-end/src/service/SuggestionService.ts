@@ -11,7 +11,7 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const { title, desc } = param
+    const { title, desc, link } = param
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
@@ -19,6 +19,7 @@ export default class extends Base {
     const doc = {
       title,
       desc,
+      link,
       createdBy: _.get(this.currentUser, '_id'),
     }
     // save the document

@@ -17,6 +17,7 @@ export const Suggestion = {
         minlength: 1,
         // maxLength: 10000,
     },
+    link: String,
     likes: {
         type: [Schema.Types.ObjectId],
         default: [],
