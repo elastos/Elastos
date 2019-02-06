@@ -63,6 +63,7 @@ class C extends BaseComponent {
           desc: sanitizeHtml(values.description, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
           }),
+          link: values.link
         }
 
         try {
@@ -91,6 +92,10 @@ class C extends BaseComponent {
       />
     )
 
+    const link_el = (
+    <Input size="large" />
+    )
+
     const title_fn = getFieldDecorator('title', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.titleRequired') },
@@ -107,9 +112,16 @@ class C extends BaseComponent {
       initialValue: ''
     })
 
+    const link_fn = getFieldDecorator('link', {
+      rules: [
+        {type: 'url'}
+      ]
+    })
+
     return {
       title: title_fn(input_el),
       description: description_fn(textarea_el),
+      link: link_fn(link_el)
     }
   }
 
@@ -213,21 +225,24 @@ class C extends BaseComponent {
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 8 },
+        sm: { span: 4 },
       },
       wrapperCol: {
         xs: { span: 24 },
-        sm: { span: 12 },
+        sm: { span: 20 },
       },
     }
 
     const formContent = (
       <div>
-        <FormItem {...formItemLayout} className="form-title">
+        <FormItem className="form-title">
           {p.title}
         </FormItem>
-        <FormItem {...formItemLayout} className="form-desc">
+        <FormItem className="form-desc">
           {p.description}
+        </FormItem>
+        <FormItem label={I18N.get('from.TaskCreateForm.label.info')} {...formItemLayout} className="form-link">
+          {p.link}
         </FormItem>
         <FormItem wrapperCol={{ xs: { span: 24, offset: 0 }, sm: { span: 12, offset: 8 } }} className="form-actions">
           <Button type="ebp" className="cr-btn-default" onClick={this.props.showCreateForm}>
