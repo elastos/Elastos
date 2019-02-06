@@ -8,6 +8,7 @@ import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 import Footer from '@/module/layout/Footer/Container'
 
+import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
 import { LG_WIDTH } from '@/config/constant'
 
@@ -87,11 +88,13 @@ export default class extends StandardPage {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
     const descNode = this.renderDescNode()
+    const linkNode = this.renderLinkNode()
     return (
       <div>
         {metaNode}
         {titleNode}
         {descNode}
+        {linkNode ? linkNode : ''}
       </div>
     )
   }
@@ -117,6 +120,20 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <div className="detail-desc" dangerouslySetInnerHTML={{ __html: detail.desc }} />
+    )
+  }
+
+  renderLinkNode() {
+    const { detail } = this.props
+
+    if (!detail.link) {
+      return false
+    }
+
+    return (
+      <div className="detail-link">
+        {I18N.get('from.TaskCreateForm.label.info')}: <a href={detail.link} target="_blank">{detail.link}</a>
+      </div>
     )
   }
 

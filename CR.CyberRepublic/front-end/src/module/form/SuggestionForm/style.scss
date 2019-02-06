@@ -11,7 +11,8 @@
     }
   }
   @media only screen and (min-width: 576px) {
-    .ant-col-sm-12 {
+    .form-title .ant-col-sm-12,
+    .form-desc .ant-col-sm-12{
       width: 100%;
     }
   }
