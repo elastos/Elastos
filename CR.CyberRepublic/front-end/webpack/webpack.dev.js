@@ -71,6 +71,7 @@ module.exports = merge(common, {
         contentBase: 'dev_dist',
         port: 3001,
         hot: true,
+        host: '0.0.0.0',
         /*
         headers: {
             'X-Frame-Options': 'allow-from https://www.facebook.com/'
