@@ -17,13 +17,19 @@ const protectRoles = (prefix: String, app: any, permissions: Array<any>) => {
       const user = _.get(req, 'session.user')
       if (!user) return next()
       console.log('=================== \n app httpMethod: ', httpMethod, url, user.role);
+      const userRole = _.get(user, 'role')
       try {
         const permissionRole = await DB.getModel('Permission_Role').findOne({
           url,
           httpMethod,
-          role: _.get(user, 'role')
+          role: userRole,
         })
-        req['isAccessAllowed'] = _.get(permissionRole, 'isAllowed', false) // false if there is no permision defined for this role
+        // false if there is no permision defined for this role
+        req['isAccessAllowed'] = _.get(permissionRole, 'isAllowed', false)
+        // DEV ONLY: SUPER_ADMIN has access to everything
+        if (userRole === 'SUPER_ADMIN') {
+          req['isAccessAllowed'] = true
+        }
         console.log('---------------- \n permissionRole is: ', permissionRole)
       } catch (err) {
         console.log('err happened: ', err)
