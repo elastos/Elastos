@@ -1,90 +1,91 @@
 
-# Elastos Cyber Republic Council Conflict of Interest Policy
+# 亦来云Cyber Republic委员会利益和分歧协调政策
 
-## Chapter I - General Principles
+## 第一章 总则
 
-#### 1. Interim Period
+#### 1 过渡期
 
-1. This is an Alpha version of this document.
-2. The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.
-3. During the “Interim Period” between the first anniversary of Elastos (25 August 2018) and the second anniversary of Elastos (25 August 2019), the terms of the Constitution and the other Founding Documents will be continuously revised.
-4. Cyber Republic governance will be managed by representatives of the Elastos Foundation, and the Constitution and voting rules will be continuously developed to reflect the practical needs and experiences of Cyber Republic governance.
-5. There will be a full transition to community governance of the Cyber Republic by the end of the Interim Period.
-6. At the end of the Interim Period, amendment of this document will follow a community voting process that shall be defined within the Elastos Community Voting Rules document.
+1. 这是本文档的草案版。
+2. 亦来云社区章程（以下简称“章程”）和其他创始文件旨在规定亦来云社区成员的权利和关系。
+3. 在Elastos成立一周年（2018年8月25日）和Elastos成立两周年（2019年8月25日）的过渡期间，创始文件的条款将不断修订。
+4. 共治筹备委员会（“筹委会”）将由Elastos基金会推荐代表管理，并将不断制拟定、完善章程和投票规则，以反映共治委员会治理的实际需要和经验。
+5. 在过渡期结束时，将完全过渡到由共治委员会进行社区治理。
+6. 在过渡期末，本文件的修订将遵循社区投票程序，该程序应在Elastos社区投票规则文件中定义。
 
-#### 2. Purpose
+#### 2 目标
 
-The purpose of the Cyber Republic Council Conflict of Interest Policy is to
+亦来云社区共治委员会利益冲突政策（从下简称“利益冲突政策”）的目的是为了：
 
-1. Establish clear conflict of interest rules for Cyber Republic Council Members;
-2. Minimize the possibility of conflicts arising between the private interests and Elastos governance duties of Cyber Republic Council Members;
-3. Provide Cyber Republic Council Members with a mechanism to publicly disclose their private interests;
-4. Provide the Elastos community with a mechanism to lodge complaints against Cyber Republic Council Members in the case of inadequate disclosures or clear conflicts of interest;
-5. Provide for the resolution of those conflicts by the Elastos Community should they arise;
-6. Encourage experienced and competent persons to seek and accept Cyber Republic Council positions.
+1. 为亦来云社区共治委员会成员制定明确的利益冲突规则；
+2. 尽量减少私人利益与亦来云社区共治委员会成员的Elastos治理职责之间发生冲突的可能性；
+3. 为亦来云社区共治委员会成员提供公开披露其私人利益的机制；
+4. 向亦来云社区提供机制，在披露不充分或明显利益冲突的情况下向亦来云社区共治委员会成员提出投诉；
+5. 为亦来云社区出现这些冲突提供解决方案；
+6. 鼓励有经验和有能力的人任职。
 
-#### 3. Conflict of Interest
+#### 3 利益冲突
 
-For the purposes of this Policy, a Cyber Republic Council Member is in a conflict of interest when he or she exercises an official power, duty or function that provides an opportunity to further their private interests or those of their relatives or friends or to improperly further another person’s private interests.
+就本政策而言，亦来云社区共治委员会成员在行使权力，职责或职能以提供机会进一步扩展其私人利益或其亲属朋友的利益进一步不当行为时，会产生利益冲突。
 
-## Chapter II - Duties of Cyber Republic Council Members
+## 第二章 亦来云社区共治委员会委员的职责
 
-#### 4. General Duty
+#### 4 基本职责
 
-1. Every Cyber Republic Council Member shall make reasonable efforts to arrange their private affairs in a manner that will prevent the Cyber Republic Council Member from being in a conflict of interest.
-2. Where conflicts arise, every Cyber Republic Council Member has a duty to disclose their personal interests that may conflict with the interests of the Cyber Republic and the wider Elastos community. This duty is described in detail in Section 12 of this Document.
-3. It is expected, acceptable and reasonable that Cyber Republic Council Members may have conflicts of interests. What is important is that they disclose these conflicts. Hiding these conflicts is not acceptable.
-4. If a Cyber Republic Council Member fails to disclose a conflict of interest, this shall be considered grounds for a complaint to be registered against that Cyber Republic Council Member, and the possibility of that Cyber Republic Council Member being removed from the Cyber Republic Council.
+1. 每个亦来云社区共治委员会成员都应作出努力，以防止亦来云社区共治委员会成员以其私人事务陷入利益冲突。
+2. 如果出现冲突，每个亦来云社区共治委员会成员都有责任披露。本职责在本文件第12节中有详细描述。
+3. 亦来云社区共治委员会成员可能存在利益冲突，重要的是披露这些冲突。隐藏这些冲突是不可接受的。
+4. 如果有亦来云社区共治委员会成员未披露利益冲突，则应视为对该亦来云社区共治委员会成员进行投诉的理由，以及该亦来云社区共治委员会成员可能会被亦来云社区共治委员会撤职。
 
-#### 5. Decision Making
+#### 5 决策
 
-No Cyber Republic Council Member shall make a decision or participate in making a decision related to the exercise of an official power, duty or function if the Cyber Republic Council Member knows or reasonably should know that, in the making of the decision, he or she would be in a conflict of interest.
+如果亦来云社区共治委员会成员在作出决定时知道或合理地知道，他或她不应作出决定或参与作出与行使官方权力，职责或职能有关的决定会有利益冲突。
 
-#### 6. Preferential Treatment
+#### 6 优惠待遇
 
-No Cyber Republic Council member shall, in the exercise of an official power, duty or function, give preferential treatment to any person or organization based on the identity of the person or organization that represents the first-mentioned person or organization.
+任何亦来云社区共治委员会成员在行使权力，职责或职能时，不得以任何个人或组织的名义给予个人或组织优惠待遇。
 
-#### 7. Insider Information
+#### 7 内幕消息
 
-No Cyber Republic Council member shall use information that is obtained in their position as a Cyber Republic Council member and that is not available to the public to further or seek to further the Cyber Republic Council Member’s private interests or those of the Cyber Republic Council Member’s relatives or friends, or to further another person’s private interests.
+任何亦来云社区共治委员会成员均不得使用其作为亦来云社区共治委员会成员的身份获得的信息，以及公众无法获得的信息，以促进或寻求进一步推动亦来云社区共治委员会成员的私人利益或亦来云社区共治委员会成员的亲属朋友，或进一步促进他人的私人利益。
 
-#### 8. Influence
+#### 8 影响
 
-No Cyber Republic Council Member shall use their position as a Cyber Republic Council Member to seek to influence a decision of another person to further their own private interests or those of the Cyber Republic Council Member’s relatives or friends or to improperly further another person’s private interests.
+任何亦来云社区共治委员会成员均不得利用其作为亦来云社区共治委员会成员的身份，试图影响他人的决定，以促进他们自己的私人利益或亦来云社区共治委员会成员的亲属朋友的利益，或不正当地促进另一人的私人利益。
 
-#### 9. Offers of Employment
+#### 9 就业机会
 
-No Cyber Republic Council Member shall allow himself or herself to be influenced in the exercise of an Cyber Republic Council power, duty or function by plans for, or offers of employment.
+任何亦来云社区共治委员会成员均不得通过利用亦来云社区共治委员会的权力，职责或职能计划或提供就业机会。
 
-#### 10. Gifts and other advantages
+#### 10 利益
 
-No Cyber Republic Council Member or member of their family shall accept any gift or other advantage, that might reasonably be seen to have been given to influence the Cyber Republic Council Member in the exercise of Cyber Republic Council power, duty or function.
+任何亦来云社区共治委员会成员或其家庭成员均不得接受任何可能被视为影响亦来云社区共治委员会成员行使权力的礼物或其他利益。
 
-#### 11. Duty to Recuse
+#### 11 撤权的责任
 
-A Cyber Republic Council Member shall recuse himself or herself from any discussion, decision, debate or vote on any matter in respect of which he or she would be in a conflict of interest.
+亦来云社区共治委员会成员应就任何与他或她有利益冲突的事项进行任何讨论，决定，辩论或投票。
 
-#### 12. Duty to Disclose
+#### 12 披露的义务
 
-Every Cyber Republic Council Member has a duty to disclose their personal interests that may conflict with the interests of the Cyber Republic and the wider Elastos community. These personal interests may include, but are not limited to:
+每个亦来云社区共治委员会成员都有责任披露可能与亦来云社区和Elastos社区利益相冲突的个人行为。这些个人利益可能包括但不限于：
 
-1. Other Blockchain projects that a Cyber Republic Council Member has an interest in;
-2. Other forms of employment or business activities that Cyber Republic Council Members engage in;
-3. Any other forms of income that a Cyber Republic Council Member receives.
+1. 亦来云社区共治委员会成员感兴趣的其他区块链项目；
+2. 亦来云社区共治委员会成员参与的其他形式的就业或商业活动；
+3. 亦来云社区共治委员会成员收到的任何其他形式的收入。
 
-## Chapter III - Checks and Balances
+## 第三章 检查和平衡
 
-#### 13. Lodging a Complaint
+#### 13 投诉
 
-In the event a community members believes a Cyber Republic Council Member may have an interest which conflicts with their responsibilities as a Cyber Republic Council Member, and where that community member feels there has either not been adequate disclosure or disclosure has failed to adequately mitigate the conflict, the community member may lodge a complaint against that Cyber Republic Council Member.
+如果社区成员认为亦来云社区共治委员会成员的利益与他们作为亦来云社区共治委员会成员的责任相冲突，并且该社区成员认为其未充分披露或披露未能充分缓解冲突，社区成员可以对该亦来云社区共治委员会成员提出投诉。
 
-#### 14. Complaint Reporting
+#### 14 举报
 
-Beginning with the CRC Inauguration, the impeachment program is automatically activated and community members can support the impeachment process at any time.A resolution to remove a Cyber Republic Council Member shall follow the community voting process contained within the Elastos Community Voting Rules
+如果发生投诉，委员会秘书处应在投诉举报网页上披露投诉。
 
-#### 15. Complaint Voting
+#### 15 弹劾
 
-A resolution to remove a Cyber Republic Council Member shall follow the community voting process contained within the Elastos Community Voting Rules, to be released by the end of the Interim Period.
+从共治委员会产生开始，委员或候补委员的弹劾程序将自动激活。社区成员可以随时支持弹劾程序。弹劾共治委员会委员的决议应遵循Elastos社区投票规则。
 
-#### 16. Vacancy
-Any vacancy resulting from the removal of a Cyber Republic Council Member shall be filled by an Alternate Member. In the event that there are no remaining Alternate Members, a new vote shall be initiated to replace these Alternative Members.
+#### 16 空缺
+
+移除亦来云社区共治委员会成员所产生的任何空缺应由候补成员填补。

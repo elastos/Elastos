@@ -18,7 +18,7 @@
         }
 
         h4 {
-            margin-block-start: 1.5em;
+            margin-block-start: 2.5em;
             margin-block-end: 1em;
         }
     </style>
@@ -34,8 +34,10 @@
         loadNavbar: true,
         themeColor: '#2A3C5A',
         alias: {
-            '/.*/_navbar.md': '/_navbar.md',
+            '/zh/.*/_sidebar.md': '/zh/_sidebar.md',
             '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
+            '/.*/_navbar.md': '/_navbar.md',
+            '/.*/_sidebar.md': '/_sidebar.md',
         },
         ga: 'UA-123722031-1',
         search: {

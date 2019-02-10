@@ -3,7 +3,7 @@
 
 ## 第一章 总则
 
-#### 1. 过渡期
+#### 1 过渡期
 
 1. 这是本文档的草案版。
 2. 亦来云社区章程（以下简称“章程”）和其他创始文件旨在规定亦来云社区成员的权利和关系。
@@ -12,7 +12,7 @@
 5. 在过渡期结束时，将完全过渡到由共治委员会进行社区治理。
 6. 在过渡期末，本文件的修订将遵循社区投票程序，该程序应在Elastos社区投票规则文件中定义。
 
-#### 2. 目的
+#### 2 目的
 
 **社区共治委员会成立文件的目的是**
 
@@ -22,100 +22,100 @@
 4. 随附的共治委员会利益冲突政策，该政策提供了对共治委员会成员权力的制衡制度；
 5. 鼓励有经验、有能力的人参与选举共治委员会委员。
 
-#### 3. 选举
+#### 3 选举
 
-The Cyber Republic Council of the Elastos community is selected by community voting. The voting process will be defined in the Elastos Community Voting Rules
+Elastos社区共治委员会是通过社区投票选出的。投票过程将在Elastos社区投票规则中定义。
 
-## Chapter II - Structure and Procedure
+## 第二章 结构和程序
 
-#### 4. 结构
+#### 4 结构
 
-1. The Cyber Republic Council has seven Members and five Alternate Members, who all represent community members.
-2. Each term lasts for one year.
-3. Cyber Republic Council Members may be re-elected to serve consecutive terms.
-4. In the case a selection does not take place before a term ends, the Cyber Republic Council Members shall continue to shoulder their responsibility as Council members until new Cyber Republic Council Members are selected.
+1. 共治委员会有七名委员和五名候补委员。
+2. 每届任期一年。
+3. 共治委员会委员可以连选连任。
+4. 如果在任期结束前没有进行换届选举，则共治委员会成员应继续承担其作为委员会成员的责任，直至选出新的共治委员会委员。
 
-#### 5. Selection of Cyber Republic Council Members
+#### 5 参选共治委员会委员、候补委员
 
-When selecting Cyber Republic Council Members or Alternate Members, the Secretariat shall publish a list of candidates and gather advice from the community. The proposal shall fully disclose the detailed information of the candidates, including but not limited to:
+在参选共治委员会委员或候补委员时，秘书处应公布候选人名单并披露候选人信息，包括但不限于：
 
-1. Personal information such as education background, working experience, part-time works, etc.;
-2. Contributions made to the Elastos community;
-3. Statements of interest for voluntarily running for the position;
-4. Amount of locked-up ELA (include the locked-up ELA of the community members in support of the candidate); and
-5. Relations with any other Council member (if any).
+1. 个人信息，如教育背景，工作经验，兼职等；
+2. 对Elastos社区的贡献；
+3. 竞选该职位的陈述；
+4. ELA锁仓数量（包括支持候选人的社区成员的ELA锁仓数量）；
+5. 与共治委员会其他成员的关系（如果有的话）。
 
-#### 6. Resignations
+#### 6 辞职
 
-A Cyber Republic Council Member and Alternate Member may submit in writing their resignation to the Cyber Republic Council before the term ends.
+共治委员会委员和候补委员可在任期结束前以书面形式向共治委员会提交辞呈。
 
-#### 7. Vacancies
+#### 7 职位空缺
 
-A vacancy in the Cyber Republic Council shall be filled by an Alternate Member for the remaining time of the term. In the event that there are no remaining Alternate Members, a new vote shall be initiated to replace these Alternate Members.
+共治委员会的空缺应由一名候补委员填补该任期的剩余时间。如果没有剩余的候补成员，则应启动新的选举投票。
 
-## Chapter III - Qualifications and Responsibilities
+## 第三章 资格和责任
 
-#### 8. Qualifications
+#### 8 资格
 
-Qualifications of Cyber Republic Council Members and Alternate Members include but are not restricted to:
+共治委员会委员和候补委员的资格包括但不限于：
 
-1. Having made contributions to the Elastos community, including but not limited to steadily holding full nodes, providing resources in support of major events and so on;
-2. Having gained supporting votes represented by 10,000 ELA locked-up for one year; and
-3. Voluntarily running for the Cyber Republic Council position and having time and energy to attend meetings.
+1. 为Elastos社区做出贡献，包括但不限于稳定地保持完整节点，提供资源以支持重大活动等；
+2. 获得锁仓10,000 ELA 的选票支持；
+3. 自愿参选共治委员会委员，并有时间及精力议事。
 
-#### 9. Authority
+#### 9 权力
 
-The Cyber Republic Council shall make resolutions on the following matters:
+共治委员会应就以下事项作出决议：
 
-1. The annual budget and its implementation;
-2. Applications for Ongoing Expenditures or Single Expenditures as defined in Section 10.
-3. Reviewing and evaluating the overall community operations, and providing rewards accordingly;
-4. Deciding business plans and investment programs;
-5. Payment for Cyber Republic Council members; and
-6. Other matters required to be resolved according to the community.
+1. 年度预算及其实施；
+2. 适用于第10节中定义的持续支出或单一支出的申请；
+3. 审查和评估整个社区运营，并相应地提供奖励；
+4. 决定商业计划和投资计划；
+5. 共治委员会成员报酬；
+6. 其他需要社区来解决事项。
 
-#### 10. Expenditure Definitions
+#### 10 支出
 
-1. An Ongoing Expenditure is defined as one in which the annual cumulative expenditure represents less than 10% of the total assets managed by the Cyber Republic Council on behalf of the community.
-2. A Single Expenditure is defined as one in which the expenditures represent less than 1% of the assets managed by the Cyber Republic Council on behalf of the community.
-3. Ongoing expenditures larger than 10% of the total assets managed by the Cyber Republic Council on behalf of the community are not allowed.
-4. If the remaining assets managed by the Cyber Republic Council on behalf of the community is smallerlarger than 4 million ELA, the application for Ongoing Expenditures must be less than 1% of the total assets managed by the Cyber Republic Council, while the application for Single Expenditures must be less than 0.5%.
+1. 持续支出定义为年度累计支出不得超过社区管理资产的10％ 。
+2. 单一支出定义为单笔项目支出不超过社区管理资产的1％ 。
+3. 不允许持续支出超过共治委员会委员代表社区管理的总资产的10％ 。
+4. 如果社区管理资产小于400万ELA，则持续支出申请必须少于社区管理资产的1％，而单一支出申请则须小于0.5％ 。
 
-#### 11. Compensation
+#### 11 报酬
 
-The compensation of Cyber Republic Council Members shall be defined by the end of the Interim Period.
+共治委员会成员的报酬在过渡期结束时确定。
 
-## Chapter IV - The Secretariat of the Cyber Republic Council
+## 第四章 共治委员会秘书处
 
-#### 12. The Secretariat’s Responsibilities
+#### 12 秘书处的职责
 
-The Secretariat of the Cyber Republic Council handles routine businesses of the Council. The responsibilities of the Secretariat include:
+共治委员会秘书处负责处理共治委员会的日常事务。秘书处的职责包括：
 
-1. Convening Cyber Republic Council meetings;
-2. Supervising the execution of Cyber Republic Council resolutions;
-3. Disclosure of Cyber Republic Council proposal information;and
-4. Ensure Cyber Republic Council fully understand the Key Documents
+1. 召集共治委员会会议；
+2. 监督共治委员会决议的执行；
+3. 披露共治委员会的提案资料；
+4. 确保共治委员会充分理解重要文件。
 
-#### 13. Structure of the Secretariat
+#### 13 Structure of the Secretariat
 
-1. Members of the Secretariat are considered by the Cyber Republic Council.
-2. Each member shall have a term of 1 years.
-3. Secretariat Members may be renewed.
+1. 由共治委员会聘任秘书处成员；
+2. 成员任期为1年；
+3. 秘书处成员可以续聘。
 
-## Chapter V - Code of Conduct
+## 第五章 管理准则
 
-#### 14. Statement of Values
+#### 14 Statement of Values
 
-Members of the Cyber Republic Council and the Secretariat shall abide by the following values:
+共治委员会和秘书处的成员应遵守以下价值观：
 
-1. Integrity
-2. Professionalism
-3. Transparency
-4. Accountability
+1. 廉正；
+2. 专业；
+3. 透明；
+4. 问责制。
 
-#### 15. Objectives
+#### 15 目标
 
-Members of the Cyber Republic Council and the Secretariat shall always ensure that their decisions are ultimately guided by the objectives of:
+共治委员会和秘书处的成员应始终确保其决定以下列最终目标为指导：
 
-1. Advancing the Elastos Ecosystem;
-2. Reflecting the will of the Elastos Community.
+1. 推进Elastos生态系统；
+2. 反映Elastos社区的意愿。
