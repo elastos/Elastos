@@ -286,6 +286,9 @@ const zh = {
   'suggestion.rules.3': '如果有可交付成果，则必须对成本和预期投资回报进行有根据的估算',
   'suggestion.rules.infoRequest': '向亦来云基金会或CR的任何成员索要信息将不被受理，这超出了CR共识的范畴。对于这些问题，请联系社区经理。',
 
+  // Roles & Permissions
+  'permission.title': 'Roles & Permissions',
+
   // Developer
   'developer.breadcrumb.developers': '社区',
   'developer.breadcrumb.search': '搜索',

@@ -8,13 +8,12 @@ import {USER_ROLE, TASK_TYPE, TASK_CANDIDATE_STATUS, TASK_CATEGORY, TASK_STATUS}
 
 export default createContainer(Component, (state) => {
     const currentUserId = state.user.current_user_id
-    const isAdmin = state.user.role === USER_ROLE.ADMIN
 
     const taskState = {
         ...state.task,
         currentUserId,
         is_leader: state.user.role === USER_ROLE.LEADER,
-        is_admin: isAdmin,
+        is_admin: state.user.is_admin,
         filter: state.task.filter || {}
     }
 

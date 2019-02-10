@@ -52,8 +52,9 @@ import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Con
 import MemberPage from '@/module/page/member/Container'
 
 // admin pages
-import TeamListPage from '../module/page/admin/teams/TeamListPage';
-import AdminSuggestionPage from '../module/page/admin/suggestion/list/Container';
+import TeamListPage from '@/module/page/admin/teams/TeamListPage';
+import AdminSuggestionPage from '@/module/page/admin/suggestion/list/Container';
+import AdminPermissionPage from '@/module/page/admin/permission/main/Container';
 import AdminUsersPage from '@/module/page/admin/users/Container'
 import AdminProfileDetailPage from '@/module/page/admin/profile_detail/Container'
 import AdminFormsPage from '@/module/page/admin/forms/Container'
@@ -398,6 +399,10 @@ export default [
   {
     path: '/admin/suggestion',
     page: AdminSuggestionPage,
+  },
+  {
+    path: '/admin/permission',
+    page: AdminPermissionPage,
   },
   /*
     ********************************************************************************
