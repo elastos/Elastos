@@ -102,13 +102,13 @@ if (sessionStorage.getItem('api-token')) {
 
             analytics.identify(data._id, {
                 id: data._id,
-                firstName: userProfile.firstName,
-                lastName: userProfile.lastName,
-                username: data.username,
+                // firstName: userProfile.firstName,
+                // lastName: userProfile.lastName,
+                // username: data.username,
                 title: data.role,
                 gender: userProfile.gender,
-                email: data.email,
-                address: (_.filter([userProfile.city, userProfile.state, userProfile.country], (text) => _.trim(text).length)).join(' '),
+                // email: data.email,
+                // address: (_.filter([userProfile.city, userProfile.state, userProfile.country], (text) => _.trim(text).length)).join(' '),
                 createdAt: data.createdAt,
             })
 
