@@ -18,9 +18,9 @@ export default createContainer(Component, state => ({
           // General
           firstName: formData.firstName,
           lastName: formData.lastName,
-          role: formData.role,
           bio: formData.bio,
         },
+        role: formData.role,
       }
 
       return userService.update(userId, doc)
