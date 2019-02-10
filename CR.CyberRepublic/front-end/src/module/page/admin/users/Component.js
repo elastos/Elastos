@@ -57,7 +57,7 @@ export default class extends AdminPage {
                     />
                   </div>
                   <div className="vert-gap-sm clearfix" />
-                  <ListUsers users={users} history={this.props.history} loading={this.props.loading} />
+                  <ListUsers users={users} refetch={this.props.listUsers} history={this.props.history} loading={this.props.loading} />
                 </Col>
               </Row>
             </div>
