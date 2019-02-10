@@ -1,5 +1,6 @@
 import Base from '../Base'
 import create from './create'
+import createMany from './createMany'
 import list from './list'
 import show from './show'
 import del from './delete'
@@ -9,6 +10,11 @@ export default Base.setRouter([
   {
     path: '/create',
     router: create,
+    method: 'post',
+  },
+  {
+    path: '/createMany',
+    router: createMany,
     method: 'post',
   },
   {
