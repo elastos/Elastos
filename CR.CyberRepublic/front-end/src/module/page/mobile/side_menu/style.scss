@@ -15,6 +15,7 @@
   box-shadow: -10px 0px 10px 1px rgba(0, 0, 0, 0.3);
 
   z-index: 10000;
+  overflow-y: scroll;
 
   .closeMobileMenu {
     color: $primary_color;
