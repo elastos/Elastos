@@ -35,9 +35,20 @@
         themeColor: '#2A3C5A',
         alias: {
             '/.*/_navbar.md': '/_navbar.md',
-            '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
+            '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/clarence/docs-update/front-end/docs/zh/$1',
         },
-        ga: 'UA-123722031-1'
+        ga: 'UA-123722031-1',
+        search: {
+            noData: {
+              '/zh/': '没有结果!',
+              '/': 'No results!'
+            },
+            paths: 'auto',
+            placeholder: {
+              '/zh/': '搜索',
+              '/': 'Search'
+            }
+        }
     }
 </script>
 <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
