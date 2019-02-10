@@ -16,6 +16,11 @@
         nav.app-nav li ul {
             min-width: 100px;
         }
+
+        h4 {
+            margin-block-start: 1.5em;
+            margin-block-end: 1em;
+        }
     </style>
 </head>
 <body>
@@ -24,15 +29,26 @@
     window.$docsify = {
         logo: 'https://www.cyberrepublic.org/assets/images/logo.svg',
         name: 'Cyber Republic Documentation',
-        repo: 'https://github.com/elastos/Elastos.Community',
+        repo: 'https://github.com/cyber-republic/CyberRepublic',
         loadSidebar: true,
         loadNavbar: true,
         themeColor: '#2A3C5A',
         alias: {
             '/.*/_navbar.md': '/_navbar.md',
-            '/zh/(.*)': 'https://raw.githubusercontent.com/elastos/Elastos.Community/master/ElastosBountyProgram/front-end/docs/zh/$1',
+            '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
         },
-        ga: 'UA-123722031-1'
+        ga: 'UA-123722031-1',
+        search: {
+            noData: {
+              '/zh/': '没有结果!',
+              '/': 'No results!'
+            },
+            paths: 'auto',
+            placeholder: {
+              '/zh/': '搜索',
+              '/': 'Search'
+            }
+        }
     }
 </script>
 <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
