@@ -11,6 +11,13 @@ export default class extends BaseComponent {
 
     ord_render () {
         const columns = [{
+            title: I18N.get('profile.detail.avatar'),
+            dataIndex: 'profile.avatar',
+            render: (avatar, item) => {
+                return avatar ? <img src={avatar} style={{ height: 30,
+                    width: 30}} /> : 'None'
+            }
+        }, {
             title: I18N.get('1201'),
             dataIndex: 'username',
             render: (username, record) => {
