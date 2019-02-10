@@ -17,7 +17,7 @@ export const EMPOWER_MAX_WRITER_CONTENT = 3;
 export const EMPOWER_MAX_WRITER_TECHNICAL = 3;
 export const EMPOWER_MAX_DAPP_ANALYST = 5;
 export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10;
-export const MAX_LENGTH_COMMENT = 1024;
+export const MAX_LENGTH_COMMENT = 2048;
 export const TOOLBAR_OPTIONS = [
     ['bold', 'italic', 'underline', 'strike'],
     [{'list': 'ordered'}, {'list': 'bullet'}]
