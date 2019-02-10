@@ -11,12 +11,10 @@ import * as _ from 'lodash'
 const protectRoles = (prefix: String, app: any, permissions: Array<any>) => {
   _.each(permissions, permission => {
     const { httpMethod, url } = permission
-    console.log('Protecting path: ', httpMethod, prefix + url)
     app[httpMethod](prefix + url, async (req: Request, res: Response, next: NextFunction) => {
       const DB = await db.create()
       const user = _.get(req, 'session.user')
       if (!user) return next()
-      console.log('=================== \n app httpMethod: ', httpMethod, url, user.role);
       const userRole = _.get(user, 'role')
       try {
         const permissionRole = await DB.getModel('Permission_Role').findOne({
@@ -30,7 +28,6 @@ const protectRoles = (prefix: String, app: any, permissions: Array<any>) => {
         if (userRole === 'SUPER_ADMIN') {
           req['isAccessAllowed'] = true
         }
-        console.log('---------------- \n permissionRole is: ', permissionRole)
       } catch (err) {
         console.log('err happened: ', err)
       }
@@ -49,7 +46,6 @@ const protectRoles = (prefix: String, app: any, permissions: Array<any>) => {
  */
 function checkRoleAuthorization(req: Request, res: Response, next: NextFunction) {
   const isAccessAllowed = _.get(req, 'isAccessAllowed')
-  console.log('isAccessAllowed: ' + isAccessAllowed)
   // when there is no isAccessAllowed field in req object,
   // we just allow the req to continue
   if (_.has(req, 'isAccessAllowed') && !isAccessAllowed) {
