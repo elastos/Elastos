@@ -1,32 +1,26 @@
 
 
-- Structure
+- Overview
 
-    - [Overview](structure/overview.md)
-    - [Token Fund Team](/structure/token-fund-team.md)
+    - [Introduction](/overview/intro.md)
+    - [How to Get Involved](/overview/contribute.md)
+    - [CRC Workflow](/overview/crc.md)
 
 - User's Guide
 
-    - CRcles
-    - Teams
-    - Tasks
-        - [Applying for Tasks](/user-guide/tasks/task-apply.md)
-        - [Task Approval Process](/user-guide/tasks/task-approval.md)
+    - [Suggestions](/guide/suggestions.md)
+    - [Proposals](/guide/proposals.md)
+    - [Secretariat Team](/guide/secretariat.md)
 
-- Roster and Contacts
-    - Council, Secretariat and Administrators
-    - Token Fund Team
-    - Marketing Team
-    - Development Team
-    - Translators
-    - CRcle Active Members
+- The Constitution
 
-- Reports & KPIs
-    - KPI Reports
-    - Project Roadmap
+    - [1. Constitution](/constitution/constitution.md)
+    - [2. Founding Document](/constitution/founding.md)
+    - [3. Voting Rules](/constitution/voting.md)
+    - [4. Conflict of Interest](/constitution/conflict-of-interest.md)
 
-- CR Website Architecture (Developers)
-    - Front-End
-    - Back-End
-
+- FAQ
+    - [General](/faq/general.md)
+    - [Definitions](/faq/definitions.md)
+    - [Funding](/faq/funding.md)
 
