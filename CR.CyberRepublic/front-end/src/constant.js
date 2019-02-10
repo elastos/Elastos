@@ -27,7 +27,7 @@ export const USER_ROLE = {
     ADMIN : 'ADMIN',
     COUNCIL: 'COUNCIL',
     SECRETARY: 'SECRETARY',
-    CUSTOM : 'Custom',
+    CUSTOM : 'CUSTOM',
     MEMBER : 'MEMBER',
     LEADER : 'LEADER',
 }

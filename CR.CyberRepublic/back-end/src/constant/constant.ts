@@ -10,11 +10,12 @@ const create = (constant_list: string[]): any => {
 }
 
 export const USER_ROLE = {
-    MEMBER : 'MEMBER',
-    LEADER : 'LEADER',
     ADMIN : 'ADMIN',
     COUNCIL: 'COUNCIL',
-    SECRETARY: 'SECRETARY'
+    SECRETARY: 'SECRETARY',
+    CUSTOM : 'CUSTOM',
+    MEMBER : 'MEMBER',
+    LEADER : 'LEADER',
 }
 
 export const USER_LANGUAGE = {
