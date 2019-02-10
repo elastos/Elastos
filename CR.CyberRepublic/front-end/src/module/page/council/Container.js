@@ -12,7 +12,7 @@ export default createContainer(Component, state => ({
   is_login: state.user.is_login,
 
   // TODO: we need a comparator for access level GE/LE
-  is_admin: (state.user.role === USER_ROLE.ADMIN || state.user.role === USER_ROLE.COUNCIL),
+  is_admin: (state.user.is_admin || state.user.role === USER_ROLE.COUNCIL),
 
   council: state.council,
 }), () => {

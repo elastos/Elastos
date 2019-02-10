@@ -1,7 +1,7 @@
 import BaseService from '../model/BaseService'
 import _ from 'lodash'
-import {USER_ROLE} from '@/constant'
-import {api_request} from '@/util';
+import { api_request } from '@/util';
+import { isAdmin, isLeader } from '@/util/user'
 
 export default class extends BaseService {
 
@@ -17,21 +17,15 @@ export default class extends BaseService {
                 password
             }
         });
+        const is_admin = isAdmin(res.user)
+        const is_leader = isLeader(res.user)
 
         this.dispatch(userRedux.actions.login_form_reset())
 
         this.dispatch(userRedux.actions.is_login_update(true))
 
-        if ([USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(res.user.role)) {
-            this.dispatch(userRedux.actions.is_admin_update(true))
-        }else{
-            this.dispatch(userRedux.actions.is_admin_update(false))
-        }
-        if ([USER_ROLE.LEADER].includes(res.user.role)) {
-            this.dispatch(userRedux.actions.is_leader_update(true))
-        }else {
-            this.dispatch(userRedux.actions.is_leader_update(false))
-        }
+        this.dispatch(userRedux.actions.is_admin_update(is_admin))
+        this.dispatch(userRedux.actions.is_leader_update(is_leader))
 
         this.dispatch(userRedux.actions.email_update(res.user.email))
         this.dispatch(userRedux.actions.username_update(res.user.username))
@@ -51,7 +45,7 @@ export default class extends BaseService {
 
         return {
             success: true,
-            is_admin: res.user.role === USER_ROLE.ADMIN
+            is_admin,
         }
     }
 
@@ -116,18 +110,12 @@ export default class extends BaseService {
         const data = await api_request({
             path: '/api/user/current_user'
         })
+        const is_admin = isAdmin(data)
+        const is_leader = isLeader(data)
 
-        this.dispatch(userRedux.actions.is_login_update(true));
-        if ([USER_ROLE.LEADER].includes(data.role)) {
-            this.dispatch(userRedux.actions.is_leader_update(true))
-        } else {
-            this.dispatch(userRedux.actions.is_leader_update(false))
-        }
-        if ([USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(data.role)) {
-            this.dispatch(userRedux.actions.is_admin_update(true))
-        } else {
-            this.dispatch(userRedux.actions.is_admin_update(false))
-        }
+        this.dispatch(userRedux.actions.is_leader_update(is_leader))
+        this.dispatch(userRedux.actions.is_admin_update(is_admin))
+
         this.dispatch(userRedux.actions.email_update(data.email))
         this.dispatch(userRedux.actions.username_update(data.username))
         this.dispatch(userRedux.actions.profile_reset())
