@@ -5,27 +5,26 @@ import { message } from 'antd/lib/index'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
+  if (!_.isArray(state.member.users)) {
+    state.member.users = _.values(state.member.users)
+  }
 
-    if (!_.isArray(state.member.users)) {
-        state.member.users = _.values(state.member.users)
-    }
-
-    return {
-        loading: state.member.users_loading,
-        is_admin: state.user.is_admin,
-        users: state.member.users || []
-    }
+  return {
+    loading: state.member.users_loading,
+    is_admin: state.user.is_admin,
+    users: state.member.users || [],
+  }
 }, () => {
-    const userService = new UserService()
+  const userService = new UserService()
 
-    return {
-        async listUsers () {
-            try {
-                return await userService.getAll({admin: true})
-            } catch (err) {
-                console.error(err)
-                message.error(err.message)
-            }
-        }
-    }
+  return {
+    async listUsers() {
+      try {
+        return await userService.getAll({ admin: true })
+      } catch (err) {
+        console.error(err)
+        message.error(err.message)
+      }
+    },
+  }
 })
