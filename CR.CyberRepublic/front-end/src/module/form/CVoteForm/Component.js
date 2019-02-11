@@ -96,9 +96,7 @@ class C extends BaseComponent {
   }
 
   getInputProps(data) {
-    const edit = this.props.edit
-    const role = this.props.user.role
-    const canCreate = this.props.canCreate
+    const { edit, canCreate, isSecretary } = this.props
 
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
 
@@ -106,11 +104,12 @@ class C extends BaseComponent {
     const publicDisabled = {}
     const councilNotOwnerReadOnly = {}
     const councilNotOwnerDisabled = {}
-
+    // allow secretary and proposal owner to edit
+    const isAllowEdit = (!isSecretary && data.createdBy !== this.user.current_user_id) || _.includes(['FINAL', 'DEFERRED'], data.status)
     if (!canCreate) {
       publicReadonly.readOnly = true
       publicDisabled.disabled = true
-    } else if (edit && (data.createdBy !== this.user.current_user_id || _.includes(['FINAL', 'DEFERRED'], data.status))) {
+    } else if (edit && isAllowEdit) {
       councilNotOwnerReadOnly.readOnly = true
       councilNotOwnerDisabled.disabled = true
     }
@@ -165,10 +164,10 @@ class C extends BaseComponent {
       <Select size="large" {...publicDisabled} {...councilNotOwnerDisabled}>
         {/* <Select.Option key={-1} value={-1}>please select type</Select.Option> */}
         {
-                    _.map(s.select_type, (item, i) => (
-                      <Select.Option key={i} value={item.code}>{item.name}</Select.Option>
-                    ))
-                }
+          _.map(s.select_type, (item, i) => (
+            <Select.Option key={i} value={item.code}>{item.name}</Select.Option>
+          ))
+        }
       </Select>
     )
 
@@ -194,10 +193,10 @@ class C extends BaseComponent {
       <Select {...publicDisabled} {...councilNotOwnerDisabled} size="large">
         {/* <Select.Option key={-1} value={-1}>please select</Select.Option> */}
         {
-                    _.map(s.voter, (item, i) => (
-                      <Select.Option key={i} value={item.value}>{item.value}</Select.Option>
-                    ))
-                }
+          _.map(s.voter, (item, i) => (
+            <Select.Option key={i} value={item.value}>{item.value}</Select.Option>
+          ))
+        }
       </Select>
     )
 
@@ -218,18 +217,19 @@ class C extends BaseComponent {
       if (fullName !== name) {
         tmp.disabled = true
       }
-
+      let voteInitValue = _.get(data, ['vote_map', name], '')
+      if (voteInitValue === 'undefined') voteInitValue = '-1'
       const fn = getFieldDecorator(`vote_${name}`, {
-        initialValue: edit ? _.get(data, 'vote_map.name') : (fullName !== name ? '-1' : 'support'),
+        initialValue: edit ? voteInitValue : (fullName !== name ? '-1' : 'support'),
       })
       const el = (
         <Select {...publicDisabled} {...tmp} size="large">
           <Select.Option key="-1" value="-1">please select</Select.Option>
           {
-                        _.map(s.select_vote, (item, i) => (
-                          <Select.Option key={i} value={item.value}>{item.name}</Select.Option>
-                        ))
-                    }
+            _.map(s.select_vote, (item, i) => (
+              <Select.Option key={i} value={item.value}>{item.name}</Select.Option>
+            ))
+          }
         </Select>
       )
       vtt[`vote_${name}`] = fn(el)
@@ -244,9 +244,10 @@ class C extends BaseComponent {
       if (fullName !== name) {
         tmp.disabled = true
       }
-
+      let reasonInitValue = _.get(data, ['reason_map', name], '')
+      if (!edit || reasonInitValue === 'undefined') reasonInitValue = ''
       const fn = getFieldDecorator(`reason_${name}`, {
-        initialValue: edit ? _.get(data, 'vote_map.name') : '',
+        initialValue: reasonInitValue,
         rules: [
           {},
           {

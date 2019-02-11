@@ -128,6 +128,7 @@ export const TASK_CANDIDATE_CATEGORY = {
     RSVP: 'RSVP'
 }
 
+// ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED']);
 export const CVOTE_RESULT = {
     SUPPORT: 'support',
@@ -135,6 +136,7 @@ export const CVOTE_RESULT = {
     ABSTENTION: 'abstention',
     UNDECIDED: 'undecided',
 };
+// expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
 export const USER_SKILLSET = {

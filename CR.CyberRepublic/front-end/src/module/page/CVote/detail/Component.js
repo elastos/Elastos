@@ -6,7 +6,7 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
@@ -145,7 +145,10 @@ class C extends StandardPage {
   }
 
   renderVoteActions() {
-    if (!this.props.isCouncil) return null
+    const { isCouncil } = this.props
+    const { status } = this.state.data
+    const isExpired = status === CVOTE_STATUS.DEFERRED
+    if (!isCouncil || isExpired) return null
     return (
       <div className="vote-btn-group">
         <Button
@@ -173,25 +176,37 @@ class C extends StandardPage {
   }
 
   renderAdminActions() {
-    if (!this.props.isSecretary) return null
+    const { isSecretary, isCouncil } = this.props
+    if (!isSecretary && !isCouncil) return null
+    const { status } = this.state.data
+    const isExpired = status === CVOTE_STATUS.DEFERRED
+    const addNoteBtn = isSecretary && (
+      <Button
+        onClick={this.showUpdateNotesModal}
+      >
+        {I18N.get('council.voting.btnText.notesSecretary')}
+      </Button>
+    )
+    const editProposalBtn = (isSecretary || isCouncil) && !isExpired && (
+      <Button
+        onClick={this.gotoEditPage}
+      >
+        {I18N.get('council.voting.btnText.editProposal')}
+      </Button>
+    )
+    const completeProposalBtn = isSecretary && !isExpired && (
+      <Button
+        type="primary"
+        onClick={this.completeProposal}
+      >
+        {I18N.get('council.voting.btnText.completeProposal')}
+      </Button>
+    )
     return (
       <div className="vote-btn-group">
-        <Button
-          onClick={this.showUpdateNotesModal}
-        >
-          {I18N.get('council.voting.btnText.notesSecretary')}
-        </Button>
-        <Button
-          onClick={this.gotoEditPage}
-        >
-          {I18N.get('council.voting.btnText.editProposal')}
-        </Button>
-        <Button
-          type="primary"
-          onClick={this.completeProposal}
-        >
-          {I18N.get('council.voting.btnText.completeProposal')}
-        </Button>
+        {addNoteBtn}
+        {editProposalBtn}
+        {completeProposalBtn}
       </div>
     )
   }
