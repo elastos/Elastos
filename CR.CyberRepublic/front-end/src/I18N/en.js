@@ -880,6 +880,9 @@ const en = {
   'role.member': 'Member',
   'role.organizer': 'Organizer',
   'role.admin': 'Admin',
+  'role.council': 'Council',
+  'role.secretary': 'Secretary',
+  'role.custom': 'Custom',
   'role.admin.mode': 'Admin Mode',
 
   // Profile

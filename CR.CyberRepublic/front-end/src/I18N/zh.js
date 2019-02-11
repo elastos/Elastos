@@ -880,6 +880,9 @@ const zh = {
   'role.member': '成员',
   'role.organizer': '组织者',
   'role.admin': '管理员',
+  'role.council': '委员',
+  'role.secretary': '秘书',
+  'role.custom': '自定义',
   'role.admin.mode': '管理员模式',
 
   // Profile
