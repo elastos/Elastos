@@ -5,7 +5,7 @@
 
 您可以点击此处查看所有的徽标资源的压缩文件： [CyberRepublicLogoAssets.zip](https://raw.githubusercontent.com/elastos/Elastos.Community/master/CyberRepublicLogoAssets/CyberRepublicLogoAssets.zip)
 
-或则您还可以访问我们的Github文件夹来检索徽标：[https://github.com/elastos/Elastos.Community/tree/master/CyberRepublicLogoAssets](https://github.com/elastos/Elastos.Community/tree/master/CyberRepublicLogoAssets)
+或者您还可以访问我们的Github文件夹来检索徽标：[https://github.com/elastos/Elastos.Community/tree/master/CyberRepublicLogoAssets](https://github.com/elastos/Elastos.Community/tree/master/CyberRepublicLogoAssets)
 
 
 ### 海报
