@@ -30,7 +30,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote');
 
         const {
-            title, title_zh, type, content,  content_zh, proposedBy, motionId, isConflict,
+            title, title_zh, type, content, published, content_zh, proposedBy, motionId, isConflict,
             notes, notes_zh,vote_map, reason_map, reason_zh_map
         } = param;
 
@@ -38,6 +38,7 @@ export default class extends Base {
             title,
             title_zh,
             type,
+            published,
             content,
             content_zh,
             proposedBy,
@@ -53,7 +54,7 @@ export default class extends Base {
 
         const vid = await this.getNewVid();
         doc.vid = vid;
-        doc.status = this.getNewStatus(doc.vote_map, null);
+        doc.status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT;
 
         const cvote = await db_cvote.save(doc);
 
@@ -244,6 +245,7 @@ export default class extends Base {
             return constant.CVOTE_STATUS.DEFERRED;
         }
 
+        // TODO: later there will be more than 3 council members
         if(nf > 1){
             rs = constant.CVOTE_STATUS.REJECT;
         }
