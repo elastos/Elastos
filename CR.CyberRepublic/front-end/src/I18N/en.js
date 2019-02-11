@@ -892,6 +892,7 @@ const en = {
   'profile.completeProfile.explanation': 'Get more tasks and connect with talent all over the world',
   'profile.editProfile': 'Edit Profile',
   'profile.editBasicProfile': 'Edit Basic Profile',
+  'profile.editFullProfile': 'Edit Full Profile',
   'profile.editProfile.section.1': 'Basic Information',
   'profile.editProfile.section.2': 'Skill Set',
   'profile.editProfile.section.3': 'Social Profile',

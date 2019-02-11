@@ -91,6 +91,9 @@ export default class extends BaseComponent {
           switchEditMode={this.switchEditMode}
           completing={false}
         />
+        <div style={{textAlign: 'center'}}>
+          <a onClick={() => this.linkProfileInfo(user._id)} className="tableLink">{I18N.get('profile.editFullProfile')}</a>
+        </div>
       </Modal>
     )
   }

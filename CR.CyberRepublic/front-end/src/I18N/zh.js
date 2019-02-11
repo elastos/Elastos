@@ -892,6 +892,7 @@ const zh = {
   'profile.completeProfile.explanation': '获取更多任务并与世界各地的英才联系',
   'profile.editProfile': '编辑个人资料',
   'profile.editBasicProfile': '编辑个人基本资料',
+  'profile.editFullProfile': '编辑个人完整资料',
   'profile.editProfile.section.1': '基本信息',
   'profile.editProfile.section.2': '技能',
   'profile.editProfile.section.3': '社交媒体',
