@@ -313,17 +313,11 @@ export default class extends Base {
     }
 
     private async eachJob() {
-
         const db_cvote = this.getDBModel('CVote');
-
         const list = await db_cvote.find({
-            'status' : {
-                '$in' : [constant.CVOTE_STATUS.PROPOSED, constant.CVOTE_STATUS.ACTIVE]
-            }
+            status: constant.CVOTE_STATUS.PROPOSED
         });
         const ids = [];
-
-        ids.length && console.log(ids);
 
         _.each(list, (item)=>{
             if(this.isExpired(item)){
@@ -336,7 +330,6 @@ export default class extends Base {
         }}, {
             status : constant.CVOTE_STATUS.DEFERRED
         });
-
     }
 
     public cronjob(){
