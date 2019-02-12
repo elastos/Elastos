@@ -274,6 +274,7 @@ const zh = {
   'suggestion.intro.1.1': '的第一步。委员会成员挑选最佳或最受欢迎的想法，将其变成提案，然后进入投票裁决。',
   'suggestion.intro.2': '这个过程称为CR共识，基本信息请参阅我们的',
   'suggestion.intro.2.blog': '博客。',
+  'suggestion.intro.3': '更多信息请参考：',
   'suggestion.rules.guidelines': '指南',
   'suggestion.rules.guidelines.1': '您可以建议您的公司、团队或您自己作为提案候选人，而委员会成员将斟酌决定是否采纳这项建议。',
   'suggestion.rules.guidelines.2': '请描述您觉得为什么这条建议对亦来云生态有益',

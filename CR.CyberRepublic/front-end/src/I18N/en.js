@@ -274,6 +274,7 @@ const en = {
   'suggestion.intro.1.1': ', the best or most popular ideas can be picked up by council members and turned into Proposals for voting consideration.',
   'suggestion.intro.2': 'This process is known collectively as the Cyber Republic Consensus, for preliminary info see our',
   'suggestion.intro.2.blog': ' blog.',
+  'suggestion.intro.3': 'For more information, please refer to: ',
   'suggestion.rules.guidelines': 'Guidelines',
   'suggestion.rules.guidelines.1': 'You may suggest your company, team or self as the candidate for the proposal, this is at the discretion of the council member who picks up the suggestion',
   'suggestion.rules.guidelines.2': 'Describe why you think this suggestion would benefit the Elastos ecosystem',

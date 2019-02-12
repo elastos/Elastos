@@ -241,6 +241,7 @@ class C extends BaseComponent {
         <FormItem className="form-desc">
           {p.description}
         </FormItem>
+        <br/>
         <FormItem label={I18N.get('from.TaskCreateForm.label.info')} {...formItemLayout} className="form-link">
           {p.link}
         </FormItem>
