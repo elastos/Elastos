@@ -877,7 +877,7 @@ const zh = {
   'vision.07': '我们期待着为更安全、更透明、更自由的新型互联网建立一个创业和创新的国际化港湾。',
 
   // Role
-  'role.member': '成员',
+  'role.member': '用户',
   'role.organizer': '组织者',
   'role.admin': '管理员',
   'role.council': '委员',

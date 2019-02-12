@@ -877,7 +877,7 @@ const en = {
   'vision.07': 'We look forward to building an international haven for entrepreneurship  and innovation for the new internet.',
 
   // Role
-  'role.member': 'Member',
+  'role.member': 'User',
   'role.organizer': 'Organizer',
   'role.admin': 'Admin',
   'role.council': 'Council',
