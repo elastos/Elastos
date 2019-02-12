@@ -170,7 +170,7 @@ export default class extends Base {
         const isUserAdmin = permissions.isAdmin(userRole)
         const isSelf = _.get(this.currentUser, '_id') === userId
 
-        if (!isUserAdmin && !isSelf) {
+        if (!isUserAdmin && (!isSelf || param.role)) {
             throw 'Access Denied'
         }
 
