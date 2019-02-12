@@ -1,20 +1,17 @@
-import {mail} from "../../utility"
 import * as uuid from 'uuid'
-
-declare var global, describe, test, require, process, beforeAll, afterAll
-import {expect, assert} from 'chai'
-
-const sinon = require('sinon')
-
+import { expect } from 'chai'
+import { constant } from '../../constant';
+import {mail} from '../../utility'
 import db from '../../db'
 import '../../config'
 import CVoteService from '../CVoteService'
-import UserService from "../UserService"
-import TaskService from "../TaskService"
+import UserService from '../UserService'
 
+declare var global, describe, test, require, process, beforeAll, afterAll
+
+const sinon = require('sinon')
 const user: any = {}
 let DB, mailMethod
-
 
 beforeAll(async ()=>{
     DB = await db.create()
@@ -38,7 +35,16 @@ beforeAll(async ()=>{
     })
     user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
     user.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER)
-    user.council = await userService.registerNewUser(global.DB.COUNCIL_USER)
+    const council = await userService.registerNewUser(global.DB.COUNCIL_USER)
+    // added COUNCIL role to council
+    const adminService = new UserService(DB, {
+        user: user.admin
+    })
+    await adminService.update({
+        userId: council._id,
+        role: constant.USER_ROLE.COUNCIL
+    })
+    user.council = await userService.getDBModel('User').findOne({ _id: council._id })
 })
 
 describe('Tests for CVote', () => {

@@ -1,7 +1,6 @@
 import BaseService from '../model/BaseService'
 import _ from 'lodash'
-import { api_request } from '@/util';
-import { isAdmin, isLeader } from '@/util/user'
+import { api_request, permissions } from '@/util';
 
 export default class extends BaseService {
   async login(username, password, persist) {
@@ -16,8 +15,8 @@ export default class extends BaseService {
         password,
       },
     });
-    const is_admin = isAdmin(res.user)
-    const is_leader = isLeader(res.user)
+    const is_admin = permissions.isAdmin(res.user.role)
+    const is_leader = permissions.isLeader(res.user.role)
 
     this.dispatch(userRedux.actions.login_form_reset())
 
@@ -106,8 +105,8 @@ export default class extends BaseService {
     const data = await api_request({
       path: '/api/user/current_user',
     })
-    const is_admin = isAdmin(data)
-    const is_leader = isLeader(data)
+    const is_admin = permissions.isAdmin(data.role)
+    const is_leader = permissions.isLeader(data.role)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))

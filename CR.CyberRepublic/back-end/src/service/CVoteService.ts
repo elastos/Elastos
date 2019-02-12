@@ -1,8 +1,8 @@
 import Base from './Base';
-import {Document} from 'mongoose';
+import { Document } from 'mongoose';
 import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate, utilCrypto, mail} from '../utility';
+import { constant } from '../constant';
+import { permissions } from '../utility';
 import * as moment from 'moment';
 
 let tm = null;
@@ -342,16 +342,8 @@ export default class extends Base {
         }, 1000*60);
     }
 
-    private isCouncil() {
-        return constant.COUNCIL_MEMBER_IDS.indexOf(this.currentUser._id.toString()) >= 0 || this.currentUser.role === constant.USER_ROLE.COUNCIL
-    }
-
-    private isSecretary() {
-        return this.currentUser.role === constant.USER_ROLE.SECRETARY
-    }
-
     private canManageProposal() {
-        return this.isCouncil() || this.isSecretary()
+        const userRole = _.get(this.currentUser, 'role')
+        return permissions.isCouncil(userRole) || permissions.isSecretary(userRole)
     }
-
 }

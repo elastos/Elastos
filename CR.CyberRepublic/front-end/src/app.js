@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
-import {Helmet} from "react-helmet"
+import {Helmet} from 'react-helmet'
 import _ from 'lodash';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import {Provider} from 'react-redux';
 import {ConnectedRouter} from 'react-router-redux';
 import store from '@/store';
 import config from '@/config';
-import {api_request} from "./util";
-import { isAdmin, isLeader } from '@/util/user'
+import { api_request, permissions } from './util';
 
 import './boot';
 import './style/index.scss';
@@ -81,8 +80,8 @@ if (sessionStorage.getItem('api-token')) {
         path : '/api/user/current_user',
         success : (data)=>{
             // store user in redux
-            const is_admin = isAdmin(data)
-            const is_leader = isLeader(data)
+            const is_admin = permissions.isAdmin(data.role)
+            const is_leader = permissions.isLeader(data.role)
 
             store.dispatch(userRedux.actions.is_leader_update(is_leader))
             store.dispatch(userRedux.actions.is_admin_update(is_admin))
