@@ -35,15 +35,16 @@ beforeAll(async ()=>{
     })
     user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
     user.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER)
-    user.council = await userService.registerNewUser(global.DB.COUNCIL_USER)
+    const council = await userService.registerNewUser(global.DB.COUNCIL_USER)
     // added COUNCIL role to council
     const adminService = new UserService(DB, {
         user: user.admin
     })
     await adminService.update({
-        userId: user.council._id,
+        userId: council._id,
         role: constant.USER_ROLE.COUNCIL
     })
+    user.council = council
 })
 
 describe('Tests for CVote', () => {
