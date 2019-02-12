@@ -16,10 +16,10 @@ export const getPermissionIndex = role => [
 
 export const checkPermissions = (userRole, role) => getPermissionIndex(userRole) >= getPermissionIndex(role)
 
-export const isCouncil = userRole => getPermissionIndex(userRole) === getPermissionIndex(USER_ROLE.COUNCIL)
+export const isCouncil = userRole => userRole === USER_ROLE.COUNCIL
 
-export const isSecretary = userRole => getPermissionIndex(userRole) === getPermissionIndex(USER_ROLE.SECRETARY)
+export const isSecretary = userRole => userRole === USER_ROLE.SECRETARY
 
-export const isAdmin = userRole => getPermissionIndex(userRole) === getPermissionIndex(USER_ROLE.ADMIN) || getPermissionIndex(userRole) === getPermissionIndex(SUPER_ADMIN)
+export const isAdmin = userRole => userRole === USER_ROLE.ADMIN || userRole === SUPER_ADMIN
 
-export const isLeader = userRole => getPermissionIndex(userRole) === getPermissionIndex(USER_ROLE.LEADER)
+export const isLeader = userRole => userRole === USER_ROLE.LEADER
