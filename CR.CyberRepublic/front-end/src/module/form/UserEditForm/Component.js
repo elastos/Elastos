@@ -23,6 +23,7 @@ import TimezonePicker from 'react-timezone'
 import I18N from '@/I18N'
 import {upload_file} from '@/util'
 import './style.scss'
+import * as _ from 'lodash'
 import {TASK_CATEGORY, TASK_TYPE, TASK_STATUS, USER_GENDER, USER_SKILLSET, USER_PROFESSION} from '@/constant'
 
 const FormItem = Form.Item
