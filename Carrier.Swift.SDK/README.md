@@ -84,4 +84,4 @@ We welcome contributions to the Elastos Carrier iOS Project (or Native Project) 
 
 ## License
 
-Elastos Carrier iOS Project source code files are made available under the MIT License, located in the LICENSE file.
+Elastos Carrier iOS Project source code files are made available under the GPLv3 License, located in the LICENSE file.
