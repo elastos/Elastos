@@ -846,4 +846,4 @@ A sincere thank you to all teams and projects that we rely on directly or indire
 
 ## License
 
-This project is licensed under the terms of the [MIT license](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/LICENSE).
+This project is licensed under the terms of the [GPLv3 license](https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/blob/master/LICENSE).
