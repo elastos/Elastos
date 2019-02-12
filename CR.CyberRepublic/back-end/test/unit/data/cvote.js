@@ -10,7 +10,6 @@ global.DB = Object.assign(global.DB, {
         proposedBy: 'Kevin Zhang',
         isConflict: 'NO',
         status: 'ACTIVE',
-        published: true,
     }
 
 })

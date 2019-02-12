@@ -44,7 +44,7 @@ beforeAll(async ()=>{
         userId: council._id,
         role: constant.USER_ROLE.COUNCIL
     })
-    user.council = council
+    user.council = await userService.getDBModel('User').findOne({ _id: council._id })
 })
 
 describe('Tests for CVote', () => {
