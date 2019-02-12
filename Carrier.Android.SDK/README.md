@@ -205,4 +205,4 @@ We welcome contributions to the Elastos Carrier Android SDK Project.
 A sincere thank you to all teams and projects that we rely on directly or indirectly.
 
 ## License
-This project is licensed under the terms of the [MIT license](https://github.com/elastos/Elastos.NET.Carrier.Android.SDK/blob/master/LICENSE).
+This project is licensed under the terms of the [GPLv3 license](https://github.com/elastos/Elastos.NET.Carrier.Android.SDK/blob/master/LICENSE).
