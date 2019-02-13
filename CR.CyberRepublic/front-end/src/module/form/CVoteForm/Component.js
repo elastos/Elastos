@@ -105,7 +105,7 @@ class C extends BaseComponent {
     const councilNotOwnerReadOnly = {}
     const councilNotOwnerDisabled = {}
     // allow secretary and proposal owner to edit
-    const isAllowEdit = (!isSecretary && data.createdBy !== this.user.current_user_id) || _.includes(['FINAL', 'DEFERRED'], data.status)
+    const isAllowEdit = edit && ((!isSecretary && data.createdBy !== this.user.current_user_id) || _.includes(['FINAL', 'DEFERRED'], data.status))
     if (!canCreate) {
       publicReadonly.readOnly = true
       publicDisabled.disabled = true
