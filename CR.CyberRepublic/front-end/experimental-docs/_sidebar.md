@@ -18,6 +18,8 @@
 
 - Services
     - [Wallet](/services/wallet.md)
+        - [Sending ELA on the Mainchain](/services/wallet-sending.md)
+        - [Sending ELA from Main to Sidechain](/services/wallet-to-side.md)
     - [DID Wallet](/services/wallet-did.md)
 
 - Tools
