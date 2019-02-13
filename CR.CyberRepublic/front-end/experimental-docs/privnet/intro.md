@@ -11,12 +11,14 @@ have to rely on the docker container.
 
 **This includes:**
 
-- ELA Mainchain
-- ELA Sidechain (DID)
-- ELA Sidechain (ETH)
-- ELA Arbiter Nodes (dPoS)
+- ELA Mainchain - cache is `elastos` folder
+- ELA Sidechain (DID) - cache is `elastos_did` folder
+- ELA Sidechain (ETH) - cache is `elastos_eth` folder
+- ELA Arbiter Nodes (dPoS) - cache is `elastos_arbiter` folder
 - IPFS
 - PeerPad
+
+!> **PLEASE NOTE:** If you make a mistake, change a magic number or other genesis parameter, you may need to delete the cache folders listed above and start all over again.
 
 
 ## Local Environment or Docker Container
@@ -49,10 +51,12 @@ Locally the recommended setup is having
 To set this up follow the steps throughout this documentation site for each component, the assumed order of
 setup is as follows:
 
-#### 1. Build the Elastos.ELA.Client -&nbsp;[
+#### 1. Build the Elastos.ELA.Client -&nbsp;[click here](/tools/ela-client.md)
 
 We need this to generate our foundation address and private key, this is where the initial 33 million in the genesis block will go
 
+Now call `./ela-cli wallet -c` and it will spit out a new wallet address and public key for you to use. The private key will be encrypted by your password and inside `keystore.dat`.
+Review the Elastos.ELA.Client documentation for more functions such as retrieving your private key.
 
 
 #### 2. Setup the ELA Mainchain seed node -&nbsp;[guide is here](/core/mainchain/mainchain.md), don't have it mine by setting the `PowConfiguration` in `config.json` to:
@@ -68,7 +72,7 @@ We need this to generate our foundation address and private key, this is where t
 ```
 
 - `SeedList` should be empty since this is your first node
-- `FoundationAddress` is where all the genesis tokens go, if you need access to that create a new wallet address where you have private key
+- `FoundationAddress` is where all the genesis tokens go, this is where you can put your wallet address from step 1.
 - `PowConfiguration.PayToAddr` is empty because we are not mining with this node.
 
 
@@ -78,7 +82,7 @@ We will use this service to make your first wallet on your new chain,
 
 Just call `curl localhost:<>/api/1/createWallet` and it will return your new wallet info, make sure you jot this down.
 
-#### 3. Setup the secondary ELA node that will do the mining
+#### 4. Setup the secondary ELA node that will do the mining
 
 Put your newly created wallet address in the `PayToAddr` field and watch the ELA roll in!
 
