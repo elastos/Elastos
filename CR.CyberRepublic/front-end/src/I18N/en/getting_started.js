@@ -1,5 +1,5 @@
 export default {
-    'part1': `<h3>What is Elastos?</h3>
+  part1: `<h3>What is Elastos?</h3>
             <p>Elastos is the safe and reliable internet of the future. Built utilizing the blockchain, this technological breakthrough provides the first completely safe environment on the web where decentralized applications are detached from the internet while also permitting full scalability to billions of users. Elastos enables the generation of wealth through ownership and exchange of your data and digital assets.</p>
             <p>Elastos is not a blockchain project but rather a network operating system project powered by blockchain technology so in that sense, Elastos is not directly competing with any other blockchain projects. It can work together with them to form this new ecosystem where the decentralized applications run directly on the device instead of running on the blockchain along with decentralized peer to peer network to transfer assets in a completey closed sandboxed environment, thereby solving the three pillar issues that are prevelant in the internet of today - security, scalibility and decentralization.</p>
             <p>Elastos uses internet as the base-layer infrastructure rather than an application where decentralized applications are forced to never directly connect to the internet and only interact with Elastos runtime(which in turn acts as a middle layer, then connecting to the internet). Within the elastos ecosystem, everything from devices to virtual machines to users to DApps have a DID(Decentralized ID) issued by the blockchain and everytime the application requests any sort of internet access, the ID has to first be verified using the blockchain which in turn eliminates many of the man-in-the-middle attacks, virus attacks, etc</p>
@@ -8,7 +8,7 @@ export default {
             <br/>
             <a href="https://www.elastos.org/wp-content/uploads/2018/White Papers/elastos_sidechain_whitepaper_v0.3.0.8_EN.pdf?_t=1526918471" target="_blank">Read Elastos Mainchain - Sidechain Whitepaper</a>
             <br/>`,
-    'part2': `<h3>Brief Summary</h3>
+  part2: `<h3>Brief Summary</h3>
                 <ul>
                     <li>
                         <strong>Bitcoin</strong> = Trustworthy Ledger: Bitcoin introduced the power of decentralised ledger technology to the world,
@@ -69,13 +69,13 @@ export default {
                     Tomorrow, even if I change a cellphone, we can still communicate with the same ID.
                     So, specific applications should not care about which cellphone you use or how you access it.
                 </p>`,
-    'part3': `<h3>Brief Summary</h3>
+  part3: `<h3>Brief Summary</h3>
                 <ul>
                     <li>Through the merged mining with Bitcoin, the safety and reliability are ensured by strong Bitcoin computing power through Proof of Work. This mining strategy saves resources and avoids repeated consumption.</li>
                     <li>Because Elastos structure is built by having a main chain and sidechains, it avoids main chain being overloaded, and leads to easy routing and flexible extension, increasing the possibility for the Elastos to become basis for future internet applications.</li>
                     <li>The blockchain is a trust zone and a reliable internet database. Smart contracts are merely the saving process of this reliable database. Only the valuable data that needs to be notarized is recorded on the blockchain; only the data processing that needs computation reliability requires smart contracts.</li>
                 </ul>`,
-    'part4': `<h3>Merged Mining</h3>
+  part4: `<h3>Merged Mining</h3>
                 <p>
                     The Elastos blockchain utilizes merged mining with Bitcoin, the process by which consensus is reached on both chains simultaneously.
                     In this case, the Bitcoin blockchain works as the parent blockchain to Elastos, with the Elastos chain as its auxiliary blockchain.
@@ -99,7 +99,7 @@ export default {
                 </ul>
                 <a href="https://medium.com/@kiran.pachhai/elastos-did-the-backbone-of-the-new-internet-26182108bf6a" target="_blank">Read an article on ID Sidechain and the benefits of merged mining</a>`,
 
-    'part5': `<h3>Overview of Main chain and Sidechains in the elastos ecosystem</h3>
+  part5: `<h3>Overview of Main chain and Sidechains in the elastos ecosystem</h3>
                 <p>
                     One of the highlights of the design is that it makes use of a blend of mainchains and sidechains to improve the computational ability of blockchain technology.
                     The mainchain only executes simple transactions and payment transfers while the sidechain handles smart contracts to support services and applications.
@@ -137,7 +137,7 @@ export default {
                 </p>
                 <a href="https://www.elastos.org/wp-content/uploads/2018/White Papers/elastos_sidechain_whitepaper_v0.3.0.8_EN.pdf?_t=1526918471" target="_blank">Read Elastos Sidechain Whitepaper</a>
                 <h3>Main chain, sidechains and friendchains</h3>`,
-    'part6': `<p>
+  part6: `<p>
                     The Elastos main chain uses the arbitrator’s joint signature and SPV(Simplified Payment Verification) mechanism to guarantee the security of the transfer with the sidechain.
                     The main chain token holders(ELA holders) jointly elect a certain number of arbitrators.
                     The arbitrator is responsible for signing the token withdrawals from the sidechain to the main chain.
@@ -154,7 +154,7 @@ export default {
                     This kind of blockchain that can transfer funds with Elastos is called a “friend chain” and atomic swaps are possible between main chain and friendchains.
                 </p>
                 <h5>Asset transfer from main chain to sidechain</h5>`,
-    'part7': `<ol>
+  part7: `<ol>
                     <li>User wants to convert their 5 ELAs to STOKENs</li>
                     <li>Initiate the transfer of 5 ELAs from main chain address U to the main chain address S(the sidechain address in main chain)</li>
                     <li>Transaction #1 is created with 5 ELAs and also the actual sidechain address u is attached to the transaction</li>
@@ -167,7 +167,7 @@ export default {
                     <li>User gets 5 STOKENs on their sidechain address</li>
                 </ol>
                 <h5>Asset transfer from sidechain to main chain</h5>`,
-    'part8': `<ol>
+  part8: `<ol>
                     <li>User wants to convert 5 STOKENs to ELAs</li>
                     <li>Initiate the transfer of 5 STOKENs from sidehain address u to the main chain address U</li>
                     <li>Transaction #1 is created with 5 STOKENs and also the actual main chain address U is attached to the transaction</li>
@@ -196,7 +196,7 @@ export default {
                 <p>
                     The first stage of atomic swap will be achieved using hash lock mechanism and will work as described below:
                 </p>`,
-    'part9': `<ol>
+  part9: `<ol>
                     <li>Alice wants to sell 5 ELAs with Bob in exchange for 25 FTOKENs because the current market rate is 1 ELA = 5 FTOKENs</li>
                     <li>Alice generates a random number x and uses it to get hash(x) that is then encoded within Transaction #1 along with 5 ELAs</li>
                     <li>Alice puts Transaction #1 from her address EA to Elastos main chain E</li>
@@ -206,7 +206,7 @@ export default {
                     <li>Bob signs Transaction #1 with his private key on Elastos main chain E along with the number x. This unlocks Transaction #1 for Bob and finally 5 ELAs are transferred to his address on Elastos main chain E</li>
                 </ol>
                 <a href="https://medium.com/@kiran.pachhai/elastos-architecture-the-main-chain-sidechains-and-friendchains-3727ef477d8e" target="_blank">Read an article on the main chain, sidechains and friendchains</a>`,
-    'part10': `<h3>What is CAR?</h3>
+  part10: `<h3>What is CAR?</h3>
                 <p>CAR means The Component Assembly Runtime (CAR). It is Java with machine code. It is COM with metadata.</p>
                 <p>
                     It is a component-oriented programming model and also a programming idea, and it is described by special standards divided in two parts: specification and implementation.
@@ -236,7 +236,7 @@ export default {
                 <h3>How to write a CAR component?</h3>
                 <p>This focuses on the use of the CAR component and how to implement the inheritance relationship as well as the use of some of the macros defined.</p>
                 <a href="https://github.com/elastos/Elastos.RT/blob/master/Docs/How_To_Write_A_Car_Component.md" target="_blank">Source</a>`,
-    'part11': `<h3>Overview</h3>
+  part11: `<h3>Overview</h3>
                 This is material for any developer who has some experience with programming languages like Javascript/NodeJS, HTML5, Java, Swift, C++, Golang, etc and wants to get started with various github projects that are open sourced by Elastos.
                 This includes the core development of the product such as the Elastos Runtime environment, Elastos Blockchain, creating and integrating ELA into wallets, or creating applications using the SDK if you're a DApp developer.
                 In order to make it very easy for any developer(even to someone who's not very familiar with blockchain) Elastos provides an SDK that makes it easy to start developing a decentralized application integrated with blockchain technology without having to fully learn about how blockchain works underneath.
@@ -266,5 +266,5 @@ export default {
                     <li>Even when Elastos apps are running on operating systems such as iOS, Android and Windows, the local OS won’t be able to sabotage the property rights of digital assets. The value of digital assets is preserved.</li>
                     <li>For non-Elastos apps such as Android or iOS apps, users can access the Elastos Smart Web through the Elastos SDK. Users can log into non-Elastos apps using their Elastos Smart Web ID. Users can also keep their non-Elastos app data in their Elastos cloud storage.</li>
                     <li>Both Elastos smart contracts and Elastos Dapps run on the Elastos Smart Web. This creates a closed platform and avoids the necessity of moving on and off the blockchain. This closed platform creates a special economic zone where users can feel secure while trading digital assets. This enables a closed cycle of production, transaction, and consumption that is necessary for creating wealth.</li>
-                </ul>`
+                </ul>`,
 }

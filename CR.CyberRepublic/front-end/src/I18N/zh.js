@@ -46,45 +46,45 @@ const zh = {
   '0302': '简体中文',
 
   // Admin breadcrumb
-  '1100': '管理员',
+  1100: '管理员',
 
   // Admin users
-  '1200': '编号',
-  '1201': '用户名',
-  '1202': '电子邮件',
-  '1203': '默认语言',
-  '1204': '职能',
-  '1205': '活跃',
-  '1206': 'ELA',
-  '1207': '创建日期',
-  '1208': '全名',
-  '1209': '国家',
+  1200: '编号',
+  1201: '用户名',
+  1202: '电子邮件',
+  1203: '默认语言',
+  1204: '职能',
+  1205: '活跃',
+  1206: 'ELA',
+  1207: '创建日期',
+  1208: '全名',
+  1209: '国家',
 
   // Admin navigator
-  '1300': '任务',
-  '1301': '社区',
-  '1302': '用户',
-  '1303': '团队',
-  '1304': '议题',
-  '1305': '表格',
-  '1306': '项目',
+  1300: '任务',
+  1301: '社区',
+  1302: '用户',
+  1303: '团队',
+  1304: '议题',
+  1305: '表格',
+  1306: '项目',
   'admin.suggestion': '建议',
 
   // Profile navigator
-  '2300': '我的档案',
-  '2301': '我的任务',
-  '2302': '我的团队',
-  '2303': '我的议题',
-  '2304': '我的社区',
-  '2305': '我的项目',
-  '2306': '社区',
+  2300: '我的档案',
+  2301: '我的任务',
+  2302: '我的团队',
+  2303: '我的议题',
+  2304: '我的社区',
+  2305: '我的项目',
+  2306: '社区',
   'profile.suggestion': '我的建议',
 
   'login.success': '登陆成功',
 
   'mentions.notFound': '该用户不存在',
 
-  'comments': '评论',
+  comments: '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，抢沙发！',
@@ -203,8 +203,8 @@ const zh = {
   'register.welcome': '欢迎加入Cyber Republic!',
   'register.join_circle': '加入一个圈子并获取ELA',
   'register.join': '加入',
-  '3533': '更多关于您的信息',
-  '3534': '国家',
+  3533: '更多关于您的信息',
+  3534: '国家',
   'register.code.title': '成为公民',
 
   // Forgot / Reset Password Form
@@ -625,7 +625,7 @@ const zh = {
   '.yes': '是',
   '.no': '否',
   '.loading': '加载中...',
-  'ela': 'ELA',
+  ela: 'ELA',
   '.areYouSure': '您确定吗？',
   '.suspended': '暂停',
 
@@ -1413,7 +1413,7 @@ const zh = {
   'counstitution.title1': '亦来云Cyber Republic章程',
   'counstitution.title2': '亦来云Cyber Republic委员会创始文件',
   'counstitution.title3': '亦来云Cyber Republic投票规则',
-  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策'
+  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策',
 }
 
 // lang mappings

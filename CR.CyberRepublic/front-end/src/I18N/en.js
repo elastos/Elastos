@@ -46,45 +46,45 @@ const en = {
   '0302': 'Chinese',
 
   // Admin breadcrumb
-  '1100': 'Admin',
+  1100: 'Admin',
 
   // Admin users
-  '1200': 'No',
-  '1201': 'Username',
-  '1202': 'Email',
-  '1203': 'Default language',
-  '1204': 'Role',
-  '1205': 'Active',
-  '1206': 'Ela',
-  '1207': 'Created Date',
-  '1208': 'Full Name',
-  '1209': 'Country',
+  1200: 'No',
+  1201: 'Username',
+  1202: 'Email',
+  1203: 'Default language',
+  1204: 'Role',
+  1205: 'Active',
+  1206: 'Ela',
+  1207: 'Created Date',
+  1208: 'Full Name',
+  1209: 'Country',
 
   // Admin navigator
-  '1300': 'Tasks',
-  '1301': 'Community',
-  '1302': 'Users',
-  '1303': 'Teams',
-  '1304': 'Issues',
-  '1305': 'Forms',
-  '1306': 'Projects',
+  1300: 'Tasks',
+  1301: 'Community',
+  1302: 'Users',
+  1303: 'Teams',
+  1304: 'Issues',
+  1305: 'Forms',
+  1306: 'Projects',
   'admin.suggestion': 'Suggestions',
 
   // Profile navigator
-  '2300': 'My Profile',
-  '2301': 'My Tasks',
-  '2302': 'My Teams',
-  '2303': 'My Issues',
-  '2304': 'My Communities',
-  '2305': 'My Projects',
-  '2306': 'Communities',
+  2300: 'My Profile',
+  2301: 'My Tasks',
+  2302: 'My Teams',
+  2303: 'My Issues',
+  2304: 'My Communities',
+  2305: 'My Projects',
+  2306: 'Communities',
   'profile.suggestion': 'My Suggestions',
 
   'login.success': 'Login Successful',
 
   'mentions.notFound': 'User not found',
 
-  'comments': 'Comments',
+  comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
   'comments.noComments': 'No comments yet. Be the first to post!',
@@ -203,8 +203,8 @@ const en = {
   'register.welcome': 'Welcome to the Cyber Republic!',
   'register.join_circle': 'Join a CRcle and earn ELA',
   'register.join': 'Join',
-  '3533': 'More about you',
-  '3534': 'Country',
+  3533: 'More about you',
+  3534: 'Country',
   'register.code.title': 'Become a citizen',
 
   // Forgot / Reset Password Form
@@ -625,7 +625,7 @@ const en = {
   '.yes': 'Yes',
   '.no': 'No',
   '.loading': 'Loading...',
-  'ela': 'ELA',
+  ela: 'ELA',
   '.areYouSure': 'Are you sure?',
   '.suspended': 'Suspended',
 
@@ -1413,7 +1413,7 @@ const en = {
   'counstitution.title1': 'Elastos Cyber Republic Constitution',
   'counstitution.title2': 'Elastos Cyber Republic Council Founding Document',
   'counstitution.title3': 'Elastos Cyber Republic Voting Rules',
-  'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy'
+  'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy',
 }
 
 // lang mappings

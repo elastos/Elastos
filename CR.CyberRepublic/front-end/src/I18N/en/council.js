@@ -1,41 +1,41 @@
 export default {
-    '0001' : 'Council',
-    '0002' : 'Article List',
-    '0003' : 'Alpha Version',
-    
-    list : {
-        '1' : 'Elastos Cyber Republic Constitution',
-        '2' : 'Elastos Cyber Republic Council Founding Document',
-        '3' : 'Elastos Cyber Republic Voting Rules',
-        '4' : 'Elastos Cyber Republic Council Conflict of Interest Policy',
-        '5' : 'Elastos Cyber Republic Council Proposal and Voting Rules'
-    },
-    desc : {
-        '1' : `
+  '0001': 'Council',
+  '0002': 'Article List',
+  '0003': 'Alpha Version',
+
+  list: {
+    1: 'Elastos Cyber Republic Constitution',
+    2: 'Elastos Cyber Republic Council Founding Document',
+    3: 'Elastos Cyber Republic Voting Rules',
+    4: 'Elastos Cyber Republic Council Conflict of Interest Policy',
+    5: 'Elastos Cyber Republic Council Proposal and Voting Rules',
+  },
+  desc: {
+    1: `
             This is an Alpha version of this document.
             The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.         
         `,
-        '2' : `
+    2: `
             This is an Alpha version of this document.
             The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
         `,
-        '3' : `
+    3: `
             This is an Alpha version of this document.
             The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
         `,
-        '4' : `
+    4: `
             This is an Alpha version of this document.
             The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
         `,
-        '5' : `
+    5: `
             This rules of proposals and voting are discussed and approved by the Cyber Republic Council(CRC) and supervised by the Secretariat.
 
             Recommended language of CRC is English. In case there is a conflict between languages, English prevails.
         
-        `
-    },
-    article : {
-        '1' : `
+        `,
+  },
+  article: {
+    1: `
          
         <strong>ARTICLE 1 - INTERIM PERIOD</strong>
          
@@ -119,7 +119,7 @@ export default {
         <br/>
         `,
 
-        '2' : `
+    2: `
         <center>Chapter I	 General Principles</center>
         <strong>1 Interim Period</strong>
         <ol>
@@ -245,7 +245,7 @@ export default {
     
         `,
 
-        '3' : `
+    3: `
         <center>Chapter I	 General Principles</center>
 
         <strong>1 Interim Period</strong>
@@ -352,7 +352,7 @@ export default {
         
         `,
 
-        '4' : `
+    4: `
         <center>Chapter I	 General Principles</center>
         <strong>1 Interim Period</strong>
         <ol>
@@ -424,7 +424,7 @@ export default {
         
         `,
 
-        '5' : `
+    5: `
 
         <p>
         1. This rules of proposals and voting are discussed and approved by the Cyber Republic Council(CRC) and supervised by the Secretariat.
@@ -494,7 +494,7 @@ export default {
         </ul>
 
         
-        `
-    }
-    
+        `,
+  },
+
 }
