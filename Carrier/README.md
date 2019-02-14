@@ -360,13 +360,13 @@ Generate the Makefile in the current directory:
 *Note: Please see custom options below.*
 
 ```shell
-$ cmake ../..
+$ cmake -DBUILD_ON_RPI=ON ../..
 ```
 
 ***
 Optional (Generate the Makefile): To be able to build a distribution with a specific build type **Debug/Release**, as well as with customized install location of distributions, run the following commands:
 ```shell
-$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
+$ cmake -DBUILD_ON_RPI=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
 ```
 ***
 
