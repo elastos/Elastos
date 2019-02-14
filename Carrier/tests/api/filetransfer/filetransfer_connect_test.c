@@ -93,7 +93,6 @@ static void ft_connect_cb(ElaCarrier *carrier,
     TestContext *wctx = (TestContext *)context;
     CarrierContext *ctx = wctx->carrier;
     CarrierContextExtra *extra = ctx->extra;
-    int rc;
 
     if (fileinfo) {
         extra->has_ft_info = true;
@@ -162,12 +161,12 @@ static TestContext test_context = {
     .context_reset = test_context_reset
 };
 
-static void test_filetransfer_connect()
+static void test_filetransfer_connect(void)
 {
     test_filetransfer_scheme(&test_context, NULL, false);
 }
 
-static void test_filetransfer_connect_with_file_info()
+static void test_filetransfer_connect_with_file_info(void)
 {
     ElaFileTransferInfo ft_info = {0};
 
@@ -178,7 +177,7 @@ static void test_filetransfer_connect_with_file_info()
     test_filetransfer_scheme(&test_context, NULL, true);
 }
 
-static void test_filetransfer_accept_connect()
+static void test_filetransfer_accept_connect(void)
 {
     CarrierContext *wctxt = test_context.carrier;
     CarrierContextExtra *wextra = wctxt->extra;

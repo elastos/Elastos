@@ -1245,7 +1245,6 @@ static void ft_new(TestContext *context, int argc, char *argv[])
 {
     TestContext *ctx = (TestContext *)context;
     CarrierContext *wctx = ctx->carrier;
-    int rc;
 
     CHK_ARGS(argc == 2);
 
