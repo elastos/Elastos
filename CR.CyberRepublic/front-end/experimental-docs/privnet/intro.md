@@ -95,3 +95,7 @@ Put your newly created wallet address in the `PayToAddr` field and watch the ELA
   "ActiveNet": "MainNet"
 },
 ```
+
+#### 5. Setup the DID Sidechain Nodes
+
+#### 6. Setup the Arbiters

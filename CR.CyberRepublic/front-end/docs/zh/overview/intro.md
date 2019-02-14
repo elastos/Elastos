@@ -1,6 +1,8 @@
 
 # Welcome to the Cyber Republic Documentation
 
+!> This is a DRAFT ONLY - the official CRC Whitepaper will come out shortly
+
 ### Cyber Republic's (CR) goal is to allow the public to control how CR's funds are spent and used, currently this is only through the Cyber Republic Consensus (CRC) Workflow.
 
 __All Suggestions, Proposals, Decisions and Financials are public__, CR will strive to be fully transparent and a tool to serve the general public.
