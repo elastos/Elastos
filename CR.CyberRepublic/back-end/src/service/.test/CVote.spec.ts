@@ -18,14 +18,15 @@ beforeAll(async ()=>{
 
     // stub mail
     mailMethod = sinon.stub(mail, 'send', (options) => {
-        console.log('mail suppressed', options)
         return Promise.resolve()
     })
 
     await DB.getModel('User').remove({
-        role : 'MEMBER'
+        role : constant.USER_ROLE.MEMBER
     })
-    await DB.getModel('User').getDBInstance().findByIdAndRemove(global.DB.COUNCIL_USER._id.$oid)
+    await DB.getModel('User').remove({
+        role: constant.USER_ROLE.COUNCIL
+    })
     await DB.getModel('Task').remove({})
     await DB.getModel('CVote').remove({})
 
@@ -33,13 +34,14 @@ beforeAll(async ()=>{
     const userService = new UserService(DB, {
         user: null
     })
+    user.admin = await userService.getDBModel('User').findOne({ role : constant.USER_ROLE.ADMIN })
     user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
-    user.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER)
     const council = await userService.registerNewUser(global.DB.COUNCIL_USER)
     // added COUNCIL role to council
     const adminService = new UserService(DB, {
         user: user.admin
     })
+
     await adminService.update({
         userId: council._id,
         role: constant.USER_ROLE.COUNCIL
@@ -79,7 +81,7 @@ describe('Tests for CVote', () => {
         try {
             const rs: any = await cvoteService.create(Object.assign(
                 global.DB.CVOTE_1, {
-                    createdBy: user.member._id
+                    createdBy: user.admin._id
                 }
             ))
         } catch (err) {
@@ -96,7 +98,7 @@ describe('Tests for CVote', () => {
 
         const rs: any = await cvoteService.create(Object.assign(
             global.DB.CVOTE_1, {
-                createdBy: user.member._id
+                createdBy: user.council._id
             }
         ))
 

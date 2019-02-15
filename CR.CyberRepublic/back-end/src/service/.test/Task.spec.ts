@@ -8,6 +8,7 @@ import '../../config';
 import UserService from '../UserService';
 import TaskService from '../TaskService';
 import {mail} from '../../utility'
+import { constant } from '../../constant';
 
 const user: any = {};
 let DB, mailMethod;
@@ -23,7 +24,7 @@ beforeAll(async ()=>{
     });
 
     await DB.getModel('User').remove({
-        role : 'MEMBER'
+        role: constant.USER_ROLE.MEMBER
     });
     await DB.getModel('Task').remove({});
 
@@ -32,7 +33,7 @@ beforeAll(async ()=>{
         user: null
     });
     user.member = await userService.registerNewUser(global.DB.MEMBER_USER);
-    user.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER);
+    user.admin = await userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN });
 });
 
 describe('Tests for Tasks', () => {
