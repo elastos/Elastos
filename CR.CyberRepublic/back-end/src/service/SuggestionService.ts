@@ -35,7 +35,7 @@ export default class extends Base {
 
     if (param.sortBy) {
       const sortObject = {}
-      sortObject[param.sortBy] = param.sortOrder || constant.SORT_ORDER.DESC
+      sortObject[param.sortBy] = _.get(constant.SORT_ORDER, param.sortOrder, constant.SORT_ORDER.DESC)
       cursor.sort(sortObject)
     }
 
