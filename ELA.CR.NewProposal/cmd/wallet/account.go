@@ -9,6 +9,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/account"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 
 	"github.com/urfave/cli"
 )
@@ -86,16 +88,35 @@ var accountCommand = []cli.Command{
 			AccountWalletFlag,
 		},
 	},
+	{
+		Category: "Account",
+		Name:     "depositaddr",
+		Usage:    "generate deposit address",
+		Action:   generateDepositAddress,
+	},
 }
 
 func createAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwd := c.String("password")
-	if err := createWallet(walletPath, pwd); err != nil {
-		fmt.Println("error: create wallet failed,", err)
-		cli.ShowCommandHelpAndExit(c, "create", 1)
+	password := c.String("password")
+
+	var p []byte
+	if password == "" {
+		var err error
+		p, err = cmdcom.GetConfirmedPassword()
+		if err != nil {
+			return err
+		}
+	} else {
+		p = []byte(password)
 	}
-	return nil
+
+	client, err := account.Create(walletPath, p)
+	if err != nil {
+		return err
+	}
+
+	return ShowAccountInfo(client)
 }
 
 func accountInfo(c *cli.Context) error {
@@ -224,5 +245,49 @@ func exportAccount(c *cli.Context) error {
 	}
 
 	fmt.Println(string(data))
+	return nil
+}
+
+func generateDepositAddress(c *cli.Context) error {
+	if c.NArg() < 1 {
+		cmdcom.PrintErrorMsg("Missing argument. Standard address expected.")
+		cli.ShowCommandHelpAndExit(c, "depositaddress", 1)
+	}
+	addr := c.Args().First()
+
+	var programHash *common.Uint168
+	var err error
+	if addr == "" {
+		storeAccounts, err := account.GetWalletAccountData(account.KeystoreFileName)
+		if err != nil {
+			return err
+		}
+		for _, a := range storeAccounts {
+			if a.Type == account.MAINACCOUNT {
+				p, err := common.HexStringToBytes(a.ProgramHash)
+				if err != nil {
+					return err
+				}
+				programHash, err = common.Uint168FromBytes(p)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		programHash, err = common.Uint168FromAddress(addr)
+		if err != nil {
+			return err
+		}
+	}
+
+	codeHash := programHash.ToCodeHash()
+	depositHash := common.Uint168FromCodeHash(byte(contract.PrefixDeposit), codeHash)
+	address, err := depositHash.ToAddress()
+	if err != nil {
+		return nil
+	}
+	fmt.Println(address)
+
 	return nil
 }
