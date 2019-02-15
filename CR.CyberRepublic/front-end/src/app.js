@@ -82,9 +82,13 @@ if (sessionStorage.getItem('api-token')) {
             // store user in redux
             const is_admin = permissions.isAdmin(data.role)
             const is_leader = permissions.isLeader(data.role)
+            const is_council = permissions.isCouncil(data.role)
+            const is_secretary = permissions.isSecretary(data.role)
 
             store.dispatch(userRedux.actions.is_leader_update(is_leader))
             store.dispatch(userRedux.actions.is_admin_update(is_admin))
+            store.dispatch(userRedux.actions.is_council_update(is_council))
+            store.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
             store.dispatch(userRedux.actions.is_login_update(true));
             store.dispatch(userRedux.actions.email_update(data.email))

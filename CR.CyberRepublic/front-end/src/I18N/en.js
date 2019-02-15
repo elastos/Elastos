@@ -681,7 +681,6 @@ const en = {
   'council.voting.btnText.notesSecretary': 'Notes from Secretary',
   'council.voting.btnText.editProposal': 'Edit this proposal',
   'council.voting.btnText.completeProposal': 'Complete this proposal',
-  'council.voting.btnText.saveChanges': 'Save changes',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
@@ -1046,9 +1045,12 @@ const en = {
   'from.CVoteForm.label.note': 'Notes from Secretary',
   'from.CVoteForm.message.note.update.success': 'Update notes success!',
   'from.CVoteForm.text.onlycouncil': 'Only Council Member could create or edit proposal.',
-  'from.CVoteForm.button.save': 'Save',
-  'from.CVoteForm.button.submit': 'Submit',
-  'from.CVoteForm.button.complete.proposal': 'Complete this proposal',
+
+  'from.CVoteForm.button.cancel': 'Cancel',
+  'from.CVoteForm.button.saveDraft': 'Save as Draft',
+  'from.CVoteForm.button.saveAndPublish': 'Save & Publish',
+  'from.CVoteForm.button.saveChanges': 'Save changes',
+
   'from.CVoteForm.modal.title': 'Are you sure to complete this proposal?',
   'from.CVoteForm.modal.confirm': 'Confirm',
   'from.CVoteForm.modal.cancel': 'Cancel',

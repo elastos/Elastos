@@ -80,18 +80,22 @@ export default class extends Base {
 
         const db_cvote = this.getDBModel('CVote');
         const db_user = this.getDBModel('User');
-        let query:any = {};
+        const query: any = {};
 
         // if we are not querying only published records, we need to be an admin
         // TODO: write a test for this
-        if (param.published !== true) {
+        if (!param.published) {
             if (!this.isLoggedIn() || !this.canManageProposal()) {
-                throw 'cvoteservice.list - unpublished proposals only visible to admin';
+                throw 'cvoteservice.list - unpublished proposals only visible to council/secretary';
+            } else {
+                // only owner can list his own proposal
+                query.$or = [
+                    { createdBy: _.get(this.currentUser, '_id'), published: false },
+                    { published: true },
+                ]
             }
         } else {
-            if (param.published === true) {
-                query.published = param.published
-            }
+            query.published = param.published
         }
 
         // we should map over allowed filters manually
@@ -101,7 +105,7 @@ export default class extends Base {
             createdAt: -1
         }, 100);
 
-        for(let item of list){
+        for(const item of list){
             if(item.createdBy){
                 const u = await db_user.findOne({_id : item.createdBy});
                 item.createdBy = u.username;

@@ -17,13 +17,16 @@ export default class extends BaseService {
     });
     const is_admin = permissions.isAdmin(res.user.role)
     const is_leader = permissions.isLeader(res.user.role)
+    const is_council = permissions.isCouncil(res.user.role)
+    const is_secretary = permissions.isSecretary(res.user.role)
+
+    this.dispatch(userRedux.actions.is_leader_update(is_leader))
+    this.dispatch(userRedux.actions.is_admin_update(is_admin))
+    this.dispatch(userRedux.actions.is_council_update(is_council))
+    this.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
     this.dispatch(userRedux.actions.login_form_reset())
-
     this.dispatch(userRedux.actions.is_login_update(true))
-
-    this.dispatch(userRedux.actions.is_admin_update(is_admin))
-    this.dispatch(userRedux.actions.is_leader_update(is_leader))
 
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
@@ -107,9 +110,13 @@ export default class extends BaseService {
     })
     const is_admin = permissions.isAdmin(data.role)
     const is_leader = permissions.isLeader(data.role)
+    const is_council = permissions.isCouncil(data.role)
+    const is_secretary = permissions.isSecretary(data.role)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
+    this.dispatch(userRedux.actions.is_council_update(is_council))
+    this.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
     this.dispatch(userRedux.actions.email_update(data.email))
     this.dispatch(userRedux.actions.username_update(data.username))

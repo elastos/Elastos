@@ -681,7 +681,6 @@ const zh = {
   'council.voting.btnText.notesSecretary': '秘书处记录',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '完成此提案',
-  'council.voting.btnText.saveChanges': '保存更改',
 
   'council.voting.modal.complete': '您确定要完成此提案吗？',
   'council.voting.modal.updateNotes': '秘书处记录',
@@ -1046,9 +1045,12 @@ const zh = {
   'from.CVoteForm.label.note': '秘书处的记录',
   'from.CVoteForm.message.note.update.success': '记录更新成功！',
   'from.CVoteForm.text.onlycouncil': '只有委员会委员才可以创建和编辑提案。',
-  'from.CVoteForm.button.save': '保存',
-  'from.CVoteForm.button.submit': '提交',
-  'from.CVoteForm.button.complete.proposal': '完成这份提案',
+
+  'from.CVoteForm.button.cancel': '取消',
+  'from.CVoteForm.button.saveDraft': '保存为草案',
+  'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
+  'from.CVoteForm.button.saveChanges': '保存更改',
+
   'from.CVoteForm.modal.title': '您是否确定完成了这份提案？',
   'from.CVoteForm.modal.confirm': '确定',
   'from.CVoteForm.modal.cancel': '取消',

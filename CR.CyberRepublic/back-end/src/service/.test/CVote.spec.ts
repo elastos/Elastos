@@ -122,7 +122,7 @@ describe('Tests for CVote', () => {
             })
 
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to admin')
+            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to council/secretary')
         }
 
         try {
@@ -131,7 +131,7 @@ describe('Tests for CVote', () => {
             })
 
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to admin')
+            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to council/secretary')
         }
 
     })
