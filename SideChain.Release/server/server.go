@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
@@ -24,6 +25,15 @@ const (
 	// the server.
 	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom
 )
+
+// naFilter defines a network address filter for the side chain server, for now
+// it is used to filter SPV wallet addresses from relaying to other peers.
+type naFilter struct{}
+
+func (f *naFilter) Filter(na *p2p.NetAddress) bool {
+	service := pact.ServiceFlag(na.Services)
+	return service&pact.SFNodeNetwork == pact.SFNodeNetwork
+}
 
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
@@ -747,6 +757,7 @@ func New(dataDir string, chain *blockchain.BlockChain, txPool *mempool.TxPool, p
 		func() uint64 { return uint64(chain.GetBestHeight()) },
 	)
 	cfg.DataDir = dataDir
+	cfg.NAFilter = &naFilter{}
 
 	s := server{
 		chain:     chain,
