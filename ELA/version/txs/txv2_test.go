@@ -2,6 +2,8 @@ package txs
 
 import (
 	"fmt"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 	"math"
 	"testing"
 
@@ -20,10 +22,14 @@ type txVersionTestSuite struct {
 	suite.Suite
 
 	Version TxVersion
+	Cfg     *verconf.Config
 }
 
 func (s *txVersionTestSuite) SetupTest() {
-	s.Version = &txV2{}
+	config.Parameters = config.ConfigParams{Configuration: &config.Template}
+
+	s.Cfg = &verconf.Config{}
+	s.Version = NewTxV2(s.Cfg)
 }
 
 func (s *txVersionTestSuite) TestCheckOutputPayload() {
@@ -122,7 +128,7 @@ func (s *txVersionTestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txVersionTestSuite) TestCheckCoinbaseMinerReward() {
-	totalReward := blockchain.RewardAmountPerBlock
+	totalReward := config.MainNetParams.RewardPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
 		TxType:  types.CoinBase,
@@ -188,14 +194,16 @@ func (s *txVersionTestSuite) TestCheckCoinbaseArbitratorsReward() {
 	}
 
 	originLedger := blockchain.DefaultLedger
-	blockchain.DefaultLedger = &blockchain.Ledger{
-		Arbitrators: &mock.ArbitratorsMock{
-			CurrentArbitrators:         arbitrators,
-			CurrentCandidates:          candidates,
-			CurrentArbitratorsPrograms: arbitratorHashes,
-			CurrentCandidatesPrograms:  candidateHashes,
-		},
+	arbitratorsMock := &mock.ArbitratorsMock{
+		CurrentArbitrators:         arbitrators,
+		CurrentCandidates:          candidates,
+		CurrentArbitratorsPrograms: arbitratorHashes,
+		CurrentCandidatesPrograms:  candidateHashes,
 	}
+	blockchain.DefaultLedger = &blockchain.Ledger{
+		Arbitrators: arbitratorsMock,
+	}
+	s.Cfg.Arbitrators = arbitratorsMock
 
 	rewardInCoinbase := common.Fixed64(1000)
 	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)

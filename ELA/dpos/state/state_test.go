@@ -411,7 +411,7 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 
 	// Make producer 0 illegal.
 	tx := mockIllegalBlockTx(producers[0].OwnerPublicKey)
-	state.ProcessIllegalBlockEvidence(tx.Payload)
+	state.ProcessSpecialTxPayload(tx.Payload)
 	// At this point, we have 6 pending, 3 active 1 illegal and 9 in total producers.
 	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
 		t.FailNow()
@@ -696,7 +696,7 @@ func TestState_NicknameExists(t *testing.T) {
 
 	// Make producer-3 illegal, see if nickname change to unused.
 	tx = mockIllegalBlockTx(producers[2].OwnerPublicKey)
-	state.ProcessIllegalBlockEvidence(tx.Payload)
+	state.ProcessSpecialTxPayload(tx.Payload)
 	if !assert.Equal(t, false, state.NicknameExists("Producer-3")) {
 		t.FailNow()
 	}
