@@ -101,9 +101,8 @@ func (h *HandlerEIP001) HandleMessage(message p2p.Message) {
 	}
 }
 
-func (h *HandlerEIP001) onFilterLoad(filterLoad *msg.FilterLoad) {
-	h.base.node.LoadFilter(filterLoad)
-	h.base.node.SendMessage(msg.NewFilterAck())
+func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) {
+	h.base.node.LoadFilter(msg)
 }
 
 func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) {
