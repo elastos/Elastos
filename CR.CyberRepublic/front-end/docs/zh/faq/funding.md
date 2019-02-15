@@ -1,40 +1,28 @@
 
 
-## FAQ - General
+## 关于资金
 
-#### How much funding is available?
+#### 有多少资金可供Cyber Republic使用？
 
-As written in the Cyber Republic Constitution, each year the council has discretion to spend 10% of the remaining ELA allocated to Cyber Republic.
-At the start CR had a bit over 16 million ELA, so 10% of this is ~1.6 million ELA, there is no requirement to spend all of it. We absolutely advocate spending the funds wisely.
+根据Cyber Republic章程规定，每年委员会都可以花费剩余ELA的10%。现在CR有超过1600万ELA的预备金，那么10%大约是160万ELA可供使用，但并没有规定要将这部分资金全部用完。我们会明智地花费这些资金。
 
-Currently the funds are held at: [https://blockchain.elastos.org/address/8KNrJAyF4M67HT5tma7ZE4Rx9N9YzaUbtM](https://blockchain.elastos.org/address/8KNrJAyF4M67HT5tma7ZE4Rx9N9YzaUbtM)
+目前这些资金都存放在以下地址： [https://blockchain.elastos.org/address/8KNrJAyF4M67HT5tma7ZE4Rx9N9YzaUbtM](https://blockchain.elastos.org/address/8KNrJAyF4M67HT5tma7ZE4Rx9N9YzaUbtM)
 
-*All spending that occurs in Cyber Republic must be transparent and we will be providing a list of pertinent wallet addresses.*
+*Cyber Republic所有的花费都将是公开透明的，并且我们会提供特定的钱包地址。*
 
-#### Is the funding given all at once or based on milestones?
+#### 资金将会一次性支付还是根据里程碑目标完成情况来支付？
 
-There is no explicit rule but the Secretariat Team will consist of various experts in their own field, especially investment. In that sense
-it can be assumed that everything will be done to minimize the risk to Elastos, including attaching funding to certain milestones and deliverables.
+尽管没有明确的规定，但我们的秘书处团队是由不同领域的专家组成的，特别是在投资领域。他们会确保尽一切可能将亦来云的风险降到最低，包括将资金用在特定的里程碑节点及可交付项目上。
+如果社区并不支持，那么可以投票去对章程进行修改。但我们一如既往地想让Cyber Republic 共识尽可能简单，以避免让我们现在的治理系统变得繁琐和低效。
 
-If this isn't being upheld the community can always vote on an amendment to the constitution to be changed, however as noted elsewhere we
-want to keep CRC as simple as possible and avoid becoming as bureaucratic and inefficient as our existing government systems.
+#### 委员会如何才能确保合理使用资金？
 
-#### How does the Council ensure that the funds are spent properly?
+整个审计过程还没结束，但是秘书处会聘用经验丰富的会计和专业的投资人。在发出任何基于里程碑目标达成情况的资金之前，专业人士也会对里程碑及可交付任务目标完成情况进行尽职调查并且给出金融报告。
+同时我们也会设置多重签名钱包，让委员会能够控制资金直到阶段性里程碑目标完成。
 
-The auditing process is not finalized, but since the Secretariat Team will include experienced accountants and investors we expect professionally written
-requirements. Financial reporting should be expected as well as due diligence to verify the milestones and deliverables are as reported before milestone based funding is given.
+#### 委员会是何时开始筛选社区建议并且添加提案的？
 
-Multi-signature wallets will also be setup so that the Council can revoke or hold funds until the milestones are met.
+目前，Cyber Republic委员会创建提案时是很慎重的，而现在的花费都是来自亦来云基金会挖矿奖励获得的100万ELA。对于我们而言，逐步建立起对亦来云核心成员、秘书处团队以及过渡委员会的信任十分重要。可以预见过渡委员会不会将这100万ELA花费太多。
+过渡委员会不是由社区选举出来的，因此他们也会选择根据社区建议的受欢迎程度来做决定，而不会冒随意揣测社区意愿的风险来做决定。当前，社区和过渡委员会之间的联系还没有建立起来，我们希望在2019年第二季度能有所进展。
 
-#### When till the Council start selecting Suggestions and adding Proposals?
-
-Right now the interim CR Council has discretion to create proposals and spend approx. 1 million of ELA from the Elastos Foundation private mining rewards.
-
-It is very important to us to instill trust in the members of Elastos, the Secretariat Team and interim council, so it is not expected that much of the 1 million ELA will
-be spent by the interim council.
-
-The interim council was not elected by the community, and so they have opted to be reliant on the popularity of Suggestions to make decisions, rather than risk wrongly assuming
-the will of the community. At the moment the lines of communication between the community and interim council are simply not set up, but we hope to improve this
-heading into Q2 of 2019.
-
-##### If you have more questions email us at&nbsp;[cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org ':disabled')
+##### 如果您有更多问题，请发邮件至cyberrepublic@elastos.org&nbsp;[cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org ':disabled')。
