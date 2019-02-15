@@ -145,8 +145,8 @@ export default class extends Base {
         const cursor = db_task.getDBInstance().find(_.omit(param, ['results', 'page', 'sortBy', 'sortOrder']))
 
         if (param.sortBy) {
-            let sortObject = {}
-            sortObject[param.sortBy] = param.sortOrder || constant.SORT_ORDER.DESC
+            const sortObject = {}
+            sortObject[param.sortBy] = _.get(constant.SORT_ORDER, param.sortOrder, constant.SORT_ORDER.DESC)
             cursor.sort(sortObject)
         }
 
@@ -159,7 +159,7 @@ export default class extends Base {
         const tasks = await cursor
 
         if (tasks.length) {
-            for (let task of tasks) {
+            for (const task of tasks) {
                 await db_task.getDBInstance().populate(task, {
                     path: 'createdBy',
                     select: sanitize,
@@ -185,15 +185,15 @@ export default class extends Base {
                     select: sanitize,
                 })
 
-                for (let subscriber of task.subscribers) {
+                for (const subscriber of task.subscribers) {
                     await db_user.getDBInstance().populate(subscriber, {
                         path: 'user',
                         select: sanitize
                     })
                 }
 
-                for (let comment of task.comments) {
-                    for (let thread of comment) {
+                for (const comment of task.comments) {
+                    for (const thread of comment) {
                         await db_task.getDBInstance().populate(thread, {
                             path: 'createdBy',
                             select: sanitize
@@ -201,7 +201,7 @@ export default class extends Base {
                     }
                 }
 
-                for (let candidate of task.candidates) {
+                for (const candidate of task.candidates) {
                     await db_task_candidate.getDBInstance().populate(candidate, {
                         path: 'user',
                         select: sanitize
