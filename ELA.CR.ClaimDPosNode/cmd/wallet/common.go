@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
@@ -51,51 +51,122 @@ func ShowAccountInfo(client *account.ClientImpl) error {
 	return nil
 }
 
-func ShowAccountBalance(name string) error {
+func ShowAccountBalance(walletPath string) error {
 	// print header
 	fmt.Printf("%5s %34s %-20s%22s \n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 
-	var fileStore account.FileStore
-	fileStore.SetPath(name)
-	storeAccounts, err := fileStore.LoadAccountData()
+	storeAccounts, err := account.GetWalletAccountData(walletPath)
 	if err != nil {
 		return err
 	}
 
 	for _, a := range storeAccounts {
-		result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
-			"addresses": []string{a.Address},
-		})
+		available, locked, err := getAddressBalance(a.Address)
 		if err != nil {
 			return err
 		}
-		data, err := json.Marshal(result)
-		if err != nil {
-			return err
-		}
-		var utxos []servers.UTXOInfo
-		err = json.Unmarshal(data, &utxos)
-
-		//var availabelUtxos []servers.UTXOInfo
-		availableAmount := common.Fixed64(0)
-		lockedAmount := common.Fixed64(0)
-		for _, utxo := range utxos {
-			amount, err := common.StringToFixed64(utxo.Amount)
-			if err != nil {
-				return err
-			}
-
-			if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
-				lockedAmount += *amount
-				continue
-			}
-			availableAmount += *amount
-		}
-
-		fmt.Printf("%5d %34s %-20s%22s \n", 0, a.Address, availableAmount.String(), "("+lockedAmount.String()+")")
+		fmt.Printf("%5d %34s %-20s%22s \n", 0, a.Address, available.String(), "("+locked.String()+")")
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 	}
+
+	return nil
+}
+
+func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, error) {
+	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "listunspent", util.Params{
+		"addresses": []string{address},
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		return nil, nil, err
+	}
+	var UTXOs []servers.UTXOInfo
+	err = json.Unmarshal(data, &UTXOs)
+
+	var availableUTXOs []servers.UTXOInfo
+	var lockedUTXOs []servers.UTXOInfo
+	for _, utxo := range UTXOs {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+			lockedUTXOs = append(lockedUTXOs, utxo)
+			continue
+		}
+		availableUTXOs = append(availableUTXOs, utxo)
+	}
+
+	return availableUTXOs, lockedUTXOs, nil
+}
+
+func getAddressBalance(address string) (common.Fixed64, common.Fixed64, error) {
+	availableUTXOs, lockedUTXOs, err := getAddressUTXOs(address)
+	if err != nil {
+		return 0, 0, err
+	}
+	availableAmount := common.Fixed64(0)
+	lockedAmount := common.Fixed64(0)
+
+	for _, utxo := range availableUTXOs {
+		amount, err := common.StringToFixed64(utxo.Amount)
+		if err != nil {
+			return 0, 0, err
+		}
+		availableAmount += *amount
+	}
+
+	for _, utxo := range lockedUTXOs {
+		amount, err := common.StringToFixed64(utxo.Amount)
+		if err != nil {
+			return 0, 0, err
+		}
+		lockedAmount += *amount
+	}
+
+	return availableAmount, lockedAmount, nil
+}
+
+func output(haveSign, needSign int, txn *types.Transaction) error {
+	// Serialise transaction content
+	buf := new(bytes.Buffer)
+	err := txn.Serialize(buf)
+	if err != nil {
+		fmt.Println("serialize error", err)
+	}
+	content := common.BytesToHexString(buf.Bytes())
+
+	// Print transaction hex string
+	fmt.Println(content)
+
+	// Output to file
+	fileName := "to_be_signed" // Create transaction file name
+
+	if haveSign == 0 {
+		//	Transaction created do nothing
+	} else if needSign > haveSign {
+		fileName = fmt.Sprint(fileName, "_", haveSign, "_of_", needSign)
+	} else if needSign == haveSign {
+		fileName = "ready_to_send"
+	}
+	fileName = fileName + ".txn"
+
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write([]byte(content))
+	if err != nil {
+		return err
+	}
+
+	var tx types.Transaction
+	txBytes, _ := hex.DecodeString(content)
+	tx.Deserialize(bytes.NewReader(txBytes))
+
+	// Print output file to console
+	fmt.Println("File: ", fileName)
 
 	return nil
 }
