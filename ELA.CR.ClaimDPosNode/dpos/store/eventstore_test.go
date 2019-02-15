@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"crypto/rand"
 	"testing"
 	"time"
 
@@ -28,7 +29,7 @@ func TestEventStore_Open(t *testing.T) {
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
 	proposal := &types.DPosProposal{
-		Sponsor:    "B",
+		Sponsor:    randomPkBytes(),
 		BlockHash:  common.Uint256{2},
 		Sign:       []byte{1, 2, 3},
 		ViewOffset: 0,
@@ -122,7 +123,7 @@ func TestEventStore_AddViewEvent(t *testing.T) {
 func TestEventStore_AddVoteEvent(t *testing.T) {
 	vote := &types.DPosProposalVote{
 		ProposalHash: common.Uint256{1, 2, 3},
-		Signer:       "A",
+		Signer:       randomPkBytes(),
 		Accept:       false,
 		Sign:         []byte{1, 2, 3},
 	}
@@ -155,4 +156,11 @@ func TestEventStore_Close(t *testing.T) {
 	eventStore.deleteTable(VoteEventTable)
 	eventStore.deleteTable(ViewEventTable)
 	eventStore.Close()
+}
+
+func randomPkBytes() []byte {
+	pk := make([]byte, 33)
+	rand.Read(pk)
+
+	return pk
 }

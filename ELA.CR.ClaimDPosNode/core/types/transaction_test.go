@@ -306,13 +306,19 @@ func (s *transactionSuite) TestReturnDepositCoin_SerializeDeserialize() {
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 }
 
+func (s *transactionSuite) randomPkBytes() []byte {
+	pk := make([]byte, 33)
+	rand.Read(pk)
+	return pk
+}
+
 func (s *transactionSuite) TestIllegalProposalEvidence_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(IllegalProposalEvidence), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &PayloadIllegalProposal{
 		DposIllegalProposals: DposIllegalProposals{
 			Evidence: ProposalEvidence{
 				Proposal: DPosProposal{
-					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					Sponsor:    s.randomPkBytes(),
 					BlockHash:  *randomUint256(),
 					ViewOffset: rand.Uint32(),
 					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
@@ -321,7 +327,7 @@ func (s *transactionSuite) TestIllegalProposalEvidence_SerializeDeserialize() {
 			},
 			CompareEvidence: ProposalEvidence{
 				Proposal: DPosProposal{
-					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					Sponsor:    s.randomPkBytes(),
 					BlockHash:  *randomUint256(),
 					ViewOffset: rand.Uint32(),
 					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
@@ -348,7 +354,7 @@ func (s *transactionSuite) TestIllegalVoteEvidence_SerializeDeserialize() {
 		DposIllegalVotes: DposIllegalVotes{
 			Evidence: VoteEvidence{
 				Proposal: DPosProposal{
-					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					Sponsor:    s.randomPkBytes(),
 					BlockHash:  *randomUint256(),
 					ViewOffset: rand.Uint32(),
 					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
@@ -356,14 +362,14 @@ func (s *transactionSuite) TestIllegalVoteEvidence_SerializeDeserialize() {
 				BlockHeader: *randomBlockHeader(),
 				Vote: DPosProposalVote{
 					ProposalHash: *randomUint256(),
-					Signer:       strconv.FormatUint(rand.Uint64(), 10),
+					Signer:       s.randomPkBytes(),
 					Accept:       true,
 					Sign:         []byte(strconv.FormatUint(rand.Uint64(), 10)),
 				},
 			},
 			CompareEvidence: VoteEvidence{
 				Proposal: DPosProposal{
-					Sponsor:    strconv.FormatUint(rand.Uint64(), 10),
+					Sponsor:    s.randomPkBytes(),
 					BlockHash:  *randomUint256(),
 					ViewOffset: rand.Uint32(),
 					Sign:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
@@ -371,7 +377,7 @@ func (s *transactionSuite) TestIllegalVoteEvidence_SerializeDeserialize() {
 				BlockHeader: *randomBlockHeader(),
 				Vote: DPosProposalVote{
 					ProposalHash: *randomUint256(),
-					Signer:       strconv.FormatUint(rand.Uint64(), 10),
+					Signer:       s.randomPkBytes(),
 					Accept:       true,
 					Sign:         []byte(strconv.FormatUint(rand.Uint64(), 10)),
 				},

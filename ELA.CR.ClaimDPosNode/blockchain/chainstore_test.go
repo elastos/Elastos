@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"github.com/elastos/Elastos.ELA/common/config"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -15,7 +16,7 @@ var sidechainTxHash common.Uint256
 
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
-	temp, err := NewChainStore("Chain_UnitTest")
+	temp, err := NewChainStore("Chain_UnitTest", config.MainNetParams.GenesisBlock)
 	testChainStore = temp.(*ChainStore)
 	testChainStore.NewBatch()
 	if err != nil {
