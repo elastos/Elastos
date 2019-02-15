@@ -1,31 +1,27 @@
 
 
-## FAQ - General
+## 常见问题解答 
 
-#### Can I be the one that also does the Suggestion if it's approved?
+#### 如果我的建议获得批准，我自己还可以执行这个建议吗？
 
-Yes if you would like to do the project yourself or have a team or person in mind you can add that to your suggestion. This is completely optional too and you're just as welcome
-to add an idea and leave it up to the Secretariat Team to find a person/team suitable to execute the idea properly.
+是的，如果您想自己去执行项目或者您有心仪的团队和个人推荐，您也可以直接在建议中添加说明。这是选择之一，同样我们也欢迎您留下建议，然后让秘书处团队去寻找合适的人或团队来执行这项建议。
 
-!> **Please Note:** it is at the Council and Secretariat Team's discretion to choose whoever eventually get assigned the task. But the reasons will be transparent and in the case of a tender/bid process it will also be visible.
-
-
-#### Can I edit a Suggestion?
-
-At the moment we do not allow edits, if your idea has received good feedback you can resubmit your Suggestion again after a reasonable amount of time with your revisions or improved ideas.
+!> **请注意:** 委员会和秘书处团队会决定谁来完成这个任务，但是必须说明理由，保证公开透明，因此竞标过程也需要对公众开放。
 
 
-#### Can the CRC Workflow be changed?
+#### 我可以修改一项建议吗？
 
-Absolutely, we don't claim to get everything right the first time. Suggestions to improve the CRC Workflow are welcome,
-the Council also has the power to bypass the Suggestion process and propose their own improvements to the CRC Workflow.
-We are always looking for ways to improve the workflow, make it more efficient and create better checks and balances.
+目前，我们不允许对已提交的建议进行修改，如果您的想法获得了良好的反馈，那么在一段时间后您还可以重新提交修改或者更新过的方案。
 
-?> However we do want to learn from lessons from the real world, adding too many rules decreases efficiency. The last thing we want is the CRC workflow to become as bureaucratic as the current governments we wish to improve upon.
+#### CRC工作流程可以改变吗？
 
-#### What's the dPoS Consensus and is it related to CR Consensus?
+当然可以，我们不可能保证第一次就把所有事情都做正确。欢迎大家提出能够提高CRC工作流程的建议，委员会也有权绕过建议流程直接提出提升CRC工作流程的方案。我们一如既往地努力寻求提高的方法，使之更为高效并创造更好的制衡效果。
 
-The DPoS Consensus is an Elastos consensus mechanism where any ELA holders can vote for 96 of the 108 DPoS supernodes, this operates independently from Cyber Republic.
-however **the 7 elected CR Council members also control 7 of the 12 non-rotating dPoS elected nodes**.
+?> 但是，我们也的确从现实世界学到了很多经验教训，增加过多的条款必定会降低效率。我们最不希望的是CRC工作流程变得像我们希望去改进的现有政府那样官僚主义。
 
-##### If you have more questions email us at&nbsp;[cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org ':disabled')
+#### 什么是DPoS共识，它和Cyber Republic共识有何关系？
+
+DPoS共识算法是亦来云的共识机制，即任何ELA持有者都可以为108个超级节点的中的96个投票，这和Cyber Republic是分开独立运营的。
+但是 **选举产生的7位Cyber Republic委员会成员也会控制其余12个非轮替的DPoS节点。**.
+
+##### 如果您有更多疑问，请联系 &nbsp;[cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org ':disabled')
