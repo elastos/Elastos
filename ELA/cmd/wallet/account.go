@@ -20,7 +20,7 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "create",
 		Aliases:  []string{"c"},
-		Usage:    "create a account",
+		Usage:    "Create a account",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 			AccountPasswordFlag,
@@ -31,7 +31,7 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "account",
 		Aliases:  []string{"a"},
-		Usage:    "show account address, public key and program hash",
+		Usage:    "Show account address, public key and program hash",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 		},
@@ -41,7 +41,7 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "list",
 		Aliases:  []string{"l"},
-		Usage:    "list wallet information [account, balance, verbose]",
+		Usage:    "List wallet information [account, balance, verbose]",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 		},
@@ -50,19 +50,19 @@ var accountCommand = []cli.Command{
 	{
 		Category: "Account",
 		Name:     "add",
-		Usage:    "add a new account",
+		Usage:    "Add a new account",
 		Action:   addAccount,
 	},
 	{
 		Category: "Account",
 		Name:     "chpwd",
-		Usage:    "change wallet password",
+		Usage:    "Change wallet password",
 		Action:   changePassword,
 	},
 	{
 		Category:  "Account",
 		Name:      "import",
-		Usage:     "import an account by private key hex string",
+		Usage:     "Import an account by private key hex string",
 		ArgsUsage: "[args]",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
@@ -73,7 +73,7 @@ var accountCommand = []cli.Command{
 	{
 		Category: "Account",
 		Name:     "export",
-		Usage:    "export all account private keys in hex string",
+		Usage:    "Export all account private keys in hex string",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 			AccountPasswordFlag,
@@ -83,7 +83,7 @@ var accountCommand = []cli.Command{
 	{
 		Category: "Account",
 		Name:     "multisigaddr",
-		Usage:    "generate multi-signature address",
+		Usage:    "Generate multi-signature address",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 		},
@@ -91,7 +91,7 @@ var accountCommand = []cli.Command{
 	{
 		Category: "Account",
 		Name:     "depositaddr",
-		Usage:    "generate deposit address",
+		Usage:    "Generate deposit address",
 		Action:   generateDepositAddress,
 	},
 }

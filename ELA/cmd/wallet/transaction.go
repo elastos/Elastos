@@ -23,7 +23,7 @@ var txCommand = []cli.Command{
 	{
 		Category:    "Transaction",
 		Name:        "buildtx",
-		Usage:       "build a transaction",
+		Usage:       "Build a transaction",
 		Description: "use --to --amount --fee [--lock], or --file --fee [--lock] to create a transaction",
 		Flags: []cli.Flag{
 			TransactionFromFlag,
@@ -38,7 +38,7 @@ var txCommand = []cli.Command{
 	{
 		Category:    "Transaction",
 		Name:        "signtx",
-		Usage:       "sign a transaction",
+		Usage:       "Sign a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
 			TransactionHexFlag,
@@ -48,9 +48,18 @@ var txCommand = []cli.Command{
 		Action: signTx,
 	},
 	{
+		Category: "Transaction",
+		Name:     "multisigtx",
+		Usage:    "Sign a multi-signature transaction",
+		Flags: []cli.Flag{
+			TransactionHexFlag,
+			TransactionFileFlag,
+		},
+	},
+	{
 		Category:    "Transaction",
 		Name:        "sendtx",
-		Usage:       "send a transaction",
+		Usage:       "Send a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
 			TransactionHexFlag,
@@ -60,27 +69,19 @@ var txCommand = []cli.Command{
 	},
 	{
 		Category: "Transaction",
-		Name:     "multisigtx",
-		Usage:    "sign a multi-signature transaction",
-		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
-		},
-	},
-	{
-		Category: "Transaction",
 		Name:     "showtx",
-		Usage:    "show info of raw transaction",
+		Usage:    "Show info of raw transaction",
 		Flags: []cli.Flag{
 			TransactionHexFlag,
 			TransactionFileFlag,
 		},
+		Action: showTx,
 	},
 }
 
-func getTransactionContent(context *cli.Context) (string, error) {
+func getTransactionHex(c *cli.Context) (string, error) {
 	// If parameter with file path is not empty, read content from file
-	if filePath := strings.TrimSpace(context.String("file")); filePath != "" {
+	if filePath := strings.TrimSpace(c.String("file")); filePath != "" {
 
 		if _, err := os.Stat(filePath); err != nil {
 			return "", errors.New("invalid transaction file path")
@@ -102,7 +103,7 @@ func getTransactionContent(context *cli.Context) (string, error) {
 		return content, nil
 	}
 
-	content := strings.TrimSpace(context.String("hex"))
+	content := strings.TrimSpace(c.String("hex"))
 	// Hex string content can not be empty
 	if content == "" {
 		return "", errors.New("transaction hex string is empty")
@@ -138,11 +139,11 @@ func signTx(c *cli.Context) error {
 		return err
 	}
 
-	content, err := getTransactionContent(c)
+	txHex, err := getTransactionHex(c)
 	if err != nil {
 		return err
 	}
-	rawData, err := common.HexStringToBytes(content)
+	rawData, err := common.HexStringToBytes(txHex)
 	if err != nil {
 		return errors.New("decode transaction content failed")
 	}
@@ -179,16 +180,41 @@ func sendTx(c *cli.Context) error {
 		return nil
 	}
 
-	content, err := getTransactionContent(c)
+	txHex, err := getTransactionHex(c)
 	if err != nil {
 		return err
 	}
 
-	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "sendrawtransaction", util.Params{"data": content})
+	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "sendrawtransaction", util.Params{"data": txHex})
 	if err != nil {
 		return err
 	}
 	fmt.Println(result.(string))
+
+	return nil
+}
+
+func showTx(c *cli.Context) error {
+	if c.NumFlags() == 0 {
+		cli.ShowSubcommandHelp(c)
+		return nil
+	}
+
+	txHex, err := getTransactionHex(c)
+	if err != nil {
+		return err
+	}
+
+	txBytes, err := common.HexStringToBytes(txHex)
+	if err != nil {
+		return err
+	}
+	var txn types.Transaction
+	if err := txn.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return err
+	}
+
+	fmt.Println(txn.String())
 
 	return nil
 }
