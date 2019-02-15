@@ -481,8 +481,8 @@ export default class extends Base {
         const cursor = db_team.getDBInstance().find(query)
 
         if (param.sortBy) {
-            let sortObject = {}
-            sortObject[param.sortBy] = param.sortOrder || constant.SORT_ORDER.DESC
+            const sortObject = {}
+            sortObject[param.sortBy] = _.get(constant.SORT_ORDER, param.sortOrder, constant.SORT_ORDER.DESC)
             cursor.sort(sortObject)
         }
 
@@ -494,7 +494,7 @@ export default class extends Base {
 
         const teams = await cursor
 
-        for (let team of teams) {
+        for (const team of teams) {
             await db_team.getDBInstance().populate(team, {
                 path: 'owner',
                 select: sanitize,
@@ -502,8 +502,8 @@ export default class extends Base {
 
             await db_team.getDBInstance().populate(team, ['members'])
 
-            for (let comment of team.comments) {
-                for (let thread of comment) {
+            for (const comment of team.comments) {
+                for (const thread of comment) {
                     await db_user.getDBInstance().populate(thread, {
                         path: 'createdBy',
                         select: sanitize
