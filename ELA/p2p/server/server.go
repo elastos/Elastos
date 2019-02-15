@@ -235,10 +235,11 @@ func (sp *serverPeer) OnGetAddr(_ *peer.Peer, msg *msg.GetAddr) {
 	addrCache := sp.server.addrManager.AddressCache()
 
 	// Filter addresses if peer NAFilter not nil.
-	if sp.NAFilter() != nil {
+	naFilter := sp.NAFilter()
+	if naFilter != nil {
 		addrFiltered := make([]*p2p.NetAddress, 0, len(addrCache))
 		for _, na := range addrCache {
-			if sp.NAFilter().Filter(na) {
+			if naFilter.Filter(na) {
 				addrFiltered = append(addrFiltered, na)
 			}
 		}
@@ -399,6 +400,9 @@ func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
 			state.outboundPeers[sp.ID()] = sp
 		}
 	}
+
+	// Set network address filter for peer.
+	sp.SetNAFilter(s.cfg.NAFilter)
 
 	return true
 }
