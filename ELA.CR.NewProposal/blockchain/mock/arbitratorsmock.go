@@ -52,15 +52,15 @@ func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbitratorParams {
 }
 
 func (a *ArbitratorsMock) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
-	panic("implement me")
+	return false
 }
 
 func (a *ArbitratorsMock) GetArbitersCount() uint32 {
-	panic("implement me")
+	return uint32(len(a.CurrentArbitrators))
 }
 
 func (a *ArbitratorsMock) GetArbitersMajorityCount() uint32 {
-	panic("implement me")
+	return a.MajorityCount
 }
 
 func (a *ArbitratorsMock) GetActiveDposPeers() map[string]string {

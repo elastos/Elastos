@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -50,7 +51,7 @@ func (s *txVersionV1TestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txVersionV1TestSuite) TestCheckCoinbaseMinerReward() {
-	totalReward := blockchain.RewardAmountPerBlock
+	totalReward := config.MainNetParams.RewardPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
 		TxType:  types.CoinBase,

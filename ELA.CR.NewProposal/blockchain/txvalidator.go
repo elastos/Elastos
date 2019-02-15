@@ -780,10 +780,6 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	if p := b.state.GetProducer(cancelProducer.OwnerPublicKey); p == nil {
-		return errors.New("canceling unknown producer")
-	}
-
 	// check signature
 	publicKey, err := DecodePoint(cancelProducer.OwnerPublicKey)
 	if err != nil {
@@ -799,6 +795,10 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid signature in payload")
 	}
 
+	if p := b.state.GetProducer(cancelProducer.OwnerPublicKey); p == nil {
+		return errors.New("canceling unknown producer")
+	}
+
 	return nil
 }
 
@@ -806,11 +806,6 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	info, ok := txn.Payload.(*payload.ProducerInfo)
 	if !ok {
 		return errors.New("invalid payload")
-	}
-
-	producer := b.state.GetProducer(info.OwnerPublicKey)
-	if producer == nil {
-		return errors.New("updating unknown producer")
 	}
 
 	// check nick name
@@ -828,19 +823,6 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// check nickname usage.
-	if producer.Info().NickName != info.NickName &&
-		b.state.NicknameExists(info.NickName) {
-		return fmt.Errorf("nick name %s already exist", info.NickName)
-	}
-
-	// check node public key duplication
-	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
-		b.state.ProducerExists(info.NodePublicKey) {
-		return fmt.Errorf("producer %s already exist",
-			hex.EncodeToString(info.NodePublicKey))
-	}
-
 	// check signature
 	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
@@ -854,6 +836,24 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
+	}
+
+	producer := b.state.GetProducer(info.OwnerPublicKey)
+	if producer == nil {
+		return errors.New("updating unknown producer")
+	}
+
+	// check nickname usage.
+	if producer.Info().NickName != info.NickName &&
+		b.state.NicknameExists(info.NickName) {
+		return fmt.Errorf("nick name %s already exist", info.NickName)
+	}
+
+	// check node public key duplication
+	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
+		b.state.ProducerExists(info.NodePublicKey) {
+		return fmt.Errorf("producer %s already exist",
+			hex.EncodeToString(info.NodePublicKey))
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package blocks
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"testing"
@@ -8,26 +9,34 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-
-	"github.com/stretchr/testify/suite"
+	"github.com/elastos/Elastos.ELA/version/verconf"
+	"github.com/stretchr/testify/assert"
 )
 
-type blockVersionTestSuite struct {
-	suite.Suite
+var version BlockVersion
+var cfg *verconf.Config
+var arbitratorsMock *mock.ArbitratorsMock
+var arbitrators [][]byte
+var originLedger *blockchain.Ledger
 
-	Version BlockVersion
-}
+func TestBlockVersionInit(t *testing.T) {
+	config.Parameters = config.ConfigParams{Configuration: &config.Template}
+	log.NewDefault(
+		config.Parameters.PrintLevel,
+		config.Parameters.MaxPerLogSize,
+		config.Parameters.MaxLogsSize,
+	)
 
-func (s *blockVersionTestSuite) SetupTest() {
-	s.Version = &blockV2{}
-}
-
-func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc(
-	arbitratorsCount uint32) {
-	originLedger := blockchain.DefaultLedger
+	chainStore, err := blockchain.NewChainStore("blockVersionTestSuite",
+		config.MainNetParams.GenesisBlock)
+	if err != nil {
+		t.Error(err)
+	}
 
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -37,49 +46,129 @@ func (s *blockVersionTestSuite) TestGetNormalArbitratorsDesc(
 		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
 
-	arbitrators := make([][]byte, 0)
+	arbitrators = make([][]byte, 0)
 	for _, v := range arbitratorsStr {
 		a, _ := common.HexStringToBytes(v)
 		arbitrators = append(arbitrators, a)
 	}
+	arbitratorsMock = &mock.ArbitratorsMock{
+		CurrentArbitrators: arbitrators,
+	}
 
-	chainStore := &blockchain.ChainStoreMock{
-		RegisterProducers: []*payload.ProducerInfo{
+	chain, err := blockchain.New(chainStore, &config.MainNetParams,
+		arbitratorsMock, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	cfg = &verconf.Config{
+		Chain:       chain,
+		Arbitrators: arbitratorsMock,
+	}
+	version = NewBlockV2(cfg)
+
+	originLedger = blockchain.DefaultLedger
+	blockchain.DefaultLedger = &blockchain.Ledger{
+		Arbitrators: arbitratorsMock,
+		Blockchain:  &blockchain.BlockChain{},
+	}
+}
+
+func TestBlockVersionMain_GetNormalArbitratorsDesc(t *testing.T) {
+
+	currentHeight := uint32(1)
+
+	block1 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
 			{
-				OwnerPublicKey: arbitrators[0],
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: arbitrators[0],
+					NodePublicKey:  arbitrators[0],
+				},
 			},
 			{
-				OwnerPublicKey: arbitrators[1],
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: arbitrators[1],
+					NodePublicKey:  arbitrators[1],
+				},
 			},
 			{
-				OwnerPublicKey: arbitrators[2],
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: arbitrators[2],
+					NodePublicKey:  arbitrators[2],
+				},
 			},
 			{
-				OwnerPublicKey: arbitrators[3],
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: arbitrators[3],
+					NodePublicKey:  arbitrators[3],
+				},
 			},
 		},
 	}
-	s.NotEmpty(chainStore)
-	blockchain.DefaultLedger = &blockchain.Ledger{
-		Store: chainStore,
+	cfg.Chain.GetState().ProcessBlock(block1, nil)
+
+	for i := uint32(0); i < 6; i++ {
+		currentHeight++
+		blockEx := &types.Block{
+			Header:       types.Header{Height: currentHeight},
+			Transactions: []*types.Transaction{},
+		}
+		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
 	}
 
-	producers, err := s.Version.GetNormalArbitratorsDesc()
-	s.Error(err, "arbitrators count does not match config value")
+	producers, err := version.GetNormalArbitratorsDesc(5)
+	assert.Error(t, err, "arbitrators count does not match config value")
 
-	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
-		&payload.ProducerInfo{OwnerPublicKey: arbitrators[4]},
-	)
-	producers, err = s.Version.GetNormalArbitratorsDesc()
-	s.NoError(err)
+	currentHeight += 1
+	block2 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: arbitrators[4],
+					NodePublicKey:  arbitrators[4],
+				},
+			},
+		},
+	}
+	cfg.Chain.GetState().ProcessBlock(block2, nil)
+
+	for i := uint32(0); i < 6; i++ {
+		currentHeight++
+		blockEx := &types.Block{
+			Header:       types.Header{Height: currentHeight},
+			Transactions: []*types.Transaction{},
+		}
+		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
+	}
+
+	producers, err = version.GetNormalArbitratorsDesc(5)
+	assert.NoError(t, err)
 	for i := range producers {
-		s.Equal(arbitrators[i], producers[i])
-	}
+		found := false
+		for _, ar := range arbitrators {
+			if bytes.Equal(ar, producers[i]) {
+				found = true
+				break
+			}
+		}
 
-	blockchain.DefaultLedger = originLedger
+		assert.True(t, found)
+	}
 }
 
-func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
+func TestBlockVersionMain_AssignCoinbaseTxRewards(t *testing.T) {
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
 		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
@@ -118,16 +207,9 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 		candidateHashMap[*hash] = nil
 	}
 
-	originLedger := blockchain.DefaultLedger
-	blockchain.DefaultLedger = &blockchain.Ledger{
-		Arbitrators: &mock.ArbitratorsMock{
-			CurrentArbitrators:         arbitrators,
-			CurrentCandidates:          candidates,
-			CurrentArbitratorsPrograms: arbitratorHashes,
-			CurrentCandidatesPrograms:  candidateHashes,
-		},
-		Blockchain: &blockchain.BlockChain{},
-	}
+	arbitratorsMock.CurrentCandidates = candidates
+	arbitratorsMock.CurrentArbitratorsPrograms = arbitratorHashes
+	arbitratorsMock.CurrentCandidatesPrograms = candidateHashes
 
 	//reward can be exactly division
 
@@ -142,7 +224,7 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 	arbitratorsChange := dposTotalReward - (individualProducerReward+individualBlockConfirmReward)*5 - individualProducerReward*5
 
 	tx := &types.Transaction{
-		Version: types.TransactionVersion(s.Version.GetVersion()),
+		Version: types.TransactionVersion(version.GetVersion()),
 		TxType:  types.CoinBase,
 	}
 	tx.Outputs = []*types.Output{
@@ -155,25 +237,27 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 		},
 	}
 
-	s.NoError(s.Version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
+	assert.NoError(t, version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 
-	s.Equal(foundationReward, tx.Outputs[0].Value)
-	s.NotEqual(minerReward, tx.Outputs[1].Value)
-	s.Equal(minerReward+arbitratorsChange, tx.Outputs[1].Value, "should add change of arbitrators' reward")
-	s.Equal(2+5+5, len(tx.Outputs))
+	assert.Equal(t, foundationReward, tx.Outputs[0].Value)
+	assert.NotEqual(t, minerReward, tx.Outputs[1].Value)
+	assert.Equal(t, minerReward+arbitratorsChange, tx.Outputs[1].Value,
+		"should add change of arbitrators' reward")
+	assert.Equal(t, 2+5+5, len(tx.Outputs))
 	for i := 2; i < 12; i++ {
 		found := false
 		if _, ok := arbitratorHashMap[tx.Outputs[i].ProgramHash]; ok {
-			s.Equal(individualBlockConfirmReward+individualProducerReward, tx.Outputs[i].Value)
+			assert.Equal(t, individualBlockConfirmReward+individualProducerReward,
+				tx.Outputs[i].Value)
 			found = true
 		}
 
 		if _, ok := candidateHashMap[tx.Outputs[i].ProgramHash]; ok {
-			s.Equal(individualProducerReward, tx.Outputs[i].Value)
+			assert.Equal(t, individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
 
-		s.Equal(true, found)
+		assert.Equal(t, true, found)
 	}
 
 	//reward can not be exactly division
@@ -190,7 +274,7 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 	arbitratorsChange = dposTotalReward - (individualProducerReward+individualBlockConfirmReward)*5 - individualProducerReward*5
 
 	tx = &types.Transaction{
-		Version: types.TransactionVersion(s.Version.GetVersion()),
+		Version: types.TransactionVersion(version.GetVersion()),
 		TxType:  types.CoinBase,
 	}
 	tx.Outputs = []*types.Output{
@@ -203,93 +287,69 @@ func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {
 		},
 	}
 
-	s.NoError(s.Version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
+	assert.NoError(t, version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 
-	s.NotEqual(foundationRewardNormal, tx.Outputs[0].Value)
-	s.Equal(foundationReward, tx.Outputs[0].Value)
-	s.Equal(minerReward+arbitratorsChange, tx.Outputs[1].Value)
-	s.Equal(2+5+5, len(tx.Outputs))
+	assert.NotEqual(t, foundationRewardNormal, tx.Outputs[0].Value)
+	assert.Equal(t, foundationReward, tx.Outputs[0].Value)
+	assert.Equal(t, minerReward+arbitratorsChange, tx.Outputs[1].Value)
+	assert.Equal(t, 2+5+5, len(tx.Outputs))
 	for i := 2; i < 12; i++ {
 		found := false
 		if _, ok := arbitratorHashMap[tx.Outputs[i].ProgramHash]; ok {
-			s.Equal(individualBlockConfirmReward+individualProducerReward, tx.Outputs[i].Value)
+			assert.Equal(t,
+				individualBlockConfirmReward+individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
 
 		if _, ok := candidateHashMap[tx.Outputs[i].ProgramHash]; ok {
-			s.Equal(individualProducerReward, tx.Outputs[i].Value)
+			assert.Equal(t, individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
 
-		s.Equal(true, found)
+		assert.Equal(t, true, found)
 	}
-
-	blockchain.DefaultLedger = originLedger
 }
 
-func (s *blockVersionTestSuite) TestBlockVersionMain_GetNextOnDutyArbitrator() {
-	arbitratorsStr := []string{
-		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
-		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
-		"0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
-		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
-		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
-	}
-
-	arbitrators := make([][]byte, 0)
-	for _, v := range arbitratorsStr {
-		a, _ := common.HexStringToBytes(v)
-		arbitrators = append(arbitrators, a)
-	}
-
-	originLedger := blockchain.DefaultLedger
-	blockchain.DefaultLedger = &blockchain.Ledger{
-		Arbitrators: &mock.ArbitratorsMock{
-			CurrentArbitrators: arbitrators,
-		},
-	}
-
+func TestBlockVersionMain_GetNextOnDutyArbitrator(t *testing.T) {
 	var currentArbitrator []byte
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 0)
+	assert.Equal(t, arbitrators[0], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(1, 0)
-	s.Equal(arbitrators[1], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(1, 0)
+	assert.Equal(t, arbitrators[1], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(2, 0)
-	s.Equal(arbitrators[2], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(2, 0)
+	assert.Equal(t, arbitrators[2], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(3, 0)
-	s.Equal(arbitrators[3], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(3, 0)
+	assert.Equal(t, arbitrators[3], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(4, 0)
-	s.Equal(arbitrators[4], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(4, 0)
+	assert.Equal(t, arbitrators[4], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(5, 0)
-	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(5, 0)
+	assert.Equal(t, arbitrators[0], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 1)
-	s.Equal(arbitrators[1], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 1)
+	assert.Equal(t, arbitrators[1], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 2)
-	s.Equal(arbitrators[2], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 2)
+	assert.Equal(t, arbitrators[2], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 3)
-	s.Equal(arbitrators[3], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 3)
+	assert.Equal(t, arbitrators[3], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 4)
-	s.Equal(arbitrators[4], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 4)
+	assert.Equal(t, arbitrators[4], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 5)
-	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 5)
+	assert.Equal(t, arbitrators[0], currentArbitrator)
 
-	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 6)
-	s.Equal(arbitrators[1], currentArbitrator)
-
-	blockchain.DefaultLedger = originLedger
+	currentArbitrator = version.GetNextOnDutyArbitrator(0, 6)
+	assert.Equal(t, arbitrators[1], currentArbitrator)
 }
 
-func TestBlockVersionSuit(t *testing.T) {
-	suite.Run(t, new(blockVersionTestSuite))
+func TestBlockVersionDone(t *testing.T) {
+	blockchain.DefaultLedger = originLedger
 }

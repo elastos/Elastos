@@ -88,7 +88,7 @@ func TestCheckCheckSigSignature(t *testing.T) {
 	rand.Read(fakeSignature)
 	err = checkStandardSignature(program.Program{Code: act.redeemScript, Parameter: fakeSignature}, data)
 	assert.Error(t, err, "[CheckChecksigSignature] with invalid signature length")
-	assert.Equal(t, "Invalid signature length", err.Error())
+	assert.Equal(t, "invalid signature length", err.Error())
 
 	// invalid signature content
 	fakeSignature = make([]byte, crypto.SignatureScriptLength)
@@ -252,14 +252,14 @@ func TestRunPrograms(t *testing.T) {
 	hashes = append(hashes[:removeIndex], hashes[removeIndex+1:]...)
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with unmathed hashes")
-	assert.Equal(t, "The number of data hashes is different with number of programs.", err.Error())
+	assert.Equal(t, "the number of data hashes is different with number of programs", err.Error())
 
 	// With no programs
 	init()
 	programs = []*program.Program{}
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with no programs")
-	assert.Equal(t, "The number of data hashes is different with number of programs.", err.Error())
+	assert.Equal(t, "the number of data hashes is different with number of programs", err.Error())
 
 	// With unmatched hashes
 	init()
@@ -305,7 +305,7 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Generate key pair failed, error %s", err.Error())
 	}
 
-	a.redeemScript, err = CreateStandardRedeemScript(a.public)
+	a.redeemScript, err = crypto.CreateStandardRedeemScript(a.public)
 	if err != nil {
 		t.Errorf("Create standard redeem script failed, error %s", err.Error())
 	}

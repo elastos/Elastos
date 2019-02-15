@@ -3,7 +3,6 @@ package blockchain
 import (
 	"bytes"
 	"encoding/hex"
-	"math/big"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
@@ -34,6 +33,7 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
+	config.Parameters = config.ConfigParams{Configuration: &config.Template}
 	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
@@ -44,18 +44,26 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest")
+	chainStore, err := NewChainStore("Chain_UnitTest", config.MainNetParams.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	err = Init(chainStore, mock.NewBlockHeightMock())
+	heightVersions := &mock.HeightVersionsMock{}
+	chain, _ := New(chainStore, &config.MainNetParams, nil, heightVersions)
+	if DefaultLedger == nil {
+		DefaultLedger = &Ledger{
+			Blockchain:     chain,
+			HeightVersions: heightVersions,
+			Store:          chainStore,
+		}
+	}
+
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	powLimit := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 	timeSource := NewMedianTime()
 	blockData, err := hex.DecodeString(TestBlockHex)
 	if err != nil {
@@ -64,7 +72,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	var block types.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	err = CheckBlockSanity(&block, powLimit, timeSource)
+	err = chain.CheckBlockSanity(&block)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -72,7 +80,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	// change of time stamp, this will change the block hash
 	// and the proof check would fail
 	block.Timestamp = uint32(timeSource.AdjustedTime().Unix())
-	err = CheckBlockSanity(&block, powLimit, timeSource)
+	err = chain.CheckBlockSanity(&block)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
 }

@@ -7,12 +7,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/version"
-
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/stretchr/testify/suite"
 )
@@ -20,7 +19,7 @@ import (
 type txVersionV0TestSuite struct {
 	suite.Suite
 
-	Version version.TxVersion
+	Version TxVersion
 }
 
 func (s *txVersionV0TestSuite) SetupTest() {
@@ -51,7 +50,7 @@ func (s *txVersionV0TestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txVersionV0TestSuite) TestCheckCoinbaseMinerReward() {
-	totalReward := blockchain.RewardAmountPerBlock
+	totalReward := config.MainNetParams.RewardPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
 		TxType:  types.CoinBase,
@@ -176,7 +175,7 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
-				outputpayload.VoteContent{
+				{
 					VoteType:   0,
 					Candidates: [][]byte{candidate},
 				},
@@ -184,7 +183,8 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 		},
 	})
 
-	s.Error(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references,
+		producers))
 
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,

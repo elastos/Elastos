@@ -24,9 +24,9 @@ type heightVersionTestSuit struct {
 }
 
 func (s *heightVersionTestSuit) SetupTest() {
-	s.Height1 = GenesisHeightVersion
-	s.Height2 = HeightVersion1
-	s.Height3 = HeightVersion2
+	s.Height1 = 0
+	s.Height2 = 100
+	s.Height3 = 200
 
 	txV1 := &txVersionTest1{}
 	txV2 := &txVersionTest2{}
@@ -54,6 +54,7 @@ func (s *heightVersionTestSuit) SetupTest() {
 				map[uint32]blocks.BlockVersion{blockV2.GetVersion(): blockV2},
 			},
 		},
+		s.Height3,
 	)
 }
 
@@ -416,29 +417,31 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
 	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1)
+	defaultCount := uint32(12)
+
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2, defaultCount)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
+	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3)
-	s.Error(err, "height 3 do not support block v1")
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3, defaultCount)
+	s.NoError(err, "found default version")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1)
-	s.Error(err, "height 1 do not support block v2")
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1, defaultCount)
+	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
@@ -446,14 +449,14 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1)
-	s.Error(err, "height 1 do not support block vmax")
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1, defaultCount)
+	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2)
-	s.Error(err, "height 1 do not support block vmax")
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2, defaultCount)
+	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3)
-	s.Error(err, "height 1 do not support block vmax")
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3, defaultCount)
+	s.NoError(err, "found default version")
 }
 
 func (s *heightVersionTestSuit) TestHeightVersions_CheckConfirmedBlockOnFork() {
@@ -669,7 +672,8 @@ func (v *txVersionTest1) GetVersion() byte {
 	return 1
 }
 
-func (v *txVersionTest1) CheckOutputPayload(txType types.TransactionType, output *types.Output) error {
+func (v *txVersionTest1) CheckOutputPayload(txType types.TxType,
+	output *types.Output) error {
 	versionsMsg = "txVersionTest1_CheckOutputPayload"
 	return nil
 }
@@ -706,7 +710,8 @@ func (v *txVersionTest2) GetVersion() byte {
 	return 2
 }
 
-func (v *txVersionTest2) CheckOutputPayload(txType types.TransactionType, output *types.Output) error {
+func (v *txVersionTest2) CheckOutputPayload(txType types.TxType,
+	output *types.Output) error {
 	versionsMsg = "txVersionTest2_CheckOutputPayload"
 	return nil
 }
@@ -743,6 +748,11 @@ func (v *txBlockTest1) GetVersion() uint32 {
 	return 1
 }
 
+func (v *txBlockTest1) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
+	versionsMsg = "blockVersionTest1_GetCandidatesDesc"
+	return nil, nil
+}
+
 func (v *txBlockTest1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
 	[][]byte, error) {
 	versionsMsg = "blockVersionTest1_GetNormalArbitratorsDesc"
@@ -774,6 +784,11 @@ type txBlockTest2 struct {
 
 func (v *txBlockTest2) GetVersion() uint32 {
 	return 2
+}
+
+func (v *txBlockTest2) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
+	versionsMsg = "blockVersionTest2_GetCandidatesDesc"
+	return nil, nil
 }
 
 func (v *txBlockTest2) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
