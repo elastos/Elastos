@@ -234,3 +234,14 @@ func (cs *FileStore) SetPath(path string) {
 
 	cs.path = path
 }
+
+func GetWalletAccountData(walletPath string) ([]AccountData, error) {
+	var fileStore FileStore
+	fileStore.SetPath(walletPath)
+	storeAccounts, err := fileStore.LoadAccountData()
+	if err != nil {
+		return nil, err
+	}
+
+	return storeAccounts, nil
+}
