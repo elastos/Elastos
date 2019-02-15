@@ -12,9 +12,9 @@ type AttributeUsage byte
 const (
 	Nonce          AttributeUsage = 0x00
 	Script         AttributeUsage = 0x20
-	DescriptionUrl AttributeUsage = 0x81
+	Memo           AttributeUsage = 0x81
 	Description    AttributeUsage = 0x90
-	Memo           AttributeUsage = 0x91
+	DescriptionUrl AttributeUsage = 0x91
 )
 
 func (u AttributeUsage) Name() string {
@@ -23,12 +23,12 @@ func (u AttributeUsage) Name() string {
 		return "Nonce"
 	case Script:
 		return "Script"
-	case DescriptionUrl:
-		return "DescriptionUrl"
-	case Description:
-		return "Description"
 	case Memo:
 		return "Memo"
+	case Description:
+		return "Description"
+	case DescriptionUrl:
+		return "DescriptionUrl"
 	default:
 		return "Unknown"
 	}
@@ -36,7 +36,7 @@ func (u AttributeUsage) Name() string {
 
 func IsValidAttributeType(usage AttributeUsage) bool {
 	switch usage {
-	case Nonce, Script, Description, DescriptionUrl, Memo:
+	case Nonce, Script, Memo, Description, DescriptionUrl:
 		return true
 	}
 	return false
