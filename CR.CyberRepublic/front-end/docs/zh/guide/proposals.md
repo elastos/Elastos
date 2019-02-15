@@ -1,18 +1,16 @@
 
-# Proposals
+# 提案
 
-Proposals can only be created by the Council members or Secretariat, typically they are created based off the community added **Suggestions**,
-but they can also be created by these members directly.
+提案可以由委员会成员或者秘书处提出，通常是基于社区提出的**建议**，但是也可以由社区成员直接提出。
 
-All proposals must be public and can be found at: [Cyber Republic Website - Proposals Page](https://www.cyberrepublic.org/proposals).
+所有的提案都必须是公开，所有人都可以在网站上阅读: [Cyber Republic 网站——提案页面](https://www.cyberrepublic.org/proposals)。
 
-**Some key points about Proposals:**
+**关于提案的一些要点：**
 
-1. A proposal may designate a person, team or organization to execute it. If so this bypasses the tender/bidding process.
+1. 提案可以之指派一个人、团队或者组织来执行。如果这样，就可以绕过招标过程。
 
-2. A proposal must both pass a majority vote by the council and an opportunity for the community to reject it.
+2.一项提案想要获得通过，必须要经过委员会的大多数投票赞成和社区的检验：即使委员会通过提案，社区还有权选择拒绝它。
 
-3. If the proposal requires funding, a detailed analysis of ROI must be included.
+3.如果这份提案需要资金，必须要包含详细的ROI分析。
 
-
-#### A Proposal will always have a primary council member that is required to accept responsibility for the execution and performance of the project.
+#### 要执行一项提案，始终需要有一个主要的委员会成员来承担执行和推进项目的责任。
