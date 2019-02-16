@@ -14,6 +14,7 @@ import (
 type AccountData struct {
 	Address             string
 	ProgramHash         string
+	RedeemScript        string
 	PrivateKeyEncrypted string
 	Type                string
 }
@@ -97,7 +98,7 @@ func (cs *FileStore) BuildDatabase(path string) {
 	cs.writeDB(jsonBlob)
 }
 
-func (cs *FileStore) SaveAccountData(programHash []byte, encryptedPrivateKey []byte) error {
+func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, encryptedPrivateKey []byte) error {
 	JSONData, err := cs.readDB()
 	if err != nil {
 		return errors.New("error: reading db")
@@ -124,6 +125,7 @@ func (cs *FileStore) SaveAccountData(programHash []byte, encryptedPrivateKey []b
 	a := AccountData{
 		Address:             addr,
 		ProgramHash:         BytesToHexString(programHash),
+		RedeemScript:        BytesToHexString(redeemScript),
 		PrivateKeyEncrypted: BytesToHexString(encryptedPrivateKey),
 		Type:                accountType,
 	}

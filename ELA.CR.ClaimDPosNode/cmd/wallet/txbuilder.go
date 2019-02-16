@@ -184,7 +184,7 @@ func createTransaction(from string, fee *common.Fixed64, lockedUntil uint32, out
 		return nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	return newTransaction(acc.Contract.Code, txInputs, txOutputs, types.TransferAsset), nil
+	return newTransaction(acc.RedeemScript, txInputs, txOutputs, types.TransferAsset), nil
 }
 
 func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TxType) *types.Transaction {
