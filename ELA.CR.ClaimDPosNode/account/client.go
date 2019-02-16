@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"sort"
 	"sync"
 	"time"
 
@@ -320,10 +319,11 @@ func (cl *ClientImpl) GetAccounts() []*Account {
 		accounts = append(accounts, account)
 	}
 
-	sort.Slice(accounts, func(i, j int) bool {
-		return bytes.Compare(accounts[i].ProgramHash[:],
-			accounts[j].ProgramHash[:]) < 0
-	})
+	// comment below to make sure the main account is at the top
+	//sort.Slice(accounts, func(i, j int) bool {
+	//	return bytes.Compare(accounts[i].ProgramHash[:],
+	//		accounts[j].ProgramHash[:]) < 0
+	//})
 
 	return accounts
 }

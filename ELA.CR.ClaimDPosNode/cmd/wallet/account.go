@@ -203,23 +203,28 @@ func importAccount(c *cli.Context) error {
 		return err
 	}
 
-	var pwd []byte
-	if pwdHex == "" {
-		pwd, err = cmdcom.GetConfirmedPassword()
-		if err != nil {
-			return err
-		}
-	} else {
-		pwd = []byte(pwdHex)
-	}
-
+	pwd := []byte(pwdHex)
 	var client *account.ClientImpl
 	if _, err := os.Open(walletPath); os.IsNotExist(err) {
+		// create a keystore file
+		if pwdHex == "" {
+			pwd, err = cmdcom.GetConfirmedPassword()
+			if err != nil {
+				return err
+			}
+		}
 		client = account.NewClient(walletPath, pwd, true)
 		if client == nil {
 			return errors.New("client nil")
 		}
 	} else {
+		// open a keystore file
+		if pwdHex == "" {
+			pwd, err = cmdcom.GetPassword()
+			if err != nil {
+				return err
+			}
+		}
 		client, err = account.Open(walletPath, pwd)
 		if err != nil {
 			return err
