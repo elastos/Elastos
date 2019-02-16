@@ -3,12 +3,11 @@ package mock
 import (
 	"fmt"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 

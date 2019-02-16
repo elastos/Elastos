@@ -6,9 +6,10 @@ local dpos_msg = require("test/white_box/dpos_msg")
 local log = require("test/white_box/log_config")
 local block_utils = require("test/white_box/block_utils")
 
-print(colors('%{blue}-----------------Begin-----------------'))
 local dpos = dofile("test/white_box/dpos_manager.lua")
 local test = dofile("test/common/test_utils.lua")
+
+test.file_begin()
 
 api.clear_store()
 api.init_ledger(log.level, dpos.A.arbitrators)
@@ -78,7 +79,7 @@ dpos.C.network:push_illegal_proposals(dpos.B.manager:public_key(), illegal)
 --todo check illegal must exist within next two blocks
 
 --- clean up
+test.file_end()
 api.close_store()
-print(colors('%{green}-----------------Test success!-----------------'))
 
 return test.result
