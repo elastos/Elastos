@@ -49,9 +49,19 @@ var accountCommand = []cli.Command{
 	},
 	{
 		Category: "Account",
-		Name:     "add",
-		Usage:    "Add a new account",
-		Action:   addAccount,
+		Name:     "addaccount",
+		Usage:    "Add a standard account",
+		Flags: []cli.Flag{
+			AccountWalletFlag,
+			AccountPasswordFlag,
+		},
+		Action: addAccount,
+	},
+	{
+		Category: "Account",
+		Name:     "addmultisigaccount",
+		Usage:    "Add a multi-signature account",
+		Action:   addMultiSigAccount,
 	},
 	{
 		Category: "Account",
@@ -79,14 +89,6 @@ var accountCommand = []cli.Command{
 			AccountPasswordFlag,
 		},
 		Action: exportAccount,
-	},
-	{
-		Category: "Account",
-		Name:     "multisigaddr",
-		Usage:    "Generate multi-signature address",
-		Flags: []cli.Flag{
-			AccountWalletFlag,
-		},
 	},
 	{
 		Category: "Account",
@@ -154,6 +156,29 @@ func listAccount(c *cli.Context) error {
 }
 
 func addAccount(c *cli.Context) error {
+	walletPath := c.String("wallet")
+	pwdHex := c.String("password")
+
+	var pwd []byte
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
+	} else {
+		pwd = []byte(pwdHex)
+	}
+
+	client, err := account.Add(walletPath, pwd)
+	if err != nil {
+		return err
+	}
+
+	return ShowAccountInfo(client)
+}
+
+func addMultiSigAccount(c *cli.Context) error {
 	// todo
 	return nil
 }
