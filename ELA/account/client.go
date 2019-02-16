@@ -160,9 +160,9 @@ func (cl *ClientImpl) GetDefaultAccount() (*Account, error) {
 }
 
 func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
+	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
-		return nil, errors.New("CreateStandardContractByPubKey failed")
+		return nil, errors.New("CreateStandardContract failed")
 	}
 	return cl.GetAccountByCodeHash(*signatureContract.ToCodeHash()), nil
 }
@@ -273,7 +273,7 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	defer cl.mu.Unlock()
 
 	// save Account to memory
-	cl.accounts[*ac.Contract.ToCodeHash()] = ac
+	cl.accounts[ac.ProgramHash.ToCodeHash()] = ac
 
 	decryptedPrivateKey := make([]byte, 96)
 	temp, err := ac.PublicKey.EncodePoint(false)
@@ -293,7 +293,7 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	common.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
-	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), encryptedPrivateKey)
+	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), ac.RedeemScript, encryptedPrivateKey)
 	if err != nil {
 		return err
 	}

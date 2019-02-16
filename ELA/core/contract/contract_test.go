@@ -14,7 +14,7 @@ func TestToProgramHash(t *testing.T) {
 	publicKeyHex := "022c9652d3ad5cc065aa9147dc2ad022f80001e8ed233de20f352950d351d472b7"
 	publicKey, err := hex.DecodeString(publicKeyHex)
 	pub, _ := crypto.DecodePoint(publicKey)
-	ct, err := CreateStandardContractByPubKey(pub)
+	ct, err := CreateStandardContract(pub)
 	if err != nil {
 		t.Errorf("[PublicKeyToStandardProgramHash] failed")
 	}
