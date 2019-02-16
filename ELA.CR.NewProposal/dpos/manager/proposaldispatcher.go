@@ -720,7 +720,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispa
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: cfg.InactiveEliminateCount,
 			Store:                  cfg.Store,
-			Arbitrators:            cfg.Arbitrators.(*store.Arbitrators),
+			Arbitrators:            cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{

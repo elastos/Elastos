@@ -2,11 +2,12 @@ package api
 
 import (
 	"bytes"
+
 	. "github.com/elastos/Elastos.ELA/cmd/script/api/mock"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/yuin/gopher-lua"
 )
 

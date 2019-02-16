@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -162,22 +163,26 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 			}
 		}
 	case relayBlockConfirm:
-		if relayedConfirm, ok := m.Peer.GetLastRelay().(*types.DposBlock); ok {
-			if relayedConfirm.BlockFlag && relayedConfirm.ConfirmFlag {
-				b := checkBlock(L, 3)
-				c := checkConfirm(L, 4)
-				if b != nil && c != nil {
-					result = b.Hash().IsEqual(relayedConfirm.Block.Hash()) && confirmsEqual(c, relayedConfirm.Confirm)
-				}
-			} else if relayedConfirm.BlockFlag {
-				b := checkBlock(L, 3)
-				if b != nil {
-					result = b.Hash().IsEqual(relayedConfirm.Block.Hash())
-				}
-			} else if relayedConfirm.ConfirmFlag {
-				c := checkConfirm(L, 3)
-				if c != nil {
-					result = confirmsEqual(c, relayedConfirm.Confirm)
+		if relayedConfirm, ok := m.Peer.GetLastRelay().(*msg.Block); ok {
+			if dposBlock, ok := relayedConfirm.Serializable.(*types.
+			DposBlock); ok {
+
+				if dposBlock.BlockFlag && dposBlock.ConfirmFlag {
+					b := checkBlock(L, 3)
+					c := checkConfirm(L, 4)
+					if b != nil && c != nil {
+						result = b.Hash().IsEqual(dposBlock.Block.Hash()) && confirmsEqual(c, dposBlock.Confirm)
+					}
+				} else if dposBlock.BlockFlag {
+					b := checkBlock(L, 3)
+					if b != nil {
+						result = b.Hash().IsEqual(dposBlock.Block.Hash())
+					}
+				} else if dposBlock.ConfirmFlag {
+					c := checkConfirm(L, 3)
+					if c != nil {
+						result = confirmsEqual(c, dposBlock.Confirm)
+					}
 				}
 			}
 		}
@@ -221,7 +226,7 @@ func confirmsEqual(con1 *types.DPosProposalVoteSlot, con2 *types.DPosProposalVot
 
 func dposManagerPublicKey(L *lua.LState) int {
 	m := checkDposManager(L, 1)
-	L.Push(lua.LString(m.GetPublicKey()))
+	L.Push(lua.LString(common.BytesToHexString(m.GetPublicKey())))
 
 	return 1
 }
