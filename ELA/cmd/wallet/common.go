@@ -35,18 +35,16 @@ func ShowAccountInfo(client *account.ClientImpl) error {
 	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PUBLIC KEY")
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
-	mainAccount, err := client.GetDefaultAccount()
-	if err != nil {
-		return err
+	for _, acc := range client.GetAccounts() {
+		publicKey, err := acc.PublicKey.EncodePoint(true)
+		if err != nil {
+			return err
+		}
+		addr, err := acc.ProgramHash.ToAddress()
+		fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
+		// print divider line
+		fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 	}
-	publicKey, err := mainAccount.PublicKey.EncodePoint(true)
-	if err != nil {
-		return err
-	}
-	addr, err := mainAccount.ProgramHash.ToAddress()
-	fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
-	// print divider line
-	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
 	return nil
 }

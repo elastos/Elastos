@@ -48,7 +48,7 @@ type ClientImpl struct {
 func Create(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, true)
 	if client == nil {
-		return nil, errors.New("client nil")
+		return nil, errors.New("create account failed")
 	}
 	account, err := client.CreateAccount()
 	if err != nil {
@@ -60,13 +60,26 @@ func Create(path string, password []byte) (*ClientImpl, error) {
 	return client, nil
 }
 
+func Add(path string, password []byte) (*ClientImpl, error) {
+	client := NewClient(path, password, false)
+	if client == nil {
+		return nil, errors.New("add account failed")
+	}
+	_, err := client.CreateAccount()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 func Open(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, false)
 	if client == nil {
-		return nil, errors.New("client nil")
+		return nil, errors.New("open wallet failed")
 	}
 	if err := client.LoadAccounts(); err != nil {
-		return nil, errors.New("Load accounts failure")
+		return nil, errors.New("load accounts failed")
 	}
 
 	return client, nil

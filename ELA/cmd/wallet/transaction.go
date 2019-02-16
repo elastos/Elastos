@@ -48,15 +48,6 @@ var txCommand = []cli.Command{
 		Action: signTx,
 	},
 	{
-		Category: "Transaction",
-		Name:     "multisigtx",
-		Usage:    "Sign a multi-signature transaction",
-		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
-		},
-	},
-	{
 		Category:    "Transaction",
 		Name:        "sendtx",
 		Usage:       "Send a transaction",
