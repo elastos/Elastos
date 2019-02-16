@@ -162,6 +162,7 @@ func initLedger(L *lua.LState) int {
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Arbitrators = arbitrators
 	blockchain.DefaultLedger.Store = chainStore
+	blockchain.DefaultLedger.HeightVersions = versions
 
 	if err = chain.InitializeProducersState(interrupt.C); err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())
