@@ -36,11 +36,11 @@ namespace Elastos {
 					_peer->setMempoolCallback(mempoolParameter.CompletionCallback);
 				}
 
-				_peer->SendMessage(CMBlock(), MSG_MEMPOOL);
-			}
-			else {
-				_peer->info("mempool request already sent");
-				if (mempoolParameter.CompletionCallback) mempoolParameter.CompletionCallback(0);
+				_peer->SendMessage(CMBlock(), Type());
+			} else {
+				_peer->SendMessage(CMBlock(), Type());
+//				_peer->info("mempool request already sent");
+//				if (mempoolParameter.CompletionCallback) mempoolParameter.CompletionCallback(0);
 			}
 		}
 

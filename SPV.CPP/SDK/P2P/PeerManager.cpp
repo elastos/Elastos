@@ -836,7 +836,7 @@ namespace Elastos {
 				std::vector<UInt256> recoverHashes;
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
 					if (!_publishedTx[i - 1].HasCallback()) {
-						peer->info("recover tx {} to known tx list of peer", Utils::UInt256ToString(_publishedTxHashes[i - 1]), true);
+						peer->info("recover tx {} to known tx list of peer", Utils::UInt256ToString(_publishedTxHashes[i - 1], true));
 						recoverHashes.push_back(_publishedTxHashes[i - 1]);
 					}
 				}

@@ -4,6 +4,7 @@
 
 #include "PingMessage.h"
 #include "PongMessage.h"
+#include "MempoolMessage.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/P2P/Peer.h>
@@ -30,7 +31,7 @@ namespace Elastos {
 				r = false;
 			} else {
 				_peer->info("got ping");
-				bool needRelayPing = false;
+				bool needRelayPing = false, hasPendingTx = false;
 				PeerManager *manager = _peer->getPeerManager();
 
 				PongParameter pongParameter;
@@ -39,20 +40,26 @@ namespace Elastos {
 
 				if (manager->getConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
 					time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
-
 					needRelayPing = true;
-					for (size_t i = manager->getPublishedTransaction().size(); i > 0; i--) {
-						if (manager->getPublishedTransaction()[i - 1].HasCallback()) {
-							_peer->info("publish pending tx hash = {}, do not disconnect",
-										Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1], true));
-							needRelayPing = false;
-							break;
-						}
+				}
+
+				std::vector<PublishedTransaction> publishedTx = manager->getPublishedTransaction();
+				for (size_t i = publishedTx.size(); i > 0; i--) {
+					if (publishedTx[i - 1].HasCallback()) {
+						_peer->info("publish pending tx hash = {}, do not disconnect",
+									Utils::UInt256ToString(publishedTx[i - 1].GetTransaction()->getHash(), true));
+						hasPendingTx = true;
+						break;
 					}
 				}
 
-				if (needRelayPing)
+				if (needRelayPing && !hasPendingTx) {
 					FireRelayedPingMsg();
+				} else if (hasPendingTx) {
+					MempoolParameter mempoolParameter;
+					mempoolParameter.CompletionCallback = boost::function<void(int)>();
+					_peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
+				}
 			}
 
 			return r;
