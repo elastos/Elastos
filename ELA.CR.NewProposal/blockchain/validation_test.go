@@ -310,7 +310,7 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Create standard redeem script failed, error %s", err.Error())
 	}
 
-	c, err := contract.CreateStandardContractByPubKey(a.public)
+	c, err := contract.CreateStandardContract(a.public)
 	if err != nil {
 		t.Errorf("Create standard contract failed, error %s", err.Error())
 	}

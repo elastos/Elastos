@@ -152,8 +152,6 @@ func transactionHash(L *lua.LState) int {
 func transactionSign(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	client := checkClient(L, 2)
-	//fmt.Println("txn:", txn)
-	//fmt.Println("client:", client)
 
 	acc, err := client.GetDefaultAccount()
 	if err != nil {
@@ -162,7 +160,7 @@ func transactionSign(L *lua.LState) int {
 	}
 
 	program := pg.Program{
-		Code:      acc.Contract.Code,
+		Code:      acc.RedeemScript,
 		Parameter: []byte{},
 	}
 	txn.Programs = []*pg.Program{
