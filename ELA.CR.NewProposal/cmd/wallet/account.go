@@ -49,7 +49,7 @@ var accountCommand = []cli.Command{
 	},
 	{
 		Category: "Account",
-		Name:     "addaccount",
+		Name:     "add",
 		Usage:    "Add a standard account",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
@@ -59,9 +59,19 @@ var accountCommand = []cli.Command{
 	},
 	{
 		Category: "Account",
-		Name:     "addmultisigaccount",
+		Name:     "addmultisig",
 		Usage:    "Add a multi-signature account",
 		Action:   addMultiSigAccount,
+	},
+	{
+		Category: "Account",
+		Name:     "delete",
+		Usage:    "Delete an account",
+		Flags: []cli.Flag{
+			AccountWalletFlag,
+			AccountPasswordFlag,
+		},
+		Action: delAccount,
 	},
 	{
 		Category: "Account",
@@ -181,6 +191,46 @@ func addAccount(c *cli.Context) error {
 func addMultiSigAccount(c *cli.Context) error {
 	// todo
 	return nil
+}
+
+func delAccount(c *cli.Context) error {
+	walletPath := c.String("wallet")
+	pwdHex := c.String("password")
+
+	var pwd []byte
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
+	} else {
+		pwd = []byte(pwdHex)
+	}
+
+	if c.NArg() < 1 {
+		cmdcom.PrintErrorMsg("Missing argument. Account address expected.")
+		cli.ShowCommandHelpAndExit(c, "delete", 1)
+	}
+	address := c.Args().First()
+	programHash, err := common.Uint168FromAddress(address)
+
+	client, err := account.Open(walletPath, pwd)
+	if err != nil {
+		return err
+	}
+
+	err = client.DeleteAccountData(programHash.String())
+	if err != nil {
+		return err
+	}
+
+	// reopen client after delete
+	client, err = account.Open(walletPath, pwd)
+	if err != nil {
+		return err
+	}
+	return ShowAccountInfo(client)
 }
 
 func changePassword(c *cli.Context) error {
