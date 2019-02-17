@@ -9,11 +9,11 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type DposNormalHandler struct {
-	*dposHandlerSwitch
+type DPOSNormalHandler struct {
+	*DPOSHandlerSwitch
 }
 
-func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSNormalHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	defer log.Info("[Normal-ProcessAcceptVote] end")
 
@@ -29,7 +29,7 @@ func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalV
 	}
 }
 
-func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSNormalHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
 	log.Info("[Normal-ProcessRejectVote] start")
 	defer log.Info("[Normal-ProcessRejectVote] end")
 
@@ -46,17 +46,17 @@ func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalV
 	}
 }
 
-func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p types.DPosProposalVote) (common.Uint256, bool) {
+func (h *DPOSNormalHandler) tryGetCurrentProposal(id peer.PID, p types.DPosProposalVote) (common.Uint256, bool) {
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal == nil {
 		requestProposal := &msg.RequestProposal{ProposalHash: p.ProposalHash}
-		h.network.SendMessageToPeer(id, requestProposal)
+		h.cfg.Network.SendMessageToPeer(id, requestProposal)
 		return common.Uint256{}, false
 	}
 	return currentProposal.Hash(), true
 }
 
-func (h *DposNormalHandler) StartNewProposal(p types.DPosProposal) {
+func (h *DPOSNormalHandler) StartNewProposal(p types.DPosProposal) {
 	log.Info("[Normal][StartNewProposal] start")
 	defer log.Info("[Normal][StartNewProposal] end")
 
@@ -67,12 +67,12 @@ func (h *DposNormalHandler) StartNewProposal(p types.DPosProposal) {
 	h.proposalDispatcher.ProcessProposal(p)
 }
 
-func (h *DposNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
+func (h *DPOSNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
 	log.Info("[OnViewChanged] clean proposal")
 	h.proposalDispatcher.CleanProposals(true)
 }
 
-func (h *DposNormalHandler) TryStartNewConsensus(b *types.Block) bool {
+func (h *DPOSNormalHandler) TryStartNewConsensus(b *types.Block) bool {
 	result := false
 
 	if h.consensus.IsReady() {

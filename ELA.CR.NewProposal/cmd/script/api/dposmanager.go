@@ -73,8 +73,11 @@ func newDposManager(L *lua.LState) int {
 	mockManager.EventMonitor = log.NewEventMoniter()
 	mockManager.EventMonitor.RegisterListener(&log.EventLogs{})
 
-	mockManager.Handler = NewHandler(n, dposManager,
-		mockManager.EventMonitor, nil)
+	mockManager.Handler = NewHandler(DPOSHandlerConfig{
+		Network: n,
+		Manager: dposManager,
+		Monitor: mockManager.EventMonitor,
+	})
 
 	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
 	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(ProposalDispatcherConfig{
@@ -298,7 +301,7 @@ type manager struct {
 	Account        account.DposAccount
 	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor
-	Handler        DposHandlerSwitch
+	Handler        *DPOSHandlerSwitch
 	Dispatcher     *ProposalDispatcher
 	IllegalMonitor *IllegalBehaviorMonitor
 	Peer           mock.PeerMock

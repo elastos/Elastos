@@ -162,8 +162,12 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		eventMonitor.RegisterListener(eventRecorder)
 	}
 
-	dposHandlerSwitch := manager.NewHandler(
-		network, dposManager, eventMonitor, cfg.Arbitrators)
+	dposHandlerSwitch := manager.NewHandler(manager.DPOSHandlerConfig{
+		Network:     network,
+		Manager:     dposManager,
+		Monitor:     eventMonitor,
+		Arbitrators: cfg.Arbitrators,
+	})
 
 	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
 	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(
