@@ -1,32 +1,32 @@
 
-# Welcome to the Cyber Republic Documentation
+# 欢迎查阅Cyber Republic文档
 
-!> This is a DRAFT ONLY - the official CRC Whitepaper will come out shortly
+!> 目前这还是一个草案——正式的CRC白皮书将很快发布
 
-### Cyber Republic's (CR) goal is to allow the public to control how CR's funds are spent and used, currently this is only through the Cyber Republic Consensus (CRC) Workflow.
+### Cyber Republic（CR）的目标是让公众控制Cyber Republic的资金支出和使用方式，目前这只能通过Cyber Republic 共识（CRC）工作流程来实现。
 
-__All Suggestions, Proposals, Decisions and Financials are public__, CR will strive to be fully transparent and a tool to serve the general public.
+所有建议，提案，决定和财务都是公开的，Cyber Republic 将努力提供完全透明的操作流程，并为公众服务。
 
-!> **There is only one way that ELA is spent** and that is through the [Cyber Republic Consensus (CRC) Workflow](/overview/crc.md)
+!> **ELA只有一种花费方式** ，即通过 [Cyber Republic Consensus（CRC）的工作流程](/overview/crc.md)来使用。
 
-#### The Constitution & CRC Document
+#### Cyber Republic 章程和 Cyber Republic共识文档
 
-1. The Constitution listed here and on the cyberrepublic.org website is a work in progress ALPHA
+1. 此处列出的和cyberrepublic.org网站上的章程还是ALPHA版本。
 
-2. There will be a CRC document released when key issues are solved and finalized
+2. 当关键的问题被解决和最终确定时，将发布Cyber Republic 共识的正式文档。
 
-##### The CRC was created as a way for the community to propose and vote on ideas or projects that better the Elastos Ecosystem.
+##### 建立 Cyber Republic 共识是为了让社区来为创建更好的亦来云生态系统的想法或项目提出建议并投票。
 
-?> However it's fundamental that the voice of majority is heard, not the loudest individuals, we implore everyone to vote on Suggestions and discuss what they feel CR should invest in on the [CR forums](https://forum.cyberrepublic.org)
+?> 但是，至关重要的是能听到多数人的声音，而不仅仅是最响亮的呼声，我们恳请每个人对建议进行投票，并在[CR论坛](https://forum.cyberrepublic.org)上讨论他们认为 Cyber Republic 应该投资的项目。
 
-#### Ideal projects include, but are not limited to:
+#### 理想的项目包括但不限于：
 
-- **Ecosystem Development Projects** - building reusable open-source components so that developers can more easily build dApps on Elastos
+- **生态系统开发项目** - 构建可重复利用的开源组件，以便开发人员可以更轻松地在亦来云上构建DApp。
 
-- **Marketing Initiatives, Regional Events and Meetups** - are there specific channels you think Elastos should market to? Or is there a region that would be receptive to Elastos? These are all valid suggestions, nor do you need to propose who will execute the proposal, its the Secretariat team's job to find a competent team to do the Proposal.
+- **营销计划，区域活动和聚会** - 您认为应该通过哪些渠道来推广亦来云？ 或者哪些区域可以接受亦来云？ 这些都是有效的建议，您不需要提出谁将执行该提案，招募有竞争力的执行团队是秘书团队的工作。
 
-- **dApp projects** - in case you have an idea for the first killer dApp, all ideas are welcome even if you're not a developer
+- **DApp 项目** - 如果您对未来的第一个杀手级DApp应用有任何的想法和思路，即使您不是开发人员，我们也非常欢迎您分享所有的想法。
 
-- **Media** - do you think a certain infographic or video needs to be made? We are making these all the time but as a community you can promote to use funds to focus on certain areas as well
+- **传媒** - 您认为去做一个确切的信息图表或者视频很有必要吗？我们一直在致力于制作这些，不过作为一个社区，您仍然可以申请资金去专注于这个领域的工作。
 
 
