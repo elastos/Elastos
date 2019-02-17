@@ -19,7 +19,7 @@ const (
 
 type ViewChangesCountDown struct {
 	dispatcher  ProposalDispatcher
-	consensus   Consensus
+	consensus   *Consensus
 	arbitrators interfaces.Arbitrators
 
 	timeoutRefactor               uint32
