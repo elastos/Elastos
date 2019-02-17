@@ -405,13 +405,6 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
-	// Do not connect to same address.
-	addr := c.Addr.String()
-	if _, ok := cm.addresses.Load(addr); ok {
-		return
-	}
-	cm.addresses.Store(addr, c.Addr)
-
 	if atomic.LoadUint64(&c.id) == 0 {
 		atomic.StoreUint64(&c.id, atomic.AddUint64(&cm.connReqCount, 1))
 
@@ -433,6 +426,13 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 		case <-cm.quit:
 			return
 		}
+	}
+
+	// Do not connect to same address.
+	addr := c.Addr.String()
+	if _, ok := cm.addresses.LoadOrStore(addr, addr); ok {
+		cm.handleFailedConn(c)
+		return
 	}
 
 	log.Debugf("Attempting to connect to %v", c)
