@@ -36,7 +36,7 @@ type Arbitrator struct {
 	cfg            ArbitratorConfig
 	enableViewLoop bool
 	network        *network
-	dposManager    manager.DposManager
+	dposManager    *manager.DPOSManager
 }
 
 func (a *Arbitrator) Start() {
@@ -133,7 +133,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		log.Error("init dpos account error")
 		return nil, err
 	}
-	dposManager := manager.NewManager(manager.DposManagerConfig{
+	dposManager := manager.NewManager(manager.DPOSManagerConfig{
 		PublicKey:   pubKey,
 		Arbitrators: cfg.Arbitrators,
 	})
