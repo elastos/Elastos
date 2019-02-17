@@ -23,7 +23,7 @@
 - 媒体资源
 
     - [设计风格指南](/zh/media/style-guide.md)
-    - [数字资产](/zh/media/assets.md)
+    - [视觉标识资产](/zh/media/assets.md)
     - [幻灯片](/zh/media/slides.md)
 
 - FAQ
