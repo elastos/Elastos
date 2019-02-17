@@ -58,9 +58,9 @@ func newDposManager(L *lua.LState) int {
 	}
 
 	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
-	dposManager := NewManager(DposManagerConfig{PublicKey: pub, Arbitrators: a})
+	dposManager := NewManager(DPOSManagerConfig{PublicKey: pub, Arbitrators: a})
 	mockManager := &manager{
-		DposManager: dposManager,
+		DPOSManager: dposManager,
 	}
 
 	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[index])
@@ -294,7 +294,7 @@ func dposManagerSignVote(L *lua.LState) int {
 
 //mock object of dpos manager
 type manager struct {
-	DposManager
+	*DPOSManager
 	Account        account.DposAccount
 	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor

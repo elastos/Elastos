@@ -76,36 +76,12 @@ type AbnormalRecovering interface {
 	RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error
 }
 
-type DposManager interface {
-	NetworkEventListener
-
-	GetPublicKey() []byte
-	GetBlockCache() *ConsensusBlockCache
-	GetArbitrators() interfaces.Arbitrators
-
-	Initialize(handler DposHandlerSwitch, dispatcher *ProposalDispatcher,
-		consensus *Consensus, network DposNetwork,
-		illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
-		txPool *mempool.TxPool, broadcast func(message p2p.Message))
-
-	Recover()
-
-	ProcessHigherBlock(b *types.Block)
-	ConfirmBlock()
-
-	ChangeConsensus(onDuty bool)
-
-	AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error)
-	AppendToTxnPool(txn *types.Transaction) errors.ErrCode
-	Broadcast(msg p2p.Message)
-}
-
-type DposManagerConfig struct {
+type DPOSManagerConfig struct {
 	PublicKey   []byte
 	Arbitrators interfaces.Arbitrators
 }
 
-type dposManager struct {
+type DPOSManager struct {
 	publicKey  []byte
 	blockCache *ConsensusBlockCache
 
@@ -121,12 +97,12 @@ type dposManager struct {
 	broadcast   func(p2p.Message)
 }
 
-func (d *dposManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
+func (d *DPOSManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
 	return d.blockPool.AppendConfirm(confirm)
 }
 
-func NewManager(cfg DposManagerConfig) DposManager {
-	m := &dposManager{
+func NewManager(cfg DPOSManagerConfig) *DPOSManager {
+	m := &DPOSManager{
 		publicKey:   cfg.PublicKey,
 		blockCache:  &ConsensusBlockCache{},
 		arbitrators: cfg.Arbitrators,
@@ -136,7 +112,7 @@ func NewManager(cfg DposManagerConfig) DposManager {
 	return m
 }
 
-func (d *dposManager) Initialize(handler DposHandlerSwitch,
+func (d *DPOSManager) Initialize(handler DposHandlerSwitch,
 	dispatcher *ProposalDispatcher, consensus *Consensus, network DposNetwork,
 	illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
@@ -151,27 +127,27 @@ func (d *dposManager) Initialize(handler DposHandlerSwitch,
 	d.broadcast = broadcast
 }
 
-func (d *dposManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
+func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
 	return d.txPool.AppendToTxnPool(txn)
 }
 
-func (d *dposManager) Broadcast(msg p2p.Message) {
+func (d *DPOSManager) Broadcast(msg p2p.Message) {
 	d.broadcast(msg)
 }
 
-func (d *dposManager) GetPublicKey() []byte {
+func (d *DPOSManager) GetPublicKey() []byte {
 	return d.publicKey
 }
 
-func (d *dposManager) GetBlockCache() *ConsensusBlockCache {
+func (d *DPOSManager) GetBlockCache() *ConsensusBlockCache {
 	return d.blockCache
 }
 
-func (d *dposManager) GetArbitrators() interfaces.Arbitrators {
+func (d *DPOSManager) GetArbitrators() interfaces.Arbitrators {
 	return d.arbitrators
 }
 
-func (d *dposManager) Recover() {
+func (d *DPOSManager) Recover() {
 	d.changeHeight()
 	for {
 		if peerID := d.network.GetActivePeer(); peerID != nil {
@@ -183,7 +159,7 @@ func (d *dposManager) Recover() {
 	}
 }
 
-func (d *dposManager) ProcessHigherBlock(b *types.Block) {
+func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	if !d.illegalMonitor.IsBlockValid(b) {
 		log.Info("[ProcessHigherBlock] received block do not contains illegal evidence, block hash: ", b.Hash())
 		return
@@ -194,42 +170,42 @@ func (d *dposManager) ProcessHigherBlock(b *types.Block) {
 	d.handler.TryStartNewConsensus(b)
 }
 
-func (d *dposManager) ConfirmBlock() {
+func (d *DPOSManager) ConfirmBlock() {
 	d.handler.FinishConsensus()
 }
 
-func (d *dposManager) ChangeConsensus(onDuty bool) {
+func (d *DPOSManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *dposManager) OnProposalReceived(id dpeer.PID, p types.DPosProposal) {
+func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p types.DPosProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *dposManager) OnVoteReceived(id dpeer.PID, p types.DPosProposalVote) {
+func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p types.DPosProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(id, p)
 }
 
-func (d *dposManager) OnVoteRejected(id dpeer.PID, p types.DPosProposalVote) {
+func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p types.DPosProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)
 }
 
-func (d *dposManager) OnPing(id dpeer.PID, height uint32) {
+func (d *DPOSManager) OnPing(id dpeer.PID, height uint32) {
 	d.processHeartBeat(id, height)
 }
 
-func (d *dposManager) OnPong(id dpeer.PID, height uint32) {
+func (d *DPOSManager) OnPong(id dpeer.PID, height uint32) {
 	d.processHeartBeat(id, height)
 }
 
-func (d *dposManager) OnBlock(id dpeer.PID, block *types.Block) {
+func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
 		if _, _, err := d.blockPool.AppendDposBlock(&types.DposBlock{
@@ -241,24 +217,24 @@ func (d *dposManager) OnBlock(id dpeer.PID, block *types.Block) {
 	}
 }
 
-func (d *dposManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
+func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
 	if _, err := d.getBlock(blockHash); err != nil {
 		log.Info("[ProcessInv] send getblock:", blockHash.String())
 		d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
 	}
 }
 
-func (d *dposManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
+func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
 	if block, err := d.getBlock(blockHash); err == nil {
 		d.network.SendMessageToPeer(id, msg.NewBlock(block))
 	}
 }
 
-func (d *dposManager) OnGetBlocks(id dpeer.PID, startBlockHeight, endBlockHeight uint32) {
+func (d *DPOSManager) OnGetBlocks(id dpeer.PID, startBlockHeight, endBlockHeight uint32) {
 	d.handler.ResponseGetBlocks(id, startBlockHeight, endBlockHeight)
 }
 
-func (d *dposManager) OnResponseBlocks(id dpeer.PID, blockConfirms []*types.DposBlock) {
+func (d *DPOSManager) OnResponseBlocks(id dpeer.PID, blockConfirms []*types.DposBlock) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 
@@ -267,24 +243,24 @@ func (d *dposManager) OnResponseBlocks(id dpeer.PID, blockConfirms []*types.Dpos
 	}
 }
 
-func (d *dposManager) OnRequestConsensus(id dpeer.PID, height uint32) {
+func (d *DPOSManager) OnRequestConsensus(id dpeer.PID, height uint32) {
 	d.handler.HelpToRecoverAbnormal(id, height)
 }
 
-func (d *dposManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus) {
+func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus) {
 	log.Info("[OnResponseConsensus], status:", *status)
 	d.handler.RecoverAbnormal(status)
 }
 
-func (d *dposManager) OnBadNetwork() {
+func (d *DPOSManager) OnBadNetwork() {
 	d.dispatcher.OnAbnormalStateDetected()
 }
 
-func (d *dposManager) OnChangeView() {
+func (d *DPOSManager) OnChangeView() {
 	d.consensus.TryChangeView()
 }
 
-func (d *dposManager) OnBlockReceived(b *types.Block, confirmed bool) {
+func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
@@ -302,7 +278,7 @@ func (d *dposManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	}
 }
 
-func (d *dposManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (d *DPOSManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 
 	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
 	defer log.Info("[OnConfirmReceived] end")
@@ -311,33 +287,33 @@ func (d *dposManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	d.changeHeight()
 }
 
-func (d *dposManager) OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals) {
+func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals) {
 	d.illegalMonitor.AddEvidence(proposals)
 }
 
-func (d *dposManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes) {
+func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes) {
 	d.illegalMonitor.AddEvidence(votes)
 }
 
-func (d *dposManager) OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks) {
+func (d *DPOSManager) OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks) {
 	d.illegalMonitor.AddEvidence(i)
 }
 
-func (d *dposManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
 	d.illegalMonitor.AddEvidence(s)
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
-func (d *dposManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
+func (d *DPOSManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
 	d.dispatcher.OnInactiveArbitratorsReceived(tx)
 }
 
-func (d *dposManager) OnResponseInactiveArbitratorsReceived(
+func (d *DPOSManager) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signers []byte, signs []byte) {
 	d.dispatcher.OnResponseInactiveArbitratorsReceived(txHash, signers, signs)
 }
 
-func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
+func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 	currentProposal := d.dispatcher.GetProcessingProposal()
 	if currentProposal != nil {
 		responseProposal := &dmsg.Proposal{Proposal: *currentProposal}
@@ -345,7 +321,7 @@ func (d *dposManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 	}
 }
 
-func (d *dposManager) changeHeight() {
+func (d *DPOSManager) changeHeight() {
 	if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil {
 		log.Error("Error occurred with change height: ", err)
 		return
@@ -362,13 +338,13 @@ func (d *dposManager) changeHeight() {
 	d.ChangeConsensus(onDuty)
 }
 
-func (d *dposManager) processHeartBeat(id dpeer.PID, height uint32) {
+func (d *DPOSManager) processHeartBeat(id dpeer.PID, height uint32) {
 	if d.tryRequestBlocks(id, height) {
 		log.Info("Found higher block, requesting it.")
 	}
 }
 
-func (d *dposManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
+func (d *DPOSManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
 	height := d.dispatcher.CurrentHeight()
 	if sourceHeight > height {
 		m := &dmsg.GetBlocks{
@@ -381,7 +357,7 @@ func (d *dposManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
 	return false
 }
 
-func (d *dposManager) getBlock(blockHash common.Uint256) (*types.Block, error) {
+func (d *DPOSManager) getBlock(blockHash common.Uint256) (*types.Block, error) {
 	block, have := d.blockPool.GetBlock(blockHash)
 	if have {
 		return block, nil

@@ -18,11 +18,11 @@ type Consensus struct {
 	consensusStatus uint32
 	viewOffset      uint32
 
-	manager     DposManager
+	manager     *DPOSManager
 	currentView view
 }
 
-func NewConsensus(manager DposManager, tolerance time.Duration,
+func NewConsensus(manager *DPOSManager, tolerance time.Duration,
 	viewListener ViewListener) *Consensus {
 	c := &Consensus{
 		consensusStatus: consensusReady,
