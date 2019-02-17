@@ -17,13 +17,13 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
-type DposNetworkConfig struct {
+type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
 	Store              interfaces.IDposStore
 }
 
-type DposNetwork interface {
-	Initialize(dnConfig DposNetworkConfig)
+type DPOSNetwork interface {
+	Initialize(dnConfig DPOSNetworkConfig)
 
 	Start()
 	Stop() error
@@ -86,7 +86,7 @@ type DPOSManager struct {
 	blockCache *ConsensusBlockCache
 
 	handler        DposHandlerSwitch
-	network        DposNetwork
+	network        DPOSNetwork
 	dispatcher     *ProposalDispatcher
 	consensus      *Consensus
 	illegalMonitor *IllegalBehaviorMonitor
@@ -113,7 +113,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 }
 
 func (d *DPOSManager) Initialize(handler DposHandlerSwitch,
-	dispatcher *ProposalDispatcher, consensus *Consensus, network DposNetwork,
+	dispatcher *ProposalDispatcher, consensus *Consensus, network DPOSNetwork,
 	illegalMonitor *IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
 	d.handler = handler

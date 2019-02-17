@@ -107,7 +107,9 @@ func (a *Arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 }
 
 func (a *Arbitrator) OnNewElection(arbiters [][]byte) {
-	a.network.UpdatePeers(arbiters)
+	if err := a.network.UpdatePeers(arbiters); err != nil {
+		log.Warn("[OnNewElection] update peers error: ", err)
+	}
 }
 
 func (a *Arbitrator) changeViewLoop() {
@@ -182,7 +184,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 
 	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus,
 		network, illegalMonitor, cfg.BlockMemPool, cfg.TxMemPool, cfg.Broadcast)
-	network.Initialize(manager.DposNetworkConfig{
+	network.Initialize(manager.DPOSNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
 		Store:              cfg.Store,
 	})
