@@ -84,7 +84,7 @@ type DposManager interface {
 	GetArbitrators() interfaces.Arbitrators
 
 	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher,
-		consensus Consensus, network DposNetwork,
+		consensus *Consensus, network DposNetwork,
 		illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 		txPool *mempool.TxPool, broadcast func(message p2p.Message))
 
@@ -112,7 +112,7 @@ type dposManager struct {
 	handler        DposHandlerSwitch
 	network        DposNetwork
 	dispatcher     ProposalDispatcher
-	consensus      Consensus
+	consensus      *Consensus
 	illegalMonitor IllegalBehaviorMonitor
 
 	arbitrators interfaces.Arbitrators
@@ -137,7 +137,7 @@ func NewManager(cfg DposManagerConfig) DposManager {
 }
 
 func (d *dposManager) Initialize(handler DposHandlerSwitch,
-	dispatcher ProposalDispatcher, consensus Consensus, network DposNetwork,
+	dispatcher ProposalDispatcher, consensus *Consensus, network DposNetwork,
 	illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
 	d.handler = handler
