@@ -17,6 +17,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/function.hpp>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #define REJECT_INVALID     0x10 // transaction is invalid for some reason (invalid signature, output value > input, etc)
 #define REJECT_SPENT       0x12 // an input is already spent

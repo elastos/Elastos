@@ -279,19 +279,6 @@ TEST_CASE(
 		REQUIRE(mnemonic2 == mnemonic);
 		masterWalletManager->DestroyWallet(masterWalletId);
 	}
-	SECTION("export & import password is special symbol") {
-		std::string phrasePassword = "❤❥웃유♋☮㊣㊎";
-		std::string payPassword = "❤❥웃유♋☮㊣㊎";
-
-		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
-			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-		mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
-		REQUIRE(!mnemonic2.empty());
-		REQUIRE(mnemonic2 == mnemonic);
-		masterWalletManager->DestroyWallet(masterWalletId);
-	}
 	SECTION("export & import password is chinese") {
 		std::string phrasePassword = "测试中文为密码";
 		std::string payPassword = "的情况怎么样";

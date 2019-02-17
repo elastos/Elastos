@@ -4,6 +4,8 @@
 
 #include "BigNum.h"
 
+#include <cassert>
+
 namespace Elastos {
 	namespace ElaWallet {
 
