@@ -36,7 +36,7 @@ type illegalBehaviorMonitor struct {
 	cachedProposals map[common.Uint256]*types.DPosProposal
 
 	evidenceCache evidenceCache
-	manager       DposManager
+	manager       *DPOSManager
 
 	inactiveArbitratorsTxHash *common.Uint256
 }
