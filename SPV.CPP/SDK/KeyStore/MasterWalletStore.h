@@ -48,7 +48,7 @@ namespace Elastos {
 
 			const VotePubKeyMap &GetVotePublicKeyMap() const;
 
-			const CMBlock &GetVotePublicKey(const std::string &chainID) const;
+			CMBlock GetVotePublicKey(const std::string &chainID) const;
 
 			void SetVotePublicKeyMap(const VotePubKeyMap &publicKey);
 

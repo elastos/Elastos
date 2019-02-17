@@ -69,7 +69,7 @@ namespace Elastos {
 			return _votePublicKeyMap;
 		}
 
-		const CMBlock &MasterWalletStore::GetVotePublicKey(const std::string &chainID) const {
+		CMBlock MasterWalletStore::GetVotePublicKey(const std::string &chainID) const {
 			if (_votePublicKeyMap.find(chainID) == _votePublicKeyMap.end())
 				return CMBlock();
 
