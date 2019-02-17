@@ -24,7 +24,7 @@ type ProposalDispatcherConfig struct {
 	store.EventStoreAnalyzerConfig
 	EventMonitor *log.EventMonitor
 	Consensus    *Consensus
-	Network      DposNetwork
+	Network      DPOSNetwork
 	Manager      *DPOSManager
 	Account      account.DposAccount
 	ChainParams  *config.Params

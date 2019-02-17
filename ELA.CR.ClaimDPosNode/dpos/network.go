@@ -58,7 +58,7 @@ type network struct {
 	sidechainIllegalEvidence chan *types.SidechainIllegalData
 }
 
-func (n *network) Initialize(dnConfig manager.DposNetworkConfig) {
+func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
 	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {

@@ -45,7 +45,7 @@ type DposHandlerSwitch interface {
 type dposHandlerSwitch struct {
 	proposalDispatcher *ProposalDispatcher
 	consensus          *Consensus
-	network            DposNetwork
+	network            DPOSNetwork
 	manager            *DPOSManager
 	arbitrators        interfaces.Arbitrators
 
@@ -58,7 +58,7 @@ type dposHandlerSwitch struct {
 	isAbnormal bool
 }
 
-func NewHandler(network DposNetwork, manager *DPOSManager,
+func NewHandler(network DPOSNetwork, manager *DPOSManager,
 	monitor *log.EventMonitor, arbitrators interfaces.Arbitrators) DposHandlerSwitch {
 	h := &dposHandlerSwitch{
 		network:      network,

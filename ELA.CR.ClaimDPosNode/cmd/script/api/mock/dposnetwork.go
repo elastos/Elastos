@@ -12,7 +12,7 @@ import (
 )
 
 type NetworkMock interface {
-	DposNetwork
+	DPOSNetwork
 	SetListener(listener NetworkEventListener)
 
 	FirePing(id peer.PID, height uint32)
@@ -87,7 +87,7 @@ func (n *network) SetListener(listener NetworkEventListener) {
 	n.listener = listener
 }
 
-func (n *network) Initialize(dnConfig DposNetworkConfig) {
+func (n *network) Initialize(dnConfig DPOSNetworkConfig) {
 
 }
 
