@@ -1,23 +1,16 @@
 
-# How to Get Involved
+# 如何参与
 
-#### 1. Join our Telegram! -&nbsp;[https://t.me/elastosgroup](https://t.me/elastosgroup)
+#### 1. 加入我们的电报群！-&nbsp;[https://t.me/elastosgroup](https://t.me/elastosgroup)
 
+#### 2. 注册Cyber Republic 并前往论坛
 
+注册Cyber Republic后，您的账户将直接与论坛连接，仅需点击菜单栏中的论坛链接或者在浏览器输入[https://forum.cyberrepublic.org](https://forum.cyberrepublic.org) 即可。在如果您已经登录了Cyber Republic账号，将自动登录论坛；否则，页面将提示您先进行登录，再重新回到论坛。
 
-#### 2. Sign up on Cyber Republic and head over to the forums
+#### 3. 在论坛上讨论您的想法
 
-After signing up on Cyber Republic your account is linked to the forums, simply click the link in the header or
-go to [https://forum.cyberrepublic.org](https://forum.cyberrepublic.org). It will log you in automatically or
-request that you log into Cyber Republic and redirect you back to the forums.
+如果您有特定的想法或建议，论坛就是您表达的最佳场所。而在Cyber Republic的网站上创建一个建议之前，请您务必为它准备好具体详实的论据，如果是一份白皮书就更好了。
 
-#### 3. Discuss your idea on the forums
-
-If you have a specific idea or suggestion this is the best place to start it. You shouldn't be creating a Suggestion
-on the Cyber Republic website until you have a concrete argument for it and even better a whitepaper.
-
-#### 4. If people like your idea, create a Suggestion!
-
-The CR website has a Suggestions section at [https://www.cyberrepublic.org/suggestion](https://www.cyberrepublic.org/suggestion),
-anyone logged in can create or upvote Suggestions.
+#### 4. 如果人们喜欢您的想法，请发表一个建议！
+Cyber Republic网站上有一个建议的界面[https://www.cyberrepublic.org/suggestion](https://www.cyberrepublic.org/suggestion) 任何登录的人都可以发表建议或去投票支持建议。
 
