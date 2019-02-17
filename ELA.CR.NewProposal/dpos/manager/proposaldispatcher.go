@@ -57,7 +57,7 @@ type ProposalDispatcher interface {
 type ProposalDispatcherConfig struct {
 	store.EventStoreAnalyzerConfig
 	EventMonitor *log.EventMonitor
-	Consensus    Consensus
+	Consensus    *Consensus
 	Network      DposNetwork
 	Manager      DposManager
 	Account      account.DposAccount

@@ -296,7 +296,7 @@ func dposManagerSignVote(L *lua.LState) int {
 type manager struct {
 	DposManager
 	Account        account.DposAccount
-	Consensus      Consensus
+	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor
 	Handler        DposHandlerSwitch
 	Dispatcher     ProposalDispatcher
