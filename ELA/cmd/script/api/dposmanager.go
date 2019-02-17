@@ -93,7 +93,7 @@ func newDposManager(L *lua.LState) int {
 
 	mockManager.Peer = mock.NewPeerMock()
 	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor, mockManager.Peer.GetBlockPool(), mockManager.Peer.GetTxPool(), mockManager.Peer.Broadcast)
-	n.Initialize(DposNetworkConfig{
+	n.Initialize(DPOSNetworkConfig{
 		ProposalDispatcher: mockManager.Dispatcher,
 		Store:              nil,
 	})
