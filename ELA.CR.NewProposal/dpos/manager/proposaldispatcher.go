@@ -20,40 +20,6 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
-type ProposalDispatcher interface {
-	AbnormalRecovering
-
-	//status
-	GetProcessingBlock() *types.Block
-	GetProcessingProposal() *types.DPosProposal
-	IsProcessingBlockEmpty() bool
-	CurrentHeight() uint32
-
-	//proposal
-	StartProposal(b *types.Block)
-	CleanProposals(changeView bool)
-	FinishProposal()
-	TryStartSpeculatingProposal(b *types.Block)
-	ProcessProposal(d types.DPosProposal)
-
-	FinishConsensus()
-
-	ProcessVote(v types.DPosProposalVote, accept bool)
-	AddPendingVote(v types.DPosProposalVote)
-
-	//abnormal
-	OnAbnormalStateDetected()
-	RequestAbnormalRecovering()
-	TryAppendAndBroadcastConfirmBlockMsg() bool
-
-	//inactive arbitrators
-	OnInactiveArbitratorsReceived(tx *types.Transaction)
-	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256, signer []byte,
-		sign []byte)
-	CreateInactiveArbitrators() (*types.Transaction, error)
-	IsViewChangedTimeOut() bool
-}
-
 type ProposalDispatcherConfig struct {
 	store.EventStoreAnalyzerConfig
 	EventMonitor *log.EventMonitor
@@ -64,7 +30,7 @@ type ProposalDispatcherConfig struct {
 	ChainParams  *config.Params
 }
 
-type proposalDispatcher struct {
+type ProposalDispatcher struct {
 	cfg ProposalDispatcherConfig
 
 	processingBlock    *types.Block
@@ -81,11 +47,11 @@ type proposalDispatcher struct {
 	illegalMonitor IllegalBehaviorMonitor
 }
 
-func (p *proposalDispatcher) OnAbnormalStateDetected() {
+func (p *ProposalDispatcher) OnAbnormalStateDetected() {
 	p.RequestAbnormalRecovering()
 }
 
-func (p *proposalDispatcher) RequestAbnormalRecovering() {
+func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
 	msgItem := &dmsg.RequestConsensus{Height: height}
 	peerID := p.cfg.Network.GetActivePeer()
@@ -96,15 +62,15 @@ func (p *proposalDispatcher) RequestAbnormalRecovering() {
 	p.cfg.Network.SendMessageToPeer(*peerID, msgItem)
 }
 
-func (p *proposalDispatcher) GetProcessingBlock() *types.Block {
+func (p *ProposalDispatcher) GetProcessingBlock() *types.Block {
 	return p.processingBlock
 }
 
-func (p *proposalDispatcher) GetProcessingProposal() *types.DPosProposal {
+func (p *ProposalDispatcher) GetProcessingProposal() *types.DPosProposal {
 	return p.processingProposal
 }
 
-func (p *proposalDispatcher) ProcessVote(v types.DPosProposalVote, accept bool) {
+func (p *ProposalDispatcher) ProcessVote(v types.DPosProposalVote, accept bool) {
 	log.Info("[ProcessVote] start")
 	defer log.Info("[ProcessVote] end")
 
@@ -130,15 +96,15 @@ func (p *proposalDispatcher) ProcessVote(v types.DPosProposalVote, accept bool) 
 	}
 }
 
-func (p *proposalDispatcher) AddPendingVote(v types.DPosProposalVote) {
+func (p *ProposalDispatcher) AddPendingVote(v types.DPosProposalVote) {
 	p.pendingVotes[v.Hash()] = v
 }
 
-func (p *proposalDispatcher) IsProcessingBlockEmpty() bool {
+func (p *ProposalDispatcher) IsProcessingBlockEmpty() bool {
 	return p.processingBlock == nil
 }
 
-func (p *proposalDispatcher) StartProposal(b *types.Block) {
+func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	log.Info("[StartProposal] start")
 	defer log.Info("[StartProposal] end")
 
@@ -179,7 +145,7 @@ func (p *proposalDispatcher) StartProposal(b *types.Block) {
 	p.acceptProposal(proposal)
 }
 
-func (p *proposalDispatcher) TryStartSpeculatingProposal(b *types.Block) {
+func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *types.Block) {
 	log.Info("[TryStartSpeculatingProposal] start")
 	defer log.Info("[TryStartSpeculatingProposal] end")
 
@@ -190,7 +156,7 @@ func (p *proposalDispatcher) TryStartSpeculatingProposal(b *types.Block) {
 	p.processingBlock = b
 }
 
-func (p *proposalDispatcher) FinishProposal() {
+func (p *ProposalDispatcher) FinishProposal() {
 	log.Info("[FinishProposal] start")
 	defer log.Info("[FinishProposal] end")
 
@@ -217,7 +183,7 @@ func (p *proposalDispatcher) FinishProposal() {
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 }
 
-func (p *proposalDispatcher) CleanProposals(changeView bool) {
+func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	log.Info("Clean proposals")
 
 	//todo clear pending proposals that are lower than current consensus height
@@ -235,7 +201,7 @@ func (p *proposalDispatcher) CleanProposals(changeView bool) {
 	}
 }
 
-func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
+func (p *ProposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
@@ -296,7 +262,7 @@ func (p *proposalDispatcher) ProcessProposal(d types.DPosProposal) {
 	p.acceptProposal(d)
 }
 
-func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
+func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	currentVoteSlot := &types.DPosProposalVoteSlot{
 		Hash:     p.processingBlock.Hash(),
 		Proposal: *p.processingProposal,
@@ -320,7 +286,7 @@ func (p *proposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	return true
 }
 
-func (p *proposalDispatcher) OnBlockAdded(b *types.Block) {
+func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
 
 	if p.cfg.Consensus.IsRunning() {
 		for k, v := range p.pendingProposals {
@@ -333,7 +299,7 @@ func (p *proposalDispatcher) OnBlockAdded(b *types.Block) {
 	}
 }
 
-func (p *proposalDispatcher) FinishConsensus() {
+func (p *ProposalDispatcher) FinishConsensus() {
 	if p.cfg.Consensus.IsRunning() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
@@ -345,7 +311,7 @@ func (p *proposalDispatcher) FinishConsensus() {
 	}
 }
 
-func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error {
+func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error {
 	if height > p.CurrentHeight() {
 		return errors.New("Requesting height greater than current processing height")
 	}
@@ -373,7 +339,7 @@ func (p *proposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.
 	return nil
 }
 
-func (p *proposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error {
+func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error {
 	p.acceptVotes = make(map[common.Uint256]types.DPosProposalVote)
 	for _, v := range status.AcceptVotes {
 		p.acceptVotes[v.Hash()] = v
@@ -397,7 +363,7 @@ func (p *proposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusSt
 	return nil
 }
 
-func (p *proposalDispatcher) CurrentHeight() uint32 {
+func (p *ProposalDispatcher) CurrentHeight() uint32 {
 	var height uint32
 	currentBlock := p.GetProcessingBlock()
 	if currentBlock != nil {
@@ -408,11 +374,11 @@ func (p *proposalDispatcher) CurrentHeight() uint32 {
 	return height
 }
 
-func (p *proposalDispatcher) IsViewChangedTimeOut() bool {
+func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
 	return p.inactiveCountDown.IsTimeOut()
 }
 
-func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
+func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
 	var err error
 
@@ -463,7 +429,7 @@ func (p *proposalDispatcher) OnInactiveArbitratorsReceived(
 	p.cfg.Network.BroadcastMessage(response)
 }
 
-func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
+func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signer []byte, sign []byte) {
 
 	if !p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
@@ -502,7 +468,7 @@ func (p *proposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureLength)
 }
 
-func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
+func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
 	if signCount > minSignCount {
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
@@ -528,7 +494,7 @@ func (p *proposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	return false
 }
 
-func (p *proposalDispatcher) alreadyExistVote(v types.DPosProposalVote) bool {
+func (p *ProposalDispatcher) alreadyExistVote(v types.DPosProposalVote) bool {
 	_, ok := p.acceptVotes[v.Hash()]
 	if ok {
 		log.Info("[alreadyExistVote]: ", v.Signer, "already in the AcceptVotes!")
@@ -544,7 +510,7 @@ func (p *proposalDispatcher) alreadyExistVote(v types.DPosProposalVote) bool {
 	return false
 }
 
-func (p *proposalDispatcher) countAcceptedVote(v types.DPosProposalVote) {
+func (p *ProposalDispatcher) countAcceptedVote(v types.DPosProposalVote) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
@@ -559,7 +525,7 @@ func (p *proposalDispatcher) countAcceptedVote(v types.DPosProposalVote) {
 	}
 }
 
-func (p *proposalDispatcher) countRejectedVote(v types.DPosProposalVote) {
+func (p *ProposalDispatcher) countRejectedVote(v types.DPosProposalVote) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
@@ -574,7 +540,7 @@ func (p *proposalDispatcher) countRejectedVote(v types.DPosProposalVote) {
 	}
 }
 
-func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
+func (p *ProposalDispatcher) acceptProposal(d types.DPosProposal) {
 	log.Info("[acceptProposal] start")
 	defer log.Info("[acceptProposal] end")
 
@@ -598,7 +564,7 @@ func (p *proposalDispatcher) acceptProposal(d types.DPosProposal) {
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
-func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
+func (p *ProposalDispatcher) rejectProposal(d types.DPosProposal) {
 	p.setProcessingProposal(d)
 
 	vote := types.DPosProposalVote{ProposalHash: d.Hash(), Signer: p.cfg.Manager.GetPublicKey(), Accept: false}
@@ -625,7 +591,7 @@ func (p *proposalDispatcher) rejectProposal(d types.DPosProposal) {
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
-func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
+func (p *ProposalDispatcher) setProcessingProposal(d types.DPosProposal) {
 	p.processingProposal = &d
 
 	for _, v := range p.pendingVotes {
@@ -636,7 +602,7 @@ func (p *proposalDispatcher) setProcessingProposal(d types.DPosProposal) {
 	p.pendingVotes = make(map[common.Uint256]types.DPosProposalVote)
 }
 
-func (p *proposalDispatcher) CreateInactiveArbitrators() (
+func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	*types.Transaction, error) {
 	var err error
 
@@ -692,7 +658,7 @@ func (p *proposalDispatcher) CreateInactiveArbitrators() (
 	return tx, nil
 }
 
-func (p *proposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
+func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 
 	var pks []*crypto.PublicKey
 	for _, v := range p.cfg.Arbitrators.GetArbitrators() {
@@ -708,8 +674,9 @@ func (p *proposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 	return crypto.CreateMultiSignRedeemScript(minSignCount+1, pks)
 }
 
-func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispatcher, IllegalBehaviorMonitor) {
-	p := &proposalDispatcher{
+func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
+	*ProposalDispatcher, IllegalBehaviorMonitor) {
+	p := &ProposalDispatcher{
 		cfg:                cfg,
 		processingBlock:    nil,
 		processingProposal: nil,
@@ -734,7 +701,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (ProposalDispa
 	i := &illegalBehaviorMonitor{
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*types.DPosProposal),
-		evidenceCache:   evidenceCache{make(map[common.Uint256]types.DposIllegalData)},
+		evidenceCache:   evidenceCache{make(map[common.Uint256]types.
+			DposIllegalData)},
 		manager:         cfg.Manager,
 	}
 	p.illegalMonitor = i
