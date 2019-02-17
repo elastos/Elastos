@@ -299,7 +299,7 @@ type manager struct {
 	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor
 	Handler        DposHandlerSwitch
-	Dispatcher     ProposalDispatcher
+	Dispatcher     *ProposalDispatcher
 	IllegalMonitor IllegalBehaviorMonitor
 	Peer           mock.PeerMock
 }

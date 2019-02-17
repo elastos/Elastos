@@ -30,7 +30,7 @@ type DposHandlerSwitch interface {
 	ViewListener
 	DposEventConditionHandler
 
-	Initialize(dispatcher ProposalDispatcher, consensus *Consensus)
+	Initialize(dispatcher *ProposalDispatcher, consensus *Consensus)
 	SwitchTo(isOnDuty bool)
 
 	FinishConsensus()
@@ -43,7 +43,7 @@ type DposHandlerSwitch interface {
 }
 
 type dposHandlerSwitch struct {
-	proposalDispatcher ProposalDispatcher
+	proposalDispatcher *ProposalDispatcher
 	consensus          *Consensus
 	network            DposNetwork
 	manager            DposManager
@@ -74,7 +74,7 @@ func NewHandler(network DposNetwork, manager DposManager,
 	return h
 }
 
-func (h *dposHandlerSwitch) Initialize(dispatcher ProposalDispatcher,
+func (h *dposHandlerSwitch) Initialize(dispatcher *ProposalDispatcher,
 	consensus *Consensus) {
 	h.proposalDispatcher = dispatcher
 	h.consensus = consensus

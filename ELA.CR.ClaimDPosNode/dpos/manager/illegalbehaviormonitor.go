@@ -32,7 +32,7 @@ type IllegalBehaviorMonitor interface {
 }
 
 type illegalBehaviorMonitor struct {
-	dispatcher      *proposalDispatcher
+	dispatcher      *ProposalDispatcher
 	cachedProposals map[common.Uint256]*types.DPosProposal
 
 	evidenceCache evidenceCache
