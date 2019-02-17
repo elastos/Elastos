@@ -215,7 +215,8 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 			sp.NA(), v.Port, v.Services, na)
 
 		// Filter and add valid net address to address manager.
-		if sp.NAFilter() != nil && sp.NAFilter().Filter(na) {
+		naFilter := sp.NAFilter()
+		if naFilter == nil || sp.NAFilter().Filter(na) {
 			addrManager.AddAddress(na, na)
 		}
 	}
@@ -252,15 +253,13 @@ func (sp *serverPeer) OnGetAddr(_ *peer.Peer, msg *msg.GetAddr) {
 
 	// Filter addresses if peer NAFilter not nil.
 	naFilter := sp.NAFilter()
-	if naFilter != nil {
-		addrFiltered := make([]*p2p.NetAddress, 0, len(addrCache))
-		for _, na := range addrCache {
-			if naFilter.Filter(na) {
-				addrFiltered = append(addrFiltered, na)
-			}
+	addrFiltered := make([]*p2p.NetAddress, 0, len(addrCache))
+	for _, na := range addrCache {
+		if naFilter == nil || naFilter.Filter(na) {
+			addrFiltered = append(addrFiltered, na)
 		}
-		addrCache = addrFiltered
 	}
+	addrCache = addrFiltered
 
 	// Push the addresses.
 	sp.pushAddrMsg(addrCache)
@@ -416,9 +415,6 @@ func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
 			state.outboundPeers[sp.ID()] = sp
 		}
 	}
-
-	// Set network address filter for peer.
-	sp.SetNAFilter(s.cfg.NAFilter)
 
 	return true
 }
@@ -706,6 +702,7 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
+	sp.SetNAFilter(s.cfg.NAFilter)
 	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
 }
@@ -725,6 +722,7 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp.Peer = p
 	sp.connReq = c
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
+	sp.SetNAFilter(s.cfg.NAFilter)
 	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
 	s.addrManager.Attempt(sp.NA())
