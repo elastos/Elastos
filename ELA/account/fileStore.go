@@ -129,6 +129,12 @@ func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, en
 		PrivateKeyEncrypted: BytesToHexString(encryptedPrivateKey),
 		Type:                accountType,
 	}
+
+	for _, v := range cs.data.Account {
+		if a.ProgramHash == v.ProgramHash {
+			return errors.New("account already exists")
+		}
+	}
 	cs.data.Account = append(cs.data.Account, a)
 
 	JSONBlob, err := json.Marshal(cs.data)
