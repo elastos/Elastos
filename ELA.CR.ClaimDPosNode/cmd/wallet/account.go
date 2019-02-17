@@ -196,24 +196,24 @@ func addMultiSigAccount(c *cli.Context) error {
 func delAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
 	pwdHex := c.String("password")
-
-	var pwd []byte
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
-	} else {
-		pwd = []byte(pwdHex)
-	}
-
 	if c.NArg() < 1 {
 		cmdcom.PrintErrorMsg("Missing argument. Account address expected.")
 		cli.ShowCommandHelpAndExit(c, "delete", 1)
 	}
 	address := c.Args().First()
 	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return err
+	}
+
+	pwd := []byte(pwdHex)
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
+	}
 
 	client, err := account.Open(walletPath, pwd)
 	if err != nil {
@@ -268,7 +268,7 @@ func importAccount(c *cli.Context) error {
 			return errors.New("client nil")
 		}
 	} else {
-		// open a keystore file
+		// append to keystore file
 		if pwdHex == "" {
 			pwd, err = cmdcom.GetPassword()
 			if err != nil {
