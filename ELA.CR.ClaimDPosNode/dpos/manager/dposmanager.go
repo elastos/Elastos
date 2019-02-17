@@ -85,7 +85,7 @@ type DPOSManager struct {
 	publicKey  []byte
 	blockCache *ConsensusBlockCache
 
-	handler        DposHandlerSwitch
+	handler        *DPOSHandlerSwitch
 	network        DPOSNetwork
 	dispatcher     *ProposalDispatcher
 	consensus      *Consensus
@@ -112,7 +112,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 	return m
 }
 
-func (d *DPOSManager) Initialize(handler DposHandlerSwitch,
+func (d *DPOSManager) Initialize(handler *DPOSHandlerSwitch,
 	dispatcher *ProposalDispatcher, consensus *Consensus, network DPOSNetwork,
 	illegalMonitor *IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
