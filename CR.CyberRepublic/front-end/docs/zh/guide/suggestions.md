@@ -1,18 +1,18 @@
 
 
-# Suggestions
+# 建议
 
-CR Suggestions are a key feature of the CRC workflow described [here](/overview/crc.md).
+Cyber Republic建议是Cyber Republic 共识的[工作流程](/overview/crc.md)中关键的一个功能。.
 
-Anyone with an account can create a Suggestion at [Cyber Republic Website - Suggestions Page](https://www.cyberrepublic.org/suggestion).
+任何拥有CR账号的人都可以在[Cyber Republic 网站-建议页面](https://www.cyberrepublic.org/suggestion)上创建建议.
 
-In the future we will tie accounts to wallets and add a reputation system to ensure a high quality of submissions.
+未来，我们会将这些账户与钱包地址绑定，并且增加信誉系统来确保社区提交高质量的建议。
 
-!> Spamming, creating fake accounts for upvoting and inappropriate content will not be tolerated.
+!> 垃圾帖子，为投票和发布不适当的内容而创建虚假帐户在这里是不能容忍的。
 
 
-#### Post your idea on the forums first!
+#### 首先请在论坛上发表您的观点！
 
-This is a highly suggested way to gather feedback on your idea before publishing it as a Suggestion.
+在您将观点发表为建议之前，通过这样的方式可以知晓这个观点获得的社区反馈。
 
-You can find the forums here: [https://forum.cyberrepublic.org](https://forum.cyberrepublic.org)
+您可以点击此处进入论坛：[https://forum.cyberrepublic.org](https://forum.cyberrepublic.org)
