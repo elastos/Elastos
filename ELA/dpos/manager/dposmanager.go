@@ -89,7 +89,7 @@ type DPOSManager struct {
 	network        DposNetwork
 	dispatcher     *ProposalDispatcher
 	consensus      *Consensus
-	illegalMonitor IllegalBehaviorMonitor
+	illegalMonitor *IllegalBehaviorMonitor
 
 	arbitrators interfaces.Arbitrators
 	blockPool   *mempool.BlockPool
@@ -114,7 +114,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 
 func (d *DPOSManager) Initialize(handler DposHandlerSwitch,
 	dispatcher *ProposalDispatcher, consensus *Consensus, network DposNetwork,
-	illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
+	illegalMonitor *IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
 	d.handler = handler
 	d.dispatcher = dispatcher

@@ -44,7 +44,7 @@ type ProposalDispatcher struct {
 	currentInactiveArbitratorTx *types.Transaction
 
 	eventAnalyzer  *store.EventStoreAnalyzer
-	illegalMonitor IllegalBehaviorMonitor
+	illegalMonitor *IllegalBehaviorMonitor
 }
 
 func (p *ProposalDispatcher) OnAbnormalStateDetected() {
@@ -675,7 +675,7 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 }
 
 func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
-	*ProposalDispatcher, IllegalBehaviorMonitor) {
+	*ProposalDispatcher, *IllegalBehaviorMonitor) {
 	p := &ProposalDispatcher{
 		cfg:                cfg,
 		processingBlock:    nil,
@@ -698,7 +698,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		inactiveArbitratorsEliminated: false,
 	}
 
-	i := &illegalBehaviorMonitor{
+	i := &IllegalBehaviorMonitor{
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*types.DPosProposal),
 		evidenceCache:   evidenceCache{make(map[common.Uint256]types.

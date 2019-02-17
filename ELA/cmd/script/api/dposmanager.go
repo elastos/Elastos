@@ -300,6 +300,6 @@ type manager struct {
 	EventMonitor   *log.EventMonitor
 	Handler        DposHandlerSwitch
 	Dispatcher     *ProposalDispatcher
-	IllegalMonitor IllegalBehaviorMonitor
+	IllegalMonitor *IllegalBehaviorMonitor
 	Peer           mock.PeerMock
 }
