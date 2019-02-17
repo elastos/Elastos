@@ -1,11 +1,10 @@
 
-# The Secretariat Team
+# 秘书处团队
 
-The Secretariat Team is the administrative team behind the CRC and Council.
+秘书处团队是Cyber Republic共识和委员会背后的行政团队。
 
-This team will have a basic hierarchy with the Secretariat as its leader who will be responsible for the smooth operations of CR.
+秘书处团队会有基本的组织架构，它的领导者将负责整个Cyber Republic的流畅运营。
 
-There is no set composition or size for this team, but it will likely consist of a mix of full-time and part-time
-advisers in various fields and it will scale in size as needed.
+这个团队没有固定的人数限制，它很可能由不同领域的全职和兼职的顾问组成，并且其规模会随着需求的增加而逐渐增大。
 
-*A webpage is in the works now to list the Secretariat and the team*
+*我们正在开发一个包含秘书处及其团队成员介绍的网页*
