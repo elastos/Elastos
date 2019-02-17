@@ -42,7 +42,7 @@ type network struct {
 	listener           manager.NetworkEventListener
 	currentHeight      uint32
 	account            account.DposAccount
-	proposalDispatcher manager.ProposalDispatcher
+	proposalDispatcher *manager.ProposalDispatcher
 	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
 	store              interfaces.IDposStore

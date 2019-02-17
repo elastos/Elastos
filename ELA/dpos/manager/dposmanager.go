@@ -18,7 +18,7 @@ import (
 )
 
 type DposNetworkConfig struct {
-	ProposalDispatcher ProposalDispatcher
+	ProposalDispatcher *ProposalDispatcher
 	Store              interfaces.IDposStore
 }
 
@@ -83,7 +83,7 @@ type DposManager interface {
 	GetBlockCache() *ConsensusBlockCache
 	GetArbitrators() interfaces.Arbitrators
 
-	Initialize(handler DposHandlerSwitch, dispatcher ProposalDispatcher,
+	Initialize(handler DposHandlerSwitch, dispatcher *ProposalDispatcher,
 		consensus *Consensus, network DposNetwork,
 		illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 		txPool *mempool.TxPool, broadcast func(message p2p.Message))
@@ -111,7 +111,7 @@ type dposManager struct {
 
 	handler        DposHandlerSwitch
 	network        DposNetwork
-	dispatcher     ProposalDispatcher
+	dispatcher     *ProposalDispatcher
 	consensus      *Consensus
 	illegalMonitor IllegalBehaviorMonitor
 
@@ -137,7 +137,7 @@ func NewManager(cfg DposManagerConfig) DposManager {
 }
 
 func (d *dposManager) Initialize(handler DposHandlerSwitch,
-	dispatcher ProposalDispatcher, consensus *Consensus, network DposNetwork,
+	dispatcher *ProposalDispatcher, consensus *Consensus, network DposNetwork,
 	illegalMonitor IllegalBehaviorMonitor, blockPool *mempool.BlockPool,
 	txPool *mempool.TxPool, broadcast func(message p2p.Message)) {
 	d.handler = handler
@@ -145,7 +145,7 @@ func (d *dposManager) Initialize(handler DposHandlerSwitch,
 	d.consensus = consensus
 	d.network = network
 	d.illegalMonitor = illegalMonitor
-	d.blockCache.Listener = d.dispatcher.(*proposalDispatcher)
+	d.blockCache.Listener = d.dispatcher
 	d.blockPool = blockPool
 	d.txPool = txPool
 	d.broadcast = broadcast

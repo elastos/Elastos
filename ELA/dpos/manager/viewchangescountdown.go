@@ -18,7 +18,7 @@ const (
 )
 
 type ViewChangesCountDown struct {
-	dispatcher  ProposalDispatcher
+	dispatcher  *ProposalDispatcher
 	consensus   *Consensus
 	arbitrators interfaces.Arbitrators
 
