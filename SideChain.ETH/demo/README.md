@@ -4,10 +4,13 @@
 
 1. nodejs >= 10.4.0 (10.13.0 LTS recommended)
 
-2. web3.js >= 1.0.0 beta 
+2. web3.js >= 1.0.0 beta ,create a new folder and install as follow
 
    ```shell
-   ~$ npm install web3
+   ~$ make yourfolder
+   ~$ cd yourfolder
+   ~$ npm init -f 
+   ~$ npm install web3 --save
    ```
 
 3. Express.js >= 4.16.0 
