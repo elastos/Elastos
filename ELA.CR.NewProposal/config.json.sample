@@ -52,7 +52,7 @@
           "PublicKey": "030c756d9ac85337b3c9a4d94a70e2d3f99c6cbb6f78becbfc08baa3df830e5fb4",
           "NetAddress": "127.0.0.1:20348"
         }
-      ]
+      ],
       "EmergencyTriggerTimeSpan": 3600,
       "EmergencyDuration": 604800,
       "EmergencyInactivePenalty": 50000000000,

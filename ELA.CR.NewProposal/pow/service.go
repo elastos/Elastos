@@ -175,7 +175,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		if txs[i].IsIllegalTypeTx() || txs[i].IsInactiveArbitrators() {
 			return true
 		}
-		if txs[j].IsIllegalTypeTx() || txs[j].IsInactiveArbitrators(){
+		if txs[j].IsIllegalTypeTx() || txs[j].IsInactiveArbitrators() {
 			return false
 		}
 		return txs[i].FeePerKB > txs[j].FeePerKB

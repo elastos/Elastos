@@ -44,6 +44,7 @@ var txCommand = []cli.Command{
 			TransactionHexFlag,
 			TransactionFileFlag,
 			AccountWalletFlag,
+			AccountPasswordFlag,
 		},
 		Action: signTx,
 	},
@@ -121,11 +122,17 @@ func signTx(c *cli.Context) error {
 		return nil
 	}
 	walletPath := c.String("wallet")
-	password, err := cmdcom.GetPassword()
-	if err != nil {
-		return err
+	pwdHex := c.String("password")
+	pwd := []byte(pwdHex)
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
 	}
-	client, err := account.Open(walletPath, password)
+
+	client, err := account.Open(walletPath, pwd)
 	if err != nil {
 		return err
 	}
