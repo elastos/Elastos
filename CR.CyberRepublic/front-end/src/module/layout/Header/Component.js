@@ -372,7 +372,6 @@ export default class extends BaseComponent {
       'council-secretariat',
       'constitution/1',
       'council',
-      'docs',
     ], key)) {
 
       if (key === 'landing') {
@@ -451,7 +450,7 @@ export default class extends BaseComponent {
       let linkTo = 'https://cyberrepublic.org/docs/#/'
 
       if (I18N.getLang() === USER_LANGUAGE.zh) {
-        linkTo += `/${USER_LANGUAGE.zh}`
+        linkTo += `${USER_LANGUAGE.zh}/`
       }
 
       window.location.href = linkTo
