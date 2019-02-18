@@ -150,7 +150,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 	node := h.base.node
 	hash := req.Hash
 
-	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	block, err := chain.DefaultLedger.Blockchain.GetBlock(hash)
 	if err != nil {
 		log.Debugf("can't get block from hash %s, send not found message", hash)
 		node.SendMessage(v0.NewNotFound(hash))
