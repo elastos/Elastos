@@ -236,6 +236,11 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, "block hash unknown")
 	}
 
+	localHeight := chain.DefaultLedger.GetLocalBlockChainHeight()
+	if localHeight >= msgAuxBlock.Height {
+		return ResponsePack(InternalError, "reject the block which have existing height")
+	}
+
 	var aux aux.AuxPow
 	buf, _ := common.HexStringToBytes(auxPow)
 	if err := aux.Deserialize(bytes.NewReader(buf)); err != nil {
