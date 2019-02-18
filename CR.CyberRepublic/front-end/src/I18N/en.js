@@ -31,9 +31,10 @@ const en = {
   '0109': 'Submissions',
   '0110': 'Blog',
   'navigation.programs': 'Programs',
-  'navagation.suggestion': 'Suggestions',
-  'navagation.council': 'Council & Secreariat',
-  'navagation.constitution': 'Constitution',
+  'navigation.suggestion': 'Suggestions',
+  'navigation.council': 'Council & Secreariat',
+  'navigation.constitution': 'Constitution',
+  'navigation.docs': 'Docs',
 
   '0200': 'Profile',
   '0201': 'Login',

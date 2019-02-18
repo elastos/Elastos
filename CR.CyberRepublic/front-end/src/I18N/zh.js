@@ -31,9 +31,10 @@ const zh = {
   '0109': '提交',
   '0110': '博客',
   'navigation.programs': '项目',
-  'navagation.suggestion': '建议',
-  'navagation.council': '委员会&秘书处',
-  'navagation.constitution': '章程',
+  'navigation.suggestion': '建议',
+  'navigation.council': '委员会&秘书处',
+  'navigation.constitution': '章程',
+  'navigation.docs': '文档',
 
   '0200': '简介',
   '0201': '登录',
