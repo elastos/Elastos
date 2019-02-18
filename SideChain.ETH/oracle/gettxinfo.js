@@ -9,8 +9,6 @@ module.exports = async function(json_data, res) {
         if (sctxhash.indexOf("0x") !== 0) sctxhash = "0x" + sctxhash;
         console.log(sctxhash);
         console.log("============================================================");
-
-        let txinfo = await common.web3.eth.getTransaction(sctxhash);
         let txreceipt = await common.web3.eth.getTransactionReceipt(sctxhash);
         let payload = {};
         payload["crosschainassets"] = null;
@@ -23,7 +21,7 @@ module.exports = async function(json_data, res) {
                 }
                 let event = common.web3.eth.abi.decodeLog(common.payloadReceived.inputs, log.data, log.topics.slice(1));
 
-                let crosschainamount = String((event["_amount"]- txreceipt.gasUsed * txinfo.gasPrice) / 1e18);
+                let crosschainamount = String(((event["_amount"]) / 1e18)-0.0001);
                 let outputamount = String(event["_amount"] / 1e18);
 
                 payload["crosschainassets"].push({

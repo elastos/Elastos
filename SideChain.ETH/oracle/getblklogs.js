@@ -12,20 +12,15 @@ module.exports = async function(json_data, res) {
         let result = new Array();
         let txhash = null;
         let txlog = null;
-        let outputindex = 0;
-        let costamount = 0;
         for (const log of logs) {
             if (txhash === null || txhash != log["transactionHash"]) {
                 txhash = log["transactionHash"];
-                let txinfo = await common.web3.eth.getTransaction(txhash);
-                let txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
-                costamount = txreceipt.gasUsed * txinfo.gasPrice
                 txlog = {"txid": txhash.slice(2)};
                 result.push(txlog);
                 txlog["crosschainassets"] = new Array();
             }
 
-            let crosschainamount = String((log["returnValues"]["_amount"]- costamount) / 1e18);
+            let crosschainamount = String(((log["returnValues"]["_amount"]) / 1e18)-0.0001);
             let outputamount = String(log["returnValues"]["_amount"] / 1e18);
 
             txlog["crosschainassets"].push({
@@ -33,7 +28,6 @@ module.exports = async function(json_data, res) {
                 "crosschainamount": crosschainamount,
                 "outputamount":outputamount
             });
-            outputindex++;
         }
         res.json({"result": result, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
