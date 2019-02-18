@@ -20,7 +20,8 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 	necessaryEvidences := make(map[common.Uint256]interface{})
 	for k, v := range e.evidences {
 		tolerance := WaitHeightTolerance
-		if v.Type() != payload.IllegalBlock {
+		if v.Type() == payload.IllegalBlock ||
+			v.Type() == payload.InactiveArbitrator {
 			tolerance = 0
 		}
 		if v.GetBlockHeight()+tolerance <= block.Height {
