@@ -33,9 +33,21 @@ have to rely on the docker container.
 
 ##### Directory Structure
 
-We would like to keep everything in one root, this will all be relative to your `$HOME` variable
+We would like to keep everything in one root folder, this will all be relative to your `$HOME` variable
+- This is aliased as `~`.
 
-These should be set in your `~/.bash_profile`, don't forget to call it after the edits `source ~/.bash_profile`
+Most of Elastos components assumed everything is at `~/dev/src/github.com/elastos`, they've stopped hardcoding that
+but you can never be too sure, so I suggest you follow the convention.
+
+These should be set in your `~/.bash_profile`, don't forget to call this after the edits `source ~/.bash_profile`
+
+```
+export GOROOT=/usr/local/opt/go@1.9/libexec
+export GOPATH=$HOME/dev
+export GOBIN=$GOPATH/bin
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOBIN:$PATH
+```
 
 
 ### Steps
@@ -60,6 +72,14 @@ Review the Elastos.ELA.Client documentation for more functions such as retrievin
 
 
 #### 2. Setup the ELA Mainchain seed node -&nbsp;[guide is here](/core/mainchain/mainchain.md), don't have it mine by setting the `PowConfiguration` in `config.json` to:
+
+But since we are setting up a new genesis block we need to do the following things:
+
+1. run `glide cc && glide update && glide install` make sure you delete the `elastos` folder in case it was leftover
+
+2. change the genesis block timestamp in `blockchain/blockchain.go - line 106` to near the current time
+
+3.
 
 ```
 "PowConfiguration": {
