@@ -1,7 +1,8 @@
 package api
 
 import (
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+
 	"github.com/yuin/gopher-lua"
 )
 
@@ -20,10 +21,10 @@ func RegisterIllegalBlocksType(L *lua.LState) {
 
 // Constructor
 func newIllegalBlocks(L *lua.LState) int {
-	coinType := types.CoinType(L.ToInt(1))
+	coinType := payload.CoinType(L.ToInt(1))
 	height := uint32(L.ToInt(2))
 
-	illegalBlock := &types.DposIllegalBlocks{
+	illegalBlock := &payload.DPOSIllegalBlocks{
 		CoinType:    coinType,
 		BlockHeight: height,
 	}
@@ -37,12 +38,12 @@ func newIllegalBlocks(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Attribute and returns this *Attribute.
-func checkIllegalBlocks(L *lua.LState, idx int) *types.DposIllegalBlocks {
+func checkIllegalBlocks(L *lua.LState, idx int) *payload.DPOSIllegalBlocks {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*types.DposIllegalBlocks); ok {
+	if v, ok := ud.Value.(*payload.DPOSIllegalBlocks); ok {
 		return v
 	}
-	L.ArgError(1, "DPosProposal expected")
+	L.ArgError(1, "DPOSProposal expected")
 	return nil
 }
 

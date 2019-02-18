@@ -1,4 +1,4 @@
-package types
+package payload
 
 import (
 	"io"
@@ -6,13 +6,13 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type DPosProposalVoteSlot struct {
+type Confirm struct {
 	Hash     common.Uint256
-	Proposal DPosProposal
-	Votes    []DPosProposalVote
+	Proposal DPOSProposal
+	Votes    []DPOSProposalVote
 }
 
-func (p *DPosProposalVoteSlot) TryAppend(v DPosProposalVote) bool {
+func (p *Confirm) TryAppend(v DPOSProposalVote) bool {
 	if p.Proposal.Hash().IsEqual(v.ProposalHash) {
 		p.Votes = append(p.Votes, v)
 		return true
@@ -20,7 +20,7 @@ func (p *DPosProposalVoteSlot) TryAppend(v DPosProposalVote) bool {
 	return false
 }
 
-func (p *DPosProposalVoteSlot) Serialize(w io.Writer) error {
+func (p *Confirm) Serialize(w io.Writer) error {
 	if err := p.Hash.Serialize(w); err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (p *DPosProposalVoteSlot) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (p *DPosProposalVoteSlot) Deserialize(r io.Reader) error {
+func (p *Confirm) Deserialize(r io.Reader) error {
 	if err := p.Hash.Deserialize(r); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (p *DPosProposalVoteSlot) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	p.Votes = make([]DPosProposalVote, signCount)
+	p.Votes = make([]DPOSProposalVote, signCount)
 
 	for i := uint64(0); i < signCount; i++ {
 		err := p.Votes[i].Deserialize(r)

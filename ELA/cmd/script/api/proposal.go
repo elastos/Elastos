@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/elastos/Elastos.ELA/core/types"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+
 	"github.com/yuin/gopher-lua"
 )
 
@@ -26,7 +26,7 @@ func newProposal(L *lua.LState) int {
 
 	hash, _ := common.Uint256FromHexString(blockHash)
 	pk, _ := common.HexStringToBytes(sponsor)
-	proposal := &types.DPosProposal{
+	proposal := &payload.DPOSProposal{
 		Sponsor:    pk,
 		BlockHash:  *hash,
 		ViewOffset: offset,
@@ -41,12 +41,12 @@ func newProposal(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Attribute and returns this *Attribute.
-func checkProposal(L *lua.LState, idx int) *types.DPosProposal {
+func checkProposal(L *lua.LState, idx int) *payload.DPOSProposal {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*types.DPosProposal); ok {
+	if v, ok := ud.Value.(*payload.DPOSProposal); ok {
 		return v
 	}
-	L.ArgError(1, "DPosProposal expected")
+	L.ArgError(1, "DPOSProposal expected")
 	return nil
 }
 

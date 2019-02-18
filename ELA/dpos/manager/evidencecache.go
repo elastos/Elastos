@@ -7,10 +7,10 @@ import (
 )
 
 type evidenceCache struct {
-	evidences map[common.Uint256]types.DposIllegalData
+	evidences map[common.Uint256]payload.DPOSIllegalData
 }
 
-func (e *evidenceCache) AddEvidence(evidence types.DposIllegalData) {
+func (e *evidenceCache) AddEvidence(evidence payload.DPOSIllegalData) {
 	if evidence != nil {
 		e.evidences[evidence.Hash()] = evidence
 	}
@@ -20,7 +20,7 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 	necessaryEvidences := make(map[common.Uint256]interface{})
 	for k, v := range e.evidences {
 		tolerance := WaitHeightTolerance
-		if v.Type() != types.IllegalBlock {
+		if v.Type() != payload.IllegalBlock {
 			tolerance = 0
 		}
 		if v.GetBlockHeight()+tolerance <= block.Height {
@@ -55,16 +55,16 @@ func (e *evidenceCache) tryGetEvidenceHash(tx *types.Transaction) (common.Uint25
 
 	switch tx.TxType {
 	case types.IllegalProposalEvidence:
-		proposalPayload := tx.Payload.(*types.PayloadIllegalProposal)
+		proposalPayload := tx.Payload.(*payload.DPOSIllegalProposals)
 		hash = proposalPayload.Hash()
 	case types.IllegalVoteEvidence:
-		votePayload := tx.Payload.(*types.PayloadIllegalVote)
+		votePayload := tx.Payload.(*payload.DPOSIllegalVotes)
 		hash = votePayload.Hash()
 	case types.IllegalBlockEvidence:
-		blockPayload := tx.Payload.(*types.PayloadIllegalBlock)
+		blockPayload := tx.Payload.(*payload.DPOSIllegalBlocks)
 		hash = blockPayload.Hash()
 	case types.IllegalSidechainEvidence:
-		sidechainPayload := tx.Payload.(*types.PayloadSidechainIllegalData)
+		sidechainPayload := tx.Payload.(*payload.SidechainIllegalData)
 		hash = sidechainPayload.Hash()
 	case types.InactiveArbitrators:
 		inactiveArbitrators := tx.Payload.(*payload.InactiveArbitrators)

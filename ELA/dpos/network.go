@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
@@ -53,9 +54,9 @@ type network struct {
 
 	changeViewChan           chan bool
 	blockReceivedChan        chan blockItem
-	confirmReceivedChan      chan *types.DPosProposalVoteSlot
-	illegalBlocksEvidence    chan *types.DposIllegalBlocks
-	sidechainIllegalEvidence chan *types.SidechainIllegalData
+	confirmReceivedChan      chan *payload.Confirm
+	illegalBlocksEvidence    chan *payload.DPOSIllegalBlocks
+	sidechainIllegalEvidence chan *payload.SidechainIllegalData
 }
 
 func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
@@ -275,15 +276,15 @@ func (n *network) PostBlockReceivedTask(b *types.Block, confirmed bool) {
 	n.blockReceivedChan <- blockItem{b, confirmed}
 }
 
-func (n *network) PostIllegalBlocksTask(i *types.DposIllegalBlocks) {
+func (n *network) PostIllegalBlocksTask(i *payload.DPOSIllegalBlocks) {
 	n.illegalBlocksEvidence <- i
 }
 
-func (n *network) PostSidechainIllegalDataTask(s *types.SidechainIllegalData) {
+func (n *network) PostSidechainIllegalDataTask(s *payload.SidechainIllegalData) {
 	n.sidechainIllegalEvidence <- s
 }
 
-func (n *network) PostConfirmReceivedTask(p *types.DPosProposalVoteSlot) {
+func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 	n.confirmReceivedChan <- p
 }
 
@@ -435,15 +436,16 @@ func (n *network) blockReceived(b *types.Block, confirmed bool) {
 	n.listener.OnBlockReceived(b, confirmed)
 }
 
-func (n *network) confirmReceived(p *types.DPosProposalVoteSlot) {
+func (n *network) confirmReceived(p *payload.Confirm) {
 	n.listener.OnConfirmReceived(p)
 }
 
-func (n *network) illegalBlocksReceived(i *types.DposIllegalBlocks) {
+func (n *network) illegalBlocksReceived(i *payload.DPOSIllegalBlocks) {
 	n.listener.OnIllegalBlocksTxReceived(i)
 }
 
-func (n *network) sidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+func (n *network) sidechainIllegalEvidenceReceived(
+	s *payload.SidechainIllegalData) {
 	n.BroadcastMessage(&msg.SidechainIllegalData{Data: *s})
 	n.listener.OnSidechainIllegalEvidenceReceived(s)
 }
@@ -459,10 +461,10 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		changeViewChan:           make(chan bool),
-		blockReceivedChan:        make(chan blockItem, 10),                   //todo config handle capacity though config file
-		confirmReceivedChan:      make(chan *types.DPosProposalVoteSlot, 10), //todo config handle capacity though config file
-		illegalBlocksEvidence:    make(chan *types.DposIllegalBlocks),
-		sidechainIllegalEvidence: make(chan *types.SidechainIllegalData),
+		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
+		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
+		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
+		sidechainIllegalEvidence: make(chan *payload.SidechainIllegalData),
 		currentHeight:            blockchain.DefaultLedger.Blockchain.GetHeight() - 1,
 		account:                  dposAccount,
 	}

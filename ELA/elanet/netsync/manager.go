@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
 	"github.com/elastos/Elastos.ELA/events"
@@ -692,7 +693,7 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 	case events.ETTransactionAccepted:
 		tx := event.Data.(*types.Transaction)
 		if tx.IsIllegalBlockTx() {
-			sm.chain.ProcessIllegalBlock(tx.Payload.(*types.PayloadIllegalBlock))
+			sm.chain.ProcessIllegalBlock(tx.Payload.(*payload.DPOSIllegalBlocks))
 		}
 
 	// A block has been accepted into the block chain.  Relay it to other

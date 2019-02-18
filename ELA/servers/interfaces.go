@@ -264,9 +264,10 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "parameter illegaldata not found")
 	}
 
-	var data SidechainIllegalData
+	var data payload.SidechainIllegalData
 	buf, _ := common.HexStringToBytes(rawHex)
-	if err := data.DeserializeUnsigned(bytes.NewReader(buf)); err != nil {
+	if err := data.DeserializeUnsigned(bytes.NewReader(buf),
+		payload.PayloadSidechainIllegalDataVersion); err != nil {
 		log.Debug("[json-rpc:SubmitSidechainIllegalData] illegaldata deserialization failed", rawHex)
 		return ResponsePack(InternalError, "illegaldata deserialization failed")
 	}

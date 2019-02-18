@@ -95,14 +95,12 @@ func mockCancelVoteTx(tx *types.Transaction) *types.Transaction {
 func mockIllegalBlockTx(publicKey []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.IllegalBlockEvidence,
-		Payload: &types.PayloadIllegalBlock{
-			DposIllegalBlocks: types.DposIllegalBlocks{
-				Evidence: types.BlockEvidence{
-					Signers: [][]byte{publicKey},
-				},
-				CompareEvidence: types.BlockEvidence{
-					Signers: [][]byte{publicKey},
-				},
+		Payload: &payload.DPOSIllegalBlocks{
+			Evidence: payload.BlockEvidence{
+				Signers: [][]byte{publicKey},
+			},
+			CompareEvidence: payload.BlockEvidence{
+				Signers: [][]byte{publicKey},
 			},
 		},
 	}

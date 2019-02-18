@@ -1,4 +1,4 @@
-package types
+package payload
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-type DPosProposalVote struct {
+type DPOSProposalVote struct {
 	ProposalHash common.Uint256
 
 	Signer []byte
@@ -18,7 +18,7 @@ type DPosProposalVote struct {
 	hash *common.Uint256
 }
 
-func (v *DPosProposalVote) Data() []byte {
+func (v *DPOSProposalVote) Data() []byte {
 	buf := new(bytes.Buffer)
 	if err := v.SerializeUnsigned(buf); err != nil {
 		return []byte{0}
@@ -27,7 +27,7 @@ func (v *DPosProposalVote) Data() []byte {
 	return buf.Bytes()
 }
 
-func (v *DPosProposalVote) SerializeUnsigned(w io.Writer) error {
+func (v *DPOSProposalVote) SerializeUnsigned(w io.Writer) error {
 	if err := v.ProposalHash.Serialize(w); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (v *DPosProposalVote) SerializeUnsigned(w io.Writer) error {
 	return nil
 }
 
-func (v *DPosProposalVote) Serialize(w io.Writer) error {
+func (v *DPOSProposalVote) Serialize(w io.Writer) error {
 	if err := v.SerializeUnsigned(w); err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (v *DPosProposalVote) Serialize(w io.Writer) error {
 	return common.WriteVarBytes(w, v.Sign)
 }
 
-func (v *DPosProposalVote) DeserializeUnsigned(r io.Reader) error {
+func (v *DPOSProposalVote) DeserializeUnsigned(r io.Reader) error {
 	if err := v.ProposalHash.Deserialize(r); err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (v *DPosProposalVote) DeserializeUnsigned(r io.Reader) error {
 	return nil
 }
 
-func (v *DPosProposalVote) Deserialize(r io.Reader) error {
+func (v *DPOSProposalVote) Deserialize(r io.Reader) error {
 	if err := v.DeserializeUnsigned(r); err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (v *DPosProposalVote) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (v *DPosProposalVote) Hash() common.Uint256 {
+func (v *DPOSProposalVote) Hash() common.Uint256 {
 	if v.hash == nil {
 		buf := new(bytes.Buffer)
 		v.SerializeUnsigned(buf)

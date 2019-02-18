@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -48,24 +49,24 @@ type StatusSyncEventListener interface {
 	OnRequestConsensus(id dpeer.PID, height uint32)
 	OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus)
 	OnRequestProposal(id dpeer.PID, hash common.Uint256)
-	OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals)
-	OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes)
+	OnIllegalProposalReceived(id dpeer.PID, proposals *payload.DPOSIllegalProposals)
+	OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIllegalVotes)
 }
 
 type NetworkEventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(id dpeer.PID, p types.DPosProposal)
-	OnVoteReceived(id dpeer.PID, p types.DPosProposalVote)
-	OnVoteRejected(id dpeer.PID, p types.DPosProposalVote)
+	OnProposalReceived(id dpeer.PID, p payload.DPOSProposal)
+	OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote)
+	OnVoteRejected(id dpeer.PID, p payload.DPOSProposalVote)
 
 	OnChangeView()
 	OnBadNetwork()
 
 	OnBlockReceived(b *types.Block, confirmed bool)
-	OnConfirmReceived(p *types.DPosProposalVoteSlot)
-	OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks)
-	OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData)
+	OnConfirmReceived(p *payload.Confirm)
+	OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks)
+	OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData)
 	OnInactiveArbitratorsReceived(tx *types.Transaction)
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256,
 		Signer []byte, Sign []byte)
@@ -97,7 +98,7 @@ type DPOSManager struct {
 	broadcast   func(p2p.Message)
 }
 
-func (d *DPOSManager) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
+func (d *DPOSManager) AppendConfirm(confirm *payload.Confirm) (bool, bool, error) {
 	return d.blockPool.AppendConfirm(confirm)
 }
 
@@ -178,20 +179,20 @@ func (d *DPOSManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p types.DPosProposal) {
+func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p payload.DPOSProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p types.DPosProposalVote) {
+func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	d.handler.ProcessAcceptVote(id, p)
 }
 
-func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p types.DPosProposalVote) {
+func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p payload.DPOSProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)
@@ -278,7 +279,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	}
 }
 
-func (d *DPOSManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
 
 	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
 	defer log.Info("[OnConfirmReceived] end")
@@ -287,19 +288,19 @@ func (d *DPOSManager) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
 	d.changeHeight()
 }
 
-func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *types.DposIllegalProposals) {
+func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload.DPOSIllegalProposals) {
 	d.illegalMonitor.AddEvidence(proposals)
 }
 
-func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *types.DposIllegalVotes) {
+func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIllegalVotes) {
 	d.illegalMonitor.AddEvidence(votes)
 }
 
-func (d *DPOSManager) OnIllegalBlocksTxReceived(i *types.DposIllegalBlocks) {
+func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
 	d.illegalMonitor.AddEvidence(i)
 }
 
-func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *types.SidechainIllegalData) {
+func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData) {
 	d.illegalMonitor.AddEvidence(s)
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
