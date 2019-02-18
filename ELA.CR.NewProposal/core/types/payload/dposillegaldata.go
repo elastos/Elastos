@@ -14,6 +14,7 @@ const (
 	IllegalVote              IllegalDataType = 0x02
 	SidechainIllegalProposal IllegalDataType = 0x03
 	SidechainIllegalVote     IllegalDataType = 0x04
+	InactiveArbitrator       IllegalDataType = 0x05
 )
 
 type DPOSIllegalData interface {

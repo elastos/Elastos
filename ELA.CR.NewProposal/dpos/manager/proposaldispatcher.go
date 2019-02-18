@@ -402,6 +402,8 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		return
 	}
 
+	p.illegalMonitor.AddEvidence(inactivePayload)
+
 	inactiveArbitratorsMap := make(map[string]interface{})
 	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
 		inactiveArbitratorsMap[v] = nil
@@ -608,7 +610,10 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	var err error
 
 	inactivePayload := &payload.InactiveArbitrators{
-		Sponsor: p.cfg.Manager.GetPublicKey(), Arbitrators: [][]byte{}}
+		Sponsor:     p.cfg.Manager.GetPublicKey(),
+		Arbitrators: [][]byte{},
+		BlockHeight: p.CurrentHeight(),
+	}
 	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
 	for _, v := range inactiveArbitrators {
 		var pk []byte
@@ -643,6 +648,8 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 		Inputs:   []*types.Input{},
 		Fee:      0,
 	}
+
+	p.illegalMonitor.AddEvidence(inactivePayload)
 
 	var sign []byte
 	if sign, err = p.cfg.Account.SignTx(tx); err != nil {
