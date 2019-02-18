@@ -122,8 +122,6 @@ func New(cfg *Config) (*BlockChain, error) {
 }
 
 func (b *BlockChain) GetBestHeight() uint32 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	return b.db.GetHeight()
 }
 
