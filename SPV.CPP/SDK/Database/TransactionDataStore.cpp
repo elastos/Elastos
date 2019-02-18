@@ -48,14 +48,7 @@ namespace Elastos {
 					ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 												 "Prepare sql " + ss.str());
 
-#ifndef SPVSDK_DEBUG
 					_sqlite->bindBlob(stmt, 1, transactionEntity.buff, nullptr);
-#else
-					std::string str = Utils::encodeHex(transactionEntity.buff);
-					CMBlock bytes;
-					bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length());
-					_sqlite->bindBlob(stmt, 1, bytes, nullptr);
-#endif
 					_sqlite->bindInt(stmt, 2, transactionEntity.blockHeight);
 					_sqlite->bindInt(stmt, 3, transactionEntity.timeStamp);
 					_sqlite->bindText(stmt, 4, transactionEntity.remark, nullptr);
@@ -85,14 +78,7 @@ namespace Elastos {
 											 "Prepare sql " + ss.str());
 
 				_sqlite->bindText(stmt, 1, transactionEntity.txHash, nullptr);
-#ifndef SPVSDK_DEBUG
 				_sqlite->bindBlob(stmt, 2, transactionEntity.buff, nullptr);
-#else
-				std::string str = Utils::encodeHex(transactionEntity.buff);
-				CMBlock bytes;
-				bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length());
-				_sqlite->bindBlob(stmt, 2, bytes, nullptr);
-#endif
 				_sqlite->bindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
 				_sqlite->bindText(stmt, 5, transactionEntity.remark, nullptr);
@@ -169,16 +155,10 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 1);
 
-#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
 					tx.buff = buff;
-#else
-					std::string str((char *) pdata, len);
-					tx.buff = Utils::decodeHex(str);
-#endif
-
 					tx.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 3);
 					tx.assetID = _sqlite->columnText(stmt, 4);
@@ -261,16 +241,10 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 0);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 0);
 
-#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
 					txEntity.buff = buff;
-#else
-					std::string str((char *) pdata, len);
-					txEntity.buff = Utils::decodeHex(str);
-#endif
-
 					txEntity.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 2);
 					txEntity.assetID = _sqlite->columnText(stmt, 3);

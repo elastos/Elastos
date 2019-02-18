@@ -53,14 +53,7 @@ namespace Elastos {
 			sqlite3_stmt *stmt;
 			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 										 "prepare sql " + ss.str());
-#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 1, blockEntity.blockBytes, nullptr);
-#else
-			std::string str = Utils::encodeHex(blockEntity.blockBytes);
-			CMBlock bytes;
-			bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length() + 1);
-			_sqlite->bindBlob(stmt, 1, bytes, nullptr);
-#endif
 			_sqlite->bindInt(stmt, 2, blockEntity.blockHeight);
 			_sqlite->bindText(stmt, 3, iso, nullptr);
 
@@ -119,15 +112,10 @@ namespace Elastos {
 					// blockBytes
 					const uint8_t *pblob = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
-#ifndef SPVSDK_DEBUG
 					blockBytes.Resize(len);
 					memcpy(blockBytes, pblob, len);
 
 					merkleBlock.blockBytes = blockBytes;
-#else
-					std::string str((char *) pblob);
-					merkleBlock.blockBytes = Utils::decodeHex(str);
-#endif
 
 					// blockHeight
 					merkleBlock.blockHeight = _sqlite->columnInt(stmt, 2);

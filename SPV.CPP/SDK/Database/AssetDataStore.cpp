@@ -116,15 +116,10 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 2);
 					size_t len = (size_t) _sqlite->columnBytes(stmt, 2);
 
-#ifndef SPVSDK_DEBUG
 					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
 					asset.Asset = buff;
-#else
-					std::string str((const char *) pdata, len);
-					asset.Asset = Utils::decodeHex(str);
-#endif
 					asset.TxHash = _sqlite->columnText(stmt, 3);
 
 					assets.push_back(asset);
@@ -159,15 +154,10 @@ namespace Elastos {
 				const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 				size_t len = (size_t) _sqlite->columnBytes(stmt, 1);
 
-#ifndef SPVSDK_DEBUG
 				CMBlock buff;
-					buff.Resize(len);
-					memcpy(buff, pdata, len);
-					asset.Asset = buff;
-#else
-				std::string str((const char *) pdata, len);
-				asset.Asset = Utils::decodeHex(str);
-#endif
+				buff.Resize(len);
+				memcpy(buff, pdata, len);
+				asset.Asset = buff;
 				asset.TxHash = _sqlite->columnText(stmt, 2);
 			}
 
@@ -191,14 +181,7 @@ namespace Elastos {
 
 			_sqlite->bindText(stmt, 1, asset.AssetID, nullptr);
 			_sqlite->bindInt64(stmt, 2, asset.Amount);
-#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 3, asset.Asset, nullptr);
-#else
-			std::string str = Utils::encodeHex(asset.Asset);
-			CMBlock bytes;
-			bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length());
-			_sqlite->bindBlob(stmt, 3, bytes, nullptr);
-#endif
 			_sqlite->bindText(stmt, 4, asset.TxHash, nullptr);
 			_sqlite->bindText(stmt, 5, iso, nullptr);
 
@@ -224,14 +207,7 @@ namespace Elastos {
 										 "Prepare sql " + ss.str());
 
 			_sqlite->bindInt64(stmt, 1, asset.Amount);
-#ifndef SPVSDK_DEBUG
 			_sqlite->bindBlob(stmt, 2, asset.Asset, nullptr);
-#else
-			std::string str = Utils::encodeHex(asset.Asset);
-			CMBlock bytes;
-			bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length());
-			_sqlite->bindBlob(stmt, 2, bytes, nullptr);
-#endif
 			_sqlite->bindText(stmt, 3, asset.TxHash, nullptr);
 
 			_sqlite->step(stmt);
