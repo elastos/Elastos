@@ -6,15 +6,15 @@
     display: flex;
     .vote-status-item {
       flex-basis: 33.3%;
-      height: 14px;
+      height: 10px;
       box-sizing: border-box;
       margin-right: 1px;
       margin-left: 0;
       &.undecided {
-        background: #EFEFEF;
+        background: #CED6E3;
       }
       &.abstained {
-        background: #CED6E3;
+        background: #0F2631;
       }
       &.yes {
         background: $cr_primary_highlight;

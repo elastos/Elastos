@@ -26,6 +26,7 @@
     display: flex;
     align-items: center;
     font-size: 14px;
+    justify-content: space-between;
   }
   .vote-status-item {
     flex: 0 0 10px;
@@ -35,10 +36,21 @@
     margin-left: 10px;
 
     &.undecided {
-      background: #EFEFEF;
+      background: #CED6E3;
+      position: relative;
+      overflow: hidden;
+      &:before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: url("/assets/images/bg-line.png") 0 0 repeat;
+      }
     }
     &.abstained {
-      background: #CED6E3;
+      background: #0F2631;
     }
     &.yes {
       margin-left: 0;

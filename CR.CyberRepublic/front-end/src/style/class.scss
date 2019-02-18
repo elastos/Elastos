@@ -152,19 +152,23 @@
 
   > span {
     color: #000;
-    font-family: "komu-a", sans-serif;
     font-size: 16px;
-    line-height: 28px;
+    line-height: 16px;
+  }
+  padding: 0 30px;
+  min-width: 155px;
+  height: 40px;
+}
+
+.ant-btn.cr-btn-komu {
+  > span {
+    font-family: "komu-a", sans-serif;
     letter-spacing: 0.1em;
   }
-  padding: 15px 31px 10px;
-  height: 53px;
 }
 .ant-btn.cr-btn-default {
-  border-radius: 0;
-  border: 1px solid black;
+  border-color: black;
   > span {
-    font-size: 16px;
     color: black;
   }
   &:hover {
@@ -173,8 +177,6 @@
     }
     border-color: $cr_btn_primary;
   }
-  padding: 8px 30px;
-  height: 40px;
 }
 .ant-btn.cr-btn-primary {
   background: $cr_btn_primary;
