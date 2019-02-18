@@ -165,12 +165,7 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 			addrs = append(addrs, addr)
 		}
 	}
-	known, err := sp.PushAddrMsg(addrs)
-	if err != nil {
-		log.Errorf("Can't push address message to %s: %v", sp.Peer, err)
-		sp.Disconnect()
-		return
-	}
+	known := sp.PushAddrMsg(addrs)
 	sp.addKnownAddresses(known)
 }
 
@@ -214,11 +209,7 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 		log.Debugf("New inbound sp.NA %s, port %d, services %d, na %s",
 			sp.NA(), v.Port, v.Services, na)
 
-		// Filter and add valid net address to address manager.
-		naFilter := sp.NAFilter()
-		if naFilter == nil || sp.NAFilter().Filter(na) {
-			addrManager.AddAddress(na, na)
-		}
+		addrManager.AddAddress(na, na)
 	}
 
 	// Add valid peer to the server.
@@ -250,16 +241,6 @@ func (sp *serverPeer) OnGetAddr(_ *peer.Peer, msg *msg.GetAddr) {
 
 	// Get the current known addresses from the address manager.
 	addrCache := sp.server.addrManager.AddressCache()
-
-	// Filter addresses if peer NAFilter not nil.
-	naFilter := sp.NAFilter()
-	addrFiltered := make([]*p2p.NetAddress, 0, len(addrCache))
-	for _, na := range addrCache {
-		if naFilter == nil || naFilter.Filter(na) {
-			addrFiltered = append(addrFiltered, na)
-		}
-	}
-	addrCache = addrFiltered
 
 	// Push the addresses.
 	sp.pushAddrMsg(addrCache)
@@ -702,7 +683,6 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.SetNAFilter(s.cfg.NAFilter)
 	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
 }
@@ -722,7 +702,6 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp.Peer = p
 	sp.connReq = c
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
-	sp.SetNAFilter(s.cfg.NAFilter)
 	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
 	s.addrManager.Attempt(sp.NA())
@@ -1167,7 +1146,7 @@ func newServer(origCfg *Config) (*server, error) {
 	if os.IsNotExist(err) {
 		os.MkdirAll(dataDir, os.ModePerm)
 	}
-	amgr := addrmgr.New(dataDir)
+	amgr := addrmgr.New(dataDir, cfg.NAFilter)
 
 	var listeners []net.Listener
 	var nat NAT

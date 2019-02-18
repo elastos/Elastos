@@ -26,6 +26,7 @@ import (
 // peers on the network.
 type AddrManager struct {
 	mtx            sync.Mutex
+	filter         p2p.NAFilter
 	peersFile      string
 	rand           *rand.Rand
 	key            [32]byte
@@ -345,6 +346,13 @@ func (a *AddrManager) savePeers() {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	w, err := os.Create(a.peersFile)
+	if err != nil {
+		log.Errorf("Error opening file %s: %v", a.peersFile, err)
+		return
+	}
+	defer w.Close()
+
 	// First we make a serialisable datastructure so we can encode it to
 	// json.
 	sam := new(serializedAddrManager)
@@ -354,6 +362,11 @@ func (a *AddrManager) savePeers() {
 	sam.Addresses = make([]*serializedKnownAddress, len(a.addrIndex))
 	i := 0
 	for k, v := range a.addrIndex {
+		// Filter network address here to update address saved in peers.json.
+		if !a.filter.Filter(v.na) {
+			continue
+		}
+
 		ska := new(serializedKnownAddress)
 		ska.Addr = k
 		ska.TimeStamp = v.na.Timestamp.Unix()
@@ -384,13 +397,7 @@ func (a *AddrManager) savePeers() {
 		}
 	}
 
-	w, err := os.Create(a.peersFile)
-	if err != nil {
-		log.Errorf("Error opening file %s: %v", a.peersFile, err)
-		return
-	}
 	enc := json.NewEncoder(w)
-	defer w.Close()
 	if err := enc.Encode(&sam); err != nil {
 		log.Errorf("Failed to encode file %s: %v", a.peersFile, err)
 		return
@@ -630,8 +637,11 @@ func (a *AddrManager) AddressCache() []*p2p.NetAddress {
 	allAddr := make([]*p2p.NetAddress, 0, addrIndexLen)
 	// Iteration order is undefined here, but we randomise it anyway.
 	for _, v := range a.addrIndex {
-		allAddr = append(allAddr, v.na)
+		if a.filter == nil || a.filter.Filter(v.na) {
+			allAddr = append(allAddr, v.na)
+		}
 	}
+	addrIndexLen = len(allAddr)
 
 	numAddresses := addrIndexLen * getAddrPercent / 100
 	if numAddresses <= getAddrMin {
@@ -1094,8 +1104,9 @@ func (a *AddrManager) GetBestLocalAddress(remoteAddr *p2p.NetAddress) *p2p.NetAd
 
 // New returns a new address manager.
 // Use Start to begin processing asynchronous address updates.
-func New(dataDir string) *AddrManager {
+func New(dataDir string, filter p2p.NAFilter) *AddrManager {
 	am := AddrManager{
+		filter:         filter,
 		peersFile:      filepath.Join(dataDir, "peers.json"),
 		rand:           rand.New(rand.NewSource(time.Now().UnixNano())),
 		quit:           make(chan struct{}),
