@@ -53,6 +53,7 @@ var Template = Configuration{
 		InactiveDuration:         uint32((time.Hour * 24 * 7) / time.Second),
 		InactivePenalty:          100 * 100000000,
 		InactiveEliminateCount:   12,
+		EnableEventRecord:        false,
 	},
 	RpcConfiguration: RpcConfiguration{
 		User:        "",
