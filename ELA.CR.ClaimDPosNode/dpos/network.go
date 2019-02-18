@@ -403,8 +403,8 @@ func (n *network) processMessage(msgItem *messageItem) {
 	case msg.CmdResponseInactiveArbitrators:
 		msgResponse, processed := m.(*msg.ResponseInactiveArbitrators)
 		if processed {
-			n.listener.OnResponseInactiveArbitratorsReceived(&msgResponse.
-				TxHash, msgResponse.Signer, msgResponse.Sign)
+			n.listener.OnResponseInactiveArbitratorsReceived(
+				&msgResponse.TxHash, msgResponse.Signer, msgResponse.Sign)
 		}
 	}
 }
