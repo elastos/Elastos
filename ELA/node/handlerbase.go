@@ -179,15 +179,14 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	}
 
 	// Filter addresses if NAFilter not nil.
-	if h.node.NAFilter() != nil {
-		addrFiltered := make([]*p2p.NetAddress, 0, len(addrs))
-		for _, na := range addrs {
-			if h.node.NAFilter().Filter(na) {
-				addrFiltered = append(addrFiltered, na)
-			}
+	naFilter := h.node.NAFilter()
+	addrFiltered := make([]*p2p.NetAddress, 0, len(addrs))
+	for _, na := range addrs {
+		if naFilter == nil || naFilter.Filter(na) {
+			addrFiltered = append(addrFiltered, na)
 		}
-		addrs = addrFiltered
 	}
+	addrs = addrFiltered
 
 	repeatNum := 0
 	var uniqueAddrs []*p2p.NetAddress
