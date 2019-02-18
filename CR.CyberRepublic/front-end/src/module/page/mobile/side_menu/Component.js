@@ -125,19 +125,19 @@ export default class extends BaseComponent {
                             {I18N.get('0005')}
                         </Menu.Item>
                         {/* <Menu.Item key="council-secretariat">
-                            {I18N.get('navagation.council')}
+                            {I18N.get('navigation.council')}
                         </Menu.Item> */}
                         {/* <Menu.Item key="council">
                             {I18N.get('council.0001')}
                         </Menu.Item> */}
                         <Menu.Item key="suggestion">
-                            {I18N.get('navagation.suggestion')}
+                            {I18N.get('navigation.suggestion')}
                         </Menu.Item>
                         <Menu.Item key="proposals">
                             {I18N.get('council.voting.proposalList')}
                         </Menu.Item>
                         {/* <Menu.Item key="constitution/1">
-                            {I18N.get('navagation.constitution')}
+                            {I18N.get('navigation.constitution')}
                         </Menu.Item> */}
                         <Menu.Item key="blog">
                             {I18N.get('0110')}
