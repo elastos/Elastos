@@ -146,7 +146,8 @@ func main() {
 		}
 		arbitrator, err := dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{
 			EnableEventLog:    true,
-			EnableEventRecord: true,
+			EnableEventRecord: config.Parameters.ArbiterConfiguration.
+				EnableEventRecord,
 			Params:            cfg.ArbiterConfiguration,
 			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,

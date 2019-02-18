@@ -59,7 +59,9 @@
       "InactivePercentage": 0.1,
       "MaxAllowedInactiveRounds": 3,
       "InactiveDuration": 604800,
-      "InactivePenalty": 10000000000
+      "InactivePenalty": 10000000000,
+      "InactiveEliminateCount": 12,
+      "EnableEventRecord": false
     },
     "RpcConfiguration": {
       "User": "ElaUser",
