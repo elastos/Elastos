@@ -51,24 +51,6 @@ If it's running you should see something like `org.elastos.Application: Started 
 
 Now query your, genesis block wallet address, you should see 33 million ELA if you haven't touched it: `http://localhost:8091/api/1/balance/8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta`
 
-
-### How to Use It
-
-The `wallet.db` stores the addresses and public keys, whereas the `keystore-*.dat` files hold the private keys.
-The two function independently from each other, in that importing a private key does not automatically add the wallet to the `wallet.db`.
-
-**So when you type `./ela-cli wallet -l` it doesn't actually list anything initially.**
-
-When you import a wallet via the private key with the `--import privateKey` command, all this does is it encrypts the private key into the keystore file,
-which by default is `keystore.dat`. Each private key will need a new key store so ensure you name them properly.
-
-- To add the wallet address to the `wallet.db` you have to use `--addaccount value` command with the public key.
-
-- When signing transactions, you can use a keystore by using the `-n` flag and entering your password for that keystore.
-
-The rest of the info in the `README.md` should be self-explanatory.
-
-
 ### Errors
 
 ##### Tomcat fails to start, something is running on your port
