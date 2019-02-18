@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/elastos/Elastos.ELA/core/types"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+
 	"github.com/yuin/gopher-lua"
 )
 
@@ -23,9 +23,9 @@ func newConfirm(L *lua.LState) int {
 	blockHash := L.ToString(1)
 	hash, _ := common.Uint256FromHexString(blockHash)
 
-	proposal := &types.DPosProposalVoteSlot{
+	proposal := &payload.Confirm{
 		Hash:  *hash,
-		Votes: make([]types.DPosProposalVote, 0),
+		Votes: make([]payload.DPOSProposalVote, 0),
 	}
 	ud := L.NewUserData()
 	ud.Value = proposal
@@ -36,12 +36,12 @@ func newConfirm(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Attribute and returns this *Attribute.
-func checkConfirm(L *lua.LState, idx int) *types.DPosProposalVoteSlot {
+func checkConfirm(L *lua.LState, idx int) *payload.Confirm {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*types.DPosProposalVoteSlot); ok {
+	if v, ok := ud.Value.(*payload.Confirm); ok {
 		return v
 	}
-	L.ArgError(1, "DPosProposalVoteSlot expected")
+	L.ArgError(1, "Confirm expected")
 	return nil
 }
 

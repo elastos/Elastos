@@ -13,8 +13,8 @@ type IChainStore interface {
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *Transaction) bool
 
-	SaveConfirm(confirm *DPosProposalVoteSlot) error
-	GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error)
+	SaveConfirm(confirm *payload.Confirm) error
+	GetConfirm(hash Uint256) (*payload.Confirm, error)
 
 	GetHeader(hash Uint256) (*Header, error)
 

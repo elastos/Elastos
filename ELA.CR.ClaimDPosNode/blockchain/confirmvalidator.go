@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-func ConfirmSanityCheck(confirm *DPosProposalVoteSlot) error {
+func ConfirmSanityCheck(confirm *payload.Confirm) error {
 	if err := ProposalSanityCheck(&confirm.Proposal); err != nil {
 		return errors.New("[ConfirmSanityCheck] confirm contain invalid " +
 			"proposal: " + err.Error())
@@ -42,7 +42,7 @@ func ConfirmSanityCheck(confirm *DPosProposalVoteSlot) error {
 	return nil
 }
 
-func ConfirmContextCheck(confirm *DPosProposalVoteSlot) error {
+func ConfirmContextCheck(confirm *payload.Confirm) error {
 	if err := ProposalContextCheck(&confirm.Proposal); err != nil {
 		return errors.New("[ConfirmContextCheck] confirm contain invalid " +
 			"proposal: " + err.Error())
@@ -59,7 +59,7 @@ func ConfirmContextCheck(confirm *DPosProposalVoteSlot) error {
 }
 
 func CheckBlockWithConfirmation(block *Block,
-	confirm *DPosProposalVoteSlot) error {
+	confirm *payload.Confirm) error {
 	if block.Hash() != confirm.Hash {
 		return errors.New("[CheckBlockWithConfirmation] block " +
 			"confirmation validate failed")
@@ -93,7 +93,7 @@ func CheckBlockWithConfirmation(block *Block,
 	return nil
 }
 
-func IsProposalValid(proposal *DPosProposal) bool {
+func IsProposalValid(proposal *payload.DPOSProposal) bool {
 	if err := ProposalSanityCheck(proposal); err != nil {
 		log.Warn("[ProposalSanityCheck] error: ", err.Error())
 		return false
@@ -107,7 +107,7 @@ func IsProposalValid(proposal *DPosProposal) bool {
 	return true
 }
 
-func ProposalSanityCheck(proposal *DPosProposal) error {
+func ProposalSanityCheck(proposal *payload.DPOSProposal) error {
 	pubKey, err := crypto.DecodePoint(proposal.Sponsor)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func ProposalSanityCheck(proposal *DPosProposal) error {
 	return nil
 }
 
-func ProposalContextCheck(proposal *DPosProposal) error {
+func ProposalContextCheck(proposal *payload.DPOSProposal) error {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		if bytes.Equal(a, proposal.Sponsor) {
@@ -134,7 +134,7 @@ func ProposalContextCheck(proposal *DPosProposal) error {
 	return nil
 }
 
-func IsVoteValid(vote *DPosProposalVote) bool {
+func IsVoteValid(vote *payload.DPOSProposalVote) bool {
 	if err := VoteSanityCheck(vote); err != nil {
 		log.Warn("[VoteSanityCheck] error: ", err.Error())
 		return false
@@ -148,7 +148,7 @@ func IsVoteValid(vote *DPosProposalVote) bool {
 	return true
 }
 
-func VoteSanityCheck(vote *DPosProposalVote) error {
+func VoteSanityCheck(vote *payload.DPOSProposalVote) error {
 	pubKey, err := crypto.DecodePoint(vote.Signer)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func VoteSanityCheck(vote *DPosProposalVote) error {
 
 	return nil
 }
-func VoteContextCheck(vote *DPosProposalVote) error {
+func VoteContextCheck(vote *payload.DPOSProposalVote) error {
 	var isArbiter bool
 	for _, a := range DefaultLedger.Arbitrators.GetArbitrators() {
 		if bytes.Equal(a, vote.Signer) {

@@ -3,12 +3,12 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	msg2 "github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type SidechainIllegalData struct {
-	Data types.SidechainIllegalData
+	Data payload.SidechainIllegalData
 }
 
 func (msg *SidechainIllegalData) CMD() string {
@@ -20,7 +20,8 @@ func (msg *SidechainIllegalData) MaxLength() uint32 {
 }
 
 func (msg *SidechainIllegalData) Serialize(w io.Writer) error {
-	if err := msg.Data.Serialize(w); err != nil {
+	if err := msg.Data.Serialize(w,
+		payload.PayloadSidechainIllegalDataVersion); err != nil {
 		return err
 	}
 
@@ -28,7 +29,8 @@ func (msg *SidechainIllegalData) Serialize(w io.Writer) error {
 }
 
 func (msg *SidechainIllegalData) Deserialize(r io.Reader) error {
-	if err := msg.Data.Deserialize(r); err != nil {
+	if err := msg.Data.Deserialize(r,
+		payload.PayloadSidechainIllegalDataVersion); err != nil {
 		return err
 	}
 

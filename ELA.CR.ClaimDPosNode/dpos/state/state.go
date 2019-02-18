@@ -363,7 +363,8 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 
 // ProcessBlock takes a block and it's confirm to update producers state and
 // votes accordingly.
-func (s *State) ProcessBlock(block *types.Block, confirm *types.DPosProposalVoteSlot) {
+func (s *State) ProcessBlock(block *types.Block,
+	confirm *payload.Confirm) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -387,7 +388,8 @@ func (s *State) ProcessBlock(block *types.Block, confirm *types.DPosProposalVote
 }
 
 // getInactiveArbitrators returns inactive arbiters from a confirm data.
-func (s *State) getInactiveArbitrators(confirm *types.DPosProposalVoteSlot) (result []string) {
+func (s *State) getInactiveArbitrators(confirm *payload.Confirm) (
+	result []string) {
 	if bytes.Equal(s.arbiters.GetOnDutyArbitrator(), confirm.Proposal.Sponsor) {
 
 		arSequence := s.arbiters.GetArbitrators()
@@ -656,17 +658,18 @@ func (s *State) processEmergencyInactiveArbitrators(
 
 // processIllegalEvidence takes the illegal evidence payload and change producer
 // state according to the evidence.
-func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
+func (s *State) processIllegalEvidence(payloadData types.Payload,
+	height uint32) {
 	// Get illegal producers from evidence.
 	var illegalProducers [][]byte
-	switch p := payload.(type) {
-	case *types.PayloadIllegalProposal:
+	switch p := payloadData.(type) {
+	case *payload.DPOSIllegalProposals:
 		illegalProducers = [][]byte{p.Evidence.Proposal.Sponsor}
 
-	case *types.PayloadIllegalVote:
+	case *payload.DPOSIllegalVotes:
 		illegalProducers = [][]byte{p.Evidence.Vote.Signer}
 
-	case *types.PayloadIllegalBlock:
+	case *payload.DPOSIllegalBlocks:
 		signers := make(map[string]interface{})
 		for _, pk := range p.Evidence.Signers {
 			signers[hex.EncodeToString(pk)] = nil
@@ -679,7 +682,7 @@ func (s *State) processIllegalEvidence(payload types.Payload, height uint32) {
 			}
 		}
 
-	case *types.PayloadSidechainIllegalData:
+	case *payload.SidechainIllegalData:
 		illegalProducers = [][]byte{p.IllegalSigner}
 
 	default:

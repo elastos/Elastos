@@ -1,4 +1,4 @@
-package types
+package payload
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
+
+const PayloadSidechainIllegalDataVersion byte = 0x00
 
 type SidechainIllegalEvidence struct {
 	DataHash common.Uint256
@@ -40,6 +42,14 @@ func (s *SidechainIllegalEvidence) Deserialize(r io.Reader) error {
 	return nil
 }
 
+func (s *SidechainIllegalData) Data(version byte) []byte {
+	buf := new(bytes.Buffer)
+	if err := s.Serialize(buf, version); err != nil {
+		return []byte{0}
+	}
+	return buf.Bytes()
+}
+
 func (s *SidechainIllegalData) Type() IllegalDataType {
 	return s.IllegalType
 }
@@ -48,7 +58,7 @@ func (s *SidechainIllegalData) GetBlockHeight() uint32 {
 	return s.Height
 }
 
-func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer) error {
+func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := common.WriteUint8(w, byte(s.IllegalType)); err != nil {
 		return err
 	}
@@ -76,8 +86,8 @@ func (s *SidechainIllegalData) SerializeUnsigned(w io.Writer) error {
 	return nil
 }
 
-func (s *SidechainIllegalData) Serialize(w io.Writer) error {
-	if err := s.SerializeUnsigned(w); err != nil {
+func (s *SidechainIllegalData) Serialize(w io.Writer, version byte) error {
+	if err := s.SerializeUnsigned(w, version); err != nil {
 		return err
 	}
 
@@ -93,7 +103,8 @@ func (s *SidechainIllegalData) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader) error {
+func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader,
+	version byte) error {
 	var err error
 
 	var illegalType uint8
@@ -125,9 +136,9 @@ func (s *SidechainIllegalData) DeserializeUnsigned(r io.Reader) error {
 	return nil
 }
 
-func (s *SidechainIllegalData) Deserialize(r io.Reader) error {
+func (s *SidechainIllegalData) Deserialize(r io.Reader, version byte) error {
 	var err error
-	if err = s.DeserializeUnsigned(r); err != nil {
+	if err = s.DeserializeUnsigned(r, version); err != nil {
 		return err
 	}
 
@@ -137,7 +148,8 @@ func (s *SidechainIllegalData) Deserialize(r io.Reader) error {
 	}
 	s.Signs = make([][]byte, signLen)
 	for i := 0; i < int(signLen); i++ {
-		s.Signs[i], err = common.ReadVarBytes(r, crypto.SignatureLength, "Signature")
+		s.Signs[i], err = common.ReadVarBytes(r, crypto.SignatureLength,
+			"Signature")
 		if err != nil {
 			return err
 		}
@@ -149,7 +161,7 @@ func (s *SidechainIllegalData) Deserialize(r io.Reader) error {
 func (s *SidechainIllegalData) Hash() common.Uint256 {
 	if s.hash == nil {
 		buf := new(bytes.Buffer)
-		s.Serialize(buf)
+		s.Serialize(buf, PayloadSidechainIllegalDataVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		s.hash = &hash
 	}

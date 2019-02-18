@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
@@ -66,23 +67,21 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 		return err
 	}
 
-	illegalBlocks := &types.PayloadIllegalBlock{
-		DposIllegalBlocks: types.DposIllegalBlocks{
-			CoinType:        types.ELACoin,
-			BlockHeight:     block.Height,
-			Evidence:        *evidence,
-			CompareEvidence: *compareEvidence,
-		},
+	illegalBlocks := &payload.DPOSIllegalBlocks{
+		CoinType:        payload.ELACoin,
+		BlockHeight:     block.Height,
+		Evidence:        *evidence,
+		CompareEvidence: *compareEvidence,
 	}
 
-	if err := b.cfg.Chain.CheckDposIllegalBlocks(&illegalBlocks.DposIllegalBlocks); err != nil {
+	if err := b.cfg.Chain.CheckDposIllegalBlocks(illegalBlocks); err != nil {
 		return err
 	}
 
 	tx := &types.Transaction{
 		Version:        types.TransactionVersion(b.cfg.Versions.GetDefaultTxVersion(block.Height)),
 		TxType:         types.IllegalBlockEvidence,
-		PayloadVersion: types.PayloadIllegalBlockVersion,
+		PayloadVersion: payload.PayloadIllegalBlockVersion,
 		Payload:        illegalBlocks,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
@@ -182,12 +181,13 @@ func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward com
 
 	change := reward - realDposReward
 	if change < 0 {
-		return 0, errors.New("Real dpos reward more than reward limit.")
+		return 0, errors.New("real dpos reward more than reward limit")
 	}
 	return change, nil
 }
 
-func (b *blockV1) generateBlockEvidence(block *types.Block) (*types.BlockEvidence, error) {
+func (b *blockV1) generateBlockEvidence(block *types.Block) (
+	*payload.BlockEvidence, error) {
 	headerBuf := new(bytes.Buffer)
 	if err := block.Header.Serialize(headerBuf); err != nil {
 		return nil, err
@@ -206,14 +206,15 @@ func (b *blockV1) generateBlockEvidence(block *types.Block) (*types.BlockEvidenc
 		return nil, err
 	}
 
-	return &types.BlockEvidence{
+	return &payload.BlockEvidence{
 		Block:        headerBuf.Bytes(),
 		BlockConfirm: confirmBuf.Bytes(),
 		Signers:      confirmSigners,
 	}, nil
 }
 
-func (b *blockV1) getConfirmSigners(confirm *types.DPosProposalVoteSlot) ([][]byte, error) {
+func (b *blockV1) getConfirmSigners(confirm *payload.Confirm) (
+	[][]byte, error) {
 	result := make([][]byte, 0)
 	for _, v := range confirm.Votes {
 		result = append(result, v.Signer)

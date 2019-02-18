@@ -1,4 +1,4 @@
-package types
+package payload
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-type DPosProposal struct {
+type DPOSProposal struct {
 	Sponsor    []byte
 	BlockHash  common.Uint256
 	ViewOffset uint32
@@ -17,7 +17,7 @@ type DPosProposal struct {
 	hash *common.Uint256
 }
 
-func (p *DPosProposal) Data() []byte {
+func (p *DPOSProposal) Data() []byte {
 	buf := new(bytes.Buffer)
 	if err := p.SerializeUnsigned(buf); err != nil {
 		return []byte{0}
@@ -26,7 +26,7 @@ func (p *DPosProposal) Data() []byte {
 	return buf.Bytes()
 }
 
-func (p *DPosProposal) SerializeUnsigned(w io.Writer) error {
+func (p *DPOSProposal) SerializeUnsigned(w io.Writer) error {
 	if err := common.WriteVarBytes(w, p.Sponsor); err != nil {
 		return err
 	}
@@ -36,14 +36,14 @@ func (p *DPosProposal) SerializeUnsigned(w io.Writer) error {
 	return common.WriteUint32(w, p.ViewOffset)
 }
 
-func (p *DPosProposal) Serialize(w io.Writer) error {
+func (p *DPOSProposal) Serialize(w io.Writer) error {
 	if err := p.SerializeUnsigned(w); err != nil {
 		return err
 	}
 	return common.WriteVarBytes(w, p.Sign)
 }
 
-func (p *DPosProposal) DeserializeUnSigned(r io.Reader) error {
+func (p *DPOSProposal) DeserializeUnSigned(r io.Reader) error {
 	sponsor, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (p *DPosProposal) DeserializeUnSigned(r io.Reader) error {
 	return err
 }
 
-func (p *DPosProposal) Deserialize(r io.Reader) error {
+func (p *DPOSProposal) Deserialize(r io.Reader) error {
 	if err := p.DeserializeUnSigned(r); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (p *DPosProposal) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (p *DPosProposal) Hash() common.Uint256 {
+func (p *DPOSProposal) Hash() common.Uint256 {
 	if p.hash == nil {
 		buf := new(bytes.Buffer)
 		p.SerializeUnsigned(buf)

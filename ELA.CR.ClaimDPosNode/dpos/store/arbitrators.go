@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -106,7 +107,7 @@ func (a *Arbitrators) OnBlockReceived(b *types.Block, confirmed bool) {
 	}
 }
 
-func (a *Arbitrators) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (a *Arbitrators) OnConfirmReceived(p *payload.Confirm) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 	block, err := a.cfg.ChainStore.GetBlock(p.Hash)

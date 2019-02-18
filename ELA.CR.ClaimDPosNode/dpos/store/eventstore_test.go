@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -28,7 +28,7 @@ func TestEventStore_Open(t *testing.T) {
 }
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
-	proposal := &types.DPosProposal{
+	proposal := &payload.DPOSProposal{
 		Sponsor:    randomPkBytes(),
 		BlockHash:  common.Uint256{2},
 		Sign:       []byte{1, 2, 3},
@@ -121,7 +121,7 @@ func TestEventStore_AddViewEvent(t *testing.T) {
 }
 
 func TestEventStore_AddVoteEvent(t *testing.T) {
-	vote := &types.DPosProposalVote{
+	vote := &payload.DPOSProposalVote{
 		ProposalHash: common.Uint256{1, 2, 3},
 		Signer:       randomPkBytes(),
 		Accept:       false,

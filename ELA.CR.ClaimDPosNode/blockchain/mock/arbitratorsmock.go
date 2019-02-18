@@ -4,6 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
@@ -79,7 +80,7 @@ func (a *ArbitratorsMock) OnBlockReceived(b *types.Block, confirmed bool) {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (a *ArbitratorsMock) OnConfirmReceived(p *payload.Confirm) {
 	panic("implement me")
 }
 

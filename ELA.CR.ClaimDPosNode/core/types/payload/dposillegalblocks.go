@@ -1,4 +1,4 @@
-package types
+package payload
 
 import (
 	"bytes"
@@ -11,7 +11,11 @@ import (
 
 type CoinType uint32
 
-const ELACoin = CoinType(0)
+const (
+	ELACoin = CoinType(0)
+
+	PayloadIllegalBlockVersion byte = 0x00
+)
 
 type BlockEvidence struct {
 	Block        []byte
@@ -21,7 +25,7 @@ type BlockEvidence struct {
 	hash *common.Uint256
 }
 
-type DposIllegalBlocks struct {
+type DPOSIllegalBlocks struct {
 	CoinType        CoinType
 	BlockHeight     uint32
 	Evidence        BlockEvidence
@@ -32,7 +36,7 @@ type DposIllegalBlocks struct {
 
 func (b *BlockEvidence) Serialize(w io.Writer) error {
 	if b.Block == nil {
-		return errors.New("Block data can not be null.")
+		return errors.New("block data can not be null")
 	}
 	if err := common.WriteVarBytes(w, b.Block); err != nil {
 		return err
@@ -59,7 +63,15 @@ func (b *BlockEvidence) BlockHash() common.Uint256 {
 	return *b.hash
 }
 
-func (d *DposIllegalBlocks) Serialize(w io.Writer) error {
+func (d *DPOSIllegalBlocks) Data(version byte) []byte {
+	buf := new(bytes.Buffer)
+	if err := d.Serialize(buf, version); err != nil {
+		return []byte{0}
+	}
+	return buf.Bytes()
+}
+
+func (d *DPOSIllegalBlocks) Serialize(w io.Writer, version byte) error {
 	if err := common.WriteUint32(w, uint32(d.CoinType)); err != nil {
 		return err
 	}
@@ -79,7 +91,7 @@ func (d *DposIllegalBlocks) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (d *DposIllegalBlocks) Deserialize(r io.Reader) error {
+func (d *DPOSIllegalBlocks) Deserialize(r io.Reader, version byte) error {
 	var err error
 	var coinType uint32
 	if coinType, err = common.ReadUint32(r); err != nil {
@@ -102,20 +114,20 @@ func (d *DposIllegalBlocks) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (d *DposIllegalBlocks) Hash() common.Uint256 {
+func (d *DPOSIllegalBlocks) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
-		d.Serialize(buf)
+		d.Serialize(buf, PayloadIllegalBlockVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		d.hash = &hash
 	}
 	return *d.hash
 }
 
-func (d *DposIllegalBlocks) GetBlockHeight() uint32 {
+func (d *DPOSIllegalBlocks) GetBlockHeight() uint32 {
 	return d.BlockHeight
 }
 
-func (d *DposIllegalBlocks) Type() IllegalDataType {
+func (d *DPOSIllegalBlocks) Type() IllegalDataType {
 	return IllegalBlock
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -16,7 +17,7 @@ const WaitHeightTolerance = uint32(1)
 
 type IllegalBehaviorMonitor struct {
 	dispatcher      *ProposalDispatcher
-	cachedProposals map[common.Uint256]*types.DPosProposal
+	cachedProposals map[common.Uint256]*payload.DPOSProposal
 
 	evidenceCache evidenceCache
 	manager       *DPOSManager
@@ -24,7 +25,7 @@ type IllegalBehaviorMonitor struct {
 	inactiveArbitratorsTxHash *common.Uint256
 }
 
-func (i *IllegalBehaviorMonitor) AddEvidence(evidence types.DposIllegalData) {
+func (i *IllegalBehaviorMonitor) AddEvidence(evidence payload.DPOSIllegalData) {
 	i.evidenceCache.AddEvidence(evidence)
 }
 
@@ -50,12 +51,12 @@ func (i *IllegalBehaviorMonitor) IsBlockValid(block *types.Block) bool {
 	return i.evidenceCache.IsBlockValid(block)
 }
 
-func (i *IllegalBehaviorMonitor) AddProposal(proposal types.DPosProposal) {
+func (i *IllegalBehaviorMonitor) AddProposal(proposal payload.DPOSProposal) {
 	i.cachedProposals[proposal.Hash()] = &proposal
 }
 
 func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
-	i.cachedProposals = make(map[common.Uint256]*types.DPosProposal)
+	i.cachedProposals = make(map[common.Uint256]*payload.DPOSProposal)
 	for k, v := range i.dispatcher.pendingProposals {
 		i.cachedProposals[k] = &v
 	}
@@ -69,7 +70,7 @@ func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 	}
 }
 
-func (i *IllegalBehaviorMonitor) IsLegalProposal(p *types.DPosProposal) (*types.DPosProposal, bool) {
+func (i *IllegalBehaviorMonitor) IsLegalProposal(p *payload.DPOSProposal) (*payload.DPOSProposal, bool) {
 	if i.isProposalsIllegal(p, i.dispatcher.processingProposal) {
 		return i.dispatcher.processingProposal, false
 	}
@@ -83,18 +84,28 @@ func (i *IllegalBehaviorMonitor) IsLegalProposal(p *types.DPosProposal) (*types.
 	return nil, true
 }
 
-func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPosProposal) {
-	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(first.BlockHash)
-	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(second.BlockHash)
+func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
+	first, second *payload.DPOSProposal) {
 
-	evidences := &types.DposIllegalProposals{
-		Evidence: types.ProposalEvidence{
+	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
+		first.BlockHash)
+	firstBlockByte := new(bytes.Buffer)
+	firstBlock.Header.Serialize(firstBlockByte)
+	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
+		second.BlockHash)
+	secondBlockByte := new(bytes.Buffer)
+	secondBlock.Header.Serialize(secondBlockByte)
+
+	evidences := &payload.DPOSIllegalProposals{
+		Evidence: payload.ProposalEvidence{
 			Proposal:    *first,
-			BlockHeader: firstBlock.Header,
+			BlockHeader: firstBlockByte.Bytes(),
+			BlockHeight: firstBlock.Height,
 		},
-		CompareEvidence: types.ProposalEvidence{
+		CompareEvidence: payload.ProposalEvidence{
 			Proposal:    *second,
-			BlockHeader: secondBlock.Header,
+			BlockHeader: secondBlockByte.Bytes(),
+			BlockHeight: secondBlock.Height,
 		},
 	}
 
@@ -105,12 +116,14 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(first, second *types.DPo
 	i.dispatcher.cfg.Network.BroadcastMessage(m)
 }
 
-func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types.DposIllegalProposals) {
+func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *payload.DPOSIllegalProposals) {
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		Version: types.TransactionVersion(blockchain.DefaultLedger.
+			HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.
+			Height)),
 		TxType:         types.IllegalProposalEvidence,
-		PayloadVersion: types.PayloadIllegalProposalVersion,
-		Payload:        &types.PayloadIllegalProposal{DposIllegalProposals: *evidences},
+		PayloadVersion: payload.PayloadIllegalProposalVersion,
+		Payload:        evidences,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
@@ -124,12 +137,15 @@ func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *types
 	}
 }
 
-func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(evidence *types.SidechainIllegalData) {
+func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
+	evidence *payload.SidechainIllegalData) {
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		Version: types.TransactionVersion(blockchain.DefaultLedger.
+			HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.
+			Height)),
 		TxType:         types.IllegalSidechainEvidence,
-		PayloadVersion: types.PayloadSidechainIllegalDataVersion,
-		Payload:        &types.PayloadSidechainIllegalData{SidechainIllegalData: *evidence},
+		PayloadVersion: payload.PayloadSidechainIllegalDataVersion,
+		Payload:        evidence,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
@@ -143,12 +159,13 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(evidenc
 	}
 }
 
-func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.DposIllegalVotes) {
+func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
+	evidences *payload.DPOSIllegalVotes) {
 	tx := &types.Transaction{
 		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
 		TxType:         types.IllegalVoteEvidence,
-		PayloadVersion: types.PayloadIllegalVoteVersion,
-		Payload:        &types.PayloadIllegalVote{DposIllegalVotes: *evidences},
+		PayloadVersion: payload.PayloadIllegalVoteVersion,
+		Payload:        evidences,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
 		Programs:       []*program.Program{},
@@ -162,22 +179,37 @@ func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(evidences *types.Dpo
 	}
 }
 
-func (i *IllegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosProposalVote) {
+func (i *IllegalBehaviorMonitor) ProcessIllegalVote(
+	first, second *payload.DPOSProposalVote) {
+
 	firstProposal, _ := i.cachedProposals[first.ProposalHash]
 	secondProposal, _ := i.cachedProposals[second.ProposalHash]
-	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(firstProposal.BlockHash)
-	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(secondProposal.BlockHash)
 
-	evidences := &types.DposIllegalVotes{
-		Evidence: types.VoteEvidence{
-			Vote:        *first,
-			Proposal:    *firstProposal,
-			BlockHeader: firstBlock.Header,
+	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
+		firstProposal.BlockHash)
+	firstBlockByte := new(bytes.Buffer)
+	firstBlock.Header.Serialize(firstBlockByte)
+	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
+		secondProposal.BlockHash)
+	secondBlockByte := new(bytes.Buffer)
+	secondBlock.Header.Serialize(secondBlockByte)
+
+	evidences := &payload.DPOSIllegalVotes{
+		Evidence: payload.VoteEvidence{
+			Vote: *first,
+			ProposalEvidence: payload.ProposalEvidence{
+				Proposal:    *firstProposal,
+				BlockHeader: firstBlockByte.Bytes(),
+				BlockHeight: firstBlock.Height,
+			},
 		},
-		CompareEvidence: types.VoteEvidence{
-			Vote:        *second,
-			Proposal:    *secondProposal,
-			BlockHeader: secondBlock.Header,
+		CompareEvidence: payload.VoteEvidence{
+			Vote: *second,
+			ProposalEvidence: payload.ProposalEvidence{
+				Proposal:    *secondProposal,
+				BlockHeader: secondBlockByte.Bytes(),
+				BlockHeight: secondBlock.Height,
+			},
 		},
 	}
 
@@ -188,7 +220,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalVote(first, second *types.DPosPro
 	i.dispatcher.cfg.Network.BroadcastMessage(m)
 }
 
-func (i *IllegalBehaviorMonitor) isProposalsIllegal(first, second *types.DPosProposal) bool {
+func (i *IllegalBehaviorMonitor) isProposalsIllegal(first, second *payload.DPOSProposal) bool {
 	if first == nil || second == nil {
 		return false
 	}
@@ -210,7 +242,7 @@ func (i *IllegalBehaviorMonitor) isProposalsIllegal(first, second *types.DPosPro
 	return false
 }
 
-func (i *IllegalBehaviorMonitor) IsLegalVote(v *types.DPosProposalVote) (*types.DPosProposalVote, bool) {
+func (i *IllegalBehaviorMonitor) IsLegalVote(v *payload.DPOSProposalVote) (*payload.DPOSProposalVote, bool) {
 	for _, accept := range i.dispatcher.acceptVotes {
 		if i.isVotesIllegal(v, &accept) {
 			return &accept, false
@@ -226,7 +258,7 @@ func (i *IllegalBehaviorMonitor) IsLegalVote(v *types.DPosProposalVote) (*types.
 	return nil, true
 }
 
-func (i *IllegalBehaviorMonitor) isVotesIllegal(first, second *types.DPosProposalVote) bool {
+func (i *IllegalBehaviorMonitor) isVotesIllegal(first, second *payload.DPOSProposalVote) bool {
 	if !bytes.Equal(first.Signer, second.Signer) {
 		return false
 	}
