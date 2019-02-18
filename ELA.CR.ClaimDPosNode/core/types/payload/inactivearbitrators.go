@@ -13,8 +13,17 @@ const PayloadInactiveArbitratorsVersion byte = 0x00
 type InactiveArbitrators struct {
 	Sponsor     []byte
 	Arbitrators [][]byte
+	BlockHeight uint32
 
 	hash *common.Uint256
+}
+
+func (i *InactiveArbitrators) Type() IllegalDataType {
+	return InactiveArbitrator
+}
+
+func (i *InactiveArbitrators) GetBlockHeight() uint32 {
+	return i.BlockHeight
 }
 
 func (i *InactiveArbitrators) Data(version byte) []byte {
@@ -32,6 +41,10 @@ func (i *InactiveArbitrators) Serialize(w io.Writer,
 	}
 
 	if err := common.WriteVarUint(w, uint64(len(i.Arbitrators))); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, i.BlockHeight); err != nil {
 		return err
 	}
 
@@ -53,6 +66,10 @@ func (i *InactiveArbitrators) Deserialize(r io.Reader,
 
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return err
+	}
+
+	if i.BlockHeight, err = common.ReadUint32(r); err != nil {
 		return err
 	}
 
