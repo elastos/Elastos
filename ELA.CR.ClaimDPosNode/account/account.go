@@ -23,10 +23,7 @@ func NewAccount() (*Account, error) {
 		return nil, err
 	}
 
-	programHash, err := signatureContract.ToProgramHash()
-	if err != nil {
-		return nil, err
-	}
+	programHash := signatureContract.ToProgramHash()
 	address, err := programHash.ToAddress()
 	if err != nil {
 		return nil, err
@@ -53,10 +50,7 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	programHash, err := signatureContract.ToProgramHash()
-	if err != nil {
-		return nil, err
-	}
+	programHash := signatureContract.ToProgramHash()
 	address, err := programHash.ToAddress()
 	if err != nil {
 		return nil, err
@@ -66,6 +60,27 @@ func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
 		PublicKey:    pubKey,
 		ProgramHash:  *programHash,
 		RedeemScript: signatureContract.Code,
+		Address:      address,
+	}, nil
+}
+
+func NewMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Account, error) {
+	multiSigContract, err := contract.CreateMultiSigContract(m, pubKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	programHash := multiSigContract.ToProgramHash()
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Account{
+		PrivateKey:   nil,
+		PublicKey:    nil,
+		ProgramHash:  *programHash,
+		RedeemScript: multiSigContract.Code,
 		Address:      address,
 	}, nil
 }

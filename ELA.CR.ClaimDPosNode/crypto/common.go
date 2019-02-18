@@ -2,12 +2,9 @@ package crypto
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"errors"
 
 	"github.com/elastos/Elastos.ELA/common"
-
-	"golang.org/x/crypto/ripemd160"
 )
 
 const (
@@ -23,54 +20,6 @@ const (
 	// 1byte n + 1byte OP_CHECKMULTISIG
 	MinMultiSignCodeLength = 71
 )
-
-func ToProgramHash(prefix byte, code []byte) *common.Uint168 {
-	hash := sha256.Sum256(code)
-	md160 := ripemd160.New()
-	md160.Write(hash[:])
-	sum := common.Uint168{}
-	copy(sum[:], md160.Sum([]byte{prefix}))
-	return &sum
-}
-
-func CreateStandardRedeemScript(publicKey *PublicKey) ([]byte, error) {
-	content, err := publicKey.EncodePoint(true)
-	if err != nil {
-		return nil, errors.New("create standard redeem script, encode public key failed")
-	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(content)))
-	buf.Write(content)
-	buf.WriteByte(byte(common.STANDARD))
-
-	return buf.Bytes(), nil
-}
-
-func CreateMultiSignRedeemScript(M uint, publicKeys []*PublicKey) ([]byte, error) {
-	// Write M
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(PUSH1 + M - 1))
-
-	//sort pubkey
-	SortPublicKeys(publicKeys)
-
-	// Write public keys
-	for _, pubkey := range publicKeys {
-		content, err := pubkey.EncodePoint(true)
-		if err != nil {
-			return nil, errors.New("create multi sign redeem script, encode public key failed")
-		}
-		buf.WriteByte(byte(len(content)))
-		buf.Write(content)
-	}
-
-	// Write N
-	N := len(publicKeys)
-	buf.WriteByte(byte(PUSH1 + N - 1))
-	buf.WriteByte(common.MULTISIG)
-
-	return buf.Bytes(), nil
-}
 
 func CreateCrossChainRedeemScript(genesisHash common.Uint256) []byte {
 	buf := new(bytes.Buffer)
@@ -119,7 +68,7 @@ func parsePublicKeys(code []byte) ([][]byte, error) {
 
 func GetScriptType(script []byte) (byte, error) {
 	if len(script) != PublicKeyScriptLength && len(script) < MinMultiSignCodeLength {
-		return 0, errors.New("invalid transaction type, redeem script not a standard or multi sign type")
+		return 0, errors.New("invalid redeem script, not a standard or multi sign type")
 	}
 	return script[len(script)-1], nil
 }
@@ -130,7 +79,7 @@ func GetM(code []byte) (uint, error) {
 		return 0, err
 	}
 	if scriptType != common.MULTISIG {
-		return 0, errors.New("not a multisig script")
+		return 0, errors.New("not a multi-signature script")
 	}
 	return getM(code), nil
 }

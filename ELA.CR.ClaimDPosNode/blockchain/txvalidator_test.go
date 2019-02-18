@@ -534,7 +534,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 func getCode(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := crypto.CreateStandardRedeemScript(pk)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
 	return redeemScript
 }
 

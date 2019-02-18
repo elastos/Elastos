@@ -28,8 +28,8 @@ func CreateStandardContract(pubKey *crypto.PublicKey) (*Contract, error) {
 	}
 
 	return &Contract{
-		Code:       redeemScript,
-		HashPrefix: PrefixStandard,
+		Code:   redeemScript,
+		Prefix: PrefixStandard,
 	}, nil
 }
 
@@ -44,7 +44,7 @@ func PublicKeyToStandardProgramHash(pubKey []byte) (*common.Uint168, error) {
 		return nil, err
 	}
 
-	return contract.ToProgramHash()
+	return contract.ToProgramHash(), nil
 }
 
 func PublicKeyToStandardCodeHash(pubKey []byte) (*common.Uint160, error) {
