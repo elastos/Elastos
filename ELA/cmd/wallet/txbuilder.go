@@ -23,6 +23,8 @@ type Transfer struct {
 }
 
 func CreateTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
+
 	feeStr := c.String("fee")
 	if feeStr == "" {
 		return errors.New("use --fee to specify transfer fee")
@@ -59,7 +61,7 @@ func CreateTransaction(c *cli.Context) error {
 		to = standard
 		lockStr := c.String("lock")
 		if lockStr == "" {
-			txn, err = createTransaction(from, fee, uint32(0), &Transfer{to, amount})
+			txn, err = createTransaction(walletPath, from, fee, uint32(0), &Transfer{to, amount})
 			if err != nil {
 				return errors.New("create transaction failed: " + err.Error())
 			}
@@ -68,7 +70,7 @@ func CreateTransaction(c *cli.Context) error {
 			if err != nil {
 				return errors.New("invalid lock height")
 			}
-			txn, err = createTransaction(from, fee, uint32(lock), &Transfer{to, amount})
+			txn, err = createTransaction(walletPath, from, fee, uint32(lock), &Transfer{to, amount})
 			if err != nil {
 				return errors.New("create transaction failed: " + err.Error())
 			}
@@ -82,7 +84,7 @@ func CreateTransaction(c *cli.Context) error {
 	return nil
 }
 
-func createTransaction(from string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
+func createTransaction(walletPath string, from string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
 	// Check output
 	if len(outputs) == 0 {
 		return nil, errors.New("[Wallet], Invalid transaction target")
@@ -93,7 +95,7 @@ func createTransaction(from string, fee *common.Fixed64, lockedUntil uint32, out
 	if err != nil {
 		return nil, err
 	}
-	client, err := account.Open(account.KeystoreFileName, password)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return nil, err
 	}

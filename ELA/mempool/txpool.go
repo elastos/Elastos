@@ -100,7 +100,7 @@ func (mp *TxPool) HaveTransaction(txId Uint256) bool {
 // This function is safe for concurrent access.
 func (mp *TxPool) GetTxsInPool() []*Transaction {
 	mp.RLock()
-	txs := make([]*Transaction, len(mp.txnList))
+	txs := make([]*Transaction, 0, len(mp.txnList))
 	for _, tx := range mp.txnList {
 		txs = append(txs, tx)
 	}
