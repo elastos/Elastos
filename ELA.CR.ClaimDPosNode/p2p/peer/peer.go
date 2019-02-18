@@ -140,7 +140,6 @@ type Peer struct {
 
 	flagsMtx           sync.Mutex // protects the peer flags below
 	na                 *p2p.NetAddress
-	naFilter           p2p.NAFilter
 	id                 uint64
 	services           uint64
 	versionKnown       bool
@@ -241,26 +240,6 @@ func (p *Peer) NA() *p2p.NetAddress {
 	p.flagsMtx.Unlock()
 
 	return na
-}
-
-// SetNAFilter set a NetAddress filter to the peer.
-//
-// This function is safe for concurrent access.
-func (p *Peer) SetNAFilter(filter p2p.NAFilter) {
-	p.flagsMtx.Lock()
-	p.naFilter = filter
-	p.flagsMtx.Unlock()
-}
-
-// NAFilter returns the peer network address filter.
-//
-// This function is safe for concurrent access.
-func (p *Peer) NAFilter() p2p.NAFilter {
-	p.flagsMtx.Lock()
-	filter := p.naFilter
-	p.flagsMtx.Unlock()
-
-	return filter
 }
 
 // Addr returns the peer address.
@@ -427,12 +406,12 @@ func (p *Peer) StartingHeight() uint32 {
 // message will be sent if there are no entries in the provided addresses slice.
 //
 // This function is safe for concurrent access.
-func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) ([]*p2p.NetAddress, error) {
+func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) []*p2p.NetAddress {
 	addressCount := len(addresses)
 
 	// Nothing to send.
 	if addressCount == 0 {
-		return nil, nil
+		return nil
 	}
 
 	addr := msg.NewAddr(addresses)
@@ -450,7 +429,7 @@ func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) ([]*p2p.NetAddress, erro
 	}
 
 	p.SendMessage(addr, nil)
-	return addr.AddrList, nil
+	return addr.AddrList
 }
 
 // handlePingMsg is invoked when a peer receives a ping message.
