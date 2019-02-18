@@ -874,53 +874,54 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction) error {
 }
 
 func (b *BlockChain) checkIllegalProposalsTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalProposal)
-	if !ok {
-		return errors.New("Invalid payload.")
-	}
-
-	return b.checkDposIllegalProposals(&payload.DposIllegalProposals)
-}
-
-func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalVote)
-	if !ok {
-		return errors.New("Invalid payload.")
-	}
-
-	return b.checkDposIllegalVotes(&payload.DposIllegalVotes)
-}
-
-func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalBlock)
-	if !ok {
-		return errors.New("Invalid payload.")
-	}
-
-	return b.CheckDposIllegalBlocks(&payload.DposIllegalBlocks)
-}
-
-func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadSidechainIllegalData)
+	p, ok := txn.Payload.(*payload.DPOSIllegalProposals)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
-	if payload.IllegalType != SidechainIllegalProposal && payload.IllegalType != SidechainIllegalVote {
+	return b.checkDposIllegalProposals(p)
+}
+
+func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.DPOSIllegalVotes)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	return b.checkDposIllegalVotes(p)
+}
+
+func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.DPOSIllegalBlocks)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	return b.CheckDposIllegalBlocks(p)
+}
+
+func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.SidechainIllegalData)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if p.IllegalType != payload.SidechainIllegalProposal &&
+		p.IllegalType != payload.SidechainIllegalVote {
 		return errors.New("invalid type")
 	}
 
-	_, err := crypto.DecodePoint(payload.IllegalSigner)
+	_, err := crypto.DecodePoint(p.IllegalSigner)
 	if err != nil {
 		return err
 	}
 
-	_, err = common.Uint168FromAddress(payload.GenesisBlockAddress)
+	_, err = common.Uint168FromAddress(p.GenesisBlockAddress)
 	if err != nil {
 		return err
 	}
 
-	if len(payload.Signs) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
+	if len(p.Signs) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("insufficient signs count")
 	}
 
@@ -991,12 +992,18 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 	return nil
 }
 
-func (b *BlockChain) checkDposIllegalProposals(d *DposIllegalProposals) error {
-	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
-		return errors.New("proposal hash and block should match")
+func (b *BlockChain) checkDposIllegalProposals(
+	d *payload.DPOSIllegalProposals) error {
+
+	if err := validateProposalEvidence(&d.Evidence); err != nil {
+		return err
 	}
 
-	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+	if err := validateProposalEvidence(&d.CompareEvidence); err != nil {
+		return err
+	}
+
+	if d.Evidence.BlockHeight != d.CompareEvidence.BlockHeight {
 		return errors.New("should be in same height")
 	}
 
@@ -1019,13 +1026,17 @@ func (b *BlockChain) checkDposIllegalProposals(d *DposIllegalProposals) error {
 	return nil
 }
 
-func (b *BlockChain) checkDposIllegalVotes(d *DposIllegalVotes) error {
+func (b *BlockChain) checkDposIllegalVotes(d *payload.DPOSIllegalVotes) error {
 
-	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
-		return errors.New("vote, proposal and block should match")
+	if err := validateVoteEvidence(&d.Evidence); err != nil {
+		return nil
 	}
 
-	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+	if err := validateVoteEvidence(&d.CompareEvidence); err != nil {
+		return nil
+	}
+
+	if d.Evidence.BlockHeight != d.CompareEvidence.BlockHeight {
 		return errors.New("should be in same height")
 	}
 
@@ -1049,16 +1060,16 @@ func (b *BlockChain) checkDposIllegalVotes(d *DposIllegalVotes) error {
 	return nil
 }
 
-func (b *BlockChain) CheckDposIllegalBlocks(d *DposIllegalBlocks) error {
+func (b *BlockChain) CheckDposIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 
 	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
 		return errors.New("blocks can not be same")
 	}
 
-	if d.CoinType == ELACoin {
+	if d.CoinType == payload.ELACoin {
 		var err error
 		var header, compareHeader *Header
-		var confirm, compareConfirm *DPosProposalVoteSlot
+		var confirm, compareConfirm *payload.Confirm
 
 		if header, compareHeader, err = checkDposElaIllegalBlockHeaders(d); err != nil {
 			return err
@@ -1076,13 +1087,16 @@ func (b *BlockChain) CheckDposIllegalBlocks(d *DposIllegalBlocks) error {
 	return nil
 }
 
-func (b *BlockChain) checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposalVoteSlot, compareConfirm *DPosProposalVoteSlot) error {
+func (b *BlockChain) checkDposElaIllegalBlockSigners(
+	d *payload.DPOSIllegalBlocks, confirm *payload.Confirm,
+	compareConfirm *payload.Confirm) error {
+
 	signers := d.Evidence.Signers
 	compareSigners := d.CompareEvidence.Signers
 
 	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) ||
 		len(compareSigners) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
-		return errors.New("Signers count less than dpos required majority count")
+		return errors.New("signers count less than dpos required majority count")
 	}
 
 	arbitratorsSet := make(map[string]interface{})
@@ -1092,36 +1106,39 @@ func (b *BlockChain) checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confi
 
 	for _, v := range signers {
 		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
-			return errors.New("Invalid signers within evidence.")
+			return errors.New("invalid signers within evidence")
 		}
 	}
 
 	for _, v := range compareSigners {
 		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
-			return errors.New("Invalid signers within evidence.")
+			return errors.New("invalid signers within evidence")
 		}
 	}
 
 	confirmSigners := getConfirmSigners(confirm)
 	for _, v := range signers {
 		if _, ok := confirmSigners[common.BytesToHexString(v)]; !ok {
-			return errors.New("Signers and confirm votes do not match.")
+			return errors.New("signers and confirm votes do not match")
 		}
 	}
 
 	compareConfirmSigners := getConfirmSigners(compareConfirm)
 	for _, v := range signers {
 		if _, ok := compareConfirmSigners[common.BytesToHexString(v)]; !ok {
-			return errors.New("Signers and confirm votes do not match.")
+			return errors.New("signers and confirm votes do not match")
 		}
 	}
 
 	return nil
 }
 
-func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, compareHeader *Header) (*DPosProposalVoteSlot, *DPosProposalVoteSlot, error) {
-	confirm := &DPosProposalVoteSlot{}
-	compareConfirm := &DPosProposalVoteSlot{}
+func checkDposElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
+	header *Header, compareHeader *Header) (*payload.Confirm,
+	*payload.Confirm, error) {
+
+	confirm := &payload.Confirm{}
+	compareConfirm := &payload.Confirm{}
 
 	data := new(bytes.Buffer)
 	data.Write(d.Evidence.BlockConfirm)
@@ -1160,7 +1177,9 @@ func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, comp
 	return confirm, compareConfirm, nil
 }
 
-func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, error) {
+func checkDposElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
+	*Header, error) {
+
 	header := &Header{}
 	compareHeader := &Header{}
 
@@ -1185,7 +1204,8 @@ func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, er
 	return header, compareHeader, nil
 }
 
-func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
+func getConfirmSigners(
+	confirm *payload.Confirm) map[string]interface{} {
 	result := make(map[string]interface{})
 	for _, v := range confirm.Votes {
 		result[common.BytesToHexString(v.Signer)] = nil
@@ -1196,6 +1216,39 @@ func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
 func checkStringField(rawStr string, field string) error {
 	if len(rawStr) == 0 || len(rawStr) > MaxStringLength {
 		return fmt.Errorf("Field %s has invalid string length.", field)
+	}
+
+	return nil
+}
+
+func validateProposalEvidence(evidence *payload.ProposalEvidence) error {
+
+	header := &Header{}
+	buf := new(bytes.Buffer)
+	buf.Write(evidence.BlockHeader)
+
+	if err := header.Deserialize(buf); err != nil {
+		return err
+	}
+
+	if header.Height != evidence.BlockHeight {
+		return errors.New("evidence height and block height should match")
+	}
+
+	if !header.Hash().IsEqual(evidence.Proposal.BlockHash) {
+		return errors.New("proposal hash and block should match")
+	}
+
+	return nil
+}
+
+func validateVoteEvidence(evidence *payload.VoteEvidence) error {
+	if err := validateProposalEvidence(&evidence.ProposalEvidence); err != nil {
+		return err
+	}
+
+	if evidence.Proposal.Hash().IsEqual(evidence.Vote.ProposalHash) {
+		return errors.New("vote and proposal should match")
 	}
 
 	return nil

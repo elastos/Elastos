@@ -56,10 +56,10 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
-func (a *Arbitrator) OnIllegalBlockTxReceived(payload *types.PayloadIllegalBlock) {
+func (a *Arbitrator) OnIllegalBlockTxReceived(p *payload.DPOSIllegalBlocks) {
 	log.Info("[OnIllegalBlockTxReceived] listener received illegal block tx")
-	if payload.CoinType != types.ELACoin {
-		a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+	if p.CoinType != payload.ELACoin {
+		a.network.PostIllegalBlocksTask(p)
 	}
 }
 
@@ -91,8 +91,10 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 	}
 }
 
-func (a *Arbitrator) OnSidechainIllegalEvidenceReceived(data *types.SidechainIllegalData) {
-	log.Info("[OnSidechainIllegalEvidenceReceived] listener received sidechain illegal evidence")
+func (a *Arbitrator) OnSidechainIllegalEvidenceReceived(
+	data *payload.SidechainIllegalData) {
+	log.Info("[OnSidechainIllegalEvidenceReceived] listener received" +
+		" sidechain illegal evidence")
 	a.network.PostSidechainIllegalDataTask(data)
 }
 
@@ -101,7 +103,7 @@ func (a *Arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
-func (a *Arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
@@ -210,7 +212,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			a.OnBlockReceived(block.Block, block.ConfirmFlag)
 
 		case events.ETConfirmAccepted:
-			a.OnConfirmReceived(e.Data.(*types.DPosProposalVoteSlot))
+			a.OnConfirmReceived(e.Data.(*payload.Confirm))
 
 		case events.ETNewArbiterElection:
 			a.OnNewElection(e.Data.([][]byte))
@@ -218,7 +220,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)
 			if tx.IsIllegalBlockTx() {
-				a.OnIllegalBlockTxReceived(tx.Payload.(*types.PayloadIllegalBlock))
+				a.OnIllegalBlockTxReceived(tx.Payload.(*payload.DPOSIllegalBlocks))
 			} else if tx.IsInactiveArbitrators() {
 				a.OnInactiveArbitratorsTxReceived(tx.Payload.(*payload.InactiveArbitrators))
 			}

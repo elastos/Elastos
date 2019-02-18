@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -173,7 +174,7 @@ func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
 	return inMainChain, isOrphan, nil
 }
 
-func (b *BlockChain) AddConfirm(confirm *DPosProposalVoteSlot) error {
+func (b *BlockChain) AddConfirm(confirm *payload.Confirm) error {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
@@ -223,7 +224,7 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 	return b.db.GetCurrentBlockHash()
 }
 
-func (b *BlockChain) ProcessIllegalBlock(payload *PayloadIllegalBlock) {
+func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
 	b.state.ProcessSpecialTxPayload(payload)
 }
 
@@ -1045,7 +1046,7 @@ func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
 	return inMainChain, false, nil
 }
 
-func (b *BlockChain) processConfirm(confirm *DPosProposalVoteSlot) error {
+func (b *BlockChain) processConfirm(confirm *payload.Confirm) error {
 	if err := b.db.SaveConfirm(confirm); err != nil {
 		return err
 	}

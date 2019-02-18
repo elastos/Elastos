@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -195,7 +196,9 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 	return 1
 }
 
-func confirmsEqual(con1 *types.DPosProposalVoteSlot, con2 *types.DPosProposalVoteSlot) bool {
+func confirmsEqual(con1 *payload.Confirm,
+	con2 *payload.Confirm) bool {
+
 	if !con1.Hash.IsEqual(con2.Hash) {
 		return false
 	}

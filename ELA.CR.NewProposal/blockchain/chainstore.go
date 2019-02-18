@@ -38,7 +38,7 @@ type persistBlockTask struct {
 }
 
 type persistConfirmTask struct {
-	confirm *DPosProposalVoteSlot
+	confirm *payload.Confirm
 	reply   chan bool
 }
 
@@ -503,7 +503,7 @@ func (c *ChainStore) SaveBlock(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) SaveConfirm(confirm *DPosProposalVoteSlot) error {
+func (c *ChainStore) SaveConfirm(confirm *payload.Confirm) error {
 	log.Debug("SaveConfirm()")
 
 	reply := make(chan bool)
@@ -530,7 +530,7 @@ func (c *ChainStore) handlePersistBlockTask(b *Block) {
 	c.persistBlock(b)
 }
 
-func (c *ChainStore) handlePersistConfirmTask(confirm *DPosProposalVoteSlot) {
+func (c *ChainStore) handlePersistConfirmTask(confirm *payload.Confirm) {
 	c.persistConfirm(confirm)
 }
 
@@ -546,7 +546,7 @@ func (c *ChainStore) persistBlock(block *Block) {
 	c.mu.Unlock()
 }
 
-func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
+func (c *ChainStore) persistConfirm(confirm *payload.Confirm) {
 	c.NewBatch()
 	if err := c.PersistConfirm(confirm); err != nil {
 		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
@@ -558,8 +558,8 @@ func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
 	}
 }
 
-func (c *ChainStore) GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error) {
-	var confirm = new(DPosProposalVoteSlot)
+func (c *ChainStore) GetConfirm(hash Uint256) (*payload.Confirm, error) {
+	var confirm = new(payload.Confirm)
 	prefix := []byte{byte(DATAConfirm)}
 	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
