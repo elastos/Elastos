@@ -35,22 +35,22 @@ var (
 )
 
 type Blockchain struct {
+	mutex              sync.RWMutex
 	BlockHeight        uint32
 	GenesisHash        Uint256
 	BestChain          *BlockNode
 	Root               *BlockNode
-	Index              map[Uint256]*BlockNode
 	IndexLock          sync.RWMutex
+	Index              map[Uint256]*BlockNode
 	DepNodes           map[Uint256][]*BlockNode
+	orphanLock         sync.RWMutex
 	Orphans            map[Uint256]*OrphanBlock
 	PrevOrphans        map[Uint256][]*OrphanBlock
 	OldestOrphan       *OrphanBlock
 	BlockCache         map[Uint256]*Block
 	TimeSource         MedianTimeSource
 	MedianTimePast     time.Time
-	OrphanLock         sync.RWMutex
 	BCEvents           *events.Event
-	mutex              sync.RWMutex
 	AssetID            Uint256
 	NewBlocksListeners []interfaces.NewBlocksListener
 }
@@ -207,6 +207,17 @@ func (b *Blockchain) AddBlock(block *Block) (bool, bool, error) {
 	return inMainChain, isOrphan, nil
 }
 
+func (b *Blockchain) GetBlock(hash Uint256) (*Block, error) {
+	b.orphanLock.RLock()
+	orphanBlock, ok := b.Orphans[hash]
+	b.orphanLock.RUnlock()
+	if ok {
+		return orphanBlock.Block, nil
+	}
+
+	return DefaultLedger.Store.GetBlock(hash)
+}
+
 func (b *Blockchain) AddConfirm(confirm *DPosProposalVoteSlot) error {
 	log.Debug()
 	b.mutex.Lock()
@@ -272,8 +283,8 @@ func (b *Blockchain) ProcessOrphans(hash *Uint256) error {
 }
 
 func (b *Blockchain) RemoveOrphanBlock(orphan *OrphanBlock) {
-	b.OrphanLock.Lock()
-	defer b.OrphanLock.Unlock()
+	b.orphanLock.Lock()
+	defer b.orphanLock.Unlock()
 
 	orphanHash := orphan.Block.Hash()
 	delete(b.Orphans, orphanHash)
@@ -317,8 +328,8 @@ func (b *Blockchain) AddOrphanBlock(block *Block) {
 		b.OldestOrphan = nil
 	}
 
-	b.OrphanLock.Lock()
-	defer b.OrphanLock.Unlock()
+	b.orphanLock.Lock()
+	defer b.orphanLock.Unlock()
 
 	// Insert the block into the orphan map with an expiration time
 	// 1 hour from now.
@@ -337,8 +348,8 @@ func (b *Blockchain) AddOrphanBlock(block *Block) {
 }
 
 func (b *Blockchain) IsKnownOrphan(hash *Uint256) bool {
-	b.OrphanLock.RLock()
-	defer b.OrphanLock.RUnlock()
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
 
 	if _, exists := b.Orphans[*hash]; exists {
 		return true
@@ -348,8 +359,8 @@ func (b *Blockchain) IsKnownOrphan(hash *Uint256) bool {
 }
 
 func (b *Blockchain) GetOrphanRoot(hash *Uint256) *Uint256 {
-	b.OrphanLock.RLock()
-	defer b.OrphanLock.RUnlock()
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
 
 	orphanRoot := hash
 	prevHash := hash
