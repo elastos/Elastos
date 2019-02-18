@@ -850,8 +850,7 @@ namespace Elastos {
 			if ((peer->GetServices() & _chainParams.GetServices()) != _chainParams.GetServices()) {
 				peer->warn("unsupported node type");
 				peer->Disconnect();
-			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK &&
-				(peer->GetServices() & BTC_SERVICES_NODE_NETWORK) != BTC_SERVICES_NODE_NETWORK) {
+			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
 				peer->warn("peer->services: {} != SERVICES_NODE_NETWORK", peer->GetServices());
 				peer->warn("node doesn't carry full blocks");
 				peer->Disconnect();
@@ -1053,11 +1052,6 @@ namespace Elastos {
 							found = true;
 							break;
 						}
-					}
-
-					if (_peers[i].Port != _chainParams.GetStandardPort()) {
-						peer->warn("drop peer[{}] = {}:{} port is not standard", i, _peers[i].GetHost(), _peers[i].Port);
-						continue;
 					}
 
 					if (!found) {

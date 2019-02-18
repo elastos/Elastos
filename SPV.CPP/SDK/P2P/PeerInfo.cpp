@@ -17,7 +17,7 @@ namespace Elastos {
 				Address(UINT128_ZERO),
 				Port(0),
 				Timestamp(0),
-				Services(SERVICES_NODE_NETWORK),
+				Services(SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM),
 				Flags(0) {
 
 		}
@@ -26,7 +26,7 @@ namespace Elastos {
 				Port(port),
 				Timestamp(timestamp),
 				Address(addr),
-				Services(SERVICES_NODE_NETWORK),
+				Services(SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM),
 				Flags(0) {
 		}
 
