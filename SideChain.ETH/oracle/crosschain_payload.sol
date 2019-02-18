@@ -145,6 +145,7 @@ contract CrossChainPayload {
         uint256 total = 0;
         uint256 i = 0;
         while (i < _amounts.length) {
+            require(_amounts[i]%10000000000==0);
             total = total.add(_amounts[i]);
             emit PayloadReceived(_addrs[i], _amounts[i], msg.sender);
             i++;
