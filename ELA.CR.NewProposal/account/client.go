@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"sync"
 	"time"
 
@@ -72,13 +73,26 @@ func Add(path string, password []byte) (*ClientImpl, error) {
 	return client, nil
 }
 
+func AddMultiSig(path string, password []byte, m int, pubKeys []*crypto.PublicKey) (*ClientImpl, error) {
+	client := NewClient(path, password, false)
+	if client == nil {
+		return nil, errors.New("add multi-signature account failed")
+	}
+	_, err := client.CreateMultiSigAccount(m, pubKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 func Open(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, false)
 	if client == nil {
 		return nil, errors.New("open wallet failed")
 	}
 	if err := client.LoadAccounts(); err != nil {
-		return nil, errors.New("load accounts failed")
+		return nil, err
 	}
 
 	return client, nil
@@ -279,6 +293,18 @@ func (cl *ClientImpl) CreateAccount() (*Account, error) {
 	return account, nil
 }
 
+func (cl *ClientImpl) CreateMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Account, error) {
+	account, err := NewMultiSigAccount(m, pubKeys)
+	if err != nil {
+		return nil, err
+	}
+	if err = cl.SaveAccountData(account.ProgramHash.Bytes(), account.RedeemScript, nil); err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
 // SaveAccount saves a Account to memory and db
 func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	cl.mu.Lock()
@@ -319,11 +345,10 @@ func (cl *ClientImpl) GetAccounts() []*Account {
 		accounts = append(accounts, account)
 	}
 
-	// comment below to make sure the main account is at the top
-	//sort.Slice(accounts, func(i, j int) bool {
-	//	return bytes.Compare(accounts[i].ProgramHash[:],
-	//		accounts[j].ProgramHash[:]) < 0
-	//})
+	sort.Slice(accounts, func(i, j int) bool {
+		return bytes.Compare(accounts[i].ProgramHash[:],
+			accounts[j].ProgramHash[:]) > 0
+	})
 
 	return accounts
 }
@@ -332,27 +357,51 @@ func (cl *ClientImpl) GetAccounts() []*Account {
 func (cl *ClientImpl) LoadAccounts() error {
 	accounts := map[common.Uint160]*Account{}
 
-	storeAddresses, err := cl.LoadAccountData()
+	storeAccounts, err := cl.LoadAccountData()
 	if err != nil {
 		return err
 	}
-	for _, a := range storeAddresses {
-		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
-		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		privateKey := keyPair[64:96]
-		ac, err := NewAccountWithPrivateKey(privateKey)
+	for _, a := range storeAccounts {
+		phBytes, err := common.HexStringToBytes(a.ProgramHash)
+		programHash, err := common.Uint168FromBytes(phBytes)
 		if err != nil {
 			return err
 		}
-		accounts[ac.ProgramHash.ToCodeHash()] = ac
+		prefixType := contract.GetPrefixType(*programHash)
+		if prefixType == contract.PrefixStandard {
+			encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+			keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			privateKey := keyPair[64:96]
+			ac, err := NewAccountWithPrivateKey(privateKey)
+			if err != nil {
+				return err
+			}
+			accounts[ac.ProgramHash.ToCodeHash()] = ac
 
-		if a.Type == MAINACCOUNT {
-			cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			if a.Type == MAINACCOUNT {
+				cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			}
+		} else if prefixType == contract.PrefixMultiSig {
+			phBytes, _ := common.HexStringToBytes(a.ProgramHash)
+			ph, err := common.Uint168FromBytes(phBytes)
+			if err != nil {
+				return err
+			}
+			rs, _ := common.HexStringToBytes(a.RedeemScript)
+			ac := &Account{
+				PrivateKey:   nil,
+				PublicKey:    nil,
+				ProgramHash:  *ph,
+				RedeemScript: rs,
+				Address:      a.Address,
+			}
+			accounts[ac.ProgramHash.ToCodeHash()] = ac
 		}
+
 	}
 
 	cl.accounts = accounts

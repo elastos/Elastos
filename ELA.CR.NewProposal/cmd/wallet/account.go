@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/account"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/urfave/cli"
 )
@@ -61,7 +63,13 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "addmultisig",
 		Usage:    "Add a multi-signature account",
-		Action:   addMultiSigAccount,
+		Flags: []cli.Flag{
+			AccountWalletFlag,
+			AccountPasswordFlag,
+			AccountMultiMFlag,
+			AccountMultiPubKeyFlag,
+		},
+		Action: addMultiSigAccount,
 	},
 	{
 		Category: "Account",
@@ -169,15 +177,13 @@ func addAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
 	pwdHex := c.String("password")
 
-	var pwd []byte
+	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
 		pwd, err = cmdcom.GetPassword()
 		if err != nil {
 			return err
 		}
-	} else {
-		pwd = []byte(pwdHex)
 	}
 
 	client, err := account.Add(walletPath, pwd)
@@ -189,8 +195,42 @@ func addAccount(c *cli.Context) error {
 }
 
 func addMultiSigAccount(c *cli.Context) error {
-	// todo
-	return nil
+	walletPath := c.String("wallet")
+	pwdHex := c.String("password")
+	m := c.Int("m")
+	pksStr := c.String("pubkeys")
+	pksStr = strings.TrimSpace(strings.Trim(pksStr, ","))
+
+	if pksStr == "" || m == 0 {
+		return errors.New("missing arguments. pubkeys or m expected")
+	}
+
+	pwd := []byte(pwdHex)
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
+	}
+	pks := strings.Split(pksStr, ",")
+	pubKeys := make([]*crypto.PublicKey, 0)
+	for _, pk := range pks {
+		pk = strings.TrimSpace(pk)
+		pkBytes, err := common.HexStringToBytes(pk)
+		pubKey, err := crypto.DecodePoint(pkBytes)
+		if err != nil {
+			return err
+		}
+		pubKeys = append(pubKeys, pubKey)
+	}
+
+	client, err := account.AddMultiSig(walletPath, pwd, m, pubKeys)
+	if err != nil {
+		return err
+	}
+
+	return ShowAccountInfo(client)
 }
 
 func delAccount(c *cli.Context) error {

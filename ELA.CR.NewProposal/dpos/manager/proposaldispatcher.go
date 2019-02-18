@@ -141,7 +141,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
 		RawData:      rawData.Bytes(),
-		Result:       false,}
+		Result:       false}
 	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
 	p.acceptProposal(proposal)
 }
@@ -624,16 +624,12 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 		inactivePayload.Arbitrators = append(inactivePayload.Arbitrators, pk)
 	}
 
-	con := contract.Contract{HashPrefix: contract.PrefixMultiSig}
+	con := contract.Contract{Prefix: contract.PrefixMultiSig}
 	if con.Code, err = p.createArbitratorsRedeemScript(); err != nil {
 		return nil, err
 	}
 
-	var programHash *common.Uint168
-	if programHash, err = con.ToProgramHash(); err != nil {
-		return nil, err
-	}
-
+	programHash := con.ToProgramHash()
 	tx := &types.Transaction{
 		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(p.processingBlock.Height)),
 		TxType:         types.InactiveArbitrators,
@@ -678,8 +674,8 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 	}
 
 	arbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
-	minSignCount := uint(float64(arbitratorsCount) * 0.5)
-	return crypto.CreateMultiSignRedeemScript(minSignCount+1, pks)
+	minSignCount := int(float64(arbitratorsCount) * 0.5)
+	return contract.CreateMultiSigRedeemScript(minSignCount+1, pks)
 }
 
 func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
@@ -694,8 +690,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:       make(map[common.Uint256]payload.DPOSProposalVote),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: cfg.InactiveEliminateCount,
-			Store:                  cfg.Store,
-			Arbitrators:            cfg.Arbitrators,
+			Store:       cfg.Store,
+			Arbitrators: cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{
@@ -710,7 +706,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*payload.DPOSProposal),
 		evidenceCache: evidenceCache{make(map[common.Uint256]payload.
-		DPOSIllegalData)},
+			DPOSIllegalData)},
 		manager: cfg.Manager,
 	}
 	p.illegalMonitor = i

@@ -305,7 +305,7 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Generate key pair failed, error %s", err.Error())
 	}
 
-	a.redeemScript, err = crypto.CreateStandardRedeemScript(a.public)
+	a.redeemScript, err = contract.CreateStandardRedeemScript(a.public)
 	if err != nil {
 		t.Errorf("Create standard redeem script failed, error %s", err.Error())
 	}
@@ -315,10 +315,7 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Create standard contract failed, error %s", err.Error())
 	}
 
-	a.programHash, err = c.ToProgramHash()
-	if err != nil {
-		t.Errorf("To program hash failed, error %s", err.Error())
-	}
+	a.programHash = c.ToProgramHash()
 
 	return a
 }
@@ -332,20 +329,17 @@ func newMultiAccount(num int, t *testing.T) *multiAccount {
 	}
 
 	var err error
-	ma.redeemScript, err = crypto.CreateMultiSignRedeemScript(uint(num/2+1), publicKeys)
+	ma.redeemScript, err = contract.CreateMultiSigRedeemScript(num/2+1, publicKeys)
 	if err != nil {
 		t.Errorf("Create multisig redeem script failed, error %s", err.Error())
 	}
 
-	c, err := contract.CreateMultiSigContractByPubKey(num/2+1, publicKeys)
+	c, err := contract.CreateMultiSigContract(num/2+1, publicKeys)
 	if err != nil {
 		t.Errorf("Create multi-sign contract failed, error %s", err.Error())
 	}
 
-	ma.programHash, err = c.ToProgramHash()
-	if err != nil {
-		t.Errorf("To program hash failed, error %s", err.Error())
-	}
+	ma.programHash = c.ToProgramHash()
 
 	return ma
 }
