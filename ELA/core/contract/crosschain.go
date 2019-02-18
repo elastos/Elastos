@@ -11,7 +11,7 @@ import (
 
 // A temporary file created for cross chain tx
 
-func CreateCrossChainContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Contract, error) {
+func CreateCrossChainContract(m int, pubkeys []*crypto.PublicKey) (*Contract, error) {
 	if !(m >= 1 && m <= len(pubkeys) && len(pubkeys) <= 24) {
 		return nil, nil //TODO: add panic
 	}
@@ -25,7 +25,7 @@ func CreateCrossChainContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Cont
 	for _, pubkey := range pubkeys {
 		temp, err := pubkey.EncodePoint(true)
 		if err != nil {
-			return nil, errors.New("[Contract],CreateMultiSigContractByPubKey failed.")
+			return nil, errors.New("[Contract],CreateCrossChainContract failed")
 		}
 		sb.PushData(temp)
 	}
@@ -34,7 +34,7 @@ func CreateCrossChainContractByPubKey(m int, pubkeys []*crypto.PublicKey) (*Cont
 	sb.AddOp(vm.CHECKMULTISIG)
 
 	return &Contract{
-		Code:       sb.ToArray(),
-		HashPrefix: PrefixMultiSig,
+		Code:   sb.ToArray(),
+		Prefix: PrefixMultiSig,
 	}, nil
 }

@@ -18,19 +18,9 @@ func TestToProgramHash(t *testing.T) {
 	if err != nil {
 		t.Errorf("[PublicKeyToStandardProgramHash] failed")
 	}
-	programHash, err := ct.ToProgramHash()
-	if err != nil {
-		t.Errorf("[ToProgramHash] failed")
-	}
+	programHash := ct.ToProgramHash()
 	addr, _ := programHash.ToAddress()
 	if !assert.Equal(t, "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z", addr) {
-		t.FailNow()
-	}
-
-	// Empty code
-	var ct1 = Contract{}
-	_, err = ct1.ToProgramHash()
-	if !assert.EqualError(t, err, "[ToProgramHash] failed, empty program code") {
 		t.FailNow()
 	}
 }
