@@ -148,14 +148,14 @@ func (cl *ClientImpl) signMultiSignTransaction(txn *types.Transaction) (*types.T
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
-	programHashes, err := GetSigners(code)
+	codeHashes, err := GetSigners(code)
 	if err != nil {
 		return nil, err
 	}
 	var signerIndex = -1
 	var acc *Account
-	for i, hash := range programHashes {
-		acc := cl.GetAccountByCodeHash(*hash)
+	for i, hash := range codeHashes {
+		acc = cl.GetAccountByCodeHash(*hash)
 		if acc != nil {
 			signerIndex = i
 			break
@@ -463,7 +463,6 @@ func (cl *ClientImpl) HandleInterrupt() {
 }
 
 func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
-	log.Debug()
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
 	signature, err := crypto.Sign(acc.PrivKey(), buf.Bytes())

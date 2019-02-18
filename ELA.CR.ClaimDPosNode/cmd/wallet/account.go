@@ -336,15 +336,13 @@ func exportAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
 	pwdHex := c.String("password")
 
-	var pwd []byte
+	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
 		pwd, err = cmdcom.GetPassword()
 		if err != nil {
 			return err
 		}
-	} else {
-		pwd = []byte(pwdHex)
 	}
 
 	client, err := account.Open(walletPath, pwd)
