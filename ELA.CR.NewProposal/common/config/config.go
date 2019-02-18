@@ -128,6 +128,7 @@ type ArbiterConfiguration struct {
 	InactiveDuration         uint32                    `json:"InactiveDuration"`
 	InactivePenalty          common.Fixed64            `json:"InactivePenalty"`
 	InactiveEliminateCount   uint32                    `json:"InactiveEliminateCount"`
+	EnableEventRecord        bool                      `json:"EnableEventRecord"`
 }
 
 type Seed struct {
