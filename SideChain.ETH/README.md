@@ -2,6 +2,17 @@
 
 Elastos Sidechain implementation based on Go Ethereum.
 
+## web3.js 1.0 install
+1.create a new folder
+
+    mkdir yourfolder
+
+2.enter your folder and install web3    
+
+    cd  yourfolder
+    npm init -f 
+    npm install web3 --save
+
 ## Building the source
 
 For prerequisites and detailed build instructions please read the

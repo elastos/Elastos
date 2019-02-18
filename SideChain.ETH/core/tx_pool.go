@@ -33,6 +33,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/metrics"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -75,9 +77,6 @@ var (
 
 	//ErrElaTransferFee to ensure ela fee be greater than 1 Microether(Szabo)
 	ErrGasPricePrecision = errors.New("gas price  should be greater than e10 wei")
-
-	//ErrOutputAmount to ensure outputamount be greater than 1 Microether(Szabo)
-	ErrOutputAmount = errors.New("transfer amount  should be greater than ela transferfee(gas*gasprice)")
 
 	// ErrOversizedData is returned if the input data of a transaction is greater
 	// than some meaningful limit a user might use. This is not a consensus error
@@ -599,13 +598,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrUnderpriced
 	}
 
-	if(new (big.Int).SetUint64(10000000000).Cmp(tx.GasPrice()) > 0){
+	if(!strings.HasSuffix(tx.GasPrice().String(),"0000000000")){
 		return ErrGasPricePrecision
-	}
-
-	elaTransferFee := new (big.Int).Mul(new (big.Int).SetUint64(tx.Gas()),tx.GasPrice())
-	if(new (big.Int).Set(elaTransferFee).Cmp(tx.Value()) >= 0){
-		return ErrOutputAmount
 	}
 
 	// Ensure the transaction adheres to nonce ordering
