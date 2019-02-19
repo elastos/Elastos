@@ -10,7 +10,8 @@ import { LANGUAGES } from '@/config/constant'
 import VoteStats from '../stats/Component'
 import { CVOTE_RESULT_TEXT } from '@/constant'
 
-import './style.scss'
+// style
+import { Container, List, Item, ItemUndecided } from './style'
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -81,47 +82,47 @@ export default class extends BaseComponent {
     }
 
     const statusIndicator = (
-      <div className="vote-status-list indicator">
-        <span className="vote-status-item yes" />
+      <List>
+        <Item yes />
         <span>{I18N.get('council.voting.type.support')}</span>
-        <span className="vote-status-item no" />
+        <Item no />
         <span>{I18N.get('council.voting.type.reject')}</span>
-        <span className="vote-status-item abstained" />
+        <Item abstained />
         <span>{I18N.get('council.voting.type.abstention')}</span>
-        <span className="vote-status-item undecided" />
+        <ItemUndecided undecided />
         <span>{I18N.get('council.voting.type.undecided')}</span>
-      </div>
+      </List>
     )
 
     const createBtn = this.props.canCreate && (
-      <Col lg={8} md={12} sm={24} xs={24}>
-        <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-            Create New Proposal
+      <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
+        <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
+            Add a Proposal
         </Button>
       </Col>
     )
     return (
-      <div className="p-cvote-list">
-        <div className="d_box">
-          <Row type="flex" align="middle">
-            <Col lg={8} md={12} sm={24} xs={24}>
-              <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
-                {I18N.get('council.voting.proposalList')}
-              </h3>
-            </Col>
-            <Col lg={8} md={12} sm={24} xs={24}>
-              {statusIndicator}
-            </Col>
-            {createBtn}
-          </Row>
-          <Table
-            columns={columns}
-            loading={this.state.loading}
-            dataSource={this.state.list}
-            rowKey={record => record._id}
-          />
-        </div>
-      </div>
+      <Container>
+        <Row type="flex" align="middle" justify="end">
+          {createBtn}
+        </Row>
+        <Row type="flex" align="middle" justify="space-between">
+          <Col lg={8} md={8} sm={12} xs={24}>
+            <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
+              {I18N.get('council.voting.proposalList')}
+            </h3>
+          </Col>
+          <Col lg={8} md={8} sm={12} xs={24}>
+            {statusIndicator}
+          </Col>
+        </Row>
+        <Table
+          columns={columns}
+          loading={this.state.loading}
+          dataSource={this.state.list}
+          rowKey={record => record._id}
+        />
+      </Container>
 
     )
   }

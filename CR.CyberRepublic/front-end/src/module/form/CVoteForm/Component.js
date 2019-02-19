@@ -33,7 +33,7 @@ class C extends BaseComponent {
     this.setState({ loading: f })
   }
 
-  async handleSubmit(e) {
+  async handleSubmit(e, fields = {}) {
     e.preventDefault()
 
     const s = this.props.static
@@ -52,7 +52,8 @@ class C extends BaseComponent {
           proposedBy: values.proposedBy,
           content: values.content,
           content_zh: values.content_zh,
-          published: values.published === 'YES',
+          published: true,
+          ...fields,
         }
         const x1 = []
         const x2 = []
@@ -75,9 +76,9 @@ class C extends BaseComponent {
             await this.props.updateCVote(param)
             message.success(I18N.get('from.CVoteForm.message.updated.success'))
             this.ord_loading(false)
-            this.props.history.push('/proposals')
-          } catch (e) {
-            message.error(e.message)
+            this.gotoList()
+          } catch (error) {
+            message.error(error.message)
             this.ord_loading(false)
           }
         } else {
@@ -85,9 +86,9 @@ class C extends BaseComponent {
             await this.props.createCVote(param)
             message.success(I18N.get('from.CVoteForm.message.create.success'))
             this.ord_loading(false)
-            this.props.history.push('/proposals')
-          } catch (e) {
-            message.error(e.message)
+            this.gotoList()
+          } catch (error) {
+            message.error(error.message)
             this.ord_loading(false)
           }
         }
@@ -96,7 +97,7 @@ class C extends BaseComponent {
   }
 
   getInputProps(data) {
-    const { edit, canCreate, isSecretary } = this.props
+    const { edit, canManage, isSecretary } = this.props
 
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
 
@@ -105,17 +106,19 @@ class C extends BaseComponent {
     const councilNotOwnerReadOnly = {}
     const councilNotOwnerDisabled = {}
     // allow secretary and proposal owner to edit
-    const isAllowEdit = edit && ((!isSecretary && data.createdBy !== this.user.current_user_id) || _.includes(['FINAL', 'DEFERRED'], data.status))
-    if (!canCreate) {
+    // const canEdit = edit && ((!isSecretary && data.createdBy !== this.user.current_user_id) || _.includes(['FINAL', 'DEFERRED'], data.status))
+    const canEdit = edit && data.createdBy === this.user.current_user_id
+
+    if (!canManage) {
       publicReadonly.readOnly = true
       publicDisabled.disabled = true
-    } else if (edit && isAllowEdit) {
+    } else if (canEdit) {
       councilNotOwnerReadOnly.readOnly = true
       councilNotOwnerDisabled.disabled = true
     }
 
     const secretaryDisabled = { readOnly: true }
-    if (this.props.isSecretary) {
+    if (isSecretary) {
       delete secretaryDisabled.readOnly
     }
 
@@ -129,16 +132,6 @@ class C extends BaseComponent {
 
     const s = this.props.static
     const { getFieldDecorator } = this.props.form
-
-    const published_fn = getFieldDecorator('published', {
-      initialValue: edit ? (data.published ? 'YES' : 'NO') : 'NO',
-    })
-    const published_el = (
-      <Select {...publicDisabled} size="large">
-        <Select.Option value="NO">{I18N.get('from.CVoteForm.no')}</Select.Option>
-        <Select.Option value="YES">{I18N.get('from.CVoteForm.yes')}</Select.Option>
-      </Select>
-    )
 
     const title_fn = getFieldDecorator('title', {
       rules: [{ required: true }],
@@ -327,7 +320,6 @@ class C extends BaseComponent {
     )
 
     return {
-      published: published_fn(published_el),
       title: title_fn(title_el),
       title_zh: title_zh_fn(title_zh_el),
       type: type_fn(type_el),
@@ -353,13 +345,13 @@ class C extends BaseComponent {
   }
 
   ord_render() {
-    const { language } = this.state
+    const { edit, data, canManage } = this.props
     let p = null
-    if (this.props.edit && !this.props.data) {
+    if (!canManage || (edit && !data)) {
       return null
     }
-    if (this.props.edit && this.props.data) {
-      p = this.getInputProps(this.props.data)
+    if (edit) {
+      p = this.getInputProps(data)
     } else {
       p = this.getInputProps()
     }
@@ -377,7 +369,6 @@ class C extends BaseComponent {
 
     return (
       <Form onSubmit={this.handleSubmit.bind(this)} className="c_CVoteForm">
-
         <h2>
           {I18N.get('from.CVoteForm.proposal.title')}
         </h2>
@@ -388,15 +379,12 @@ class C extends BaseComponent {
 
         <Row>
           <Col offset={6} span={12}>
-            {this.renderVoteStep(this.props.data)}
+            {this.renderVoteStep(data)}
           </Col>
         </Row>
         <br />
         <Tabs defaultActiveKey={LANGUAGES.english} onChange={k => console.log(`changing tab: ${k}`)}>
           <TabPane tab={I18N.get('0301')} key={LANGUAGES.english}>
-            <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.publish')} {...formItemLayout}>
-              {p.published}
-            </FormItem>
             <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayout} style={{ marginTop: '24px' }}>{ p.title }</FormItem>
 
             <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{p.type}</FormItem>
@@ -422,12 +410,10 @@ class C extends BaseComponent {
 
             <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.conflict')} help={I18N.get('from.CVoteForm.label.conflict.help')} {...formItemLayout}>{p.isConflict}</FormItem>
             <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>
-            <Row>
-              <Col offset={6} span={12}>
-                {this.props.canCreate && this.renderSubmitButton()}
-                {this.props.canCreate && this.renderFinishButton()}
-                {this.props.canCreate && this.renderUpdateNoteButton()}
-              </Col>
+            <Row gutter={8}>
+              {this.renderCancelBtn()}
+              {this.renderSaveDraftBtn()}
+              {this.renderSaveBtn()}
             </Row>
           </TabPane>
           <TabPane tab={I18N.get('0302')} key={LANGUAGES.chinese}>
@@ -446,70 +432,54 @@ class C extends BaseComponent {
     )
   }
 
-  renderUpdateNoteButton() {
-    const edit = this.props.edit
-    const role = this.props.user.role
-    const data = this.props.data
-    if (edit && this.isLogin && role === 'SECRETARY' && _.includes(['FINAL', 'DEFERRED'], data.status)) {
-      return (
-        <FormItem style={{ marginTop: 40 }}>
-          <Button loading={this.state.loading} onClick={this.updateNote.bind(this, data._id)} size="large" type="ebp" className="d_btn">
-                        Update Notes
+  gotoList = () => {
+    this.props.history.push('/proposals')
+  }
+
+  saveDraft = (e) => {
+    this.handleSubmit(e, { published: false })
+  }
+
+  renderCancelBtn() {
+    return (
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <FormItem>
+          <Button loading={this.state.loading} onClick={this.gotoList} size="large" className="d_btn">
+            {I18N.get('from.CVoteForm.button.cancel')}
           </Button>
         </FormItem>
-      )
-    }
-    return null
-  }
-
-  updateNote(id) {
-    const notes = this.props.form.getFieldValue('notes')
-    this.ord_loading(true)
-    this.props.updateNotes({
-      _id: id,
-      notes,
-    }).then(() => {
-      message.success(I18N.get('from.CVoteForm.message.note.update.success'))
-      this.ord_loading(false)
-    }).catch((e) => {
-      message.error(e.message)
-      this.ord_loading(false)
-    })
-  }
-
-  renderSubmitButton() {
-    const edit = this.props.edit
-    const role = this.props.user.role
-    const data = this.props.data
-    if (!this.props.canCreate) {
-      return (
-        <h4 style={{ color: '#f00' }}>{I18N.get('from.CVoteForm.text.onlycouncil')}</h4>
-      )
-    }
-
-    return (
-      <FormItem>
-        <Button loading={this.state.loading} size="large" type="ebp" htmlType="submit" className="d_btn">
-          {edit ? I18N.get('from.CVoteForm.button.save') : I18N.get('from.CVoteForm.button.submit')}
-        </Button>
-      </FormItem>
+      </Col>
     )
   }
 
-  renderFinishButton() {
-    const edit = this.props.edit
-    const role = this.props.user.role
-    const data = this.props.data
-    if (edit && this.isLogin && role === 'SECRETARY' && data.status !== 'FINAL') {
-      return (
-        <FormItem style={{ marginTop: 40 }}>
-          <Button loading={this.state.loading} onClick={this.finishClick.bind(this, data._id)} size="large" type="ebp" className="d_btn">
-            {I18N.get('from.CVoteForm.button.complete.proposal')}
+  renderSaveDraftBtn() {
+    const { edit } = this.props
+
+    if (edit) return null
+
+    return (
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <FormItem>
+          <Button loading={this.state.loading} size="large" onClick={this.saveDraft} className="d_btn">
+            {I18N.get('from.CVoteForm.button.saveDraft')}
           </Button>
         </FormItem>
-      )
-    }
-    return null
+      </Col>
+    )
+  }
+
+  renderSaveBtn() {
+    const { edit } = this.props
+    const btnText = edit ? I18N.get('from.CVoteForm.button.saveChanges') : I18N.get('from.CVoteForm.button.saveAndPublish')
+    return (
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <FormItem>
+          <Button loading={this.state.loading} size="large" type="ebp" htmlType="submit" className="d_btn">
+            {btnText}
+          </Button>
+        </FormItem>
+      </Col>
+    )
   }
 
   finishClick(id) {
@@ -526,7 +496,7 @@ class C extends BaseComponent {
         }).then(() => {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
           this.ord_loading(false)
-          this.props.history.push('/proposals')
+          this.gotoList()
         }).catch((e) => {
           message.error(e.message)
           this.ord_loading(false)

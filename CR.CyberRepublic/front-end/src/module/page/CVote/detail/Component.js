@@ -147,8 +147,10 @@ class C extends StandardPage {
   renderVoteActions() {
     const { isCouncil } = this.props
     const { status } = this.state.data
-    const isExpired = status === CVOTE_STATUS.DEFERRED
-    if (!isCouncil || isExpired) return null
+    const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
+
+    if (!canVote) return null
+
     return (
       <div className="vote-btn-group">
         <Button
@@ -176,10 +178,16 @@ class C extends StandardPage {
   }
 
   renderAdminActions() {
-    const { isSecretary, isCouncil } = this.props
-    if (!isSecretary && !isCouncil) return null
-    const { status } = this.state.data
-    const isExpired = status === CVOTE_STATUS.DEFERRED
+    const { isSecretary, isCouncil, currentUserId } = this.props
+    const { status, createdBy } = this.state.data
+    const isSelf = currentUserId === createdBy
+    const isCompleted = status === CVOTE_STATUS.FINAL
+    const canManage = isSecretary || isCouncil
+    const canEdit = _.includes([CVOTE_STATUS.DRAFT, CVOTE_STATUS.PROPOSED], status)
+    const canComplete = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.REJECT, CVOTE_STATUS.DEFERRED], status)
+
+    if (!canManage || isCompleted) return null
+
     const addNoteBtn = isSecretary && (
       <Button
         onClick={this.showUpdateNotesModal}
@@ -187,14 +195,14 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.notesSecretary')}
       </Button>
     )
-    const editProposalBtn = (isSecretary || isCouncil) && !isExpired && (
+    const editProposalBtn = isSelf && canEdit && (
       <Button
         onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
     )
-    const completeProposalBtn = isSecretary && !isExpired && (
+    const completeProposalBtn = isSecretary && canComplete && (
       <Button
         type="primary"
         onClick={this.completeProposal}
