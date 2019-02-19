@@ -93,6 +93,12 @@ func addNaTest(ip string, port uint16, want string) {
 	naTests = append(naTests, test)
 }
 
+type naFilter struct{}
+
+func (f *naFilter) Filter(na *p2p.NetAddress) bool {
+	return na.Services&1 == 1
+}
+
 func TestStartStop(t *testing.T) {
 	n := addrmgr.New("teststartstop", nil)
 	n.Start()
@@ -468,4 +474,19 @@ func TestSavePeers(t *testing.T) {
 	}
 
 	am.Stop()
+}
+
+func TestLoadPeers(t *testing.T) {
+	addNaTests()
+
+	am := addrmgr.New("./", &naFilter{})
+	am.Start()
+	for _, test := range naTests {
+		test.in.Services = 0
+		am.AddAddress(&test.in, &test.in)
+	}
+
+	am.Stop()
+
+	am.Start()
 }
