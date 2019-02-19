@@ -44,9 +44,8 @@ func checkIllegalProposals(L *lua.LState, idx int) *payload.DPOSIllegalProposals
 }
 
 var illegalProposalsMethods = map[string]lua.LGFunction{
-	"hash":         illegalProposalsHash,
-	"set_proposal": illegalProposalsSetProposal,
-	"set_header":   illegalProposalsSetHeader,
+	"hash":        illegalProposalsHash,
+	"set_content": illegalProposalsSetContent,
 }
 
 func illegalProposalsHash(L *lua.LState) int {
@@ -58,34 +57,40 @@ func illegalProposalsHash(L *lua.LState) int {
 	return 1
 }
 
-func illegalProposalsSetProposal(L *lua.LState) int {
+func illegalProposalsSetContent(L *lua.LState) int {
 	i := checkIllegalProposals(L, 1)
 	p := checkProposal(L, 2)
-	first := L.ToBool(3)
-
-	if first {
-		i.Evidence.Proposal = *p
-	} else {
-		i.CompareEvidence.Proposal = *p
-	}
-
-	return 0
-}
-
-func illegalProposalsSetHeader(L *lua.LState) int {
-	i := checkIllegalProposals(L, 1)
-	h := checkHeader(L, 2)
-	first := L.ToBool(3)
+	h := checkHeader(L, 3)
+	p2 := checkProposal(L, 4)
+	h2 := checkHeader(L, 5)
 
 	buf := new(bytes.Buffer)
 	h.Serialize(buf)
+	e1 := payload.ProposalEvidence{
+		Proposal:    *p,
+		BlockHeader: buf.Bytes(),
+		BlockHeight: h.Height,
+	}
 
-	if first {
-		i.Evidence.BlockHeader = buf.Bytes()
-		i.Evidence.BlockHeight = h.Height
+	buf2 := new(bytes.Buffer)
+	h2.Serialize(buf2)
+	e2 := payload.ProposalEvidence{
+		Proposal:    *p2,
+		BlockHeader: buf2.Bytes(),
+		BlockHeight: h2.Height,
+	}
+
+	asc := true
+	if p.Hash().String() > p2.Hash().String() {
+		asc = false
+	}
+
+	if asc {
+		i.Evidence = e1
+		i.CompareEvidence = e2
 	} else {
-		i.CompareEvidence.BlockHeader = buf.Bytes()
-		i.CompareEvidence.BlockHeight = h.Height
+		i.Evidence = e2
+		i.CompareEvidence = e1
 	}
 
 	return 0
