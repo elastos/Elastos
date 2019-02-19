@@ -107,12 +107,12 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 
 	firstEvidence, err := i.generateProposalEvidence(first)
 	if err != nil {
-		log.Warn("[ProcessIllegalProposal] generate evidence error")
+		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
 	}
 
 	secondEvidence, err := i.generateProposalEvidence(second)
 	if err != nil {
-		log.Warn("[ProcessIllegalProposal] generate evidence error")
+		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
 	}
 
 	asc := true
@@ -203,35 +203,50 @@ func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
 func (i *IllegalBehaviorMonitor) ProcessIllegalVote(
 	first, second *payload.DPOSProposalVote) {
 
-	firstProposal, _ := i.cachedProposals[first.ProposalHash]
-	secondProposal, _ := i.cachedProposals[second.ProposalHash]
+	firstProposal, ok := i.cachedProposals[first.ProposalHash]
+	if !ok {
+		log.Warn("[ProcessIllegalVote] found proposal error")
+	}
 
-	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
-		firstProposal.BlockHash)
-	firstBlockByte := new(bytes.Buffer)
-	firstBlock.Header.Serialize(firstBlockByte)
-	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
-		secondProposal.BlockHash)
-	secondBlockByte := new(bytes.Buffer)
-	secondBlock.Header.Serialize(secondBlockByte)
+	secondProposal, ok := i.cachedProposals[second.ProposalHash]
+	if !ok {
+		log.Warn("[ProcessIllegalVote] found proposal error")
+	}
 
-	evidences := &payload.DPOSIllegalVotes{
-		Evidence: payload.VoteEvidence{
-			Vote: *first,
-			ProposalEvidence: payload.ProposalEvidence{
-				Proposal:    *firstProposal,
-				BlockHeader: firstBlockByte.Bytes(),
-				BlockHeight: firstBlock.Height,
-			},
-		},
-		CompareEvidence: payload.VoteEvidence{
-			Vote: *second,
-			ProposalEvidence: payload.ProposalEvidence{
-				Proposal:    *secondProposal,
-				BlockHeader: secondBlockByte.Bytes(),
-				BlockHeight: secondBlock.Height,
-			},
-		},
+	firstEvidence, err := i.generateProposalEvidence(firstProposal)
+	if err != nil {
+		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
+	}
+
+	secondEvidence, err := i.generateProposalEvidence(secondProposal)
+	if err != nil {
+		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
+	}
+
+	asc := true
+	if first.Hash().String() > second.Hash().String() {
+		asc = false
+	}
+
+	evidences := &payload.DPOSIllegalVotes{}
+	if asc {
+		evidences.Evidence = payload.VoteEvidence{
+			Vote:             *first,
+			ProposalEvidence: *firstEvidence,
+		}
+		evidences.CompareEvidence = payload.VoteEvidence{
+			Vote:             *second,
+			ProposalEvidence: *secondEvidence,
+		}
+	} else {
+		evidences.Evidence = payload.VoteEvidence{
+			Vote:             *second,
+			ProposalEvidence: *secondEvidence,
+		}
+		evidences.CompareEvidence = payload.VoteEvidence{
+			Vote:             *first,
+			ProposalEvidence: *firstEvidence,
+		}
 	}
 
 	i.AddEvidence(evidences)

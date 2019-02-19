@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"math"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -68,13 +69,25 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	}
 
 	illegalBlocks := &payload.DPOSIllegalBlocks{
-		CoinType:        payload.ELACoin,
-		BlockHeight:     block.Height,
-		Evidence:        *evidence,
-		CompareEvidence: *compareEvidence,
+		CoinType:    payload.ELACoin,
+		BlockHeight: block.Height,
 	}
 
-	if err := b.cfg.Chain.CheckDposIllegalBlocks(illegalBlocks); err != nil {
+	asc := true
+	if common.BytesToHexString(evidence.Block) >
+		common.BytesToHexString(compareEvidence.Block) {
+		asc = false
+	}
+
+	if asc {
+		illegalBlocks.Evidence = *evidence
+		illegalBlocks.CompareEvidence = *compareEvidence
+	} else {
+		illegalBlocks.Evidence = *compareEvidence
+		illegalBlocks.CompareEvidence = *evidence
+	}
+
+	if err := b.cfg.Chain.CheckDPOSIllegalBlocks(illegalBlocks); err != nil {
 		return err
 	}
 
@@ -215,10 +228,23 @@ func (b *blockV1) generateBlockEvidence(block *types.Block) (
 
 func (b *blockV1) getConfirmSigners(confirm *payload.Confirm) (
 	[][]byte, error) {
-	result := make([][]byte, 0)
+
+	var signers []string
 	for _, v := range confirm.Votes {
-		result = append(result, v.Signer)
+		signers = append(signers, common.BytesToHexString(v.Signer))
 	}
+	sort.Strings(signers)
+
+	result := make([][]byte, 0)
+	for _, v := range signers {
+		signer, err := common.HexStringToBytes(v)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, signer)
+	}
+
 	return result, nil
 }
 

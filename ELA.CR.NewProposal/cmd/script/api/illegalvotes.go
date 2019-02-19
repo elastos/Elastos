@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/yuin/gopher-lua"
@@ -45,10 +46,8 @@ func checkIllegalVotes(L *lua.LState, idx int) *payload.DPOSIllegalVotes {
 }
 
 var illegalVotesMethods = map[string]lua.LGFunction{
-	"hash":         illegalVotesHash,
-	"set_proposal": illegalVotesSetProposal,
-	"set_header":   illegalVotesSetHeader,
-	"set_vote":     illegalVotesSetVote,
+	"hash":        illegalVotesHash,
+	"set_content": illegalVotesSetContent,
 }
 
 func illegalVotesHash(L *lua.LState) int {
@@ -60,49 +59,43 @@ func illegalVotesHash(L *lua.LState) int {
 	return 1
 }
 
-func illegalVotesSetProposal(L *lua.LState) int {
+func illegalVotesSetContent(L *lua.LState) int {
 	i := checkIllegalVotes(L, 1)
 	p := checkProposal(L, 2)
-	first := L.ToBool(3)
+	v := checkVote(L, 3)
+	h := checkHeader(L, 4)
+	p2 := checkProposal(L, 5)
+	v2 := checkVote(L, 6)
+	h2 := checkHeader(L, 7)
 
-	if first {
-		i.Evidence.Proposal = *p
+	asc := true
+	if v.Hash().String() > v2.Hash().String() {
+		asc = false
+	}
+
+	if asc {
+		i.Evidence = *generateVoteEvidence(p, v, h)
+		i.CompareEvidence = *generateVoteEvidence(p2, v2, h2)
 	} else {
-		i.CompareEvidence.Proposal = *p
+		i.Evidence = *generateVoteEvidence(p2, v2, h2)
+		i.CompareEvidence = *generateVoteEvidence(p, v, h)
 	}
 
 	return 0
 }
 
-func illegalVotesSetHeader(L *lua.LState) int {
-	i := checkIllegalVotes(L, 1)
-	h := checkHeader(L, 2)
-	first := L.ToBool(3)
+func generateVoteEvidence(p *payload.DPOSProposal,
+	v *payload.DPOSProposalVote, h *types.Header) *payload.VoteEvidence {
 
 	buf := new(bytes.Buffer)
 	h.Serialize(buf)
 
-	if first {
-		i.Evidence.BlockHeader = buf.Bytes()
-		i.Evidence.BlockHeight = h.Height
-	} else {
-		i.CompareEvidence.BlockHeader = buf.Bytes()
-		i.CompareEvidence.BlockHeight = h.Height
+	return &payload.VoteEvidence{
+		Vote: *v,
+		ProposalEvidence: payload.ProposalEvidence{
+			Proposal:    *p,
+			BlockHeight: h.Height,
+			BlockHeader: buf.Bytes(),
+		},
 	}
-
-	return 0
-}
-
-func illegalVotesSetVote(L *lua.LState) int {
-	i := checkIllegalVotes(L, 1)
-	v := checkVote(L, 2)
-	first := L.ToBool(3)
-
-	if first {
-		i.Evidence.Vote = *v
-	} else {
-		i.CompareEvidence.Vote = *v
-	}
-
-	return 0
 }
