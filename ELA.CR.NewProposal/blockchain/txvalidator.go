@@ -974,6 +974,10 @@ func CheckInactiveArbitrators(txn *Transaction,
 		return errors.New("sponsor is not belong to arbitrators")
 	}
 
+	if err := checkSignersInOrder(p.Arbitrators); err != nil {
+		return err
+	}
+
 	if len(p.Arbitrators) != int(inactiveArbitratorsCount) {
 		return errors.New("number of arbitrators must be " +
 			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
@@ -1332,4 +1336,3 @@ func checkSignersInOrder(signers [][]byte) error {
 	}
 	return nil
 }
-
