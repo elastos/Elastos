@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -84,29 +85,48 @@ func (i *IllegalBehaviorMonitor) IsLegalProposal(p *payload.DPOSProposal) (*payl
 	return nil, true
 }
 
+func (i *IllegalBehaviorMonitor) generateProposalEvidence(
+	p *payload.DPOSProposal) (*payload.ProposalEvidence, error) {
+
+	block, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
+		p.BlockHash)
+	blockByte := new(bytes.Buffer)
+	if err := block.Header.Serialize(blockByte); err != nil {
+		return nil, err
+	}
+
+	return &payload.ProposalEvidence{
+		Proposal:    *p,
+		BlockHeader: blockByte.Bytes(),
+		BlockHeight: block.Height,
+	}, nil
+}
+
 func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 	first, second *payload.DPOSProposal) {
 
-	firstBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
-		first.BlockHash)
-	firstBlockByte := new(bytes.Buffer)
-	firstBlock.Header.Serialize(firstBlockByte)
-	secondBlock, _ := i.dispatcher.cfg.Manager.GetBlockCache().TryGetValue(
-		second.BlockHash)
-	secondBlockByte := new(bytes.Buffer)
-	secondBlock.Header.Serialize(secondBlockByte)
+	firstEvidence, err := i.generateProposalEvidence(first)
+	if err != nil {
+		log.Warn("[ProcessIllegalProposal] generate evidence error")
+	}
 
-	evidences := &payload.DPOSIllegalProposals{
-		Evidence: payload.ProposalEvidence{
-			Proposal:    *first,
-			BlockHeader: firstBlockByte.Bytes(),
-			BlockHeight: firstBlock.Height,
-		},
-		CompareEvidence: payload.ProposalEvidence{
-			Proposal:    *second,
-			BlockHeader: secondBlockByte.Bytes(),
-			BlockHeight: secondBlock.Height,
-		},
+	secondEvidence, err := i.generateProposalEvidence(second)
+	if err != nil {
+		log.Warn("[ProcessIllegalProposal] generate evidence error")
+	}
+
+	asc := true
+	if first.Hash().String() > second.Hash().String() {
+		asc = false
+	}
+
+	evidences := &payload.DPOSIllegalProposals{}
+	if asc {
+		evidences.Evidence = *firstEvidence
+		evidences.CompareEvidence = *secondEvidence
+	} else {
+		evidences.Evidence = *secondEvidence
+		evidences.CompareEvidence = *firstEvidence
 	}
 
 	i.AddEvidence(evidences)
@@ -116,7 +136,8 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 	i.dispatcher.cfg.Network.BroadcastMessage(m)
 }
 
-func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(evidences *payload.DPOSIllegalProposals) {
+func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
+	evidences *payload.DPOSIllegalProposals) {
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(blockchain.DefaultLedger.
 			HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.
