@@ -126,8 +126,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		}
 
 	case InactiveArbitrators:
-		if err := CheckInactiveArbitrators(txn,
-			b.chainParams.InactiveEliminateCount); err != nil {
+		if err := b.checkInactiveArbitratorsTransaction(txn); err != nil {
 			log.Warn("[CheckInactiveArbitrators],", err)
 			return ErrTransactionPayload
 		}
@@ -899,6 +898,10 @@ func (b *BlockChain) checkIllegalProposalsTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
 	return b.checkDPOSIllegalProposals(p)
 }
 
@@ -906,6 +909,10 @@ func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
 	p, ok := txn.Payload.(*payload.DPOSIllegalVotes)
 	if !ok {
 		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
 	}
 
 	return b.checkDPOSIllegalVotes(p)
@@ -917,13 +924,31 @@ func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
 	return b.CheckDPOSIllegalBlocks(p)
+}
+
+func (b *BlockChain) checkInactiveArbitratorsTransaction(
+	txn *Transaction) error {
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	return CheckInactiveArbitrators(txn, b.chainParams.InactiveEliminateCount)
 }
 
 func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
 	p, ok := txn.Payload.(*payload.SidechainIllegalData)
 	if !ok {
 		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
 	}
 
 	if p.IllegalType != payload.SidechainIllegalProposal &&
