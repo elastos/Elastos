@@ -37,6 +37,9 @@ const (
 
 	// FoundBad indicates the producer was found doing bad.
 	FoundBad
+
+	// ReturnedDeposit indicates the producer has canceled and returned deposit
+	ReturnedDeposit
 )
 
 // producerStateStrings is a array of producer states back to their constant
@@ -473,6 +476,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.InactiveArbitrators:
 		s.processEmergencyInactiveArbitrators(
 			tx.Payload.(*payload.InactiveArbitrators), height)
+
+	case types.ReturnDepositCoin:
+		s.returnDeposit(tx, height)
 	}
 }
 
@@ -597,6 +603,25 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 					producer.votes += output.Value
 				})
 			}
+		}
+	}
+}
+
+func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
+
+	returnAction := func(producer *Producer) {
+		s.history.append(height, func() {
+			producer.state = ReturnedDeposit
+		}, func() {
+			producer.state = Canceled
+		})
+	}
+
+	for _, program := range tx.Programs {
+		pk := program.Code[1 : len(program.Code)-1]
+		if producer := s.GetProducer(pk);
+			producer != nil && producer.state == Canceled {
+			returnAction(producer)
 		}
 	}
 }
