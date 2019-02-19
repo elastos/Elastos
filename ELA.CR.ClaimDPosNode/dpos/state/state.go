@@ -122,6 +122,7 @@ type State struct {
 	illegalProducers  map[string]*Producer
 	votes             map[string]*types.Output
 	nicknames         map[string]struct{}
+	specialTxHashes   map[string]struct{}
 	history           *history
 
 	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
@@ -328,6 +329,15 @@ func (s *State) ProducerExists(publicKey []byte) bool {
 	return producer != nil
 }
 
+// SpecialTxExists returns if a special tx (typically means illegal and
+// inactive tx) is exists by it's hash
+func (s *State) SpecialTxExists(hash *common.Uint256) bool {
+	s.mtx.RLock()
+	_, ok := s.specialTxHashes[hash.String()]
+	s.mtx.RLock()
+	return ok
+}
+
 // IsDPOSTransaction returns if a transaction will change the producers and
 // votes state.
 func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
@@ -472,10 +482,12 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.IllegalProposalEvidence, types.IllegalVoteEvidence,
 		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
 		s.processIllegalEvidence(tx.Payload, height)
+		s.recordSpecialTx(tx, height)
 
 	case types.InactiveArbitrators:
 		s.processEmergencyInactiveArbitrators(
 			tx.Payload.(*payload.InactiveArbitrators), height)
+		s.recordSpecialTx(tx, height)
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
@@ -679,6 +691,15 @@ func (s *State) processEmergencyInactiveArbitrators(
 		}
 	}
 
+}
+
+// recordSpecialTx record hash of a special tx
+func (s *State) recordSpecialTx(tx *types.Transaction, height uint32) {
+	s.history.append(height, func() {
+		s.specialTxHashes[tx.Hash().String()] = struct{}{}
+	}, func() {
+		delete(s.specialTxHashes, tx.Hash().String())
+	})
 }
 
 // processIllegalEvidence takes the illegal evidence payload and change producer
@@ -930,6 +951,7 @@ func NewState(arbiters interfaces.Arbitrators, chainParams *config.Params) *Stat
 		illegalProducers:  make(map[string]*Producer),
 		votes:             make(map[string]*types.Output),
 		nicknames:         make(map[string]struct{}),
+		specialTxHashes:   make(map[string]struct{}),
 		history:           newHistory(maxHistoryCapacity),
 	}
 }
