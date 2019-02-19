@@ -70,6 +70,9 @@ type Config struct {
 	// The max peer connections.
 	MaxPeers int
 
+	// CandidateFlags defines flags needed for a sync candidate.
+	CandidateFlags []uint64
+
 	// GenesisHeader is the
 	GenesisHeader util.BlockHeader
 

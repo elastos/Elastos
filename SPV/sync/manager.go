@@ -185,9 +185,6 @@ func (sm *SyncManager) startSync() {
 }
 
 func (sm *SyncManager) syncWith(p *peer.Peer) {
-	// Update bloom filter first, before start requesting blocks.
-	sm.updateBloomFilter(p)
-
 	// Clear the requestedBlocks if the sync peer changes, otherwise we
 	// may ignore blocks we need that the last sync peer failed to send.
 	sm.requestedBlocks = make(map[common.Uint256]struct{})
@@ -202,13 +199,13 @@ func (sm *SyncManager) syncWith(p *peer.Peer) {
 // isSyncCandidate returns whether or not the peer is a candidate to consider
 // syncing from.
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
-	// TODO implement this when main chain refactor completed.
-	//services := peer.Services()
-	//// Candidate if all checks passed.
-	//return services&p2p.SFNodeNetwork == p2p.SFNodeNetwork &&
-	//	services&p2p.SFNodeBloom == p2p.SFNodeBloom
-
-	// Just return true.
+	services := peer.Services()
+	for _, flag := range sm.cfg.CandidateFlags {
+		if services&flag != flag {
+			return false
+		}
+	}
+	// Candidate if all checks passed.
 	return true
 }
 
@@ -224,10 +221,9 @@ func (sm *SyncManager) getSyncCandidates() []*peer.Peer {
 	return candidates
 }
 
-// updateBloomFilter update the bloom filter and send it to the given peer.
-func (sm *SyncManager) updateBloomFilter(p *peer.Peer) {
+// pushBloomFilter update and send the bloom filter to the given peer.
+func (sm *SyncManager) pushBloomFilter(p *peer.Peer) {
 	msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
-	log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
 	p.QueueMessage(msg, nil)
 }
 
@@ -251,9 +247,14 @@ func (sm *SyncManager) handleNewPeerMsg(peer *peer.Peer) {
 		fpRate:          fprate.NewFpRate(),
 	}
 
-	// Start syncing by choosing the best candidate if needed.
-	if isSyncCandidate && sm.syncPeer == nil {
-		sm.startSync()
+	if isSyncCandidate {
+		// Update bloom filter for the candidate peer.
+		sm.pushBloomFilter(peer)
+
+		// Start syncing by choosing the best candidate if needed.
+		if sm.syncPeer == nil {
+			sm.startSync()
+		}
 	}
 }
 
@@ -405,8 +406,8 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		peer.Disconnect()
 		return
 	}
-	if newHeight+500 < peer.Height() && fpRate > fprate.ReducedFalsePositiveRate*10 {
-		sm.updateBloomFilter(peer)
+	if newHeight+500 < peer.Height() && fpRate > fprate.DefaultFalsePositiveRate {
+		sm.pushBloomFilter(peer)
 		state.fpRate.Reset()
 	}
 

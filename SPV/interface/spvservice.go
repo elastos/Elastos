@@ -18,6 +18,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
@@ -79,11 +80,15 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 	chainStore := database.NewChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
-		DataDir:        dataDir,
-		Magic:          cfg.Magic,
-		SeedList:       cfg.SeedList,
-		DefaultPort:    cfg.DefaultPort,
-		MaxPeers:       cfg.MaxConnections,
+		DataDir:     dataDir,
+		Magic:       cfg.Magic,
+		SeedList:    cfg.SeedList,
+		DefaultPort: cfg.DefaultPort,
+		MaxPeers:    cfg.MaxConnections,
+		CandidateFlags: []uint64{
+			uint64(pact.SFNodeNetwork),
+			uint64(pact.SFNodeBloom),
+		},
 		GenesisHeader:  GenesisHeader(foundation),
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,

@@ -82,7 +82,8 @@ func newService(cfg *Config) (*service, error) {
 	}
 
 	// Create sync manager instance.
-	syncCfg := sync.NewDefaultConfig(chain, service.updateFilter)
+	syncCfg := sync.NewDefaultConfig(chain, cfg.CandidateFlags,
+		service.updateFilter)
 	syncCfg.MaxPeers = maxPeers
 	if cfg.StateNotifier != nil {
 		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
