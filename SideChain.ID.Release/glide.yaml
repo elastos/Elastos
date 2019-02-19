@@ -3,13 +3,13 @@ import:
 - package: github.com/golang/crypto
 - package: github.com/golang/sys
 - package: github.com/elastos/Elastos.ELA
-  version: release_v0.2.2
+  version: v0.2.2
 - package: github.com/elastos/Elastos.ELA.SPV
-  version: release_v0.0.1
+  version: v0.0.1
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: release_v0.1.2
+  version: v0.1.2
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: release_v0.1.1
+  version: v0.1.1
 - package: github.com/mattn/go-sqlite3
 - package: github.com/syndtr/goleveldb
   subpackages:
