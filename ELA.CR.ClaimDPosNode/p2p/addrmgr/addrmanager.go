@@ -363,7 +363,7 @@ func (a *AddrManager) savePeers() {
 	i := 0
 	for k, v := range a.addrIndex {
 		// Filter network address here to update address saved in peers.json.
-		if !a.filter.Filter(v.na) {
+		if a.filter != nil && !a.filter.Filter(v.na) {
 			continue
 		}
 
@@ -544,17 +544,16 @@ func (a *AddrManager) Start() {
 }
 
 // Stop gracefully shuts down the address manager by stopping the main handler.
-func (a *AddrManager) Stop() error {
+func (a *AddrManager) Stop() {
 	if atomic.AddInt32(&a.shutdown, 1) != 1 {
 		log.Warnf("Address manager is already in the process of " +
 			"shutting down")
-		return nil
+		return
 	}
 
 	log.Infof("Address manager shutting down")
 	close(a.quit)
 	a.wg.Wait()
-	return nil
 }
 
 // AddAddresses adds new addresses to the address manager.  It enforces a max
