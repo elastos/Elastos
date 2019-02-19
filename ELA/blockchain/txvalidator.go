@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -898,7 +899,7 @@ func (b *BlockChain) checkIllegalProposalsTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	return b.checkDposIllegalProposals(p)
+	return b.checkDPOSIllegalProposals(p)
 }
 
 func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
@@ -907,7 +908,7 @@ func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	return b.checkDposIllegalVotes(p)
+	return b.checkDPOSIllegalVotes(p)
 }
 
 func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
@@ -916,7 +917,7 @@ func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	return b.CheckDposIllegalBlocks(p)
+	return b.CheckDPOSIllegalBlocks(p)
 }
 
 func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
@@ -942,6 +943,14 @@ func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) 
 
 	if len(p.Signs) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("insufficient signs count")
+	}
+
+	if p.Evidence.DataHash.Compare(p.CompareEvidence.DataHash) > 0 {
+		return errors.New("evidence order error")
+	}
+
+	if err := checkSignersInOrder(p.Signs); err != nil {
+		return err
 	}
 
 	//todo get arbitrators by payload.Height and verify each sign in signs
@@ -1011,7 +1020,7 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 	return nil
 }
 
-func (b *BlockChain) checkDposIllegalProposals(
+func (b *BlockChain) checkDPOSIllegalProposals(
 	d *payload.DPOSIllegalProposals) error {
 
 	if err := validateProposalEvidence(&d.Evidence); err != nil {
@@ -1050,7 +1059,7 @@ func (b *BlockChain) checkDposIllegalProposals(
 	return nil
 }
 
-func (b *BlockChain) checkDposIllegalVotes(d *payload.DPOSIllegalVotes) error {
+func (b *BlockChain) checkDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 
 	if err := validateVoteEvidence(&d.Evidence); err != nil {
 		return nil
@@ -1068,26 +1077,42 @@ func (b *BlockChain) checkDposIllegalVotes(d *payload.DPOSIllegalVotes) error {
 		return errors.New("votes can not be same")
 	}
 
+	if d.Evidence.Vote.Hash().String() >
+		d.CompareEvidence.Vote.Hash().String() {
+		return errors.New("evidence order error")
+	}
+
 	if !bytes.Equal(d.Evidence.Vote.Signer, d.CompareEvidence.Vote.Signer) {
 		return errors.New("should be same signer")
+	}
+
+	if !bytes.Equal(d.Evidence.Proposal.Sponsor, d.CompareEvidence.Proposal.Sponsor) {
+		return errors.New("should be same sponsor")
 	}
 
 	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
 
-	if !IsProposalValid(&d.Evidence.Proposal) || IsProposalValid(&d.CompareEvidence.Proposal) ||
-		!IsVoteValid(&d.Evidence.Vote) || IsVoteValid(&d.CompareEvidence.Vote) {
+	if !IsProposalValid(&d.Evidence.Proposal) ||
+		!IsProposalValid(&d.CompareEvidence.Proposal) ||
+		!IsVoteValid(&d.Evidence.Vote) ||
+		!IsVoteValid(&d.CompareEvidence.Vote) {
 		return errors.New("votes and related proposals should be valid")
 	}
 
 	return nil
 }
 
-func (b *BlockChain) CheckDposIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
+func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 
 	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
 		return errors.New("blocks can not be same")
+	}
+
+	if common.BytesToHexString(d.Evidence.Block) >
+		common.BytesToHexString(d.CompareEvidence.Block) {
+		return errors.New("evidence order error")
 	}
 
 	if d.CoinType == payload.ELACoin {
@@ -1095,15 +1120,18 @@ func (b *BlockChain) CheckDposIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 		var header, compareHeader *Header
 		var confirm, compareConfirm *payload.Confirm
 
-		if header, compareHeader, err = checkDposElaIllegalBlockHeaders(d); err != nil {
+		if header, compareHeader, err = checkDPOSElaIllegalBlockHeaders(d);
+			err != nil {
 			return err
 		}
 
-		if confirm, compareConfirm, err = checkDposElaIllegalBlockConfirms(d, header, compareHeader); err != nil {
+		if confirm, compareConfirm, err = checkDPOSElaIllegalBlockConfirms(
+			d, header, compareHeader); err != nil {
 			return err
 		}
 
-		if err := b.checkDposElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
+		if err := b.checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm);
+			err != nil {
 			return err
 		}
 	}
@@ -1111,16 +1139,24 @@ func (b *BlockChain) CheckDposIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 	return nil
 }
 
-func (b *BlockChain) checkDposElaIllegalBlockSigners(
+func (b *BlockChain) checkDPOSElaIllegalBlockSigners(
 	d *payload.DPOSIllegalBlocks, confirm *payload.Confirm,
 	compareConfirm *payload.Confirm) error {
 
 	signers := d.Evidence.Signers
+	if err := checkSignersInOrder(signers); err != nil {
+		return err
+	}
+
 	compareSigners := d.CompareEvidence.Signers
+	if err := checkSignersInOrder(compareSigners); err != nil {
+		return err
+	}
 
 	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) ||
 		len(compareSigners) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
-		return errors.New("signers count less than dpos required majority count")
+		return errors.New("signers count less than DPOS required majority" +
+			" count")
 	}
 
 	arbitratorsSet := make(map[string]interface{})
@@ -1157,7 +1193,7 @@ func (b *BlockChain) checkDposElaIllegalBlockSigners(
 	return nil
 }
 
-func checkDposElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
+func checkDPOSElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
 	header *Header, compareHeader *Header) (*payload.Confirm,
 	*payload.Confirm, error) {
 
@@ -1201,7 +1237,7 @@ func checkDposElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
 	return confirm, compareConfirm, nil
 }
 
-func checkDposElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
+func checkDPOSElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
 	*Header, error) {
 
 	header := &Header{}
@@ -1277,3 +1313,23 @@ func validateVoteEvidence(evidence *payload.VoteEvidence) error {
 
 	return nil
 }
+
+func checkSignersInOrder(signers [][]byte) error {
+	var signersStr []string
+	for _, signer := range signers {
+		signersStr = append(signersStr, common.BytesToHexString(signer))
+	}
+
+	var signersCompare []string
+	signersCompare = append(signersCompare, signersStr...)
+
+	sort.Strings(signersStr)
+
+	for i := 0; i < len(signersStr); i++ {
+		if signersStr[i] != signersCompare[i] {
+			return errors.New("signers have not been ordered")
+		}
+	}
+	return nil
+}
+
