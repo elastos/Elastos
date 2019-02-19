@@ -2,18 +2,19 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import _ from 'lodash'
 
-import './style.scss'
+import { List, Item, ItemUndecided, Text } from './style'
 
 const Component = ({ percentage, values, yes }) => {
   const statusGroup = _.map(values, (value, key) => {
-    const statusClass = `vote-status-item ${value.toLowerCase()}` // yes, no, undecided
-    return <div className={statusClass} key={key} />
+    const status = value.toLowerCase() // yes, no, undecided, abstained
+    if (status === 'undecided') return <ItemUndecided status={status} key={key} />
+    return <Item status={status} key={key} />
   })
-  const textClass = `vote-status-text ${yes ? 'agreed' : ''}`
+  console.log('yes is: ', yes)
   return (
-    <div className="c_VoteStatus">
-      <div className={textClass}>{percentage}</div>
-      <div className="vote-status-list">{statusGroup}</div>
+    <div>
+      <Text yes={yes}>{percentage}</Text>
+      <List>{statusGroup}</List>
     </div>
   )
 }
