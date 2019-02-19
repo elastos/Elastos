@@ -75,9 +75,6 @@ var (
 	ErrNegativeValue = errors.New("negative value")
 
 
-	//ErrElaTransferFee to ensure ela fee be greater than 1 Microether(Szabo)
-	ErrGasPricePrecision = errors.New("gas price  should be greater than e10 wei")
-
 	// ErrOversizedData is returned if the input data of a transaction is greater
 	// than some meaningful limit a user might use. This is not a consensus error
 	// making the transaction invalid, rather a DOS protection.
@@ -596,10 +593,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
 	if !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
 		return ErrUnderpriced
-	}
-
-	if(!strings.HasSuffix(tx.GasPrice().String(),"0000000000")){
-		return ErrGasPricePrecision
 	}
 
 	// Ensure the transaction adheres to nonce ordering
