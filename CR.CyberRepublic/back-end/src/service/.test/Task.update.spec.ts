@@ -35,7 +35,7 @@ beforeAll(async ()=>{
 
     // remove test user
     await DB.getModel('User').remove({
-        username: global.DB.MEMBER_USER.username
+        role: constant.USER_ROLE.MEMBER
     });
     await DB.getModel('User').remove({
         username: global.DB.ORGANIZER_USER.username
@@ -45,11 +45,12 @@ beforeAll(async ()=>{
     const userService = new UserService(DB, {
         user: null
     })
-    testData.organizer = await userService.registerNewUser(global.DB.ORGANIZER_USER)
-    testData.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER)
+    const organizer = await userService.registerNewUser(global.DB.ORGANIZER_USER)
+    testData.admin = await userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN });
+
 
     // set member to organizer
-    await userService.getDBModel('User').update({_id: testData.organizer._id}, {role: 'LEADER'})
+    await userService.getDBModel('User').update({_id: organizer._id}, { role: constant.USER_ROLE.LEADER })
 
     testData.organizer = await userService.getDBModel('User').findOne({username: global.DB.ORGANIZER_USER.username})
 
@@ -271,7 +272,7 @@ describe('Tests for Task Update', () => {
 
 afterAll(async () => {
     // remove test task
-    await DB.getModel('Task').remove({
+    testData.taskSocialEvent && await DB.getModel('Task').remove({
         _id: testData.taskSocialEvent._id
     });
 

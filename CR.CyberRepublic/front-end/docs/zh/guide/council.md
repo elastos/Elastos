@@ -1,23 +1,21 @@
 
-# The Council
+# Cyber Republic委员会
+委员会由社区每年选举出的**7** 个成员组成。 
 
-The Council consists of **7** people elected by the community on an annual basis.
+**他们主要的职责如下：**
 
-**Their main responsibilties are:**
+1. 每个委员都要保管一个私钥，这个私钥与12个非轮替活跃DPoS节点其中之一是相关的。
 
-1. Each safeguard a private key associated with 1 of the 12 Council non-rotating active DPoS nodes.
+2. 选择、审阅并且推进他们认为的对CR有价值的建议，并且参与CRC工作流程的各个环节。
 
-2. Select, review and promote Suggestions they feel are valuable to CR and participate in the CRC Workflow.
-
-3. Be public figures with a written stance on various issues as well as be available to the community to voice their concerns.
-
-
-#### Annual Elections are in August
-
-The first election will take place tentatively from June to August of 2019, more details on this will come.
+3. 成为公众人物，在各种问题上有书面立场，同时能够为社区关切的问题发声。
 
 
-#### Council Members can be impeached
+#### 每年8月份进行年度选举
 
-A council member is a paid position by CR and is expected to perform their duties as expected. We hope the community
-also pays close attention to which council members are active or not.
+首次选举预计在2019年6月到8月进行，更多的细节即将公布。
+
+
+#### 委员会成员是可以被弹劾的
+
+委员会成员由CR支付薪资，因此社区对他们能够达到工作预期寄予厚望。我们也希望社区成员们能密切关注这些委员会成员是否活跃。
