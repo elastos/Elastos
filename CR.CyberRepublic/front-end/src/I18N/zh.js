@@ -45,6 +45,8 @@ const zh = {
   '0301': '英语',
   '0302': '简体中文',
 
+  'link.back': '返回',
+
   // Admin breadcrumb
   1100: '管理员',
 

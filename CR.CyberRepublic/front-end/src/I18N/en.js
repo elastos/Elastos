@@ -45,6 +45,8 @@ const en = {
   '0301': 'English',
   '0302': 'Chinese',
 
+  'link.back': 'Back',
+
   // Admin breadcrumb
   1100: 'Admin',
 

@@ -10,6 +10,7 @@ import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS } from '@/con
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
+import BackLink from "@/module/shared/BackLink/Component";
 
 import './style.scss'
 
@@ -69,6 +70,7 @@ class C extends StandardPage {
     return (
       <div>
         <div className="p_CVoteDetail">
+          <BackLink link="/proposals" />
           {metaNode}
           {titleNode}
           {subTitleNode}

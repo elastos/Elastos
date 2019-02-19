@@ -27,14 +27,16 @@
     &:not(:first-child) {
       padding-left: 30px;
     }
+    &:first-child .value {
+      background: #1DE9B6;
+      padding: 0 5px;
+    }
     &:not(:last-child) {
       border-right: 1px solid #E5E5E5;
       padding-right: 30px;
     }
     .text {
       font-size: 11px;
-    }
-    .value {
     }
   }
   .vote-btn-group {
