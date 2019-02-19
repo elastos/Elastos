@@ -155,17 +155,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			log.Warn("[CheckUpdateProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
-
-	case ReturnDepositCoin:
-		if err := b.checkReturnDepositCoinTransaction(txn); err != nil {
-			log.Warn("[CheckReturnDepositCoinTransaction],", err)
-			return ErrReturnDepositConsensus
-		}
 	}
 
 	// check double spent transaction
 	if DefaultLedger.IsDoubleSpend(txn) {
-		log.Warn("[CheckTransactionContext] IsDoubleSpend check faild.")
+		log.Warn("[CheckTransactionContext] IsDoubleSpend check failed")
 		return ErrDoubleSpend
 	}
 
@@ -186,6 +180,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if err := b.checkTransferCrossChainAssetTransaction(txn, references); err != nil {
 			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
 			return ErrInvalidOutput
+		}
+	}
+
+	if txn.IsReturnDepositCoin() {
+		if err := b.checkReturnDepositCoinTransaction(txn, references); err != nil {
+			log.Warn("[CheckReturnDepositCoinTransaction],", err)
+			return ErrReturnDepositConsensus
 		}
 	}
 
@@ -859,7 +860,19 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction) error {
+func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
+	references map[*Input]*Output) error {
+
+	var outputValue common.Fixed64
+	var inputValue common.Fixed64
+	for _, output := range txn.Outputs {
+		outputValue += output.Value
+	}
+	for _, reference := range references {
+		inputValue += reference.Value
+	}
+
+	var penalty common.Fixed64
 	for _, program := range txn.Programs {
 		p := b.state.GetProducer(program.Code[1 : len(program.Code)-1])
 		if p.State() != state.Canceled {
@@ -868,8 +881,14 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction) error {
 		if b.db.GetHeight()-p.CancelHeight() < DepositLockupBlocks {
 			return errors.New("return deposit does not meet the lockup limit")
 		}
-		// todo use p.Penalty() to restrict deposit amount
+		penalty += p.Penalty()
 	}
+
+	if inputValue-penalty < common.Fixed64(
+		config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+		return fmt.Errorf("overspend deposit")
+	}
+
 	return nil
 }
 
