@@ -61,6 +61,7 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (
 		result = append(result, sortItems[i].PK)
 	}
 
+	sort.Strings(result)
 	return result
 }
 
