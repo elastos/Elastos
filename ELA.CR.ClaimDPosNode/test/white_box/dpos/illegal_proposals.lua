@@ -46,10 +46,7 @@ confirm:append_vote(vb)
 confirm:append_vote(vc)
 
 local illegal = illegal_proposals.new()
-illegal:set_proposal(prop, false)
-illegal:set_proposal(prop2, true)
-illegal:set_header(b1:get_header(), false)
-illegal:set_header(b2:get_header(), true)
+illegal:set_content(prop, b1:get_header(), prop2, b2:get_header())
 
 --- simulate B received the two proposals
 dpos.B.network:push_block(b1, false)

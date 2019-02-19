@@ -1030,6 +1030,11 @@ func (b *BlockChain) checkDposIllegalProposals(
 		return errors.New("proposals can not be same")
 	}
 
+	if d.Evidence.Proposal.Hash().String() >
+		d.CompareEvidence.Proposal.Hash().String() {
+		return errors.New("evidence order error")
+	}
+
 	if !bytes.Equal(d.Evidence.Proposal.Sponsor, d.CompareEvidence.Proposal.Sponsor) {
 		return errors.New("should be same sponsor")
 	}
