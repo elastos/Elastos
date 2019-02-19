@@ -96,10 +96,7 @@ func addNaTest(ip string, port uint16, want string) {
 func TestStartStop(t *testing.T) {
 	n := addrmgr.New("teststartstop", nil)
 	n.Start()
-	err := n.Stop()
-	if err != nil {
-		t.Fatalf("Address Manager failed to stop: %v", err)
-	}
+	n.Stop()
 }
 
 func TestAddAddressByIP(t *testing.T) {
@@ -459,4 +456,16 @@ func TestNetAddressKey(t *testing.T) {
 		}
 	}
 
+}
+
+func TestSavePeers(t *testing.T) {
+	addNaTests()
+
+	am := addrmgr.New("./", nil)
+	am.Start()
+	for _, test := range naTests {
+		am.AddAddress(&test.in, &test.in)
+	}
+
+	am.Stop()
 }
