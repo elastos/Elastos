@@ -22,7 +22,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { language } = this.props
+    const { canManage } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -46,7 +46,7 @@ export default class extends BaseComponent {
         width: '30%',
         render: (title, item) => (
           <a onClick={this.toDetail.bind(this, item._id)} className="tableLink">
-            { language === LANGUAGES.chinese ? (item.title_zh ? item.title_zh : title) : title }
+            {title}
           </a>
         ),
       },
@@ -74,7 +74,7 @@ export default class extends BaseComponent {
       },
     ]
 
-    if (this.props.canCreate) {
+    if (canManage) {
       columns.splice(1, 0, {
         dataIndex: 'published',
         render: (published, item, index) => (published ? <i className="fas fa-eye" /> : <i className="far fa-eye-slash" />),
@@ -94,7 +94,7 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createBtn = this.props.canCreate && (
+    const createBtn = canManage && (
       <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
         <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
             Add a Proposal
@@ -136,9 +136,10 @@ export default class extends BaseComponent {
   }
 
   async componentDidMount() {
+    const { listData, canManage } = this.props
     this.ord_loading(true);
     try {
-      const list = await this.props.listData({}, this.props.canCreate);
+      const list = await listData({}, canManage);
       this.setState({ list });
     } catch (error) {
       // do sth
