@@ -1,7 +1,7 @@
 
 # ELA Mainchain
 
-?> This can be found at [https://github.com/elastos/Elastos.ELA](https://github.com/elastos/Elastos.ELA)<br/>- use branch `release_v0.2.2` sha should be `fa35fca`
+?> This can be found at [https://github.com/elastos/Elastos.ELA](https://github.com/elastos/Elastos.ELA)<br/>- use tag `v0.2.2`
 
 #### Follow the instructions in the `README.md`
 
