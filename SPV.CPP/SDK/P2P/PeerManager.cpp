@@ -310,7 +310,7 @@ namespace Elastos {
 			}
 
 			if (_connectedPeers.empty()) {
-				Log::warn("sync failed");
+//				Log::warn("{} sync failed", GetID());
 				syncStopped();
 				lock.unlock();
 				fireSyncStopped(ENETUNREACH);
@@ -775,7 +775,7 @@ namespace Elastos {
 
 				sortPeers();
 
-				Log::debug("found {} peers", _peers.size());
+				Log::debug("{} found {} peers", GetID(), _peers.size());
 			}
 		}
 
@@ -811,11 +811,10 @@ namespace Elastos {
 		void PeerManager::asyncConnect(const boost::system::error_code &error) {
 			if (error.value() == 0) {
 				if (getConnectStatus() != Peer::Connected) {
-					Log::info("async connecting...");
 					connect();
 				}
 			} else {
-				Log::warn("asyncConnect err: {}", error.message());
+				Log::warn("{} async connect err: {}", GetID(), error.message());
 			}
 
 			if (_reconnectTaskCount > 0) {
@@ -975,7 +974,7 @@ namespace Elastos {
 //					_peers.clear();
 					txError = ENOTCONN; // trigger any pending tx publish callbacks
 					willSave = 1;
-					peer->warn("sync failed");
+//					peer->warn("sync failed");
 				} else if (_connectFailureCount < MAX_CONNECT_FAILURES) {
 					willReconnect = 1;
 				}
@@ -1074,15 +1073,11 @@ namespace Elastos {
 
 			// peer relaying is complete when we receive <1000
 			if (save.size() > 1 && save.size() < 1000) {
-				peer->info("save {} peers", save.size());
-				for (size_t i = 0; i < save.size(); i++) {
-					peer->info("peer[{}] = {}:{}, timestamp = {}, services = {}", i, save[i].GetHost(),
-							   save[i].Port, save[i].Timestamp, save[i].Services);
-				}
 				fireSavePeers(true, save);
 			}
 
 			if (willReconnect) {
+				peer->info("use new addresses to reconnect");
 				fireSyncIsInactive(2);
 			}
 		}
@@ -1806,7 +1801,7 @@ namespace Elastos {
 						addr = *(UInt128 *) &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr;
 						inet_ntop(AF_INET6, &addr, host, sizeof(host));
 					}
-					Log::debug("{} -> {}", hostname, host);
+					Log::debug("{} {} -> {}", GetID(), hostname, host);
 					addrList.push_back(addr);
 				}
 

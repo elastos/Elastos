@@ -364,10 +364,6 @@ namespace Elastos {
 		void SubWallet::syncStopped(const std::string &error) {
 			_syncStartHeight = 0;
 
-			if (!error.empty()) {
-				Log::error("syncStopped with error: {}", error);
-			}
-
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
 							  callback->OnBlockSyncStopped();

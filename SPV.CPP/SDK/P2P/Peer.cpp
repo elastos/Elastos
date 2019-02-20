@@ -348,7 +348,9 @@ namespace Elastos {
 					}
 
 					if (error) {
-						this->error("read header error: {}", FormatError(error));
+						if (_socket != -1) {
+							this->error("read header error: {}", FormatError(error));
+						}
 					} else if (header[15] != 0) { // verify header type field is NULL terminated
 						this->error("malformed message header: type not NULL terminated");
 						error = EPROTO;
@@ -389,7 +391,9 @@ namespace Elastos {
 							}
 
 							if (error) {
-								this->error("read message error: {}", FormatError(error));
+								if (_socket != -1) {
+									this->error("read message error: {}", FormatError(error));
+								}
 							} else if (len == msgLen) {
 								BRSHA256_2(&hash, payload, msgLen);
 

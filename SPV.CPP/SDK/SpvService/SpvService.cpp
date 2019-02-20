@@ -84,7 +84,7 @@ namespace Elastos {
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
 
-			Log::debug("publish tx {}", sendingTx.dump());
+			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
 			SPVLOG_DEBUG("raw tx {}", Utils::encodeHex(byteStream.getBuffer()));
 
 			if (getPeerManager()->getConnectStatus() != Peer::Connected) {
@@ -219,7 +219,8 @@ namespace Elastos {
 
 #ifndef NDEBUG
 				if (blocks.size() == 1) {
-					Log::debug("checkpoint ====> ({},  \"{}\", {}, {});",
+					Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
+							_peerManager->GetID(),
 							blocks[i]->getHeight(),
 							Utils::UInt256ToString(blocks[i]->getHash(), true),
 							blocks[i]->getTimestamp(),
@@ -289,7 +290,7 @@ namespace Elastos {
 		}
 
 		void SpvService::syncIsInactive(uint32_t time) {
-			Log::info("time to disconnect");
+			Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
 
 			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 
@@ -339,7 +340,7 @@ namespace Elastos {
 				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
 				stream.setPosition(0);
 				if (!block->Deserialize(stream)) {
-					Log::error("block deserialize fail");
+					Log::error("{} block deserialize fail", _peerManager->GetID());
 				}
 				blocks.push_back(block);
 			}
@@ -427,16 +428,15 @@ namespace Elastos {
 		}
 
 		void SpvService::startReconnect(uint32_t time) {
-			Log::info("reconnect {}s later...", time);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(time)));
 
 			_peerManager->Lock();
 			if (0 == _peerManager->GetPeers().size()) {
 				std::vector<PeerInfo> peers = loadPeers();
-				Log::info("load {} peers", peers.size());
+				Log::info("{} load {} peers", _peerManager->GetID(), peers.size());
 				for (size_t i = 0; i < peers.size(); ++i) {
-					Log::debug("p[{}]: {}", i, peers[i].GetHost());
+					Log::debug("{} p[{}]: {}", _peerManager->GetID(), i, peers[i].GetHost());
 				}
 
 				_peerManager->SetPeers(peers);
@@ -458,11 +458,11 @@ namespace Elastos {
 		void SpvService::UpdateAssets() {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
 			std::vector<Asset> assetArray;
-			std::for_each(assets.begin(), assets.end(), [&assetArray](const AssetEntity &entity) {
+			std::for_each(assets.begin(), assets.end(), [this, &assetArray](const AssetEntity &entity) {
 				Asset asset;
 				ByteStream stream(entity.Asset);
 				if (!asset.Deserialize(stream)) {
-					Log::error("Update assets deserialize fail");
+					Log::error("{} Update assets deserialize fail", _peerManager->GetID());
 				} else {
 					asset.SetHash(Utils::UInt256FromString(entity.AssetID, true));
 					assetArray.push_back(asset);
@@ -476,13 +476,13 @@ namespace Elastos {
 			AssetEntity assetEntity;
 			Asset asset;
 			if (!_databaseManager.GetAssetDetails(ISO, assetID, assetEntity)) {
-				Log::warn("Asset {} not found", assetID);
+				Log::warn("{} Asset {} not found", _peerManager->GetID(), assetID);
 				return asset;
 			}
 
 			ByteStream stream(assetEntity.Asset);
 			if (!asset.Deserialize(stream)) {
-				Log::error("Asset {} deserialize fail", assetID);
+				Log::error("{} Asset {} deserialize fail", _peerManager->GetID(), assetID);
 				return Asset();
 			}
 			asset.SetHash(Utils::UInt256FromString(assetEntity.AssetID, true));
