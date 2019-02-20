@@ -1,6 +1,6 @@
 
 
-## FAQ - General
+# General FAQ
 
 #### Can I be the one that also does the Suggestion if it's approved?
 

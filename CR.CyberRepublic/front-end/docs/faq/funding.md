@@ -1,6 +1,6 @@
 
 
-## FAQ - General
+# Funding FAQ
 
 #### How much funding is available?
 

@@ -1,5 +1,5 @@
 
-## CRC Workflow
+# CRC Workflow
 
 At the moment this is the only process to get projects and ideas funded in Cyber Republic. Everyone including the CR Council members
 are required to go through this transparent process in order to allocate Cyber Republic's funds to anything.
@@ -8,16 +8,16 @@ are required to go through this transparent process in order to allocate Cyber R
 
 ?> Note: this is still an **ALPHA** version of the **CRC workflow**
 
-### Example of a Suggestion to Execution Lifecycle
+## Example of a Suggestion to Execution Lifecycle {docsify-ignore}
 
 
-#### 1. A member of the public creates a Suggestion on the Cyber Republic website
+### 1. A member of the public creates a Suggestion on the Cyber Republic website
 
 Anyone with an account on Cyber Republic can create a **Suggestion**. In the future we will tie accounts to wallets and add a reputation system
 to ensure a high quality of submissions. [Cyber Republic Website - Suggestions Page](https://www.cyberrepublic.org/suggestion)
 
 
-#### 2. The public votes on the Suggestion and it becomes popular
+### 2. The public votes on the Suggestion and it becomes popular
 
 If the Suggestion gains enough popularity, a member of the CR Council will evaluate the Suggestion and provide feedback in the comments or create a Proposal.
 
@@ -29,7 +29,7 @@ reasonable period of time.
 If council members are not giving proper feedback, as a last resort there is a impeachment process to remove them.
 
 
-#### 3. A council member takes the Suggestion and creates a Proposal
+### 3. A council member takes the Suggestion and creates a Proposal
 
 The council is expected to consist of a variety of people from all walks of life and specializations. We also don't assume they are well versed in every important area required
 to properly assess a project's merits. Therefore we expect that council members rely on the resources in the Secretariat Team and its expert advisers to create a formal **Proposal**.
@@ -44,14 +44,14 @@ By creating a Proposal a council member must sign and accept responsibility for 
 will be up for scrutiny in future elections.
 
 
-#### 4. The finalized Proposal is brought up for voting
+### 4. The finalized Proposal is brought up for voting
 
 **Proposals** must be made public at [https://www.cyberrepublic.org/proposals](https://www.cyberrepublic.org/proposals) so the public can view the full proposal and all its details.
 
 !> There is a 7 day voting period for Council members, the votes are also public and must pass by majority.
 
 
-#### 5. If the Council votes YES the Proposal will be translated to the pertinent languages
+### 5. If the Council votes YES the Proposal will be translated to the pertinent languages
 
 This translation is done as a preparation step to allow the community to fully understand the proposal.
 
@@ -61,14 +61,14 @@ This also gives time for the community to be notified of the Proposal.
 Initially the main languages that each passing Proposal will be translated to are only English and Chinese.
 
 
-#### 6. The public community has a chance to reject the Proposal over 3 days
+### 6. The public community has a chance to reject the Proposal over 3 days
 
 The voting period for the public is 3 days. The final threshold to reject a proposal has not yet been decided.
 
 It's expected that if the community is happy with the proposal that they simply abstain from voting.
 
 
-#### 7. The passed Proposal is assigned a Team to execute it
+### 7. The passed Proposal is assigned a Team to execute it
 
 There are two possibilities here, a Proposal can either:
 

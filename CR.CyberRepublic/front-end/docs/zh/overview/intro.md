@@ -1,5 +1,5 @@
 
-# 欢迎查阅Cyber Republic文档
+# 欢迎查阅Cyber Republic文档 {docsify-ignore-all}
 
 !> 目前这还是一个草案——正式的CRC白皮书将很快发布
 

@@ -6,4 +6,4 @@
 
 Use of these documents are at your own risk, we will not provide support for issues followed by this document.
 
-#### For our official documentation please visit&nbsp;[https://developer.elastos.org](https://developer.elastos.org)
+#### For our official documentation (DRAFT) please visit&nbsp;[https://developer.elastos.org](https://developer.elastos.org)
