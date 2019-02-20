@@ -7,7 +7,9 @@
 
 - PrivNet Setup
     - [Getting Started](/privnet/intro.md)
+    - [Setup Steps](/privnet/setup.md)
     - [Version Branch/SHAs](/privnet/sha-list.md)
+    - [Tips & Tricks](/privnet/tips.md)
 
 - Core Components/Chains
     - [ELA Mainchain](/core/mainchain/mainchain.md)
