@@ -31,7 +31,7 @@ contract CrossChainPayload {
 
     event PayloadSent(bytes32 indexed _txhash, address indexed _addr, uint256 _amount, address indexed _arbiter);
     event TxProcessed(bytes32 indexed _txhash, address indexed _arbiter);
-    event PayloadReceived(string _addr, uint256 _amount, address indexed _sender);
+    event PayloadReceived(string _addr, uint256 _amount,uint256 _crosschainamount, address indexed _sender);
     event EtherDeposited(address indexed _sender, uint256 _amount);
 
     function sendPayload(bytes32 _txhash) public {
@@ -141,13 +141,15 @@ contract CrossChainPayload {
         _end = _start + 8;
     }
 
-    function receivePayload(string[] _addrs, uint256[] _amounts) public payable {
+    function receivePayload(string[] _addrs, uint256[] _amounts,uint256 _fee) public payable {
         uint256 total = 0;
         uint256 i = 0;
+        require(_fee>=100000000000000&&_fee%10000000000==0);
         while (i < _amounts.length) {
-            require(_amounts[i]%10000000000==0);
+            require(_amounts[i]%10000000000==0&&_amounts[i]>=10000000000);
+            require(_amounts[i].sub(_fee)>=10000000000&&(_amounts[i].sub(_fee))%10000000000==0);
             total = total.add(_amounts[i]);
-            emit PayloadReceived(_addrs[i], _amounts[i], msg.sender);
+            emit PayloadReceived(_addrs[i],_amounts[i], _amounts[i].sub(_fee), msg.sender);
             i++;
         }
 
