@@ -689,7 +689,7 @@ const zh = {
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstention': '您确定要弃权吗？',
   'council.voting.modal.voteNo': '反对的理由',
-  'council.voting.modal.confirm': '确认',
+  'council.voting.modal.confirm': '提交',
   'council.voting.modal.cancel': '取消',
 
   'council.voting.voteResult.yes': '赞成',

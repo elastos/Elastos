@@ -689,7 +689,7 @@ const en = {
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
   'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
   'council.voting.modal.voteNo': 'Reason for Opposing',
-  'council.voting.modal.confirm': 'Confirm',
+  'council.voting.modal.confirm': 'Submit',
   'council.voting.modal.cancel': 'Cancel',
 
   'council.voting.voteResult.yes': 'Vote Yes',

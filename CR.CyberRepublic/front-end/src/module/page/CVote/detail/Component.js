@@ -1,7 +1,7 @@
 import React from 'react'
 import StandardPage from '../../StandardPage'
 import {
-  Form, Spin, Button, Input, message, Modal,
+  Form, Spin, Button, Input, message, Modal, Icon,
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -11,6 +11,7 @@ import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component";
+import Popover from "@/module/shared/Popover/Component";
 
 import './style.scss'
 
@@ -152,25 +153,48 @@ class C extends StandardPage {
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
-
+    const { reason, visible } = this.state
+    const opposeBtn = (
+      <Button
+        type="danger"
+        icon="close-circle"
+        onClick={this.showVoteOpposeModal}
+      >
+        {I18N.get('council.voting.btnText.no')}
+      </Button>
+    )
+    const content = (
+      <div>
+        <Icon type="close" onClick={this.showVoteOpposeModal} />
+        <h4>{I18N.get('council.voting.modal.voteNo')}</h4>
+        <TextArea onChange={this.onReasonChanged} />
+        <div>
+          <Button type="default">
+            {I18N.get('council.voting.modal.cancel')}
+          </Button>
+          <Button type="danger" onClick={() => this.voteOppose({ reason })}>
+            {I18N.get('council.voting.modal.confirm')}
+          </Button>
+        </div>
+      </div>
+    )
+    const opposePopOver = (
+      <Popover content={content} trigger="click" visible={visible}>
+        {opposeBtn}
+      </Popover>
+    )
     return (
       <div className="vote-btn-group">
         <Button
           type="primary"
-          icon="check"
+          icon="check-circle"
           onClick={this.showVoteYesModal}
         >
           {I18N.get('council.voting.btnText.yes')}
         </Button>
+        {opposePopOver}
         <Button
-          type="danger"
-          icon="close"
-          onClick={this.showVoteOpposeModal}
-        >
-          {I18N.get('council.voting.btnText.no')}
-        </Button>
-        <Button
-          icon="delete"
+          icon="stop"
           onClick={this.showVoteAbstentionModal}
         >
           {I18N.get('council.voting.btnText.abstention')}
@@ -192,6 +216,7 @@ class C extends StandardPage {
 
     const addNoteBtn = isSecretary && (
       <Button
+        icon="profile"
         onClick={this.showUpdateNotesModal}
       >
         {I18N.get('council.voting.btnText.notesSecretary')}
@@ -199,6 +224,7 @@ class C extends StandardPage {
     )
     const editProposalBtn = isSelf && canEdit && (
       <Button
+        icon="edit"
         onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
@@ -206,6 +232,7 @@ class C extends StandardPage {
     )
     const completeProposalBtn = isSecretary && canComplete && (
       <Button
+        icon="check-square"
         type="primary"
         onClick={this.completeProposal}
       >
@@ -340,10 +367,6 @@ class C extends StandardPage {
     this.setState({ reason: '' })
   }
 
-  onReasonChanged = (e) => {
-    this.setState({ reason: e.target.value })
-  }
-
   showVoteYesModal = () => {
     Modal.confirm({
       title: I18N.get('council.voting.modal.voteYes'),
@@ -363,14 +386,8 @@ class C extends StandardPage {
   }
 
   showVoteOpposeModal = () => {
-    const { reason } = this.state
-    Modal.confirm({
-      title: I18N.get('council.voting.modal.voteNo'),
-      content: <TextArea onChange={this.onReasonChanged} />,
-      okText: I18N.get('council.voting.modal.confirm'),
-      cancelText: I18N.get('council.voting.modal.cancel'),
-      onOk: () => this.voteOppose({ reason }),
-    })
+    const { visible } = this.state
+    this.setState({ visible: !visible })
   }
 
   completeProposal = () => {
