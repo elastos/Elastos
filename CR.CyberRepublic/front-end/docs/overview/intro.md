@@ -1,5 +1,5 @@
 
-# Welcome to the Cyber Republic Documentation
+# Welcome to the Cyber Republic Documentation {docsify-ignore-all}
 
 !> Disclaimer: These are draft documents only, the official CRC whitepaper will be released shortly
 

@@ -26,32 +26,33 @@
 <body>
 <div id="app"></div>
 <script>
-    window.$docsify = {
-        logo: 'https://www.cyberrepublic.org/assets/images/logo.svg',
-        name: 'Cyber Republic Documentation',
-        repo: 'https://github.com/cyber-republic/CyberRepublic',
-        loadSidebar: true,
-        loadNavbar: true,
-        themeColor: '#2A3C5A',
-        alias: {
-            '/zh/.*/_sidebar.md': '/zh/_sidebar.md',
-            '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
-            '/.*/_navbar.md': '/_navbar.md',
-            '/.*/_sidebar.md': '/_sidebar.md',
-        },
-        ga: 'UA-123722031-1',
-        search: {
-            noData: {
-              '/zh/': '没有结果!',
-              '/': 'No results!'
-            },
-            paths: 'auto',
-            placeholder: {
-              '/zh/': '搜索',
-              '/': 'Search'
-            }
-        }
+  window.$docsify = {
+    logo: 'https://www.cyberrepublic.org/assets/images/logo.svg',
+    name: 'Cyber Republic Documentation',
+    repo: 'https://github.com/cyber-republic/CyberRepublic',
+    loadSidebar: true,
+    subMaxLevel: 3,
+    loadNavbar: true,
+    themeColor: '#2A3C5A',
+    alias: {
+      '/zh/.*/_sidebar.md': '/zh/_sidebar.md',
+      '/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
+      '/.*/_navbar.md': '/_navbar.md',
+      '/.*/_sidebar.md': '/_sidebar.md'
+    },
+    ga: 'UA-123722031-1',
+    search: {
+      noData: {
+        '/zh/': '没有结果!',
+        '/': 'No results!'
+      },
+      paths: 'auto',
+      placeholder: {
+        '/zh/': '搜索',
+        '/': 'Search'
+      }
     }
+  }
 </script>
 <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
 </body>

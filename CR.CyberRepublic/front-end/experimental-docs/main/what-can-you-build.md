@@ -1,7 +1,7 @@
 
 # What can you build on Elastos?
 
-### *Anything!*
+### <span style="color: #4585C4;">Anything!</span>
 
 Any web app or mobile app, Elastos is just like any other cloud platform like AWS, Azure or Google Cloud, but it’s decentralized. Imagine building a typical website like Airbnb or a mobile app like Lyft but anyone can take the source code and create their own network or “fork”.
 
