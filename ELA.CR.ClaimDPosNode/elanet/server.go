@@ -35,9 +35,10 @@ type relayMsg struct {
 // peers.
 type server struct {
 	svr.IServer
-	syncManager *netsync.SyncManager
-	chain       *blockchain.BlockChain
-	txMemPool   *mempool.TxPool
+	syncManager  *netsync.SyncManager
+	chain        *blockchain.BlockChain
+	txMemPool    *mempool.TxPool
+	blockMemPool *mempool.BlockPool
 
 	newPeers  chan svr.IPeer
 	donePeers chan svr.IPeer
@@ -465,10 +466,13 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	// Fetch the block from the database.
 	block, err := s.chain.GetDposBlockByHash(*hash)
 	if err != nil {
-		if doneChan != nil {
-			doneChan <- struct{}{}
+		block, err = s.blockMemPool.GetDposBlockByHash(*hash)
+		if err != nil {
+			if doneChan != nil {
+				doneChan <- struct{}{}
+			}
+			return err
 		}
-		return err
 	}
 
 	// Once we have fetched data wait for any previous operation to finish.
@@ -738,13 +742,14 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	svrCfg.DataDir = dataDir
 
 	s := server{
-		chain:     cfg.Chain,
-		txMemPool: cfg.TxMemPool,
-		newPeers:  make(chan svr.IPeer, svrCfg.MaxPeers),
-		donePeers: make(chan svr.IPeer, svrCfg.MaxPeers),
-		relayInv:  make(chan relayMsg, svrCfg.MaxPeers),
-		quit:      make(chan struct{}),
-		services:  services,
+		chain:        cfg.Chain,
+		txMemPool:    cfg.TxMemPool,
+		blockMemPool: cfg.BlockMemPool,
+		newPeers:     make(chan svr.IPeer, svrCfg.MaxPeers),
+		donePeers:    make(chan svr.IPeer, svrCfg.MaxPeers),
+		relayInv:     make(chan relayMsg, svrCfg.MaxPeers),
+		quit:         make(chan struct{}),
+		services:     services,
 	}
 	svrCfg.OnNewPeer = s.NewPeer
 	svrCfg.OnDonePeer = s.DonePeer
