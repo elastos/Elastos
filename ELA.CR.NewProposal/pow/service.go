@@ -423,16 +423,12 @@ out:
 			log.Info("<================Solved Block==============>")
 			//send the valid block to p2p networkd
 
-			inMainChain, isOrphan, err := pow.versions.AddDposBlock(&types.DposBlock{
+			_, _, err := pow.versions.AddDposBlock(&types.DposBlock{
 				BlockFlag: true,
 				Block:     msgBlock,
 			})
 			if err != nil {
 				log.Debug(err)
-				continue
-			}
-
-			if isOrphan || !inMainChain {
 				continue
 			}
 

@@ -56,6 +56,11 @@ func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, er
 	if err != nil {
 		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
 		copyBlock.ConfirmFlag = false
+
+		// Notify the caller that the new block without confirm was accepted.
+		// The caller would typically want to react by relaying the inventory
+		// to other peers.
+		events.Notify(events.ETBlockAccepted, block)
 	}
 
 	// notify new block received
@@ -154,6 +159,21 @@ func (bm *BlockPool) GetBlock(hash common.Uint256) (*types.Block, bool) {
 
 	block, ok := bm.blocks[hash]
 	return block, ok
+}
+
+func (bm *BlockPool) GetDposBlockByHash(hash common.Uint256) (*types.DposBlock, error) {
+	bm.RLock()
+	defer bm.RUnlock()
+
+	block, ok := bm.blocks[hash]
+	if !ok {
+		return nil, errors.New("not found block")
+	}
+
+	return &types.DposBlock{
+		BlockFlag: true,
+		Block:     block,
+	}, nil
 }
 
 func (bm *BlockPool) AddToConfirmMap(confirm *payload.Confirm) {
