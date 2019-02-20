@@ -53,7 +53,8 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, &config.MainNetParams, nil, heightVersions)
+	s.Chain, err = New(chainStore, &config.MainNetParams,
+		&mock.ArbitratorsMock{}, heightVersions)
 	if err != nil {
 		s.Error(err)
 	}

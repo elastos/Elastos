@@ -45,7 +45,7 @@ const (
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
 var producerStateStrings = []string{"Pending", "Activate", "Inactivate",
-	"Canceled", "FoundBad"}
+	"Canceled", "FoundBad", "ReturnedDeposit"}
 
 func (ps ProducerState) String() string {
 	if int(ps) < len(producerStateStrings) {
@@ -185,6 +185,10 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 	}
 
 	producer.info = *update
+}
+
+func (s *State) GetArbiters() interfaces.Arbitrators {
+	return s.arbiters
 }
 
 // GetProducer returns a producer with the producer's node public key or it's
@@ -376,17 +380,21 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 
 // ProcessBlock takes a block and it's confirm to update producers state and
 // votes accordingly.
-func (s *State) ProcessBlock(block *types.Block,
-	confirm *payload.Confirm) {
+func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
+	// get on duty arbiter before lock in case of recurrent lock
+	onDutyArbitrator := s.arbiters.GetOnDutyArbitrator()
+
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
 
 	if confirm != nil {
-		arbiters := s.getInactiveArbitrators(confirm)
-		s.countArbitratorsInactivity(block.Height, arbiters)
-		s.tryLeaveInactiveMode(block.Height)
+		arbiters := s.arbiters.GetInactiveArbitrators(confirm, onDutyArbitrator)
+		if len(arbiters) > 0 {
+			s.countArbitratorsInactivity(block.Height, arbiters)
+			s.tryLeaveInactiveMode(block.Height)
+		}
 	}
 
 	// Take snapshot when snapshot point arrives.
@@ -396,38 +404,18 @@ func (s *State) ProcessBlock(block *types.Block,
 		s.cursor++
 	}
 
+	s.processArbitrators(block, block.Height)
+
 	// Commit changes here if no errors found.
 	s.history.commit(block.Height)
 }
 
-// getInactiveArbitrators returns inactive arbiters from a confirm data.
-func (s *State) getInactiveArbitrators(confirm *payload.Confirm) (
-	result []string) {
-	if bytes.Equal(s.arbiters.GetOnDutyArbitrator(), confirm.Proposal.Sponsor) {
-
-		arSequence := s.arbiters.GetArbitrators()
-		arSequence = append(arSequence, arSequence...)
-
-		start := s.arbiters.GetOnDutyArbitrator()
-		stop := confirm.Proposal.Sponsor
-		reachedStart := false
-
-		for i := 0; i < len(arSequence)-1; i++ {
-			if bytes.Equal(start, arSequence[i]) {
-				reachedStart = true
-			}
-
-			if reachedStart {
-				if bytes.Equal(stop, arSequence[i]) {
-					break
-				}
-
-				result = append(result, hex.EncodeToString(arSequence[i]))
-			}
-		}
-	}
-
-	return result
+func (s *State) processArbitrators(block *types.Block, height uint32) {
+	s.history.append(height, func() {
+		s.arbiters.IncreaseChainHeight(block)
+	}, func() {
+		s.arbiters.DecreaseChainHeight(block)
+	})
 }
 
 // processTransactions takes the transactions and the height when they have been

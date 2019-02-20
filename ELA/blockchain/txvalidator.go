@@ -32,12 +32,6 @@ const (
 
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
-
-	// Numerator of dpos majority ratio
-	DposMajorityRatioNumerator = float64(2)
-
-	// Denominator of dpos majority ratio
-	DposMajorityRatioDenominator = float64(3)
 )
 
 // CheckTransactionSanity verifys received single transaction

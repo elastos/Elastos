@@ -33,10 +33,6 @@ type IEventRecord interface {
 
 type IArbitratorsRecord interface {
 	StartArbitratorsRecord()
-	GetArbitrators(a Arbitrators) error
-	SaveDposDutyChangedCount(count uint32)
-	SaveCurrentArbitrators(a Arbitrators)
-	SaveNextArbitrators(a Arbitrators)
 
 	GetDirectPeers() ([]*DirectPeers, error)
 	SaveDirectPeers(peers []*DirectPeers)

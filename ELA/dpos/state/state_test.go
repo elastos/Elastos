@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -107,7 +108,7 @@ func mockIllegalBlockTx(publicKey []byte) *types.Transaction {
 }
 
 func TestState_ProcessTransaction(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -210,7 +211,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 }
 
 func TestState_ProcessBlock(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 100 producers info.
 	producers := make([]*payload.ProducerInfo, 100)
@@ -383,7 +384,7 @@ func TestState_ProcessBlock(t *testing.T) {
 }
 
 func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -439,7 +440,7 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 }
 
 func TestState_Rollback(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -490,7 +491,7 @@ func TestState_Rollback(t *testing.T) {
 }
 
 func TestState_GetHistory(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -636,7 +637,7 @@ func TestState_GetHistory(t *testing.T) {
 }
 
 func TestState_NicknameExists(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -701,7 +702,7 @@ func TestState_NicknameExists(t *testing.T) {
 }
 
 func TestState_ProducerExists(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -755,7 +756,7 @@ func TestState_ProducerExists(t *testing.T) {
 }
 
 func TestState_IsDPOSTransaction(t *testing.T) {
-	state := NewState(nil, &config.RegNetParams)
+	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
 
 	producer := &payload.ProducerInfo{
 		OwnerPublicKey: make([]byte, 33),
@@ -770,7 +771,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 		t.FailNow()
 	}
 	state.ProcessBlock(mockBlock(1, tx), nil)
-	for i := uint32(1); i < 10; i++ {
+	for i := uint32(2); i < 10; i++ {
 		state.ProcessBlock(mockBlock(i), nil)
 	}
 
