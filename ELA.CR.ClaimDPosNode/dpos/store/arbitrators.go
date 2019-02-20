@@ -64,7 +64,7 @@ func (a *Arbitrators) Start() error {
 	}
 	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) == 0 {
 		if a.currentArbitrators, err = a.cfg.Versions.
-			GetNormalArbitratorsDesc(block, 0); err != nil {
+			GetNormalArbitratorsDesc(block.Height, 0); err != nil {
 			return err
 		}
 	} else {
@@ -137,6 +137,10 @@ func (a *Arbitrators) GetArbitrators() [][]byte {
 	return a.currentArbitrators
 }
 
+func (a *Arbitrators) GetNormalArbitrators() ([][]byte, error) {
+	return a.cfg.Versions.GetNormalArbitratorsDesc(a.cfg.ChainStore.GetHeight(), 0)
+}
+
 func (a *Arbitrators) GetCandidates() [][]byte {
 	a.lock.Lock()
 	defer a.lock.Unlock()
@@ -191,7 +195,8 @@ func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 }
 
 func (a *Arbitrators) GetOnDutyArbitrator() []byte {
-	return a.GetNextOnDutyArbitrator(uint32(0))
+	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.ChainStore.GetHeight(),
+		a.DutyChangedCount, 0)
 }
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
@@ -299,7 +304,7 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 
 	count := config.Parameters.ArbiterConfiguration.
 		NormalArbitratorsCount + crcCount
-	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block, count)
+	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(block.Height, count)
 	if err != nil {
 		return err
 	}
@@ -307,7 +312,7 @@ func (a *Arbitrators) updateNextArbitrators(block *types.Block) error {
 		a.nextArbitrators = append(a.nextArbitrators, v)
 	}
 
-	candidates, err := a.cfg.Versions.GetCandidatesDesc(block, count)
+	candidates, err := a.cfg.Versions.GetCandidatesDesc(block.Height, count)
 	if err != nil {
 		return err
 	}

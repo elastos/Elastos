@@ -29,7 +29,7 @@ func (b *blockV1) GetVersion() uint32 {
 }
 
 func (b *blockV1) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators := b.cfg.Arbitrators.GetArbitrators()
+	arbitrators, _ := b.GetNormalArbitratorsDesc(0)
 	if len(arbitrators) == 0 {
 		return nil
 	}

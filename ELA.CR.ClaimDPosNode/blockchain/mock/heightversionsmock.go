@@ -28,11 +28,11 @@ func NewBlockHeightMock() *HeightVersionsMock {
 	return mockObj
 }
 
-func (b *HeightVersionsMock) GetCandidatesDesc(block *types.Block, startIndex uint32) ([][]byte, error) {
+func (b *HeightVersionsMock) GetCandidatesDesc(blockHeight uint32, startIndex uint32) ([][]byte, error) {
 	return nil, nil
 }
 
-func (b *HeightVersionsMock) GetNormalArbitratorsDesc(block *types.Block, arbitratorsCount uint32) ([][]byte, error) {
+func (b *HeightVersionsMock) GetNormalArbitratorsDesc(blockHeight uint32, arbitratorsCount uint32) ([][]byte, error) {
 	return nil, nil
 }
 

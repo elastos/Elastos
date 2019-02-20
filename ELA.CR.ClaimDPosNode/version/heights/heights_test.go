@@ -419,29 +419,29 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 
 	defaultCount := uint32(12)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1.Height, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2.Height, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3.Height, defaultCount)
 	s.NoError(err, "found default version")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1.Height, defaultCount)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2.Height, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3.Height, defaultCount)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
@@ -449,13 +449,13 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1.Height, defaultCount)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2.Height, defaultCount)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3.Height, defaultCount)
 	s.NoError(err, "found default version")
 }
 

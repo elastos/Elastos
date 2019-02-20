@@ -83,7 +83,8 @@ func (n *network) Start() {
 	n.p2pServer.Start()
 
 	n.UpdateProducersInfo()
-	n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetArbitrators())
+	arbiters, _ := blockchain.DefaultLedger.Arbitrators.GetNormalArbitrators()
+	n.UpdatePeers(arbiters)
 
 	go func() {
 	out:
@@ -219,7 +220,7 @@ func (n *network) BroadcastMessage(msg elap2p.Message) {
 }
 
 func (n *network) ChangeHeight(height uint32) error {
-	if height < n.currentHeight {
+	if height != 0 && height < n.currentHeight {
 		return errors.New("Changing height lower than current height")
 	}
 
@@ -229,7 +230,15 @@ func (n *network) ChangeHeight(height uint32) error {
 	}
 
 	n.peersLock.Lock()
+	crcArbiters := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
+	crcArbitersMap := make(map[string]struct{}, 0)
+	for _, a := range crcArbiters {
+		crcArbitersMap[common.BytesToHexString(a.PublicKey)] = struct{}{}
+	}
 	for _, v := range n.directPeers {
+		if _, ok := crcArbitersMap[common.BytesToHexString(v.Address.PID[:])]; ok {
+			continue
+		}
 		if v.Sequence < offset {
 			v.NeedConnect = false
 			v.Sequence = 0
