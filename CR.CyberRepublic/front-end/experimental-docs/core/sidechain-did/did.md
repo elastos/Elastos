@@ -21,3 +21,4 @@ Copy the `sample.json` from docs folder and rename it to `config.json`
 
 3. Follow the **Build the node** instructions in the `README.md`
 
+4. Run the sidechain node with `./did`

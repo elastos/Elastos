@@ -158,18 +158,69 @@ For more details on this see [Tips & Tricks](/privnet/tips.md)
 
 [Build Guide is Here](/core/sidechain-did/did.md)
 
-However it is advised to change
+<details>
+<summary>Example <code>config.json</code></summary>
+
+<code>
+{
+  "Configuration": {
+    "Magic": 7638402,
+    "SpvMagic": 7638401,
+    "Version": 23,
+    "SeedList": [
+      "127.0.0.1:20608",
+      "127.0.0.1:21608"
+    ],
+    "SpvSeedList": [
+      "127.0.0.1:20866",
+      "127.0.0.1:21866"
+    ],
+    "ExchangeRate": 1.0,
+    "MinCrossChainTxFee": 10000,
+    "HttpRestPort": 20604,
+    "HttpWsPort": 20605,
+    "HttpJsonPort": 20606,
+    "NodePort": 20608,
+    "PrintLevel": 1,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "DisableTxFilters": false,
+    "MainChainFoundationAddress": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf",
+    "FoundationAddress": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf",
+    "PowConfiguration": {
+      "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
+      "AutoMining": true,
+      "MinerInfo": "DID",
+      "MinTxFee": 100,
+      "InstantBlock": false
+    }
+  }
+}
+</code>
+
+</details>
 
 
-### 4. Setup the Wallet Service -&nbsp;[guide is here](/services/wallet.md)
+### 5. Setup the Arbiters
 
-We will use this service to make your first wallet on your new chain,
+[Guide is Here](/core/arbiter/arbiter.md)
+
+
+### 6. Setup the Wallet Service
+
+[Guide is Here](/services/wallet.md)
+
+We will use this to as the API to work with your mainchain, let's try creating a wallet:
 
 Just call `curl localhost:8091/api/1/createWallet` and it will return your new wallet info, make sure you jot this down.
 
-Now try sending some ELA from your miner address to this new address.
+If you had an app you can imagine that this would be a simple HTTP call by your back-end.
+
+#### Now try sending some ELA from your miner address to this new address.
+
+*TODO*
+
+#### More importantly we need to send ELA from the Mainchain to the Sidechain
 
 
 
-
-### 6. Setup the Arbiters

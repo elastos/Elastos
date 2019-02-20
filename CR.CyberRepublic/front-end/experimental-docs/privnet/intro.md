@@ -13,7 +13,6 @@ have to rely on the docker container.
 
 - ELA Mainchain - cache is `elastos` folder
 - ELA Sidechain (DID) - cache is `elastos_did` folder
-- ELA Sidechain (ETH) - cache is `elastos_eth` folder
 - ELA Arbiter Nodes (dPoS) - cache is `elastos_arbiter` folder
 - IPFS
 - PeerPad
