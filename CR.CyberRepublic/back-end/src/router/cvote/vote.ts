@@ -7,7 +7,7 @@ export default class extends Base {
         const param = this.getParam();
         const service = this.buildService(CVoteService);
 
-        const rs = await service.updateNote(param);
+        const rs = await service.vote(param);
         return this.result(1, rs);
     }
 }
