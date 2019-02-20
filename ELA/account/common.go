@@ -37,3 +37,21 @@ func GetSigners(code []byte) ([]*common.Uint160, error) {
 
 	return signers, nil
 }
+
+func GetCorssChainSigners(code []byte) ([]*common.Uint160, error) {
+	publicKeys, err := crypto.ParseCrossChainScript(code)
+	if err != nil {
+		return nil, err
+	}
+
+	var signers []*common.Uint160
+	for _, publicKey := range publicKeys {
+		hash, err := contract.PublicKeyToStandardCodeHash(publicKey[1:])
+		if err != nil {
+			return nil, err
+		}
+		signers = append(signers, hash)
+	}
+
+	return signers, nil
+}

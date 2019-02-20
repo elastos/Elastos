@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA.Utility/signal"
@@ -58,7 +59,6 @@ func init() {
 }
 
 func startConsensus() {
-	servers.LocalPow = pow.NewPowService()
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.LocalPow.Start()
@@ -77,12 +77,12 @@ func main() {
 	log.Info("BlockChain init")
 	versions := verconfig.InitVersions()
 	var dposStore interfaces.IDposStore
-	chainStore, err := blockchain.NewChainStore("Chain")
+	chainStore, err := blockchain.NewChainStore(filepath.Join(config.DataPath, config.DataDir, config.ChainDir))
 	if err != nil {
 		goto ERROR
 	}
 	defer chainStore.Close()
-	dposStore, err = store.NewDposStore("Dpos_Data")
+	dposStore, err = store.NewDposStore(filepath.Join(config.DataPath, config.DataDir, config.DposDir))
 	if err != nil {
 		goto ERROR
 	}
@@ -92,9 +92,9 @@ func main() {
 		goto ERROR
 	}
 	store.InitArbitrators(store.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		ArbitratorsCount: config.ArbitratorsCount,
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		MajorityCount:    config.MajorityCount,
 		Store:            dposStore,
 	})
 	if err = blockchain.DefaultLedger.Arbitrators.StartUp(); err != nil {
@@ -104,9 +104,9 @@ func main() {
 	log.Info("Start the P2P networks")
 	noder = node.InitLocalNode()
 
-	if config.Parameters.EnableArbiter {
+	if config.EnableArbiter {
 		log.Info("Start the manager")
-		pwd, err = password.GetPassword()
+		pwd, err = password.GetFlagPassword()
 		if err != nil {
 			goto ERROR
 		}
@@ -128,6 +128,7 @@ func main() {
 	servers.ServerNode = noder
 	servers.ServerNode.RegisterTxPoolListener(arbitrator)
 	servers.ServerNode.RegisterTxPoolListener(chainStore)
+	servers.LocalPow = pow.NewPowService()
 
 	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()

@@ -3,6 +3,7 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -18,12 +19,17 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
 )
 
 const (
 	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
+
+	MixedUTXO  utxoType = 0x00
+	VoteUTXO   utxoType = 0x01
+	NormalUTXO utxoType = 0x02
 )
 
 var ServerNode Noder
@@ -32,6 +38,8 @@ var LocalPow *pow.PowService
 var preChainHeight uint64
 var preTime int64
 var currentAuxBlock *Block
+
+type utxoType byte
 
 func ToReversedString(hash common.Uint256) string {
 	return common.BytesToHexString(common.BytesReverse(hash[:]))
@@ -226,6 +234,11 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	if msgAuxBlock, ok = LocalPow.AuxBlockPool.GetBlock(*blockHash); !ok {
 		log.Debug("[json-rpc:SubmitAuxBlock] block hash unknown", blockHash)
 		return ResponsePack(InternalError, "block hash unknown")
+	}
+
+	localHeight := chain.DefaultLedger.GetLocalBlockChainHeight()
+	if localHeight >= msgAuxBlock.Height {
+		return ResponsePack(InternalError, "reject the block which have existing height")
 	}
 
 	var aux aux.AuxPow
@@ -735,6 +748,19 @@ func ListUnspent(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need addresses in an array!")
 	}
+	utxoType := MixedUTXO
+	if t, ok := param.String("utxotype"); ok {
+		switch t {
+		case "mixed":
+			utxoType = MixedUTXO
+		case "vote":
+			utxoType = VoteUTXO
+		case "normal":
+			utxoType = NormalUTXO
+		default:
+			return ResponsePack(InvalidParams, "invalid utxotype")
+		}
+	}
 	for _, address := range addresses {
 		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
@@ -750,6 +776,13 @@ func ListUnspent(param Params) map[string]interface{} {
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+			}
+			if utxoType == VoteUTXO && (tx.Version < TxVersion09 ||
+				tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].OutputType != VoteOutput) {
+				continue
+			}
+			if utxoType == NormalUTXO && tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].OutputType == VoteOutput {
+				continue
 			}
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
@@ -918,18 +951,21 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 type Producer struct {
-	Address  string `json:"address"`
-	Nickname string `json:"nickname"`
-	Url      string `json:"url"`
-	Location uint64 `json:"location"`
-	Active   bool   `json:"active"`
-	Votes    string `json:"votes"`
-	IP       string `json:"ip"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	Nickname       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	Active         bool   `json:"active"`
+	Votes          string `json:"votes"`
+	NetAddress     string `json:"netaddress"`
+	Index          uint64 `json:"index"`
 }
 
 type Producers struct {
-	Producers  []Producer `json:"producers"`
-	TotalVotes string     `json:"total_votes"`
+	Producers   []Producer `json:"producers"`
+	TotalVotes  string     `json:"totalvotes"`
+	TotalCounts uint64     `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -944,31 +980,25 @@ func ListProducers(param Params) map[string]interface{} {
 		return ResponsePack(Error, "not found producer")
 	}
 	var ps []Producer
-	for _, p := range producers {
-		programHash, err := contract.PublicKeyToDepositProgramHash(p.PublicKey)
-		if err != nil {
-			return ResponsePack(Error, "invalid public key")
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return ResponsePack(Error, "invalid program hash")
-		}
+	for i, p := range producers {
 		var active bool
-		state := chain.DefaultLedger.Store.GetProducerStatus(addr)
+		pk := common.BytesToHexString(p.OwnerPublicKey)
+		state := chain.DefaultLedger.Store.GetProducerStatus(pk)
 		if state == chain.ProducerRegistered {
 			active = true
 		}
-		vote := chain.DefaultLedger.Store.GetProducerVote(p.PublicKey)
+		vote := chain.DefaultLedger.Store.GetProducerVote(p.OwnerPublicKey)
 		producer := Producer{
-			Address:  addr,
-			Nickname: p.NickName,
-			Url:      p.Url,
-			Location: p.Location,
-			Active:   active,
-			Votes:    vote.String(),
-			IP:       p.Address,
+			OwnerPublicKey: pk,
+			NodePublicKey:  common.BytesToHexString(p.NodePublicKey),
+			Nickname:       p.NickName,
+			Url:            p.Url,
+			Location:       p.Location,
+			Active:         active,
+			Votes:          vote.String(),
+			NetAddress:     p.NetAddress,
+			Index:          uint64(i),
 		}
-
 		ps = append(ps, producer)
 	}
 
@@ -976,30 +1006,40 @@ func ListProducers(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i := start; i < limit && i < int64(len(ps)); i++ {
 		resultPs = append(resultPs, ps[i])
+	}
+	for i := 0; i < len(ps); i++ {
 		v, _ := common.StringToFixed64(ps[i].Votes)
 		totalVotes += *v
 	}
 
 	result := &Producers{
-		Producers:  resultPs,
-		TotalVotes: totalVotes.String(),
+		Producers:   resultPs,
+		TotalVotes:  totalVotes.String(),
+		TotalCounts: uint64(len(producers)),
 	}
 
 	return ResponsePack(Success, result)
 }
 
 func ProducerStatus(param Params) map[string]interface{} {
-	address, ok := param.String("address")
+	publicKey, ok := param.String("publickey")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "public key not found")
 	}
-	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(address))
+	publicKeyBytes, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid public key")
+	}
+	if _, err = contract.PublicKeyToStandardProgramHash(publicKeyBytes); err != nil {
+		return ResponsePack(InvalidParams, "invalid public key bytes")
+	}
+	return ResponsePack(Success, chain.DefaultLedger.Store.GetProducerStatus(publicKey))
 }
 
 func VoteStatus(param Params) map[string]interface{} {
 	address, ok := param.String("address")
 	if !ok {
-		return ResponsePack(InvalidParams, "address not found.")
+		return ResponsePack(InvalidParams, "address not found")
 	}
 
 	programHash, err := common.Uint168FromAddress(address)
@@ -1013,30 +1053,36 @@ func VoteStatus(param Params) map[string]interface{} {
 
 	var total common.Fixed64
 	var voting common.Fixed64
-	status := true
 	for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
-		if unspent.Index == 0 {
-			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
-			if err != nil {
-				return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
-			}
-			if tx.Outputs[unspent.Index].OutputType == VoteOutput {
-				voting += unspent.Value
-			}
-			bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
-			header, err := chain.DefaultLedger.Store.GetHeader(bHash)
-			if err != nil {
-				return ResponsePack(UnknownTransaction, "")
-			}
-
-			if chain.DefaultLedger.Blockchain.GetBestHeight()-header.Height < 6 {
-				status = false
-			}
+		tx, _, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
+		if err != nil {
+			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+		}
+		if tx.Outputs[unspent.Index].OutputType == VoteOutput {
+			voting += unspent.Value
 		}
 		total += unspent.Value
+	}
+
+	pending := false
+	for _, t := range ServerNode.GetTransactionPool(false) {
+		for _, i := range t.Inputs {
+			tx, _, err := chain.DefaultLedger.Store.GetTransaction(i.Previous.TxID)
+			if err != nil {
+				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
+			}
+			if tx.Outputs[i.Previous.Index].ProgramHash.IsEqual(*programHash) {
+				pending = true
+			}
+		}
+		for _, o := range t.Outputs {
+			if o.OutputType == VoteOutput && o.ProgramHash.IsEqual(*programHash) {
+				pending = true
+			}
+		}
+		if pending {
+			break
+		}
 	}
 
 	type voteInfo struct {
@@ -1047,8 +1093,74 @@ func VoteStatus(param Params) map[string]interface{} {
 	return ResponsePack(Success, &voteInfo{
 		Total:   total.String(),
 		Voting:  voting.String(),
-		Pending: status,
+		Pending: pending,
 	})
+}
+
+func GetDepositCoin(param Params) map[string]interface{} {
+	pk, ok := param.String("ownerpublickey")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called ownerpublickey")
+	}
+	pkBytes, err := hex.DecodeString(pk)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid publickey")
+	}
+	programHash, err := contract.PublicKeyToDepositProgramHash(pkBytes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid publickey to programHash")
+	}
+	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	var balance common.Fixed64 = 0
+	for _, u := range unspends {
+		for _, v := range u {
+			balance = balance + v.Value
+		}
+	}
+	var deducted common.Fixed64 = 0
+	//todo get deducted coin
+
+	type depositCoin struct {
+		Available string `json:"available"`
+		Deducted  string `json:"deducted"`
+	}
+	return ResponsePack(Success, &depositCoin{
+		Available: balance.String(),
+		Deducted:  deducted.String(),
+	})
+}
+
+func EstimateSmartFee(param Params) map[string]interface{} {
+	confirm, ok := param.Int("confirmations")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called confirmations")
+	}
+	if confirm > 25 {
+		return ResponsePack(InvalidParams, "support only 25 confirmations at most")
+	}
+	currentHeight := chain.DefaultLedger.GetLocalBlockChainHeight()
+	var FeeRate = 10000 //basic fee rate 10000 sela per KB
+	var count = 0
+	// 6 confirmations at most
+	for i := currentHeight; i == 0; i-- {
+		b, _ := chain.DefaultLedger.GetBlockWithHeight(i)
+		if b.GetSize() < msg.MaxBlockSize {
+			break
+		} else {
+			//how many full blocks continuously before?
+			count++
+		}
+	}
+
+	return ResponsePack(Success, GetFeeRate(count, int(confirm))*FeeRate)
+}
+
+func GetFeeRate(count int, confirm int) int {
+	gap := count - confirm
+	if gap < 0 {
+		gap = -1
+	}
+	return gap + 2
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {
@@ -1088,25 +1200,30 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadRecord:
 	case *PayloadRegisterProducer:
 		obj := new(RegisterProducerInfo)
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.Address = object.Address
+		obj.NetAddress = object.NetAddress
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadCancelProducer:
 		obj := new(CancelProducerInfo)
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *PayloadUpdateProducer:
 		obj := &UpdateProducerInfo{
 			new(RegisterProducerInfo),
 		}
-		obj.PublicKey = common.BytesToHexString(object.PublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
-		obj.Address = object.Address
+		obj.NetAddress = object.NetAddress
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}
 	return nil

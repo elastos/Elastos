@@ -10,12 +10,25 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/version/heights"
 )
 
 const (
 	DefaultConfigFilename = "./config.json"
 	MINGENBLOCKTIME       = 2
 	DefaultGenBlockTime   = 6
+
+	DataPath   = "elastos"
+	DataDir    = "data"
+	ChainDir   = "chain"
+	DposDir    = "dpos"
+	LogDir     = "logs"
+	NodeDir    = "node"
+	ArbiterDir = "arbiter"
+
+	MajorityCount    = 3
+	ArbitratorsCount = 5
+	EnableArbiter    = false
 )
 
 var (
@@ -29,6 +42,12 @@ type PowConfiguration struct {
 	MinerInfo  string `json:"MinerInfo"`
 	MinTxFee   int    `json:"MinTxFee"`
 	ActiveNet  string `json:"ActiveNet"`
+}
+
+type RpcConfiguration struct {
+	User        string   `json:"User"`
+	Pass        string   `json:"Pass"`
+	WhiteIPList []string `json:"WhiteIPList"`
 }
 
 type Configuration struct {
@@ -46,8 +65,6 @@ type Configuration struct {
 	HttpWsPort           int                  `json:"HttpWsPort"`
 	WsHeartbeatInterval  time.Duration        `json:"WsHeartbeatInterval"`
 	HttpJsonPort         int                  `json:"HttpJsonPort"`
-	OauthServerUrl       string               `json:"OauthServerUrl"`
-	NoticeServerUrl      string               `json:"NoticeServerUrl"`
 	NodePort             uint16               `json:"NodePort"`
 	NodeOpenPort         uint16               `json:"NodeOpenPort"`
 	PrintLevel           uint8                `json:"PrintLevel"`
@@ -61,24 +78,24 @@ type Configuration struct {
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
 	MaxBlockSize         int                  `json:"MaxBlockSize"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
-	EnableArbiter        bool                 `json:"EnableArbiter"`
+	VoteHeight           uint32               `json:"VoteHeight"`
+	Arbiters             []string             `json:"Arbiters"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
+	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 }
 
 type ArbiterConfiguration struct {
-	Name             string `json:"Name"`
-	Magic            uint32 `json:"Magic"`
-	NodePort         uint16 `json:"NodePort"`
-	ProtocolVersion  uint32 `json:"ProtocolVersion"`
-	Services         uint64 `json:"Services"`
-	PrintLevel       uint8  `json:"PrintLevel"`
-	SignTolerance    uint64 `json:"SignTolerance"`
-	MaxLogsSize      int64  `json:"MaxLogsSize"`
-	MaxPerLogSize    int64  `json:"MaxPerLogSize"`
-	MaxConnections   int    `json:"MaxConnections"`
-	MajorityCount    uint32 `json:"MajorityCount"`
-	ArbitratorsCount uint32 `json:"ArbitratorsCount"`
-	CandidatesCount  uint32 `json:"CandidatesCount"`
+	Name            string `json:"Name"`
+	Magic           uint32 `json:"Magic"`
+	NodePort        uint16 `json:"NodePort"`
+	ProtocolVersion uint32 `json:"ProtocolVersion"`
+	Services        uint64 `json:"Services"`
+	PrintLevel      uint8  `json:"PrintLevel"`
+	SignTolerance   uint64 `json:"SignTolerance"`
+	MaxLogsSize     int64  `json:"MaxLogsSize"`
+	MaxPerLogSize   int64  `json:"MaxPerLogSize"`
+	MaxConnections  int    `json:"MaxConnections"`
+	CandidatesCount uint32 `json:"CandidatesCount"`
 }
 
 type Seed struct {
@@ -109,6 +126,7 @@ type configParams struct {
 
 func init() {
 	var config ConfigFile
+	config.ConfigFile.VoteHeight = heights.HeightVersion1
 
 	if _, err := os.Stat(DefaultConfigFilename); os.IsNotExist(err) {
 		config.ConfigFile = configTemplate

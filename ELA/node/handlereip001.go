@@ -205,7 +205,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) {
 	for _, iv := range getData.InvList {
 		switch iv.Type {
 		case msg.InvTypeBlock:
-			block, err := chain.DefaultLedger.Store.GetBlock(iv.Hash)
+			block, err := chain.DefaultLedger.Blockchain.GetBlock(iv.Hash)
 			if err != nil {
 				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
 				notFound.AddInvVect(iv)
@@ -237,7 +237,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) {
 				return
 			}
 
-			block, err := chain.DefaultLedger.Store.GetBlock(iv.Hash)
+			block, err := chain.DefaultLedger.Blockchain.GetBlock(iv.Hash)
 			if err != nil {
 				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
 				notFound.AddInvVect(iv)
@@ -270,7 +270,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
 	block := msgBlock.Serializable.(*types.Block)
 
 	hash := block.Hash()
-	if !LocalNode.IsNeighborNode(node.ID()) {
+	if !LocalNode.IsNeighborNode(node) {
 		log.Warn("receive block message from unknown peer")
 		node.Disconnect()
 		return
@@ -311,7 +311,7 @@ func (h *HandlerEIP001) onTx(msgTx *msg.Tx) {
 	node := h.base.node
 	tx := msgTx.Serializable.(*types.Transaction)
 
-	if !LocalNode.IsNeighborNode(node.ID()) {
+	if !LocalNode.IsNeighborNode(node) {
 		log.Warn("received transaction message from unknown peer")
 		node.Disconnect()
 		return

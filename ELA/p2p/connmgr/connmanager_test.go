@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"sync/atomic"
 	"testing"
@@ -181,15 +182,21 @@ func TestConnectMode(t *testing.T) {
 // only connections made.
 func TestTargetOutbound(t *testing.T) {
 	targetOutbound := uint32(10)
+	addresses := make([]net.Addr, 10)
+	for i := range addresses {
+		addresses[i] = &net.TCPAddr{
+			IP:   net.ParseIP("127.0.0.1"),
+			Port: 18555 + i,
+		}
+	}
 	connected := make(chan *ConnReq)
 	cmgr, err := New(&Config{
 		TargetOutbound: targetOutbound,
 		Dial:           mockDialer,
 		GetNewAddress: func() (net.Addr, error) {
-			return &net.TCPAddr{
-				IP:   net.ParseIP("127.0.0.1"),
-				Port: 18555,
-			}, nil
+			addr := addresses[0]
+			addresses = addresses[1:]
+			return addr, nil
 		},
 		OnConnection: func(c *ConnReq, conn net.Conn) {
 			connected <- c
@@ -200,6 +207,53 @@ func TestTargetOutbound(t *testing.T) {
 	}
 	cmgr.Start()
 	for i := uint32(0); i < targetOutbound; i++ {
+		<-connected
+	}
+
+	select {
+	case c := <-connected:
+		t.Fatalf("target outbound: got unexpected connection - %v", c.Addr)
+	case <-time.After(time.Millisecond):
+		break
+	}
+	cmgr.Stop()
+}
+
+// TestDuplicateOutbound tests if duplicated outbound connections will be
+// ignored.
+//
+// We wait until all connections are established, then test they there are the
+// only connections made.
+func TestDuplicateOutbound(t *testing.T) {
+	targetOutbound := uint32(10)
+	addresses := []*net.TCPAddr{
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18551},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18552},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18553},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18554},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18555},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18551},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18552},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18553},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18554},
+		{IP:   net.ParseIP("127.0.0.1"), Port: 18555},
+	}
+	connected := make(chan *ConnReq)
+	cmgr, err := New(&Config{
+		TargetOutbound: targetOutbound,
+		Dial:           mockDialer,
+		GetNewAddress: func() (net.Addr, error) {
+			return addresses[rand.Intn(len(addresses))], nil
+		},
+		OnConnection: func(c *ConnReq, conn net.Conn) {
+			connected <- c
+		},
+	})
+	if err != nil {
+		t.Fatalf("New error: %v", err)
+	}
+	cmgr.Start()
+	for i := uint32(0); i < 5; i++ {
 		<-connected
 	}
 

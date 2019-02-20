@@ -61,6 +61,7 @@ type MessageFunc func(peer *Peer, msg p2p.Message)
 type Config struct {
 	Magic            uint32
 	ProtocolVersion  uint32
+	DefaultPort      uint16
 	Services         uint64
 	DisableRelayTx   bool
 	HostToNetAddress HostToNetAddrFunc
@@ -405,12 +406,12 @@ func (p *Peer) StartingHeight() uint32 {
 // message will be sent if there are no entries in the provided addresses slice.
 //
 // This function is safe for concurrent access.
-func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) ([]*p2p.NetAddress, error) {
+func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) []*p2p.NetAddress {
 	addressCount := len(addresses)
 
 	// Nothing to send.
 	if addressCount == 0 {
-		return nil, nil
+		return nil
 	}
 
 	addr := msg.NewAddr(addresses)
@@ -428,7 +429,7 @@ func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) ([]*p2p.NetAddress, erro
 	}
 
 	p.SendMessage(addr, nil)
-	return addr.AddrList, nil
+	return addr.AddrList
 }
 
 // handlePingMsg is invoked when a peer receives a ping message.
@@ -833,8 +834,8 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	nonce := p.cfg.GetVersionNonce()
 
 	// Version message.
-	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services, nonce,
-		p.cfg.BestHeight(), p.cfg.DisableRelayTx)
+	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.DefaultPort,
+		p.cfg.Services, nonce, p.cfg.BestHeight(), p.cfg.DisableRelayTx)
 
 	// Advertise the services flag
 	msg.Services = p.cfg.Services

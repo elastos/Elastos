@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -20,16 +20,21 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 	}
 
 	for i, program := range programs {
-		codeHash, err := common.ToCodeHash(program.Code)
-		if err != nil {
-			return err
+		programHash := programHashes[i]
+
+		// TODO: this implementation will be deprecated
+		if programHash[0] == common.PrefixCrossChain {
+			if err := checkCrossChainSignatures(*program, data); err != nil {
+				return err
+			}
+			continue
 		}
 
-		programHash := programHashes[i]
+		codeHash := common.ToCodeHash(program.Code)
 		ownerHash := programHash.ToCodeHash()
 
-		if !ownerHash.IsEqual(*codeHash) && programHash[0] != common.PrefixCrossChain {
-			return errors.New("The data hashes is different with corresponding program code.")
+		if !ownerHash.IsEqual(*codeHash) {
+			return errors.New("the data hashes is different with corresponding program code")
 		}
 
 		prefixType := contract.PrefixType(programHash[0])
@@ -39,15 +44,9 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 			}
 
 		} else if programHash[0] == common.PrefixMultisig {
-			if err = checkMultiSigSignatures(*program, data); err != nil {
+			if err := checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
-
-		} else if programHash[0] == common.PrefixCrossChain {
-			if err = checkCrossChainSignatures(*program, data); err != nil {
-				return err
-			}
-
 		} else {
 			return errors.New("unknown signature type")
 		}
@@ -124,7 +123,8 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n {
+	if m < 1 || m > n || n != int(config.ArbitratorsCount) ||
+		m <= int(config.MajorityCount) {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseCrossChainScript(code)
@@ -204,14 +204,8 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func SortPrograms(programs []*Program) (err error) {
-	defer func() {
-		if code := recover(); code != nil {
-			err = fmt.Errorf("invalid program code %x", code)
-		}
-	}()
+func SortPrograms(programs []*Program) {
 	sort.Sort(byHash(programs))
-	return err
 }
 
 type byHash []*Program
@@ -219,13 +213,7 @@ type byHash []*Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, err := common.ToCodeHash(p[i].Code)
-	if err != nil {
-		panic(p[i].Code)
-	}
-	hashj, err := common.ToCodeHash(p[j].Code)
-	if err != nil {
-		panic(p[j].Code)
-	}
+	hashi := common.ToCodeHash(p[i].Code)
+	hashj := common.ToCodeHash(p[j].Code)
 	return hashi.Compare(*hashj) < 0
 }

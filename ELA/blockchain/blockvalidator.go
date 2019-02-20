@@ -78,6 +78,8 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
 	existingSideTxs := make(map[Uint256]struct{})
+	existingProducer := make(map[string]struct{})
+	existingProducerNode := make(map[string]struct{})
 	for _, txn := range transactions {
 		txID := txn.Hash()
 		// Check for duplicate transactions.
@@ -110,6 +112,48 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 				}
 				existingSideTxs[hash] = struct{}{}
 			}
+		}
+
+		if txn.IsRegisterProducerTx() {
+			producerPayload, ok := txn.Payload.(*PayloadRegisterProducer)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid register producer payload")
+			}
+
+			producer := BytesToHexString(producerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
+
+			producerNode := BytesToHexString(producerPayload.NodePublicKey)
+			// Check for duplicate producer node in a block
+			if _, exists := existingProducerNode[producerNode]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
+			}
+			existingProducerNode[producerNode] = struct{}{}
+		}
+
+		if txn.IsUpdateProducerTx() {
+			producerPayload, ok := txn.Payload.(*PayloadUpdateProducer)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid update producer payload")
+			}
+
+			producer := BytesToHexString(producerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
+
+			producerNode := BytesToHexString(producerPayload.NodePublicKey)
+			// Check for duplicate producer node in a block
+			if _, exists := existingProducerNode[BytesToHexString(producerPayload.NodePublicKey)]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
+			}
+			existingProducerNode[producerNode] = struct{}{}
 		}
 
 		// Append transaction to list

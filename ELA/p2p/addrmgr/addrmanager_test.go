@@ -94,12 +94,9 @@ func addNaTest(ip string, port uint16, want string) {
 }
 
 func TestStartStop(t *testing.T) {
-	n := addrmgr.New("teststartstop")
+	n := addrmgr.New("teststartstop", nil)
 	n.Start()
-	err := n.Stop()
-	if err != nil {
-		t.Fatalf("Address Manager failed to stop: %v", err)
-	}
+	n.Stop()
 }
 
 func TestAddAddressByIP(t *testing.T) {
@@ -127,7 +124,7 @@ func TestAddAddressByIP(t *testing.T) {
 		},
 	}
 
-	amgr := addrmgr.New("testaddressbyip")
+	amgr := addrmgr.New("testaddressbyip", nil)
 	for i, test := range tests {
 		err := amgr.AddAddressByIP(test.addrIP)
 		if test.err != nil && err == nil {
@@ -183,7 +180,7 @@ func TestAddLocalAddress(t *testing.T) {
 			true,
 		},
 	}
-	amgr := addrmgr.New("testaddlocaladdress")
+	amgr := addrmgr.New("testaddlocaladdress", nil)
 	for x, test := range tests {
 		result := amgr.AddLocalAddress(&test.address, test.priority)
 		if result == nil && !test.valid {
@@ -200,7 +197,7 @@ func TestAddLocalAddress(t *testing.T) {
 }
 
 func TestAttempt(t *testing.T) {
-	n := addrmgr.New("testattempt")
+	n := addrmgr.New("testattempt", nil)
 
 	// Add a new address and get it
 	err := n.AddAddressByIP(someIP + ":8333")
@@ -222,7 +219,7 @@ func TestAttempt(t *testing.T) {
 }
 
 func TestConnected(t *testing.T) {
-	n := addrmgr.New("testconnected")
+	n := addrmgr.New("testconnected", nil)
 
 	// Add a new address and get it
 	err := n.AddAddressByIP(someIP + ":8333")
@@ -242,7 +239,7 @@ func TestConnected(t *testing.T) {
 }
 
 func TestNeedMoreAddresses(t *testing.T) {
-	n := addrmgr.New("testneedmoreaddresses")
+	n := addrmgr.New("testneedmoreaddresses", nil)
 	addrsToAdd := 1500
 	b := n.NeedMoreAddresses()
 	if !b {
@@ -274,7 +271,7 @@ func TestNeedMoreAddresses(t *testing.T) {
 }
 
 func TestGood(t *testing.T) {
-	n := addrmgr.New("testgood")
+	n := addrmgr.New("testgood", nil)
 	addrsToAdd := 64 * 64
 	addrs := make([]*p2p.NetAddress, addrsToAdd)
 
@@ -306,7 +303,7 @@ func TestGood(t *testing.T) {
 }
 
 func TestGetAddress(t *testing.T) {
-	n := addrmgr.New("testgetaddress")
+	n := addrmgr.New("testgetaddress", nil)
 
 	// Get an address from an empty set (should error)
 	if rv := n.GetAddress(); rv != nil {
@@ -392,7 +389,7 @@ func TestGetBestLocalAddress(t *testing.T) {
 		*/
 	}
 
-	amgr := addrmgr.New("testgetbestlocaladdress")
+	amgr := addrmgr.New("testgetbestlocaladdress", nil)
 
 	// Test against default when there's no address
 	for x, test := range tests {
@@ -459,4 +456,16 @@ func TestNetAddressKey(t *testing.T) {
 		}
 	}
 
+}
+
+func TestSavePeers(t *testing.T) {
+	addNaTests()
+
+	am := addrmgr.New("./", nil)
+	am.Start()
+	for _, test := range naTests {
+		am.AddAddress(&test.in, &test.in)
+	}
+
+	am.Stop()
 }

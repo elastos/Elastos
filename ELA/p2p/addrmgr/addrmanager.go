@@ -26,6 +26,7 @@ import (
 // peers on the network.
 type AddrManager struct {
 	mtx            sync.Mutex
+	filter         p2p.NAFilter
 	peersFile      string
 	rand           *rand.Rand
 	key            [32]byte
@@ -138,6 +139,10 @@ const (
 	// minBadDays is the number of days since the last success before we
 	// will consider evicting an address.
 	minBadDays = 7
+
+	// getAddrMin is the minimum addresses that we will send in response
+	// to a getAddr
+	getAddrMin = 10
 
 	// getAddrMax is the most addresses that we will send in response
 	// to a getAddr (in practise the most addresses we will return from a
@@ -341,6 +346,13 @@ func (a *AddrManager) savePeers() {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	w, err := os.Create(a.peersFile)
+	if err != nil {
+		log.Errorf("Error opening file %s: %v", a.peersFile, err)
+		return
+	}
+	defer w.Close()
+
 	// First we make a serialisable datastructure so we can encode it to
 	// json.
 	sam := new(serializedAddrManager)
@@ -350,6 +362,11 @@ func (a *AddrManager) savePeers() {
 	sam.Addresses = make([]*serializedKnownAddress, len(a.addrIndex))
 	i := 0
 	for k, v := range a.addrIndex {
+		// Filter network address here to update address saved in peers.json.
+		if a.filter != nil && !a.filter.Filter(v.na) {
+			continue
+		}
+
 		ska := new(serializedKnownAddress)
 		ska.Addr = k
 		ska.TimeStamp = v.na.Timestamp.Unix()
@@ -380,13 +397,7 @@ func (a *AddrManager) savePeers() {
 		}
 	}
 
-	w, err := os.Create(a.peersFile)
-	if err != nil {
-		log.Errorf("Error opening file %s: %v", a.peersFile, err)
-		return
-	}
 	enc := json.NewEncoder(w)
-	defer w.Close()
 	if err := enc.Encode(&sam); err != nil {
 		log.Errorf("Failed to encode file %s: %v", a.peersFile, err)
 		return
@@ -533,17 +544,16 @@ func (a *AddrManager) Start() {
 }
 
 // Stop gracefully shuts down the address manager by stopping the main handler.
-func (a *AddrManager) Stop() error {
+func (a *AddrManager) Stop() {
 	if atomic.AddInt32(&a.shutdown, 1) != 1 {
 		log.Warnf("Address manager is already in the process of " +
 			"shutting down")
-		return nil
+		return
 	}
 
 	log.Infof("Address manager shutting down")
 	close(a.quit)
 	a.wg.Wait()
-	return nil
 }
 
 // AddAddresses adds new addresses to the address manager.  It enforces a max
@@ -626,10 +636,16 @@ func (a *AddrManager) AddressCache() []*p2p.NetAddress {
 	allAddr := make([]*p2p.NetAddress, 0, addrIndexLen)
 	// Iteration order is undefined here, but we randomise it anyway.
 	for _, v := range a.addrIndex {
-		allAddr = append(allAddr, v.na)
+		if a.filter == nil || a.filter.Filter(v.na) {
+			allAddr = append(allAddr, v.na)
+		}
 	}
+	addrIndexLen = len(allAddr)
 
 	numAddresses := addrIndexLen * getAddrPercent / 100
+	if numAddresses <= getAddrMin {
+		numAddresses = min(getAddrMin, addrIndexLen)
+	}
 	if numAddresses > getAddrMax {
 		numAddresses = getAddrMax
 	}
@@ -657,9 +673,12 @@ func (a *AddrManager) reset() {
 	for i := range a.addrNew {
 		a.addrNew[i] = make(map[string]*KnownAddress)
 	}
+	a.nNew = 0
+
 	for i := range a.addrTried {
 		a.addrTried[i] = list.New()
 	}
+	a.nTried = 0
 }
 
 // HostToNetAddress returns a netaddress given a host address.  If the address
@@ -913,6 +932,25 @@ func (a *AddrManager) Good(addr *p2p.NetAddress) {
 	a.addrNew[newBucket][rmkey] = rmka
 }
 
+// SetServices sets the services for the giiven address to the provided value.
+func (a *AddrManager) SetServices(addr *p2p.NetAddress, services uint64) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	ka := a.find(addr)
+	if ka == nil {
+		return
+	}
+
+	// Update the services if needed.
+	if ka.na.Services != services {
+		// ka.na is immutable, so replace it.
+		naCopy := *ka.na
+		naCopy.Services = services
+		ka.na = &naCopy
+	}
+}
+
 // AddLocalAddress adds na to the list of known local addresses to advertise
 // with the given priority.
 func (a *AddrManager) AddLocalAddress(na *p2p.NetAddress, priority AddressPriority) error {
@@ -936,6 +974,14 @@ func (a *AddrManager) AddLocalAddress(na *p2p.NetAddress, priority AddressPriori
 		}
 	}
 	return nil
+}
+
+// min returns the smaller of x or y.
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 // getReachabilityFrom returns the relative reachability of the provided local
@@ -1057,8 +1103,9 @@ func (a *AddrManager) GetBestLocalAddress(remoteAddr *p2p.NetAddress) *p2p.NetAd
 
 // New returns a new address manager.
 // Use Start to begin processing asynchronous address updates.
-func New(dataDir string) *AddrManager {
+func New(dataDir string, filter p2p.NAFilter) *AddrManager {
 	am := AddrManager{
+		filter:         filter,
 		peersFile:      filepath.Join(dataDir, "peers.json"),
 		rand:           rand.New(rand.NewSource(time.Now().UnixNano())),
 		quit:           make(chan struct{}),

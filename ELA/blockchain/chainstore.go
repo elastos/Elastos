@@ -8,7 +8,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
@@ -58,10 +57,11 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 
-	producerVotes    map[string]*ProducerInfo
-	producerAddress  map[string]string // key: address  value: public key
-	dirty            map[outputpayload.VoteType]bool
-	orderedProducers []*PayloadRegisterProducer
+	producerVotes     map[string]*ProducerInfo // key: public key
+	producerAddress   map[string]string        // key: address  value: public key
+	dirty             map[outputpayload.VoteType]bool
+	canceledProducers map[string]uint32 // key: public key value: height
+	orderedProducers  []*PayloadRegisterProducer
 }
 
 func NewChainStore(filePath string) (IChainStore, error) {
@@ -78,6 +78,7 @@ func NewChainStore(filePath string) (IChainStore, error) {
 		producerVotes:      make(map[string]*ProducerInfo),
 		producerAddress:    make(map[string]string),
 		dirty:              make(map[outputpayload.VoteType]bool),
+		canceledProducers:  make(map[string]uint32),
 		orderedProducers:   make([]*PayloadRegisterProducer, 0),
 	}
 
@@ -124,40 +125,7 @@ func (c *ChainStore) loop() {
 }
 
 func (c *ChainStore) InitProducerVotes() error {
-	publicKeys, err := c.getRegisteredProducers()
-	if err != nil {
-		return err
-	}
-	for _, pk := range publicKeys {
-		height, payload, err := c.getProducerInfo(pk)
-		if err != nil {
-			return err
-		}
-		p, ok := payload.(*PayloadRegisterProducer)
-		if !ok {
-			return errors.New("invalid register producer payload")
-		}
-
-		vote, _ := c.getVoteByPublicKey(outputpayload.Delegate, pk)
-		c.producerVotes[BytesToHexString(pk)] = &ProducerInfo{
-			Payload:   p,
-			RegHeight: height,
-			Vote:      vote,
-		}
-		programHash, err := contract.PublicKeyToStandardProgramHash(pk)
-		if err != nil {
-			return err
-		}
-		addr, err := programHash.ToAddress()
-		if err != nil {
-			return err
-		}
-		c.producerAddress[addr] = BytesToHexString(pk)
-		for _, t := range outputpayload.VoteTypes {
-			c.dirty[t] = true
-		}
-	}
-	return nil
+	return c.reloadProducersFromChainForMempool()
 }
 
 func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
@@ -465,7 +433,7 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	return reference, nil
 }
 
-func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
+func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
@@ -495,31 +463,40 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
-	bHash, err := c.Get(append(prefix, hash.Bytes()...))
+	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
 
-	reader := bytes.NewReader(bHash)
+	r := bytes.NewReader(data)
 
 	// first 8 bytes is sys_fee
-	_, err = ReadUint64(reader)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deserialize block data
-	if err := b.FromTrimmedData(reader); err != nil {
+	if err := b.Header.Deserialize(r); err != nil {
 		return nil, err
 	}
 
-	// Deserialize transaction
-	for i, txn := range b.Transactions {
-		tmp, _, err := c.GetTransaction(txn.Hash())
+	//Transactions
+	count, err := ReadUint32(r)
+	if err != nil {
+		return nil, err
+	}
+	b.Transactions = make([]*Transaction, count)
+	for i := range b.Transactions {
+		var hash Uint256
+		if err := hash.Deserialize(r); err != nil {
+			return nil, err
+		}
+		tx, _, err := c.GetTransaction(hash)
 		if err != nil {
 			return nil, err
 		}
-		b.Transactions[i] = tmp
+		b.Transactions[i] = tx
 	}
 
 	return b, nil
@@ -543,30 +520,34 @@ func (c *ChainStore) rollback(b *Block) error {
 
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
 
-	return nil
+	return c.rollbackForMempool(b)
 }
 
 func (c *ChainStore) persist(b *Block) error {
 	c.NewBatch()
-	if err := c.PersistTrimmedBlock(b); err != nil {
+	if err := c.persistTrimmedBlock(b); err != nil {
 		return err
 	}
-	if err := c.PersistBlockHash(b); err != nil {
+	if err := c.persistBlockHash(b); err != nil {
 		return err
 	}
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspendUTXOs(b); err != nil {
+	if err := c.persistUnspendUTXOs(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspend(b); err != nil {
+	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
-	if err := c.PersistCurrentBlock(b); err != nil {
+	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
-	return c.BatchCommit()
+	if err := c.BatchCommit(); err != nil {
+		return err
+	}
+
+	return c.persistForMempool(b)
 }
 
 func (c *ChainStore) SaveBlock(b *Block) error {
@@ -694,23 +675,7 @@ func (c *ChainStore) GetHeight() uint32 {
 }
 
 func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
-	var b = new(Block)
-	prefix := []byte{byte(DATAHeader)}
-	blockData, err := c.Get(append(prefix, hash.Bytes()...))
-	if err != nil {
-		return false
-	}
-
-	r := bytes.NewReader(blockData)
-
-	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
-	if err != nil {
-		return false
-	}
-
-	// Deserialize block data
-	err = b.FromTrimmedData(r)
+	b, err := c.GetBlock(hash)
 	if err != nil {
 		return false
 	}
@@ -878,7 +843,7 @@ func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
 	if !ok {
 		return
 	}
-	if err := c.PersistIllegalBlock(illegalBlock); err != nil {
+	if err := c.persistIllegalBlock(illegalBlock); err != nil {
 		log.Error("Persist illegal block tx error: ", err.Error())
 	}
 	if illegalBlock.CoinType == ELACoin {
