@@ -1,8 +1,11 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"bytes"
+	"errors"
+
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 /*
@@ -16,21 +19,18 @@ type Account struct {
 	privateKey   []byte
 	publicKey    *crypto.PublicKey
 	redeemScript []byte
-	programHash  *Uint168
+	programHash  *common.Uint168
 	address      string
 }
 
 // Create an account instance with private key and public key
 func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
-	signatureRedeemScript, err := crypto.CreateStandardRedeemScript(publicKey)
+	redeemScript, err := createCheckSigRedeemScript(publicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
-	if err != nil {
-		return nil, err
-	}
+	programHash := common.ToProgramHash(common.PrefixStandard, redeemScript)
 
 	address, err := programHash.ToAddress()
 	if err != nil {
@@ -40,7 +40,7 @@ func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error
 	return &Account{
 		privateKey:   privateKey,
 		publicKey:    publicKey,
-		redeemScript: signatureRedeemScript,
+		redeemScript: redeemScript,
 		programHash:  programHash,
 		address:      address,
 	}, nil
@@ -62,7 +62,7 @@ func (a *Account) RedeemScript() []byte {
 }
 
 // Get account program hash
-func (a *Account) ProgramHash() *Uint168 {
+func (a *Account) ProgramHash() *common.Uint168 {
 	return a.programHash
 }
 
@@ -78,4 +78,17 @@ func (a *Account) Sign(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	return signature, nil
+}
+
+func createCheckSigRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
+	content, err := publicKey.EncodePoint(true)
+	if err != nil {
+		return nil, errors.New("create standard redeem script, encode public key failed")
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(content)))
+	buf.Write(content)
+	buf.WriteByte(byte(common.STANDARD))
+
+	return buf.Bytes(), nil
 }

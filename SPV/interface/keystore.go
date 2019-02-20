@@ -1,7 +1,7 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 /*
@@ -39,5 +39,5 @@ type Account interface {
 }
 
 func NewKeystore() Keystore {
-	return &KeystoreImpl{}
+	return &keystore{}
 }

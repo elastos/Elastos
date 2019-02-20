@@ -1,14 +1,13 @@
 package sdk
 
+import (
+	"github.com/elastos/Elastos.ELA/p2p"
+)
+
 const (
-	TypeMainNet = "MainNet"
-	TypeTestNet = "TestNet"
+	// The protocol version implemented SPV protocol
+	ProtocolVersion = p2p.EIP001Version
 
-	MainNetMagic = 7630401
-	TestNetMagic = 1234567
-
-	ProtocolVersion = 1 // The min protocol version to support spv
-	ServiveSPV      = 1 << 2
-	SPVServerPort   = 20866
-	SPVClientPort   = 20867
+	// OpenService is a flag used to indicate a peer provides open service.
+	OpenService = 1 << 2
 )
