@@ -20,7 +20,7 @@ module.exports = async function(json_data, res) {
                 txlog["crosschainassets"] = new Array();
             }
 
-            let crosschainamount = String(((log["returnValues"]["_amount"]) / 1e18)-0.0001);
+            let crosschainamount = String(common.retnum(log["returnValues"]["_crosschainamount"] / 1e18));
             let outputamount = String(log["returnValues"]["_amount"] / 1e18);
 
             txlog["crosschainassets"].push({

@@ -28,5 +28,9 @@ module.exports = {
         console.log("============================================================");
         res.json({"error": err.toString(), "id": null, "jsonrpc": "2.0", "result": null});
         return;
+    },
+    retnum: function toNonExponential(num) {
+        let m = num.toExponential().match(/\d(?:\.(\d*))?e([+-]\d+)/);
+        return num.toFixed(Math.max(0, (m[1] || '').length - m[2]));
     }
 }
