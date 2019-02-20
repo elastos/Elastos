@@ -5,7 +5,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Integer struct {

@@ -5,7 +5,8 @@ import (
 	"errors"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 )
 

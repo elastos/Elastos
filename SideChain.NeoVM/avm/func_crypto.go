@@ -116,7 +116,7 @@ func Hash(b []byte, e *ExecutionEngine) []byte {
 		sh.Write(b)
 		bt = sh.Sum(nil)
 	case HASH160:
-		bt = e.crypto.Hash168(b)
+		bt = e.crypto.Hash160(b)
 	case HASH256:
 		bt = e.crypto.Hash256(b)
 	}

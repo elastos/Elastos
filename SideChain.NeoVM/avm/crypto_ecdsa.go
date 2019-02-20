@@ -3,8 +3,8 @@ package avm
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )
@@ -18,6 +18,18 @@ func (c *CryptoECDsa) Hash168(data []byte) []byte {
 		return nil
 	}
 	return temp.Bytes()
+}
+
+func (c *CryptoECDsa) Hash160(data []byte) []byte {
+	temp := c.Hash168(data)
+	if temp == nil {
+		return nil
+	}
+	hash, err := common.Uint168FromBytes(temp)
+	if err != nil {
+		return nil
+	}
+	return hash.ToCodeHash().Bytes()
 }
 
 func (c *CryptoECDsa) Hash256(data []byte) []byte {

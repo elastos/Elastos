@@ -3,7 +3,7 @@ package contract
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"

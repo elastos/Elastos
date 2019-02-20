@@ -5,7 +5,7 @@ import (
 	"errors"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type StorageKey struct {

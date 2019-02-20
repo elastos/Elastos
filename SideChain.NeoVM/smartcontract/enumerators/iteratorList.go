@@ -4,7 +4,7 @@ import (
 	"io"
 	"container/list"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"

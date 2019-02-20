@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 	st "github.com/elastos/Elastos.ELA.SideChain/types"

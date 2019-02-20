@@ -21,7 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"

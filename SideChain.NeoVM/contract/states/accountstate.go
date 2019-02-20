@@ -4,7 +4,7 @@ import (
 	"io"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type AccountState struct {

@@ -8,7 +8,7 @@ import (
 	"math"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 
 	sideser "github.com/elastos/Elastos.ELA.SideChain/service"

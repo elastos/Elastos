@@ -4,7 +4,7 @@ import (
 	"io"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type StateBase struct {

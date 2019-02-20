@@ -7,14 +7,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 )
 
 func TestPayloadDeploy_Serialize(t *testing.T) {
 	payload := PayloadDeploy{}
-	code := contract.FunctionCode{}
+	code := FunctionCode{}
 	code.Code = []byte{1, 2, 3, 4, 3, 1, 2, 3, 4, 3, 1, 2, 3, 4, 3, 1, 2, 3, 4, 3, 3}
 	code.ParameterTypes = []contract.ContractParameterType{contract.Signature}
 	code.ReturnType = contract.Boolean

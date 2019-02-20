@@ -9,7 +9,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
@@ -115,7 +116,6 @@ func checkOutputProgramHash(programHash common.Uint168) bool {
 	if prefix == common.PrefixStandard ||
 		prefix == common.PrefixMultisig ||
 		prefix == common.PrefixCrossChain ||
-		prefix == common.PrefixRegisterId ||
 		prefix == params.PrefixSmartContract ||
 		programHash == empty {
 		return true
@@ -137,7 +137,7 @@ func (v *validator) checkTransactionSignature(txn *side.Transaction) error {
 	}
 
 	// Sort first
-	common.SortProgramHashes(hashes)
+	common.SortProgramHashByCodeHash(hashes)
 	if err := mempool.SortPrograms(txn.Programs); err != nil {
 		return errors.New("[NeoVM checkTransactionSignature] Sort program hashes error:" + err.Error())
 	}
@@ -192,8 +192,7 @@ func RunPrograms(tx *side.Transaction, hashes []common.Uint168, programs []*side
 		if err != nil {
 			return err
 		}
-
-		if !hashes[i].IsEqual(*programHash) {
+		if !hashes[i].ToCodeHash().IsEqual(programHash.ToCodeHash()) {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 		//execute program on AVM

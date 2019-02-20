@@ -6,8 +6,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	ela "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
-			Controller: Uint168{},
+			Controller: common.Uint168{},
 		},
 		Attributes: []*types.Attribute{},
 		Inputs:     []*types.Input{},
@@ -36,7 +37,7 @@ var (
 	// genesisHeader
 	genesisHeader = types.Header{
 		Version:    types.BlockVersion,
-		Previous:   EmptyHash,
+		Previous:   common.EmptyHash,
 		MerkleRoot: elaAssetId,
 		Timestamp:  uint32(time.Unix(time.Date(2018, time.December, 24,
 			12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
@@ -44,10 +45,10 @@ var (
 		Nonce:      types.GenesisNonce,
 		Height:     uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
-			SideAuxBlockTx: core.Transaction{
-				TxType:         core.SideChainPow,
-				PayloadVersion: core.SideChainPowPayloadVersion,
-				Payload:        new(core.PayloadSideChainPow),
+			SideAuxBlockTx: ela.Transaction{
+				TxType:         ela.SideChainPow,
+				PayloadVersion: payload.SideChainPowPayloadVersion,
+				Payload:        new(payload.PayloadSideChainPow),
 			},
 		},
 	}

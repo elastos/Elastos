@@ -3,12 +3,16 @@ package websocket
 import (
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
+
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
+
 	"encoding/json"
+
+	"github.com/elastos/Elastos.ELA/common"
+
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 )
 
 type SocketServer struct {

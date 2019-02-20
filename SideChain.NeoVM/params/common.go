@@ -8,8 +8,7 @@ import (
 
 	"golang.org/x/crypto/ripemd160"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 
 func ToCodeHash(code []byte) (*common.Uint168, error) {
 	if len(code) < 1 {
-		return nil, errors.New("[ToProgramHash] failed, empty program code")
+		return nil, errors.New("[ToCodeHash] failed, empty program code")
 	}
 	hash := sha256.Sum256(code)
 	md160 := ripemd160.New()
@@ -38,12 +37,20 @@ func UInt168ToUInt160(hash *common.Uint168) []byte {
 	return hashBytes
 }
 
-func ToProgramHash(code []byte) (*common.Uint168, error){
-	hash, err := crypto.ToProgramHash(code)
-	if hash == nil && len(code) > 0 {
-		hash, err = ToCodeHash(code)
+func ToProgramHash(code []byte) (*common.Uint168, error) {
+	if len(code) < 1 {
+		return nil, errors.New("[ToProgramHash] failed, empty program code")
 	}
-	return hash, err
+	switch code[len(code)-1] {
+	case common.STANDARD:
+		return common.ToProgramHash(common.PrefixStandard, code), nil
+	case common.MULTISIG:
+		return common.ToProgramHash(common.PrefixMultisig, code), nil
+	case common.CROSSCHAIN:
+		return common.ToProgramHash(common.PrefixCrossChain, code), nil
+	default:
+		return ToCodeHash(code)
+	}
 }
 
 func IntToBytes(n int64) []byte {

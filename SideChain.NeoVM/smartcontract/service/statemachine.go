@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
@@ -432,7 +432,7 @@ func (s *StateMachine) AccountIsStandard(e *avm.ExecutionEngine) bool {
 
 func contains(programHashes []common.Uint168, programHash common.Uint168) bool {
 	for _, v := range programHashes {
-		if v == programHash {
+		if v.ToCodeHash().IsEqual(programHash.ToCodeHash()) {
 			return true
 		}
 	}

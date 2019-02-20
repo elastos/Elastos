@@ -2,7 +2,7 @@ package types
 
 import (
 	"testing"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"bytes"
 	"github.com/stretchr/testify/assert"
 )

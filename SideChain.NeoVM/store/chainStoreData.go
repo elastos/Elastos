@@ -10,7 +10,7 @@ import (
 	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 
