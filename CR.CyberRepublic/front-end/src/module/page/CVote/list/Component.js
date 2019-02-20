@@ -149,12 +149,15 @@ export default class extends BaseComponent {
   }
 
   voteDataByUser = (data) => {
-    const voteMap = data.vote_map;
-    if (!data.vote_map) {
-      // fix error in finding index of undefined
+    const { vote_map: voteMap, voteResult } = data
+    let voteArr
+    if (!_.isEmpty(voteResult)) {
+      voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
+    } else if (!_.isEmpty(voteMap)) {
+      voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+    } else {
       return ''
     }
-    const voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
     const supportNum = _.countBy(voteArr).Yes || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50

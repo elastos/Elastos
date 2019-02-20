@@ -1,6 +1,7 @@
 import { createContainer, api_request } from '@/util'
 import Component from './Component'
 import I18N from '@/I18N'
+import { avatar_map } from '@/constant'
 
 export default createContainer(Component, state => ({
   user: state.user,
@@ -9,6 +10,7 @@ export default createContainer(Component, state => ({
   isSecretary: state.user.is_secretary,
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
+  avatar_map,
   static: {
     select_type: [
       { name: I18N.get('council.voting.type.newMotion'), code: 1 },

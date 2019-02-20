@@ -219,10 +219,17 @@ export const CVOTE_RESULT = {
 
 export const CVOTE_RESULT_TEXT = {
   undefined: 'Undecided',
+  undecided: 'Undecided',
   support: 'Yes',
   reject: 'No',
   abstention: 'Abstained',
   '-1': 'Undecided',
+}
+
+export const avatar_map = {
+  'Kevin Zhang': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/44f5fe8e-f062-41e4-ba5b-1dbbea4e63b0_kevin.jpeg',
+  'Fay Li': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/37706672-efa7-4a7a-8453-200f3ab615d9_IMG_4320.JPG',
+  'Yipeng Su': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/19691cdc-913f-40d1-9d1d-f88b709fcecf_yipeng.jpeg'
 }
 
 export const CVOTE_TYPE = {

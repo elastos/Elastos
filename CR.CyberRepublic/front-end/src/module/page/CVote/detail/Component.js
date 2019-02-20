@@ -279,15 +279,34 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, avatar_map: avatarMap } = this.state.data
-    const stats = _.reduce(voteMap, (prev, value, key) => {
-      const userObj = { name: key, avatar: avatarMap[key] }
-      if (prev[value]) {
-        prev[value].push(userObj)
-        return prev
-      }
-      return _.extend(prev, { [value]: [userObj] })
-    }, {})
+    const { vote_map: voteMap, reason_map: reasonMap, voteResult } = this.state.data
+    const { avatar_map: avatarMap } = this.props
+    let stats
+    if (!_.isEmpty(voteResult)) {
+      stats = _.reduce(voteResult, (prev, cur) => {
+        const item = {
+          name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(cur, 'votedBy.profile.lastName')} `,
+          avatar: _.get(cur, 'votedBy.profile.avatar'),
+          reason: cur.reason,
+        }
+        if (prev[cur.value]) {
+          prev[cur.value].push(item)
+          return prev
+        }
+        return _.extend(prev, { [cur.value]: [item] })
+      }, {})
+    } else if (!_.isEmpty(voteMap)) {
+      // for legacy data structure
+      stats = _.reduce(voteMap, (prev, value, key) => {
+        const item = { name: key, avatar: _.get(avatarMap, key), reason: _.get(reasonMap, key) }
+        if (prev[value]) {
+          prev[value].push(item)
+          return prev
+        }
+        return _.extend(prev, { [value]: [item] })
+      }, {})
+    }
+
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
       const users = _.map(statArr, stat => ({ name: stat.name, avatar: stat.avatar }))
