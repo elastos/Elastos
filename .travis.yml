@@ -37,6 +37,12 @@ matrix:
       tag IS present AND \
       NOT tag =~ /^(internal-test)/
 
+  - os: osx
+    env: BUILD_ENV=darwin_android_arm64 ANDROID_ABI=arm64-v8a BUILD_TYPE=Debug NO_DEPLOY=ON
+    if: |
+      NOT tag IS present OR \
+      tag =~ /^(internal-test)/
+
   - env: BUILD_ENV=linux_x64 BUILD_TYPE=Debug RUN_TEST=ON
     sudo: true
     if: |
@@ -165,6 +171,7 @@ matrix:
       NOT tag =~ /^(internal-test)/
 
 install:
+  - cd /tmp
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       if [[ "$ENABLE_DOCS" != "" ]]; then
         sudo apt-get update;
@@ -179,7 +186,6 @@ install:
 
       if [[ "$ANDROID_ABI" == "" ]]; then
         if [[ "$RASPBERRRIPI" != "" ]]; then
-          cd /tmp;
           git clone https://github.com/raspberrypi/tools.git raspberrypitools;
           export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
           wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
@@ -187,7 +193,6 @@ install:
           export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
         fi
       else
-        cd /tmp;
         wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
         tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
         export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
@@ -199,28 +204,34 @@ install:
       ulimit -c unlimited;
       sudo sysctl kern.corefile=/cores/core;
       easy_install six;
+      if [[ "$ANDROID_ABI" != "" ]]; then
+        wget -q https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip;
+        unzip -q android-ndk-r16b-darwin-x86_64.zip;
+        export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
+      fi
     fi
 
 script:
   - cd $TRAVIS_BUILD_DIR/build && mkdir ${BUILD_ENV}_$BUILD_TYPE && cd ${BUILD_ENV}_$BUILD_TYPE
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      export OUTPUT_TYPE=so;
-      if [[ "$ANDROID_ABI" == "" ]]; then
+  - if [[ "$ANDROID_ABI" == "" ]]; then
+      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        export OUTPUT_TYPE=so;
         if [[ "$RASPBERRRIPI" == "" ]]; then
           cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_DOCS=$ENABLE_DOCS ../.. ;
         else
           cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/RPiToolchain.cmake ../.. ;
         fi
       else
-        cmake -DANDROID_ABI=$ANDROID_ABI -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../.. ;
+        export OUTPUT_TYPE=dylib;
+        if [[ "$PLATFORM" == "" ]]; then
+          cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER ../.. ;
+        else
+          cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
+        fi
       fi
     else
-      export OUTPUT_TYPE=dylib;
-      if [[ "$PLATFORM" == "" ]]; then
-        cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER ../.. ;
-      else
-        cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
-      fi
+      export OUTPUT_TYPE=so;
+      cmake -DANDROID_ABI=$ANDROID_ABI -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../.. ;
     fi
   - make && make install && make dist && cd dist
   - if [[ "$RUN_TEST" != "" ]]; then
@@ -261,6 +272,7 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+    condition: $NO_DEPLOY = ""
     # branches:
     #   only:
     #     - master
