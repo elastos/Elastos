@@ -96,6 +96,10 @@ func (a *ArbitratorsMock) GetArbitrators() [][]byte {
 	return a.CurrentArbitrators
 }
 
+func (a *ArbitratorsMock) GetNormalArbitrators() ([][]byte, error) {
+	return a.CurrentArbitrators, nil
+}
+
 func (a *ArbitratorsMock) GetCandidates() [][]byte {
 	return a.CurrentCandidates
 }

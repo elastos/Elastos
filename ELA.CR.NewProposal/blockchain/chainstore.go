@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"path/filepath"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
@@ -48,8 +48,6 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
-	mu sync.RWMutex // guard the following var
-
 	currentBlockHeight uint32
 }
 
@@ -60,10 +58,9 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	}
 
 	s := &ChainStore{
-		IStore:             db,
-		currentBlockHeight: 0,
-		taskCh:             make(chan persistTask, TaskChanCap),
-		quit:               make(chan chan bool, 1),
+		IStore: db,
+		taskCh: make(chan persistTask, TaskChanCap),
+		quit:   make(chan chan bool, 1),
 	}
 
 	go s.taskHandler()
@@ -463,9 +460,7 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.RollbackConfirm(b)
 	c.BatchCommit()
 
-	c.mu.Lock()
-	c.currentBlockHeight = b.Header.Height - 1
-	c.mu.Unlock()
+	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
 	return nil
 }
@@ -541,9 +536,7 @@ func (c *ChainStore) persistBlock(block *Block) {
 		return
 	}
 
-	c.mu.Lock()
-	c.currentBlockHeight = block.Header.Height
-	c.mu.Unlock()
+	atomic.StoreUint32(&c.currentBlockHeight, block.Height)
 }
 
 func (c *ChainStore) persistConfirm(confirm *payload.Confirm) {
@@ -609,9 +602,7 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 }
 
 func (c *ChainStore) GetHeight() uint32 {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.currentBlockHeight
+	return atomic.LoadUint32(&c.currentBlockHeight)
 }
 
 func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {

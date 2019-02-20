@@ -141,7 +141,8 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
 		RawData:      rawData.Bytes(),
-		Result:       false}
+		Result:       false,
+	}
 	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
 	p.acceptProposal(proposal)
 }

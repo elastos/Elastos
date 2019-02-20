@@ -168,6 +168,8 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 
 	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
 	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+
+	d.changeOnDuty()
 	d.handler.TryStartNewConsensus(b)
 }
 
@@ -327,14 +329,17 @@ func (d *DPOSManager) changeHeight() {
 		log.Error("Error occurred with change height: ", err)
 		return
 	}
+	//d.changeOnDuty()
+}
 
-	currentArbiter := d.arbitrators.GetOnDutyArbitrator()
+func (d *DPOSManager) changeOnDuty() {
+	currentArbiter := d.arbitrators.GetNextOnDutyArbitrator(0)
 	onDuty := bytes.Equal(d.publicKey, currentArbiter)
 
 	if onDuty {
-		log.Info("[onDutyArbitratorChanged] not onduty -> onduty")
+		log.Info("[onDutyArbitratorChanged] onduty")
 	} else {
-		log.Info("[onDutyArbitratorChanged] onduty -> not onduty")
+		log.Info("[onDutyArbitratorChanged] not onduty")
 	}
 	d.ChangeConsensus(onDuty)
 }
