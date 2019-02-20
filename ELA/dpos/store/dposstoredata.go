@@ -148,7 +148,7 @@ func (s *DposStore) persistBytesArray(batch Batch, bytesArray [][]byte, prefix D
 	key.WriteByte(byte(prefix))
 
 	value := new(bytes.Buffer)
-	if err := common.WriteUint64(value, uint64(len(bytesArray))); err != nil {
+	if err := common.WriteVarUint(value, uint64(len(bytesArray))); err != nil {
 		return err
 	}
 
