@@ -87,10 +87,6 @@ func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {
 		return false, false, err
 	}
-
-	if _, exist := bm.confirms[confirm.Hash]; exist {
-		return false, false, errors.New("duplicate confirm in pool")
-	}
 	bm.confirms[confirm.Hash] = confirm
 
 	inMainChain, isOrphan, err := bm.confirmBlock(confirm.Hash)

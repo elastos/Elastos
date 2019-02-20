@@ -261,6 +261,10 @@ func (i *IllegalBehaviorMonitor) isProposalsIllegal(first, second *payload.DPOSP
 		return false
 	}
 
+	if first.BlockHash.IsEqual(second.BlockHash) {
+		return false
+	}
+
 	if !bytes.Equal(first.Sponsor, second.Sponsor) || first.ViewOffset != second.ViewOffset {
 		return false
 	}

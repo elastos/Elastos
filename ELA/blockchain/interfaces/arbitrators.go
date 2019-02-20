@@ -11,6 +11,7 @@ type Arbitrators interface {
 
 	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte
+	GetNormalArbitrators() ([][]byte, error)
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte

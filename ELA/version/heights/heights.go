@@ -76,26 +76,26 @@ func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Tran
 	})
 }
 
-func (h *heightVersions) GetNormalArbitratorsDesc(block *types.Block,
+func (h *heightVersions) GetNormalArbitratorsDesc(blockHeight uint32,
 	arbitratorsCount uint32) ([][]byte, error) {
-	heightKey := h.findLastAvailableHeightKey(block.Height + 1)
+	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
 	info := h.versions[heightKey]
 
 	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
 	if v == nil {
-		return nil, fmt.Errorf("[GetNormalArbitratorsDesc] Block height %d can not support block version %d", block.Height, block.Version)
+		return nil, fmt.Errorf("[GetNormalArbitratorsDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
 	}
 	return v.GetNormalArbitratorsDesc(arbitratorsCount)
 }
 
-func (h *heightVersions) GetCandidatesDesc(block *types.Block,
+func (h *heightVersions) GetCandidatesDesc(blockHeight uint32,
 	startIndex uint32) ([][]byte, error) {
-	heightKey := h.findLastAvailableHeightKey(block.Height)
+	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	info := h.versions[heightKey]
 
-	v := h.findBlockVersion(&info, block.Version)
+	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
 	if v == nil {
-		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", block.Height, block.Version)
+		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
 	}
 	return v.GetCandidatesDesc(startIndex)
 }
