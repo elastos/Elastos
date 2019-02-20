@@ -49,7 +49,17 @@
 
 static int mode = MODE_UNKNOWN;
 
-#define DEFAULT_CONFIG  "tests.conf";
+#define CONFIG_NAME   "tests.conf"
+
+static const char *config_files[] = {
+    "./"CONFIG_NAME,
+    "../etc/carrier/"CONFIG_NAME,
+#if !defined(_WIN32) && !defined(_WIN64)
+    "/usr/local/etc/carrier/"CONFIG_NAME,
+    "/etc/carrier/"CONFIG_NAME,
+#endif
+    NULL
+};
 
 int test_main(int argc, char *argv[]);
 int robot_main(int argc, char *argv[]);
@@ -118,13 +128,30 @@ static void usage(void)
     printf("\n");
 }
 
+const char *get_config_path(const char *config_files[])
+{
+    const char **file;
+
+    for (file = config_files; *file; file++) {
+        FILE *fp = fopen(*file, "r");
+        if (!fp)
+            continue;
+
+        fclose(fp);
+
+        return *file;
+    }
+
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     int rc;
     int debug = 0;
     char buffer[PATH_MAX];
 
-    const char *config_file;
+    const char *config_file = NULL;
 
     int opt;
     int idx;
@@ -189,7 +216,13 @@ int main(int argc, char *argv[])
 #endif
 
     if (!config_file)
-        config_file = DEFAULT_CONFIG;
+        config_file = get_config_path(config_files);
+
+    if (!config_file) {
+        printf("Error: Missing config file.\n");
+        usage();
+        return -1;
+     }
 
     if (mode == MODE_UNKNOWN)
         mode = MODE_LAUNCHER;
