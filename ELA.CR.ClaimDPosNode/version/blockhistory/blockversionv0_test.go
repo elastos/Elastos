@@ -7,7 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/stretchr/testify/suite"
 )
@@ -24,7 +23,6 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 
 func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.ArbitratorsCount
 
 	arbitrators := make([][]byte, 0)
 	for _, v := range originalArbitrators {
@@ -39,7 +37,6 @@ func (s *blockVersionV0TestSuite) TestGetProducersDesc() {
 	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionV0TestSuite) TestAssignCoinbaseTxRewards() {
@@ -117,70 +114,69 @@ func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNextOnDutyArbitrator()
 		arbitrators = append(arbitrators, a)
 	}
 
-	//originLedger := blockchain.DefaultLedger
-	//chainMock := &mock.ChainStoreMock{
-	//	BlockHeight: 0,
-	//}
+	originLedger := blockchain.DefaultLedger
+	chainMock := &blockchain.ChainStoreMock{
+		BlockHeight: 0,
+	}
 	blockchain.DefaultLedger = &blockchain.Ledger{
-		//fixme uncommon when chain store mock is ready
-		//Blockchain: chainMock,
+		Store: chainMock,
 	}
 
-	//var currentArbitrator []byte
-	//
-	//chainMock.BlockHeight = 0
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(1, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(2, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(3, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(4, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(5, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 0
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 1
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[1], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 2
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[2], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 3
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[3], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 4
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[4], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 5
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//
-	//chainMock.BlockHeight = 0
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 1)
-	//s.Equal(arbitrators[1], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 2)
-	//s.Equal(arbitrators[2], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 3)
-	//s.Equal(arbitrators[3], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 4)
-	//s.Equal(arbitrators[4], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 5)
-	//s.Equal(arbitrators[0], currentArbitrator)
-	//currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 6)
-	//s.Equal(arbitrators[1], currentArbitrator)
-	//
-	//blockchain.DefaultLedger = originLedger
+	var currentArbitrator []byte
+
+	chainMock.BlockHeight = 0
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(1, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(2, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(3, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(4, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(5, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+
+	chainMock.BlockHeight = 0
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+
+	chainMock.BlockHeight = 1
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[1], currentArbitrator)
+
+	chainMock.BlockHeight = 2
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[2], currentArbitrator)
+
+	chainMock.BlockHeight = 3
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[3], currentArbitrator)
+
+	chainMock.BlockHeight = 4
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[4], currentArbitrator)
+
+	chainMock.BlockHeight = 5
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 0)
+	s.Equal(arbitrators[0], currentArbitrator)
+
+	chainMock.BlockHeight = 0
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 1)
+	s.Equal(arbitrators[1], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 2)
+	s.Equal(arbitrators[2], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 3)
+	s.Equal(arbitrators[3], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 4)
+	s.Equal(arbitrators[4], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 5)
+	s.Equal(arbitrators[0], currentArbitrator)
+	currentArbitrator = s.Version.GetNextOnDutyArbitrator(0, 6)
+	s.Equal(arbitrators[1], currentArbitrator)
+
+	blockchain.DefaultLedger = originLedger
 }
 
 func TestBlockVersionV0Suit(t *testing.T) {

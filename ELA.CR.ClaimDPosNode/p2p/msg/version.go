@@ -39,13 +39,14 @@ func (msg *Version) Deserialize(r io.Reader) error {
 		&msg.TimeStamp, &msg.Port, &msg.Nonce, &msg.Height, &msg.Relay)
 }
 
-func NewVersion(pver uint32, services, nonce, height uint64,
+func NewVersion(pver uint32, port uint16, services, nonce, height uint64,
 	disableRelayTx bool) *Version {
 
 	return &Version{
 		Version:   pver,
 		Services:  services,
 		TimeStamp: uint32(time.Now().Unix()),
+		Port:      port,
 		Nonce:     nonce,
 		Height:    height,
 		Relay:     !disableRelayTx,

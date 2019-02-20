@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/elastos/Elastos.ELA/common/config"
+
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 )
 
@@ -47,7 +49,6 @@ var (
 )
 
 const (
-	OutputPath            = "./Logs/" // The log files output path
 	calldepth             = 2
 	KBSize                = int64(1024)
 	MBSize                = KBSize * 1024
@@ -100,7 +101,7 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 }
 
 func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = NewLogger(OutputPath, level, maxPerLogSizeMb, maxLogsSizeMb)
+	logger = NewLogger(filepath.Join(config.DataPath, config.LogDir, config.NodeDir), level, maxPerLogSizeMb, maxLogsSizeMb)
 }
 
 func (l *Logger) SetPrintLevel(level uint8) {

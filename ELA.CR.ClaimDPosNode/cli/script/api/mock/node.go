@@ -105,6 +105,14 @@ func (n *nodeMock) NetAddress() *p2p.NetAddress {
 	panic("implement me")
 }
 
+func (n *nodeMock) SetNAFilter(filter p2p.NAFilter) {
+	panic("implement me")
+}
+
+func (n *nodeMock) NAFilter() p2p.NAFilter {
+	panic("implement me")
+}
+
 func (n *nodeMock) Port() uint16 {
 	panic("implement me")
 }
@@ -141,7 +149,7 @@ func (n *nodeMock) AddNeighborNode(protocol.Noder) {
 	panic("implement me")
 }
 
-func (n *nodeMock) DelNeighborNode(id uint64) (protocol.Noder, bool) {
+func (n *nodeMock) DelNeighborNode(node protocol.Noder) (protocol.Noder, bool) {
 	panic("implement me")
 }
 
@@ -227,10 +235,6 @@ func (n *nodeMock) BloomFilter() *bloom.Filter {
 }
 
 func (n *nodeMock) SendMessage(msg p2p.Message) {
-	panic("implement me")
-}
-
-func (n *nodeMock) NodeEstablished(uid uint64) bool {
 	panic("implement me")
 }
 

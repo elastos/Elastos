@@ -10,6 +10,8 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
+const ProducerConfirmations = 6
+
 func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -19,7 +21,28 @@ func (c *ChainStore) GetRegisteredProducers() []*PayloadRegisterProducer {
 	result := make([]*PayloadRegisterProducer, 0)
 
 	for _, p := range c.producerVotes {
-		if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+		if _, ok := illProducers[BytesToHexString(p.Payload.OwnerPublicKey)]; ok {
+			continue
+		}
+		result = append(result, p.Payload)
+	}
+
+	return result
+}
+
+func (c *ChainStore) GetActiveRegisteredProducers() []*PayloadRegisterProducer {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	illProducers := c.getIllegalProducers()
+
+	result := make([]*PayloadRegisterProducer, 0)
+
+	for _, p := range c.producerVotes {
+		if _, ok := illProducers[BytesToHexString(p.Payload.OwnerPublicKey)]; ok {
+			continue
+		}
+		if c.currentBlockHeight-p.RegHeight+1 < ProducerConfirmations {
 			continue
 		}
 		result = append(result, p.Payload)
@@ -45,7 +68,7 @@ func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer,
 			ivalue := producersInfo[i].Vote
 			jvalue := producersInfo[j].Vote
 			if ivalue == jvalue {
-				return bytes.Compare(producersInfo[i].Payload.PublicKey, producersInfo[j].Payload.PublicKey) > 0
+				return bytes.Compare(producersInfo[i].Payload.OwnerPublicKey, producersInfo[j].Payload.OwnerPublicKey) > 0
 			}
 			return ivalue > jvalue
 		})
@@ -53,7 +76,7 @@ func (c *ChainStore) GetRegisteredProducersSorted() ([]*PayloadRegisterProducer,
 		producers := make([]*PayloadRegisterProducer, 0)
 		illProducers := c.getIllegalProducers()
 		for _, p := range producersInfo {
-			if _, ok := illProducers[BytesToHexString(p.Payload.PublicKey)]; ok {
+			if _, ok := illProducers[BytesToHexString(p.Payload.OwnerPublicKey)]; ok {
 				continue
 			}
 			producers = append(producers, p.Payload)
@@ -78,12 +101,12 @@ func (c *ChainStore) GetProducerVote(publicKey []byte) Fixed64 {
 	return info.Vote
 }
 
-func (c *ChainStore) GetProducerStatus(address string) ProducerState {
+func (c *ChainStore) GetProducerStatus(publicKey string) ProducerState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if p, ok := c.producerVotes[address]; ok {
-		if c.currentBlockHeight-p.RegHeight >= 6 {
+	if p, ok := c.producerVotes[publicKey]; ok {
+		if c.currentBlockHeight-p.RegHeight+1 >= ProducerConfirmations {
 			return ProducerRegistered
 		} else {
 			return ProducerRegistering
@@ -103,5 +126,9 @@ func (c *ChainStore) GetCancelProducerHeight(publicKey []byte) (uint32, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	return c.getCancelProducerHeight(publicKey)
+	height, ok := c.canceledProducers[BytesToHexString(publicKey)]
+	if !ok {
+		return 0, errors.New("not found canceled producer")
+	}
+	return height, nil
 }

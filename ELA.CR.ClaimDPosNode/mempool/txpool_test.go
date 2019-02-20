@@ -57,9 +57,9 @@ func TestTxPoolInit(t *testing.T) {
 		t.Fatal(err, "BlockChain generate failed")
 	}
 	store.InitArbitrators(store.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.ArbitratorsCount,
+		ArbitratorsCount: config.ArbitratorsCount,
 		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		MajorityCount:    config.Parameters.ArbiterConfiguration.MajorityCount,
+		MajorityCount:    config.MajorityCount,
 		Store:            dposStore,
 	})
 

@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -69,15 +70,15 @@ func TestChainStore_RollbackSidechainTx(t *testing.T) {
 	}
 
 	// 2. Run Rollback
-	err = testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err = testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}
 
-	// Need batch commit here because RollbackSidechainTx use BatchDelete
+	// Need batch commit here because rollbackSidechainTx use BatchDelete
 	testChainStore.BatchCommit()
 
-	// 3. Verify RollbackSidechainTx
+	// 3. Verify rollbackSidechainTx
 	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should been deleted")
@@ -120,16 +121,18 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 
 	// 1.Prepare data
-	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	// addr: EZ3fDKreg82nAgzJPPWd3ZFXRhcAKkgqWk
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	//privateKayStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	nickName1 := "nickname 1"
 	payload1 := &payload.PayloadRegisterProducer{
-		PublicKey: publicKey1,
-		NickName:  nickName1,
-		Url:       "http://www.test.com",
-		Location:  1,
-		Address:   "127.0.0.1",
+		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
+		NickName:       nickName1,
+		Url:            "http://www.test.com",
+		Location:       1,
+		NetAddress:     "127.0.0.1:20338",
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -137,11 +140,12 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName2 := "nickname 2"
 	payload2 := &payload.PayloadRegisterProducer{
-		PublicKey: publicKey2,
-		NickName:  nickName2,
-		Url:       "http://www.test.com",
-		Location:  2,
-		Address:   "127.0.0.1",
+		OwnerPublicKey: publicKey2,
+		NodePublicKey:  publicKey2,
+		NickName:       nickName2,
+		Url:            "http://www.test.com",
+		Location:       2,
+		NetAddress:     "127.0.0.1:20338",
 	}
 
 	// 2. Should have no producer in db
@@ -151,18 +155,14 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	}
 
 	// 3. Run RegisterProducer
-	err = testChainStore.PersistRegisterProducer(payload1)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed:", err.Error())
+	if err = testChainStore.persistRegisterProducerForMempool(payload1, 1); err != nil {
+		t.Error("persistRegisterProducerForMempool failed:", err.Error())
 	}
-	testChainStore.BatchCommit()
 
 	// 4. Run RegisterProducer
-	err = testChainStore.PersistRegisterProducer(payload2)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	if err := testChainStore.persistRegisterProducerForMempool(payload2, 2); err != nil {
+		t.Error("persistRegisterProducerForMempool failed")
 	}
-	testChainStore.BatchCommit()
 
 	producers, err = testChainStore.GetRegisteredProducersSorted()
 	if len(producers) != 2 {
@@ -173,13 +173,13 @@ func TestChainStore_PersistRegisterProducer(t *testing.T) {
 	if producers[0].NickName != nickName1 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[0].PublicKey, publicKey1) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey1) {
 		t.Error("GetRegisteredProducers failed")
 	}
 	if producers[1].NickName != nickName2 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[1].PublicKey, publicKey2) {
+	if !bytes.Equal(producers[1].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
 }
@@ -188,26 +188,32 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	originChainStore := DefaultLedger.Store
 	DefaultLedger.Store = testChainStore
 
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	//publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	//publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
-	publicKeyStr3 := "03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613"
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+
+	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+
+	publicKeyStr3 := "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 	publicKey3, _ := common.HexStringToBytes(publicKeyStr3)
+	privateKayStr3 := "c779d181658b112b584ce21c9ea3c23d2be0689550d790506f14bdebe6b3fe38"
+	privateKey3, _ := common.HexStringToBytes(privateKayStr3)
 
 	publicKeyPlege1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	publicKeyPlege3, _ := contract.PublicKeyToDepositProgramHash(publicKey3)
 
 	//CheckRegisterProducerTransaction
-
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
 	txn.Payload = &payload.PayloadRegisterProducer{
-		PublicKey: publicKey1,
-		NickName:  "nick name 1",
-		Url:       "http://www.google.com",
-		Location:  1,
-		Address:   "127.0.0.1",
+		OwnerPublicKey: publicKey1,
+		NickName:       "nickname 1",
+		Url:            "http://www.test.com",
+		Location:       1,
+		NetAddress:     "127.0.0.1:20338",
 	}
 
 	txn.Programs = []*program.Program{{
@@ -217,15 +223,15 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	txn.Outputs = []*types.Output{{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyPlege1,
 	}}
 
 	err := CheckRegisterProducerTransaction(txn)
-	assert.EqualError(t, err, "Duplicated public key.")
+	assert.EqualError(t, err, "duplicated public key")
 
-	txn.Payload.(*payload.PayloadRegisterProducer).PublicKey = publicKey3
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey3
 	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 1"
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr3),
@@ -234,21 +240,42 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	txn.Outputs[0].ProgramHash = *publicKeyPlege3
 
 	err = CheckRegisterProducerTransaction(txn)
-	assert.EqualError(t, err, "Duplicated nick name.")
+	assert.EqualError(t, err, "duplicated nick name")
 
 	txn.Payload.(*payload.PayloadRegisterProducer).NickName = "nickname 3"
+	txn.Payload.(*payload.PayloadRegisterProducer).NodePublicKey = publicKey1
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr3),
+		Parameter: nil,
+	}}
+	txn.Outputs[0].ProgramHash = *publicKeyPlege3
+
+	err = CheckRegisterProducerTransaction(txn)
+	assert.EqualError(t, err, "duplicated producer node")
+
+	rpPayload, _ := txn.Payload.(*payload.PayloadRegisterProducer)
+	rpPayload.NickName = "nickname 3"
+	rpPayload.NodePublicKey = publicKey3
+	rpSignBuf := new(bytes.Buffer)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	assert.NoError(t, err)
+	rpSig, err := crypto.Sign(privateKey3, rpSignBuf.Bytes())
+	assert.NoError(t, err)
+	rpPayload.Signature = rpSig
+	txn.Payload = rpPayload
 	err = CheckRegisterProducerTransaction(txn)
 	assert.NoError(t, err)
 
 	//CheckUpdateProducerTransaction
-
 	txn.TxType = types.UpdateProducer
 	txn.Payload = &payload.PayloadUpdateProducer{
-		PublicKey: publicKey3,
-		NickName:  "nick name 1",
-		Url:       "http://www.google.com",
-		Location:  1,
-		Address:   "127.0.0.1",
+		OwnerPublicKey: publicKey3,
+		NodePublicKey:  publicKey3,
+		NickName:       "nickname 3",
+		Url:            "http://www.test.com",
+		Location:       1,
+		NetAddress:     "127.0.0.1:20338",
+		Signature:      rpSig,
 	}
 
 	txn.Programs = []*program.Program{{
@@ -258,16 +285,25 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 
 	txn.Outputs = []*types.Output{{
 		AssetID:     common.Uint256{},
-		Value:       5000,
+		Value:       5000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *publicKeyPlege3,
 	}}
 
 	err = CheckUpdateProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid producer.")
+	assert.EqualError(t, err, "invalid producer")
 
-	txn.Payload.(*payload.PayloadUpdateProducer).PublicKey = publicKey1
-	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 1"
+	updatePayload, _ := txn.Payload.(*payload.PayloadUpdateProducer)
+	updatePayload.OwnerPublicKey = publicKey1
+	updatePayload.NickName = "nickname 1"
+	updateSignBuf := new(bytes.Buffer)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadUpdateProducerVersion)
+	assert.NoError(t, err)
+	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	assert.NoError(t, err)
+	updatePayload.Signature = updateSig
+	txn.Payload = updatePayload
+
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr1),
 		Parameter: nil,
@@ -275,17 +311,54 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	txn.Outputs[0].ProgramHash = *publicKeyPlege1
 
 	err = CheckUpdateProducerTransaction(txn)
-	assert.EqualError(t, err, "Duplicated nick name.")
+	assert.NoError(t, err)
 
-	txn.Payload.(*payload.PayloadUpdateProducer).NickName = "nickname 3"
+	updatePayload.NickName = "nickname 2"
+	updateSignBuf = new(bytes.Buffer)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadUpdateProducerVersion)
+	assert.NoError(t, err)
+	updateSig, err = crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	assert.NoError(t, err)
+	updatePayload.Signature = updateSig
+	txn.Payload = updatePayload
+
+	err = CheckUpdateProducerTransaction(txn)
+	assert.EqualError(t, err, "duplicated nick name")
+
+	updatePayload.NickName = "nickname 3"
+	updateSignBuf = new(bytes.Buffer)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadUpdateProducerVersion)
+	assert.NoError(t, err)
+	sig4, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	assert.NoError(t, err)
+	updatePayload.Signature = sig4
+	txn.Payload = updatePayload
 	err = CheckUpdateProducerTransaction(txn)
 	assert.NoError(t, err)
+
+	updatePayload.NodePublicKey = publicKey2
+	updateSignBuf = new(bytes.Buffer)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadUpdateProducerVersion)
+	assert.NoError(t, err)
+	updateSig, err = crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	assert.NoError(t, err)
+	updatePayload.Signature = updateSig
+	txn.Payload = updatePayload
+
+	err = CheckUpdateProducerTransaction(txn)
+	assert.EqualError(t, err, "duplicated producer node")
 
 	//CheckCancelProducerTransaction
 	txn.TxType = types.CancelProducer
 	cancelPayload := &payload.PayloadCancelProducer{
-		PublicKey: publicKey3,
+		OwnerPublicKey: publicKey3,
 	}
+	cpSignBuf := new(bytes.Buffer)
+	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	assert.NoError(t, err)
+	cpSig, err := crypto.Sign(privateKey3, cpSignBuf.Bytes())
+	assert.NoError(t, err)
+	cancelPayload.Signature = cpSig
 	txn.Payload = cancelPayload
 
 	txn.Programs = []*program.Program{{
@@ -294,15 +367,36 @@ func TestChainStore_TransactionChecks(t *testing.T) {
 	}}
 
 	err = CheckCancelProducerTransaction(txn)
-	assert.EqualError(t, err, "Invalid producer.")
+	assert.EqualError(t, err, "invalid producer")
 
-	cancelPayload.PublicKey = publicKey1
+	cancelPayload.OwnerPublicKey = publicKey1
+	cpSignBuf = new(bytes.Buffer)
+	err = cancelPayload.SerializeUnsigned(cpSignBuf, payload.PayloadCancelProducerVersion)
+	assert.NoError(t, err)
+	cpSig, err = crypto.Sign(privateKey1, cpSignBuf.Bytes())
+	assert.NoError(t, err)
+	cancelPayload.Signature = cpSig
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr1),
 		Parameter: nil,
 	}}
 
 	err = CheckCancelProducerTransaction(txn)
+	assert.NoError(t, err)
+
+	// CheckReturnDepositCoinTransaction
+	DefaultLedger.Store = &ChainStoreMock{
+		BlockHeight:          2000,
+		CancelProducerHeight: 1000,
+	}
+	err = CheckReturnDepositCoinTransaction(txn)
+	assert.EqualError(t, err, "the deposit does not meet the lockup limit")
+
+	DefaultLedger.Store = &ChainStoreMock{
+		BlockHeight:          5000,
+		CancelProducerHeight: 1000,
+	}
+	err = CheckReturnDepositCoinTransaction(txn)
 	assert.NoError(t, err)
 
 	DefaultLedger.Store = originChainStore
@@ -314,11 +408,11 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	}
 
 	// 1.Prepare data
-	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
-	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	// addr: EZ3fDKreg82nAgzJPPWd3ZFXRhcAKkgqWk
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	payload1 := &payload.PayloadCancelProducer{
-		PublicKey: publicKey1,
+		OwnerPublicKey: publicKey1,
 	}
 
 	// addr: EUa2s2Wmc1quGDACEGKmm5qrFEAgoQK9AD
@@ -326,12 +420,10 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	nickName2 := "nickname 2"
 
-	// 2. Run PersistCancelProducer
-	err := testChainStore.PersistCancelProducer(payload1)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	// 2. Run persistCancelProducer
+	if err := testChainStore.persistCancelProducerForMempool(payload1, 100); err != nil {
+		t.Error("persistCancelProducerForMempool failed")
 	}
-	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
 	producers, err := testChainStore.GetRegisteredProducersSorted()
@@ -343,12 +435,9 @@ func TestChainStore_PersistCancelProducer(t *testing.T) {
 	if producers[0].NickName != nickName2 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if !bytes.Equal(producers[0].PublicKey, publicKey2) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
-
-	testChainStore.RemoveCanceledProducer(publicKey1)
-	testChainStore.BatchCommit()
 }
 
 func TestChainStore_PersistUpdateProducer(t *testing.T) {
@@ -363,19 +452,17 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	nickName1 := "nickname 1"
 	ip1 := "168.192.1.1"
 	payload1 := &payload.PayloadUpdateProducer{
-		PublicKey: publicKey2,
-		NickName:  nickName1,
-		Url:       "http://www.test.com",
-		Location:  2,
-		Address:   ip1,
+		OwnerPublicKey: publicKey2,
+		NickName:       nickName1,
+		Url:            "http://www.test.com",
+		Location:       2,
+		NetAddress:     ip1,
 	}
 
 	// 2. Run RegisterProducer
-	err := testChainStore.PersistUpdateProducer(payload1)
-	if err != nil {
-		t.Error("PersistUpdateProducer failed")
+	if err := testChainStore.persistUpdateProducerForMempool(payload1); err != nil {
+		t.Error("persistUpdateProducerForMempool failed")
 	}
-	testChainStore.BatchCommit()
 
 	// 3. Run GetRegisteredProducers
 	producers, err := testChainStore.GetRegisteredProducersSorted()
@@ -384,13 +471,13 @@ func TestChainStore_PersistUpdateProducer(t *testing.T) {
 	}
 
 	// 4. Check payload
-	if !bytes.Equal(producers[0].PublicKey, publicKey2) {
+	if !bytes.Equal(producers[0].OwnerPublicKey, publicKey2) {
 		t.Error("GetRegisteredProducers failed")
 	}
 	if producers[0].NickName != nickName1 {
 		t.Error("GetRegisteredProducers failed")
 	}
-	if producers[0].Address != ip1 {
+	if producers[0].NetAddress != ip1 {
 		t.Error("GetRegisteredProducers failed")
 	}
 
@@ -451,24 +538,21 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	// addr: EZwPHEMQLNBpP2VStF3gRk8EVoMM2i3hda
 	nickName2 := "nickname 2"
 	payload2 := &payload.PayloadRegisterProducer{
-		PublicKey: publicKey2,
-		NickName:  nickName2,
-		Url:       "http://www.test.com",
-		Location:  1,
-		Address:   "127.0.0.1",
+		OwnerPublicKey: publicKey2,
+		NickName:       nickName2,
+		Url:            "http://www.test.com",
+		Location:       1,
+		NetAddress:     "127.0.0.1:20338",
 	}
 
 	// 2. Run RegisterProducer
-	err := testChainStore.PersistRegisterProducer(payload2)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	if err := testChainStore.persistRegisterProducerForMempool(payload2, 2); err != nil {
+		t.Error("persistRegisterProducerForMempool failed")
 	}
-	testChainStore.BatchCommit()
 
 	// 3. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 4. Check vote
@@ -478,9 +562,8 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 5. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	if err := testChainStore.persistVoteOutputForMempool(output); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 6. Check vote
@@ -490,9 +573,8 @@ func TestChainStore_PersistVoteProducer(t *testing.T) {
 	}
 
 	// 7. Run PersistVoteProducer
-	err = testChainStore.PersistVoteOutput(output2)
-	if err != nil {
-		t.Error("PersistRegisterProducer failed")
+	if err := testChainStore.persistVoteOutputForMempool(output2); err != nil {
+		t.Error("persistVoteOutputForMempool failed")
 	}
 
 	// 8. Check vote
@@ -558,9 +640,8 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 2. Run PersistCancelVoteOutput
-	err := testChainStore.PersistCancelVoteOutput(output)
-	if err != nil {
-		t.Error("PersistCancelVoteOutput failed")
+	if err := testChainStore.persistCancelVoteOutputForMempool(output); err != nil {
+		t.Error("persistCancelVoteOutputForMempool failed")
 	}
 
 	// 3. Check vote
@@ -570,9 +651,8 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 	}
 
 	// 4. Run PersistCancelVoteOutput
-	err = testChainStore.PersistCancelVoteOutput(output2)
-	if err != nil {
-		t.Error("PersistCancelVoteOutput failed")
+	if err := testChainStore.persistCancelVoteOutputForMempool(output2); err != nil {
+		t.Error("persistCancelVoteOutputForMempool failed")
 	}
 
 	// 5. Check Vote
@@ -581,8 +661,7 @@ func TestChainStore_PersistCancelVoteOutput(t *testing.T) {
 		t.Error("GetProducerVote failed")
 	}
 
-	testChainStore.ClearRegisteredProducer()
-	testChainStore.BatchCommit()
+	testChainStore.clearRegisteredProducerForMempool()
 }
 
 func TestCheckAssetPrecision(t *testing.T) {
@@ -653,7 +732,7 @@ func TestChainStoreDone(t *testing.T) {
 		t.Error("Chainstore init failed")
 	}
 
-	err := testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err := testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}

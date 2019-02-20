@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/version"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -165,19 +166,30 @@ func (s *txVersionV0TestSuite) TestCheckVoteProducerOutputs() {
 
 	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
 
-	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
-	hashByte, _ := common.HexStringToBytes(hashStr)
-	hash, _ := common.Uint168FromBytes(hashByte)
+	publicKey := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
+	candidate, _ := common.HexStringToBytes(publicKey)
+	producers := [][]byte{candidate}
+	hash, _ := contract.PublicKeyToStandardProgramHash(candidate)
 	outputs = append(outputs, &types.Output{
 		OutputType:  types.VoteOutput,
 		ProgramHash: *hash,
+		OutputPayload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				outputpayload.VoteContent{
+					VoteType:   0,
+					Candidates: [][]byte{candidate},
+				},
+			},
+		},
 	})
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
+
+	s.Error(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, nil))
+	s.NoError(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 }
 
 func (s *txVersionV0TestSuite) TestCheckTxHasNoPrograms() {

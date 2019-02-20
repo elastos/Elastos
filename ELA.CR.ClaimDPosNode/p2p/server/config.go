@@ -91,6 +91,10 @@ type Config struct {
 
 	// PongNonce will be invoked to get a nonce when sending a ping message.
 	PongNonce func() uint64
+
+	// NAFilter is a network address filter for peers to filter relayed
+	// addresses.
+	NAFilter p2p.NAFilter
 }
 
 func (cfg *Config) normalize() {
