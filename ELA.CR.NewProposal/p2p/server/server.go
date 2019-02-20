@@ -129,7 +129,6 @@ type serverPeer struct {
 	isWhitelisted  bool
 	knownAddresses map[string]struct{}
 	banScore       connmgr.DynamicBanScore
-	quit           chan struct{}
 }
 
 // newServerPeer returns a new IPeer instance. The peer needs to be set by
@@ -139,7 +138,6 @@ func newServerPeer(s *server, isPersistent bool) *serverPeer {
 		server:         s,
 		persistent:     isPersistent,
 		knownAddresses: make(map[string]struct{}),
-		quit:           make(chan struct{}),
 	}
 }
 
@@ -167,12 +165,7 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 			addrs = append(addrs, addr)
 		}
 	}
-	known, err := sp.PushAddrMsg(addrs)
-	if err != nil {
-		log.Errorf("Can't push address message to %s: %v", sp.Peer, err)
-		sp.Disconnect()
-		return
-	}
+	known := sp.PushAddrMsg(addrs)
 	sp.addKnownAddresses(known)
 }
 
@@ -180,11 +173,6 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 // used to negotiate the protocol version details as well as kick start
 // the communications.
 func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
-	// Signal the new peer.
-	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
-	}
-
 	// Update the address manager and request known addresses from the
 	// remote peer for outbound connections.  This is skipped when running
 	// on the simulation test network since it is only intended to connect
@@ -194,6 +182,10 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Outbound connections.
 	if !sp.Inbound() {
+		// Update the address manager with the advertised services for outbound
+		// connections in case they have changed.
+		addrManager.SetServices(sp.NA(), v.Services)
+
 		// Get address that best matches.
 		lna := addrManager.GetBestLocalAddress(sp.NA())
 		if addrmgr.IsRoutable(lna) {
@@ -209,10 +201,24 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 		// Mark the address as a known good address.
 		addrManager.Good(sp.NA())
+
+	} else { // Inbound connections.
+
+		// Create net address according to the version message.
+		na := p2p.NewNetAddressIPPort(sp.NA().IP, v.Port, v.Services)
+		log.Debugf("New inbound sp.NA %s, port %d, services %d, na %s",
+			sp.NA(), v.Port, v.Services, na)
+
+		addrManager.AddAddress(na, na)
 	}
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
+
+	// Signal the new peer.
+	if sp.server.cfg.OnNewPeer != nil {
+		sp.server.cfg.OnNewPeer(sp)
+	}
 }
 
 // OnGetAddr is invoked when a peer receives a getaddr message and is used
@@ -636,6 +642,7 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 	cfg := &peer.Config{
 		Magic:            sp.server.cfg.MagicNumber,
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
+		DefaultPort:      sp.server.cfg.DefaultPort,
 		Services:         sp.server.cfg.Services,
 		DisableRelayTx:   sp.server.cfg.DisableRelayTx,
 		HostToNetAddress: sp.server.addrManager.HostToNetAddress,
@@ -676,8 +683,8 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -695,8 +702,8 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp.Peer = p
 	sp.connReq = c
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 	s.addrManager.Attempt(sp.NA())
 }
 
@@ -710,7 +717,6 @@ func (s *server) peerDoneHandler(sp *serverPeer) {
 	if sp.VersionKnown() && s.cfg.OnDonePeer != nil {
 		s.cfg.OnDonePeer(sp)
 	}
-	close(sp.quit)
 }
 
 // peerHandler is used to handle peer operations such as adding and removing
@@ -729,6 +735,25 @@ func (s *server) peerHandler() {
 		outboundPeers:   make(map[uint64]*serverPeer),
 		banned:          make(map[string]time.Time),
 		outboundGroups:  make(map[string]int),
+	}
+
+	// Startup persistent peers.
+	for _, addr := range s.cfg.SeedPeers {
+		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			continue
+		}
+
+		// Add seed peer addresses into addr manager
+		err = s.addrManager.AddAddressByIP(netAddr.String())
+		if err != nil {
+			continue
+		}
+
+		go s.connManager.Connect(&connmgr.ConnReq{
+			Addr:      netAddr,
+			Permanent: true,
+		})
 	}
 
 	go s.connManager.Start()
@@ -1121,7 +1146,7 @@ func newServer(origCfg *Config) (*server, error) {
 	if os.IsNotExist(err) {
 		os.MkdirAll(dataDir, os.ModePerm)
 	}
-	amgr := addrmgr.New(dataDir)
+	amgr := addrmgr.New(dataDir, cfg.NAFilter)
 
 	var listeners []net.Listener
 	var nat NAT
@@ -1207,19 +1232,6 @@ func newServer(origCfg *Config) (*server, error) {
 		return nil, err
 	}
 	s.connManager = cmgr
-
-	// Startup persistent peers.
-	for _, addr := range cfg.SeedPeers {
-		netAddr, err := addrStringToNetAddr(addr)
-		if err != nil {
-			return nil, err
-		}
-
-		go s.connManager.Connect(&connmgr.ConnReq{
-			Addr:      netAddr,
-			Permanent: true,
-		})
-	}
 
 	return &s, nil
 }

@@ -12,7 +12,7 @@ import (
 
 // key: DATAHeader || block hash
 // value: sysfee(8bytes) || trimmed block
-func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
+func (c *ChainStore) persistTrimmedBlock(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATAHeader))
 	hash := b.Hash()
@@ -25,8 +25,17 @@ func (c *ChainStore) PersistTrimmedBlock(b *Block) error {
 	if err := WriteUint64(value, sysFee); err != nil {
 		return err
 	}
-	if err := b.Trim(value); err != nil {
+	if err := b.Header.Serialize(value); err != nil {
 		return err
+	}
+	if err := WriteUint32(value, uint32(len(b.Transactions))); err != nil {
+		return err
+	}
+	for _, tx := range b.Transactions {
+		txHash := tx.Hash()
+		if err := txHash.Serialize(value); err != nil {
+			return errors.New("Block item transaction hash serialize failed, " + err.Error())
+		}
 	}
 
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -47,7 +56,7 @@ func (c *ChainStore) RollbackTrimmedBlock(b *Block) error {
 
 // key: DATABlockHash || height
 // value: block hash
-func (c *ChainStore) PersistBlockHash(b *Block) error {
+func (c *ChainStore) persistBlockHash(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATABlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -77,7 +86,7 @@ func (c *ChainStore) RollbackBlockHash(b *Block) error {
 
 // key: SYSCurrentBlock
 // value: current block hash || height
-func (c *ChainStore) PersistCurrentBlock(b *Block) error {
+func (c *ChainStore) persistCurrentBlock(b *Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYSCurrentBlock))
 
@@ -111,7 +120,7 @@ func (c *ChainStore) RollbackCurrentBlock(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspendUTXOs(b *Block) error {
+func (c *ChainStore) persistUnspendUTXOs(b *Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
@@ -297,134 +306,61 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
+		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
+		switch txn.TxType {
+		case RegisterAsset:
 			regPayload := txn.Payload.(*PayloadRegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
 			}
-		}
-		if txn.TxType == RegisterProducer {
-			err := c.PersistRegisterProducer(txn.Payload.(*PayloadRegisterProducer))
-			if err != nil {
+		case IllegalProposalEvidence:
+			if err := c.persistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == CancelProducer {
-			err := c.PersistCancelProducer(txn.Payload.(*PayloadCancelProducer))
-			if err != nil {
+		case IllegalVoteEvidence:
+			if err := c.persistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == UpdateProducer {
-			if err := c.PersistUpdateProducer(txn.Payload.(*PayloadUpdateProducer)); err != nil {
-				return err
-			}
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
-			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
-					if err := c.PersistVoteOutput(output); err != nil {
-						return err
-					}
-				}
-			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					if err = c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
-				}
-			}
-		}
-		if txn.TxType == IllegalProposalEvidence {
-			if err := c.PersistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
-				return err
-			}
-		}
-		if txn.TxType == IllegalVoteEvidence {
-			if err := c.PersistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
-				return err
-			}
-		}
-		if txn.TxType == IllegalBlockEvidence {
-			if err := c.PersistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
+		case IllegalBlockEvidence:
+			if err := c.persistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
 				return err
 			}
 		}
 	}
+
 	return nil
 }
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.RollbackTransaction(txn); err != nil {
+		if err := c.rollbackTransaction(txn); err != nil {
 			return err
 		}
-		if txn.TxType == RegisterAsset {
-			if err := c.RollbackAsset(txn.Hash()); err != nil {
+		switch txn.TxType {
+		case RegisterAsset:
+			if err := c.rollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == WithdrawFromSideChain {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
-				if err := c.RollbackSidechainTx(hash); err != nil {
+				if err := c.rollbackSidechainTx(hash); err != nil {
 					return err
-				}
-			}
-		}
-		if txn.TxType == RegisterProducer {
-			regPayload := txn.Payload.(*PayloadRegisterProducer)
-			if err := c.RollbackRegisterProducer(regPayload); err != nil {
-				return err
-			}
-		}
-		if txn.TxType == CancelProducer || txn.TxType == UpdateProducer {
-			if err := c.RollbackCancelOrUpdateProducer(); err != nil {
-				return err
-			}
-		}
-		if txn.TxType == TransferAsset && txn.Version >= TxVersion09 {
-			for _, output := range txn.Outputs {
-				if output.OutputType == VoteOutput {
-					if err := c.PersistCancelVoteOutput(output); err != nil {
-						return err
-					}
-				}
-			}
-			for _, input := range txn.Inputs {
-				transaction, _, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				output := transaction.Outputs[input.Previous.Index]
-				if output.OutputType == VoteOutput {
-					if err = c.PersistVoteOutput(output); err != nil {
-						return err
-					}
 				}
 			}
 		}
 	}
-
 	return nil
 }
 
-func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
+func (c *ChainStore) rollbackTransaction(txn *Transaction) error {
 
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATATransaction))
@@ -437,7 +373,7 @@ func (c *ChainStore) RollbackTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackAsset(assetID Uint256) error {
+func (c *ChainStore) rollbackAsset(assetID Uint256) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(STInfo))
 	if err := assetID.Serialize(key); err != nil {
@@ -448,7 +384,7 @@ func (c *ChainStore) RollbackAsset(assetID Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
+func (c *ChainStore) rollbackSidechainTx(sidechainTxHash Uint256) error {
 	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
@@ -456,7 +392,7 @@ func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspend(b *Block) error {
+func (c *ChainStore) persistUnspend(b *Block) error {
 	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {

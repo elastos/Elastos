@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -28,7 +27,6 @@ func (s *blockVersionTestSuite) SetupTest() {
 
 func (s *blockVersionTestSuite) TestGetProducersDesc() {
 	originLedger := blockchain.DefaultLedger
-	originArbitratorsCount := config.Parameters.ArbiterConfiguration.ArbitratorsCount
 
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -44,43 +42,40 @@ func (s *blockVersionTestSuite) TestGetProducersDesc() {
 		arbitrators = append(arbitrators, a)
 	}
 
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = 5
-	chainStore := &mock.ChainStoreMock{
+	chainStore := &blockchain.ChainStoreMock{
 		RegisterProducers: []*payload.PayloadRegisterProducer{
 			{
-				PublicKey: arbitrators[0],
+				OwnerPublicKey: arbitrators[0],
 			},
 			{
-				PublicKey: arbitrators[1],
+				OwnerPublicKey: arbitrators[1],
 			},
 			{
-				PublicKey: arbitrators[2],
+				OwnerPublicKey: arbitrators[2],
 			},
 			{
-				PublicKey: arbitrators[3],
+				OwnerPublicKey: arbitrators[3],
 			},
 		},
 	}
 	s.NotEmpty(chainStore)
-	//fixme uncommon when ChainStoreMock is done
-	//blockchain.DefaultLedger = &blockchain.Ledger{
-	//	Store: chainStore,
-	//}
-	//
-	//producers, err := s.Version.GetProducersDesc()
-	//s.Error(err, "arbitrators count does not match config value")
-	//
-	//chainStore.RegisterProducers = append(chainStore.RegisterProducers,
-	//	&payload.PayloadRegisterProducer{PublicKey: arbitrators[4]},
-	//)
-	//producers, err = s.Version.GetProducersDesc()
-	//s.NoError(err)
-	//for i := range producers {
-	//	s.Equal(arbitrators[i], producers[i])
-	//}
+	blockchain.DefaultLedger = &blockchain.Ledger{
+		Store: chainStore,
+	}
+
+	producers, err := s.Version.GetProducersDesc()
+	s.Error(err, "arbitrators count does not match config value")
+
+	chainStore.RegisterProducers = append(chainStore.RegisterProducers,
+		&payload.PayloadRegisterProducer{OwnerPublicKey: arbitrators[4]},
+	)
+	producers, err = s.Version.GetProducersDesc()
+	s.NoError(err)
+	for i := range producers {
+		s.Equal(arbitrators[i], producers[i])
+	}
 
 	blockchain.DefaultLedger = originLedger
-	config.Parameters.ArbiterConfiguration.ArbitratorsCount = originArbitratorsCount
 }
 
 func (s *blockVersionTestSuite) TestAssignCoinbaseTxRewards() {

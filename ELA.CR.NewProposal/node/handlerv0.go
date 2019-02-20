@@ -106,7 +106,7 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 
 func (h *HandlerV0) onInv(inv *v0.Inv) error {
 	node := h.base.node
-	log.Debugf("[OnInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
+	log.Debugf("[onInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
 
 	if node.IsExternal() {
 		return fmt.Errorf("receive inv message from external node")
@@ -130,7 +130,7 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(hash)
 			locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			if err != nil {
-				log.Errorf("Failed to get block locator for the latest block: %v", err)
+				log.Errorf("failed to get block locator for the latest block: %v", err)
 				continue
 			}
 			SendGetBlocks(node, locator, *orphanRoot)
@@ -150,9 +150,9 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 	node := h.base.node
 	hash := req.Hash
 
-	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	block, err := chain.DefaultLedger.Blockchain.GetBlock(hash)
 	if err != nil {
-		log.Debugf("Can't get block from hash %s, send not found message", hash)
+		log.Debugf("can't get block from hash %s, send not found message", hash)
 		node.SendMessage(v0.NewNotFound(hash))
 		return err
 	}
@@ -163,7 +163,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		var ok bool
 		confirm, ok = LocalNode.GetConfirm(hash)
 		if !ok {
-			log.Debugf("Can't get confirm from hash %s, only send block", hash)
+			log.Debugf("can't get confirm from hash %s, only send block", hash)
 			node.SendMessage(msg.NewBlock(&types.DposBlock{
 				BlockFlag: true,
 				Block:     block,
@@ -200,18 +200,17 @@ func (h *HandlerV0) onBlock(msg *msg.Block) error {
 		blockHash = dposBlock.Confirm.Hash
 		return nil
 	} else {
+		blockHash = dposBlock.Block.Hash()
+		log.Debug("[onBlock] handlerV0 received block:", blockHash.String())
 
-		blockHash := dposBlock.Block.Hash()
-		log.Debug("[onblock] handlerV0 received block:", blockHash.String())
-
-		if !LocalNode.IsNeighborNode(node.ID()) {
+		if !LocalNode.IsNeighborNode(node) {
 			log.Debug("Received block message from unknown peer")
 			return fmt.Errorf("received block message from unknown peer")
 		}
 
 		if chain.DefaultLedger.BlockInLedger(blockHash) {
 			h.duplicateBlocks++
-			log.Debug("Receive ", h.duplicateBlocks, " duplicated block.")
+			log.Debug("receive ", h.duplicateBlocks, " duplicated block.")
 			return fmt.Errorf("received duplicated block")
 		}
 
@@ -222,8 +221,8 @@ func (h *HandlerV0) onBlock(msg *msg.Block) error {
 		var err error
 		_, isOrphan, err = chain.DefaultLedger.HeightVersions.AddDposBlock(dposBlock)
 		if err != nil {
-			log.Debugf("Received invalid block %s, err: %s", blockHash.String(), err.Error())
-			return fmt.Errorf("Receive invalid block %s, err: %s", blockHash.String(), err.Error())
+			log.Debugf("received invalid block %s, err: %s", blockHash.String(), err.Error())
+			return fmt.Errorf("receive invalid block %s, err: %s", blockHash.String(), err.Error())
 		}
 	}
 
@@ -231,7 +230,7 @@ func (h *HandlerV0) onBlock(msg *msg.Block) error {
 		// relay
 		if !LocalNode.ExistedID(blockHash) {
 			LocalNode.Relay(node, dposBlock)
-			log.Debug("Relay block")
+			log.Debug("relay block")
 		}
 
 		if isOrphan && !LocalNode.IsRequestedBlock(blockHash) {
@@ -249,10 +248,10 @@ func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
 
 	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
 		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
-			return fmt.Errorf("[HandlerBase] VerifyTransaction failed when AppendToTxnPool")
+			return fmt.Errorf("[HandlerBase] verifyTransaction failed when AppendToTxnPool")
 		}
 		LocalNode.Relay(node, tx)
-		log.Debugf("Relay Transaction hash %s type %s", tx.Hash().String(), tx.TxType.Name())
+		log.Debugf("relay transaction hash %s type %s", tx.Hash().String(), tx.TxType.Name())
 		LocalNode.IncRxTxnCnt()
 	}
 
@@ -260,6 +259,6 @@ func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
 }
 
 func (h *HandlerV0) onNotFound(msg *v0.NotFound) error {
-	log.Debug("Received not found message, hash: ", msg.Hash.String())
+	log.Debug("received not found message, hash: ", msg.Hash.String())
 	return nil
 }

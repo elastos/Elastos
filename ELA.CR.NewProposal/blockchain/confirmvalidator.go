@@ -25,7 +25,7 @@ func CheckConfirm(confirm *DPosProposalVoteSlot) error {
 		signers[vote.Signer] = struct{}{}
 	}
 
-	if len(signers) < int(config.Parameters.ArbiterConfiguration.MajorityCount) {
+	if len(signers) < int(config.MajorityCount) {
 		return errors.New("[onConfirm] signers less than majority count")
 	}
 

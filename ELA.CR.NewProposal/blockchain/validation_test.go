@@ -154,7 +154,7 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	fakeCode[2] = 0x01
 	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature}, data)
 	assert.Error(t, err, "[CheckMultisigSignature] invalid redeem script wrong public key")
-	assert.Equal(t, "The encodeData format is error", err.Error())
+	assert.Equal(t, "the encodeData format is error", err.Error())
 
 	// invalid signature length not match
 	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature[math.Intn(64):]}, data)
@@ -268,7 +268,7 @@ func TestRunPrograms(t *testing.T) {
 	}
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with unmathed hashes")
-	assert.Equal(t, "The data hashes is different with corresponding program code.", err.Error())
+	assert.Equal(t, "the data hashes is different with corresponding program code", err.Error())
 
 	// With disordered hashes
 	init()
@@ -276,7 +276,7 @@ func TestRunPrograms(t *testing.T) {
 	sort.Sort(sort.Reverse(byHash(programs)))
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with disordered hashes")
-	assert.Equal(t, "The data hashes is different with corresponding program code.", err.Error())
+	assert.Equal(t, "the data hashes is different with corresponding program code", err.Error())
 
 	// With random no code
 	init()
@@ -285,7 +285,7 @@ func TestRunPrograms(t *testing.T) {
 	}
 	err = RunPrograms(data, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with random no code")
-	assert.Equal(t, "The data hashes is different with corresponding program code.", err.Error())
+	assert.Equal(t, "the data hashes is different with corresponding program code", err.Error())
 
 	// With random no parameter
 	init()
@@ -427,8 +427,7 @@ func TestSortPrograms(t *testing.T) {
 		p.Code = getInvalidCode()
 		programs = append(programs, p)
 	}
-	err := SortPrograms(programs)
-	assert.NoError(t, err)
+	SortPrograms(programs)
 
 	count := 100
 	hashes := make([]common.Uint168, 0, count)

@@ -62,9 +62,7 @@ func (node *node) initConnection() {
 func (node *node) start(inbound bool) {
 	go node.inHandler()
 	go node.outHandler()
-	if !inbound {
-		go node.pingHandler()
-	}
+	go node.pingHandler()
 }
 
 func listenNodePort() {
