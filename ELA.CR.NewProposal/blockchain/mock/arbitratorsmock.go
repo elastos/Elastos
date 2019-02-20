@@ -32,6 +32,17 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) IncreaseChainHeight(block *types.Block) {
+}
+
+func (a *ArbitratorsMock) DecreaseChainHeight(block *types.Block) {
+}
+
+func (a *ArbitratorsMock) GetInactiveArbitrators(confirm *payload.Confirm,
+	onDutyArbitrator []byte) (result []string) {
+	return []string{}
+}
+
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
 	panic("implement me")
 }
@@ -64,28 +75,12 @@ func (a *ArbitratorsMock) GetArbitersMajorityCount() uint32 {
 	return a.MajorityCount
 }
 
-func (a *ArbitratorsMock) GetActiveDposPeers() map[string]string {
-	panic("implement me")
-}
-
 func (a *ArbitratorsMock) GetDutyChangeCount() uint32 {
 	return a.DutyChangedCount
 }
 
 func (a *ArbitratorsMock) SetDutyChangeCount(count uint32) {
 	a.DutyChangedCount = count
-}
-
-func (a *ArbitratorsMock) OnBlockReceived(b *types.Block, confirmed bool) {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) OnConfirmReceived(p *payload.Confirm) {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) Start() error {
-	return nil
 }
 
 func (a *ArbitratorsMock) ForceChange() error {
@@ -149,6 +144,9 @@ func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {
 }
 
 func (a *ArbitratorsMock) GetNextOnDutyArbitrator(offset uint32) []byte {
+	if len(a.CurrentArbitrators) == 0 {
+		return nil
+	}
 	index := (a.DutyChangedCount + offset) % uint32(len(a.CurrentArbitrators))
 	return a.CurrentArbitrators[index]
 }

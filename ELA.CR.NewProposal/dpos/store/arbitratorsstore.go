@@ -2,7 +2,6 @@ package store
 
 import (
 	"bytes"
-	"errors"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
@@ -13,16 +12,6 @@ import (
 type persistDutyChangedCountTask struct {
 	count uint32
 	reply chan bool
-}
-
-type persistCurrentArbitratorsTask struct {
-	arbiters *Arbitrators
-	reply    chan bool
-}
-
-type persistNextArbitratorsTask struct {
-	arbiters *Arbitrators
-	reply    chan bool
 }
 
 type persistDirectPeersTask struct {
@@ -40,12 +29,6 @@ out:
 			switch task := t.(type) {
 			case *persistDutyChangedCountTask:
 				s.handlePersistDposDutyChangedCount(task.count)
-				task.reply <- true
-			case *persistCurrentArbitratorsTask:
-				s.handlePersistCurrentArbiters(task.arbiters)
-				task.reply <- true
-			case *persistNextArbitratorsTask:
-				s.handlePersistNextArbiters(task.arbiters)
 				task.reply <- true
 			case *persistDirectPeersTask:
 				s.handlePersistDirectPeers(task.peers)
@@ -68,14 +51,6 @@ func (s *DposStore) handlePersistDposDutyChangedCount(count uint32) {
 	s.saveDposDutyChangedCount(count)
 }
 
-func (s *DposStore) handlePersistCurrentArbiters(a *Arbitrators) {
-	s.saveCurrentArbitrators(a)
-}
-
-func (s *DposStore) handlePersistNextArbiters(a *Arbitrators) {
-	s.saveNextArbitrators(a)
-}
-
 func (s *DposStore) handlePersistDirectPeers(p []*interfaces.DirectPeers) {
 	s.saveDirectPeers(p)
 }
@@ -86,56 +61,10 @@ func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	<-reply
 }
 
-func (s *DposStore) SaveCurrentArbitrators(a interfaces.Arbitrators) {
-	reply := make(chan bool)
-	if arbiters, ok := a.(*Arbitrators); ok {
-		s.persistCh <- &persistCurrentArbitratorsTask{arbiters: arbiters,
-			reply: reply}
-		<-reply
-	}
-}
-
-func (s *DposStore) SaveNextArbitrators(a interfaces.Arbitrators) {
-	reply := make(chan bool)
-	if arbiters, ok := a.(*Arbitrators); ok {
-		s.persistCh <- &persistNextArbitratorsTask{arbiters: arbiters, reply: reply}
-		<-reply
-	}
-}
-
 func (s *DposStore) SaveDirectPeers(p []*interfaces.DirectPeers) {
 	reply := make(chan bool)
 	s.persistCh <- &persistDirectPeersTask{peers: p, reply: reply}
 	<-reply
-}
-
-func (s *DposStore) GetArbitrators(a interfaces.Arbitrators) error {
-	arbiters, ok := a.(*Arbitrators)
-	if !ok {
-		return errors.New("invalid ")
-	}
-	var err error
-	if arbiters.DutyChangedCount, err = s.getDposDutyChangedCount(); err != nil {
-		return err
-	}
-
-	if arbiters.currentArbitrators, err = s.getCurrentArbitrators(); err != nil {
-		return err
-	}
-
-	if arbiters.currentCandidates, err = s.getCurrentCandidates(); err != nil {
-		return err
-	}
-
-	if arbiters.nextArbitrators, err = s.getNextArbitrators(); err != nil {
-		return err
-	}
-
-	if arbiters.nextCandidates, err = s.getNextCandidates(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (s *DposStore) GetDirectPeers() ([]*interfaces.DirectPeers, error) {
@@ -184,34 +113,6 @@ func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 	batch := s.db.NewBatch()
 	if err := s.persistDposDutyChangedCount(batch, count); err != nil {
 		log.Fatal("[persistDposDutyChangedCount]: error to persist dpos duty changed count:", err.Error())
-		return
-	}
-	batch.Commit()
-}
-
-func (s *DposStore) saveCurrentArbitrators(a *Arbitrators) {
-	log.Debug("SaveCurrentArbitrators()")
-	batch := s.db.NewBatch()
-	if err := s.persistCurrentArbitrators(batch, a.currentArbitrators); err != nil {
-		log.Fatal("[persistCurrentArbitrators]: error to persist current arbiters:", err.Error())
-		return
-	}
-	if err := s.persistCurrentCandidates(batch, a.currentCandidates); err != nil {
-		log.Fatal("[persistCurrentCandidates]: error to persist current candidates:", err.Error())
-		return
-	}
-	batch.Commit()
-}
-
-func (s *DposStore) saveNextArbitrators(a *Arbitrators) {
-	log.Debug("SaveNextArbitrators()")
-	batch := s.db.NewBatch()
-	if err := s.persistNextArbitrators(batch, a.nextArbitrators); err != nil {
-		log.Fatal("[persistNextArbitrators]: error to persist current arbiters:", err.Error())
-		return
-	}
-	if err := s.persistNextCandidates(batch, a.nextCandidates); err != nil {
-		log.Fatal("[persistNextCandidates]: error to persist current candidates:", err.Error())
 		return
 	}
 	batch.Commit()

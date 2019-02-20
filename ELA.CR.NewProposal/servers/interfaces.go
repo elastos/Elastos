@@ -277,8 +277,12 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
-func GetActiveDposPeers(params Params) map[string]interface{} {
-	peers := blockchain.DefaultLedger.Arbitrators.GetActiveDposPeers()
+func GetActiveDPOSPeers(params Params) map[string]interface{} {
+	if Arbiter == nil {
+		return ResponsePack(InternalError, "arbiter disabled")
+	}
+
+	peers := Arbiter.GetActiveDPOSPeers()
 	return ResponsePack(Success, peers)
 }
 
