@@ -69,8 +69,8 @@ namespace Elastos {
 		}
 
 		ISubAccount *SubAccountGenerator::GenerateFromCoinInfo(IAccount *account, const CoinInfo &coinInfo) {
-			ParamChecker::checkArgumentNotEmpty(coinInfo.getPublicKey(), "Sub account public key");
-			ParamChecker::checkArgumentNotEmpty(coinInfo.getChainCode(), "Sub account chain code");
+			ParamChecker::checkParamNotEmpty(coinInfo.getPublicKey(), "Sub account public key");
+			ParamChecker::checkParamNotEmpty(coinInfo.getChainCode(), "Sub account chain code");
 
 			CMBlock pubKey = Utils::decodeHex(coinInfo.getPublicKey());
 			MasterPubKey masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(coinInfo.getChainCode()));

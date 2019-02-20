@@ -95,7 +95,7 @@ namespace Elastos {
 
 			static void checkPasswordWithNullLegal(const std::string &password, const std::string &msg);
 
-			static void checkArgumentNotEmpty(const std::string &argument, const std::string &msg);
+			static void checkParamNotEmpty(const std::string &argument, const std::string &msg);
 
 			static void CheckDecrypt(bool condition);
 

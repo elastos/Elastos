@@ -87,8 +87,8 @@ namespace Elastos {
 			checkPassword(password, msg);
 		}
 
-		void ParamChecker::checkArgumentNotEmpty(const std::string &argument, const std::string &msg) {
-			checkCondition(argument.empty(), Error::InvalidArgument, msg + " is empty", Exception::InvalidArgument);
+		void ParamChecker::checkParamNotEmpty(const std::string &argument, const std::string &msg) {
+			checkCondition(argument.empty(), Error::InvalidArgument, msg + " should not be empty", Exception::InvalidArgument);
 		}
 
 		void ParamChecker::CheckDecrypt(bool condition) {
@@ -110,15 +110,22 @@ namespace Elastos {
 		void ParamChecker::checkPubKeyJsonArray(const nlohmann::json &jsonArray,
 												size_t checkCount, const std::string &msg) {
 
-			checkJsonArray(jsonArray, checkCount, msg + "pubkey");
+			checkJsonArray(jsonArray, checkCount, msg + " pubkey");
 
-			std::vector<std::string> signers = jsonArray;
+			for (nlohmann::json::const_iterator it = jsonArray.begin(); it != jsonArray.end(); ++it) {
+				ParamChecker::checkParam(!(*it).is_string(), Error::PubKeyFormat, msg + " is not string");
 
-			for (int i = 0; i < signers.size(); i++) {
-				ParamChecker::checkCondition(signers[i].find("xpub") != -1, Error::PubKeyFormat,
-											 "Public key is not support xpub");
-				ParamChecker::checkCondition(signers[i].length() != 33 * 2 && signers[i].length() != 65 * 2,
+				std::string pubKey = (*it).get<std::string>();
+
+				ParamChecker::checkCondition(pubKey.find("xpub") != -1, Error::PubKeyFormat,
+											 msg + " public key is not support xpub");
+
+				ParamChecker::checkCondition(pubKey.length() != 33 * 2 && pubKey.length() != 65 * 2,
 											 Error::PubKeyLength, "Public key length should be 33 or 65 bytes");
+				for (nlohmann::json::const_iterator it1 = it + 1; it1 != jsonArray.end(); ++it1) {
+					ParamChecker::checkParam(pubKey == (*it1).get<std::string>(),
+					    Error::PubKeyFormat, msg + " contain the same");
+				}
 			}
 		}
 
