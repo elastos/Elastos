@@ -44,3 +44,14 @@ Do the same thing for the DID Sidechain keystore:
 
 1. Install dependencies `glide cc && glide update && glide install`
 
+2. Delete the `elastos_arbiter` folder if it exists so we can start new
+
+3. Set the `config.json` fields
+
+    - the `MainNode` is the connection to `Elastos.ELA`, so `SpvSeedList` should correspond to the IP and `NodeOpenPort`
+    - You need a separate SideNode in `SideNodeList` for each side chain
+    - Each side chain's `GenesisBlock` needs to be retrived via something like `http://localhost:20604/api/v1/block/hash/0`, make sure you use the right port defined by `HttpRestPort`.
+
+4. Add the public keys from each of the Arbiter's primary keystore.dat to the `Arbiters` array in the `Elastos.ELA` mainchain `config.json`
+
+5. Now run the arbiter, make sure you pass the password for the keystores, there is only one because your keystores should be using the same password, e.g. if your password is elastos - `./arbiter -p elastos`
