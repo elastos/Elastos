@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -90,21 +91,28 @@ func main() {
 		BlockMemPool: blockMemPool,
 	}
 	versions := version.NewVersions(&verconf)
+	verconf.Versions = versions
 	ledger.HeightVersions = versions   // fixme
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := store.NewArbitrators(&store.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.NormalArbitratorsCount + uint32(len(activeNetParams.CRCArbiters)),
-		CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
-		CRCArbitrators:   activeNetParams.CRCArbiters,
-		Versions:         versions,
-		Store:            dposStore,
-		ChainStore:       chainStore,
+	arbiters, err := state.NewArbitrators(&state.ArbitratorsConfig{
+		ArbitratorsCount: config.Parameters.ArbiterConfiguration.
+			NormalArbitratorsCount + uint32(len(activeNetParams.CRCArbiters)),
+		CandidatesCount: config.Parameters.ArbiterConfiguration.CandidatesCount,
+		CRCArbitrators:  activeNetParams.CRCArbiters,
+		Versions:        versions,
+		GetBestHeight: func() uint32 {
+			return chainStore.GetHeight()
+		},
+		GetCurrentHeader: func() (*types.Header, error) {
+			b, err := chainStore.GetBlock(chainStore.GetCurrentBlockHash())
+			if err != nil {
+				return nil, err
+			}
+			return &b.Header, nil
+		},
 	})
 	if err != nil {
-		printErrorAndExit(err)
-	}
-	if err = arbiters.Start(); err != nil {
 		printErrorAndExit(err)
 	}
 	verconf.Arbitrators = arbiters
@@ -145,15 +153,15 @@ func main() {
 			printErrorAndExit(err)
 		}
 		arbitrator, err := dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{
-			EnableEventLog:    true,
+			EnableEventLog: true,
 			EnableEventRecord: config.Parameters.ArbiterConfiguration.
 				EnableEventRecord,
-			Params:            cfg.ArbiterConfiguration,
-			ChainParams:       activeNetParams,
-			Arbitrators:       arbiters,
-			Store:             dposStore,
-			TxMemPool:         txMemPool,
-			BlockMemPool:      blockMemPool,
+			Params:       cfg.ArbiterConfiguration,
+			ChainParams:  activeNetParams,
+			Arbitrators:  arbiters,
+			Store:        dposStore,
+			TxMemPool:    txMemPool,
+			BlockMemPool: blockMemPool,
 			Broadcast: func(msg p2p.Message) {
 				server.BroadcastMessage(msg)
 			},

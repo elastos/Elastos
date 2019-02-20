@@ -146,6 +146,7 @@ func initLedger(L *lua.LState) int {
 		ChainParams: &config.MainNetParams,
 	}
 	versions := version.NewVersions(verconf)
+	verconf.Versions = versions
 	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.MainNetParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())

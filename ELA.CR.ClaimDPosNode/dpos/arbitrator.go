@@ -56,6 +56,22 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
+func (a *Arbitrator) GetActiveDPOSPeers() (result map[string]string) {
+	peers, err := a.cfg.Store.GetDirectPeers()
+	if err == nil {
+		log.Warn("get direct peers from data base error")
+		return result
+	}
+
+	for _, v := range peers {
+		if v.Sequence > 0 {
+			pk := common.BytesToHexString(v.PublicKey)
+			result[pk] = v.Address
+		}
+	}
+	return result
+}
+
 func (a *Arbitrator) OnIllegalBlockTxReceived(p *payload.DPOSIllegalBlocks) {
 	log.Info("[OnIllegalBlockTxReceived] listener received illegal block tx")
 	if p.CoinType != payload.ELACoin {

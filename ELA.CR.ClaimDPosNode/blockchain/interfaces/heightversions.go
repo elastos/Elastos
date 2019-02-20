@@ -17,7 +17,8 @@ type HeightVersions interface {
 		references map[*types.Input]*types.Output, producers [][]byte) error
 	CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error
 
-	GetNormalArbitratorsDesc(blockHeight uint32, arbitratorsCount uint32) ([][]byte, error)
+	GetNormalArbitratorsDesc(blockHeight uint32,
+		arbitratorsCount uint32) ([][]byte, error)
 	GetCandidatesDesc(blockHeight uint32, startIndex uint32) ([][]byte, error)
 	AddBlock(block *types.Block) (bool, bool, error)
 	AddDposBlock(block *types.DposBlock) (bool, bool, error)

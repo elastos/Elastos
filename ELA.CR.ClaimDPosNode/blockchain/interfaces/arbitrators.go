@@ -3,11 +3,14 @@ package interfaces
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type Arbitrators interface {
-	Start() error
 	ForceChange() error
+	IncreaseChainHeight(block *types.Block)
+	DecreaseChainHeight(block *types.Block)
 
 	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte
@@ -31,5 +34,6 @@ type Arbitrators interface {
 	HasArbitersMajorityCount(num uint32) bool
 	HasArbitersMinorityCount(num uint32) bool
 
-	GetActiveDposPeers() map[string]string
+	GetInactiveArbitrators(confirm *payload.Confirm,
+		onDutyArbitrator []byte) (result []string)
 }

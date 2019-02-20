@@ -58,6 +58,5 @@ func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 		},
 		cfg.ChainParams.HeightVersions[2],
 	)
-	cfg.Versions = versions
 	return versions
 }
