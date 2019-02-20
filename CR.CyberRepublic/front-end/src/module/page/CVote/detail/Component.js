@@ -11,7 +11,7 @@ import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component";
-import Popover from "@/module/shared/Popover/Component";
+import CRPopover from "@/module/shared/Popover/Component";
 
 import './style.scss'
 
@@ -37,6 +37,7 @@ class C extends StandardPage {
       language: LANGUAGES.english, // language for this specifc form only
       data: undefined,
       reason: '',
+      visible: false,
     }
 
     this.isLogin = this.props.isLogin
@@ -163,25 +164,14 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.no')}
       </Button>
     )
-    const content = (
-      <div>
-        <Icon type="close" onClick={this.showVoteOpposeModal} />
-        <h4>{I18N.get('council.voting.modal.voteNo')}</h4>
-        <TextArea onChange={this.onReasonChanged} />
-        <div>
-          <Button type="default">
-            {I18N.get('council.voting.modal.cancel')}
-          </Button>
-          <Button type="danger" onClick={() => this.voteOppose({ reason })}>
-            {I18N.get('council.voting.modal.confirm')}
-          </Button>
-        </div>
-      </div>
-    )
+
     const opposePopOver = (
-      <Popover content={content} trigger="click" visible={visible}>
-        {opposeBtn}
-      </Popover>
+      <CRPopover
+        triggeredBy={opposeBtn}
+        visible={visible}
+        onToggle={this.showVoteOpposeModal}
+        onSubmit={this.voteOppose}
+      />
     )
     return (
       <div className="vote-btn-group">
@@ -318,33 +308,15 @@ class C extends StandardPage {
     )
   }
 
-  async vote({ vote, reason, reasonZh }) {
-    const { data } = this.state
-    const { match, updateCVote, currentUserId, static: { voter } } = this.props
+  async vote({ value, reason }) {
+    const { match, vote } = this.props
     const id = _.get(match, 'params.id')
 
-    const param = { _id: id }
-    const voteMap = []
-    const reasonMap = []
-    const reasonMapZh = []
-    _.each(voter, (name, voterId) => {
-      if (voterId === currentUserId) {
-        voteMap.push(`${name}|${vote}`)
-        reasonMap.push(`${name}|${reason || data.reason_map[name]}`)
-        reasonMapZh.push(`${name}|${reasonZh || data.reason_zh_map[name]}`)
-      } else {
-        voteMap.push(`${name}|${data.vote_map[name]}`)
-        reasonMap.push(`${name}|${data.reason_map[name]}`)
-        reasonMapZh.push(`${name}|${data.reason_zh_map[name]}`)
-      }
-    })
-    param.vote_map = voteMap.join(',')
-    if (reason) param.reason_map = reasonMap.join(',')
-    if (reasonZh) param.reason_zh_map = reasonMapZh.join(',')
+    const param = { _id: id, value, reason }
 
     this.ord_loading(true)
     try {
-      await updateCVote(param)
+      await vote(param)
       message.success(I18N.get('from.CVoteForm.message.updated.success'))
       this.refetch()
       this.ord_loading(false)
@@ -355,15 +327,15 @@ class C extends StandardPage {
   }
 
   voteYes = () => {
-    this.vote({ vote: CVOTE_RESULT.SUPPORT })
+    this.vote({ value: CVOTE_RESULT.SUPPORT })
   }
 
   voteAbstention = () => {
-    this.vote({ vote: CVOTE_RESULT.ABSTENTION })
+    this.vote({ value: CVOTE_RESULT.ABSTENTION })
   }
 
   voteOppose = ({ reason }) => {
-    this.vote({ vote: CVOTE_RESULT.REJECT, reason })
+    this.vote({ value: CVOTE_RESULT.REJECT, reason })
     this.setState({ reason: '' })
   }
 

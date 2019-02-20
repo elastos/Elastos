@@ -1,17 +1,15 @@
 import { createContainer, api_request } from '@/util'
 import Component from './Component'
 import I18N from '@/I18N'
-import { USER_ROLE, COUNCIL_MEMBER_IDS, COUNCIL_MEMBERS } from '@/constant'
-
 
 export default createContainer(Component, state => ({
   user: state.user,
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
-  isSecretary: state.user.role === USER_ROLE.SECRETARY || state.user.role === USER_ROLE.ADMIN,
-  isCouncil: COUNCIL_MEMBER_IDS.indexOf(state.user.current_user_id) >= 0 || state.user.role === USER_ROLE.COUNCIL,
+  isSecretary: state.user.is_secretary,
+  isCouncil: state.user.is_council,
+  canManage: state.user.is_secretary || state.user.is_council,
   static: {
-    voter: COUNCIL_MEMBERS,
     select_type: [
       { name: I18N.get('council.voting.type.newMotion'), code: 1 },
       { name: I18N.get('council.voting.type.motionAgainst'), code: 2 },
@@ -42,6 +40,14 @@ export default createContainer(Component, state => ({
   async updateCVote(param) {
     const rs = await api_request({
       path: '/api/cvote/update',
+      method: 'post',
+      data: param,
+    });
+    return rs;
+  },
+  async vote(param) {
+    const rs = await api_request({
+      path: '/api/cvote/vote',
       method: 'post',
       data: param,
     });

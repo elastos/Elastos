@@ -5,6 +5,8 @@ import _ from 'lodash'
 import { List, Item, ItemUndecided, Text } from './style'
 
 const Component = ({ percentage, values, yes }) => {
+  console.log(values, '======');
+
   const statusGroup = _.map(values, (value, key) => {
     const status = value.toLowerCase() // yes, no, undecided, abstained
     if (status === 'undecided') return <ItemUndecided status={status} key={key} />

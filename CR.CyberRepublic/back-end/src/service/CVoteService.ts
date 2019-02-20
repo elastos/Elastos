@@ -18,37 +18,34 @@ const restrictedFields = {
 export default class extends Base {
 
     public async create(param): Promise<Document>{
-
-        if (!this.isLoggedIn()) {
-            throw 'cvoteservice.create - must be logged in';
-        }
-
-        if (!this.canManageProposal()) {
-            throw 'cvoteservice.create - not council or secretary'
-        }
-
         const db_cvote = this.getDBModel('CVote');
+        const db_user = this.getDBModel('User');
 
         const {
-            title, title_zh, type, content, published, content_zh, proposedBy, motionId, isConflict,
-            notes, notes_zh,vote_map, reason_map, reason_zh_map
+            title, type, content, published, proposedBy, motionId, isConflict, notes,
         } = param;
+
+        const councilMembers = await db_user.find({role: constant.USER_ROLE.COUNCIL});
+        const voteResult = []
+        const vote_map = {}
+        const reason_map = {}
+        _.each(councilMembers, user => {
+          const fullName = `${user.profile.firstName} ${user.profile.lastName}`
+          voteResult.push({ votedBy: user._id })
+          vote_map[fullName] = -1
+          reason_map[fullName] = ''
+        })
 
         const doc: any = {
             title,
-            title_zh,
             type,
             published,
             content,
-            content_zh,
             proposedBy,
             motionId,
             isConflict,
             notes,
-            notes_zh,
-            vote_map : this.param_metadata(vote_map),
-            reason_map : this.param_metadata(reason_map),
-            reason_zh_map : this.param_metadata(reason_zh_map),
+            voteResult,
             createdBy : this.currentUser._id
         };
 
@@ -123,6 +120,7 @@ export default class extends Base {
      */
     public async update(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
+        const { _id, published, notes } = param
 
         if(!this.currentUser || !this.currentUser._id){
             throw 'cvoteservice.update - invalid current user';
@@ -132,46 +130,23 @@ export default class extends Base {
             throw 'cvoteservice.update - not council'
         }
 
-        const cur = await db_cvote.findOne({_id : param._id});
-        if(!cur){
+        const cur = await db_cvote.findOne({ _id });
+        if(!cur) {
             throw 'cvoteservice.update - invalid proposal id';
         }
 
-        let doc:any = {}
+        const doc: any = {}
 
-        if (this.isExpired(cur) || _.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.DEFERRED], cur.status)) {
-            if (cur.published !== param.published) {
-                // if published is changed, we let it pass if published is changed, but only that field
-                doc = {
-                    published: param.published
-                }
-            }
-        } else {
-            doc = _.omit(param, restrictedFields.update)
-
-            if (param.vote_map) {
-                doc.vote_map = this.param_metadata(param.vote_map)
-                doc.status = this.getNewStatus(doc.vote_map, cur);
-            }
-
-            if (param.reason_map) {
-                doc.reason_map = this.param_metadata(param.reason_map)
-            }
-
-            if (param.reason_zh_map) {
-                doc.reason_zh_map = this.param_metadata(param.reason_zh_map)
-            }
-        }
+        if (published && cur.status === constant.CVOTE_STATUS.DRAFT) doc.status = constant.CVOTE_STATUS.PROPOSED
 
         // always allow secretary to edit notes
-        if (param.notes) doc.notes = param.notes
+        if (notes) doc.notes = notes
 
-        const cvote = await db_cvote.update({_id : param._id}, doc);
+        await db_cvote.update({ _id }, doc);
 
-        this.sendEmailNotification({_id : param._id}, 'update');
+        this.sendEmailNotification({ _id }, 'update');
 
-        // this is wrong, update call doesn't return doc
-        return cvote;
+        return await this.getById(_id);
     }
 
     public async finishById(id): Promise<any>{
@@ -197,18 +172,10 @@ export default class extends Base {
     }
 
     public async getById(id): Promise<any>{
-        const db_cvote = this.getDBModel('CVote');
-        const rs = await db_cvote.findOne({_id : id});
-        const db_user = this.getDBModel('User');
-        const councilMembers = await db_user.find({_id : { $in: constant.COUNCIL_MEMBER_IDS }});
-        const avatar_map = {}
-
-        _.each(councilMembers, user => {
-            const name: string = constant.COUNCIL_MEMBERS[user._id.toString()]
-            avatar_map[name] = user.profile.avatar
-        })
-        rs.avatar_map = avatar_map
-        return rs;
+      const db_cvote = this.getDBModel('CVote')
+      const rs = await db_cvote.getDBInstance().findOne({_id : id})
+        .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      return rs;
     }
 
     private param_metadata(meta: string){
@@ -269,6 +236,29 @@ export default class extends Base {
         return false;
     }
 
+    public async vote(param): Promise<Document>{
+        const db_cvote = this.getDBModel('CVote');
+        const { _id, value, reason } = param
+        const cur = await db_cvote.findOne({ _id });
+        if(!cur) {
+            throw 'invalid proposal id';
+        }
+
+        const rs = await db_cvote.updateOne(
+          {
+            _id,
+            'voteResult.votedBy': _.get(this.currentUser, '_id')
+          }, {
+            $set : {
+              'voteResult.$.value': value,
+              'voteResult.$.reason': reason,
+            }
+          }
+        )
+
+        return rs;
+    }
+
     public async updateNote(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
 
@@ -291,7 +281,6 @@ export default class extends Base {
 
         return rs;
     }
-
 
     public async sendEmailNotification(data, updateOrCreate){
         // const list = [

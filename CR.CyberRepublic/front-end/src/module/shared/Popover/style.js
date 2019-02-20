@@ -1,19 +1,32 @@
 import styled from 'styled-components'
-import { Link } from 'react-router-dom'
+import { Icon, Input, Button } from 'antd'
 
-export const StyledLink = styled(Link)`
-  display: flex;
+const { TextArea } = Input;
+
+export const Container = styled.div`
+  position: relative;
+  padding: 20px 10px;
+  width: 546px;
+`
+export const CloseIcon = styled(Icon)`
   position: absolute;
-  left: 30px;
-  height: 16px;
-  line-height: 16px;
-  align-items: center;
-  color: #000;
+  right: 0;
 `
-export const Arrow = styled.img`
-  transform: rotate(180deg);
-  width: 10px;
+export const Title = styled.h4`
+
 `
-export const Text = styled.span`
-  margin-left: 10px;
+export const StyledTextArea = styled(TextArea)`
+`
+export const Footer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`
+export const Btn = styled(Button)`
+  border-radius: 0;
+  background: ${props => (props.type === 'default' && '#fff')
+    || (props.type === 'danger' && '#BE1313')
+  };
+  color: ${props => (props.type === 'default' && 'rgba(3, 30, 40, 0.3)')
+    || (props.type === 'danger' && '#fff')
+  };
 `

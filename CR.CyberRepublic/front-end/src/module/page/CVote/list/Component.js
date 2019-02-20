@@ -153,7 +153,7 @@ export default class extends BaseComponent {
       // fix error in finding index of undefined
       return ''
     }
-    const voteArr = _.map(voteMap, value => ((value === '-1' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+    const voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
     const supportNum = _.countBy(voteArr).Yes || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50

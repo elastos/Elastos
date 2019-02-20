@@ -181,7 +181,8 @@ export const DB_EXCLUDED_FIELDS = {
 
 export const DB_SELECTED_FIELDS = {
     USER: {
-        NAME: 'profile.firstName profile.lastName username'
+        NAME: 'profile.firstName profile.lastName username',
+        NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
     },
 }
 
