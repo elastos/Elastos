@@ -7,7 +7,7 @@
 2. web3.js >= 1.0.0 beta ,create a new folder and install as follow
 
    ```shell
-   ~$ make yourfolder
+   ~$ mkdir yourfolder
    ~$ cd yourfolder
    ~$ npm init -f 
    ~$ npm install web3 --save
