@@ -48,7 +48,7 @@ INDEX                            ADDRESS BALANCE                           (LOCK
 
 But since we are setting up a new genesis block we need to do the following things:
 
-1. run `glide cc && glide update && glide install` make sure you delete the `elastos` folder in case it was leftover
+1. Delete the `glide.lock` and `vendor` folder if it exists, then run `glide cc && glide update && glide install` make sure you delete the `elastos` and `Chain` folder in case it was leftover
 
 2. change the genesis block timestamp in `blockchain/blockchain.go - line 106` to near the current time
 

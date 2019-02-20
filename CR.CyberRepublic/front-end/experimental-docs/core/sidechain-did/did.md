@@ -17,7 +17,7 @@ Copy the `sample.json` from docs folder and rename it to `config.json`
     - `SpvSeedList` refers to your Mainchain node's IP and `NodeOpenPort` config
     - `PowConfiguration.PayToAddr` can be any address created from `Elastos.ELA.Client`
 
-2. Delete folder `elastos_did` if it exists, we are starting anew, if you have a previous install from a different version, you may need to run `glide cc` too.
+2. Delete folder `elastos_did` if it exists, we are starting anew, if you have a previous install from a different version, you may need to delete `glide.lock`, `vendor` folder and run `glide cc` too.
 
 3. Follow the **Build the node** instructions in the `README.md`
 

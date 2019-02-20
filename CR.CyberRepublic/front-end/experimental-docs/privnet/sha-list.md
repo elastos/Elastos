@@ -4,7 +4,7 @@
 These are the Git SHAs we are using for each Project
 
 ### Core
-- elastos/Elastos.ELA - tags/v0.2.1
+- elastos/Elastos.ELA - tags/v0.2.2
 - elastos/Elastos.ELA.Arbiter (PRIVATE) - release_v0.0.3 - 8970efe9
 - elastos/Elastos.ELA.Sidechain.ID - release_v0.0.2 - 07599ad4
 

@@ -1,7 +1,7 @@
 
 # ELA Mainchain
 
-?> This can be found at [https://github.com/elastos/Elastos.ELA](https://github.com/elastos/Elastos.ELA)<br/>- use tag `v0.2.1`
+?> This can be found at [https://github.com/elastos/Elastos.ELA](https://github.com/elastos/Elastos.ELA)<br/>- use tag `v0.2.2`
 
 #### Follow the instructions in the `README.md`
 
