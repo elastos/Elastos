@@ -54,8 +54,6 @@ typedef struct TestConfig {
 
 extern TestConfig global_config;
 
-const char *get_config_file(const char *candidates[]);
-
 void load_config(const char *config_file);
 
 #endif /* __TEST_CONFIG_H__ */

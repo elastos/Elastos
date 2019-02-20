@@ -141,24 +141,6 @@ static void free_bootstraps(TestConfig *config)
     free(config->bootstraps);
 }
 
-const char *get_config_file(const char *candidates[])
-{
-    const char **cond;
-
-    for (cond = candidates; *cond; cond++) {
-        FILE *fp = fopen(*cond, "r");
-
-        if (!fp)
-            continue;
-
-        fclose(fp);
-
-        return *cond;
-    }
-
-    return NULL;
-}
-
 void load_config(const char *config_file)
 {
     config_t cfg;
@@ -170,11 +152,6 @@ void load_config(const char *config_file)
     int entries;
     int i;
     int rc;
-
-    if (!config_file) {
-        fprintf(stderr, "Configuration file is null.\n");
-        exit(-1);
-    }
 
     config_init(&cfg);
     rc = config_read_file(&cfg, config_file);
