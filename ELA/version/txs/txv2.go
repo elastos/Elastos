@@ -58,7 +58,7 @@ func (v *txV2) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewar
 		outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
 	}
 
-	arbitratorsHashes := v.cfg.Arbitrators.GetArbitratorsProgramHashes()
+	arbitratorsHashes := v.cfg.Arbitrators.GetNormalArbitratorsProgramHashes()
 	candidatesHashes := v.cfg.Arbitrators.GetCandidatesProgramHashes()
 	if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
 		return errors.New("coinbase output count not match")

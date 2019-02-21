@@ -115,10 +115,11 @@ func main() {
 	if err != nil {
 		printErrorAndExit(err)
 	}
+	arbiters.State = state.NewState(arbiters, activeNetParams)
 	verconf.Arbitrators = arbiters
 	ledger.Arbitrators = arbiters // fixme
 
-	chain, err := blockchain.New(chainStore, activeNetParams, arbiters, versions)
+	chain, err := blockchain.New(chainStore, activeNetParams, versions, arbiters.State)
 	if err != nil {
 		printErrorAndExit(err)
 	}
