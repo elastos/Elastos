@@ -1,11 +1,14 @@
 import styled from 'styled-components'
-import { Icon, Input, Button } from 'antd'
+import { Icon, Input, Button, Popover } from 'antd'
 
 const { TextArea } = Input;
 
+export const StyledPopover = styled(Popover)`
+  background: #F6F9FD;
+`
 export const Container = styled.div`
   position: relative;
-  padding: 20px 10px;
+  padding: 10px;
   width: 546px;
 `
 export const CloseIcon = styled(Icon)`
@@ -20,9 +23,11 @@ export const StyledTextArea = styled(TextArea)`
 export const Footer = styled.div`
   display: flex;
   justify-content: flex-end;
+  margin-top: 20px;
 `
 export const Btn = styled(Button)`
   border-radius: 0;
+  margin-left: 10px;
   background: ${props => (props.type === 'default' && '#fff')
     || (props.type === 'danger' && '#BE1313')
   };

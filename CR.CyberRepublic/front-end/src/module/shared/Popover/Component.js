@@ -1,9 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Icon, TextArea, Button, Popover } from 'antd'
 import I18N from '@/I18N'
 
-import { Container, CloseIcon, Title, StyledTextArea, Footer, Btn } from './style'
+import { Container, StyledPopover, CloseIcon, Title, StyledTextArea, Footer, Btn } from './style'
 
 class Component extends React.Component {
   state = {
@@ -14,9 +13,15 @@ class Component extends React.Component {
     this.setState({ reason: e.target.value })
   }
 
-  render() {
-    const { triggeredBy, onToggle, onSubmit, visible } = this.props
+  onSubmit = () => {
+    const { onToggle, onSubmit } = this.props
     const { reason } = this.state
+    onToggle()
+    onSubmit({ reason })
+  }
+
+  render() {
+    const { triggeredBy, onToggle, visible } = this.props
     const content = (
       <Container>
         <CloseIcon type="close" onClick={onToggle} />
@@ -26,16 +31,16 @@ class Component extends React.Component {
           <Btn type="default" onClick={onToggle}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type="danger" onClick={() => onSubmit({ reason })}>
+          <Btn type="danger" onClick={this.onSubmit}>
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>
       </Container>
     )
     return (
-      <Popover content={content} trigger="click" visible={visible}>
+      <StyledPopover content={content} trigger="click" visible={visible}>
         {triggeredBy}
-      </Popover>
+      </StyledPopover>
     )
   }
 }
