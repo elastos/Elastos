@@ -397,14 +397,14 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 	}
 
+	s.processArbitrators(block, block.Height)
+
 	// Take snapshot when snapshot point arrives.
 	if (block.Height-s.chainParams.DPOSStartHeight)%snapshotInterval == 0 {
 		s.cursor = s.cursor % maxSnapshots
 		s.snapshots[s.cursor] = s.snapshot()
 		s.cursor++
 	}
-
-	s.processArbitrators(block, block.Height)
 
 	// Commit changes here if no errors found.
 	s.history.commit(block.Height)

@@ -233,6 +233,11 @@ func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
 func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
 	onDutyArbitrator []byte) (result []string) {
 
+	// check inactive arbitrators after producers has participated in
+	if len(a.currentArbitrators) == len(a.cfg.CRCArbitrators) {
+		return
+	}
+
 	if !bytes.Equal(onDutyArbitrator, confirm.Proposal.Sponsor) {
 		arSequence := a.currentArbitrators
 		arSequence = append(arSequence, arSequence...)
@@ -256,7 +261,7 @@ func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
 		}
 	}
 
-	return result
+	return
 }
 
 func (a *Arbitrators) isNewElection() bool {
