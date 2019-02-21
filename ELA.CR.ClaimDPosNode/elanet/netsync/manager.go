@@ -74,23 +74,6 @@ type getSyncPeerMsg struct {
 	reply chan uint64
 }
 
-// processBlockResponse is a response sent to the reply channel of a
-// processBlockMsg.
-type processBlockResponse struct {
-	isOrphan bool
-	err      error
-}
-
-// processBlockMsg is a message type to be sent across the message channel
-// for requested a block is processed.  Note this call differs from blockMsg
-// above in that blockMsg is intended for blocks that came from peers and have
-// extra handling whereas this message essentially is just a concurrent safe
-// way to call ProcessBlock on the internal block chain instance.
-type processBlockMsg struct {
-	block *types.Block
-	reply chan processBlockResponse
-}
-
 // isCurrentMsg is a message type to be sent across the message channel for
 // requesting whether or not the sync manager believes it is synced with the
 // currently connected peers.
@@ -648,20 +631,6 @@ out:
 				}
 				msg.reply <- peerID
 
-			case processBlockMsg:
-				_, isOrphan, err := sm.chain.ProcessBlock(msg.block)
-				if err != nil {
-					msg.reply <- processBlockResponse{
-						isOrphan: false,
-						err:      err,
-					}
-				}
-
-				msg.reply <- processBlockResponse{
-					isOrphan: isOrphan,
-					err:      nil,
-				}
-
 			case isCurrentMsg:
 				msg.reply <- sm.current()
 
@@ -837,15 +806,6 @@ func (sm *SyncManager) SyncPeerID() uint64 {
 	reply := make(chan uint64)
 	sm.msgChan <- getSyncPeerMsg{reply: reply}
 	return <-reply
-}
-
-// ProcessBlock makes use of ProcessBlock on an internal instance of a block
-// chain.
-func (sm *SyncManager) ProcessBlock(block *types.Block) (bool, error) {
-	reply := make(chan processBlockResponse, 1)
-	sm.msgChan <- processBlockMsg{block: block, reply: reply}
-	response := <-reply
-	return response.isOrphan, response.err
 }
 
 // IsCurrent returns whether or not the sync manager believes it is synced with
