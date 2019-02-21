@@ -11,12 +11,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -62,9 +62,7 @@ func (node *node) initConnection() {
 func (node *node) start(inbound bool) {
 	go node.inHandler()
 	go node.outHandler()
-	if !inbound {
-		go node.pingHandler()
-	}
+	go node.pingHandler()
 }
 
 func listenNodePort() {

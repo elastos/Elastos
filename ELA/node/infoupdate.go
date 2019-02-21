@@ -4,14 +4,13 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/msg/v0"
 	. "github.com/elastos/Elastos.ELA/protocol"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg/v0"
 )
 
 type syncTimer struct {
@@ -60,7 +59,7 @@ func (t *syncTimer) stop() {
 }
 
 func (node *node) SyncBlocks() {
-	needSync := node.needSync()
+	needSync := !node.IsCurrent()
 	log.Info("needSync: ", needSync)
 	log.Info("BlockHeight = ", chain.DefaultLedger.Blockchain.BlockHeight)
 	chain.DefaultLedger.Blockchain.DumpState()
@@ -142,10 +141,7 @@ out:
 		case <-pingTicker.C:
 
 			// send ping message to node
-			log.Debug("new ping begin")
 			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
-			log.Debug("new ping end")
-
 		case <-node.quit:
 			break out
 		}
@@ -183,7 +179,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if total > DefaultMaxPeers {
-		DisconnectNode(node.GetExternalNeighbourRandomly().ID())
+		DisconnectNode(node.GetExternalNeighbourRandomly())
 	}
 }
 

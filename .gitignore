@@ -6,10 +6,14 @@
 *.json
 /glide.lock
 /vendor/*
-Chain/
+Chain_WhiteBox/
 Chain_UnitTest/
-Logs/
+Dpos_UnitTest/
+Dpos_Test/
+Dpos_Data/
+elastos/
 /ela
 /ela-cli
 *.db
-rollback
+*.dat
+*.txn

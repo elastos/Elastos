@@ -2,22 +2,22 @@ package blockchain
 
 import (
 	"container/list"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math/big"
-	"math/rand"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/core/contract/program"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/events"
-	"github.com/elastos/Elastos.ELA/log"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -35,23 +35,24 @@ var (
 )
 
 type Blockchain struct {
-	BlockHeight    uint32
-	GenesisHash    Uint256
-	BestChain      *BlockNode
-	Root           *BlockNode
-	Index          map[Uint256]*BlockNode
-	IndexLock      sync.RWMutex
-	DepNodes       map[Uint256][]*BlockNode
-	Orphans        map[Uint256]*OrphanBlock
-	PrevOrphans    map[Uint256][]*OrphanBlock
-	OldestOrphan   *OrphanBlock
-	BlockCache     map[Uint256]*Block
-	TimeSource     MedianTimeSource
-	MedianTimePast time.Time
-	OrphanLock     sync.RWMutex
-	BCEvents       *events.Event
-	mutex          sync.RWMutex
-	AssetID        Uint256
+	mutex              sync.RWMutex
+	BlockHeight        uint32
+	GenesisHash        Uint256
+	BestChain          *BlockNode
+	Root               *BlockNode
+	IndexLock          sync.RWMutex
+	Index              map[Uint256]*BlockNode
+	DepNodes           map[Uint256][]*BlockNode
+	orphanLock         sync.RWMutex
+	Orphans            map[Uint256]*OrphanBlock
+	PrevOrphans        map[Uint256][]*OrphanBlock
+	OldestOrphan       *OrphanBlock
+	BlockCache         map[Uint256]*Block
+	TimeSource         MedianTimeSource
+	MedianTimePast     time.Time
+	BCEvents           *events.Event
+	AssetID            Uint256
+	NewBlocksListeners []interfaces.NewBlocksListener
 }
 
 func NewBlockchain(height uint32) *Blockchain {
@@ -72,29 +73,34 @@ func NewBlockchain(height uint32) *Blockchain {
 	}
 }
 
-func Init(store IChainStore) error {
+func Init(store IChainStore, versions interfaces.HeightVersions) error {
+	DefaultLedger = new(Ledger)
+	DefaultLedger.HeightVersions = versions
+
 	genesisBlock, err := GetGenesisBlock()
 	if err != nil {
 		return errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
 	}
 
-	DefaultLedger = new(Ledger)
 	DefaultLedger.Blockchain = NewBlockchain(0)
 	DefaultLedger.Store = store
 	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
+
 	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
 	if err != nil {
 		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")
 	}
+	DefaultLedger.Store.InitProducerVotes()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(height)
+
 	return nil
 }
 
 func GetGenesisBlock() (*Block, error) {
 	// header
 	header := Header{
-		Version:    BlockVersion,
+		Version:    0,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
 		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
@@ -131,11 +137,8 @@ func GetGenesisBlock() (*Block, error) {
 		},
 	}
 
-	nonce := make([]byte, 8)
-	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := NewAttribute(Nonce, nonce)
+	txAttr := NewAttribute(Nonce, []byte{77, 101, 130, 33, 7, 252, 253, 82})
 	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
-
 	//block
 	block := &Block{
 		Header:       header,
@@ -156,6 +159,7 @@ func GetGenesisBlock() (*Block, error) {
 
 func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint32) *Transaction {
 	return &Transaction{
+		Version:        TransactionVersion(DefaultLedger.HeightVersions.GetDefaultTxVersion(currentHeight)),
 		TxType:         CoinBase,
 		PayloadVersion: PayloadCoinBaseVersion,
 		Payload:        coinBasePayload,
@@ -194,7 +198,32 @@ func (b *Blockchain) AddBlock(block *Block) (bool, bool, error) {
 		return false, false, err
 	}
 
+	if !inMainChain && !isOrphan {
+		if err := DefaultLedger.HeightVersions.CheckConfirmedBlockOnFork(block); err != nil {
+			return false, false, err
+		}
+	}
+
 	return inMainChain, isOrphan, nil
+}
+
+func (b *Blockchain) GetBlock(hash Uint256) (*Block, error) {
+	b.orphanLock.RLock()
+	orphanBlock, ok := b.Orphans[hash]
+	b.orphanLock.RUnlock()
+	if ok {
+		return orphanBlock.Block, nil
+	}
+
+	return DefaultLedger.Store.GetBlock(hash)
+}
+
+func (b *Blockchain) AddConfirm(confirm *DPosProposalVoteSlot) error {
+	log.Debug()
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	return b.ProcessConfirm(confirm)
 }
 
 func (b *Blockchain) GetHeader(hash Uint256) (*Header, error) {
@@ -254,8 +283,8 @@ func (b *Blockchain) ProcessOrphans(hash *Uint256) error {
 }
 
 func (b *Blockchain) RemoveOrphanBlock(orphan *OrphanBlock) {
-	b.OrphanLock.Lock()
-	defer b.OrphanLock.Unlock()
+	b.orphanLock.Lock()
+	defer b.orphanLock.Unlock()
 
 	orphanHash := orphan.Block.Hash()
 	delete(b.Orphans, orphanHash)
@@ -299,8 +328,8 @@ func (b *Blockchain) AddOrphanBlock(block *Block) {
 		b.OldestOrphan = nil
 	}
 
-	b.OrphanLock.Lock()
-	defer b.OrphanLock.Unlock()
+	b.orphanLock.Lock()
+	defer b.orphanLock.Unlock()
 
 	// Insert the block into the orphan map with an expiration time
 	// 1 hour from now.
@@ -319,8 +348,8 @@ func (b *Blockchain) AddOrphanBlock(block *Block) {
 }
 
 func (b *Blockchain) IsKnownOrphan(hash *Uint256) bool {
-	b.OrphanLock.RLock()
-	defer b.OrphanLock.RUnlock()
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
 
 	if _, exists := b.Orphans[*hash]; exists {
 		return true
@@ -330,8 +359,8 @@ func (b *Blockchain) IsKnownOrphan(hash *Uint256) bool {
 }
 
 func (b *Blockchain) GetOrphanRoot(hash *Uint256) *Uint256 {
-	b.OrphanLock.RLock()
-	defer b.OrphanLock.RUnlock()
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
 
 	orphanRoot := hash
 	prevHash := hash
@@ -1065,6 +1094,10 @@ func (b *Blockchain) ProcessBlock(block *Block) (bool, bool, error) {
 	//log.Debugf("Accepted block %v", blockHash)
 
 	return inMainChain, false, nil
+}
+
+func (b *Blockchain) ProcessConfirm(confirm *DPosProposalVoteSlot) error {
+	return DefaultLedger.Store.SaveConfirm(confirm)
 }
 
 func (b *Blockchain) DumpState() {
