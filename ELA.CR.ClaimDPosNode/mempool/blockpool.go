@@ -42,11 +42,7 @@ func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, er
 
 	// add confirm
 	if dposBlock.ConfirmFlag {
-		inMainChain, isOrphan, err := bm.appendConfirm(dposBlock.Confirm)
-		if err != nil {
-			return false, false, err
-		}
-		return inMainChain, isOrphan, nil
+		bm.appendConfirm(dposBlock.Confirm)
 	}
 
 	// confirm block
