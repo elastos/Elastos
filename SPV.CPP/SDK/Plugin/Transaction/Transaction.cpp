@@ -657,7 +657,8 @@ namespace Elastos {
 			setRemark(remark);
 
 			std::string addr;
-			nlohmann::json summary;
+			nlohmann::json summary, outputPayload;
+			std::vector<nlohmann::json> outputPayloads;
 			std::string direction = "Received";
 			uint64_t inputAmount = 0, outputAmount = 0, changeAmount = 0, fee = 0;
 
@@ -665,42 +666,56 @@ namespace Elastos {
 			for (size_t i = 0; i < _inputs.size(); i++) {
 				TransactionPtr tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
 				if (tx) {
+					uint64_t spentAmount = tx->getOutputs()[_inputs[i].getIndex()].getAmount();
 					addr = tx->getOutputs()[_inputs[i].getIndex()].getAddress();
-					if (wallet->containsAddress(addr)) {
+
+					if (detail) {
+						if (inputList.find(addr) == inputList.end()) {
+							inputList[addr] = spentAmount;
+						} else {
+							inputList[addr] += spentAmount;
+						}
+					}
+
+					if (wallet->containsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 						// sent or moved
-						uint64_t spentAmount = tx->getOutputs()[_inputs[i].getIndex()].getAmount();
 						direction = "Sent";
 						inputAmount += spentAmount;
-
-						if (detail) {
-							if (inputList.find(addr) == inputList.end())
-								inputList[addr] = spentAmount;
-							else
-								inputList[addr] += spentAmount;
-						}
 					}
 				}
 			}
 
 			std::map<std::string, uint64_t> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				addr = _outputs[i].getAddress();
 				uint64_t oAmount = _outputs[i].getAmount();
-				bool containAddress = wallet->containsAddress(addr);
-				if (containAddress) {
+				addr = _outputs[i].getAddress();
+
+				if (_outputs[i].GetType() == TransactionOutput::VoteOutput) {
+					outputPayload = _outputs[i].GetPayload()->toJson();
+					outputPayload["Amount"] = oAmount;
+					outputPayloads.push_back(outputPayload);
+				}
+
+				if (wallet->IsVoteDepositAddress(addr)) {
+					direction = "Deposit";
+				}
+
+				if (wallet->containsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
 				}
-				if (detail && ((direction == "Received" && containAddress) || direction != "Received")) {
-					if (outputList.find(addr) == outputList.end())
+
+				if (detail) {
+					if (outputList.find(addr) == outputList.end()) {
 						outputList[addr] = oAmount;
-					else
+					} else {
 						outputList[addr] += oAmount;
+					}
 				}
 			}
 
-			if (direction == "Sent" && outputAmount == 0) {
+			if (direction != "Deposit" && direction == "Sent" && outputAmount == 0) {
 				direction = "Moved";
 			}
 
@@ -710,6 +725,12 @@ namespace Elastos {
 				amount = changeAmount;
 			} else if (direction == "Sent") {
 				amount = outputAmount;
+			} else if (direction == "Deposit") {
+				if (inputAmount > 0) {
+					amount = outputAmount;
+				} else {
+					amount = 0;
+				}
 			} else {
 				amount = 0;
 			}
@@ -728,6 +749,7 @@ namespace Elastos {
 				summary["Inputs"] = inputList;
 				summary["Outputs"] = outputList;
 				summary["Payload"] = _payload->toJson(_payloadVersion);
+				summary["OutputPayload"] = outputPayloads;
 
 				std::vector<nlohmann::json> attributes;
 				for (int i = 0; i < _attributes.size(); ++i) {

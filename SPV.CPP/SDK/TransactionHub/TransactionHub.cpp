@@ -247,7 +247,7 @@ namespace Elastos {
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 				uint64_t balance = getBalance(transaction->GetAssetID(), AssetTransactions::BalanceType::Total);
 				txAdded(transaction);
-//				balanceChanged(transaction->GetAssetID(), balance);
+				balanceChanged(transaction->GetAssetID(), balance);
 			}
 
 			return r;
@@ -457,6 +457,11 @@ namespace Elastos {
 			key.SetPubKey(publicKey);
 
 			return key.GetAddress(PrefixDeposit);
+		}
+
+		bool TransactionHub::IsVoteDepositAddress(const std::string &addr) const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->IsDepositAddress(addr);
 		}
 
 		bool TransactionHub::containsAddress(const std::string &address) {

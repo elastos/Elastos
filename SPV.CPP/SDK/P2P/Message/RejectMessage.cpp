@@ -52,7 +52,7 @@ namespace Elastos {
 			}
 
 			if (!UInt256IsZero(&txHash)) {
-				_peer->info("rejected {} code: {:x} reason: {} txid: {}", type, code,
+				_peer->info("rejected {} code: 0x{:x} reason: {} txid: {}", type, code,
 							reason, Utils::UInt256ToString(txHash, true));
 				FireRejectedTx(txHash, code, reason);
 			} else {

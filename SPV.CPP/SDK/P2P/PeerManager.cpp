@@ -1224,6 +1224,7 @@ namespace Elastos {
 			}
 
 			if (pubTx.HasCallback()) pubTx.FireCallback(0, "has tx");
+			_wallet->UpdateBalance();
 		}
 
 		void PeerManager::OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason) {
