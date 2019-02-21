@@ -45,6 +45,8 @@ const en = {
   '0301': 'English',
   '0302': 'Chinese',
 
+  'link.back': 'Back',
+
   // Admin breadcrumb
   1100: 'Admin',
 
@@ -679,15 +681,16 @@ const en = {
   'council.voting.btnText.no': 'Oppose with a Reason',
   'council.voting.btnText.abstention': 'Abstain',
   'council.voting.btnText.notesSecretary': 'Notes from Secretary',
-  'council.voting.btnText.editProposal': 'Edit this proposal',
-  'council.voting.btnText.completeProposal': 'Complete this proposal',
+  'council.voting.btnText.editNotes': 'Edit Notes',
+  'council.voting.btnText.editProposal': 'Edit Proposal',
+  'council.voting.btnText.completeProposal': 'Complete Proposal',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
   'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
   'council.voting.modal.voteNo': 'Reason for Opposing',
-  'council.voting.modal.confirm': 'Confirm',
+  'council.voting.modal.confirm': 'Submit',
   'council.voting.modal.cancel': 'Cancel',
 
   'council.voting.voteResult.yes': 'Vote Yes',

@@ -4,12 +4,12 @@ import _ from 'lodash'
 
 import './style.scss'
 
-const Component = ({ label, type, users }) => {
-  const votesNode = _.map(users, (user, key) => {
+const Component = ({ label, type, dataList }) => {
+  const votesNode = _.map(dataList, (data, key) => {
     return (
       <div className="voter-item" key={key}>
-        <img src={user.avatar} alt="voter avatar" />
-        <div>{user.name}</div>
+        <img src={data.avatar} alt="voter avatar" />
+        <div>{data.name}</div>
       </div>
     )
   })
@@ -24,7 +24,7 @@ const Component = ({ label, type, users }) => {
 const propTypes = {
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
-  users: PropTypes.array.isRequired,
+  dataList: PropTypes.array.isRequired,
 }
 
 Component.propTypes = propTypes

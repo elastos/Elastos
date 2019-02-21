@@ -6,9 +6,8 @@ import {
   Table, Row, Col, Button,
 } from 'antd'
 import I18N from '@/I18N'
-import { LANGUAGES } from '@/config/constant'
 import VoteStats from '../stats/Component'
-import { CVOTE_RESULT_TEXT } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_STATUS_TEXT } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided } from './style'
@@ -22,7 +21,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { language } = this.props
+    const { canManage } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -46,7 +45,7 @@ export default class extends BaseComponent {
         width: '30%',
         render: (title, item) => (
           <a onClick={this.toDetail.bind(this, item._id)} className="tableLink">
-            { language === LANGUAGES.chinese ? (item.title_zh ? item.title_zh : title) : title }
+            {title}
           </a>
         ),
       },
@@ -65,7 +64,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => item.status || '',
+        render: (id, item) => CVOTE_STATUS_TEXT[item.status] || '',
       },
       {
         title: I18N.get('council.voting.createdAt'),
@@ -74,7 +73,7 @@ export default class extends BaseComponent {
       },
     ]
 
-    if (this.props.canCreate) {
+    if (canManage) {
       columns.splice(1, 0, {
         dataIndex: 'published',
         render: (published, item, index) => (published ? <i className="fas fa-eye" /> : <i className="far fa-eye-slash" />),
@@ -94,7 +93,7 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createBtn = this.props.canCreate && (
+    const createBtn = canManage && (
       <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
         <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
             Add a Proposal
@@ -136,9 +135,10 @@ export default class extends BaseComponent {
   }
 
   async componentDidMount() {
+    const { listData, canManage } = this.props
     this.ord_loading(true);
     try {
-      const list = await this.props.listData({}, this.props.canCreate);
+      const list = await listData({}, canManage);
       this.setState({ list });
     } catch (error) {
       // do sth
@@ -148,12 +148,15 @@ export default class extends BaseComponent {
   }
 
   voteDataByUser = (data) => {
-    const voteMap = data.vote_map;
-    if (!data.vote_map) {
-      // fix error in finding index of undefined
+    const { vote_map: voteMap, voteResult } = data
+    let voteArr
+    if (!_.isEmpty(voteResult)) {
+      voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
+    } else if (!_.isEmpty(voteMap)) {
+      voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+    } else {
       return ''
     }
-    const voteArr = _.map(voteMap, value => ((value === '-1' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
     const supportNum = _.countBy(voteArr).Yes || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50

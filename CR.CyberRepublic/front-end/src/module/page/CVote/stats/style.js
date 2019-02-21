@@ -5,10 +5,10 @@ export const List = styled.div`
   display: flex;
 `
 export const Item = styled.div`
-  flex-basis: 33.3%;
+  flex: 0 0 33.3%;
   height: 10px;
   box-sizing: border-box;
-  border-right: 1px solid white;
+  margin-right: 1px;
   margin-left: 0;
   background-color: ${props => (props.status === 'undecided' && proposalStatus.undecided)
     || (props.status === 'abstained' && proposalStatus.abstained)

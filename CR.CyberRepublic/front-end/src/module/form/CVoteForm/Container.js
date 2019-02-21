@@ -2,8 +2,6 @@ import _ from 'lodash'
 import { createContainer, api_request } from '@/util'
 import Component from './Component'
 import I18N from '@/I18N'
-import { COUNCIL_MEMBERS } from '@/constant'
-
 
 export default createContainer(Component, state => ({
   user: state.user,
@@ -12,7 +10,6 @@ export default createContainer(Component, state => ({
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
   static: {
-    voter: _.map(COUNCIL_MEMBERS, value => ({ value })),
     select_type: [
       { name: I18N.get('council.voting.type.newMotion'), code: 1 },
       { name: I18N.get('council.voting.type.motionAgainst'), code: 2 },

@@ -45,6 +45,8 @@ const zh = {
   '0301': '英语',
   '0302': '简体中文',
 
+  'link.back': '返回',
+
   // Admin breadcrumb
   1100: '管理员',
 
@@ -679,6 +681,7 @@ const zh = {
   'council.voting.btnText.no': '投反对票并给出理由',
   'council.voting.btnText.abstention': '弃权',
   'council.voting.btnText.notesSecretary': '秘书处记录',
+  'council.voting.btnText.editNotes': '编辑记录',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '完成此提案',
 
@@ -687,7 +690,7 @@ const zh = {
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstention': '您确定要弃权吗？',
   'council.voting.modal.voteNo': '反对的理由',
-  'council.voting.modal.confirm': '确认',
+  'council.voting.modal.confirm': '提交',
   'council.voting.modal.cancel': '取消',
 
   'council.voting.voteResult.yes': '赞成',

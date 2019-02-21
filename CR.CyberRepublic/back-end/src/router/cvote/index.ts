@@ -5,6 +5,7 @@ import list from './list';
 import list_public from './list_public';
 import get from './get';
 import update from './update';
+import vote from './vote';
 import finish from './finish';
 import update_notes from './update_notes';
 
@@ -32,6 +33,11 @@ export default Base.setRouter([
     {
         path : '/update',
         router : update,
+        method : 'post'
+    },
+    {
+        path : '/vote',
+        router : vote,
         method : 'post'
     },
     {

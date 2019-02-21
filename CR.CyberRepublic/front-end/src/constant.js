@@ -41,26 +41,6 @@ export const USER_ROLE_TO_TEXT = {
     LEADER : 'Leader',
 }
 
-// council related
-// '5c2f5a15f13d65008969be61', // Feng Zhang
-// '5b28be2784f6f900350d30b9', // Kevin Zhang
-// '5bcf21f030826d68a940b017', //  Yipeng Su
-// '5b4c3ba6450ff10035954c80', // Feng zhu
-// '5b367c128f23a70035d35425', // Fay Li
-export const COUNCIL_MEMBERS = {
-    '5bcf21f030826d68a940b017': 'Yipeng Su',
-    // '5c2f5a15f13d65008969be61': 'Feng Zhang',
-    '5b367c128f23a70035d35425': 'Fay Li',
-    '5b28be2784f6f900350d30b9': 'Kevin Zhang',
-}
-
-export const COUNCIL_MEMBER_IDS = _.keys(COUNCIL_MEMBERS)
-
-export const ADMIN_MEMBER_IDS = [
-    ...COUNCIL_MEMBER_IDS,
-    '5b4c3ba6450ff10035954c80'
-]
-
 export const USER_EMPOWER_TYPE = {
     MARKETING: 'MARKETING',
     PRODUCT_MANAGER: 'PRODUCT_MANAGER',
@@ -230,6 +210,15 @@ export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 // council vote
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
 
+export const CVOTE_STATUS_TEXT = {
+  DRAFT: 'DRAFT',
+  PROPOSED: 'PROPOSED',
+  ACTIVE: 'PASSED',
+  REJECT: 'REJECTED',
+  DEFERRED: 'DEFERRED',
+  FINAL: 'COMPLETED',
+}
+
 export const CVOTE_RESULT = {
   SUPPORT: 'support',
   REJECT: 'reject',
@@ -239,10 +228,17 @@ export const CVOTE_RESULT = {
 
 export const CVOTE_RESULT_TEXT = {
   undefined: 'Undecided',
+  undecided: 'Undecided',
   support: 'Yes',
   reject: 'No',
   abstention: 'Abstained',
   '-1': 'Undecided',
+}
+
+export const avatar_map = {
+  'Kevin Zhang': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/44f5fe8e-f062-41e4-ba5b-1dbbea4e63b0_kevin.jpeg',
+  'Fay Li': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/37706672-efa7-4a7a-8453-200f3ab615d9_IMG_4320.JPG',
+  'Yipeng Su': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/19691cdc-913f-40d1-9d1d-f88b709fcecf_yipeng.jpeg'
 }
 
 export const CVOTE_TYPE = {

@@ -1,15 +1,17 @@
 import React from 'react'
 import StandardPage from '../../StandardPage'
 import {
-  Form, Spin, Button, Input, message, Modal,
+  Form, Spin, Button, Input, message, Modal, Icon,
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
+import BackLink from "@/module/shared/BackLink/Component";
+import CRPopover from "@/module/shared/Popover/Component";
 
 import './style.scss'
 
@@ -35,6 +37,7 @@ class C extends StandardPage {
       language: LANGUAGES.english, // language for this specifc form only
       data: undefined,
       reason: '',
+      visible: false,
     }
 
     this.isLogin = this.props.isLogin
@@ -69,6 +72,7 @@ class C extends StandardPage {
     return (
       <div>
         <div className="p_CVoteDetail">
+          <BackLink link="/proposals" />
           {metaNode}
           {titleNode}
           {subTitleNode}
@@ -100,7 +104,7 @@ class C extends StandardPage {
     const { data } = this.state
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
-      value: data.status || 'processing...',
+      value: CVOTE_STATUS_TEXT[data.status] || 'processing...',
     }
 
     const publishObj = {
@@ -150,25 +154,37 @@ class C extends StandardPage {
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
+    const { visible } = this.state
+    const opposeBtn = (
+      <Button
+        type="danger"
+        icon="close-circle"
+        onClick={this.showVoteOpposeModal}
+      >
+        {I18N.get('council.voting.btnText.no')}
+      </Button>
+    )
 
+    const opposePopOver = (
+      <CRPopover
+        triggeredBy={opposeBtn}
+        visible={visible}
+        onToggle={this.showVoteOpposeModal}
+        onSubmit={this.voteOppose}
+      />
+    )
     return (
       <div className="vote-btn-group">
         <Button
           type="primary"
-          icon="check"
+          icon="check-circle"
           onClick={this.showVoteYesModal}
         >
           {I18N.get('council.voting.btnText.yes')}
         </Button>
+        {opposePopOver}
         <Button
-          type="danger"
-          icon="close"
-          onClick={this.showVoteOpposeModal}
-        >
-          {I18N.get('council.voting.btnText.no')}
-        </Button>
-        <Button
-          icon="delete"
+          icon="stop"
           onClick={this.showVoteAbstentionModal}
         >
           {I18N.get('council.voting.btnText.abstention')}
@@ -179,7 +195,7 @@ class C extends StandardPage {
 
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
-    const { status, createdBy } = this.state.data
+    const { status, createdBy, notes } = this.state.data
     const isSelf = currentUserId === createdBy
     const isCompleted = status === CVOTE_STATUS.FINAL
     const canManage = isSecretary || isCouncil
@@ -188,15 +204,18 @@ class C extends StandardPage {
 
     if (!canManage || isCompleted) return null
 
+    const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
     const addNoteBtn = isSecretary && (
       <Button
+        icon="profile"
         onClick={this.showUpdateNotesModal}
       >
-        {I18N.get('council.voting.btnText.notesSecretary')}
+        {noteBtnText}
       </Button>
     )
     const editProposalBtn = isSelf && canEdit && (
       <Button
+        icon="edit"
         onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
@@ -204,6 +223,7 @@ class C extends StandardPage {
     )
     const completeProposalBtn = isSecretary && canComplete && (
       <Button
+        icon="check-square"
         type="primary"
         onClick={this.completeProposal}
       >
@@ -224,9 +244,10 @@ class C extends StandardPage {
   }
 
   showUpdateNotesModal = () => {
+    const { notes } = this.state.data
     Modal.confirm({
       title: I18N.get('council.voting.modal.updateNotes'),
-      content: <TextArea onChange={this.onNotesChanged} />,
+      content: <TextArea onChange={this.onNotesChanged} defaultValue={notes} />,
       okText: I18N.get('council.voting.modal.confirm'),
       cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.updateNotes(),
@@ -260,22 +281,40 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, avatar_map: avatarMap } = this.state.data
-    const stats = _.reduce(voteMap, (prev, value, key) => {
-      const userObj = { name: key, avatar: avatarMap[key] }
-      if (prev[value]) {
-        prev[value].push(userObj)
-        return prev
-      }
-      return _.extend(prev, { [value]: [userObj] })
-    }, {})
+    const { vote_map: voteMap, reason_map: reasonMap, voteResult } = this.state.data
+    const { avatar_map: avatarMap } = this.props
+    let stats
+    if (!_.isEmpty(voteResult)) {
+      stats = _.reduce(voteResult, (prev, cur) => {
+        const item = {
+          name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(cur, 'votedBy.profile.lastName')} `,
+          avatar: _.get(cur, 'votedBy.profile.avatar'),
+          reason: cur.reason,
+        }
+        if (prev[cur.value]) {
+          prev[cur.value].push(item)
+          return prev
+        }
+        return _.extend(prev, { [cur.value]: [item] })
+      }, {})
+    } else if (!_.isEmpty(voteMap)) {
+      // for legacy data structure
+      stats = _.reduce(voteMap, (prev, value, key) => {
+        const item = { name: key, avatar: _.get(avatarMap, key), reason: _.get(reasonMap, key) }
+        if (prev[value]) {
+          prev[value].push(item)
+          return prev
+        }
+        return _.extend(prev, { [value]: [item] })
+      }, {})
+    }
+
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
-      const users = _.map(statArr, stat => ({ name: stat.name, avatar: stat.avatar }))
       const label = CVOTE_RESULT_TEXT[key]
       const type = label.toLowerCase()
       const props = {
-        users,
+        dataList: statArr,
         type,
         label,
       }
@@ -289,33 +328,15 @@ class C extends StandardPage {
     )
   }
 
-  async vote({ vote, reason, reasonZh }) {
-    const { data } = this.state
-    const { match, updateCVote, currentUserId, static: { voter } } = this.props
+  async vote({ value, reason }) {
+    const { match, vote } = this.props
     const id = _.get(match, 'params.id')
 
-    const param = { _id: id }
-    const voteMap = []
-    const reasonMap = []
-    const reasonMapZh = []
-    _.each(voter, (name, voterId) => {
-      if (voterId === currentUserId) {
-        voteMap.push(`${name}|${vote}`)
-        reasonMap.push(`${name}|${reason || data.reason_map[name]}`)
-        reasonMapZh.push(`${name}|${reasonZh || data.reason_zh_map[name]}`)
-      } else {
-        voteMap.push(`${name}|${data.vote_map[name]}`)
-        reasonMap.push(`${name}|${data.reason_map[name]}`)
-        reasonMapZh.push(`${name}|${data.reason_zh_map[name]}`)
-      }
-    })
-    param.vote_map = voteMap.join(',')
-    if (reason) param.reason_map = reasonMap.join(',')
-    if (reasonZh) param.reason_zh_map = reasonMapZh.join(',')
+    const param = { _id: id, value, reason }
 
     this.ord_loading(true)
     try {
-      await updateCVote(param)
+      await vote(param)
       message.success(I18N.get('from.CVoteForm.message.updated.success'))
       this.refetch()
       this.ord_loading(false)
@@ -326,20 +347,16 @@ class C extends StandardPage {
   }
 
   voteYes = () => {
-    this.vote({ vote: CVOTE_RESULT.SUPPORT })
+    this.vote({ value: CVOTE_RESULT.SUPPORT })
   }
 
   voteAbstention = () => {
-    this.vote({ vote: CVOTE_RESULT.ABSTENTION })
+    this.vote({ value: CVOTE_RESULT.ABSTENTION })
   }
 
   voteOppose = ({ reason }) => {
-    this.vote({ vote: CVOTE_RESULT.REJECT, reason })
+    this.vote({ value: CVOTE_RESULT.REJECT, reason })
     this.setState({ reason: '' })
-  }
-
-  onReasonChanged = (e) => {
-    this.setState({ reason: e.target.value })
   }
 
   showVoteYesModal = () => {
@@ -361,14 +378,8 @@ class C extends StandardPage {
   }
 
   showVoteOpposeModal = () => {
-    const { reason } = this.state
-    Modal.confirm({
-      title: I18N.get('council.voting.modal.voteNo'),
-      content: <TextArea onChange={this.onReasonChanged} />,
-      okText: I18N.get('council.voting.modal.confirm'),
-      cancelText: I18N.get('council.voting.modal.cancel'),
-      onOk: () => this.voteOppose({ reason }),
-    })
+    const { visible } = this.state
+    this.setState({ visible: !visible })
   }
 
   completeProposal = () => {

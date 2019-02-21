@@ -10,7 +10,6 @@ const Component = ({ percentage, values, yes }) => {
     if (status === 'undecided') return <ItemUndecided status={status} key={key} />
     return <Item status={status} key={key} />
   })
-  console.log('yes is: ', yes)
   return (
     <div>
       <Text yes={yes}>{percentage}</Text>
