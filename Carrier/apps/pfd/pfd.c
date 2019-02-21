@@ -48,6 +48,18 @@
 
 #include "config.h"
 
+#define CONFIG_NAME   "elapfd.conf"
+
+static const char *config_files[] = {
+    "./"CONFIG_NAME,
+    "../etc/carrier/"CONFIG_NAME,
+#if !defined(_WIN32) && !defined(_WIN64)
+    "/usr/local/etc/carrier/"CONFIG_NAME,
+    "/etc/carrier/"CONFIG_NAME,
+#endif
+    NULL
+};
+
 static PFConfig *config;
 
 static ElaCarrier *carrier;
@@ -518,11 +530,29 @@ static int session_hash_compare(const void *key1, size_t len1,
         return 1;
 }
 
+const char *get_config_path(const char *config_files[])
+{
+    const char **file;
+
+    for (file = config_files; *file; file++) {
+        FILE *fp = fopen(*file, "r");
+
+        if (!fp)
+            continue;
+
+        fclose(fp);
+
+        return *file;
+    }
+
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     ElaOptions opts;
     ElaCallbacks callbacks;
-    char buffer[2048] = { 0 };
+    const char *config_file = NULL;
     int wait_for_attach = 0;
     int rc;
     int opt;
@@ -550,7 +580,7 @@ int main(int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, "c:h?", options, &idx)) != -1) {
         switch (opt) {
         case 'c':
-            strcpy(buffer, optarg);
+            config_file = optarg;
             break;
         case 1:
             wait_for_attach = 1;
@@ -559,7 +589,7 @@ int main(int argc, char *argv[])
         case 'h':
         case '?':
         default:
-            printf("\nUSAGE: wmpfd [-c CONFIG_FILE]\n\n");
+            printf("\nUSAGE: elapfd [-c CONFIG_FILE]\n\n");
             exit(-1);
         }
     }
@@ -570,12 +600,16 @@ int main(int argc, char *argv[])
         getchar();
     }
 
-    if (!*buffer) {
-        realpath(argv[0], buffer);
-        strcat(buffer, ".conf");
+    if (!config_file)
+        config_file = get_config_path(config_files);
+
+    if (!config_file) {
+        printf("Error: Missing config file.\n");
+        printf("\nUSAGE: elapfd [-c CONFIG_FILE]\n\n");
+        return -1;
     }
 
-    config = load_config(buffer);
+    config = load_config(config_file);
     if (!config) {
         return -1;
     }
