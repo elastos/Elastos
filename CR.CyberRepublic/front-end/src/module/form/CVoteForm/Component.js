@@ -1,11 +1,11 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Form, Icon, Input, Button, Select, Row, Col, message, Steps, Modal,
+  Form, Input, Button, Select, Row, Col, message, Modal,
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { LANGUAGES } from '@/config/constant'
+import { CVOTE_STATUS, CVOTE_TYPE } from '@/constant'
 
 import './style.scss'
 
@@ -19,7 +19,6 @@ class C extends BaseComponent {
     this.state = {
       persist: true,
       loading: false,
-      language: LANGUAGES.english, // language for this specifc form only
     }
 
     this.user = this.props.user
@@ -90,7 +89,7 @@ class C extends BaseComponent {
     const type_fn = getFieldDecorator('type', {
       rules: [{ required: true }],
       readOnly: true,
-      initialValue: edit ? parseInt(data.type, 10) : '',
+      initialValue: edit ? parseInt(data.type, 10) : 1,
     })
     const type_el = (
       <Select size="large">
@@ -126,13 +125,6 @@ class C extends BaseComponent {
       </Select>
     )
 
-    const motionId_fn = getFieldDecorator('motionId', {
-      initialValue: edit ? data.motionId : '',
-    })
-    const motionId_el = (
-      <Input size="large" type="text" />
-    )
-
     const isConflict_fn = getFieldDecorator('isConflict', {
       initialValue: edit ? data.isConflict : 'NO',
     })
@@ -155,18 +147,18 @@ class C extends BaseComponent {
       type: type_fn(type_el),
       content: content_fn(content_el),
       proposedBy: proposedBy_fn(proposedBy_el),
-      motionId: motionId_fn(motionId_el),
       isConflict: isConflict_fn(isConflict_el),
       notes: notes_fn(notes_el),
     }
   }
 
   togglePersist() {
-    this.setState({ persist: !this.state.persist })
+    const { persist } = this.state
+    this.setState({ persist: !persist })
   }
 
   ord_render() {
-    const { edit, data, canManage } = this.props
+    const { edit, data, canManage, isSecretary } = this.props
     let p = null
     if (!canManage || (edit && !data)) {
       return null
@@ -176,7 +168,6 @@ class C extends BaseComponent {
     } else {
       p = this.getInputProps()
     }
-    const s = this.props.static
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -205,10 +196,8 @@ class C extends BaseComponent {
         <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayout}>{p.content}</FormItem>
         <FormItem label={I18N.get('from.CVoteForm.label.proposedby')} {...formItemLayout}>{p.proposedBy}</FormItem>
 
-        <FormItem style={{ marginBottom: '30px' }} label={I18N.get('from.CVoteForm.label.motion')} help={I18N.get('from.CVoteForm.label.motion.help')} {...formItemLayout}>{p.motionId}</FormItem>
-
         <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.conflict')} help={I18N.get('from.CVoteForm.label.conflict.help')} {...formItemLayout}>{p.isConflict}</FormItem>
-        <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>
+        {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>}
         <Row gutter={8}>
           {this.renderCancelBtn()}
           {this.renderSaveDraftBtn()}
@@ -230,7 +219,7 @@ class C extends BaseComponent {
     return (
       <Col xs={24} sm={24} md={8} lg={8}>
         <FormItem>
-          <Button loading={this.state.loading} onClick={this.gotoList} size="large" className="d_btn">
+          <Button loading={this.state.loading} onClick={this.gotoList} size="large" style={{ width: '100%', borderRadius: 0 }}>
             {I18N.get('from.CVoteForm.button.cancel')}
           </Button>
         </FormItem>
@@ -239,11 +228,10 @@ class C extends BaseComponent {
   }
 
   renderSaveDraftBtn() {
-    const { edit } = this.props
+    const { edit, data } = this.props
+    const showButton = !edit || _.get(data, 'status') === CVOTE_STATUS.DRAFT
 
-    if (edit) return null
-
-    return (
+    return showButton && (
       <Col xs={24} sm={24} md={8} lg={8}>
         <FormItem>
           <Button loading={this.state.loading} size="large" onClick={this.saveDraft} className="d_btn">
