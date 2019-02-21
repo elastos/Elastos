@@ -12354,6 +12354,7 @@ a.ant-notification-notice-close:focus {
   outline: none;
   display: block;
   transition: all 0.3s;
+  position: relative;
 }
 .ant-pagination-prev .ant-pagination-item-link:after,
 .ant-pagination-next .ant-pagination-item-link:after {
@@ -12368,7 +12369,9 @@ a.ant-notification-notice-close:focus {
   margin: 2px;
   width: 30px;
   color: #1DE9B6;
-
+  position: absolute;
+  top: -2px;
+  left: -2px;
 }
 .ant-pagination-prev:focus .ant-pagination-item-link,
 .ant-pagination-next:focus .ant-pagination-item-link,
