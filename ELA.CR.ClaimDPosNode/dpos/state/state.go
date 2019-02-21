@@ -619,8 +619,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	for _, program := range tx.Programs {
 		pk := program.Code[1 : len(program.Code)-1]
-		if producer := s.GetProducer(pk);
-			producer != nil && producer.state == Canceled {
+		if producer := s.GetProducer(pk); producer != nil && producer.state == Canceled {
 			returnAction(producer)
 		}
 	}

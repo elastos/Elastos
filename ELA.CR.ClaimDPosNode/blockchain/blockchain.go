@@ -60,8 +60,8 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params, arbiters interfaces.Arbitrators,
-	versions interfaces.HeightVersions) (*BlockChain, error) {
+func New(db IChainStore, chainParams *config.Params, versions interfaces.HeightVersions,
+	state *state.State) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -69,7 +69,7 @@ func New(db IChainStore, chainParams *config.Params, arbiters interfaces.Arbitra
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
-		state:               state.NewState(arbiters, chainParams),
+		state:               state,
 		versions:            versions,
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,

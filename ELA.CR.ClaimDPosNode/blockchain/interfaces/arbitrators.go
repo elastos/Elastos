@@ -24,6 +24,7 @@ type Arbitrators interface {
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 
 	GetArbitratorsProgramHashes() []*common.Uint168
+	GetNormalArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168
 
 	GetOnDutyArbitrator() []byte

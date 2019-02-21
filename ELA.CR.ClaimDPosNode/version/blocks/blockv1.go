@@ -6,7 +6,6 @@ import (
 	"math"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
@@ -150,9 +149,9 @@ func (b *blockV1) AssignCoinbaseTxRewards(block *types.Block, totalReward common
 }
 
 func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes := b.cfg.Arbitrators.GetArbitratorsProgramHashes()
-	if uint32(len(arbitratorsHashes)) < blockchain.DefaultLedger.Arbitrators.GetArbitersCount() {
-		return 0, errors.New("current arbitrators count less than required arbitrators count")
+	arbitratorsHashes := b.cfg.Arbitrators.GetNormalArbitratorsProgramHashes()
+	if len(arbitratorsHashes) == 0 {
+		return 0, errors.New("not found arbiters when distributeDposReward")
 	}
 	candidatesHashes := b.cfg.Arbitrators.GetCandidatesProgramHashes()
 

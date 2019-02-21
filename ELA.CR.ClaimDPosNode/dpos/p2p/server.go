@@ -448,8 +448,8 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s)
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -466,8 +466,8 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	}
 	sp.Peer = p
 	sp.connReq = c
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 }
 
 // peerDoneHandler handles peer disconnects by notifiying the server that it's
