@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
+	"mime"
 	"net"
 	"net/http"
 	"strconv"
@@ -98,8 +99,8 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
 		return
 	}
-
-	if r.Header["Content-Type"][0] != "application/json" {
+	contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if contentType != "application/json" {
 		http.Error(w, "need content type to be application/json", http.StatusUnsupportedMediaType)
 		return
 	}
