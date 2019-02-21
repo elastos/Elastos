@@ -28,7 +28,8 @@ export default class extends Base {
         const councilMembers = await db_user.find({role: constant.USER_ROLE.COUNCIL});
         const voteResult = []
         _.each(councilMembers, user => {
-          const value = currentUserId === user._id ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+          // use ObjectId.equals
+          const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
           voteResult.push({ votedBy: user._id, value })
         })
 
