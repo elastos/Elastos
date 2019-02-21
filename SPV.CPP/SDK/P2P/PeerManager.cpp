@@ -1141,25 +1141,25 @@ namespace Elastos {
 						CMBlock hashData(sizeof(UInt168));
 						for (std::vector<Address>::iterator externalIt = externalAddrs.begin(), internalIt = internalAddrs.begin();
 							 externalIt != externalAddrs.end() || internalIt != internalAddrs.end();) {
-							if (BRAddressHash168(&hash, (*externalIt).GetChar())) {
+							if (externalIt != externalAddrs.end() && BRAddressHash168(&hash, (*externalIt).GetChar())) {
 								memcpy(hashData, hash.u8, sizeof(UInt168));
 								if (!_bloomFilter->ContainsData(hashData)) {
 									_bloomFilter.reset();
 									updateBloomFilter();
 									break;
 								}
+								externalIt++;
 							}
 
-							if (BRAddressHash168(&hash, (*internalIt).GetChar())) {
+							if (internalIt != internalAddrs.end() && BRAddressHash168(&hash, (*internalIt).GetChar())) {
 								memcpy(hashData, hash.u8, sizeof(UInt168));
 								if (!_bloomFilter->ContainsData(hashData)) {
 									_bloomFilter.reset();
 									updateBloomFilter();
 									break;
 								}
+								internalIt++;
 							}
-							if (externalIt != externalAddrs.end()) externalIt++;
-							if (internalIt != internalAddrs.end()) internalIt++;
 						}
 					}
 				}

@@ -153,26 +153,6 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet1));
 	}
-	SECTION("Create with phrase password can be empty") {
-		CHECK_NOTHROW(TestMasterWallet("", payPassword));
-	}
-	SECTION("Create with phrase password that is less than 8") {
-		CHECK_THROWS_AS(TestMasterWallet("ilegal", payPassword), std::invalid_argument);
-	}
-	SECTION("Create with phrase password that is more than 128") {
-		REQUIRE_THROWS_AS(TestMasterWallet(
-								  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-										  payPassword), std::invalid_argument);
-	}
-	SECTION("Create with pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, ""), std::invalid_argument);
-		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "ilegal"), std::invalid_argument);
-	}
-	SECTION("Create with pay password that is more than 128") {
-		REQUIRE_THROWS_AS(TestMasterWallet(phrasePassword,
-										   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-						  std::invalid_argument);
-	}
 }
 
 TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {

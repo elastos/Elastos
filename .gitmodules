@@ -1,18 +1,9 @@
-[submodule "ThirdParty/spdlog"]
-	path = SPV.CPP/ThirdParty/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "ThirdParty/Catch2"]
-	path = SPV.CPP/ThirdParty/Catch2
-	url = https://github.com/catchorg/Catch2.git
-[submodule "ThirdParty/json"]
-	path = SPV.CPP/ThirdParty/json
-	url = https://github.com/nlohmann/json.git
 [submodule "ThirdParty/openssl/openssl"]
 	path = SPV.CPP/ThirdParty/openssl/openssl
-	url = https://github.com/heropan/openssl.git
+	url = https://github.com/openssl/openssl.git
 [submodule "ThirdParty/fruit"]
 	path = SPV.CPP/ThirdParty/fruit
-	url = git@github.com:google/fruit.git
+	url = https://github.com/google/fruit.git
 [submodule "ThirdParty/openssl/OpenSSL-for-iPhone"]
 	path = SPV.CPP/ThirdParty/openssl/OpenSSL-for-iPhone
-	url = git@github.com:x2on/OpenSSL-for-iPhone.git
+	url = https://github.com/x2on/OpenSSL-for-iPhone.git
