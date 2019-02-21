@@ -35,7 +35,7 @@ beforeAll(async ()=>{
 
     // remove test user
     await DB.getModel('User').remove({
-        role: constant.USER_ROLE.MEMBER
+        username: global.DB.MEMBER_USER.username
     });
     await DB.getModel('User').remove({
         username: global.DB.ORGANIZER_USER.username

@@ -22,10 +22,10 @@ beforeAll(async ()=>{
     })
 
     await DB.getModel('User').remove({
-        role : constant.USER_ROLE.MEMBER
+        username: global.DB.MEMBER_USER.username
     })
     await DB.getModel('User').remove({
-        role: constant.USER_ROLE.COUNCIL
+        username: global.DB.COUNCIL_USER.username
     })
     await DB.getModel('Task').remove({})
     await DB.getModel('CVote').remove({})
