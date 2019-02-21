@@ -3,14 +3,16 @@ package auxpow
 import (
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/auxpow"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
+	ela "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-func getSideChainPowTx(msgBlockHash Uint256, genesisHash Uint256) *ela.Transaction {
+func getSideChainPowTx(msgBlockHash common.Uint256, genesisHash common.Uint256) *ela.Transaction {
 
-	txPayload := &ela.PayloadSideChainPow{
+	txPayload := &payload.PayloadSideChainPow{
 		SideBlockHash:   msgBlockHash,
 		SideGenesisHash: genesisHash,
 	}
@@ -20,13 +22,13 @@ func getSideChainPowTx(msgBlockHash Uint256, genesisHash Uint256) *ela.Transacti
 	return sideChainPowTx
 }
 
-func GenerateSideAuxPow(msgBlockHash Uint256, genesisHash Uint256) *SideAuxPow {
-	sideAuxMerkleBranch := make([]Uint256, 0)
+func GenerateSideAuxPow(msgBlockHash common.Uint256, genesisHash common.Uint256) *SideAuxPow {
+	sideAuxMerkleBranch := make([]common.Uint256, 0)
 	sideAuxMerkleIndex := 0
 	sideAuxBlockTx := getSideChainPowTx(msgBlockHash, genesisHash)
 	elaBlockHeader := ela.Header{
 		Version:    0x7fffffff,
-		Previous:   EmptyHash,
+		Previous:   common.EmptyHash,
 		MerkleRoot: sideAuxBlockTx.Hash(),
 		Timestamp:  uint32(time.Now().Unix()),
 		Bits:       0,
@@ -49,14 +51,14 @@ func GenerateSideAuxPow(msgBlockHash Uint256, genesisHash Uint256) *SideAuxPow {
 	return sideAuxPow
 }
 
-func NewSideChainPowTx(payload *ela.PayloadSideChainPow, currentHeight uint32) *ela.Transaction {
+func NewSideChainPowTx(payload *payload.PayloadSideChainPow, currentHeight uint32) *ela.Transaction {
 	return &ela.Transaction{
 		TxType:  ela.SideChainPow,
 		Payload: payload,
 		Inputs: []*ela.Input{
 			{
 				Previous: ela.OutPoint{
-					TxID:  EmptyHash,
+					TxID:  common.EmptyHash,
 					Index: 0x0000,
 				},
 				Sequence: 0x00000000,
@@ -64,6 +66,6 @@ func NewSideChainPowTx(payload *ela.PayloadSideChainPow, currentHeight uint32) *
 		},
 		Attributes: []*ela.Attribute{},
 		LockTime:   currentHeight,
-		Programs:   []*ela.Program{},
+		Programs:   []*program.Program{},
 	}
 }
