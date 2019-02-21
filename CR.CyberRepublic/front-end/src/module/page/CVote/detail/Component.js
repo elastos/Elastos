@@ -6,7 +6,7 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import Footer from '@/module/layout/Footer/Container'
@@ -104,7 +104,7 @@ class C extends StandardPage {
     const { data } = this.state
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
-      value: data.status || 'processing...',
+      value: CVOTE_STATUS_TEXT[data.status] || 'processing...',
     }
 
     const publishObj = {
@@ -195,7 +195,7 @@ class C extends StandardPage {
 
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
-    const { status, createdBy } = this.state.data
+    const { status, createdBy, notes } = this.state.data
     const isSelf = currentUserId === createdBy
     const isCompleted = status === CVOTE_STATUS.FINAL
     const canManage = isSecretary || isCouncil
@@ -204,12 +204,13 @@ class C extends StandardPage {
 
     if (!canManage || isCompleted) return null
 
+    const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
     const addNoteBtn = isSecretary && (
       <Button
         icon="profile"
         onClick={this.showUpdateNotesModal}
       >
-        {I18N.get('council.voting.btnText.notesSecretary')}
+        {noteBtnText}
       </Button>
     )
     const editProposalBtn = isSelf && canEdit && (
@@ -243,9 +244,10 @@ class C extends StandardPage {
   }
 
   showUpdateNotesModal = () => {
+    const { notes } = this.state.data
     Modal.confirm({
       title: I18N.get('council.voting.modal.updateNotes'),
-      content: <TextArea onChange={this.onNotesChanged} />,
+      content: <TextArea onChange={this.onNotesChanged} defaultValue={notes} />,
       okText: I18N.get('council.voting.modal.confirm'),
       cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => this.updateNotes(),

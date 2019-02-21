@@ -681,6 +681,7 @@ const zh = {
   'council.voting.btnText.no': '投反对票并给出理由',
   'council.voting.btnText.abstention': '弃权',
   'council.voting.btnText.notesSecretary': '秘书处记录',
+  'council.voting.btnText.editNotes': '编辑记录',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '完成此提案',
 
