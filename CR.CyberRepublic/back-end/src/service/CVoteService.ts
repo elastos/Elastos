@@ -20,20 +20,16 @@ export default class extends Base {
     public async create(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
         const db_user = this.getDBModel('User');
-
+        const currentUserId = _.get(this.currentUser, '_id')
         const {
             title, type, content, published, proposedBy, motionId, isConflict, notes,
         } = param;
 
         const councilMembers = await db_user.find({role: constant.USER_ROLE.COUNCIL});
         const voteResult = []
-        const vote_map = {}
-        const reason_map = {}
         _.each(councilMembers, user => {
-          const fullName = `${user.profile.firstName} ${user.profile.lastName}`
-          voteResult.push({ votedBy: user._id })
-          vote_map[fullName] = -1
-          reason_map[fullName] = ''
+          const value = currentUserId === user._id ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+          voteResult.push({ votedBy: user._id, value })
         })
 
         const doc: any = {
@@ -46,6 +42,7 @@ export default class extends Base {
             isConflict,
             notes,
             voteResult,
+            voteHistory: voteResult,
             createdBy : this.currentUser._id
         };
 
@@ -182,9 +179,10 @@ export default class extends Base {
     }
 
     public async vote(param): Promise<Document>{
-        const db_cvote = this.getDBModel('CVote');
+        const db_cvote = this.getDBModel('CVote')
         const { _id, value, reason } = param
-        const cur = await db_cvote.findOne({ _id });
+        const cur = await db_cvote.findOne({ _id })
+        const votedBy = _.get(this.currentUser, '_id')
         if(!cur) {
             throw 'invalid proposal id';
         }
@@ -192,12 +190,19 @@ export default class extends Base {
         await db_cvote.update(
           {
             _id,
-            'voteResult.votedBy': _.get(this.currentUser, '_id')
+            'voteResult.votedBy': votedBy
           },
           {
-            $set : {
+            $set: {
               'voteResult.$.value': value,
-              'voteResult.$.reason': reason,
+              'voteResult.$.reason': reason || '',
+            },
+            $push: {
+              voteHistory: {
+                value,
+                reason,
+                votedBy,
+              }
             }
           }
         )

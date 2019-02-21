@@ -20,6 +20,15 @@ export const CVoteResultSchema = {
     }
 }
 
+export const CVoteHistorySchema = {
+    ...CVoteResultSchema,
+    createdAt: {
+        type : Date,
+        required : true,
+        default : Date.now,
+    },
+}
+
 export const CVote = {
     title : {
         type : String,
@@ -60,7 +69,8 @@ export const CVote = {
     notes_zh : {
         type : String
     },
-    voteResult: [CVoteResultSchema],
+    voteHistory: [CVoteHistorySchema],
+    voteResult:  [CVoteResultSchema],
     vote_map : Object,
     avatar_map : Object,
     reason_map : Object,
