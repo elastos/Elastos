@@ -124,9 +124,13 @@ export default class extends Base {
             throw 'cvoteservice.update - invalid proposal id';
         }
 
-        const doc: any = {
-          content, isConflict, proposedBy, title, type
-        }
+        const doc: any = {}
+
+        if (content) doc.content = content
+        if (isConflict) doc.isConflict = isConflict
+        if (proposedBy) doc.proposedBy = proposedBy
+        if (title) doc.title = title
+        if (type) doc.type = type
 
         if (published === true && cur.status === constant.CVOTE_STATUS.DRAFT) {
           doc.status = constant.CVOTE_STATUS.PROPOSED
