@@ -6,9 +6,8 @@ import {
   Table, Row, Col, Button,
 } from 'antd'
 import I18N from '@/I18N'
-import { LANGUAGES } from '@/config/constant'
 import VoteStats from '../stats/Component'
-import { CVOTE_RESULT_TEXT } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_STATUS_TEXT } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided } from './style'
@@ -65,7 +64,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => item.status || '',
+        render: (id, item) => CVOTE_STATUS_TEXT[item.status] || '',
       },
       {
         title: I18N.get('council.voting.createdAt'),
