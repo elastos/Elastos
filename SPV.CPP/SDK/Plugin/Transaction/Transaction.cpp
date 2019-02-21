@@ -727,6 +727,13 @@ namespace Elastos {
 				summary["Remark"] = getRemark();
 				summary["Inputs"] = inputList;
 				summary["Outputs"] = outputList;
+				summary["Payload"] = _payload->toJson(_payloadVersion);
+
+				std::vector<nlohmann::json> attributes;
+				for (int i = 0; i < _attributes.size(); ++i) {
+					attributes.push_back(_attributes[i].toJson());
+				}
+				summary["Attribute"] = attributes;
 			}
 
 			return summary;
