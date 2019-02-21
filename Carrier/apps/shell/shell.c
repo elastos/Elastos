@@ -74,6 +74,18 @@
 
 #include "config.h"
 
+#define CONFIG_NAME   "elashell.conf"
+
+static const char *config_files[] = {
+    "./"CONFIG_NAME,
+    "../etc/carrier/"CONFIG_NAME,
+#if !defined(_WIN32) && !defined(_WIN64)
+    "/usr/local/etc/carrier/"CONFIG_NAME,
+    "/etc/carrier/"CONFIG_NAME,
+#endif
+    NULL
+};
+
 #define NUMBER_OF_HISTORY       256
 
 static char default_data_location[PATH_MAX];
@@ -2162,10 +2174,28 @@ void signal_handler(int signum)
     exit(-1);
 }
 
+const char *get_config_path(const char *config_files[])
+{
+    const char **file;
+
+    for (file = config_files; *file; file++) {
+        FILE *fp = fopen(*file, "r");
+
+        if (!fp)
+            continue;
+
+        fclose(fp);
+
+        return *file;
+    }
+
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     ShellConfig *cfg;
-    char buffer[2048];
+    const char *config_file = NULL;
     ElaCarrier *w;
     ElaOptions opts;
     int wait_for_attach = 0;
@@ -2193,7 +2223,7 @@ int main(int argc, char *argv[])
             options, &idx)) != -1) {
         switch (opt) {
         case 'c':
-            strcpy(buffer, optarg);
+            config_file = optarg;
             break;
 
         case 2:
@@ -2226,12 +2256,16 @@ int main(int argc, char *argv[])
     signal(SIGHUP, signal_handler);
 #endif
 
-    if (!*buffer) {
-        (void)realpath(argv[0], buffer);
-        strcat(buffer, ".conf");
+    if (!config_file)
+        config_file = get_config_path(config_files);
+
+    if (!config_file) {
+        fprintf(stderr, "Error: Missing config file.\n");
+        usage();
+        return -1;
     }
 
-    cfg = load_config(buffer);
+    cfg = load_config(config_file);
     if (!cfg) {
         fprintf(stderr, "loading configure failed !\n");
         return -1;

@@ -159,7 +159,7 @@ ShellConfig *load_config(const char *config_file)
         deref(config);
         return NULL;
     } else {
-        char path[PATH_MAX];
+        char path[PATH_MAX] = {0};
         qualified_path(stropt, config_file, path);
         config->datadir = strdup(path);
     }
