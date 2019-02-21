@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	log2 "github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/version"
 	"github.com/elastos/Elastos.ELA/version/verconf"
@@ -153,7 +154,7 @@ func initLedger(L *lua.LState) int {
 	}
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.MainNetParams, nil, versions)
+	chain, err := blockchain.New(chainStore, &config.MainNetParams, versions, state.NewState(nil, &config.MainNetParams))
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
