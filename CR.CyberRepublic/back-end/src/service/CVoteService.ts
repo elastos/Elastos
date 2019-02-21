@@ -184,6 +184,12 @@ export default class extends Base {
         return false;
     }
 
+    // proposal active/passed
+    public isActive(data): Boolean {
+        const supportNum = _.countBy(data.voteResult, 'value').support || 0
+        return supportNum > data.voteResult.length * 0.5;
+    }
+
     public async vote(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote')
         const { _id, value, reason } = param
@@ -245,18 +251,28 @@ export default class extends Base {
         const list = await db_cvote.find({
             status: constant.CVOTE_STATUS.PROPOSED
         });
-        const ids = [];
+        const idsDeferred = [];
+        const idsActive = [];
 
         _.each(list, (item)=>{
-            if(this.isExpired(item)){
-                ids.push(item._id);
+            if(this.isExpired(item)) {
+              if (this.isActive(item)) {
+                idsActive.push(item._id);
+              } else {
+                idsDeferred.push(item._id);
+              }
             }
         });
 
         await db_cvote.update({_id : {
-            $in : ids
+            $in : idsDeferred
         }}, {
             status : constant.CVOTE_STATUS.DEFERRED
+        });
+        await db_cvote.update({_id : {
+            $in : idsActive
+        }}, {
+            status : constant.CVOTE_STATUS.ACTIVE
         });
     }
 
