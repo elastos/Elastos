@@ -23,7 +23,7 @@ class Component extends React.Component {
         <Title>{I18N.get('council.voting.modal.voteNo')}</Title>
         <StyledTextArea onChange={this.onReasonChanged} />
         <Footer>
-          <Btn type="default">
+          <Btn type="default" onClick={onToggle}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
           <Btn type="danger" onClick={() => onSubmit({ reason })}>

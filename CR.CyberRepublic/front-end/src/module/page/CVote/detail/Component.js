@@ -154,7 +154,7 @@ class C extends StandardPage {
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
-    const { reason, visible } = this.state
+    const { visible } = this.state
     const opposeBtn = (
       <Button
         type="danger"
@@ -309,11 +309,10 @@ class C extends StandardPage {
 
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
-      const users = _.map(statArr, stat => ({ name: stat.name, avatar: stat.avatar }))
       const label = CVOTE_RESULT_TEXT[key]
       const type = label.toLowerCase()
       const props = {
-        users,
+        dataList: statArr,
         type,
         label,
       }
