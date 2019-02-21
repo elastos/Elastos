@@ -81,12 +81,12 @@ var accountCommand = []cli.Command{
 		},
 		Action: delAccount,
 	},
-	{
-		Category: "Account",
-		Name:     "chpwd",
-		Usage:    "Change wallet password",
-		Action:   changePassword,
-	},
+	//{
+	//	Category: "Account",
+	//	Name:     "chpwd",
+	//	Usage:    "Change wallet password",
+	//	Action:   changePassword,
+	//},
 	{
 		Category:  "Account",
 		Name:      "import",
