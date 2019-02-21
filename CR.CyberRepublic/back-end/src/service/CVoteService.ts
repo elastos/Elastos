@@ -109,7 +109,7 @@ export default class extends Base {
      */
     public async update(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
-        const { _id, published, notes } = param
+        const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
 
         if(!this.currentUser || !this.currentUser._id){
             throw 'cvoteservice.update - invalid current user';
@@ -124,9 +124,14 @@ export default class extends Base {
             throw 'cvoteservice.update - invalid proposal id';
         }
 
-        const doc: any = {}
+        const doc: any = {
+          content, isConflict, proposedBy, title, type
+        }
 
-        if (published && cur.status === constant.CVOTE_STATUS.DRAFT) doc.status = constant.CVOTE_STATUS.PROPOSED
+        if (published === true && cur.status === constant.CVOTE_STATUS.DRAFT) {
+          doc.status = constant.CVOTE_STATUS.PROPOSED
+          doc.published = published
+        }
 
         // always allow secretary to edit notes
         if (notes) doc.notes = notes
