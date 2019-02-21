@@ -12,6 +12,7 @@
 - HttpJsonPort、
 - NodePort，
 - ActiveNet  //for reduce the mining blocks interval
+- RpcConfiguration //for limit ip to use rpc interface
 ## Inline Explanation
 
 ```JSON
@@ -51,6 +52,14 @@
       "MinerInfo": "ELA",           //No need to change.
       "MinTxFee": 100,              //Minimal mining fee
       "ActiveNet": "MainNet"        //Network type. Choices: MainNet、TestNet、RegNet，RegNet. Mining interval are 120s、10s、1s accordingly. Difficulty factor high to low.
+    },
+    "VoteHeight": 100000,           //Starting height of statistical voting
+    "RpcConfiguration": {           
+      "User": "ELAUser",            //User name: if set, you need to provide user name and password when calling the rpc interface
+      "Pass": "ELAPass" ,           //User password: if set, you need to provide user name and password when calling the rpc interface
+      "WhiteIPList":[               //If hanve "0.0.0.0" in WhiteIPList will allow all ip to connect, otherwise only allow ip in WhiteIPList to connect
+        "0.0.0.0"
+      ]
     },
     "Arbiters": [          //Public keys of the arbitrator nodes, used to verify cross-chain transfer transactions and sidechain blocks
       "03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",

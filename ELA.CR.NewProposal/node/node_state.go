@@ -1,13 +1,13 @@
 package node
 
 import (
-	"time"
 	"fmt"
 	"strings"
+	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 )
 
 const (

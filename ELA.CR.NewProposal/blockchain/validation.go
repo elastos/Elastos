@@ -4,51 +4,49 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	. "github.com/elastos/Elastos.ELA/core/contract/program"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
-	if len(hashes) != len(programs) {
+func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Program) error {
+	if len(programHashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
 	for i, program := range programs {
-		programHash, err := crypto.ToProgramHash(program.Code)
-		if err != nil {
-			return err
+		programHash := programHashes[i]
+
+		// TODO: this implementation will be deprecated
+		if programHash[0] == common.PrefixCrossChain {
+			if err := checkCrossChainSignatures(*program, data); err != nil {
+				return err
+			}
+			continue
 		}
 
-		signType, err := crypto.GetScriptType(program.Code)
-		if err != nil {
-			return err
+		codeHash := common.ToCodeHash(program.Code)
+		ownerHash := programHash.ToCodeHash()
+
+		if !ownerHash.IsEqual(*codeHash) {
+			return errors.New("the data hashes is different with corresponding program code")
 		}
 
-		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
-			return errors.New("The data hashes is different with corresponding program code.")
-		}
-
-		if signType == common.STANDARD {
+		prefixType := contract.PrefixType(programHash[0])
+		if prefixType == contract.PrefixStandard || prefixType == contract.PrefixDeposit {
 			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}
 
-		} else if signType == common.MULTISIG {
-			if err = checkMultiSigSignatures(*program, data); err != nil {
+		} else if programHash[0] == common.PrefixMultisig {
+			if err := checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
-
-		} else if signType == common.CROSSCHAIN {
-			if err = checkCrossChainSignatures(*program, data); err != nil {
-				return err
-			}
-
 		} else {
 			return errors.New("unknown signature type")
 		}
@@ -125,7 +123,8 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n {
+	if m < 1 || m > n || n != int(config.ArbitratorsCount) ||
+		m <= int(config.MajorityCount) {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseCrossChainScript(code)
@@ -184,10 +183,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 }
 
 func checkCrossChainArbitrators(publicKeys [][]byte) error {
-	arbitrators, err := config.Parameters.GetArbitrators()
-	if err != nil {
-		return err
-	}
+	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
 	if len(arbitrators) != len(publicKeys) {
 		return errors.New("Invalid arbitrator count.")
 	}
@@ -208,14 +204,8 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func SortPrograms(programs []*Program) (err error) {
-	defer func() {
-		if code := recover(); code != nil {
-			err = fmt.Errorf("invalid program code %x", code)
-		}
-	}()
+func SortPrograms(programs []*Program) {
 	sort.Sort(byHash(programs))
-	return err
 }
 
 type byHash []*Program
@@ -223,13 +213,7 @@ type byHash []*Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, err := crypto.ToProgramHash(p[i].Code)
-	if err != nil {
-		panic(p[i].Code)
-	}
-	hashj, err := crypto.ToProgramHash(p[j].Code)
-	if err != nil {
-		panic(p[j].Code)
-	}
+	hashi := common.ToCodeHash(p[i].Code)
+	hashj := common.ToCodeHash(p[j].Code)
 	return hashi.Compare(*hashj) < 0
 }

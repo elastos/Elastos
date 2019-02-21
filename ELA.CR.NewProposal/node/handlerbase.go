@@ -5,13 +5,12 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/protocol"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 var _ protocol.Handler = (*HandlerBase)(nil)
@@ -95,14 +94,6 @@ func (h *HandlerBase) onVersion(version *msg.Version) {
 		return
 	}
 
-	//// Obsolete node
-	//n, ret := LocalNode.DelNeighborNode(version.Nonce)
-	//if ret == true {
-	//	log.Info(fmt.Sprintf("Node %s reconnect", n))
-	//	// Close the connection and release the node soure
-	//	n.Disconnect()
-	//}
-
 	node.UpdateInfo(time.Now(), version.Version,
 		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
 
@@ -145,6 +136,9 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 
 	node.SetState(protocol.ESTABLISHED)
 
+	// Set NAFilter for node.
+	node.SetNAFilter(&nodeNAFilter{})
+
 	// Finish handshake
 	LocalNode.RemoveFromHandshakeQueue(node)
 	LocalNode.RemoveFromConnectingList(node.Addr())
@@ -165,14 +159,12 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) {
 }
 
 func (h *HandlerBase) onPing(ping *msg.Ping) {
-	log.Debug("onPing")
 	h.node.SetHeight(ping.Nonce)
 	h.node.SetLastActive(time.Now())
 	h.node.SendMessage(msg.NewPong(uint64(chain.DefaultLedger.Store.GetHeight())))
 }
 
 func (h *HandlerBase) onPong(pong *msg.Pong) {
-	log.Debug("onPong")
 	h.node.SetHeight(pong.Nonce)
 	h.node.SetLastActive(time.Now())
 }
@@ -181,20 +173,20 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	var addrs []*p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsExternal() {
-		for _, addr := range LocalNode.RandSelectAddresses() {
-			if addr.Services&protocol.OpenService == protocol.OpenService {
-				addrs = append(addrs,
-					&p2p.NetAddress{
-						addr.Timestamp,
-						addr.Services,
-						addr.IP,
-						config.Parameters.NodeOpenPort,
-					})
-			}
-		}
+		addrs = LocalNode.RandOpenAddresses()
 	} else {
 		addrs = LocalNode.RandSelectAddresses()
 	}
+
+	// Filter addresses if NAFilter not nil.
+	naFilter := h.node.NAFilter()
+	addrFiltered := make([]*p2p.NetAddress, 0, len(addrs))
+	for _, na := range addrs {
+		if naFilter == nil || naFilter.Filter(na) {
+			addrFiltered = append(addrFiltered, na)
+		}
+	}
+	addrs = addrFiltered
 
 	repeatNum := 0
 	var uniqueAddrs []*p2p.NetAddress
@@ -203,7 +195,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		if h.node.NetAddress().String() != addr.String() {
 			uniqueAddrs = append(uniqueAddrs, addr)
 		} else {
-			repeatNum ++
+			repeatNum++
 			if repeatNum > 1 {
 				log.Warn("more than one repeat:", repeatNum, " ", repeatNum, " ", addr.String())
 			}
@@ -212,7 +204,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	}
 
 	if len(uniqueAddrs) > 0 {
-		h.node.SendMessage(msg.NewAddr(addrs))
+		h.node.SendMessage(msg.NewAddr(uniqueAddrs))
 	}
 }
 

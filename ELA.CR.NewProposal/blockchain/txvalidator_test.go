@@ -4,23 +4,34 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math"
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/version/heights"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-var ELA = int64(math.Pow(10, 8))
+type txValidatorTestSuite struct {
+	suite.Suite
 
-func TestTxValidatorInit(t *testing.T) {
+	ELA               int64
+	foundationAddress common.Uint168
+}
+
+func (s *txValidatorTestSuite) SetupSuite() {
 	log.Init(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
@@ -31,25 +42,14 @@ func TestTxValidatorInit(t *testing.T) {
 		log.Error(err)
 		os.Exit(-1)
 	}
-	FoundationAddress = *foundation
-	chainStore, err := newTestChainStore()
-	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
-	}
-
-	err = Init(chainStore)
-	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
-	}
+	s.foundationAddress = *foundation
 }
 
-func TestCheckTransactionSize(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 	tx := buildTx()
 	buf := new(bytes.Buffer)
 	err := tx.Serialize(buf)
-	if !assert.NoError(t, err) {
+	if !s.NoError(err) {
 		return
 	}
 
@@ -57,138 +57,105 @@ func TestCheckTransactionSize(t *testing.T) {
 	// normal
 	config.Parameters.MaxBlockSize = size
 	err = CheckTransactionSize(tx)
-	assert.NoError(t, err, "[CheckTransactionSize] passed normal size")
+	s.NoError(err, "[CheckTransactionSize] passed normal size")
 
 	// invalid
 	config.Parameters.MaxBlockSize = size - 1
 	err = CheckTransactionSize(tx)
-	assert.EqualError(t, err, fmt.Sprintf("Invalid transaction size: %d bytes", size))
-
-	t.Log("[TestCheckTransactionSize] PASSED")
+	s.EqualError(err, fmt.Sprintf("Invalid transaction size: %d bytes", size))
 }
 
-func TestCheckOutputProgramHash(t *testing.T) {
-	programHash := common.Uint168{}
-
-	// empty program hash should pass
-	assert.Equal(t, true, CheckOutputProgramHash(programHash))
-
-	// prefix standard program hash should pass
-	programHash[0] = common.PrefixStandard
-	assert.Equal(t, true, CheckOutputProgramHash(programHash))
-
-	// prefix multisig program hash should pass
-	programHash[0] = common.PrefixMultisig
-	assert.Equal(t, true, CheckOutputProgramHash(programHash))
-
-	// prefix crosschain program hash should pass
-	programHash[0] = common.PrefixCrossChain
-	assert.Equal(t, true, CheckOutputProgramHash(programHash))
-
-	// other prefix program hash should not pass
-	programHash[0] = 0x34
-	assert.Equal(t, false, CheckOutputProgramHash(programHash))
-
-	t.Log("[TestCheckOutputProgramHash] PASSED")
-}
-
-func TestCheckTransactionInput(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckTransactionInput() {
 	// coinbase transaction
-	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
 	tx.Inputs[0].Previous.Index = math.MaxUint16
 	err := CheckTransactionInput(tx)
-	assert.NoError(t, err)
+	s.NoError(err)
 
 	// invalid coinbase refer index
 	tx.Inputs[0].Previous.Index = 0
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "invalid coinbase input")
+	s.EqualError(err, "invalid coinbase input")
 
 	// invalid coinbase refer id
 	tx.Inputs[0].Previous.Index = math.MaxUint16
 	rand.Read(tx.Inputs[0].Previous.TxID[:])
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "invalid coinbase input")
+	s.EqualError(err, "invalid coinbase input")
 
 	// multiple coinbase inputs
-	tx.Inputs = append(tx.Inputs, &core.Input{})
+	tx.Inputs = append(tx.Inputs, &types.Input{})
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "coinbase must has only one input")
+	s.EqualError(err, "coinbase must has only one input")
 
 	// normal transaction
 	tx = buildTx()
 	err = CheckTransactionInput(tx)
-	assert.NoError(t, err)
+	s.NoError(err)
 
 	// no inputs
 	tx.Inputs = nil
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "transaction has no inputs")
+	s.EqualError(err, "transaction has no inputs")
 
 	// normal transaction with coinbase input
-	tx.Inputs = append(tx.Inputs, &core.Input{Previous: *core.NewOutPoint(common.EmptyHash, math.MaxUint16)})
+	tx.Inputs = append(tx.Inputs, &types.Input{Previous: *types.NewOutPoint(common.EmptyHash, math.MaxUint16)})
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "invalid transaction input")
+	s.EqualError(err, "invalid transaction input")
 
 	// duplicated inputs
 	tx = buildTx()
 	tx.Inputs = append(tx.Inputs, tx.Inputs[0])
 	err = CheckTransactionInput(tx)
-	assert.EqualError(t, err, "duplicated transaction inputs")
-
-	t.Log("[TestCheckTransactionInput] PASSED")
+	s.EqualError(err, "duplicated transaction inputs")
 }
 
-func TestCheckTransactionOutput(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// coinbase
-	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
+	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	tx.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
 	}
-	err := CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.NoError(t, err)
+	err := CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.NoError(err)
 
 	// outputs < 2
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
+	tx.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "coinbase output is not enough, at least 2")
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.EqualError(err, "coinbase output is not enough, at least 2")
 
 	// invalid asset id
-	tx.Outputs = []*core.Output{
-		{AssetID: common.EmptyHash, ProgramHash: FoundationAddress},
-		{AssetID: common.EmptyHash, ProgramHash: FoundationAddress},
+	tx.Outputs = []*types.Output{
+		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
+		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "asset ID in coinbase is invalid")
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.EqualError(err, "Asset ID in coinbase is invalid")
 
-	// reward to foundation in coinbase = 30%
+	// reward to foundation in coinbase = 30% (CheckTxOut version)
 	totalReward := RewardAmountPerBlock
-	t.Logf("Block reward amount %s", totalReward.String())
+	fmt.Printf("Block reward amount %s", totalReward.String())
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
-	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward := totalReward - foundationReward
-	t.Logf("Miner reward amount %s", minerReward.String())
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+	fmt.Printf("Foundation reward amount %s", foundationReward.String())
+	tx.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.NoError(t, err)
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.NoError(err)
 
-	// reward to foundation in coinbase < 30%
-	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
-	t.Logf("Foundation reward amount %s", foundationReward.String())
-	minerReward = totalReward - foundationReward
-	t.Logf("Miner reward amount %s", minerReward.String())
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+	// reward to foundation in coinbase < 30% (CheckTxOut version)
+	foundationReward = common.Fixed64(float64(totalReward) * 0.299999)
+	fmt.Printf("Foundation reward amount %s", foundationReward.String())
+	tx.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.EqualError(err, "Reward to foundation in coinbase < 30%")
 
 	// normal transaction
 	tx = buildTx()
@@ -196,13 +163,13 @@ func TestCheckTransactionOutput(t *testing.T) {
 		output.AssetID = DefaultLedger.Blockchain.AssetID
 		output.ProgramHash = common.Uint168{}
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.NoError(t, err)
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.NoError(err)
 
 	// outputs < 1
 	tx.Outputs = nil
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "transaction has no outputs")
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.EqualError(err, "transaction has no outputs")
 
 	// invalid asset ID
 	tx.Outputs = randomOutputs()
@@ -210,8 +177,8 @@ func TestCheckTransactionOutput(t *testing.T) {
 		output.AssetID = common.EmptyHash
 		output.ProgramHash = common.Uint168{}
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "asset ID in output is invalid")
+	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	s.EqualError(err, "asset ID in output is invalid")
 
 	// invalid program hash
 	tx.Outputs = randomOutputs()
@@ -221,187 +188,101 @@ func TestCheckTransactionOutput(t *testing.T) {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
-	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "output address is invalid")
-
-	t.Log("[TestCheckTransactionOutput] PASSED")
 }
 
-func TestCheckAssetPrecision(t *testing.T) {
-	// normal transaction
-	tx := buildTx()
-	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
-		output.ProgramHash = common.Uint168{}
-	}
-	err := CheckAssetPrecision(tx)
-	assert.NoError(t, err)
-
-	// asset not exist
-	for _, output := range tx.Outputs {
-		output.AssetID = common.EmptyHash
-		output.ProgramHash = common.Uint168{}
-	}
-	err = CheckAssetPrecision(tx)
-	assert.EqualError(t, err, "The asset not exist in local blockchain.")
-
-	// register asset
-	asset := core.Asset{
-		Name:      "TEST",
-		Precision: 0x04,
-		AssetType: 0x00,
-	}
-	register := &core.Transaction{
-		TxType:         core.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
-			Asset:  asset,
-			Amount: 0 * 100000000,
-		},
-	}
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
-
-	// valid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 123456780000
-	}
-	err = CheckAssetPrecision(tx)
-	assert.NoError(t, err)
-
-	// invalid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 12345678000
-	}
-	err = CheckAssetPrecision(tx)
-	assert.EqualError(t, err, "The precision of asset is incorrect.")
-
-	t.Log("[TestCheckAssetPrecision] PASSED")
-}
-
-func TestCheckAmountPrecision(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckAmountPrecision() {
 	// precision check
 	for i := 8; i >= 0; i-- {
 		amount := common.Fixed64(math.Pow(10, float64(i)))
-		t.Logf("Amount %s", amount.String())
-		assert.Equal(t, true, checkAmountPrecise(amount, byte(8-i)))
-		assert.Equal(t, false, checkAmountPrecise(amount, byte(8-i-1)))
+		fmt.Printf("Amount %s", amount.String())
+		s.Equal(true, checkAmountPrecise(amount, byte(8-i)))
+		s.Equal(false, checkAmountPrecise(amount, byte(8-i-1)))
 	}
-	t.Log("[TestCheckAmountPrecision] PASSED")
 }
 
-func TestCheckAttributeProgram(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	// valid attributes
 	tx := buildTx()
-	usages := []core.AttributeUsage{
-		core.Nonce,
-		core.Script,
-		core.Description,
-		core.DescriptionUrl,
-		core.Memo,
+	usages := []types.AttributeUsage{
+		types.Nonce,
+		types.Script,
+		types.Description,
+		types.DescriptionUrl,
+		types.Memo,
 	}
 	for _, usage := range usages {
-		attr := core.NewAttribute(usage, nil)
+		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	err := CheckAttributeProgram(tx)
-	assert.EqualError(t, err, "no programs found in transaction")
+	err := CheckAttributeProgram(heights.HeightVersion1, tx)
+	s.EqualError(err, "no programs found in transaction")
 
 	// invalid attributes
-	getInvalidUsage := func() core.AttributeUsage {
+	getInvalidUsage := func() types.AttributeUsage {
 		var usage = make([]byte, 1)
 	NEXT:
 		rand.Read(usage)
-		for _, u := range usages {
-			if u == core.AttributeUsage(usage[0]) {
-				goto NEXT
-			}
+		if types.IsValidAttributeType(types.AttributeUsage(usage[0])) {
+			goto NEXT
 		}
-		return core.AttributeUsage(usage[0])
+		return types.AttributeUsage(usage[0])
 	}
 	for i := 0; i < 10; i++ {
-		attr := core.NewAttribute(getInvalidUsage(), nil)
-		tx.Attributes = []*core.Attribute{&attr}
-		err := CheckAttributeProgram(tx)
-		assert.EqualError(t, err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
+		attr := types.NewAttribute(getInvalidUsage(), nil)
+		tx.Attributes = []*types.Attribute{&attr}
+		err := CheckAttributeProgram(heights.HeightVersion1, tx)
+		s.EqualError(err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
-	tx.Programs = []*core.Program{}
-	err = CheckAttributeProgram(tx)
-	assert.EqualError(t, err, "no programs found in transaction")
+	tx.Programs = []*program.Program{}
+	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	s.EqualError(err, "no programs found in transaction")
 
 	// nil program code
-	program := &core.Program{}
-	tx.Programs = append(tx.Programs, program)
-	err = CheckAttributeProgram(tx)
-	assert.EqualError(t, err, "invalid program code nil")
+	p := &program.Program{}
+	tx.Programs = append(tx.Programs, p)
+	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	s.EqualError(err, "invalid program code nil")
 
 	// nil program parameter
 	var code = make([]byte, 21)
 	rand.Read(code)
-	program = &core.Program{Code: code}
-	tx.Programs = []*core.Program{program}
-	err = CheckAttributeProgram(tx)
-	assert.EqualError(t, err, "invalid program parameter nil")
-
-	// invalid program code
-	getInvalidCode := func() []byte {
-		var code = make([]byte, 21)
-	NEXT:
-		rand.Read(code)
-		switch code[len(code)-1] {
-		case common.STANDARD, common.MULTISIG, common.CROSSCHAIN:
-			goto NEXT
-		}
-		return code
-	}
-	for i := 0; i < 10; i++ {
-		program = &core.Program{Code: getInvalidCode(), Parameter: make([]byte, 1)}
-		tx.Programs = []*core.Program{program}
-		err = CheckAttributeProgram(tx)
-		assert.EqualError(t, err, fmt.Sprintf("invalid program code %x", program.Code))
-	}
-
-	t.Log("[TestCheckAttributeProgram] PASSED")
+	p = &program.Program{Code: code}
+	tx.Programs = []*program.Program{p}
+	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	s.EqualError(err, "invalid program parameter nil")
 }
 
-func TestCheckTransactionPayload(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckTransactionPayload() {
 	// normal
-	tx := new(core.Transaction)
-	payload := &core.PayloadRegisterAsset{
-		Asset: core.Asset{
+	tx := new(types.Transaction)
+	payload := &payload.PayloadRegisterAsset{
+		Asset: payload.Asset{
 			Name:      "ELA",
 			Precision: 0x08,
-			AssetType: core.Token,
+			AssetType: payload.Token,
 		},
 		Amount: 3300 * 10000 * 10000000,
 	}
 	tx.Payload = payload
 	err := CheckTransactionPayload(tx)
-	assert.NoError(t, err)
+	s.NoError(err)
 
 	// invalid precision
 	payload.Asset.Precision = 9
 	err = CheckTransactionPayload(tx)
-	assert.EqualError(t, err, "Invalide asset Precision.")
+	s.EqualError(err, "Invalide asset Precision.")
 
 	// invalid amount
 	payload.Asset.Precision = 0
 	payload.Amount = 1234567
 	err = CheckTransactionPayload(tx)
-	assert.EqualError(t, err, "Invalide asset value,out of precise.")
-
-	t.Log("[TestCheckTransactionPayload] PASSED")
+	s.EqualError(err, "Invalide asset value,out of precise.")
 }
 
-func TestCheckDuplicateSidechainTx(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckDuplicateSidechainTx() {
 	hashStr1 := "8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62"
 	hashBytes1, _ := common.HexStringToBytes(hashStr1)
 	hash1, _ := common.Uint256FromBytes(hashBytes1)
@@ -410,9 +291,9 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 	hash2, _ := common.Uint256FromBytes(hashBytes2)
 
 	// 1. Generate the ill withdraw transaction which have duplicate sidechain tx
-	txn := new(core.Transaction)
-	txn.TxType = core.WithdrawFromSideChain
-	txn.Payload = &core.PayloadWithdrawFromSideChain{
+	txn := new(types.Transaction)
+	txn.TxType = types.WithdrawFromSideChain
+	txn.Payload = &payload.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -424,66 +305,57 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 
 	// 2. Run CheckDuplicateSidechainTx
 	err := CheckDuplicateSidechainTx(txn)
-	assert.EqualError(t, err, "Duplicate sidechain tx detected in a transaction")
-
-	t.Log("[TestCheckDuplicateSidechainTx] PASSED")
+	s.EqualError(err, "Duplicate sidechain tx detected in a transaction")
 }
 
-func TestCheckTransactionBalance(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	// WithdrawFromSideChain will pass check in any condition
-	tx := new(core.Transaction)
-	tx.TxType = core.WithdrawFromSideChain
-	references, _ := DefaultLedger.Store.GetTxReference(tx)
-	var err error
-	// deposit 100 ELA to foundation account
-	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	deposit.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
+	tx := new(types.Transaction)
+	tx.TxType = types.WithdrawFromSideChain
+
+	// single output
+
+	outputValue1 := common.Fixed64(100 * s.ELA)
+	deposit := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	deposit.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
 	}
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).PersistTransaction(deposit, 0)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
 
-	// // invalid output value
-	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	tx.Inputs = []*core.Input{
-		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
+	references := map[*types.Input]*types.Output{
+		&types.Input{}: {Value: outputValue1},
 	}
-	//tx.Outputs = []*core.Output{
-	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
-	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
-	//}
-	//references, _ = DefaultLedger.Store.GetTxReference(tx)
-	//err = CheckTransactionFee(tx, references)
-	//assert.EqualError(t, err, "Invalide transaction UTXO output.")
+	s.EqualError(CheckTransactionFee(tx, references), "transaction fee not enough")
 
-	// invalid transaction fee
-	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
+	references = map[*types.Input]*types.Output{
+		&types.Input{}: {Value: outputValue1 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
 	}
-	references, _ = DefaultLedger.Store.GetTxReference(tx)
-	err = CheckTransactionFee(tx, references)
-	assert.EqualError(t, err, "transaction fee not enough")
+	s.NoError(CheckTransactionFee(tx, references))
 
-	// rollback deposit above
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).RollbackTransaction(deposit)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
+	// multiple output
 
-	t.Log("[TestCheckTransactionBalance] PASSED")
+	outputValue1 = common.Fixed64(30 * s.ELA)
+	outputValue2 := common.Fixed64(70 * s.ELA)
+	tx.Outputs = []*types.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
+	}
+
+	references = map[*types.Input]*types.Output{
+		&types.Input{}: {Value: outputValue1 + outputValue2},
+	}
+	s.EqualError(CheckTransactionFee(tx, references), "transaction fee not enough")
+
+	references = map[*types.Input]*types.Output{
+		&types.Input{}: {Value: outputValue1 + outputValue2 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
+	}
+	s.NoError(CheckTransactionFee(tx, references))
 }
 
-func TestTxValidatorDone(t *testing.T) {
-	DefaultLedger.Store.Close()
-}
-
-func TestCheckSideChainPowConsensus(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 	// 1. Generate a side chain pow transaction
-	txn := new(core.Transaction)
-	txn.TxType = core.SideChainPow
-	txn.Payload = &core.PayloadSideChainPow{
+	txn := new(types.Transaction)
+	txn.TxType = types.SideChainPow
+	txn.Payload = &payload.PayloadSideChainPow{
 		SideBlockHash:   common.Uint256{1, 1, 1},
 		SideGenesisHash: common.Uint256{2, 2, 2},
 		BlockHeight:     uint32(10),
@@ -504,30 +376,345 @@ func TestCheckSideChainPowConsensus(t *testing.T) {
 
 	//3. Sign transaction by arbitrator1
 	buf := new(bytes.Buffer)
-	txn.Payload.Serialize(buf, core.SideChainPowPayloadVersion)
+	txn.Payload.Serialize(buf, payload.SideChainPowPayloadVersion)
 	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
-	txn.Payload.(*core.PayloadSideChainPow).SignedData = signature
+	txn.Payload.(*payload.PayloadSideChainPow).SignedData = signature
 
 	//4. Run CheckSideChainPowConsensus
-	err := CheckSideChainPowConsensus(txn, arbitrator1)
-	if err != nil {
-		t.Error("TestCheckSideChainPowConsensus failed.")
-	}
+	s.NoError(CheckSideChainPowConsensus(txn, arbitrator1), "TestCheckSideChainPowConsensus failed.")
 
-	err = CheckSideChainPowConsensus(txn, arbitrator2)
-	if err == nil {
-		t.Error("TestCheckSideChainPowConsensus failed.")
-	}
+	s.Error(CheckSideChainPowConsensus(txn, arbitrator2), "TestCheckSideChainPowConsensus failed.")
 }
 
-func TestCheckDestructionAddress(t *testing.T) {
+func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	destructionAddress := "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
 	txID, _ := common.Uint256FromHexString("7e8863a503e90e6464529feb1c25d98c903e01bec00ccfea2475db4e37d7328b")
 	programHash, _ := common.Uint168FromAddress(destructionAddress)
-	reference := map[*core.Input]*core.Output{
-		&core.Input{core.OutPoint{*txID, 1234}, 123456}: &core.Output{ProgramHash: *programHash},
+	reference := map[*types.Input]*types.Output{
+		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: &types.Output{ProgramHash: *programHash},
 	}
 
 	err := CheckDestructionAddress(reference)
-	assert.EqualError(t, err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
+	s.EqualError(err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
+}
+
+func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
+	// Generate a register producer transaction
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterProducer
+	rpPayload := &payload.PayloadRegisterProducer{
+		OwnerPublicKey: publicKey1,
+		NickName:       "nickname 1",
+		Url:            "http://www.elastos_test.com",
+		Location:       1,
+		NetAddress:     "127.0.0.1:20338",
+	}
+	rpSignBuf := new(bytes.Buffer)
+	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	rpSig, err := crypto.Sign(privateKey1, rpSignBuf.Bytes())
+	s.NoError(err)
+	rpPayload.Signature = rpSig
+	txn.Payload = rpPayload
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	publicKeyDeposit1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyDeposit1,
+	}}
+
+	err = CheckRegisterProducerTransaction(txn)
+	s.NoError(err)
+
+	// Give an invalid public key in payload
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = errPublicKey
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "invalid public key")
+
+	// Invalidates the signature in payload
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey2
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "invalid signature in payload")
+
+	// Give an invalid url in payload
+	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey1
+	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	// Give a mismatching deposit address
+	rpPayload.OwnerPublicKey = publicKey1
+	rpPayload.Url = "www.test.com"
+	rpSignBuf = new(bytes.Buffer)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	rpSig, err = crypto.Sign(privateKey1, rpSignBuf.Bytes())
+	s.NoError(err)
+	rpPayload.Signature = rpSig
+	txn.Payload = rpPayload
+
+	publicKeyDeposit2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyDeposit2,
+	}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "deposit address does not match the public key in payload")
+
+	// Give a insufficient deposit coin
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       4000,
+		OutputLock:  0,
+		ProgramHash: *publicKeyDeposit1,
+	}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "producer deposit amount is insufficient")
+
+	// Multi deposit addresses
+	txn.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *publicKeyDeposit1,
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *publicKeyDeposit1,
+		}}
+	err = CheckRegisterProducerTransaction(txn)
+	s.EqualError(err, "there must be only one deposit address in outputs")
+}
+
+func getCode(publicKey string) []byte {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := createStandardRedeemScript(pk)
+	return redeemScript
+}
+
+func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
+	// 1. Generate a vote output
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	outputs := []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			OutputType:  types.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						Candidates: [][]byte{
+							publicKey1,
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			OutputType:  types.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType:   outputpayload.Delegate,
+						Candidates: [][]byte{},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			OutputType:  types.VoteOutput,
+			OutputPayload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						Candidates: [][]byte{
+							publicKey1,
+							publicKey1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// 2. Check output payload
+	err := outputs[0].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	s.NoError(err)
+
+	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid public key count")
+
+	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate candidate")
+}
+
+func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterProducer
+	updatePayload := &payload.PayloadUpdateProducer{
+		OwnerPublicKey: publicKey1,
+		NickName:       "",
+		Url:            "",
+		Location:       1,
+		NetAddress:     "",
+	}
+	txn.Payload = updatePayload
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
+
+	updatePayload.NickName = "nick name"
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Url has invalid string length.")
+
+	updatePayload.Url = "www.elastos.org"
+	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NetAddress has invalid string length.")
+
+	updatePayload.NetAddress = "127.0.0.1:20338"
+	updatePayload.OwnerPublicKey = errPublicKey
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid public key in payload")
+
+	updatePayload.OwnerPublicKey = publicKey2
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid signature in payload")
+
+	updatePayload.OwnerPublicKey = publicKey1
+	updateSignBuf := new(bytes.Buffer)
+	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	s.NoError(err)
+	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
+	s.NoError(err)
+	updatePayload.Signature = updateSig
+	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid producer")
+
+	//rest of check test will be continued in chain test
+}
+
+func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.CancelProducer
+	cancelPayload := &payload.PayloadCancelProducer{
+		OwnerPublicKey: publicKey1,
+	}
+	txn.Payload = cancelPayload
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	cancelPayload.OwnerPublicKey = errPublicKey
+	s.EqualError(CheckCancelProducerTransaction(txn), "invalid public key in payload")
+
+	cancelPayload.OwnerPublicKey = publicKey2
+	s.EqualError(CheckCancelProducerTransaction(txn), "invalid signature in payload")
+}
+
+func (s *txValidatorTestSuite) TestCheckStringField() {
+	s.NoError(checkStringField("Normal", "test"))
+	s.EqualError(checkStringField("", "test"), "Field test has invalid string length.")
+	s.EqualError(checkStringField("I am more than 100, 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test"), "Field test has invalid string length.")
+}
+
+func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
+	references := make(map[*types.Input]*types.Output)
+	input := &types.Input{}
+	var txn types.Transaction
+
+	// Use the deposit UTXO in a TransferAsset transaction
+	depositHash, _ := common.Uint168FromAddress("DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD")
+	depositOutput := &types.Output{
+		ProgramHash: *depositHash,
+	}
+	references[input] = depositOutput
+	txn.TxType = types.TransferAsset
+	err := CheckTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "only the ReturnDepositCoin transaction can use the deposit UTXO")
+
+	// Use the deposit UTXO in a ReturnDepositCoin transaction
+	txn.TxType = types.ReturnDepositCoin
+	err = CheckTransactionDepositUTXO(&txn, references)
+	s.NoError(err)
+
+	// Use the standard UTXO in a ReturnDepositCoin transaction
+	normalHash, _ := common.Uint168FromAddress("EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR")
+	normalOutput := &types.Output{
+		ProgramHash: *normalHash,
+	}
+	references[input] = normalOutput
+	txn.TxType = types.ReturnDepositCoin
+	err = CheckTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+}
+
+func TestTxValidatorSuite(t *testing.T) {
+	suite.Run(t, new(txValidatorTestSuite))
+}
+
+func createStandardRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
+	content, err := publicKey.EncodePoint(true)
+	if err != nil {
+		return nil, errors.New("create standard redeem script, encode public key failed")
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(content)))
+	buf.Write(content)
+	buf.WriteByte(byte(common.STANDARD))
+
+	return buf.Bytes(), nil
 }

@@ -17,8 +17,6 @@
     "NodeOpenPort": 21866,
     "OpenService": false,
     "PrintLevel": 1,
-    "MaxLogsSize": 0,
-    "MaxPerLogSize": 0,
     "IsTLS": false,
     "CertPath": "./sample-cert.pem",
     "KeyPath": "./sample-cert-key.pem",
@@ -34,6 +32,14 @@
       "MinerInfo": "ELA",
       "MinTxFee": 100,
       "ActiveNet": "MainNet"
+    },
+    "VoteHeight": 200000,
+    "RpcConfiguration": {
+      "User": "ElaUser",
+      "Pass": "Ela123",
+      "WhiteIPList": [
+        "127.0.0.1"
+      ]
     },
     "Arbiters": [
       "03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",

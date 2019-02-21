@@ -6,14 +6,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/auxpow"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {
-	for txs := uint32(1); txs < 1<<10; txs++ {
+	for txs := uint32(1); txs < 1<<10; txs = txs << 1 {
 		run(txs)
 		fmt.Println("GetTxMerkleBranch() with txs:", txs, "PASSED")
 	}
@@ -48,7 +48,7 @@ func run(txs uint32) {
 	merkleRoot := *mBlock.CalcHash(treeDepth(txs), 0)
 	// Create and return the merkle block.
 	merkleBlock := msg.MerkleBlock{
-		Header: &core.Header{
+		Header: &types.Header{
 			MerkleRoot: merkleRoot,
 		},
 		Transactions: mBlock.NumTx,
@@ -78,7 +78,7 @@ func run(txs uint32) {
 		calcRoot := auxpow.GetMerkleRoot(*txIDs[i], mb.Branches, mb.Index)
 		if merkleRoot == calcRoot {
 		} else {
-			fmt.Println("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
+			fmt.Printf("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
 			os.Exit(0)
 		}
 	}
