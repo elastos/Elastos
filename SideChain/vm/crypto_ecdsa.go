@@ -3,7 +3,7 @@ package vm
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type CryptoECDsa struct {
