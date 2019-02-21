@@ -3,9 +3,10 @@ package blockchain
 import (
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA/core"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
+	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	. "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 var FoundationAddress Uint168
@@ -14,8 +15,10 @@ var DefaultLedger *Ledger
 
 // Ledger - the struct for ledger
 type Ledger struct {
-	Blockchain *Blockchain
-	Store      IChainStore
+	Blockchain     *Blockchain
+	Store          IChainStore
+	Arbitrators    interfaces.Arbitrators
+	HeightVersions interfaces.HeightVersions
 }
 
 //check weather the transaction contains the doubleSpend.
@@ -74,5 +77,16 @@ func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 //Get local block chain height.
 func (l *Ledger) GetLocalBlockChainHeight() uint32 {
 	return l.Blockchain.GetBestHeight()
+}
 
+//Get blocks and confirms by given height range, if end equals zero will be treat as current highest block height
+func (l *Ledger) GetDposBlocks(start, end uint32) ([]*DposBlock, error) {
+	//todo complete me
+	return nil, nil
+}
+
+//Append blocks and confirms directly
+func (l *Ledger) AppendDposBlocks(confirms []*DposBlock) error {
+	//todo complete me
+	return nil
 }

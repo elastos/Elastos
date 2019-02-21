@@ -4,10 +4,9 @@ import (
 	"math"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/core"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -169,7 +168,7 @@ func (bf *Filter) Matches(data []byte) bool {
 // outpoint and false if it definitely does not.
 //
 // This function MUST be called with the filter lock held.
-func (bf *Filter) matchesOutPoint(outpoint *core.OutPoint) bool {
+func (bf *Filter) matchesOutPoint(outpoint *types.OutPoint) bool {
 	return bf.matches(outpoint.Bytes())
 }
 
@@ -177,7 +176,7 @@ func (bf *Filter) matchesOutPoint(outpoint *core.OutPoint) bool {
 // outpoint and false if it definitely does not.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) MatchesOutPoint(outpoint *core.OutPoint) bool {
+func (bf *Filter) MatchesOutPoint(outpoint *types.OutPoint) bool {
 	bf.mtx.Lock()
 	match := bf.matchesOutPoint(outpoint)
 	bf.mtx.Unlock()
@@ -226,14 +225,14 @@ func (bf *Filter) AddHash(hash *common.Uint256) {
 // addOutPoint adds the passed tx outpoint to the bloom filter.
 //
 // This function MUST be called with the filter lock held.
-func (bf *Filter) addOutPoint(outpoint *core.OutPoint) {
+func (bf *Filter) addOutPoint(outpoint *types.OutPoint) {
 	bf.add(outpoint.Bytes())
 }
 
 // AddOutPoint adds the passed tx outpoint to the bloom filter.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) AddOutPoint(outpoint *core.OutPoint) {
+func (bf *Filter) AddOutPoint(outpoint *types.OutPoint) {
 	bf.mtx.Lock()
 	bf.addOutPoint(outpoint)
 	bf.mtx.Unlock()
@@ -245,11 +244,21 @@ func (bf *Filter) AddOutPoint(outpoint *core.OutPoint) {
 // update flags set via the loaded filter if needed.
 //
 // This function MUST be called with the filter lock held.
-func (bf *Filter) matchTxAndUpdate(txn *core.Transaction) bool {
+func (bf *Filter) matchTxAndUpdate(txn *types.Transaction) bool {
 	// Check if the filter matches the hash of the tx.
 	// This is useful for finding transactions when they appear in a block.
 	hash := txn.Hash()
 	matched := bf.matches(hash[:])
+
+	// Check if the filter is a side chain SPV filter
+	if bf.msg.Tweak == math.MaxUint32 {
+		for _, txOut := range txn.Outputs {
+			if bf.matches(txOut.ProgramHash[:]) {
+				return true
+			}
+		}
+		return false
+	}
 
 	for i, txOut := range txn.Outputs {
 		if !bf.matches(txOut.ProgramHash[:]) {
@@ -257,7 +266,7 @@ func (bf *Filter) matchTxAndUpdate(txn *core.Transaction) bool {
 		}
 
 		matched = true
-		bf.addOutPoint(core.NewOutPoint(txn.Hash(), uint16(i)))
+		bf.addOutPoint(types.NewOutPoint(txn.Hash(), uint16(i)))
 	}
 
 	// Nothing more to do if a match has already been made.
@@ -284,7 +293,7 @@ func (bf *Filter) matchTxAndUpdate(txn *core.Transaction) bool {
 // update flags set via the loaded filter if needed.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) MatchTxAndUpdate(tx *core.Transaction) bool {
+func (bf *Filter) MatchTxAndUpdate(tx *types.Transaction) bool {
 	bf.mtx.Lock()
 	match := bf.matchTxAndUpdate(tx)
 	bf.mtx.Unlock()
