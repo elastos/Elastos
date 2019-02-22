@@ -59,17 +59,22 @@ class C extends BaseComponent {
         }
     }
 
-    handleSubmit (e) {
-        e.preventDefault()
-        this.props.form.validateFields((err, values) => {
-            if (!err) {
-                this.props.updateUser(values, this.state).then(() => {
-                    this.props.getCurrentUser()
-                    this.props.switchEditMode()
-                    message.success(I18N.get('profile.thanksForCompleting'))
-                });
-            }
-        })
+    handleSubmit = async (e) => {
+      e.preventDefault()
+      const { form, updateUser, updateRole, getCurrentUser, switchEditMode, user } = this.props
+      const userId = _.get(user, 'current_user_id', user._id)
+      const { avatar_url: avatar } = this.state
+
+      form.validateFields(async (err, values) => {
+        if (err) return
+        await updateUser(userId, { ...values, avatar })
+        if (values.role && values.role !== user.role) {
+          await updateRole(userId, { role: values.role })
+        }
+        getCurrentUser()
+        switchEditMode()
+        message.success(I18N.get('profile.thanksForCompleting'))
+      })
     }
 
     checkEmail(rule, value, callback, source, options) {

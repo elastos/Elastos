@@ -27,10 +27,7 @@ export default createContainer(Component, (state)=>{
             }
         },
 
-        async updateUser(formData, state) {
-            // TODO: refactor this, if it's current user it's current_user_id and otherwise it's _id
-            // should always be _id
-            const userId = this.user.current_user_id || this.user._id
+        async updateUser(userId, formData) {
             const doc = {
                 email: formData.email,
                 username: formData.username,
@@ -43,7 +40,7 @@ export default createContainer(Component, (state)=>{
                     country: formData.country,
                     timezone: formData.timezone,
                     skillset: formData.skillset,
-                    avatar: state.avatar_url,
+                    avatar: formData.avatar,
                     walletAddress: formData.walletAddress,
                     profession: formData.profession,
                     portfolio: formData.portfolio,
@@ -65,11 +62,15 @@ export default createContainer(Component, (state)=>{
                 },
             }
 
-            if(this.is_admin){
-                doc.role = formData.role
+            return userService.update(userId, doc)
+        },
+
+        async updateRole(userId, formData) {
+            const doc = {
+                role: formData.role,
             }
 
-            return userService.update(userId, doc)
+            return userService.updateRole(userId, doc)
         },
 
         async checkEmail(email) {

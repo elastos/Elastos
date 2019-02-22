@@ -182,6 +182,23 @@ export default class extends BaseService {
     return result
   }
 
+  async updateRole(userId, doc) {
+    const memberRedux = this.store.getRedux('member')
+
+    await this.dispatch(memberRedux.actions.loading_update(true))
+
+    const result = await api_request({
+      path: `/api/user/${userId}/updateRole`,
+      method: 'put',
+      data: doc,
+    })
+
+    await this.dispatch(memberRedux.actions.detail_update(result))
+    await this.dispatch(memberRedux.actions.loading_update(false))
+
+    return result
+  }
+
   async logout() {
     const userRedux = this.store.getRedux('user')
     const tasksRedux = this.store.getRedux('task')
