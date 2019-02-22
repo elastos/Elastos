@@ -20,14 +20,24 @@ type BlockPool struct {
 	confirms map[common.Uint256]*payload.Confirm
 }
 
-func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
+	bool, error) {
 	bm.Lock()
-	inMainChain, isOrphan, err := bm.appendDposBlock(dposBlock)
+	inMainChain, isOrphan, err := bm.appendConfirm(confirm)
 	bm.Unlock()
 	return inMainChain, isOrphan, err
 }
 
-func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	bm.Lock()
+	defer bm.Unlock()
+	if !dposBlock.ConfirmFlag {
+		return bm.appendBlock(dposBlock)
+	}
+	return bm.appendBlockAndConfirm(dposBlock)
+}
+
+func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	// add block
 	block := dposBlock.Block
 	hash := block.Hash()
@@ -39,11 +49,6 @@ func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, er
 		return false, false, err
 	}
 	bm.blocks[block.Hash()] = block
-
-	// add confirm
-	if dposBlock.ConfirmFlag {
-		bm.appendConfirm(dposBlock.Confirm)
-	}
 
 	// confirm block
 	copyBlock := *dposBlock
@@ -65,12 +70,36 @@ func (bm *BlockPool) appendDposBlock(dposBlock *types.DposBlock) (bool, bool, er
 	return inMainChain, isOrphan, nil
 }
 
-func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
-	bool, error) {
-	bm.Lock()
-	inMainChain, isOrphan, err := bm.appendConfirm(confirm)
-	bm.Unlock()
-	return inMainChain, isOrphan, err
+func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bool, error) {
+	block := dposBlock.Block
+	hash := block.Hash()
+	// verify block
+	if err := bm.Chain.CheckBlockSanity(block); err != nil {
+		return false, false, err
+	}
+	// add block
+	bm.blocks[block.Hash()] = block
+	// add confirm
+	bm.appendConfirm(dposBlock.Confirm)
+
+	// confirm block
+	copyBlock := *dposBlock
+	copyBlock.ConfirmFlag = true
+	inMainChain, isOrphan, err := bm.confirmBlock(hash)
+	if err != nil {
+		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
+		copyBlock.ConfirmFlag = false
+
+		// Notify the caller that the new block without confirm was accepted.
+		// The caller would typically want to react by relaying the inventory
+		// to other peers.
+		events.Notify(events.ETBlockAccepted, block)
+	}
+
+	// notify new block received
+	events.Notify(events.ETNewBlockReceived, &copyBlock)
+
+	return inMainChain, isOrphan, nil
 }
 
 func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
@@ -129,6 +158,8 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		if isOrphan || !inMainChain {
 			return inMainChain, isOrphan, errors.New("add orphan block")
 		}
+	} else {
+		return false, false, errors.New("already processed block")
 	}
 
 	err := bm.Chain.AddConfirm(confirm)
