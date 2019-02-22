@@ -21,7 +21,7 @@ import (
 const (
 	// defaultServices describes the default services that are supported by
 	// the server.
-	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering
+	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering | pact.SFNodeBloom
 )
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -31,8 +31,7 @@ type relayMsg struct {
 	data    interface{}
 }
 
-// server provides a server for handling communications to and from
-// peers.
+// server provides a server for handling communications to and from peers.
 type server struct {
 	svr.IServer
 	syncManager  *netsync.SyncManager
