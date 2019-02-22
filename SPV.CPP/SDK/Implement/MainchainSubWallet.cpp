@@ -316,7 +316,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->getAllTransactions();
 			nlohmann::json j;
 
-			j["Registered"] = false;
+			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
 			for (size_t i = 0; i < allTxs.size(); ++i) {
 				if (allTxs[i]->getBlockHeight() == TX_UNCONFIRMED) {
@@ -335,7 +335,7 @@ namespace Elastos {
 						info["Location"] = pr->GetLocation();
 						info["Address"] = pr->GetAddress();
 
-						j["Registered"] = true;
+						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
 				} else if (allTxs[i]->getTransactionType() == Transaction::UpdateProducer) {
@@ -350,13 +350,13 @@ namespace Elastos {
 						info["Location"] = pu->GetLocation();
 						info["Address"] = pu->GetAddress();
 
-						j["Registered"] = true;
+						j["Stataus"] = "Registered";
 						j["Info"] = info;
 					}
 				} else if (allTxs[i]->getTransactionType() == Transaction::CancelProducer) {
 					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->getPayload());
 					if (pc) {
-						j["Registered"] = false;
+						j["Status"] = "Canceled";
 						j["Info"] = nlohmann::json();
 					}
 				}
