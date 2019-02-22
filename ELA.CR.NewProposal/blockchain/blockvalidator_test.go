@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +52,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	defer chainStore.Close()
 
 	heightVersions := &mock.HeightVersionsMock{}
-	chain, _ := New(chainStore, &config.MainNetParams, nil, heightVersions)
+	chain, _ := New(chainStore, &config.MainNetParams, heightVersions, state.NewState(nil, &config.MainNetParams))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain:     chain,

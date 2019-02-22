@@ -19,6 +19,7 @@ import (
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/errors"
 
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,7 +70,7 @@ func TestTxPoolInit(t *testing.T) {
 	arbitrators := mock.NewArbitratorsMock(arbitersByte, 0, 3)
 
 	chain, err := blockchain.New(chainStore, &config.MainNetParams,
-		arbitrators, nil)
+		nil, state.NewState(arbitrators, &config.MainNetParams))
 	//err = blockchain.Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
