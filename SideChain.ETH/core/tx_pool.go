@@ -33,8 +33,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/metrics"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
-	"strconv"
-	"strings"
 )
 
 const (
