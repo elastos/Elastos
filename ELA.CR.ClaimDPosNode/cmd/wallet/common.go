@@ -142,7 +142,7 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	content := common.BytesToHexString(buf.Bytes())
 
 	// Print transaction hex string
-	fmt.Println(content)
+	fmt.Println("Hex: ", content)
 
 	// Output to file
 	fileName := "to_be_signed" // Create transaction file name

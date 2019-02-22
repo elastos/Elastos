@@ -225,12 +225,13 @@ func addMultiSigAccount(c *cli.Context) error {
 		pubKeys = append(pubKeys, pubKey)
 	}
 
-	client, err := account.AddMultiSig(walletPath, pwd, m, pubKeys)
+	account, err := account.AddMultiSig(walletPath, pwd, m, pubKeys)
 	if err != nil {
 		return err
 	}
 
-	return ShowAccountInfo(client)
+	fmt.Println(account.Address)
+	return nil
 }
 
 func delAccount(c *cli.Context) error {
