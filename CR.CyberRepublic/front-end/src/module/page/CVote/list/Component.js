@@ -7,7 +7,7 @@ import {
 } from 'antd'
 import I18N from '@/I18N'
 import VoteStats from '../stats/Component'
-import { CVOTE_RESULT_TEXT, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided } from './style'
@@ -148,8 +148,11 @@ export default class extends BaseComponent {
   }
 
   voteDataByUser = (data) => {
-    const { vote_map: voteMap, voteResult } = data
+    const { vote_map: voteMap, voteResult, status } = data
     let voteArr
+
+    if (status === CVOTE_STATUS.DRAFT) return null
+
     if (!_.isEmpty(voteResult)) {
       voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
     } else if (!_.isEmpty(voteMap)) {

@@ -281,9 +281,12 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, reason_map: reasonMap, voteResult } = this.state.data
+    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.state.data
     const { avatar_map: avatarMap } = this.props
     let stats
+
+    if (status === CVOTE_STATUS.DRAFT) return null
+
     if (!_.isEmpty(voteResult)) {
       stats = _.reduce(voteResult, (prev, cur) => {
         const item = {
