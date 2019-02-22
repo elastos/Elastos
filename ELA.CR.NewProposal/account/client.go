@@ -73,17 +73,13 @@ func Add(path string, password []byte) (*ClientImpl, error) {
 	return client, nil
 }
 
-func AddMultiSig(path string, password []byte, m int, pubKeys []*crypto.PublicKey) (*ClientImpl, error) {
+func AddMultiSig(path string, password []byte, m int, pubKeys []*crypto.PublicKey) (*Account, error) {
 	client := NewClient(path, password, false)
 	if client == nil {
 		return nil, errors.New("add multi-signature account failed")
 	}
-	_, err := client.CreateMultiSigAccount(m, pubKeys)
-	if err != nil {
-		return nil, err
-	}
 
-	return client, nil
+	return client.CreateMultiSigAccount(m, pubKeys)
 }
 
 func Open(path string, password []byte) (*ClientImpl, error) {
