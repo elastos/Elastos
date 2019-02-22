@@ -412,9 +412,9 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 func (s *State) processArbitrators(block *types.Block, height uint32) {
 	s.history.append(height, func() {
-		s.arbiters.IncreaseChainHeight(block)
+		s.arbiters.IncreaseChainHeight(block.Height + 1)
 	}, func() {
-		s.arbiters.DecreaseChainHeight(block)
+		s.arbiters.DecreaseChainHeight(block.Height + 1)
 	})
 }
 

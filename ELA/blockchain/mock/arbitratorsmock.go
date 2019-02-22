@@ -1,10 +1,8 @@
 package mock
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
@@ -33,14 +31,10 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
-func (a *ArbitratorsMock) ForwardFork() interfaces.Arbitrators {
-	return a
+func (a *ArbitratorsMock) IncreaseChainHeight(height uint32) {
 }
 
-func (a *ArbitratorsMock) IncreaseChainHeight(block *types.Block) {
-}
-
-func (a *ArbitratorsMock) DecreaseChainHeight(block *types.Block) {
+func (a *ArbitratorsMock) DecreaseChainHeight(height uint32) {
 }
 
 func (a *ArbitratorsMock) GetInactiveArbitrators(confirm *payload.Confirm,
