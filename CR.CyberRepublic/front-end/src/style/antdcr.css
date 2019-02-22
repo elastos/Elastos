@@ -11835,44 +11835,6 @@ li.ant-menu-item.ant-menu-item-selected:after {
   background-clip: padding-box;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.ant-modal-close {
-  cursor: pointer;
-  border: 0;
-  background: transparent;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 10;
-  font-weight: 700;
-  line-height: 1;
-  text-decoration: none;
-  transition: color 0.3s;
-  color: rgba(0, 0, 0, 0.45);
-  outline: 0;
-  padding: 0;
-}
-.ant-modal-close-x {
-  display: block;
-  font-style: normal;
-  vertical-align: baseline;
-  text-align: center;
-  text-transform: none;
-  text-rendering: auto;
-  width: 56px;
-  height: 56px;
-  line-height: 56px;
-  font-size: 16px;
-}
-.ant-modal-close-x:before {
-  content: "\e633";
-  display: block;
-  font-family: "anticon" !important;
-}
-.ant-modal-close:focus,
-.ant-modal-close:hover {
-  color: #444;
-  text-decoration: none;
-}
 .ant-modal-header {
   padding: 16px 24px;
   border-radius: 4px 4px 0 0;
@@ -13243,46 +13205,6 @@ span.ant-radio + * {
 .ant-select > ul > li > a {
   padding: 0;
   background-color: #fff;
-}
-.ant-select-arrow {
-  display: inline-block;
-  font-style: normal;
-  vertical-align: baseline;
-  text-align: center;
-  text-transform: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  position: absolute;
-  top: 50%;
-  right: 11px;
-  line-height: 1;
-  margin-top: -6px;
-  transform-origin: 50% 50%;
-  color: rgba(0, 0, 0, 0.25);
-  font-size: 12px;
-}
-.ant-select-arrow:before {
-  display: block;
-  font-family: "anticon" !important;
-}
-.ant-select-arrow * {
-  display: none;
-}
-.ant-select-arrow:before {
-  content: '\e61d';
-  transition: transform 0.3s;
-}
-.ant-select-selection {
-  outline: none;
-  user-select: none;
-  box-sizing: border-box;
-  display: block;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 1px solid #d9d9d9;
-  border-top-width: 1.02px;
-  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 .ant-select-selection:hover {
   border-color: #66bda3;
@@ -15417,20 +15339,6 @@ tr.ant-table-expanded-row:hover {
   width: 16px;
   height: 16px;
   height: 14px;
-}
-.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-tab .anticon-close:hover {
-  color: rgba(0, 0, 0, 0.85);
-}
-.ant-tabs.ant-tabs-card .ant-tabs-content > .ant-tabs-tabpane,
-.ant-tabs.ant-tabs-editable-card .ant-tabs-content > .ant-tabs-tabpane {
-  transition: none !important;
-}
-.ant-tabs.ant-tabs-card .ant-tabs-content > .ant-tabs-tabpane-inactive,
-.ant-tabs.ant-tabs-editable-card .ant-tabs-content > .ant-tabs-tabpane-inactive {
-  overflow: hidden;
-}
-.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-tab:hover .anticon-close {
-  opacity: 1;
 }
 .ant-tabs-extra-content {
   line-height: 40px;
