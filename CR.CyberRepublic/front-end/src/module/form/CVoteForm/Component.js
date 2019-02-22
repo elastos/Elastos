@@ -5,7 +5,7 @@ import {
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CVOTE_STATUS, CVOTE_TYPE } from '@/constant'
+import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 
 import './style.scss'
 
@@ -103,6 +103,14 @@ class C extends BaseComponent {
       </Select>
     )
 
+    const status_fn = getFieldDecorator('status', {
+      readOnly: true,
+      initialValue: edit ? CVOTE_STATUS_TEXT[data.status] : CVOTE_STATUS_TEXT.DRAFT,
+    })
+    const status_el = (
+      <Select size="large" disabled />
+    )
+
     const content_fn = getFieldDecorator('content', {
       rules: [{ required: true }],
       initialValue: edit ? data.content : '',
@@ -131,6 +139,7 @@ class C extends BaseComponent {
     return {
       title: title_fn(title_el),
       type: type_fn(type_el),
+      status: status_fn(status_el),
       content: content_fn(content_el),
       isConflict: isConflict_fn(isConflict_el),
       notes: notes_fn(notes_el),
@@ -180,8 +189,13 @@ class C extends BaseComponent {
 
         <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayout}>{p.content}</FormItem>
 
+
         <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.conflict')} help={I18N.get('from.CVoteForm.label.conflict.help')} {...formItemLayout}>{p.isConflict}</FormItem>
+
+        <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{p.status}</FormItem>
+
         {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>}
+
         <Row gutter={8}>
           {this.renderCancelBtn()}
           {this.renderSaveDraftBtn()}
