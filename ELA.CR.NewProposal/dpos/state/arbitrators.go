@@ -49,50 +49,6 @@ type Arbitrators struct {
 	nextCandidates  [][]byte
 
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
-
-	isShadow bool
-	fork     *Arbitrators
-}
-
-func (a *Arbitrators) ForwardFork() interfaces.Arbitrators {
-	if a.isShadow {
-		log.Error("Can not fork form shadow")
-		return nil
-	}
-
-	if a.fork != nil && (a.dutyChangedCount+1)%a.cfg.ArbitratorsCount ==
-		a.fork.dutyChangedCount {
-		return a.fork
-	}
-
-	a.fork = &Arbitrators{
-		cfg:                             a.cfg,
-		dutyChangedCount:                a.dutyChangedCount,
-		isShadow:                        true,
-		fork:                            nil,
-		crcArbitratorsProgramHashes:     a.crcArbitratorsProgramHashes,
-		currentArbitrators:              make([][]byte, 0),
-		currentCandidates:               make([][]byte, 0),
-		currentArbitratorsProgramHashes: make([]*common.Uint168, 0),
-		currentCandidatesProgramHashes:  make([]*common.Uint168, 0),
-		nextArbitrators:                 make([][]byte, 0),
-		nextCandidates:                  make([][]byte, 0),
-	}
-	a.fork.currentArbitrators = append(a.fork.currentArbitrators,
-		a.currentArbitrators...)
-	a.fork.currentCandidates = append(a.fork.currentCandidates,
-		a.currentCandidates...)
-	a.fork.currentArbitratorsProgramHashes = append(a.fork.
-		currentArbitratorsProgramHashes, a.currentArbitratorsProgramHashes...)
-	a.fork.currentCandidatesProgramHashes = append(a.fork.
-		currentCandidatesProgramHashes, a.currentCandidatesProgramHashes...)
-	a.fork.nextArbitrators = append(a.fork.nextArbitrators,
-		a.nextArbitrators...)
-	a.fork.nextCandidates = append(a.fork.nextCandidates, a.nextCandidates...)
-
-	a.fork.IncreaseChainHeight(nil)
-
-	return a.fork
 }
 
 func (a *Arbitrators) ForceChange() error {
@@ -101,7 +57,7 @@ func (a *Arbitrators) ForceChange() error {
 		return err
 	}
 
-	if err = a.updateNextArbitrators(block); err != nil {
+	if err = a.updateNextArbitrators(block.Height); err != nil {
 		return err
 	}
 
@@ -114,29 +70,27 @@ func (a *Arbitrators) ForceChange() error {
 	return nil
 }
 
-func (a *Arbitrators) IncreaseChainHeight(block *types.Block) {
+func (a *Arbitrators) IncreaseChainHeight(height uint32) {
 
-	if a.isNewElection(block) {
+	if a.isNewElection(height) {
 		if err := a.changeCurrentArbitrators(); err != nil {
 			log.Error("Change current arbitrators error: ", err)
 			return
 		}
 
-		if a.isShadow {
-			if err := a.updateNextArbitrators(&block.Header); err != nil {
-				log.Error("Update arbitrators error: ", err)
-				return
-			}
-
-			events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+		if err := a.updateNextArbitrators(height); err != nil {
+			log.Error("Update arbitrators error: ", err)
+			return
 		}
+
+		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
 
 	} else {
 		a.dutyChangedCount++
 	}
 }
 
-func (a *Arbitrators) DecreaseChainHeight(block *types.Block) {
+func (a *Arbitrators) DecreaseChainHeight(height uint32) {
 
 	if a.dutyChangedCount == 0 {
 		//todo complete me
@@ -180,8 +134,7 @@ func (a *Arbitrators) GetNextArbitrators() [][]byte {
 	return result
 }
 
-func (a *Arbitrators) GetNextCandidates() [][]byte {
-	a.State.mtx.RLock()
+func (a *Arbitrators) GetNextCandidates() [][]byte { a.State.mtx.RLock()
 	result := a.nextCandidates
 	a.State.mtx.RUnlock()
 
@@ -292,11 +245,11 @@ func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
 	return
 }
 
-func (a *Arbitrators) isNewElection(block *types.Block) bool {
-	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) >= 1 {
+func (a *Arbitrators) isNewElection(height uint32) bool {
+	if a.cfg.Versions.GetDefaultBlockVersion(height) >= 1 {
 
 		// when change to "H1" height should fire new election immediately
-		if block.Height == a.State.chainParams.HeightVersions[2] {
+		if height == a.State.chainParams.HeightVersions[2] {
 			return true
 		}
 		return a.dutyChangedCount == a.cfg.ArbitratorsCount-1
@@ -321,7 +274,7 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 	return nil
 }
 
-func (a *Arbitrators) updateNextArbitrators(header *types.Header) error {
+func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 
 	crcCount := uint32(0)
 	a.nextArbitrators = make([][]byte, 0)
@@ -333,7 +286,7 @@ func (a *Arbitrators) updateNextArbitrators(header *types.Header) error {
 	}
 	count := config.Parameters.ArbiterConfiguration.
 		NormalArbitratorsCount + crcCount
-	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(header.Height, count)
+	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(height, count)
 	if err != nil {
 		return err
 	}
@@ -341,7 +294,7 @@ func (a *Arbitrators) updateNextArbitrators(header *types.Header) error {
 		a.nextArbitrators = append(a.nextArbitrators, v)
 	}
 
-	candidates, err := a.cfg.Versions.GetCandidatesDesc(header.Height, count)
+	candidates, err := a.cfg.Versions.GetCandidatesDesc(height, count)
 	if err != nil {
 		return err
 	}
@@ -400,7 +353,6 @@ func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
 
 	a := &Arbitrators{
 		cfg:             *cfg,
-		isShadow:        false,
 		nextArbitrators: make([][]byte, 0),
 		nextCandidates:  make([][]byte, 0),
 	}

@@ -84,7 +84,7 @@ func (n *network) Start() {
 
 	n.UpdateProducersInfo()
 	arbiters :=
-		blockchain.DefaultLedger.Arbitrators.ForwardFork().GetArbitrators()
+		blockchain.DefaultLedger.Arbitrators.GetArbitrators()
 	if err := n.UpdatePeers(arbiters); err != nil {
 		log.Error(err)
 	}
