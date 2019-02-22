@@ -28,7 +28,7 @@ func (b *blockV1) GetVersion() uint32 {
 }
 
 func (b *blockV1) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators, _ := b.GetNormalArbitratorsDesc(0)
+	arbitrators := b.cfg.Arbitrators.ForwardFork().GetArbitrators()
 	if len(arbitrators) == 0 {
 		return nil
 	}
@@ -139,7 +139,8 @@ func (b *blockV1) AssignCoinbaseTxRewards(block *types.Block, totalReward common
 }
 
 func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes := b.cfg.Arbitrators.GetNormalArbitratorsProgramHashes()
+	arbitratorsHashes :=
+		b.cfg.Arbitrators.ForwardFork().GetArbitratorsProgramHashes()
 	if len(arbitratorsHashes) == 0 {
 		return 0, errors.New("not found arbiters when distributeDposReward")
 	}

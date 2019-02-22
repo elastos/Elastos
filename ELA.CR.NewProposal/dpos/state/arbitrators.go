@@ -37,7 +37,7 @@ type Arbitrators struct {
 	cfg   ArbitratorsConfig
 	State *State
 
-	DutyChangedCount uint32
+	dutyChangedCount uint32
 
 	currentArbitrators [][]byte
 	currentCandidates  [][]byte
@@ -49,6 +49,50 @@ type Arbitrators struct {
 	nextCandidates  [][]byte
 
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
+
+	isShadow bool
+	fork     *Arbitrators
+}
+
+func (a *Arbitrators) ForwardFork() interfaces.Arbitrators {
+	if a.isShadow {
+		log.Error("Can not fork form shadow")
+		return nil
+	}
+
+	if a.fork != nil && (a.dutyChangedCount+1)%a.cfg.ArbitratorsCount ==
+		a.fork.dutyChangedCount {
+		return a.fork
+	}
+
+	a.fork = &Arbitrators{
+		cfg:                             a.cfg,
+		dutyChangedCount:                a.dutyChangedCount,
+		isShadow:                        true,
+		fork:                            nil,
+		crcArbitratorsProgramHashes:     a.crcArbitratorsProgramHashes,
+		currentArbitrators:              make([][]byte, 0),
+		currentCandidates:               make([][]byte, 0),
+		currentArbitratorsProgramHashes: make([]*common.Uint168, 0),
+		currentCandidatesProgramHashes:  make([]*common.Uint168, 0),
+		nextArbitrators:                 make([][]byte, 0),
+		nextCandidates:                  make([][]byte, 0),
+	}
+	a.fork.currentArbitrators = append(a.fork.currentArbitrators,
+		a.currentArbitrators...)
+	a.fork.currentCandidates = append(a.fork.currentCandidates,
+		a.currentCandidates...)
+	a.fork.currentArbitratorsProgramHashes = append(a.fork.
+		currentArbitratorsProgramHashes, a.currentArbitratorsProgramHashes...)
+	a.fork.currentCandidatesProgramHashes = append(a.fork.
+		currentCandidatesProgramHashes, a.currentCandidatesProgramHashes...)
+	a.fork.nextArbitrators = append(a.fork.nextArbitrators,
+		a.nextArbitrators...)
+	a.fork.nextCandidates = append(a.fork.nextCandidates, a.nextCandidates...)
+
+	a.fork.IncreaseChainHeight(nil)
+
+	return a.fork
 }
 
 func (a *Arbitrators) ForceChange() error {
@@ -72,30 +116,32 @@ func (a *Arbitrators) ForceChange() error {
 
 func (a *Arbitrators) IncreaseChainHeight(block *types.Block) {
 
-	if a.isNewElection() {
+	if a.isNewElection(block) {
 		if err := a.changeCurrentArbitrators(); err != nil {
 			log.Error("Change current arbitrators error: ", err)
 			return
 		}
 
-		if err := a.updateNextArbitrators(&block.Header); err != nil {
-			log.Error("Update arbitrators error: ", err)
-			return
+		if a.isShadow {
+			if err := a.updateNextArbitrators(&block.Header); err != nil {
+				log.Error("Update arbitrators error: ", err)
+				return
+			}
+
+			events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
 		}
 
-		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
-
 	} else {
-		a.DutyChangedCount++
+		a.dutyChangedCount++
 	}
 }
 
 func (a *Arbitrators) DecreaseChainHeight(block *types.Block) {
 
-	if a.DutyChangedCount == 0 {
+	if a.dutyChangedCount == 0 {
 		//todo complete me
 	} else {
-		a.DutyChangedCount--
+		a.dutyChangedCount--
 	}
 }
 
@@ -116,10 +162,6 @@ func (a *Arbitrators) GetArbitrators() [][]byte {
 	a.State.mtx.RUnlock()
 
 	return result
-}
-
-func (a *Arbitrators) GetNormalArbitrators() ([][]byte, error) {
-	return a.cfg.Versions.GetNormalArbitratorsDesc(a.cfg.GetBestHeight(), 0)
 }
 
 func (a *Arbitrators) GetCandidates() [][]byte {
@@ -172,20 +214,6 @@ func (a *Arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
 	return result
 }
 
-func (a *Arbitrators) GetNormalArbitratorsProgramHashes() []*common.Uint168 {
-	arbitratorsHashes := make([]*common.Uint168, 0)
-	arbiters, _ := a.cfg.Versions.GetNormalArbitratorsDesc(a.cfg.GetBestHeight(), 0)
-	for _, a := range arbiters {
-		hash, err := contract.PublicKeyToStandardProgramHash(a)
-		if err != nil {
-			return nil
-		}
-		arbitratorsHashes = append(arbitratorsHashes, hash)
-	}
-
-	return arbitratorsHashes
-}
-
 func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 	a.State.mtx.RLock()
 	result := a.currentCandidatesProgramHashes
@@ -196,12 +224,12 @@ func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 
 func (a *Arbitrators) GetOnDutyArbitrator() []byte {
 	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.GetBestHeight(),
-		a.DutyChangedCount, 0)
+		a.dutyChangedCount, 0)
 }
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.GetBestHeight()+1,
-		a.DutyChangedCount, offset)
+		a.dutyChangedCount, offset)
 }
 
 func (a *Arbitrators) GetArbitersCount() uint32 {
@@ -264,27 +292,16 @@ func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
 	return
 }
 
-func (a *Arbitrators) isNewElection() bool {
-	arbiters := a.currentArbitrators
-	normalArbiters, _ := a.GetNormalArbitrators()
-	if len(normalArbiters) == 0 {
-		log.Error("get normal arbitrators failed")
-		return false
-	}
-	if len(arbiters) != len(normalArbiters) {
-		return true
-	}
-	arbitersMap := make(map[string]struct{})
-	for _, arbiter := range arbiters {
-		arbitersMap[common.BytesToHexString(arbiter)] = struct{}{}
-	}
-	for _, arbiter := range normalArbiters {
-		if _, ok := arbitersMap[common.BytesToHexString(arbiter)]; !ok {
-			return false
-		}
-	}
+func (a *Arbitrators) isNewElection(block *types.Block) bool {
+	if a.cfg.Versions.GetDefaultBlockVersion(block.Height) >= 1 {
 
-	return true
+		// when change to "H1" height should fire new election immediately
+		if block.Height == a.State.chainParams.HeightVersions[2] {
+			return true
+		}
+		return a.dutyChangedCount == a.cfg.ArbitratorsCount-1
+	}
+	return false
 }
 
 func (a *Arbitrators) changeCurrentArbitrators() error {
@@ -299,7 +316,7 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 		return err
 	}
 
-	a.DutyChangedCount = 0
+	a.dutyChangedCount = 0
 
 	return nil
 }
@@ -308,6 +325,12 @@ func (a *Arbitrators) updateNextArbitrators(header *types.Header) error {
 
 	crcCount := uint32(0)
 	a.nextArbitrators = make([][]byte, 0)
+	for _, v := range a.cfg.CRCArbitrators {
+		if !a.State.IsInactiveProducer(v.PublicKey) {
+			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+			crcCount++
+		}
+	}
 	count := config.Parameters.ArbiterConfiguration.
 		NormalArbitratorsCount + crcCount
 	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(header.Height, count)
@@ -375,10 +398,17 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 
 func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
 
-	a := &Arbitrators{cfg: *cfg}
+	a := &Arbitrators{
+		cfg:             *cfg,
+		isShadow:        false,
+		nextArbitrators: make([][]byte, 0),
+		nextCandidates:  make([][]byte, 0),
+	}
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
 	for _, v := range a.cfg.CRCArbitrators {
+		a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+
 		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
 		if err != nil {
 			return nil, err
