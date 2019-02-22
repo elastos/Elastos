@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -54,7 +55,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, &config.MainNetParams,
-		&mock.ArbitratorsMock{}, heightVersions)
+		heightVersions, state.NewState(&mock.ArbitratorsMock{}, &config.MainNetParams))
 	if err != nil {
 		s.Error(err)
 	}

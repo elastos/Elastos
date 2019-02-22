@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,7 +64,7 @@ func TestBlockVersionInit(t *testing.T) {
 	}
 
 	chain, err := blockchain.New(chainStore, &config.MainNetParams,
-		arbitratorsMock, nil)
+		nil, state.NewState(arbitratorsMock, &config.MainNetParams))
 	if err != nil {
 		t.Error(err)
 	}

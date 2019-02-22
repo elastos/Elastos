@@ -28,7 +28,6 @@ type ArbitratorsConfig struct {
 	CandidatesCount  uint32
 	CRCArbitrators   []config.CRCArbitratorParams
 	Versions         interfaces.HeightVersions
-	State            *State
 
 	GetCurrentHeader func() (*types.Header, error)
 	GetBestHeight    func() uint32
@@ -112,9 +111,9 @@ func (a *Arbitrators) IsArbitrator(pk []byte) bool {
 }
 
 func (a *Arbitrators) GetArbitrators() [][]byte {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.currentArbitrators
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
@@ -124,25 +123,25 @@ func (a *Arbitrators) GetNormalArbitrators() ([][]byte, error) {
 }
 
 func (a *Arbitrators) GetCandidates() [][]byte {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.currentCandidates
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
 
 func (a *Arbitrators) GetNextArbitrators() [][]byte {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.nextArbitrators
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
 
 func (a *Arbitrators) GetNextCandidates() [][]byte {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.nextCandidates
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
@@ -166,9 +165,9 @@ func (a *Arbitrators) GetCRCArbitrators() []config.CRCArbitratorParams {
 }
 
 func (a *Arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.currentArbitratorsProgramHashes
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
@@ -188,9 +187,9 @@ func (a *Arbitrators) GetNormalArbitratorsProgramHashes() []*common.Uint168 {
 }
 
 func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.currentCandidatesProgramHashes
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
@@ -206,18 +205,18 @@ func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 }
 
 func (a *Arbitrators) GetArbitersCount() uint32 {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	result := a.getArbitersCount()
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return result
 }
 
 func (a *Arbitrators) GetArbitersMajorityCount() uint32 {
-	a.cfg.State.mtx.RLock()
+	a.State.mtx.RLock()
 	minSignCount := float64(a.getArbitersCount()) *
 		DPOSMajorityRatioNumerator / DPOSMajorityRatioDenominator
-	a.cfg.State.mtx.RUnlock()
+	a.State.mtx.RUnlock()
 
 	return uint32(minSignCount)
 }
