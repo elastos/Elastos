@@ -30,8 +30,10 @@ class C extends BaseComponent {
 
   handleSubmit = async (e, fields = {}) => {
     e.preventDefault()
+    const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
+    const { edit, form, updateCVote, createCVote } = this.props
 
-    this.props.form.validateFields(async (err, values) => {
+    form.validateFields(async (err, values) => {
       if (!err) {
         const param = {
           title: values.title,
@@ -39,17 +41,17 @@ class C extends BaseComponent {
           notes: values.notes,
           motionId: values.motionId,
           isConflict: values.isConflict,
-          proposedBy: values.proposedBy,
           content: values.content,
           published: true,
           ...fields,
         }
+        if (!edit) param.proposedBy = fullName
 
         this.ord_loading(true)
-        if (this.props.edit) {
+        if (edit) {
           try {
-            param._id = this.props.edit
-            await this.props.updateCVote(param)
+            param._id = edit
+            await updateCVote(param)
             message.success(I18N.get('from.CVoteForm.message.updated.success'))
             this.ord_loading(false)
             this.gotoList()
@@ -59,7 +61,7 @@ class C extends BaseComponent {
           }
         } else {
           try {
-            await this.props.createCVote(param)
+            await createCVote(param)
             message.success(I18N.get('from.CVoteForm.message.create.success'))
             this.ord_loading(false)
             this.gotoList()
@@ -74,7 +76,6 @@ class C extends BaseComponent {
 
   getInputProps(data) {
     const { edit } = this.props
-    const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
     const s = this.props.static
     const { getFieldDecorator } = this.props.form
 
@@ -110,21 +111,6 @@ class C extends BaseComponent {
       <TextArea rows={6} />
     )
 
-    const proposedBy_fn = getFieldDecorator('proposedBy', {
-      rules: [{ required: true }],
-      initialValue: edit ? data.proposedBy : fullName,
-    })
-    const proposedBy_el = (
-      <Select size="large">
-        {/* <Select.Option key={-1} value={-1}>please select</Select.Option> */}
-        {
-          _.map(s.voter, (item, i) => (
-            <Select.Option key={i} value={item.value}>{item.value}</Select.Option>
-          ))
-        }
-      </Select>
-    )
-
     const isConflict_fn = getFieldDecorator('isConflict', {
       initialValue: edit ? data.isConflict : 'NO',
     })
@@ -146,7 +132,6 @@ class C extends BaseComponent {
       title: title_fn(title_el),
       type: type_fn(type_el),
       content: content_fn(content_el),
-      proposedBy: proposedBy_fn(proposedBy_el),
       isConflict: isConflict_fn(isConflict_el),
       notes: notes_fn(notes_el),
     }
@@ -194,7 +179,6 @@ class C extends BaseComponent {
         <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{p.type}</FormItem>
 
         <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayout}>{p.content}</FormItem>
-        <FormItem label={I18N.get('from.CVoteForm.label.proposedby')} {...formItemLayout}>{p.proposedBy}</FormItem>
 
         <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.conflict')} help={I18N.get('from.CVoteForm.label.conflict.help')} {...formItemLayout}>{p.isConflict}</FormItem>
         {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>}
