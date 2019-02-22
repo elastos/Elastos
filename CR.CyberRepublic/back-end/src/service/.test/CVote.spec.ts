@@ -42,7 +42,7 @@ beforeAll(async ()=>{
         user: user.admin
     })
 
-    await adminService.update({
+    await adminService.updateRole({
         userId: council._id,
         role: constant.USER_ROLE.COUNCIL
     })

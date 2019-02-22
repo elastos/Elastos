@@ -176,7 +176,7 @@ export default class extends Base {
         const updateObj: any = _.omit(param, restrictedFields.update)
         const db_user = this.getDBModel('User');
         let user = await db_user.findById(userId)
-        const isSelf = _.get(this.currentUser, '_id').toString() === userId
+        const isSelf = _.get(this.currentUser, '_id', '').toString() === userId
         const userRole = _.get(this.currentUser, 'role')
         const isUserAdmin = permissions.isAdmin(userRole)
         const canUpdate = isUserAdmin || isSelf
