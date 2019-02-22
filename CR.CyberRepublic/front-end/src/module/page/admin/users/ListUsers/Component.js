@@ -31,7 +31,7 @@ export default class extends BaseComponent {
       sorter: (a, b) => a.username.localeCompare(b.username),
       defaultSortOrder: 'ascend',
     }, {
-      title: I18N.get('1208'),
+      title: <div style={{ whiteSpace: 'nowrap' }}>{I18N.get('1208')}</div>,
       dataIndex: '_id',
       render: (id, item) => `${item.profile.firstName} ${item.profile.lastName}`,
     }, {
@@ -41,7 +41,7 @@ export default class extends BaseComponent {
       title: I18N.get('1209'),
       dataIndex: 'profile.country',
       render: geolocation => config.data.mappingCountryCodeToName[geolocation],
-      sorter: (a, b) => config.data.mappingCountryCodeToName[a.profile.country].localeCompare(config.data.mappingCountryCodeToName[b.profile.country]),
+      sorter: (a, b) => _.get(config.data.mappingCountryCodeToName, a.profile.country, '').localeCompare(_.get(config.data.mappingCountryCodeToName, b.profile.country, '')),
     }, {
       title: I18N.get('1204'),
       dataIndex: 'role',
