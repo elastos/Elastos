@@ -83,8 +83,11 @@ func (n *network) Start() {
 	n.p2pServer.Start()
 
 	n.UpdateProducersInfo()
-	arbiters, _ := blockchain.DefaultLedger.Arbitrators.GetNormalArbitrators()
-	n.UpdatePeers(arbiters)
+	arbiters :=
+		blockchain.DefaultLedger.Arbitrators.ForwardFork().GetArbitrators()
+	if err := n.UpdatePeers(arbiters); err != nil {
+		log.Error(err)
+	}
 
 	go func() {
 	out:
