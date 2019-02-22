@@ -4,6 +4,7 @@ import get from './get';
 import login from './login';
 import register from './register';
 import update from './update';
+import updateRole from './updateRole';
 import current_user from './current_user';
 import send_email from './send_email';
 import send_reg_email from './send_reg_email';
@@ -31,6 +32,11 @@ export default Base.setRouter([
     {
         path : '/:userId',
         router : update,
+        method : 'put'
+    },
+    {
+        path : '/:userId/updateRole',
+        router : updateRole,
         method : 'put'
     },
     {

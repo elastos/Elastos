@@ -155,7 +155,21 @@ export default class extends Base {
         return user
     }
 
-    public async update(param) {
+    public async updateRole(param) {
+      const { userId, role } = param
+      const db_user = this.getDBModel('User');
+      const userRole = _.get(this.currentUser, 'role')
+      const isUserAdmin = permissions.isAdmin(userRole)
+
+      if (!isUserAdmin) {
+          throw 'Access Denied'
+      }
+
+      if(Object.keys(constant.USER_ROLE).indexOf(role) === -1){
+          throw 'invalid role'
+      }
+      return await db_user.update({ _id: userId }, { role })
+    }
 
     public async update(param) {
         const { userId } = param
