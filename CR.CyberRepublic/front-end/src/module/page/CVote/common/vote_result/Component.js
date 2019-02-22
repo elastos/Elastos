@@ -1,23 +1,38 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Row, Col } from 'antd'
 import _ from 'lodash'
+import { CVOTE_RESULT_TEXT } from '@/constant'
 
-import './style.scss'
+import { Container, RejectRow, Reason, Label, List, Item, Avatar } from './style'
 
 const Component = ({ label, type, dataList }) => {
   const votesNode = _.map(dataList, (data, key) => {
-    return (
-      <div className="voter-item" key={key}>
-        <img src={data.avatar} alt="voter avatar" />
+    const isReject = type === CVOTE_RESULT_TEXT.reject.toLowerCase()
+    const userNode = (
+      <Item key={key}>
+        <Avatar src={data.avatar} alt="voter avatar" />
         <div>{data.name}</div>
-      </div>
+      </Item>
+    )
+
+    if (!isReject) return userNode
+
+    const reasonNode = isReject && (
+      <Reason>{data.reason}</Reason>
+    )
+    return (
+      <RejectRow key={key}>
+        {userNode}
+        {reasonNode}
+      </RejectRow>
     )
   })
   return (
-    <div className="c_VoteResult">
-      <div className="vote-label">{label}</div>
-      <div className={`voter-list ${type}`}>{votesNode}</div>
-    </div>
+    <Container>
+      <Label>{label}</Label>
+      <List type={type}>{votesNode}</List>
+    </Container>
   )
 }
 
