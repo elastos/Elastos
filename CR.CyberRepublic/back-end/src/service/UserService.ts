@@ -157,32 +157,23 @@ export default class extends Base {
 
     public async update(param) {
 
+    public async update(param) {
         const { userId } = param
-
-        const updateObj:any = _.omit(param, restrictedFields.update)
-
+        const updateObj: any = _.omit(param, restrictedFields.update)
         const db_user = this.getDBModel('User');
-
         let user = await db_user.findById(userId)
-        let countryChanged = false
-
+        const isSelf = _.get(this.currentUser, '_id').toString() === userId
         const userRole = _.get(this.currentUser, 'role')
         const isUserAdmin = permissions.isAdmin(userRole)
-        const isSelf = _.get(this.currentUser, '_id') === userId
-
-        if (!isUserAdmin && (!isSelf || param.role)) {
+        const canUpdate = isUserAdmin || isSelf
+        let countryChanged = false
+        console.log(isUserAdmin, isSelf)
+        if (!canUpdate) {
             throw 'Access Denied'
         }
 
         if (!user) {
             throw `userId: ${userId} not found`
-        }
-
-        if(isUserAdmin && param.role){
-            if(Object.keys(constant.USER_ROLE).indexOf(param.role) === -1){
-                throw 'invalid role'
-            }
-            updateObj.role = param.role
         }
 
         if (param.profile && param.profile.country && param.profile.country !== user.profile.country) {
