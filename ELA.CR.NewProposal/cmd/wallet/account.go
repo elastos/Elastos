@@ -33,7 +33,7 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "account",
 		Aliases:  []string{"a"},
-		Usage:    "Show account address, public key and program hash",
+		Usage:    "Show account address and public key",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 		},
@@ -41,13 +41,13 @@ var accountCommand = []cli.Command{
 	},
 	{
 		Category: "Account",
-		Name:     "list",
-		Aliases:  []string{"l"},
-		Usage:    "List wallet information [account, balance, verbose]",
+		Name:     "balance",
+		Aliases:  []string{"b"},
+		Usage:    "Check account balance",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 		},
-		Action: listAccount,
+		Action: accountBalance,
 	},
 	{
 		Category: "Account",
@@ -160,14 +160,14 @@ func accountInfo(c *cli.Context) error {
 	return nil
 }
 
-func listAccount(c *cli.Context) error {
+func accountBalance(c *cli.Context) error {
 	walletPath := c.String("wallet")
 	if exist := cmdcom.FileExisted(walletPath); !exist {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
 	if err := ShowAccountBalance(walletPath); err != nil {
-		fmt.Println("error: list accounts information failed,", err)
+		fmt.Println("error: check account balance failed,", err)
 		cli.ShowCommandHelpAndExit(c, "list", 1)
 	}
 	return nil
