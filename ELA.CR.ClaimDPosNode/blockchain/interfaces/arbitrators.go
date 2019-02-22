@@ -8,13 +8,13 @@ import (
 )
 
 type Arbitrators interface {
+	ForwardFork() Arbitrators
 	ForceChange() error
 	IncreaseChainHeight(block *types.Block)
 	DecreaseChainHeight(block *types.Block)
 
 	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte
-	GetNormalArbitrators() ([][]byte, error)
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
@@ -24,7 +24,6 @@ type Arbitrators interface {
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 
 	GetArbitratorsProgramHashes() []*common.Uint168
-	GetNormalArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168
 
 	GetOnDutyArbitrator() []byte
