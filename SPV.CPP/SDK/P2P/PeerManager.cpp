@@ -1569,10 +1569,10 @@ namespace Elastos {
 				addPeerToList(peer, txHash, _txRelays);
 				if (pubTx.GetTransaction() != nullptr) _wallet->registerTransaction(pubTx.GetTransaction());
 				if (pubTx.GetTransaction() != nullptr && !_wallet->transactionIsValid(pubTx.GetTransaction()))
-					error = EINVAL;
+					error = 0x10; // RejectInvalid by node
 			}
 
-			if (error && pubTx.HasCallback()) pubTx.FireCallback(error, "tx not signed");
+			if (error && pubTx.HasCallback()) pubTx.FireCallback(error, "tx is invalid");
 			return pubTx.GetTransaction();
 		}
 
