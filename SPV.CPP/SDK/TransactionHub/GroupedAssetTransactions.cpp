@@ -274,6 +274,9 @@ namespace Elastos {
 
 			if (useVotedUTXO) {
 				for (i = 0; i < _utxos.size(); ++i) {
+					if (_spentOutputs.Contains(_utxos[i]))
+						continue;
+
 					const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
 					if (!txInput || _utxos[i].n >= txInput->getOutputs().size())
 						continue;
@@ -296,6 +299,9 @@ namespace Elastos {
 			}
 
 			for (i = 0; i < _utxos.size() && totalInputAmount < totalOutputAmount + fee; ++i) {
+				if (_spentOutputs.Contains(_utxos[i]))
+					continue;
+
 				const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
 				if (!txInput || _utxos[i].n >= txInput->getOutputs().size())
 					continue;
@@ -388,7 +394,7 @@ namespace Elastos {
 
 			_lockable->Lock();
 			for (i = 0; i < _utxos.size() && totalInputAmount < totalOutputAmount + fee; ++i) {
-				if (tx->ContainInput(_utxos[i].hash, _utxos[i].n)) {
+				if (_spentOutputs.Contains(_utxos[i]) || tx->ContainInput(_utxos[i].hash, _utxos[i].n)) {
 					continue;
 				}
 
