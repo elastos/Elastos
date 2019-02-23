@@ -9,11 +9,15 @@ This is the wallet service for the DID Sidechain, it's very similar to the mainc
 
 You can find the configuration file at `did.api/src/main/resources/application.properties`
 
+##### Some Notes:
+
+- You must use a normal address for the `didAddress` starting in 'E' or '8', not an 'X' address like the wallet service.
+
 ### Setup
 
 1. Update `application.properties`
     - Set the `node.prefix` to your DID node's `HttpRestPort`
-    - Set the `did.address` to any wallet address, but you need ELA in it
+    - Set the `did.address` to a new wallet address, but you need ELA in it
 
 
 2. Pick an open port for the service, by default it uses 8091 which may conflict with other programs.
