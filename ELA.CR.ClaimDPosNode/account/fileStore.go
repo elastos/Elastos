@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type AccountData struct {
@@ -114,7 +114,7 @@ func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, en
 		accountType = SUBACCOUNT
 	}
 
-	pHash, err := Uint168FromBytes(programHash)
+	pHash, err := common.Uint168FromBytes(programHash)
 	if err != nil {
 		return errors.New("invalid program hash")
 	}
@@ -124,9 +124,9 @@ func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, en
 	}
 	a := AccountData{
 		Address:             addr,
-		ProgramHash:         BytesToHexString(programHash),
-		RedeemScript:        BytesToHexString(redeemScript),
-		PrivateKeyEncrypted: BytesToHexString(encryptedPrivateKey),
+		ProgramHash:         common.BytesToHexString(programHash),
+		RedeemScript:        common.BytesToHexString(redeemScript),
+		PrivateKeyEncrypted: common.BytesToHexString(encryptedPrivateKey),
 		Type:                accountType,
 	}
 
@@ -193,7 +193,7 @@ func (cs *FileStore) SaveStoredData(name string, value []byte) error {
 		return errors.New("error: unmarshal db")
 	}
 
-	hexValue := BytesToHexString(value)
+	hexValue := common.BytesToHexString(value)
 	switch name {
 	case "Version":
 		cs.data.Version = string(value)
@@ -226,11 +226,11 @@ func (cs *FileStore) LoadStoredData(name string) ([]byte, error) {
 	case "Version":
 		return []byte(cs.data.Version), nil
 	case "IV":
-		return HexStringToBytes(cs.data.IV)
+		return common.HexStringToBytes(cs.data.IV)
 	case "MasterKey":
-		return HexStringToBytes(cs.data.MasterKey)
+		return common.HexStringToBytes(cs.data.MasterKey)
 	case "PasswordHash":
-		return HexStringToBytes(cs.data.PasswordHash)
+		return common.HexStringToBytes(cs.data.PasswordHash)
 	}
 
 	return nil, errors.New("can't find the key: " + name)
@@ -252,4 +252,18 @@ func GetWalletAccountData(walletPath string) ([]AccountData, error) {
 	}
 
 	return storeAccounts, nil
+}
+
+func GetWalletMainAccountData(walletPath string) (*AccountData, error) {
+	storeAccounts, err := GetWalletAccountData(walletPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range storeAccounts {
+		if a.Type == MAINACCOUNT {
+			return &a, nil
+		}
+	}
+
+	return nil, errors.New("no main account found")
 }
