@@ -1,0 +1,7 @@
+{
+  "name": "Foundation Wallet",
+  "description": "This is where the genesis block's 33 million ELA is created",
+  "privateKey": "7227da92a21a663daf96220c9dc4919b6e7cafaa1b58ff3cd02adcc92e11c14b",
+  "publicKey": "025c6c37d304f1d603e00898574f24962051af36697baea30ee49d035207e95c4a",
+  "address": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf"
+}
