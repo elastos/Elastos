@@ -274,7 +274,7 @@ namespace Elastos {
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _enableReconnect, _needGetAddr;
+			bool _syncSucceeded, _needGetAddr;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;

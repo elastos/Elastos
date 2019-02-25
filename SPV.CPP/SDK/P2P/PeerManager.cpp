@@ -128,7 +128,6 @@ namespace Elastos {
 				_chainParams(params),
 
 				_syncSucceeded(false),
-				_enableReconnect(true),
 
 				_isConnected(0),
 				_connectFailureCount(0),
@@ -244,23 +243,9 @@ namespace Elastos {
 			lock.unlock();
 		}
 
-		bool PeerManager::IsReconnectEnable() const {
-			lock.lock();
-			bool status = _enableReconnect;
-			lock.unlock();
-
-			return status;
-		}
-
-		void PeerManager::SetReconnectEnableStatus(bool status) {
-			lock.lock();
-			_enableReconnect = status;
-			lock.unlock();
-		}
-
 		void PeerManager::connect() {
 			lock.lock();
-			if (_connectFailureCount >= MAX_CONNECT_FAILURES) _connectFailureCount = 0; //this is a manual retry
+//			if (_connectFailureCount >= MAX_CONNECT_FAILURES) _connectFailureCount = 0; //this is a manual retry
 
 			if ((!_downloadPeer || _lastBlock->getHeight() < _estimatedHeight) && _syncStartHeight == 0) {
 				_syncStartHeight = _lastBlock->getHeight() + 1;
@@ -310,11 +295,10 @@ namespace Elastos {
 			}
 
 			if (_connectedPeers.empty()) {
-//				Log::warn("{} sync failed", GetID());
+				Log::error("{} sync failed: {}", GetID(), std::string(strerror(ENETUNREACH)));
 				syncStopped();
 				lock.unlock();
 				fireSyncStopped(ENETUNREACH);
-				fireSyncIsInactive(60);
 			} else {
 				lock.unlock();
 			}
@@ -328,9 +312,10 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				peerCount = _connectedPeers.size();
 				dnsThreadCount = this->_dnsThreadCount;
+				if (_reconnectTaskCount == 0)
+					_connectFailureCount = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
 
 				for (size_t i = peerCount; i > 0; i--) {
-					_connectFailureCount = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
 					_connectedPeers[i - 1]->Disconnect();
 				}
 			}
@@ -901,7 +886,6 @@ namespace Elastos {
 				peer->SetCurrentBlockHeight(_lastBlock->getHeight());
 				publishPendingTx(peer);
 				if (_needGetAddr) {
-					_needGetAddr = false;
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
 
@@ -935,6 +919,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 
 				if (error == EPROTO) { // if it's protocol error, the peer isn't following standard policy
+					_connectFailureCount++;
 					peerMisbehaving(peer);
 				} else if (error) { // timeout or some non-protocol related network error
 					for (size_t i = _peers.size(); i > 0; i--) {
@@ -971,11 +956,12 @@ namespace Elastos {
 					syncStopped();
 
 					// clear out stored peers so we get a fresh list from DNS on next connect attempt
-//					_peers.clear();
+					_peers.clear();
 					txError = ENOTCONN; // trigger any pending tx publish callbacks
 					willSave = 1;
-//					peer->warn("sync failed");
-				} else if (_connectFailureCount < MAX_CONNECT_FAILURES) {
+					_needGetAddr = true;
+					peer->warn("sync failed");
+				} else if (_connectFailureCount < MAX_CONNECT_FAILURES && _reconnectTaskCount == 0) {
 					willReconnect = 1;
 				}
 
@@ -995,33 +981,27 @@ namespace Elastos {
 					break;
 				}
 
-				bool havePendingTx = false;
-				for (size_t i = 0; i < _publishedTx.size(); ++i) {
-					if (_publishedTx[i].HasCallback()) {
-						havePendingTx = true;
-						break;
-					}
-				}
 
-				if (_reconnectTaskCount == 0 && (!_isConnected || _connectedPeers.empty())) {
-					willReconnect = 1;
-					if (havePendingTx) {
-						reconnectSeconds = 3;
-						willReconnect = 1;
+				if (willReconnect) {
+					for (size_t i = 0; i < _publishedTx.size(); ++i) {
+						if (_publishedTx[i].HasCallback()) {
+							// have pending tx
+							reconnectSeconds = 3;
+							break;
+						}
 					}
-					peer->debug("will reconnect {}s later...", reconnectSeconds);
-				} else {
-					willReconnect = 0;
 				}
 			}
 
-//			for (size_t i = 0; i < pubTx.size(); i++) {
-//				pubTx[i].FireCallback(txError, "tx canceled");
-//			}
+			if (willReconnect == 0) {
+				for (size_t i = 0; i < pubTx.size(); i++) {
+					pubTx[i].FireCallback(txError, "tx canceled");
+				}
+			}
 
-			//if (willSave) fireSavePeers(true, {});
+			if (willSave) fireSavePeers(true, {});
 			if (willSave) fireSyncStopped(error);
-			if (willReconnect && _enableReconnect) fireSyncIsInactive(reconnectSeconds);
+			if (willReconnect) fireSyncIsInactive(reconnectSeconds);
 			fireTxStatusUpdate();
 		}
 
@@ -1035,7 +1015,8 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed {} peer(s)", peers.size());
 
-				if (_chainParams.GetDNSSeeds().size() == _peers.size() || _peers.size() == 0) {
+				if (_needGetAddr) {
+					_needGetAddr = false;
 					willReconnect = true;
 				}
 
@@ -1666,6 +1647,8 @@ namespace Elastos {
 			if (++_misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
 				_misbehavinCount = 0;
 				_peers.clear();
+				fireSavePeers(true, {});
+				_needGetAddr = true;
 			}
 
 			peer->Disconnect();
