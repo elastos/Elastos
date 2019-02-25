@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -352,18 +351,17 @@ func exportAccount(c *cli.Context) error {
 	}
 
 	accounts := client.GetAccounts()
-	privateKeys := make([]string, 0, len(accounts))
+
+	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PRIVATE KEY")
+	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 	for _, account := range accounts {
-		str := hex.EncodeToString(account.PrivateKey[:])
-		privateKeys = append(privateKeys, str)
+		prefixType := contract.GetPrefixType(account.ProgramHash)
+		if prefixType == contract.PrefixStandard {
+			fmt.Printf("%-34s %-66s\n", account.Address, hex.EncodeToString(account.PrivKey()))
+			fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
+		}
 	}
 
-	data, err := json.Marshal(privateKeys)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(data))
 	return nil
 }
 
