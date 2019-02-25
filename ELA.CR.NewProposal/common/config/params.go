@@ -87,7 +87,7 @@ var MainNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:          1008812, //fixme edit height later
+	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
 	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
@@ -135,7 +135,7 @@ var TestNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:          1008812, //fixme edit height later
+	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
 	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
@@ -173,7 +173,7 @@ var RegNetParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	DPOSStartHeight:          1008812, //fixme edit height later
+	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
 	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
@@ -256,8 +256,8 @@ type Params struct {
 	// Define height versions about block chain.
 	HeightVersions []uint32
 
-	// DPOSStartHeight indicates the height of DPOS consensus begins.
-	DPOSStartHeight uint32
+	// VoteStartHeight indicates the height of DPOS consensus begins.
+	VoteStartHeight uint32
 
 	// InactiveDuration defines the duration blocks to set a producer as
 	// inactive.
