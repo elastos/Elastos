@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/elastos/Elastos.ELA/account"
-	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -91,30 +90,30 @@ func createTransaction(walletPath string, from string, fee *common.Fixed64, lock
 	}
 
 	// Check from address
-	password, err := cmdcom.GetPassword()
-	if err != nil {
-		return nil, err
-	}
-	client, err := account.Open(walletPath, password)
-	if err != nil {
-		return nil, err
-	}
-	acc, err := client.GetDefaultAccount()
+	var usingAccount *account.AccountData
+	mainAccount, err := account.GetWalletMainAccountData(walletPath)
 	if err != nil {
 		return nil, err
 	}
 
-	if from != "" && from != acc.Address {
-		programHash, err := common.Uint168FromAddress(from)
+	if from == "" {
+		from = mainAccount.Address
+		usingAccount = mainAccount
+	} else if from != mainAccount.Address {
+		storeAccounts, err := account.GetWalletAccountData(walletPath)
 		if err != nil {
 			return nil, err
 		}
-		acc = client.GetAccountByCodeHash(programHash.ToCodeHash())
-		if acc == nil {
+		for _, acc := range storeAccounts {
+			if from == acc.Address {
+				usingAccount = &acc
+				break
+			}
+		}
+		if usingAccount == nil {
 			return nil, errors.New(from + " is not local account")
 		}
 	}
-	from = acc.Address
 
 	spender, err := common.Uint168FromAddress(from)
 	if err != nil {
@@ -186,7 +185,12 @@ func createTransaction(walletPath string, from string, fee *common.Fixed64, lock
 		return nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	return newTransaction(acc.RedeemScript, txInputs, txOutputs, types.TransferAsset), nil
+	redeemScript, err := common.HexStringToBytes(usingAccount.RedeemScript)
+	if err != nil {
+		return nil, err
+	}
+
+	return newTransaction(redeemScript, txInputs, txOutputs, types.TransferAsset), nil
 }
 
 func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TxType) *types.Transaction {

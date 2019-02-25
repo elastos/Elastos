@@ -155,6 +155,9 @@ func signTx(c *cli.Context) error {
 	program := txn.Programs[0]
 
 	haveSign, needSign, err := crypto.GetSignStatus(program.Code, program.Parameter)
+	if err != nil {
+		return err
+	}
 	if haveSign == needSign {
 		return errors.New("transaction was fully signed, no need more sign")
 	}
