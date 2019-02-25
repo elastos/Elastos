@@ -21,6 +21,7 @@ import (
 type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
 	Store              interfaces.IDposStore
+	PublicKey          []byte
 }
 
 type DPOSNetwork interface {

@@ -134,7 +134,8 @@ func (a *Arbitrators) GetNextArbitrators() [][]byte {
 	return result
 }
 
-func (a *Arbitrators) GetNextCandidates() [][]byte { a.State.mtx.RLock()
+func (a *Arbitrators) GetNextCandidates() [][]byte {
+	a.State.mtx.RLock()
 	result := a.nextCandidates
 	a.State.mtx.RUnlock()
 
@@ -279,7 +280,7 @@ func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 	crcCount := uint32(0)
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.cfg.CRCArbitrators {
-		if !a.State.IsInactiveProducer(v.PublicKey) {
+		if !a.State.isInactiveProducer(v.PublicKey) {
 			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
 			crcCount++
 		}
