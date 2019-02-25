@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/account"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 
@@ -31,7 +32,6 @@ func FormatOutput(o []byte) error {
 }
 
 func ShowAccountInfo(client *account.ClientImpl) error {
-	// print header
 	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PUBLIC KEY")
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
@@ -48,9 +48,11 @@ func ShowAccountInfo(client *account.ClientImpl) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
-		// print divider line
-		fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
+		prefixType := contract.GetPrefixType(acc.ProgramHash)
+		if prefixType == contract.PrefixStandard {
+			fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
+			fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
+		}
 	}
 
 	return nil
