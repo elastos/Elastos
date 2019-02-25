@@ -2,37 +2,36 @@ package txs
 
 import (
 	"fmt"
-	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/version/verconf"
 	"math"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/version/verconf"
 
 	"github.com/stretchr/testify/suite"
 )
 
-type txVersionV2TestSuite struct {
+type txVersionV3TestSuite struct {
 	suite.Suite
 
 	Version TxVersion
 	Cfg     *verconf.Config
 }
 
-func (s *txVersionV2TestSuite) SetupTest() {
+func (s *txVersionV3TestSuite) SetupTest() {
 	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-
 	s.Cfg = &verconf.Config{}
 	s.Version = NewTxV2(s.Cfg)
 }
 
-func (s *txVersionV2TestSuite) TestCheckOutputPayload() {
+func (s *txVersionV3TestSuite) TestCheckOutputPayload() {
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	outputs := []*types.Output{
@@ -69,9 +68,7 @@ func (s *txVersionV2TestSuite) TestCheckOutputPayload() {
 					},
 				},
 			},
-		},
-		{
-			AssetID:     common.Uint256{},
+		}, {AssetID: common.Uint256{},
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
@@ -104,7 +101,7 @@ func (s *txVersionV2TestSuite) TestCheckOutputPayload() {
 	s.EqualError(err, "duplicate candidate")
 }
 
-func (s *txVersionV2TestSuite) TestCheckOutputProgramHash() {
+func (s *txVersionV3TestSuite) TestCheckOutputProgramHash() {
 	programHash := common.Uint168{}
 
 	// empty program hash should pass
@@ -127,7 +124,7 @@ func (s *txVersionV2TestSuite) TestCheckOutputProgramHash() {
 	s.Error(s.Version.CheckOutputProgramHash(programHash))
 }
 
-func (s *txVersionV2TestSuite) TestCheckCoinbaseMinerReward() {
+func (s *txVersionV3TestSuite) TestCheckCoinbaseMinerReward() {
 	totalReward := config.MainNetParams.RewardPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
@@ -158,7 +155,7 @@ func (s *txVersionV2TestSuite) TestCheckCoinbaseMinerReward() {
 	s.EqualError(err, "reward to miner in coinbase < 35%")
 }
 
-func (s *txVersionV2TestSuite) TestCheckCoinbaseArbitratorsReward() {
+func (s *txVersionV3TestSuite) TestCheckCoinbaseArbitratorsReward() {
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
 		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
@@ -235,7 +232,7 @@ func (s *txVersionV2TestSuite) TestCheckCoinbaseArbitratorsReward() {
 	blockchain.DefaultLedger = originLedger
 }
 
-func (s *txVersionV2TestSuite) TestCheckVoteProducerOutputs() {
+func (s *txVersionV3TestSuite) TestCheckVoteProducerOutputs() {
 	outputs := []*types.Output{
 		{
 			Type: types.OTNone,
@@ -290,7 +287,7 @@ func (s *txVersionV2TestSuite) TestCheckVoteProducerOutputs() {
 	s.Error(s.Version.CheckVoteProducerOutputs(outputs, references, producers))
 }
 
-func (s *txVersionV2TestSuite) TestCheckTxHasNoPrograms() {
+func (s *txVersionV3TestSuite) TestCheckTxHasNoPrograms() {
 	tx := &types.Transaction{
 		Version:  types.TransactionVersion(s.Version.GetVersion()),
 		TxType:   types.CoinBase,
@@ -303,6 +300,6 @@ func (s *txVersionV2TestSuite) TestCheckTxHasNoPrograms() {
 	s.Error(s.Version.CheckTxHasNoPrograms(tx))
 }
 
-func TestTxVersionV2Suit(t *testing.T) {
-	suite.Run(t, new(txVersionV2TestSuite))
+func TestTxVersionV3Suit(t *testing.T) {
+	suite.Run(t, new(txVersionV3TestSuite))
 }

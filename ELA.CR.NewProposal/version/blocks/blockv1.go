@@ -2,15 +2,11 @@ package blocks
 
 import (
 	"bytes"
-	"errors"
-	"math"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
@@ -20,7 +16,7 @@ var _ BlockVersion = (*blockV1)(nil)
 
 // blockV1 represent the current block version.
 type blockV1 struct {
-	cfg *verconf.Config
+	*blockV0
 }
 
 func (b *blockV1) GetVersion() uint32 {
@@ -114,79 +110,8 @@ func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
 	return
 }
 
-func (b *blockV1) GetCandidatesDesc(startIndex uint32) (
-	result [][]byte, err error) {
-	return
-}
-
 func (b *blockV1) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	return b.cfg.BlockMemPool.AppendDposBlock(dposBlock)
-}
-
-func (b *blockV1) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
-	rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
-	rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
-
-	var dposChange common.Fixed64
-	var err error
-	if dposChange, err = b.distributeDposReward(block.Transactions[0], rewardDposArbiter); err != nil {
-		return err
-	}
-	rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter + dposChange
-	block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
-	block.Transactions[0].Outputs[1].Value = rewardMergeMiner
-	return nil
-}
-
-func (b *blockV1) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes :=
-		b.cfg.Arbitrators.GetArbitratorsProgramHashes()
-	if len(arbitratorsHashes) == 0 {
-		return 0, errors.New("not found arbiters when distributeDposReward")
-	}
-	candidatesHashes := b.cfg.Arbitrators.GetCandidatesProgramHashes()
-
-	totalBlockConfirmReward := float64(reward) * 0.25
-	totalTopProducersReward := float64(reward) * 0.75
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
-
-	realDposReward := common.Fixed64(0)
-	for _, v := range arbitratorsHashes {
-		reward := individualBlockConfirmReward + individualProducerReward
-		if b.cfg.Arbitrators.IsCRCArbitratorProgramHash(v) {
-			reward = individualBlockConfirmReward
-		}
-
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:     config.ELAAssetID,
-			Value:       reward,
-			ProgramHash: *v,
-			Type:        types.OTNone,
-			Payload:     &outputpayload.DefaultOutput{},
-		})
-
-		realDposReward += reward
-	}
-
-	for _, v := range candidatesHashes {
-
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:     config.ELAAssetID,
-			Value:       individualProducerReward,
-			ProgramHash: *v,
-			Type:        types.OTNone,
-			Payload:     &outputpayload.DefaultOutput{},
-		})
-
-		realDposReward += individualProducerReward
-	}
-
-	change := reward - realDposReward
-	if change < 0 {
-		return 0, errors.New("real dpos reward more than reward limit")
-	}
-	return change, nil
 }
 
 func (b *blockV1) generateBlockEvidence(block *types.Block) (
@@ -239,5 +164,5 @@ func (b *blockV1) getConfirmSigners(confirm *payload.Confirm) (
 }
 
 func NewBlockV1(cfg *verconf.Config) *blockV1 {
-	return &blockV1{cfg: cfg}
+	return &blockV1{NewBlockV0(cfg)}
 }
