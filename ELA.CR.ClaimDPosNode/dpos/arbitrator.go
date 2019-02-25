@@ -198,8 +198,8 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:                  cfg.Store,
-				Arbitrators:            cfg.Arbitrators,
+				Store:       cfg.Store,
+				Arbitrators: cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
@@ -209,6 +209,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 	network.Initialize(manager.DPOSNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
 		Store:              cfg.Store,
+		PublicKey:          pubKey,
 	})
 
 	cfg.Store.StartEventRecord()

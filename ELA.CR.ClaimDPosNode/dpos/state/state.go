@@ -293,8 +293,13 @@ func (s *State) IsActiveProducer(publicKey []byte) bool {
 // the public key.
 func (s *State) IsInactiveProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.inactiveProducers[s.getProducerKey(publicKey)]
+	ok := s.isInactiveProducer(publicKey)
 	s.mtx.RUnlock()
+	return ok
+}
+
+func (s *State) isInactiveProducer(publicKey []byte) bool {
+	_, ok := s.inactiveProducers[s.getProducerKey(publicKey)]
 	return ok
 }
 

@@ -119,7 +119,7 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err er
 	bestHeight := b.db.GetHeight()
 	done := make(chan struct{})
 	go func() {
-		for i := b.chainParams.DPOSStartHeight; i < bestHeight; i++ {
+		for i := b.chainParams.DPOSStartHeight - 1; i < bestHeight; i++ {
 			hash, e := b.db.GetBlockHash(i)
 			if e != nil {
 				err = e

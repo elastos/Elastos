@@ -47,6 +47,7 @@ type network struct {
 	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
 	store              interfaces.IDposStore
+	publicKey          []byte
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -62,6 +63,7 @@ type network struct {
 func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
+	n.publicKey = dnConfig.PublicKey
 	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {
 		for _, p := range peers {
 			pid := peer.PID{}
@@ -186,7 +188,7 @@ func (n *network) UpdatePeers(arbitrators [][]byte) error {
 		n.peersLock.Lock()
 		ad, ok := n.directPeers[pubKey]
 		if !ok {
-			log.Error("Can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
+			log.Error("can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
 			n.peersLock.Unlock()
 			continue
 		}
@@ -200,7 +202,7 @@ func (n *network) UpdatePeers(arbitrators [][]byte) error {
 		n.peersLock.Lock()
 		ad, ok := n.directPeers[pubKey]
 		if !ok {
-			log.Error("Can not find crc arbitrator related connection information, arbitrator public key is: ", pubKey)
+			log.Error("can not find crc arbitrator related connection information, arbitrator public key is: ", pubKey)
 			n.peersLock.Unlock()
 			continue
 		}
@@ -224,7 +226,7 @@ func (n *network) BroadcastMessage(msg elap2p.Message) {
 
 func (n *network) ChangeHeight(height uint32) error {
 	if height != 0 && height < n.currentHeight {
-		return errors.New("Changing height lower than current height")
+		return errors.New("changing height lower than current height")
 	}
 
 	offset := height - n.currentHeight
@@ -302,6 +304,10 @@ func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 
 func (n *network) getValidPeers() (result []p2p.PeerAddr) {
 	result = make([]p2p.PeerAddr, 0)
+	if _, ok := n.directPeers[common.BytesToHexString(n.publicKey)]; !ok {
+		log.Info("self not in direct peers list")
+		return result
+	}
 	for _, v := range n.directPeers {
 		if v.NeedConnect {
 			result = append(result, v.Address)
