@@ -876,6 +876,11 @@ func (b *BlockChain) maybeAcceptBlock(block *Block) (bool, error) {
 		return false, err
 	}
 
+	if inMainChain && block.Height < config.Parameters.HeightVersions[2] &&
+		block.Height >= config.Parameters.HeightVersions[1] {
+		b.state.ProcessBlock(block, nil)
+	}
+
 	// Notify the caller that the new block was accepted into the block
 	// chain.  The caller would typically want to react by relaying the
 	// inventory to other peers.
