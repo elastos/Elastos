@@ -25,6 +25,10 @@
 #include <string.h>
 #include <signal.h>
 #include <getopt.h>
+#include <fcntl.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <io.h>
+#endif
 #ifdef HAVE_PROCESS_H
 #include <process.h>
 #endif
@@ -128,16 +132,22 @@ static void usage(void)
     printf("\n");
 }
 
-const char *get_config_path(const char *config_files[])
+const char *get_config_path(const char *config_file, const char *config_files[])
 {
-    const char **file;
+    const char **file = config_file ? &config_file : config_files;
 
-    for (file = config_files; *file; file++) {
-        FILE *fp = fopen(*file, "r");
-        if (!fp)
+    for (; *file; ) {
+        int fd = open(*file, O_RDONLY);
+        if (fd < 0) {
+            if (*file == config_file)
+                file = config_files;
+            else
+                file++;
+
             continue;
+        }
 
-        fclose(fp);
+        close(fd);
 
         return *file;
     }
@@ -215,8 +225,7 @@ int main(int argc, char *argv[])
         return -1;
 #endif
 
-    if (!config_file)
-        config_file = get_config_path(config_files);
+    config_file = get_config_path(config_file, config_files);
 
     if (!config_file) {
         printf("Error: Missing config file.\n");
