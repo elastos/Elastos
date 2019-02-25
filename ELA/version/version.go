@@ -23,11 +23,12 @@ func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 
 	txV0 := txs.NewTxV0(cfg)
 	txV1 := txs.NewTxV1(cfg)
-	txCurrent := txs.NewTxV2(cfg)
+	txV2 := txs.NewTxV2(cfg)
+	txMax := txs.NewTxV3(cfg)
 
 	blockV0 := blocks.NewBlockV0(cfg)
 	blockV1 := blocks.NewBlockV1(cfg)
-	blockCurrent := blocks.NewBlockV2(cfg)
+	blockMax := blocks.NewBlockV2(cfg)
 
 	versions := heights.NewHeightVersions(
 		map[uint32]heights.VersionInfo{
@@ -46,14 +47,14 @@ func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 			cfg.ChainParams.HeightVersions[2]: {
 				9,
 				1,
-				map[byte]txs.TxVersion{txCurrent.GetVersion(): txCurrent},
+				map[byte]txs.TxVersion{txMax.GetVersion(): txV2},
 				map[uint32]blocks.BlockVersion{blockV1.GetVersion(): blockV1},
 			},
 			cfg.ChainParams.HeightVersions[3]: {
-				9,
+				10,
 				2,
-				map[byte]txs.TxVersion{txCurrent.GetVersion(): txCurrent},
-				map[uint32]blocks.BlockVersion{blockCurrent.GetVersion(): blockCurrent},
+				map[byte]txs.TxVersion{txMax.GetVersion(): txMax},
+				map[uint32]blocks.BlockVersion{blockMax.GetVersion(): blockMax},
 			},
 		},
 		cfg.ChainParams.HeightVersions[2],
