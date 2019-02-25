@@ -1406,9 +1406,9 @@ const en = {
   'cs.yipeng.name': 'Yipeng Su',
   'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
   'cs.feng.name': 'Feng Zhang',
-  'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+  'cs.feng.intro': 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
   'cs.rebecca.name': 'Rebecca Zhu',
-  'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
+  'cs.rebecca.intro': 'Project Director of Elastos Foundation, based in Beijing',
 
   // ConstitutionNavigator
   'counstitution.menu1': '01 Elastos Cyber Republic Constitution',
