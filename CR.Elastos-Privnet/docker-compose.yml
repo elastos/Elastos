@@ -3,12 +3,22 @@ services:
 
   ela-mainchain:
     container_name: ela-mainchain
-    image: elastos-mainchain
+    image: ela-mainchain
     build:
       context: .
       dockerfile: Dockerfile-ela
     ports:
-      - 20334:20334
+      - 20333-20338:20333-20338
+    tty: true
+
+  ela-sidechain-did:
+    container_name: ela-sidechain-did
+    image: ela-sidechain-did
+    build:
+      context: .
+      dockerfile: Dockerfile-did
+    ports:
+      - 20604-20608:20604-20608
     tty: true
 
 
