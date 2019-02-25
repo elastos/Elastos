@@ -1,0 +1,16 @@
+version : "3.2"
+services:
+
+  ela-mainchain:
+    container_name: ela-mainchain
+    image: elastos-mainchain
+    build:
+      context: .
+      dockerfile: Dockerfile-ela
+    command: >
+      sh -c "sh ~/deploy.sh && /bin/sh"
+    ports:
+      - 20334:20334
+    tty: true
+
+

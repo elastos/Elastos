@@ -1,0 +1,25 @@
+# Elastos privnet - elastos.org
+# This is an official but unsupported docker image
+
+FROM alpine:3.8
+
+RUN apk update
+RUN apk add --no-cache curl
+
+COPY ./ela/elastos /go/src/github.com/elastos/Elastos.ELA/elastos
+COPY ./ela/ela /go/src/github.com/elastos/Elastos.ELA/ela
+COPY ./ela/config.json /go/src/github.com/elastos/Elastos.ELA/config.json
+
+# Create unprivileged user (running processes securely)
+RUN adduser -D -g '' elauser
+
+# Give permission to elauser for necessary folders
+RUN chown -R elauser /go/src/github.com/elastos/Elastos.ELA
+
+USER elauser
+
+# Copy Start Script
+COPY ./deploy_scripts/deploy-ela.sh /home/elauser/deploy.sh
+
+EXPOSE 20334
+
