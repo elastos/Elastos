@@ -224,42 +224,21 @@ export default class extends BaseComponent {
           {I18N.get('0012')}
         </Menu.Item>
 
-        {/* <Menu.Item className="c_MenuItem link" key="notice">
-            {I18N.get('popup.changes.title')}
-        </Menu.Item> */}
+        <Menu.Item className="c_MenuItem link" key="council">
+          {I18N.get('navagation.council')}
+        </Menu.Item>
 
-        {/* <Menu.Item className="c_MenuItem link" key="council-secretariat">
-            {I18N.get('navagation.council')}
-        </Menu.Item> */}
+        <Menu.Item className="c_MenuItem link" key="constitution/1">
+          {I18N.get('navagation.constitution')}
+        </Menu.Item>
 
         <Menu.Item className="c_MenuItem link" key="suggestion">
           {I18N.get('navagation.suggestion')}
         </Menu.Item>
 
-        {/*
-        <SubMenu title={I18N.get('navigation.programs')} onClick={this.clickItem.bind(this)}
-            className="c_SubMenuItem c_MenuItem link" selectedKeys={this.getSelectedKeys()} mode="horizontal">
-            <Menu.Item className="c_MenuItem link" key="cr100">
-                {I18N.get('0105')}
-            </Menu.Item>
-
-            <Menu.Item className="c_MenuItem link" key="crcles">
-                {I18N.get('0106')}
-            </Menu.Item>
-
-            <Menu.Item className="c_MenuItem link" key="ambassadors">
-                {I18N.get('0107')}
-            </Menu.Item>
-        </SubMenu>
-        */}
-
         <Menu.Item className="c_MenuItem link" key="proposals">
           {I18N.get('council.voting.proposalList')}
         </Menu.Item>
-
-        {/* <Menu.Item className="c_MenuItem link" key="constitution/1">
-                        {I18N.get('navagation.constitution')}
-                    </Menu.Item> */}
 
         <Menu.Item className="c_MenuItem link" key="forum">
           {I18N.get('0011')}
@@ -269,16 +248,19 @@ export default class extends BaseComponent {
           {I18N.get('0110')}
         </Menu.Item>
 
-        {this.props.isLogin ?
-        <Menu.Item className="c_MenuItem link" key="profile">
-          {I18N.get('0104')}
-        </Menu.Item>
-        : <Menu.Item className="c_MenuItem link" key="login">
-          {I18N.get('0201')}
-        </Menu.Item>
+        {this.props.isLogin
+          ? (
+            <Menu.Item className="c_MenuItem link" key="profile">
+              {I18N.get('0104')}
+            </Menu.Item>
+          ) : (
+            <Menu.Item className="c_MenuItem link" key="login">
+              {I18N.get('0201')}
+            </Menu.Item>
+          )
         }
       </Menu>
-      <div className="clearfix"/>
+      <div className="clearfix" />
       {!this.state.dismissed && !this.isPermanentlyDismissed() &&
       this.props.isLogin && this.hasIncompleteProfile() && this.renderToast()}
       {this.renderCompleteProfileModal()}
@@ -365,9 +347,8 @@ export default class extends BaseComponent {
       'contact',
       'slack',
       'suggestion',
-      'council-secretariat',
+      'council',
       'constitution/1',
-      'council'
     ], key)) {
 
       if (key === 'landing') {

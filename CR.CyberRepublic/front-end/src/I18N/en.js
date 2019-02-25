@@ -32,7 +32,7 @@ const en = {
   '0110': 'Blog',
   'navigation.programs': 'Programs',
   'navagation.suggestion': 'Suggestions',
-  'navagation.council': 'Council & Secreariat',
+  'navagation.council': 'Council',
   'navagation.constitution': 'Constitution',
 
   '0200': 'Profile',

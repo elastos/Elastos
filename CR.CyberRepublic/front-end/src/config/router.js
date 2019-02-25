@@ -444,10 +444,10 @@ export default [
     path: '/proposals',
     page: CouncilPage,
   },
-  // {
-  //     path : '/council-secretariat',
-  //     page : CouncilSecretariatPage
-  // },
+  {
+    path: '/council',
+    page: CouncilSecretariatPage,
+  },
   {
     path: '/council/list',
     page: CouncilListPage,

@@ -32,7 +32,7 @@ const zh = {
   '0110': '博客',
   'navigation.programs': '项目',
   'navagation.suggestion': '建议',
-  'navagation.council': '委员会&秘书处',
+  'navagation.council': '委员会',
   'navagation.constitution': '章程',
 
   '0200': '简介',
