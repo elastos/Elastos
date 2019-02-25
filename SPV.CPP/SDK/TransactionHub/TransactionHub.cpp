@@ -64,7 +64,7 @@ namespace Elastos {
 		}
 
 		std::string TransactionHub::GetRemark(const std::string &txHash) {
-			if (_txRemarkMap.find(txHash) != _txRemarkMap.end())
+			if (_txRemarkMap.find(txHash) == _txRemarkMap.end())
 				return "";
 			return _txRemarkMap[txHash];
 		}
