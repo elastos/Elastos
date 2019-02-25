@@ -155,7 +155,7 @@ func (s *txVersionV2TestSuite) TestCheckCoinbaseMinerReward() {
 		{ProgramHash: common.Uint168{}, Value: dposReward},
 	}
 	err = s.Version.CheckCoinbaseMinerReward(tx, totalReward)
-	s.EqualError(err, "reward to miner in coinbase < 35%")
+	s.NoError(err, "Reward to miner in coinbase < 35%")
 }
 
 func (s *txVersionV2TestSuite) TestCheckCoinbaseArbitratorsReward() {
@@ -194,16 +194,14 @@ func (s *txVersionV2TestSuite) TestCheckCoinbaseArbitratorsReward() {
 	}
 
 	originLedger := blockchain.DefaultLedger
-	arbitratorsMock := &mock.ArbitratorsMock{
-		CurrentArbitrators:         arbitrators,
-		CurrentCandidates:          candidates,
-		CurrentArbitratorsPrograms: arbitratorHashes,
-		CurrentCandidatesPrograms:  candidateHashes,
-	}
 	blockchain.DefaultLedger = &blockchain.Ledger{
-		Arbitrators: arbitratorsMock,
+		Arbitrators: &mock.ArbitratorsMock{
+			CurrentArbitrators:         arbitrators,
+			CurrentCandidates:          candidates,
+			CurrentArbitratorsPrograms: arbitratorHashes,
+			CurrentCandidatesPrograms:  candidateHashes,
+		},
 	}
-	s.Cfg.Arbitrators = arbitratorsMock
 
 	rewardInCoinbase := common.Fixed64(1000)
 	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
@@ -220,12 +218,12 @@ func (s *txVersionV2TestSuite) TestCheckCoinbaseArbitratorsReward() {
 		{ProgramHash: common.Uint168{}, Value: common.Fixed64(float64(rewardInCoinbase) * 0.35)},
 	}
 
-	s.Error(s.Version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase))
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase))
 
 	for _, v := range arbitratorHashes {
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
 	}
-	s.Error(s.Version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase))
+	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase))
 
 	for _, v := range candidateHashes {
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})

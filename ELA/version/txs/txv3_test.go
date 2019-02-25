@@ -28,7 +28,7 @@ type txVersionV3TestSuite struct {
 func (s *txVersionV3TestSuite) SetupTest() {
 	config.Parameters = config.ConfigParams{Configuration: &config.Template}
 	s.Cfg = &verconf.Config{}
-	s.Version = NewTxV2(s.Cfg)
+	s.Version = NewTxV3(s.Cfg)
 }
 
 func (s *txVersionV3TestSuite) TestCheckOutputPayload() {
