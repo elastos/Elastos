@@ -53,11 +53,7 @@ func (b *blockV0) GetCandidatesDesc(startIndex uint32, producers []interfaces.Pr
 }
 
 func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	inMainChain, isOrphan, err := b.cfg.Chain.ProcessBlock(dposBlock.Block)
-	if inMainChain && dposBlock.Block.Height == config.Parameters.HeightVersions[1]-1 {
-		b.cfg.Chain.GetState().ProcessBlock(dposBlock.Block, dposBlock.Confirm)
-	}
-	return inMainChain, isOrphan, err
+	return b.cfg.Chain.ProcessBlock(dposBlock.Block)
 }
 
 func (b *blockV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

@@ -1143,8 +1143,7 @@ func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 		var header, compareHeader *Header
 		var confirm, compareConfirm *payload.Confirm
 
-		if header, compareHeader, err = checkDPOSElaIllegalBlockHeaders(d);
-			err != nil {
+		if header, compareHeader, err = checkDPOSElaIllegalBlockHeaders(d); err != nil {
 			return err
 		}
 
@@ -1153,8 +1152,7 @@ func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 			return err
 		}
 
-		if err := b.checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm);
-			err != nil {
+		if err := b.checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
 			return err
 		}
 	}
