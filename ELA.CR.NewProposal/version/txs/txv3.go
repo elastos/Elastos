@@ -22,7 +22,7 @@ func (v *txV3) GetVersion() byte {
 	return 10
 }
 
-func (v *txV2) CheckCoinbaseMinerReward(tx *types.Transaction,
+func (v *txV3) CheckCoinbaseMinerReward(tx *types.Transaction,
 	totalReward common.Fixed64) error {
 	minerReward := tx.Outputs[1].Value
 	if common.Fixed64(minerReward) < common.Fixed64(float64(totalReward)*0.35) {
@@ -32,7 +32,7 @@ func (v *txV2) CheckCoinbaseMinerReward(tx *types.Transaction,
 	return nil
 }
 
-func (v *txV2) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction,
+func (v *txV3) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction,
 	rewardInCoinbase common.Fixed64) error {
 	outputAddressMap := make(map[common.Uint168]common.Fixed64)
 
