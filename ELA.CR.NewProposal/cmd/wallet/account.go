@@ -375,21 +375,17 @@ func generateDepositAddress(c *cli.Context) error {
 	var programHash *common.Uint168
 	var err error
 	if addr == "" {
-		storeAccounts, err := account.GetWalletAccountData(account.KeystoreFileName)
+		mainAccount, err := account.GetWalletMainAccountData(account.KeystoreFileName)
 		if err != nil {
 			return err
 		}
-		for _, a := range storeAccounts {
-			if a.Type == account.MAINACCOUNT {
-				p, err := common.HexStringToBytes(a.ProgramHash)
-				if err != nil {
-					return err
-				}
-				programHash, err = common.Uint168FromBytes(p)
-				if err != nil {
-					return err
-				}
-			}
+		p, err := common.HexStringToBytes(mainAccount.ProgramHash)
+		if err != nil {
+			return err
+		}
+		programHash, err = common.Uint168FromBytes(p)
+		if err != nil {
+			return err
 		}
 	} else {
 		programHash, err = common.Uint168FromAddress(addr)
