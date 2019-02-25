@@ -7,8 +7,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-ela
-    command: >
-      sh -c "sh ~/deploy.sh && /bin/sh"
     ports:
       - 20334:20334
     tty: true

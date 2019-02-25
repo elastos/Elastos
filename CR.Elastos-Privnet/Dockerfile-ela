@@ -23,3 +23,5 @@ COPY ./deploy_scripts/deploy-ela.sh /home/elauser/deploy.sh
 
 EXPOSE 20334
 
+CMD sh -c "sh /home/elauser/deploy.sh && /bin/sh"
+
