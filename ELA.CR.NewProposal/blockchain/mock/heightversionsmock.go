@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
@@ -28,11 +29,11 @@ func NewBlockHeightMock() *HeightVersionsMock {
 	return mockObj
 }
 
-func (b *HeightVersionsMock) GetCandidatesDesc(blockHeight uint32, startIndex uint32) ([][]byte, error) {
+func (b *HeightVersionsMock) GetCandidatesDesc(blockHeight uint32, startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	return nil, nil
 }
 
-func (b *HeightVersionsMock) GetNormalArbitratorsDesc(blockHeight uint32, arbitratorsCount uint32) ([][]byte, error) {
+func (b *HeightVersionsMock) GetNormalArbitratorsDesc(blockHeight uint32, arbitratorsCount uint32, arbiters []interfaces.Producer) ([][]byte, error) {
 	return nil, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"math"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -24,10 +25,8 @@ func (b *blockV2) GetVersion() uint32 {
 	return 2
 }
 
-func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32) ([][]byte,
+func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []interfaces.Producer) ([][]byte,
 	error) {
-
-	producers := b.cfg.Chain.GetState().GetActiveProducers()
 	if uint32(len(producers)) < arbitratorsCount {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
@@ -38,14 +37,12 @@ func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32) ([][]byte,
 
 	result := make([][]byte, arbitratorsCount)
 	for i := uint32(0); i < arbitratorsCount; i++ {
-		result[i] = producers[i].Info().NodePublicKey
+		result[i] = producers[i].NodePublicKey()
 	}
 	return result, nil
 }
 
-func (b *blockV2) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
-
-	producers := b.cfg.Chain.GetState().GetActiveProducers()
+func (b *blockV2) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	if uint32(len(producers)) < startIndex {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
@@ -57,7 +54,7 @@ func (b *blockV2) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
 	result := make([][]byte, 0)
 	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.
 		Parameters.ArbiterConfiguration.CandidatesCount; i++ {
-		result = append(result, producers[i].Info().NodePublicKey)
+		result = append(result, producers[i].NodePublicKey())
 	}
 	return result, nil
 }

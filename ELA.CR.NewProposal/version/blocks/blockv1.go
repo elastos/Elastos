@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -105,7 +106,7 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
 	result [][]byte, err error) {
 	return
 }

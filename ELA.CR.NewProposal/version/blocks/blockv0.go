@@ -2,6 +2,7 @@ package blocks
 
 import (
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -21,7 +22,7 @@ func (b *blockV0) GetVersion() uint32 {
 }
 
 func (b *blockV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators, _ := b.GetNormalArbitratorsDesc(0)
+	arbitrators, _ := b.GetNormalArbitratorsDesc(0, nil)
 	height := b.cfg.ChainStore.GetHeight()
 	index := (height + offset) % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
@@ -33,7 +34,7 @@ func (b *blockV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
 }
 
-func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
 	[][]byte, error) {
 	arbitersByte := make([][]byte, 0)
 	for _, arbiter := range b.cfg.ChainParams.OriginArbiters {
@@ -47,7 +48,7 @@ func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
 	return arbitersByte, nil
 }
 
-func (b *blockV0) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
+func (b *blockV0) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	return [][]byte{}, nil
 }
 

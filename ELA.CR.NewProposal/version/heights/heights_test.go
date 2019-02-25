@@ -419,29 +419,29 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 
 	defaultCount := uint32(12)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h1.Height, defaultCount, nil)
 	s.NoError(err)
-	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg)
+	s.Equal("blockVersionTest1_GetNormalArbitratorsDesc", versionsMsg, nil)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h2.Height, defaultCount, nil)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV1_h3.Height, defaultCount, nil)
 	s.NoError(err, "found default version")
 
 	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
 	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
 	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h1.Height, defaultCount, nil)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h2.Height, defaultCount, nil)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockV2_h3.Height, defaultCount, nil)
 	s.NoError(err)
 	s.Equal("blockVersionTest2_GetNormalArbitratorsDesc", versionsMsg)
 
@@ -449,13 +449,13 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
 	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
 	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h1.Height, defaultCount, nil)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h2.Height, defaultCount, nil)
 	s.NoError(err, "found default version")
 
-	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3.Height, defaultCount)
+	_, err = s.Version.GetNormalArbitratorsDesc(blockVMax_h3.Height, defaultCount, nil)
 	s.NoError(err, "found default version")
 }
 
@@ -748,12 +748,12 @@ func (v *txBlockTest1) GetVersion() uint32 {
 	return 1
 }
 
-func (v *txBlockTest1) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
+func (v *txBlockTest1) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	versionsMsg = "blockVersionTest1_GetCandidatesDesc"
 	return nil, nil
 }
 
-func (v *txBlockTest1) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+func (v *txBlockTest1) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
 	[][]byte, error) {
 	versionsMsg = "blockVersionTest1_GetNormalArbitratorsDesc"
 	return nil, nil
@@ -786,12 +786,12 @@ func (v *txBlockTest2) GetVersion() uint32 {
 	return 2
 }
 
-func (v *txBlockTest2) GetCandidatesDesc(startIndex uint32) ([][]byte, error) {
+func (v *txBlockTest2) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	versionsMsg = "blockVersionTest2_GetCandidatesDesc"
 	return nil, nil
 }
 
-func (v *txBlockTest2) GetNormalArbitratorsDesc(arbitratorsCount uint32) (
+func (v *txBlockTest2) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
 	[][]byte, error) {
 	versionsMsg = "blockVersionTest2_GetNormalArbitratorsDesc"
 	return nil, nil
