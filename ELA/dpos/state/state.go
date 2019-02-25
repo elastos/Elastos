@@ -92,6 +92,14 @@ func (p *Producer) Votes() common.Fixed64 {
 	return p.votes
 }
 
+func (p *Producer) NodePublicKey() []byte {
+	return p.info.NodePublicKey
+}
+
+func (p *Producer) OwnerPublicKey() []byte {
+	return p.info.OwnerPublicKey
+}
+
 func (p *Producer) Penalty() common.Fixed64 {
 	return p.penalty
 }
@@ -214,6 +222,21 @@ func (s *State) GetProducers() []*Producer {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
+	return producers
+}
+
+func (s *State) GetInterfaceProducers() []interfaces.Producer {
+	s.mtx.RLock()
+	producers := s.getInterfaceProducers()
+	s.mtx.RUnlock()
+	return producers
+}
+
+func (s *State) getInterfaceProducers() []interfaces.Producer {
+	producers := make([]interfaces.Producer, 0, len(s.activityProducers))
+	for _, producer := range s.activityProducers {
+		producers = append(producers, producer)
+	}
 	return producers
 }
 

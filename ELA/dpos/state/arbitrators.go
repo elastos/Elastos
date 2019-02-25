@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -70,21 +69,31 @@ func (a *Arbitrators) ForceChange() error {
 	return nil
 }
 
+func (a *Arbitrators) NormalChange() error {
+	block, err := a.cfg.GetCurrentHeader()
+	if err != nil {
+		return err
+	}
+
+	if err = a.changeCurrentArbitrators(); err != nil {
+		return err
+	}
+
+	if err = a.updateNextArbitrators(block.Height); err != nil {
+		return err
+	}
+
+	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+
+	return nil
+}
+
 func (a *Arbitrators) IncreaseChainHeight(height uint32) {
-
-	if a.isNewElection(height) {
-		if err := a.changeCurrentArbitrators(); err != nil {
-			log.Error("Change current arbitrators error: ", err)
-			return
-		}
-
-		if err := a.updateNextArbitrators(height); err != nil {
-			log.Error("Update arbitrators error: ", err)
-			return
-		}
-
-		events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
-
+	forceChange, normalChange := a.isNewElection(height)
+	if forceChange {
+		a.ForceChange()
+	} else if normalChange {
+		a.NormalChange()
 	} else {
 		a.dutyChangedCount++
 	}
@@ -246,16 +255,17 @@ func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
 	return
 }
 
-func (a *Arbitrators) isNewElection(height uint32) bool {
+func (a *Arbitrators) isNewElection(height uint32) (forceChange bool, normalChange bool) {
 	if a.cfg.Versions.GetDefaultBlockVersion(height) >= 1 {
 
-		// when change to "H1" height should fire new election immediately
-		if height == a.State.chainParams.HeightVersions[2] {
-			return true
+		// when change to "H1" or "H2" height should fire new election immediately
+		if height == a.State.chainParams.HeightVersions[2] || height == a.State.chainParams.HeightVersions[3] {
+			return true, false
 		}
-		return a.dutyChangedCount == a.cfg.ArbitratorsCount-1
+		return false, a.dutyChangedCount == a.cfg.ArbitratorsCount-1
 	}
-	return false
+
+	return false, false
 }
 
 func (a *Arbitrators) changeCurrentArbitrators() error {
@@ -287,7 +297,7 @@ func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 	}
 	count := config.Parameters.ArbiterConfiguration.
 		NormalArbitratorsCount + crcCount
-	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(height, count)
+	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(height, count, a.State.getInterfaceProducers())
 	if err != nil {
 		return err
 	}
@@ -295,7 +305,7 @@ func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 		a.nextArbitrators = append(a.nextArbitrators, v)
 	}
 
-	candidates, err := a.cfg.Versions.GetCandidatesDesc(height, count)
+	candidates, err := a.cfg.Versions.GetCandidatesDesc(height, count, a.State.getInterfaceProducers())
 	if err != nil {
 		return err
 	}

@@ -37,7 +37,7 @@ func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNormalArbitratorsDesc(
 		arbitrators = append(arbitrators, a)
 	}
 
-	producers, err := s.Version.GetNormalArbitratorsDesc(5)
+	producers, err := s.Version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
 	s.NoError(err)
 	for i := range producers {
 		s.Equal(arbitrators[i], producers[i])

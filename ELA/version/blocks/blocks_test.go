@@ -132,7 +132,7 @@ func TestBlockVersionMain_GetNormalArbitratorsDesc(t *testing.T) {
 		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
 	}
 
-	producers, err := version.GetNormalArbitratorsDesc(5)
+	producers, err := version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
 	assert.Error(t, err, "arbitrators count does not match config value")
 
 	currentHeight += 1
@@ -161,7 +161,7 @@ func TestBlockVersionMain_GetNormalArbitratorsDesc(t *testing.T) {
 		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
 	}
 
-	producers, err = version.GetNormalArbitratorsDesc(5)
+	producers, err = version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
 	assert.NoError(t, err)
 	for i := range producers {
 		found := false
