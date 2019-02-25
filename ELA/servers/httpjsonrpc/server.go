@@ -86,11 +86,12 @@ func StartRPCServer() {
 //this is the function that should be called in order to answer an rpc call
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
 func Handle(w http.ResponseWriter, r *http.Request) {
+
 	//JSON RPC commands should be POSTs
 	isClientAllowed := clientAllowed(r)
 	if !isClientAllowed {
 		log.Warn("HTTP Client ip is not allowd")
-		http.Error(w, "Client ip is not allowd", http.StatusNetworkAuthenticationRequired)
+		http.Error(w, "Client ip is not allowd", http.StatusForbidden)
 		return
 	}
 
@@ -107,7 +108,8 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
-		http.Error(w, "client authenticate failed", http.StatusNetworkAuthenticationRequired)
+		log.Warn("client authenticate failed")
+		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
 		return
 	}
 
