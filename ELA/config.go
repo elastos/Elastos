@@ -81,7 +81,7 @@ func loadConfigParams() *config.ConfigParams {
 	if len(cfg.HeightVersions) > 0 {
 		activeNetParams.HeightVersions = cfg.HeightVersions
 		if len(cfg.HeightVersions) > 3 {
-			activeNetParams.DPOSStartHeight = cfg.HeightVersions[2]
+			activeNetParams.VoteStartHeight = cfg.HeightVersions[1]
 		}
 	}
 	if cfg.ArbiterConfiguration.InactiveDuration > 0 {
