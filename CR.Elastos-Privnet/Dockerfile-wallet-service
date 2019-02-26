@@ -13,6 +13,7 @@ RUN chown -R elauser /restful-services
 
 USER elauser
 
+EXPOSE 3307
 EXPOSE 8091
 
 ENTRYPOINT ["java", "-jar", "/restful-services/base.api-0.0.6.jar"]

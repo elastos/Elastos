@@ -7,7 +7,7 @@ which we use to compile the executables into the right environment, only the exe
 
 #### These executables are purpose built for the docker images herein, if you want to use them directly you may need to build from source
 
-If you are a core developer and need to update the executable please contact me for access.
+*If you are a core developer and need to update the executable please contact me for access.*
 
 ## Building from Source
 

@@ -4,11 +4,10 @@
     "SpvMagic": 7638401,
     "Version": 23,
     "SeedList": [
-      "127.0.0.1:20608",
-      "127.0.0.1:21608"
+
     ],
     "SpvSeedList": [
-      "127.0.0.1:20337"
+      "ela-mainchain:20337"
     ],
     "ExchangeRate": 1.0,
     "MinCrossChainTxFee": 10000,

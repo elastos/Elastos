@@ -1,0 +1,32 @@
+# Elastos privnet - Arbiter 1 - elastos.org
+# This is an official but unsupported docker image
+
+# alpine3.8 - use image digest for security
+FROM alpine@sha256:dad671370a148e9d9573e3e10a9f8cc26ce937bea78f3da80b570c2442364406
+
+RUN apk update
+RUN apk add --no-cache curl
+
+# reuse the arbiter binary from 1st arbiter, they are the same
+COPY ./arbiter-1/arbiter /go/src/github.com/elastos/Elastos.ELA.Arbiter/arbiter
+COPY ./arbiter-2/elastos_arbiter /go/src/github.com/elastos/Elastos.ELA.Arbiter/elastos_arbiter
+COPY ./arbiter-2/config.json /go/src/github.com/elastos/Elastos.ELA.Arbiter/config.json
+
+COPY ./wallets/arbiter-2/*.dat /go/src/github.com/elastos/Elastos.ELA.Arbiter/
+
+# Create unprivileged user (running processes securely)
+RUN adduser -D -g '' elauser
+
+# Give permission to elauser for necessary folders
+RUN chown -R elauser /go/src/github.com/elastos/Elastos.ELA.Arbiter
+
+USER elauser
+
+# Copy Start Script
+COPY ./deploy_scripts/deploy-arbiter-2.sh /home/elauser/deploy.sh
+
+EXPOSE 11336
+EXPOSE 11338
+
+CMD sh -c "sh /home/elauser/deploy.sh && /bin/sh"
+
