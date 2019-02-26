@@ -121,6 +121,10 @@ func (n *network) GetActivePeer() *peer.PID {
 	return nil
 }
 
+func (n *network) InProducerList() bool {
+	return true
+}
+
 func (n *network) FirePing(id peer.PID, height uint32) {
 	n.listener.OnPing(id, height)
 }
