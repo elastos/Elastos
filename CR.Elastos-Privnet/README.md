@@ -83,7 +83,7 @@ These are located in the `wallets` folder:
     
     You should see at least 825 ELA in the miner wallet:
     ```
-    {"Desc":"Success","Error":0,"Result":"838.86741124"}
+    {"result":"835.35142952","status":200}
     ```
     
 7. Verify the DID Service is running by checking the pre-loaded wallet:
@@ -94,7 +94,7 @@ These are located in the `wallets` folder:
     
     You should see 12 ELA in the DID Sidechain wallet pre-loaded:
     ```
-    {"Result":"12","Error":0,"Desc":"Success"}
+    {"result":"12.0","status":200}
     ```
 
 ## More Documentation, `config.json` and other nuances if you want to tinker
