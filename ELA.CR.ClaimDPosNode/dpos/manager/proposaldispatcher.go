@@ -212,8 +212,14 @@ func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal) {
 		return
 	}
 
-	if p.processingProposal != nil && d.BlockHash.IsEqual(p.processingProposal.Hash()) {
+	if p.processingProposal != nil && d.Hash().IsEqual(
+		p.processingProposal.Hash()) {
 		log.Info("already processing processing")
+		return
+	}
+
+	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
+		log.Info("have different view offset")
 		return
 	}
 
