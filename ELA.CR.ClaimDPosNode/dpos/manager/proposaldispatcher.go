@@ -632,7 +632,8 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 
 	programHash := con.ToProgramHash()
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(p.processingBlock.Height)),
+		Version:        types.TransactionVersion(blockchain.DefaultLedger.
+			HeightVersions.GetDefaultTxVersion(p.CurrentHeight())),
 		TxType:         types.InactiveArbitrators,
 		PayloadVersion: payload.PayloadInactiveArbitratorsVersion,
 		Payload:        inactivePayload,
