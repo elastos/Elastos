@@ -1,0 +1,62 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "org.elastos.conf.BasicConfiguration",
+      "name": "basic",
+      "type": "org.elastos.conf.BasicConfiguration"
+    },
+    {
+      "sourceType": "org.elastos.conf.DidConfiguration",
+      "name": "did",
+      "type": "org.elastos.conf.DidConfiguration"
+    },
+    {
+      "sourceType": "org.elastos.conf.NodeConfiguration",
+      "name": "node",
+      "type": "org.elastos.conf.NodeConfiguration"
+    },
+    {
+      "sourceType": "org.elastos.conf.RetCodeConfiguration",
+      "name": "retcode",
+      "type": "org.elastos.conf.RetCodeConfiguration"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "org.elastos.conf.BasicConfiguration",
+      "name": "basic.c-r-o-s-s-d-o-m-a-i-n",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "org.elastos.conf.DidConfiguration",
+      "name": "did.address",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.elastos.conf.DidConfiguration",
+      "name": "did.burn-address",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.elastos.conf.DidConfiguration",
+      "name": "did.fee",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.elastos.conf.DidConfiguration",
+      "name": "did.main-chain-address",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.elastos.conf.NodeConfiguration",
+      "name": "node.did-j-s-o-n-r-p-c",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.elastos.conf.NodeConfiguration",
+      "name": "node.did-prefix",
+      "type": "java.lang.String"
+    }
+  ]
+}

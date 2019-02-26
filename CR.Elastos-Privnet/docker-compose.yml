@@ -21,4 +21,36 @@ services:
       - 20604-20608:20604-20608
     tty: true
 
+  mysql-db-simple:
+    container_name: mysql-db-simple
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=12345678
+      - MYSQL_DATABASE=ws
+      - MYSQL_USER=elastos
+      - MYSQL_PASSWORD=12345678
+    ports: 
+      - 3306:3306
+    tty: true
+
+  ela-wallet-service:
+    container_name: ela-wallet-service
+    image: ela-wallet-service
+    build:
+      context: .
+      dockerfile: Dockerfile-wallet-service
+    ports:
+      - 8091:8091
+    tty: true   
+    
+  ela-did-service:
+    container_name: ela-did-service
+    image: ela-did-service
+    build:
+      context: .
+      dockerfile: Dockerfile-did-service
+    ports:
+      - 8092:8092
+    tty: true  
+
 

@@ -47,13 +47,13 @@ These are located in the `wallets` folder:
     
     ##### Note: DID Service's - `getDidInfo` method is currently broken, but available on the Add-on API - port 8093
     
-2. Just run with docker-compose from within the directory:
+3. Just run with docker-compose from within the directory:
     
     ```
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
     
-3. Verify the Mainchain is running by checking the miner reward wallet:
+4. Verify the Mainchain is running by checking the miner reward wallet:
 
     ```
     http://localhost:20334/api/v1/asset/balances/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
@@ -64,7 +64,7 @@ These are located in the `wallets` folder:
     {"Desc":"Success","Error":0,"Result":"838.86741124"}
     ```
     
-3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
+5. Verify the DID Sidechain is running by checking the pre-loaded wallet:
 
     ```
     http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
@@ -74,7 +74,29 @@ These are located in the `wallets` folder:
     ```
     {"Result":"12","Error":0,"Desc":"Success"}
     ```
+
+6. Verify the Wallet Service is running by checking the miner reward wallet:
+
+    ```
+    http://localhost:8091/api/1/balance/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
+    ```    
     
+    You should see at least 825 ELA in the miner wallet:
+    ```
+    {"Desc":"Success","Error":0,"Result":"838.86741124"}
+    ```
+    
+7. Verify the DID Service is running by checking the pre-loaded wallet:
+
+    ```
+    http://localhost:8092/api/1/balance/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
+    ```    
+    
+    You should see 12 ELA in the DID Sidechain wallet pre-loaded:
+    ```
+    {"Result":"12","Error":0,"Desc":"Success"}
+    ```
+
 ## More Documentation, `config.json` and other nuances if you want to tinker
 
 A lot more details about the configuration and actual running of the blockchain is located here: [https://www.cyberrepublic.org/experimental-docs](https://www.cyberrepublic.org/experimental-docs)

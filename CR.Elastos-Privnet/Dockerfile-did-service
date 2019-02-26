@@ -1,0 +1,18 @@
+# Elastos privnet - DID Service - elastos.org
+# This is an official but unsupported docker image
+
+FROM maven:3.6.0-jdk-8-alpine
+
+COPY ./restful-services/did-service/did.api/target/did.api-0.0.6.jar /restful-services/did.api-0.0.6.jar
+
+# Create unprivileged user (running processes securely)
+RUN adduser -D -g '' elauser
+
+# Give permission to elauser for necessary folders
+RUN chown -R elauser /restful-services
+
+USER elauser
+
+EXPOSE 8092
+
+ENTRYPOINT ["java", "-jar", "/restful-services/did.api-0.0.6.jar"]
