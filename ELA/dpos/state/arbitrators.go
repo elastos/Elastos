@@ -285,17 +285,16 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *Arbitrators) updateNextArbitrators(height uint32) error {
-
 	crcCount := uint32(0)
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.cfg.CRCArbitrators {
 		if !a.State.isInactiveProducer(v.PublicKey) {
 			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+		} else {
 			crcCount++
 		}
 	}
-	count := config.Parameters.ArbiterConfiguration.
-		NormalArbitratorsCount + crcCount
+	count := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount + crcCount
 	producers, err := a.cfg.Versions.GetNormalArbitratorsDesc(height, count, a.State.getInterfaceProducers())
 	if err != nil {
 		return err
