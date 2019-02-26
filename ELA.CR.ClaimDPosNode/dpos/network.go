@@ -301,6 +301,10 @@ func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 	n.confirmReceivedChan <- p
 }
 
+func (n *network) InProducerList() bool {
+	return len(n.getValidPeers()) != 0
+}
+
 func (n *network) getValidPeers() (result []p2p.PeerAddr) {
 	result = make([]p2p.PeerAddr, 0)
 	if _, ok := n.directPeers[common.BytesToHexString(n.publicKey)]; !ok {

@@ -37,6 +37,7 @@ type DPOSNetwork interface {
 	ChangeHeight(height uint32) error
 
 	GetActivePeer() *dpeer.PID
+	InProducerList() bool
 }
 
 type StatusSyncEventListener interface {
@@ -267,6 +268,10 @@ func (d *DPOSManager) OnChangeView() {
 func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
+
+	if !d.network.InProducerList() {
+		return
+	}
 
 	if confirmed {
 		d.ConfirmBlock()
