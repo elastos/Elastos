@@ -140,8 +140,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
 	evidences *payload.DPOSIllegalProposals) {
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(blockchain.DefaultLedger.
-			HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.
-			Height)),
+			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalProposalEvidence,
 		PayloadVersion: payload.PayloadIllegalProposalVersion,
 		Payload:        evidences,
@@ -162,8 +161,7 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 	evidence *payload.SidechainIllegalData) {
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(blockchain.DefaultLedger.
-			HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.
-			Height)),
+			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalSidechainEvidence,
 		PayloadVersion: payload.PayloadSidechainIllegalDataVersion,
 		Payload:        evidence,
@@ -183,7 +181,8 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
 	evidences *payload.DPOSIllegalVotes) {
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.HeightVersions.GetDefaultTxVersion(i.dispatcher.processingBlock.Height)),
+		Version:        types.TransactionVersion(blockchain.DefaultLedger.
+			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalVoteEvidence,
 		PayloadVersion: payload.PayloadIllegalVoteVersion,
 		Payload:        evidences,
