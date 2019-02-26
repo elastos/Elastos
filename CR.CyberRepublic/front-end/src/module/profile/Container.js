@@ -4,13 +4,11 @@ import { createContainer } from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
 
-export default createContainer(Component, (state, ownProps) => {
-  return {
-    is_admin: state.user.is_admin,
-    is_login: state.user.is_login,
-    currentUserId: _.get(ownProps, 'user._id', state.user.current_user_id),
-  }
-}, (dispatch, ownProps) => {
+export default createContainer(Component, (state, ownProps) => ({
+  is_admin: state.user.is_admin,
+  is_login: state.user.is_login,
+  currentUserId: _.get(ownProps, 'user._id', state.user.current_user_id),
+}), (dispatch, ownProps) => {
   const userService = new UserService()
 
   return {
