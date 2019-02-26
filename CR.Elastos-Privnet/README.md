@@ -96,6 +96,24 @@ These are located in the `wallets` folder:
     ```
     {"result":"12.0","status":200}
     ```
+    
+8. Verify that cross-chain mainchain to sidechain transfers work
+    ```
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE","privateKey": "2e900f236671edfd39a31e65a938491df5fc9a53b6b16e8ea0d697fe2f0a3d52"}],"receiver": [{"address": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
+    ```
+    
+    You should see the transaction hash returned and a 200 status
+    ```
+    {"result":"57507ad2eb5513e79f90912d789559ce36a387facbf0f481f96b0bba27f52385","status":200}
+    ```
+    
+    In a minute or two you can also see the new ELA on your receiver address
+    ```
+    http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
+    ```
+    
+    
+    
 
 ## More Documentation, `config.json` and other nuances if you want to tinker
 
