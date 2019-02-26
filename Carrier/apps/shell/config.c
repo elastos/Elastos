@@ -91,22 +91,7 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
     } else if (*path == '~') {
         sprintf(qualified, "%s%s", getenv("HOME"), path+1);
     } else {
-        if (ref) {
-            const char *p = strrchr(ref, '/');
-            if (!p) p = ref;
-
-            if (p - ref > 0)
-                strncpy(qualified, ref, p - ref);
-            else
-                *qualified = 0;
-        } else {
-            getcwd(qualified, PATH_MAX);
-        }
-
-        if (*qualified)
-            strcat(qualified, "/");
-
-        strcat(qualified, path);
+        sprintf(qualified, "%s/%s", getenv("PWD"), path);
     }
 }
 
