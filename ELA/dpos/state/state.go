@@ -468,7 +468,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	}
 	if len(s.pendingProducers) > 0 {
 		for key, producer := range s.pendingProducers {
-			if height-producer.registerHeight >= 6 {
+			if height-producer.registerHeight+1 >= 6 {
 				activeProducer(key, producer)
 			}
 		}
