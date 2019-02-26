@@ -702,6 +702,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		timeoutRefactor:               0,
 		inactiveArbitratorsEliminated: false,
 	}
+	p.inactiveCountDown.Reset()
 
 	i := &IllegalBehaviorMonitor{
 		dispatcher:      p,
