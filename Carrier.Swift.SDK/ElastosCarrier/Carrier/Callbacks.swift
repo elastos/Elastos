@@ -307,6 +307,7 @@ internal func getNativeHandlers() -> CCallbacks {
     callbacks.friend_message = onFriendMessage
     callbacks.friend_invite = onFriendInvite
     callbacks.group_invite = onGroupInvite
+    callbacks.group_callbacks = CGroupCallbacks()
     callbacks.group_callbacks.group_connected = onGroupConnected
     callbacks.group_callbacks.group_message = onGroupMessage
     callbacks.group_callbacks.group_title = onGroupTitle
