@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elastos - Experimental Docs</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="description" content="Description">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+    <style>
+        h1.app-name img {
+            width: 90%;
+        }
+
+        nav.app-nav li ul {
+            min-width: 100px;
+        }
+
+        .sidebar li > p > a {
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+  window.$docsify = {
+    logo: 'https://www.elastos.org/images/logo.svg',
+    name: 'Elastos - Experimental Docs',
+    repo: 'https://github.com/elastos/Elastos.Community',
+    loadSidebar: true,
+    subMaxLevel: 3,
+    loadNavbar: true,
+    themeColor: '#2A3C5A',
+    alias: {
+      //'/.*/_sidebar.md': '/_sidebar.md',
+      //'/(.*)': 'https://gitcdn.xyz/cdn/cyber-republic/CyberRepublic/master/front-end/experimental-docs/$1',
+      //'/zh/(.*)': 'https://raw.githubusercontent.com/cyber-republic/CyberRepublic/master/front-end/docs/zh/$1',
+      //'/.*/_navbar.md': '/_navbar.md'
+    },
+    ga: 'UA-123722031-1'
+  }
+</script>
+<script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+</body>
+</html>

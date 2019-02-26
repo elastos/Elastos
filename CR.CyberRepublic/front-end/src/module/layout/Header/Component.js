@@ -225,15 +225,15 @@ export default class extends BaseComponent {
         </Menu.Item>
 
         <Menu.Item className="c_MenuItem link" key="council">
-          {I18N.get('navagation.council')}
+          {I18N.get('navigation.council')}
         </Menu.Item>
 
         <Menu.Item className="c_MenuItem link" key="constitution/1">
-          {I18N.get('navagation.constitution')}
+          {I18N.get('navigation.constitution')}
         </Menu.Item>
 
         <Menu.Item className="c_MenuItem link" key="suggestion">
-          {I18N.get('navagation.suggestion')}
+          {I18N.get('navigation.suggestion')}
         </Menu.Item>
 
         <Menu.Item className="c_MenuItem link" key="proposals">
@@ -246,6 +246,10 @@ export default class extends BaseComponent {
 
         <Menu.Item className="c_MenuItem link" key="blog">
           {I18N.get('0110')}
+        </Menu.Item>
+
+        <Menu.Item className="c_MenuItem link" key="docs">
+          {I18N.get('navigation.docs')}
         </Menu.Item>
 
         {this.props.isLogin
@@ -418,6 +422,19 @@ export default class extends BaseComponent {
 
       window.location.href = linkToBlog
 
+    } else if (key === 'docs') {
+
+      analytics.track('DOCS_CLICKED', {
+        url: location.href
+      })
+
+      let linkTo = 'https://cyberrepublic.org/docs/#/'
+
+      if (I18N.getLang() === USER_LANGUAGE.zh) {
+        linkTo += `${USER_LANGUAGE.zh}/`
+      }
+
+      window.location.href = linkTo
     } else if (_.includes([
       'en',
       'zh'

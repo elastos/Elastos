@@ -53,7 +53,7 @@ While the Cyber Republic Council is presently composed of 3 representatives from
 **In the case of voting to amend the Constitution, voting shall follow the process as outlined in the Elastos Community Voting Rules, with the following exception. Amending the Constitution requires the following threshold:**
 
 1. ELA participating in voting accounting for more than 30% of circulated ELA by the deadline of such voting;
-3. Support of 66.67% of the votes represented by ELA participating in voting.
+2. Support of 66.67% of the votes represented by ELA participating in voting.
 
 ### ARTICLE 9 - MISCELLANEOUS
 

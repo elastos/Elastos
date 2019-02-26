@@ -1,6 +1,6 @@
 
 
-## FAQ - General
+# General FAQ
 
 #### Can I be the one that also does the Suggestion if it's approved?
 
@@ -21,7 +21,11 @@ Absolutely, we don't claim to get everything right the first time. Suggestions t
 the Council also has the power to bypass the Suggestion process and propose their own improvements to the CRC Workflow.
 We are always looking for ways to improve the workflow, make it more efficient and create better checks and balances.
 
+?> However we do want to learn from lessons from the real world, adding too many rules decreases efficiency. The last thing we want is the CRC workflow to become as bureaucratic as the current governments we wish to improve upon.
+
 #### What's the dPoS Consensus and is it related to CR Consensus?
 
 The DPoS Consensus is an Elastos consensus mechanism where any ELA holders can vote for 96 of the 108 DPoS supernodes, this operates independently from Cyber Republic.
 however **the 7 elected CR Council members also control 7 of the 12 non-rotating dPoS elected nodes**.
+
+##### If you have more questions email us at&nbsp;[cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org ':disabled')

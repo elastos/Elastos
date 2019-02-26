@@ -1,26 +1,33 @@
 
 
-- Overview
+- 概览
 
-    - [Introduction](/zh/overview/intro.md)
-    - [How to Get Involved](/zh/overview/contribute.md)
-    - [CRC Workflow](/zh/overview/crc.md)
+    - [介绍](/zh/overview/intro.md)
+    - [如何参与](/zh/overview/contribute.md)
+    - [CRC 工作流程](/zh/overview/crc.md)
 
-- User's Guide
+- 用户指南
 
-    - [Suggestions](/zh/guide/suggestions.md)
-    - [Proposals](/zh/guide/proposals.md)
-    - [Secretariat Team](/zh/guide/secretariat.md)
+    - [建议](/zh/guide/suggestions.md)
+    - [提案清单](/zh/guide/proposals.md)
+    - [秘书处](/zh/guide/secretariat.md)
+    - [委员会](/zh/guide/council.md)
 
-- The Constitution
+- 章程
 
     - [1. 章程](/zh/constitution/constitution.md)
-    - [2. Founding Document](/zh/constitution/founding.md)
-    - [3. Voting Rules](/zh/constitution/voting.md)
+    - [2. 委员会创始文件](/zh/constitution/founding.md)
+    - [3. 投票规则](/zh/constitution/voting.md)
     - [4. 委员会利益和分歧协调](/zh/constitution/conflict-of-interest.md)
 
+- 媒体资源
+
+    - [设计风格指南](/zh/media/style-guide.md)
+    - [视觉标识资产](/zh/media/assets.md)
+    - [幻灯片](/zh/media/slides.md)
+
 - FAQ
-    - [General](/zh/faq/general.md)
-    - [Definitions](/zh/faq/definitions.md)
-    - [Funding](/zh/faq/funding.md)
+    - [通用问题](/zh/faq/general.md)
+    - [定义](/zh/faq/definitions.md)
+    - [资金](/zh/faq/funding.md)
 

@@ -87,4 +87,5 @@ Beginning with the CRC Inauguration, the impeachment program is automatically ac
 A resolution to remove a Cyber Republic Council Member shall follow the community voting process contained within the Elastos Community Voting Rules, to be released by the end of the Interim Period.
 
 #### 16. Vacancy
+
 Any vacancy resulting from the removal of a Cyber Republic Council Member shall be filled by an Alternate Member. In the event that there are no remaining Alternate Members, a new vote shall be initiated to replace these Alternative Members.

@@ -74,6 +74,8 @@ There are four different types of community voting.
 6. Cumulative voting is adopted in selecting the Cyber Republic Council Members. This process is described in Section 6(1) of this Document.
 7. Uncirculated ELA represents no vote and shall not be calculated in the base. Uncirculated ELA are the unspent ELA for the purpose of ecosystem development, and the ELA account balance of the Elastos Foundation that have not been transferred to the accounts of cooperative parties or individuals for ecosystem development.
 
+## Chapter V - Resolutions
+
 #### 11. Voting Thresholds
 
 There will be different thresholds required for each type of vote. These thresholds shall be defined by the end of the Interim Period.
