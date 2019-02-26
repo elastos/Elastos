@@ -106,7 +106,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	s.RejectedVotes = make([]payload.DPOSProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
 		var rejectVote payload.DPOSProposalVote
-		if err = s.RejectedVotes[i].Deserialize(r); err != nil {
+		if err = rejectVote.Deserialize(r); err != nil {
 			return err
 		}
 		s.RejectedVotes = append(s.RejectedVotes, rejectVote)
@@ -118,7 +118,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	s.PendingProposals = make([]payload.DPOSProposal, 0)
 	for i := uint64(0); i < arrayLength; i++ {
 		var proposal payload.DPOSProposal
-		if err = s.PendingProposals[i].Deserialize(r); err != nil {
+		if err = proposal.Deserialize(r); err != nil {
 			return err
 		}
 		s.PendingProposals = append(s.PendingProposals, proposal)
@@ -130,7 +130,7 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	s.PendingVotes = make([]payload.DPOSProposalVote, 0)
 	for i := uint64(0); i < arrayLength; i++ {
 		var pendingVote payload.DPOSProposalVote
-		if err = s.PendingVotes[i].Deserialize(r); err != nil {
+		if err = pendingVote.Deserialize(r); err != nil {
 			return err
 		}
 		s.PendingVotes = append(s.PendingVotes, pendingVote)
