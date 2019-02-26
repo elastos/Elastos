@@ -131,11 +131,11 @@ func TestState_ProcessTransaction(t *testing.T) {
 		state.ProcessBlock(mockBlock(uint32(i+1), tx), nil)
 	}
 
-	// At this point, we have 6 pending, 4 active and 10 in total producers.
-	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
+	// At this point, we have 5 pending, 5 active and 10 in total producers.
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 4, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 10, len(state.GetProducers())) {
@@ -160,14 +160,14 @@ func TestState_ProcessTransaction(t *testing.T) {
 	// Test cancel producer.
 	tx = mockCancelProducerTx(producers[0].OwnerPublicKey)
 	state.ProcessBlock(mockBlock(12, tx), nil)
-	// at this point, we have 1 canceled, 4 pending, 5 active and 9 in total producers.
+	// at this point, we have 1 canceled, 3 pending, 6 active and 9 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 4, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 3, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 6, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 9, len(state.GetProducers())) {
@@ -192,14 +192,14 @@ func TestState_ProcessTransaction(t *testing.T) {
 	// Test illegal producer.
 	tx = mockIllegalBlockTx(producers[1].OwnerPublicKey)
 	state.ProcessBlock(mockBlock(14, tx), nil)
-	// at this point, we have 1 canceled, 2 pending, 6 active, 1 illegal and 8 in total producers.
+	// at this point, we have 1 canceled, 1 pending, 7 active, 1 illegal and 8 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 2, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 1, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 6, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 7, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 1, len(state.GetIllegalProducers())) {
@@ -236,11 +236,11 @@ func TestState_ProcessBlock(t *testing.T) {
 		}
 		state.ProcessBlock(mockBlock(uint32(i+1), txs...), nil)
 	}
-	// at this point, we have 60 pending, 44 active and 100 in total producers.
-	if !assert.Equal(t, 60, len(state.GetPendingProducers())) {
+	// at this point, we have 50 pending, 50 active and 100 in total producers.
+	if !assert.Equal(t, 50, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 40, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 50, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 100, len(state.GetProducers())) {
@@ -267,14 +267,14 @@ func TestState_ProcessBlock(t *testing.T) {
 		txs[i] = mockCancelProducerTx(producers[i].OwnerPublicKey)
 	}
 	state.ProcessBlock(mockBlock(12, txs...), nil)
-	// at this point, we have 10 canceled, 40 pending, 50 active and 90 in total producers.
+	// at this point, we have 10 canceled, 30 pending, 60 active and 90 in total producers.
 	if !assert.Equal(t, 10, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 40, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 30, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 50, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 60, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 90, len(state.GetProducers())) {
@@ -304,14 +304,14 @@ func TestState_ProcessBlock(t *testing.T) {
 		txs[i] = mockIllegalBlockTx(producers[10+i].OwnerPublicKey)
 	}
 	state.ProcessBlock(mockBlock(14, txs...), nil)
-	// at this point, we have 10 canceled, 20 pending, 60 active, 10 illegal and 80 in total producers.
+	// at this point, we have 10 canceled, 10 pending, 70 active, 10 illegal and 80 in total producers.
 	if !assert.Equal(t, 10, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 20, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 10, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 60, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 70, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 10, len(state.GetIllegalProducers())) {
@@ -354,17 +354,17 @@ func TestState_ProcessBlock(t *testing.T) {
 		txs[10+i] = mockIllegalBlockTx(producers[50+i].OwnerPublicKey)
 	}
 	state.ProcessBlock(mockBlock(15, txs...), nil)
-	// at this point, we have 12 canceled, 11 pending, 63 active, 15 illegal and 74 in total producers.
+	// at this point, we have 12 canceled, 1 pending, 73 active, 15 illegal and 74 in total producers.
 	// 10+2
 	if !assert.Equal(t, 12, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
 	// 20-10+1
-	if !assert.Equal(t, 11, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 1, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
 	// 60+10-2-5
-	if !assert.Equal(t, 63, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 73, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	// 10+5
@@ -406,16 +406,16 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 		tx := mockRegisterProducerTx(p)
 		state.ProcessBlock(mockBlock(uint32(i+1), tx), nil)
 	}
-	// At this point, we have 6 pending, 4 active and 10 in total producers.
+	// At this point, we have 5 pending, 5 active and 10 in total producers.
 
 	// Make producer 0 illegal.
 	tx := mockIllegalBlockTx(producers[0].OwnerPublicKey)
 	state.ProcessSpecialTxPayload(tx.Payload)
-	// At this point, we have 6 pending, 3 active 1 illegal and 9 in total producers.
-	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
+	// At this point, we have 5 pending, 4 active 1 illegal and 9 in total producers.
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 3, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 4, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 1, len(state.GetIllegalProducers())) {
@@ -427,11 +427,11 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 
 	// Process next height, state will rollback illegal producer.
 	state.ProcessBlock(mockBlock(11), nil)
-	// At this point, we have 5 pending, 5 active and 10 in total producers.
-	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
+	// At this point, we have 4 pending, 6 active and 10 in total producers.
+	if !assert.Equal(t, 4, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 6, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 10, len(state.GetProducers())) {
@@ -462,11 +462,11 @@ func TestState_Rollback(t *testing.T) {
 		tx := mockRegisterProducerTx(p)
 		state.ProcessBlock(mockBlock(uint32(i+1), tx), nil)
 	}
-	// At this point, we have 6 pending, 4 active and 10 in total producers.
-	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
+	// At this point, we have 5 pending, 5 active and 10 in total producers.
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 4, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 10, len(state.GetProducers())) {
@@ -478,11 +478,11 @@ func TestState_Rollback(t *testing.T) {
 		t.FailNow()
 	}
 
-	// At this point, we have 6 pending, 3 active and 9 in total producers.
-	if !assert.Equal(t, 6, len(state.GetPendingProducers())) {
+	// At this point, we have 5 pending, 4 active and 9 in total producers.
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 3, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 4, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 9, len(state.GetProducers())) {
@@ -513,7 +513,7 @@ func TestState_GetHistory(t *testing.T) {
 		tx := mockRegisterProducerTx(p)
 		state.ProcessBlock(mockBlock(uint32(i+1), tx), nil)
 	}
-	// At this point, we have 6 pending, 4 active and 10 in total producers.
+	// At this point, we have 5 pending, 5 active and 10 in total producers.
 
 	// Test update producer.
 	producers[0].NickName = "Updated"
@@ -533,7 +533,7 @@ func TestState_GetHistory(t *testing.T) {
 	// Test cancel producer.
 	tx = mockCancelProducerTx(producers[0].OwnerPublicKey)
 	state.ProcessBlock(mockBlock(12, tx), nil)
-	// At this point, we have 1 canceled, 4 pending, 5 active and 9 in total producers.
+	// At this point, we have 1 canceled, 3 pending, 6 active and 9 in total producers.
 
 	// Test vote producer.
 	publicKeys := make([][]byte, 5)
@@ -552,7 +552,7 @@ func TestState_GetHistory(t *testing.T) {
 	// Test illegal producer.
 	tx = mockIllegalBlockTx(producers[1].OwnerPublicKey)
 	state.ProcessBlock(mockBlock(14, tx), nil)
-	// At this point, we have 1 canceled, 2 pending, 6 active, 1 illegal and 8 in total producers.
+	// At this point, we have 1 canceled, 1 pending, 7 active, 1 illegal and 8 in total producers.
 
 	_, err := state.GetHistory(0)
 	limitHeight := state.history.height - uint32(len(state.history.changes))
@@ -565,11 +565,11 @@ func TestState_GetHistory(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	// At this point, we have 4 pending and 4 in total producers.
-	if !assert.Equal(t, 6, len(s.GetPendingProducers())) {
+	// At this point, we have 5 pending and 5 in total producers.
+	if !assert.Equal(t, 5, len(s.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 4, len(s.GetActiveProducers())) {
+	if !assert.Equal(t, 5, len(s.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 10, len(s.GetProducers())) {
@@ -580,14 +580,14 @@ func TestState_GetHistory(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	// At this point, we have 1 canceled, 2 pending, 6 active, 1 illegal and 8 in total producers.
+	// At this point, we have 1 canceled, 1 pending, 7 active, 1 illegal and 8 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 2, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 1, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 6, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 7, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 1, len(state.GetIllegalProducers())) {
@@ -601,14 +601,14 @@ func TestState_GetHistory(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	// At this point, we have 1 canceled, 4 pending, 5 active and 9 in total producers.
+	// At this point, we have 1 canceled, 3 pending, 6 active and 9 in total producers.
 	if !assert.Equal(t, 1, len(s.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 4, len(s.GetPendingProducers())) {
+	if !assert.Equal(t, 3, len(s.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 5, len(s.GetActiveProducers())) {
+	if !assert.Equal(t, 6, len(s.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 9, len(s.GetProducers())) {
@@ -617,14 +617,14 @@ func TestState_GetHistory(t *testing.T) {
 
 	// Process a new height see if state go to best height.
 	state.ProcessBlock(mockBlock(15, tx), nil)
-	// At this point, we have 1 canceled, 1 pending, 7 active, 1 illegal and 8 in total producers.
+	// At this point, we have 1 canceled, 0 pending, 8 active, 1 illegal and 8 in total producers.
 	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 1, len(state.GetPendingProducers())) {
+	if !assert.Equal(t, 0, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 7, len(state.GetActiveProducers())) {
+	if !assert.Equal(t, 8, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
 	if !assert.Equal(t, 1, len(state.GetIllegalProducers())) {
