@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 
 
 export const CVoteResultSchema = {
-    voterId: {
+    votedBy: {
         type: Schema.Types.ObjectId,
         ref: 'users',
         required: true
@@ -14,8 +14,19 @@ export const CVoteResultSchema = {
         emun: _.values(constant.CVOTE_RESULT),
         default: constant.CVOTE_RESULT.UNDECIDED
     },
-    reason: String,
-    reason_zh: String
+    reason: {
+        type: String,
+        default: ''
+    }
+}
+
+export const CVoteHistorySchema = {
+    ...CVoteResultSchema,
+    createdAt: {
+        type : Date,
+        required : true,
+        default : Date.now,
+    },
 }
 
 export const CVote = {
@@ -58,7 +69,8 @@ export const CVote = {
     notes_zh : {
         type : String
     },
-    voteResult: [CVoteResultSchema],
+    voteHistory: [CVoteHistorySchema],
+    voteResult:  [CVoteResultSchema],
     vote_map : Object,
     avatar_map : Object,
     reason_map : Object,

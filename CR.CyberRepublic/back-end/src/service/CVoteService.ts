@@ -1,8 +1,8 @@
 import Base from './Base';
-import {Document} from 'mongoose';
+import { Document } from 'mongoose';
 import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate, utilCrypto, mail} from '../utility';
+import { constant } from '../constant';
+import { permissions } from '../utility';
 import * as moment from 'moment';
 
 let tm = null;
@@ -18,48 +18,40 @@ const restrictedFields = {
 export default class extends Base {
 
     public async create(param): Promise<Document>{
-
-        if (!this.isLoggedIn()) {
-            throw 'cvoteservice.create - must be logged in';
-        }
-
-        if (!this.canManageProposal()) {
-            throw 'cvoteservice.create - not council or secretary'
-        }
-
         const db_cvote = this.getDBModel('CVote');
-
+        const db_user = this.getDBModel('User');
+        const currentUserId = _.get(this.currentUser, '_id')
         const {
-            title, title_zh, type, content,  content_zh, proposedBy, motionId, isConflict,
-            notes, notes_zh,vote_map, reason_map, reason_zh_map
+            title, type, content, published, proposedBy, motionId, isConflict, notes,
         } = param;
+
+        const councilMembers = await db_user.find({role: constant.USER_ROLE.COUNCIL});
+        const voteResult = []
+        _.each(councilMembers, user => {
+          // use ObjectId.equals
+          const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+          voteResult.push({ votedBy: user._id, value })
+        })
 
         const doc: any = {
             title,
-            title_zh,
             type,
+            published,
             content,
-            content_zh,
             proposedBy,
             motionId,
             isConflict,
             notes,
-            notes_zh,
-            vote_map : this.param_metadata(vote_map),
-            reason_map : this.param_metadata(reason_map),
-            reason_zh_map : this.param_metadata(reason_zh_map),
+            voteResult,
+            voteHistory: voteResult,
             createdBy : this.currentUser._id
         };
 
         const vid = await this.getNewVid();
         doc.vid = vid;
-        doc.status = this.getNewStatus(doc.vote_map, null);
+        doc.status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT;
 
-        const cvote = await db_cvote.save(doc);
-
-        this.sendEmailNotification(cvote, 'create');
-
-        return cvote;
+        return await db_cvote.save(doc);
     }
 
     /**
@@ -79,28 +71,27 @@ export default class extends Base {
 
         const db_cvote = this.getDBModel('CVote');
         const db_user = this.getDBModel('User');
-        let query:any = {};
+        const query: any = {};
 
-        // if we are not querying only published records, we need to be an admin
-        // TODO: write a test for this
-        if (param.published !== true) {
+        if (!param.published) {
             if (!this.isLoggedIn() || !this.canManageProposal()) {
-                throw 'cvoteservice.list - unpublished proposals only visible to admin';
+                throw 'cvoteservice.list - unpublished proposals only visible to council/secretary';
+            } else {
+                // only owner can list his own proposal
+                query.$or = [
+                    { createdBy: _.get(this.currentUser, '_id'), published: false },
+                    { published: true },
+                ]
             }
         } else {
-            if (param.published === true) {
-                query.published = param.published
-            }
+            query.published = param.published
         }
-
-        // we should map over allowed filters manually
-        // console.log(query)
 
         const list = await db_cvote.list(query, {
             createdAt: -1
         }, 100);
 
-        for(let item of list){
+        for(const item of list){
             if(item.createdBy){
                 const u = await db_user.findOne({_id : item.createdBy});
                 item.createdBy = u.username;
@@ -118,6 +109,7 @@ export default class extends Base {
      */
     public async update(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
+        const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
 
         if(!this.currentUser || !this.currentUser._id){
             throw 'cvoteservice.update - invalid current user';
@@ -127,46 +119,30 @@ export default class extends Base {
             throw 'cvoteservice.update - not council'
         }
 
-        const cur = await db_cvote.findOne({_id : param._id});
-        if(!cur){
+        const cur = await db_cvote.findOne({ _id });
+        if(!cur) {
             throw 'cvoteservice.update - invalid proposal id';
         }
 
-        let doc:any = {}
+        const doc: any = {}
 
-        if (this.isExpired(cur) || _.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.DEFERRED], cur.status)) {
-            if (cur.published !== param.published) {
-                // if published is changed, we let it pass if published is changed, but only that field
-                doc = {
-                    published: param.published
-                }
-            }
-        } else {
-            doc = _.omit(param, restrictedFields.update)
+        if (content) doc.content = content
+        if (isConflict) doc.isConflict = isConflict
+        if (proposedBy) doc.proposedBy = proposedBy
+        if (title) doc.title = title
+        if (type) doc.type = type
 
-            if (param.vote_map) {
-                doc.vote_map = this.param_metadata(param.vote_map)
-                doc.status = this.getNewStatus(doc.vote_map, cur);
-            }
-
-            if (param.reason_map) {
-                doc.reason_map = this.param_metadata(param.reason_map)
-            }
-
-            if (param.reason_zh_map) {
-                doc.reason_zh_map = this.param_metadata(param.reason_zh_map)
-            }
+        if (published === true && cur.status === constant.CVOTE_STATUS.DRAFT) {
+          doc.status = constant.CVOTE_STATUS.PROPOSED
+          doc.published = published
         }
 
         // always allow secretary to edit notes
-        if (param.notes) doc.notes = param.notes
+        if (notes) doc.notes = notes
 
-        const cvote = await db_cvote.update({_id : param._id}, doc);
+        await db_cvote.update({ _id }, doc);
 
-        this.sendEmailNotification({_id : param._id}, 'update');
-
-        // this is wrong, update call doesn't return doc
-        return cvote;
+        return await this.getById(_id);
     }
 
     public async finishById(id): Promise<any>{
@@ -192,67 +168,16 @@ export default class extends Base {
     }
 
     public async getById(id): Promise<any>{
-        const db_cvote = this.getDBModel('CVote');
-        const rs = await db_cvote.findOne({_id : id});
-        const db_user = this.getDBModel('User');
-        const councilMembers = await db_user.find({_id : { $in: constant.COUNCIL_MEMBER_IDS }});
-        const avatar_map = {}
-
-        _.each(councilMembers, user => {
-            const name: string = constant.COUNCIL_MEMBERS[user._id.toString()]
-            avatar_map[name] = user.profile.avatar
-        })
-        rs.avatar_map = avatar_map
-        return rs;
-    }
-
-    private param_metadata(meta: string){
-        const rs = {};
-        if(meta){
-            const list = meta.split(',');
-
-            _.each(list, (str)=>{
-                const tmp = str.split('|');
-                if(tmp.length === 2){
-                    rs[tmp[0]] = tmp[1];
-                }
-            });
-        }
-        return rs;
+      const db_cvote = this.getDBModel('CVote')
+      const rs = await db_cvote.getDBInstance().findOne({_id : id})
+        .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      return rs;
     }
 
     public async getNewVid(){
         const db_cvote = this.getDBModel('CVote');
         const n = await db_cvote.count({});
         return n+1;
-    }
-
-    public getNewStatus(vote_map, data){
-        let rs = constant.CVOTE_STATUS.PROPOSED;
-        let ns = 0;
-        let nf = 0;
-        _.each(vote_map, (v)=>{
-            if(v === 'support'){
-                ns++;
-            }
-            else if(v === 'reject'){
-                nf++;
-            }
-        });
-
-        if(data && this.isExpired(data)){
-            return constant.CVOTE_STATUS.DEFERRED;
-        }
-
-        if(nf > 1){
-            rs = constant.CVOTE_STATUS.REJECT;
-        }
-        if(ns > 1){
-            rs = constant.CVOTE_STATUS.ACTIVE;
-        }
-
-
-        return rs;
     }
 
     public isExpired(data): Boolean{
@@ -263,10 +188,49 @@ export default class extends Base {
         return false;
     }
 
+    // proposal active/passed
+    public isActive(data): Boolean {
+        const supportNum = _.countBy(data.voteResult, 'value').support || 0
+        return supportNum > data.voteResult.length * 0.5;
+    }
+
+    public async vote(param): Promise<Document>{
+        const db_cvote = this.getDBModel('CVote')
+        const { _id, value, reason } = param
+        const cur = await db_cvote.findOne({ _id })
+        const votedBy = _.get(this.currentUser, '_id')
+        if(!cur) {
+            throw 'invalid proposal id';
+        }
+
+        await db_cvote.update(
+          {
+            _id,
+            'voteResult.votedBy': votedBy
+          },
+          {
+            $set: {
+              'voteResult.$.value': value,
+              'voteResult.$.reason': reason || '',
+            },
+            $push: {
+              voteHistory: {
+                value,
+                reason,
+                votedBy,
+              }
+            }
+          }
+        )
+
+        return await this.getById(_id);
+    }
+
     public async updateNote(param): Promise<Document>{
         const db_cvote = this.getDBModel('CVote');
+        const { _id, notes } = param
 
-        const cur = await db_cvote.findOne({_id : param._id});
+        const cur = await db_cvote.findOne({ _id });
         if(!cur){
             throw 'invalid proposal id';
         }
@@ -277,64 +241,43 @@ export default class extends Base {
             throw 'only secretary could update notes';
         }
 
-        const rs = await db_cvote.update({_id : param._id}, {
+        const rs = await db_cvote.update({ _id }, {
             $set : {
-                notes : param.notes || ''
+                notes : notes || ''
             }
         })
 
-        return rs;
-    }
-
-
-    public async sendEmailNotification(data, updateOrCreate){
-        // const list = [
-        //     'kevinzhang@elastos.org',
-        //     'suyipeng@elastos.org',
-        //     'fay@elastos.org',
-        //     'zhufeng@elastos.org'
-        // ];
-
-        // _.each(['liyangwood@aliyun.com'], async (address)=>{
-        //     await mail.send({
-        //         to : address,
-        //         toName : 'Jacky.li',
-        //         subject : 'CVote - Notification',
-        //         body : `
-        //             Proposal ${updateOrCreate}
-        //             <br />
-        //             please alick this link to get details.
-        //             <a href="${process.env.SERVER_URL}/cvote/edit/${data._id}">${process.env.SERVER_URL}/cvote/edit/${data._id}</a>
-        //         `
-        //     });
-        // });
+        return await this.getById(_id);
     }
 
     private async eachJob() {
-
         const db_cvote = this.getDBModel('CVote');
-
         const list = await db_cvote.find({
-            'status' : {
-                '$in' : [constant.CVOTE_STATUS.PROPOSED, constant.CVOTE_STATUS.ACTIVE]
-            }
+            status: constant.CVOTE_STATUS.PROPOSED
         });
-        const ids = [];
-
-        ids.length && console.log(ids);
+        const idsDeferred = [];
+        const idsActive = [];
 
         _.each(list, (item)=>{
-            if(this.isExpired(item)){
-                ids.push(item._id);
+            if(this.isExpired(item)) {
+              if (this.isActive(item)) {
+                idsActive.push(item._id);
+              } else {
+                idsDeferred.push(item._id);
+              }
             }
         });
 
         await db_cvote.update({_id : {
-            $in : ids
+            $in : idsDeferred
         }}, {
             status : constant.CVOTE_STATUS.DEFERRED
         });
-
+        await db_cvote.update({_id : {
+            $in : idsActive
+        }}, {
+            status : constant.CVOTE_STATUS.ACTIVE
+        });
     }
 
     public cronjob(){
@@ -347,16 +290,8 @@ export default class extends Base {
         }, 1000*60);
     }
 
-    private isCouncil() {
-        return constant.COUNCIL_MEMBER_IDS.indexOf(this.currentUser._id.toString()) >= 0 || this.currentUser.role === constant.USER_ROLE.COUNCIL
-    }
-
-    private isSecretary() {
-        return this.currentUser.role === constant.USER_ROLE.SECRETARY
-    }
-
     private canManageProposal() {
-        return this.isCouncil() || this.isSecretary()
+        const userRole = _.get(this.currentUser, 'role')
+        return permissions.isCouncil(userRole) || permissions.isSecretary(userRole)
     }
-
 }

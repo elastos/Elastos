@@ -8,12 +8,13 @@
     "build:staging": "rimraf dist && NODE_ENV=staging webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",
     "build:dev": "rimraf dist && NODE_ENV=dev webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",
     "lint": "eslint ./src/**/**.js",
+    "lintfix": "node_modules/.bin/eslint --fix ",
     "test": "NODE_ENV=development jest --config jest/jest.conf.js --coverage"
   },
   "author": "liyangwood@gmail.com",
   "dependencies": {
     "@svgr/webpack": "^4.1.0",
-    "antd": "3.8.0",
+    "antd": "^3.13.5",
     "bluebird": "^3.5.1",
     "cross-env": "^5.1.1",
     "crypto-js": "^3.1.9-1",
@@ -50,6 +51,9 @@
     "redux": "4.0.0",
     "redux-thunk": "^2.2.0",
     "sanitize-html": "^1.18.5",
+    "sass-extract": "^2.1.0",
+    "sass-extract-loader": "^1.1.0",
+    "styled-components": "^4.1.3",
     "urijs": "^1.19.1"
   },
   "devDependencies": {
@@ -68,6 +72,7 @@
     "copy-webpack-plugin": "^4.5.1",
     "css-loader": "0.28.11",
     "eslint": "^4.19.1 || ^5.3.0",
+    "eslint-config-airbnb": "^17.1.0",
     "eslint-loader": "^2.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.1",
@@ -78,7 +83,7 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "3.2.0",
     "jest": "22.4.3",
-    "node-sass": "4.10.0",
+    "node-sass": "^4.10.0",
     "open-browser-webpack-plugin": "0.0.5",
     "optimize-css-assets-webpack-plugin": "^4.0.1",
     "postcss-flexbugs-fixes": "^3.3.1",

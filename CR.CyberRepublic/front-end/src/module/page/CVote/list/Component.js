@@ -6,11 +6,11 @@ import {
   Table, Row, Col, Button,
 } from 'antd'
 import I18N from '@/I18N'
-import { LANGUAGES } from '@/config/constant'
 import VoteStats from '../stats/Component'
-import { CVOTE_RESULT_TEXT } from '@/constant'
+import { CVOTE_RESULT_TEXT, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 
-import './style.scss'
+// style
+import { Container, List, Item, ItemUndecided } from './style'
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -21,7 +21,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { language } = this.props
+    const { canManage } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -45,7 +45,7 @@ export default class extends BaseComponent {
         width: '30%',
         render: (title, item) => (
           <a onClick={this.toDetail.bind(this, item._id)} className="tableLink">
-            { language === LANGUAGES.chinese ? (item.title_zh ? item.title_zh : title) : title }
+            {title}
           </a>
         ),
       },
@@ -64,7 +64,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => item.status || '',
+        render: (id, item) => CVOTE_STATUS_TEXT[item.status] || '',
       },
       {
         title: I18N.get('council.voting.createdAt'),
@@ -73,7 +73,7 @@ export default class extends BaseComponent {
       },
     ]
 
-    if (this.props.canCreate) {
+    if (canManage) {
       columns.splice(1, 0, {
         dataIndex: 'published',
         render: (published, item, index) => (published ? <i className="fas fa-eye" /> : <i className="far fa-eye-slash" />),
@@ -81,47 +81,47 @@ export default class extends BaseComponent {
     }
 
     const statusIndicator = (
-      <div className="vote-status-list indicator">
-        <span className="vote-status-item yes" />
+      <List>
+        <Item yes />
         <span>{I18N.get('council.voting.type.support')}</span>
-        <span className="vote-status-item no" />
+        <Item no />
         <span>{I18N.get('council.voting.type.reject')}</span>
-        <span className="vote-status-item abstained" />
+        <Item abstained />
         <span>{I18N.get('council.voting.type.abstention')}</span>
-        <span className="vote-status-item undecided" />
+        <ItemUndecided undecided />
         <span>{I18N.get('council.voting.type.undecided')}</span>
-      </div>
+      </List>
     )
 
-    const createBtn = this.props.canCreate && (
-      <Col lg={8} md={12} sm={24} xs={24}>
-        <Button onClick={this.toCreate} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-            Create New Proposal
+    const createBtn = canManage && (
+      <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
+        <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
+            Add a Proposal
         </Button>
       </Col>
     )
     return (
-      <div className="p-cvote-list">
-        <div className="d_box">
-          <Row type="flex" align="middle">
-            <Col lg={8} md={12} sm={24} xs={24}>
-              <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
-                {I18N.get('council.voting.proposalList')}
-              </h3>
-            </Col>
-            <Col lg={8} md={12} sm={24} xs={24}>
-              {statusIndicator}
-            </Col>
-            {createBtn}
-          </Row>
-          <Table
-            columns={columns}
-            loading={this.state.loading}
-            dataSource={this.state.list}
-            rowKey={record => record._id}
-          />
-        </div>
-      </div>
+      <Container>
+        <Row type="flex" align="middle" justify="end">
+          {createBtn}
+        </Row>
+        <Row type="flex" align="middle" justify="space-between">
+          <Col lg={8} md={8} sm={12} xs={24}>
+            <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
+              {I18N.get('council.voting.proposalList')}
+            </h3>
+          </Col>
+          <Col lg={8} md={8} sm={12} xs={24}>
+            {statusIndicator}
+          </Col>
+        </Row>
+        <Table
+          columns={columns}
+          loading={this.state.loading}
+          dataSource={this.state.list}
+          rowKey={record => record._id}
+        />
+      </Container>
 
     )
   }
@@ -135,9 +135,10 @@ export default class extends BaseComponent {
   }
 
   async componentDidMount() {
+    const { listData, canManage } = this.props
     this.ord_loading(true);
     try {
-      const list = await this.props.listData({}, this.props.canCreate);
+      const list = await listData({}, canManage);
       this.setState({ list });
     } catch (error) {
       // do sth
@@ -147,12 +148,18 @@ export default class extends BaseComponent {
   }
 
   voteDataByUser = (data) => {
-    const voteMap = data.vote_map;
-    if (!data.vote_map) {
-      // fix error in finding index of undefined
+    const { vote_map: voteMap, voteResult, status } = data
+    let voteArr
+
+    if (status === CVOTE_STATUS.DRAFT) return null
+
+    if (!_.isEmpty(voteResult)) {
+      voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
+    } else if (!_.isEmpty(voteMap)) {
+      voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+    } else {
       return ''
     }
-    const voteArr = _.map(voteMap, value => ((value === '-1' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
     const supportNum = _.countBy(voteArr).Yes || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50

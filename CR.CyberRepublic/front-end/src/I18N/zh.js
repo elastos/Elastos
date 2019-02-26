@@ -32,7 +32,7 @@ const zh = {
   '0110': '博客',
   'navigation.programs': '项目',
   'navigation.suggestion': '建议',
-  'navigation.council': '委员会&秘书处',
+  'navigation.council': '委员会',
   'navigation.constitution': '章程',
   'navigation.docs': '文档',
 
@@ -46,46 +46,48 @@ const zh = {
   '0301': '英语',
   '0302': '简体中文',
 
+  'link.back': '返回',
+
   // Admin breadcrumb
-  '1100': '管理员',
+  1100: '管理员',
 
   // Admin users
-  '1200': '编号',
-  '1201': '用户名',
-  '1202': '电子邮件',
-  '1203': '默认语言',
-  '1204': '职能',
-  '1205': '活跃',
-  '1206': 'ELA',
-  '1207': '创建日期',
-  '1208': '全名',
-  '1209': '国家',
+  1200: '编号',
+  1201: '用户名',
+  1202: '电子邮件',
+  1203: '默认语言',
+  1204: '职能',
+  1205: '活跃',
+  1206: 'ELA',
+  1207: '创建日期',
+  1208: '全名',
+  1209: '国家',
 
   // Admin navigator
-  '1300': '任务',
-  '1301': '社区',
-  '1302': '用户',
-  '1303': '团队',
-  '1304': '议题',
-  '1305': '表格',
-  '1306': '项目',
+  1300: '任务',
+  1301: '社区',
+  1302: '用户',
+  1303: '团队',
+  1304: '议题',
+  1305: '表格',
+  1306: '项目',
   'admin.suggestion': '建议',
 
   // Profile navigator
-  '2300': '我的档案',
-  '2301': '我的任务',
-  '2302': '我的团队',
-  '2303': '我的议题',
-  '2304': '我的社区',
-  '2305': '我的项目',
-  '2306': '社区',
+  2300: '我的档案',
+  2301: '我的任务',
+  2302: '我的团队',
+  2303: '我的议题',
+  2304: '我的社区',
+  2305: '我的项目',
+  2306: '社区',
   'profile.suggestion': '我的建议',
 
   'login.success': '登陆成功',
 
   'mentions.notFound': '该用户不存在',
 
-  'comments': '评论',
+  comments: '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，抢沙发！',
@@ -204,8 +206,8 @@ const zh = {
   'register.welcome': '欢迎加入Cyber Republic!',
   'register.join_circle': '加入一个圈子并获取ELA',
   'register.join': '加入',
-  '3533': '更多关于您的信息',
-  '3534': '国家',
+  3533: '更多关于您的信息',
+  3534: '国家',
   'register.code.title': '成为公民',
 
   // Forgot / Reset Password Form
@@ -287,6 +289,9 @@ const zh = {
   'suggestion.rules.2': '我们无法忍受灌水建议，请等待一段时间再修改并重新提交建议。',
   'suggestion.rules.3': '如果有可交付成果，则必须对成本和预期投资回报进行有根据的估算',
   'suggestion.rules.infoRequest': '向亦来云基金会或CR的任何成员索要信息将不被受理，这超出了CR共识的范畴。对于这些问题，请联系社区经理。',
+
+  // Roles & Permissions
+  'permission.title': 'Roles & Permissions',
 
   // Developer
   'developer.breadcrumb.developers': '社区',
@@ -624,7 +629,7 @@ const zh = {
   '.yes': '是',
   '.no': '否',
   '.loading': '加载中...',
-  'ela': 'ELA',
+  ela: 'ELA',
   '.areYouSure': '您确定吗？',
   '.suspended': '暂停',
 
@@ -678,16 +683,16 @@ const zh = {
   'council.voting.btnText.no': '投反对票并给出理由',
   'council.voting.btnText.abstention': '弃权',
   'council.voting.btnText.notesSecretary': '秘书处记录',
+  'council.voting.btnText.editNotes': '编辑记录',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '完成此提案',
-  'council.voting.btnText.saveChanges': '保存更改',
 
   'council.voting.modal.complete': '您确定要完成此提案吗？',
   'council.voting.modal.updateNotes': '秘书处记录',
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstention': '您确定要弃权吗？',
   'council.voting.modal.voteNo': '反对的理由',
-  'council.voting.modal.confirm': '确认',
+  'council.voting.modal.confirm': '提交',
   'council.voting.modal.cancel': '取消',
 
   'council.voting.voteResult.yes': '赞成',
@@ -876,9 +881,12 @@ const zh = {
   'vision.07': '我们期待着为更安全、更透明、更自由的新型互联网建立一个创业和创新的国际化港湾。',
 
   // Role
-  'role.member': '成员',
+  'role.member': '用户',
   'role.organizer': '组织者',
   'role.admin': '管理员',
+  'role.council': '委员',
+  'role.secretary': '秘书',
+  'role.custom': '自定义',
   'role.admin.mode': '管理员模式',
 
   // Profile
@@ -886,6 +894,9 @@ const zh = {
   'profile.skillsets': '我的技能',
   'profile.completeProfile': '请完成您的个人档案',
   'profile.completeProfile.explanation': '获取更多任务并与世界各地的英才联系',
+  'profile.editProfile': '编辑个人资料',
+  'profile.editBasicProfile': '编辑个人基本资料',
+  'profile.editFullProfile': '编辑个人完整资料',
   'profile.editProfile.section.1': '基本信息',
   'profile.editProfile.section.2': '技能',
   'profile.editProfile.section.3': '社交媒体',
@@ -916,7 +927,6 @@ const zh = {
   'profile.localTime': '本地时间',
   'profile.sendMessage': '发送消息',
   'profile.viewProfile': '查看个人资料',
-  'profile.editProfile': '编辑个人资料',
   'profile.showPublicProfile': '显示公开的资料',
   'profile.crContributors': 'CR 贡献者',
   'profile.followers': '粉丝',
@@ -1040,9 +1050,12 @@ const zh = {
   'from.CVoteForm.label.note': '秘书处的记录',
   'from.CVoteForm.message.note.update.success': '记录更新成功！',
   'from.CVoteForm.text.onlycouncil': '只有委员会委员才可以创建和编辑提案。',
-  'from.CVoteForm.button.save': '保存',
-  'from.CVoteForm.button.submit': '提交',
-  'from.CVoteForm.button.complete.proposal': '完成这份提案',
+
+  'from.CVoteForm.button.cancel': '取消',
+  'from.CVoteForm.button.saveDraft': '保存为草案',
+  'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
+  'from.CVoteForm.button.saveChanges': '保存更改',
+
   'from.CVoteForm.modal.title': '您是否确定完成了这份提案？',
   'from.CVoteForm.modal.confirm': '确定',
   'from.CVoteForm.modal.cancel': '取消',
@@ -1407,7 +1420,7 @@ const zh = {
   'counstitution.title1': '亦来云Cyber Republic章程',
   'counstitution.title2': '亦来云Cyber Republic委员会创始文件',
   'counstitution.title3': '亦来云Cyber Republic投票规则',
-  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策'
+  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策',
 }
 
 // lang mappings

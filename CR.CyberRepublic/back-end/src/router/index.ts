@@ -19,6 +19,8 @@ import upload from './upload';
 
 import ping from './ping';
 import sso from './sso';
+import permission from './permission';
+import permissionRole from './permission_role';
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -28,55 +30,42 @@ import sso from './sso';
  * @param {e.NextFunction} next
  * @returns {boolean}
  */
-export const middleware = (req: Request, res: Response, next: NextFunction) => {
+export const middleware = async (req: Request, res: Response, next: NextFunction) => {
     // check token
     const token = req.headers['api-token'];
+    const DB = await db.create()
 
     if (token) {
-        try {
-            const json = JSON.parse(utilCrypto.decrypt(token.toString()));
-            if (json.userId && json.expired && (json.expired - moment().unix() > 0)) {
-                db.create().then((DB) => {
-                    DB.getModel('User').findOne({_id: json.userId}).then((user) => {
+        const json = JSON.parse(utilCrypto.decrypt(token.toString()));
+        if (json.userId && json.expired && (json.expired - moment().unix() > 0)) {
+            try {
+                const user = await DB.getModel('User').findOne({_id: json.userId})
+                // TODO: find better way to not send the salt back to the front-end
+                delete user._doc.salt
 
-                        // TODO: find better way to not send the salt back to the front-end
-                        delete user._doc.salt
-
-                        if (user) {
-                            req['session'].user = user;
-                            req['session'].userId = user.id;
-                        }
-
-                        next();
-                    }).catch(() => {
-                        next();
-                    })
-                });
-                return false;
+                if (user) {
+                    req['session'].user = user;
+                    req['session'].userId = user.id;
+                }
+            } catch (err) {
+                console.log('err happened: ', err)
             }
-        } catch (e) {
-            next();
         }
-
     } else if (req['session'].userId) {
         // check session
         const session = req['session'];
-        db.create().then((DB) => {
-            DB.getModel('User').findOne({_id: session.userId}).then((user) => {
-                if (user) {
-                    req['session'].user = user;
-                }
+        try {
+            const user = await DB.getModel('User').findOne({_id: session.userId})
 
-                next();
-            }).catch(() => {
-                next();
-            })
-        });
-        return false;
+            if (user) {
+                req['session'].user = user;
+            }
+        } catch (err) {
+            console.log('err happened: ', err)
+        }
     }
-
     next();
-};
+}
 
 const router = Router();
 
@@ -97,6 +86,8 @@ router.use('/submission', submission);
 router.use('/suggestion', suggestion);
 router.use('/cvote', cvote);
 router.use('/sso', sso);
+router.use('/permission', permission);
+router.use('/permissionRole', permissionRole);
 
 router.use((req, res) => {
     return res.sendStatus(403);

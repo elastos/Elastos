@@ -378,7 +378,10 @@ export default {
     mappingRoleToName: {
         MEMBER: 'role.member',
         LEADER: 'role.organizer',
-        ADMIN: 'role.admin'
+        ADMIN: 'role.admin',
+        COUNCIL: 'role.council',
+        SECRETARY: 'role.secretary',
+        CUSTOM: 'role.custom',
     },
     mappingLanguageKeyToName: {
         en: 'US',

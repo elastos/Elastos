@@ -32,6 +32,7 @@ export default class extends BaseComponent {
             profileCommunities: '/profile/communities',
             profileSuggestions: '/profile/suggestion',
             profileAdminSuggestions: '/admin/suggestion',
+            profileAdminPermission: '/admin/permission',
             forms: '/admin/forms',
             users: '/admin/users',
             communities: '/admin/community'
@@ -114,6 +115,11 @@ export default class extends BaseComponent {
                             {this.props.is_admin &&
                                 <Menu.Item key="communities">
                                     {I18N.get('2306')}
+                                </Menu.Item>
+                            }
+                            {this.props.is_admin &&
+                                <Menu.Item key="profileAdminPermission">
+                                    {I18N.get('permission.title')}
                                 </Menu.Item>
                             }
                         </Menu>

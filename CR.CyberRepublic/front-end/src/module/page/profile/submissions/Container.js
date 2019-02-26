@@ -13,7 +13,7 @@ export default createContainer(Component, (state) => {
         ...state.submission,
         currentUserId,
         is_leader: state.user.role === USER_ROLE.LEADER,
-        is_admin: state.user.role === USER_ROLE.ADMIN
+        is_admin: state.user.is_admin
     }
 
     if (!_.isArray(submissionState.all_submissions)) {

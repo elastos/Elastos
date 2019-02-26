@@ -22,10 +22,10 @@ beforeAll(async ()=>{
     })
 
     await DB.getModel('User').remove({
-        role : constant.USER_ROLE.MEMBER
+        username: global.DB.MEMBER_USER.username
     })
     await DB.getModel('User').remove({
-        role: constant.USER_ROLE.COUNCIL
+        username: global.DB.COUNCIL_USER.username
     })
     await DB.getModel('Task').remove({})
     await DB.getModel('CVote').remove({})
@@ -42,7 +42,7 @@ beforeAll(async ()=>{
         user: user.admin
     })
 
-    await adminService.update({
+    await adminService.updateRole({
         userId: council._id,
         role: constant.USER_ROLE.COUNCIL
     })
@@ -122,7 +122,7 @@ describe('Tests for CVote', () => {
             })
 
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to admin')
+            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to council/secretary')
         }
 
         try {
@@ -131,7 +131,7 @@ describe('Tests for CVote', () => {
             })
 
         } catch (err) {
-            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to admin')
+            expect(err).to.be.equal('cvoteservice.list - unpublished proposals only visible to council/secretary')
         }
 
     })
@@ -162,23 +162,19 @@ describe('Tests for CVote', () => {
             published: true
         })
 
-        expect(updateRs.nModified).to.be.equal(1)
+        expect(updateRs.published).to.be.equal(true)
 
-        const rs = await DB.getModel('CVote').findById(cvote1._id)
-
-        expect(rs.title).to.equal(global.DB.CVOTE_1.title)
+        expect(updateRs.title).to.equal(global.DB.CVOTE_1.title)
 
         const uuidVal = uuid.v4()
 
-        await cvoteService.update({
+        const updateRs2: any = await cvoteService.update({
             _id: cvote1._id,
             content: uuidVal
         })
 
-        const rs2 = await DB.getModel('CVote').findById(cvote1._id)
-
-        expect(rs2.title).to.equal(global.DB.CVOTE_1.title)
-        expect(rs2.content).to.equal(uuidVal)
+        expect(updateRs2.title).to.equal(global.DB.CVOTE_1.title)
+        expect(updateRs2.content).to.equal(uuidVal)
     })
 
     // TODO: council changing vote of other member should fail

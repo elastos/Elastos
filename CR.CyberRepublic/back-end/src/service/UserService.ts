@@ -4,9 +4,8 @@ import * as _ from 'lodash';
 import {constant} from '../constant';
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import {validate, utilCrypto, mail} from '../utility';
+import { validate, utilCrypto, mail, permissions } from '../utility';
 import CommunityService from "./CommunityService";
-import CommentService from "./CommentService";
 
 const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
 
@@ -111,14 +110,13 @@ export default class extends Base {
      * @returns {Promise<"mongoose".DocumentQuery<T extends "mongoose".Document, T extends "mongoose".Document>>}
      */
     public async show(param) {
-
-        const {userId} = param
-
+        const { userId } = param
         const db_user = this.getDBModel('User')
-        const db_team = this.getDBModel('Team')
+        const userRole = _.get(this.currentUser, 'role')
+        const isUserAdmin = permissions.isAdmin(userRole)
+        const isSelf = _.get(this.currentUser, '_id') === userId
 
-        if (param.admin && (!this.currentUser || (this.currentUser.role !== constant.USER_ROLE.ADMIN &&
-            this.currentUser._id !== userId))) {
+        if (param.admin && !isUserAdmin && !isSelf) {
             throw 'Access Denied'
         }
 
@@ -157,30 +155,39 @@ export default class extends Base {
         return user
     }
 
+    public async updateRole(param) {
+      const { userId, role } = param
+      const db_user = this.getDBModel('User');
+      const userRole = _.get(this.currentUser, 'role')
+      const isUserAdmin = permissions.isAdmin(userRole)
+
+      if (!isUserAdmin) {
+          throw 'Access Denied'
+      }
+
+      if(Object.keys(constant.USER_ROLE).indexOf(role) === -1){
+          throw 'invalid role'
+      }
+      return await db_user.update({ _id: userId }, { role })
+    }
+
     public async update(param) {
-
-        const {userId} = param
-
-        const updateObj:any = _.omit(param, restrictedFields.update)
-
+        const { userId } = param
+        const updateObj: any = _.omit(param, restrictedFields.update)
         const db_user = this.getDBModel('User');
-
         let user = await db_user.findById(userId)
+        const isSelf = _.get(this.currentUser, '_id', '').toString() === userId
+        const userRole = _.get(this.currentUser, 'role')
+        const isUserAdmin = permissions.isAdmin(userRole)
+        const canUpdate = isUserAdmin || isSelf
         let countryChanged = false
-
-        if (!this.currentUser || (this.currentUser.role !== constant.USER_ROLE.ADMIN && this.currentUser._id.toString() !== userId)) {
+        console.log(isUserAdmin, isSelf)
+        if (!canUpdate) {
             throw 'Access Denied'
         }
 
         if (!user) {
             throw `userId: ${userId} not found`
-        }
-
-        if(this.currentUser.role === constant.USER_ROLE.ADMIN && param.role){
-            if(Object.keys(constant.USER_ROLE).indexOf(param.role) === -1){
-                throw 'invalid role'
-            }
-            updateObj.role = param.role
         }
 
         if (param.profile && param.profile.country && param.profile.country !== user.profile.country) {
@@ -273,8 +280,10 @@ export default class extends Base {
     public async findAll(query): Promise<Object>{
         const db_user = this.getDBModel('User');
         let excludeFields = selectFields;
+        const userRole = _.get(this.currentUser, 'role')
+        const isUserAdmin = permissions.isAdmin(userRole)
 
-        if (!query.admin || this.currentUser.role !== constant.USER_ROLE.ADMIN) {
+        if (!query.admin || !isUserAdmin) {
             excludeFields += ' -email'
         }
 
@@ -344,13 +353,15 @@ export default class extends Base {
 
         const {oldPassword, password} = param;
         const username = param.username.toLowerCase();
+        const userRole = _.get(this.currentUser, 'role')
+        const isUserAdmin = permissions.isAdmin(userRole)
+        const isSelf = _.get(this.currentUser, 'username') === username
 
         this.validate_password(oldPassword);
         this.validate_password(password);
         this.validate_username(username);
 
-        if (!this.currentUser || (this.currentUser.role !== constant.USER_ROLE.ADMIN &&
-            this.currentUser.username !== username)) {
+        if (!isUserAdmin && !isSelf) {
             throw 'Access Denied'
         }
 

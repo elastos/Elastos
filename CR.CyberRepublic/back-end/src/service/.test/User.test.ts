@@ -105,7 +105,7 @@ describe('Tests for User', () => {
             user: resultMember
         })
         try {
-            await memberService.update({
+            await memberService.updateRole({
                 userId: resultMember._id,
                 role: constant.USER_ROLE.ADMIN
             })

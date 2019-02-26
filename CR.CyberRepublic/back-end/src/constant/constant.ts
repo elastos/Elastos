@@ -10,11 +10,12 @@ const create = (constant_list: string[]): any => {
 }
 
 export const USER_ROLE = {
-    MEMBER : 'MEMBER',
-    LEADER : 'LEADER',
     ADMIN : 'ADMIN',
     COUNCIL: 'COUNCIL',
-    SECRETARY: 'SECRETARY'
+    SECRETARY: 'SECRETARY',
+    CUSTOM : 'CUSTOM',
+    MEMBER : 'MEMBER',
+    LEADER : 'LEADER',
 }
 
 export const USER_LANGUAGE = {
@@ -127,6 +128,7 @@ export const TASK_CANDIDATE_CATEGORY = {
     RSVP: 'RSVP'
 }
 
+// ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED']);
 export const CVOTE_RESULT = {
     SUPPORT: 'support',
@@ -134,6 +136,7 @@ export const CVOTE_RESULT = {
     ABSTENTION: 'abstention',
     UNDECIDED: 'undecided',
 };
+// expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
 export const USER_SKILLSET = {
@@ -178,14 +181,7 @@ export const DB_EXCLUDED_FIELDS = {
 
 export const DB_SELECTED_FIELDS = {
     USER: {
-        NAME: 'profile.firstName profile.lastName username'
+        NAME: 'profile.firstName profile.lastName username',
+        NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
     },
 }
-
-export const COUNCIL_MEMBERS = {
-    '5bcf21f030826d68a940b017': 'Yipeng Su',
-    // '5c2f5a15f13d65008969be61': 'Feng Zhang',
-    '5b367c128f23a70035d35425': 'Fay Li',
-    '5b28be2784f6f900350d30b9': 'Kevin Zhang',
-}
-export const COUNCIL_MEMBER_IDS = _.keys(COUNCIL_MEMBERS)

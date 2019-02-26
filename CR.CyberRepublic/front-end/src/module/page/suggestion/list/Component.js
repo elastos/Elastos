@@ -1,4 +1,5 @@
-import React from 'react';
+import React from 'react'
+import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import {
   Pagination, Modal, Button, Col, Row, Select, Spin,
@@ -144,7 +145,7 @@ export default class extends StandardPage {
         <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</h2>
 
         <p style={{width: '60%', paddingBottom: '60px'}}>
-          {I18N.get('suggestion.intro.1')}<a href="/proposals">{I18N.get('suggestion.intro.1.proposals')}</a>{I18N.get('suggestion.intro.1.1')}
+          {I18N.get('suggestion.intro.1')}<Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>{I18N.get('suggestion.intro.1.1')}
           <br/>
           <br/>
           {I18N.get('suggestion.intro.3')}{localStorage.getItem('lang') === 'en' ?
@@ -243,7 +244,7 @@ export default class extends StandardPage {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data)
     const metaNode = this.renderMetaNode(data)
-    const title = <a href={href} className="title-link">{data.title}</a>
+    const title = <Link to={href} className="title-link">{data.title}</Link>
     return (
       <div key={data._id} className="item-container">
         {metaNode}

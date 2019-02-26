@@ -21,10 +21,10 @@ const FILTERS = {
 }
 
 const FILTERS_TEXT = {
-  ALL: 'All',
-  CREATED: 'Added by me',
-  COMMENTED: 'Commented by me',
-  SUBSCRIBED: 'Followed',
+  ALL: 'suggestion.all',
+  CREATED: 'suggestion.addedByMe',
+  COMMENTED: 'suggestion.commentedByMe',
+  SUBSCRIBED: 'suggestion.subscribed',
 }
 
 export default class extends ProfilePage {
@@ -80,7 +80,7 @@ export default class extends ProfilePage {
 
   renderHeader() {
     return (
-      <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</h2>
+      <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('profile.suggestion').toUpperCase()}</h2>
     )
   }
 
@@ -148,7 +148,7 @@ export default class extends ProfilePage {
                 onClick={() => this.onFilterChanged(value)}
                 className={(this.state.filter === value && 'cr-strikethrough') || ''}
               >
-                {FILTERS_TEXT[key]}
+                {I18N.get(FILTERS_TEXT[key])}
               </Button>
             ))}
           </Button.Group>

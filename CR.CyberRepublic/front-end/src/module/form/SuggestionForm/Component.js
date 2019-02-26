@@ -81,11 +81,12 @@ class C extends BaseComponent {
     const { getFieldDecorator } = this.props.form
 
     const input_el = (
-      <Input size="large" />
+      <Input size="large" placeholder="Title" />
     )
 
     const textarea_el = (
       <ReactQuill
+        placeholder="Description"
         modules={{
           toolbar: TOOLBAR_OPTIONS,
         }}
@@ -93,7 +94,7 @@ class C extends BaseComponent {
     )
 
     const link_el = (
-    <Input size="large" />
+      <Input size="large" placeholder="Info Link" />
     )
 
     const title_fn = getFieldDecorator('title', {
@@ -241,15 +242,14 @@ class C extends BaseComponent {
         <FormItem className="form-desc">
           {p.description}
         </FormItem>
-        <br/>
-        <FormItem label={I18N.get('from.TaskCreateForm.label.info')} {...formItemLayout} className="form-link">
+        <FormItem className="form-link">
           {p.link}
         </FormItem>
         <FormItem wrapperCol={{ xs: { span: 24, offset: 0 }, sm: { span: 12, offset: 8 } }} className="form-actions">
-          <Button type="ebp" className="cr-btn-default" onClick={this.props.showCreateForm}>
+          <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
             {I18N.get('suggestion.cancel')}
           </Button>
-          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn-default cr-btn-primary">
+          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
             {I18N.get('suggestion.submit')}
           </Button>
         </FormItem>

@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { withRouter } from 'react-router';
 import { api_request, upload_file } from './request';
 import { loginRedirectWithQuery } from './login'
+import * as permissions from './permissions';
 
 /**
  * Helper for React-Redux connect
@@ -31,9 +32,9 @@ export const constant = (moduleName, detailArray) => {
   return result;
 };
 
-
 export {
   api_request,
   upload_file,
   loginRedirectWithQuery,
+  permissions,
 }

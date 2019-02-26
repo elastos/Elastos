@@ -10,6 +10,7 @@ import * as cors from 'cors';
 import * as fileUpload from 'express-fileupload';
 import * as compression from 'compression';
 import * as fs from 'fs';
+import AccessControl from './utility/accessControl'
 import db from './db';
 
 import router, {middleware} from './router';
@@ -23,9 +24,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 (async ()=>{
-    const DB = await db.create();
-
     const app = express();
+    const DB = await db.create();
+    const permissions = await DB.getModel('Permission').find()
+    const prefix = '/api'
 
     app.set('trust proxy', true)
     app.use(cors());
@@ -68,7 +70,11 @@ if (process.env.NODE_ENV === 'production') {
     // init router
     app.use(middleware);
     app.use(fileUpload());
-    app.use('/api', router);
+
+    // setup access control for REST apis before the router middleware
+    AccessControl(prefix, app, permissions);
+
+    app.use(prefix, router);
 
     if (process.env.NODE_ENV === 'production') {
         app.use(rollbar.errorHandler())

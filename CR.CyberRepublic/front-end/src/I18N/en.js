@@ -32,7 +32,7 @@ const en = {
   '0110': 'Blog',
   'navigation.programs': 'Programs',
   'navigation.suggestion': 'Suggestions',
-  'navigation.council': 'Council & Secreariat',
+  'navigation.council': 'Council',
   'navigation.constitution': 'Constitution',
   'navigation.docs': 'Docs',
 
@@ -46,46 +46,48 @@ const en = {
   '0301': 'English',
   '0302': 'Chinese',
 
+  'link.back': 'Back',
+
   // Admin breadcrumb
-  '1100': 'Admin',
+  1100: 'Admin',
 
   // Admin users
-  '1200': 'No',
-  '1201': 'Username',
-  '1202': 'Email',
-  '1203': 'Default language',
-  '1204': 'Role',
-  '1205': 'Active',
-  '1206': 'Ela',
-  '1207': 'Created Date',
-  '1208': 'Full Name',
-  '1209': 'Country',
+  1200: 'No',
+  1201: 'Username',
+  1202: 'Email',
+  1203: 'Default language',
+  1204: 'Role',
+  1205: 'Active',
+  1206: 'Ela',
+  1207: 'Created Date',
+  1208: 'Full Name',
+  1209: 'Country',
 
   // Admin navigator
-  '1300': 'Tasks',
-  '1301': 'Community',
-  '1302': 'Users',
-  '1303': 'Teams',
-  '1304': 'Issues',
-  '1305': 'Forms',
-  '1306': 'Projects',
+  1300: 'Tasks',
+  1301: 'Community',
+  1302: 'Users',
+  1303: 'Teams',
+  1304: 'Issues',
+  1305: 'Forms',
+  1306: 'Projects',
   'admin.suggestion': 'Suggestions',
 
   // Profile navigator
-  '2300': 'My Profile',
-  '2301': 'My Tasks',
-  '2302': 'My Teams',
-  '2303': 'My Issues',
-  '2304': 'My Communities',
-  '2305': 'My Projects',
-  '2306': 'Communities',
+  2300: 'My Profile',
+  2301: 'My Tasks',
+  2302: 'My Teams',
+  2303: 'My Issues',
+  2304: 'My Communities',
+  2305: 'My Projects',
+  2306: 'Communities',
   'profile.suggestion': 'My Suggestions',
 
   'login.success': 'Login Successful',
 
   'mentions.notFound': 'User not found',
 
-  'comments': 'Comments',
+  comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
   'comments.noComments': 'No comments yet. Be the first to post!',
@@ -204,8 +206,8 @@ const en = {
   'register.welcome': 'Welcome to the Cyber Republic!',
   'register.join_circle': 'Join a CRcle and earn ELA',
   'register.join': 'Join',
-  '3533': 'More about you',
-  '3534': 'Country',
+  3533: 'More about you',
+  3534: 'Country',
   'register.code.title': 'Become a citizen',
 
   // Forgot / Reset Password Form
@@ -287,6 +289,9 @@ const en = {
   'suggestion.rules.2': 'Spamming suggestions will not be tolerated, please wait a reasonable time before modifying and resubmitting',
   'suggestion.rules.3': 'If there is a deliverable, it must have an educated estimate of cost and expected return on investment',
   'suggestion.rules.infoRequest': 'Requests for information from Elastos Foundation or specific CR members are not permitted and outside of the scope of the Cyber Republic Consensus program, for these matters please contact the Community Manager.',
+
+  // Roles & Permissions
+  'permission.title': 'Roles & Permissions',
 
   // Developer
   'developer.breadcrumb.developers': 'Community',
@@ -624,7 +629,7 @@ const en = {
   '.yes': 'Yes',
   '.no': 'No',
   '.loading': 'Loading...',
-  'ela': 'ELA',
+  ela: 'ELA',
   '.areYouSure': 'Are you sure?',
   '.suspended': 'Suspended',
 
@@ -678,16 +683,16 @@ const en = {
   'council.voting.btnText.no': 'Oppose with a Reason',
   'council.voting.btnText.abstention': 'Abstain',
   'council.voting.btnText.notesSecretary': 'Notes from Secretary',
-  'council.voting.btnText.editProposal': 'Edit this proposal',
-  'council.voting.btnText.completeProposal': 'Complete this proposal',
-  'council.voting.btnText.saveChanges': 'Save changes',
+  'council.voting.btnText.editNotes': 'Edit Notes',
+  'council.voting.btnText.editProposal': 'Edit Proposal',
+  'council.voting.btnText.completeProposal': 'Complete Proposal',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
   'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
   'council.voting.modal.voteNo': 'Reason for Opposing',
-  'council.voting.modal.confirm': 'Confirm',
+  'council.voting.modal.confirm': 'Submit',
   'council.voting.modal.cancel': 'Cancel',
 
   'council.voting.voteResult.yes': 'Vote Yes',
@@ -876,9 +881,12 @@ const en = {
   'vision.07': 'We look forward to building an international haven for entrepreneurship  and innovation for the new internet.',
 
   // Role
-  'role.member': 'Member',
+  'role.member': 'User',
   'role.organizer': 'Organizer',
   'role.admin': 'Admin',
+  'role.council': 'Council',
+  'role.secretary': 'Secretary',
+  'role.custom': 'Custom',
   'role.admin.mode': 'Admin Mode',
 
   // Profile
@@ -887,6 +895,8 @@ const en = {
   'profile.completeProfile': 'Complete your Profile',
   'profile.completeProfile.explanation': 'Get more tasks and connect with talent all over the world',
   'profile.editProfile': 'Edit Profile',
+  'profile.editBasicProfile': 'Edit Basic Profile',
+  'profile.editFullProfile': 'Edit Full Profile',
   'profile.editProfile.section.1': 'Basic Information',
   'profile.editProfile.section.2': 'Skill Set',
   'profile.editProfile.section.3': 'Social Profile',
@@ -1040,9 +1050,12 @@ const en = {
   'from.CVoteForm.label.note': 'Notes from Secretary',
   'from.CVoteForm.message.note.update.success': 'Update notes success!',
   'from.CVoteForm.text.onlycouncil': 'Only Council Member could create or edit proposal.',
-  'from.CVoteForm.button.save': 'Save',
-  'from.CVoteForm.button.submit': 'Submit',
-  'from.CVoteForm.button.complete.proposal': 'Complete this proposal',
+
+  'from.CVoteForm.button.cancel': 'Cancel',
+  'from.CVoteForm.button.saveDraft': 'Save as Draft',
+  'from.CVoteForm.button.saveAndPublish': 'Save & Publish',
+  'from.CVoteForm.button.saveChanges': 'Save changes',
+
   'from.CVoteForm.modal.title': 'Are you sure to complete this proposal?',
   'from.CVoteForm.modal.confirm': 'Confirm',
   'from.CVoteForm.modal.cancel': 'Cancel',
@@ -1395,9 +1408,9 @@ const en = {
   'cs.yipeng.name': 'Yipeng Su',
   'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
   'cs.feng.name': 'Feng Zhang',
-  'cs.feng.intro': 'Lawyer Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+  'cs.feng.intro': 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
   'cs.rebecca.name': 'Rebecca Zhu',
-  'cs.rebecca.intro': 'Project Director of the Elastos Foundation, based in Beijing',
+  'cs.rebecca.intro': 'Project Director of Elastos Foundation, based in Beijing',
 
   // ConstitutionNavigator
   'counstitution.menu1': '01 Elastos Cyber Republic Constitution',
@@ -1407,7 +1420,7 @@ const en = {
   'counstitution.title1': 'Elastos Cyber Republic Constitution',
   'counstitution.title2': 'Elastos Cyber Republic Council Founding Document',
   'counstitution.title3': 'Elastos Cyber Republic Voting Rules',
-  'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy'
+  'counstitution.title4': 'Elastos Cyber Republic Council Conflict of Interest Policy',
 }
 
 // lang mappings
