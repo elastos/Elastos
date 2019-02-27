@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net"
 	"runtime"
+	"sort"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -293,6 +294,10 @@ type getPeersMsg struct {
 	reply chan []*serverPeer
 }
 
+type dumpPeersInfoMsg struct {
+	reply chan []*PeerInfo
+}
+
 // handleQuery is the central handler for all queries and commands from other
 // goroutines related to peer state.
 func (s *server) handleQuery(state *peerState, querymsg interface{}) {
@@ -400,7 +405,62 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 			peers = append(peers, sp)
 		})
 		msg.reply <- peers
+
+	case dumpPeersInfoMsg:
+		// DumpPeesInfo returns the peers info in connect peers list.  The peers
+		// in connect list can be in 4 states.
+		// 1. NoneConnection, no outbound or inbound connection.
+		// 2. 2WayConnection, have both outbound and inbound connections.
+		// 3. OutboundOnly, has one outbound connection.
+		// 4. InboundOnly, has one inbound connection.
+
+		// To get the actual state of a peer in connect list, we need to loop
+		// through outbound peers list, inbound peers list and connect peers
+		// list, these are high cost operations.  So this method should not be
+		// called frequently.
+		peers := make(map[peer.PID]*PeerInfo)
+		for _, sp := range state.outboundPeers {
+			peers[sp.PID()] = &PeerInfo{
+				PID:   sp.PID(),
+				Addr:  sp.Addr(),
+				State: CSOutboundOnly,
+			}
+		}
+		for _, sp := range state.inboundPeers {
+			if pi, ok := peers[sp.PID()]; ok {
+				pi.State = CS2WayConnection
+				continue
+			}
+			peers[sp.PID()] = &PeerInfo{
+				PID:   sp.PID(),
+				Addr:  sp.Addr(),
+				State: CSInboundOnly,
+			}
+		}
+		for _, pa := range state.connectPeers {
+			if _, ok := peers[pa.PID]; ok {
+				continue
+			}
+			peers[pa.PID] = &PeerInfo{
+				PID:   pa.PID,
+				Addr:  pa.Addr,
+				State: CSNoneConnection,
+			}
+		}
+		msg.reply <- sortPeersInfo(peers)
 	}
+}
+
+// sortPeersInfo returns an ordered PeerInfo slice by peer's PID in asc.
+func sortPeersInfo(peers map[peer.PID]*PeerInfo) []*PeerInfo {
+	list := make([]*PeerInfo, 0, len(peers))
+	for _, pi := range peers {
+		list = append(list, pi)
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return bytes.Compare(list[i].PID[:], list[j].PID[:]) < 0
+	})
+	return list
 }
 
 func (s *server) pingNonce(pid peer.PID) uint64 {
@@ -586,6 +646,16 @@ func (s *server) ConnectedPeers() []Peer {
 		peers = append(peers, (Peer)(sp))
 	}
 	return peers
+}
+
+// DumpPeersInfo returns an array consisting of all peers state in connect list.
+//
+// This function is safe for concurrent access and is part of the
+// IServer interface implementation.
+func (s *server) DumpPeersInfo() []*PeerInfo {
+	replyChan := make(chan []*PeerInfo)
+	s.query <- dumpPeersInfoMsg{reply: replyChan}
+	return <-replyChan
 }
 
 // Start begins accepting connections from peers.
