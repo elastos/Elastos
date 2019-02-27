@@ -27,6 +27,7 @@
 #include <getopt.h>
 #include <assert.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -44,6 +45,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <builtins.h>
 #include <posix_helper.h>
+#include <io.h>
 #endif
 
 #include "config.h"
@@ -530,17 +532,22 @@ static int session_hash_compare(const void *key1, size_t len1,
         return 1;
 }
 
-const char *get_config_path(const char *config_files[])
+const char *get_config_path(const char *config_file, const char *config_files[])
 {
-    const char **file;
+    const char **file = config_file ? &config_file : config_files;
 
-    for (file = config_files; *file; file++) {
-        FILE *fp = fopen(*file, "r");
+    for (; *file; ) {
+        int fd = open(*file, O_RDONLY);
+        if (fd < 0) {
+            if (*file == config_file)
+                file = config_files;
+            else
+                file++;
 
-        if (!fp)
             continue;
+        }
 
-        fclose(fp);
+        close(fd);
 
         return *file;
     }
@@ -600,8 +607,7 @@ int main(int argc, char *argv[])
         getchar();
     }
 
-    if (!config_file)
-        config_file = get_config_path(config_files);
+    config_file = get_config_path(config_file, config_files);
 
     if (!config_file) {
         printf("Error: Missing config file.\n");
