@@ -1,10 +1,45 @@
 package p2p
 
 import (
-	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"fmt"
 
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
+
+// ConnState indicates the peer connection state.
+type ConnState uint8
+
+const (
+	// CSNoneConnection indicates the peer has no connection.
+	CSNoneConnection ConnState = iota
+
+	// CSOutboundOnly indicates the peer has outbound connection only.
+	CSOutboundOnly
+
+	// CSInboundOnly indicates the peer has inbound connection only.
+	CSInboundOnly
+
+	// CS2WayConnection indicates the peer have both inbound and outbound
+	// connections.
+	CS2WayConnection
+)
+
+// Names of ConnState for pretty printing.
+var csStrings = []string{
+	"NoneConnection",
+	"OutboundOnly",
+	"InboundOnly",
+	"2WayConnection",
+}
+
+// String returns the ConnState in human-readable form.
+func (cs ConnState) String() string {
+	if int(cs) <= len(csStrings)-1 {
+		return csStrings[cs]
+	}
+	return fmt.Sprintf("ConnState%d", cs)
+}
 
 // PeerAddr represent a connect peer's ID and it's IP address
 type PeerAddr struct {
@@ -23,6 +58,19 @@ type Peer interface {
 
 	// ToPeer returns the real peer instance.
 	ToPeer() *peer.Peer
+}
+
+// PeerInfo represent the peer info of the connect peers.
+type PeerInfo struct {
+	// PID is the peer's public key id.
+	PID peer.PID
+
+	// Addr is the peer's IP address.  It can be host:port format,
+	// or host only and use the DefaultPort passed by server config.
+	Addr string
+
+	// State is the peer's connection state.
+	State ConnState
 }
 
 // StateNotifier notifies the server peer state changes.
@@ -63,4 +111,8 @@ type Server interface {
 
 	// ConnectedPeers returns an array consisting of all connected peers.
 	ConnectedPeers() []Peer
+
+	// DumpPeersInfo returns a list of connect peers information.  This is a
+	// high cost method, should not be called frequently.
+	DumpPeersInfo() []*PeerInfo
 }
