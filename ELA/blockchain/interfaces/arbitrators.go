@@ -24,6 +24,7 @@ type Arbitrators interface {
 	GetArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168
 
+	GetPreviousOnDutyArbitrator() []byte
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
 
