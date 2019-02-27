@@ -84,7 +84,7 @@ func CheckBlockWithConfirmation(block *Block,
 		}
 		return err
 	} else if inactivePayload != nil {
-		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
+		if err := DefaultLedger.Arbitrators.ForceChange(block.Height); err != nil {
 			panic("force change fail when finding an inactive arbitrators" +
 				" transaction")
 		}

@@ -82,7 +82,7 @@ func (a *ArbitratorsMock) SetDutyChangeCount(count uint32) {
 	a.DutyChangedCount = count
 }
 
-func (a *ArbitratorsMock) ForceChange() error {
+func (a *ArbitratorsMock) ForceChange(height uint32) error {
 	return nil
 }
 
@@ -142,7 +142,7 @@ func (a *ArbitratorsMock) GetCandidatesProgramHashes() []*common.Uint168 {
 	return a.CurrentCandidatesPrograms
 }
 
-func (a *ArbitratorsMock) GetPreviousOnDutyArbitrator() []byte {
+func (a *ArbitratorsMock) GetOnDutyArbitratorByHeight(height uint32) []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }
 
