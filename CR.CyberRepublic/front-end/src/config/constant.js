@@ -19,8 +19,10 @@ export const EMPOWER_MAX_DAPP_ANALYST = 5;
 export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10;
 export const MAX_LENGTH_COMMENT = 2048;
 export const TOOLBAR_OPTIONS = [
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
-    [{'list': 'ordered'}, {'list': 'bullet'}]
+    [{'list': 'ordered'}, {'list': 'bullet'}],
+    ['blockquote', 'code-block'],
 ];
 export const LINKIFY_OPTION = {
     defaultProtocol: 'https',

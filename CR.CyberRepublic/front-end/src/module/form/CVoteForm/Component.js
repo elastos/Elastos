@@ -3,11 +3,13 @@ import BaseComponent from '@/model/BaseComponent'
 import {
   Form, Input, Button, Select, Row, Col, message, Modal,
 } from 'antd'
+import ReactQuill from 'react-quill'
+import { TOOLBAR_OPTIONS } from '@/config/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 
-import './style.scss'
+import { Container, Title, Btn } from './style'
 
 const FormItem = Form.Item
 const { TextArea } = Input
@@ -31,44 +33,44 @@ class C extends BaseComponent {
   handleSubmit = async (e, fields = {}) => {
     e.preventDefault()
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
-    const { edit, form, updateCVote, createCVote } = this.props
+    const { edit, form, updateCVote, createCVote, onCreate, onEdit } = this.props
 
     form.validateFields(async (err, values) => {
-      if (!err) {
-        const param = {
-          title: values.title,
-          type: values.type,
-          notes: values.notes,
-          motionId: values.motionId,
-          isConflict: values.isConflict,
-          content: values.content,
-          published: true,
-          ...fields,
-        }
-        if (!edit) param.proposedBy = fullName
+      if (err) return
+      const { title, type, notes, motionId, isConflict, content } = values
+      const param = {
+        title,
+        type,
+        notes,
+        motionId,
+        isConflict,
+        content,
+        published: true,
+        ...fields,
+      }
+      if (!edit) param.proposedBy = fullName
 
-        this.ord_loading(true)
-        if (edit) {
-          try {
-            param._id = edit
-            await updateCVote(param)
-            message.success(I18N.get('from.CVoteForm.message.updated.success'))
-            this.ord_loading(false)
-            this.gotoList()
-          } catch (error) {
-            message.error(error.message)
-            this.ord_loading(false)
-          }
-        } else {
-          try {
-            await createCVote(param)
-            message.success(I18N.get('from.CVoteForm.message.create.success'))
-            this.ord_loading(false)
-            this.gotoList()
-          } catch (error) {
-            message.error(error.message)
-            this.ord_loading(false)
-          }
+      this.ord_loading(true)
+      if (edit) {
+        try {
+          param._id = edit
+          await updateCVote(param)
+          await onEdit()
+          message.success(I18N.get('from.CVoteForm.message.updated.success'))
+          this.ord_loading(false)
+        } catch (error) {
+          message.error(error.message)
+          this.ord_loading(false)
+        }
+      } else {
+        try {
+          await createCVote(param)
+          await onCreate()
+          message.success(I18N.get('from.CVoteForm.message.create.success'))
+          this.ord_loading(false)
+        } catch (error) {
+          message.error(error.message)
+          this.ord_loading(false)
         }
       }
     })
@@ -93,8 +95,7 @@ class C extends BaseComponent {
       initialValue: edit ? parseInt(data.type, 10) : 1,
     })
     const type_el = (
-      <Select size="large">
-        {/* <Select.Option key={-1} value={-1}>please select type</Select.Option> */}
+      <Select>
         {
           _.map(s.select_type, (item, i) => (
             <Select.Option key={i} value={item.code}>{item.name}</Select.Option>
@@ -105,10 +106,10 @@ class C extends BaseComponent {
 
     const status_fn = getFieldDecorator('status', {
       readOnly: true,
-      initialValue: edit ? CVOTE_STATUS_TEXT[data.status] : CVOTE_STATUS_TEXT.DRAFT,
+      initialValue: edit ? I18N.get(`cvoteStatus.${data.status}`) : I18N.get(`cvoteStatus.${CVOTE_STATUS_TEXT.DRAFT}`),
     })
     const status_el = (
-      <Select size="large" disabled />
+      <Select disabled />
     )
 
     const content_fn = getFieldDecorator('content', {
@@ -116,16 +117,22 @@ class C extends BaseComponent {
       initialValue: edit ? data.content : '',
     })
     const content_el = (
-      <TextArea rows={6} />
+      <ReactQuill
+        placeholder=""
+        style={{ background: 'white' }}
+        modules={{
+          toolbar: TOOLBAR_OPTIONS,
+        }}
+      />
     )
 
     const isConflict_fn = getFieldDecorator('isConflict', {
       initialValue: edit ? data.isConflict : 'NO',
     })
     const isConflict_el = (
-      <Select size="large">
-        <Select.Option value="NO">{I18N.get('from.CVoteForm.yes')}</Select.Option>
-        <Select.Option value="YES">{I18N.get('from.CVoteForm.no')}</Select.Option>
+      <Select>
+        <Select.Option value="NO">{I18N.get('from.CVoteForm.no')}</Select.Option>
+        <Select.Option value="YES">{I18N.get('from.CVoteForm.yes')}</Select.Option>
       </Select>
     )
 
@@ -165,43 +172,61 @@ class C extends BaseComponent {
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 6 },
+        sm: { span: 12 },
+        md: { span: 12 },
       },
       wrapperCol: {
         xs: { span: 24 },
         sm: { span: 12 },
+        md: { span: 12 },
       },
+      colon: false,
+    }
+    const formItemLayoutOneLine = {
+      labelCol: {
+        span: 24,
+      },
+      wrapperCol: {
+        span: 24,
+      },
+      colon: false,
     }
 
     return (
-      <Form onSubmit={this.handleSubmit} className="c_CVoteForm">
-        <h2>
-          {I18N.get('from.CVoteForm.proposal.title')}
-        </h2>
+      <Container>
+        <Form onSubmit={this.handleSubmit}>
+          <Title>
+            {this.props.header || I18N.get('from.CVoteForm.button.add')}
+          </Title>
 
-        <h5>
-          {I18N.get('from.CVoteForm.proposal.content')}
-        </h5>
+          <Row gutter={16} type="flex" justify="space-between">
+            <Col sm={24} md={11} lg={11}>
+              <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{p.type}</FormItem>
+            </Col>
+            <Col sm={24} md={11} lg={11}>
+              <FormItem label={`${I18N.get('council.voting.ifConflicted')}?`} {...formItemLayout}>{p.isConflict}</FormItem>
+            </Col>
+          </Row>
+          <Row gutter={16} type="flex" justify="space-between">
+            <Col sm={24} md={11} lg={11}>
+              <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{p.status}</FormItem>
+            </Col>
+          </Row>
 
-        <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayout} style={{ marginTop: '24px' }}>{ p.title }</FormItem>
 
-        <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{p.type}</FormItem>
+          <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayoutOneLine}>{ p.title }</FormItem>
 
-        <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayout}>{p.content}</FormItem>
+          <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayoutOneLine}>{p.content}</FormItem>
 
+          {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayoutOneLine}>{p.notes}</FormItem>}
 
-        <FormItem style={{ marginBottom: '12px' }} label={I18N.get('from.CVoteForm.label.conflict')} help={I18N.get('from.CVoteForm.label.conflict.help')} {...formItemLayout}>{p.isConflict}</FormItem>
-
-        <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{p.status}</FormItem>
-
-        {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayout}>{p.notes}</FormItem>}
-
-        <Row gutter={8}>
-          {this.renderCancelBtn()}
-          {this.renderSaveDraftBtn()}
-          {this.renderSaveBtn()}
-        </Row>
-      </Form>
+          <Row gutter={8} type="flex" justify="center">
+            {this.renderCancelBtn()}
+            {this.renderSaveDraftBtn()}
+            {this.renderSaveBtn()}
+          </Row>
+        </Form>
+      </Container>
     )
   }
 
@@ -215,13 +240,11 @@ class C extends BaseComponent {
 
   renderCancelBtn() {
     return (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} onClick={this.gotoList} size="large" style={{ width: '100%', borderRadius: 0 }}>
-            {I18N.get('from.CVoteForm.button.cancel')}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+          {I18N.get('from.CVoteForm.button.cancel')}
+        </Button>
+      </FormItem>
     )
   }
 
@@ -230,13 +253,11 @@ class C extends BaseComponent {
     const showButton = !edit || _.get(data, 'status') === CVOTE_STATUS.DRAFT
 
     return showButton && (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} size="large" onClick={this.saveDraft} className="d_btn">
-            {I18N.get('from.CVoteForm.button.saveDraft')}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraft} style={{ marginRight: 10 }}>
+          {I18N.get('from.CVoteForm.button.saveDraft')}
+        </Button>
+      </FormItem>
     )
   }
 
@@ -244,13 +265,11 @@ class C extends BaseComponent {
     const { edit, data } = this.props
     const btnText = edit && data.published ? I18N.get('from.CVoteForm.button.saveChanges') : I18N.get('from.CVoteForm.button.saveAndPublish')
     return (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} size="large" type="ebp" htmlType="submit" className="d_btn">
-            {btnText}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" htmlType="submit">
+          {btnText}
+        </Button>
+      </FormItem>
     )
   }
 
@@ -268,7 +287,6 @@ class C extends BaseComponent {
         }).then(() => {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
           this.ord_loading(false)
-          this.gotoList()
         }).catch((e) => {
           message.error(e.message)
           this.ord_loading(false)
