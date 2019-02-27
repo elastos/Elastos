@@ -216,7 +216,7 @@ export const CVOTE_STATUS_TEXT = {
   ACTIVE: 'PASSED',
   REJECT: 'REJECTED',
   DEFERRED: 'DEFERRED',
-  FINAL: 'COMPLETED',
+  FINAL: 'FINAL',
 }
 
 export const CVOTE_RESULT = {

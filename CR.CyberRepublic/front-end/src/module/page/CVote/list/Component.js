@@ -3,10 +3,11 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Table, Row, Col, Button,
+  Table, Row, Col, Button, Modal,
 } from 'antd'
 import I18N from '@/I18N'
 import VoteStats from '../stats/Component'
+import CreateForm from '../create/Container'
 import { CVOTE_RESULT_TEXT, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
 
 // style
@@ -16,8 +17,15 @@ export default class extends BaseComponent {
   constructor(p) {
     super(p);
 
-    this.state.list = null;
-    this.state.loading = true;
+    this.state = {
+      list: null,
+      loading: true,
+      creating: false,
+    }
+  }
+
+  async componentDidMount() {
+    this.refetch()
   }
 
   ord_render() {
@@ -64,7 +72,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => CVOTE_STATUS_TEXT[item.status] || '',
+        render: (id, item) => I18N.get(`cvoteStatus.${item.status}`) || '',
       },
       {
         title: I18N.get('council.voting.createdAt'),
@@ -95,11 +103,12 @@ export default class extends BaseComponent {
 
     const createBtn = canManage && (
       <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-        <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
-            Add a Proposal
+        <Button onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
+          {I18N.get('from.CVoteForm.button.add')}
         </Button>
       </Col>
     )
+    const createFormNode = this.renderCreateForm()
     return (
       <Container>
         <Row type="flex" align="middle" justify="end">
@@ -121,22 +130,15 @@ export default class extends BaseComponent {
           dataSource={this.state.list}
           rowKey={record => record._id}
         />
+        {createFormNode}
       </Container>
 
     )
   }
 
-  toDetail(id) {
-    this.props.history.push(`/cvote/${id}`);
-  }
-
-  toCreate = () => {
-    this.props.history.push('/cvote/create');
-  }
-
-  async componentDidMount() {
-    const { listData, canManage } = this.props
+  refetch = async () => {
     this.ord_loading(true);
+    const { listData, canManage } = this.props
     try {
       const list = await listData({}, canManage);
       this.setState({ list });
@@ -145,6 +147,41 @@ export default class extends BaseComponent {
     }
 
     this.ord_loading(false);
+  }
+
+  renderCreateForm() {
+    return (
+      <Modal
+        className="project-detail-nobar"
+        visible={this.state.creating}
+        onOk={this.switchCreateMode}
+        onCancel={this.switchCreateMode}
+        footer={null}
+        width="70%"
+      >
+        <CreateForm onCreate={this.onCreate} onCancel={this.switchCreateMode} />
+      </Modal>
+    )
+  }
+
+  switchCreateMode = () => {
+    const { creating } = this.state
+    this.setState({
+      creating: !creating,
+    })
+  }
+
+  onCreate = () => {
+    this.switchCreateMode()
+    this.refetch()
+  }
+
+  toDetail(id) {
+    this.props.history.push(`/cvote/${id}`);
+  }
+
+  toCreate = () => {
+    this.props.history.push('/cvote/create');
   }
 
   voteDataByUser = (data) => {
