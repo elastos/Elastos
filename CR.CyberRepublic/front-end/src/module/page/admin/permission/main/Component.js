@@ -1,6 +1,5 @@
 import React from 'react'
 import _ from 'lodash'
-import MediaQuery from 'react-responsive'
 import {
   Col, Row, Spin, Tabs,
 } from 'antd'
@@ -11,6 +10,7 @@ import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import List from '../list/Container'
 import {
   USER_ROLE_TO_TEXT,
+  RESOURCE_TYPE_TO_TEXT,
 } from '@/constant'
 
 import '@/module/page/admin/admin.scss'
@@ -18,13 +18,6 @@ import '@/module/page/admin/admin.scss'
 const TabPane = Tabs.TabPane
 
 export default class extends AdminPage {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-    }
-  }
-
   componentDidMount() {
     super.componentDidMount()
 
@@ -94,14 +87,15 @@ export default class extends AdminPage {
   renderList(role, accuData) {
     const nodes = _.map(accuData, (dataList, resourceType) => {
       const dataListForRole = this.getDataListForRole(resourceType, role)
+      const header = RESOURCE_TYPE_TO_TEXT[resourceType] || resourceType
       const props = {
         dataList,
         dataListForRole,
         role,
-        header: resourceType,
+        header,
       }
       return (
-        <Col lg={8} md={12} sm={24} key= {resourceType}>
+        <Col lg={8} md={12} sm={24} key={resourceType}>
           <List {...props} />
         </Col>
       )
@@ -120,25 +114,10 @@ export default class extends AdminPage {
     )
   }
 
-
-  /**
-   * Builds the query from the current state
-   */
-  getQuery = () => {
-    const { role, resourceType } = this.props
-    const query = {
-      role,
-      resourceType,
-    }
-
-    return query
-  }
-
   /**
    * Refetch the data based on the current state retrieved from getQuery
    */
   refetch = () => {
-    const query = this.getQuery()
     this.props.getList()
     this.props.getListForRole()
   }

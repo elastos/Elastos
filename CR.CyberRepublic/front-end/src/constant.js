@@ -235,6 +235,10 @@ export const CVOTE_RESULT_TEXT = {
   '-1': 'Undecided',
 }
 
+export const RESOURCE_TYPE_TO_TEXT = {
+  CVote: 'Proposal',
+}
+
 export const avatar_map = {
   'Kevin Zhang': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/44f5fe8e-f062-41e4-ba5b-1dbbea4e63b0_kevin.jpeg',
   'Fay Li': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/37706672-efa7-4a7a-8453-200f3ab615d9_IMG_4320.JPG',
