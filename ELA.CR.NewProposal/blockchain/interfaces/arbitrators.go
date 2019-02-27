@@ -7,7 +7,7 @@ import (
 )
 
 type Arbitrators interface {
-	ForceChange() error
+	ForceChange(height uint32) error
 	IncreaseChainHeight(height uint32)
 	DecreaseChainHeight(height uint32)
 
@@ -24,7 +24,7 @@ type Arbitrators interface {
 	GetArbitratorsProgramHashes() []*common.Uint168
 	GetCandidatesProgramHashes() []*common.Uint168
 
-	GetPreviousOnDutyArbitrator() []byte
+	GetOnDutyArbitratorByHeight(height uint32) []byte
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
 

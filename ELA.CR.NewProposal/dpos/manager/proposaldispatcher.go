@@ -214,7 +214,12 @@ func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal) {
 
 	if p.processingProposal != nil && d.Hash().IsEqual(
 		p.processingProposal.Hash()) {
-		log.Info("already processing processing")
+		log.Info("already processing proposal")
+		return
+	}
+
+	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
+		log.Info("already exist block in block chain")
 		return
 	}
 
@@ -485,7 +490,7 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 
 		blockchain.DefaultLedger.Blockchain.GetState().
 			ProcessSpecialTxPayload(p.currentInactiveArbitratorTx.Payload)
-		if err := p.cfg.Arbitrators.ForceChange(); err != nil {
+		if err := p.cfg.Arbitrators.ForceChange(blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 			log.Error("[tryEnterEmergencyState] force change arbitrators"+
 				" error: ", err.Error())
 			return false
@@ -638,7 +643,7 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 
 	programHash := con.ToProgramHash()
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.
+		Version: types.TransactionVersion(blockchain.DefaultLedger.
 			HeightVersions.GetDefaultTxVersion(p.CurrentHeight())),
 		TxType:         types.InactiveArbitrators,
 		PayloadVersion: payload.PayloadInactiveArbitratorsVersion,

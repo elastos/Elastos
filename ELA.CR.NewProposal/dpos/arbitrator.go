@@ -99,7 +99,7 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 			blockchain.DefaultLedger.Blockchain.GetState().
 				ProcessSpecialTxPayload(p)
 
-			if err := a.cfg.Arbitrators.ForceChange(); err != nil {
+			if err := a.cfg.Arbitrators.ForceChange(blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 				log.Error("[OnInactiveArbitratorsTxReceived] force change "+
 					"arbitrators error: ", err)
 			}

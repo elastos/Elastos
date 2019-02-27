@@ -50,17 +50,12 @@ type Arbitrators struct {
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
 }
 
-func (a *Arbitrators) ForceChange() error {
-	block, err := a.cfg.GetCurrentHeader()
-	if err != nil {
+func (a *Arbitrators) ForceChange(height uint32) error {
+	if err := a.updateNextArbitrators(height); err != nil {
 		return err
 	}
 
-	if err = a.updateNextArbitrators(block.Height); err != nil {
-		return err
-	}
-
-	if err = a.changeCurrentArbitrators(); err != nil {
+	if err := a.changeCurrentArbitrators(); err != nil {
 		return err
 	}
 
@@ -69,17 +64,12 @@ func (a *Arbitrators) ForceChange() error {
 	return nil
 }
 
-func (a *Arbitrators) NormalChange() error {
-	block, err := a.cfg.GetCurrentHeader()
-	if err != nil {
+func (a *Arbitrators) NormalChange(height uint32) error {
+	if err := a.changeCurrentArbitrators(); err != nil {
 		return err
 	}
 
-	if err = a.changeCurrentArbitrators(); err != nil {
-		return err
-	}
-
-	if err = a.updateNextArbitrators(block.Height); err != nil {
+	if err := a.updateNextArbitrators(height); err != nil {
 		return err
 	}
 
@@ -89,11 +79,11 @@ func (a *Arbitrators) NormalChange() error {
 }
 
 func (a *Arbitrators) IncreaseChainHeight(height uint32) {
-	forceChange, normalChange := a.isNewElection(height)
+	forceChange, normalChange := a.isNewElection(height + 1)
 	if forceChange {
-		a.ForceChange()
+		a.ForceChange(height)
 	} else if normalChange {
-		a.NormalChange()
+		a.NormalChange(height)
 	} else {
 		a.dutyChangedCount++
 	}
@@ -185,9 +175,8 @@ func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 	return result
 }
 
-func (a *Arbitrators) GetPreviousOnDutyArbitrator() []byte {
-	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.GetBestHeight(),
-		a.dutyChangedCount, 0)
+func (a *Arbitrators) GetOnDutyArbitratorByHeight(height uint32) []byte {
+	return a.cfg.Versions.GetNextOnDutyArbitrator(height, a.dutyChangedCount, 0)
 }
 
 func (a *Arbitrators) GetOnDutyArbitrator() []byte {
@@ -284,8 +273,7 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 		return err
 	}
 
-	a.dutyChangedCount = 0
-
+	a.dutyChangedCount = 1
 	return nil
 }
 
