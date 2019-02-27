@@ -37,13 +37,14 @@ class C extends BaseComponent {
 
     form.validateFields(async (err, values) => {
       if (err) return
+      const { title, type, notes, motionId, isConflict, content } = values
       const param = {
-        title: values.title,
-        type: values.type,
-        notes: values.notes,
-        motionId: values.motionId,
-        isConflict: values.isConflict,
-        content: values.content,
+        title,
+        type,
+        notes,
+        motionId,
+        isConflict,
+        content,
         published: true,
         ...fields,
       }
@@ -130,8 +131,8 @@ class C extends BaseComponent {
     })
     const isConflict_el = (
       <Select>
-        <Select.Option value="NO">{I18N.get('from.CVoteForm.yes')}</Select.Option>
-        <Select.Option value="YES">{I18N.get('from.CVoteForm.no')}</Select.Option>
+        <Select.Option value="NO">{I18N.get('from.CVoteForm.no')}</Select.Option>
+        <Select.Option value="YES">{I18N.get('from.CVoteForm.yes')}</Select.Option>
       </Select>
     )
 
@@ -239,13 +240,11 @@ class C extends BaseComponent {
 
   renderCancelBtn() {
     return (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} onClick={this.props.onCancel} size="large" style={{ minWidth: 155, borderRadius: 0 }}>
-            {I18N.get('from.CVoteForm.button.cancel')}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+          {I18N.get('from.CVoteForm.button.cancel')}
+        </Button>
+      </FormItem>
     )
   }
 
@@ -254,13 +253,11 @@ class C extends BaseComponent {
     const showButton = !edit || _.get(data, 'status') === CVOTE_STATUS.DRAFT
 
     return showButton && (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraft}>
-            {I18N.get('from.CVoteForm.button.saveDraft')}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraft} style={{ marginRight: 10 }}>
+          {I18N.get('from.CVoteForm.button.saveDraft')}
+        </Button>
+      </FormItem>
     )
   }
 
@@ -268,13 +265,11 @@ class C extends BaseComponent {
     const { edit, data } = this.props
     const btnText = edit && data.published ? I18N.get('from.CVoteForm.button.saveChanges') : I18N.get('from.CVoteForm.button.saveAndPublish')
     return (
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <FormItem>
-          <Button loading={this.state.loading} className="cr-btn cr-btn-primary" htmlType="submit">
-            {btnText}
-          </Button>
-        </FormItem>
-      </Col>
+      <FormItem>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" htmlType="submit">
+          {btnText}
+        </Button>
+      </FormItem>
     )
   }
 
