@@ -142,6 +142,10 @@ func (a *ArbitratorsMock) GetCandidatesProgramHashes() []*common.Uint168 {
 	return a.CurrentCandidatesPrograms
 }
 
+func (a *ArbitratorsMock) GetPreviousOnDutyArbitrator() []byte {
+	return a.GetNextOnDutyArbitrator(0)
+}
+
 func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }

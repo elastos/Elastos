@@ -410,7 +410,7 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 // votes accordingly.
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// get on duty arbiter before lock in case of recurrent lock
-	onDutyArbitrator := s.arbiters.GetOnDutyArbitrator()
+	onDutyArbitrator := s.arbiters.GetPreviousOnDutyArbitrator()
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()

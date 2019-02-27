@@ -43,7 +43,7 @@ func (c *ViewChangesCountDown) SetEliminated() {
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
 	//todo improve me when height versions refactor is done
-	if c.dispatcher.CurrentHeight() <= config.Parameters.HeightVersions[3] {
+	if c.dispatcher.CurrentHeight() <= config.Parameters.HeightVersions[3] || c.timeoutRefactor == 0 {
 		return false
 	}
 
