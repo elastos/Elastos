@@ -185,6 +185,11 @@ func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 	return result
 }
 
+func (a *Arbitrators) GetPreviousOnDutyArbitrator() []byte {
+	return a.cfg.Versions.GetNextOnDutyArbitrator(a.cfg.GetBestHeight(),
+		a.dutyChangedCount, 0)
+}
+
 func (a *Arbitrators) GetOnDutyArbitrator() []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }
