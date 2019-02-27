@@ -4,6 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 type evidenceCache struct {
@@ -17,6 +18,10 @@ func (e *evidenceCache) AddEvidence(evidence payload.DPOSIllegalData) {
 }
 
 func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
+	if len(e.evidences) == 0 {
+		return true
+	}
+
 	necessaryEvidences := make(map[common.Uint256]interface{})
 	for k, v := range e.evidences {
 		tolerance := WaitHeightTolerance
@@ -24,7 +29,7 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 			v.Type() == payload.InactiveArbitrator {
 			tolerance = 0
 		}
-		if v.GetBlockHeight()+tolerance <= block.Height {
+		if v.GetBlockHeight()+tolerance < block.Height {
 			necessaryEvidences[k] = nil
 		}
 	}
@@ -36,6 +41,9 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 			}
 		}
 	}
+
+	log.Debug("[IsBlockValid] necessaryEvidences count left count :",
+		len(necessaryEvidences))
 
 	return len(necessaryEvidences) == 0
 }
