@@ -729,6 +729,11 @@ cleanup:
 	}
 }
 
+// Services returns the service flags the server supports.
+func (s *server) Services() pact.ServiceFlag {
+	return s.services
+}
+
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p svr.IPeer) {
 	s.newPeers <- p
@@ -776,6 +781,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	services := defaultServices
 	params := cfg.ChainParams
 	if params.DisableTxFilters {
+		services &^= pact.SFNodeBloom
 		services &^= pact.SFTxFiltering
 	}
 
