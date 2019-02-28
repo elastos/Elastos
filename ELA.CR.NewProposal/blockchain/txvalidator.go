@@ -2,66 +2,76 @@ package blockchain
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
+	"sort"
+	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
 
 const (
 	// MinDepositAmount is the minimum deposit as a producer.
 	MinDepositAmount = 5000 * 100000000
-	// DepositLockupBlocks indicates how many blocks need to wait when cancel producer was triggered, and can submit return deposit coin request.
+
+	// DepositLockupBlocks indicates how many blocks need to wait when cancel
+	// producer was triggered, and can submit return deposit coin request.
 	DepositLockupBlocks = 2160
-	MaxStringLength     = 100
+
+	// MaxStringLength is the maximum length of a string field.
+	MaxStringLength = 100
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
-	if err := CheckTransactionSize(txn); err != nil {
+func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
+	if err := checkTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
 		return ErrTransactionSize
 	}
 
-	if err := CheckTransactionInput(txn); err != nil {
+	if err := checkTransactionInput(txn); err != nil {
 		log.Warn("[CheckTransactionInput],", err)
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionOutput(blockHeight, txn); err != nil {
+	if err := checkTransactionOutput(blockHeight, txn); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
 
-	if err := CheckAssetPrecision(txn); err != nil {
+	if err := checkAssetPrecision(txn); err != nil {
 		log.Warn("[CheckAssetPrecesion],", err)
 		return ErrAssetPrecision
 	}
 
-	if err := CheckAttributeProgram(blockHeight, txn); err != nil {
+	if err := checkAttributeProgram(blockHeight, txn); err != nil {
 		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
 
-	if err := CheckTransactionPayload(txn); err != nil {
+	if err := checkTransactionPayload(txn); err != nil {
 		log.Warn("[CheckTransactionPayload],", err)
 		return ErrTransactionPayload
 	}
 
-	if err := CheckDuplicateSidechainTx(txn); err != nil {
+	if err := checkDuplicateSidechainTx(txn); err != nil {
 		log.Warn("[CheckDuplicateSidechainTx],", err)
 		return ErrSidechainTxDuplicate
 	}
 
-	// check iterms above for Coinbase transaction
+	// check items above for Coinbase transaction
 	if txn.IsCoinBaseTx() {
 		return Success
 	}
@@ -70,81 +80,80 @@ func CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
+func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
-	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
 		return ErrTransactionDuplicate
 	}
 
-	if txn.IsCoinBaseTx() {
+	switch txn.TxType {
+	case CoinBase:
 		return Success
-	}
 
-	if txn.IsIllegalProposalTx() {
-		if err := CheckIllegalProposalsTransaction(txn); err != nil {
+	case IllegalProposalEvidence:
+		if err := b.checkIllegalProposalsTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalProposalsTransaction],", err)
 			return ErrTransactionPayload
 		} else {
 			return Success
 		}
-	}
 
-	if txn.IsIllegalVoteTx() {
-		if err := CheckIllegalVotesTransaction(txn); err != nil {
+	case IllegalVoteEvidence:
+		if err := b.checkIllegalVotesTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalVotesTransaction],", err)
 			return ErrTransactionPayload
 		} else {
 			return Success
 		}
-	}
 
-	if txn.IsIllegalBlockTx() {
-		if err := CheckIllegalBlocksTransaction(txn); err != nil {
+	case IllegalBlockEvidence:
+		if err := b.checkIllegalBlocksTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalBlocksTransaction],", err)
 			return ErrTransactionPayload
 		}
-	}
 
-	if txn.IsSideChainPowTx() {
+	case IllegalSidechainEvidence:
+		if err := b.checkSidechainIllegalEvidenceTransaction(txn); err != nil {
+			log.Warn("[CheckSidechainIllegalEvidenceTransaction],", err)
+			return ErrTransactionPayload
+		}
+
+	case InactiveArbitrators:
+		if err := b.checkInactiveArbitratorsTransaction(txn); err != nil {
+			log.Warn("[CheckInactiveArbitrators],", err)
+			return ErrTransactionPayload
+		}
+
+	case SideChainPow:
 		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 			log.Warn("[CheckSideChainPowConsensus],", err)
 			return ErrSideChainPowConsensus
 		}
-	}
 
-	if txn.IsRegisterProducerTx() {
-		if err := CheckRegisterProducerTransaction(txn); err != nil {
+	case RegisterProducer:
+		if err := b.checkRegisterProducerTransaction(txn); err != nil {
 			log.Warn("[CheckRegisterProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
-	}
 
-	if txn.IsCancelProducerTx() {
-		if err := CheckCancelProducerTransaction(txn); err != nil {
+	case CancelProducer:
+		if err := b.checkCancelProducerTransaction(txn); err != nil {
 			log.Warn("[CheckCancelProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
-	}
 
-	if txn.IsUpdateProducerTx() {
-		if err := CheckUpdateProducerTransaction(txn); err != nil {
+	case UpdateProducer:
+		if err := b.checkUpdateProducerTransaction(txn); err != nil {
 			log.Warn("[CheckUpdateProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
 
-	if txn.IsReturnDepositCoin() {
-		if err := CheckReturnDepositCoinTransaction(txn); err != nil {
-			log.Warn("[CheckReturnDepositCoinTransaction],", err)
-			return ErrReturnDepositConsensus
-		}
-	}
-
 	// check double spent transaction
 	if DefaultLedger.IsDoubleSpend(txn) {
-		log.Warn("[CheckTransactionContext] IsDoubleSpend check faild.")
+		log.Warn("[CheckTransactionContext] IsDoubleSpend check failed")
 		return ErrDoubleSpend
 	}
 
@@ -155,51 +164,58 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	}
 
 	if txn.IsWithdrawFromSideChainTx() {
-		if err := CheckWithdrawFromSideChainTransaction(txn, references); err != nil {
+		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
 			return ErrSidechainTxDuplicate
 		}
 	}
 
 	if txn.IsTransferCrossChainAssetTx() {
-		if err := CheckTransferCrossChainAssetTransaction(txn, references); err != nil {
+		if err := b.checkTransferCrossChainAssetTransaction(txn, references); err != nil {
 			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
 			return ErrInvalidOutput
 		}
 	}
 
-	if err := CheckTransactionUTXOLock(txn, references); err != nil {
+	if txn.IsReturnDepositCoin() {
+		if err := b.checkReturnDepositCoinTransaction(txn, references); err != nil {
+			log.Warn("[CheckReturnDepositCoinTransaction],", err)
+			return ErrReturnDepositConsensus
+		}
+	}
+
+	if err := checkTransactionUTXOLock(txn, references); err != nil {
 		log.Warn("[CheckTransactionUTXOLock],", err)
 		return ErrUTXOLocked
 	}
 
-	if err := CheckTransactionFee(txn, references); err != nil {
+	if err := checkTransactionFee(txn, references); err != nil {
 		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
 
-	if err := CheckDestructionAddress(references); err != nil {
+	if err := checkDestructionAddress(references); err != nil {
 		log.Warn("[CheckDestructionAddress], ", err)
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionDepositUTXO(txn, references); err != nil {
+	if err := checkTransactionDepositUTXO(txn, references); err != nil {
 		log.Warn("[CheckTransactionDepositUTXO],", err)
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionSignature(txn, references); err != nil {
+	if err := checkTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
 	}
 
-	if err := CheckTransactionCoinbaseOutputLock(txn); err != nil {
+	if err := checkTransactionCoinbaseOutputLock(txn); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
 		return ErrIneffectiveCoinbase
 	}
 
 	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references,
-		getProducerPublicKeys(DefaultLedger.Store.GetActiveRegisteredProducers())); err != nil {
+		getProducerPublicKeys(b.state.GetActiveProducers())); err != nil {
 		log.Warn("[CheckVoteProducerOutputs],", err)
 		return ErrInvalidOutput
 	}
@@ -207,15 +223,15 @@ func CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	return Success
 }
 
-func getProducerPublicKeys(producers []*PayloadRegisterProducer) [][]byte {
+func getProducerPublicKeys(producers []*state.Producer) [][]byte {
 	var publicKeys [][]byte
 	for _, p := range producers {
-		publicKeys = append(publicKeys, p.OwnerPublicKey)
+		publicKeys = append(publicKeys, p.Info().OwnerPublicKey)
 	}
 	return publicKeys
 }
 
-func CheckDestructionAddress(references map[*Input]*Output) error {
+func checkDestructionAddress(references map[*Input]*Output) error {
 	for _, output := range references {
 		// this uint168 code
 		// is the program hash of the Elastos foundation destruction address ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr
@@ -228,13 +244,13 @@ func CheckDestructionAddress(references map[*Input]*Output) error {
 	return nil
 }
 
-func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
+func checkTransactionCoinbaseOutputLock(txn *Transaction) error {
 	type lockTxInfo struct {
 		isCoinbaseTx bool
 		locktime     uint32
 	}
 	transactionCache := make(map[common.Uint256]lockTxInfo)
-	currentHeight := DefaultLedger.Store.GetHeight()
+	currentHeight := DefaultLedger.Blockchain.GetHeight()
 	var referTxn *Transaction
 	for _, input := range txn.Inputs {
 		var lockHeight uint32
@@ -266,7 +282,7 @@ func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 }
 
 //validate the transaction of duplicate UTXO input
-func CheckTransactionInput(txn *Transaction) error {
+func checkTransactionInput(txn *Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
@@ -280,7 +296,7 @@ func CheckTransactionInput(txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("illegal transactions must has no input")
 		}
@@ -305,7 +321,7 @@ func CheckTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
+func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -327,7 +343,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		var totalReward = common.Fixed64(0)
 		for _, output := range txn.Outputs {
-			if output.AssetID != DefaultLedger.Blockchain.AssetID {
+			if output.AssetID != config.ELAAssetID {
 				return errors.New("Asset ID in coinbase is invalid")
 			}
 			totalReward += output.Value
@@ -345,7 +361,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		return nil
 	}
-	if txn.IsIllegalProposalTx() || txn.IsIllegalVoteTx() || txn.IsIllegalBlockTx() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -358,7 +374,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 	}
 	// check if output address is valid
 	for _, output := range txn.Outputs {
-		if output.AssetID != DefaultLedger.Blockchain.AssetID {
+		if output.AssetID != config.ELAAssetID {
 			return errors.New("asset ID in output is invalid")
 		}
 
@@ -379,7 +395,7 @@ func CheckTransactionOutput(blockHeight uint32, txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
+func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
@@ -399,7 +415,7 @@ func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) e
 	return nil
 }
 
-func CheckTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
+func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
 	for _, output := range references {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() {
@@ -415,7 +431,7 @@ func CheckTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 	return nil
 }
 
-func CheckTransactionSize(txn *Transaction) error {
+func checkTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
 		return fmt.Errorf("Invalid transaction size: %d bytes", size)
@@ -424,7 +440,7 @@ func CheckTransactionSize(txn *Transaction) error {
 	return nil
 }
 
-func CheckAssetPrecision(txn *Transaction) error {
+func checkAssetPrecision(txn *Transaction) error {
 	if len(txn.Outputs) == 0 {
 		return nil
 	}
@@ -448,7 +464,7 @@ func CheckAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+func checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
@@ -463,25 +479,33 @@ func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	return nil
 }
 
-func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
-	// Coinbase and illegal transactions do not check attribute and program
-	if tx.IsCoinBaseTx() {
+func checkAttributeProgram(blockHeight uint32, tx *Transaction) error {
+	switch tx.TxType {
+	case CoinBase:
+		// Coinbase and illegal transactions do not check attribute and program
 		return DefaultLedger.HeightVersions.CheckTxHasNoPrograms(blockHeight, tx)
-	}
-
-	if tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() {
+	case IllegalSidechainEvidence:
+		fallthrough
+	case IllegalProposalEvidence:
+		fallthrough
+	case IllegalVoteEvidence:
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
 			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
 		}
 		return nil
-	}
-
-	if tx.IsIllegalBlockTx() {
+	case IllegalBlockEvidence:
 		if len(tx.Programs) != 1 {
 			return errors.New("illegal block transactions should have one and only one program")
 		}
 		if len(tx.Attributes) != 0 {
 			return errors.New("illegal block transactions should have no programs")
+		}
+	case InactiveArbitrators:
+		if len(tx.Programs) != 1 {
+			return errors.New("inactive arbitrators transactions should have one and only one program")
+		}
+		if len(tx.Attributes) != 1 {
+			return errors.New("inactive arbitrators transactions should have one and only one arbitrator")
 		}
 	}
 
@@ -507,7 +531,7 @@ func CheckAttributeProgram(blockHeight uint32, tx *Transaction) error {
 	return nil
 }
 
-func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
+func checkTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
 	if err != nil {
 		return err
@@ -527,25 +551,29 @@ func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, float64(8-precision))) == 0
 }
 
-func CheckTransactionPayload(txn *Transaction) error {
+func checkTransactionPayload(txn *Transaction) error {
 	switch pld := txn.Payload.(type) {
-	case *PayloadRegisterAsset:
-		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
+	case *payload.RegisterAsset:
+		if pld.Asset.Precision < payload.MinPrecision || pld.Asset.Precision > payload.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
 		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
-	case *PayloadTransferAsset:
-	case *PayloadRecord:
-	case *PayloadCoinBase:
-	case *PayloadSideChainPow:
-	case *PayloadWithdrawFromSideChain:
-	case *PayloadTransferCrossChainAsset:
-	case *PayloadRegisterProducer:
-	case *PayloadCancelProducer:
-	case *PayloadUpdateProducer:
-	case *PayloadReturnDepositCoin:
+	case *payload.TransferAsset:
+	case *payload.Record:
+	case *payload.CoinBase:
+	case *payload.SideChainPow:
+	case *payload.WithdrawFromSideChain:
+	case *payload.TransferCrossChainAsset:
+	case *payload.ProducerInfo:
+	case *payload.CancelProducer:
+	case *payload.ReturnDepositCoin:
+	case *payload.DPOSIllegalProposals:
+	case *payload.DPOSIllegalVotes:
+	case *payload.DPOSIllegalBlocks:
+	case *payload.SidechainIllegalData:
+	case *payload.InactiveArbitrators:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -553,9 +581,9 @@ func CheckTransactionPayload(txn *Transaction) error {
 }
 
 //validate the transaction of duplicate sidechain transaction
-func CheckDuplicateSidechainTx(txn *Transaction) error {
+func checkDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
-		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+		witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 		existingHashs := make(map[common.Uint256]struct{})
 		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
@@ -568,7 +596,7 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 }
 
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
-	payloadSideChainPow, ok := txn.Payload.(*PayloadSideChainPow)
+	payloadSideChainPow, ok := txn.Payload.(*payload.SideChainPow)
 	if !ok {
 		return errors.New("Side mining transaction has invalid payload")
 	}
@@ -579,7 +607,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	}
 
 	buf := new(bytes.Buffer)
-	err = payloadSideChainPow.Serialize(buf, SideChainPowPayloadVersion)
+	err = payloadSideChainPow.Serialize(buf, payload.SideChainPowVersion)
 	if err != nil {
 		return err
 	}
@@ -592,8 +620,8 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	return nil
 }
 
-func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
-	witPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
+func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
+	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
 	}
@@ -612,8 +640,8 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction, references map[*Inp
 	return nil
 }
 
-func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
-	payloadObj, ok := txn.Payload.(*PayloadTransferCrossChainAsset)
+func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
+	payloadObj, ok := txn.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
 	}
@@ -672,64 +700,61 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction, references map[*I
 	return nil
 }
 
-func CheckRegisterProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadRegisterProducer)
+func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
+	info, ok := txn.Payload.(*payload.ProducerInfo)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
-	height, err := DefaultLedger.Store.GetCancelProducerHeight(payload.OwnerPublicKey)
-	if err == nil {
-		return fmt.Errorf("invalid producer, canceled at height: %d", height)
-	}
-
-	// check public key and nick name
-	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hash, err := contract.PublicKeyToDepositProgramHash(payload.OwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid public key")
-	}
-	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
 		return err
-	}
-	for _, p := range producers {
-		if bytes.Equal(p.OwnerPublicKey, payload.OwnerPublicKey) {
-			return errors.New("duplicated public key")
-		}
-		if p.NickName == payload.NickName {
-			return errors.New("duplicated nick name")
-		}
-		if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
-			return errors.New("duplicated producer node")
-		}
 	}
 
 	// check url
-	if err = checkStringField(payload.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url"); err != nil {
 		return err
 	}
 
 	// check ip
-	if err = checkStringField(payload.NetAddress, "NetAddress"); err != nil {
+	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
 		return err
 	}
 
+	// check duplication of node.
+	if b.state.ProducerExists(info.NodePublicKey) {
+		return fmt.Errorf("producer already registered")
+	}
+
+	// check duplication of owner.
+	if b.state.ProducerExists(info.OwnerPublicKey) {
+		return fmt.Errorf("producer owner already registered")
+	}
+
+	// check duplication of nickname.
+	if b.state.NicknameExists(info.NickName) {
+		return fmt.Errorf("nick name %s already inuse", info.NickName)
+	}
+
 	// check signature
-	publicKey, err := DecodePoint(payload.OwnerPublicKey)
+	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadRegisterProducerVersion)
+	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
 
 	// check the deposit coin
+	hash, err := contract.PublicKeyToDepositProgramHash(info.OwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid public key")
+	}
 	var depositCount int
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
@@ -749,158 +774,292 @@ func CheckRegisterProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func CheckCancelProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadCancelProducer)
+func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
+	cancelProducer, ok := txn.Payload.(*payload.CancelProducer)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.OwnerPublicKey)
+	publicKey, err := DecodePoint(cancelProducer.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadCancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(signedBuf, payload.CancelProducerVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), cancelProducer.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
 
-	producers := DefaultLedger.Store.GetRegisteredProducers()
-	for _, p := range producers {
-		if bytes.Equal(p.OwnerPublicKey, payload.OwnerPublicKey) {
-			return nil
-		}
+	if p := b.state.GetProducer(cancelProducer.OwnerPublicKey); p == nil {
+		return errors.New("canceling unknown producer")
 	}
-	return errors.New("invalid producer")
+
+	return nil
 }
 
-func CheckUpdateProducerTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadUpdateProducer)
+func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
+	info, ok := txn.Payload.(*payload.ProducerInfo)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
 	// check nick name
-	if err := checkStringField(payload.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(payload.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url"); err != nil {
 		return err
 	}
 
 	// check ip
-	if err := checkStringField(payload.NetAddress, "NetAddress"); err != nil {
+	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
 		return err
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(payload.OwnerPublicKey)
+	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = payload.SerializeUnsigned(signedBuf, PayloadUpdateProducerVersion)
+	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		return err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), payload.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), info.Signature)
 	if err != nil {
 		return errors.New("invalid signature in payload")
 	}
 
-	// check from database
-	producers := DefaultLedger.Store.GetRegisteredProducers()
-	hasProducer := false
-	keepNickName := false
-	keepNodePublicKey := false
-	for _, p := range producers {
-		if bytes.Equal(p.OwnerPublicKey, payload.OwnerPublicKey) {
-			if !hasProducer {
-				hasProducer = true
-			}
-			if !keepNickName {
-				keepNickName = p.NickName == payload.NickName
-			}
-			if !keepNodePublicKey {
-				keepNodePublicKey = bytes.Equal(p.NodePublicKey, payload.NodePublicKey)
-			}
-		}
-	}
-	if !hasProducer {
-		return errors.New("invalid producer")
+	producer := b.state.GetProducer(info.OwnerPublicKey)
+	if producer == nil {
+		return errors.New("updating unknown producer")
 	}
 
-	if !keepNickName {
-		for _, p := range producers {
-			if p.NickName == payload.NickName {
-				return errors.New("duplicated nick name")
-			}
-		}
+	// check nickname usage.
+	if producer.Info().NickName != info.NickName &&
+		b.state.NicknameExists(info.NickName) {
+		return fmt.Errorf("nick name %s already exist", info.NickName)
 	}
-	if !keepNodePublicKey {
-		for _, p := range producers {
-			if bytes.Equal(p.NodePublicKey, payload.NodePublicKey) {
-				return errors.New("duplicated producer node")
-			}
-		}
+
+	// check node public key duplication
+	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
+		b.state.ProducerExists(info.NodePublicKey) {
+		return fmt.Errorf("producer %s already exist",
+			hex.EncodeToString(info.NodePublicKey))
 	}
 
 	return nil
 }
 
-func CheckReturnDepositCoinTransaction(txn *Transaction) error {
+func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
+	references map[*Input]*Output) error {
+
+	var outputValue common.Fixed64
+	var inputValue common.Fixed64
+	for _, output := range txn.Outputs {
+		outputValue += output.Value
+	}
+	for _, reference := range references {
+		inputValue += reference.Value
+	}
+
+	var penalty common.Fixed64
 	for _, program := range txn.Programs {
-		cancelHeight, err := DefaultLedger.Store.GetCancelProducerHeight(program.Code[1 : len(program.Code)-1])
-		if err != nil {
-			return errors.New("no cancel sign found on this public key")
+		p := b.state.GetProducer(program.Code[1 : len(program.Code)-1])
+		if p.State() != state.Canceled {
+			return errors.New("producer must be canceled before return deposit coin")
 		}
-		if DefaultLedger.Store.GetHeight()-cancelHeight < DepositLockupBlocks {
-			return errors.New("the deposit does not meet the lockup limit")
+		if b.db.GetHeight()-p.CancelHeight() < DepositLockupBlocks {
+			return errors.New("return deposit does not meet the lockup limit")
+		}
+		penalty += p.Penalty()
+	}
+
+	if inputValue-penalty < common.Fixed64(
+		config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+		return fmt.Errorf("overspend deposit")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkIllegalProposalsTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.DPOSIllegalProposals)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	return b.checkDPOSIllegalProposals(p)
+}
+
+func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.DPOSIllegalVotes)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	return b.checkDPOSIllegalVotes(p)
+}
+
+func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.DPOSIllegalBlocks)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	return b.CheckDPOSIllegalBlocks(p)
+}
+
+func (b *BlockChain) checkInactiveArbitratorsTransaction(
+	txn *Transaction) error {
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	return CheckInactiveArbitrators(txn, b.chainParams.InactiveEliminateCount)
+}
+
+func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
+	p, ok := txn.Payload.(*payload.SidechainIllegalData)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
+		return errors.New("tx already exists")
+	}
+
+	if p.IllegalType != payload.SidechainIllegalProposal &&
+		p.IllegalType != payload.SidechainIllegalVote {
+		return errors.New("invalid type")
+	}
+
+	_, err := crypto.DecodePoint(p.IllegalSigner)
+	if err != nil {
+		return err
+	}
+
+	_, err = common.Uint168FromAddress(p.GenesisBlockAddress)
+	if err != nil {
+		return err
+	}
+
+	if len(p.Signs) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
+		return errors.New("insufficient signs count")
+	}
+
+	if p.Evidence.DataHash.Compare(p.CompareEvidence.DataHash) > 0 {
+		return errors.New("evidence order error")
+	}
+
+	if err := checkSignersInOrder(p.Signs); err != nil {
+		return err
+	}
+
+	//todo get arbitrators by payload.Height and verify each sign in signs
+
+	return nil
+}
+
+func CheckInactiveArbitrators(txn *Transaction,
+	inactiveArbitratorsCount uint32) error {
+	p, ok := txn.Payload.(*payload.InactiveArbitrators)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	arbitrators := map[string]interface{}{}
+	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
+		arbitrators[common.BytesToHexString(v)] = nil
+	}
+
+	if _, exists := arbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
+		return errors.New("sponsor is not belong to arbitrators")
+	}
+
+	if err := checkSignersInOrder(p.Arbitrators); err != nil {
+		return err
+	}
+
+	if len(p.Arbitrators) != int(inactiveArbitratorsCount) {
+		return errors.New("number of arbitrators must be " +
+			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
+	}
+	for _, v := range p.Arbitrators {
+		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists {
+			return errors.New("inactive arbitrator is not belong to CRC " +
+				"arbitrators")
+		}
+	}
+
+	if err := checkInactiveArbitratorsSignatures(txn.Programs[0],
+		arbitrators); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkInactiveArbitratorsSignatures(program *program.Program,
+	arbitrators map[string]interface{}) error {
+
+	code := program.Code
+	// Get N parameter
+	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
+	// Get M parameter
+	m := int(code[0]) - crypto.PUSH1 + 1
+
+	crcArbitratorsCount := len(arbitrators)
+	minSignCount := int(float64(crcArbitratorsCount) * 0.5)
+	if m < 1 || m > n || n != crcArbitratorsCount || m <= minSignCount {
+		return errors.New("invalid multi sign script code")
+	}
+	publicKeys, err := crypto.ParseMultisigScript(code)
+	if err != nil {
+		return err
+	}
+
+	for _, pk := range publicKeys {
+		if _, exists := arbitrators[common.BytesToHexString(pk)]; !exists {
+			return errors.New("invalid multi sign public key")
 		}
 	}
 	return nil
 }
 
-func CheckIllegalProposalsTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalProposal)
-	if !ok {
-		return errors.New("Invalid payload.")
+func (b *BlockChain) checkDPOSIllegalProposals(
+	d *payload.DPOSIllegalProposals) error {
+
+	if err := validateProposalEvidence(&d.Evidence); err != nil {
+		return err
 	}
 
-	return checkDposIllegalProposals(&payload.DposIllegalProposals)
-}
-
-func CheckIllegalVotesTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalVote)
-	if !ok {
-		return errors.New("Invalid payload.")
+	if err := validateProposalEvidence(&d.CompareEvidence); err != nil {
+		return err
 	}
 
-	return checkDposIllegalVotes(&payload.DposIllegalVotes)
-}
-
-func CheckIllegalBlocksTransaction(txn *Transaction) error {
-	payload, ok := txn.Payload.(*PayloadIllegalBlock)
-	if !ok {
-		return errors.New("Invalid payload.")
-	}
-
-	return CheckDposIllegalBlocks(&payload.DposIllegalBlocks)
-}
-
-func checkDposIllegalProposals(d *DposIllegalProposals) error {
-	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
-		return errors.New("proposal hash and block should match")
-	}
-
-	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+	if d.Evidence.BlockHeight != d.CompareEvidence.BlockHeight {
 		return errors.New("should be in same height")
 	}
 
@@ -908,7 +1067,12 @@ func checkDposIllegalProposals(d *DposIllegalProposals) error {
 		return errors.New("proposals can not be same")
 	}
 
-	if d.Evidence.Proposal.Sponsor != d.CompareEvidence.Proposal.Sponsor {
+	if d.Evidence.Proposal.Hash().String() >
+		d.CompareEvidence.Proposal.Hash().String() {
+		return errors.New("evidence order error")
+	}
+
+	if !bytes.Equal(d.Evidence.Proposal.Sponsor, d.CompareEvidence.Proposal.Sponsor) {
 		return errors.New("should be same sponsor")
 	}
 
@@ -923,13 +1087,17 @@ func checkDposIllegalProposals(d *DposIllegalProposals) error {
 	return nil
 }
 
-func checkDposIllegalVotes(d *DposIllegalVotes) error {
+func (b *BlockChain) checkDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 
-	if !d.Evidence.IsMatch() || !d.CompareEvidence.IsMatch() {
-		return errors.New("vote, proposal and block should match")
+	if err := validateVoteEvidence(&d.Evidence); err != nil {
+		return nil
 	}
 
-	if d.Evidence.BlockHeader.Height != d.CompareEvidence.BlockHeader.Height {
+	if err := validateVoteEvidence(&d.CompareEvidence); err != nil {
+		return nil
+	}
+
+	if d.Evidence.BlockHeight != d.CompareEvidence.BlockHeight {
 		return errors.New("should be in same height")
 	}
 
@@ -937,42 +1105,59 @@ func checkDposIllegalVotes(d *DposIllegalVotes) error {
 		return errors.New("votes can not be same")
 	}
 
-	if d.Evidence.Vote.Signer != d.CompareEvidence.Vote.Signer {
+	if d.Evidence.Vote.Hash().String() >
+		d.CompareEvidence.Vote.Hash().String() {
+		return errors.New("evidence order error")
+	}
+
+	if !bytes.Equal(d.Evidence.Vote.Signer, d.CompareEvidence.Vote.Signer) {
 		return errors.New("should be same signer")
+	}
+
+	if !bytes.Equal(d.Evidence.Proposal.Sponsor, d.CompareEvidence.Proposal.Sponsor) {
+		return errors.New("should be same sponsor")
 	}
 
 	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
 
-	if !IsProposalValid(&d.Evidence.Proposal) || IsProposalValid(&d.CompareEvidence.Proposal) ||
-		!IsVoteValid(&d.Evidence.Vote) || IsVoteValid(&d.CompareEvidence.Vote) {
+	if !IsProposalValid(&d.Evidence.Proposal) ||
+		!IsProposalValid(&d.CompareEvidence.Proposal) ||
+		!IsVoteValid(&d.Evidence.Vote) ||
+		!IsVoteValid(&d.CompareEvidence.Vote) {
 		return errors.New("votes and related proposals should be valid")
 	}
 
 	return nil
 }
 
-func CheckDposIllegalBlocks(d *DposIllegalBlocks) error {
+func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 
 	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
 		return errors.New("blocks can not be same")
 	}
 
-	if d.CoinType == ELACoin {
+	if common.BytesToHexString(d.Evidence.Block) >
+		common.BytesToHexString(d.CompareEvidence.Block) {
+		return errors.New("evidence order error")
+	}
+
+	if d.CoinType == payload.ELACoin {
 		var err error
 		var header, compareHeader *Header
-		var confirm, compareConfirm *DPosProposalVoteSlot
+		var confirm, compareConfirm *payload.Confirm
 
-		if header, compareHeader, err = checkDposElaIllegalBlockHeaders(d); err != nil {
+		if header, compareHeader, err = checkDPOSElaIllegalBlockHeaders(d); err != nil {
 			return err
 		}
 
-		if confirm, compareConfirm, err = checkDposElaIllegalBlockConfirms(d, header, compareHeader); err != nil {
+		if confirm, compareConfirm, err = checkDPOSElaIllegalBlockConfirms(
+			d, header, compareHeader); err != nil {
 			return err
 		}
 
-		if err := checkDposElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
+		if err := b.checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
 			return err
 		}
 	}
@@ -980,13 +1165,24 @@ func CheckDposIllegalBlocks(d *DposIllegalBlocks) error {
 	return nil
 }
 
-func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposalVoteSlot, compareConfirm *DPosProposalVoteSlot) error {
-	signers := d.Evidence.Signers
-	compareSigners := d.CompareEvidence.Signers
+func (b *BlockChain) checkDPOSElaIllegalBlockSigners(
+	d *payload.DPOSIllegalBlocks, confirm *payload.Confirm,
+	compareConfirm *payload.Confirm) error {
 
-	if uint32(len(signers)) < config.MajorityCount ||
-		uint32(len(compareSigners)) < config.MajorityCount {
-		return errors.New("Signers count less than dpos required majority count")
+	signers := d.Evidence.Signers
+	if err := checkSignersInOrder(signers); err != nil {
+		return err
+	}
+
+	compareSigners := d.CompareEvidence.Signers
+	if err := checkSignersInOrder(compareSigners); err != nil {
+		return err
+	}
+
+	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) ||
+		len(compareSigners) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
+		return errors.New("signers count less than DPOS required majority" +
+			" count")
 	}
 
 	arbitratorsSet := make(map[string]interface{})
@@ -996,36 +1192,39 @@ func checkDposElaIllegalBlockSigners(d *DposIllegalBlocks, confirm *DPosProposal
 
 	for _, v := range signers {
 		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
-			return errors.New("Invalid signers within evidence.")
+			return errors.New("invalid signers within evidence")
 		}
 	}
 
 	for _, v := range compareSigners {
 		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
-			return errors.New("Invalid signers within evidence.")
+			return errors.New("invalid signers within evidence")
 		}
 	}
 
 	confirmSigners := getConfirmSigners(confirm)
 	for _, v := range signers {
 		if _, ok := confirmSigners[common.BytesToHexString(v)]; !ok {
-			return errors.New("Signers and confirm votes do not match.")
+			return errors.New("signers and confirm votes do not match")
 		}
 	}
 
 	compareConfirmSigners := getConfirmSigners(compareConfirm)
 	for _, v := range signers {
 		if _, ok := compareConfirmSigners[common.BytesToHexString(v)]; !ok {
-			return errors.New("Signers and confirm votes do not match.")
+			return errors.New("signers and confirm votes do not match")
 		}
 	}
 
 	return nil
 }
 
-func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, compareHeader *Header) (*DPosProposalVoteSlot, *DPosProposalVoteSlot, error) {
-	confirm := &DPosProposalVoteSlot{}
-	compareConfirm := &DPosProposalVoteSlot{}
+func checkDPOSElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
+	header *Header, compareHeader *Header) (*payload.Confirm,
+	*payload.Confirm, error) {
+
+	confirm := &payload.Confirm{}
+	compareConfirm := &payload.Confirm{}
 
 	data := new(bytes.Buffer)
 	data.Write(d.Evidence.BlockConfirm)
@@ -1039,11 +1238,17 @@ func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, comp
 		return nil, nil, err
 	}
 
-	if err := CheckConfirm(confirm); err != nil {
+	if err := ConfirmSanityCheck(confirm); err != nil {
+		return nil, nil, err
+	}
+	if err := ConfirmContextCheck(confirm); err != nil {
 		return nil, nil, err
 	}
 
-	if err := CheckConfirm(compareConfirm); err != nil {
+	if err := ConfirmSanityCheck(compareConfirm); err != nil {
+		return nil, nil, err
+	}
+	if err := ConfirmContextCheck(compareConfirm); err != nil {
 		return nil, nil, err
 	}
 
@@ -1058,7 +1263,9 @@ func checkDposElaIllegalBlockConfirms(d *DposIllegalBlocks, header *Header, comp
 	return confirm, compareConfirm, nil
 }
 
-func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, error) {
+func checkDPOSElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
+	*Header, error) {
+
 	header := &Header{}
 	compareHeader := &Header{}
 
@@ -1083,10 +1290,11 @@ func checkDposElaIllegalBlockHeaders(d *DposIllegalBlocks) (*Header, *Header, er
 	return header, compareHeader, nil
 }
 
-func getConfirmSigners(confirm *DPosProposalVoteSlot) map[string]interface{} {
+func getConfirmSigners(
+	confirm *payload.Confirm) map[string]interface{} {
 	result := make(map[string]interface{})
 	for _, v := range confirm.Votes {
-		result[v.Signer] = nil
+		result[common.BytesToHexString(v.Signer)] = nil
 	}
 	return result
 }
@@ -1096,5 +1304,57 @@ func checkStringField(rawStr string, field string) error {
 		return fmt.Errorf("Field %s has invalid string length.", field)
 	}
 
+	return nil
+}
+
+func validateProposalEvidence(evidence *payload.ProposalEvidence) error {
+
+	header := &Header{}
+	buf := new(bytes.Buffer)
+	buf.Write(evidence.BlockHeader)
+
+	if err := header.Deserialize(buf); err != nil {
+		return err
+	}
+
+	if header.Height != evidence.BlockHeight {
+		return errors.New("evidence height and block height should match")
+	}
+
+	if !header.Hash().IsEqual(evidence.Proposal.BlockHash) {
+		return errors.New("proposal hash and block should match")
+	}
+
+	return nil
+}
+
+func validateVoteEvidence(evidence *payload.VoteEvidence) error {
+	if err := validateProposalEvidence(&evidence.ProposalEvidence); err != nil {
+		return err
+	}
+
+	if evidence.Proposal.Hash().IsEqual(evidence.Vote.ProposalHash) {
+		return errors.New("vote and proposal should match")
+	}
+
+	return nil
+}
+
+func checkSignersInOrder(signers [][]byte) error {
+	var signersStr []string
+	for _, signer := range signers {
+		signersStr = append(signersStr, common.BytesToHexString(signer))
+	}
+
+	var signersCompare []string
+	signersCompare = append(signersCompare, signersStr...)
+
+	sort.Strings(signersStr)
+
+	for i := 0; i < len(signersStr); i++ {
+		if signersStr[i] != signersCompare[i] {
+			return errors.New("signers have not been ordered")
+		}
+	}
 	return nil
 }

@@ -9,64 +9,79 @@ import (
 )
 
 type Account struct {
-	PrivateKey  []byte
-	PublicKey   *crypto.PublicKey
-	ProgramHash common.Uint168
-	Contract    contract.Contract
-	Address     string
+	PrivateKey   []byte
+	PublicKey    *crypto.PublicKey
+	ProgramHash  common.Uint168
+	RedeemScript []byte
+	Address      string
 }
 
 func NewAccount() (*Account, error) {
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
+	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
 		return nil, err
 	}
 
-	programHash, err := signatureContract.ToProgramHash()
-	if err != nil {
-		return nil, err
-	}
+	programHash := signatureContract.ToProgramHash()
 	address, err := programHash.ToAddress()
 	if err != nil {
 		return nil, err
 	}
 
 	return &Account{
-		PrivateKey:  priKey,
-		PublicKey:   pubKey,
-		ProgramHash: *programHash,
-		Contract:    *signatureContract,
-		Address:     address,
+		PrivateKey:   priKey,
+		PublicKey:    pubKey,
+		ProgramHash:  *programHash,
+		RedeemScript: signatureContract.Code,
+		Address:      address,
 	}, nil
 }
 
 func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
-	privKeyLen := len(privateKey)
+	priKeyLen := len(privateKey)
 
-	if privKeyLen != 32 && privKeyLen != 96 && privKeyLen != 104 {
+	if priKeyLen != 32 && priKeyLen != 96 && priKeyLen != 104 {
 		return nil, errors.New("invalid private key")
 	}
 
 	pubKey := crypto.NewPubKey(privateKey)
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
+	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
 		return nil, err
 	}
-	programHash, err := signatureContract.ToProgramHash()
-	if err != nil {
-		return nil, err
-	}
+	programHash := signatureContract.ToProgramHash()
 	address, err := programHash.ToAddress()
 	if err != nil {
 		return nil, err
 	}
 	return &Account{
-		PrivateKey:  privateKey,
-		PublicKey:   pubKey,
-		ProgramHash: *programHash,
-		Contract:    *signatureContract,
-		Address:     address,
+		PrivateKey:   privateKey,
+		PublicKey:    pubKey,
+		ProgramHash:  *programHash,
+		RedeemScript: signatureContract.Code,
+		Address:      address,
+	}, nil
+}
+
+func NewMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Account, error) {
+	multiSigContract, err := contract.CreateMultiSigContract(m, pubKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	programHash := multiSigContract.ToProgramHash()
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Account{
+		PrivateKey:   nil,
+		PublicKey:    nil,
+		ProgramHash:  *programHash,
+		RedeemScript: multiSigContract.Code,
+		Address:      address,
 	}, nil
 }
 

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -104,7 +104,7 @@ func (s *DposStore) eventLoop() {
 out:
 	for {
 		select {
-		case t := <-s.taskCh:
+		case t := <-s.eventCh:
 			now := time.Now()
 			switch task := t.(type) {
 			case *addConsensusEventTask:
@@ -193,7 +193,7 @@ func (s *DposStore) handleViewProposalEvent(view *log.ViewEvent) {
 	log.Info("add view event succeed at row id:", rowID)
 }
 
-func (s *DposStore) StartRecordEvent() error {
+func (s *DposStore) StartEventRecord() {
 	err := s.createConsensusEventTable()
 	if err != nil {
 		log.Debug("create ConsensusEvent table Connect failed:", err.Error())
@@ -212,8 +212,6 @@ func (s *DposStore) StartRecordEvent() error {
 	}
 
 	go s.eventLoop()
-
-	return nil
 }
 
 func (s *DposStore) createConsensusEventTable() error {
@@ -228,7 +226,7 @@ func (s *DposStore) AddConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &addConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -249,7 +247,7 @@ func (s *DposStore) UpdateConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &updateConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -272,7 +270,7 @@ func (s *DposStore) AddProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &addProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -295,7 +293,7 @@ func (s *DposStore) UpdateProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &updateProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
@@ -323,14 +321,14 @@ func (s *DposStore) AddVoteEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addVoteEventTask{event: e, reply: reply}
+	s.eventCh <- &addVoteEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
-	vote := &types.DPosProposalVote{}
+	vote := &payload.DPOSProposalVote{}
 	err := vote.Deserialize(bytes.NewReader(event.RawData))
 	if err != nil {
 		return 0, err
@@ -367,7 +365,7 @@ func (s *DposStore) AddViewEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addViewEventTask{event: e, reply: reply}
+	s.eventCh <- &addViewEventTask{event: e, reply: reply}
 	<-reply
 	return nil
 }
