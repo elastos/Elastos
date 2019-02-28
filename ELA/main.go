@@ -144,6 +144,8 @@ func main() {
 		servers.Arbiter = arbitrator
 	}
 
+	servers.Compile = Version
+	servers.Config = cfg
 	servers.Chain = chain
 	servers.Store = chainStore
 	servers.TxMemPool = txMemPool
