@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
+	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/events"
@@ -56,20 +57,8 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
-func (a *Arbitrator) GetActiveDPOSPeers() (result map[string]string) {
-	peers, err := a.cfg.Store.GetDirectPeers()
-	if err == nil {
-		log.Warn("get direct peers from data base error")
-		return result
-	}
-
-	for _, v := range peers {
-		if v.Sequence > 0 {
-			pk := common.BytesToHexString(v.PublicKey)
-			result[pk] = v.Address
-		}
-	}
-	return result
+func (a *Arbitrator) GetDPOSPeersInfo() []*dposp2p.PeerInfo {
+	return a.network.p2pServer.DumpPeersInfo()
 }
 
 func (a *Arbitrator) OnIllegalBlockTxReceived(p *payload.DPOSIllegalBlocks) {
@@ -198,8 +187,8 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:       cfg.Store,
-				Arbitrators: cfg.Arbitrators,
+				Store:                  cfg.Store,
+				Arbitrators:            cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
