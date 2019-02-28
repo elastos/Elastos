@@ -111,7 +111,7 @@ public class CarrierSessionManager: NSObject {
                 throw CarrierError.FromErrorCode(errno: errno)
             }
 
-            let cb: CSessionRequestCallback = { (_, _, cfrom, csdp, _, cctxt) in
+            let cb: CSessionRequestCallback = { (_, cfrom, _, csdp, _, cctxt) in
                 let manager = Unmanaged<CarrierSessionManager>
                         .fromOpaque(cctxt!).takeUnretainedValue()
 
