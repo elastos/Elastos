@@ -6,120 +6,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
-
-func infoAction(c *cli.Context) error {
-	if c.NumFlags() == 0 {
-		cli.ShowSubcommandHelp(c)
-		return nil
-	}
-
-	if c.Bool("connections") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getconnectioncount", http.Params{})
-		if err != nil {
-			fmt.Println("error: get node connections failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if c.Bool("neighbor") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getneighbors", http.Params{})
-		if err != nil {
-			fmt.Println("error: get node neighbors info failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if c.Bool("state") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getnodestate", http.Params{})
-		if err != nil {
-			fmt.Println("error: get node state info failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if c.Bool("currentheight") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getcurrentheight", http.Params{})
-		if err != nil {
-			fmt.Println("error: get block count failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if c.Bool("getbestblockhash") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getbestblockhash", http.Params{})
-		if err != nil {
-			fmt.Println("error: get best block hash failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if index := c.Int64("getblockhash"); index >= 0 {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getblockhash", http.Params{"height": index})
-		if err != nil {
-			fmt.Println("error: get block hash failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if param := c.String("getblock"); param != "" {
-		index, err := strconv.ParseInt(param, 10, 64)
-		if err == nil {
-			result, err := jsonrpc.CallParams(common.LocalServer(), "getblockhash", http.Params{"height": index})
-			if err != nil {
-				fmt.Println("error: get block failed,", err)
-				return err
-			}
-			param = result.(string)
-		}
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getblock", http.Params{"blockhash": param, "verbosity": 2})
-		if err != nil {
-			fmt.Println("error: get block failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if param := c.String("gettransaction"); param != "" {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getrawtransaction", http.Params{"txid": param})
-		if err != nil {
-			fmt.Println("error: get transaction failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	if c.Bool("showtxpool") {
-		result, err := jsonrpc.CallParams(common.LocalServer(), "getrawmempool", http.Params{})
-		if err != nil {
-			fmt.Println("error: get transaction pool failed,", err)
-			return err
-		}
-		printFormat(result)
-		return nil
-	}
-
-	return nil
-}
 
 func printFormat(data interface{}) {
 	dataBytes, err := json.Marshal(data)
@@ -139,48 +31,151 @@ func NewCommand() *cli.Command {
 		Usage:       "show node information",
 		Description: "With ela-cli info, you could look up node status, query blocks, transactions, etc.",
 		ArgsUsage:   "[args]",
-		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "connections",
-				Usage: "see how many peers are connected with current node",
+		Subcommands: []cli.Command{
+			{
+				Name:  "getconnectioncount",
+				Usage: "Show how many peers are connected",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getconnectioncount", http.Params{})
+					if err != nil {
+						fmt.Println("error: get node connections failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.BoolFlag{
-				Name:  "neighbor, nbr",
-				Usage: "show neighbor nodes information",
+			{
+				Name:  "getneighbors",
+				Usage: "Show neighbor nodes information",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getneighbors", http.Params{})
+					if err != nil {
+						fmt.Println("error: get node neighbors info failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.BoolFlag{
-				Name:  "state",
-				Usage: "show current node status",
+			{
+				Name:  "getnodestate",
+				Usage: "Show current node status",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getnodestate", http.Params{})
+					if err != nil {
+						fmt.Println("error: get node state info failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.BoolFlag{
-				Name:  "currentheight, height",
-				Usage: "show blockchain height on current node",
+			{
+				Name:  "getcurrentheight",
+				Usage: "Get best block height",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getcurrentheight", http.Params{})
+					if err != nil {
+						fmt.Println("error: get block count failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.BoolFlag{
+			{
 				Name:  "getbestblockhash",
-				Usage: "show best block hash",
+				Usage: "Get the best block hash",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getbestblockhash", http.Params{})
+					if err != nil {
+						fmt.Println("error: get best block hash failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.Int64Flag{
-				Name:  "getblockhash, blockh",
-				Usage: "query a block's hash with it's height",
-				Value: -1,
+			{
+				Name:  "getblockhash",
+				Usage: "Get a block hash by height",
+				Action: func(c *cli.Context) error {
+					if c.NArg() < 1 {
+						cmdcom.PrintErrorMsg("Missing argument. Block height expected.")
+						cli.ShowCommandHelpAndExit(c, "getblockhash", 1)
+					}
+
+					height := c.Args().First()
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblockhash", http.Params{"height": height})
+					if err != nil {
+						fmt.Println("error: get block hash failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.StringFlag{
-				Name:  "getblock, block",
-				Usage: "query a block with height or it's hash",
+			{
+				Name:  "getblock",
+				Usage: "Get a block details by height or block hash",
+				Action: func(c *cli.Context) error {
+					if c.NArg() < 1 {
+						cmdcom.PrintErrorMsg("Missing argument. Block height or hash expected.")
+						cli.ShowCommandHelpAndExit(c, "getblock", 1)
+					}
+					param := c.Args().First()
+
+					height, err := strconv.ParseInt(param, 10, 64)
+					if err == nil {
+						result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblockhash", http.Params{"height": height})
+						if err != nil {
+							fmt.Println("error: get block failed,", err)
+							return err
+						}
+						param = result.(string)
+					}
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblock", http.Params{"blockhash": param, "verbosity": 2})
+					if err != nil {
+						fmt.Println("error: get block failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.StringFlag{
-				Name:  "gettransaction, tx",
-				Usage: "query a transaction with it's hash",
+			{
+				Name:  "getrawtransaction",
+				Usage: "Get raw transaction by transaction hash",
+				Action: func(c *cli.Context) error {
+					if c.NArg() < 1 {
+						cmdcom.PrintErrorMsg("Missing argument. Transaction hash expected.")
+						cli.ShowCommandHelpAndExit(c, "getrawtransaction", 1)
+					}
+					param := c.Args().First()
+
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getrawtransaction", http.Params{"txid": param})
+					if err != nil {
+						fmt.Println("error: get transaction failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-			cli.BoolFlag{
-				Name:  "showtxpool, txpool",
-				Usage: "show transactions in node's transaction pool",
+			{
+				Name:  "getrawmempool",
+				Usage: "Get transaction details in node mempool",
+				Action: func(c *cli.Context) error {
+					result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getrawmempool", http.Params{})
+					if err != nil {
+						fmt.Println("error: get transaction pool failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
 			},
-		},
-		Action: infoAction,
-		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			return cli.NewExitError(err, 1)
 		},
 	}
 }
