@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	cliCommon "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/urfave/cli"
@@ -25,16 +24,17 @@ func NewCommand() *cli.Command {
 				Usage: "the final height after rollback",
 			},
 		},
-		Action: rollbackBlockchain,
-		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			cliCommon.PrintError(c, err, "rollback")
-			return cli.NewExitError("", 1)
-		},
+		Action: rollbackAction,
 	}
 }
 
-func rollbackBlockchain(context *cli.Context) error {
-	targetHeight, err := strconv.Atoi(context.Args().Get(0))
+func rollbackAction(c *cli.Context) error {
+	if c.NumFlags() == 0 {
+		cli.ShowSubcommandHelp(c)
+		return nil
+	}
+
+	targetHeight, err := strconv.Atoi(c.Args().Get(0))
 	if err != nil {
 		fmt.Println("get height error:", err)
 		return err

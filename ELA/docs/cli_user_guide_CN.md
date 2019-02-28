@@ -2,6 +2,35 @@
 
 ## 1.钱包管理
 
+```
+NAME:
+   ela-cli wallet - With ela-cli wallet, you could control your asset.
+
+USAGE:
+   ela-cli wallet command [command options] [args]
+
+COMMANDS:
+   Account:
+     create, c    Create a account
+     account, a   Show account address and public key
+     balance, b   Check account balance
+     add          Add a standard account
+     addmultisig  Add a multi-signature account
+     delete       Delete an account
+     import       Import an account by private key hex string
+     export       Export all account private keys in hex string
+     depositaddr  Generate deposit address
+
+   Transaction:
+     buildtx  Build a transaction
+     signtx   Sign a transaction
+     sendtx   Send a transaction
+     showtx   Show info of raw transaction
+
+OPTIONS:
+   --help, -h  show help
+```
+
 ### 1.1 创建账户
 
 创建账户命令用于创建一个单签账户，并将私钥加密存储在 keystore 文件中。每个 keystore 文件都有一个**主账户**，一般情况下是第一个被添加上账户。
@@ -361,21 +390,414 @@ Transaction: {
 
 ## 2.信息查询
 
+```
+NAME:
+   ela-cli info - With ela-cli info, you could look up node status, query blocks, transactions, etc.
+
+USAGE:
+   ela-cli info command [command options] [args]
+
+COMMANDS:
+     getconnectioncount  Show how many peers are connected
+     getneighbors        Show neighbor nodes information
+     getnodestate        Show current node status
+     getcurrentheight    Get best block height
+     getbestblockhash    Get the best block hash
+     getblockhash        Get a block hash by height
+     getblock            Get a block details by height or block hash
+     getrawtransaction   Get raw transaction by transaction hash
+     getrawmempool       Get transaction details in node mempool
+
+OPTIONS:
+   --help, -h  show help
+```
+
 ### 2.1 查看节点连接数
+
+```
+./ela-cli info getconnectioncount
+```
+
+返回连接数：
+
+```
+1
+```
 
 ### 2.2 查看邻居节点
 
+```
+./ela-cli info getneighbors
+```
+
+返回邻居节点信息：
+
+```
+[
+    "127.0.0.1:30338 (outbound)"
+]
+```
+
 ### 2.3 查看节点状态
 
-### 2.4 查看节点当前高度
+```
+./ela-cli info getnodestate
+```
 
-### 2.5 查看最高区块hash
+返回节点状态列表：
 
-### 2.6 查看区块信息
+```
+[
+    {
+        "Addr": "127.0.0.1:30338",
+        "ConnTime": "2019-02-28T14:32:44.996711+08:00",
+        "ID": 4130841897781718000,
+        "Inbound": false,
+        "LastBlock": 395,
+        "LastPingMicros": 0,
+        "LastPingTime": "0001-01-01T00:00:00Z",
+        "LastRecv": "2019-02-28T14:32:45+08:00",
+        "LastSend": "2019-02-28T14:32:45+08:00",
+        "RelayTx": 0,
+        "Services": 3,
+        "StartingHeight": 395,
+        "TimeOffset": 0,
+        "Version": 10002
+    }
+]
+```
 
-### 2.7 查看交易信息
+### 2.4 获取节点当前高度
 
-### 2.8 查看交易池
+```
+./ela-cli info getcurrentheight
+```
+
+返回节点当前高度：
+
+```
+395
+```
+
+### 2.5 获取最高区块hash
+
+```
+./ela-cli info getbestblockhash
+```
+
+返回最高块 hash：
+
+```
+"0affad77eacef8d5e69bebd1edd24b43ca8d8948dade9e23b14a9d8ceca060e6"
+```
+
+### 2.6 获取区块 hash
+
+获取块高为 100 的区块 hash
+
+```
+./ela-cli info getblockhash 100
+```
+
+返回区块 hash：
+
+```
+"1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415"
+```
+
+### 2.7 获取区块信息
+
+通过区块 hash 获取区块信息：
+
+```
+./ela-cli info getblock 1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415
+```
+
+返回如下：
+
+```
+{
+    "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d1514e04111572b91e7e7d67b5ac055f3158f9b0af3de90d3841189ce221c1e1c0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f000000000000000000000000000000000000000000000000000000000000000073f93ed7b4401e54aef152505f4d4b88c7c5462453e77069455262bed04575df3f236e5c00000000e6ef0600",
+    "bits": 520095999,
+    "chainwork": "00000127",
+    "confirmations": 296,
+    "difficulty": "1",
+    "hash": "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415",
+    "height": 100,
+    "mediantime": 1550721855,
+    "merkleroot": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+    "minerinfo": "",
+    "nextblockhash": "0c1a3bddf4686c6be9be8c4be2d3915c542856adac8c7458bd056df83e434eaa",
+    "nonce": 0,
+    "previousblockhash": "05d6db028304da9c126ea34a2820bfda8a269e2ceb9bfdda73e70632ef13be7f",
+    "size": 560,
+    "strippedsize": 560,
+    "time": 1550721855,
+    "tx": [
+        {
+            "attributes": [
+                {
+                    "data": "33c33ebc08ea3c1a",
+                    "usage": 0
+                }
+            ],
+            "blockhash": "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415",
+            "blocktime": 1550721855,
+            "confirmations": 296,
+            "hash": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+            "locktime": 100,
+            "payload": {
+                "CoinbaseData": ""
+            },
+            "payloadversion": 4,
+            "programs": [],
+            "size": 254,
+            "time": 1550721855,
+            "txid": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+            "type": 0,
+            "version": 0,
+            "vin": [
+                {
+                    "sequence": 4294967295,
+                    "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+                    "vout": 65535
+                }
+            ],
+            "vout": [
+                {
+                    "address": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 0,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.50684931"
+                },
+                {
+                    "address": "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 1,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.75799086"
+                },
+                {
+                    "address": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 2,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.75799088"
+                }
+            ],
+            "vsize": 254
+        }
+    ],
+    "version": 0,
+    "versionhex": "00000000",
+    "weight": 2240
+}
+```
+
+通过区块高度过去区块信息：
+
+```
+./ela-cli info getblock 100
+```
+
+返回如下：
+
+```
+{
+    "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d1514e04111572b91e7e7d67b5ac055f3158f9b0af3de90d3841189ce221c1e1c0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f000000000000000000000000000000000000000000000000000000000000000073f93ed7b4401e54aef152505f4d4b88c7c5462453e77069455262bed04575df3f236e5c00000000e6ef0600",
+    "bits": 520095999,
+    "chainwork": "00000127",
+    "confirmations": 296,
+    "difficulty": "1",
+    "hash": "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415",
+    "height": 100,
+    "mediantime": 1550721855,
+    "merkleroot": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+    "minerinfo": "",
+    "nextblockhash": "0c1a3bddf4686c6be9be8c4be2d3915c542856adac8c7458bd056df83e434eaa",
+    "nonce": 0,
+    "previousblockhash": "05d6db028304da9c126ea34a2820bfda8a269e2ceb9bfdda73e70632ef13be7f",
+    "size": 560,
+    "strippedsize": 560,
+    "time": 1550721855,
+    "tx": [
+        {
+            "attributes": [
+                {
+                    "data": "33c33ebc08ea3c1a",
+                    "usage": 0
+                }
+            ],
+            "blockhash": "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415",
+            "blocktime": 1550721855,
+            "confirmations": 296,
+            "hash": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+            "locktime": 100,
+            "payload": {
+                "CoinbaseData": ""
+            },
+            "payloadversion": 4,
+            "programs": [],
+            "size": 254,
+            "time": 1550721855,
+            "txid": "8570ff4cd3d356be2f9d90333205f9d4b11bd234aa513bf16c53c503f6575718",
+            "type": 0,
+            "version": 0,
+            "vin": [
+                {
+                    "sequence": 4294967295,
+                    "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+                    "vout": 65535
+                }
+            ],
+            "vout": [
+                {
+                    "address": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 0,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.50684931"
+                },
+                {
+                    "address": "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 1,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.75799086"
+                },
+                {
+                    "address": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+                    "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                    "n": 2,
+                    "outputlock": 0,
+                    "payload": null,
+                    "type": 0,
+                    "value": "1.75799088"
+                }
+            ],
+            "vsize": 254
+        }
+    ],
+    "version": 0,
+    "versionhex": "00000000",
+    "weight": 2240
+}
+```
+
+### 2.8 获取原始交易信息
+
+```
+./ela-cli info getrawtransaction 17296308c322aee00274da494e0b9a08423b65d170bd2235c3b658f7030fd9b9
+```
+
+返回如下：
+
+```
+"0902000100133233313431363030303939333439323932373506f9a9deeaf33bde5646567b129c8da3fee08db6210a8d17f359caf6e3b353bf320100ffffffff01ac3c65375d4f0f882a7b76639e3408c1b1fa39731ace92a352e1b650ce35a20100ffffffffe85c7e34e11fd8e1257333d509fc1828f8feef1120b0822940be9c88ee58c31d0100ffffffffdce53502041b2a22a354ffbf03d1c0aed9ff44f731aec4d3a2376c84cbc5696b0100ffffffff8234bf50743e34707a48d9c0cc31ccef29c6f3013b44170ee73835099e3574c60100ffffffffcb1210fe4fbd42cd71c4a5ce46a7862e3e4e557cc5ee6c1d3189208525ecf6de0100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300ca9a3b0000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b9481100b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3d4d634030000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141403c72d894b0138348a7640f689b0c4003f1a91969e1b1a1f767303f0fda8226fee42f4b15ac650a8df31a68000fc979036a29dec4383be0571f7bf1bcf3c1cd842321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
+```
+
+### 2.9 查看交易池
+
+```
+./ela-cli info getrawmempool
+```
+
+返回如下：
+
+```
+[
+    {
+        "attributes": [
+            {
+                "data": "35343036373034363031353838313931393731",
+                "usage": 0
+            }
+        ],
+        "blockhash": "",
+        "blocktime": 0,
+        "confirmations": 0,
+        "hash": "acbb3c92e36db7d11e81a16e478943edf5cfb5bc7437e7319d3348fd4c7cb2bf",
+        "locktime": 0,
+        "payload": null,
+        "payloadversion": 0,
+        "programs": [
+            {
+                "code": "21034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac",
+                "parameter": "40ad12383bf739c2f38da527f90b93b82faf9cef103fc8ffed25e79769eb03a7d47c6146f5795aa09636ca855295d9dd016b7c34d2a6804f7e0c13564693ba5872"
+            }
+        ],
+        "size": 494,
+        "time": 0,
+        "txid": "acbb3c92e36db7d11e81a16e478943edf5cfb5bc7437e7319d3348fd4c7cb2bf",
+        "type": 2,
+        "version": 9,
+        "vin": [
+            {
+                "sequence": 4294967295,
+                "txid": "2575de0d6d323881e7cdb8ede3a13c0ac8a108621be42d66be55860621cfe718",
+                "vout": 1
+            },
+            {
+                "sequence": 4294967295,
+                "txid": "6c90a60a9e1884211f136de8ebab43a70c7f5c7470490b4031a2426584d08f06",
+                "vout": 1
+            },
+            {
+                "sequence": 4294967295,
+                "txid": "1162ad86e2f80cfc5507fc018ea03cecdc7f48732d034ac76b6c0b7280fc5f98",
+                "vout": 1
+            },
+            {
+                "sequence": 4294967295,
+                "txid": "f6c41d3ba2248ee3311aa5680be44e95e295823ac4a6018d76a56de818e481b0",
+                "vout": 1
+            },
+            {
+                "sequence": 4294967295,
+                "txid": "79fe7592307c44e2794286c2782f1599213eb7fd790f89d39fd8fb0a3e7a40ed",
+                "vout": 1
+            },
+            {
+                "sequence": 4294967295,
+                "txid": "a9d1030614d73518a1b51555e09d63b38fc8d42cbbb8800abcd0008975144606",
+                "vout": 1
+            }
+        ],
+        "vout": [
+            {
+                "address": "8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP",
+                "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                "n": 0,
+                "outputlock": 0,
+                "payload": {},
+                "type": 0,
+                "value": "10"
+            },
+            {
+                "address": "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR",
+                "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                "n": 1,
+                "outputlock": 0,
+                "payload": {},
+                "type": 0,
+                "value": "0.53794516"
+            }
+        ],
+        "vsize": 494
+    }
+]
+```
 
 
 
