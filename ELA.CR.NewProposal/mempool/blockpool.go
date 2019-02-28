@@ -104,7 +104,7 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 
 func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	bool, bool, error) {
-	if _, ok := bm.confirms[confirm.Hash]; ok {
+	if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
 		return false, false, errors.New("duplicate confirm in pool")
 	}
 
@@ -112,9 +112,9 @@ func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {
 		return false, false, err
 	}
-	bm.confirms[confirm.Hash] = confirm
+	bm.confirms[confirm.Proposal.BlockHash] = confirm
 
-	inMainChain, isOrphan, err := bm.confirmBlock(confirm.Hash)
+	inMainChain, isOrphan, err := bm.confirmBlock(confirm.Proposal.BlockHash)
 	if err != nil {
 		return inMainChain, isOrphan, err
 	}
@@ -153,6 +153,10 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		inMainChain, isOrphan, err := bm.Chain.ProcessBlock(block)
 		if err != nil {
 			return inMainChain, isOrphan, errors.New("add block failed," + err.Error())
+		}
+
+		if isOrphan && !inMainChain {
+			bm.Chain.AddOrphanConfirm(confirm)
 		}
 
 		if isOrphan || !inMainChain {
@@ -203,7 +207,7 @@ func (bm *BlockPool) AddToConfirmMap(confirm *payload.Confirm) {
 	bm.Lock()
 	defer bm.Unlock()
 
-	bm.confirms[confirm.Hash] = confirm
+	bm.confirms[confirm.Proposal.BlockHash] = confirm
 }
 
 func (bm *BlockPool) GetConfirm(hash common.Uint256) (

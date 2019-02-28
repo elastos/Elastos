@@ -45,16 +45,17 @@ type BlockChain struct {
 	maxRetargetTimespan int64  // target timespan * adjustment factor
 	blocksPerRetarget   uint32 // target timespan / target time per block
 
-	BestChain      *BlockNode
-	Root           *BlockNode
-	Index          map[Uint256]*BlockNode
-	IndexLock      sync.RWMutex
-	DepNodes       map[Uint256][]*BlockNode
+	BestChain *BlockNode
+	Root      *BlockNode
+	Index     map[Uint256]*BlockNode
+	IndexLock sync.RWMutex
+	DepNodes  map[Uint256][]*BlockNode
 
 	orphanLock     sync.RWMutex
 	orphans        map[Uint256]*OrphanBlock
 	prevOrphans    map[Uint256][]*OrphanBlock
 	oldestOrphan   *OrphanBlock
+	orphanConfirms map[Uint256]*payload.Confirm
 
 	blockCache     map[Uint256]*Block
 	TimeSource     MedianTimeSource
@@ -85,6 +86,7 @@ func New(db IChainStore, chainParams *config.Params, versions interfaces.HeightV
 		orphans:             make(map[Uint256]*OrphanBlock),
 		prevOrphans:         make(map[Uint256][]*OrphanBlock),
 		blockCache:          make(map[Uint256]*Block),
+		orphanConfirms:      make(map[Uint256]*payload.Confirm),
 		TimeSource:          NewMedianTime(),
 	}
 
@@ -257,6 +259,11 @@ func (b *BlockChain) ProcessOrphans(hash *Uint256) error {
 			}
 
 			processHashes = append(processHashes, &orphanHash)
+
+			// if found confirm in orphanConfirms need to process block for state
+			if confirm, ok := b.GetOrphanConfirm(&orphanHash); ok {
+				b.state.ProcessBlock(orphan.Block, confirm)
+			}
 		}
 	}
 	return nil
@@ -325,6 +332,19 @@ func (b *BlockChain) AddOrphanBlock(block *Block) {
 	b.prevOrphans[*prevHash] = append(b.prevOrphans[*prevHash], oBlock)
 
 	return
+}
+
+func (b *BlockChain) AddOrphanConfirm(confirm *payload.Confirm) {
+	b.orphanLock.Lock()
+	b.orphanConfirms[confirm.Proposal.BlockHash] = confirm
+	b.orphanLock.Unlock()
+}
+
+func (b *BlockChain) GetOrphanConfirm(hash *Uint256) (*payload.Confirm, bool) {
+	b.orphanLock.RLock()
+	confirm, ok := b.orphanConfirms[*hash]
+	b.orphanLock.RUnlock()
+	return confirm, ok
 }
 
 func (b *BlockChain) IsKnownOrphan(hash *Uint256) bool {
