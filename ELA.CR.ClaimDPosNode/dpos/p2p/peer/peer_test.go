@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
@@ -190,8 +190,8 @@ func TestPeerConnection(t *testing.T) {
 		}
 	}
 
-	peer1Cfg := peerConfig(123123, p2p.EIP001Version, 0)
-	peer2Cfg := peerConfig(123123, p2p.EIP001Version, 1)
+	peer1Cfg := peerConfig(123123, pact.EBIP001Version, 0)
+	peer2Cfg := peerConfig(123123, pact.EBIP001Version, 1)
 	peer1Cfg.MakeEmptyMessage = makeMessage
 	peer2Cfg.MakeEmptyMessage = makeMessage
 	peer1Cfg.AddMessageFunc(messageFunc)
@@ -199,7 +199,7 @@ func TestPeerConnection(t *testing.T) {
 
 	wantStats1 := peerStats{
 		wantServices:        0,
-		wantProtocolVersion: p2p.EIP001Version,
+		wantProtocolVersion: pact.EBIP001Version,
 		wantConnected:       true,
 		wantVersionKnown:    true,
 		wantVerAckReceived:  true,
@@ -209,7 +209,7 @@ func TestPeerConnection(t *testing.T) {
 	}
 	wantStats2 := peerStats{
 		wantServices:        1,
-		wantProtocolVersion: p2p.EIP001Version,
+		wantProtocolVersion: pact.EBIP001Version,
 		wantConnected:       true,
 		wantVersionKnown:    true,
 		wantVerAckReceived:  true,

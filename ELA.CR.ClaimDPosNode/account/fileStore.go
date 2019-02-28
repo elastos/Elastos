@@ -8,12 +8,13 @@ import (
 	"os"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type AccountData struct {
 	Address             string
 	ProgramHash         string
+	RedeemScript        string
 	PrivateKeyEncrypted string
 	Type                string
 }
@@ -97,7 +98,7 @@ func (cs *FileStore) BuildDatabase(path string) {
 	cs.writeDB(jsonBlob)
 }
 
-func (cs *FileStore) SaveAccountData(programHash []byte, encryptedPrivateKey []byte) error {
+func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, encryptedPrivateKey []byte) error {
 	JSONData, err := cs.readDB()
 	if err != nil {
 		return errors.New("error: reading db")
@@ -113,7 +114,7 @@ func (cs *FileStore) SaveAccountData(programHash []byte, encryptedPrivateKey []b
 		accountType = SUBACCOUNT
 	}
 
-	pHash, err := Uint168FromBytes(programHash)
+	pHash, err := common.Uint168FromBytes(programHash)
 	if err != nil {
 		return errors.New("invalid program hash")
 	}
@@ -123,9 +124,16 @@ func (cs *FileStore) SaveAccountData(programHash []byte, encryptedPrivateKey []b
 	}
 	a := AccountData{
 		Address:             addr,
-		ProgramHash:         BytesToHexString(programHash),
-		PrivateKeyEncrypted: BytesToHexString(encryptedPrivateKey),
+		ProgramHash:         common.BytesToHexString(programHash),
+		RedeemScript:        common.BytesToHexString(redeemScript),
+		PrivateKeyEncrypted: common.BytesToHexString(encryptedPrivateKey),
 		Type:                accountType,
+	}
+
+	for _, v := range cs.data.Account {
+		if a.ProgramHash == v.ProgramHash {
+			return errors.New("account already exists")
+		}
 	}
 	cs.data.Account = append(cs.data.Account, a)
 
@@ -185,7 +193,7 @@ func (cs *FileStore) SaveStoredData(name string, value []byte) error {
 		return errors.New("error: unmarshal db")
 	}
 
-	hexValue := BytesToHexString(value)
+	hexValue := common.BytesToHexString(value)
 	switch name {
 	case "Version":
 		cs.data.Version = string(value)
@@ -218,11 +226,11 @@ func (cs *FileStore) LoadStoredData(name string) ([]byte, error) {
 	case "Version":
 		return []byte(cs.data.Version), nil
 	case "IV":
-		return HexStringToBytes(cs.data.IV)
+		return common.HexStringToBytes(cs.data.IV)
 	case "MasterKey":
-		return HexStringToBytes(cs.data.MasterKey)
+		return common.HexStringToBytes(cs.data.MasterKey)
 	case "PasswordHash":
-		return HexStringToBytes(cs.data.PasswordHash)
+		return common.HexStringToBytes(cs.data.PasswordHash)
 	}
 
 	return nil, errors.New("can't find the key: " + name)
@@ -233,4 +241,29 @@ func (cs *FileStore) SetPath(path string) {
 	defer cs.Unlock()
 
 	cs.path = path
+}
+
+func GetWalletAccountData(walletPath string) ([]AccountData, error) {
+	var fileStore FileStore
+	fileStore.SetPath(walletPath)
+	storeAccounts, err := fileStore.LoadAccountData()
+	if err != nil {
+		return nil, err
+	}
+
+	return storeAccounts, nil
+}
+
+func GetWalletMainAccountData(walletPath string) (*AccountData, error) {
+	storeAccounts, err := GetWalletAccountData(walletPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range storeAccounts {
+		if a.Type == MAINACCOUNT {
+			return &a, nil
+		}
+	}
+
+	return nil, errors.New("no main account found")
 }

@@ -10,8 +10,7 @@ import (
 	"sync"
 	"time"
 
-	chain "github.com/elastos/Elastos.ELA/blockchain"
-	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	. "github.com/elastos/Elastos.ELA/errors"
@@ -44,8 +43,16 @@ type WebSocketServer struct {
 }
 
 func StartServer() {
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+	events.Subscribe(func(e *events.Event) {
+		switch e.Type {
+		case events.ETBlockConnected:
+			SendBlock2WSclient(e.Data)
+
+		case events.ETTransactionAccepted:
+			SendTransaction2WSclient(e.Data)
+
+		}
+	})
 
 	instance = &WebSocketServer{
 		Upgrader:    websocket.Upgrader{},
@@ -59,7 +66,7 @@ func (server *WebSocketServer) Start() {
 	server.initializeMethods()
 	server.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	if Parameters.HttpWsPort%1000 == TlsPort {
+	if config.Parameters.HttpWsPort%1000 == TlsPort {
 		var err error
 		server.Listener, err = server.initTlsListen()
 		if err != nil {
@@ -67,7 +74,7 @@ func (server *WebSocketServer) Start() {
 		}
 	} else {
 		var err error
-		server.Listener, err = net.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpWsPort))
+		server.Listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpWsPort))
 		if err != nil {
 			log.Fatal("net.Listen: ", err.Error())
 		}
@@ -113,7 +120,7 @@ func (server *WebSocketServer) Stop() {
 }
 
 func (server *WebSocketServer) checkSessionsTimeout(done chan bool) {
-	ticker := time.NewTicker(time.Second * Parameters.Configuration.WsHeartbeatInterval)
+	ticker := time.NewTicker(time.Second * config.Parameters.Configuration.WsHeartbeatInterval)
 	defer ticker.Stop()
 	for {
 		select {
@@ -305,8 +312,8 @@ func (server *WebSocketServer) broadcast(data []byte) error {
 
 func (server *WebSocketServer) initTlsListen() (net.Listener, error) {
 
-	CertPath := Parameters.RestCertPath
-	KeyPath := Parameters.RestKeyPath
+	CertPath := config.Parameters.RestCertPath
+	KeyPath := config.Parameters.RestKeyPath
 
 	// load cert
 	cert, err := tls.LoadX509KeyPair(CertPath, KeyPath)
@@ -319,8 +326,8 @@ func (server *WebSocketServer) initTlsListen() (net.Listener, error) {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.HttpWsPort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpWsPort), tlsConfig)
+	log.Info("TLS listen port is ", strconv.Itoa(config.Parameters.HttpWsPort))
+	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpWsPort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err

@@ -17,7 +17,9 @@ type HeightVersions interface {
 		references map[*types.Input]*types.Output, producers [][]byte) error
 	CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error
 
-	GetProducersDesc(block *types.Block) ([][]byte, error)
+	GetNormalArbitratorsDesc(blockHeight uint32,
+		arbitratorsCount uint32, arbiters []Producer) ([][]byte, error)
+	GetCandidatesDesc(blockHeight uint32, startIndex uint32, producers []Producer) ([][]byte, error)
 	AddBlock(block *types.Block) (bool, bool, error)
 	AddDposBlock(block *types.DposBlock) (bool, bool, error)
 	AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error

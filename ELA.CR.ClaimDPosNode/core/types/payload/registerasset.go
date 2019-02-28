@@ -7,19 +7,19 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type PayloadRegisterAsset struct {
+type RegisterAsset struct {
 	Asset      Asset
 	Amount     common.Fixed64
 	Controller common.Uint168
 }
 
-func (a *PayloadRegisterAsset) Data(version byte) []byte {
+func (a *RegisterAsset) Data(version byte) []byte {
 	//TODO: implement RegisterAsset.Data()
 	return []byte{0}
 
 }
 
-func (a *PayloadRegisterAsset) Serialize(w io.Writer, version byte) error {
+func (a *RegisterAsset) Serialize(w io.Writer, version byte) error {
 	err := a.Asset.Serialize(w)
 	if err != nil {
 		return errors.New("[RegisterAsset], Asset Serialize failed.")
@@ -35,7 +35,7 @@ func (a *PayloadRegisterAsset) Serialize(w io.Writer, version byte) error {
 	return nil
 }
 
-func (a *PayloadRegisterAsset) Deserialize(r io.Reader, version byte) error {
+func (a *RegisterAsset) Deserialize(r io.Reader, version byte) error {
 	//asset
 	err := a.Asset.Deserialize(r)
 	if err != nil {

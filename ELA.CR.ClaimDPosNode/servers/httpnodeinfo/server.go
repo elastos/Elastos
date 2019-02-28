@@ -21,7 +21,6 @@ type Info struct {
 	HttpJsonPort  int
 	HttpLocalPort int
 	NodePort      uint16
-	NodeID        string
 }
 
 type NgbNodeInfo struct {
@@ -33,26 +32,25 @@ var templates = template.Must(template.New("info").Parse(page))
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	var ngbrNodersInfo []NgbNodeInfo
-	var node = servers.ServerNode
 
-	neighbors := node.GetNeighborNodes()
+	peers := servers.Server.ConnectedPeers()
 
-	for i := 0; i < len(neighbors); i++ {
+	for _, ip := range peers {
+		p := ip.ToPeer()
 		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
-			NgbID:   fmt.Sprintf("0x%x", neighbors[i].ID()),
-			NbrAddr: neighbors[i].Addr(),
+			NgbID:   fmt.Sprintf("0x%x", p.ID()),
+			NbrAddr: p.Addr(),
 		})
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  chain.DefaultLedger.Blockchain.BlockHeight,
-		NeighborCnt:  len(neighbors),
+		BlockHeight:  chain.DefaultLedger.Blockchain.GetHeight(),
+		NeighborCnt:  len(peers),
 		Neighbors:    ngbrNodersInfo,
 		HttpRestPort: config.Parameters.HttpRestPort,
 		HttpWsPort:   config.Parameters.HttpWsPort,
 		HttpJsonPort: config.Parameters.HttpJsonPort,
 		NodePort:     config.Parameters.NodePort,
-		NodeID:       fmt.Sprintf("0x%x", node.ID()),
 	}
 
 	err := templates.ExecuteTemplate(w, "info", pageInfo)

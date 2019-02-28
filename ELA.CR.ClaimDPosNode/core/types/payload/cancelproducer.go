@@ -9,14 +9,14 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const PayloadCancelProducerVersion byte = 0x00
+const CancelProducerVersion byte = 0x00
 
-type PayloadCancelProducer struct {
+type CancelProducer struct {
 	OwnerPublicKey []byte
 	Signature      []byte
 }
 
-func (a *PayloadCancelProducer) Data(version byte) []byte {
+func (a *CancelProducer) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := a.Serialize(buf, version); err != nil {
 		return []byte{0}
@@ -24,7 +24,7 @@ func (a *PayloadCancelProducer) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
+func (a *CancelProducer) Serialize(w io.Writer, version byte) error {
 	err := a.SerializeUnsigned(w, version)
 	if err != nil {
 		return err
@@ -32,40 +32,40 @@ func (a *PayloadCancelProducer) Serialize(w io.Writer, version byte) error {
 
 	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
-		return errors.New("[PayloadCancelProducer], signature serialize failed")
+		return errors.New("[CancelProducer], signature serialize failed")
 	}
 
 	return nil
 }
 
-func (a *PayloadCancelProducer) SerializeUnsigned(w io.Writer, version byte) error {
+func (a *CancelProducer) SerializeUnsigned(w io.Writer, version byte) error {
 	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
-		return errors.New("[PayloadCancelProducer], serialize failed")
+		return errors.New("[CancelProducer], serialize failed")
 	}
 	return nil
 }
 
-func (a *PayloadCancelProducer) Deserialize(r io.Reader, version byte) error {
+func (a *CancelProducer) Deserialize(r io.Reader, version byte) error {
 	err := a.DeserializeUnsigned(r, version)
 	if err != nil {
 		return err
 	}
-	sig, err := common.ReadVarBytes(r, crypto.SignatureLength, "signature")
-	if err != nil {
-		return errors.New("[PayloadCancelProducer], signature deserialize failed")
-	}
 
-	a.Signature = sig
+	a.Signature, err = common.ReadVarBytes(r, crypto.SignatureLength, "signature")
+	if err != nil {
+		return errors.New("[CancelProducer], signature deserialize failed")
+	}
 
 	return nil
 }
 
-func (a *PayloadCancelProducer) DeserializeUnsigned(r io.Reader, version byte) error {
-	pk, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
+func (a *CancelProducer) DeserializeUnsigned(r io.Reader, version byte) error {
+	var err error
+	a.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
-		return errors.New("[PayloadCancelProducer], deserialize failed")
+		return errors.New("[CancelProducer], deserialize failed")
 	}
-	a.OwnerPublicKey = pk
+
 	return err
 }

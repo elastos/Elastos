@@ -1,23 +1,27 @@
 package account
 
 import (
+	"bytes"
+
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/core/types"
-
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type DposAccount interface {
-	SignProposal(proposal *types.DPosProposal) ([]byte, error)
-	SignVote(vote *types.DPosProposalVote) ([]byte, error)
+	SignProposal(proposal *payload.DPOSProposal) ([]byte, error)
+	SignVote(vote *payload.DPOSProposalVote) ([]byte, error)
 	SignPeerNonce(nonce []byte) (signature [64]byte)
+	SignTx(tx *types.Transaction) ([]byte, error)
 }
 
 type dposAccount struct {
 	*account.Account
 }
 
-func (a *dposAccount) SignProposal(proposal *types.DPosProposal) ([]byte, error) {
+func (a *dposAccount) SignProposal(proposal *payload.DPOSProposal) ([]byte,
+	error) {
 	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, proposal.Data())
@@ -28,7 +32,7 @@ func (a *dposAccount) SignProposal(proposal *types.DPosProposal) ([]byte, error)
 	return signature, nil
 }
 
-func (a *dposAccount) SignVote(vote *types.DPosProposalVote) ([]byte, error) {
+func (a *dposAccount) SignVote(vote *payload.DPOSProposalVote) ([]byte, error) {
 	privateKey := a.PrivKey()
 
 	signature, err := crypto.Sign(privateKey, vote.Data())
@@ -50,6 +54,16 @@ func (a *dposAccount) SignPeerNonce(nonce []byte) (signature [64]byte) {
 	copy(signature[:], sign)
 
 	return signature
+}
+
+func (a *dposAccount) SignTx(tx *types.Transaction) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	if err := tx.SerializeUnsigned(buf); err != nil {
+		return nil, err
+	}
+
+	privateKey := a.PrivKey()
+	return crypto.Sign(privateKey, buf.Bytes())
 }
 
 func NewDposAccount(password []byte) (DposAccount, error) {

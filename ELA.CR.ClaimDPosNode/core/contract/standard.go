@@ -9,18 +9,27 @@ import (
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
-func CreateStandardContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
-	temp, err := pubkey.EncodePoint(true)
+func CreateStandardRedeemScript(pubKey *crypto.PublicKey) ([]byte, error) {
+	temp, err := pubKey.EncodePoint(true)
 	if err != nil {
-		return nil, errors.New("[Contract],CreateStandardContractByPubKey failed.")
+		return nil, errors.New("create standard redeem script, encode public key failed")
 	}
 	sb := program.NewProgramBuilder()
 	sb.PushData(temp)
 	sb.AddOp(vm.CHECKSIG)
 
+	return sb.ToArray(), nil
+}
+
+func CreateStandardContract(pubKey *crypto.PublicKey) (*Contract, error) {
+	redeemScript, err := CreateStandardRedeemScript(pubKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Contract{
-		Code:       sb.ToArray(),
-		HashPrefix: PrefixStandard,
+		Code:   redeemScript,
+		Prefix: PrefixStandard,
 	}, nil
 }
 
@@ -30,12 +39,12 @@ func PublicKeyToStandardProgramHash(pubKey []byte) (*common.Uint168, error) {
 		return nil, err
 	}
 
-	contract, err := CreateStandardContractByPubKey(publicKey)
+	contract, err := CreateStandardContract(publicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return contract.ToProgramHash()
+	return contract.ToProgramHash(), nil
 }
 
 func PublicKeyToStandardCodeHash(pubKey []byte) (*common.Uint160, error) {
@@ -44,7 +53,7 @@ func PublicKeyToStandardCodeHash(pubKey []byte) (*common.Uint160, error) {
 		return nil, err
 	}
 
-	contract, err := CreateStandardContractByPubKey(publicKey)
+	contract, err := CreateStandardContract(publicKey)
 	if err != nil {
 		return nil, err
 	}

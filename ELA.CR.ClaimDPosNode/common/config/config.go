@@ -1,39 +1,55 @@
 package config
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/version/heights"
-)
-
-const (
-	DefaultConfigFilename = "./config.json"
-	MINGENBLOCKTIME       = 2
-	DefaultGenBlockTime   = 6
-
-	DataPath   = "elastos"
-	DataDir    = "data"
-	ChainDir   = "chain"
-	DposDir    = "dpos"
-	LogDir     = "logs"
-	NodeDir    = "node"
-	ArbiterDir = "arbiter"
-
-	MajorityCount    = 3
-	ArbitratorsCount = 5
-	EnableArbiter    = false
 )
 
 var (
-	Parameters configParams
-	Version    string
+	Parameters ConfigParams
+
+	MainNet = ChainParams{
+		Name:               "MainNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x1f0008ff,
+		TargetTimePerBlock: time.Minute * 2,
+		TargetTimespan:     time.Minute * 2 * 720,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Minute * 2),
+	}
+
+	TestNet = ChainParams{
+		Name:               "TestNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x1e1da5ff,
+		TargetTimePerBlock: time.Second * 10,
+		TargetTimespan:     time.Second * 10 * 10,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Second * 10),
+	}
+
+	RegNet = ChainParams{
+		Name:               "RegNet",
+		PowLimit:           powLimit,
+		PowLimitBits:       0x207fffff,
+		TargetTimePerBlock: time.Second * 1,
+		TargetTimespan:     time.Second * 1 * 10,
+		AdjustmentFactor:   int64(4),
+		MaxOrphanBlocks:    10000,
+		MinMemoryNodes:     20160,
+		CoinbaseLockTime:   100,
+		RewardPerBlock:     rewardPerBlock(time.Second * 1),
+	}
 )
 
 type PowConfiguration struct {
@@ -48,6 +64,11 @@ type RpcConfiguration struct {
 	User        string   `json:"User"`
 	Pass        string   `json:"Pass"`
 	WhiteIPList []string `json:"WhiteIPList"`
+}
+
+type CRCArbitratorConfigItem struct {
+	PublicKey  string `json:"PublicKey"`
+	NetAddress string `json:"NetAddress"`
 }
 
 type Configuration struct {
@@ -80,22 +101,34 @@ type Configuration struct {
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
 	VoteHeight           uint32               `json:"VoteHeight"`
 	Arbiters             []string             `json:"Arbiters"`
+	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
 	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
+	HeightVersions       []uint32             `json:"HeightVersions"`
 }
 
 type ArbiterConfiguration struct {
-	Name            string `json:"Name"`
-	Magic           uint32 `json:"Magic"`
-	NodePort        uint16 `json:"NodePort"`
-	ProtocolVersion uint32 `json:"ProtocolVersion"`
-	Services        uint64 `json:"Services"`
-	PrintLevel      uint8  `json:"PrintLevel"`
-	SignTolerance   uint64 `json:"SignTolerance"`
-	MaxLogsSize     int64  `json:"MaxLogsSize"`
-	MaxPerLogSize   int64  `json:"MaxPerLogSize"`
-	MaxConnections  int    `json:"MaxConnections"`
-	CandidatesCount uint32 `json:"CandidatesCount"`
+	PublicKey                string                    `json:"PublicKey"`
+	Magic                    uint32                    `json:"Magic"`
+	NodePort                 uint16                    `json:"NodePort"`
+	ProtocolVersion          uint32                    `json:"ProtocolVersion"`
+	Services                 uint64                    `json:"Services"`
+	PrintLevel               uint8                     `json:"PrintLevel"`
+	SignTolerance            uint64                    `json:"SignTolerance"`
+	MaxLogsSize              int64                     `json:"MaxLogsSize"`
+	MaxPerLogSize            int64                     `json:"MaxPerLogSize"`
+	MaxConnections           int                       `json:"MaxConnections"`
+	OriginArbiters           []string                  `json:"OriginArbiters"`
+	CRCArbiters              []CRCArbitratorConfigItem `json:"CRCArbiters"`
+	NormalArbitratorsCount   uint32                    `json:"NormalArbitratorsCount"`
+	CandidatesCount          uint32                    `json:"CandidatesCount"`
+	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
+	EmergencyInactivePenalty common.Fixed64            `json:"EmergencyInactivePenalty"`
+	MaxInactiveRounds        uint32                    `json:"MaxInactiveRounds"`
+	InactiveDuration         uint32                    `json:"InactiveDuration"`
+	InactivePenalty          common.Fixed64            `json:"InactivePenalty"`
+	InactiveEliminateCount   uint32                    `json:"InactiveEliminateCount"`
+	EnableEventRecord        bool                      `json:"EnableEventRecord"`
 }
 
 type Seed struct {
@@ -104,61 +137,29 @@ type Seed struct {
 }
 
 type ConfigFile struct {
-	ConfigFile Configuration `json:"Configuration"`
+	Configuration `json:"Configuration"`
 }
 
 type ChainParams struct {
-	Name               string        `json:"Name"`
-	PowLimit           *big.Int      `json:"PowLimit"`
-	PowLimitBits       uint32        `json:"PowLimitBits"`
-	TargetTimePerBlock time.Duration `json:"TargetTimePerBlock"`
-	TargetTimespan     time.Duration `json:"TargetTimespan"`
-	AdjustmentFactor   int64         `json:"AdjustmentFactor"`
-	MaxOrphanBlocks    int           `json:"MaxOrphanBlocks"`
-	MinMemoryNodes     uint32        `json:"MinMemoryNodes"`
-	CoinbaseLockTime   uint32        `json:"CoinbaseLockTime"`
+	Name               string
+	PowLimit           *big.Int
+	PowLimitBits       uint32
+	TargetTimePerBlock time.Duration
+	TargetTimespan     time.Duration
+	AdjustmentFactor   int64
+	MaxOrphanBlocks    int
+	MinMemoryNodes     uint32
+	CoinbaseLockTime   uint32
+	RewardPerBlock     common.Fixed64
 }
 
-type configParams struct {
+type ConfigParams struct {
 	*Configuration
 	ChainParam *ChainParams
 }
 
-func init() {
-	var config ConfigFile
-	config.ConfigFile.VoteHeight = heights.HeightVersion1
-
-	if _, err := os.Stat(DefaultConfigFilename); os.IsNotExist(err) {
-		config.ConfigFile = configTemplate
-
-	} else {
-		file, e := ioutil.ReadFile(DefaultConfigFilename)
-		if e != nil {
-			log.Fatalf("File error: %v\n", e)
-			os.Exit(1)
-		}
-		// Remove the UTF-8 Byte Order Mark
-		file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
-
-		if e := json.Unmarshal(file, &config); e != nil {
-			log.Fatalf("Unmarshal json file erro %v", e)
-			os.Exit(1)
-		}
-	}
-
-	//	Parameters = &(config.ConfigFile)
-	Parameters.Configuration = &config.ConfigFile
-	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
-		Parameters.ChainParam = mainNet
-	} else if Parameters.PowConfiguration.ActiveNet == "TestNet" {
-		Parameters.ChainParam = testNet
-	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
-		Parameters.ChainParam = regNet
-	}
-}
-
 func (config *Configuration) GetArbiterID() []byte {
-	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.Name)
+	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.PublicKey)
 	if err != nil || len(publicKey) != 33 {
 		log.Fatalf("get arbiter public key error %v", err)
 		os.Exit(1)
