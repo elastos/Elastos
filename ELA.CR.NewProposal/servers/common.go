@@ -62,7 +62,7 @@ type TransactionInfo struct {
 	Confirmations  uint32             `json:"confirmations"`
 	Time           uint32             `json:"time"`
 	BlockTime      uint32             `json:"blocktime"`
-	TxType         TransactionType    `json:"type"`
+	TxType         TxType             `json:"type"`
 	PayloadVersion byte               `json:"payloadversion"`
 	Payload        PayloadInfo        `json:"payload"`
 	Attributes     []AttributeInfo    `json:"attributes"`
@@ -158,7 +158,7 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
-type RegisterProducerInfo struct {
+type ProducerInfo struct {
 	OwnerPublicKey string `json:"ownerpublickey"`
 	NodePublicKey  string `json:"nodepublickey"`
 	NickName       string `json:"nickname"`
@@ -173,10 +173,6 @@ type CancelProducerInfo struct {
 	Signature      string `json:"signature"`
 }
 
-type UpdateProducerInfo struct {
-	*RegisterProducerInfo
-}
-
 type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
@@ -186,4 +182,14 @@ type UTXOInfo struct {
 	Amount        string `json:"amount"`
 	OutputLock    uint32 `json:"outputlock"`
 	Confirmations uint32 `json:"confirmations"`
+}
+
+type SidechainIllegalDataInfo struct {
+	IllegalType         uint8
+	Height              uint32
+	IllegalSigner       string
+	Evidence            string
+	CompareEvidence     string
+	GenesisBlockAddress string
+	Signs               []string
 }

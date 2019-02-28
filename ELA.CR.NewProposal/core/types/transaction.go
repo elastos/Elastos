@@ -8,40 +8,42 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const (
 	InvalidTransactionSize = -1
 )
 
-// TransactionType represents different transaction types with different payload format.
-// The TransactionType range is 0x00 - 0x08. When it is greater than 0x08 it will be
+// TxType represents different transaction types with different payload format.
+// The TxType range is 0x00 - 0x08. When it is greater than 0x08 it will be
 // interpreted as a TransactionVersion.
-type TransactionType byte
+type TxType byte
 
 const (
-	CoinBase                TransactionType = 0x00
-	RegisterAsset           TransactionType = 0x01
-	TransferAsset           TransactionType = 0x02
-	Record                  TransactionType = 0x03
-	Deploy                  TransactionType = 0x04
-	SideChainPow            TransactionType = 0x05
-	RechargeToSideChain     TransactionType = 0x06
-	WithdrawFromSideChain   TransactionType = 0x07
-	TransferCrossChainAsset TransactionType = 0x08
+	CoinBase                TxType = 0x00
+	RegisterAsset           TxType = 0x01
+	TransferAsset           TxType = 0x02
+	Record                  TxType = 0x03
+	Deploy                  TxType = 0x04
+	SideChainPow            TxType = 0x05
+	RechargeToSideChain     TxType = 0x06
+	WithdrawFromSideChain   TxType = 0x07
+	TransferCrossChainAsset TxType = 0x08
 
-	RegisterProducer  TransactionType = 0x09
-	CancelProducer    TransactionType = 0x0a
-	UpdateProducer    TransactionType = 0x0b
-	ReturnDepositCoin TransactionType = 0x0c
+	RegisterProducer  TxType = 0x09
+	CancelProducer    TxType = 0x0a
+	UpdateProducer    TxType = 0x0b
+	ReturnDepositCoin TxType = 0x0c
 
-	IllegalProposalEvidence TransactionType = 0x0d
-	IllegalVoteEvidence     TransactionType = 0x0e
-	IllegalBlockEvidence    TransactionType = 0x0f
+	IllegalProposalEvidence  TxType = 0x0d
+	IllegalVoteEvidence      TxType = 0x0e
+	IllegalBlockEvidence     TxType = 0x0f
+	IllegalSidechainEvidence TxType = 0x10
+	InactiveArbitrators      TxType = 0x11
 )
 
-func (self TransactionType) Name() string {
+func (self TxType) Name() string {
 	switch self {
 	case CoinBase:
 		return "CoinBase"
@@ -75,6 +77,10 @@ func (self TransactionType) Name() string {
 		return "IllegalVoteEvidence"
 	case IllegalBlockEvidence:
 		return "IllegalBlockEvidence"
+	case IllegalSidechainEvidence:
+		return "IllegalSidechainEvidence"
+	case InactiveArbitrators:
+		return "InactiveArbitrators"
 	default:
 		return "Unknown"
 	}
@@ -89,7 +95,7 @@ const (
 
 type Transaction struct {
 	Version        TransactionVersion // New field added in TxVersionC0
-	TxType         TransactionType
+	TxType         TxType
 	PayloadVersion byte
 	Payload        Payload
 	Attributes     []*Attribute
@@ -226,10 +232,10 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		if err != nil {
 			return err
 		}
-		tx.TxType = TransactionType(txType[0])
+		tx.TxType = TxType(txType[0])
 	} else {
 		tx.Version = TxVersionDefault
-		tx.TxType = TransactionType(flagByte[0])
+		tx.TxType = TxType(flagByte[0])
 	}
 
 	payloadVersion, err := common.ReadBytes(r, 1)
@@ -314,6 +320,10 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) IsIllegalTypeTx() bool {
+	return tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsIllegalBlockTx() || tx.IsSidechainIllegalDataTx()
+}
+
 func (tx *Transaction) IsIllegalProposalTx() bool {
 	return tx.TxType == IllegalProposalEvidence
 }
@@ -324,6 +334,14 @@ func (tx *Transaction) IsIllegalVoteTx() bool {
 
 func (tx *Transaction) IsIllegalBlockTx() bool {
 	return tx.TxType == IllegalBlockEvidence
+}
+
+func (tx *Transaction) IsSidechainIllegalDataTx() bool {
+	return tx.TxType == IllegalSidechainEvidence
+}
+
+func (tx *Transaction) IsInactiveArbitrators() bool {
+	return tx.TxType == InactiveArbitrators
 }
 
 func (tx *Transaction) IsUpdateProducerTx() bool {
@@ -373,37 +391,41 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
-func GetPayload(txType TransactionType) (Payload, error) {
+func GetPayload(txType TxType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:
-		p = new(PayloadCoinBase)
+		p = new(payload.CoinBase)
 	case RegisterAsset:
-		p = new(PayloadRegisterAsset)
+		p = new(payload.RegisterAsset)
 	case TransferAsset:
-		p = new(PayloadTransferAsset)
+		p = new(payload.TransferAsset)
 	case Record:
-		p = new(PayloadRecord)
+		p = new(payload.Record)
 	case SideChainPow:
-		p = new(PayloadSideChainPow)
+		p = new(payload.SideChainPow)
 	case WithdrawFromSideChain:
-		p = new(PayloadWithdrawFromSideChain)
+		p = new(payload.WithdrawFromSideChain)
 	case TransferCrossChainAsset:
-		p = new(PayloadTransferCrossChainAsset)
+		p = new(payload.TransferCrossChainAsset)
 	case RegisterProducer:
-		p = new(PayloadRegisterProducer)
+		p = new(payload.ProducerInfo)
 	case CancelProducer:
-		p = new(PayloadCancelProducer)
+		p = new(payload.CancelProducer)
 	case UpdateProducer:
-		p = new(PayloadUpdateProducer)
+		p = new(payload.ProducerInfo)
 	case ReturnDepositCoin:
-		p = new(PayloadReturnDepositCoin)
+		p = new(payload.ReturnDepositCoin)
 	case IllegalProposalEvidence:
-		p = new(PayloadIllegalProposal)
+		p = new(payload.DPOSIllegalProposals)
 	case IllegalVoteEvidence:
-		p = new(PayloadIllegalVote)
+		p = new(payload.DPOSIllegalVotes)
 	case IllegalBlockEvidence:
-		p = new(PayloadIllegalBlock)
+		p = new(payload.DPOSIllegalBlocks)
+	case IllegalSidechainEvidence:
+		p = new(payload.SidechainIllegalData)
+	case InactiveArbitrators:
+		p = new(payload.InactiveArbitrators)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

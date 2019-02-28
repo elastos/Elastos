@@ -2,32 +2,34 @@ package store
 
 import (
 	"bytes"
+	"crypto/rand"
 	"testing"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var eventStore = &DposStore{}
+var eventStore *DposStore
 
 //fixme clean event store for next unit test
 func TestEventStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	err := eventStore.InitConnection("Dpos_Test")
+	store, err := NewDposStore("Dpos_Test")
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}
 
-	eventStore.StartRecordEvent()
-	eventStore.StartRecordArbitrators()
+	store.StartEventRecord()
+	store.StartArbitratorsRecord()
+	eventStore = store
 }
 
 func TestEventStore_AddProposalEvent(t *testing.T) {
-	proposal := &types.DPosProposal{
-		Sponsor:    "B",
+	proposal := &payload.DPOSProposal{
+		Sponsor:    randomPkBytes(),
 		BlockHash:  common.Uint256{2},
 		Sign:       []byte{1, 2, 3},
 		ViewOffset: 0,
@@ -119,9 +121,9 @@ func TestEventStore_AddViewEvent(t *testing.T) {
 }
 
 func TestEventStore_AddVoteEvent(t *testing.T) {
-	vote := &types.DPosProposalVote{
+	vote := &payload.DPOSProposalVote{
 		ProposalHash: common.Uint256{1, 2, 3},
-		Signer:       "A",
+		Signer:       randomPkBytes(),
 		Accept:       false,
 		Sign:         []byte{1, 2, 3},
 	}
@@ -153,5 +155,12 @@ func TestEventStore_Close(t *testing.T) {
 	eventStore.deleteTable(ConsensusEventTable)
 	eventStore.deleteTable(VoteEventTable)
 	eventStore.deleteTable(ViewEventTable)
-	eventStore.Disconnect()
+	eventStore.Close()
+}
+
+func randomPkBytes() []byte {
+	pk := make([]byte, 33)
+	rand.Read(pk)
+
+	return pk
 }

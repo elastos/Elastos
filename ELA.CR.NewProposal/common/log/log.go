@@ -1,7 +1,6 @@
 package log
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -10,9 +9,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA/common/config"
-
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -49,22 +47,12 @@ var (
 )
 
 const (
-	calldepth             = 2
-	KBSize                = int64(1024)
-	MBSize                = KBSize * 1024
-	GBSize                = MBSize * 1024
-	defaultPerLogFileSize = 20 * MBSize
-	defaultLogsFolderSize = 5 * GBSize
-)
+	calldepth = 2
 
-func GetGID() uint64 {
-	var buf [64]byte
-	b := buf[:runtime.Stack(buf[:], false)]
-	b = bytes.TrimPrefix(b, []byte("goroutine "))
-	b = b[:bytes.IndexByte(b, ' ')]
-	n, _ := strconv.ParseUint(string(b), 10, 64)
-	return n
-}
+	defaultDir                  = "elastos/logs/node/"
+	defaultPerLogFileSize int64 = 20 * elalog.MBSize
+	defaultLogsFolderSize int64 = 5 * elalog.GBSize
+)
 
 var logger *Logger
 
@@ -77,6 +65,7 @@ func levelName(level uint8) string {
 
 type Logger struct {
 	level  uint8 // The log print level
+	writer io.Writer
 	logger *log.Logger
 }
 
@@ -85,41 +74,42 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 	var logsFolderSize = defaultLogsFolderSize
 
 	if maxPerLogSizeMb != 0 {
-		perLogFileSize = maxPerLogSizeMb * MBSize
+		perLogFileSize = maxPerLogSizeMb * elalog.MBSize
 	}
 	if maxLogsSizeMb != 0 {
-		logsFolderSize = maxLogsSizeMb * MBSize
+		logsFolderSize = maxLogsSizeMb * elalog.MBSize
 	}
 
-	writer := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
+	fileWriter := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
+	logWriter := io.MultiWriter(os.Stdout, fileWriter)
 
 	return &Logger{
-		level: level,
-		logger: log.New(io.MultiWriter(os.Stdout, writer), "",
-			log.Ldate|log.Lmicroseconds),
+		level:  level,
+		writer: logWriter,
+		logger: log.New(logWriter, "", log.Ldate|log.Lmicroseconds),
 	}
 }
 
-func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = NewLogger(filepath.Join(config.DataPath, config.LogDir, config.NodeDir), level, maxPerLogSizeMb, maxLogsSizeMb)
+func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
+	logger = NewLogger(defaultDir, level, maxPerLogSizeMb, maxLogsSizeMb)
+	return logger
 }
 
-func (l *Logger) SetPrintLevel(level uint8) {
-	l.level = level
+func (l *Logger) Writer() io.Writer {
+	return l.writer
 }
 
 func (l *Logger) Output(level uint8, a ...interface{}) {
 	if l.level <= level {
-		gidStr := strconv.FormatUint(GetGID(), 10)
-		a = append([]interface{}{levelName(level), "GID", gidStr + ","}, a...)
+		a = append([]interface{}{levelName(level), "GID", common.Goid() + ","}, a...)
 		l.logger.Output(calldepth, fmt.Sprintln(a...))
 	}
 }
 
 func (l *Logger) Outputf(level uint8, format string, v ...interface{}) {
 	if l.level <= level {
-		v = append([]interface{}{levelName(level), "GID", GetGID()}, v...)
-		l.logger.Output(calldepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))
+		v = append([]interface{}{levelName(level), "GID", common.Goid()}, v...)
+		l.logger.Output(calldepth, fmt.Sprintf("%s %s %s, "+format+"\n", v...))
 	}
 }
 
@@ -152,7 +142,7 @@ func (l *Logger) Debugf(format string, a ...interface{}) {
 	fn := runtime.FuncForPC(pc)
 	a = append([]interface{}{fn.Name(), filepath.Base(file), line}, a...)
 
-	l.Outputf(debugLog, format, a...)
+	l.Outputf(debugLog, "%s %s:%d "+format, a...)
 }
 
 func (l *Logger) Info(a ...interface{}) {
@@ -204,7 +194,7 @@ func Debug(a ...interface{}) {
 }
 
 func Debugf(format string, a ...interface{}) {
-	logger.Debugf("%s %s:%d "+format, a...)
+	logger.Debugf(format, a...)
 }
 
 func Info(a ...interface{}) {
@@ -240,5 +230,5 @@ func Fatalf(format string, a ...interface{}) {
 }
 
 func SetPrintLevel(level uint8) {
-	logger.SetPrintLevel(level)
+	logger.SetLevel(elalog.Level(level))
 }
