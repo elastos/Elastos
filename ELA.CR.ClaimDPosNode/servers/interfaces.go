@@ -21,6 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -29,6 +30,8 @@ import (
 )
 
 var (
+	Compile   string
+	Config    *config.ConfigParams
 	Chain     *blockchain.BlockChain
 	Store     blockchain.IChainStore
 	TxMemPool *mempool.TxPool
@@ -176,7 +179,17 @@ func GetNodeState(param Params) map[string]interface{} {
 	for _, peer := range peers {
 		states = append(states, peer.ToPeer().StatsSnapshot())
 	}
-	return ResponsePack(Success, states)
+	return ResponsePack(Success, NodeState{
+		Compile:   Compile,
+		Height:    Chain.GetHeight(),
+		Version:   pact.DPOSStartVersion,
+		Services:  Server.Services().String(),
+		Port:      Config.NodePort,
+		RPCPort:   uint16(Config.HttpJsonPort),
+		RestPort:  uint16(Config.HttpRestPort),
+		WSPort:    uint16(Config.HttpWsPort),
+		Neighbors: states,
+	})
 }
 
 func SetLogLevel(param Params) map[string]interface{} {
@@ -346,7 +359,7 @@ func GetArbitersInfo(params Params) map[string]interface{} {
 
 func GetInfo(param Params) map[string]interface{} {
 	RetVal := struct {
-		Version       int    `json:"version"`
+		Version       uint32 `json:"version"`
 		Balance       int    `json:"balance"`
 		Blocks        uint32 `json:"blocks"`
 		Timeoffset    int    `json:"timeoffset"`
@@ -359,7 +372,7 @@ func GetInfo(param Params) map[string]interface{} {
 		Relayfee      int    `json:"relayfee"`
 		Errors        string `json:"errors"`
 	}{
-		Version:       config.Parameters.Version,
+		Version:       pact.DPOSStartVersion,
 		Balance:       0,
 		Blocks:        Store.GetHeight(),
 		Timeoffset:    0,

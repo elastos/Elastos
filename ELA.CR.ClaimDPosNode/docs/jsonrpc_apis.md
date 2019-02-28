@@ -67,7 +67,7 @@ arguments sample:
 
 result sample:
 
-```javascript
+```json
 {
   "id": null,
   "jsonrpc": "2.0",
@@ -92,7 +92,7 @@ raw hash
 
 result sample:
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -127,7 +127,7 @@ result:(verbosity=1)
 
 arguments sample:
 
-```javascript
+```json
 {
   "method": "getblock",
   "params": ["0000000000000c128adadedd348061952fa5c9bd78320ee25052d2b74a10573f"],
@@ -174,7 +174,7 @@ result format except 'tx' is the same as it is when verbosity=1
 
 result format in 'tx' please see interface 'getrawtransaction'
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -259,7 +259,7 @@ parameters: none
 
 argument sample:
 
-```javascript
+```json
 {   
   "method":"getblockcount"
 }
@@ -267,12 +267,12 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "result": 171454
+  "jsonrpc": "2.0",
   "id": null,
   "error": null,
-  "jsonrpc": "2.0",
+  "result": 171454
 }
 ```
 
@@ -306,7 +306,7 @@ results:
 
 argument sample:
 
-```javascript
+```json
 {
   "method": "getrawtransaction",
   "params": ["caa0d52ea2b90a08480834b97c271a8b847aadf90057318a33ccc8674b77c796"]
@@ -315,7 +315,7 @@ argument sample:
 
 result sample:(verbose=true)
 
-```javascript
+```json
 {
   "id": null,
   "error": null,
@@ -374,7 +374,7 @@ result sample:(verbose=false)
 
 return raw data
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -391,7 +391,7 @@ parameters: none
 
 argument sample:
 
-```javascript
+```json
 {
   "method":"getrawmempool"
 }
@@ -399,12 +399,12 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "result":["5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941", "5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941"]
   "error": null,
   "id": null,
   "jsonrpc": "2.0",
+  "result":["5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941", "5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941"]
 }
 ```
 
@@ -491,8 +491,9 @@ result sample:
       "amount": "0.01255707",
       "confirmations": 846,
       "outputlock": 0
-  }
-]
+     }
+  ]
+}
 ```
 
 #### setloglevel
@@ -536,7 +537,7 @@ description: get peer's count of this node
 
 argument sample:
 
-```javascript
+```json
 {
   "method": "getconnectioncount"
 }
@@ -559,16 +560,6 @@ description: get peer's info
 
 parameters: none
 
-results:
-
-| name     | type           | description                                                 |
-| -------- | -------------- | ----------------------------------------------------------- |
-| Time     | integer        | current time in unix nano format                            |
-| Services | integer        | node service type. 4 is spv service and 0 is no spv service |
-| IP       | array[integer] | ip in 16-byte representation                                |
-| Port     | integer        | p2p network port                                            |
-| ID       | integer        | node's id                                                   |
-
 argument sample:
 
 ```json
@@ -579,20 +570,19 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "id": null,
-  "error": null,
-  "jsonrpc": "2.0",
-  "result": [
-    {
-      "Time": 1524798750979702000,
-      "Services": 4,
-      "IP": [0,0,0,0,0,0,0,0,0,0,255,255,127,0,0,1],
-      "Port": 30338,
-      "ID": 8775829619427993046
-    }
-  ]
+    "error": null,
+    "id": 123456,
+    "jsonrpc": "2.0",
+    "result": [
+        "127.0.0.1:64890 (inbound)",
+        "127.0.0.1:64880 (inbound)",
+        "127.0.0.1:64822 (inbound)",
+        "127.0.0.1:22338 (outbound)",
+        "127.0.0.1:23338 (outbound)",
+        "127.0.0.1:24338 (outbound)"
+    ]
 }
 ```
 
@@ -607,34 +597,33 @@ results:
 | name        | type            | description                                                 |
 | ----------- | --------------- | ----------------------------------------------------------- |
 | Compile     | string          | node's compile version                                      |
-| ID          | integer         | node's id                                                   |
-| HexID       | string          | node's id in hex format                                     |
-| Height      | integer         | current height                                              |
-| Version     | integer         | node's version in config.json                               |
-| Services    | integer         | node service type. 4 is spv service and 0 is no spv service |
-| Relay       | bool            | whether node will relay transaction or not                  |
-| TxnCnt      | integer         | transactions transmitted by this node                       |
-| RxTxnCnt    | integer         | The transaction received by this node                       |
-| Port        | integer         | p2p network port                                            |
-| RPCPort     | integer         | json-RPC service port                                       |
+| Height      | integer         | current height of local node                                |
+| Version     | integer         | peer-to-peer network protocol version of this node          |
+| Services    | string          | the services provided by this node                          |
+| Port        | integer         | P2P network port                                            |
+| RPCPort     | integer         | JSON-RPC service port                                       |
 | RestPort    | integer         | RESTful service port                                        |
 | WSPort      | integer         | webservice port                                             |
-| OpenPort    | integer         | open service port                                           |
-| OpenService | bool            | if opens service enabled                                    |
 | Neighbors   | array[neighbor] | neighbor nodes information                                  |
 
 neighbor:
 
-| name       | type    | description                                                     |
-| ---------- | ------- | --------------------------------------------------------------- |
-| ID         | integer | neighbor's id                                                   |
-| HexID      | string  | neighbor's id in hex format                                     |
-| Height     | integer | neighbor current height                                         |
-| Services   | integer | neighbor service type. 4 is spv service and 0 is no spv service |
-| Relay      | bool    | whether neighbor will relay transaction or not                  |
-| External   | bool    | whether neighbor is from external network                       |
-| State      | string  | neighbor state in string format                                 |
-| NetAddress | string  | neighbor tcp address                                            |
+| name           | type    | description                                                     |
+| -------------- | ------- | --------------------------------------------------------------- |
+| ID             | integer | a random number to identify the neighbor instance               |
+| Addr           | string  | network address of the neighbor in host:port format             |
+| Services       | integer | neighbor service type. 4 is spv service and 0 is no spv service |
+| RelayTx        | integer | relay transactions to the neighbor or not (0 true/1 false)      |
+| LastSend       | string  | the last time send a message to the neighbor                    |
+| LastRecv       | string  | the last time received a message from the neighbor              |
+| ConnTime       | string  | the time when this neighbor was connected                       |
+| TimeOffset     | integer | time offset between local time and the time advertised by the neighbor |
+| Version        | integer | peer-to-peer network version advertised by the neighbor         |
+| Inbound        | bool    | the connection direction of the neighbor (inbound/outbound)     |
+| StartingHeight | integer | the height advertised by the neighbor when connected            |
+| LastBlock      | integer | the height of the last block advertised by the neighbor         |
+| LastPingTime   | string  | the last time send a ping message to the neighbor               |
+| LastPingMicros | integer | microseconds to receive pong message after sending last ping message |
 
 argument sample:
 ```json
@@ -645,38 +634,53 @@ argument sample:
 
 ```json
 {
-  "id": null,
-  "error": null,
-  "jsonrpc": "2.0",
-  "result": {
-    "Compile": "v0.1.1-50-gcd97",
-    "ID": 10544939963783245780,
-    "HexID": "0x925727070f1eefd4",
-    "Height": 168748,
-    "Version": 0,
-    "Services": 4,
-    "Relay": true,
-    "TxnCnt": 0,
-    "RxTxnCnt": 0,
-    "Port": 20338,
-    "PRCPort": 20336,
-    "RestPort": 20334,
-    "WSPort": 20335,
-    "OpenPort": 20866,
-    "OpenService": true,
-    "Neighbors": [
-      {
-        "ID": 8978226977158442839,
-        "HexID": "0x7c9911ddf65baf57",
-        "Height": 168748,
-        "Services": 4,
-        "Relay": true,
-        "External": false,
-        "State": "ESTABLISH",
-        "NetAddress": "13.229.160.170:20866"
-      }
-    ]
-  }
+    "error": null,
+    "id": 123456,
+    "jsonrpc": "2.0",
+    "result": {
+        "Compile": "v0.2.2-203-g8db2",
+        "Height": 0,
+        "Version": 20000,
+        "Services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+        "Port": 21338,
+        "RPCPort": 21336,
+        "RestPort": 21334,
+        "WSPort": 21335,
+        "Neighbors": [
+            {
+                "ID": 1400283839273819327,
+                "Addr": "127.0.0.1:64603",
+                "Services": 7,
+                "RelayTx": 0,
+                "LastSend": "2019-03-01T17:11:52+08:00",
+                "LastRecv": "2019-03-01T17:12:02+08:00",
+                "ConnTime": "2019-03-01T17:10:52.093308+08:00",
+                "TimeOffset": 0,
+                "Version": 20000,
+                "Inbound": true,
+                "StartingHeight": 0,
+                "LastBlock": 0,
+                "LastPingTime": "2019-03-01T17:11:52.094861+08:00",
+                "LastPingMicros": 642
+            },
+            {
+                "ID": 2598192338369550729,
+                "Addr": "127.0.0.1:24338",
+                "Services": 7,
+                "RelayTx": 0,
+                "LastSend": "2019-03-01T17:12:12+08:00",
+                "LastRecv": "2019-03-01T17:12:12+08:00",
+                "ConnTime": "2019-03-01T17:11:42.762983+08:00",
+                "TimeOffset": 0,
+                "Version": 20000,
+                "Inbound": false,
+                "StartingHeight": 0,
+                "LastBlock": 0,
+                "LastPingTime": "2019-03-01T17:12:12.764714+08:00",
+                "LastPingMicros": 793
+            }
+        ]
+    }
 }
 ```
 
@@ -1042,7 +1046,7 @@ named arguments sample:
 
 result sample:
 
-```
+```json
 {
   "error": null,
   "id": null,

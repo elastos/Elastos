@@ -5,6 +5,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
 )
 
 const TlsPort = 443
@@ -105,33 +106,15 @@ type ConfirmInfo struct {
 }
 
 type NodeState struct {
-	Compile     string // The compile version of this server node
-	ID          uint64 // The nodes's id
-	HexID       string // The nodes's id in hex format
-	Height      uint64 // The ServerNode latest block height
-	Version     uint32 // The network protocol the ServerNode used
-	Services    uint64 // The services the local node supplied
-	Relay       bool   // The relay capability of the ServerNode (merge into capbility flag)
-	TxnCnt      uint64 // The transactions be transmit by
-	RxTxnCnt    uint64 // The transaction received by this ServerNode
-	Port        uint16 // The nodes's port
-	PRCPort     uint16 // The RPC service prot
-	RestPort    uint16 // The RESTful service port
-	WSPort      uint16 // The webservcie port
-	OpenPort    uint16 // The open service port
-	OpenService bool   // If open service is enabled
-	Neighbors   []Neighbor
-}
-
-type Neighbor struct {
-	ID         uint64 // The neighbor ID
-	HexID      string // The neighbor ID in hex format
-	Height     uint64 // The neighbor height
-	Services   uint64 // The services the neighbor node supplied
-	Relay      bool   // If this neighbor relay block and transactions
-	External   bool   // If this neighbor is an external node
-	State      string // The state of this neighbor node
-	NetAddress string // The tcp address of this neighbor node
+	Compile   string            // The compile version of this server node
+	Height    uint32            // The ServerNode latest block height
+	Version   uint32            // The network protocol the ServerNode used
+	Services  string            // The services the server supports
+	Port      uint16            // The nodes's port
+	RPCPort   uint16            // The RPC service port
+	RestPort  uint16            // The RESTful service port
+	WSPort    uint16            // The webservcie port
+	Neighbors []*peer.StatsSnap // The connected neighbor peers.
 }
 
 type ArbitratorGroupInfo struct {
