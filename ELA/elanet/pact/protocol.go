@@ -7,12 +7,14 @@ import (
 
 // Release version numbers
 const (
+	// ProtocolVersion is the latest protocol version this package supports.
+	ProtocolVersion = DPOSStartVersion
+
+	// DPOSStartVersion is the protocol version which switch to DPOS protocol.
+	DPOSStartVersion uint32 = 20000
+
 	// EBIP001Version is the protocol version starts to support SPV protocol.
 	EBIP001Version uint32 = 10001
-
-	// EBIP002Version is the protocol version which start support
-	// transaction filtering through txfilter message.
-	EBIP002Version uint32 = 10002
 
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
