@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"math"
-	"os"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -19,8 +18,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/version/heights"
 
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,20 +28,47 @@ type txValidatorTestSuite struct {
 
 	ELA               int64
 	foundationAddress common.Uint168
+	HeightVersion1    uint32
+	Chain             *BlockChain
+	OriginalLedger    *Ledger
 }
 
 func (s *txValidatorTestSuite) SetupSuite() {
-	log.Init(
+	config.Parameters = config.ConfigParams{Configuration: &config.Template}
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
 	)
+
 	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
 	if err != nil {
-		log.Error(err)
-		os.Exit(-1)
+		s.Error(err)
 	}
-	s.foundationAddress = *foundation
+	FoundationAddress = *foundation
+	s.foundationAddress = FoundationAddress
+
+	heightVersions := &mock.HeightVersionsMock{}
+	chainStore, err := NewChainStore("txValidatorTestSuite",
+		config.MainNetParams.GenesisBlock)
+	if err != nil {
+		s.Error(err)
+	}
+	s.Chain, err = New(chainStore, &config.MainNetParams,
+		heightVersions, state.NewState(&mock.ArbitratorsMock{}, &config.MainNetParams))
+	if err != nil {
+		s.Error(err)
+	}
+
+	s.OriginalLedger = DefaultLedger
+	DefaultLedger = &Ledger{
+		HeightVersions: heightVersions,
+	}
+}
+
+func (s *txValidatorTestSuite) TearDownSuite() {
+	s.Chain.db.Close()
+	DefaultLedger = s.OriginalLedger
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionSize() {
@@ -56,75 +82,75 @@ func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 	size := tx.GetSize()
 	// normal
 	config.Parameters.MaxBlockSize = size
-	err = CheckTransactionSize(tx)
+	err = checkTransactionSize(tx)
 	s.NoError(err, "[CheckTransactionSize] passed normal size")
 
 	// invalid
 	config.Parameters.MaxBlockSize = size - 1
-	err = CheckTransactionSize(tx)
+	err = checkTransactionSize(tx)
 	s.EqualError(err, fmt.Sprintf("Invalid transaction size: %d bytes", size))
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionInput() {
 	// coinbase transaction
-	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	tx := newCoinBaseTransaction(new(payload.CoinBase), 0)
 	tx.Inputs[0].Previous.Index = math.MaxUint16
-	err := CheckTransactionInput(tx)
+	err := checkTransactionInput(tx)
 	s.NoError(err)
 
 	// invalid coinbase refer index
 	tx.Inputs[0].Previous.Index = 0
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "invalid coinbase input")
 
 	// invalid coinbase refer id
 	tx.Inputs[0].Previous.Index = math.MaxUint16
 	rand.Read(tx.Inputs[0].Previous.TxID[:])
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "invalid coinbase input")
 
 	// multiple coinbase inputs
 	tx.Inputs = append(tx.Inputs, &types.Input{})
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "coinbase must has only one input")
 
 	// normal transaction
 	tx = buildTx()
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.NoError(err)
 
 	// no inputs
 	tx.Inputs = nil
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "transaction has no inputs")
 
 	// normal transaction with coinbase input
 	tx.Inputs = append(tx.Inputs, &types.Input{Previous: *types.NewOutPoint(common.EmptyHash, math.MaxUint16)})
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "invalid transaction input")
 
 	// duplicated inputs
 	tx = buildTx()
 	tx.Inputs = append(tx.Inputs, tx.Inputs[0])
-	err = CheckTransactionInput(tx)
+	err = checkTransactionInput(tx)
 	s.EqualError(err, "duplicated transaction inputs")
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	// coinbase
-	tx := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	tx := newCoinBaseTransaction(new(payload.CoinBase), 0)
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err := CheckTransactionOutput(heights.HeightVersion1, tx)
+	err := checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// outputs < 2
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "coinbase output is not enough, at least 2")
 
 	// invalid asset id
@@ -132,43 +158,43 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "Asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30% (CheckTxOut version)
-	totalReward := RewardAmountPerBlock
+	totalReward := config.MainNetParams.RewardPerBlock
 	fmt.Printf("Block reward amount %s", totalReward.String())
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	fmt.Printf("Foundation reward amount %s", foundationReward.String())
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// reward to foundation in coinbase < 30% (CheckTxOut version)
 	foundationReward = common.Fixed64(float64(totalReward) * 0.299999)
 	fmt.Printf("Foundation reward amount %s", foundationReward.String())
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "Reward to foundation in coinbase < 30%")
 
 	// normal transaction
 	tx = buildTx()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// outputs < 1
 	tx.Outputs = nil
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "transaction has no outputs")
 
 	// invalid asset ID
@@ -177,13 +203,13 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.AssetID = common.EmptyHash
 		output.ProgramHash = common.Uint168{}
 	}
-	err = CheckTransactionOutput(heights.HeightVersion1, tx)
+	err = checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "asset ID in output is invalid")
 
 	// invalid program hash
 	tx.Outputs = randomOutputs()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = config.ELAAssetID
 		address := common.Uint168{}
 		address[0] = 0x23
 		output.ProgramHash = address
@@ -214,7 +240,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	err := CheckAttributeProgram(heights.HeightVersion1, tx)
+	err := checkAttributeProgram(s.HeightVersion1, tx)
 	s.EqualError(err, "no programs found in transaction")
 
 	// invalid attributes
@@ -230,20 +256,20 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	for i := 0; i < 10; i++ {
 		attr := types.NewAttribute(getInvalidUsage(), nil)
 		tx.Attributes = []*types.Attribute{&attr}
-		err := CheckAttributeProgram(heights.HeightVersion1, tx)
+		err := checkAttributeProgram(s.HeightVersion1, tx)
 		s.EqualError(err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
 	tx.Programs = []*program.Program{}
-	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	err = checkAttributeProgram(s.HeightVersion1, tx)
 	s.EqualError(err, "no programs found in transaction")
 
 	// nil program code
 	p := &program.Program{}
 	tx.Programs = append(tx.Programs, p)
-	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	err = checkAttributeProgram(s.HeightVersion1, tx)
 	s.EqualError(err, "invalid program code nil")
 
 	// nil program parameter
@@ -251,14 +277,14 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	rand.Read(code)
 	p = &program.Program{Code: code}
 	tx.Programs = []*program.Program{p}
-	err = CheckAttributeProgram(heights.HeightVersion1, tx)
+	err = checkAttributeProgram(s.HeightVersion1, tx)
 	s.EqualError(err, "invalid program parameter nil")
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionPayload() {
 	// normal
 	tx := new(types.Transaction)
-	payload := &payload.PayloadRegisterAsset{
+	payload := &payload.RegisterAsset{
 		Asset: payload.Asset{
 			Name:      "ELA",
 			Precision: 0x08,
@@ -267,18 +293,18 @@ func (s *txValidatorTestSuite) TestCheckTransactionPayload() {
 		Amount: 3300 * 10000 * 10000000,
 	}
 	tx.Payload = payload
-	err := CheckTransactionPayload(tx)
+	err := checkTransactionPayload(tx)
 	s.NoError(err)
 
 	// invalid precision
 	payload.Asset.Precision = 9
-	err = CheckTransactionPayload(tx)
+	err = checkTransactionPayload(tx)
 	s.EqualError(err, "Invalide asset Precision.")
 
 	// invalid amount
 	payload.Asset.Precision = 0
 	payload.Amount = 1234567
-	err = CheckTransactionPayload(tx)
+	err = checkTransactionPayload(tx)
 	s.EqualError(err, "Invalide asset value,out of precise.")
 }
 
@@ -293,7 +319,7 @@ func (s *txValidatorTestSuite) TestCheckDuplicateSidechainTx() {
 	// 1. Generate the ill withdraw transaction which have duplicate sidechain tx
 	txn := new(types.Transaction)
 	txn.TxType = types.WithdrawFromSideChain
-	txn.Payload = &payload.PayloadWithdrawFromSideChain{
+	txn.Payload = &payload.WithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHashes: []common.Uint256{
@@ -304,7 +330,7 @@ func (s *txValidatorTestSuite) TestCheckDuplicateSidechainTx() {
 	}
 
 	// 2. Run CheckDuplicateSidechainTx
-	err := CheckDuplicateSidechainTx(txn)
+	err := checkDuplicateSidechainTx(txn)
 	s.EqualError(err, "Duplicate sidechain tx detected in a transaction")
 }
 
@@ -316,46 +342,46 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	// single output
 
 	outputValue1 := common.Fixed64(100 * s.ELA)
-	deposit := NewCoinBaseTransaction(new(payload.PayloadCoinBase), 0)
+	deposit := newCoinBaseTransaction(new(payload.CoinBase), 0)
 	deposit.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
 	}
 
 	references := map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1},
 	}
-	s.EqualError(CheckTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
 	}
-	s.NoError(CheckTransactionFee(tx, references))
+	s.NoError(checkTransactionFee(tx, references))
 
 	// multiple output
 
 	outputValue1 = common.Fixed64(30 * s.ELA)
 	outputValue2 := common.Fixed64(70 * s.ELA)
 	tx.Outputs = []*types.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
+		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
+		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
 	}
 
 	references = map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1 + outputValue2},
 	}
-	s.EqualError(CheckTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1 + outputValue2 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
 	}
-	s.NoError(CheckTransactionFee(tx, references))
+	s.NoError(checkTransactionFee(tx, references))
 }
 
 func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 	// 1. Generate a side chain pow transaction
 	txn := new(types.Transaction)
 	txn.TxType = types.SideChainPow
-	txn.Payload = &payload.PayloadSideChainPow{
+	txn.Payload = &payload.SideChainPow{
 		SideBlockHash:   common.Uint256{1, 1, 1},
 		SideGenesisHash: common.Uint256{2, 2, 2},
 		BlockHeight:     uint32(10),
@@ -376,9 +402,9 @@ func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 
 	//3. Sign transaction by arbitrator1
 	buf := new(bytes.Buffer)
-	txn.Payload.Serialize(buf, payload.SideChainPowPayloadVersion)
+	txn.Payload.Serialize(buf, payload.SideChainPowVersion)
 	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
-	txn.Payload.(*payload.PayloadSideChainPow).SignedData = signature
+	txn.Payload.(*payload.SideChainPow).SignedData = signature
 
 	//4. Run CheckSideChainPowConsensus
 	s.NoError(CheckSideChainPowConsensus(txn, arbitrator1), "TestCheckSideChainPowConsensus failed.")
@@ -394,7 +420,7 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: &types.Output{ProgramHash: *programHash},
 	}
 
-	err := CheckDestructionAddress(reference)
+	err := checkDestructionAddress(reference)
 	s.EqualError(err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
 }
 
@@ -411,7 +437,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	rpPayload := &payload.PayloadRegisterProducer{
+	rpPayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
 		NickName:       "nickname 1",
 		Url:            "http://www.elastos_test.com",
@@ -419,7 +445,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		NetAddress:     "127.0.0.1:20338",
 	}
 	rpSignBuf := new(bytes.Buffer)
-	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err := rpPayload.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	rpSig, err := crypto.Sign(privateKey1, rpSignBuf.Bytes())
 	s.NoError(err)
@@ -439,30 +465,30 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		ProgramHash: *publicKeyDeposit1,
 	}}
 
-	err = CheckRegisterProducerTransaction(txn)
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.NoError(err)
 
 	// Give an invalid public key in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = errPublicKey
-	err = CheckRegisterProducerTransaction(txn)
-	s.EqualError(err, "invalid public key")
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = errPublicKey
+	err = s.Chain.checkRegisterProducerTransaction(txn)
+	s.EqualError(err, "invalid public key in payload")
 
 	// Invalidates the signature in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey2
-	err = CheckRegisterProducerTransaction(txn)
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey2
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
 	// Give an invalid url in payload
-	txn.Payload.(*payload.PayloadRegisterProducer).OwnerPublicKey = publicKey1
-	txn.Payload.(*payload.PayloadRegisterProducer).Url = ""
-	err = CheckRegisterProducerTransaction(txn)
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey1
+	txn.Payload.(*payload.ProducerInfo).Url = ""
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
 	rpPayload.OwnerPublicKey = publicKey1
 	rpPayload.Url = "www.test.com"
 	rpSignBuf = new(bytes.Buffer)
-	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.PayloadRegisterProducerVersion)
+	err = rpPayload.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	rpSig, err = crypto.Sign(privateKey1, rpSignBuf.Bytes())
 	s.NoError(err)
@@ -476,7 +502,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		OutputLock:  0,
 		ProgramHash: *publicKeyDeposit2,
 	}}
-	err = CheckRegisterProducerTransaction(txn)
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "deposit address does not match the public key in payload")
 
 	// Give a insufficient deposit coin
@@ -486,7 +512,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 		OutputLock:  0,
 		ProgramHash: *publicKeyDeposit1,
 	}}
-	err = CheckRegisterProducerTransaction(txn)
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "producer deposit amount is insufficient")
 
 	// Multi deposit addresses
@@ -503,14 +529,14 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 			OutputLock:  0,
 			ProgramHash: *publicKeyDeposit1,
 		}}
-	err = CheckRegisterProducerTransaction(txn)
+	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "there must be only one deposit address in outputs")
 }
 
 func getCode(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := createStandardRedeemScript(pk)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
 	return redeemScript
 }
 
@@ -524,8 +550,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -542,8 +568,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -558,8 +584,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			Value:       1.0,
 			OutputLock:  0,
 			ProgramHash: common.Uint168{123},
-			OutputType:  types.VoteOutput,
-			OutputPayload: &outputpayload.VoteOutput{
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
@@ -575,13 +601,13 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	}
 
 	// 2. Check output payload
-	err := outputs[0].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err := outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
 	s.NoError(err)
 
-	err = outputs[1].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err = outputs[1].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "invalid public key count")
 
-	err = outputs[2].OutputPayload.(*outputpayload.VoteOutput).Validate()
+	err = outputs[2].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "duplicate candidate")
 }
 
@@ -597,7 +623,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	updatePayload := &payload.PayloadUpdateProducer{
+	updatePayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
 		NickName:       "",
 		Url:            "",
@@ -611,29 +637,36 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			txn,
+		},
+	}
+	s.Chain.state.ProcessBlock(block, nil)
+
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
 
 	updatePayload.NickName = "nick name"
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Field Url has invalid string length.")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field Url has invalid string length.")
 
 	updatePayload.Url = "www.elastos.org"
-	s.EqualError(CheckUpdateProducerTransaction(txn), "Field NetAddress has invalid string length.")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NetAddress has invalid string length.")
 
 	updatePayload.NetAddress = "127.0.0.1:20338"
 	updatePayload.OwnerPublicKey = errPublicKey
-	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid public key in payload")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid public key in payload")
 
 	updatePayload.OwnerPublicKey = publicKey2
-	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid signature in payload")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid signature in payload")
 
 	updatePayload.OwnerPublicKey = publicKey1
 	updateSignBuf := new(bytes.Buffer)
-	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.PayloadRegisterProducerVersion)
+	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	s.NoError(err)
 	updatePayload.Signature = updateSig
-	s.EqualError(CheckUpdateProducerTransaction(txn), "invalid producer")
+	s.NoError(s.Chain.checkUpdateProducerTransaction(txn))
 
 	//rest of check test will be continued in chain test
 }
@@ -648,7 +681,7 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.CancelProducer
-	cancelPayload := &payload.PayloadCancelProducer{
+	cancelPayload := &payload.CancelProducer{
 		OwnerPublicKey: publicKey1,
 	}
 	txn.Payload = cancelPayload
@@ -659,10 +692,10 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	}}
 
 	cancelPayload.OwnerPublicKey = errPublicKey
-	s.EqualError(CheckCancelProducerTransaction(txn), "invalid public key in payload")
+	s.EqualError(s.Chain.checkCancelProducerTransaction(txn), "invalid public key in payload")
 
 	cancelPayload.OwnerPublicKey = publicKey2
-	s.EqualError(CheckCancelProducerTransaction(txn), "invalid signature in payload")
+	s.EqualError(s.Chain.checkCancelProducerTransaction(txn), "invalid signature in payload")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
@@ -683,12 +716,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	}
 	references[input] = depositOutput
 	txn.TxType = types.TransferAsset
-	err := CheckTransactionDepositUTXO(&txn, references)
+	err := checkTransactionDepositUTXO(&txn, references)
 	s.EqualError(err, "only the ReturnDepositCoin transaction can use the deposit UTXO")
 
 	// Use the deposit UTXO in a ReturnDepositCoin transaction
 	txn.TxType = types.ReturnDepositCoin
-	err = CheckTransactionDepositUTXO(&txn, references)
+	err = checkTransactionDepositUTXO(&txn, references)
 	s.NoError(err)
 
 	// Use the standard UTXO in a ReturnDepositCoin transaction
@@ -698,7 +731,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	}
 	references[input] = normalOutput
 	txn.TxType = types.ReturnDepositCoin
-	err = CheckTransactionDepositUTXO(&txn, references)
+	err = checkTransactionDepositUTXO(&txn, references)
 	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
 }
 
@@ -706,15 +739,24 @@ func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }
 
-func createStandardRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
-	content, err := publicKey.EncodePoint(true)
-	if err != nil {
-		return nil, errors.New("create standard redeem script, encode public key failed")
+func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
+	currentHeight uint32) *types.Transaction {
+	return &types.Transaction{
+		Version:        0,
+		TxType:         types.CoinBase,
+		PayloadVersion: payload.CoinBaseVersion,
+		Payload:        coinBasePayload,
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  common.EmptyHash,
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Attributes: []*types.Attribute{},
+		LockTime:   currentHeight,
+		Programs:   []*program.Program{},
 	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(content)))
-	buf.Write(content)
-	buf.WriteByte(byte(common.STANDARD))
-
-	return buf.Bytes(), nil
 }

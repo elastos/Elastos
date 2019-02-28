@@ -1,13 +1,12 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
 const (
@@ -15,38 +14,17 @@ const (
 	consensusRunning
 )
 
-type Consensus interface {
-	AbnormalRecovering
-
-	IsRunning() bool
-	SetRunning()
-	IsReady() bool
-	SetReady()
-
-	IsOnDuty() bool
-	SetOnDuty(onDuty bool)
-
-	IsArbitratorOnDuty(arbitrator string) bool
-	GetOnDutyArbitrator() string
-
-	StartConsensus(b *types.Block)
-	ProcessBlock(b *types.Block)
-
-	ChangeView()
-	TryChangeView() bool
-	GetViewOffset() uint32
-}
-
-type consensus struct {
+type Consensus struct {
 	consensusStatus uint32
 	viewOffset      uint32
 
-	manager     DposManager
+	manager     *DPOSManager
 	currentView view
 }
 
-func NewConsensus(manager DposManager, tolerance time.Duration, viewListener ViewListener) Consensus {
-	c := &consensus{
+func NewConsensus(manager *DPOSManager, tolerance time.Duration,
+	viewListener ViewListener) *Consensus {
+	c := &Consensus{
 		consensusStatus: consensusReady,
 		viewOffset:      0,
 		manager:         manager,
@@ -56,42 +34,41 @@ func NewConsensus(manager DposManager, tolerance time.Duration, viewListener Vie
 	return c
 }
 
-func (c *consensus) IsOnDuty() bool {
+func (c *Consensus) IsOnDuty() bool {
 	return c.currentView.IsOnDuty()
 }
 
-func (c *consensus) SetOnDuty(onDuty bool) {
+func (c *Consensus) SetOnDuty(onDuty bool) {
 	c.currentView.SetOnDuty(onDuty)
 }
 
-func (c *consensus) SetRunning() {
+func (c *Consensus) SetRunning() {
 	c.consensusStatus = consensusRunning
 	c.resetViewOffset()
 }
 
-func (c *consensus) SetReady() {
+func (c *Consensus) SetReady() {
 	c.consensusStatus = consensusReady
 	c.resetViewOffset()
 }
 
-func (c *consensus) IsRunning() bool {
+func (c *Consensus) IsRunning() bool {
 	return c.consensusStatus == consensusRunning
 }
 
-func (c *consensus) IsReady() bool {
+func (c *Consensus) IsReady() bool {
 	return c.consensusStatus == consensusReady
 }
 
-func (c *consensus) IsArbitratorOnDuty(arbitrator string) bool {
-	return c.GetOnDutyArbitrator() == arbitrator
+func (c *Consensus) IsArbitratorOnDuty(arbitrator []byte) bool {
+	return bytes.Equal(c.GetOnDutyArbitrator(), arbitrator)
 }
 
-func (c *consensus) GetOnDutyArbitrator() string {
-	a := c.manager.GetArbitrators().GetNextOnDutyArbitrator(c.viewOffset)
-	return common.BytesToHexString(a)
+func (c *Consensus) GetOnDutyArbitrator() []byte {
+	return c.manager.GetArbitrators().GetNextOnDutyArbitrator(c.viewOffset)
 }
 
-func (c *consensus) StartConsensus(b *types.Block) {
+func (c *Consensus) StartConsensus(b *types.Block) {
 	log.Info("[StartConsensus] consensus start")
 	defer log.Info("[StartConsensus] consensus end")
 
@@ -104,26 +81,26 @@ func (c *consensus) StartConsensus(b *types.Block) {
 
 }
 
-func (c *consensus) GetViewOffset() uint32 {
+func (c *Consensus) GetViewOffset() uint32 {
 	return c.viewOffset
 }
 
-func (c *consensus) ProcessBlock(b *types.Block) {
+func (c *Consensus) ProcessBlock(b *types.Block) {
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
 }
 
-func (c *consensus) ChangeView() {
+func (c *Consensus) ChangeView() {
 	c.currentView.ChangeView(&c.viewOffset)
 }
 
-func (c *consensus) TryChangeView() bool {
+func (c *Consensus) TryChangeView() bool {
 	if c.IsRunning() {
 		return c.currentView.TryChangeView(&c.viewOffset)
 	}
 	return false
 }
 
-func (c *consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error {
+func (c *Consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error {
 	status.ConsensusStatus = c.consensusStatus
 	status.ViewOffset = c.viewOffset
 	status.ViewStartTime = c.currentView.GetViewStartTime()
@@ -131,7 +108,7 @@ func (c *consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusS
 	return nil
 }
 
-func (c *consensus) RecoverFromConsensusStatus(status *msg.ConsensusStatus) error {
+func (c *Consensus) RecoverFromConsensusStatus(status *msg.ConsensusStatus) error {
 	log.Info("[RecoverFromConsensusStatus] status.ConsensusStatus:", status.ConsensusStatus)
 	c.consensusStatus = status.ConsensusStatus
 	c.viewOffset = status.ViewOffset
@@ -139,6 +116,6 @@ func (c *consensus) RecoverFromConsensusStatus(status *msg.ConsensusStatus) erro
 	return nil
 }
 
-func (c *consensus) resetViewOffset() {
+func (c *Consensus) resetViewOffset() {
 	c.viewOffset = 0
 }

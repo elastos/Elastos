@@ -1,6 +1,8 @@
 package config
 
-var configTemplate = Configuration{
+import "time"
+
+var Template = Configuration{
 	Magic:               7630401,
 	Version:             23,
 	SeedList:            []string{"127.0.0.1:30338"},
@@ -31,23 +33,37 @@ var configTemplate = Configuration{
 		MinTxFee:   100,
 		ActiveNet:  "RegNet",
 	},
-	VoteHeight: 100,
+	EnableArbiter: false,
 	ArbiterConfiguration: ArbiterConfiguration{
-		Name:            "test",
-		Magic:           7630403,
-		NodePort:        30338,
-		ProtocolVersion: 0,
-		Services:        0,
-		PrintLevel:      1,
-		SignTolerance:   5,
-		MaxLogsSize:     0,
-		MaxPerLogSize:   0,
-		MaxConnections:  100,
-		CandidatesCount: 0,
+		PublicKey:                "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
+		Magic:                    7630403,
+		NodePort:                 30338,
+		ProtocolVersion:          0,
+		Services:                 0,
+		PrintLevel:               1,
+		SignTolerance:            5,
+		MaxLogsSize:              0,
+		MaxPerLogSize:            0,
+		MaxConnections:           100,
+		NormalArbitratorsCount:   5,
+		CandidatesCount:          0,
+		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
+		EmergencyInactivePenalty: 500 * 100000000,
+		MaxInactiveRounds:        3,
+		InactiveDuration:         uint32((time.Hour * 24 * 7) / time.Second),
+		InactivePenalty:          100 * 100000000,
+		InactiveEliminateCount:   12,
+		EnableEventRecord:        false,
 	},
 	RpcConfiguration: RpcConfiguration{
 		User:        "",
 		Pass:        "",
 		WhiteIPList: []string{"127.0.0.1"},
+	},
+	HeightVersions: []uint32{
+		0,
+		88812,
+		1008812, //fixme edit height later
+		1108812, //fixme edit height later
 	},
 }
