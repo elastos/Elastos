@@ -185,7 +185,7 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 //	}
 //	peer1Cfg := &peer.Config{
 //		Magic:            123123,
-//		ProtocolVersion:  p2p.EIP001Version,
+//		ProtocolVersion:  pact.EBIP001Version,
 //		Services:         0,
 //		DisableRelayTx:   true,
 //		HostToNetAddress: nil,
@@ -202,7 +202,7 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 //	}
 //	peer2Cfg := &peer.Config{
 //		Magic:            123123,
-//		ProtocolVersion:  p2p.EIP001Version,
+//		ProtocolVersion:  pact.EBIP001Version,
 //		Services:         1,
 //		DisableRelayTx:   true,
 //		HostToNetAddress: nil,
@@ -222,7 +222,7 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 //
 //	wantStats1 := peerStats{
 //		wantServices:        0,
-//		wantProtocolVersion: p2p.EIP001Version,
+//		wantProtocolVersion: pact.EBIP001Version,
 //		wantConnected:       true,
 //		wantVersionKnown:    true,
 //		wantVerAckReceived:  true,
@@ -232,7 +232,7 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 //	}
 //	wantStats2 := peerStats{
 //		wantServices:        1,
-//		wantProtocolVersion: p2p.EIP001Version,
+//		wantProtocolVersion: pact.EBIP001Version,
 //		wantConnected:       true,
 //		wantVersionKnown:    true,
 //		wantVerAckReceived:  true,

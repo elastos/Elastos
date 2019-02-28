@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/hex"
 	"fmt"
 	"io"
 
@@ -25,7 +24,7 @@ func (i *Input) Deserialize(r io.Reader) error {
 }
 
 func (i *Input) ReferKey() string {
-	return hex.EncodeToString(i.Previous.Bytes())
+	return i.Previous.ReferKey()
 }
 
 func (i *Input) IsEqual(o Input) bool {

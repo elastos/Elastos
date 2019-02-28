@@ -5,13 +5,14 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
+	"mime"
 	"net"
 	"net/http"
 	"strconv"
+	"time"
 
-	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	elaErr "github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/servers"
@@ -32,8 +33,6 @@ const (
 
 func StartRPCServer() {
 	mainMux = make(map[string]func(Params) map[string]interface{})
-
-	http.HandleFunc("/", Handle)
 
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
@@ -64,23 +63,36 @@ func StartRPCServer() {
 	mainMux["listproducers"] = ListProducers
 	mainMux["producerstatus"] = ProducerStatus
 	mainMux["votestatus"] = VoteStatus
+	// for cross-chain arbiter
+	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
+	mainMux["getactivedpospeers"] = GetActiveDPOSPeers
+
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin
 
-	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
+	rpcServeMux := http.NewServeMux()
+	server := http.Server{
+		Handler:      rpcServeMux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+	rpcServeMux.HandleFunc("/", Handle)
+	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
+	err := server.Serve(l)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
+		log.Fatal("ListenAndServe error: ", err.Error())
 	}
 }
 
 //this is the function that should be called in order to answer an rpc call
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
 func Handle(w http.ResponseWriter, r *http.Request) {
+
 	//JSON RPC commands should be POSTs
 	isClientAllowed := clientAllowed(r)
 	if !isClientAllowed {
 		log.Warn("HTTP Client ip is not allowd")
-		http.Error(w, "Client ip is not allowd", http.StatusNetworkAuthenticationRequired)
+		http.Error(w, "Client ip is not allowd", http.StatusForbidden)
 		return
 	}
 
@@ -89,16 +101,16 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
 		return
 	}
-
-	if r.Header["Content-Type"][0] != "application/json" {
+	contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if contentType != "application/json" {
 		http.Error(w, "need content type to be application/json", http.StatusUnsupportedMediaType)
 		return
 	}
 
-	isCheckAuthOk, err := checkAuth(r)
+	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
-		log.Warn(err.Error())
-		http.Error(w, err.Error(), http.StatusNetworkAuthenticationRequired)
+		log.Warn("client authenticate failed")
+		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
 		return
 	}
 
@@ -139,6 +151,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		RPCError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
 		return
 	}
+	log.Debug("RPC method:", requestMethod)
 	log.Debug("RPC params:", params)
 
 	response := method(params)
@@ -166,20 +179,16 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func clientAllowed(req *http.Request) bool {
-	log.Debugf("RemoteAddr %s \n", req.RemoteAddr)
-	log.Debugf("WhiteIPList %v \n", Parameters.RpcConfiguration.WhiteIPList)
-
+func clientAllowed(r *http.Request) bool {
 	//this ipAbbr  may be  ::1 when request is localhost
-	ipAbbr, _, err := net.SplitHostPort(req.RemoteAddr)
+	ipAbbr, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		log.Errorf("RemoteAddr clientAllowed SplitHostPort failure %s \n", req.RemoteAddr)
+		log.Errorf("RemoteAddr clientAllowed SplitHostPort failure %s \n", r.RemoteAddr)
 		return false
 
 	}
 	//after ParseIP ::1 chg to 0:0:0:0:0:0:0:1 the true ip
 	remoteIp := net.ParseIP(ipAbbr)
-	log.Debugf("RemoteAddr clientAllowed remoteIp %s \n", remoteIp.String())
 
 	if remoteIp == nil {
 		log.Errorf("clientAllowed ParseIP ipAbbr %s failure  \n", ipAbbr)
@@ -191,8 +200,8 @@ func clientAllowed(req *http.Request) bool {
 		return true
 	}
 
-	for _, cfgIp := range Parameters.RpcConfiguration.WhiteIPList {
-		//WhiteIPList have 0.0.0.0  allow all ip in
+	for _, cfgIp := range config.Parameters.RpcConfiguration.WhiteIPList {
+		//WhiteIpList have 0.0.0.0  allow all ip in
 		if cfgIp == "0.0.0.0" {
 			return true
 		}
@@ -201,37 +210,32 @@ func clientAllowed(req *http.Request) bool {
 		}
 
 	}
-	log.Debugf("RemoteAddr clientAllowed failure %s \n", req.RemoteAddr)
 	return false
 }
 
-func checkAuth(r *http.Request) (bool, error) {
-
-	log.Debugf("checkAuth PowConfiguration %+v", Parameters.RpcConfiguration)
-
-	if (Parameters.RpcConfiguration.User == Parameters.RpcConfiguration.Pass) && (len(Parameters.RpcConfiguration.User) == 0) {
-		return true, nil
+func checkAuth(r *http.Request) bool {
+	if (config.Parameters.RpcConfiguration.User == config.Parameters.RpcConfiguration.Pass) &&
+		(len(config.Parameters.RpcConfiguration.User) == 0) {
+		return true
 	}
 	authHeader := r.Header["Authorization"]
 	if len(authHeader) <= 0 {
-		log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-		return false, errors.New("checkAuth failure Authorization empty")
+		return false
 	}
 
 	authSha256 := sha256.Sum256([]byte(authHeader[0]))
 
-	login := Parameters.RpcConfiguration.User + ":" + Parameters.RpcConfiguration.Pass
+	login := config.Parameters.RpcConfiguration.User + ":" + config.Parameters.RpcConfiguration.Pass
 	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(login))
 	cfgAuthSha256 := sha256.Sum256([]byte(auth))
 
 	resultCmp := subtle.ConstantTimeCompare(authSha256[:], cfgAuthSha256[:])
 	if resultCmp == 1 {
-		return true, nil
+		return true
 	}
 
 	// Request's auth doesn't match  user
-	log.Warnf("checkAuth RPC authentication failure from %s", r.RemoteAddr)
-	return false, errors.New("checkAuth failure Authorization username or password error")
+	return false
 }
 
 func RPCError(w http.ResponseWriter, httpStatus int, code elaErr.ErrCode, message string) {

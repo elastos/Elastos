@@ -16,7 +16,7 @@ import (
 
 func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Program) error {
 	if len(programHashes) != len(programs) {
-		return errors.New("The number of data hashes is different with number of programs.")
+		return errors.New("the number of data hashes is different with number of programs")
 	}
 
 	for i, program := range programs {
@@ -57,7 +57,7 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 
 func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]common.Uint168, error) {
 	if tx == nil {
-		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
+		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil")
 	}
 	hashes := make([]common.Uint168, 0)
 	uniqueHashes := make([]common.Uint168, 0)
@@ -70,13 +70,13 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]commo
 		if attribute.Usage == Script {
 			dataHash, err := common.Uint168FromBytes(attribute.Data)
 			if err != nil {
-				return nil, errors.New("[Transaction], GetProgramHashes err.")
+				return nil, errors.New("[Transaction], GetProgramHashes err")
 			}
 			hashes = append(hashes, *dataHash)
 		}
 	}
 
-	//remove dupilicated hashes
+	//remove duplicated hashes
 	unique := make(map[common.Uint168]bool)
 	for _, v := range hashes {
 		unique[v] = true
@@ -89,7 +89,7 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]commo
 
 func checkStandardSignature(program Program, data []byte) error {
 	if len(program.Parameter) != crypto.SignatureScriptLength {
-		return errors.New("Invalid signature length")
+		return errors.New("invalid signature length")
 	}
 
 	publicKey, err := crypto.DecodePoint(program.Code[1 : len(program.Code)-1])
@@ -123,8 +123,8 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n || n != int(config.ArbitratorsCount) ||
-		m <= int(config.MajorityCount) {
+	if m < 1 || m > n || n != int(DefaultLedger.Arbitrators.GetArbitersCount()) ||
+		m <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseCrossChainScript(code)
@@ -156,7 +156,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
+		sign := signatures[i:i+crypto.SignatureScriptLength][1:]
 		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
@@ -185,9 +185,10 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
 	if len(arbitrators) != len(publicKeys) {
-		return errors.New("Invalid arbitrator count.")
+		return errors.New("invalid arbitrator count")
 	}
 
+	arbitratorsMap := make(map[string]interface{})
 	for _, arbitrator := range arbitrators {
 		found := false
 		for _, pk := range publicKeys {
@@ -198,9 +199,24 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 		}
 
 		if !found {
-			return errors.New("Invalid cross chain arbitrators")
+			return errors.New("invalid cross chain arbitrators")
+		}
+
+		arbitratorsMap[common.BytesToHexString(arbitrator)] = nil
+	}
+
+	// todo improve me when height version refactoring
+	if DefaultLedger.Blockchain.GetHeight() >
+		config.Parameters.HeightVersions[1] {
+		for _, crc := range DefaultLedger.Arbitrators.GetCRCArbitrators() {
+			if _, exist :=
+				arbitratorsMap[common.BytesToHexString(crc.PublicKey)]; !exist {
+				return errors.New("not all crc arbitrators participated in" +
+					" crosschain multi-sign")
+			}
 		}
 	}
+
 	return nil
 }
 

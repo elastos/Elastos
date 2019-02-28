@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -8,44 +9,44 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
-	"github.com/elastos/Elastos.ELA/node"
-	"github.com/elastos/Elastos.ELA/protocol"
+	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/mempool"
+	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 type ArbitratorConfig struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
+	Params            config.ArbiterConfiguration
+	Arbitrators       interfaces.Arbitrators
 	Store             interfaces.IDposStore
+	TxMemPool         *mempool.TxPool
+	BlockMemPool      *mempool.BlockPool
+	ChainParams       *config.Params
+	Broadcast         func(msg p2p.Message)
 }
 
-type Arbitrator interface {
-	interfaces.NewBlocksListener
-	interfaces.ArbitratorsListener
-	protocol.TxnPoolListener
-
-	Start()
-	Stop() error
-}
-
-type arbitrator struct {
+type Arbitrator struct {
+	cfg            ArbitratorConfig
 	enableViewLoop bool
-	network        *dposNetwork
-	dposManager    manager.DposManager
+	network        *network
+	dposManager    *manager.DPOSManager
 }
 
-func (a *arbitrator) Start() {
+func (a *Arbitrator) Start() {
 	a.network.Start()
 	go a.dposManager.Recover()
 
 	go a.changeViewLoop()
 }
 
-func (a *arbitrator) Stop() error {
+func (a *Arbitrator) Stop() error {
 	a.enableViewLoop = false
 
 	if err := a.network.Stop(); err != nil {
@@ -55,31 +56,81 @@ func (a *arbitrator) Stop() error {
 	return nil
 }
 
-func (a *arbitrator) OnIllegalBlockTxnReceived(txn *types.Transaction) {
-	log.Info("[OnIllegalBlockTxnReceived] listener received block")
-	if txn.TxType == types.IllegalBlockEvidence {
-		payload := txn.Payload.(*types.PayloadIllegalBlock)
-		if payload.CoinType != types.ELACoin {
-			a.network.PostIllegalBlocksTask(&payload.DposIllegalBlocks)
+func (a *Arbitrator) GetActiveDPOSPeers() (result map[string]string) {
+	peers, err := a.cfg.Store.GetDirectPeers()
+	if err == nil {
+		log.Warn("get direct peers from data base error")
+		return result
+	}
+
+	for _, v := range peers {
+		if v.Sequence > 0 {
+			pk := common.BytesToHexString(v.PublicKey)
+			result[pk] = v.Address
+		}
+	}
+	return result
+}
+
+func (a *Arbitrator) OnIllegalBlockTxReceived(p *payload.DPOSIllegalBlocks) {
+	log.Info("[OnIllegalBlockTxReceived] listener received illegal block tx")
+	if p.CoinType != payload.ELACoin {
+		a.network.PostIllegalBlocksTask(p)
+	}
+}
+
+func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
+	p *payload.InactiveArbitrators) {
+	log.Info("[OnInactiveArbitratorsTxReceived] listener received " +
+		"inactive arbitrators tx")
+
+	if !a.cfg.Arbitrators.IsArbitrator(a.dposManager.GetPublicKey()) {
+		isEmergencyCandidate := false
+
+		candidates := a.cfg.Arbitrators.GetCandidates()
+		for i := 0; i < len(candidates) && i < int(a.cfg.Params.
+			InactiveEliminateCount); i++ {
+			if bytes.Equal(candidates[i], a.dposManager.GetPublicKey()) {
+				isEmergencyCandidate = true
+			}
+		}
+
+		if isEmergencyCandidate {
+			blockchain.DefaultLedger.Blockchain.GetState().
+				ProcessSpecialTxPayload(p)
+
+			if err := a.cfg.Arbitrators.ForceChange(blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
+				log.Error("[OnInactiveArbitratorsTxReceived] force change "+
+					"arbitrators error: ", err)
+			}
 		}
 	}
 }
 
-func (a *arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
+func (a *Arbitrator) OnSidechainIllegalEvidenceReceived(
+	data *payload.SidechainIllegalData) {
+	log.Info("[OnSidechainIllegalEvidenceReceived] listener received" +
+		" sidechain illegal evidence")
+	a.network.PostSidechainIllegalDataTask(data)
+}
+
+func (a *Arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
-func (a *arbitrator) OnConfirmReceived(p *types.DPosProposalVoteSlot) {
+func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *arbitrator) OnNewElection(arbiters [][]byte) {
-	a.network.UpdatePeers(arbiters)
+func (a *Arbitrator) OnNewElection(arbiters [][]byte) {
+	if err := a.network.UpdatePeers(arbiters); err != nil {
+		log.Warn("[OnNewElection] update peers error: ", err)
+	}
 }
 
-func (a *arbitrator) changeViewLoop() {
+func (a *Arbitrator) changeViewLoop() {
 	for a.enableViewLoop {
 		a.network.PostChangeViewTask()
 
@@ -87,14 +138,25 @@ func (a *arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, error) {
+func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
+	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
+		cfg.Params.MaxLogsSize)
+
 	dposAccount, err := account.NewDposAccount(password)
 	if err != nil {
-		log.Error("Init dpos account error")
+		log.Error("init dpos account error")
 		return nil, err
 	}
 
-	dposManager := manager.NewManager(config.Parameters.ArbiterConfiguration.Name, blockchain.DefaultLedger.Arbitrators)
+	pubKey, err := common.HexStringToBytes(cfg.Params.PublicKey)
+	if err != nil {
+		log.Error("init dpos account error")
+		return nil, err
+	}
+	dposManager := manager.NewManager(manager.DPOSManagerConfig{
+		PublicKey:   pubKey,
+		Arbitrators: cfg.Arbitrators,
+	})
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
 	copy(id[:], pk)
@@ -107,43 +169,80 @@ func NewArbitrator(password []byte, arConfig ArbitratorConfig) (Arbitrator, erro
 
 	eventMonitor := log.NewEventMoniter()
 
-	if arConfig.EnableEventLog {
+	if cfg.EnableEventLog {
 		eventLogs := &log.EventLogs{}
 		eventMonitor.RegisterListener(eventLogs)
 	}
 
-	if arConfig.EnableEventRecord {
+	if cfg.EnableEventRecord {
 		eventRecorder := &store.EventRecord{}
-		eventRecorder.Initialize(arConfig.Store)
+		eventRecorder.Initialize(cfg.Store)
 		eventMonitor.RegisterListener(eventRecorder)
 	}
 
-	dposHandlerSwitch := manager.NewHandler(network, dposManager, eventMonitor)
-
-	consensus := manager.NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, dposHandlerSwitch)
-	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(consensus, eventMonitor, network, dposManager, dposAccount)
-	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
-
-	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus, network,
-		illegalMonitor, &node.LocalNode.BlockPool, &node.LocalNode.TxPool, node.LocalNode)
-	network.Initialize(manager.DposNetworkConfig{
-		ProposalDispatcher: proposalDispatcher,
-		Store:              arConfig.Store,
+	dposHandlerSwitch := manager.NewHandler(manager.DPOSHandlerConfig{
+		Network:     network,
+		Manager:     dposManager,
+		Monitor:     eventMonitor,
+		Arbitrators: cfg.Arbitrators,
 	})
 
-	result := &arbitrator{
+	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
+	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(
+		manager.ProposalDispatcherConfig{
+			EventMonitor: eventMonitor,
+			Consensus:    consensus,
+			Network:      network,
+			Manager:      dposManager,
+			Account:      dposAccount,
+			ChainParams:  cfg.ChainParams,
+			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
+				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
+				Store:       cfg.Store,
+				Arbitrators: cfg.Arbitrators,
+			},
+		})
+	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
+
+	dposManager.Initialize(dposHandlerSwitch, proposalDispatcher, consensus,
+		network, illegalMonitor, cfg.BlockMemPool, cfg.TxMemPool, cfg.Broadcast)
+	network.Initialize(manager.DPOSNetworkConfig{
+		ProposalDispatcher: proposalDispatcher,
+		Store:              cfg.Store,
+		PublicKey:          pubKey,
+	})
+
+	cfg.Store.StartEventRecord()
+	cfg.Store.StartArbitratorsRecord()
+
+	a := Arbitrator{
 		enableViewLoop: true,
 		dposManager:    dposManager,
 		network:        network,
+		cfg:            cfg,
 	}
 
-	return result, nil
-}
+	events.Subscribe(func(e *events.Event) {
+		switch e.Type {
+		case events.ETNewBlockReceived:
+			block := e.Data.(*types.DposBlock)
+			a.OnBlockReceived(block.Block, block.ConfirmFlag)
 
-func init() {
-	log.Init(
-		config.Parameters.ArbiterConfiguration.PrintLevel,
-		config.Parameters.ArbiterConfiguration.MaxPerLogSize,
-		config.Parameters.ArbiterConfiguration.MaxLogsSize,
-	)
+		case events.ETConfirmAccepted:
+			a.OnConfirmReceived(e.Data.(*payload.Confirm))
+
+		case events.ETNewArbiterElection:
+			a.OnNewElection(e.Data.([][]byte))
+
+		case events.ETTransactionAccepted:
+			tx := e.Data.(*types.Transaction)
+			if tx.IsIllegalBlockTx() {
+				a.OnIllegalBlockTxReceived(tx.Payload.(*payload.DPOSIllegalBlocks))
+			} else if tx.IsInactiveArbitrators() {
+				a.OnInactiveArbitratorsTxReceived(tx.Payload.(*payload.InactiveArbitrators))
+			}
+		}
+	})
+
+	return &a, nil
 }

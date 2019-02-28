@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"testing"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type message struct {
@@ -585,6 +589,115 @@ func mockInboundPeer(addr PeerAddr, priKey []byte, pc chan<- *peer.Peer,
 //		t.FailNow()
 //	}
 //}
+
+func TestServer_DumpPeersInfo(t *testing.T) {
+	// Start peer-to-peer server
+	pid := peer.PID{}
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
+	server, err := NewServer(&Config{
+		PID:             pid,
+		MagicNumber:     123123,
+		ProtocolVersion: 0,
+		Services:        0,
+		DefaultPort:     20338,
+		SignNonce: func(nonce []byte) (signature [64]byte) {
+			sign, _ := crypto.Sign(priKey, nonce)
+			copy(signature[:], sign)
+			return signature
+		},
+		MakeEmptyMessage: makeEmptyMessage,
+	})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	defer server.Stop()
+	server.Start()
+
+	peerChan := make(chan *peer.Peer)
+	msgChan := make(chan p2p.Message)
+
+	// Mock 10 valid remote peers and addresses.
+	addrList := make([]PeerAddr, 0, 20)
+	priKeys := make([][]byte, 0, 20)
+	for i := uint16(0); i < 10; i++ {
+		priKey, pubKey, _ := crypto.GenerateKeyPair()
+		priKeys = append(priKeys, priKey)
+		ePubKey, _ := pubKey.EncodePoint(true)
+		copy(pid[:], ePubKey)
+		port := 20000 + i
+		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
+		addrList = append(addrList, addr)
+		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+
+	// Mock 10 invalid remote peers and addresses.
+	for i := uint16(0); i < 5; i++ {
+		priKey, pubKey, _ := crypto.GenerateKeyPair()
+		ePubKey, _ := pubKey.EncodePoint(true)
+		copy(pid[:], ePubKey)
+		port := 20010 + i
+		addr := PeerAddr{PID: pid, Addr: "localhost:0"}
+		addrList = append(addrList, addr)
+		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+
+	// Wait for 10 valid outbound peers connected.
+	server.ConnectPeers(addrList)
+	for i := 0; i < 10; i++ {
+		select {
+		case <-peerChan:
+		case <-time.After(time.Minute):
+			t.Fatalf("Connect peers timeout")
+		}
+	}
+
+	// Create 5 valid inbound peers.
+	for i, addr := range addrList[:5] {
+		err := mockInboundPeer(addr, priKeys[i], peerChan, msgChan)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+	for i := 0; i < 5; i++ {
+		select {
+		case <-peerChan:
+		case <-time.After(time.Minute):
+			t.Fatalf("Connect peers timeout")
+		}
+	}
+
+	// Now there will be 5 2WayConnection peers, 5 OutboundOnly peers,
+	// 5 NoneConnection peers.
+	peers := server.DumpPeersInfo()
+	connPeers, outPeers, nonePeers := 0, 0, 0
+	for _, p := range peers {
+		switch p.State {
+		case CS2WayConnection:
+			connPeers++
+		case CSOutboundOnly:
+			outPeers++
+		case CSNoneConnection:
+			nonePeers++
+		}
+	}
+	if !assert.Equal(t, 5, connPeers) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, 5, outPeers) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, 5, nonePeers) {
+		t.FailNow()
+	}
+}
 
 func makeEmptyMessage(cmd string) (m p2p.Message, e error) {
 	switch cmd {
