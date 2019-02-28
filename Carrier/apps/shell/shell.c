@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -56,6 +57,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <posix_helper.h>
+#include <io.h>
 
 // Undefine Windows defined MOUSE_MOVED for PDCurses
 #undef MOUSE_MOVED
@@ -69,10 +71,7 @@
 
 #include <rc_mem.h>
 #include <pthread.h>
-#include <fcntl.h>
-#if defined(_WIN32) || defined(_WIN64)
-#include <io.h>
-#endif
+
 #include <ela_carrier.h>
 #include <ela_session.h>
 
