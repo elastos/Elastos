@@ -65,7 +65,7 @@ func StartRPCServer() {
 	mainMux["votestatus"] = VoteStatus
 	// for cross-chain arbiter
 	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
-	mainMux["getactivedpospeers"] = GetActiveDPOSPeers
+	mainMux["getdpospeersinfo"] = GetDPOSPeersInfo
 
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin
