@@ -730,7 +730,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 
 	svrCfg := svr.NewDefaultConfig(
 		params.Magic,
-		pact.EBIP002Version,
+		pact.DPOSStartVersion,
 		uint64(services),
 		params.DefaultPort,
 		params.SeedList,
