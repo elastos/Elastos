@@ -40,6 +40,8 @@ type ProposalDispatcher struct {
 	pendingProposals   map[common.Uint256]payload.DPOSProposal
 	pendingVotes       map[common.Uint256]payload.DPOSProposalVote
 
+	proposalProcessFinished bool
+
 	inactiveCountDown           ViewChangesCountDown
 	currentInactiveArbitratorTx *types.Transaction
 
@@ -196,6 +198,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	p.acceptVotes = make(map[common.Uint256]payload.DPOSProposalVote)
 	p.rejectedVotes = make(map[common.Uint256]payload.DPOSProposalVote)
 	p.pendingVotes = make(map[common.Uint256]payload.DPOSProposalVote)
+	p.proposalProcessFinished = false
 
 	if !changeView {
 		p.inactiveCountDown.Reset()
@@ -272,12 +275,13 @@ func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal) {
 		return
 	}
 
-	p.acceptProposal(d)
+	if !p.proposalProcessFinished {
+		p.acceptProposal(d)
+	}
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	currentVoteSlot := &payload.Confirm{
-		Hash:     p.processingBlock.Hash(),
 		Proposal: *p.processingProposal,
 		Votes:    make([]payload.DPOSProposalVote, 0),
 	}
@@ -570,6 +574,7 @@ func (p *ProposalDispatcher) acceptProposal(d payload.DPOSProposal) {
 	voteMsg := &dmsg.Vote{Command: dmsg.CmdAcceptVote, Vote: vote}
 	p.ProcessVote(vote, true)
 
+	p.proposalProcessFinished = true
 	p.cfg.Network.BroadcastMessage(voteMsg)
 	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
