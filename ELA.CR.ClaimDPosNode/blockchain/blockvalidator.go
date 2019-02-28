@@ -7,6 +7,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -54,7 +55,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > config.Parameters.MaxBlockSize {
+	if blockSize > pact.MaxBlockSize {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 

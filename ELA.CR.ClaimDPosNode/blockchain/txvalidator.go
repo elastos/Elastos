@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
 
@@ -433,7 +434,7 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 
 func checkTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > config.Parameters.MaxBlockSize {
+	if size <= 0 || size > pact.MaxBlockSize {
 		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 

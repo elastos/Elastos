@@ -5,11 +5,10 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 const (
-	MaxBlockSize = 8000000
-
 	PayloadIllegalProposalVersion byte = 0x00
 )
 
@@ -47,7 +46,7 @@ func (d *ProposalEvidence) Deserialize(r io.Reader) (err error) {
 		return err
 	}
 
-	if d.BlockHeader, err = common.ReadVarBytes(r, uint32(MaxBlockSize),
+	if d.BlockHeader, err = common.ReadVarBytes(r, uint32(pact.MaxBlockSize),
 		"block header"); err != nil {
 		return err
 	}
