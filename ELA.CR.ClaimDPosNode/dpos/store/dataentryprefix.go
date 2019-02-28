@@ -11,4 +11,5 @@ const (
 	DPOSNextArbitrators    DataEntryPrefix = 0x14
 	DPOSNextCandidates     DataEntryPrefix = 0x15
 	DPOSDirectPeers        DataEntryPrefix = 0x16
+	DPOSEmergencyData      DataEntryPrefix = 0x17
 )

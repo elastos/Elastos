@@ -6,9 +6,10 @@ local dpos_msg = require("test/white_box/dpos_msg")
 local log = require("test/white_box/log_config")
 local block_utils = require("test/white_box/block_utils")
 
-print(colors('%{blue}-----------------Begin-----------------'))
 local dpos = dofile("test/white_box/dpos_manager.lua")
 local test = dofile("test/common/test_utils.lua")
+
+test.file_begin()
 
 api.clear_store()
 api.init_ledger(log.level, dpos.A.arbitrators)
@@ -17,8 +18,8 @@ dpos.set_on_duty(1) -- set A on duty
 dpos.dump_on_duty()
 
 --- initial status check
-test.assert_true(dpos.A.manager:is_on_duty())
-test.assert_true(dpos.A.manager:is_status_ready())
+test.assert_true(dpos.A.manager:is_on_duty(), "A should be on duty")
+test.assert_true(dpos.A.manager:is_status_ready(), "status of A should be ready")
 test.assert_false(dpos.A.manager:is_status_running())
 
 --- generate two blocks within same height
@@ -50,7 +51,8 @@ confirm:set_proposal(prop)
 confirm:append_vote(va)
 confirm:append_vote(vb)
 confirm:append_vote(vc)
-test.assert_true(dpos.A.manager:check_last_relay(1, confirm))
+test.assert_true(dpos.A.manager:check_last_relay(1, confirm),
+    "last relay should be the specified confirm")
 
 print(colors('%{blue}dump node relays'))
 print(dpos.A.manager:dump_node_relays())
@@ -58,7 +60,7 @@ print(colors('%{blue}dump arbitrators network messages'))
 print(dpos.A.network:dump_msg())
 
 --- clean up
+test.file_end()
 api.close_store()
-print(colors('%{green}-----------------Test success!-----------------'))
 
 return test.result

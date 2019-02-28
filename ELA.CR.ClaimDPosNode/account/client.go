@@ -7,18 +7,16 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"os/signal"
 	"sort"
 	"sync"
-	"syscall"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/events/signalset"
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
@@ -50,7 +48,7 @@ type ClientImpl struct {
 func Create(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, true)
 	if client == nil {
-		return nil, errors.New("client nil")
+		return nil, errors.New("create account failed")
 	}
 	account, err := client.CreateAccount()
 	if err != nil {
@@ -62,13 +60,35 @@ func Create(path string, password []byte) (*ClientImpl, error) {
 	return client, nil
 }
 
+func Add(path string, password []byte) (*ClientImpl, error) {
+	client := NewClient(path, password, false)
+	if client == nil {
+		return nil, errors.New("add account failed")
+	}
+	_, err := client.CreateAccount()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func AddMultiSig(path string, password []byte, m int, pubKeys []*crypto.PublicKey) (*Account, error) {
+	client := NewClient(path, password, false)
+	if client == nil {
+		return nil, errors.New("add multi-signature account failed")
+	}
+
+	return client.CreateMultiSigAccount(m, pubKeys)
+}
+
 func Open(path string, password []byte) (*ClientImpl, error) {
 	client := NewClient(path, password, false)
 	if client == nil {
-		return nil, errors.New("client nil")
+		return nil, errors.New("open wallet failed")
 	}
 	if err := client.LoadAccounts(); err != nil {
-		return nil, errors.New("Load accounts failure")
+		return nil, err
 	}
 
 	return client, nil
@@ -124,14 +144,14 @@ func (cl *ClientImpl) signMultiSignTransaction(txn *types.Transaction) (*types.T
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
-	programHashes, err := GetSigners(code)
+	codeHashes, err := GetSigners(code)
 	if err != nil {
 		return nil, err
 	}
 	var signerIndex = -1
 	var acc *Account
-	for i, hash := range programHashes {
-		acc := cl.GetAccountByCodeHash(*hash)
+	for i, hash := range codeHashes {
+		acc = cl.GetAccountByCodeHash(*hash)
 		if acc != nil {
 			signerIndex = i
 			break
@@ -162,9 +182,9 @@ func (cl *ClientImpl) GetDefaultAccount() (*Account, error) {
 }
 
 func (cl *ClientImpl) GetAccount(pubKey *crypto.PublicKey) (*Account, error) {
-	signatureContract, err := contract.CreateStandardContractByPubKey(pubKey)
+	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
-		return nil, errors.New("CreateStandardContractByPubKey failed")
+		return nil, errors.New("CreateStandardContract failed")
 	}
 	return cl.GetAccountByCodeHash(*signatureContract.ToCodeHash()), nil
 }
@@ -185,7 +205,7 @@ func NewClient(path string, password []byte, create bool) *ClientImpl {
 		FileStore: FileStore{path: path},
 	}
 
-	go client.ProcessSignals()
+	go client.HandleInterrupt()
 
 	passwordKey := crypto.ToAesKey(password)
 	if create {
@@ -269,13 +289,25 @@ func (cl *ClientImpl) CreateAccount() (*Account, error) {
 	return account, nil
 }
 
+func (cl *ClientImpl) CreateMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Account, error) {
+	account, err := NewMultiSigAccount(m, pubKeys)
+	if err != nil {
+		return nil, err
+	}
+	if err = cl.SaveAccountData(account.ProgramHash.Bytes(), account.RedeemScript, nil); err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
 // SaveAccount saves a Account to memory and db
 func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	cl.mu.Lock()
 	defer cl.mu.Unlock()
 
 	// save Account to memory
-	cl.accounts[*ac.Contract.ToCodeHash()] = ac
+	cl.accounts[ac.ProgramHash.ToCodeHash()] = ac
 
 	decryptedPrivateKey := make([]byte, 96)
 	temp, err := ac.PublicKey.EncodePoint(false)
@@ -295,7 +327,7 @@ func (cl *ClientImpl) SaveAccount(ac *Account) error {
 	common.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
-	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), encryptedPrivateKey)
+	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), ac.RedeemScript, encryptedPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -311,7 +343,7 @@ func (cl *ClientImpl) GetAccounts() []*Account {
 
 	sort.Slice(accounts, func(i, j int) bool {
 		return bytes.Compare(accounts[i].ProgramHash[:],
-			accounts[j].ProgramHash[:]) < 0
+			accounts[j].ProgramHash[:]) > 0
 	})
 
 	return accounts
@@ -321,27 +353,51 @@ func (cl *ClientImpl) GetAccounts() []*Account {
 func (cl *ClientImpl) LoadAccounts() error {
 	accounts := map[common.Uint160]*Account{}
 
-	storeAddresses, err := cl.LoadAccountData()
+	storeAccounts, err := cl.LoadAccountData()
 	if err != nil {
 		return err
 	}
-	for _, a := range storeAddresses {
-		encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
-		keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		privateKey := keyPair[64:96]
-		ac, err := NewAccountWithPrivateKey(privateKey)
+	for _, a := range storeAccounts {
+		phBytes, err := common.HexStringToBytes(a.ProgramHash)
+		programHash, err := common.Uint168FromBytes(phBytes)
 		if err != nil {
 			return err
 		}
-		accounts[ac.ProgramHash.ToCodeHash()] = ac
+		prefixType := contract.GetPrefixType(*programHash)
+		if prefixType == contract.PrefixStandard {
+			encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+			keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			privateKey := keyPair[64:96]
+			ac, err := NewAccountWithPrivateKey(privateKey)
+			if err != nil {
+				return err
+			}
+			accounts[ac.ProgramHash.ToCodeHash()] = ac
 
-		if a.Type == MAINACCOUNT {
-			cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			if a.Type == MAINACCOUNT {
+				cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			}
+		} else if prefixType == contract.PrefixMultiSig {
+			phBytes, _ := common.HexStringToBytes(a.ProgramHash)
+			ph, err := common.Uint168FromBytes(phBytes)
+			if err != nil {
+				return err
+			}
+			rs, _ := common.HexStringToBytes(a.RedeemScript)
+			ac := &Account{
+				PrivateKey:   nil,
+				PublicKey:    nil,
+				ProgramHash:  *ph,
+				RedeemScript: rs,
+				Address:      a.Address,
+			}
+			accounts[ac.ProgramHash.ToCodeHash()] = ac
 		}
+
 	}
 
 	cl.accounts = accounts
@@ -392,35 +448,17 @@ func (cl *ClientImpl) verifyPasswordKey(passwordKey []byte) bool {
 	return true
 }
 
-func (cl *ClientImpl) ProcessSignals() {
-	clientSignalHandler := func(signal os.Signal, v interface{}) {
-		switch signal {
-		case syscall.SIGINT:
-			log.Info("Caught interrupt signal, program exits.")
-		case syscall.SIGTERM:
-			log.Info("Caught termination signal, program exits.")
-		}
+func (cl *ClientImpl) HandleInterrupt() {
+	interrupt := signal.NewInterrupt()
+	select {
+	case <-interrupt.C:
 		// hold the mutex lock to prevent any wallet db changes
 		cl.FileStore.Lock()
 		os.Exit(0)
 	}
-	signalSet := signalset.New()
-	signalSet.Register(syscall.SIGINT, clientSignalHandler)
-	signalSet.Register(syscall.SIGTERM, clientSignalHandler)
-	sigChan := make(chan os.Signal, MaxSignalQueueLen)
-	signal.Notify(sigChan)
-	for {
-		select {
-		case sig := <-sigChan:
-			signalSet.Handle(sig, nil)
-		default:
-			time.Sleep(time.Second)
-		}
-	}
 }
 
 func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
-	log.Debug()
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
 	signature, err := crypto.Sign(acc.PrivKey(), buf.Bytes())

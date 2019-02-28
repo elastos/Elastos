@@ -1,18 +1,19 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
-type DposOnDutyHandler struct {
-	*dposHandlerSwitch
+type DPOSOnDutyHandler struct {
+	*DPOSHandlerSwitch
 }
 
-func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 	defer log.Info("[Onduty-ProcessAcceptVote] end")
 
@@ -23,7 +24,7 @@ func (h *DposOnDutyHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalV
 	}
 }
 
-func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) {
 	log.Info("[Onduty-ProcessRejectVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
@@ -32,21 +33,24 @@ func (h *DposOnDutyHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalV
 	}
 }
 
-func (h *DposOnDutyHandler) StartNewProposal(p types.DPosProposal) {
+func (h *DPOSOnDutyHandler) StartNewProposal(p payload.DPOSProposal) {
 }
 
-func (h *DposOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
-	b, ok := h.manager.GetBlockCache().TryGetValue(*firstBlockHash)
-	if !ok {
-		log.Info("[OnViewChanged] get block failed for proposal")
-	} else {
-		log.Info("[OnViewChanged] start proposal")
-		h.proposalDispatcher.CleanProposals(true)
-		h.proposalDispatcher.StartProposal(b)
+func (h *DPOSOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {
+
+	if !h.tryCreateInactiveArbitratorsTx() {
+		b, ok := h.cfg.Manager.GetBlockCache().TryGetValue(*firstBlockHash)
+		if !ok {
+			log.Info("[OnViewChanged] get block failed for proposal")
+		} else {
+			log.Info("[OnViewChanged] start proposal")
+			h.proposalDispatcher.CleanProposals(true)
+			h.proposalDispatcher.StartProposal(b)
+		}
 	}
 }
 
-func (h *DposOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
+func (h *DPOSOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 	result := false
 
 	if h.consensus.IsReady() {
@@ -61,4 +65,18 @@ func (h *DposOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 	}
 
 	return result
+}
+
+func (h *DPOSOnDutyHandler) tryCreateInactiveArbitratorsTx() bool {
+	if h.proposalDispatcher.IsViewChangedTimeOut() {
+		tx, err := h.proposalDispatcher.CreateInactiveArbitrators()
+		if err != nil {
+			log.Warn("[tryCreateInactiveArbitratorsTx] create tx error: ", err)
+			return false
+		}
+
+		h.cfg.Network.BroadcastMessage(&msg.Tx{Serializable: tx})
+		return true
+	}
+	return false
 }

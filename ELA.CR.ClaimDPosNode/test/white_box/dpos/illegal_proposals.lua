@@ -6,9 +6,10 @@ local dpos_msg = require("test/white_box/dpos_msg")
 local log = require("test/white_box/log_config")
 local block_utils = require("test/white_box/block_utils")
 
-print(colors('%{blue}-----------------Begin-----------------'))
 local dpos = dofile("test/white_box/dpos_manager.lua")
 local test = dofile("test/common/test_utils.lua")
+
+test.file_begin()
 
 api.clear_store()
 api.init_ledger(log.level, dpos.A.arbitrators)
@@ -45,10 +46,7 @@ confirm:append_vote(vb)
 confirm:append_vote(vc)
 
 local illegal = illegal_proposals.new()
-illegal:set_proposal(prop, false)
-illegal:set_proposal(prop2, true)
-illegal:set_header(b1:get_header(), false)
-illegal:set_header(b2:get_header(), true)
+illegal:set_content(prop, b1:get_header(), prop2, b2:get_header())
 
 --- simulate B received the two proposals
 dpos.B.network:push_block(b1, false)
@@ -78,7 +76,7 @@ dpos.C.network:push_illegal_proposals(dpos.B.manager:public_key(), illegal)
 --todo check illegal must exist within next two blocks
 
 --- clean up
+test.file_end()
 api.close_store()
-print(colors('%{green}-----------------Test success!-----------------'))
 
 return test.result
