@@ -89,8 +89,8 @@ func newDposManager(L *lua.LState) int {
 		Account:      mockManager.Account,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
-			Store:                  nil,
-			Arbitrators:            a,
+			Store:       nil,
+			Arbitrators: a,
 		},
 	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
@@ -169,7 +169,7 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 	case relayBlockConfirm:
 		if relayedConfirm, ok := m.Peer.GetLastRelay().(*msg.Block); ok {
 			if dposBlock, ok := relayedConfirm.Serializable.(*types.
-			DposBlock); ok {
+				DposBlock); ok {
 
 				if dposBlock.BlockFlag && dposBlock.ConfirmFlag {
 					b := checkBlock(L, 3)
@@ -199,7 +199,7 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 func confirmsEqual(con1 *payload.Confirm,
 	con2 *payload.Confirm) bool {
 
-	if !con1.Hash.IsEqual(con2.Hash) {
+	if !con1.Proposal.BlockHash.IsEqual(con2.Proposal.BlockHash) {
 		return false
 	}
 

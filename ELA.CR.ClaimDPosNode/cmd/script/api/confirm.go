@@ -24,7 +24,12 @@ func newConfirm(L *lua.LState) int {
 	hash, _ := common.Uint256FromHexString(blockHash)
 
 	proposal := &payload.Confirm{
-		Hash:  *hash,
+		Proposal: payload.DPOSProposal{
+			Sponsor:    []byte{},
+			BlockHash:  *hash,
+			ViewOffset: 0,
+			Sign:       []byte{},
+		},
 		Votes: make([]payload.DPOSProposalVote, 0),
 	}
 	ud := L.NewUserData()

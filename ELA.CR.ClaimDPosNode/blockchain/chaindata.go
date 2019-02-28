@@ -485,7 +485,7 @@ func (c *ChainStore) PersistConfirm(
 	confirm *payload.Confirm) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATAConfirm))
-	if err := confirm.Hash.Serialize(key); err != nil {
+	if err := confirm.Proposal.BlockHash.Serialize(key); err != nil {
 		return err
 	}
 
