@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 )
@@ -183,7 +184,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 
 	for _, tx := range txs {
 		totalTxsSize = totalTxsSize + tx.GetSize()
-		if totalTxsSize > config.Parameters.MaxBlockSize {
+		if totalTxsSize > pact.MaxBlockSize {
 			break
 		}
 		if txCount >= config.Parameters.MaxTxsInBlock {

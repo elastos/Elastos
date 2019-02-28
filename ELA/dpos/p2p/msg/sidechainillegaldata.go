@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	msg2 "github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 type SidechainIllegalData struct {
@@ -16,7 +16,7 @@ func (msg *SidechainIllegalData) CMD() string {
 }
 
 func (msg *SidechainIllegalData) MaxLength() uint32 {
-	return msg2.MaxBlockSize
+	return pact.MaxBlockSize
 }
 
 func (msg *SidechainIllegalData) Serialize(w io.Writer) error {

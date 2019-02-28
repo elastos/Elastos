@@ -201,7 +201,7 @@ func clientAllowed(r *http.Request) bool {
 	}
 
 	for _, cfgIp := range config.Parameters.RpcConfiguration.WhiteIPList {
-		//WhiteIpList have 0.0.0.0  allow all ip in
+		//WhiteIPList have 0.0.0.0  allow all ip in
 		if cfgIp == "0.0.0.0" {
 			return true
 		}

@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
@@ -33,7 +34,7 @@ func (msg *MerkleBlock) CMD() string {
 }
 
 func (msg *MerkleBlock) MaxLength() uint32 {
-	return MaxBlockSize
+	return pact.MaxBlockSize
 }
 
 func (msg *MerkleBlock) Serialize(w io.Writer) error {
