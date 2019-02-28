@@ -23,7 +23,6 @@
     "CAPath": "./sample-ca.pem",
     "MultiCoreNum": 4,
     "MaxTransactionInBlock": 10000,
-    "MaxBlockSize": 8000000,
     "MinCrossChainTxFee": 10000,
     "FoundationAddress":"8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
     "PowConfiguration": {

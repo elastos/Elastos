@@ -79,16 +79,9 @@ func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 		return
 	}
 
-	size := tx.GetSize()
 	// normal
-	config.Parameters.MaxBlockSize = size
 	err = checkTransactionSize(tx)
 	s.NoError(err, "[CheckTransactionSize] passed normal size")
-
-	// invalid
-	config.Parameters.MaxBlockSize = size - 1
-	err = checkTransactionSize(tx)
-	s.EqualError(err, fmt.Sprintf("Invalid transaction size: %d bytes", size))
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionInput() {

@@ -44,7 +44,6 @@
     "CAPath": "./sample-ca.pem",
     "MultiCoreNum": 4,      //Max number of CPU cores to mine ELA
     "MaxTransactionInBlock": 10000, //Max transaction number in each block
-    "MaxBlockSize": 8000000,        //Max size of a block
     "MinCrossChainTxFee": 10000,    //Minimal cross-chain transaction fee
     "PowConfiguration": {           //
       "PayToAddr": "",              //Pay bonus to this address. Cannot be empty if AutoMining set to "true".

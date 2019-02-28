@@ -24,7 +24,6 @@ var Template = Configuration{
 	CAPath:              "./sample-ca.pem",
 	MultiCoreNum:        4,
 	MaxTxsInBlock:       10000,
-	MaxBlockSize:        8000000,
 	MinCrossChainTxFee:  10000,
 	PowConfiguration: PowConfiguration{
 		PayToAddr:  "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
