@@ -630,6 +630,12 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		p.stallControl <- stallControlMsg{sccHandlerStart, m}
 		switch m := m.(type) {
 		case *msg.Version:
+			// Disconnect full node peers that do not support DPOS protocol.
+			if m.Relay && p.ProtocolVersion() < pact.DPOSStartVersion {
+				p.Disconnect()
+				return
+			}
+
 			p.SetDisableRelayTx(!m.Relay)
 
 		case *msg.MemPool:
