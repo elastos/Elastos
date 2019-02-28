@@ -1252,11 +1252,11 @@ func checkDPOSElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
 		return nil, nil, err
 	}
 
-	if !confirm.Hash.IsEqual(header.Hash()) {
+	if !confirm.Proposal.BlockHash.IsEqual(header.Hash()) {
 		return nil, nil, errors.New("block and related confirm do not match")
 	}
 
-	if !compareConfirm.Hash.IsEqual(compareHeader.Hash()) {
+	if !compareConfirm.Proposal.BlockHash.IsEqual(compareHeader.Hash()) {
 		return nil, nil, errors.New("block and related confirm do not match")
 	}
 

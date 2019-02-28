@@ -289,7 +289,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 
 func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
 
-	log.Info("[OnConfirmReceived] started, hash:", p.Hash)
+	log.Info("[OnConfirmReceived] started, hash:", p.Proposal.BlockHash)
 	defer log.Info("[OnConfirmReceived] end")
 
 	d.ConfirmBlock()

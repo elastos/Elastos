@@ -7,7 +7,6 @@ import (
 )
 
 type Confirm struct {
-	Hash     common.Uint256
 	Proposal DPOSProposal
 	Votes    []DPOSProposalVote
 }
@@ -21,10 +20,6 @@ func (p *Confirm) TryAppend(v DPOSProposalVote) bool {
 }
 
 func (p *Confirm) Serialize(w io.Writer) error {
-	if err := p.Hash.Serialize(w); err != nil {
-		return err
-	}
-
 	if err := p.Proposal.Serialize(w); err != nil {
 		return err
 	}
@@ -43,10 +38,6 @@ func (p *Confirm) Serialize(w io.Writer) error {
 }
 
 func (p *Confirm) Deserialize(r io.Reader) error {
-	if err := p.Hash.Deserialize(r); err != nil {
-		return err
-	}
-
 	if err := p.Proposal.Deserialize(r); err != nil {
 		return err
 	}

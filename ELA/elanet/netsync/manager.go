@@ -348,7 +348,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		log.Debugf("Receive confirm for block %s", blockHash)
 		_, _, err := sm.blockMemPool.AppendConfirm(bmsg.block.Confirm)
 		if err != nil {
-			log.Warnf("Receive invalid confirm %s, %s from %s", bmsg.block.Confirm.Hash, err, peer.Addr())
+			log.Warnf("Receive invalid confirm %s, %s from %s", bmsg.block.Confirm.Proposal.BlockHash, err, peer.Addr())
 		}
 		return
 	}

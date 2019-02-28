@@ -92,7 +92,7 @@ func (c *ChainStore) taskHandler() {
 				c.handlePersistConfirmTask(task.confirm)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Hash.String())
+				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Proposal.BlockHash.String())
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
