@@ -277,13 +277,32 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
-func GetActiveDPOSPeers(params Params) map[string]interface{} {
+func GetDPOSPeersInfo(params Params) map[string]interface{} {
 	if Arbiter == nil {
 		return ResponsePack(InternalError, "arbiter disabled")
 	}
 
-	peers := Arbiter.GetActiveDPOSPeers()
-	return ResponsePack(Success, peers)
+	type peerInfo struct {
+		OwnerPublicKey string `json:"ownerpublickey"`
+		NodePublicKey  string `json:"nodepublickey"`
+		IP             string `json:"ip"`
+		ConnState      string `json:"connstate"`
+	}
+
+	peers := Arbiter.GetDPOSPeersInfo()
+
+	var result []peerInfo
+	for _, p := range peers {
+		producer := blockchain.DefaultLedger.Blockchain.GetState().
+			GetProducer(p.PID[:])
+		result = append(result, peerInfo{
+			OwnerPublicKey: common.BytesToHexString(producer.OwnerPublicKey()),
+			NodePublicKey:  common.BytesToHexString(producer.NodePublicKey()),
+			IP:             p.Addr,
+			ConnState:      p.State.String(),
+		})
+	}
+	return ResponsePack(Success, result)
 }
 
 func GetInfo(param Params) map[string]interface{} {

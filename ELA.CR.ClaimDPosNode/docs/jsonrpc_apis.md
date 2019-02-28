@@ -1118,3 +1118,85 @@ result sample:
   }
 }
 ```
+
+#### getdpospeersinfo
+
+description: get dpos peers information.
+
+result:
+
+| name | type | description                       |
+| ---- | ---- | --------------------------------- |
+| ownerpublickey | string  | owner public key of the peer which should be one of current arbiters |
+| nodepublickey | string  | node public key of the peer which should be one of current arbiters |
+| ip    | string  | ip address of the peer (including port) |
+| connstate | string  | connection state about the peer, the value can be: NoneConnection, OutboundOnly, InboundOnly, or 2WayConnection |
+
+named arguments sample:
+
+```json
+{
+  "method": "getdpospeersinfo"
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": [
+        {
+            "ownerpublickey": "0243ff13f1417c69686bfefc35227ad4f5f4ca03ccb3d3a635ae8ed67d57c20b97",
+            "nodepublickey": "0243ff13f1417c69686bfefc35227ad4f5f4ca03ccb3d3a635ae8ed67d57c20b97",
+            "ip": "127.0.0.1:22339",
+            "connstate": "2WayConnection"
+        },
+        {
+            "ownerpublickey": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+            "nodepublickey": "0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
+            "ip": "127.0.0.1:23339",
+            "connstate": "InboundOnly"
+        },
+        {
+            "ownerpublickey": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+            "nodepublickey": "03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
+            "ip": "127.0.0.1:24339",
+            "connstate": "NoneConnection"
+        }
+    ]
+}
+```
+
+#### submitsidechainillegaldata
+
+description: submit illegal data from side chain.
+
+parameters:
+
+| name           | type   | description                    |
+| -------------- | ------ | ------------------------------ |
+| illegaldata | string | serialized illegal data in hex string format |
+
+named arguments sample:
+
+```json
+{
+  "method":"submitauxblock",
+  "params":{
+    "illegaldata": "016400000021023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64981855ad8681d0d86d1e91e00167939cb6694d2c422acd208a0072939487f699940353662653933363937386332363162326536343964353864626661663366323364346138363832373466353532326364326164623433303861393535633461330221030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": true
+}
+```
