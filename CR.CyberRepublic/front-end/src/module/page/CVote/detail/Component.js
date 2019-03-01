@@ -135,22 +135,28 @@ class C extends StandardPage {
     const { data } = this.state
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
-      value: CVOTE_STATUS_TEXT[data.status] || 'processing...',
+      value: I18N.get(`cvoteStatus.${data.status}`) || '',
     }
 
     const publishObj = {
       text: I18N.get('from.CVoteForm.label.publish'),
-      value: data.published ? 'Yes' : 'No',
+      value: data.published ? I18N.get('.yes') : I18N.get('.no'),
     }
+
+    const typeMap = {
+      1: I18N.get('council.voting.type.newMotion'),
+      2: I18N.get('council.voting.type.motionAgainst'),
+      3: I18N.get('council.voting.type.anythingElse'),
+    };
 
     const typeObj = {
       text: I18N.get('from.CVoteForm.label.type'),
-      value: CVOTE_TYPE[data.type],
+      value: typeMap[data.type],
     }
 
     const voteObj = {
       text: I18N.get('council.voting.ifConflicted'),
-      value: data.isConflict === 'YES' ? 'Yes' : 'No',
+      value: data.isConflict === 'YES' ? I18N.get('.yes') : I18N.get('.no'),
     }
 
     const dataList = [
