@@ -13,9 +13,9 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -202,7 +202,7 @@ func transactionAppendEnough(L *lua.LState) int {
 	from := L.ToString(2)
 	totalAmount := L.ToInt64(3)
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
 		"addresses": []string{from},
 	})
 	if err != nil {

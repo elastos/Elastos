@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 const (

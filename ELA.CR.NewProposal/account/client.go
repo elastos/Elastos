@@ -11,12 +11,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/vm"
 )
 
