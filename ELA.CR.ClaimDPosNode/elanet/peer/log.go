@@ -2,8 +2,7 @@ package peer
 
 import (
 	"github.com/elastos/Elastos.ELA/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 // log is a logger that is initialized with no output filters.  This
