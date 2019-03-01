@@ -19,6 +19,8 @@ services:
   ela-sidechain-did:
     container_name: ela-sidechain-did
     image: ela-sidechain-did
+    depends_on:
+      - ela-mainchain
     build:
       context: .
       dockerfile: Dockerfile-did
@@ -76,6 +78,8 @@ services:
   ela-wallet-service:
     container_name: ela-wallet-service
     image: ela-wallet-service
+    depends_on:
+      - mysql-db-simple
     build:
       context: .
       dockerfile: Dockerfile-wallet-service

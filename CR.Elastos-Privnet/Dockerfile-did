@@ -7,22 +7,21 @@ FROM alpine@sha256:dad671370a148e9d9573e3e10a9f8cc26ce937bea78f3da80b570c2442364
 RUN apk update
 RUN apk add --no-cache curl
 
-COPY ./did/elastos_did /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/elastos_did
-COPY ./did/did /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/did
-COPY ./did/config.json /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/config.json
+COPY ./did/elastos_did ./did/elastos_did
+COPY ./did/did ./did/did
+COPY ./did/config.json ./did/config.json
 
 # Create unprivileged user (running processes securely)
 RUN adduser -D -g '' elauser
 
 # Give permission to elauser for necessary folders
-RUN chown -R elauser /go/src/github.com/elastos/Elastos.ELA.SideChain.ID
+RUN chown -R elauser /did
 
 USER elauser
 
-# Copy Start Script
-COPY ./deploy_scripts/deploy-did.sh /home/elauser/deploy.sh
+WORKDIR /did
 
 EXPOSE 20604-20608
 
-CMD sh -c "sh /home/elauser/deploy.sh && /bin/sh"
+ENTRYPOINT ["/bin/sh", "-c", "./did"]
 
