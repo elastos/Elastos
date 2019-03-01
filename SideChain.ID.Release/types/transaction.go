@@ -1,9 +1,11 @@
 package types
 
 import (
+	"github.com/elastos/Elastos.ELA.SideChain.ID/pact"
+
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 func IsRegisterIdentificationTx(tx *types.Transaction) bool {
@@ -24,7 +26,7 @@ func init() {
 	types.GetDataContainer = func(programHash *common.Uint168, tx *types.Transaction) interfaces.IDataContainer {
 		if tx.TxType == RegisterIdentification {
 			for _, output := range tx.Outputs {
-				if programHash[0] == common.PrefixRegisterId && programHash.IsEqual(output.ProgramHash) {
+				if programHash[0] == pact.PrefixRegisterId && programHash.IsEqual(output.ProgramHash) {
 					return tx.Payload.(*PayloadRegisterIdentification)
 				}
 			}

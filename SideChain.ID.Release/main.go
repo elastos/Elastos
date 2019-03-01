@@ -77,19 +77,6 @@ func main() {
 	}
 	defer idChainStore.Close()
 
-	chainCfg := blockchain.Config{
-		ChainParams: activeNetParams,
-		ChainStore:  idChainStore.ChainStore,
-	}
-
-	mempoolCfg := mempool.Config{
-		ChainParams: activeNetParams,
-		ChainStore:  idChainStore.ChainStore,
-	}
-	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
-	mempoolCfg.FeeHelper = txFeeHelper
-	chainCfg.GetTxFee = txFeeHelper.GetTxFee
-
 	eladlog.Info("2. SPV module init")
 	genesisHash := activeNetParams.GenesisBlock.Hash()
 	programHash, err := mempool.GenesisToProgramHash(&genesisHash)
@@ -117,16 +104,27 @@ func main() {
 		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
 	}
-	mempoolCfg.SpvService = spvService
 
 	defer spvService.Stop()
 	spvService.Start()
 
+	mempoolCfg := mempool.Config{
+		ChainParams: activeNetParams,
+		ChainStore:  idChainStore.ChainStore,
+		SpvService:  spvService,
+	}
+	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
+	mempoolCfg.FeeHelper = txFeeHelper
 	txValidator := mp.NewValidator(&mempoolCfg)
 	mempoolCfg.Validator = txValidator
-	chainCfg.CheckTxSanity = txValidator.CheckTransactionSanity
-	chainCfg.CheckTxContext = txValidator.CheckTransactionContext
 
+	chainCfg := blockchain.Config{
+		ChainParams:    activeNetParams,
+		ChainStore:     idChainStore.ChainStore,
+		GetTxFee:       txFeeHelper.GetTxFee,
+		CheckTxSanity:  txValidator.CheckTransactionSanity,
+		CheckTxContext: txValidator.CheckTransactionContext,
+	}
 	chain, err := blockchain.New(&chainCfg)
 	if err != nil {
 		eladlog.Fatalf("BlockChain initialize failed, %s", err)

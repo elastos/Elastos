@@ -1,6 +1,6 @@
 {
   "Configuration": {
-    "Magic": 201812151,
+    "Magic": 201901251,
     "SpvMagic": 2018001,
     "SeedList": [
       "did-testnet-001.elastos.org:21608",
