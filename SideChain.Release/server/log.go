@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 	svr "github.com/elastos/Elastos.ELA/p2p/server"
 )
 

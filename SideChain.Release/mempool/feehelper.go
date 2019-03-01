@@ -60,7 +60,7 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 			}
 		}
 
-		crossChainPayload, ok := mainChainTransaction.Payload.(*payload.PayloadTransferCrossChainAsset)
+		crossChainPayload, ok := mainChainTransaction.Payload.(*payload.TransferCrossChainAsset)
 		if !ok {
 			return nil, errors.New("invalid transfer cross chain asset transaction payload")
 		}

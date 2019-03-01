@@ -97,7 +97,7 @@ func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock common.Uint256) bool {
 		return false
 	}
 
-	payloadData := sap.SideAuxBlockTx.Payload.Data(payload.SideChainPowPayloadVersion)
+	payloadData := sap.SideAuxBlockTx.Payload.Data(payload.SideChainPowVersion)
 	payloadHashData := payloadData[0:32]
 	payloadHash, err := common.Uint256FromBytes(payloadHashData)
 	if err != nil {
