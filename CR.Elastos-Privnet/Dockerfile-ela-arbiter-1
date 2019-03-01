@@ -26,4 +26,4 @@ WORKDIR /arbiter-1
 EXPOSE 10336
 EXPOSE 10338
 
-ENTRYPOINT ["/bin/sh", "-c", "./arbiter", "-p", "elastos"]
+ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p elastos"]
