@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/wallet"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 // log is a logger that is initialized with no output filters.  This

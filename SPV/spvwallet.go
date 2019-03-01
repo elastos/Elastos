@@ -13,10 +13,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 )
 
 const (
@@ -273,7 +273,7 @@ func (w *spvwallet) BlockCommitted(block *util.Block) {
 }
 
 // Functions for RPC service.
-func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error) {
+func (w *spvwallet) notifyNewAddress(params http.Params) (interface{}, error) {
 	addrStr, ok := params.String("addr")
 	if !ok {
 		return nil, ErrInvalidParameter
@@ -295,7 +295,7 @@ func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error
 	return nil, nil
 }
 
-func (w *spvwallet) sendTransaction(params httputil.Params) (interface{}, error) {
+func (w *spvwallet) sendTransaction(params http.Params) (interface{}, error) {
 	data, ok := params.String("data")
 	if !ok {
 		return nil, ErrInvalidParameter

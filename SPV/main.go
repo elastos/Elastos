@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/elastos/Elastos.ELA.Utility/signal"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 func main() {

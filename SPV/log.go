@@ -12,11 +12,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/p2p/server"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 // log is a logger that is initialized with no output filters.  This
@@ -48,7 +47,6 @@ func init() {
 	connmgr.UseLogger(cmgrlog)
 	blockchain.UseLogger(bcdblog)
 	sdk.UseLogger(spvslog)
-	jsonrpc.UseLogger(rpcslog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	store.UseLogger(bcdblog)
