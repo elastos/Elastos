@@ -13,10 +13,11 @@ const (
 	// DPOSStartVersion is the protocol version which switch to DPOS protocol.
 	DPOSStartVersion uint32 = 20000
 
-	MaxBlockSize = 8000000
-
 	// EBIP001Version is the protocol version starts to support SPV protocol.
 	EBIP001Version uint32 = 10001
+
+	// MaxBlockSize is the maximum number of bytes allowed per block
+	MaxBlockSize = 8000000
 
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
