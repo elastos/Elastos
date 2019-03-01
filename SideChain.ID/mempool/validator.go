@@ -4,12 +4,13 @@ import (
 	"errors"
 	"math"
 
+	"github.com/elastos/Elastos.ELA.SideChain.ID/pact"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type validator struct {
@@ -101,13 +102,13 @@ func (v *validator) checkTransactionOutput(txn *types.Transaction) error {
 }
 
 func checkOutputProgramHash(programHash common.Uint168) bool {
+	switch programHash[0] {
+	case common.PrefixStandard, common.PrefixMultisig, common.PrefixCrossChain,
+		pact.PrefixRegisterId:
+		return true
+	}
 	var empty = common.Uint168{}
-	prefix := programHash[0]
-	if prefix == common.PrefixStandard ||
-		prefix == common.PrefixMultisig ||
-		prefix == common.PrefixCrossChain ||
-		prefix == common.PrefixRegisterId ||
-		programHash == empty {
+	if programHash == empty {
 		return true
 	}
 	return false
@@ -129,7 +130,7 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	// Add ID program hash to hashes
 	if id.IsRegisterIdentificationTx(txn) {
 		for _, output := range txn.Outputs {
-			if output.ProgramHash[0] == common.PrefixRegisterId {
+			if output.ProgramHash[0] == pact.PrefixRegisterId {
 				hashes = append(hashes, output.ProgramHash)
 				break
 			}
@@ -137,7 +138,7 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	}
 
 	// Sort first
-	common.SortProgramHashes(hashes)
+	common.SortProgramHashByCodeHash(hashes)
 	if err := mempool.SortPrograms(txn.Programs); err != nil {
 		return errors.New("[ID checkTransactionSignature] Sort program hashes error:" + err.Error())
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type IDChainStore struct {
@@ -26,6 +26,7 @@ func NewChainStore(genesisBlock *types.Block, dataPath string) (*IDChainStore, e
 	}
 
 	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
+	store.RegisterFunctions(false, blockchain.StoreFuncNames.RollbackTransactions, store.rollbackTransactions)
 
 	return store, nil
 }
@@ -65,12 +66,52 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 	return nil
 }
 
+func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block) error {
+	for _, txn := range b.Transactions {
+		if err := c.RollbackTransaction(batch, txn); err != nil {
+			return err
+		}
+		if txn.TxType == types.RegisterAsset {
+			if err := c.RollbackAsset(batch, txn.Hash()); err != nil {
+				return err
+			}
+		}
+		if txn.TxType == types.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
+			if err != nil {
+				return err
+			}
+			c.RollbackMainchainTx(batch, *hash)
+		}
+		if txn.TxType == id.RegisterIdentification {
+			regPayload := txn.Payload.(*id.PayloadRegisterIdentification)
+			for _, content := range regPayload.Contents {
+				buf := new(bytes.Buffer)
+				buf.WriteString(regPayload.ID)
+				buf.WriteString(content.Path)
+				c.RollbackRegisterIdentificationTx(batch, buf.Bytes())
+			}
+		}
+	}
+
+	return nil
+}
+
 func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
 	// PUT VALUE
 	batch.Put(key, txHash.Bytes())
+}
+
+func (c *IDChainStore) RollbackRegisterIdentificationTx(batch database.Batch, idKey []byte) {
+	key := []byte{byte(blockchain.IX_Identification)}
+	key = append(key, idKey...)
+
+	// PUT VALUE
+	batch.Delete(key)
 }
 
 func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {

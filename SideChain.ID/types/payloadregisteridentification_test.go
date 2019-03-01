@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 func TestPayloadRegisterIdentification_Deserialize(t *testing.T) {
