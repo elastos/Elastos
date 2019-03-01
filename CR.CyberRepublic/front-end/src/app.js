@@ -60,13 +60,12 @@ const render = () => {
   );
 };
 
-if (!sessionStorage.getItem('api-token') && localStorage.getItem('api-token')) {
-  sessionStorage.setItem('api-token', localStorage.getItem('api-token'))
-}
-
-if (sessionStorage.getItem('api-token') && !localStorage.getItem('api-token')) {
-  store.history.push('/login')
-  sessionStorage.clear();
+if (!sessionStorage.getItem('api-token')) {
+  if (localStorage.getItem('api-token')) {
+    sessionStorage.setItem('api-token', localStorage.getItem('api-token'))
+  } else {
+    store.history.push('/login')
+  }
 }
 
 if (sessionStorage.getItem('api-token')) {

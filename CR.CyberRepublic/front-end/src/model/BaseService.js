@@ -10,12 +10,7 @@ export default class {
     this.init()
   }
 
-    init(){
-        let isLogout = !localStorage.getItem('api-token') && sessionStorage.getItem('api-token')
-        if (isLogout) {
-            this.path.go(0)
-        }
-    }
+  init() {}
 
   dispatch(action) {
     return this.store.dispatch(action)
