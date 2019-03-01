@@ -13,6 +13,8 @@ RUN chown -R elauser /restful-services
 
 USER elauser
 
+WORKDIR /restful-services
+
 EXPOSE 8092
 
-ENTRYPOINT ["java", "-jar", "/restful-services/did.api-0.0.6.jar"]
+ENTRYPOINT ["java", "-jar", "./did.api-0.0.6.jar"]
