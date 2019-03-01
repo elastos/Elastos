@@ -107,7 +107,7 @@ These are located in the `wallets` folder:
     {"result":"57507ad2eb5513e79f90912d789559ce36a387facbf0f481f96b0bba27f52385","status":200}
     ```
     
-    In a minute or two you can also see the new ELA on your receiver address
+    In a minute or two you can also see the new ELA on your receiver address, it should be greater than the initial 12
     ```
     http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```

@@ -61,21 +61,13 @@ services:
       - 11338:11338
     tty: true
 
-  mysql-db-simple:
-    container_name: mysql-db-simple
-    image: mysql:5.6
-    environment:
-      - MYSQL_ROOT_PASSWORD=12345678
-      - MYSQL_DATABASE=ws
-      - MYSQL_USER=elastos
-      - MYSQL_PASSWORD=12345678
-    ports: 
-      - 3306:3307
-    tty: true
-
   ela-wallet-service:
     container_name: ela-wallet-service
     image: ela-wallet-service
+    depends_on:
+      - ela-mainchain
+      - ela-sidechain-did
+    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-wallet-service
@@ -86,11 +78,46 @@ services:
   ela-did-service:
     container_name: ela-did-service
     image: ela-did-service
+    depends_on:
+      - ela-mainchain
+      - ela-sidechain-did
+    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-did-service
     ports:
       - 8092:8092
     tty: true  
+
+  ela-mysql:
+    container_name: ela-mysql
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=12345678
+      - MYSQL_DATABASE=ws
+      - MYSQL_USER=elastos
+      - MYSQL_PASSWORD=12345678
+    ports:
+      - 3307:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    tty: true
+
+  ela-api-misc:
+    container_name: ela-api-misc
+    image: ela-api-misc
+    depends_on:
+      - ela-mysql
+    build:
+      context: .
+      dockerfile: Dockerfile-ela-api-misc
+    ports:
+      - 8093:8093
+    tty: true
+
+
 
 
