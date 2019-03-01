@@ -14,6 +14,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - blockchain
     tty: true
 
   ela-sidechain-did:
@@ -31,6 +33,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - blockchain
     tty: true
 
   ela-arbiter-1:
@@ -46,6 +50,8 @@ services:
     ports:
       - 10336:10336
       - 10338:10338
+    networks:
+      - blockchain
     tty: true
 
   ela-arbiter-2:
@@ -61,6 +67,13 @@ services:
     ports:
       - 11336:11336
       - 11338:11338
+    healthcheck:
+      test: ["CMD", "curl", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "--data", "'{\"method\":\"getmainchainblockheight\"}'", "http://localhost:11336"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
     tty: true
 
   ela-wallet-service:
@@ -76,6 +89,13 @@ services:
       dockerfile: Dockerfile-wallet-service
     ports:
       - 8091:8091
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/api/1/currHeight"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
     tty: true   
     
   ela-did-service:
@@ -90,6 +110,13 @@ services:
       dockerfile: Dockerfile-did-service
     ports:
       - 8092:8092
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/api/1/currHeight"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
     tty: true  
 
   ela-mysql:
@@ -107,6 +134,8 @@ services:
       interval: 5s
       timeout: 20s
       retries: 10
+    networks:
+      - blockchain
     tty: true
 
   ela-api-misc:
@@ -119,6 +148,15 @@ services:
       dockerfile: Dockerfile-ela-api-misc
     ports:
       - 8093:8093
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
     tty: true
 
+networks:
+  blockchain:
 

@@ -26,7 +26,6 @@ USER elauser
 # Copy Start Script
 COPY ./deploy_scripts/deploy-api-misc.sh /home/elauser/deploy.sh
 
-
 EXPOSE 8093
 
 # These scripts also initialize the DB
