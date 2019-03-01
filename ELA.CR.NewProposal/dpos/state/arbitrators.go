@@ -27,6 +27,7 @@ type ArbitratorsConfig struct {
 	CandidatesCount  uint32
 	CRCArbitrators   []config.CRCArbitratorParams
 	Versions         interfaces.HeightVersions
+	OriginArbiters   []string
 
 	GetCurrentHeader func() (*types.Header, error)
 	GetBestHeight    func() uint32
@@ -353,10 +354,32 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 
 func NewArbitrators(cfg *ArbitratorsConfig) (*Arbitrators, error) {
 
+	originArbiters := make([][]byte, len(cfg.OriginArbiters))
+	originArbitersProgramHashes := make([]*common.Uint168, len(cfg.OriginArbiters))
+	for i, arbiter := range cfg.OriginArbiters {
+		a, err := common.HexStringToBytes(arbiter)
+		if err != nil {
+			return nil, err
+		}
+		originArbiters[i] = a
+
+		publicKey, err := common.HexStringToBytes(arbiter)
+		if err != nil {
+			return nil, err
+		}
+		hash, err := contract.PublicKeyToStandardProgramHash(publicKey)
+		if err != nil {
+			return nil, err
+		}
+		originArbitersProgramHashes[i] = hash
+	}
+
 	a := &Arbitrators{
-		cfg:             *cfg,
-		nextArbitrators: make([][]byte, 0),
-		nextCandidates:  make([][]byte, 0),
+		cfg:                             *cfg,
+		currentArbitrators:              originArbiters,
+		currentArbitratorsProgramHashes: originArbitersProgramHashes,
+		nextArbitrators:                 originArbiters,
+		nextCandidates:                  make([][]byte, 0),
 	}
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})

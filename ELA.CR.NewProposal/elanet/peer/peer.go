@@ -422,8 +422,8 @@ cleanup:
 }
 
 func (p *Peer) sendMessage(msg outMsg) {
-	p.SendMessage(msg.msg, msg.doneChan)
 	p.stallControl <- stallControlMsg{sccSendMessage, msg.msg}
+	p.SendMessage(msg.msg, msg.doneChan)
 }
 
 // queueHandler handles the queuing of outgoing data for the peer. This runs as

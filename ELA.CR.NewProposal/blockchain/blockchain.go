@@ -157,11 +157,11 @@ func (b *BlockChain) GetHeight() uint32 {
 	return b.db.GetHeight()
 }
 
-func (b *BlockChain) ProcessBlock(block *Block) (bool, bool, error) {
+func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool, bool, error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	inMainChain, isOrphan, err := b.processBlock(block)
+	inMainChain, isOrphan, err := b.processBlock(block, confirm)
 	if err != nil {
 		return false, false, err
 	}
@@ -252,18 +252,16 @@ func (b *BlockChain) ProcessOrphans(hash *Uint256) error {
 			b.RemoveOrphanBlock(orphan)
 			i--
 
+			confirm, _ := b.GetOrphanConfirm(&orphanHash)
+
 			//log.Debug("deal with orphan block %x", orphanHash.ToArrayReverse())
-			_, err := b.maybeAcceptBlock(orphan.Block)
+			_, err := b.maybeAcceptBlock(orphan.Block, confirm)
 			if err != nil {
 				return err
 			}
 
 			processHashes = append(processHashes, &orphanHash)
 
-			// if found confirm in orphanConfirms need to process block for state
-			if confirm, ok := b.GetOrphanConfirm(&orphanHash); ok {
-				b.state.ProcessBlock(orphan.Block, confirm)
-			}
 		}
 	}
 	return nil
@@ -845,7 +843,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	return b.db.IsBlockInStore(hash)
 }
 
-func (b *BlockChain) maybeAcceptBlock(block *Block) (bool, error) {
+func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {
 	// Get a block node for the block previous to this one.  Will be nil
 	// if this is the genesis block.
 	prevNode, err := b.getPrevNodeFromBlock(block)
@@ -898,9 +896,8 @@ func (b *BlockChain) maybeAcceptBlock(block *Block) (bool, error) {
 		return false, err
 	}
 
-	if inMainChain && block.Height < config.Parameters.HeightVersions[2] &&
-		block.Height >= config.Parameters.HeightVersions[1] {
-		b.state.ProcessBlock(block, nil)
+	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
+		b.state.ProcessBlock(block, confirm)
 	}
 
 	// Notify the caller that the new block was accepted into the block
@@ -1011,7 +1008,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block) (bool, erro
 //1. inMainChain
 //2. isOphan
 //3. error
-func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
+func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool, bool, error) {
 	blockHash := block.Hash()
 	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
@@ -1051,7 +1048,7 @@ func (b *BlockChain) processBlock(block *Block) (bool, bool, error) {
 
 	// The block has passed all context independent checks and appears sane
 	// enough to potentially accept it into the block chain.
-	inMainChain, err := b.maybeAcceptBlock(block)
+	inMainChain, err := b.maybeAcceptBlock(block, confirm)
 	if err != nil {
 		return false, true, err
 	}
@@ -1074,12 +1071,6 @@ func (b *BlockChain) processConfirm(confirm *payload.Confirm) error {
 	if err := b.db.SaveConfirm(confirm); err != nil {
 		return err
 	}
-	block, err := b.db.GetBlock(confirm.Proposal.BlockHash)
-	if err != nil {
-		return err
-	}
-	// Synchronize state memory DB.
-	b.state.ProcessBlock(block, confirm)
 	return nil
 }
 

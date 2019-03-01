@@ -596,7 +596,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 		// Queue the inventory to be relayed with the next batch.
 		// It will be ignored if the peer is already known to
 		// have the inventory.
-		sp.QueueInventory(rmsg.invVect)
+		go sp.QueueInventory(rmsg.invVect)
 	}
 }
 

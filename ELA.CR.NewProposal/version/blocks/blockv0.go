@@ -53,7 +53,7 @@ func (b *blockV0) GetCandidatesDesc(startIndex uint32, producers []interfaces.Pr
 }
 
 func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return b.cfg.Chain.ProcessBlock(dposBlock.Block)
+	return b.cfg.Chain.ProcessBlock(dposBlock.Block, dposBlock.Confirm)
 }
 
 func (b *blockV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
