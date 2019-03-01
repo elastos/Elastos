@@ -262,6 +262,9 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsSigned() const {
+			if (_type == Type::RechargeToSideChain || _type == Type::CoinBase)
+				return true;
+
 			if (_programs.size() == 0)
 				return false;
 
