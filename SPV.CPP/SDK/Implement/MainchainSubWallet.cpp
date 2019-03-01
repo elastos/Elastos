@@ -279,10 +279,7 @@ namespace Elastos {
 			std::vector<TransactionOutput> &outputs = tx->getOutputs();
 			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
 			outputs[0].SetPayload(payload);
-
-			for (size_t i = 0; i < outputs.size(); ++i) {
-				outputs[i].setProgramHash(inputProgramHash);
-			}
+			outputs[0].setProgramHash(inputProgramHash);
 
 			return tx->toJson();
 		}
