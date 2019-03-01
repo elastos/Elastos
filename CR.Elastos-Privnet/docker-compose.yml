@@ -19,6 +19,8 @@ services:
   ela-sidechain-did:
     container_name: ela-sidechain-did
     image: ela-sidechain-did
+    depends_on:
+      - ela-mainchain
     build:
       context: .
       dockerfile: Dockerfile-did
@@ -65,6 +67,7 @@ services:
     container_name: ela-wallet-service
     image: ela-wallet-service
     depends_on:
+      - ela-mysql
       - ela-mainchain
       - ela-sidechain-did
     restart: on-failure
@@ -117,7 +120,5 @@ services:
     ports:
       - 8093:8093
     tty: true
-
-
 
 

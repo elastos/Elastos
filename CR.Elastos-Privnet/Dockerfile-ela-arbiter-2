@@ -8,25 +8,23 @@ RUN apk update
 RUN apk add --no-cache curl
 
 # reuse the arbiter binary from 1st arbiter, they are the same
-COPY ./arbiter-1/arbiter /go/src/github.com/elastos/Elastos.ELA.Arbiter/arbiter
-COPY ./arbiter-2/elastos_arbiter /go/src/github.com/elastos/Elastos.ELA.Arbiter/elastos_arbiter
-COPY ./arbiter-2/config.json /go/src/github.com/elastos/Elastos.ELA.Arbiter/config.json
+COPY ./arbiter-1/arbiter ./arbiter-2/arbiter
+COPY ./arbiter-2/elastos_arbiter ./arbiter-2/elastos_arbiter
+COPY ./arbiter-2/config.json ./arbiter-2/config.json
 
-COPY ./wallets/arbiter-2/*.dat /go/src/github.com/elastos/Elastos.ELA.Arbiter/
+COPY ./wallets/arbiter-2/*.dat ./arbiter-2/
 
 # Create unprivileged user (running processes securely)
 RUN adduser -D -g '' elauser
 
 # Give permission to elauser for necessary folders
-RUN chown -R elauser /go/src/github.com/elastos/Elastos.ELA.Arbiter
+RUN chown -R elauser /arbiter-2
 
 USER elauser
 
-# Copy Start Script
-COPY ./deploy_scripts/deploy-arbiter-2.sh /home/elauser/deploy.sh
+WORKDIR /arbiter-2
 
 EXPOSE 11336
 EXPOSE 11338
 
-CMD sh -c "sh /home/elauser/deploy.sh && /bin/sh"
-
+ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p elastos"]
