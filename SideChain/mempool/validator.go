@@ -13,10 +13,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
-	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/common"
 	core "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/elanet/bloom"
 )
 
 var zeroHash = common.Uint256{}
@@ -473,7 +473,7 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
-	payloadObj, ok := mainChainTransaction.Payload.(*payload.PayloadTransferCrossChainAsset)
+	payloadObj, ok := mainChainTransaction.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid PayloadTransferCrossChainAsset")
 		return ruleError(ErrRechargeToSideChain, str)

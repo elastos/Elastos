@@ -24,6 +24,9 @@ const (
 	// defaultServices describes the default services that are supported by
 	// the server.
 	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom
+
+	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
+	MaxBlocksPerMsg = 500
 )
 
 // naFilter defines a network address filter for the side chain server, for now
@@ -285,7 +288,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Find the most recent known block in the best chain based on the block
 	// locator and fetch all of the block hashes after it until either
-	// wire.MaxBlocksPerMsg have been fetched or the provided stop hash is
+	// MaxBlocksPerMsg have been fetched or the provided stop hash is
 	// encountered.
 	//
 	// Use the block after the genesis block if no other blocks in the
@@ -294,8 +297,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	//
 	// This mirrors the behavior in the reference implementation.
 	chain := sp.server.chain
-	hashList := chain.LocateBlocks(m.Locator, &m.HashStop,
-		p2p.MaxBlocksPerMsg)
+	hashList := chain.LocateBlocks(m.Locator, &m.HashStop, MaxBlocksPerMsg)
 
 	// Generate inventory message.
 	invMsg := msg.NewInv()
@@ -307,7 +309,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Send the inventory message if there is anything to send.
 	if len(invMsg.InvList) > 0 {
 		invListLen := len(invMsg.InvList)
-		if invListLen == p2p.MaxBlocksPerMsg {
+		if invListLen == MaxBlocksPerMsg {
 			// Intentionally use a copy of the final hash so there
 			// is not a reference into the inventory slice which
 			// would prevent the entire slice from being eligible

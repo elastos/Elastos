@@ -12,7 +12,7 @@ import (
 
 func getSideChainPowTx(msgBlockHash common.Uint256, genesisHash common.Uint256) *ela.Transaction {
 
-	txPayload := &payload.PayloadSideChainPow{
+	txPayload := &payload.SideChainPow{
 		SideBlockHash:   msgBlockHash,
 		SideGenesisHash: genesisHash,
 	}
@@ -51,7 +51,7 @@ func GenerateSideAuxPow(msgBlockHash common.Uint256, genesisHash common.Uint256)
 	return sideAuxPow
 }
 
-func NewSideChainPowTx(payload *payload.PayloadSideChainPow, currentHeight uint32) *ela.Transaction {
+func NewSideChainPowTx(payload *payload.SideChainPow, currentHeight uint32) *ela.Transaction {
 	return &ela.Transaction{
 		TxType:  ela.SideChainPow,
 		Payload: payload,

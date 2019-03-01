@@ -128,7 +128,7 @@ func (l *listener) Address() string {
 	return l.address
 }
 
-func (l *listener) Type() ela.TransactionType {
+func (l *listener) Type() ela.TxType {
 	return ela.TransferCrossChainAsset
 }
 
