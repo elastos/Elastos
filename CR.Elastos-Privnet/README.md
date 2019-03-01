@@ -52,6 +52,7 @@ These are located in the `wallets` folder:
     ```
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
+    For users in China, if you get issues pulling images please refer to this post: https://segmentfault.com/a/1190000016083023
     
 4. Verify the Mainchain is running by checking the miner reward wallet:
 
