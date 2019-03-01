@@ -168,8 +168,6 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
-			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
 			virtual void fireTransactionStatusChanged(const std::string &txid,

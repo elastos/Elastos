@@ -15,9 +15,9 @@ namespace Elastos {
 			StandardSingleSubAccount(const MasterPubKey &masterPubKey, const CMBlock &votePubKey,
 									 IAccount *account, uint32_t coinIndex);
 
-			virtual Key DeriveMainAccountKey(const std::string &payPassword);
+			virtual CMBlock GetRedeemScript(const std::string &addr) const;
 
-			virtual std::string GetMainAccountPublicKey() const;
+			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
 
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
@@ -26,11 +26,6 @@ namespace Elastos {
 			virtual bool ContainsAddress(const Address &address) const;
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd);
-
-		protected:
-			virtual std::vector<Key>
-			DeriveAccountAvailableKeys(const std::string &payPassword,
-									   const TransactionPtr &transaction);
 
 		private:
 			std::string GetAddress() const;

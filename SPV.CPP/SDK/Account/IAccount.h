@@ -25,7 +25,7 @@ namespace Elastos {
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword) = 0;
 
-			virtual Key DeriveKey(const std::string &payPassword) = 0;
+			virtual Key DeriveMultiSignKey(const std::string &payPassword) = 0;
 
 			virtual std::string GetType() const = 0;
 
@@ -39,13 +39,11 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const = 0;
-
 			virtual const std::string &GetEncryptedMnemonic() const = 0;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const = 0;
 
-			virtual const std::string &GetPublicKey() const = 0;
+			virtual CMBlock GetMultiSignPublicKey() const = 0;
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
 

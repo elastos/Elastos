@@ -505,11 +505,11 @@ namespace Elastos {
 		void PeerManager::publishTransaction(const TransactionPtr &tx,
 											 const Peer::PeerPubTxCallback &callback) {
 
-			assert(tx != NULL && tx->isSigned());
+			assert(tx != NULL && tx->IsSigned());
 			bool txValid = (tx != nullptr);
 			if (tx) lock.lock();
 
-			if (tx && !tx->isSigned()) {
+			if (tx && !tx->IsSigned()) {
 				lock.unlock();
 				if (!callback.empty()) callback(tx->getHash(), EINVAL, "tx not signed"); // transaction not signed
 				txValid = false;

@@ -183,19 +183,7 @@ namespace Elastos {
 		}
 
 		void ByteStream::writeBytes(const CMBlock &buf, ByteOrder byteOrder) {
-			size_t len = buf.GetSize();
-
-			ensureCapacity(position() + len);
-
-			size_t pos = position();
-
-			if (byteOrder == LittleEndian) {
-				memcpy(&_buf[pos], buf, len);
-			} else {
-				for (size_t i = 0; i < len; ++i) {
-					_buf[pos + i] = ((uint8_t *)buf)[len - i - 1];
-				}
-			}
+			writeBytes(buf, buf.GetSize(), byteOrder);
 		}
 
 		bool ByteStream::readVarBytes(CMBlock &bytes) {
@@ -204,7 +192,10 @@ namespace Elastos {
 				return false;
 			}
 
-			bytes.Resize((size_t)length);
+			if (!checkSize(length))
+				return false;
+
+			bytes = CMBlock((size_t)length);
 			return readBytes(bytes, bytes.GetSize());
 		}
 

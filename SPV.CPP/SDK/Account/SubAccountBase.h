@@ -23,11 +23,17 @@ namespace Elastos {
 
 			virtual void ClearUsedAddresses();
 
-			virtual std::string GetMainAccountPublicKey() const;
+			virtual CMBlock GetMultiSignPublicKey() const;
 
-			virtual const CMBlock &GetVotePublicKey() const;
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
+
+			virtual CMBlock GetVotePublicKey() const;
 
 			virtual bool IsDepositAddress(const Address &address) const;
+
+			virtual void SignTransaction(const TransactionPtr &transaction, const std::string &payPassword);
+
+			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
 
 		protected:
 			CMBlock _votePublicKey;

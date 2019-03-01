@@ -843,7 +843,7 @@ namespace Elastos {
 			UpdateAssets(assetArray);
 
 			for (size_t i = 0; i < txns.size(); ++i) {
-				if (!txns[i]->isSigned() || WalletExistTx(txns[i])) continue;
+				if (!txns[i]->IsSigned() || WalletExistTx(txns[i])) continue;
 				Append(txns[i]);
 			}
 

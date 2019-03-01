@@ -39,61 +39,114 @@ namespace Elastos {
 		Program::~Program() {
 		}
 
-		bool Program::isValid(const Transaction *transaction) const {
-			if (!_parameter || _parameter.GetSize() <= 0) {
+		bool Program::VerifySignature(const UInt256 &md) const {
+			Key key;
+			uint8_t signatureCount = 0;
+
+			std::vector<CMBlock> publicKeys = DecodePublicKey();
+			if (publicKeys.empty()) {
+				Log::error("Redeem script without public key");
 				return false;
 			}
 
-			if (!_code || _code.GetSize() <= 0) {
-				return false;
-			}
-
-			//multi-sign check
-			if (_code[_code.GetSize() - 1] == ELA_MULTISIG) {
-				uint8_t m, n;
-				std::vector<std::string> signers;
-				ParseMultiSignRedeemScript(_code, m, n, signers);
-
-				ParamChecker::checkCondition(_parameter.GetSize() % SignatureScriptLength != 0,
-											 Error::MultiSign, "Invalid multi sign signatures, length not match");
-				ParamChecker::checkCondition(_parameter.GetSize() / SignatureScriptLength < m,
-											 Error::MultiSign, "Invalid signatures, not enough signatures");
-				ParamChecker::checkCondition(_parameter.GetSize() / SignatureScriptLength > n,
-											 Error::MultiSign, "Invalid signatures, too many signatures");
-
-				UInt256 md = transaction->GetShaData();
-
-				Key key;
-				ByteStream stream(_parameter);
-				CMBlock signature;
-				while (stream.readVarBytes(signature)) {
-					bool verified = false;
-					for (int i = 0; i < signers.size(); ++i) {
-						key.SetPubKey(Utils::decodeHex(signers[i]));
-						if (key.Verify(md, signature))
-							verified = true;
+			ByteStream stream(_parameter);
+			CMBlock signature;
+			while (stream.readVarBytes(signature)) {
+				bool verified = false;
+				for (size_t i = 0; i < publicKeys.size(); ++i) {
+					key.SetPubKey(publicKeys[i]);
+					if (key.Verify(md, signature)) {
+						verified = true;
+						break;
 					}
+				}
 
-					ParamChecker::checkCondition(!verified, Error::MultiSign, "Not matched signers.");
+				signatureCount++;
+				if (!verified) {
+					Log::error("Transaction signature verify failed");
+					return false;
+				}
+			}
+
+			if (SignType(_code[_code.GetSize() - 1]) == SignTypeMultiSign) {
+				uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
+				uint8_t n = (uint8_t)(_code[_code.GetSize() - 2] - OP_1 + 1);
+
+				if (signatureCount < m) {
+					Log::error("Signature not enough for multi sign");
+					return false;
+				}
+
+				if (publicKeys.size() > n) {
+					Log::error("Too many signers");
+					return false;
+				}
+			} else if (SignType(_code[_code.GetSize() - 1]) == SignTypeStandard) {
+				if (publicKeys.size() != signatureCount) {
+					return false;
 				}
 			}
 
 			return true;
 		}
 
-		bool Program::ParseMultiSignRedeemScript(const CMBlock &code, uint8_t &m, uint8_t &n,
-												 std::vector<std::string> &signers) {
-			m = code[0] - OP_1 + 1;
-			n = code[code.GetSize() - 2] - OP_1 + 1;
+		nlohmann::json Program::GetSignedInfo(const UInt256 &md) const {
+			nlohmann::json info;
+			std::vector<CMBlock> publicKeys = DecodePublicKey();
+			if (publicKeys.empty())
+				return info;
 
-			signers.clear();
-			for (int i = 1; i < code.GetSize() - 2;) {
-				uint8_t size = code[i];
-				signers.push_back(Utils::encodeHex(&code[i + 1], size));
-				i += size + 1;
+			Key key;
+			ByteStream stream(_parameter);
+			CMBlock signature;
+			nlohmann::json signers;
+			while (stream.readVarBytes(signature)) {
+				for (size_t i = 0; i < publicKeys.size(); ++i) {
+					key.SetPubKey(publicKeys[i]);
+					if (key.Verify(md, signature)) {
+						signers.push_back(Utils::encodeHex(publicKeys[i]));
+						break;
+					}
+				}
 			}
 
-			return false;
+			if (SignType(_code[_code.GetSize() - 1]) == SignTypeMultiSign) {
+				uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
+				uint8_t n = (uint8_t)(_code[_code.GetSize() - 2] - OP_1 + 1);
+				info["SignType"] = "MultiSign";
+				info["M"] = m;
+				info["N"] = n;
+				info["Signers"] = signers;
+			} else if (SignType(_code[_code.GetSize() - 1]) == SignTypeStandard) {
+				info["SignType"] = "Standard";
+				info["Signers"] = signers;
+			}
+
+			return info;
+		}
+
+		std::vector<CMBlock> Program::DecodePublicKey() const {
+			std::vector<CMBlock> publicKeys;
+			if (_code.GetSize() < 33 + 2)
+				return publicKeys;
+
+			SignType signType = SignType(_code[_code.GetSize() - 1]);
+			CMBlock pubKey;
+
+			ByteStream stream(_code);
+
+			if (signType == SignTypeMultiSign) {
+				stream.drop(1);
+			} else if (signType != SignTypeStandard) {
+				Log::error("unsupport sign type");
+				return publicKeys;
+			}
+
+			while (stream.readVarBytes(pubKey)) {
+				publicKeys.push_back(pubKey);
+			}
+
+			return publicKeys;
 		}
 
 		const CMBlock &Program::getCode() const {

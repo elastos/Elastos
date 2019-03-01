@@ -29,23 +29,11 @@ namespace Elastos {
 			Utils::Encrypt(_encryptedMnemonic, standardPhrase, payPassword);
 			Utils::Encrypt(_encryptedPhrasePass, phrasePassword, payPassword);
 
-			//init master public key and private key
-			UInt512 seed = DeriveSeed(payPassword);
+			Key key = DeriveMultiSignKey(payPassword);
+			_multiSignPublicKey = key.PubKey();
 
-			Key key = BIP32Sequence::APIAuthKey(&seed, sizeof(seed));
+			_masterIDPubKey = DeriveIDMasterPubKey(payPassword);
 
-			const UInt256 &secret = key.GetSecret();
-			Utils::Encrypt(_encryptedKey, &secret, sizeof(secret), payPassword);
-
-			_publicKey = Utils::encodeHex(key.PubKey());
-
-			//init id chain derived master public key
-			UInt256 chainCode;
-			Key IDMasterKey = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 1, 0 | BIP32_HARD);
-			_masterIDPubKey = MasterPubKey(IDMasterKey.PubKey(), chainCode);
-
-			var_clean(&seed);
-			var_clean(&chainCode);
 			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 		}
 
@@ -58,16 +46,12 @@ namespace Elastos {
 			return _encryptedPhrasePass;
 		}
 
-		const std::string &StandardAccount::GetEncryptedKey() const {
-			return _encryptedKey;
-		}
-
 		const std::string &StandardAccount::GetEncryptedMnemonic() const {
 			return _encryptedMnemonic;
 		}
 
-		const std::string &StandardAccount::GetPublicKey() const {
-			return _publicKey;
+		CMBlock StandardAccount::GetMultiSignPublicKey() const {
+			return _multiSignPublicKey;
 		}
 
 		const std::string &StandardAccount::GetLanguage() const {
@@ -80,7 +64,7 @@ namespace Elastos {
 
 		std::string StandardAccount::GetAddress() const {
 			Key key;
-			key.SetPubKey(Utils::decodeHex(_publicKey));
+			key.SetPubKey(_multiSignPublicKey);
 			return key.GetAddress(PrefixStandard);
 		}
 
@@ -97,21 +81,19 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const StandardAccount &p) {
-			j["Key"] = p.GetEncryptedKey();
 			j["Mnemonic"] = p.GetEncryptedMnemonic();
 			j["PhrasePassword"] = p.GetEncryptedPhrasePassword();
 			j["Language"] = p.GetLanguage();
-			j["PublicKey"] = p.GetPublicKey();
+			j["PublicKey"] = Utils::encodeHex(p.GetMultiSignPublicKey());
 			j["IDChainCode"] = Utils::UInt256ToString(p.GetIDMasterPubKey().GetChainCode());
 			j["IDMasterKeyPubKey"] = Utils::encodeHex(p.GetIDMasterPubKey().GetPubKey());
 		}
 
 		void from_json(const nlohmann::json &j, StandardAccount &p) {
-			p._encryptedKey = j["Key"].get<std::string>();
 			p._encryptedMnemonic = j["Mnemonic"].get<std::string>();
 			p._encryptedPhrasePass = j["PhrasePassword"].get<std::string>();
 			p._language = j["Language"].get<std::string>();
-			p._publicKey = j["PublicKey"].get<std::string>();
+			p._multiSignPublicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
 			UInt256 chainCode = Utils::UInt256FromString(j["IDChainCode"].get<std::string>());
 			CMBlock pubKey = Utils::decodeHex(j["IDMasterKeyPubKey"].get<std::string>());
 			p._masterIDPubKey = MasterPubKey(pubKey, chainCode);
@@ -132,16 +114,26 @@ namespace Elastos {
 			return result;
 		}
 
-		Key StandardAccount::DeriveKey(const std::string &payPassword) {
-			CMBlock keyData;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(keyData, GetEncryptedKey(), payPassword));
+		Key StandardAccount::DeriveMultiSignKey(const std::string &payPassword) {
+			UInt512 seed = DeriveSeed(payPassword);
 
-			Key key;
-			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize());
-			key.SetSecret(secret, true);
+			Key key = BIP32Sequence::APIAuthKey(&seed, sizeof(seed));
+
+			var_clean(&seed);
 
 			return key;
+		}
+
+		MasterPubKey StandardAccount::DeriveIDMasterPubKey(const std::string &payPasswd) {
+			UInt512 seed = DeriveSeed(payPasswd);
+			UInt256 chainCode;
+			Key IDMasterKey = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 1, 0 | BIP32_HARD);
+			MasterPubKey IDmasterPubKey = MasterPubKey(IDMasterKey.PubKey(), chainCode);
+
+			var_clean(&seed);
+			var_clean(&chainCode);
+
+			return IDmasterPubKey;
 		}
 
 		void StandardAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
@@ -149,11 +141,9 @@ namespace Elastos {
 
 			CMBlock key;
 			std::string phrasePasswd, phrase;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(key, GetEncryptedKey(), oldPassword));
 			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, GetEncryptedPhrasePassword(), oldPassword));
 			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrase, GetEncryptedMnemonic(), oldPassword));
 
-			Utils::Encrypt(_encryptedKey, key, newPassword);
 			Utils::Encrypt(_encryptedPhrasePass, phrasePasswd, newPassword);
 			Utils::Encrypt(_encryptedMnemonic, phrase, newPassword);
 
@@ -188,7 +178,7 @@ namespace Elastos {
 			if (GetType() != account.GetType())
 				return false;
 
-			return GetPublicKey() == account.GetPublicKey();
+			return GetMultiSignPublicKey() == account.GetMultiSignPublicKey();
 		}
 
 	}

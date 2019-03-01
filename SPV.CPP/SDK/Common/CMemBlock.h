@@ -247,11 +247,13 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
-	T *operator+(size_t off) const {
+	template <class size_type>
+	T *operator+(size_type off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(size_t off) {
+	template <class size_type>
+	T *operator+(size_type off) {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 

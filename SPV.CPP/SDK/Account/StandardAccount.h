@@ -25,7 +25,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword);
 
@@ -43,19 +43,19 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
-
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual CMBlock GetMultiSignPublicKey() const;
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
 			virtual std::string GetAddress() const;
 
 			const std::string &GetLanguage() const;
+
+			MasterPubKey DeriveIDMasterPubKey(const std::string &payPasswd);
 
 		private:
 			friend class AccountFactory;
@@ -71,10 +71,9 @@ namespace Elastos {
 			FROM_JSON(StandardAccount);
 
 		private:
-			std::string _encryptedKey;
 			std::string _encryptedMnemonic;
 			std::string _encryptedPhrasePass;
-			std::string _publicKey;
+			CMBlock _multiSignPublicKey;
 			MasterPubKey _masterIDPubKey;
 			std::string _language;
 

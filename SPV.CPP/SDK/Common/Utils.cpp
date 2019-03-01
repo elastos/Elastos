@@ -180,15 +180,9 @@ namespace Elastos {
 		}
 
 		std::string Utils::UInt168ToAddress(const UInt168 &u) {
-			UInt256 hash = UINT256_ZERO;
-
-			BRSHA256_2(&hash, u.u8, sizeof(u));
-
-			CMBlock data(sizeof(UInt168) + 4);
-			memcpy(data, u.u8, sizeof(u));
-			memcpy(data + sizeof(u), hash.u8, 4);
-
-			return Base58::Encode(data);
+			CMBlock data;
+			data.SetMemFixed(u.u8, sizeof(u));
+			return Base58::CheckEncode(data);
 		}
 
 		bool Utils::UInt168FromAddress(UInt168 &u, const std::string &address) {

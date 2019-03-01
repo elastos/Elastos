@@ -19,30 +19,20 @@ namespace Elastos {
 		SingleSubAccount::~SingleSubAccount() {
 		}
 
-		Key SingleSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
-			return _parentAccount->DeriveKey(payPassword);
-		}
-
-		std::vector<Key>
-		SingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
-													 const Elastos::ElaWallet::TransactionPtr &transaction) {
-			std::vector<Key> result;
-			result.push_back(_parentAccount->DeriveKey(payPassword));
-			return result;
-		}
-
-		void
-		SingleSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
-										  const std::string &payPassword) {
-			std::vector<Key> keys = DeriveAccountAvailableKeys(payPassword, transaction);
-			ParamChecker::checkCondition(!transaction->Sign(keys, wallet), Error::Sign,
-										 "Transaction Sign error!");
-		}
-
 		nlohmann::json SingleSubAccount::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Type"] = "Single Account";
 			return j;
+		}
+
+		CMBlock SingleSubAccount::GetRedeemScript(const std::string &addr) const {
+			Key key;
+			key.SetPubKey(_parentAccount->GetMultiSignPublicKey());
+
+			ParamChecker::checkLogic(addr != key.GetAddress(PrefixStandard) || addr != key.GetAddress(PrefixDeposit),
+									 Error::Address, "Can't found pubKey for addr " + addr);
+
+			return key.RedeemScript(PrefixStandard);
 		}
 
 		bool SingleSubAccount::IsSingleAddress() const {

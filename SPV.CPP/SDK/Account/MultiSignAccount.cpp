@@ -30,9 +30,9 @@ namespace Elastos {
 
 		}
 
-		Key MultiSignAccount::DeriveKey(const std::string &payPassword) {
+		Key MultiSignAccount::DeriveMultiSignKey(const std::string &payPassword){
 			checkSigners();
-			return _me->DeriveKey(payPassword);
+			return _me->DeriveMultiSignKey(payPassword);
 		}
 
 		UInt512 MultiSignAccount::DeriveSeed(const std::string &payPassword) {
@@ -55,11 +55,6 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
-		const std::string &MultiSignAccount::GetEncryptedKey() const {
-			checkSigners();
-			return _me->GetEncryptedKey();
-		}
-
 		const std::string &MultiSignAccount::GetEncryptedMnemonic() const {
 			checkSigners();
 			return _me->GetEncryptedMnemonic();
@@ -70,9 +65,9 @@ namespace Elastos {
 			return _me->GetEncryptedPhrasePassword();
 		}
 
-		const std::string &MultiSignAccount::GetPublicKey() const {
+		CMBlock MultiSignAccount::GetMultiSignPublicKey() const {
 			checkSigners();
-			return _me->GetPublicKey();
+			return _me->GetMultiSignPublicKey();
 		}
 
 		const MasterPubKey &MultiSignAccount::GetIDMasterPubKey() const {
@@ -87,11 +82,6 @@ namespace Elastos {
 
 		std::string MultiSignAccount::GetAddress() const {
 			if (_address.empty()) {
-				Key key;
-				std::vector<std::string> pubKeys = _coSigners;
-				if (_me != nullptr)
-					pubKeys.push_back(_me->GetPublicKey());
-
 				const CMBlock &code = GetRedeemScript();
 				// redeem script -> program hash
 				UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
@@ -105,9 +95,13 @@ namespace Elastos {
 		const CMBlock &MultiSignAccount::GetRedeemScript() const {
 			if (_redeemScript.GetSize() == 0) {
 				Key key;
-				std::vector<std::string> pubKeys = _coSigners;
-				if (_me != nullptr)
-					pubKeys.push_back(_me->GetPublicKey());
+				std::vector<CMBlock> pubKeys;
+				for (size_t i = 0; i < _coSigners.size(); ++i) {
+					pubKeys.push_back(Utils::decodeHex(_coSigners[i]));
+				}
+				if (_me != nullptr) {
+					pubKeys.push_back(_me->GetMultiSignPublicKey());
+				}
 
 				_redeemScript = key.MultiSignRedeemScript(_requiredSignCount, pubKeys);
 			}
@@ -139,7 +133,7 @@ namespace Elastos {
 			if (_me != nullptr) {
 				nlohmann::json basicInfo = _me->GetBasicInfo();
 				innerType = basicInfo["Type"];
-				signers.push_back(_me->GetPublicKey());
+				signers.push_back(Utils::encodeHex(_me->GetMultiSignPublicKey()));
 			} else {
 				innerType = "Readonly";
 			}
@@ -176,7 +170,7 @@ namespace Elastos {
 				return false;
 
 			if (!IsReadOnly() && !account.IsReadOnly()) {
-				return account.GetPublicKey() == GetPublicKey();
+				return account.GetMultiSignPublicKey() == GetMultiSignPublicKey();
 			}
 
 			return account.GetAddress() == GetAddress();

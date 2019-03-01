@@ -47,6 +47,8 @@ namespace Elastos {
 
 			bool Deserialize(ByteStream &istream, uint8_t txVersion);
 
+			bool IsValid() const;
+
 			std::string getAddress() const;
 
 			void SetAddress(const std::string &address);

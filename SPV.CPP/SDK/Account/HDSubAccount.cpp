@@ -27,7 +27,7 @@ namespace Elastos {
 			_lock = lock;
 
 			for (size_t i = 0; i < transactions.size(); i++) {
-				if (transactions[i]->isSigned()) {
+				if (transactions[i]->IsSigned()) {
 					AddUsedAddrs(transactions[i]);
 				}
 			}
@@ -36,67 +36,86 @@ namespace Elastos {
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
-		Key HDSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			UInt256 chainCode;
-			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 44 | BIP32_HARD,
-												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
-			var_clean(&seed);
-			var_clean(&chainCode);
-			return key;
-		}
-
-		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
-										   const std::string &payPassword) {
-			std::vector<Key> keys = DeriveAccountAvailableKeys(payPassword, wallet, transaction);
-			ParamChecker::checkCondition(!transaction->Sign(keys, wallet), Error::Sign,
-										 "Transaction Sign error!");
-		}
-
-		std::vector<Key>
-		HDSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword, const WalletPtr &wallet,
-												 const TransactionPtr &transaction) {
+		CMBlock HDSubAccount::GetRedeemScript(const std::string &addr) const {
 			uint32_t index;
-			size_t i;
-			std::vector<uint32_t> indexInternal, indexExternal;
-			std::vector<Key> keys;
+			CMBlock pubKey;
+			Key key;
 
-			for (i = 0; i < transaction->getInputs().size(); i++) {
-				const TransactionInput &txInput = transaction->getInputs()[i];
-				const TransactionPtr &tx = wallet->transactionForHash(txInput.getTransctionHash());
-				Address inputAddr = tx->getOutputs()[txInput.getIndex()].getAddress();
-
-				_lock->Lock();
-				if (IsDepositAddress(inputAddr) && keys.empty()) {
-					keys.push_back(DeriveVoteKey(payPassword));
-				} else {
-					for (index = (uint32_t) internalChain.size(); index > 0; index--) {
-						if (inputAddr.IsEqual(internalChain[index - 1])) {
-							indexInternal.push_back(index - 1);
-						}
-					}
-
-					for (index = (uint32_t) externalChain.size(); index > 0; index--) {
-						if (inputAddr.IsEqual(externalChain[index - 1])) {
-							indexExternal.push_back(index - 1);
-						}
-					}
-				}
-				_lock->Unlock();
+			if (IsDepositAddress(addr)) {
+				pubKey = GetVotePublicKey();
+				key.SetPubKey(pubKey);
+				return key.RedeemScript(PrefixDeposit);
 			}
 
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
+			for (index = internalChain.size(); index > 0; index--) {
+				if (internalChain[index - 1].stringify() == addr) {
+					pubKey = BIP32Sequence::PubKey(_masterPubKey, SEQUENCE_INTERNAL_CHAIN, index - 1);
+					break;
+				}
+			}
 
-			std::vector<Key> internalKeys = BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
-																SEQUENCE_INTERNAL_CHAIN, indexInternal);
-			std::vector<Key> externalKeys = BIP32Sequence::PrivKeyList(&seed, sizeof(seed), _coinIndex,
-																	   SEQUENCE_EXTERNAL_CHAIN, indexExternal);
+			for (index = externalChain.size(); index > 0 && pubKey.GetSize() == 0; index--) {
+				if (externalChain[index - 1].stringify() == addr) {
+					pubKey = BIP32Sequence::PubKey(_masterPubKey, SEQUENCE_EXTERNAL_CHAIN, index - 1);
+					break;
+				}
+			}
 
-			keys.insert(keys.end(), internalKeys.begin(), internalKeys.end());
-			keys.insert(keys.end(), externalKeys.begin(), externalKeys.end());
+			ParamChecker::checkLogic(pubKey.GetSize() == 0, Error::Address, "Can't found pubKey for addr " + addr);
+
+			key.SetPubKey(pubKey);
+			return key.RedeemScript(PrefixStandard);
+		}
+
+		bool HDSubAccount::FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) {
+			if (SubAccountBase::FindKey(key, pubKey, payPasswd))
+				return true;
+
+			bool found = false;
+			Key searchKey;
+			searchKey.SetPubKey(pubKey);
+			std::string addr = searchKey.GetAddress(PrefixStandard);
+			uint32_t index, change;
+			uint32_t coinIndex;
+
+			_lock->Lock();
+
+			coinIndex = _coinIndex;
+
+			for (index = (uint32_t) internalChain.size(); index > 0; --index) {
+				if (addr == internalChain[index - 1].stringify()) {
+					found = true;
+					change = SEQUENCE_INTERNAL_CHAIN;
+					break;
+				}
+			}
+
+			if (!found) {
+				for (index = (uint32_t) externalChain.size(); index > 0; --index) {
+					if (addr == externalChain[index - 1].stringify()) {
+						found = true;
+						change = SEQUENCE_EXTERNAL_CHAIN;
+						break;
+					}
+				}
+			}
+
+			_lock->Unlock();
+
+			if (!found)
+				return false;
+
+			UInt256 chainCode;
+			UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
+			key = BIP32Sequence::PrivKeyPath(seed.u8, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+											 coinIndex | BIP32_HARD,
+											 BIP32::Account::Default | BIP32_HARD,
+											 change, index - 1);
+
 			var_clean(&seed);
+			var_clean(&chainCode);
 
-			return keys;
+			return true;
 		}
 
 		nlohmann::json HDSubAccount::GetBasicInfo() const {

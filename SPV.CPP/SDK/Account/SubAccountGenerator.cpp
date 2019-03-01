@@ -104,7 +104,7 @@ namespace Elastos {
 			if (account->GetType() == "MultiSign") {
 				MultiSignAccount *multiSignAccount = static_cast<MultiSignAccount *>(account);
 				if ("Simple" == multiSignAccount->GetInnerAccount()->GetType()) {
-					Key key = account->DeriveKey(payPassword);
+					Key key = account->DeriveMultiSignKey(payPassword);
 					return MasterPubKeyPtr(new MasterPubKey(key.PubKey(), chainCode));
 				}
 			}
@@ -119,7 +119,7 @@ namespace Elastos {
 		}
 
 		CMBlock SubAccountGenerator::GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd) {
-			std::string votePubKey;
+			CMBlock votePubKey;
 			Key key;
 
 			if (account->GetType() == "Standard") {
@@ -129,11 +129,12 @@ namespace Elastos {
 												 44 | BIP32_HARD, coinIndex | BIP32_HARD,
 												 BIP32::Account::Vote | BIP32_HARD, BIP32::External, 0);
 
+				votePubKey = key.PubKey();
 				var_clean(&seed);
 				var_clean(&chainCode);
 			}
 
-			return key.PubKey();
+			return votePubKey;
 		}
 
 	}

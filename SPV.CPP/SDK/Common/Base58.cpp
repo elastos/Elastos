@@ -129,7 +129,7 @@ namespace Elastos {
 			buf.Resize(dataLen + 4);
 			std::string str = Encode(buf);
 
-			mem_clean(buf, bufLen);
+			buf.Zero();
 
 			return str;
 		}

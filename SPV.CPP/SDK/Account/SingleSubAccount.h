@@ -18,10 +18,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveMainAccountKey(const std::string &payPassword);
-
-			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
-										 const std::string &payPassword);
+			virtual CMBlock GetRedeemScript(const std::string &addr) const;
 
 			virtual bool IsSingleAddress() const;
 
@@ -35,9 +32,6 @@ namespace Elastos {
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
-		protected:
-			virtual std::vector<Key> DeriveAccountAvailableKeys(const std::string &payPassword,
-																const TransactionPtr &transaction);
 		};
 
 	}

@@ -8,6 +8,7 @@
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
+#include <Core/BRInt.h>
 #include <boost/shared_ptr.hpp>
 
 namespace Elastos {
@@ -26,7 +27,11 @@ namespace Elastos {
 
 			~Program();
 
-			bool isValid(const Transaction *transaction) const;
+			std::vector<CMBlock> DecodePublicKey() const;
+
+			bool VerifySignature(const UInt256 &md) const;
+
+			nlohmann::json GetSignedInfo(const UInt256 &md) const;
 
 			const CMBlock &getCode() const;
 
@@ -43,10 +48,6 @@ namespace Elastos {
 			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
-
-		public:
-			static bool ParseMultiSignRedeemScript(const CMBlock &code, uint8_t &m, uint8_t &n,
-												   std::vector<std::string> &signers);
 
 		private:
 			CMBlock _code;

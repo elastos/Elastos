@@ -18,11 +18,13 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual void
-			SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
-							const std::string &payPassword);
+			virtual CMBlock GetRedeemScript(const std::string &addr) const;
 
-			std::vector<std::string> GetTransactionSignedSigners(const TransactionPtr &transaction);
+			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
+
+			virtual CMBlock GetVotePublicKey() const;
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
 		private:
 			MultiSignAccount *_multiSignAccount;

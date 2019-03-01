@@ -10,7 +10,6 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Checker/TransactionChecker.h>
 #include <SDK/Account/MultiSignSubAccount.h>
 #include <SDK/Account/SubAccountGenerator.h>
 
@@ -126,8 +125,23 @@ namespace Elastos {
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
 													uint64_t amount, const UInt256 &assetID, const std::string &memo,
 													const std::string &remark, bool useVotedUTXO) const {
-			TransactionPtr tx = _walletManager->getWallet()->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
-																  assetID, useVotedUTXO);
+			const WalletPtr &wallet = _walletManager->getWallet();
+			TransactionPtr tx = wallet->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
+														  assetID, useVotedUTXO);
+
+			std::set<std::string> uniqueAddress;
+			std::vector<TransactionInput> &inputs = tx->getInputs();
+			for (size_t i = 0; i < inputs.size(); ++i) {
+				TransactionPtr txInput = wallet->transactionForHash(inputs[i].getTransctionHash());
+				std::string addr = txInput->getOutputs()[inputs[i].getIndex()].getAddress();
+
+				if (uniqueAddress.find(addr) == uniqueAddress.end()) {
+					uniqueAddress.insert(addr);
+					CMBlock code = _subAccount->GetRedeemScript(addr);
+					tx->addProgram(Program(code, CMBlock()));
+				}
+			}
+
 			if (_info.getChainId() == "ELA") {
 				tx->setVersion(Transaction::TxVersion::V09);
 			}
@@ -194,7 +208,7 @@ namespace Elastos {
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
 
-			Key key = _subAccount->DeriveMainAccountKey(payPassword);
+			Key key = _subAccount->DeriveMultiSignKey(payPassword);
 			return Utils::encodeHex(key.Sign(message));
 		}
 
@@ -272,18 +286,16 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &rawTransaction,
 												  const std::string &payPassword) {
-			TransactionPtr transaction(new Transaction());
-			transaction->fromJson(rawTransaction);
-			_walletManager->getWallet()->signTransaction(transaction, payPassword);
-			transaction->removeDuplicatePrograms();
-			return transaction->toJson();
+			TransactionPtr tx(new Transaction());
+			tx->fromJson(rawTransaction);
+			_walletManager->getWallet()->SignTransaction(tx, payPassword);
+			return tx->toJson();
 		}
 
 		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &rawTransaction) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
 
-			verifyRawTransaction(transaction);
 			publishTransaction(transaction);
 
 			nlohmann::json j;
@@ -306,11 +318,6 @@ namespace Elastos {
 			wallet->UpdateTxFee(tx, fee, fromAddress);
 
 			return tx->toJson();
-		}
-
-		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			TransactionChecker checker(transaction, _walletManager->getWallet());
-			checker.Check();
 		}
 
 		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const {
@@ -429,7 +436,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetPublicKey() const {
-			return _subAccount->GetMainAccountPublicKey();
+			return Utils::encodeHex(_subAccount->GetMultiSignPublicKey());
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
@@ -440,14 +447,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetTransactionSignedSigners(const nlohmann::json &rawTransaction) const {
-			nlohmann::json result;
-			MultiSignSubAccount *subAccount = dynamic_cast<MultiSignSubAccount *>(_subAccount.get());
-			if (subAccount != nullptr) {
-				TransactionPtr transaction(new Transaction);
-				transaction->fromJson(rawTransaction);
-				result["Signers"] = subAccount->GetTransactionSignedSigners(transaction);
-			}
-			return result;
+			TransactionPtr tx(new Transaction);
+			tx->fromJson(rawTransaction);
+
+			return tx->GetSignedInfo();
 		}
 
 		nlohmann::json SubWallet::GetAssetDetails(const std::string &assetID) const {

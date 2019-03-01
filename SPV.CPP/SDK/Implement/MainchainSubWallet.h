@@ -88,8 +88,6 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
 		};
 
 	}

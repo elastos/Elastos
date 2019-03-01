@@ -70,7 +70,7 @@ namespace Elastos {
 
 			SignType PrefixToSignType(Prefix prefix) const;
 
-			CMBlock MultiSignRedeemScript(uint8_t m, const std::vector<std::string> &pubKeys);
+			CMBlock MultiSignRedeemScript(uint8_t m, const std::vector<CMBlock> &pubKeys);
 
 			CMBlock RedeemScript(Prefix prefix) const;
 

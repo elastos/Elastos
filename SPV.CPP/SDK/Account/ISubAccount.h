@@ -44,12 +44,15 @@ namespace Elastos {
 
 			virtual void InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) = 0;
 
-			virtual std::string GetMainAccountPublicKey() const = 0;
+			virtual CMBlock GetRedeemScript(const std::string &addr) const = 0;
 
-			virtual Key DeriveMainAccountKey(const std::string &payPassword) = 0;
+			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) = 0;
 
-			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
-										 const std::string &payPassword) = 0;
+			virtual CMBlock GetMultiSignPublicKey() const = 0;
+
+			virtual Key DeriveMultiSignKey(const std::string &payPassword) = 0;
+
+			virtual void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) = 0;
 
 			virtual void AddUsedAddrs(const TransactionPtr &tx) = 0;
 
@@ -67,7 +70,7 @@ namespace Elastos {
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd) = 0;
 
-			virtual const CMBlock &GetVotePublicKey() const = 0;
+			virtual CMBlock GetVotePublicKey() const = 0;
 
 		};
 

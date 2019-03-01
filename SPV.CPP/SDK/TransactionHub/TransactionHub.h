@@ -141,7 +141,7 @@ namespace Elastos {
 
 			uint64_t getBalanceAfterTransaction(const TransactionPtr &transaction);
 
-			void signTransaction(const TransactionPtr &transaction, const std::string &payPassword);
+			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword);
 
 			void UpdateBalance();
 

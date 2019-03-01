@@ -17,7 +17,9 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd, uint32_t coinIndex, uint32_t account, uint32_t change);
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword);
 
@@ -35,13 +37,15 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
+			const std::string &GetEncryptedKey() const;
 
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual CMBlock GetMultiSignPublicKey() const;
+
+			virtual CMBlock GetVotePublicKey() const;
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
@@ -63,7 +67,7 @@ namespace Elastos {
 		private:
 
 			std::string _emptyString;
-			std::string _publicKey;
+			CMBlock _publicKey;
 			std::string _encryptedKey; // encode with base64
 		};
 

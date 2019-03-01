@@ -234,9 +234,9 @@ namespace Elastos {
 		bool TransactionHub::registerTransaction(const TransactionPtr &transaction) {
 			bool wasAdded = false, r = true;
 
-			assert(transaction != nullptr && transaction->isSigned());
+			assert(transaction != nullptr && transaction->IsSigned());
 
-			if (transaction != nullptr && transaction->isSigned()) {
+			if (transaction != nullptr && transaction->IsSigned()) {
 				boost::mutex::scoped_lock scopedLock(lock);
 				r = _transactions[transaction->GetAssetID()]->RegisterTransaction(transaction, _blockHeight, wasAdded);
 			} else r = false;
@@ -303,7 +303,7 @@ namespace Elastos {
 
 		bool TransactionHub::transactionIsValid(const TransactionPtr &transaction) {
 			bool r = false;
-			if (transaction == nullptr || !transaction->isSigned()) return r;
+			if (transaction == nullptr || !transaction->IsSigned()) return r;
 
 			// TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
 			// TODO: XXX conflicted tx with the same wallet outputs should be presented as the same tx to the user
@@ -323,7 +323,7 @@ namespace Elastos {
 			uint32_t height;
 			int r = 0;
 
-			assert(transaction->isSigned());
+			assert(transaction->IsSigned());
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				height = _blockHeight;
@@ -359,7 +359,7 @@ namespace Elastos {
 
 		bool TransactionHub::transactionIsVerified(const TransactionPtr &transaction) {
 			bool r = true;
-			assert(transaction != NULL && transaction->isSigned());
+			assert(transaction != NULL && transaction->IsSigned());
 
 			if (transaction &&
 				transaction->getBlockHeight() == TX_UNCONFIRMED) { // only unconfirmed _transactions can be unverified
@@ -448,6 +448,10 @@ namespace Elastos {
 		}
 
 		std::string TransactionHub::GetVoteDepositAddress() const {
+			if ("Multi-Sign Account" == _subAccount->GetBasicInfo()["Type"]) {
+				return std::string();
+			}
+
 			CMBlock publicKey = _subAccount->GetVotePublicKey();
 			if (publicKey.GetSize() == 0) {
 				return std::string();
@@ -569,7 +573,7 @@ namespace Elastos {
 		uint64_t TransactionHub::BalanceAfterTx(const TransactionPtr &tx) {
 			uint64_t result;
 
-			assert(tx != NULL && tx->isSigned());
+			assert(tx != NULL && tx->IsSigned());
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 
@@ -586,8 +590,8 @@ namespace Elastos {
 			return result;
 		}
 
-		void TransactionHub::signTransaction(const TransactionPtr &transaction, const std::string &payPassword) {
-			_subAccount->SignTransaction(transaction, shared_from_this(), payPassword);
+		void TransactionHub::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) {
+			_subAccount->SignTransaction(tx, payPassword);
 		}
 
 		std::vector<TransactionPtr> TransactionHub::TxUnconfirmedBefore(uint32_t blockHeight) {

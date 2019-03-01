@@ -124,7 +124,11 @@ namespace Elastos {
 
 			size_t getSize();
 
-			bool isSigned() const;
+			nlohmann::json GetSignedInfo() const;
+
+			bool IsSigned() const;
+
+			bool IsValid() const;
 
 			UInt256 getReverseHash();
 
@@ -170,8 +174,6 @@ namespace Elastos {
 
 			void SetAssetTableID(const std::string &assetTableID);
 
-			void removeDuplicatePrograms();
-
 			void serializeUnsigned(ByteStream &ostream) const;
 
 			UInt256 GetShaData() const;
@@ -185,8 +187,6 @@ namespace Elastos {
 			bool IsEqual(const Transaction *tx) const;
 
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
-
-			bool Sign(const std::vector<Key> &keys, const boost::shared_ptr<TransactionHub> &wallet);
 
 		private:
 

@@ -251,63 +251,61 @@ namespace Elastos {
 			return ostream.getBuffer().GetSize();
 		}
 
-		bool Transaction::isSigned() const {
-			if (_type == Type::TransferAsset ||
-				_type == Type::TransferCrossChainAsset ||
-				_type == Type::RegisterProducer ||
-				_type == Type::CancelProducer ||
-				_type == Type::UpdateProducer ||
-				_type == Type::ReturnDepositCoin) {
-				if (_programs.size() <= 0) {
+		nlohmann::json Transaction::GetSignedInfo() const {
+			nlohmann::json info;
+			UInt256 md = GetShaData();
+
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				info.push_back(_programs[i].GetSignedInfo(md));
+			}
+			return info;
+		}
+
+		bool Transaction::IsSigned() const {
+			if (_programs.size() == 0)
+				return false;
+
+			UInt256 md = GetShaData();
+
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				if (!_programs[i].VerifySignature(md))
 					return false;
-				}
-				for (size_t i = 0; i < _programs.size(); ++i) {
-					if (!_programs[i].isValid(this)) {
-						return false;
-					}
-				}
-			} else if (_type == Type::RechargeToSideChain) {
-				return true;
-			} else if (_type == Type::CoinBase) {
-				return true;
 			}
 
 			return true;
 		}
 
-		bool Transaction::Sign(const std::vector<Key> &keys, const boost::shared_ptr<TransactionHub> &wallet) {
-			size_t i, keyIndex;
-
-			ParamChecker::checkCondition(keys.size() <= 0, Error::Transaction,
-										 "Transaction sign key not found");
-
-			ByteStream stream;
-			_programs.clear();
-			for (i = 0; i < _inputs.size(); i++) {
-				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
-				const UInt168 &programHash = tx->getOutputs()[_inputs[i].getIndex()].getProgramHash();
-				const std::string inputAddress = Utils::UInt168ToAddress(programHash);
-
-				// find the key for input
-				for (keyIndex = 0; keyIndex < keys.size(); ++keyIndex) {
-					if (keys[keyIndex].GetAddress(PrefixDeposit) == inputAddress ||
-						keys[keyIndex].GetAddress(PrefixStandard) == inputAddress) {
-						break;
-					}
-				}
-
-				ParamChecker::checkLogic(keyIndex >= keys.size(), Error::Sign, "Cannot found key for input: " +
-					Utils::UInt256ToString(_inputs[i].getTransctionHash(), true));
-
-				CMBlock code = keys[keyIndex].RedeemScript(Prefix(programHash.u8[0]));
-				CMBlock signedData = keys[keyIndex].Sign(GetShaData());
-				stream.setPosition(0);
-				stream.writeVarBytes(signedData);
-
-				_programs.emplace_back(code, stream.getBuffer());
+		bool Transaction::IsValid() const {
+			if (!IsSigned()) {
+				Log::error("verify tx signature fail");
+				return false;
 			}
 
-			return isSigned();
+			for (size_t i = 0; i < _attributes.size(); ++i) {
+				if (!_attributes[i].isValid()) {
+					Log::error("tx attribute is invalid");
+					return false;
+				}
+			}
+
+			if (_payload == nullptr || !_payload->isValid()) {
+				Log::error("tx payload invalid");
+				return false;
+			}
+
+			if (_outputs.size() == 0) {
+				Log::error("tx without output");
+				return false;
+			}
+
+			for (size_t i = 0; i < _outputs.size(); ++i) {
+				if (!_outputs[i].IsValid()) {
+					Log::error("tx output is invalid");
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		UInt256 Transaction::getReverseHash() {
@@ -354,20 +352,6 @@ namespace Elastos {
 
 		void Transaction::clearPrograms() {
 			_programs.clear();
-		}
-
-		void Transaction::removeDuplicatePrograms() {
-			std::set<std::string> programSet;
-
-			for (std::vector<Program>::iterator iter = _programs.begin(); iter != _programs.end();) {
-				std::string key = Utils::encodeHex(iter->getCode());
-				if (programSet.find(key) == programSet.end()) {
-					programSet.insert(key);
-					++iter;
-				} else {
-					iter = _programs.erase(iter);
-				}
-			}
 		}
 
 		const std::string Transaction::getRemark() const {

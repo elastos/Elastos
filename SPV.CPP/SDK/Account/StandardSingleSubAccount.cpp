@@ -10,6 +10,7 @@
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
+#include <SDK/Common/ParamChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -21,24 +22,43 @@ namespace Elastos {
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
-				_votePublicKey = votePubKey;
 		}
 
-		Key StandardSingleSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			UInt256 chainCode;
+		CMBlock StandardSingleSubAccount::GetRedeemScript(const std::string &addr) const {
+			CMBlock pubKey;
+			Key key;
 
-			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 44 | BIP32_HARD,
-												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
+			if (IsDepositAddress(addr)) {
+				pubKey = GetVotePublicKey();
+				key.SetPubKey(pubKey);
+				return key.RedeemScript(PrefixDeposit);
+			}
 
-			var_clean(&seed);
-			var_clean(&chainCode);
-
-			return key;
+			pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
+			key.SetPubKey(pubKey);
+			ParamChecker::checkLogic(addr != key.GetAddress(PrefixStandard), Error::Address,
+									 "Can't found pubKey for addr " + addr);
+			return key.RedeemScript(PrefixStandard);
 		}
 
-		std::string StandardSingleSubAccount::GetMainAccountPublicKey() const {
-			return Utils::encodeHex(_masterPubKey.GetPubKey());
+		bool StandardSingleSubAccount::FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) {
+			if (SubAccountBase::FindKey(key, pubKey, payPasswd)) {
+				return true;
+			}
+
+			if (pubKey == BIP32Sequence::PubKey(_masterPubKey, 0, 0)) {
+				UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
+				UInt256 chainCode;
+				key = BIP32Sequence::PrivKeyPath(seed.u8, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
+												 _coinIndex | BIP32_HARD,
+												 BIP32::Account::Default | BIP32_HARD,
+												 BIP32::External, 0);
+				var_clean(&seed);
+				var_clean(&chainCode);
+				return true;
+			}
+
+			return false;
 		}
 
 		std::vector<Address> StandardSingleSubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
@@ -68,27 +88,6 @@ namespace Elastos {
 			}
 
 			return address.IsEqual(GetAddress());
-		}
-
-		std::vector<Key> StandardSingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
-																			  const TransactionPtr &transaction) {
-			std::vector<Key> keys;
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			UInt256 chainCode;
-
-			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
-												 _coinIndex | BIP32_HARD, 0 | BIP32_HARD,
-												 SEQUENCE_EXTERNAL_CHAIN, 0);
-
-			Key producerKey = DeriveVoteKey(payPassword);
-
-			var_clean(&seed);
-			var_clean(&chainCode);
-
-			keys.push_back(key);
-			keys.push_back(producerKey);
-
-			return keys;
 		}
 
 		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {

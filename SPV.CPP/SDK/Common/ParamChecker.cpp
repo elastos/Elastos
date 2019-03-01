@@ -4,6 +4,7 @@
 
 #include "ParamChecker.h"
 #include "CommonConfig.h"
+#include "Log.h"
 
 #include <Core/BRBIP39Mnemonic.h>
 
@@ -48,6 +49,8 @@ namespace Elastos {
 		ParamChecker::checkCondition(bool condition, Error::Code err, const std::string &msg, Exception::Type type) {
 			if (condition) {
 				nlohmann::json errJson = mkErrorJson(err, msg);
+
+				Log::error(errJson.dump());
 
 				if (type == Exception::LogicError) {
 					throw std::logic_error(errJson.dump());

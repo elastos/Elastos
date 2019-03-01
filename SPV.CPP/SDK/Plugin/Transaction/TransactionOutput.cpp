@@ -154,6 +154,10 @@ namespace Elastos {
 			return true;
 		}
 
+		bool TransactionOutput::IsValid() const {
+			return true;
+		}
+
 		const UInt256 &TransactionOutput::getAssetId() const {
 			return _assetId;
 		}
@@ -224,6 +228,7 @@ namespace Elastos {
 			j["AssetId"] = Utils::UInt256ToString(_assetId, true);
 			j["OutputLock"] = _outputLock;
 			j["ProgramHash"] = Utils::UInt168ToString(_programHash);
+			j["Address"] = Utils::UInt168ToAddress(_programHash);
 			return j;
 		}
 

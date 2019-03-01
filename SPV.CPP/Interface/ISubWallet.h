@@ -174,12 +174,11 @@ namespace Elastos {
 			 * Get signers already signed specified transaction.
 			 * @param rawTransaction a multi-sign transaction to find signed signers.
 			 * @return Signed signers in json format. An example of result will be displayed as follows:
-			 * {
-			 * 	[
-			 * 		"03b73a64f50c142c1f08710e04b928553508c3028e045dfdfdc5489434df13275e",
-			 * 		"02f925e82f4482a9aa853a35203ab8965439c9db6aee8ef1783d2e1a491c28a482"
-			 * 	]
-			 * }
+			 *
+			 * [{"M":3,"N":4,"SignType":"MultiSign","Signers":["02753416fc7c1fb43c91e29622e378cd16243b53577ec971c6c3624a775722491a","0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280","030f5bdbee5e62f035f19153c5c32966e0fc72e419c2b4867ba533c43340c86b78"]}]
+			 * or
+			 * [{"SignType":"Standard","Signers":["028e0ce09c7a5905f876f38473d4e1e0a85327122372e5db14fc72f88311c30e75"]}]
+			 *
 			 */
 			virtual nlohmann::json GetTransactionSignedSigners(
 					const nlohmann::json &rawTransaction) const = 0;

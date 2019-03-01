@@ -207,8 +207,20 @@ namespace Elastos {
 		 * m / n
 		 * n = pubKeys.size()
 		 */
-		CMBlock Key::MultiSignRedeemScript(uint8_t m, const std::vector<std::string> &pubKeys) {
-			std::set<std::string> uniqueSigners(pubKeys.begin(), pubKeys.end());
+		CMBlock Key::MultiSignRedeemScript(uint8_t m, const std::vector<CMBlock> &pubKeys) {
+			std::vector<CMBlock> uniqueSigners;
+
+			for (size_t i = 0; i < pubKeys.size(); ++i) {
+				size_t j;
+				for (j = 0; j < uniqueSigners.size(); ++j) {
+					if (pubKeys[i] == uniqueSigners[j])
+						break;
+				}
+
+				if (j >= uniqueSigners.size()) {
+					uniqueSigners.push_back(pubKeys[i]);
+				}
+			}
 
 			ParamChecker::checkCondition(uniqueSigners.size() < m, Error::MultiSignersCount,
 										 "Required sign count greater than signers");
@@ -217,8 +229,8 @@ namespace Elastos {
 										 "Signers should less than 205.");
 
 			std::vector<CMBlock> sortedSigners;
-			std::for_each(uniqueSigners.begin(), uniqueSigners.end(), [&sortedSigners](const std::string &pubKey) {
-				sortedSigners.push_back(Utils::decodeHex(pubKey));
+			std::for_each(uniqueSigners.begin(), uniqueSigners.end(), [&sortedSigners](const CMBlock &pubKey) {
+				sortedSigners.push_back(pubKey);
 			});
 
 			std::sort(sortedSigners.begin(), sortedSigners.end(),

@@ -9,7 +9,6 @@
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Checker/MainchainTransactionChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 #include <Config.h>
 
@@ -66,6 +65,9 @@ namespace Elastos {
 			uint64_t location,
 			const std::string &payPasswd) const {
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			ParamChecker::checkPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = publicKey.size() >> 1;
 			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
@@ -93,6 +95,9 @@ namespace Elastos {
 			const std::string &publicKey,
 			const std::string &payPasswd) const {
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			ParamChecker::checkPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = publicKey.size() >> 1;
 			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
@@ -118,6 +123,9 @@ namespace Elastos {
 			const std::string &memo,
 			const std::string &remark,
 			bool useVotedUTXO) {
+
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			ParamChecker::checkParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
@@ -149,6 +157,9 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			PayloadUpdateProducer *payloadUpdateProducer = new PayloadUpdateProducer();
 			try {
 				payloadUpdateProducer->fromJson(payload, 0);
@@ -176,6 +187,9 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			PayloadCancelProducer *payloadCancelProducer = new PayloadCancelProducer();
 			try {
 				payloadCancelProducer->fromJson(payload, 0);
@@ -201,6 +215,9 @@ namespace Elastos {
 			const std::string &memo,
 			const std::string &remark) {
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			Key key;
 			key.SetPubKey(_subAccount->GetVotePublicKey());
 			std::string fromAddress = key.GetAddress(PrefixDeposit);
@@ -217,6 +234,9 @@ namespace Elastos {
 		}
 
 		std::string MainchainSubWallet::GetPublicKeyForVote() const {
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			return Utils::encodeHex(_subAccount->GetVotePublicKey());
 		}
 
@@ -273,6 +293,9 @@ namespace Elastos {
 			nlohmann::json j;
 			std::map<std::string, uint64_t> votedList;
 
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
+
 			for (size_t i = 0; i < utxos.size(); ++i) {
 				TransactionPtr tx = wallet->transactionForHash(utxos[i].hash);
 				if (!tx || utxos[i].n >= tx->getOutputs().size() ||
@@ -315,6 +338,9 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
 			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->getAllTransactions();
 			nlohmann::json j;
+
+			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
@@ -363,16 +389,6 @@ namespace Elastos {
 			}
 
 			return j;
-		}
-
-
-
-		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if (transaction->getTransactionType() == Transaction::TransferCrossChainAsset) {
-				MainchainTransactionChecker checker(transaction, _walletManager->getWallet());
-				checker.Check();
-			} else
-				SubWallet::verifyRawTransaction(transaction);
 		}
 
 		nlohmann::json MainchainSubWallet::GetBasicInfo() const {

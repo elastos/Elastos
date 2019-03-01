@@ -42,9 +42,9 @@ namespace Elastos {
 			return nullptr;
 		}
 
-		Key MultiSignAccounts::DeriveKey(const std::string &payPassword) {
+		Key MultiSignAccounts::DeriveMultiSignKey(const std::string &payPassword){
 			checkCurrentAccount();
-			return _currentAccount->DeriveKey(payPassword);
+			return _currentAccount->DeriveMultiSignKey(payPassword);
 		}
 
 		UInt512 MultiSignAccounts::DeriveSeed(const std::string &payPassword) {
@@ -67,11 +67,6 @@ namespace Elastos {
 
 		}
 
-		const std::string &MultiSignAccounts::GetEncryptedKey() const {
-			checkCurrentAccount();
-			return _currentAccount->GetEncryptedKey();
-		}
-
 		const std::string &MultiSignAccounts::GetEncryptedMnemonic() const {
 			checkCurrentAccount();
 			return _currentAccount->GetEncryptedMnemonic();
@@ -82,9 +77,9 @@ namespace Elastos {
 			return _currentAccount->GetEncryptedPhrasePassword();
 		}
 
-		const std::string &MultiSignAccounts::GetPublicKey() const {
+		CMBlock MultiSignAccounts::GetMultiSignPublicKey() const {
 			checkCurrentAccount();
-			return _currentAccount->GetPublicKey();
+			return _currentAccount->GetMultiSignPublicKey();
 		}
 
 		const MasterPubKey &MultiSignAccounts::GetIDMasterPubKey() const {

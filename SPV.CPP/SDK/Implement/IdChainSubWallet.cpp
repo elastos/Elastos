@@ -10,7 +10,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
-#include <SDK/Plugin/Transaction/Checker/IdchainTransactionChecker.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
@@ -68,14 +67,6 @@ namespace Elastos {
 			tx->addProgram(program);
 
 			return tx->toJson();
-		}
-
-		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if (transaction->getTransactionType() == Transaction::RegisterIdentification) {
-				IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
-				checker.Check();
-			} else
-				SidechainSubWallet::verifyRawTransaction(transaction);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

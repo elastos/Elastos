@@ -288,7 +288,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
-			return _localStore.Account()->GetPublicKey();
+			return Utils::encodeHex(_localStore.Account()->GetMultiSignPublicKey());
 		}
 
 		// to support old web keystore
@@ -378,7 +378,7 @@ namespace Elastos {
 			ParamChecker::checkParamNotEmpty(message, "Sign message");
 			ParamChecker::checkPassword(payPassword, "Pay");
 
-			Key key = _localStore.Account()->DeriveKey(payPassword);
+			Key key = _localStore.Account()->DeriveMultiSignKey(payPassword);
 			return Utils::encodeHex(key.Sign(message));
 		}
 

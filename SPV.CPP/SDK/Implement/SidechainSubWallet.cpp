@@ -7,7 +7,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
-#include <SDK/Plugin/Transaction/Checker/SidechainTransactionChecker.h>
 
 #include <Core/BRAddress.h>
 
@@ -58,14 +57,6 @@ namespace Elastos {
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
 			return _info.getGenesisAddress();
-		}
-
-		void SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if (transaction->getTransactionType() == Transaction::TransferCrossChainAsset) {
-				SidechainTransactionChecker checker(transaction, _walletManager->getWallet());
-				checker.Check();
-			} else
-				SubWallet::verifyRawTransaction(transaction);
 		}
 
 		nlohmann::json SidechainSubWallet::GetBasicInfo() const {
