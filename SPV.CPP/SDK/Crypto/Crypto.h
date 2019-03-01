@@ -38,13 +38,14 @@ namespace Elastos {
 								const std::string &saltBase64, const std::string &ivBase64,
 								const std::string &adataBase64, bool AES128 = false);
 
+			static std::string Base64Encode(const CMBlock &buffer);
+
+			static CMBlock Base64Decode(const std::string &base64Message);
+
 		private:
 			static bool _initialized;
 
-			static std::string Base64Encode(const CMBlock &buffer);
-
 			static size_t CalcDecodeLength(const std::string &b64input);
-			static CMBlock Base64Decode(const std::string &base64Message);
 
 			static bool EncryptCCM(CMBlock &ct, CMBlock &tag, const CMBlock &plainText, const CMBlock &adata,
 								   const CMBlock &key, const CMBlock &iv, bool AES128);

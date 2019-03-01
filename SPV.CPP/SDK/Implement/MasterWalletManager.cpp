@@ -22,6 +22,7 @@
 #include <Core/BRCrypto.h>
 
 #include <boost/filesystem.hpp>
+#include <SDK/Common/Base64.h>
 
 using namespace boost::filesystem;
 
@@ -333,17 +334,24 @@ namespace Elastos {
 
 			ByteStream stream;
 			txn.Serialize(stream);
-
 			CMBlock hex = stream.getBuffer();
-			size_t len = BRBase58CheckEncode(NULL, 0, hex, hex.GetSize());
-			char buf[len + 1];
 
-			BRBase58CheckEncode(buf, sizeof(buf), hex, hex.GetSize());
+			std::string algorithm = "base64";
+			std::string hexString = Base64::Encode(hex);
+			if (hexString.empty()) {
+				size_t len = BRBase58CheckEncode(NULL, 0, hex, hex.GetSize());
+				char buf[len + 1];
+
+				BRBase58CheckEncode(buf, sizeof(buf), hex, hex.GetSize());
+
+				algorithm = "base58";
+				hexString = std::string(buf);
+			}
 
 			nlohmann::json result;
 
-			result["Algorithm"] = "base58";
-			result["Data"] = std::string(buf);
+			result["Algorithm"] = algorithm;
+			result["Data"] = hexString;
 
 			return result;
 		}
@@ -355,7 +363,9 @@ namespace Elastos {
 			std::string data = cipher["Data"].get<std::string>();
 
 			CMBlock rawHex;
-			if (algorithm == "base58") {
+			if (algorithm == "base64") {
+				rawHex = Base64::Decode(data);
+			} else if (algorithm == "base58") {
 				size_t len = BRBase58CheckDecode(NULL, 0, data.c_str());
 				ParamChecker::checkCondition(len == 0, Error::Transaction,
 											 "Decode tx from base58 error");

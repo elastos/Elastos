@@ -31,6 +31,7 @@
 #include "Base64.h"
 
 #include <SDK/Common/ByteStream.h>
+#include <SDK/Crypto/Crypto.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -48,6 +49,7 @@ namespace Elastos {
 		}
 
 		std::string Base64::Encode(const CMBlock &input) {
+#if 0
 			std::string ret;
 			int i = 0;
 			int j = 0;
@@ -87,9 +89,13 @@ namespace Elastos {
 
 			}
 			return ret;
+#else
+			return Crypto::Base64Encode(input);
+#endif
 		}
 
-		CMBlock Base64::Decode(const std::string &encoded_string) {
+		CMBlock Base64::Decode(const std::string &encodedString) {
+#if 0
 			int in_len = encoded_string.size();
 			int i = 0;
 			int j = 0;
@@ -123,6 +129,9 @@ namespace Elastos {
 			}
 
 			return stream.getBuffer();
+#else
+			return Crypto::Base64Decode(encodedString);
+#endif
 		}
 
 	}
