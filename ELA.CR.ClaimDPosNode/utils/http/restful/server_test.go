@@ -9,10 +9,13 @@ import (
 	"time"
 
 	htp "github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRestfulServer(t *testing.T) {
+	test.SkipShort(t)
+
 	s := NewServer(&Config{})
 
 	methods := []string{
@@ -69,6 +72,8 @@ func TestRestfulServer(t *testing.T) {
 }
 
 func TestServer_ServeHTTP(t *testing.T) {
+	test.SkipShort(t)
+
 	s := NewServer(&Config{
 		ServePort: 20336,
 	})
@@ -278,6 +283,8 @@ func TestServer_ServeHTTP(t *testing.T) {
 }
 
 func TestServer_ServeHTTP_Path(t *testing.T) {
+	test.SkipShort(t)
+
 	s := NewServer(&Config{
 		Path:      "/api/",
 		ServePort: 20336,
