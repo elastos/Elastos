@@ -100,15 +100,16 @@ func main() {
 		CandidatesCount: config.Parameters.ArbiterConfiguration.CandidatesCount,
 		CRCArbitrators:  activeNetParams.CRCArbiters,
 		Versions:        versions,
-		GetBestHeight: func() uint32 {
-			return chainStore.GetHeight()
-		},
+		OriginArbiters:  activeNetParams.OriginArbiters,
 		GetCurrentHeader: func() (*types.Header, error) {
 			b, err := chainStore.GetBlock(chainStore.GetCurrentBlockHash())
 			if err != nil {
 				return nil, err
 			}
 			return &b.Header, nil
+		},
+		GetBestHeight: func() uint32 {
+			return chainStore.GetHeight()
 		},
 	})
 	if err != nil {
