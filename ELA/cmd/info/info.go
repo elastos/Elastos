@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strconv"
 
-	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/urfave/cli"
 )
 
@@ -20,7 +20,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("connections") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getconnectioncount", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getconnectioncount", http.Params{})
 		if err != nil {
 			fmt.Println("error: get node connections failed,", err)
 			return err
@@ -30,7 +30,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("neighbor") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getneighbors", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getneighbors", http.Params{})
 		if err != nil {
 			fmt.Println("error: get node neighbors info failed,", err)
 			return err
@@ -40,7 +40,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("state") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getnodestate", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getnodestate", http.Params{})
 		if err != nil {
 			fmt.Println("error: get node state info failed,", err)
 			return err
@@ -50,7 +50,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("currentheight") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getcurrentheight", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getcurrentheight", http.Params{})
 		if err != nil {
 			fmt.Println("error: get block count failed,", err)
 			return err
@@ -60,7 +60,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("getbestblockhash") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getbestblockhash", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getbestblockhash", http.Params{})
 		if err != nil {
 			fmt.Println("error: get best block hash failed,", err)
 			return err
@@ -70,7 +70,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if index := c.Int64("getblockhash"); index >= 0 {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblockhash", util.Params{"height": index})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getblockhash", http.Params{"height": index})
 		if err != nil {
 			fmt.Println("error: get block hash failed,", err)
 			return err
@@ -82,14 +82,14 @@ func infoAction(c *cli.Context) error {
 	if param := c.String("getblock"); param != "" {
 		index, err := strconv.ParseInt(param, 10, 64)
 		if err == nil {
-			result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblockhash", util.Params{"height": index})
+			result, err := jsonrpc.CallParams(common.LocalServer(), "getblockhash", http.Params{"height": index})
 			if err != nil {
 				fmt.Println("error: get block failed,", err)
 				return err
 			}
 			param = result.(string)
 		}
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getblock", util.Params{"blockhash": param, "verbosity": 2})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getblock", http.Params{"blockhash": param, "verbosity": 2})
 		if err != nil {
 			fmt.Println("error: get block failed,", err)
 			return err
@@ -99,7 +99,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if param := c.String("gettransaction"); param != "" {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getrawtransaction", util.Params{"txid": param})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getrawtransaction", http.Params{"txid": param})
 		if err != nil {
 			fmt.Println("error: get transaction failed,", err)
 			return err
@@ -109,7 +109,7 @@ func infoAction(c *cli.Context) error {
 	}
 
 	if c.Bool("showtxpool") {
-		result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "getrawmempool", util.Params{})
+		result, err := jsonrpc.CallParams(common.LocalServer(), "getrawmempool", http.Params{})
 		if err != nil {
 			fmt.Println("error: get transaction pool failed,", err)
 			return err

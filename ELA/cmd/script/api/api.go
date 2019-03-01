@@ -15,15 +15,15 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
-	log2 "github.com/elastos/Elastos.ELA/dpos/log"
+	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/version"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -87,7 +87,7 @@ func sendTx(L *lua.LState) int {
 	}
 	txHex := hex.EncodeToString(buffer.Bytes())
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "sendrawtransaction", util.Params{
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "sendrawtransaction", http.Params{
 		"data": txHex,
 	})
 	if err != nil {
@@ -107,7 +107,7 @@ func getAssetID(L *lua.LState) int {
 
 func getUTXO(L *lua.LState) int {
 	from := L.ToString(1)
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", util.Params{
+	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
 		"addresses": []string{from},
 	})
 	if err != nil {
@@ -141,7 +141,7 @@ func initLedger(L *lua.LState) int {
 	arbitrators := checkArbitrators(L, 2)
 
 	log.NewDefault(logLevel, 0, 0)
-	log2.Init(logLevel, 0, 0)
+	dlog.Init(logLevel, 0, 0)
 
 	verconf := &verconf.Config{
 		ChainParams: &config.MainNetParams,
