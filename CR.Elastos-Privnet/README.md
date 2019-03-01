@@ -112,6 +112,20 @@ These are located in the `wallets` folder:
     http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```
     
+9. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
+
+    This service is running on port 8093
+    
+    ```
+    http://localhost:8093/api/1/ping
+    ```
+    
+    Should return
+    
+    ```
+    {"result":"pong 1.0.1","status":200}
+    ```
+    
     
     
 

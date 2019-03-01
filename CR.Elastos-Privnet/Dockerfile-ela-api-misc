@@ -27,7 +27,8 @@ USER elauser
 COPY ./deploy_scripts/deploy-api-misc.sh /home/elauser/deploy.sh
 
 
-EXPOSE 3306
+EXPOSE 8093
 
+# These scripts also initialize the DB
 CMD sh -c "sh /home/elauser/deploy.sh && /bin/sh"
 
