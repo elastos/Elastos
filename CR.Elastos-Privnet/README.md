@@ -127,7 +127,69 @@ These are located in the `wallets` folder:
     {"result":"pong 1.0.1","status":200}
     ```
     
+## Creating a DID, and Storing/Retrieving Metadata
+
+Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io).
+
+See "Create DID" for how to create a DID, you will receive both a did and a private key, store this somewhere.
+
+```
+GET /api/1/gen/did HTTP/1.1
+```
+
+[https://didservice.readthedocs.io/en/latest/api_guide.html#create-did](https://didservice.readthedocs.io/en/latest/api_guide.html#create-did)
+
+Then you can call `POST /api/1/setDidInfo` to store data to this DID. There are two private keys, the outer private key
+is the private key of the wallet address that is paying for the store data transaction, you can use the ELA stored on the DID sidechain in `did-sidechain-preloaded.json`
+for this.
+
+```
+{
+  "privateKey":"C740869D015E674362B1F441E3EDBE1CBCF4FE8B709AA1A77E5CCA2C92BAF99D", 
+  "settings":{
+      "privateKey":"E763239857B390502289CF75FF06EEEDC3252A302C50E1CBB7E5FAC8A703486F",
+      "info":{
+                  "Tag":"DID Property",
+                  "Ver":"1.0",
+                  "Status":1,
+                  "Properties": [
+                      {
+                          "Key":"clark",
+                          "Value":"hello,world",
+                          "Status": 1
+                      }
+                  ]
+      }
+  }
+}
+```
+
+The inner settings struct is the actual DID to modify, so you will use the private key from `/api/1/gen/did` here to specify that DID.
+
+There is a cost of 10,000 SELA per 1kb on this privatenet, actual cost for the mainnet is not finalized.   
+
+### Retrieving the DID info must be on the Misc.API - port 8093
+
+This is currently undocumented in the DID service docs because it's broken, so you need to use Misc.API which should be running on port `8093`.
+
+The API call should be `http://localhost:8093/api/1/did/{did}/{key}`
+
+For example if you stored the property key "clark" above, and assuming the did was `iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe`, then calling
+
+`http://localhost:8093/api/1/did/iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe/clark`
+
+Would return the value `"hello,world"`.
     
+
+## Elastos Hive - IPFS Storage
+
+Coming soon    
+
+
+## Smart Contracts - Ethereum Sidechain
+
+This is coming soon and we won't declare this private net or the developer platform BETA ready until it is, 
+since we recognize that smart contracts and storage are minimally required for functioning dApps
     
 
 ## More Documentation, `config.json` and other nuances if you want to tinker
