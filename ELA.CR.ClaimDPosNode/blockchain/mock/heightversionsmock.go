@@ -45,10 +45,6 @@ func (b *HeightVersionsMock) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	return b.DefaultBlockVersion
 }
 
-func (b *HeightVersionsMock) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
-	return nil
-}
-
 func (b *HeightVersionsMock) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error {
 	return nil
 }
@@ -58,15 +54,6 @@ func (b *HeightVersionsMock) CheckCoinbaseMinerReward(blockHeight uint32, tx *ty
 }
 
 func (b *HeightVersionsMock) CheckCoinbaseArbitratorsReward(blockHeight uint32, coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
-	return nil
-}
-
-func (b *HeightVersionsMock) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction, outputs []*types.Output,
-	references map[*types.Input]*types.Output, producers [][]byte) error {
-	return nil
-}
-
-func (b *HeightVersionsMock) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error {
 	return nil
 }
 
