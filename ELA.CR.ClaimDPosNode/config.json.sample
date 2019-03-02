@@ -57,7 +57,6 @@
       "EmergencyInactivePenalty": 50000000000,
       "InactivePercentage": 0.1,
       "MaxAllowedInactiveRounds": 3,
-      "InactiveDuration": 604800,
       "InactivePenalty": 10000000000,
       "InactiveEliminateCount": 12,
       "EnableEventRecord": false
