@@ -19,6 +19,8 @@ const (
 	luaRegisterProducerName  = "registerproducer"
 	luaUpdateProducerName    = "updateproducer"
 	luaCancelProducerName    = "cancelproducer"
+	// todo complete lua script related
+	luaActivateProducerName  = "activateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 )
 
@@ -304,12 +306,13 @@ func newCancelProducer(L *lua.LState) int {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
 	}
-	cancelProducer := &payload.CancelProducer{
+	cancelProducer := &payload.ProcessProducer{
 		OwnerPublicKey: []byte(publicKey),
+		Operation:      payload.OperationCancel,
 	}
 
 	cpSignBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.CancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.ProducerOperationVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -334,9 +337,9 @@ func newCancelProducer(L *lua.LState) int {
 	return 1
 }
 
-func checkCancelProducer(L *lua.LState, idx int) *payload.CancelProducer {
+func checkCancelProducer(L *lua.LState, idx int) *payload.ProcessProducer {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.CancelProducer); ok {
+	if v, ok := ud.Value.(*payload.ProcessProducer); ok {
 		return v
 	}
 	L.ArgError(1, "CancelProducer expected")

@@ -1174,7 +1174,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NetAddress = object.NetAddress
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
-	case *payload.CancelProducer:
+	case *payload.ProcessProducer:
 		obj := new(CancelProducerInfo)
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)

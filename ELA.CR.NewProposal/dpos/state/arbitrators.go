@@ -2,7 +2,6 @@ package state
 
 import (
 	"bytes"
-	"encoding/hex"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
@@ -10,7 +9,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
@@ -212,41 +210,6 @@ func (a *Arbitrators) HasArbitersMajorityCount(num uint32) bool {
 
 func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num >= a.cfg.ArbitratorsCount-a.GetArbitersMajorityCount()
-}
-
-// getInactiveArbitrators returns inactive arbiters from a confirm data.
-func (a *Arbitrators) GetInactiveArbitrators(confirm *payload.Confirm,
-	onDutyArbitrator []byte) (result []string) {
-
-	// check inactive arbitrators after producers has participated in
-	if len(a.currentArbitrators) == len(a.cfg.CRCArbitrators) {
-		return
-	}
-
-	if !bytes.Equal(onDutyArbitrator, confirm.Proposal.Sponsor) {
-		arSequence := a.currentArbitrators
-		arSequence = append(arSequence, arSequence...)
-
-		start := onDutyArbitrator
-		stop := confirm.Proposal.Sponsor
-		reachedStart := false
-
-		for i := 0; i < len(arSequence)-1; i++ {
-			if bytes.Equal(start, arSequence[i]) {
-				reachedStart = true
-			}
-
-			if reachedStart {
-				if bytes.Equal(stop, arSequence[i]) {
-					break
-				}
-
-				result = append(result, hex.EncodeToString(arSequence[i]))
-			}
-		}
-	}
-
-	return
 }
 
 func (a *Arbitrators) isNewElection(height uint32) (forceChange bool, normalChange bool) {

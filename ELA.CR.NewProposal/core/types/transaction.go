@@ -35,12 +35,13 @@ const (
 	CancelProducer    TxType = 0x0a
 	UpdateProducer    TxType = 0x0b
 	ReturnDepositCoin TxType = 0x0c
+	ActivateProducer  TxType = 0x0d
 
-	IllegalProposalEvidence  TxType = 0x0d
-	IllegalVoteEvidence      TxType = 0x0e
-	IllegalBlockEvidence     TxType = 0x0f
-	IllegalSidechainEvidence TxType = 0x10
-	InactiveArbitrators      TxType = 0x11
+	IllegalProposalEvidence  TxType = 0x0e
+	IllegalVoteEvidence      TxType = 0x0f
+	IllegalBlockEvidence     TxType = 0x10
+	IllegalSidechainEvidence TxType = 0x11
+	InactiveArbitrators      TxType = 0x12
 )
 
 func (self TxType) Name() string {
@@ -71,6 +72,8 @@ func (self TxType) Name() string {
 		return "UpdateProducer"
 	case ReturnDepositCoin:
 		return "ReturnDepositCoin"
+	case ActivateProducer:
+		return "ActivateProducer"
 	case IllegalProposalEvidence:
 		return "IllegalProposalEvidence"
 	case IllegalVoteEvidence:
@@ -356,6 +359,10 @@ func (tx *Transaction) IsCancelProducerTx() bool {
 	return tx.TxType == CancelProducer
 }
 
+func (tx *Transaction) IsActivateProducerTx() bool {
+	return tx.TxType == ActivateProducer
+}
+
 func (tx *Transaction) IsRegisterProducerTx() bool {
 	return tx.TxType == RegisterProducer
 }
@@ -411,11 +418,13 @@ func GetPayload(txType TxType) (Payload, error) {
 	case RegisterProducer:
 		p = new(payload.ProducerInfo)
 	case CancelProducer:
-		p = new(payload.CancelProducer)
+		p = new(payload.ProcessProducer)
 	case UpdateProducer:
 		p = new(payload.ProducerInfo)
 	case ReturnDepositCoin:
 		p = new(payload.ReturnDepositCoin)
+	case ActivateProducer:
+		p = new(payload.ProcessProducer)
 	case IllegalProposalEvidence:
 		p = new(payload.DPOSIllegalProposals)
 	case IllegalVoteEvidence:
