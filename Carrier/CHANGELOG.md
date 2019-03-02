@@ -1,3 +1,12 @@
+03/02/2019 Tang Zhilong stiartsly@gmail.com
+
+**version 5.2.2**, main changes to previous version:
+
+```markdown
+- Update checksum SHA256 of depedency libcrystal and it's download address;
+- Update License to be GPLv3 with regards to c-toxcore project.
+```
+
 01/25/2019 Tang Zhilong <stiartsly@gmail.com>
 **Version 5.2.1**, main changes to previous version: 
 
