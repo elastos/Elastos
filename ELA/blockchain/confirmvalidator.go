@@ -17,7 +17,6 @@ func ConfirmSanityCheck(confirm *payload.Confirm) error {
 			"proposal: " + err.Error())
 	}
 
-	signers := make(map[string]struct{})
 	proposalHash := confirm.Proposal.Hash()
 	for _, vote := range confirm.Votes {
 		if !proposalHash.IsEqual(vote.ProposalHash) {
@@ -29,20 +28,23 @@ func ConfirmSanityCheck(confirm *payload.Confirm) error {
 			return errors.New("[ConfirmSanityCheck] confirm contain invalid " +
 				"vote: " + err.Error())
 		}
-
-		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
-	}
-
-	if len(signers) <= int(DefaultLedger.Arbitrators.
-		GetArbitersMajorityCount()) {
-		return errors.New("[ConfirmSanityCheck] signers less than " +
-			"majority count")
 	}
 
 	return nil
 }
 
 func ConfirmContextCheck(confirm *payload.Confirm) error {
+	signers := make(map[string]struct{})
+	for _, vote := range confirm.Votes {
+		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
+	}
+
+	if len(signers) <= int(DefaultLedger.Arbitrators.
+		GetArbitersMajorityCount()) {
+		return errors.New("[ConfirmContextCheck] signers less than " +
+			"majority count")
+	}
+
 	if err := ProposalContextCheck(&confirm.Proposal); err != nil {
 		return errors.New("[ConfirmContextCheck] confirm contain invalid " +
 			"proposal: " + err.Error())
@@ -58,7 +60,7 @@ func ConfirmContextCheck(confirm *payload.Confirm) error {
 	return nil
 }
 
-func CheckBlockWithConfirmation(block *Block,
+func checkBlockWithConfirmation(block *Block,
 	confirm *payload.Confirm) error {
 	if block.Hash() != confirm.Proposal.BlockHash {
 		return errors.New("[CheckBlockWithConfirmation] block " +

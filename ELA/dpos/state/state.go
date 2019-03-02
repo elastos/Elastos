@@ -417,7 +417,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	s.processTransactions(block.Transactions, block.Height)
 
-	if confirm != nil {
+	if block.Height >= config.Parameters.HeightVersions[1] {
 		arbiters := s.arbiters.GetInactiveArbitrators(confirm, onDutyArbitrator)
 		if len(arbiters) > 0 {
 			s.countArbitratorsInactivity(block.Height, arbiters)

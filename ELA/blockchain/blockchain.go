@@ -58,6 +58,7 @@ type BlockChain struct {
 	orphanConfirms map[Uint256]*payload.Confirm
 
 	blockCache     map[Uint256]*Block
+	confirmCache   map[Uint256]*payload.Confirm
 	TimeSource     MedianTimeSource
 	MedianTimePast time.Time
 	mutex          sync.RWMutex
@@ -86,6 +87,7 @@ func New(db IChainStore, chainParams *config.Params, versions interfaces.HeightV
 		orphans:             make(map[Uint256]*OrphanBlock),
 		prevOrphans:         make(map[Uint256][]*OrphanBlock),
 		blockCache:          make(map[Uint256]*Block),
+		confirmCache:        make(map[Uint256]*payload.Confirm),
 		orphanConfirms:      make(map[Uint256]*payload.Confirm),
 		TimeSource:          NewMedianTime(),
 	}
@@ -728,7 +730,8 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		if err != nil {
 			return err
 		}
-		err = b.disconnectBlock(n, block)
+		confirm, _ := b.db.GetConfirm(*n.Hash)
+		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
 			return err
 		}
@@ -738,11 +741,13 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
 		block := b.blockCache[*n.Hash]
-		err := b.connectBlock(n, block)
+		confirm := b.confirmCache[*n.Hash]
+		err := b.connectBlock(n, block, confirm)
 		if err != nil {
 			return err
 		}
 		delete(b.blockCache, *n.Hash)
+		delete(b.confirmCache, *n.Hash)
 	}
 
 	return nil
@@ -750,7 +755,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 //// disconnectBlock handles disconnecting the passed node/block from the end of
 //// the main (best) chain.
-func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
+func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *payload.Confirm) error {
 	// Make sure the node being disconnected is the end of the best chain.
 	if b.BestChain == nil || !node.Hash.IsEqual(*b.BestChain.Hash) {
 		return fmt.Errorf("disconnectBlock must be called with the " +
@@ -774,6 +779,7 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
 	// Put block in the side chain cache.
 	node.InMainChain = false
 	b.blockCache[*node.Hash] = block
+	b.confirmCache[*node.Hash] = confirm
 
 	//// This node's parent is now the end of the best chain.
 	b.BestChain = node.Parent
@@ -789,12 +795,19 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block) error {
 
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
-func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
-	// Check transactions context first.
-	err := b.checkTxsContext(block)
-	if err != nil {
-		log.Errorf("connect block error %s", err.Error())
+func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payload.Confirm) error {
+
+	// The block must pass all of the validation rules which depend on the
+	// position of the block within the block chain.
+	if err := b.checkBlockContext(block, node.Parent); err != nil {
+		log.Error("PowCheckBlockContext error!", err)
 		return err
+	}
+
+	if block.Height >= config.Parameters.HeightVersions[1] {
+		if err := checkBlockWithConfirmation(block, confirm); err != nil {
+			return errors.New("block confirmation validate failed")
+		}
 	}
 
 	// Make sure it's extending the end of the best chain.
@@ -805,8 +818,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Insert the block into the database which houses the main chain.
-	err = b.db.SaveBlock(block)
-	if err != nil {
+	if err := b.db.SaveBlock(block); err != nil {
 		return err
 	}
 
@@ -864,14 +876,6 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		return false, fmt.Errorf("wrong block height!")
 	}
 
-	// The block must pass all of the validation rules which depend on the
-	// position of the block within the block chain.
-	err = b.CheckBlockContext(block, prevNode)
-	if err != nil {
-		log.Error("PowCheckBlockContext error!", err)
-		return false, err
-	}
-
 	// Prune block nodes which are no longer needed before creating
 	// a new node.
 	err = b.pruneBlockNodes()
@@ -892,16 +896,14 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// Connect the passed block to the chain while respecting proper chain
 	// selection according to the chain with the most proof of work.  This
 	// also handles validation of the transaction scripts.
-	inMainChain, err := b.connectBestChain(newNode, block)
+	inMainChain, err := b.connectBestChain(newNode, block, confirm)
 	if err != nil {
 		return false, err
 	}
 
 	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
-		if confirm != nil {
-			if err := b.processConfirm(confirm); err != nil {
-				return false, err
-			}
+		if err := b.processConfirm(confirm); err != nil {
+			return false, err
 		}
 
 		b.state.ProcessBlock(block, confirm)
@@ -915,7 +917,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	return inMainChain, nil
 }
 
-func (b *BlockChain) connectBestChain(node *BlockNode, block *Block) (bool, error) {
+func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *payload.Confirm) (bool, error) {
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
@@ -931,7 +933,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block) (bool, erro
 		//}
 
 		// Connect the block to the main chain.
-		err := b.connectBlock(node, block)
+		err := b.connectBlock(node, block, confirm)
 		if err != nil {
 			return false, err
 		}
@@ -950,6 +952,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block) (bool, erro
 	// cache.
 	log.Debugf("Adding block %x to side chain cache", node.Hash.Bytes())
 	b.blockCache[*node.Hash] = block
+	b.confirmCache[*node.Hash] = confirm
 	//b.Index[*node.Hash] = node
 	b.AddNodeToIndex(node)
 
