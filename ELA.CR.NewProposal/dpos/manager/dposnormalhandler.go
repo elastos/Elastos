@@ -13,37 +13,41 @@ type DPOSNormalHandler struct {
 	*DPOSHandlerSwitch
 }
 
-func (h *DPOSNormalHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) {
+func (h *DPOSNormalHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	defer log.Info("[Normal-ProcessAcceptVote] end")
 
 	if !h.consensus.IsRunning() {
-		return
+		return false, false
 	}
 
 	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
-		h.proposalDispatcher.ProcessVote(p, true)
+		return h.proposalDispatcher.ProcessVote(p, true)
 	}
+
+	return false, false
 }
 
-func (h *DPOSNormalHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) {
+func (h *DPOSNormalHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Normal-ProcessRejectVote] start")
 	defer log.Info("[Normal-ProcessRejectVote] end")
 
 	if !h.consensus.IsRunning() {
 		log.Info("[Normal-ProcessRejectVote] consensus is not running")
-		return
+		return false, false
 	}
 
 	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
-		h.proposalDispatcher.ProcessVote(p, false)
+		return h.proposalDispatcher.ProcessVote(p, false)
 	}
+
+	return false, false
 }
 
 func (h *DPOSNormalHandler) tryGetCurrentProposal(id peer.PID, p payload.DPOSProposalVote) (common.Uint256, bool) {
