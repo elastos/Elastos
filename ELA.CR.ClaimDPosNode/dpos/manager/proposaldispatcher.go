@@ -72,18 +72,18 @@ func (p *ProposalDispatcher) GetProcessingProposal() *payload.DPOSProposal {
 	return p.processingProposal
 }
 
-func (p *ProposalDispatcher) ProcessVote(v payload.DPOSProposalVote, accept bool) {
+func (p *ProposalDispatcher) ProcessVote(v payload.DPOSProposalVote, accept bool) (succeed bool, finished bool) {
 	log.Info("[ProcessVote] start")
 	defer log.Info("[ProcessVote] end")
 
 	if !blockchain.IsVoteValid(&v) {
 		log.Info("Invalid vote")
-		return
+		return false, false
 	}
 
 	if p.alreadyExistVote(v) {
 		log.Info("Already has vote")
-		return
+		return false, false
 	}
 
 	if anotherVote, legal := p.illegalMonitor.IsLegalVote(&v); !legal {
@@ -92,10 +92,12 @@ func (p *ProposalDispatcher) ProcessVote(v payload.DPOSProposalVote, accept bool
 	}
 
 	if accept {
-		p.countAcceptedVote(v)
+		return p.countAcceptedVote(v)
 	} else {
-		p.countRejectedVote(v)
+		return p.countRejectedVote(v)
 	}
+
+	return false, false
 }
 
 func (p *ProposalDispatcher) AddPendingVote(v payload.DPOSProposalVote) {
@@ -160,20 +162,20 @@ func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *types.Block) {
 	p.processingBlock = b
 }
 
-func (p *ProposalDispatcher) FinishProposal() {
+func (p *ProposalDispatcher) FinishProposal() bool {
 	log.Info("[FinishProposal] start")
 	defer log.Info("[FinishProposal] end")
 
 	if p.processingBlock == nil {
 		log.Warn("[FinishProposal] nil processing block")
-		return
+		return false
 	}
 
 	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
 	if !p.TryAppendAndBroadcastConfirmBlockMsg() {
 		log.Warn("Add block failed, no need to broadcast confirm message")
-		return
+		return false
 	}
 
 	p.FinishConsensus()
@@ -185,6 +187,8 @@ func (p *ProposalDispatcher) FinishProposal() {
 		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
+
+	return true
 }
 
 func (p *ProposalDispatcher) CleanProposals(changeView bool) {
@@ -529,7 +533,7 @@ func (p *ProposalDispatcher) alreadyExistVote(v payload.DPOSProposalVote) bool {
 	return false
 }
 
-func (p *ProposalDispatcher) countAcceptedVote(v payload.DPOSProposalVote) {
+func (p *ProposalDispatcher) countAcceptedVote(v payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[countAcceptedVote] start")
 	defer log.Info("[countAcceptedVote] end")
 
@@ -539,12 +543,15 @@ func (p *ProposalDispatcher) countAcceptedVote(v payload.DPOSProposalVote) {
 
 		if p.cfg.Manager.GetArbitrators().HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
 			log.Info("Collect majority signs, finish proposal.")
-			p.FinishProposal()
+			return true, p.FinishProposal()
 		}
+		return true, false
 	}
+
+	return false, false
 }
 
-func (p *ProposalDispatcher) countRejectedVote(v payload.DPOSProposalVote) {
+func (p *ProposalDispatcher) countRejectedVote(v payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[countRejectedVote] start")
 	defer log.Info("[countRejectedVote] end")
 
@@ -555,8 +562,12 @@ func (p *ProposalDispatcher) countRejectedVote(v payload.DPOSProposalVote) {
 		if p.cfg.Manager.GetArbitrators().HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
 			p.CleanProposals(true)
 			p.cfg.Consensus.ChangeView()
+			return true, true
 		}
+		return true, false
 	}
+
+	return false, false
 }
 
 func (p *ProposalDispatcher) acceptProposal(d payload.DPOSProposal) {

@@ -13,24 +13,28 @@ type DPOSOnDutyHandler struct {
 	*DPOSHandlerSwitch
 }
 
-func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) {
+func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 	defer log.Info("[Onduty-ProcessAcceptVote] end")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal != nil && currentProposal.Hash().IsEqual(p.ProposalHash) && h.consensus.IsRunning() {
 		log.Info("[OnVoteReceived] Received needed sign, collect it")
-		h.proposalDispatcher.ProcessVote(p, true)
+		return h.proposalDispatcher.ProcessVote(p, true)
 	}
+
+	return false, false
 }
 
-func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) {
+func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Onduty-ProcessRejectVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal != nil && currentProposal.Hash().IsEqual(p.ProposalHash) && h.consensus.IsRunning() {
-		h.proposalDispatcher.ProcessVote(p, false)
+		return h.proposalDispatcher.ProcessVote(p, false)
 	}
+
+	return false, false
 }
 
 func (h *DPOSOnDutyHandler) StartNewProposal(p payload.DPOSProposal) {

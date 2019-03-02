@@ -79,9 +79,6 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 	}
 	// add block
 	bm.blocks[block.Hash()] = block
-	// add confirm
-	bm.appendConfirm(dposBlock.Confirm)
-
 	// confirm block
 	copyBlock := *dposBlock
 	copyBlock.ConfirmFlag = true
