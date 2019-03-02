@@ -53,7 +53,7 @@ func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
 			cfg.ChainParams.HeightVersions[3]: {
 				10,
 				2,
-				map[byte]txs.TxVersion{txMax.GetVersion(): txMax},
+				map[byte]txs.TxVersion{txV2.GetVersion(): txV2, txMax.GetVersion(): txMax},
 				map[uint32]blocks.BlockVersion{blockMax.GetVersion(): blockMax},
 			},
 		},
