@@ -44,7 +44,7 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	blockchain.FoundationAddress = *foundation
 	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		config.MainNetParams.GenesisBlock)
+		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
@@ -69,8 +69,8 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	arbitrators := mock.NewArbitratorsMock(arbitersByte, 0, 3)
 
-	chain, err := blockchain.New(chainStore, &config.MainNetParams,
-		nil, state.NewState(arbitrators, &config.MainNetParams))
+	chain, err := blockchain.New(chainStore, &config.DefaultParams,
+		nil, state.NewState(arbitrators, &config.DefaultParams))
 	//err = blockchain.Init(chainStore, mock.NewBlockHeightMock())
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")

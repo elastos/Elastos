@@ -1,5 +1,6 @@
 {
   "Configuration": {
+    "ActiveNet": "TestNet"
     "Magic": 2018001,
     "Version": 23,
     "SeedList": [
@@ -11,17 +12,9 @@
     "HttpInfoStart": true,
     "HttpRestPort": 21334,
     "HttpWsPort": 21335,
-    "WsHeartbeatInterval": 60,
     "HttpJsonPort": 21336,
     "NodePort": 21338,
-    "NodeOpenPort": 21866,
-    "OpenService": false,
     "PrintLevel": 1,
-    "IsTLS": false,
-    "CertPath": "./sample-cert.pem",
-    "KeyPath": "./sample-cert-key.pem",
-    "CAPath": "./sample-ca.pem",
-    "MultiCoreNum": 4,
     "MaxTransactionInBlock": 10000,
     "MinCrossChainTxFee": 10000,
     "FoundationAddress":"8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
@@ -30,7 +23,6 @@
       "AutoMining": false,
       "MinerInfo": "ELA",
       "MinTxFee": 100,
-      "ActiveNet": "MainNet"
     },
     "VoteHeight": 200000,
     "RpcConfiguration": {

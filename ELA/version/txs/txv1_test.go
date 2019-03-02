@@ -48,7 +48,7 @@ func (s *txVersionV1TestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txVersionV1TestSuite) TestCheckCoinbaseMinerReward() {
-	totalReward := config.MainNetParams.RewardPerBlock
+	totalReward := config.DefaultParams.RewardPerBlock
 	tx := &types.Transaction{
 		Version: types.TransactionVersion(s.Version.GetVersion()),
 		TxType:  types.CoinBase,

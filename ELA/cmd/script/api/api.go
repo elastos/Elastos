@@ -151,17 +151,17 @@ func initLedger(L *lua.LState) int {
 	dlog.Init(logLevel, 0, 0)
 
 	verconf := &verconf.Config{
-		ChainParams: &config.MainNetParams,
+		ChainParams: &config.DefaultParams,
 	}
 	versions := version.NewVersions(verconf)
 	verconf.Versions = versions
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.MainNetParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.DefaultParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.MainNetParams, versions, state.NewState(nil, &config.MainNetParams))
+	chain, err := blockchain.New(chainStore, &config.DefaultParams, versions, state.NewState(nil, &config.DefaultParams))
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}

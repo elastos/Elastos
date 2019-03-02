@@ -44,7 +44,7 @@ func loadConfigParams() *config.ConfigParams {
 	cfg := loadConfigFile()
 
 	var chainParams config.ChainParams
-	switch strings.ToLower(cfg.PowConfiguration.ActiveNet) {
+	switch strings.ToLower(cfg.ActiveNet) {
 	case "mainnet", "main":
 		chainParams = config.MainNet
 

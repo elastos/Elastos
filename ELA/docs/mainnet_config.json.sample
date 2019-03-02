@@ -20,17 +20,9 @@
     "HttpInfoStart": true,
     "HttpRestPort": 20334,
     "HttpWsPort": 20335,
-    "WsHeartbeatInterval": 60,
     "HttpJsonPort": 20336,
     "NodePort": 20338,
-    "NodeOpenPort": 20866,
-    "OpenService": false,
     "PrintLevel": 1,
-    "IsTLS": false,
-    "CertPath": "./cert.pem",
-    "KeyPath": "./cert-key.pem",
-    "CAPath": "./ca.pem",
-    "MultiCoreNum": 4,
     "MaxTransactionInBlock": 10000,
     "MinCrossChainTxFee": 10000,
     "PowConfiguration": {
@@ -38,7 +30,6 @@
       "AutoMining": false,
       "MinerInfo": "ELA",
       "MinTxFee": 100,
-      "ActiveNet": "MainNet"
     },
     "VoteHeight": 290000,
     "RpcConfiguration": {
