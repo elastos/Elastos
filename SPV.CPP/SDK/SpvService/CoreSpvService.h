@@ -19,7 +19,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class CoreSpvService :
-				public TransactionHub::Listener,
+				public AssetTransactions::Listener,
 				public PeerManager::Listener {
 
 		public:
@@ -88,7 +88,7 @@ namespace Elastos {
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
-			typedef boost::shared_ptr<TransactionHub::Listener> WalletListenerPtr;
+			typedef boost::shared_ptr<AssetTransactions::Listener> WalletListenerPtr;
 
 			virtual const WalletListenerPtr &createWalletListener();
 
@@ -176,9 +176,9 @@ namespace Elastos {
 		};
 
 		class WrappedExceptionTransactionHubListener :
-				public TransactionHub::Listener {
+				public AssetTransactions::Listener {
 		public:
-			WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener);
+			WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener);
 
 			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
@@ -189,13 +189,13 @@ namespace Elastos {
 			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		private:
-			TransactionHub::Listener *_listener;
+			AssetTransactions::Listener *_listener;
 		};
 
 		class WrappedExecutorTransactionHubListener :
-				public TransactionHub::Listener {
+				public AssetTransactions::Listener {
 		public:
-			WrappedExecutorTransactionHubListener(TransactionHub::Listener *listener, Executor *executor);
+			WrappedExecutorTransactionHubListener(AssetTransactions::Listener *listener, Executor *executor);
 
 			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
 
@@ -206,7 +206,7 @@ namespace Elastos {
 			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		private:
-			TransactionHub::Listener *_listener;
+			AssetTransactions::Listener *_listener;
 			Executor *_executor;
 		};
 

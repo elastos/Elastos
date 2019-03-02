@@ -10,6 +10,7 @@
 #include <SDK/Common/CMemBlock.h>
 #include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/Common/Mstream.h>
+#include <SDK/Base/Address.h>
 
 #include <nlohmann/json.hpp>
 
@@ -51,7 +52,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual Address GetAddress() const;
 
 			const std::string &GetLanguage() const;
 

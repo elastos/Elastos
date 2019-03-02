@@ -45,13 +45,11 @@ namespace Elastos {
 
 			size_t getAllTransactionsCount();
 
-			void registerWalletListener(TransactionHub::Listener *listener);
+			void registerWalletListener(AssetTransactions::Listener *listener);
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
 
 			void publishTransaction(const TransactionPtr &transaction);
-
-			void recover(int limitGap);
 
 			virtual const WalletPtr &getWallet();
 
@@ -117,7 +115,7 @@ namespace Elastos {
 			boost::asio::io_service _reconnectService;
 			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 
-			std::vector<TransactionHub::Listener *> _walletListeners;
+			std::vector<AssetTransactions::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;
 		};
 

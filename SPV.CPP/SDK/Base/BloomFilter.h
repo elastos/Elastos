@@ -35,11 +35,11 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
-			void insertData(const CMBlock &data);
+			void insertData(const void *data, size_t dataLen);
 
-			bool ContainsData(const CMBlock &data);
+			bool ContainsData(const void *data, size_t dataLen);
 
-			uint32_t calculateHash(const CMBlock &data, uint32_t hashNum);
+			uint32_t calculateHash(const void *data, size_t dataLen, uint32_t hashNum);
 
 		private:
 			CMBlock _filter;

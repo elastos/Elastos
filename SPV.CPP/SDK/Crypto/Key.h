@@ -76,6 +76,8 @@ namespace Elastos {
 
 			static UInt168 CodeToProgramHash(Prefix prefix, const CMBlock &code);
 
+			UInt168 ProgramHash(Prefix prefix);
+
 			std::string GetAddress(Prefix prefix) const;
 
 			CMBlock Sign(const UInt256 &md) const;
@@ -88,7 +90,7 @@ namespace Elastos {
 
 			bool Verify(const UInt256 &md, const CMBlock &signature) const;
 
-			bool PubKeyIsValid(const void *pubKey, size_t len) const;
+			static bool PubKeyIsValid(const void *pubKey, size_t len);
 
 		private:
 			bool PubKeyEmpty() const;

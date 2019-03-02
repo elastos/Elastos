@@ -98,8 +98,6 @@ namespace Elastos {
 
 			bool ContainInput(const UInt256 &hash, uint32_t n) const;
 
-			std::vector<std::string> getOutputAddresses();
-
 			void setTransactionType(Type type, const PayloadPtr &payload = nullptr);
 
 			Type getTransactionType() const;

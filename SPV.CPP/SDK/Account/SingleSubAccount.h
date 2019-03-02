@@ -18,13 +18,13 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual CMBlock GetRedeemScript(const std::string &addr) const;
+			virtual CMBlock GetRedeemScript(const Address &addr) const;
 
 			virtual bool IsSingleAddress() const;
 
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const;
+			virtual std::vector<Address> GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const;
 
 			virtual bool ContainsAddress(const Address &address) const;
 

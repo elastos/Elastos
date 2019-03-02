@@ -53,7 +53,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual Address GetAddress() const;
 
 		private:
 			friend class AccountFactory;
@@ -75,7 +75,7 @@ namespace Elastos {
 			AccountPtr _me;
 			std::vector<std::string> _coSigners;
 			uint32_t _requiredSignCount;
-			mutable std::string _address;
+			mutable Address _address;
 			std::string _rootPath;
 		};
 

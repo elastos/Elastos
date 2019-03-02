@@ -7,13 +7,11 @@
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MasterWallet.h>
-#include <SDK/Base/Address.h>
 #include <SDK/Account/StandardAccount.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 
-#include <Core/BRAddress.h>
-
 #include <algorithm>
+#include <SDK/Common/Base58.h>
 
 using namespace nlohmann;
 
@@ -84,7 +82,12 @@ namespace Elastos {
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
-			return Address::isValidIdAddress(id);
+			CMBlock programHash = Base58::CheckDecode(id);
+
+			if (programHash.GetSize() == 21 && programHash[0] == PrefixIDChain)
+				return true;
+
+			return false;
 		}
 
 		CMBlock IdAgentImpl::Sign(const std::string &id, const CMBlock &data, const std::string &passwd) {

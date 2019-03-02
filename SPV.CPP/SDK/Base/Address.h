@@ -5,13 +5,7 @@
 #ifndef __ELASTOS_SDK_ADDRESS_H__
 #define __ELASTOS_SDK_ADDRESS_H__
 
-#include <SDK/Common/CMemBlock.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-
-#include <Core/BRInt.h>
-
-#include <string>
-#include <boost/shared_ptr.hpp>
+#include <SDK/Crypto/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -24,38 +18,39 @@ namespace Elastos {
 
 			Address(const std::string &address);
 
-			Address &operator= (const std::string &address);
+			Address(const UInt168 &programHash);
 
-			bool operator== (const std::string &address) const;
+			Address(const CMBlock &pubKey, Prefix prefix);
 
-			bool isValid();
+			Address(const Address &address);
 
-			std::string stringify() const;
+			~Address();
 
-			const char *GetChar() const;
+			bool IsValid() const;
 
-			bool operator< (const Address &address) const;
+			std::string String() const;
 
-			bool IsEqual(const Address &address) const;
+			const UInt168 &ProgramHash() const;
 
-		public:
-			static bool isValidAddress(const std::string &address);
+			bool operator<(const Address &address) const;
 
-			static bool UInt168IsValid(const UInt168 &u168);
+			bool operator==(const Address &address) const;
 
-			static bool isValidIdAddress(const std::string &address);
+			bool operator==(const std::string &address) const;
 
-			static bool isValidProgramHash(const UInt168 &u168, const Transaction::Type &type);
+			bool operator!=(const Address &address) const;
 
-			static Address None;
+			bool operator!=(const std::string &address) const;
+
+			Address &operator=(const Address &address);
 
 		private:
-			char _s[75];
+			UInt168 _programHash;
+			bool _isValid;
 		};
-
-		typedef boost::shared_ptr<Address> AddressPtr;
 
 	}
 }
+
 
 #endif //__ELASTOS_SDK_ADDRESS_H__

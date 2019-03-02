@@ -81,7 +81,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetBalanceInfo() const {
-			return _walletManager->getWallet()->GetBalanceInfo(Asset::GetELAAssetID());
+			return _walletManager->getWallet()->GetBalanceInfo();
 		}
 
 		uint64_t SubWallet::GetBalance(BalanceType type) const {
@@ -89,22 +89,21 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::CreateAddress() {
-			return _walletManager->getWallet()->getReceiveAddress();
+			return _walletManager->getWallet()->GetReceiveAddress().String();
 		}
 
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) const {
 			nlohmann::json j;
-			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
-			if (start >= addresses.size()) {
-				j["Addresses"] = {};
-				j["MaxCount"] = addresses.size();
-			} else {
-				uint32_t end = std::min(start + count, (uint32_t) addresses.size());
-				std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
-				j["Addresses"] = results;
-				j["MaxCount"] = addresses.size();
+			std::vector<Address> addresses = _walletManager->getWallet()->GetAllAddresses(start, count, false);
+
+			std::vector<std::string> addrString;
+			for (size_t i = 0; i < addresses.size(); ++i) {
+				addrString.push_back(addresses[i].String());
 			}
+
+			j["Addresses"] = addrString;
+			j["MaxCount"] = addresses.size();
 			return j;
 		}
 
@@ -129,11 +128,11 @@ namespace Elastos {
 			TransactionPtr tx = wallet->createTransaction(fromAddress, amount, toAddress, _info.getMinFee(),
 														  assetID, useVotedUTXO);
 
-			std::set<std::string> uniqueAddress;
+			std::set<Address> uniqueAddress;
 			std::vector<TransactionInput> &inputs = tx->getInputs();
 			for (size_t i = 0; i < inputs.size(); ++i) {
 				TransactionPtr txInput = wallet->transactionForHash(inputs[i].getTransctionHash());
-				std::string addr = txInput->getOutputs()[inputs[i].getIndex()].getAddress();
+				Address addr = txInput->getOutputs()[inputs[i].getIndex()].GetAddress();
 
 				if (uniqueAddress.find(addr) == uniqueAddress.end()) {
 					uniqueAddress.insert(addr);
@@ -212,8 +211,7 @@ namespace Elastos {
 			return Utils::encodeHex(key.Sign(message));
 		}
 
-		nlohmann::json
-		SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
+		bool SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
 			return _parent->CheckSign(publicKey, message, signature);
 		}
 
@@ -237,7 +235,7 @@ namespace Elastos {
 			std::string txHash = Utils::UInt256ToString(transaction->getHash(), true);
 			_confirmingTxs[txHash] = transaction;
 
-			if (_walletManager->getPeerManager()->SyncSucceeded()) {
+			if (transaction->getTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
 				fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
 											 transaction->toJson(), 0);
 			} else {
@@ -258,7 +256,7 @@ namespace Elastos {
 			uint32_t txBlockHeight = _confirmingTxs[hash]->getBlockHeight();
 			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
 								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-			if (_walletManager->getPeerManager()->SyncSucceeded()) {
+			if (_confirmingTxs[hash]->getTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
 				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 _confirmingTxs[hash]->toJson(), confirm);
 			} else {
@@ -272,10 +270,6 @@ namespace Elastos {
 						  [&hash, &assetID, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
 				callback->OnTxDeleted(hash, notifyUser, recommendRescan);
 			});
-		}
-
-		void SubWallet::recover(int limitGap) {
-			_walletManager->recover(limitGap);
 		}
 
 		nlohmann::json SubWallet::CreateMultiSignTransaction(const std::string &fromAddress,
@@ -329,12 +323,12 @@ namespace Elastos {
 			const WalletPtr &wallet = _walletManager->getWallet();
 			for (size_t i = 0; i < transaction->getInputs().size(); ++i) {
 				const TransactionPtr &tx = wallet->transactionForHash(transaction->getInputs()[i].getTransctionHash());
-				if (tx && tx->getOutputs()[transaction->getInputs()[i].getIndex()].getAddress() == addressOrTxid) {
+				if (tx && tx->getOutputs()[transaction->getInputs()[i].getIndex()].GetAddress() == addressOrTxid) {
 					return true;
 				}
 			}
 			for (size_t i = 0; i < transaction->getOutputs().size(); ++i) {
-				if (transaction->getOutputs()[i].getAddress() == addressOrTxid) {
+				if (transaction->getOutputs()[i].GetAddress() == addressOrTxid) {
 					return true;
 				}
 			}

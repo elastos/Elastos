@@ -26,6 +26,6 @@ TEST_CASE("MultiSign account test", "[Readonly account test]") {
 
 		MultiSignAccount *account = new MultiSignAccount(nullptr, coSigners, 3);
 
-		REQUIRE("8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3" == account->GetAddress());
+		REQUIRE("8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3" == account->GetAddress().String());
 	}
 }

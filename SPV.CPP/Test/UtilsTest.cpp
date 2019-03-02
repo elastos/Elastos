@@ -10,7 +10,7 @@
 #include <Core/BRInt.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Base/Address.h>
+#include <SDK/Implement/SidechainSubWallet.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -60,13 +60,6 @@ TEST_CASE("Utils test", "[Utils]") {
 
 		std::string addr = Utils::UInt168ToAddress(hash);
 		REQUIRE("ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z" == addr);
-
-		UInt168 addrHash = UINT168_ZERO;
-		REQUIRE(true == Utils::UInt168FromAddress(addrHash, addr));
-		REQUIRE(UInt168Eq(&addrHash, &expectedHash) == 1);
-
-		addrHash = UINT168_ZERO;
-		REQUIRE(ELA_SIDECHAIN_DESTROY_ADDR == Utils::UInt168ToAddress(addrHash));
 	}
 
 	SECTION("Encrypt and decrypt") {

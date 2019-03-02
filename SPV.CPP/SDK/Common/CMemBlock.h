@@ -29,11 +29,16 @@ public:
 	}
 
 	template <class size_type>
-	CMemBlock(const void *buf, size_type len) {
+	CMemBlock(const void *buf, size_type len, bool autoFree = true) {
 		size_t l = size_t(len);
-		pValue = new Value(l);
-		memcpy(pValue->data, buf, l);
-		pValue->AddRef();
+		if (autoFree) {
+			pValue = new Value(l);
+			memcpy(pValue->data, buf, l);
+			pValue->AddRef();
+		} else {
+			pValue = new Value(0);
+			pValue->SetMemFixed(buf, l);
+		}
 	}
 
 	template<class size_type>

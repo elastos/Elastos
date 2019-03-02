@@ -18,11 +18,11 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/arith_uint256.h>
+#include <SDK/Common/Base58.h>
 #include <SDK/Base/BloomFilter.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRArray.h>
-#include <Core/BRAddress.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -644,10 +644,9 @@ namespace Elastos {
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
 			UInt168 hash = UINT168_ZERO;
-			CMBlock hashData;
 
-			std::string voteDepositAddress = _wallet->GetVoteDepositAddress();
-			std::vector<std::string> addrs = _wallet->getAllAddresses();
+			Address voteDepositAddress = _wallet->GetVoteDepositAddress();
+			std::vector<Address> addrs = _wallet->GetAllAddresses(0, size_t(-1), true);
 			std::vector<UTXO> utxos = _wallet->getAllUTXOsSafe();
 			uint32_t blockHeight = (_lastBlock->getHeight() > 100) ? _lastBlock->getHeight() - 100 : 0;
 
@@ -658,29 +657,26 @@ namespace Elastos {
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
-			if (!voteDepositAddress.empty()) {
-				BRAddressHash168(&hash, voteDepositAddress.c_str());
-				hashData.SetMemFixed(hash.u8, sizeof(hash));
-				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
-					filter->insertData(hashData);
+			if (voteDepositAddress.IsValid()) {
+				hash = voteDepositAddress.ProgramHash();
+				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
+					filter->insertData(hash.u8, sizeof(hash));
 				}
 			}
 
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				BRAddressHash168(&hash, addrs[i].c_str());
-				hashData.SetMemFixed(hash.u8, sizeof(hash));
+				hash = addrs[i].ProgramHash();
 
-				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
-					filter->insertData(hashData);
+				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
+					filter->insertData(hash.u8, sizeof(hash));
 				}
 			}
 
 			for (size_t i = 0; i < _wallet->getListeningAddrs().size(); ++i) {
-				BRAddressHash168(&hash, _wallet->getListeningAddrs()[i].c_str());
-				hashData.SetMemFixed(hash.u8, sizeof(hash));
+				hash = Address(_wallet->getListeningAddrs()[i]).ProgramHash();
 
-				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
-					filter->insertData(hashData);
+				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
+					filter->insertData(hash.u8, sizeof(hash));
 				}
 			}
 
@@ -689,7 +685,8 @@ namespace Elastos {
 
 				UInt256Set(o, utxos[i].hash);
 				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-				if (!filter->ContainsData(o)) filter->insertData(o);
+				if (!filter->ContainsData(o, o.GetSize()))
+					filter->insertData(o, o.GetSize());
 			}
 
 			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
@@ -699,11 +696,11 @@ namespace Elastos {
 					CMBlock o(sizeof(UInt256) + sizeof(uint32_t));
 
 					if (tx && input.getIndex() < tx->getOutputs().size() &&
-						_wallet->containsAddress(tx->getOutputs()[input.getIndex()].getAddress())) {
+						_wallet->containsAddress(tx->getOutputs()[input.getIndex()].GetAddress())) {
 						UInt256Set(o, input.getTransctionHash());
 						UInt32SetLE(&o[sizeof(UInt256)], input.getIndex());
-						if (!filter->ContainsData(o))
-							filter->insertData(o);
+						if (!filter->ContainsData(o, o.GetSize()))
+							filter->insertData(o, o.GetSize());
 					}
 				}
 			}
@@ -905,8 +902,6 @@ namespace Elastos {
 					loadMempools();
 				}
 			}
-
-			_wallet->UpdateBalance();
 		}
 
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
@@ -1087,7 +1082,7 @@ namespace Elastos {
 				}
 
 				if (_syncStartHeight == 0 || _wallet->containsTransaction(tx)) {
-					isWalletTx = _wallet->registerTransaction(tx);
+					isWalletTx = _wallet->RegisterTransaction(tx);
 					if (isWalletTx) tx = _wallet->transactionForHash(tx->getHash());
 				} else {
 					tx = nullptr;
@@ -1119,12 +1114,12 @@ namespace Elastos {
 						std::vector<Address> internalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
 						UInt168 hash;
-						CMBlock hashData(sizeof(UInt168));
+
 						for (std::vector<Address>::iterator externalIt = externalAddrs.begin(), internalIt = internalAddrs.begin();
 							 externalIt != externalAddrs.end() || internalIt != internalAddrs.end();) {
-							if (externalIt != externalAddrs.end() && BRAddressHash168(&hash, (*externalIt).GetChar())) {
-								memcpy(hashData, hash.u8, sizeof(UInt168));
-								if (!_bloomFilter->ContainsData(hashData)) {
+							if (externalIt != externalAddrs.end()) {
+								hash = (*externalIt).ProgramHash();
+								if (!_bloomFilter->ContainsData(hash.u8, sizeof(hash))) {
 									_bloomFilter.reset();
 									updateBloomFilter();
 									break;
@@ -1132,9 +1127,9 @@ namespace Elastos {
 								externalIt++;
 							}
 
-							if (internalIt != internalAddrs.end() && BRAddressHash168(&hash, (*internalIt).GetChar())) {
-								memcpy(hashData, hash.u8, sizeof(UInt168));
-								if (!_bloomFilter->ContainsData(hashData)) {
+							if (internalIt != internalAddrs.end()) {
+								hash = (*internalIt).ProgramHash();
+								if (!_bloomFilter->ContainsData(hash.u8, sizeof(hash))) {
 									_bloomFilter.reset();
 									updateBloomFilter();
 									break;
@@ -1148,7 +1143,7 @@ namespace Elastos {
 				// set timestamp when tx is verified
 				if (tx && relayCount >= _maxConnectCount && tx->getBlockHeight() == TX_UNCONFIRMED &&
 					tx->getTimestamp() == 0) {
-					_wallet->updateTransactions({tx->getHash()}, TX_UNCONFIRMED, (uint32_t) time(NULL));
+					_wallet->UpdateTransactions({tx->getHash()}, TX_UNCONFIRMED, (uint32_t) time(NULL));
 				}
 			}
 
@@ -1180,7 +1175,7 @@ namespace Elastos {
 				}
 
 				if (tx) {
-					isWalletTx = _wallet->registerTransaction(tx);
+					isWalletTx = _wallet->RegisterTransaction(tx);
 					if (isWalletTx) tx = _wallet->transactionForHash(tx->getHash());
 
 					// reschedule sync timeout
@@ -1197,7 +1192,7 @@ namespace Elastos {
 					if (relayCount >= _maxConnectCount && tx && tx->getBlockHeight() == TX_UNCONFIRMED &&
 						tx->getTimestamp() == 0) {
 						std::vector<UInt256> hashes = {txHash};
-						_wallet->updateTransactions(hashes, TX_UNCONFIRMED, (uint32_t) time(NULL));
+						_wallet->UpdateTransactions(hashes, TX_UNCONFIRMED, (uint32_t) time(NULL));
 					}
 
 					removePeerFromList(peer, txHash, _txRequests);
@@ -1231,7 +1226,7 @@ namespace Elastos {
 				if (tx) {
 					if (removePeerFromList(peer, txHash, _txRelays) && tx->getBlockHeight() == TX_UNCONFIRMED) {
 						// set timestamp 0 to mark tx as unverified
-						_wallet->updateTransactions({txHash}, TX_UNCONFIRMED, 0);
+						_wallet->UpdateTransactions({txHash}, TX_UNCONFIRMED, 0);
 					}
 
 					// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
@@ -1255,7 +1250,7 @@ namespace Elastos {
 			fireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
 			if (code != 0x12) {
-				_wallet->removeTransaction(pubTx.GetTransaction()->getHash());
+				_wallet->RemoveTransaction(pubTx.GetTransaction()->getHash());
 			}
 		}
 
@@ -1352,7 +1347,7 @@ namespace Elastos {
 					fireBlockHeightIncreased(block->getHeight());
 
 					if (txHashes.size() > 0)
-						_wallet->updateTransactions(txHashes, block->getHeight(), txTime);
+						_wallet->UpdateTransactions(txHashes, block->getHeight(), txTime);
 					if (_downloadPeer) _downloadPeer->SetCurrentBlockHeight(block->getHeight());
 
 					if (block->getHeight() < _estimatedHeight && peer == _downloadPeer) {
@@ -1379,7 +1374,7 @@ namespace Elastos {
 
 					if (b->isEqual(block.get())) { // if it's not on a fork, set block heights for its transactions
 						if (txHashes.size() > 0)
-							_wallet->updateTransactions(txHashes, block->getHeight(), txTime);
+							_wallet->UpdateTransactions(txHashes, block->getHeight(), txTime);
 						if (block->getHeight() == _lastBlock->getHeight()) _lastBlock = block;
 					}
 
@@ -1434,7 +1429,7 @@ namespace Elastos {
 							b = _blocks.Get(b->getPrevBlockHash());
 							if (b) timestamp = timestamp / 2 + b->getTimestamp() / 2;
 							if (txHashes.size() > 0)
-								_wallet->updateTransactions(txHashes, height, timestamp);
+								_wallet->UpdateTransactions(txHashes, height, timestamp);
 						}
 
 						_lastBlock = block;
@@ -1493,6 +1488,10 @@ namespace Elastos {
 				fireTxStatusUpdate(); // notify that transaction confirmations may have changed
 			}
 
+			if (block->getHeight() == _estimatedHeight) {
+				_wallet->UpdateBalance();
+			}
+
 			if (next) OnRelayedBlock(peer, next);
 		}
 
@@ -1548,7 +1547,7 @@ namespace Elastos {
 				}
 
 				addPeerToList(peer, txHash, _txRelays);
-				if (pubTx.GetTransaction() != nullptr) _wallet->registerTransaction(pubTx.GetTransaction());
+				if (pubTx.GetTransaction() != nullptr) _wallet->RegisterTransaction(pubTx.GetTransaction());
 				if (pubTx.GetTransaction() != nullptr && !_wallet->transactionIsValid(pubTx.GetTransaction()))
 					error = 0x10; // RejectInvalid by node
 			}
@@ -2026,10 +2025,10 @@ namespace Elastos {
 						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->getHeight(),
 								   Utils::UInt256ToString(hash, true));
 						assert(tx[i - 1]->getBlockHeight() == TX_UNCONFIRMED);
-						_wallet->removeTransaction(hash);
+						_wallet->RemoveTransaction(hash);
 					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
 						// set timestamp 0 to mark as unverified
-						_wallet->updateTransactions({hash}, TX_UNCONFIRMED, 0);
+						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
 					}
 				}
 			}

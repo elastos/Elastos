@@ -112,12 +112,19 @@ namespace Elastos {
 		}
 
 		CMBlock Utils::decodeHex(const std::string &source) {
-			ParamChecker::checkCondition(0 != source.length() % 2, Error::HexString,
-										 "Decode hex string fail: length is not even");
 			CMBlock target;
+			if (source.length() % 2 != 0) {
+				Log::error("Decode '{}' fail: length is not even", source);
+				return target;
+			}
+
 			target.Resize(source.length() / 2);
 
 			for (int i = 0; i < target.GetSize(); i++) {
+				if (!isxdigit(source[2 * i]) || !isxdigit(source[2 * i + 1])) {
+					Log::error("Decode '{}' fail", source);
+					return CMBlock();
+				}
 				target[i] = (uint8_t) ((_hexu(source[2 * i]) << 4) | _hexu(source[(2 * i) + 1]));
 			}
 
@@ -180,9 +187,7 @@ namespace Elastos {
 		}
 
 		std::string Utils::UInt168ToAddress(const UInt168 &u) {
-			CMBlock data;
-			data.SetMemFixed(u.u8, sizeof(u));
-			return Base58::CheckEncode(data);
+			return Base58::CheckEncode(u.u8, sizeof(u));
 		}
 
 		bool Utils::UInt168FromAddress(UInt168 &u, const std::string &address) {

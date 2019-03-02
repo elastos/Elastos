@@ -8,6 +8,7 @@
 
 #include <SDK/Crypto/Key.h>
 #include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/Base/Address.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
@@ -47,7 +48,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
 
-			virtual std::string GetAddress() const = 0;
+			virtual Address GetAddress() const = 0;
 		};
 
 		typedef boost::shared_ptr<IAccount> AccountPtr;

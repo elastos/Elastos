@@ -17,8 +17,8 @@ namespace Elastos {
 
 		void MultiSignAccounts::AddAccount(const std::vector<std::string> &coSigners, uint32_t requiredSignCount) {
 			MultiSignAccount *account = new MultiSignAccount(_innerAccount.get(), coSigners, requiredSignCount);
-			if (_accounts.find(account->GetAddress()) == _accounts.end()) {
-				_accounts[account->GetAddress()] = MultiSignAccoutPtr(account);
+			if (_accounts.find(account->GetAddress().String()) == _accounts.end()) {
+				_accounts[account->GetAddress().String()] = MultiSignAccoutPtr(account);
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace Elastos {
 										 "Do not have current account");
 		}
 
-		std::string MultiSignAccounts::GetAddress() {
+		Address MultiSignAccounts::GetAddress() {
 			checkCurrentAccount();
 			return _currentAccount->GetAddress();
 		}

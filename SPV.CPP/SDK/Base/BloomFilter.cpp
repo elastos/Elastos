@@ -96,30 +96,30 @@ namespace Elastos {
 			_tweak = jsonData["tweak"].get<uint32_t>();
 		}
 
-		void BloomFilter::insertData(const CMBlock &data) {
+		void BloomFilter::insertData(const void *data, size_t dataLen) {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = calculateHash(data, i);
+				idx = calculateHash(data, dataLen, i);
 				_filter[idx >> 3] |= (1 << (7 & idx));
 			}
 
-			if (data.GetSize() > 0) _elemCount++;
+			if (data != nullptr) _elemCount++;
 		}
 
-		uint32_t BloomFilter::calculateHash(const CMBlock &data, uint32_t hashNum) {
-			return BRMurmur3_32(data, data.GetSize(), hashNum * 0xfba4c795 + _tweak) % (_filter.GetSize() * 8);
+		uint32_t BloomFilter::calculateHash(const void *data, size_t dataLen, uint32_t hashNum) {
+			return BRMurmur3_32(data, dataLen, hashNum * 0xfba4c795 + _tweak) % (_filter.GetSize() * 8);
 		}
 
-		bool BloomFilter::ContainsData(const CMBlock &data) {
+		bool BloomFilter::ContainsData(const void *data, size_t dataLen) {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = calculateHash(data, i);
+				idx = calculateHash(data, dataLen, i);
 				if (!(_filter[idx >> 3] & (1 << (7 & idx)))) return false;
 			}
 
-			return data.GetSize() > 0;
+			return data != nullptr ? true : false;
 		}
 	}
 }

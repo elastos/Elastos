@@ -434,7 +434,7 @@ namespace Elastos {
 			}));
 		}
 
-		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener) :
+		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener) :
 				_listener(listener) {
 		}
 
@@ -491,7 +491,7 @@ namespace Elastos {
 		}
 
 		WrappedExecutorTransactionHubListener::WrappedExecutorTransactionHubListener(
-				TransactionHub::Listener *listener,
+				AssetTransactions::Listener *listener,
 				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {

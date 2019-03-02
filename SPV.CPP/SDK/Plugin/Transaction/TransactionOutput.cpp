@@ -4,7 +4,6 @@
 
 #include "TransactionOutput.h"
 
-#include <SDK/Base/Address.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
@@ -40,13 +39,13 @@ namespace Elastos {
 			*_payload = *output.GetPayload();
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const std::string &addr, const UInt256 &assetID,
+		TransactionOutput::TransactionOutput(uint64_t a, const Address &addr, const UInt256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
 			_amount(a),
 			_outputLock(0),
 			_outputType(type) {
 			_assetId = assetID;
-			Utils::UInt168FromAddress(_programHash, addr);
+			_programHash = addr.ProgramHash();
 			if (payload == nullptr) {
 				_payload = GeneratePayload(_outputType);
 			} else {
@@ -71,14 +70,8 @@ namespace Elastos {
 		TransactionOutput::~TransactionOutput() {
 		}
 
-		std::string TransactionOutput::getAddress() const {
-			return Utils::UInt168ToAddress(_programHash);
-		}
-
-		void TransactionOutput::SetAddress(const std::string &address) {
-			if (!Utils::UInt168FromAddress(_programHash, address)) {
-				Log::error("address '{}' can't convert to program hash", address);
-			}
+		Address TransactionOutput::GetAddress() const {
+			return Address(_programHash);
 		}
 
 		uint64_t TransactionOutput::getAmount() const {
@@ -227,8 +220,8 @@ namespace Elastos {
 			j["Amount"] = _amount;
 			j["AssetId"] = Utils::UInt256ToString(_assetId, true);
 			j["OutputLock"] = _outputLock;
-			j["ProgramHash"] = Utils::UInt168ToString(_programHash);
-			j["Address"] = Utils::UInt168ToAddress(_programHash);
+			j["ProgramHash"] = Utils::encodeHex(_programHash.u8, sizeof(_programHash));
+			j["Address"] = Address(_programHash).String();
 			return j;
 		}
 

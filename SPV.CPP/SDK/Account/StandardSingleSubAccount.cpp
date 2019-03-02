@@ -22,9 +22,16 @@ namespace Elastos {
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
+				_votePublicKey = votePubKey;
+				if (votePubKey.GetSize() > 0)
+					_depositAddress = Address(votePubKey, PrefixDeposit);
+
+				CMBlock pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
+
+				_address = Address(pubKey, PrefixStandard);
 		}
 
-		CMBlock StandardSingleSubAccount::GetRedeemScript(const std::string &addr) const {
+		CMBlock StandardSingleSubAccount::GetRedeemScript(const Address &addr) const {
 			CMBlock pubKey;
 			Key key;
 
@@ -36,8 +43,7 @@ namespace Elastos {
 
 			pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
 			key.SetPubKey(pubKey);
-			ParamChecker::checkLogic(addr != key.GetAddress(PrefixStandard), Error::Address,
-									 "Can't found pubKey for addr " + addr);
+			ParamChecker::checkLogic(addr != _address, Error::Address, "Can't found pubKey for addr " + addr.String());
 			return key.RedeemScript(PrefixStandard);
 		}
 
@@ -62,32 +68,23 @@ namespace Elastos {
 		}
 
 		std::vector<Address> StandardSingleSubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
-			std::vector<Address> address;
-
-			address.push_back(GetAddress());
-
-			return address;
+			return {_address};
 		}
 
-		std::vector<Address> StandardSingleSubAccount::GetAllAddresses(size_t addrsCount) const {
+		std::vector<Address> StandardSingleSubAccount::GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const {
 			std::vector<Address> address;
 
 			if (addrsCount > 0)
-				address.emplace_back(GetAddress());
+				address.emplace_back(_address);
 
 			return address;
 		}
 
 		bool StandardSingleSubAccount::ContainsAddress(const Address &address) const {
-			const CMBlock &producerPubKey = GetVotePublicKey();
-			if (producerPubKey.GetSize() > 0) {
-				Key key;
-				key.SetPubKey(GetVotePublicKey());
-				if (address.IsEqual(key.GetAddress(PrefixDeposit)))
-					return true;
-			}
+			if (IsDepositAddress(address))
+				return true;
 
-			return address.IsEqual(GetAddress());
+			return address == _address;
 		}
 
 		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
@@ -103,15 +100,6 @@ namespace Elastos {
 			var_clean(&chainCode);
 
 			return key;
-		}
-
-		std::string StandardSingleSubAccount::GetAddress() const {
-			CMBlock pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
-
-			Key key;
-			key.SetPubKey(pubKey);
-
-			return key.GetAddress(PrefixStandard);
 		}
 
 	}

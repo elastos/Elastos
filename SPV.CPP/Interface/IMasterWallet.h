@@ -69,18 +69,6 @@ namespace Elastos {
 					uint64_t feePerKb = 0) = 0;
 
 			/**
-			 * Recover a sub wallet from scratch.
-			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param limitGap specify the max gap length for recover addresses and transactions.
-			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
-			 * @return If success will return a pointer of sub wallet interface.
-			 */
-			virtual ISubWallet *RecoverSubWallet(
-					const std::string &chainID,
-					uint32_t limitGap,
-					uint64_t feePerKb = 0) = 0;
-
-			/**
 			 * Destroy a sub wallet created by the master wallet.
 			 * @param wallet sub wallet object, should created by the master wallet.
 			 */
@@ -107,9 +95,9 @@ namespace Elastos {
 			 * @param publicKey belong to the private key signed the signature.
 			 * @param message raw data.
 			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return the result wrapper by a json.
+			 * @return true or false.
 			 */
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;

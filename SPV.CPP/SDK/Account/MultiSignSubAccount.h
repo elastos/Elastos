@@ -18,7 +18,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual CMBlock GetRedeemScript(const std::string &addr) const;
+			virtual CMBlock GetRedeemScript(const Address &addr) const;
 
 			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
 

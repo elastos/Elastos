@@ -20,6 +20,7 @@
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 #include <openssl/obj_mac.h>
+#include <openssl/ecdsa.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -50,11 +51,12 @@ namespace Elastos {
 		}
 
 		bool Key::SetPubKey(const CMBlock &pubKey) {
-			Clean();
 			memcpy(_pubKey, pubKey, pubKey.GetSize() < sizeof(_pubKey) ? pubKey.GetSize() : sizeof(_pubKey));
 			_compressed = (pubKey.GetSize() <= 33);
 
-			return PubKeyIsValid(_pubKey, pubKey.GetSize());
+			assert(PubKeyIsValid(_pubKey, pubKey.GetSize()));
+
+			return true;
 		}
 
 		// writes the WIF private key to privKey and returns the number of bytes writen, or pkLen needed if privKey is NULL
@@ -72,9 +74,7 @@ namespace Elastos {
 				UInt256Set(&data[1], _secret);
 				if (_compressed)
 					data[33] = 0x01;
-				else
-					data.Resize(33);
-				privKey = Base58::CheckEncode(data);
+				privKey = Base58::CheckEncode(data, _compressed ? 34 : 33);
 				mem_clean(data, data.GetSize());
 //			}
 
@@ -82,10 +82,6 @@ namespace Elastos {
 		}
 
 		CMBlock Key::PubKey() {
-			if (PubKeyEmpty()) {
-				GeneratePubKey();
-			}
-
 			size_t size = _compressed ? 33 : 65;
 
 			return CMBlock(_pubKey, size);
@@ -250,10 +246,6 @@ namespace Elastos {
 		}
 
 		CMBlock Key::RedeemScript(Prefix prefix) const {
-			if (PubKeyEmpty()) {
-				GeneratePubKey();
-			}
-
 			uint8_t size = (uint8_t)(_compressed ? 33 : 65);
 
 			ByteStream stream(size + 2);
@@ -266,11 +258,18 @@ namespace Elastos {
 		}
 
 		UInt168 Key::CodeToProgramHash(Prefix prefix, const CMBlock &code) {
-			UInt160 hash = UINT160_ZERO;
-			BRHash160(&hash, code, code.GetSize());
+			UInt168 programHash;
+			BRHash160(&programHash.u8[1], code, code.GetSize());
+			programHash.u8[0] = prefix;
 
-			UInt168 programHash = UINT168_ZERO;
-			memcpy(&programHash.u8[1], &hash.u8[0], sizeof(hash.u8));
+			return programHash;
+		}
+
+		UInt168 Key::ProgramHash(Prefix prefix) {
+			CMBlock code = RedeemScript(prefix);
+
+			UInt168 programHash;
+			BRHash160(&programHash.u8[1], code, code.GetSize());
 			programHash.u8[0] = prefix;
 
 			return programHash;
@@ -380,7 +379,7 @@ namespace Elastos {
 			return result;
 		}
 
-		bool Key::PubKeyIsValid(const void *pubKey, size_t len) const {
+		bool Key::PubKeyIsValid(const void *pubKey, size_t len) {
 			bool valid = false;
 
 			EC_POINT *pnt = nullptr;

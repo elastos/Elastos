@@ -11,7 +11,6 @@
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadCoinBase.h>
 #include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/Base/Address.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <Core/BRTransaction.h>

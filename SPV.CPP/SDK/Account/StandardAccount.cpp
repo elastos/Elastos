@@ -7,6 +7,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
+#include <SDK/Base/Address.h>
 
 #include <Core/BRCrypto.h>
 #include <Core/BRBIP39Mnemonic.h>
@@ -62,10 +63,8 @@ namespace Elastos {
 			return _masterIDPubKey;
 		}
 
-		std::string StandardAccount::GetAddress() const {
-			Key key;
-			key.SetPubKey(_multiSignPublicKey);
-			return key.GetAddress(PrefixStandard);
+		Address StandardAccount::GetAddress() const {
+			return Address(_multiSignPublicKey, PrefixStandard);
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const StandardAccount &p) {

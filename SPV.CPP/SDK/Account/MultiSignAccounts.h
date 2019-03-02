@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
 #include <SDK/Account/MultiSignAccount.h>
+#include <SDK/Base/Address.h>
 
 #include <vector>
 #include <map>
@@ -47,7 +48,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress();
+			virtual Address GetAddress();
 
 		private:
 			void checkCurrentAccount() const;

@@ -25,12 +25,12 @@ namespace Elastos {
 			return j;
 		}
 
-		CMBlock SingleSubAccount::GetRedeemScript(const std::string &addr) const {
+		CMBlock SingleSubAccount::GetRedeemScript(const Address &addr) const {
 			Key key;
 			key.SetPubKey(_parentAccount->GetMultiSignPublicKey());
 
 			ParamChecker::checkLogic(addr != key.GetAddress(PrefixStandard) || addr != key.GetAddress(PrefixDeposit),
-									 Error::Address, "Can't found pubKey for addr " + addr);
+									 Error::Address, "Can't found pubKey for addr " + addr.String());
 
 			return key.RedeemScript(PrefixStandard);
 		}
@@ -39,7 +39,7 @@ namespace Elastos {
 			return true;
 		}
 
-		std::vector<Address> SingleSubAccount::GetAllAddresses(size_t addrsCount) const {
+		std::vector<Address> SingleSubAccount::GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const {
 			std::vector<Address> result;
 			if (addrsCount > 0) {
 				result.push_back(GetParent()->GetAddress());
@@ -58,7 +58,7 @@ namespace Elastos {
 		}
 
 		bool SingleSubAccount::ContainsAddress(const Address &address) const {
-			return address.IsEqual(GetParent()->GetAddress());
+			return address == GetParent()->GetAddress();
 		}
 
 		Key SingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {

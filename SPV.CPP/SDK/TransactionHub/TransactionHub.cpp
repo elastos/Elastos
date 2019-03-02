@@ -11,7 +11,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/MultiSignSubAccount.h>
 
-#include <Core/BRAddress.h>
 #include <Core/BRBIP39Mnemonic.h>
 #include <Core/BRArray.h>
 #include <Core/BRTransaction.h>
@@ -29,18 +28,13 @@ namespace Elastos {
 		TransactionHub::TransactionHub(const std::vector<Asset> &assetArray,
 						const std::vector<TransactionPtr> &txArray,
 					   const SubAccountPtr &subAccount,
-					   const boost::shared_ptr<Listener> &listener) :
+					   const boost::shared_ptr<AssetTransactions::Listener> &listener) :
 				_subAccount(subAccount),
-				_transactions(this, assetArray, txArray, subAccount) {
-
-			_blockHeight = 0;
+				_transactions(this, assetArray, txArray, subAccount, listener) {
 
 			_subAccount->InitAccount(txArray, this);
 
 			_transactions.InitWithTransactions(txArray);
-
-			assert(listener != nullptr);
-			_listener = boost::weak_ptr<Listener>(listener);
 
 			_transactions.BatchSet([](const TransactionPtr &tx) {
 				tx->isRegistered() = true;
@@ -90,42 +84,20 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json TransactionHub::GetBalanceInfo(const UInt256 &assetID) {
-			std::vector<UTXO> utxos = getUTXOsSafe(assetID);
-			nlohmann::json j, jDefault, jVoted;
+		nlohmann::json TransactionHub::GetBalanceInfo() {
+			nlohmann::json info;
 
-			{
-				boost::mutex::scoped_lock scopedLock(lock);
+			_transactions.ForEach([this, &info](const UInt256 &key, const AssetTransactionsPtr &value) {
+				nlohmann::json assetInfo;
+				assetInfo["AssetID"] = Utils::UInt256ToString(key, true);
+				assetInfo["BalanceInfo"] = value->GetBalanceInfo();
+				info.push_back(assetInfo);
+			});
 
-				for (size_t i = 0; i < utxos.size(); ++i) {
-					if (!_transactions[assetID]->Exist(utxos[i].hash))
-						continue;
-
-					const TransactionPtr &t = _transactions[assetID]->GetExistTransaction(utxos[i].hash);
-					TransactionOutput o = t->getOutputs()[utxos[i].n];
-					if (o.GetType() == TransactionOutput::Type::VoteOutput) {
-						if (jVoted.find(o.getAddress()) != jVoted.end()) {
-							jVoted[o.getAddress()] += o.getAmount();
-						} else {
-							jVoted[o.getAddress()] = o.getAmount();
-						}
-					} else {
-						if (jDefault.find(o.getAddress()) != jDefault.end()) {
-							jDefault[o.getAddress()] += o.getAmount();
-						} else {
-							jDefault[o.getAddress()] = o.getAmount();
-						}
-					}
-				}
-			}
-
-			j["Default"] = jDefault;
-			j["Voted"] = jVoted;
-
-			return j;
+			return info;
 		}
 
-		uint64_t TransactionHub::GetBalanceWithAddress(const UInt256 &assetID, const std::string &address,
+		uint64_t TransactionHub::GetBalanceWithAddress(const UInt256 &assetID, const Address &address,
 													   AssetTransactions::BalanceType type) const {
 			std::vector<UTXO> utxos = getUTXOsSafe(assetID);
 			uint64_t balance = 0;
@@ -140,7 +112,7 @@ namespace Elastos {
 						continue;
 					}
 
-					if (t->getOutputs()[utxos[i].n].getAddress() == address) {
+					if (t->getOutputs()[utxos[i].n].GetAddress() == address) {
 						balance += t->getOutputs()[utxos[i].n].getAmount();
 					}
 				}
@@ -154,24 +126,6 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				result = _transactions.Get(assetID)->GetBalance(type);
-			}
-			return result;
-		}
-
-		uint64_t TransactionHub::getTotalSent(const UInt256 &assetID) const {
-			uint64_t result;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				result = _transactions.Get(assetID)->GetTotalSent();
-			}
-			return result;
-		}
-
-		uint64_t TransactionHub::getTotalReceived(const UInt256 &assetID) const {
-			uint64_t result;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				result = _transactions.Get(assetID)->GetTotalReceived();
 			}
 			return result;
 		}
@@ -200,26 +154,22 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress) {
-			_transactions.UpdateTxFee(tx, fee, fromAddress, _blockHeight);
+		void TransactionHub::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress) {
+			_transactions.UpdateTxFee(tx, fee, fromAddress);
 		}
 
 		TransactionPtr
-		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t amount,
-										  const std::string &toAddress, uint64_t fee,
+		TransactionHub::createTransaction(const Address &fromAddress, uint64_t amount,
+										  const Address &toAddress, uint64_t fee,
 										  const UInt256 &assetID, bool useVotedUTXO) {
-			UInt168 u168Address = UINT168_ZERO;
-			ParamChecker::checkCondition(!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress),
-										 Error::CreateTransaction, "Invalid spender address " + fromAddress);
-
-			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
-										 "Invalid receiver address " + toAddress);
+			ParamChecker::checkCondition(!toAddress.IsValid(), Error::CreateTransaction,
+										 "Invalid receiver address " + toAddress.String());
 
 			std::vector<TransactionOutput> outputs;
 
 			outputs.emplace_back(amount, toAddress, assetID);
 
-			return _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, _blockHeight);
+			return _transactions.CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
 		}
 
 		bool TransactionHub::containsTransaction(const TransactionPtr &transaction) {
@@ -231,65 +181,17 @@ namespace Elastos {
 			return result;
 		}
 
-		bool TransactionHub::registerTransaction(const TransactionPtr &transaction) {
-			bool wasAdded = false, r = true;
-
-			assert(transaction != nullptr && transaction->IsSigned());
-
-			if (transaction != nullptr && transaction->IsSigned()) {
-				boost::mutex::scoped_lock scopedLock(lock);
-				r = _transactions[transaction->GetAssetID()]->RegisterTransaction(transaction, _blockHeight, wasAdded);
-			} else r = false;
-
-			if (wasAdded) {
-				// when a wallet address is used in a transaction, generate a new address to replace it
-				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-				uint64_t balance = getBalance(transaction->GetAssetID(), AssetTransactions::BalanceType::Total);
-				txAdded(transaction);
-				balanceChanged(transaction->GetAssetID(), balance);
-			}
-
-			return r;
+		bool TransactionHub::RegisterTransaction(const TransactionPtr &tx) {
+			return _transactions.RegisterTransaction(tx);
 		}
 
-		void TransactionHub::removeTransaction(const UInt256 &transactionHash) {
-			bool notifyUser = false, recommendRescan = false;
-			UInt256 removedAssetID;
-			std::vector<UInt256> removedTransactions;
-
-			assert(!UInt256IsZero(&transactionHash));
-
-			{
-				boost::mutex::scoped_lock scopedLock(lock);
-				_transactions.RemoveTransaction(transactionHash, _blockHeight, removedTransactions, removedAssetID,
-												notifyUser, recommendRescan);
-			}
-
-			uint64_t balance = getBalance(removedAssetID, AssetTransactions::BalanceType::Total);
-			balanceChanged(removedAssetID, balance);
-			txDeleted(removedTransactions, removedAssetID, notifyUser, recommendRescan);
+		void TransactionHub::RemoveTransaction(const UInt256 &txHash) {
+			_transactions.RemoveTransaction(txHash);
 		}
 
-		void TransactionHub::updateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight,
+		void TransactionHub::UpdateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight,
 												uint32_t timestamp) {
-			std::vector<UInt256> updatedHashes;
-			std::vector<UInt256> needUpdateAssets;
-
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				if (blockHeight != TX_UNCONFIRMED && blockHeight > _blockHeight) _blockHeight = blockHeight;
-				needUpdateAssets = _transactions.UpdateTransactions(txHashes, updatedHashes, blockHeight, timestamp);
-				_transactions.UpdateBalance(needUpdateAssets, _blockHeight);
-			}
-
-			if (!updatedHashes.empty())
-				txUpdated(updatedHashes, blockHeight, timestamp);
-
-			for (size_t i = 0; i < needUpdateAssets.size(); ++i) {
-				uint64_t balance = _transactions.Get(needUpdateAssets[i])->GetBalance(AssetTransactions::Total);
-				balanceChanged(needUpdateAssets[i], balance);
-			}
+			_transactions.UpdateTransactions(txHashes, blockHeight, timestamp);
 		}
 
 		TransactionPtr TransactionHub::transactionForHash(const UInt256 &transactionHash) {
@@ -326,7 +228,7 @@ namespace Elastos {
 			assert(transaction->IsSigned());
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-				height = _blockHeight;
+				height = _transactions.GetBlockHeight();
 			}
 
 			if (transaction != nullptr &&
@@ -402,7 +304,7 @@ namespace Elastos {
 					uint32_t n = tx->getInputs()[i].getIndex();
 
 					if (t && n < t->getOutputs().size() &&
-						_subAccount->ContainsAddress(t->getOutputs()[n].getAddress())) {
+						_subAccount->ContainsAddress(t->getOutputs()[n].GetAddress())) {
 						amount += t->getOutputs()[n].getAmount();
 					}
 				}
@@ -419,7 +321,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				// TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
 				for (size_t i = 0; tx && i < tx->getOutputs().size(); i++) {
-					if (_subAccount->ContainsAddress(tx->getOutputs()[i].getAddress()))
+					if (_subAccount->ContainsAddress(tx->getOutputs()[i].GetAddress()))
 						amount += tx->getOutputs()[i].getAmount();
 				}
 			}
@@ -427,48 +329,29 @@ namespace Elastos {
 			return amount;
 		}
 
-		uint64_t TransactionHub::getBalanceAfterTransaction(const TransactionPtr &transaction) {
-			return BalanceAfterTx(transaction);
-		}
-
-		std::string TransactionHub::getReceiveAddress() const {
+		Address TransactionHub::GetReceiveAddress() const {
 			std::vector<Address> addr = _subAccount->UnusedAddresses(1, 0);
-			return addr[0].stringify();
+			return addr[0];
 		}
 
-		std::vector<std::string> TransactionHub::getAllAddresses() {
-
-			std::vector<Address> addrs = _subAccount->GetAllAddresses(size_t(-1));
-
-			std::vector<std::string> results;
-			for (int i = 0; i < addrs.size(); i++) {
-				results.push_back(addrs[i].stringify());
-			}
-			return results;
+		std::vector<Address> TransactionHub::GetAllAddresses(uint32_t start, size_t count, bool containInternal) {
+			return _subAccount->GetAllAddresses(start, count, containInternal);
 		}
 
-		std::string TransactionHub::GetVoteDepositAddress() const {
+		Address TransactionHub::GetVoteDepositAddress() const {
 			if ("Multi-Sign Account" == _subAccount->GetBasicInfo()["Type"]) {
-				return std::string();
+				return Address();
 			}
 
-			CMBlock publicKey = _subAccount->GetVotePublicKey();
-			if (publicKey.GetSize() == 0) {
-				return std::string();
-			}
-
-			Key key;
-			key.SetPubKey(publicKey);
-
-			return key.GetAddress(PrefixDeposit);
+			return Address(_subAccount->GetVotePublicKey(), PrefixDeposit);
 		}
 
-		bool TransactionHub::IsVoteDepositAddress(const std::string &addr) const {
+		bool TransactionHub::IsVoteDepositAddress(const Address &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->IsDepositAddress(addr);
 		}
 
-		bool TransactionHub::containsAddress(const std::string &address) {
+		bool TransactionHub::containsAddress(const Address &address) {
 			bool result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -477,7 +360,7 @@ namespace Elastos {
 			return result;
 		}
 
-		bool TransactionHub::addressIsUsed(const std::string &address) {
+		bool TransactionHub::addressIsUsed(const Address &address) {
 			bool result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -516,41 +399,8 @@ namespace Elastos {
 
 		void TransactionHub::UpdateBalance() {
 			_transactions.ForEach([this](const UInt256 &key, const AssetTransactionsPtr &value) {
-				value->UpdateBalance(_blockHeight);
+				value->UpdateBalance();
 			});
-		}
-
-		void TransactionHub::balanceChanged(const UInt256 &asset, uint64_t balance) {
-			if (!_listener.expired()) {
-				_listener.lock()->balanceChanged(asset, balance);
-			}
-		}
-
-		void TransactionHub::txAdded(const TransactionPtr &tx) {
-			if (!_listener.expired()) {
-				_listener.lock()->onTxAdded(tx);
-			}
-		}
-
-		void TransactionHub::txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp) {
-			if (!_listener.expired()) {
-				// Invoke the callback for each of txHashes.
-				for (size_t i = 0; i < txHashes.size(); i++) {
-					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), blockHeight, timestamp);
-				}
-			}
-		}
-
-		void TransactionHub::txDeleted(const std::vector<UInt256> &txHashes, const UInt256 &assetID, bool notifyUser,
-							   bool recommendRescan) {
-			if (!_listener.expired()) {
-
-				for (size_t i = 0; i < txHashes.size(); i++) {
-					_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHashes[i], true),
-												  UInt256IsZero(&assetID) ? "" : Utils::UInt256ToString(assetID, true),
-												  notifyUser, recommendRescan);
-				}
-			}
 		}
 
 		const std::string &TransactionHub::GetWalletID() const {
@@ -562,32 +412,13 @@ namespace Elastos {
 		}
 
 		void TransactionHub::SetBlockHeight(uint32_t height) {
-			boost::mutex::scoped_lock scoped_lock(lock);
-			_blockHeight = height;
+			boost::mutex::scoped_lock scopedLock(lock);
+			_transactions.SetBlockHeight(height);
 		}
 
-		uint32_t TransactionHub::getBlockHeight() const {
-			return _blockHeight;
-		}
-
-		uint64_t TransactionHub::BalanceAfterTx(const TransactionPtr &tx) {
-			uint64_t result;
-
-			assert(tx != NULL && tx->IsSigned());
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-
-				const UInt256 &assetID = tx->GetAssetID();
-				result = _transactions.Get(assetID)->GetBalance();
-				const std::vector<TransactionPtr> &transactions = _transactions.Get(assetID)->GetTransactions();
-				for (size_t i = transactions.size(); i > 0; i--) {
-					if (!tx->IsEqual(transactions[i - 1].get())) continue;
-					result = _transactions.Get(assetID)->GetBalanceHistory()[i - 1];
-					break;
-				}
-			}
-
-			return result;
+		uint32_t TransactionHub::GetBlockHeight() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _transactions.GetBlockHeight();
 		}
 
 		void TransactionHub::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) {
@@ -627,29 +458,7 @@ namespace Elastos {
 		}
 
 		void TransactionHub::SetTxUnconfirmedAfter(uint32_t blockHeight) {
-			std::vector<UInt256> hashes;
-			std::vector<UInt256> needUpdateAssets;
-
-			{
-				boost::mutex::scoped_lock scopedLock(lock);
-				_blockHeight = blockHeight;
-				_transactions.ForEach([&needUpdateAssets, &hashes, blockHeight](const UInt256 &key, const AssetTransactionsPtr &value) {
-					std::vector<UInt256> temp = value->SetTxUnconfirmedAfter(blockHeight);
-					if (temp.size() > 0) {
-						needUpdateAssets.push_back(key);
-					}
-					hashes.insert(hashes.end(), temp.begin(), temp.end());
-				});
-			}
-
-			if (hashes.size() > 0) {
-				txUpdated(hashes, TX_UNCONFIRMED, 0);
-			}
-
-			for (size_t i = 0; i < needUpdateAssets.size(); ++i) {
-				uint64_t balance = _transactions.Get(needUpdateAssets[i])->GetBalance(AssetTransactions::Total);
-				balanceChanged(needUpdateAssets[i], balance);
-			}
+			_transactions.SetTxUnconfirmedAfter(blockHeight);
 		}
 
 		void TransactionHub::UpdateAssets(const std::vector<Asset> &assetArray) {

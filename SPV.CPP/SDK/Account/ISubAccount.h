@@ -44,7 +44,7 @@ namespace Elastos {
 
 			virtual void InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) = 0;
 
-			virtual CMBlock GetRedeemScript(const std::string &addr) const = 0;
+			virtual CMBlock GetRedeemScript(const Address &addr) const = 0;
 
 			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) = 0;
 
@@ -58,7 +58,7 @@ namespace Elastos {
 
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
 
-			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const = 0;
+			virtual std::vector<Address> GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const = 0;
 
 			virtual bool ContainsAddress(const Address &address) const = 0;
 

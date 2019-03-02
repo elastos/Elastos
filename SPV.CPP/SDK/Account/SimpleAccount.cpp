@@ -7,6 +7,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Base/Address.h>
 
 #include <Core/BRCrypto.h>
 
@@ -107,10 +108,8 @@ namespace Elastos {
 			return MasterPubKey();
 		}
 
-		std::string SimpleAccount::GetAddress() const {
-			Key key;
-			key.SetPubKey(_publicKey);
-			return key.GetAddress(PrefixStandard);
+		Address SimpleAccount::GetAddress() const {
+			return Address(_publicKey, PrefixStandard);
 		}
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {

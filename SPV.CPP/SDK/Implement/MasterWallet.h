@@ -68,11 +68,6 @@ namespace Elastos {
 					const std::string &chainID,
 					uint64_t feePerKb = 0);
 
-			virtual ISubWallet *RecoverSubWallet(
-					const std::string &chainID,
-					uint32_t limitGap,
-					uint64_t feePerKb = 0);
-
 			virtual void DestroyWallet(ISubWallet *wallet);
 
 			virtual std::string GetPublicKey() const;
@@ -81,7 +76,7 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &payPassword);
 
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);

@@ -76,7 +76,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) const {
-			return _walletManager->getWallet()->GetBalanceInfo(Utils::UInt256FromString(assetID, true));
+			return _walletManager->getWallet()->GetBalanceInfo();
 		}
 
 		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) const {

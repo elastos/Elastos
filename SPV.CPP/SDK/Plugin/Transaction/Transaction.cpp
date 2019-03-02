@@ -194,17 +194,6 @@ namespace Elastos {
 			return false;
 		}
 
-		std::vector<std::string> Transaction::getOutputAddresses() {
-
-			const std::vector<TransactionOutput> &_outputs = getOutputs();
-			ssize_t len = _outputs.size();
-			std::vector<std::string> addresses(len);
-			for (int i = 0; i < len; i++)
-				addresses[i] = _outputs[i].getAddress();
-
-			return addresses;
-		}
-
 		uint32_t Transaction::getLockTime() const {
 
 			return _lockTime;
@@ -654,7 +643,7 @@ namespace Elastos {
 				TransactionPtr tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
 				if (tx) {
 					uint64_t spentAmount = tx->getOutputs()[_inputs[i].getIndex()].getAmount();
-					addr = tx->getOutputs()[_inputs[i].getIndex()].getAddress();
+					addr = tx->getOutputs()[_inputs[i].getIndex()].GetAddress().String();
 
 					if (detail) {
 						if (inputList.find(addr) == inputList.end()) {
@@ -675,7 +664,7 @@ namespace Elastos {
 			std::map<std::string, uint64_t> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
 				uint64_t oAmount = _outputs[i].getAmount();
-				addr = _outputs[i].getAddress();
+				addr = _outputs[i].GetAddress().String();
 
 				if (_outputs[i].GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = _outputs[i].GetPayload()->toJson();

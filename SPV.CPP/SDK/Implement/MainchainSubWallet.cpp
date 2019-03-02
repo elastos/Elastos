@@ -57,7 +57,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
-			const std::string &publicKey,
+			const std::string &ownerPublicKey,
 			const std::string &nodePublicKey,
 			const std::string &nickName,
 			const std::string &url,
@@ -69,13 +69,18 @@ namespace Elastos {
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			ParamChecker::checkPassword(payPasswd, "Generate payload");
-			size_t pubKeyLen = publicKey.size() >> 1;
-			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
-									 "Public key length should be 33 or 65 bytes");
+
+			CMBlock ownerPubKey = Utils::decodeHex(ownerPublicKey);
+			ParamChecker::checkParam(!Key::PubKeyIsValid(ownerPubKey, ownerPubKey.GetSize()), Error::PubKeyFormat,
+									 "Invalid owner public key");
+
+			CMBlock nodePubKey = Utils::decodeHex(nodePublicKey);
+			ParamChecker::checkParam(!Key::PubKeyIsValid(nodePubKey, nodePubKey.GetSize()), Error::PubKeyFormat,
+									 "Invalid node public key");
 
 			PayloadRegisterProducer pr;
-			pr.SetPublicKey(Utils::decodeHex(publicKey));
-			pr.SetNodePublicKey(Utils::decodeHex(nodePublicKey));
+			pr.SetPublicKey(ownerPubKey);
+			pr.SetNodePublicKey(nodePubKey);
 			pr.SetNickName(nickName);
 			pr.SetUrl(url);
 			pr.SetAddress(ipAddress);

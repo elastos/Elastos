@@ -13,19 +13,19 @@ namespace Elastos {
 		// base58 and base58check encoding: https://en.bitcoin.it/wiki/Base58Check_encoding
 
 		// returns the number of characters written to str including NULL terminator, or total strLen needed if str is NULL
-		std::string Base58::Encode(const CMBlock &data) {
+		std::string Base58::Encode(const void *data, size_t dataLen) {
 			static const char chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 			size_t i, j, len, zcount = 0;
-			size_t dataLen = data.GetSize();
+			const uint8_t *pdata = (const uint8_t *)data;
 
-			while (zcount < dataLen && data[zcount] == 0) zcount++; // count leading zeroes
+			while (zcount < dataLen && pdata[zcount] == 0) zcount++; // count leading zeroes
 
 			uint8_t buf[(dataLen - zcount)*138/100 + 1]; // log(256)/log(58), rounded up
 
 			memset(buf, 0, sizeof(buf));
 
 			for (i = zcount; data && i < dataLen; i++) {
-				uint32_t carry = data[i];
+				uint32_t carry = pdata[i];
 
 				for (j = sizeof(buf); j > 0; j--) {
 					carry += (uint32_t)buf[j - 1] << 8;
@@ -119,15 +119,13 @@ namespace Elastos {
 		}
 
 		// returns the number of characters written to str including NULL terminator, or total strLen needed if str is NULL
-		std::string Base58::CheckEncode(const CMBlock &data) {
-			size_t dataLen = data.GetSize();
+		std::string Base58::CheckEncode(const void *data, size_t dataLen) {
 			size_t bufLen = dataLen + 256/8;
 			CMBlock buf(bufLen);
 
 			memcpy(buf, data, dataLen);
 			BRSHA256_2(&buf[dataLen], data, dataLen);
-			buf.Resize(dataLen + 4);
-			std::string str = Encode(buf);
+			std::string str = Encode(buf, dataLen + 4);
 
 			buf.Zero();
 

@@ -14,11 +14,11 @@ namespace Elastos {
 	namespace ElaWallet {
 		class Base58 {
 		public:
-			static std::string Encode(const CMBlock &data);
+			static std::string Encode(const void *data, size_t dataLen);
 
 			static CMBlock Decode(const std::string &str);
 
-			static std::string CheckEncode(const CMBlock &data);
+			static std::string CheckEncode(const void *data, size_t dataLen);
 
 			static CMBlock CheckDecode(const std::string &str);
 

@@ -24,7 +24,7 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public TransactionHub::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet, public AssetTransactions::Listener, public PeerManager::Listener {
 		public:
 			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 
@@ -100,7 +100,7 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &payPassword);
 
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
@@ -165,8 +165,6 @@ namespace Elastos {
 				bool useVotedUTXO = false) const;
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
-
-			void recover(int limitGap);
 
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 

@@ -11,7 +11,8 @@
 #include <SDK/Common/Log.h>
 
 #include <Core/BRTransaction.h>
-#include <Core/BRAddress.h>
+#include <SDK/BIPs/BIP32Sequence.h>
+#include <Interface/ISubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -27,13 +28,16 @@ namespace Elastos {
 			}
 		}
 
-		AssetTransactions::AssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount,
-											 const std::vector<std::string> &listeningAddrs) :
+		AssetTransactions::AssetTransactions(GroupedAssetTransactions *parent, Lockable *lockable, const SubAccountPtr &subAccount,
+											 const std::vector<std::string> &listeningAddrs,
+											 const boost::shared_ptr<AssetTransactions::Listener> &listener) :
+				_parent(parent),
 				_lockable(lockable),
 				_subAccount(subAccount),
 				_listeningAddrs(listeningAddrs),
 				_feePerKb(DEFAULT_FEE_PER_KB) {
 
+			_listener = boost::weak_ptr<AssetTransactions::Listener>(listener);
 		}
 
 		AssetTransactions::AssetTransactions(const AssetTransactions &proto) {
@@ -43,18 +47,20 @@ namespace Elastos {
 		AssetTransactions &AssetTransactions::operator=(const AssetTransactions &proto) {
 			_transactions = proto._transactions;
 			_balance = proto._balance;
-			_totalSent = proto._totalSent;
-			_totalReceived = proto._totalReceived;
+			_votedBalance = proto._votedBalance;
+			_lockedBalance = proto._lockedBalance;
+			_depositBalance = proto._depositBalance;
 			_feePerKb = proto._feePerKb;
 			_utxos = proto._utxos;
-			_balanceHist = proto._balanceHist;
+			_utxosLocked = proto._utxosLocked;
 			_spentOutputs = proto._spentOutputs;
 			_allTx = proto._allTx;
 			_invalidTx = proto._invalidTx;
-			_pendingTx = proto._pendingTx;
 			_lockable = proto._lockable;
 			_subAccount = proto._subAccount;
 			_listeningAddrs = proto._listeningAddrs;
+			_listener = proto._listener;
+			_parent = proto._parent;
 			return *this;
 		}
 
@@ -97,14 +103,6 @@ namespace Elastos {
 			return _balance;
 		}
 
-		uint64_t AssetTransactions::GetTotalSent() const {
-			return _totalSent;
-		}
-
-		uint64_t AssetTransactions::GetTotalReceived() const {
-			return _totalReceived;
-		}
-
 		uint64_t AssetTransactions::GetFeePerKb() const {
 			return _feePerKb;
 		}
@@ -113,26 +111,20 @@ namespace Elastos {
 			_feePerKb = value;
 		}
 
-		const std::vector<uint64_t> &AssetTransactions::GetBalanceHistory() const {
-			return _balanceHist;
-		}
-
 		void AssetTransactions::CleanBalance() {
 			_utxos.Clear();
-			_balanceHist.clear();
-			_totalSent = 0;
-			_totalReceived = 0;
+			_utxosLocked.Clear();
 			_balance = 0;
+			_votedBalance = 0;
+			_depositBalance = 0;
 			_spentOutputs.Clear();
 			_invalidTx.Clear();
-			_pendingTx.Clear();
 			_subAccount->ClearUsedAddresses();
 		}
 
-		void AssetTransactions::UpdateBalance(uint32_t blockHeight) {
-			int isInvalid, isPending;
-			uint64_t balance = 0, prevBalance = 0, votedBalance = 0;
-			time_t now = time(nullptr);
+		void AssetTransactions::UpdateBalance() {
+			int isInvalid;
+			uint64_t balance = 0, lockedBalance = 0, depositBalance = 0, votedBalance = 0;
 			size_t i, j;
 
 			CleanBalance();
@@ -150,9 +142,8 @@ namespace Elastos {
 
 					if (isInvalid) {
 						_invalidTx.Insert(tx);
-						_balanceHist.push_back(balance);
-						continue;
 					}
+					continue;
 				}
 
 				// add inputs to spent output set
@@ -160,86 +151,71 @@ namespace Elastos {
 					_spentOutputs.AddByTxInput(tx->getInputs()[j], 0, 0);
 				}
 
-				// check if tx is pending
-				if (tx->getBlockHeight() == TX_UNCONFIRMED) {
-					isPending = tx->getSize() > TX_MAX_SIZE ? 1 : 0; // check tx size is under TX_MAX_SIZE
+				_subAccount->AddUsedAddrs(tx);
+				uint32_t confirms = tx->GetConfirms(_parent->GetBlockHeight());
 
-					for (j = 0; !isPending && j < tx->getOutputs().size(); j++) {
-						if (tx->getOutputs()[j].getAmount() < TX_MIN_OUTPUT_AMOUNT)
-							isPending = 1; // check that no outputs are dust
-					}
-
-					for (j = 0; !isPending && j < tx->getInputs().size(); j++) {
-						if (tx->getInputs()[j].getSequence() < UINT32_MAX - 1)
-							isPending = 1; // check for replace-by-fee
-						if (tx->getInputs()[j].getSequence() < UINT32_MAX && tx->getLockTime() < TX_MAX_LOCK_HEIGHT &&
-							tx->getLockTime() > blockHeight + 1)
-							isPending = 1; // future lockTime
-						if (tx->getInputs()[j].getSequence() < UINT32_MAX && tx->getLockTime() > now)
-							isPending = 1; // future lockTime
-						if (_pendingTx.Contains(tx->getInputs()[j].getTransctionHash()))
-							isPending = 1; // check for pending inputs
-						// TODO: XXX handle BIP68 check lock time verify rules
-					}
-
-					if (isPending) {
-						_pendingTx.Insert(tx);
-						_balanceHist.push_back(balance);
-						continue;
-					}
-				}
-
-				// add outputs to UTXO set
-				// TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
-				// TODO: don't add coin generation outputs < 100 blocks deep
-				// NOTE: balance/UTXOs will then need to be recalculated when last block changes
-				if (tx->getBlockHeight() != TX_UNCONFIRMED) {
-					_subAccount->AddUsedAddrs(tx);
-
-					const std::vector<TransactionOutput> &outputs = tx->getOutputs();
-					for (j = 0; j < outputs.size(); j++) {
-						if (!outputs[j].getAddress().empty()) {
-
-							uint32_t confirms = blockHeight >= tx->getBlockHeight() ?
-												blockHeight - tx->getBlockHeight() + 1 : 0;
-							if (_subAccount->IsDepositAddress(outputs[j].getAddress())) {
-								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
-							} else if (_subAccount->ContainsAddress(outputs[j].getAddress())) {
-								bool isVote = (tx->getVersion() == Transaction::TxVersion::V09 &&
-									outputs[j].GetType() == TransactionOutput::Type::VoteOutput);
-								_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
-								balance += outputs[j].getAmount();
-								if (isVote) {
-									votedBalance += outputs[j].getAmount();
-								}
+				const std::vector<TransactionOutput> &outputs = tx->getOutputs();
+				for (j = 0; j < outputs.size(); j++) {
+					Address addr = outputs[j].GetAddress();
+					if (_subAccount->ContainsAddress(addr)) {
+						if (_subAccount->IsDepositAddress(addr)) {
+							_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
+							depositBalance += outputs[j].getAmount();
+						} else if ((tx->getTransactionType() == Transaction::Type::CoinBase && confirms <= 100) ||
+							outputs[j].getOutputLock() > _parent->GetBlockHeight()) {
+							_utxosLocked.AddUTXO(tx->getHash(), (uint32_t)j, outputs[j].getAmount(), confirms);
+							lockedBalance += outputs[j].getAmount();
+						} else {
+							_utxos.AddUTXO(tx->getHash(), (uint32_t) j, outputs[j].getAmount(), confirms);
+							balance += outputs[j].getAmount();
+							if (outputs[j].GetType() == TransactionOutput::VoteOutput) {
+								votedBalance += outputs[j].getAmount();
 							}
 						}
 					}
 				}
-
-				// transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
-				for (j = _utxos.size(); j > 0; j--) {
-					if (!_spentOutputs.Contains(_utxos[j - 1])) continue;
-					const TransactionPtr &t = _allTx.Get(_utxos[j - 1].hash);
-
-					if (!_subAccount->IsDepositAddress(t->getOutputs()[_utxos[j - 1].n].getAddress())) {
-						balance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
-						if (t->getOutputs()[_utxos[j - 1].n].GetType() == TransactionOutput::Type::VoteOutput) {
-							votedBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
-						}
-					}
-					_utxos.RemoveAt(j - 1);
-				}
-
-				if (prevBalance < balance) _totalReceived += balance - prevBalance;
-				if (balance < prevBalance) _totalSent += prevBalance - balance;
-				_balanceHist.push_back(balance);
-				prevBalance = balance;
 			}
 
-			assert(_balanceHist.size() == _transactions.size());
+			// transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
+			for (j = _utxos.size(); j > 0; j--) {
+				if (!_spentOutputs.Contains(_utxos[j - 1])) continue;
+				const TransactionPtr &t = _allTx.Get(_utxos[j - 1].hash);
+
+				if (_subAccount->IsDepositAddress(t->getOutputs()[_utxos[j - 1].n].GetAddress())) {
+					depositBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+				} else {
+					balance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+					if (t->getOutputs()[_utxos[j - 1].n].GetType() == TransactionOutput::Type::VoteOutput) {
+						votedBalance -= t->getOutputs()[_utxos[j - 1].n].getAmount();
+					}
+				}
+				_utxos.RemoveAt(j - 1);
+			}
+
+			for (j = _utxosLocked.size(); j > 0; j--) {
+				if (!_spentOutputs.Contains(_utxosLocked[j - 1]))
+					continue;
+				const TransactionPtr &t = _allTx.Get(_utxosLocked[j - 1].hash);
+
+				lockedBalance -= t->getOutputs()[_utxosLocked[j - 1].n].getAmount();
+				_utxosLocked.RemoveAt(j - 1);
+			}
+
 			_balance = balance;
+			_lockedBalance = lockedBalance;
+			_depositBalance = depositBalance;
 			_votedBalance = votedBalance;
+		}
+
+		nlohmann::json AssetTransactions::GetBalanceInfo() {
+			nlohmann::json info;
+
+			info["Balance"] = _balance;
+			info["LockedBalance"] = _lockedBalance;
+			info["DepositBalance"] = _depositBalance;
+			info["VotedBalance"] = _votedBalance;
+
+			return info;
 		}
 
 		bool AssetTransactions::Exist(const TransactionPtr &tx) {
@@ -255,9 +231,8 @@ namespace Elastos {
 		}
 
 		TransactionPtr AssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
-														 const std::string &fromAddress, uint64_t fee,
-														 bool useVotedUTXO,
-														 uint32_t blockHeight) {
+														 const Address &fromAddress, uint64_t fee,
+														 bool useVotedUTXO) {
 			TransactionPtr txn = TransactionPtr(new Transaction);
 			uint64_t totalOutputAmount = 0, totalInputAmount = 0;
 			uint32_t confirms;
@@ -286,7 +261,7 @@ namespace Elastos {
 						continue;
 					}
 
-					confirms = txInput->GetConfirms(blockHeight);
+					confirms = txInput->GetConfirms(_parent->GetBlockHeight());
 					if (confirms < 2) {
 						Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
 								  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
@@ -309,17 +284,17 @@ namespace Elastos {
 				TransactionOutput o = txInput->getOutputs()[_utxos[i].n];
 
 				if (o.GetType() == TransactionOutput::Type::VoteOutput ||
-					(_subAccount->IsDepositAddress(o.getAddress()) && fromAddress != o.getAddress())) {
+					(_subAccount->IsDepositAddress(o.GetAddress()) && fromAddress != o.GetAddress())) {
 					Log::debug("skip utxo: {}, n: {}, addr: {}", Utils::UInt256ToString(_utxos[i].hash, true),
-							   _utxos[i].n, o.getAddress());
+							   _utxos[i].n, o.GetAddress().String());
 					continue;
 				}
 
-				if (!fromAddress.empty() && fromAddress != o.getAddress()) {
+				if (fromAddress.IsValid() && fromAddress != o.GetAddress().String()) {
 					continue;
 				}
 
-				uint32_t confirms = txInput->GetConfirms(blockHeight);
+				uint32_t confirms = txInput->GetConfirms(_parent->GetBlockHeight());
 				if (confirms < 2) {
 					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
 							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
@@ -353,7 +328,7 @@ namespace Elastos {
 					std::vector<Address> addresses = _subAccount->UnusedAddresses(1, 1);
 					ParamChecker::checkCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed.");
 					uint64_t changeAmount = totalInputAmount - totalOutputAmount - fee;
-					TransactionOutput changeOutput(changeAmount, addresses[0].stringify(), assetID);
+					TransactionOutput changeOutput(changeAmount, addresses[0], assetID);
 					txn->AddOutput(changeOutput);
 				}
 			}
@@ -361,8 +336,7 @@ namespace Elastos {
 			return txn;
 		}
 
-		void AssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress,
-											uint32_t blockHeight) {
+		void AssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress) {
 			uint64_t totalInputAmount = 0, totalOutputAmount = 0, changeAmount = 0, newChangeAmount = 0;
 			size_t i;
 			uint32_t confirms;
@@ -405,17 +379,17 @@ namespace Elastos {
 				TransactionOutput o = txInput->getOutputs()[_utxos[i].n];
 
 				if (o.GetType() == TransactionOutput::Type::VoteOutput ||
-					(_subAccount->IsDepositAddress(o.getAddress()) && fromAddress != o.getAddress())) {
+					(_subAccount->IsDepositAddress(o.GetAddress()) && o.GetAddress() != fromAddress)) {
 					Log::debug("skip utxo: {}, n: {}, addr: {}", Utils::UInt256ToString(_utxos[i].hash, true),
-							   _utxos[i].n, o.getAddress());
+							   _utxos[i].n, o.GetAddress().String());
 					continue;
 				}
 
-				if (!fromAddress.empty() && fromAddress != o.getAddress()) {
+				if (fromAddress.IsValid() && o.GetAddress() != fromAddress ) {
 					continue;
 				}
 
-				confirms = txInput->GetConfirms(blockHeight);
+				confirms = txInput->GetConfirms(_parent->GetBlockHeight());
 				if (confirms < 2) {
 					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
 							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, confirms);
@@ -448,151 +422,13 @@ namespace Elastos {
 					UInt256 assetID = outputs[0].getAssetId();
 					std::vector<Address> addresses = _subAccount->UnusedAddresses(1, 1);
 					ParamChecker::checkCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed.");
-					outputs.emplace_back(newChangeAmount, addresses[0].stringify(), assetID);
+					outputs.emplace_back(newChangeAmount, addresses[0], assetID);
 				}
 			} else {
 				tx->removeChangeOutput();
 			}
 			tx->setFee(fee);
 		}
-
-#if 0
-		TransactionPtr
-		AssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-											  const std::string &fromAddress,
-											  bool useVotedUTXO,
-											  const boost::function<bool(const std::string &,
-																		 const std::string &)> &filter) {
-			TransactionPtr transaction = TransactionPtr(new Transaction);
-			uint64_t feeAmount, amount = 0, balance = 0;
-			size_t i, cpfpSize = 0;
-
-			assert(outputs.size() > 0);
-			for (i = 0; i < outputs.size(); i++) {
-				amount += outputs[i].getAmount();
-			}
-			transaction->getOutputs() = outputs;
-
-			_lockable->Lock();
-			feeAmount = transaction->calculateFee(_feePerKb);
-
-			_utxos.SortBaseOnOutputAmount(amount, _feePerKb);
-			// TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
-			// TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
-			// TODO: use up UTXOs received from any of the output scripts that this transaction sends funds to, to mitigate an
-			//       attacker double spending and requesting a refund
-			for (i = 0; i < _utxos.size(); i++) {
-
-				if (!useVotedUTXO && _utxos[i].isVote) {
-					Log::debug("skip voted utxo: {}, n: {}", Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n);
-					continue;
-				}
-
-				const TransactionPtr &tx = _allTx.Get(_utxos[i].hash);
-				if (!tx || _utxos[i].n >= tx->getOutputs().size()) continue;
-				if (filter && !fromAddress.empty() &&
-					!filter(fromAddress, tx->getOutputs()[_utxos[i].n].getAddress())) {
-					continue;
-				}
-
-				if (_utxos[i].confirms < 2) {
-					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-							  Utils::UInt256ToString(_utxos[i].hash, true), _utxos[i].n, _utxos[i].confirms);
-					continue;
-				}
-
-				transaction->getInputs().push_back(TransactionInput(_utxos[i].hash, _utxos[i].n));
-
-				if (transaction->getSize() + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
-					bool balanceEnough = true;
-					feeAmount = transaction->calculateFee(_feePerKb) + _feePerKb;
-					transaction = nullptr;
-
-					// check for sufficient total funds before building a smaller transaction
-					if (_balance < amount + feeAmount) {
-						balanceEnough = false;
-					}
-					_lockable->Unlock();
-
-					ParamChecker::checkCondition(!balanceEnough, Error::CreateTransaction,
-												 "Available token is not enough");
-
-					uint64_t maxAmount = 0;
-					if (outputs[outputs.size() - 1].getAmount() > amount + feeAmount - balance) {
-						for (int k = 0; k < outputs.size() - 1; ++k) {
-							maxAmount += outputs[k].getAmount();
-						}
-						maxAmount += outputs[outputs.size() - 1].getAmount() - (amount + feeAmount - balance);
-
-						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, amount should less than " +
-													 std::to_string(maxAmount), maxAmount);
-						//todo automatic create new transaction if needed
-//						std::vector<TransactionOutput> newOutputs = outputs;
-//						newOutputs[outputs.size() - 1].setAmount(newOutputs[outputs.size() - 1].getAmount() -
-//																 amount + feeAmount -
-//																 balance); // reduce last output amount
-//						transaction = CreateTxForOutputs(newOutputs, fromAddress, filter);
-					} else {
-						for (int k = 0; k < outputs.size() - 1; ++k) {
-							maxAmount += outputs[k].getAmount();
-						}
-						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, amount should less than " +
-													 std::to_string(maxAmount), maxAmount);
-						//todo automatic create new transaction if needed
-//						std::vector<TransactionOutput> newOutputs;
-//						newOutputs.insert(newOutputs.end(), outputs.begin(), outputs.begin() + outputs.size() - 1);
-//						transaction = CreateTxForOutputs(newOutputs, fromAddress, filter); // remove last output
-					}
-
-					balance = amount = feeAmount = 0;
-					_lockable->Lock();
-					break;
-				}
-
-				balance += tx->getOutputs()[_utxos[i].n].getAmount();
-
-//        // size of unconfirmed, non-change inputs for child-pays-for-parent fee
-//        // don't include parent tx with more than 10 inputs or 10 outputs
-//        if (tx->_blockHeight == TX_UNCONFIRMED && tx->inCount <= 10 && tx->outCount <= 10 &&
-//            ! _BRWalletTxIsSend(wallet, tx)) cpfpSize += BRTransactionSize(tx);
-
-				// fee amount after adding a change output
-				feeAmount = tx->calculateFee(_feePerKb);
-
-				// increase fee to round off remaining wallet balance to nearest 100 satoshi
-				//if (_balance > amount + feeAmount) feeAmount += (_balance - (amount + feeAmount)) % 100;
-
-				if (balance >= amount + feeAmount) break;
-			}
-			_lockable->Unlock();
-
-			if (transaction != nullptr) {
-				transaction->setFee(feeAmount);
-			}
-
-			if (transaction && (transaction->getOutputs().size() < 1 ||
-								balance < amount + feeAmount)) { // no outputs/insufficient funds
-				transaction = nullptr;
-				ParamChecker::checkCondition(balance < amount + feeAmount, Error::BalanceNotEnough,
-											 "Available token is not enough");
-				ParamChecker::checkCondition(transaction->getOutputs().size() < 1, Error::CreateTransaction,
-											 "Output count is not enough");
-			} else if (transaction && balance - (amount + feeAmount) > 0) { // add change output
-				std::vector<Address> addrs = _subAccount->UnusedAddresses(1, 1);
-				ParamChecker::checkCondition(addrs.empty(), Error::CreateTransaction, "Get address failed.");
-
-				UInt168 programHash;
-				ParamChecker::checkCondition(!Utils::UInt168FromAddress(programHash, addrs[i].stringify()),
-											 Error::CreateTransaction, "Convert from address to program hash error.");
-				TransactionOutput changeOutput(balance - (amount + feeAmount), programHash, outputs[0].getAssetId());
-				transaction->getOutputs().push_back(changeOutput);
-			}
-
-			return transaction;
-		}
-#endif
 
 		uint64_t AssetTransactions::getMinOutputAmount() {
 			uint64_t amount;
@@ -643,22 +479,28 @@ namespace Elastos {
 			return result;
 		}
 
-		std::vector<UInt256> AssetTransactions::SetTxUnconfirmedAfter(uint32_t blockHeight) {
-			size_t i, j, count;
-			std::vector<UInt256> hashes;
+		void AssetTransactions::SetTxUnconfirmedAfter(uint32_t blockHeight) {
 
+			size_t i, j, count;
+
+			_lockable->Lock();
+			_parent->SetBlockHeight(blockHeight);
 			count = i = _transactions.size();
 			while (i > 0 && _transactions[i - 1]->getBlockHeight() > blockHeight) i--;
 			count -= i;
 
+			std::vector<UInt256> hashes;
 
 			for (j = 0; j < count; j++) {
 				_transactions[i + j]->setBlockHeight(TX_UNCONFIRMED);
 				hashes.push_back(_transactions[i + j]->getHash());
 			}
 
-			if (count > 0) UpdateBalance(blockHeight);
-			return hashes;
+			if (count > 0) UpdateBalance();
+			_lockable->Unlock();
+
+			if (count > 0) txUpdated(hashes, TX_UNCONFIRMED, 0);
+			if (count > 0) balanceChanged(_transactions[0]->GetAssetID(), _balance);
 		}
 
 		bool AssetTransactions::TransactionIsValid(const TransactionPtr &tx) {
@@ -677,37 +519,51 @@ namespace Elastos {
 			return r;
 		}
 
-		bool AssetTransactions::RegisterTransaction(const TransactionPtr &transaction, uint32_t blockHeight,
-													bool &wasAdded) {
-			bool r = true;
-			if (!_allTx.Contains(transaction)) {
-				if (WalletContainsTx(transaction)) {
-					// TODO: verify signatures when possible
-					// TODO: handle tx replacement with input sequence numbers
-					//       (for now, replacements appear invalid until confirmation)
-					Append(transaction);
-					UpdateBalance(blockHeight);
-					wasAdded = true;
-				} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
-					// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
-					if (transaction->getBlockHeight() == TX_UNCONFIRMED) _allTx.Insert(transaction);
-					r = false;
-					// BUG: XXX memory leak if tx is not added to wallet->_allTx, and we can't just free it
+		bool AssetTransactions::RegisterTransaction(const TransactionPtr &tx) {
+			bool r = true, wasAdded = false;
+
+			if (tx != nullptr && tx->IsSigned()) {
+				_lockable->Lock();
+				if (!_allTx.Contains(tx)) {
+					if (WalletContainsTx(tx)) {
+						// TODO: verify signatures when possible
+						// TODO: handle tx replacement with input sequence numbers
+						//       (for now, replacements appear invalid until confirmation)
+						Append(tx);
+						if (tx->getTransactionType() != Transaction::CoinBase)
+							UpdateBalance();
+						wasAdded = true;
+					} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
+						// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
+						if (tx->getBlockHeight() == TX_UNCONFIRMED) _allTx.Insert(tx);
+						r = false;
+						// BUG: XXX memory leak if tx is not added to wallet->_allTx, and we can't just free it
+					}
 				}
+				_lockable->Unlock();
+			} else {
+				r = false;
+			}
+
+			if (wasAdded) {
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+				txAdded(tx);
+				if (tx->getTransactionType() != Transaction::CoinBase)
+					balanceChanged(tx->GetAssetID(), _balance);
 			}
 
 			return r;
 		}
 
-		bool
-		AssetTransactions::RemoveTransaction(const UInt256 &transactionHash, uint32_t blockHeight,
-											 std::vector<UInt256> &removedTransactions, UInt256 &removedAssetID,
-											 bool &notifyUser, bool &recommendRescan) {
-			bool removed = false;
+		void AssetTransactions::RemoveTransaction(const UInt256 &txHash) {
+			bool notifyUser = false, recommendRescan = false;
 			std::vector<UInt256> hashes;
 
-			assert(!UInt256IsZero(&transactionHash));
-			const TransactionPtr &tx = _allTx.Get(transactionHash);
+			assert(!UInt256IsZero(&txHash));
+
+			_lockable->Lock();
+			const TransactionPtr &tx = _allTx.Get(txHash);
 
 			if (tx) {
 				for (size_t i = _transactions.size(); i > 0; i--) { // find depedent _transactions
@@ -716,49 +572,48 @@ namespace Elastos {
 					if (tx->IsEqual(t.get())) continue;
 
 					for (size_t j = 0; j < t->getInputs().size(); j++) {
-						if (!UInt256Eq(&t->getInputs()[j].getTransctionHash(), &transactionHash)) continue;
+						if (!UInt256Eq(&t->getInputs()[j].getTransctionHash(), &txHash)) continue;
 						hashes.push_back(t->getHash());
 						break;
 					}
 				}
 
 				if (!hashes.empty()) {
-
+					_lockable->Unlock();
 					for (size_t i = hashes.size(); i > 0; i--) {
-						RemoveTransaction(hashes[i - 1], blockHeight, removedTransactions, removedAssetID, notifyUser,
-										  recommendRescan);
+						RemoveTransaction(hashes[i - 1]);
 					}
 
-					RemoveTransaction(transactionHash, blockHeight, removedTransactions, removedAssetID, notifyUser,
-									  recommendRescan);
+					RemoveTransaction(txHash);
 				} else {
 					for (size_t i = _transactions.size(); i > 0; i--) {
 						if (!_transactions[i - 1]->IsEqual(tx.get())) continue;
-						removedAssetID = tx->GetAssetID();
 						_transactions.erase(_transactions.begin() + i - 1);
 						break;
 					}
 
-					UpdateBalance(blockHeight);
+					UpdateBalance();
+					_lockable->Unlock();
 
 					// if this is for a transaction we sent, and it wasn't already known to be invalid, notify user
 					if (AmountSentByTx(tx) > 0 && TransactionIsValid(tx)) {
-						recommendRescan = notifyUser = 1;
+						recommendRescan = notifyUser = true;
 
 						for (size_t i = 0;
 							 i < tx->getInputs().size(); i++) { // only recommend a rescan if all inputs are confirmed
 							TransactionPtr t = _allTx.Get(tx->getInputs()[i].getTransctionHash());
 							if (t && t->getBlockHeight() != TX_UNCONFIRMED) continue;
-							recommendRescan = 0;
+							recommendRescan = false;
 							break;
 						}
 					}
 
-					removedTransactions.push_back(transactionHash);
+					balanceChanged(tx->GetAssetID(), _balance);
+					txDeleted(tx->getHash(), tx->GetAssetID(), notifyUser, recommendRescan);
 				}
-				removed = true;
+			} else {
+				_lockable->Unlock();
 			}
-			return removed;
 		}
 
 		uint64_t AssetTransactions::AmountSentByTx(const TransactionPtr &tx) {
@@ -769,7 +624,7 @@ namespace Elastos {
 				uint32_t n = tx->getInputs()[i].getIndex();
 
 				if (t && n < t->getOutputs().size() &&
-					_subAccount->ContainsAddress(t->getOutputs()[n].getAddress())) {
+					_subAccount->ContainsAddress(t->getOutputs()[n].GetAddress())) {
 					amount += t->getOutputs()[n].getAmount();
 				}
 			}
@@ -785,7 +640,7 @@ namespace Elastos {
 			size_t outCount = tx->getOutputs().size();
 
 			for (size_t i = 0; !r && i < outCount; i++) {
-				if (_subAccount->ContainsAddress(tx->getOutputs()[i].getAddress())) {
+				if (_subAccount->ContainsAddress(tx->getOutputs()[i].GetAddress())) {
 					r = true;
 				}
 			}
@@ -798,47 +653,100 @@ namespace Elastos {
 					continue;
 				}
 
-				if (_subAccount->ContainsAddress(t->getOutputs()[n].getAddress()))
+				if (_subAccount->ContainsAddress(t->getOutputs()[n].GetAddress()))
 					r = true;
 			}
 
 			//for listening addresses
 			for (size_t i = 0; i < outCount; ++i) {
 				if (std::find(_listeningAddrs.begin(), _listeningAddrs.end(),
-							  tx->getOutputs()[i].getAddress()) != _listeningAddrs.end())
+							  tx->getOutputs()[i].GetAddress().String()) != _listeningAddrs.end())
 					r = true;
 			}
 			return r;
 		}
 
-		bool AssetTransactions::UpdateTransactions(const TransactionPtr &tx, bool &updated,
+		void AssetTransactions::UpdateTransactions(const std::vector<UInt256> &txHashes,
 												   uint32_t blockHeight, uint32_t timestamp) {
+			std::vector<UInt256> hashes;
 			bool needsUpdate = false;
+			UInt256 assetID;
+			size_t i;
 
-			if (tx->getBlockHeight() == TX_UNCONFIRMED)
-				needsUpdate = true;
+			_lockable->Lock();
+			if (blockHeight != TX_UNCONFIRMED && blockHeight > _parent->GetBlockHeight())
+				_parent->SetBlockHeight(blockHeight);
 
-			tx->setTimestamp(timestamp);
-			tx->setBlockHeight(blockHeight);
+			for (i = 0; i < txHashes.size(); i++) {
+				const TransactionPtr &tx = GetExistTransaction(txHashes[i]);
+				if (tx == nullptr || (tx->getBlockHeight() == blockHeight && tx->getTimestamp() == timestamp))
+					continue;
 
-			if (WalletContainsTx(tx)) {
-				SortTransaction();
-
-				updated = true;
-				if (_pendingTx.Contains(tx) || _invalidTx.Contains(tx))
+				if (tx->getBlockHeight() == TX_UNCONFIRMED && tx->getTransactionType() != Transaction::CoinBase) {
+					assetID = tx->GetAssetID();
 					needsUpdate = true;
-			} else if (blockHeight != TX_UNCONFIRMED) { // remove and free confirmed non-wallet tx
-				_allTx.Remove(tx);
+				}
+
+				tx->setTimestamp(timestamp);
+				tx->setBlockHeight(blockHeight);
+
+				if (WalletContainsTx(tx)) {
+					SortTransaction();
+					hashes.push_back(txHashes[i]);
+					if (_invalidTx.Contains(tx)) {
+						assetID = tx->GetAssetID();
+						needsUpdate = true;
+					}
+				} else if (blockHeight != TX_UNCONFIRMED) { // remove and free confirmed non-wallet tx
+					_allTx.Remove(tx);
+				}
 			}
 
-			return needsUpdate;
+			if (needsUpdate) UpdateBalance();
+			_lockable->Unlock();
+
+			if (!hashes.empty()) txUpdated(hashes, blockHeight, timestamp);
+			if (needsUpdate) balanceChanged(assetID, _balance);
 		}
 
-		GroupedAssetTransactions::GroupedAssetTransactions(Lockable *lockable, const std::vector<Asset> &assetArray,
+		void AssetTransactions::balanceChanged(const UInt256 &asset, uint64_t balance) {
+			if (!_listener.expired()) {
+				_listener.lock()->balanceChanged(asset, balance);
+			}
+		}
+
+		void AssetTransactions::txAdded(const TransactionPtr &tx) {
+			if (!_listener.expired()) {
+				_listener.lock()->onTxAdded(tx);
+			}
+		}
+
+		void AssetTransactions::txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp) {
+			if (!_listener.expired()) {
+				// Invoke the callback for each of txHashes.
+				for (size_t i = 0; i < txHashes.size(); i++) {
+					_listener.lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i], true), blockHeight, timestamp);
+				}
+			}
+		}
+
+		void AssetTransactions::txDeleted(const UInt256 &txHash, const UInt256 &assetID, bool notifyUser,
+										  bool recommendRescan) {
+			if (!_listener.expired()) {
+				_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHash, true),
+											  UInt256IsZero(&assetID) ? "" : Utils::UInt256ToString(assetID, true),
+											  notifyUser, recommendRescan);
+			}
+		}
+
+		GroupedAssetTransactions::GroupedAssetTransactions(TransactionHub *parent, const std::vector<Asset> &assetArray,
 														   const std::vector<TransactionPtr> &txns,
-														   const SubAccountPtr &subAccount) :
-				_lockable(lockable),
-				_subAccount(subAccount) {
+														   const SubAccountPtr &subAccount,
+														   const boost::shared_ptr<AssetTransactions::Listener> &listener) :
+				_parent(parent),
+				_subAccount(subAccount),
+				_blockHeight(0),
+				_listener(listener) {
 
 			UpdateAssets(assetArray);
 
@@ -877,7 +785,7 @@ namespace Elastos {
 				UInt256 assetID = assetArray[i].GetHash();
 				if (!_groupedTransactions.Contains(assetID)) {
 					_groupedTransactions.Insert(assetID, AssetTransactionsPtr(
-							new AssetTransactions(_lockable, _subAccount, _listeningAddrs)));
+							new AssetTransactions(this, _parent, _subAccount, _listeningAddrs, _listener)));
 				}
 			}
 		}
@@ -926,27 +834,16 @@ namespace Elastos {
 
 		TransactionPtr
 		GroupedAssetTransactions::CreateTxForFee(const std::vector<TransactionOutput> &outputs,
-												 const std::string &fromAddress,
-												 uint64_t fee, bool useVotedUTXO,
-												 uint32_t blockHeight) {
+												 const Address &fromAddress,
+												 uint64_t fee, bool useVotedUTXO) {
 			UInt256 assetID = GetUniqueAssetID(outputs);
-			return _groupedTransactions[assetID]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO, blockHeight);
+			return _groupedTransactions[assetID]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
 		}
 
-		void GroupedAssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const std::string &fromAddress,
-												   uint32_t blockHeight) {
+		void GroupedAssetTransactions::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress) {
 			UInt256 assetID = GetUniqueAssetID(tx->getOutputs());
-			_groupedTransactions[assetID]->UpdateTxFee(tx, fee, fromAddress, blockHeight);
+			_groupedTransactions[assetID]->UpdateTxFee(tx, fee, fromAddress);
 		}
-
-//		TransactionPtr GroupedAssetTransactions::CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-//																	const std::string &fromAddress,
-//																	bool useVotedUTXO,
-//																	const boost::function<bool(const std::string &,
-//																							   const std::string &)> &filter) {
-//			UInt256 assetID = GetUniqueAssetID(outputs);
-//			return _groupedTransactions[assetID]->CreateTxForOutputs(outputs, fromAddress, useVotedUTXO, filter);
-//		}
 
 		TransactionPtr GroupedAssetTransactions::TransactionForHash(const UInt256 &transactionHash) {
 			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();
@@ -963,55 +860,35 @@ namespace Elastos {
 			return _groupedTransactions[assetID]->GetExistTransaction(transactionHash);
 		}
 
-		void GroupedAssetTransactions::RemoveTransaction(const UInt256 &transactionHash, uint32_t blockHeight,
-														 std::vector<UInt256> &removedTransactions,
-														 UInt256 &removedAssetID, bool &notifyUser,
-														 bool &recommendRescan) {
+		bool GroupedAssetTransactions::RegisterTransaction(const TransactionPtr &tx) {
+			const AssetTransactionsPtr assetTx= Get(tx->GetAssetID());
+			if (!assetTx) {
+				Log::warn("asset {} not found", Utils::UInt256ToString(tx->GetAssetID(), true));
+				return false;
+			}
+
+			return assetTx->RegisterTransaction(tx);
+		}
+
+		void GroupedAssetTransactions::RemoveTransaction(const UInt256 &txHash) {
 			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();
 				 it != _groupedTransactions.End(); ++it) {
-				if (it->second->RemoveTransaction(transactionHash, blockHeight, removedTransactions, removedAssetID,
-												  notifyUser, recommendRescan))
-					break;
+				it->second->RemoveTransaction(txHash);
 			}
 		}
 
-		std::vector<UInt256>
-		GroupedAssetTransactions::UpdateTransactions(const std::vector<UInt256> &txHashes,
-													 std::vector<UInt256> &updatedHashes,
-													 uint32_t blockHeight, uint32_t timestamp) {
-			std::vector<UInt256> needUpdateAssets;
-			bool needsUpdate, txUpdated;
+		void GroupedAssetTransactions::UpdateTransactions(const std::vector<UInt256> &txHashes,
+														  uint32_t blockHeight, uint32_t timestamp) {
 			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();
 				 it != _groupedTransactions.End(); ++it) {
-
-				needsUpdate = false;
-				for (size_t i = 0; i < txHashes.size(); ++i) {
-					const TransactionPtr &tx = it->second->GetExistTransaction(txHashes[i]);
-					if (!tx || (tx->getBlockHeight() == blockHeight && tx->getTimestamp() == timestamp))
-						continue;
-
-					txUpdated = false;
-					if (it->second->UpdateTransactions(tx, txUpdated, blockHeight, timestamp)) {
-						needsUpdate = true;
-					}
-
-					if (txUpdated) {
-						updatedHashes.push_back(txHashes[i]);
-					}
-				}
-
-				if (needsUpdate) {
-					needUpdateAssets.push_back(it->first);
-				}
+				it->second->UpdateTransactions(txHashes, blockHeight, timestamp);
 			}
-
-			return needUpdateAssets;
 		}
 
-		void GroupedAssetTransactions::UpdateBalance(const std::vector<UInt256> &needUpdateAssets, uint32_t blockHeight) {
-			for (size_t i = 0; i < needUpdateAssets.size(); ++i) {
-				const AssetTransactionsPtr &assetTransaction = _groupedTransactions.Get(needUpdateAssets[i]);
-				assetTransaction->UpdateBalance(blockHeight);
+		void GroupedAssetTransactions::SetTxUnconfirmedAfter(uint32_t blockHeight) {
+			for (AssetTransactionMap::MapType::iterator it = _groupedTransactions.Begin();
+				 it != _groupedTransactions.End(); ++it) {
+				it->second->SetTxUnconfirmedAfter(blockHeight);
 			}
 		}
 
@@ -1026,6 +903,7 @@ namespace Elastos {
 				result |= it->second->WalletContainsTx(tx);
 				if (result) break;
 			}
+
 			return result;
 		}
 
@@ -1066,6 +944,14 @@ namespace Elastos {
 
 		bool GroupedAssetTransactions::ContainsAsset(const UInt256 &assetID) {
 			return _groupedTransactions.Contains(assetID);
+		}
+
+		uint32_t GroupedAssetTransactions::GetBlockHeight() const {
+			return _blockHeight;
+		}
+
+		void GroupedAssetTransactions::SetBlockHeight(uint32_t height) {
+			_blockHeight = height;
 		}
 
 	}

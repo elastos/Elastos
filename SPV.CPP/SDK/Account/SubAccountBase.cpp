@@ -50,12 +50,11 @@ namespace Elastos {
 				return false;
 			}
 
-			Key key;
-			if (!key.SetPubKey(GetVotePublicKey())) {
+			if (!_depositAddress.IsValid()) {
 				return false;
 			}
 
-			return address.IsEqual(key.GetAddress(PrefixDeposit));
+			return _depositAddress == address;
 		}
 
 		void SubAccountBase::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {

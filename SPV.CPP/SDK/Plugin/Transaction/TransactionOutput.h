@@ -8,6 +8,7 @@
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Base/Address.h>
 #include <Core/BRInt.h>
 
 #include <boost/shared_ptr.hpp>
@@ -31,7 +32,7 @@ namespace Elastos {
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const std::string &toAddress, const UInt256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput(uint64_t amount, const Address &toAddress, const UInt256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			TransactionOutput(uint64_t amount, const UInt168 &programHash, const UInt256 &assetID = Asset::GetELAAssetID(),
@@ -49,9 +50,7 @@ namespace Elastos {
 
 			bool IsValid() const;
 
-			std::string getAddress() const;
-
-			void SetAddress(const std::string &address);
+			Address GetAddress() const;
 
 			uint64_t getAmount() const;
 

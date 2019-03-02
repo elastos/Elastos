@@ -49,7 +49,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual Address GetAddress() const;
 
 		private:
 			friend class AccountFactory;

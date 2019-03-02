@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <boost/filesystem.hpp>
+#include <SDK/Common/Base58.h>
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -235,25 +236,6 @@ namespace Elastos {
 			return subWallet;
 		}
 
-		ISubWallet *
-		MasterWallet::RecoverSubWallet(const std::string &chainID, uint32_t limitGap, uint64_t feePerKb) {
-
-			if (_createdWallets.find(chainID) != _createdWallets.end())
-				return _createdWallets[chainID];
-
-			ParamChecker::checkParam(limitGap > SEQUENCE_GAP_LIMIT_EXTERNAL, Error::LimitGap,
-										 "Limit gap should less than or equal " +
-										 std::to_string(SEQUENCE_GAP_LIMIT_EXTERNAL));
-
-			ISubWallet *subWallet = CreateSubWallet(chainID, feePerKb);
-			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
-			assert(walletInner != nullptr);
-			walletInner->recover(limitGap);
-
-			_createdWallets[chainID] = subWallet;
-			return subWallet;
-		}
-
 		void MasterWallet::restoreSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 
 			for (int i = 0; i < coinInfoList.size(); ++i) {
@@ -382,20 +364,21 @@ namespace Elastos {
 			return Utils::encodeHex(key.Sign(message));
 		}
 
-		nlohmann::json
-		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
+		bool MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
 
 			Key key;
 			key.SetPubKey(Utils::decodeHex(publicKey));
-			bool r = key.Verify(message, Utils::decodeHex(signature));
-			nlohmann::json jsonData;
-			jsonData["Result"] = r;
-			return jsonData;
+			return key.Verify(message, Utils::decodeHex(signature));
 		}
 
 		bool MasterWallet::IsIdValid(const std::string &id) {
-			return Address::isValidIdAddress(id);
+			CMBlock programHash = Base58::CheckDecode(id);
+
+			if (programHash.GetSize() == 21 && programHash[0] == PrefixIDChain)
+				return true;
+
+			return false;
 		}
 
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config,
@@ -491,7 +474,18 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) const {
-			return Address::isValidAddress(address);
+			CMBlock programHash = Base58::CheckDecode(address);
+			if (programHash.GetSize() == 21) {
+				if (programHash[0] == PrefixStandard ||
+					programHash[0] == PrefixCrossChain ||
+					programHash[0] == PrefixMultiSign ||
+					programHash[0] == PrefixIDChain ||
+					programHash[0] == PrefixDeposit ||
+					programHash[0] == PrefixDestroy)
+					return true;
+			}
+
+			return false;
 		}
 
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {

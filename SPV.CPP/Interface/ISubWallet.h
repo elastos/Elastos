@@ -219,9 +219,9 @@ namespace Elastos {
 			 * @param publicKey belong to the private key signed the signature.
 			 * @param message raw data.
 			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return the result wrapper by a json.
+			 * @return true or false.
 			 */
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;

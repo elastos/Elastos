@@ -115,14 +115,11 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		ISubWallet *subWallet = nullptr;
 		REQUIRE_NOTHROW(subWallet = masterWallet->CreateSubWallet(chainId, feePerKB));
 		REQUIRE(subWallet != nullptr);
-		ISubWallet *subWallet1 = masterWallet->RecoverSubWallet(chainId, 100, feePerKB);
-		REQUIRE(subWallet1 != nullptr);
 
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
 		REQUIRE_FALSE(signedMessage.empty());
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage);
-		REQUIRE(j["Result"].get<bool>());
+		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage));
 
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
 	}
@@ -141,17 +138,12 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, feePerKB);
 		REQUIRE(subWallet != nullptr);
 
-		ISubWallet *subWallet1 = masterWallet->RecoverSubWallet("ELA", 10, feePerKB);
-		REQUIRE(subWallet1 != nullptr);
-
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
 		REQUIRE_FALSE(signedMessage.empty());
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage);
-		REQUIRE(j["Result"].get<bool>());
+		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage));
 
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
-		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet1));
 	}
 }
 
@@ -288,43 +280,6 @@ TEST_CASE("Master wallet GenerateMnemonic method test", "[GenerateMnemonic]") {
 	}
 }
 
-TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string chainId = "IdChain";
-	uint64_t feePerKB = 10000;
-
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
-
-	SECTION("Return exist sub wallet with same id") {
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, feePerKB);
-		REQUIRE(subWallet != nullptr);
-
-		//Return same sub wallet with same chain id
-		ISubWallet *subWallet1 = masterWallet->RecoverSubWallet(chainId, 1, feePerKB);
-		REQUIRE(subWallet == subWallet1);
-
-		//Return same sub wallet even if parameter of others are different
-		ISubWallet *subWallet2 = masterWallet->RecoverSubWallet(chainId, 1, feePerKB);
-		REQUIRE(subWallet == subWallet2);
-
-		//Create another sub wallet
-		ISubWallet *subWallet3 = masterWallet->RecoverSubWallet("ELA", 1, feePerKB);
-		REQUIRE(subWallet3 != nullptr);
-		REQUIRE(subWallet != subWallet3);
-
-		masterWallet->DestroyWallet(subWallet);
-		masterWallet->DestroyWallet(subWallet3);
-	}
-	SECTION("Limit gap should less than or equal 10") {
-		REQUIRE_THROWS_AS(masterWallet->RecoverSubWallet(chainId, 11, feePerKB),
-						  std::invalid_argument);
-	}
-	SECTION("Recover wallet if not exist") {
-		//todo complete me
-	}
-}
-
 TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -453,15 +408,13 @@ TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
 	std::string message = "mymessage";
 	std::string signedData = masterWallet->Sign(message, payPassword);
 	SECTION("Normal check sign") {
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedData);
-		REQUIRE(j["Result"].get<bool>());
+		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedData));
 	}
 	SECTION("Check sign with wrong message") {
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), "wrongMessage", signedData);
-		REQUIRE_FALSE(j["Result"].get<bool>());
+		REQUIRE_FALSE(masterWallet->CheckSign(masterWallet->GetPublicKey(), "wrongMessage", signedData));
 	}
 	SECTION("Check sign with wrong signed data") {
-		REQUIRE_THROWS_AS(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, "wrangData"), std::logic_error);
+		REQUIRE_FALSE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, "wrangData"));
 	}
 }
 
@@ -557,8 +510,7 @@ TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 		std::string signedMsg = masterWallet->Sign(id, "mymessage", payPassword);
 		REQUIRE_FALSE(signedMsg.empty());
 
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(id), "mymessage", signedMsg);
-		REQUIRE(j["Result"].get<bool>());
+		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(id), "mymessage", signedMsg));
 	}
 	SECTION("Sign empty message") {
 		REQUIRE_THROWS_AS(masterWallet->Sign(id, "", payPassword), std::invalid_argument);

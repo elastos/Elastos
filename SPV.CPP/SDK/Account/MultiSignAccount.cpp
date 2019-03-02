@@ -9,9 +9,9 @@
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Base/Address.h>
 
 #include <Core/BRInt.h>
-#include <Core/BRAddress.h>
 
 #include <set>
 #include <boost/bind.hpp>
@@ -24,6 +24,10 @@ namespace Elastos {
 			_me(me),
 			_requiredSignCount(requiredSignCount),
 			_coSigners(coSigners) {
+
+			const CMBlock &code = GetRedeemScript();
+			UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
+			_address = Address(programHash);
 		}
 
 		MultiSignAccount::MultiSignAccount(const std::string &rootPath) : _rootPath(rootPath) {
@@ -80,15 +84,7 @@ namespace Elastos {
 										 "Readonly account do not support this operation.");
 		}
 
-		std::string MultiSignAccount::GetAddress() const {
-			if (_address.empty()) {
-				const CMBlock &code = GetRedeemScript();
-				// redeem script -> program hash
-				UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
-				// program hash -> address
-				_address = Utils::UInt168ToAddress(programHash);
-			}
-
+		Address MultiSignAccount::GetAddress() const {
 			return _address;
 		}
 

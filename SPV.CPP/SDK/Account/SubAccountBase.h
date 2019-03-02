@@ -36,6 +36,7 @@ namespace Elastos {
 			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
 
 		protected:
+			mutable Address _depositAddress;
 			CMBlock _votePublicKey;
 			IAccount *_parentAccount;
 			MasterPubKey _masterPubKey;

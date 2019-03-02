@@ -97,10 +97,6 @@ namespace Elastos {
 			getWallet()->RegisterRemark(transaction);
 		}
 
-		void SpvService::recover(int limitGap) {
-			//todo implement recover logic
-		}
-
 		const WalletPtr &SpvService::getWallet() {
 			return CoreSpvService::getWallet();
 		}
@@ -108,7 +104,7 @@ namespace Elastos {
 		//override Wallet listener
 		void SpvService::balanceChanged(const UInt256 &asset, uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&asset, &balance](TransactionHub::Listener *listener) {
+						  [&asset, &balance](AssetTransactions::Listener *listener) {
 							  listener->balanceChanged(asset, balance);
 						  });
 		}
@@ -141,7 +137,7 @@ namespace Elastos {
 			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&tx](TransactionHub::Listener *listener) {
+						  [&tx](AssetTransactions::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}
@@ -156,7 +152,7 @@ namespace Elastos {
 			_databaseManager.updateTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](TransactionHub::Listener *listener) {
+						  [&hash, blockHeight, timeStamp](AssetTransactions::Listener *listener) {
 							  listener->onTxUpdated(hash, blockHeight, timeStamp);
 						  });
 		}
@@ -170,7 +166,7 @@ namespace Elastos {
 			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &assetID, notifyUser, recommendRescan](TransactionHub::Listener *listener) {
+						  [&hash, &assetID, notifyUser, recommendRescan](AssetTransactions::Listener *listener) {
 							  listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 						  });
 		}
@@ -419,7 +415,7 @@ namespace Elastos {
 			return _walletListener;
 		}
 
-		void SpvService::registerWalletListener(TransactionHub::Listener *listener) {
+		void SpvService::registerWalletListener(AssetTransactions::Listener *listener) {
 			_walletListeners.push_back(listener);
 		}
 

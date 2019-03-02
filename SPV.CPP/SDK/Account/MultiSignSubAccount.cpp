@@ -22,9 +22,9 @@ namespace Elastos {
 										 "Multi-sign sub account do not allow account that are not multi-sign type.");
 		}
 
-		CMBlock MultiSignSubAccount::GetRedeemScript(const std::string &addr) const {
+		CMBlock MultiSignSubAccount::GetRedeemScript(const Address &addr) const {
 			ParamChecker::checkLogic(_multiSignAccount->GetAddress() != addr, Error::Address,
-									 "Can't found pubKey for addr " + addr);
+									 "Can't found pubKey for addr " + addr.String());
 			return _multiSignAccount->GetRedeemScript();
 		}
 

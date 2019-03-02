@@ -4,7 +4,8 @@
 
 #include "PayloadTransferCrossChainAsset.h"
 #include <SDK/Common/Log.h>
-#include <SDK/Base/Address.h>
+#include <SDK/Common/Base58.h>
+#include <SDK/Crypto/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -44,8 +45,15 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < len; ++i) {
-				Address address(_crossChainAddress[i]);
-				if (!address.isValid()) {
+				CMBlock programHash = Base58::CheckDecode(_crossChainAddress[i]);
+
+				if (!(programHash.GetSize() == 21 && (
+					programHash[0] == PrefixStandard ||
+					programHash[0] == PrefixCrossChain ||
+					programHash[0] == PrefixMultiSign ||
+					programHash[0] == PrefixIDChain ||
+					programHash[0] == PrefixDeposit ||
+					programHash[0] == PrefixDestroy))) {
 					return false;
 				}
 
