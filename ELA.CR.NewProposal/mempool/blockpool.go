@@ -141,9 +141,6 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 	if !ok {
 		return false, false, errors.New("there is no block confirmation in pool when confirming block")
 	}
-	if err := blockchain.CheckBlockWithConfirmation(block, confirm); err != nil {
-		return false, true, errors.New("block confirmation validate failed")
-	}
 
 	log.Info("[ConfirmBlock] block height:", block.Height)
 	if !bm.Chain.BlockExists(&hash) {

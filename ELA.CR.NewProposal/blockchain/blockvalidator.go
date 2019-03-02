@@ -7,12 +7,12 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
 
@@ -186,7 +186,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 	return b.checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
-func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error {
+func (b *BlockChain) checkBlockContext(block *Block, prevNode *BlockNode) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil
@@ -218,7 +218,7 @@ func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error 
 		}
 	}
 
-	return nil
+	return b.checkTxsContext(block)
 }
 
 func CheckProofOfWork(header *Header, powLimit *big.Int) error {
