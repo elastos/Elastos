@@ -14,11 +14,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 const (
@@ -58,8 +56,6 @@ var (
 	spvslog = backend.Logger("SPVS", level)
 	srvrlog = backend.Logger("SRVR", level)
 	httplog = backend.Logger("HTTP", level)
-	rpcslog = backend.Logger("RPCS", level)
-	restlog = backend.Logger("REST", level)
 	eladlog = backend.Logger("ELAD", level)
 )
 
@@ -72,8 +68,6 @@ func setLogLevel(level elalog.Level) {
 	spvslog.SetLevel(level)
 	srvrlog.SetLevel(level)
 	httplog.SetLevel(level)
-	rpcslog.SetLevel(level)
-	restlog.SetLevel(level)
 	eladlog.SetLevel(level)
 }
 
@@ -89,6 +83,4 @@ func init() {
 	pow.UseLogger(minrlog)
 	spv.UseLogger(spvslog)
 	service.UseLogger(httplog)
-	jsonrpc.UseLogger(rpcslog)
-	restful.UseLogger(restlog)
 }

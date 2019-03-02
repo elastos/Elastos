@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,13 +20,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
+	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
-
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/restful"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA.Utility/signal"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA/utils/http/restful"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 const (
@@ -193,7 +192,7 @@ func main() {
 	defer restServer.Stop()
 	go func() {
 		if err := restServer.Start(); err != nil {
-			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
+			eladlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
 		}
 	}()
 
@@ -222,7 +221,6 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("getrawmempool", service.GetTransactionPool)
 	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
-	s.RegisterAction("getnodestate", service.GetNodeState)
 	s.RegisterAction("sendrechargetransaction", service.SendRechargeToSideChainTxByHash)
 	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getreceivedbyaddress", service.GetReceivedByAddress, "address")
@@ -247,7 +245,7 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 		s = restful.NewServer(&restful.Config{ServePort: port})
 
 		sendRawTransaction = func(data []byte) (interface{}, error) {
-			var params = util.Params{}
+			var params = http.Params{}
 			if err := json.Unmarshal(data, &params); err != nil {
 				return nil, err
 			}
