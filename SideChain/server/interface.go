@@ -1,12 +1,17 @@
 package server
 
 import (
+	"github.com/elastos/Elastos.ELA.SideChain/pact"
+
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	svr "github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 type Server interface {
 	svr.IServer
+
+	// Services returns the service flags the server supports.
+	Services() pact.ServiceFlag
 
 	// NewPeer adds a new peer that has already been connected to the server.
 	NewPeer(p svr.IPeer)
