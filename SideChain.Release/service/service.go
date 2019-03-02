@@ -18,7 +18,6 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
-	"github.com/elastos/Elastos.ELA/p2p/peer"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/http"
 )
@@ -111,15 +110,6 @@ func (s *HttpService) GetNeighbors(param http.Params) (interface{}, error) {
 		neighborAddrs = append(neighborAddrs, peer.ToPeer().String())
 	}
 	return neighborAddrs, nil
-}
-
-func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
-	peers := s.cfg.Server.ConnectedPeers()
-	states := make([]*peer.StatsSnap, 0, len(peers))
-	for _, peer := range peers {
-		states = append(states, peer.ToPeer().StatsSnapshot())
-	}
-	return states, nil
 }
 
 func (s *HttpService) SetLogLevel(param http.Params) (interface{}, error) {

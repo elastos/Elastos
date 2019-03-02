@@ -712,6 +712,11 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 	}
 }
 
+// Services returns the service flags the server supports.
+func (s *server) Services() pact.ServiceFlag {
+	return s.services
+}
+
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p p2psvr.IPeer) {
 	s.peerQueue <- newPeerMsg(p)
