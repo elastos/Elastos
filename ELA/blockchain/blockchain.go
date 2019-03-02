@@ -273,6 +273,7 @@ func (b *BlockChain) RemoveOrphanBlock(orphan *OrphanBlock) {
 
 	orphanHash := orphan.Block.Hash()
 	delete(b.orphans, orphanHash)
+	delete(b.orphanConfirms, orphanHash)
 
 	prevHash := &orphan.Block.Header.Previous
 	orphans := b.prevOrphans[*prevHash]
@@ -897,6 +898,12 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
+		if confirm != nil {
+			if err := b.processConfirm(confirm); err != nil {
+				return false, err
+			}
+		}
+
 		b.state.ProcessBlock(block, confirm)
 	}
 
@@ -1068,10 +1075,7 @@ func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) processConfirm(confirm *payload.Confirm) error {
-	if err := b.db.SaveConfirm(confirm); err != nil {
-		return err
-	}
-	return nil
+	return b.db.SaveConfirm(confirm)
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
