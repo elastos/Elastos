@@ -7,11 +7,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/utils/http"
 )
 
 type HttpServiceExtend struct {
@@ -30,18 +30,18 @@ func NewHttpService(cfg *service.Config, store *blockchain.IDChainStore) *HttpSe
 	return server
 }
 
-func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param http.Params) (interface{}, error) {
 	id, ok := param.String("id")
 	if !ok {
-		return nil, util.NewError(int(service.InvalidParams), "id is null")
+		return nil, http.NewError(int(service.InvalidParams), "id is null")
 	}
 	_, err := common.Uint168FromAddress(id)
 	if err != nil {
-		return nil, util.NewError(int(service.InvalidParams), "invalid id")
+		return nil, http.NewError(int(service.InvalidParams), "invalid id")
 	}
 	path, ok := param.String("path")
 	if !ok {
-		return nil, util.NewError(int(service.InvalidParams), "path is null")
+		return nil, http.NewError(int(service.InvalidParams), "path is null")
 	}
 
 	buf := new(bytes.Buffer)
@@ -49,30 +49,30 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	buf.WriteString(path)
 	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownTransaction), "get identification transaction failed")
+		return nil, http.NewError(int(service.UnknownTransaction), "get identification transaction failed")
 	}
 	txHash, err := common.Uint256FromBytes(txHashBytes)
 	if err != nil {
-		return nil, util.NewError(int(service.InvalidTransaction), "invalid transaction hash")
+		return nil, http.NewError(int(service.InvalidTransaction), "invalid transaction hash")
 	}
 
 	txn, height, err := s.store.GetTransaction(*txHash)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownTransaction), "get transaction failed")
+		return nil, http.NewError(int(service.UnknownTransaction), "get transaction failed")
 	}
 	bHash, err := s.store.GetBlockHash(height)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownBlock), "get block failed")
+		return nil, http.NewError(int(service.UnknownBlock), "get block failed")
 	}
 	header, err := s.store.GetHeader(bHash)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownBlock), "get header failed")
+		return nil, http.NewError(int(service.UnknownBlock), "get header failed")
 	}
 
 	return s.Config.GetTransactionInfo(s.Config, header, txn), nil
 }
 
-func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) {
 	bestHeight := s.Config.Store.GetHeight()
 	type UTXOInfo struct {
 		AssetId       string `json:"assetid"`
