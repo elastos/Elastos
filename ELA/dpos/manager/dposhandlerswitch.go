@@ -22,8 +22,8 @@ type DPOSEventConditionHandler interface {
 
 	StartNewProposal(p payload.DPOSProposal)
 
-	ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote)
-	ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote)
+	ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool)
+	ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool)
 }
 
 type DPOSHandlerConfig struct {
@@ -136,22 +136,26 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 	return false
 }
 
-func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) {
-	h.currentHandler.ProcessAcceptVote(id, p)
+func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
+	succeed, finished := h.currentHandler.ProcessAcceptVote(id, p)
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+
+	return succeed, finished
 }
 
-func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) {
-	h.currentHandler.ProcessRejectVote(id, p)
+func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
+	succeed, finished := h.currentHandler.ProcessRejectVote(id, p)
 
 	rawData := new(bytes.Buffer)
 	p.Serialize(rawData)
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+
+	return succeed, finished
 }
 
 func (h *DPOSHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {

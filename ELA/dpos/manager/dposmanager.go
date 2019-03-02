@@ -192,7 +192,10 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p payload.DPOSProposal) {
 func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
-	d.handler.ProcessAcceptVote(id, p)
+	_, finished := d.handler.ProcessAcceptVote(id, p)
+	if finished {
+		d.changeHeight()
+	}
 }
 
 func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p payload.DPOSProposalVote) {
