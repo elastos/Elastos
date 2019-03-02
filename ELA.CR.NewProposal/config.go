@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	activeNetParams = &config.MainNetParams
+	activeNetParams = &config.DefaultParams
 
 	cfg = loadConfigParams()
 )
@@ -41,29 +41,33 @@ func loadConfigFile() *config.Configuration {
 func loadConfigParams() *config.ConfigParams {
 	cfg := loadConfigFile()
 
-	var chainParams config.ChainParams
-	switch strings.ToLower(cfg.PowConfiguration.ActiveNet) {
-	case "mainnet", "main":
-		chainParams = config.MainNet
-		activeNetParams = &config.MainNetParams
-
+	var chainParams = config.MainNet
+	switch strings.ToLower(cfg.ActiveNet) {
 	case "testnet", "test":
 		chainParams = config.TestNet
-		activeNetParams = &config.TestNetParams
+		activeNetParams = activeNetParams.TestNet()
 
 	case "regnet", "reg":
 		chainParams = config.RegNet
-		activeNetParams = &config.RegNetParams
+		activeNetParams = activeNetParams.RegNet()
 	}
 
 	config.Parameters = config.ConfigParams{
 		Configuration: cfg,
 		ChainParam:    &chainParams,
 	}
-
-	activeNetParams.Magic = cfg.Magic
-	activeNetParams.DefaultPort = cfg.NodePort
-	activeNetParams.SeedList = cfg.SeedList
+	if cfg.PowConfiguration.InstantBlock {
+		activeNetParams = activeNetParams.InstantBlock()
+	}
+	if cfg.Magic > 0 {
+		activeNetParams.Magic = cfg.Magic
+	}
+	if cfg.NodePort > 0 {
+		activeNetParams.DefaultPort = cfg.NodePort
+	}
+	if len(cfg.SeedList) > 0 {
+		activeNetParams.SeedList = cfg.SeedList
+	}
 	foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 	if err == nil {
 		activeNetParams.Foundation = *foundation
@@ -104,13 +108,13 @@ func loadConfigParams() *config.ConfigParams {
 	return &config.Parameters
 }
 
-func convertArbitrators(arbiters []config.CRCArbitratorConfigItem) (result []config.CRCArbitratorParams, err error) {
+func convertArbitrators(arbiters []config.CRCArbiterInfo) (result []config.CRCArbiter, err error) {
 	for _, v := range arbiters {
 		arbiterByte, err := common.HexStringToBytes(v.PublicKey)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, config.CRCArbitratorParams{PublicKey: arbiterByte, NetAddress: v.NetAddress})
+		result = append(result, config.CRCArbiter{PublicKey: arbiterByte, NetAddress: v.NetAddress})
 	}
 
 	return result, nil

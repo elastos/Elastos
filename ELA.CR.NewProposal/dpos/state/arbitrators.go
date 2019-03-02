@@ -160,7 +160,7 @@ func (a *Arbitrators) IsCRCArbitrator(pk []byte) bool {
 	return false
 }
 
-func (a *Arbitrators) GetCRCArbitrators() []config.CRCArbitratorParams {
+func (a *Arbitrators) GetCRCArbitrators() []config.CRCArbiter {
 	return a.chainParams.CRCArbiters
 }
 

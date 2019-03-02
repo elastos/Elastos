@@ -45,14 +45,14 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest", config.MainNetParams.GenesisBlock)
+	chainStore, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
 	heightVersions := &mock.HeightVersionsMock{}
-	chain, _ := New(chainStore, &config.MainNetParams, heightVersions, state.NewState(nil, &config.MainNetParams))
+	chain, _ := New(chainStore, &config.DefaultParams, heightVersions, state.NewState(nil, &config.DefaultParams))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain:     chain,

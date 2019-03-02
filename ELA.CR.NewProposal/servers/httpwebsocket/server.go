@@ -21,6 +21,11 @@ import (
 	"github.com/pborman/uuid"
 )
 
+const (
+	// sessionTimeout is the duration of inactivity before we time out a session.
+	sessionTimeout = time.Minute
+)
+
 var instance *WebSocketServer
 
 var (
@@ -120,7 +125,7 @@ func (server *WebSocketServer) Stop() {
 }
 
 func (server *WebSocketServer) checkSessionsTimeout(done chan bool) {
-	ticker := time.NewTicker(time.Second * config.Parameters.Configuration.WsHeartbeatInterval)
+	ticker := time.NewTicker(sessionTimeout)
 	defer ticker.Stop()
 	for {
 		select {

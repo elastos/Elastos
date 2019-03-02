@@ -16,7 +16,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 
-	GetCRCArbitrators() []config.CRCArbitratorParams
+	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 
