@@ -3,7 +3,6 @@ package mock
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
@@ -35,11 +34,6 @@ func (a *ArbitratorsMock) IncreaseChainHeight(height uint32) {
 }
 
 func (a *ArbitratorsMock) DecreaseChainHeight(height uint32) {
-}
-
-func (a *ArbitratorsMock) GetInactiveArbitrators(confirm *payload.Confirm,
-	onDutyArbitrator []byte) (result []string) {
-	return []string{}
 }
 
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
@@ -143,7 +137,7 @@ func (a *ArbitratorsMock) GetCandidatesProgramHashes() []*common.Uint168 {
 }
 
 func (a *ArbitratorsMock) GetOnDutyArbitratorByHeight(height uint32) []byte {
-	return a.GetNextOnDutyArbitrator(0)
+	return a.GetNextOnDutyArbitrator(height)
 }
 
 func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {

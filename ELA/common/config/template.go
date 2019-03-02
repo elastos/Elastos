@@ -49,7 +49,6 @@ var Template = Configuration{
 		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		EmergencyInactivePenalty: 500 * 100000000,
 		MaxInactiveRounds:        3,
-		InactiveDuration:         uint32((time.Hour * 24 * 7) / time.Second),
 		InactivePenalty:          100 * 100000000,
 		InactiveEliminateCount:   12,
 		EnableEventRecord:        false,

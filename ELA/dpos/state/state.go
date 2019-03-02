@@ -57,14 +57,14 @@ func (ps ProducerState) String() string {
 // Producer holds a producer's info.  It provides read only methods to access
 // producer's info.
 type Producer struct {
-	info           payload.ProducerInfo
-	state          ProducerState
-	registerHeight uint32
-	cancelHeight   uint32
-	inactiveRounds uint32
-	inactiveSince  uint32
-	penalty        common.Fixed64
-	votes          common.Fixed64
+	info                  payload.ProducerInfo
+	state                 ProducerState
+	registerHeight        uint32
+	cancelHeight          uint32
+	inactiveSince         uint32
+	activateRequestHeight uint32
+	penalty               common.Fixed64
+	votes                 common.Fixed64
 }
 
 // Info returns a copy of the origin registered producer info.
@@ -104,6 +104,10 @@ func (p *Producer) Penalty() common.Fixed64 {
 	return p.penalty
 }
 
+func (p *Producer) InactiveSince() uint32 {
+	return p.inactiveSince
+}
+
 const (
 	// maxHistoryCapacity indicates the maximum capacity of change history.
 	maxHistoryCapacity = 10
@@ -121,17 +125,18 @@ type State struct {
 	arbiters    interfaces.Arbitrators
 	chainParams *config.Params
 
-	mtx               sync.RWMutex
-	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	pendingProducers  map[string]*Producer
-	activityProducers map[string]*Producer
-	inactiveProducers map[string]*Producer
-	canceledProducers map[string]*Producer
-	illegalProducers  map[string]*Producer
-	votes             map[string]*types.Output
-	nicknames         map[string]struct{}
-	specialTxHashes   map[string]struct{}
-	history           *history
+	mtx                 sync.RWMutex
+	nodeOwnerKeys       map[string]string // NodePublicKey as key, OwnerPublicKey as value
+	pendingProducers    map[string]*Producer
+	activityProducers   map[string]*Producer
+	inactiveProducers   map[string]*Producer
+	canceledProducers   map[string]*Producer
+	illegalProducers    map[string]*Producer
+	onDutyMissingCounts map[string]uint32
+	votes               map[string]*types.Output
+	nicknames           map[string]struct{}
+	specialTxHashes     map[string]struct{}
+	history             *history
 
 	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
 	// state every 12 blocks, and keeps at most 9 newest snapshots in memory.
@@ -167,6 +172,9 @@ func (s *State) getProducer(publicKey []byte) *Producer {
 		return producer
 	}
 	if producer, ok := s.pendingProducers[key]; ok {
+		return producer
+	}
+	if producer, ok := s.inactiveProducers[key]; ok {
 		return producer
 	}
 	return nil
@@ -379,8 +387,9 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 	switch tx.TxType {
 	// Transactions will changes the producers state.
 	case types.RegisterProducer, types.UpdateProducer, types.CancelProducer,
-		types.IllegalProposalEvidence, types.IllegalVoteEvidence,
-		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
+		types.ActivateProducer, types.IllegalProposalEvidence,
+		types.IllegalVoteEvidence, types.IllegalBlockEvidence,
+		types.IllegalSidechainEvidence:
 		return true
 
 	// Transactions will change the votes state.
@@ -411,18 +420,16 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// get on duty arbiter before lock in case of recurrent lock
 	onDutyArbitrator := s.arbiters.GetOnDutyArbitratorByHeight(block.Height)
+	arbitersCount := s.arbiters.GetArbitersCount()
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
 
-	if block.Height >= config.Parameters.HeightVersions[2] {
-		arbiters := s.arbiters.GetInactiveArbitrators(confirm, onDutyArbitrator)
-		if len(arbiters) > 0 {
-			s.countArbitratorsInactivity(block.Height, arbiters)
-			s.tryLeaveInactiveMode(block.Height)
-		}
+	if confirm != nil {
+		s.countArbitratorsInactivity(block.Height, arbitersCount,
+			onDutyArbitrator, confirm)
 	}
 
 	s.processArbitrators(block, block.Height)
@@ -455,7 +462,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	}
 
 	// Check if any pending producers has got 6 confirms, set them to activate.
-	activeProducer := func(key string, producer *Producer) {
+	activateProducerFromPending := func(key string, producer *Producer) {
 		s.history.append(height, func() {
 			producer.state = Activate
 			s.activityProducers[key] = producer
@@ -466,10 +473,33 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			delete(s.activityProducers, key)
 		})
 	}
+
+	// Check if any pending producers has got 6 confirms, set them to activate.
+	activateProducerFromInactive := func(key string, producer *Producer) {
+		s.history.append(height, func() {
+			producer.state = Activate
+			s.activityProducers[key] = producer
+			delete(s.inactiveProducers, key)
+		}, func() {
+			producer.state = Inactivate
+			s.inactiveProducers[key] = producer
+			delete(s.activityProducers, key)
+		})
+	}
+
 	if len(s.pendingProducers) > 0 {
 		for key, producer := range s.pendingProducers {
 			if height-producer.registerHeight+1 >= 6 {
-				activeProducer(key, producer)
+				activateProducerFromPending(key, producer)
+			}
+		}
+
+	}
+	if len(s.inactiveProducers) > 0 {
+		for key, producer := range s.inactiveProducers {
+			if height > producer.activateRequestHeight &&
+				height-producer.activateRequestHeight+1 >= 6 {
+				activateProducerFromInactive(key, producer)
 			}
 		}
 	}
@@ -489,8 +519,11 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 			height)
 
 	case types.CancelProducer:
-		s.cancelProducer(tx.Payload.(*payload.CancelProducer),
+		s.cancelProducer(tx.Payload.(*payload.ProcessProducer),
 			height)
+
+	case types.ActivateProducer:
+		s.activateProducer(tx.Payload.(*payload.ProcessProducer), height)
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
@@ -516,12 +549,12 @@ func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	nodeKey := hex.EncodeToString(payload.NodePublicKey)
 	ownerKey := hex.EncodeToString(payload.OwnerPublicKey)
 	producer := Producer{
-		info:           *payload,
-		registerHeight: height,
-		votes:          0,
-		inactiveRounds: 0,
-		inactiveSince:  math.MaxUint32,
-		penalty:        common.Fixed64(0),
+		info:                  *payload,
+		registerHeight:        height,
+		votes:                 0,
+		inactiveSince:         0,
+		penalty:               common.Fixed64(0),
+		activateRequestHeight: math.MaxUint32,
 	}
 
 	s.history.append(height, func() {
@@ -547,7 +580,7 @@ func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 }
 
 // cancelProducer handles the cancel producer transaction.
-func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
+func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) {
 	key := hex.EncodeToString(payload.OwnerPublicKey)
 	producer := s.getProducer(payload.OwnerPublicKey)
 	s.history.append(height, func() {
@@ -562,6 +595,16 @@ func (s *State) cancelProducer(payload *payload.CancelProducer, height uint32) {
 		delete(s.canceledProducers, key)
 		s.activityProducers[key] = producer
 		s.nicknames[producer.info.NickName] = struct{}{}
+	})
+}
+
+// activateProducer handles the activate producer transaction.
+func (s *State) activateProducer(p *payload.ProcessProducer, height uint32) {
+	producer := s.getProducer(p.OwnerPublicKey)
+	s.history.append(height, func() {
+		producer.activateRequestHeight = height
+	}, func() {
+		producer.activateRequestHeight = math.MaxUint32
 	})
 }
 
@@ -660,23 +703,9 @@ func (s *State) processEmergencyInactiveArbitrators(
 
 	addEmergencyInactiveArbitrator := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-
-			producer.state = Inactivate
-			s.inactiveProducers[key] = producer
-			delete(s.activityProducers, key)
-
-			producer.penalty += s.chainParams.EmergencyInactivePenalty
+			s.setInactiveProducer(producer, key, height)
 		}, func() {
-
-			producer.state = Activate
-			s.activityProducers[key] = producer
-			delete(s.inactiveProducers, key)
-
-			if producer.penalty < s.chainParams.EmergencyInactivePenalty {
-				producer.penalty = common.Fixed64(0)
-			} else {
-				producer.penalty -= s.chainParams.EmergencyInactivePenalty
-			}
+			s.revertSettingInactiveProducer(producer, key, height)
 		})
 	}
 
@@ -692,11 +721,11 @@ func (s *State) processEmergencyInactiveArbitrators(
 					info: payload.ProducerInfo{
 						NodePublicKey: v,
 					},
-					registerHeight: height,
-					votes:          0,
-					inactiveRounds: 0,
-					inactiveSince:  math.MaxUint32,
-					penalty:        common.Fixed64(0),
+					registerHeight:        height,
+					votes:                 0,
+					inactiveSince:         0,
+					penalty:               common.Fixed64(0),
+					activateRequestHeight: math.MaxUint32,
 				}
 				addEmergencyInactiveArbitrator(pkStr, producer)
 
@@ -802,97 +831,85 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload) {
 	s.history.commit(0)
 }
 
-// tryLeaveInactiveMode for inactive arbitrators to try leaving inactive mode if
-// over the inactive duration
-func (s *State) tryLeaveInactiveMode(blockHeight uint32) {
-	tryLeaveInactive := func(key string, producer *Producer) {
-		s.history.append(blockHeight, func() {
-			if blockHeight > producer.inactiveSince+s.chainParams.InactiveDuration {
-				pk, err := common.HexStringToBytes(key)
-				if err != nil {
-					log.Warn("[tryLeaveInactiveMode] convert to public key" +
-						" byte error")
-					return
-				}
+// setInactiveProducer set active producer to inactive state
+func (s *State) setInactiveProducer(producer *Producer, key string,
+	height uint32) {
+	producer.inactiveSince = height
+	producer.state = Inactivate
+	s.inactiveProducers[key] = producer
+	delete(s.activityProducers, key)
 
-				producer.state = Activate
+	producer.penalty += s.chainParams.InactivePenalty
+}
 
-				if !s.arbiters.IsCRCArbitrator(pk) {
-					s.activityProducers[key] = producer
-				}
-				delete(s.inactiveProducers, key)
-			}
-		}, func() {
-			if blockHeight <= producer.inactiveSince+s.chainParams.InactiveDuration {
+// revertSettingInactiveProducer revert operation about setInactiveProducer
+func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
+	height uint32) {
+	producer.inactiveSince = 0
+	producer.state = Activate
+	s.activityProducers[key] = producer
+	delete(s.inactiveProducers, key)
 
-				producer.state = Inactivate
-				s.inactiveProducers[key] = producer
-				delete(s.activityProducers, key)
-			}
-		})
-	}
-
-	for k, v := range s.inactiveProducers {
-		tryLeaveInactive(k, v)
+	if producer.penalty < s.chainParams.InactivePenalty {
+		producer.penalty = common.Fixed64(0)
+	} else {
+		producer.penalty -= s.chainParams.InactivePenalty
 	}
 }
 
 // countArbitratorsInactivity count arbitrators inactive rounds, and change to
 // inactive if more than "MaxInactiveRounds"
-func (s *State) countArbitratorsInactivity(height uint32, arbitrators []string) {
+func (s *State) countArbitratorsInactivity(height, totalArbitersCount uint32,
+	onDutyArbiter []byte, confirm *payload.Confirm) {
+	// check inactive arbitrators after producers has participated in
+	if int(totalArbitersCount) == len(s.chainParams.CRCArbiters) {
+		return
+	}
 
-	countInactiveRounds := func(key string, producer *Producer) {
+	key := s.getProducerKey(onDutyArbiter)
+
+	isMissOnDuty := !bytes.Equal(onDutyArbiter, confirm.Proposal.Sponsor)
+	if producer, ok := s.activityProducers[key]; ok {
+		count, existMissingRecord := s.onDutyMissingCounts[key]
+
 		s.history.append(height, func() {
+			if isMissOnDuty {
+				if existMissingRecord {
+					s.onDutyMissingCounts[key]++
 
-			if producer.state == Activate {
-
-				if producer.inactiveRounds == 0 {
-					producer.inactiveSince = height
+					if s.onDutyMissingCounts[key] >=
+						s.chainParams.MaxInactiveRounds {
+						s.setInactiveProducer(producer, key, height)
+						delete(s.onDutyMissingCounts, key)
+					}
+				} else {
+					s.onDutyMissingCounts[key] = 1
 				}
-				producer.inactiveRounds++
-
-				if producer.inactiveRounds >= s.chainParams.MaxInactiveRounds {
-
-					producer.state = Inactivate
-					s.inactiveProducers[key] = producer
-					delete(s.activityProducers, key)
-
-					producer.penalty += s.chainParams.InactivePenalty
+			} else {
+				if existMissingRecord {
+					delete(s.onDutyMissingCounts, key)
 				}
 			}
 		}, func() {
-
-			if producer.state == Inactivate {
-				producer.inactiveRounds--
-
-				if producer.inactiveRounds < s.chainParams.MaxInactiveRounds {
-
-					producer.state = Activate
-					s.activityProducers[key] = producer
-					delete(s.inactiveProducers, key)
-
-					if producer.penalty < s.chainParams.InactivePenalty {
-						producer.penalty = common.Fixed64(0)
+			if isMissOnDuty {
+				if existMissingRecord {
+					if producer.state == Inactivate {
+						s.revertSettingInactiveProducer(producer, key, height)
+						s.onDutyMissingCounts[key] = s.chainParams.MaxInactiveRounds
 					} else {
-						producer.penalty -= s.chainParams.InactivePenalty
+						if count > 1 {
+							s.onDutyMissingCounts[key]--
+						} else {
+							delete(s.onDutyMissingCounts, key)
+						}
 					}
 				}
-			} else if producer.state == Activate {
-
-				producer.inactiveRounds--
-				if producer.inactiveRounds == 0 {
-					producer.inactiveSince = math.MaxUint32
+			} else {
+				if existMissingRecord {
+					s.onDutyMissingCounts[key] = count
 				}
 			}
 		})
-	}
-
-	for _, v := range arbitrators {
-		if _, ok := s.activityProducers[v]; ok {
-			countInactiveRounds(v, s.activityProducers[v])
-		} else {
-			log.Warn("unknown active producer: ", v)
-		}
 	}
 }
 
@@ -922,17 +939,19 @@ func (s *State) GetHistory(height uint32) (*State, error) {
 // snapshot takes a snapshot of current state and returns the copy.
 func (s *State) snapshot() *State {
 	state := State{
-		pendingProducers:  make(map[string]*Producer),
-		activityProducers: make(map[string]*Producer),
-		inactiveProducers: make(map[string]*Producer),
-		canceledProducers: make(map[string]*Producer),
-		illegalProducers:  make(map[string]*Producer),
+		pendingProducers:    make(map[string]*Producer),
+		activityProducers:   make(map[string]*Producer),
+		inactiveProducers:   make(map[string]*Producer),
+		canceledProducers:   make(map[string]*Producer),
+		illegalProducers:    make(map[string]*Producer),
+		onDutyMissingCounts: make(map[string]uint32),
 	}
 	copyMap(state.pendingProducers, s.pendingProducers)
 	copyMap(state.activityProducers, s.activityProducers)
 	copyMap(state.inactiveProducers, s.inactiveProducers)
 	copyMap(state.canceledProducers, s.canceledProducers)
 	copyMap(state.illegalProducers, s.illegalProducers)
+	copyCountMap(state.onDutyMissingCounts, s.onDutyMissingCounts)
 	return &state
 }
 
@@ -953,20 +972,28 @@ func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 	}
 }
 
+// copyMap copy the src map's key, value pairs into dst map.
+func copyCountMap(dst map[string]uint32, src map[string]uint32) {
+	for k, v := range src {
+		dst[k] = v
+	}
+}
+
 // NewState returns a new State instance.
 func NewState(arbiters interfaces.Arbitrators, chainParams *config.Params) *State {
 	return &State{
-		arbiters:          arbiters,
-		chainParams:       chainParams,
-		nodeOwnerKeys:     make(map[string]string),
-		pendingProducers:  make(map[string]*Producer),
-		activityProducers: make(map[string]*Producer),
-		inactiveProducers: make(map[string]*Producer),
-		canceledProducers: make(map[string]*Producer),
-		illegalProducers:  make(map[string]*Producer),
-		votes:             make(map[string]*types.Output),
-		nicknames:         make(map[string]struct{}),
-		specialTxHashes:   make(map[string]struct{}),
-		history:           newHistory(maxHistoryCapacity),
+		arbiters:            arbiters,
+		chainParams:         chainParams,
+		nodeOwnerKeys:       make(map[string]string),
+		pendingProducers:    make(map[string]*Producer),
+		activityProducers:   make(map[string]*Producer),
+		inactiveProducers:   make(map[string]*Producer),
+		canceledProducers:   make(map[string]*Producer),
+		illegalProducers:    make(map[string]*Producer),
+		onDutyMissingCounts: make(map[string]uint32),
+		votes:               make(map[string]*types.Output),
+		nicknames:           make(map[string]struct{}),
+		specialTxHashes:     make(map[string]struct{}),
+		history:             newHistory(maxHistoryCapacity),
 	}
 }

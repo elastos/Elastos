@@ -9,14 +9,22 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const CancelProducerVersion byte = 0x00
+type ProducerOperation byte
 
-type CancelProducer struct {
+const (
+	ProducerOperationVersion byte = 0x00
+
+	OperationCancel   ProducerOperation = 0x01
+	OperationActivate ProducerOperation = 0x02
+)
+
+type ProcessProducer struct {
 	OwnerPublicKey []byte
 	Signature      []byte
+	Operation      ProducerOperation
 }
 
-func (a *CancelProducer) Data(version byte) []byte {
+func (a *ProcessProducer) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := a.Serialize(buf, version); err != nil {
 		return []byte{0}
@@ -24,7 +32,7 @@ func (a *CancelProducer) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (a *CancelProducer) Serialize(w io.Writer, version byte) error {
+func (a *ProcessProducer) Serialize(w io.Writer, version byte) error {
 	err := a.SerializeUnsigned(w, version)
 	if err != nil {
 		return err
@@ -32,21 +40,27 @@ func (a *CancelProducer) Serialize(w io.Writer, version byte) error {
 
 	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
-		return errors.New("[CancelProducer], signature serialize failed")
+		return errors.New("[ProcessProducer], signature serialize failed")
 	}
 
 	return nil
 }
 
-func (a *CancelProducer) SerializeUnsigned(w io.Writer, version byte) error {
+func (a *ProcessProducer) SerializeUnsigned(w io.Writer, version byte) error {
 	err := common.WriteVarBytes(w, a.OwnerPublicKey)
 	if err != nil {
-		return errors.New("[CancelProducer], serialize failed")
+		return errors.New("[ProcessProducer], write owner public key failed")
 	}
+
+	err = common.WriteUint8(w, uint8(a.Operation))
+	if err != nil {
+		return errors.New("[ProcessProducer], write operation failed")
+	}
+
 	return nil
 }
 
-func (a *CancelProducer) Deserialize(r io.Reader, version byte) error {
+func (a *ProcessProducer) Deserialize(r io.Reader, version byte) error {
 	err := a.DeserializeUnsigned(r, version)
 	if err != nil {
 		return err
@@ -54,18 +68,25 @@ func (a *CancelProducer) Deserialize(r io.Reader, version byte) error {
 
 	a.Signature, err = common.ReadVarBytes(r, crypto.SignatureLength, "signature")
 	if err != nil {
-		return errors.New("[CancelProducer], signature deserialize failed")
+		return errors.New("[ProcessProducer], signature deserialize failed")
 	}
 
 	return nil
 }
 
-func (a *CancelProducer) DeserializeUnsigned(r io.Reader, version byte) error {
+func (a *ProcessProducer) DeserializeUnsigned(r io.Reader, version byte) error {
 	var err error
 	a.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "public key")
 	if err != nil {
-		return errors.New("[CancelProducer], deserialize failed")
+		return errors.New("[ProcessProducer], read owner public key failed")
 	}
+
+	var op uint8
+	op, err = common.ReadUint8(r)
+	if err != nil {
+		return errors.New("[ProcessProducer], read operation failed")
+	}
+	a.Operation = ProducerOperation(op)
 
 	return err
 }

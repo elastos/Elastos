@@ -674,8 +674,9 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.CancelProducer
-	cancelPayload := &payload.CancelProducer{
+	cancelPayload := &payload.ProcessProducer{
 		OwnerPublicKey: publicKey1,
+		Operation:      payload.OperationCancel,
 	}
 	txn.Payload = cancelPayload
 
@@ -689,6 +690,36 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 
 	cancelPayload.OwnerPublicKey = publicKey2
 	s.EqualError(s.Chain.checkCancelProducerTransaction(txn), "invalid signature in payload")
+}
+
+func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	errPublicKeyStr := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd4"
+	errPublicKey, _ := common.HexStringToBytes(errPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.ActivateProducer
+	activatePayload := &payload.ProcessProducer{
+		OwnerPublicKey: publicKey1,
+		Operation:      payload.OperationActivate,
+	}
+	txn.Payload = activatePayload
+
+	txn.Programs = []*program.Program{{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	activatePayload.OwnerPublicKey = errPublicKey
+	s.EqualError(s.Chain.checkActivateProducerTransaction(txn, 0),
+		"invalid public key in payload")
+
+	activatePayload.OwnerPublicKey = publicKey2
+	s.EqualError(s.Chain.checkActivateProducerTransaction(txn, 0),
+		"invalid signature in payload")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {

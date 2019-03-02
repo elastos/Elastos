@@ -185,7 +185,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
 				}
 				if tx.TxType == CancelProducer {
-					cpPayload, ok := tx.Payload.(*payload.CancelProducer)
+					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
@@ -204,7 +204,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
 	for _, txn := range txs {
 		if txn.TxType == CancelProducer {
-			cpPayload, ok := txn.Payload.(*payload.CancelProducer)
+			cpPayload, ok := txn.Payload.(*payload.ProcessProducer)
 			if !ok {
 				return errors.New("invalid cancel producer payload")
 			}
@@ -298,7 +298,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			return ErrProducerNodeProcessing
 		}
 	} else if txn.IsCancelProducerTx() {
-		payload, ok := txn.Payload.(*payload.CancelProducer)
+		payload, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 		}

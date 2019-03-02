@@ -89,7 +89,6 @@ var MainNetParams = Params{
 	},
 	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
-	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
 	InactiveEliminateCount:   12,
@@ -137,7 +136,6 @@ var TestNetParams = Params{
 	},
 	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
-	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
 	InactiveEliminateCount:   12,
@@ -175,7 +173,6 @@ var RegNetParams = Params{
 	},
 	VoteStartHeight:          1008812, //fixme edit height later
 	MaxInactiveRounds:        3,
-	InactiveDuration:         10,
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
 	InactiveEliminateCount:   12,
@@ -258,10 +255,6 @@ type Params struct {
 
 	// VoteStartHeight indicates the height of DPOS consensus begins.
 	VoteStartHeight uint32
-
-	// InactiveDuration defines the duration blocks to set a producer as
-	// inactive.
-	InactiveDuration uint32
 
 	// MaxInactiveRounds defines the maximum inactive rounds before producer
 	// takes penalty.

@@ -34,6 +34,10 @@ const (
 
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
+
+	// InactiveRecoveringHeightLimit is the minimum height an inactive
+	// producer can request recovering
+	InactiveRecoveringHeightLimit = 720
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -149,6 +153,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	case UpdateProducer:
 		if err := b.checkUpdateProducerTransaction(txn); err != nil {
 			log.Warn("[CheckUpdateProducerTransaction],", err)
+			return ErrTransactionPayload
+		}
+
+	case ActivateProducer:
+		if err := b.checkActivateProducerTransaction(txn, blockHeight);
+			err != nil {
+			log.Warn("[CheckActivateProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
@@ -624,7 +635,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.WithdrawFromSideChain:
 	case *payload.TransferCrossChainAsset:
 	case *payload.ProducerInfo:
-	case *payload.CancelProducer:
+	case *payload.ProcessProducer:
 	case *payload.ReturnDepositCoin:
 	case *payload.DPOSIllegalProposals:
 	case *payload.DPOSIllegalVotes:
@@ -831,29 +842,82 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
-	cancelProducer, ok := txn.Payload.(*payload.CancelProducer)
+func (b *BlockChain) checkProcessProducer(txn *Transaction) (
+	*state.Producer, error) {
+	cancelProducer, ok := txn.Payload.(*payload.ProcessProducer)
 	if !ok {
-		return errors.New("invalid payload")
+		return nil, errors.New("invalid payload")
 	}
 
 	// check signature
 	publicKey, err := DecodePoint(cancelProducer.OwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid public key in payload")
+		return nil, errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(signedBuf, payload.CancelProducerVersion)
+	err = cancelProducer.SerializeUnsigned(signedBuf, payload.ProducerOperationVersion)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = Verify(*publicKey, signedBuf.Bytes(), cancelProducer.Signature)
 	if err != nil {
-		return errors.New("invalid signature in payload")
+		return nil, errors.New("invalid signature in payload")
 	}
 
-	if p := b.state.GetProducer(cancelProducer.OwnerPublicKey); p == nil {
-		return errors.New("canceling unknown producer")
+	producer := b.state.GetProducer(cancelProducer.OwnerPublicKey)
+	if producer == nil {
+		return nil, errors.New("getting unknown producer")
+	}
+	return producer, nil
+}
+
+func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
+	producer, err := b.checkProcessProducer(txn)
+	if err != nil {
+		return err
+	}
+
+	if producer.State() == state.FoundBad ||
+		producer.State() == state.Canceled {
+		return errors.New("can not cancel this producer")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
+	height uint32) error {
+	producer, err := b.checkProcessProducer(txn)
+	if err != nil {
+		return err
+	}
+
+	if producer.State() != state.Inactivate {
+		return errors.New("can not activate this producer")
+	}
+
+	if height < producer.InactiveSince()+InactiveRecoveringHeightLimit {
+		return errors.New("inactive producers should recover after 1 day")
+	}
+
+	programHash, err := contract.PublicKeyToDepositProgramHash(
+		producer.OwnerPublicKey())
+	if err != nil {
+		return err
+	}
+
+	utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+	if err != nil {
+		return err
+	}
+
+	depositAmount := common.Fixed64(0)
+	for _, u := range utxos {
+		depositAmount += u.Value
+	}
+
+	if depositAmount - producer.Penalty() < MinDepositAmount {
+		return errors.New("insufficient deposit amount")
 	}
 
 	return nil

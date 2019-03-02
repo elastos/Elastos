@@ -84,10 +84,6 @@ func loadConfigParams() *config.ConfigParams {
 			activeNetParams.VoteStartHeight = cfg.HeightVersions[1]
 		}
 	}
-	if cfg.ArbiterConfiguration.InactiveDuration > 0 {
-		activeNetParams.InactiveDuration =
-			cfg.ArbiterConfiguration.InactiveDuration
-	}
 	if cfg.ArbiterConfiguration.MaxInactiveRounds > 0 {
 		activeNetParams.MaxInactiveRounds =
 			cfg.ArbiterConfiguration.MaxInactiveRounds
