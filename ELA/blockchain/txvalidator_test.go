@@ -728,6 +728,133 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
 }
 
+func (s *txValidatorTestSuite) TestCheckOutputPayload() {
+	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	outputs := []*types.Output{
+		{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					{
+						VoteType: outputpayload.Delegate,
+						Candidates: [][]byte{
+							publicKey1,
+						},
+					},
+				},
+			},
+		},
+		{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					{
+						VoteType:   outputpayload.Delegate,
+						Candidates: [][]byte{},
+					},
+				},
+			},
+		},
+		{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					{
+						VoteType: outputpayload.Delegate,
+						Candidates: [][]byte{
+							publicKey1,
+							publicKey1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := checkOutputPayload(types.TransferAsset, outputs[0])
+	s.NoError(err)
+
+	err = checkOutputPayload(types.RechargeToSideChain, outputs[0])
+	s.EqualError(err, "transaction type dose not match the output payload type")
+
+	err = checkOutputPayload(types.TransferAsset, outputs[1])
+	s.EqualError(err, "invalid public key count")
+
+	err = checkOutputPayload(types.TransferAsset, outputs[2])
+	s.EqualError(err, "duplicate candidate")
+}
+
+func (s *txValidatorTestSuite) TestCheckVoteProducerOutputs() {
+	outputs := []*types.Output{
+		{
+			Type: types.OTNone,
+		},
+	}
+	references := make(map[*types.Input]*types.Output)
+
+	s.NoError(checkVoteProducerOutputs(outputs, references, nil))
+
+	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	candidate1, _ := common.HexStringToBytes(publicKey1)
+	candidate2, _ := common.HexStringToBytes(publicKey2)
+	producers := [][]byte{candidate1}
+
+	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
+	hashByte, _ := common.HexStringToBytes(hashStr)
+	hash, _ := common.Uint168FromBytes(hashByte)
+	outputs = append(outputs, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   0,
+					Candidates: [][]byte{candidate1},
+				},
+			},
+		},
+	})
+	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *hash,
+	}
+	s.NoError(checkVoteProducerOutputs(outputs, references, producers))
+
+	outputs = append(outputs, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   0,
+					Candidates: [][]byte{candidate2},
+				},
+			},
+		},
+	})
+	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+}
+
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }

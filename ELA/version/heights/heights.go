@@ -39,12 +39,6 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	return h.versions[heightKey].DefaultBlockVersion
 }
 
-func (h *heightVersions) CheckOutputPayload(blockHeight uint32, tx *types.Transaction, output *types.Output) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(v txs.TxVersion) error {
-		return v.CheckOutputPayload(tx.TxType, output)
-	})
-}
-
 func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error {
 	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(v txs.TxVersion) error {
 		return v.CheckOutputProgramHash(programHash)
@@ -60,19 +54,6 @@ func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.
 func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase common.Fixed64) error {
 	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version txs.TxVersion) error {
 		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
-	})
-}
-
-func (h *heightVersions) CheckVoteProducerOutputs(blockHeight uint32, tx *types.Transaction,
-	outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version txs.TxVersion) error {
-		return version.CheckVoteProducerOutputs(outputs, references, producers)
-	})
-}
-
-func (h *heightVersions) CheckTxHasNoPrograms(blockHeight uint32, tx *types.Transaction) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version txs.TxVersion) error {
-		return version.CheckTxHasNoPrograms(tx)
 	})
 }
 

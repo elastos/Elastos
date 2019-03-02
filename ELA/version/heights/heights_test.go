@@ -98,58 +98,6 @@ func (s *heightVersionTestSuit) TestHeightVersions_GetDefaultBlockVersion() {
 	s.Equal(uint32(2), v)
 }
 
-func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputPayload() {
-	txV1 := &types.Transaction{Version: 1}
-	txV2 := &types.Transaction{Version: 2}
-	txVMax := &types.Transaction{Version: 255}
-
-	//check output payload shall always find version by Transaction.Version
-
-	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV1, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height1, txV2, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height1, txVMax, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload((s.Height1+s.Height2)/2, txV1, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.Error(s.Version.CheckOutputPayload(s.Height1, nil, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height2, txV1, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txV1, nil))
-	s.Equal("txVersionTest1_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height2, txV2, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txV2, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height2, txVMax, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload((s.Height2+s.Height3)/2, txVMax, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-
-	s.Error(s.Version.CheckOutputPayload(s.Height3, txV1, nil), "do not support v1")
-	s.Error(s.Version.CheckOutputPayload(s.Height3, txVMax, nil), "do not support vMax")
-	s.Error(s.Version.CheckOutputPayload(s.Height3, nil, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height3, txV2, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-
-	s.NoError(s.Version.CheckOutputPayload(s.Height3+5, txV2, nil))
-	s.Equal("txVersionTest2_CheckOutputPayload", versionsMsg)
-}
-
 func (s *heightVersionTestSuit) TestHeightVersions_CheckOutputProgramHash() {
 	txV1 := &types.Transaction{Version: 1}
 	txV2 := &types.Transaction{Version: 2}
@@ -304,110 +252,6 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckCoinbaseArbitratorsRewar
 
 	s.NoError(s.Version.CheckCoinbaseArbitratorsReward(s.Height3+5, txV2, 0))
 	s.Equal("txVersionTest2_CheckCoinbaseArbitratorsReward", versionsMsg)
-}
-
-func (s *heightVersionTestSuit) TestHeightVersions_CheckVoteProducerOutputs() {
-	txV1 := &types.Transaction{Version: 1}
-	txV2 := &types.Transaction{Version: 2}
-	txVMax := &types.Transaction{Version: 255}
-
-	//note less or equal than heights.HeightVersion2(s.Height2) find version only by DefaultTxVersion
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV1, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txV2, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height1, txVMax, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height1, nil, nil, nil, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height1+s.Height2)/2, txV1, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV1, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV1, nil, nil, nil))
-	s.Equal("txVersionTest1_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txV2, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txV2, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height2, txVMax, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs((s.Height2+s.Height3)/2, txVMax, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-
-	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
-
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txV1, nil, nil, nil), "do not support v1")
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, txVMax, nil, nil, nil), "do not support vMax")
-	s.Error(s.Version.CheckVoteProducerOutputs(s.Height3, nil, nil, nil, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3, txV2, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-
-	s.NoError(s.Version.CheckVoteProducerOutputs(s.Height3+5, txV2, nil, nil, nil))
-	s.Equal("txVersionTest2_CheckVoteProducerOutputs", versionsMsg)
-}
-
-func (s *heightVersionTestSuit) TestHeightVersions_CheckTxHasNoPrograms() {
-	txV1 := &types.Transaction{Version: 1}
-	txV2 := &types.Transaction{Version: 2}
-	txVMax := &types.Transaction{Version: 255}
-
-	//note less or equal than heights.HeightVersion2(s.Height2) find version only by DefaultTxVersion
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txV2))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height1, txVMax))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.Error(s.Version.CheckTxHasNoPrograms(s.Height1, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height1+s.Height2)/2, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txV1))
-	s.Equal("txVersionTest1_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height2, txVMax))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms((s.Height2+s.Height3)/2, txVMax))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
-
-	//greater than heights.HeightVersion2(s.Height2) find version by Transaction.Version
-
-	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, txV1), "do not support v1")
-	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, txVMax), "do not support vMax")
-	s.Error(s.Version.CheckTxHasNoPrograms(s.Height3, nil), "do not support nil tx")
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height3, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
-
-	s.NoError(s.Version.CheckTxHasNoPrograms(s.Height3+5, txV2))
-	s.Equal("txVersionTest2_CheckTxHasNoPrograms", versionsMsg)
 }
 
 func (s *heightVersionTestSuit) TestHeightVersions_GetNormalArbitratorsDesc() {
@@ -672,12 +516,6 @@ func (v *txVersionTest1) GetVersion() byte {
 	return 1
 }
 
-func (v *txVersionTest1) CheckOutputPayload(txType types.TxType,
-	output *types.Output) error {
-	versionsMsg = "txVersionTest1_CheckOutputPayload"
-	return nil
-}
-
 func (v *txVersionTest1) CheckOutputProgramHash(programHash common.Uint168) error {
 	versionsMsg = "txVersionTest1_CheckOutputProgramHash"
 	return nil
@@ -708,12 +546,6 @@ type txVersionTest2 struct {
 
 func (v *txVersionTest2) GetVersion() byte {
 	return 2
-}
-
-func (v *txVersionTest2) CheckOutputPayload(txType types.TxType,
-	output *types.Output) error {
-	versionsMsg = "txVersionTest2_CheckOutputPayload"
-	return nil
 }
 
 func (v *txVersionTest2) CheckOutputProgramHash(programHash common.Uint168) error {

@@ -17,10 +17,6 @@ func (v *txV0) GetVersion() byte {
 	return 0
 }
 
-func (v *txV0) CheckOutputPayload(txType types.TxType, output *types.Output) error {
-	return nil
-}
-
 func (v *txV0) CheckOutputProgramHash(programHash common.Uint168) error {
 	return nil
 }
@@ -30,14 +26,6 @@ func (v *txV0) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward commo
 }
 
 func (v *txV0) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
-	return nil
-}
-
-func (v *txV0) CheckVoteProducerOutputs(outputs []*types.Output, references map[*types.Input]*types.Output, producers [][]byte) error {
-	return nil
-}
-
-func (v *txV0) CheckTxHasNoPrograms(tx *types.Transaction) error {
 	return nil
 }
 

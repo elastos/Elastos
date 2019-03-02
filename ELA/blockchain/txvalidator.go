@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
@@ -215,13 +216,49 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrIneffectiveCoinbase
 	}
 
-	if err := DefaultLedger.HeightVersions.CheckVoteProducerOutputs(blockHeight, txn, txn.Outputs, references,
-		getProducerPublicKeys(b.state.GetActiveProducers())); err != nil {
-		log.Warn("[CheckVoteProducerOutputs],", err)
-		return ErrInvalidOutput
+	if txn.Version >= TxVersion09 {
+		if err := checkVoteProducerOutputs(txn.Outputs, references, getProducerPublicKeys(b.state.GetActiveProducers())); err != nil {
+			log.Warn("[CheckVoteProducerOutputs],", err)
+			return ErrInvalidOutput
+		}
 	}
 
 	return Success
+}
+
+func checkVoteProducerOutputs(outputs []*Output, references map[*Input]*Output, producers [][]byte) error {
+	programHashes := make(map[common.Uint168]struct{})
+	for _, v := range references {
+		programHashes[v.ProgramHash] = struct{}{}
+	}
+
+	pds := make(map[string]struct{})
+	for _, p := range producers {
+		pds[common.BytesToHexString(p)] = struct{}{}
+	}
+
+	for _, o := range outputs {
+		if o.Type == OTVote {
+			if _, ok := programHashes[o.ProgramHash]; !ok {
+				return errors.New("Invalid vote output")
+			}
+			payload, ok := o.Payload.(*outputpayload.VoteOutput)
+			if !ok {
+				return errors.New("Invalid vote output payload")
+			}
+			for _, content := range payload.Contents {
+				if content.VoteType == outputpayload.Delegate {
+					for _, candidate := range content.Candidates {
+						if _, ok := pds[common.BytesToHexString(candidate)]; !ok {
+							return fmt.Errorf("Invalid vote output payload candidate: %s", common.BytesToHexString(candidate))
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func getProducerPublicKeys(producers []*state.Producer) [][]byte {
@@ -388,12 +425,34 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return err
 		}
 
-		if err := DefaultLedger.HeightVersions.CheckOutputPayload(blockHeight, txn, output); err != nil {
-			return err
+		if txn.Version >= TxVersion09 {
+			if err := checkOutputPayload(txn.TxType, output); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+func checkOutputPayload(txType TxType, output *Output) error {
+	// OTVote information can only be placed in TransferAsset transaction.
+	if txType == TransferAsset {
+		switch output.Type {
+		case OTNone:
+		case OTVote:
+		default:
+			return errors.New("transaction type dose not match the output payload type")
+		}
+	} else {
+		switch output.Type {
+		case OTNone:
+		default:
+			return errors.New("transaction type dose not match the output payload type")
+		}
+	}
+
+	return output.Payload.Validate()
 }
 
 func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
@@ -484,7 +543,10 @@ func checkAttributeProgram(blockHeight uint32, tx *Transaction) error {
 	switch tx.TxType {
 	case CoinBase:
 		// Coinbase and illegal transactions do not check attribute and program
-		return DefaultLedger.HeightVersions.CheckTxHasNoPrograms(blockHeight, tx)
+		if len(tx.Programs) != 0 {
+			return errors.New("transaction should have no programs")
+		}
+		return nil
 	case IllegalSidechainEvidence:
 		fallthrough
 	case IllegalProposalEvidence:
