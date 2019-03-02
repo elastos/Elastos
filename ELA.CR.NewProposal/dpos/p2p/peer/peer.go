@@ -150,14 +150,13 @@ type Peer struct {
 	inbound bool
 
 	flagsMtx           sync.Mutex // protects the peer flags below
-	na                 *p2p.NetAddress
 	id                 uint64
+	na                 *p2p.NetAddress
+	pk                 *crypto.PublicKey
 	pid                PID
 	services           uint64
-	versionKnown       bool
 	advertisedProtoVer uint32 // protocol version advertised by remote
 	protocolVersion    uint32 // negotiated protocol version
-	verAckReceived     bool
 
 	// These fields keep track of statistics for the peer and are protected
 	// by the statsMtx mutex.
@@ -241,6 +240,17 @@ func (p *Peer) PID() PID {
 	return pid
 }
 
+// PK returns the peer public key.
+//
+// This function is safe for concurrent access.
+func (p *Peer) PK() *crypto.PublicKey {
+	p.flagsMtx.Lock()
+	pk := p.pk
+	p.flagsMtx.Unlock()
+
+	return pk
+}
+
 // NA returns the peer network address.
 //
 // This function is safe for concurrent access.
@@ -299,30 +309,6 @@ func (p *Peer) LastPingMicros() int64 {
 	p.statsMtx.RUnlock()
 
 	return lastPingMicros
-}
-
-// VersionKnown returns the whether or not the version of a peer is known
-// locally.
-//
-// This function is safe for concurrent access.
-func (p *Peer) VersionKnown() bool {
-	p.flagsMtx.Lock()
-	versionKnown := p.versionKnown
-	p.flagsMtx.Unlock()
-
-	return versionKnown
-}
-
-// VerAckReceived returns whether or not a verack message was received by the
-// peer.
-//
-// This function is safe for concurrent access.
-func (p *Peer) VerAckReceived() bool {
-	p.flagsMtx.Lock()
-	verAckReceived := p.verAckReceived
-	p.flagsMtx.Unlock()
-
-	return verAckReceived
 }
 
 // ProtocolVersion returns the negotiated peer protocol version.
@@ -525,13 +511,8 @@ out:
 
 			// No read lock is necessary because verAckReceived is not written
 			// to in any other goroutine.
-			if p.verAckReceived {
-				log.Infof("Already received 'verack' from peer %v -- disconnecting", p)
-				break out
-			}
-			p.flagsMtx.Lock()
-			p.verAckReceived = true
-			p.flagsMtx.Unlock()
+			log.Infof("Already received 'verack' from peer %v -- disconnecting", p)
+			break out
 
 		case *msg.Ping:
 			p.handlePingMsg(m)
@@ -690,11 +671,11 @@ func (p *Peer) Quit() <-chan struct{} {
 // readRemoteVersionMsg waits for the next message to arrive from the remote
 // peer.  If the next message is not a version message or the version is not
 // acceptable then return an error.
-func (p *Peer) readRemoteVersionMsg() error {
+func (p *Peer) readRemoteVersionMsg() ([]byte, error) {
 	// Read their version message.
 	remoteMsg, err := p.readMessage()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	verMsg, ok := remoteMsg.(*msg.Version)
@@ -702,19 +683,18 @@ func (p *Peer) readRemoteVersionMsg() error {
 		reason := "A version message must precede all others"
 		rejectMsg := msg.NewReject(remoteMsg.CMD(), msg.RejectMalformed, reason)
 		p.writeMessage(rejectMsg)
-		return errors.New(reason)
+		return nil, errors.New(reason)
 	}
 
 	// Detect self connections.
 	if p.cfg.PID.Equal(verMsg.PID) {
-		return errors.New("disconnecting peer connected to self")
+		return nil, errors.New("disconnecting peer connected to self")
 	}
 
-	// Verify signature of the message nonce.
+	// Verify peer public key.
 	pk, err := crypto.DecodePoint(verMsg.PID[:])
-	err = crypto.Verify(*pk, verMsg.Nonce[:], verMsg.Signature[:])
 	if err != nil {
-		return errors.New("disconnecting peer verify signature failed")
+		return nil, errors.New("disconnecting peer invalided public key")
 	}
 
 	// Negotiate the protocol version and set the services to what the remote
@@ -722,73 +702,100 @@ func (p *Peer) readRemoteVersionMsg() error {
 	p.flagsMtx.Lock()
 	p.advertisedProtoVer = uint32(verMsg.Version)
 	p.protocolVersion = minUint32(p.protocolVersion, p.advertisedProtoVer)
-	p.versionKnown = true
 	log.Debugf("Negotiated protocol version %d for peer %s",
 		p.protocolVersion, p)
 
-	// Set the peer's ID.
+	p.pk = pk
 	p.pid = verMsg.PID
-
-	// Set the supported services for the peer to what the remote peer advertised.
 	p.services = verMsg.Services
 	p.flagsMtx.Unlock()
 
 	p.cfg.handleMessage(p, verMsg)
-	return nil
+	return verMsg.Nonce[:], nil
 }
 
-// localVersionMsg creates a version message that can be used to send to the
-// remote peer.
-func (p *Peer) localVersionMsg() (*msg.Version, error) {
-	// Create a 32 bytes nonce value
-	nonce := [32]byte{}
-	_, err := rand.Read(nonce[:])
-	if err != nil {
-		return nil, errors.New("create local version nonce failed")
-	}
-	// Version message.
-	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services, p.cfg.PID,
-		nonce, p.cfg.SignNonce(nonce[:]))
-
-	// Advertise the services flag
-	msg.Services = p.cfg.Services
-
-	// Advertise our max supported protocol version.
-	msg.Version = uint32(p.cfg.ProtocolVersion)
-
-	return msg, nil
-}
-
-// writeLocalVersionMsg writes our version message to the remote peer.
-func (p *Peer) writeLocalVersionMsg() error {
-	localVerMsg, err := p.localVersionMsg()
+// readRemoteVerAckMsg waits for the next message to arrive from the remote
+// peer.  If the next message is not a verack message or the signature is not
+// match return an error.
+func (p *Peer) readRemoteVerAckMsg(nonce []byte) error {
+	// Read their verack message.
+	remoteMsg, err := p.readMessage()
 	if err != nil {
 		return err
 	}
 
-	return p.writeMessage(localVerMsg)
+	verAck, ok := remoteMsg.(*msg.VerAck)
+	if !ok {
+		reason := "A verack message must after a version message"
+		rejectMsg := msg.NewReject(remoteMsg.CMD(), msg.RejectMalformed, reason)
+		p.writeMessage(rejectMsg)
+		return errors.New(reason)
+	}
+
+	// Verify signature of the message nonce.
+	p.cfg.handleMessage(p, verAck)
+	return crypto.Verify(*p.pk, nonce, verAck.Signature[:])
+}
+
+// writeLocalVersionMsg writes our version message to the remote peer.
+func (p *Peer) writeLocalVersionMsg() ([]byte, error) {
+	// Create a 32 bytes nonce value
+	nonce := [32]byte{}
+	rand.Read(nonce[:])
+
+	// Version message.
+	localVerMsg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services,
+		p.cfg.PID, nonce)
+
+	return nonce[:], p.writeMessage(localVerMsg)
+}
+
+// writeLocalVerAckMsg writes our verack message to the remote peer.
+func (p *Peer) writeLocalVerAckMsg(nonce []byte) error {
+	localVarAck := msg.NewVerAck(p.cfg.SignNonce(nonce))
+	return p.writeMessage(localVarAck)
 }
 
 // negotiateInboundProtocol waits to receive a version message from the peer
 // then sends our version message. If the events do not occur in that order then
 // it returns an error.
 func (p *Peer) negotiateInboundProtocol() error {
-	if err := p.readRemoteVersionMsg(); err != nil {
+	theirNonce, err := p.readRemoteVersionMsg()
+	if err != nil {
 		return err
 	}
 
-	return p.writeLocalVersionMsg()
+	ourNonce, err := p.writeLocalVersionMsg()
+	if err != nil {
+		return err
+	}
+
+	if err := p.writeLocalVerAckMsg(theirNonce); err != nil {
+		return err
+	}
+
+	return p.readRemoteVerAckMsg(ourNonce)
 }
 
 // negotiateOutboundProtocol sends our version message then waits to receive a
 // version message from the peer.  If the events do not occur in that order then
 // it returns an error.
 func (p *Peer) negotiateOutboundProtocol() error {
-	if err := p.writeLocalVersionMsg(); err != nil {
+	ourNonce, err := p.writeLocalVersionMsg()
+	if err != nil {
 		return err
 	}
 
-	return p.readRemoteVersionMsg()
+	theirNonce, err := p.readRemoteVersionMsg()
+	if err != nil {
+		return err
+	}
+
+	if err := p.readRemoteVerAckMsg(ourNonce); err != nil {
+		return err
+	}
+
+	return p.writeLocalVerAckMsg(theirNonce)
 }
 
 // start begins processing input and output messages.
@@ -819,8 +826,6 @@ func (p *Peer) start() error {
 	go p.outHandler()
 	go p.pingHandler()
 
-	// Send our verack message now that the IO processing machinery has started.
-	p.SendMessage(&msg.VerAck{}, nil)
 	return nil
 }
 
