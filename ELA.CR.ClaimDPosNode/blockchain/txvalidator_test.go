@@ -50,12 +50,12 @@ func (s *txValidatorTestSuite) SetupSuite() {
 
 	heightVersions := &mock.HeightVersionsMock{}
 	chainStore, err := NewChainStore("txValidatorTestSuite",
-		config.MainNetParams.GenesisBlock)
+		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, &config.MainNetParams,
-		heightVersions, state.NewState(&mock.ArbitratorsMock{}, &config.MainNetParams))
+	s.Chain, err = New(chainStore, &config.DefaultParams,
+		heightVersions, state.NewState(&mock.ArbitratorsMock{}, &config.DefaultParams))
 	if err != nil {
 		s.Error(err)
 	}
@@ -155,7 +155,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	s.EqualError(err, "Asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30% (CheckTxOut version)
-	totalReward := config.MainNetParams.RewardPerBlock
+	totalReward := config.DefaultParams.RewardPerBlock
 	fmt.Printf("Block reward amount %s", totalReward.String())
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	fmt.Printf("Foundation reward amount %s", foundationReward.String())

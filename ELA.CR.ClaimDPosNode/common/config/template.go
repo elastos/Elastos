@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 var Template = Configuration{
 	Magic:               7630401,
 	Version:             23,
@@ -10,19 +8,11 @@ var Template = Configuration{
 	HttpInfoStart:       true,
 	HttpRestPort:        20334,
 	HttpWsPort:          20335,
-	WsHeartbeatInterval: 60,
 	HttpJsonPort:        20336,
 	NodePort:            20338,
-	NodeOpenPort:        20866,
-	OpenService:         true,
 	PrintLevel:          0,
 	MaxLogsSize:         0,
 	MaxPerLogSize:       0,
-	IsTLS:               false,
-	CertPath:            "./sample-cert.pem",
-	KeyPath:             "./sample-cert-key.pem",
-	CAPath:              "./sample-ca.pem",
-	MultiCoreNum:        4,
 	MaxTxsInBlock:       10000,
 	MinCrossChainTxFee:  10000,
 	PowConfiguration: PowConfiguration{
@@ -30,7 +20,6 @@ var Template = Configuration{
 		AutoMining: false,
 		MinerInfo:  "ELA",
 		MinTxFee:   100,
-		ActiveNet:  "RegNet",
 	},
 	EnableArbiter: false,
 	ArbiterConfiguration: ArbiterConfiguration{
@@ -43,10 +32,8 @@ var Template = Configuration{
 		SignTolerance:            5,
 		MaxLogsSize:              0,
 		MaxPerLogSize:            0,
-		MaxConnections:           100,
 		NormalArbitratorsCount:   5,
 		CandidatesCount:          0,
-		EmergencyDuration:        uint32((time.Hour * 24 * 7) / time.Second),
 		EmergencyInactivePenalty: 500 * 100000000,
 		MaxInactiveRounds:        3,
 		InactivePenalty:          100 * 100000000,

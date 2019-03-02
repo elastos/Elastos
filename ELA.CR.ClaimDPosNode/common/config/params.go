@@ -40,9 +40,8 @@ var (
 	}
 )
 
-// MainNetParams defines the network parameters for the main network.
-var MainNetParams = Params{
-	Name:        "mainnet",
+// DefaultParams defines the default network parameters.
+var DefaultParams = Params{
 	Magic:       2017001,
 	DefaultPort: 20338,
 
@@ -70,8 +69,8 @@ var MainNetParams = Params{
 		"02fa3e0d14e0e93ca41c3c0f008679e417cf2adb6375dd4bbbee9ed8e8db606a56",
 		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 	},
-	CRCArbiters: []CRCArbitratorParams{
-	//todo add CRC arbiters
+	CRCArbiters: []CRCArbiter{
+		//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
@@ -94,100 +93,76 @@ var MainNetParams = Params{
 	InactiveEliminateCount:   12,
 }
 
-// TestNetParams defines the network parameters for the test network.
-var TestNetParams = Params{
-	Name:        "testnet",
-	Magic:       2018001,
-	DefaultPort: 21338,
+// TestNet returns the network parameters for the test network.
+func (p *Params) TestNet() *Params {
+	copy := *p
+	copy.Magic = 2018001
+	copy.DefaultPort = 21338
 
-	SeedList: []string{
+	copy.SeedList = []string{
 		"node-testnet-001.elastos.org",
 		"node-testnet-002.elastos.org",
 		"node-testnet-003.elastos.org",
 		"node-testnet-004.elastos.org",
 		"node-testnet-005.elastos.org",
-	},
+	}
 
-	Foundation:   testNetFoundation,
-	GenesisBlock: GenesisBlock(&testNetFoundation),
-	OriginArbiters: []string{
+	copy.Foundation = testNetFoundation
+	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
+	copy.OriginArbiters = []string{
 		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
 		"02dd22722c3b3a284929e4859b07e6a706595066ddd2a0b38e5837403718fb047c",
 		"03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
-	},
-	CRCArbiters: []CRCArbitratorParams{
-	//todo add CRC arbiters
-	},
-	PowLimit:           powLimit,
-	PowLimitBits:       0x1f0008ff,
-	TargetTimespan:     24 * time.Hour,  // 24 hours
-	TargetTimePerBlock: 2 * time.Minute, // 2 minute
-	AdjustmentFactor:   4,               // 25% less, 400% more
-	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
-	CoinbaseMaturity:   100,
-	MinTransactionFee:  100,
-	HeightVersions: []uint32{
+	}
+	copy.HeightVersions = []uint32{
 		0,
 		0,
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
-	},
-	VoteStartHeight:          1008812, //fixme edit height later
-	MaxInactiveRounds:        3,
-	InactivePenalty:          100 * 100000000,
-	EmergencyInactivePenalty: 500 * 100000000,
-	InactiveEliminateCount:   12,
+	}
+	return &copy
 }
 
-// RegNetParams defines the network parameters for the regression test network.
-var RegNetParams = Params{
-	Name:         "regnet",
-	Foundation:   testNetFoundation,
-	GenesisBlock: GenesisBlock(&testNetFoundation),
-	OriginArbiters: []string{
+// RegNet returns the network parameters for the test network.
+func (p *Params) RegNet() *Params {
+	copy := *p
+	copy.Foundation = testNetFoundation
+	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
+	copy.OriginArbiters = []string{
 		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
 		"02dd22722c3b3a284929e4859b07e6a706595066ddd2a0b38e5837403718fb047c",
 		"03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
-	},
-	CRCArbiters: []CRCArbitratorParams{
-	//todo add CRC arbiters
-	},
-
-	PowLimit:           powLimit,
-	PowLimitBits:       0x207fffff,
-	TargetTimePerBlock: 1 * time.Second,  // 1 second
-	TargetTimespan:     10 * time.Second, // 10 seconds
-	AdjustmentFactor:   4,                // 25% less, 400% more
-	RewardPerBlock:     rewardPerBlock(1 * time.Second),
-	CoinbaseMaturity:   100,
-	MinTransactionFee:  100,
-	HeightVersions: []uint32{
+	}
+	copy.HeightVersions = []uint32{
 		0,
 		0,
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
-	},
-	VoteStartHeight:          1008812, //fixme edit height later
-	MaxInactiveRounds:        3,
-	InactivePenalty:          100 * 100000000,
-	EmergencyInactivePenalty: 500 * 100000000,
-	InactiveEliminateCount:   12,
+	}
+	return &copy
+}
+
+// InstantBlock returns the network parameters for generate instant block.
+func (p *Params) InstantBlock() *Params {
+	copy := *p
+	copy.PowLimitBits = 0x207fffff
+	copy.TargetTimespan = 10 * time.Second
+	copy.TargetTimePerBlock = 1 * time.Second
+	copy.RewardPerBlock = rewardPerBlock(1 * time.Second)
+	return &copy
 }
 
 // CRCArbitratorParam defines parameters about arbitrators consensus and direct connection
-type CRCArbitratorParams struct {
+type CRCArbiter struct {
 	PublicKey  []byte
 	NetAddress string
 }
 
 type Params struct {
-	// Name defines a human-readable identifier for the network.
-	Name string
-
 	// Magic defines the magic number of the peer-to-peer network.
 	Magic uint32
 
@@ -211,7 +186,7 @@ type Params struct {
 	OriginArbiters []string
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
-	CRCArbiters []CRCArbitratorParams
+	CRCArbiters []CRCArbiter
 
 	// PowLimit defines the highest allowed proof of work value for a block
 	// as a uint256.

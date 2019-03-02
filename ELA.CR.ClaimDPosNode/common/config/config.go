@@ -53,11 +53,11 @@ var (
 )
 
 type PowConfiguration struct {
-	PayToAddr  string `json:"PayToAddr"`
-	AutoMining bool   `json:"AutoMining"`
-	MinerInfo  string `json:"MinerInfo"`
-	MinTxFee   int    `json:"MinTxFee"`
-	ActiveNet  string `json:"ActiveNet"`
+	PayToAddr    string `json:"PayToAddr"`
+	AutoMining   bool   `json:"AutoMining"`
+	MinerInfo    string `json:"MinerInfo"`
+	MinTxFee     int    `json:"MinTxFee"`
+	InstantBlock bool   `json:"InstantBlock"`
 }
 
 type RpcConfiguration struct {
@@ -66,12 +66,13 @@ type RpcConfiguration struct {
 	WhiteIPList []string `json:"WhiteIPList"`
 }
 
-type CRCArbitratorConfigItem struct {
+type CRCArbiterInfo struct {
 	PublicKey  string `json:"PublicKey"`
 	NetAddress string `json:"NetAddress"`
 }
 
 type Configuration struct {
+	ActiveNet            string               `json:"ActiveNet"`
 	Magic                uint32               `json:"Magic"`
 	FoundationAddress    string               `json:"FoundationAddress"`
 	Version              int                  `json:"Version"`
@@ -82,18 +83,10 @@ type Configuration struct {
 	RestKeyPath          string               `json:"RestKeyPath"`
 	HttpInfoPort         uint16               `json:"HttpInfoPort"`
 	HttpInfoStart        bool                 `json:"HttpInfoStart"`
-	OpenService          bool                 `json:"OpenService"`
 	HttpWsPort           int                  `json:"HttpWsPort"`
-	WsHeartbeatInterval  time.Duration        `json:"WsHeartbeatInterval"`
 	HttpJsonPort         int                  `json:"HttpJsonPort"`
 	NodePort             uint16               `json:"NodePort"`
-	NodeOpenPort         uint16               `json:"NodeOpenPort"`
 	PrintLevel           uint8                `json:"PrintLevel"`
-	IsTLS                bool                 `json:"IsTLS"`
-	CertPath             string               `json:"CertPath"`
-	KeyPath              string               `json:"KeyPath"`
-	CAPath               string               `json:"CAPath"`
-	MultiCoreNum         uint                 `json:"MultiCoreNum"`
 	MaxLogsSize          int64                `json:"MaxLogsSize"`
 	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
@@ -107,26 +100,24 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	PublicKey                string                    `json:"PublicKey"`
-	Magic                    uint32                    `json:"Magic"`
-	NodePort                 uint16                    `json:"NodePort"`
-	ProtocolVersion          uint32                    `json:"ProtocolVersion"`
-	Services                 uint64                    `json:"Services"`
-	PrintLevel               uint8                     `json:"PrintLevel"`
-	SignTolerance            uint64                    `json:"SignTolerance"`
-	MaxLogsSize              int64                     `json:"MaxLogsSize"`
-	MaxPerLogSize            int64                     `json:"MaxPerLogSize"`
-	MaxConnections           int                       `json:"MaxConnections"`
-	OriginArbiters           []string                  `json:"OriginArbiters"`
-	CRCArbiters              []CRCArbitratorConfigItem `json:"CRCArbiters"`
-	NormalArbitratorsCount   uint32                    `json:"NormalArbitratorsCount"`
-	CandidatesCount          uint32                    `json:"CandidatesCount"`
-	EmergencyDuration        uint32                    `json:"EmergencyDuration"`
-	EmergencyInactivePenalty common.Fixed64            `json:"EmergencyInactivePenalty"`
-	MaxInactiveRounds        uint32                    `json:"MaxInactiveRounds"`
-	InactivePenalty          common.Fixed64            `json:"InactivePenalty"`
-	InactiveEliminateCount   uint32                    `json:"InactiveEliminateCount"`
-	EnableEventRecord        bool                      `json:"EnableEventRecord"`
+	PublicKey                string           `json:"PublicKey"`
+	Magic                    uint32           `json:"Magic"`
+	NodePort                 uint16           `json:"NodePort"`
+	ProtocolVersion          uint32           `json:"ProtocolVersion"`
+	Services                 uint64           `json:"Services"`
+	PrintLevel               uint8            `json:"PrintLevel"`
+	SignTolerance            uint64           `json:"SignTolerance"`
+	MaxLogsSize              int64            `json:"MaxLogsSize"`
+	MaxPerLogSize            int64            `json:"MaxPerLogSize"`
+	OriginArbiters           []string         `json:"OriginArbiters"`
+	CRCArbiters              []CRCArbiterInfo `json:"CRCArbiters"`
+	NormalArbitratorsCount   uint32           `json:"NormalArbitratorsCount"`
+	CandidatesCount          uint32           `json:"CandidatesCount"`
+	EmergencyInactivePenalty common.Fixed64   `json:"EmergencyInactivePenalty"`
+	MaxInactiveRounds        uint32           `json:"MaxInactiveRounds"`
+	InactivePenalty          common.Fixed64   `json:"InactivePenalty"`
+	InactiveEliminateCount   uint32           `json:"InactiveEliminateCount"`
+	EnableEventRecord        bool             `json:"EnableEventRecord"`
 }
 
 type Seed struct {

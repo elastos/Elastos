@@ -23,7 +23,7 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 	config.Parameters = config.ConfigParams{Configuration: &config.Template}
 
 	s.Cfg = &verconf.Config{
-		ChainParams: &config.MainNetParams,
+		ChainParams: &config.DefaultParams,
 	}
 	s.Version = NewBlockV0(s.Cfg)
 }
@@ -32,7 +32,7 @@ func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNormalArbitratorsDesc(
 	originLedger := blockchain.DefaultLedger
 
 	arbitrators := make([][]byte, 0)
-	for _, v := range config.MainNetParams.OriginArbiters {
+	for _, v := range config.DefaultParams.OriginArbiters {
 		a, _ := common.HexStringToBytes(v)
 		arbitrators = append(arbitrators, a)
 	}
@@ -115,7 +115,7 @@ func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNextOnDutyArbitrator()
 
 	// fixme chain store removed, fix me later
 	//arbitrators := make([][]byte, 0)
-	//for _, v := range config.MainNetParams.OriginArbiters {
+	//for _, v := range config.DefaultParams.OriginArbiters {
 	//	a, _ := common.HexStringToBytes(v)
 	//	arbitrators = append(arbitrators, a)
 	//}

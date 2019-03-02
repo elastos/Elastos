@@ -52,7 +52,7 @@ func (a *ArbitratorsMock) TryEnterEmergency(blockTime uint32) bool {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbitratorParams {
+func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbiter {
 	panic("implement me")
 }
 
