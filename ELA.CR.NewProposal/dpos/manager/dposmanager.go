@@ -171,7 +171,6 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
 	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 
-	d.changeOnDuty()
 	d.handler.TryStartNewConsensus(b)
 }
 
@@ -335,7 +334,7 @@ func (d *DPOSManager) changeHeight() {
 		log.Error("Error occurred with change height: ", err)
 		return
 	}
-	//d.changeOnDuty()
+	d.changeOnDuty()
 }
 
 func (d *DPOSManager) changeOnDuty() {

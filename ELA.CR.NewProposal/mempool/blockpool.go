@@ -85,9 +85,9 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 	// confirm block
 	copyBlock := *dposBlock
 	copyBlock.ConfirmFlag = true
-	inMainChain, isOrphan, err := bm.confirmBlock(hash)
+	inMainChain, isOrphan, err := bm.appendConfirm(dposBlock.Confirm)
 	if err != nil {
-		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
+		log.Debug("[appendBlockAndConfirm] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
 		copyBlock.ConfirmFlag = false
 
 		// Notify the caller that the new block without confirm was accepted.
@@ -104,9 +104,9 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 
 func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	bool, bool, error) {
-	if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
-		return false, false, errors.New("duplicate confirm in pool")
-	}
+	//if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
+	//	return false, true, errors.New("duplicate confirm in pool")
+	//}
 
 	// verify confirmation
 	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {
@@ -166,10 +166,6 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		return false, false, errors.New("already processed block")
 	}
 
-	err := bm.Chain.AddConfirm(confirm)
-	if err != nil {
-		return true, false, errors.New("add confirm failed")
-	}
 	return true, false, nil
 }
 
