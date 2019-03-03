@@ -81,7 +81,6 @@ func (h *DPOSNormalHandler) TryStartNewConsensus(b *types.Block) bool {
 
 	if h.consensus.IsReady() {
 		log.Info("[Normal][OnBlockReceived] received first unsigned block, start consensus")
-		h.proposalDispatcher.CleanProposals(false)
 		h.consensus.StartConsensus(b)
 		result = true
 	} else { //running

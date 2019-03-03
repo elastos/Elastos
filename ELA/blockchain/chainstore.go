@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -33,11 +34,7 @@ type rollbackBlockTask struct {
 }
 
 type persistBlockTask struct {
-	block *Block
-	reply chan bool
-}
-
-type persistConfirmTask struct {
+	block   *Block
 	confirm *payload.Confirm
 	reply   chan bool
 }
@@ -84,15 +81,10 @@ func (c *ChainStore) taskHandler() {
 			now := time.Now()
 			switch task := t.(type) {
 			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block)
+				c.handlePersistBlockTask(task.block, task.confirm)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
-			case *persistConfirmTask:
-				c.handlePersistConfirmTask(task.confirm)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Proposal.BlockHash.String())
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
@@ -129,7 +121,7 @@ func (c *ChainStore) init(genesisBlock *Block) error {
 		}
 
 		// persist genesis block
-		err = c.persist(genesisBlock)
+		err = c.persist(genesisBlock, nil)
 		if err != nil {
 			return err
 		}
@@ -465,7 +457,7 @@ func (c *ChainStore) rollback(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) persist(b *Block) error {
+func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	c.NewBatch()
 	if err := c.persistTrimmedBlock(b); err != nil {
 		return err
@@ -485,24 +477,19 @@ func (c *ChainStore) persist(b *Block) error {
 	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
+	if b.Height >= config.Parameters.HeightVersions[2] {
+		if err := c.persistConfirm(confirm); err != nil {
+			return err
+		}
+	}
 	return c.BatchCommit()
 }
 
-func (c *ChainStore) SaveBlock(b *Block) error {
+func (c *ChainStore) SaveBlock(b *Block, confirm *payload.Confirm) error {
 	log.Debug("SaveBlock()")
 
 	reply := make(chan bool)
-	c.taskCh <- &persistBlockTask{block: b, reply: reply}
-	<-reply
-
-	return nil
-}
-
-func (c *ChainStore) SaveConfirm(confirm *payload.Confirm) error {
-	log.Debug("SaveConfirm()")
-
-	reply := make(chan bool)
-	c.taskCh <- &persistConfirmTask{confirm: confirm, reply: reply}
+	c.taskCh <- &persistBlockTask{block: b, confirm: confirm, reply: reply}
 	<-reply
 
 	return nil
@@ -517,20 +504,16 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 	c.rollback(block)
 }
 
-func (c *ChainStore) handlePersistBlockTask(b *Block) {
+func (c *ChainStore) handlePersistBlockTask(b *Block, confirm *payload.Confirm) {
 	if b.Header.Height <= c.currentBlockHeight {
 		return
 	}
 
-	c.persistBlock(b)
+	c.persistBlock(b, confirm)
 }
 
-func (c *ChainStore) handlePersistConfirmTask(confirm *payload.Confirm) {
-	c.persistConfirm(confirm)
-}
-
-func (c *ChainStore) persistBlock(block *Block) {
-	err := c.persist(block)
+func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) {
+	err := c.persist(block, confirm)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
 		return
@@ -539,16 +522,12 @@ func (c *ChainStore) persistBlock(block *Block) {
 	atomic.StoreUint32(&c.currentBlockHeight, block.Height)
 }
 
-func (c *ChainStore) persistConfirm(confirm *payload.Confirm) {
-	c.NewBatch()
+func (c *ChainStore) persistConfirm(confirm *payload.Confirm) error {
 	if err := c.PersistConfirm(confirm); err != nil {
 		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
-		return
+		return err
 	}
-	if err := c.BatchCommit(); err != nil {
-		log.Fatal("[persistConfirm]: error to commit confirm:", err.Error())
-		return
-	}
+	return nil
 }
 
 func (c *ChainStore) GetConfirm(hash Uint256) (*payload.Confirm, error) {

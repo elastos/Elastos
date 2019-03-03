@@ -109,7 +109,12 @@ func mockIllegalBlockTx(publicKey []byte) *types.Transaction {
 
 func TestState_ProcessTransaction(t *testing.T) {
 	state := NewState(&mock.ArbitratorsMock{}, &config.RegNetParams)
-
+	config.Parameters = config.ConfigParams{
+		Configuration: &config.Configuration{
+			HeightVersions: []uint32{0, 100, 200, 300},
+		},
+		ChainParam: nil,
+	}
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
