@@ -499,6 +499,7 @@ func NewService(cfg *Config) *Service {
 	block, _ := cfg.Chain.GetBlockByHash(*cfg.Chain.BestChain.Hash)
 	pow := &Service{
 		PayToAddr:   cfg.PayToAddr,
+		MinerInfo:   cfg.MinerInfo,
 		chain:       cfg.Chain,
 		chainParams: cfg.ChainParams,
 		versions:    cfg.Versions,
