@@ -177,13 +177,6 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 	return inMainChain, isOrphan, nil
 }
 
-func (b *BlockChain) AddConfirm(confirm *payload.Confirm) error {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-
-	return b.processConfirm(confirm)
-}
-
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 	header, err := b.db.GetHeader(hash)
 	if err != nil {
@@ -804,7 +797,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 		return err
 	}
 
-	if block.Height >= config.Parameters.HeightVersions[1] {
+	if block.Height >= config.Parameters.HeightVersions[2] {
 		if err := checkBlockWithConfirmation(block, confirm); err != nil {
 			return errors.New("block confirmation validate failed")
 		}
@@ -818,7 +811,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	}
 
 	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block); err != nil {
+	if err := b.db.SaveBlock(block, confirm); err != nil {
 		return err
 	}
 
@@ -902,10 +895,6 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
-		if err := b.processConfirm(confirm); err != nil {
-			return false, err
-		}
-
 		b.state.ProcessBlock(block, confirm)
 	}
 
@@ -1075,10 +1064,6 @@ func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool,
 	//log.Debugf("Accepted block %v", blockHash)
 
 	return inMainChain, false, nil
-}
-
-func (b *BlockChain) processConfirm(confirm *payload.Confirm) error {
-	return b.db.SaveConfirm(confirm)
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
