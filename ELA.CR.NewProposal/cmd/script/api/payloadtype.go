@@ -19,7 +19,6 @@ const (
 	luaRegisterProducerName  = "registerproducer"
 	luaUpdateProducerName    = "updateproducer"
 	luaCancelProducerName    = "cancelproducer"
-	// todo complete lua script related
 	luaActivateProducerName  = "activateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 )
@@ -291,15 +290,16 @@ func RegisterCancelProducerType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaCancelProducerName)
 	L.SetGlobal("cancelproducer", mt)
 	// static attributes
-	L.SetField(mt, "new", L.NewFunction(newCancelProducer))
+	L.SetField(mt, "new", L.NewFunction(newProcessProducer))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), cancelProducerMethods))
 }
 
 // Constructor
-func newCancelProducer(L *lua.LState) int {
+func newProcessProducer(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
 	client := checkClient(L, 2)
+	operation := L.ToInt(3)
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -308,7 +308,7 @@ func newCancelProducer(L *lua.LState) int {
 	}
 	processProducer := &payload.ProcessProducer{
 		OwnerPublicKey: []byte(publicKey),
-		Operation:      payload.POCancel,
+		Operation:      payload.ProducerOperation(operation),
 	}
 
 	cpSignBuf := new(bytes.Buffer)
@@ -396,6 +396,37 @@ var returnDepositCoinMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func returnDepositCoinGet(L *lua.LState) int {
 	p := checkReturnDepositCoin(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterActivateProducerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaActivateProducerName)
+	L.SetGlobal("activateproducer", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newProcessProducer))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), activateProducerMethods))
+}
+
+func checkActivateProducer(L *lua.LState, idx int) *payload.ProcessProducer {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.ProcessProducer);
+		ok && v.Operation == payload.POActivate {
+		return v
+	}
+	L.ArgError(1, "ActivateProducer expected")
+	return nil
+}
+
+var activateProducerMethods = map[string]lua.LGFunction{
+	"get": activateProducerGet,
+}
+
+// Getter and setter for the Person#Name
+func activateProducerGet(L *lua.LState) int {
+	p := checkActivateProducer(L, 1)
 	fmt.Println(p)
 
 	return 0
