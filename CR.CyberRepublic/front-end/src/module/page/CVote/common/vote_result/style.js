@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { proposalStatus } from '../color'
+import { CVOTE_RESULT, CVOTE_RESULT_COLOR } from '@/constant'
 
 export const Container = styled.div`
   display: flex;
@@ -20,16 +20,12 @@ export const Label = styled.div`
 export const List = styled.div`
   position: relative;
   padding: 40px;
-  display: ${props => (props.type === 'no' ? 'block' : 'flex')};
+  display: ${props => (props.type === CVOTE_RESULT.REJECT ? 'block' : 'flex')};
   align-items: center;
   box-sizing: border-box;
   height: 100%;
   border-left: 10px solid;
-  border-color: ${props => (props.type === 'no' && proposalStatus.no)
-    || (props.type === 'yes' && proposalStatus.yes)
-    || (props.type === 'abstained' && proposalStatus.abstained)
-    || (props.type === 'undecided' && proposalStatus.undecided)
-  }
+  border-color: ${props => CVOTE_RESULT_COLOR[props.type]};
   &:after {
     content: " ";
     min-width: 500px;

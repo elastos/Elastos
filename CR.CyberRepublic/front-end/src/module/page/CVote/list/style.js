@@ -1,6 +1,6 @@
 import styled from 'styled-components'
-import { proposalStatus } from '../common/color'
 import { grid } from '../common/variable'
+import { CVOTE_RESULT_COLOR, CVOTE_RESULT } from '@/constant'
 
 export const Container = styled.div`
   background: #ffffff;
@@ -27,13 +27,8 @@ export const Item = styled.div`
   height: 10px;
   box-sizing: border-box;
   margin-right: 2px;
-  margin-left: ${props => (props.yes ? 0 : '10px')}
-
-  background-color: ${props => (props.undecided && proposalStatus.undecided)
-    || (props.abstained && proposalStatus.abstained)
-    || (props.yes && proposalStatus.yes)
-    || (props.no && proposalStatus.no)
-  }
+  margin-left: ${props => (props.status === CVOTE_RESULT.SUPPORT ? 0 : '10px')}
+  background-color: ${props => CVOTE_RESULT_COLOR[props.status]};
 `
 
 export const ItemUndecided = styled(Item)`

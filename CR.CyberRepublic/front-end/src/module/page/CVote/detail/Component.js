@@ -6,7 +6,7 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import EditForm from '../edit/Container'
@@ -351,8 +351,8 @@ class C extends StandardPage {
 
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
-      const label = CVOTE_RESULT_TEXT[key]
-      const type = label.toLowerCase()
+      const type = (CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED)
+      const label = I18N.get(`council.voting.type.${type}`)
       const props = {
         dataList: statArr,
         type,

@@ -8,7 +8,7 @@ import {
 import I18N from '@/I18N'
 import VoteStats from '../stats/Component'
 import CreateForm from '../create/Container'
-import { CVOTE_RESULT_TEXT, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided } from './style'
@@ -90,13 +90,13 @@ export default class extends BaseComponent {
 
     const statusIndicator = (
       <List>
-        <Item yes />
+        <Item status={CVOTE_RESULT.SUPPORT} />
         <span>{I18N.get('council.voting.type.support')}</span>
-        <Item no />
+        <Item status={CVOTE_RESULT.REJECT} />
         <span>{I18N.get('council.voting.type.reject')}</span>
-        <Item abstained />
+        <Item status={CVOTE_RESULT.ABSTENTION} />
         <span>{I18N.get('council.voting.type.abstention')}</span>
-        <ItemUndecided undecided />
+        <ItemUndecided status={CVOTE_RESULT.UNDECIDED} />
         <span>{I18N.get('council.voting.type.undecided')}</span>
       </List>
     )
@@ -191,13 +191,13 @@ export default class extends BaseComponent {
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
-      voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
+      voteArr = _.map(voteResult, item => CVOTE_RESULT[item.value.toUpperCase()])
     } else if (!_.isEmpty(voteMap)) {
-      voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+      voteArr = _.map(voteMap, value => (CVOTE_RESULT[value.toUpperCase()] || CVOTE_RESULT.UNDECIDED))
     } else {
       return ''
     }
-    const supportNum = _.countBy(voteArr).Yes || 0
+    const supportNum = _.countBy(voteArr)[CVOTE_RESULT.SUPPORT] || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50
     const percentageStr = percentage.toString() && `${percentage.toFixed(1).toString()}%`

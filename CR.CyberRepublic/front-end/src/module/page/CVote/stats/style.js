@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { proposalStatus } from '../common/color'
+import { CVOTE_RESULT_COLOR } from '@/constant'
 
 export const List = styled.div`
   display: flex;
@@ -10,11 +10,7 @@ export const Item = styled.div`
   box-sizing: border-box;
   margin-right: 1px;
   margin-left: 0;
-  background-color: ${props => (props.status === 'undecided' && proposalStatus.undecided)
-    || (props.status === 'abstained' && proposalStatus.abstained)
-    || (props.status === 'yes' && proposalStatus.yes)
-    || (props.status === 'no' && proposalStatus.no)
-  }
+  background-color: ${props => CVOTE_RESULT_COLOR[props.status]};
 `
 export const ItemUndecided = styled(Item)`
   position: relative;

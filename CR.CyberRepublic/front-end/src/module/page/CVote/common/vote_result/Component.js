@@ -1,14 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Row, Col } from 'antd'
 import _ from 'lodash'
-import { CVOTE_RESULT_TEXT } from '@/constant'
+import { CVOTE_RESULT } from '@/constant'
 
 import { Container, RejectRow, Reason, Label, List, Item, Avatar } from './style'
 
 const Component = ({ label, type, dataList }) => {
   const votesNode = _.map(dataList, (data, key) => {
-    const isReject = type === CVOTE_RESULT_TEXT.reject.toLowerCase()
+    const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
       <Item key={key}>
         <Avatar src={data.avatar} alt="voter avatar" />
