@@ -1,52 +1,52 @@
 import BaseRedux from '@/model/BaseRedux';
 
 class UserRedux extends BaseRedux {
-    defineTypes() {
-        return ['user'];
-    }
+  defineTypes() {
+    return ['user'];
+  }
 
-    defineDefaultState() {
-        return {
-            loading: false,
-            avatar_loading: false,
+  defineDefaultState() {
+    return {
+      loading: false,
+      avatar_loading: false,
 
-            is_login: false,
-            is_leader: false,
-            is_admin: false,
-            is_council: false,
-            is_secretary: false,
+      is_login: false,
+      is_leader: false,
+      is_admin: false,
+      is_council: false,
+      is_secretary: false,
 
-            email: '',
-            username: '',
+      email: '',
+      username: '',
 
-            role: '',
-            circles: [],
-            subscribers: [],
-            // TODO: I think we scrap this
-            login_form: {
-                username: '',
-                password: '',
-                loading: false
-            },
+      role: '',
+      circles: [],
+      subscribers: [],
+      // TODO: I think we scrap this
+      login_form: {
+        username: '',
+        password: '',
+        loading: false,
+      },
 
-            // TODO: I think we scrap this
-            register_form: {
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: ''
-            },
+      // TODO: I think we scrap this
+      register_form: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+      },
 
-            profile: {
+      profile: {
 
-            },
-            current_user_id: null,
+      },
+      current_user_id: null,
 
-            teams: [],
+      teams: [],
 
-            popup_update: false
-        };
-    }
+      popup_update: false,
+    };
+  }
 }
 
 export default new UserRedux()
