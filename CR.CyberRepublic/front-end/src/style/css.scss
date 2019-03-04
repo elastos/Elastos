@@ -132,3 +132,10 @@ table {
   color: $text_dark_gray;
   margin-left: $gap_1;
 }
+
+blockquote {
+  border-left: 4px solid #ccc;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  padding-left: 16px;
+}
