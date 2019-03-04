@@ -306,13 +306,13 @@ func newCancelProducer(L *lua.LState) int {
 		fmt.Println("wrong producer public key")
 		os.Exit(1)
 	}
-	cancelProducer := &payload.ProcessProducer{
+	processProducer := &payload.ProcessProducer{
 		OwnerPublicKey: []byte(publicKey),
-		Operation:      payload.OperationCancel,
+		Operation:      payload.POCancel,
 	}
 
 	cpSignBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(cpSignBuf, payload.ProducerOperationVersion)
+	err = processProducer.SerializeUnsigned(cpSignBuf, payload.ProcessProducerVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -327,10 +327,10 @@ func newCancelProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	cancelProducer.Signature = rpSig
+	processProducer.Signature = rpSig
 
 	ud := L.NewUserData()
-	ud.Value = cancelProducer
+	ud.Value = processProducer
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCancelProducerName))
 	L.Push(ud)
 

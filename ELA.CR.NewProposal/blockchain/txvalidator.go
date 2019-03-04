@@ -844,27 +844,27 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 
 func (b *BlockChain) checkProcessProducer(txn *Transaction) (
 	*state.Producer, error) {
-	cancelProducer, ok := txn.Payload.(*payload.ProcessProducer)
+	processProducer, ok := txn.Payload.(*payload.ProcessProducer)
 	if !ok {
 		return nil, errors.New("invalid payload")
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(cancelProducer.OwnerPublicKey)
+	publicKey, err := DecodePoint(processProducer.OwnerPublicKey)
 	if err != nil {
 		return nil, errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = cancelProducer.SerializeUnsigned(signedBuf, payload.ProducerOperationVersion)
+	err = processProducer.SerializeUnsigned(signedBuf, payload.ProcessProducerVersion)
 	if err != nil {
 		return nil, err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), cancelProducer.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), processProducer.Signature)
 	if err != nil {
 		return nil, errors.New("invalid signature in payload")
 	}
 
-	producer := b.state.GetProducer(cancelProducer.OwnerPublicKey)
+	producer := b.state.GetProducer(processProducer.OwnerPublicKey)
 	if producer == nil {
 		return nil, errors.New("getting unknown producer")
 	}

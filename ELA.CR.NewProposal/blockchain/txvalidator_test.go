@@ -676,7 +676,7 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	txn.TxType = types.CancelProducer
 	cancelPayload := &payload.ProcessProducer{
 		OwnerPublicKey: publicKey1,
-		Operation:      payload.OperationCancel,
+		Operation:      payload.POCancel,
 	}
 	txn.Payload = cancelPayload
 
@@ -704,7 +704,7 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 	txn.TxType = types.ActivateProducer
 	activatePayload := &payload.ProcessProducer{
 		OwnerPublicKey: publicKey1,
-		Operation:      payload.OperationActivate,
+		Operation:      payload.POActivate,
 	}
 	txn.Payload = activatePayload
 

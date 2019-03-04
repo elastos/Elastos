@@ -250,7 +250,7 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.ProcessProducer{
 		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Operation:      payload.OperationCancel,
+		Operation:      payload.POCancel,
 		Signature:      randomSignature(),
 	}
 
@@ -276,7 +276,7 @@ func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.ProcessProducer{
 		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Operation:      payload.OperationActivate,
+		Operation:      payload.POActivate,
 		Signature:      randomSignature(),
 	}
 
