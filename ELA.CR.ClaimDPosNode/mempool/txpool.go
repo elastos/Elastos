@@ -31,7 +31,9 @@ type TxPool struct {
 func (mp *TxPool) AppendToTxnPool(tx *Transaction) ErrCode {
 	mp.Lock()
 	code := mp.appendToTxPool(tx)
+	go events.Notify(events.ETTransactionAccepted, tx)
 	mp.Unlock()
+
 	return code
 }
 
@@ -72,8 +74,6 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
-
-	events.Notify(events.ETTransactionAccepted, tx)
 
 	return Success
 }
