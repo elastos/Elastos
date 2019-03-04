@@ -13,13 +13,14 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
-	"github.com/elastos/Elastos.ELA/utils/elalog"
-	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/p2p/server"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
+	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/elastos/Elastos.ELA/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,7 +91,6 @@ func TestGetListenerKey(t *testing.T) {
 	if !key1.IsEqual(key2) {
 		t.Errorf("listeners with same fields get different key1 %s, key2 %s", key1.String(), key2.String())
 	}
-	t.Log("listeners with same fields passed")
 
 	// same type, flags different address
 	key1 = getListenerKey(listener)
@@ -99,7 +99,6 @@ func TestGetListenerKey(t *testing.T) {
 	if key1.IsEqual(key2) {
 		t.Errorf("listeners with different address got same key %s", key1.String())
 	}
-	t.Log("listeners with different address passed")
 
 	// same address, flags different type
 	key1 = getListenerKey(listener)
@@ -108,7 +107,6 @@ func TestGetListenerKey(t *testing.T) {
 	if key1.IsEqual(key2) {
 		t.Errorf("listeners with different type got same key %s", key1.String())
 	}
-	t.Log("listeners with different type passed")
 
 	// same address, type different flags
 	key1 = getListenerKey(listener)
@@ -118,10 +116,10 @@ func TestGetListenerKey(t *testing.T) {
 	if key1.IsEqual(key2) {
 		t.Errorf("listeners with different flags got same key %s", key1.String())
 	}
-	t.Log("listeners with different flags passed")
 }
 
 func TestNewSPVService(t *testing.T) {
+	test.SkipShort(t)
 	interrupt := signal.NewInterrupt()
 
 	backend := elalog.NewBackend(os.Stdout, elalog.Lshortfile)
