@@ -192,19 +192,30 @@ func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	block, err := b.db.GetBlock(hash)
-	if err != nil {
-		return nil, err
+	if block, _ := b.db.GetBlock(hash); block != nil {
+		confirm, _ := b.db.GetConfirm(hash)
+		return &DposBlock{
+			BlockFlag:   true,
+			Block:       block,
+			ConfirmFlag: confirm != nil,
+			Confirm:     confirm,
+		}, nil
 	}
 
-	confirm, _ := b.db.GetConfirm(hash)
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
 
-	return &DposBlock{
-		BlockFlag:   true,
-		Block:       block,
-		ConfirmFlag: confirm != nil,
-		Confirm:     confirm,
-	}, nil
+	if orphan := b.orphans[hash]; orphan != nil {
+		confirm := b.orphanConfirms[hash]
+		return &DposBlock{
+			BlockFlag:   true,
+			Block:       orphan.Block,
+			ConfirmFlag: confirm != nil,
+			Confirm:     confirm,
+		}, nil
+	}
+
+	return nil, errors.New("not found dpos block in block chain")
 }
 
 func (b *BlockChain) ContainsTransaction(hash Uint256) bool {

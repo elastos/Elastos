@@ -24,12 +24,16 @@ func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 	bool, error) {
 	bm.Lock()
 	defer bm.Unlock()
+
 	inMainChain, isOrphan, err := bm.appendConfirm(confirm)
-	if err == nil && inMainChain {
-		if block, ok := bm.blocks[confirm.Proposal.Hash()]; ok {
-			events.Notify(events.ETBlockAccepted, block)
-		}
+	if err != nil {
+		return inMainChain, isOrphan, err
 	}
+
+	if block, ok := bm.blocks[confirm.Proposal.Hash()]; ok {
+		events.Notify(events.ETBlockAccepted, block)
+	}
+
 	return inMainChain, isOrphan, err
 }
 
@@ -56,18 +60,22 @@ func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error)
 	bm.blocks[block.Hash()] = block
 
 	// confirm block
-	copyBlock := *dposBlock
-	copyBlock.ConfirmFlag = true
 	inMainChain, isOrphan, err := bm.confirmBlock(hash)
 	if err != nil {
 		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
-		copyBlock.ConfirmFlag = false
 
 		// Notify the caller that the new block without confirm was accepted.
 		// The caller would typically want to react by relaying the inventory
 		// to other peers.
 		events.Notify(events.ETBlockAccepted, block)
+		events.Notify(events.ETNewBlockReceived, dposBlock)
+		return inMainChain, isOrphan, nil
 	}
+
+	copyBlock := *dposBlock
+	confirm := bm.confirms[hash]
+	copyBlock.ConfirmFlag = confirm != nil
+	copyBlock.Confirm = confirm
 
 	// notify new block received
 	events.Notify(events.ETNewBlockReceived, &copyBlock)
@@ -85,23 +93,14 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 	// add block
 	bm.blocks[block.Hash()] = block
 	// confirm block
-	copyBlock := *dposBlock
-	copyBlock.ConfirmFlag = true
 	inMainChain, isOrphan, err := bm.appendConfirm(dposBlock.Confirm)
 	if err != nil {
 		log.Debug("[appendBlockAndConfirm] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
-		copyBlock.ConfirmFlag = false
-
-		// Notify the caller that the new block without confirm was accepted.
-		// The caller would typically want to react by relaying the inventory
-		// to other peers.
-		events.Notify(events.ETBlockAccepted, block)
+		return inMainChain, isOrphan, nil
 	}
 
 	// notify new block received
-	if copyBlock.ConfirmFlag {
-		events.Notify(events.ETNewBlockReceived, &copyBlock)
-	}
+	events.Notify(events.ETNewBlockReceived, dposBlock)
 
 	return inMainChain, isOrphan, nil
 }
@@ -189,15 +188,20 @@ func (bm *BlockPool) GetDposBlockByHash(hash common.Uint256) (*types.DposBlock, 
 	bm.RLock()
 	defer bm.RUnlock()
 
-	block, ok := bm.blocks[hash]
-	if !ok {
-		return nil, errors.New("not found block")
+	if block, _ := bm.Chain.GetDposBlockByHash(hash); block != nil {
+		return block, nil
 	}
 
-	return &types.DposBlock{
-		BlockFlag: true,
-		Block:     block,
-	}, nil
+	if block := bm.blocks[hash]; block != nil {
+		confirm := bm.confirms[hash]
+		return &types.DposBlock{
+			BlockFlag:   true,
+			Block:       block,
+			ConfirmFlag: confirm != nil,
+			Confirm:     confirm,
+		}, nil
+	}
+	return nil, errors.New("not found dpos block")
 }
 
 func (bm *BlockPool) AddToConfirmMap(confirm *payload.Confirm) {
