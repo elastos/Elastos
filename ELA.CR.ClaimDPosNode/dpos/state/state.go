@@ -873,43 +873,56 @@ func (s *State) countArbitratorsInactivity(height, totalArbitersCount uint32,
 		count, existMissingRecord := s.onDutyMissingCounts[key]
 
 		s.history.append(height, func() {
-			if isMissOnDuty {
-				if existMissingRecord {
-					s.onDutyMissingCounts[key]++
+			s.tryUpdateOnDutyInactivity(isMissOnDuty, existMissingRecord,
+				key, producer, height)
+		}, func() {
+			s.tryRevertOnDutyInactivity(isMissOnDuty, existMissingRecord, key,
+				producer, height, count)
+		})
+	}
+}
 
-					if s.onDutyMissingCounts[key] >=
-						s.chainParams.MaxInactiveRounds {
-						s.setInactiveProducer(producer, key, height)
-						delete(s.onDutyMissingCounts, key)
-					}
-				} else {
-					s.onDutyMissingCounts[key] = 1
-				}
+func (s *State) tryRevertOnDutyInactivity(isMissOnDuty bool,
+	existMissingRecord bool, key string, producer *Producer,
+	height uint32, count uint32) {
+	if isMissOnDuty {
+		if existMissingRecord {
+			if producer.state == Inactivate {
+				s.revertSettingInactiveProducer(producer, key, height)
+				s.onDutyMissingCounts[key] = s.chainParams.MaxInactiveRounds
 			} else {
-				if existMissingRecord {
+				if count > 1 {
+					s.onDutyMissingCounts[key]--
+				} else {
 					delete(s.onDutyMissingCounts, key)
 				}
 			}
-		}, func() {
-			if isMissOnDuty {
-				if existMissingRecord {
-					if producer.state == Inactivate {
-						s.revertSettingInactiveProducer(producer, key, height)
-						s.onDutyMissingCounts[key] = s.chainParams.MaxInactiveRounds
-					} else {
-						if count > 1 {
-							s.onDutyMissingCounts[key]--
-						} else {
-							delete(s.onDutyMissingCounts, key)
-						}
-					}
-				}
-			} else {
-				if existMissingRecord {
-					s.onDutyMissingCounts[key] = count
-				}
+		}
+	} else {
+		if existMissingRecord {
+			s.onDutyMissingCounts[key] = count
+		}
+	}
+}
+
+func (s *State) tryUpdateOnDutyInactivity(isMissOnDuty bool,
+	existMissingRecord bool, key string, producer *Producer, height uint32) {
+	if isMissOnDuty {
+		if existMissingRecord {
+			s.onDutyMissingCounts[key]++
+
+			if s.onDutyMissingCounts[key] >=
+				s.chainParams.MaxInactiveRounds {
+				s.setInactiveProducer(producer, key, height)
+				delete(s.onDutyMissingCounts, key)
 			}
-		})
+		} else {
+			s.onDutyMissingCounts[key] = 1
+		}
+	} else {
+		if existMissingRecord {
+			delete(s.onDutyMissingCounts, key)
+		}
 	}
 }
 
