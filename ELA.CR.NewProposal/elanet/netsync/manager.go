@@ -665,7 +665,7 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 
 	// A block has been accepted into the block chain.  Relay it to other
 	// peers.
-	case events.ETBlockAccepted, events.ETConfirmAccepted:
+	case events.ETBlockAccepted:
 		// Don't relay if we are not current. Other peers that are
 		// current should already know about it.
 		if !sm.current() {

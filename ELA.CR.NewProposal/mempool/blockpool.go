@@ -23,8 +23,13 @@ type BlockPool struct {
 func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 	bool, error) {
 	bm.Lock()
+	defer bm.Unlock()
 	inMainChain, isOrphan, err := bm.appendConfirm(confirm)
-	bm.Unlock()
+	if err == nil && inMainChain {
+		if block, ok := bm.blocks[confirm.Proposal.Hash()]; ok {
+			events.Notify(events.ETBlockAccepted, block)
+		}
+	}
 	return inMainChain, isOrphan, err
 }
 
@@ -94,16 +99,18 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 	}
 
 	// notify new block received
-	events.Notify(events.ETNewBlockReceived, &copyBlock)
+	if copyBlock.ConfirmFlag {
+		events.Notify(events.ETNewBlockReceived, &copyBlock)
+	}
 
 	return inMainChain, isOrphan, nil
 }
 
 func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	bool, bool, error) {
-	//if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
-	//	return false, true, errors.New("duplicate confirm in pool")
-	//}
+	if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
+		return false, true, errors.New("duplicate confirm in pool")
+	}
 
 	// verify confirmation
 	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {

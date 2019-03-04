@@ -165,12 +165,12 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 
 	inMainChain, isOrphan, err := b.processBlock(block, confirm)
 	if err != nil {
-		return false, false, err
+		return inMainChain, isOrphan, err
 	}
 
 	if !inMainChain && !isOrphan {
 		if err := b.versions.CheckConfirmedBlockOnFork(block); err != nil {
-			return false, false, err
+			return inMainChain, isOrphan, err
 		}
 	}
 
@@ -244,9 +244,6 @@ func (b *BlockChain) ProcessOrphans(hash *Uint256) error {
 			}
 
 			orphanHash := orphan.Block.Hash()
-			b.RemoveOrphanBlock(orphan)
-			i--
-
 			confirm, _ := b.GetOrphanConfirm(&orphanHash)
 
 			//log.Debug("deal with orphan block %x", orphanHash.ToArrayReverse())
@@ -255,6 +252,8 @@ func (b *BlockChain) ProcessOrphans(hash *Uint256) error {
 				return err
 			}
 
+			b.RemoveOrphanBlock(orphan)
+			i--
 			processHashes = append(processHashes, &orphanHash)
 
 		}
