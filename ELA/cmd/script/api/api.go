@@ -223,6 +223,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterRegisterProducerType(L)
 	RegisterUpdateProducerType(L)
 	RegisterCancelProducerType(L)
+	RegisterActivateProducerType(L)
 	RegisterIllegalProposalsType(L)
 	RegisterIllegalVotesType(L)
 	RegisterIllegalBlocksType(L)
