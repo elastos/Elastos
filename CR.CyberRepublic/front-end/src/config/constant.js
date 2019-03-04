@@ -21,6 +21,7 @@ export const MAX_LENGTH_COMMENT = 2048;
 export const TOOLBAR_OPTIONS = [
     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
+    ['link'],
     [{'list': 'ordered'}, {'list': 'bullet'}],
     ['blockquote', 'code-block'],
 ];
