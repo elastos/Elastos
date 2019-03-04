@@ -9,13 +9,14 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
+// ProducerOperation is a type that defines operations about a producer
 type ProducerOperation byte
 
 const (
-	ProducerOperationVersion byte = 0x00
+	ProcessProducerVersion byte = 0x00
 
-	OperationCancel   ProducerOperation = 0x01
-	OperationActivate ProducerOperation = 0x02
+	POCancel   ProducerOperation = 0x01
+	POActivate ProducerOperation = 0x02
 )
 
 type ProcessProducer struct {

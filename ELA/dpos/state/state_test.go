@@ -50,7 +50,7 @@ func mockCancelProducerTx(publicKey []byte) *types.Transaction {
 		TxType: types.CancelProducer,
 		Payload: &payload.ProcessProducer{
 			OwnerPublicKey: publicKey,
-			Operation:      payload.OperationCancel,
+			Operation:      payload.POCancel,
 		},
 	}
 }
@@ -60,7 +60,7 @@ func mockActivateProducerTx(publicKey []byte) *types.Transaction {
 		TxType: types.ActivateProducer,
 		Payload: &payload.ProcessProducer{
 			OwnerPublicKey: publicKey,
-			Operation:      payload.OperationActivate,
+			Operation:      payload.POActivate,
 		},
 	}
 }
