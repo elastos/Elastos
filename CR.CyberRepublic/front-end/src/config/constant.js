@@ -18,21 +18,43 @@ export const EMPOWER_MAX_WRITER_TECHNICAL = 3;
 export const EMPOWER_MAX_DAPP_ANALYST = 5;
 export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10;
 export const MAX_LENGTH_COMMENT = 2048;
-export const TOOLBAR_OPTIONS = [
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+export const TOOLBAR_OPTIONS = {
+  container: [
+    [{ header: [1, 2, 3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
     ['link'],
-    [{'list': 'ordered'}, {'list': 'bullet'}],
+    [{ list: 'ordered' }, { list: 'bullet' }],
     ['blockquote', 'code-block'],
-];
+    ['clean'],
+  ],
+  handlers: {
+    // handlers object will be merged with default handlers object
+    link: function link(value) {
+      if (value) {
+        const range = this.quill.getSelection();
+        if (range == null || range.length === 0) return;
+        let preview = this.quill.getText(range);
+        if (/^\S+@\S+\.\S+$/.test(preview) && preview.indexOf('mailto:') !== 0) {
+          preview = `mailto:${preview}`
+        }
+        const { tooltip } = this.quill.theme;
+        const input = tooltip.root.querySelector('input[data-link]')
+        input.dataset.link = ''
+        tooltip.edit('link', preview);
+      } else {
+        this.quill.format('link', false);
+      }
+    },
+  },
+}
+
 export const LINKIFY_OPTION = {
-    defaultProtocol: 'https',
-    target: {
-        url: '_self' // Does not work for some reason
-    }
+  defaultProtocol: 'https',
+  target: {
+    url: '_self' // Does not work for some reason
+  }
 };
 export const LANGUAGES = {
   english: 'en',
-  chinese: 'zh'
+  chinese: 'zh',
 }
-
