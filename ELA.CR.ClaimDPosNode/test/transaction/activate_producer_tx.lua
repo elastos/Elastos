@@ -19,11 +19,11 @@ local fee = 0.001
 local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 
 -- cancel producer payload: publickey, wallet
-local cp_payload = cancelproducer.new(own_publickey, wallet, 1)
-print(cp_payload:get())
+local ap_payload = activateproducer.new(own_publickey, wallet, 2)
+print(ap_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x0a, 0, cp_payload, 0)
+local tx = transaction.new(9, 0x0a, 0, ap_payload, 0)
 
 -- input: from, amount + fee
 local charge = tx:appendenough(addr, fee * 100000000)
