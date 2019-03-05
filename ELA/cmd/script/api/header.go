@@ -60,6 +60,14 @@ func checkHeader(L *lua.LState, idx int) *types.Header {
 
 var headerMethods = map[string]lua.LGFunction{
 	"hash": headerHash,
+	"height": headerHeight,
+}
+
+func headerHeight(L *lua.LState) int {
+	h := checkHeader(L, 1)
+
+	L.Push(lua.LString(h.Height))
+	return 1
 }
 
 func headerHash(L *lua.LState) int {

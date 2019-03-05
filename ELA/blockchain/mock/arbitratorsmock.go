@@ -153,11 +153,9 @@ func (a *ArbitratorsMock) GetNextOnDutyArbitrator(offset uint32) []byte {
 }
 
 func (a *ArbitratorsMock) HasArbitersMajorityCount(num uint32) bool {
-	//note "num > majorityCount" in real logic
-	return num >= a.MajorityCount
+	return num > a.MajorityCount
 }
 
 func (a *ArbitratorsMock) HasArbitersMinorityCount(num uint32) bool {
-	//note "num >= uint32(len(arbitratorsPublicKeys))-majorityCount" in real logic
-	return num > uint32(len(a.CurrentArbitrators))-a.MajorityCount
+	return num >= uint32(len(a.CurrentArbitrators))-a.MajorityCount
 }

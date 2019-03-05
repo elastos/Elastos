@@ -51,7 +51,8 @@ func checkProposal(L *lua.LState, idx int) *payload.DPOSProposal {
 }
 
 var proposalMethods = map[string]lua.LGFunction{
-	"hash": proposalHash,
+	"hash":        proposalHash,
+	"get_sponsor": proposalGetSponsor,
 }
 
 func proposalHash(L *lua.LState) int {
@@ -59,6 +60,14 @@ func proposalHash(L *lua.LState) int {
 	h := p.Hash()
 
 	L.Push(lua.LString(h.String()))
+
+	return 1
+}
+
+func proposalGetSponsor(L *lua.LState) int {
+	p := checkProposal(L, 1)
+
+	L.Push(lua.LString(common.BytesToHexString(p.Sponsor)))
 
 	return 1
 }

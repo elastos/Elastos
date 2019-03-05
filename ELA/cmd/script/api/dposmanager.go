@@ -53,7 +53,7 @@ func newDposManager(L *lua.LState) int {
 	}
 	a := checkArbitrators(L, 2)
 	index := uint32(L.ToInt(3))
-	if index >= 5 {
+	if index >= 6 {
 		L.ArgError(1, "Index invalid.")
 		return 0
 	}
@@ -96,7 +96,10 @@ func newDposManager(L *lua.LState) int {
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
 
 	mockManager.Peer = mock.NewPeerMock()
-	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher, mockManager.Consensus, n, mockManager.IllegalMonitor, mockManager.Peer.GetBlockPool(), mockManager.Peer.GetTxPool(), mockManager.Peer.Broadcast)
+	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher,
+		mockManager.Consensus, n, mockManager.IllegalMonitor,
+		mockManager.Peer.GetBlockPool(), mockManager.Peer.GetTxPool(),
+		mockManager.Peer.Broadcast)
 	n.Initialize(DPOSNetworkConfig{
 		ProposalDispatcher: mockManager.Dispatcher,
 		Store:              nil,
@@ -132,10 +135,20 @@ var dposManagerMethods = map[string]lua.LGFunction{
 
 	"set_on_duty": dposManagerSetOnDuty,
 
+	"push_block":    dposManagerPushBlock,
 	"sign_proposal": dposManagerSignProposal,
 	"sign_vote":     dposManagerSignVote,
 
 	"check_last_relay": dposManagerCheckLastRelay,
+}
+
+func dposManagerPushBlock(L *lua.LState) int {
+	m := checkDposManager(L, 1)
+	block := checkBlock(L, 2)
+
+	m.AppendBlock(block)
+
+	return 0
 }
 
 func dposManagerDumpRelays(L *lua.LState) int {
