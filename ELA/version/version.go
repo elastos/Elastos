@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/version/blocks"
 	"github.com/elastos/Elastos.ELA/version/heights"
 	"github.com/elastos/Elastos.ELA/version/txs"
