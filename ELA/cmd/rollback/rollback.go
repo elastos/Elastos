@@ -33,8 +33,8 @@ func rollbackAction(c *cli.Context) error {
 		cli.ShowSubcommandHelp(c)
 		return nil
 	}
-
-	targetHeight, err := strconv.Atoi(c.Args().Get(0))
+	targetHeightStr := c.String("height")
+	targetHeight, err := strconv.Atoi(targetHeightStr)
 	if err != nil {
 		fmt.Println("get height error:", err)
 		return err
