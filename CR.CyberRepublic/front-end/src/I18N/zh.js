@@ -1051,6 +1051,7 @@ const zh = {
   'from.CVoteForm.message.note.update.success': '记录更新成功！',
   'from.CVoteForm.text.onlycouncil': '只有委员会委员才可以创建和编辑提案。',
 
+  'from.CVoteForm.button.add': '添加提案',
   'from.CVoteForm.button.cancel': '取消',
   'from.CVoteForm.button.saveDraft': '保存为草案',
   'from.CVoteForm.button.saveAndPublish': '保存 & 发布',

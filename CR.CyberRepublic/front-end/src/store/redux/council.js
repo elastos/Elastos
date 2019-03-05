@@ -1,19 +1,17 @@
 import BaseRedux from '@/model/BaseRedux'
 
 class CouncilRedux extends BaseRedux {
+  defineTypes() {
+    return ['council']
+  }
 
-    defineTypes () {
-        return ['council']
-    }
-
-    defineDefaultState() {
-
-        return {
-            loading: false,
-            tab: null,
-            filter: {}
-        };
-    }
+  defineDefaultState() {
+    return {
+      loading: false,
+      tab: null,
+      filter: {},
+    };
+  }
 }
 
 export default new CouncilRedux()

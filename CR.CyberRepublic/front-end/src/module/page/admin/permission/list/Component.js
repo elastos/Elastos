@@ -1,4 +1,5 @@
-import React from 'react';
+import React from 'react'
+import _ from 'lodash'
 import I18N from '@/I18N'
 import BaseComponent from '@/model/BaseComponent'
 import ListItem from '../listItem/Container'

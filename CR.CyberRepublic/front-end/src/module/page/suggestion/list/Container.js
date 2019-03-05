@@ -29,6 +29,10 @@ const mapDispatch = () => {
   const commentService = new CommentService()
 
   return {
+    async onSortByChanged(sortBy) {
+      return service.saveSortBy(sortBy)
+    },
+
     async getList(query) {
       return service.list({
         status: SUGGESTION_STATUS.ACTIVE,

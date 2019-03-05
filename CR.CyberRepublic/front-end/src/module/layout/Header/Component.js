@@ -388,11 +388,11 @@ export default class extends BaseComponent {
       })
 
       Modal.confirm({
-        title: 'Are you sure you want to logout?',
+        title: I18N.get('logout.title'),
         content: '',
-        okText: 'Yes',
+        okText: I18N.get('.yes'),
         okType: 'danger',
-        cancelText: 'No',
+        cancelText: I18N.get('.no'),
         onOk: () => {
           analytics.track('LOGOUT', {
             url: location.href

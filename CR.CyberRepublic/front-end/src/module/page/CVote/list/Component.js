@@ -3,11 +3,12 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Table, Row, Col, Button,
+  Table, Row, Col, Button, Modal,
 } from 'antd'
 import I18N from '@/I18N'
 import VoteStats from '../stats/Component'
-import { CVOTE_RESULT_TEXT, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import CreateForm from '../create/Container'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided } from './style'
@@ -16,8 +17,15 @@ export default class extends BaseComponent {
   constructor(p) {
     super(p);
 
-    this.state.list = null;
-    this.state.loading = true;
+    this.state = {
+      list: null,
+      loading: true,
+      creating: false,
+    }
+  }
+
+  async componentDidMount() {
+    this.refetch()
   }
 
   ord_render() {
@@ -64,7 +72,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => CVOTE_STATUS_TEXT[item.status] || '',
+        render: (id, item) => I18N.get(`cvoteStatus.${item.status}`) || '',
       },
       {
         title: I18N.get('council.voting.createdAt'),
@@ -82,24 +90,25 @@ export default class extends BaseComponent {
 
     const statusIndicator = (
       <List>
-        <Item yes />
+        <Item status={CVOTE_RESULT.SUPPORT} />
         <span>{I18N.get('council.voting.type.support')}</span>
-        <Item no />
+        <Item status={CVOTE_RESULT.REJECT} />
         <span>{I18N.get('council.voting.type.reject')}</span>
-        <Item abstained />
+        <Item status={CVOTE_RESULT.ABSTENTION} />
         <span>{I18N.get('council.voting.type.abstention')}</span>
-        <ItemUndecided undecided />
+        <ItemUndecided status={CVOTE_RESULT.UNDECIDED} />
         <span>{I18N.get('council.voting.type.undecided')}</span>
       </List>
     )
 
     const createBtn = canManage && (
       <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-        <Button onClick={this.toCreate} className="cr-btn cr-btn-primary">
-            Add a Proposal
+        <Button onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
+          {I18N.get('from.CVoteForm.button.add')}
         </Button>
       </Col>
     )
+    const createFormNode = this.renderCreateForm()
     return (
       <Container>
         <Row type="flex" align="middle" justify="end">
@@ -121,22 +130,15 @@ export default class extends BaseComponent {
           dataSource={this.state.list}
           rowKey={record => record._id}
         />
+        {createFormNode}
       </Container>
 
     )
   }
 
-  toDetail(id) {
-    this.props.history.push(`/cvote/${id}`);
-  }
-
-  toCreate = () => {
-    this.props.history.push('/cvote/create');
-  }
-
-  async componentDidMount() {
-    const { listData, canManage } = this.props
+  refetch = async () => {
     this.ord_loading(true);
+    const { listData, canManage } = this.props
     try {
       const list = await listData({}, canManage);
       this.setState({ list });
@@ -147,6 +149,41 @@ export default class extends BaseComponent {
     this.ord_loading(false);
   }
 
+  renderCreateForm() {
+    return (
+      <Modal
+        className="project-detail-nobar"
+        visible={this.state.creating}
+        onOk={this.switchCreateMode}
+        onCancel={this.switchCreateMode}
+        footer={null}
+        width="70%"
+      >
+        <CreateForm onCreate={this.onCreate} onCancel={this.switchCreateMode} />
+      </Modal>
+    )
+  }
+
+  switchCreateMode = () => {
+    const { creating } = this.state
+    this.setState({
+      creating: !creating,
+    })
+  }
+
+  onCreate = () => {
+    this.switchCreateMode()
+    this.refetch()
+  }
+
+  toDetail(id) {
+    this.props.history.push(`/cvote/${id}`);
+  }
+
+  toCreate = () => {
+    this.props.history.push('/cvote/create');
+  }
+
   voteDataByUser = (data) => {
     const { vote_map: voteMap, voteResult, status } = data
     let voteArr
@@ -154,13 +191,13 @@ export default class extends BaseComponent {
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
-      voteArr = _.map(voteResult, item => CVOTE_RESULT_TEXT[item.value])
+      voteArr = _.map(voteResult, item => CVOTE_RESULT[item.value.toUpperCase()])
     } else if (!_.isEmpty(voteMap)) {
-      voteArr = _.map(voteMap, value => ((value === '-1' || value === 'undefined' || _.isUndefined(value)) ? CVOTE_RESULT_TEXT.undefined : CVOTE_RESULT_TEXT[value.toLowerCase()]))
+      voteArr = _.map(voteMap, value => (CVOTE_RESULT[value.toUpperCase()] || CVOTE_RESULT.UNDECIDED))
     } else {
       return ''
     }
-    const supportNum = _.countBy(voteArr).Yes || 0
+    const supportNum = _.countBy(voteArr)[CVOTE_RESULT.SUPPORT] || 0
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50
     const percentageStr = percentage.toString() && `${percentage.toFixed(1).toString()}%`

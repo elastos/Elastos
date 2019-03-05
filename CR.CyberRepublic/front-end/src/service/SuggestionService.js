@@ -12,6 +12,10 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.filter_update(filter))
   }
 
+  async saveSortBy(sortBy) {
+    this.dispatch(this.selfRedux.actions.sortBy_update(sortBy))
+  }
+
   async loadMore(qry) {
     this.list(qry)
   }

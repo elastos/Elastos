@@ -2,8 +2,9 @@
 @import "@/style/color";
 
 .p_SuggestionDetail {
-  margin-top: 44px;
-  margin-left: 220px;
+  padding: 0 50px 80px;
+  width: 80vw;
+  margin: 80px auto 0;
   .detail-title {
     font-size: 30px;
     color: $primary_dark_color;

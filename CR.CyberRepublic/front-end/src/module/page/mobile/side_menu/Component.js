@@ -34,7 +34,6 @@ export default class extends BaseComponent {
       'contact',
       'suggestion',
       'proposals',
-      'council-secretariat',
       'constitution/1',
       'council'
     ], key)) {
@@ -107,110 +106,109 @@ export default class extends BaseComponent {
     const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(this.props.user.role)
 
     // animateStyle is passed in and handled by react-motion
-    return <div className="c_mobileMenu" style={this.props.animateStyle}>
-      <Row>
-        <Col className="right-align">
-          <Icon className="closeMobileMenu" type="menu-unfold" onClick={this.props.toggleMobileMenu}/>
-        </Col>
-      </Row>
-      <Row>
-        <Col className="menuContainer">
-          <Menu
-          onClick={this.handleMenuClick.bind(this)}
-          mode="inline"
-          >
-            {/*
-            <Menu.Item key="cr100">
-                {I18N.get('0105')}
-            </Menu.Item>
-            <Menu.Item key="crcles">
-                {I18N.get('0106')}
-            </Menu.Item>
-            <Menu.Item key="developer">
-                {I18N.get('0102')}
-            </Menu.Item>
-            */}
-            <Menu.Item key="landing">
-              {I18N.get('0012')}
-            </Menu.Item>
-            {/*
-            <Menu.Item key="teams">
-                {I18N.get('0005')}
-            </Menu.Item>
-             <Menu.Item key="council-secretariat">
+    return (
+      <div className="c_mobileMenu" style={this.props.animateStyle}>
+        <Row>
+          <Col className="right-align">
+            <Icon className="closeMobileMenu" type="menu-unfold" onClick={this.props.toggleMobileMenu}/>
+          </Col>
+        </Row>
+        <Row>
+          <Col className="menuContainer">
+            <Menu
+            onClick={this.handleMenuClick.bind(this)}
+            mode="inline"
+            >
+              <Menu.Item key="landing">
+                {I18N.get('0012')}
+              </Menu.Item>
+              {/*
+              <Menu.Item key="teams">
+                  {I18N.get('0005')}
+              </Menu.Item>
+              <Menu.Item key="council-secretariat">
+                  {I18N.get('navigation.council')}
+              </Menu.Item> */}
+              {/* <Menu.Item key="council">
+                  {I18N.get('council.0001')}
+              </Menu.Item> */}
+              <Menu.Item key="council">
                 {I18N.get('navigation.council')}
-            </Menu.Item> */}
-            {/* <Menu.Item key="council">
-                {I18N.get('council.0001')}
-            </Menu.Item> */}
-            <Menu.Item key="suggestion">
-              {I18N.get('navigation.suggestion')}
-            </Menu.Item>
-            <Menu.Item key="proposals">
-              {I18N.get('council.voting.proposalList')}
-            </Menu.Item>
-            {/* <Menu.Item key="constitution/1">
+              </Menu.Item>
+
+              <Menu.Item key="constitution/1">
                 {I18N.get('navigation.constitution')}
-            </Menu.Item> */}
-            <Menu.Item key="forum">
-              {I18N.get('0011')}
-            </Menu.Item>
-            <Menu.Item key="blog">
-              {I18N.get('0110')}
-            </Menu.Item>
-            <Menu.Item key="docs">
-              {I18N.get('navigation.docs')}
-            </Menu.Item>
-          </Menu>
-        </Col>
-      </Row>
-      <Row>
-        <Col className="menuContainer">
-          <Menu
-          onClick={this.handleMenuClick.bind(this)}
-          mode="inline"
-          >
-            {isLogin &&
-            <Menu.Item key="profile/info">
-              {I18N.get('0104')}
-            </Menu.Item>
-            }
-            {!isLogin &&
-            <Menu.Item key="login">
-              {I18N.get('0201')}
-            </Menu.Item>
-            }
-            {!isLogin &&
-            <Menu.Item key="register">
-              {I18N.get('0202')}
-            </Menu.Item>
-            }
-            {isLogin &&
-            <Menu.Item key="logout">
-              {I18N.get('0204')}
-            </Menu.Item>
-            }
-          </Menu>
-        </Col>
-      </Row>
-      <Row>
-        <Col className="menuContainer">
-          <Menu
-          onClick={this.handleMenuClick.bind(this)}
-          mode="inline"
-          >
-            {/*
-                        <Menu.Item key="help">
-                            {I18N.get('0007')}
-                        </Menu.Item>
-                        <Menu.Item key="forum">
-                            {I18N.get('0011')}
-                        </Menu.Item>
-                        */}
-          </Menu>
-        </Col>
-      </Row>
-    </div>
+              </Menu.Item>
+
+              <Menu.Item key="suggestion">
+                {I18N.get('navigation.suggestion')}
+              </Menu.Item>
+              <Menu.Item key="proposals">
+                {I18N.get('council.voting.proposalList')}
+              </Menu.Item>
+              {/* <Menu.Item key="constitution/1">
+                  {I18N.get('navigation.constitution')}
+              </Menu.Item> */}
+              <Menu.Item key="forum">
+                {I18N.get('0011')}
+              </Menu.Item>
+              <Menu.Item key="blog">
+                {I18N.get('0110')}
+              </Menu.Item>
+              <Menu.Item key="docs">
+                {I18N.get('navigation.docs')}
+              </Menu.Item>
+            </Menu>
+          </Col>
+        </Row>
+        <Row>
+          <Col className="menuContainer">
+            <Menu
+            onClick={this.handleMenuClick.bind(this)}
+            mode="inline"
+            >
+              {isLogin &&
+              <Menu.Item key="profile/info">
+                {I18N.get('0104')}
+              </Menu.Item>
+              }
+              {!isLogin &&
+              <Menu.Item key="login">
+                {I18N.get('0201')}
+              </Menu.Item>
+              }
+              {!isLogin &&
+              <Menu.Item key="register">
+                {I18N.get('0202')}
+              </Menu.Item>
+              }
+              {isLogin &&
+              <Menu.Item key="logout">
+                {I18N.get('0204')}
+              </Menu.Item>
+              }
+            </Menu>
+          </Col>
+        </Row>
+        <Row>
+          <Col className="menuContainer">
+            <Menu
+            onClick={this.handleMenuClick.bind(this)}
+            mode="inline"
+            >
+              {/*
+                          <Menu.Item key="help">
+                              {I18N.get('0007')}
+                          </Menu.Item>
+                          <Menu.Item key="forum">
+                              {I18N.get('0011')}
+                          </Menu.Item>
+                          */}
+            </Menu>
+          </Col>
+        </Row>
+      </div>
+    )
   }
 
 }

@@ -5,33 +5,32 @@ export const FETCH_SUGGESTION_SUCCESS = 'FETCH_SUGGESTION_SUCCESS'
 export const FETCH_SUGGESTION_FAILURE = 'FETCH_SUGGESTION_FAILURE'
 
 class SuggestionRedux extends BaseRedux {
+  defineTypes() {
+    return ['suggestion']
+  }
 
-    defineTypes () {
-        return ['suggestion']
-    }
+  defineDefaultState() {
+    return {
+      active_suggestion: null,
 
-    defineDefaultState() {
-        return {
-            active_suggestion: null,
+      loading: false,
 
-            loading: false,
+      create_form: {
+      },
 
-            create_form: {
-            },
+      all_suggestions: [],
+      all_suggestions_total: 0,
 
-            all_suggestions: [],
-            all_suggestions_total: 0,
+      my_suggestions_loading: false,
+      my_suggestions: [],
+      my_suggestions_total: 0,
 
-            my_suggestions_loading: false,
-            my_suggestions: [],
-            my_suggestions_total: 0,
-
-            // if we select a detail
-            detail: {},
-
-            filter: {}
-        };
-    }
+      // if we select a detail
+      detail: {},
+      sortBy: null,
+      filter: {},
+    };
+  }
 }
 
 export default new SuggestionRedux()

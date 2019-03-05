@@ -42,7 +42,6 @@ export default class extends StandardPage {
       showForm: uri.hasQuery('create'),
       isDropdownActionOpen: false,
       showMobile: false,
-      sortBy: SORT_BY.likesNum,
       page: 1,
       results: 10,
       total: 0,
@@ -79,7 +78,7 @@ export default class extends StandardPage {
             </Row>
             <Row>
               <Col>
-                <br/>
+                <br />
               </Col>
             </Row>
             <Row>
@@ -89,7 +88,7 @@ export default class extends StandardPage {
               </Col>
             </Row>
           </MediaQuery>
-          <MediaQuery minWidth={LG_WIDTH+1}>
+          <MediaQuery minWidth={LG_WIDTH + 1}>
             <Row gutter={24}>
               <Col span={16}>{actionsNode}</Col>
               <Col span={8}>{addButtonNode}</Col>
@@ -164,21 +163,20 @@ export default class extends StandardPage {
   }
 
   renderHeaderActions() {
-
     const SORT_BY_TEXT = {
-        likesNum: I18N.get('suggestion.likes'),
-        viewsNum: I18N.get('suggestion.views'),
-        activeness: I18N.get('suggestion.activeness'),
-        createdAt: I18N.get('suggestion.dateAdded'),
+      likesNum: I18N.get('suggestion.likes'),
+      viewsNum: I18N.get('suggestion.views'),
+      activeness: I18N.get('suggestion.activeness'),
+      createdAt: I18N.get('suggestion.dateAdded'),
     }
-
+    const sortBy = this.props.sortBy || SORT_BY.likesNum
     return (
       <div className="header-actions-container">
         <MediaQuery maxWidth={LG_WIDTH}>
           <Select
             name="type"
             onChange={this.onSortByChanged}
-            value={this.state.sortBy}
+            value={sortBy}
           >
             {_.map(SORT_BY, value => (
               <Select.Option key={value} value={value}>
@@ -187,13 +185,13 @@ export default class extends StandardPage {
             ))}
           </Select>
         </MediaQuery>
-        <MediaQuery minWidth={LG_WIDTH+1}>
+        <MediaQuery minWidth={LG_WIDTH + 1}>
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button
                 key={value}
                 onClick={() => this.onSortByChanged(value)}
-                className={(this.state.sortBy === value && 'cr-strikethrough') || ''}
+                className={(sortBy === value && 'cr-strikethrough') || ''}
               >
                 {SORT_BY_TEXT[value]}
               </Button>
@@ -272,20 +270,24 @@ export default class extends StandardPage {
 
   renderMySuggestion = () => <MySuggestion />
 
-  onSortByChanged = sortBy => this.setState({ sortBy }, this.refetch)
+  onSortByChanged = async (sortBy) => {
+    await this.props.onSortByChanged(sortBy)
+    await this.refetch()
+  }
 
   /**
    * Builds the query from the current state
    */
   getQuery = () => {
+    const sortBy = this.props.sortBy || SORT_BY.likesNum
     const { page, results } = this.state
     const query = {
       page,
       results,
     }
     // TODO
-    if (this.state.sortBy) {
-      query.sortBy = this.state.sortBy
+    if (sortBy) {
+      query.sortBy = sortBy
     }
 
     return query

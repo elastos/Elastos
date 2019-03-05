@@ -6,9 +6,10 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
-import { CVOTE_RESULT_TEXT, CVOTE_RESULT, CVOTE_TYPE, CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
+import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component";
 import CRPopover from "@/module/shared/Popover/Component";
@@ -38,6 +39,7 @@ class C extends StandardPage {
       data: undefined,
       reason: '',
       visible: false,
+      editing: false,
     }
 
     this.isLogin = this.props.isLogin
@@ -48,7 +50,7 @@ class C extends StandardPage {
     this.refetch()
   }
 
-  async refetch() {
+  refetch = async () => {
     const data = await this.props.getData(_.get(this.props.match, 'params.id'))
     this.setState({ data })
   }
@@ -69,6 +71,7 @@ class C extends StandardPage {
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
+    const editFormNode = this.renderEditForm()
     return (
       <div>
         <div className="p_CVoteDetail">
@@ -81,10 +84,38 @@ class C extends StandardPage {
           {voteActionsNode}
           {adminActionsNode}
           {voteDetailNode}
+          {editFormNode}
         </div>
         <Footer />
       </div>
     )
+  }
+
+  renderEditForm() {
+    return (
+      <Modal
+        className="project-detail-nobar"
+        visible={this.state.editing}
+        onOk={this.switchEditMode}
+        onCancel={this.switchEditMode}
+        footer={null}
+        width="70%"
+      >
+        <EditForm onEdit={this.onEdit} onCancel={this.switchEditMode} />
+      </Modal>
+    )
+  }
+
+  switchEditMode = () => {
+    const { editing } = this.state
+    this.setState({
+      editing: !editing,
+    })
+  }
+
+  onEdit = () => {
+    this.switchEditMode()
+    this.refetch()
   }
 
   renderMeta() {
@@ -104,22 +135,28 @@ class C extends StandardPage {
     const { data } = this.state
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
-      value: CVOTE_STATUS_TEXT[data.status] || 'processing...',
+      value: I18N.get(`cvoteStatus.${data.status}`) || '',
     }
 
     const publishObj = {
       text: I18N.get('from.CVoteForm.label.publish'),
-      value: data.published ? 'Yes' : 'No',
+      value: data.published ? I18N.get('.yes') : I18N.get('.no'),
     }
+
+    const typeMap = {
+      1: I18N.get('council.voting.type.newMotion'),
+      2: I18N.get('council.voting.type.motionAgainst'),
+      3: I18N.get('council.voting.type.anythingElse'),
+    };
 
     const typeObj = {
       text: I18N.get('from.CVoteForm.label.type'),
-      value: CVOTE_TYPE[data.type],
+      value: typeMap[data.type],
     }
 
     const voteObj = {
       text: I18N.get('council.voting.ifConflicted'),
-      value: data.isConflict === 'YES' ? 'Yes' : 'No',
+      value: data.isConflict === 'YES' ? I18N.get('.yes') : I18N.get('.no'),
     }
 
     const dataList = [
@@ -133,7 +170,7 @@ class C extends StandardPage {
 
   renderContent() {
     const { content } = this.state.data
-    return <div className="content">{content}</div>
+    return <div className="content" dangerouslySetInnerHTML={{ __html: content }} />
   }
 
   renderNotes() {
@@ -216,7 +253,7 @@ class C extends StandardPage {
     const editProposalBtn = isSelf && canEdit && (
       <Button
         icon="edit"
-        onClick={this.gotoEditPage}
+        onClick={this.switchEditMode}
       >
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
@@ -314,8 +351,8 @@ class C extends StandardPage {
 
     const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
     const detail = _.map(stats, (statArr, key) => {
-      const label = CVOTE_RESULT_TEXT[key]
-      const type = label.toLowerCase()
+      const type = (CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED)
+      const label = I18N.get(`council.voting.type.${type}`)
       const props = {
         dataList: statArr,
         type,

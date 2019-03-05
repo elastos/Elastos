@@ -216,7 +216,7 @@ export const CVOTE_STATUS_TEXT = {
   ACTIVE: 'PASSED',
   REJECT: 'REJECTED',
   DEFERRED: 'DEFERRED',
-  FINAL: 'COMPLETED',
+  FINAL: 'FINAL',
 }
 
 export const CVOTE_RESULT = {
@@ -226,13 +226,24 @@ export const CVOTE_RESULT = {
   UNDECIDED: 'undecided',
 };
 
-export const CVOTE_RESULT_TEXT = {
-  undefined: 'Undecided',
-  undecided: 'Undecided',
-  support: 'Yes',
-  reject: 'No',
-  abstention: 'Abstained',
-  '-1': 'Undecided',
+// export const CVOTE_RESULT_TEXT = {
+//   undefined: 'Undecided',
+//   undecided: 'Undecided',
+//   support: 'Yes',
+//   reject: 'No',
+//   abstention: 'Abstained',
+//   '-1': 'Undecided',
+// }
+
+export const CVOTE_RESULT_COLOR = {
+  [CVOTE_RESULT.UNDECIDED]: '#CED6E3',
+  [CVOTE_RESULT.ABSTENTION]: '#0F2631',
+  [CVOTE_RESULT.SUPPORT]: '#1DE9B6',
+  [CVOTE_RESULT.REJECT]: '#BE1313',
+}
+
+export const RESOURCE_TYPE_TO_TEXT = {
+  CVote: 'Proposal',
 }
 
 export const avatar_map = {

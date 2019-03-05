@@ -7,6 +7,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 import Footer from '@/module/layout/Footer/Container'
+import BackLink from "@/module/shared/BackLink/Component";
 
 import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
@@ -41,11 +42,12 @@ export default class extends StandardPage {
     const detailNode = this.renderDetail()
     const translationBtn = this.renderTranslationBtn()
     const actionsNode = this.renderActionsNode()
-    const mySuggestionNode = this.renderMySuggestion()
+    const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     return (
       <div>
         <div className="p_SuggestionDetail">
+          <BackLink link="/suggestion" />
           <MediaQuery maxWidth={LG_WIDTH}>
             <Row>
               <Col>
@@ -63,7 +65,7 @@ export default class extends StandardPage {
               </Col>
             </Row>
           </MediaQuery>
-          <MediaQuery minWidth={LG_WIDTH+1}>
+          <MediaQuery minWidth={LG_WIDTH + 1}>
             <Row gutter={24}>
               <Col span={15}>
                 {detailNode}
@@ -80,10 +82,6 @@ export default class extends StandardPage {
     )
   }
 
-  renderMySuggestion() {
-    return <MySuggestion />
-  }
-
   renderDetail() {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
@@ -94,7 +92,7 @@ export default class extends StandardPage {
         {metaNode}
         {titleNode}
         {descNode}
-        {linkNode ? linkNode : ''}
+        {linkNode}
       </div>
     )
   }
@@ -127,7 +125,7 @@ export default class extends StandardPage {
     const { detail } = this.props
 
     if (!detail.link) {
-      return false
+      return null
     }
 
     return (
