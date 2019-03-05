@@ -36,6 +36,17 @@
         "KeystoreFile": "keystore-did.dat",
         "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
         "PowChain": true
+      },
+      {
+        "Rpc": {
+          "IpAddress": "ela-sidechain-token",
+          "HttpJsonPort": 20616
+        },
+        "ExchangeRate": 1.0,
+        "GenesisBlock": "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+        "KeystoreFile": "keystore-token.dat",
+        "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
+        "PowChain": true
       }
     ],
     "MinThreshold": 10000000,

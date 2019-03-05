@@ -152,7 +152,7 @@ These are located in the `wallets` folder:
     Protocol Version: ipfs/0.1.0
     ```
 
- 12. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+12. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
 
     This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
     ```
@@ -172,6 +172,18 @@ These are located in the `wallets` folder:
     Should return an empty dictionary as there's nothing present yet
     ```
     {"Keys":{}}
+    ```
+
+13. Verify that your token sidechain is running correctly[Elastos.ELA.Sidechain.Token](http://github.com/elastos/Elastos.ELA.Sidechain.Token)
+
+    Because "HttpRestPort" of token sidechain is not available, currently, it's not connected to the wallet service API so you cannot send any tokens from mainchain to token sidechain. All you can do is check that token sidechain is running properly. When the API layer for token sidechain will be available, this documentation will be updated.
+    ```
+    curl -H "Content-Type:application/json" -H "Accept:application/json" --data '{"method":"getbestblockhash"}' http://localhost:20616
+    ```
+
+    Should return something like
+    ```
+    {"id":null,"jsonrpc":"2.0","result":"5aeabb55d9ecf590ec5d189c7d6ee795648b9e000892e9570649cea5e85dbd38","error":null}
     ```
 
 ## Creating a DID, and Storing/Retrieving Metadata

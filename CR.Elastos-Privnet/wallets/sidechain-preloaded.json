@@ -1,0 +1,7 @@
+{
+  "name": "Sidechain Pre-Loaded Wallet(works with DID and Token sidechain)",
+  "description": "Pre-loaded transferred ELA from the mainchain to DID sidechain wallet and Token sidechain wallet",
+  "privateKey": "acf6ee13a2256f60f597f55bdd17d0ee772014db7233b50543bebdd1faf9a0da",
+  "publicKey": "038f8c2f924616a52a33000b74a8ebc94a492ed6f652e2cf8b2d33eaa07815e257",
+  "address": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE"
+}
