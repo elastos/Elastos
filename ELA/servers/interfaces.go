@@ -291,7 +291,7 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 
 	peers := Arbiter.GetDPOSPeersInfo()
 
-	var result []peerInfo
+	result := make([]peerInfo, 0)
 	for _, p := range peers {
 		producer := blockchain.DefaultLedger.Blockchain.GetState().
 			GetProducer(p.PID[:])
