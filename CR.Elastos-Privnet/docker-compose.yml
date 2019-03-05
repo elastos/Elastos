@@ -157,6 +157,62 @@ services:
       - blockchain
     tty: true
 
+  ela-hive-ipfs-peer-1:
+    container_name: ela-hive-ipfs-peer-1
+    image: ela-hive-ipfs-peer-1
+    build:
+      context: .
+      dockerfile: Dockerfile-ela-hive-ipfs-peer-1
+    ports:
+      - 38080:8080
+    networks:
+      - hive
+    tty: true
+
+  ela-hive-ipfs-peer-2:
+    container_name: ela-hive-ipfs-peer-2
+    image: ela-hive-ipfs-peer-2
+    build:
+      context: .
+      dockerfile: Dockerfile-ela-hive-ipfs-peer-2
+    ports:
+      - 48080:8080
+    networks:
+      - hive
+    tty: true
+
+  ela-hive-cluster-master:
+    container_name: ela-hive-cluster-master
+    image: ela-hive-cluster-master
+    depends_on:
+      - ela-hive-ipfs-peer-1
+      - ela-hive-ipfs-peer-2
+    build:
+      context: .
+      dockerfile: Dockerfile-ela-hive-cluster-master
+    ports:
+      - 9094-9096:9094-9096
+    networks:
+      - hive
+    tty: true
+
+  ela-hive-cluster-slave:
+    container_name: ela-hive-cluster-slave
+    image: ela-hive-cluster-slave
+    depends_on:
+      - ela-hive-ipfs-peer-1
+      - ela-hive-ipfs-peer-2
+      - ela-hive-cluster-master
+    build:
+      context: .
+      dockerfile: Dockerfile-ela-hive-cluster-slave
+    ports:
+      - 49094-49096:9094-9096
+    networks:
+      - hive
+    tty: true
+
 networks:
   blockchain:
+  hive:
 

@@ -37,24 +37,36 @@ These are located in the `wallets` folder:
     - Docker Engine 18.09.2
     - Docker Compose 1.23.2
     - Docker Machine 0.16.1
+
+2. The following are the GIT SHAs we're using for each project:
+    - Elastos.ELA: tag v0.2.2 3f1e5e6
+    - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad
+    - Elastos.ELA.Arbiter: tag v0.0.3 8970efe
+    - Elastos.ORG.Wallet.Service: master 49dcbfa
+    - Elastos.ORG.DID.Service: master 1ff8c00
+    - Elastos.ORG.API.Misc: master 5322f2e
+    - Elastos.NET.Hive.IPFS: dev-master 6a5e240
+    - Elastos.NET.Hive.Cluster: dev-master 65033f0
     
-2. Check your ports, here are the following ports these containers expect available:
+3. Check your ports, here are the following ports these containers expect available:
     - Mainchain: 20333-20338
     - DID Sidechain: 20604-20608
     - Wallet Service: 8091 - [https://walletservice.readthedocs.io](https://walletservice.readthedocs.io)
     - DID Service: 8092 - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
     - Add-on API: 8093 - [https://github.com/elastos/Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc)
+    - HIVE IPFS: 38080, 48080 - [http://github.com/elastos/Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
+    - HIVE Cluster: 9094-9095, 49094-49095 - [http://github.com/elastos/Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
     
     ##### Note: DID Service's - `getDidInfo` method is currently broken, but available on the Add-on API - port 8093
     
-3. Just run with docker-compose from within the directory:
+4. Just run with docker-compose from within the directory:
     
     ```
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
     For users in China, if you get issues pulling images please refer to this post: https://segmentfault.com/a/1190000016083023
     
-4. Verify the Mainchain is running by checking the miner reward wallet:
+5. Verify the Mainchain is running by checking the miner reward wallet:
 
     ```
     http://localhost:20334/api/v1/asset/balances/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
@@ -65,7 +77,7 @@ These are located in the `wallets` folder:
     {"Desc":"Success","Error":0,"Result":"838.86741124"}
     ```
     
-5. Verify the DID Sidechain is running by checking the pre-loaded wallet:
+6. Verify the DID Sidechain is running by checking the pre-loaded wallet:
 
     ```
     http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
@@ -76,7 +88,7 @@ These are located in the `wallets` folder:
     {"Result":"12","Error":0,"Desc":"Success"}
     ```
 
-6. Verify the Wallet Service is running by checking the miner reward wallet:
+7. Verify the Wallet Service is running by checking the miner reward wallet:
 
     ```
     http://localhost:8091/api/1/balance/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
@@ -87,7 +99,7 @@ These are located in the `wallets` folder:
     {"result":"835.35142952","status":200}
     ```
     
-7. Verify the DID Service is running by checking the pre-loaded wallet:
+8. Verify the DID Service is running by checking the pre-loaded wallet:
 
     ```
     http://localhost:8092/api/1/balance/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
@@ -98,7 +110,7 @@ These are located in the `wallets` folder:
     {"result":"12.0","status":200}
     ```
     
-8. Verify that cross-chain mainchain to sidechain transfers work
+9. Verify that cross-chain mainchain to sidechain transfers work
     ```
     curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE","privateKey": "2e900f236671edfd39a31e65a938491df5fc9a53b6b16e8ea0d697fe2f0a3d52"}],"receiver": [{"address": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
     ```
@@ -113,7 +125,7 @@ These are located in the `wallets` folder:
     http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```
     
-9. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
+10. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
     This service is running on port 8093
     
@@ -126,7 +138,42 @@ These are located in the `wallets` folder:
     ```
     {"result":"pong 1.0.1","status":200}
     ```
-    
+11. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
+
+    This service is running on port 38080 and 48080 since there are two peer nodes running
+    ```
+    http://localhost:38080/version
+    ```
+
+    Should return
+    ```
+    Commit: 6a5e24032
+    Client Version: go-ipfs/0.4.18/6a5e24032
+    Protocol Version: ipfs/0.1.0
+    ```
+
+ 12. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+
+    This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
+    ```
+    http://localhost:9094/id
+    ```
+
+    Should return something like
+    ```
+    {"id":"QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","addresses":["/ip4/172.19.0.4/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","/p2p-circuit/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","/ip4/127.0.0.1/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"],"cluster_peers":["QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"],"cluster_peers_addresses":["/ip4/127.0.0.1/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors","/ip4/172.19.0.5/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors","/p2p-circuit/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"],"version":"0.8.0+git65033f01bb94e5d205e1ed0e80198f050cea212a","commit":"","rpc_protocol_version":"/hivecluster/0.8/rpc","error":"","ipfs":{"id":"QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj","addresses":["/ip4/127.0.0.1/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj","/ip4/172.19.0.3/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj"],"error":""},"peername":"Elastos Hive Privnet"}
+    ```
+
+    And 9095 exposes Node API endpoints.
+    ```
+    http://localhost:9095/api/v0/pin/ls
+    ```
+
+    Should return an empty dictionary as there's nothing present yet
+    ```
+    {"Keys":{}}
+    ```
+
 ## Creating a DID, and Storing/Retrieving Metadata
 
 Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io).
@@ -183,8 +230,37 @@ Would return the value `"hello,world"`.
 
 ## Elastos Hive - IPFS Storage
 
-Coming soon    
+Let's try to create a simple file and then push it to Elastos Hive using the API endpoints exposed via our Cluster setup.
 
+1. Add the content "This is Elastos" to the cluster. Note that doing this will automatically pin this file to the cluster too.
+    ```
+    curl -F file="This is Elastos" "http://localhost:9095/api/v0/file/add"
+    ```
+
+    Should return something like
+    ```
+    {"Name":"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg","Hash":"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg","Size":"23"}
+    ```
+
+2. Let's verify that something was indeed pinned to the cluster
+    ```
+    curl "http://localhost:9095/api/v0/pin/ls"
+    ```
+
+    Should return something like
+    ```
+    {"Keys":{"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg":{"Type":"recursive"}}}
+    ```
+
+3. Retrieve the content from the hash
+    ```
+    curl http://localhost:9095/api/v0/file/cat?arg=QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg
+    ```
+
+    Should return
+    ```
+    This is Elastos
+    ```
 
 ## Smart Contracts - Ethereum Sidechain
 
