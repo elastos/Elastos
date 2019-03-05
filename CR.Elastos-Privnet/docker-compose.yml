@@ -43,7 +43,6 @@ services:
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
-    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-ela-arbiter-1
@@ -60,7 +59,6 @@ services:
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
-    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-ela-arbiter-2
@@ -83,7 +81,6 @@ services:
       - ela-mysql
       - ela-mainchain
       - ela-sidechain-did
-    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-wallet-service
@@ -104,7 +101,6 @@ services:
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
-    restart: on-failure
     build:
       context: .
       dockerfile: Dockerfile-did-service

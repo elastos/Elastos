@@ -252,15 +252,49 @@ Let's try to create a simple file and then push it to Elastos Hive using the API
     {"Keys":{"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg":{"Type":"recursive"}}}
     ```
 
-3. Retrieve the content from the hash
+3. Retrieve the content from the hash using the cluster-slave
     ```
-    curl http://localhost:9095/api/v0/file/cat?arg=QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg
+    curl http://localhost:49095/api/v0/file/cat?arg=QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg
+    ```
+
+    Note that even if we added the content via port 9095(ela-hive-cluster-master), we're now using port 49095(ela-hive-cluster-slave) to retrieve the result because we know that they're part of the same cluster and the same network. The above should return
+    ```
+    This is Elastos
+    ```
+
+4. Let's push the content to the cluster by directly interacting with the IPFS peer nodes
+    ```
+    echo "This is Elastos" > hello.txt
+    docker cp hello.txt ela-hive-ipfs-peer-1:/tmp/hello.txt
+    docker exec ela-hive-ipfs-peer-1 ipfs add /tmp/hello.txt
+    ```
+
+    Should return something like
+    ```
+    16 B / 16 B  100.00%added QmZVtqcb9AAz4xSXkWupWgA9mHDLwtksuem2fhNbNkYwbA hello.txt
+    ```  
+
+5. Check that this content was added to the cluster by trying to read this hash
+    ```
+    docker exec ela-hive-ipfs-peer-2 ipfs cat QmZVtqcb9AAz4xSXkWupWgA9mHDLwtksuem2fhNbNkYwbA
+    ```
+
+    Note that even if I added file from ela-hive-ipfs-peer-1 container, I'm using ela-hive-ipfs-peer-2 to cat out the content from the cluster. This is because these two peer nodes are part of the same IPFS swarm. The above should return
+    ```
+    This is Elastos
+    ```
+
+6. Let's verify the above content we added is actually in the cluster by interacting with the CLUSTER APIs
+    ```
+    curl http://localhost:9095/api/v0/file/cat?arg=QmZVtqcb9AAz4xSXkWupWgA9mHDLwtksuem2fhNbNkYwbA
     ```
 
     Should return
     ```
     This is Elastos
     ```
+
+7. If you would like to read up on how to interact with the cluster and node APIs of elastos, please refer to [https://github.com/elastos/Elastos.NET.Hive.DevDocs](https://github.com/elastos/Elastos.NET.Hive.DevDocs)
 
 ## Smart Contracts - Ethereum Sidechain
 
