@@ -53,10 +53,19 @@ func checkBlock(L *lua.LState, idx int) *types.Block {
 
 var blockMethods = map[string]lua.LGFunction{
 	"hash":       blockHash,
+	"height":     blockHeight,
 	"get_header": blockGetHeader,
 	"set_header": blockSetHeader,
 	"append_tx":  blockAppendTx,
 	"update":     blockUpdate,
+}
+
+func blockHeight(L *lua.LState) int {
+	p := checkBlock(L, 1)
+
+	L.Push(lua.LNumber(p.Height))
+
+	return 1
 }
 
 func blockHash(L *lua.LState) int {

@@ -43,6 +43,7 @@ var exports = map[string]lua.LGFunction{
 	"send_tx":           sendTx,
 	"get_asset_id":      getAssetID,
 	"get_utxo":          getUTXO,
+	"set_arbitrators":   setArbitrators,
 	"init_ledger":       initLedger,
 	"close_store":       closeStore,
 	"clear_store":       clearStore,
@@ -136,9 +137,15 @@ func getUTXO(L *lua.LState) int {
 	return 1
 }
 
+func setArbitrators(L *lua.LState) int {
+	arbitrators := checkArbitrators(L, 1)
+	blockchain.DefaultLedger.Arbitrators = arbitrators
+
+	return 0
+}
+
 func initLedger(L *lua.LState) int {
 	logLevel := uint8(L.ToInt(1))
-	arbitrators := checkArbitrators(L, 2)
 
 	log.NewDefault(logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
@@ -162,7 +169,6 @@ func initLedger(L *lua.LState) int {
 	ledger := blockchain.Ledger{}
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
-	blockchain.DefaultLedger.Arbitrators = arbitrators
 	blockchain.DefaultLedger.Store = chainStore
 	blockchain.DefaultLedger.HeightVersions = versions
 
