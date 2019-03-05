@@ -104,6 +104,10 @@ func (d *DPOSManager) AppendConfirm(confirm *payload.Confirm) (bool, bool, error
 	return d.blockPool.AppendConfirm(confirm)
 }
 
+func (d *DPOSManager) AppendBlock(block *types.Block) {
+	d.blockPool.AddToBlockMap(block)
+}
+
 func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 	m := &DPOSManager{
 		publicKey:   cfg.PublicKey,

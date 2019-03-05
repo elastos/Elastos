@@ -30,10 +30,21 @@ dpos.E.network = dpos_network.new()
 dpos.E.arbitrators = arbitrators.new()
 dpos.E.manager = dpos_manager.new(dpos.E.network, dpos.E.arbitrators, 4)
 
-dpos.current_arbitrators = { dpos.A, dpos.B, dpos.C, dpos.D, dpos.E }
+dpos.F = {}
+dpos.F.name = 'F'
+dpos.F.network = dpos_network.new()
+dpos.F.arbitrators = arbitrators.new()
+dpos.F.manager = dpos_manager.new(dpos.F.network, dpos.F.arbitrators, 5)
+
+dpos.current_arbitrators = { dpos.A, dpos.B, dpos.C, dpos.D, dpos.E, dpos.F }
+
+function dpos.push_block(arbiter, block)
+    arbiter.manager:push_block(block)
+    arbiter.network:push_block(block, false)
+end
 
 function dpos.set_on_duty(index)
-    for i = 1, 5 do
+    for i = 1, 6 do
         if index == i
         then
             dpos.current_arbitrators[i].manager:set_on_duty(true)
@@ -42,14 +53,15 @@ function dpos.set_on_duty(index)
         end
     end
 
-    for i = 1, 5 do
+    for i = 1, 6 do
         dpos.current_arbitrators[i].arbitrators:set_duty_index(index - 1)
     end
 end
 
 function dpos.dump_on_duty()
-    for i = 1, 5 do
-        print(dpos.current_arbitrators[i].name .. ' on duty: ' .. tostring(dpos.current_arbitrators[i].manager:is_on_duty()))
+    for i = 1, 6 do
+        print(dpos.current_arbitrators[i].name .. ' on duty: ' ..
+                tostring(dpos.current_arbitrators[i].manager:is_on_duty()))
     end
 end
 

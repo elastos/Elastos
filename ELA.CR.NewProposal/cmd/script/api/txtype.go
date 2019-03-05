@@ -62,6 +62,16 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.ProcessProducer)
 	case *payload.ReturnDepositCoin:
 		pload, _ = ud.Value.(*payload.ReturnDepositCoin)
+	case *payload.DPOSIllegalProposals:
+		pload, _ = ud.Value.(*payload.DPOSIllegalProposals)
+	case *payload.DPOSIllegalVotes:
+		pload, _ = ud.Value.(*payload.DPOSIllegalVotes)
+	case *payload.DPOSIllegalBlocks:
+		pload, _ = ud.Value.(*payload.DPOSIllegalBlocks)
+	case *payload.SidechainIllegalData:
+		pload, _ = ud.Value.(*payload.SidechainIllegalData)
+	case *payload.InactiveArbitrators:
+		pload, _ = ud.Value.(*payload.InactiveArbitrators)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
