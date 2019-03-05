@@ -69,7 +69,7 @@ These are located in the `wallets` folder:
 5. Verify the Mainchain is running by checking the miner reward wallet:
 
     ```
-    http://localhost:20334/api/v1/asset/balances/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
+    curl http://localhost:20334/api/v1/asset/balances/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
     ```    
     
     You should see at least 825 ELA in the miner wallet:
@@ -80,7 +80,7 @@ These are located in the `wallets` folder:
 6. Verify the DID Sidechain is running by checking the pre-loaded wallet:
 
     ```
-    http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
+    curl http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```    
     
     You should see 12 ELA in the DID Sidechain wallet pre-loaded:
@@ -91,7 +91,7 @@ These are located in the `wallets` folder:
 7. Verify the Wallet Service is running by checking the miner reward wallet:
 
     ```
-    http://localhost:8091/api/1/balance/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
+    curl http://localhost:8091/api/1/balance/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
     ```    
     
     You should see at least 825 ELA in the miner wallet:
@@ -102,7 +102,7 @@ These are located in the `wallets` folder:
 8. Verify the DID Service is running by checking the pre-loaded wallet:
 
     ```
-    http://localhost:8092/api/1/balance/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
+    curl http://localhost:8092/api/1/balance/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```    
     
     You should see 12 ELA in the DID Sidechain wallet pre-loaded:
@@ -122,7 +122,7 @@ These are located in the `wallets` folder:
     
     In a minute or two you can also see the new ELA on your receiver address, it should be greater than the initial 12
     ```
-    http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
+    curl http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```
     
 10. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
@@ -130,7 +130,7 @@ These are located in the `wallets` folder:
     This service is running on port 8093
     
     ```
-    http://localhost:8093/api/1/ping
+    curl http://localhost:8093/api/1/ping
     ```
     
     Should return
@@ -142,7 +142,7 @@ These are located in the `wallets` folder:
 
     This service is running on port 38080 and 48080 since there are two peer nodes running
     ```
-    http://localhost:38080/version
+    curl http://localhost:38080/version
     ```
 
     Should return
@@ -156,7 +156,7 @@ These are located in the `wallets` folder:
 
     This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
     ```
-    http://localhost:9094/id
+    curl http://localhost:9094/id
     ```
 
     Should return something like
@@ -166,7 +166,7 @@ These are located in the `wallets` folder:
 
     And 9095 exposes Node API endpoints.
     ```
-    http://localhost:9095/api/v0/pin/ls
+    curl http://localhost:9095/api/v0/pin/ls
     ```
 
     Should return an empty dictionary as there's nothing present yet

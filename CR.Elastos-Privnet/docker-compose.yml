@@ -5,8 +5,7 @@ services:
     container_name: ela-mainchain
     image: ela-mainchain
     build:
-      context: .
-      dockerfile: Dockerfile-ela
+      context: ela-mainchain
     ports:
       - 20333-20338:20333-20338
     healthcheck:
@@ -24,8 +23,7 @@ services:
     depends_on:
       - ela-mainchain
     build:
-      context: .
-      dockerfile: Dockerfile-did
+      context: ela-sidechain/did
     ports:
       - 20604-20608:20604-20608
     healthcheck:
@@ -37,15 +35,14 @@ services:
       - blockchain
     tty: true
 
-  ela-arbiter-1:
-    container_name: ela-arbiter-1
-    image: ela-arbiter
+  ela-arbitrator-1:
+    container_name: ela-arbitrator-1
+    image: ela-arbitrator
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
     build:
-      context: .
-      dockerfile: Dockerfile-ela-arbiter-1
+      context: ela-arbitrator/arbitrator-1
     ports:
       - 10336:10336
       - 10338:10338
@@ -53,15 +50,14 @@ services:
       - blockchain
     tty: true
 
-  ela-arbiter-2:
-    container_name: ela-arbiter-2
-    image: ela-arbiter
+  ela-arbitrator-2:
+    container_name: ela-arbitrator-2
+    image: ela-arbitrator
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
     build:
-      context: .
-      dockerfile: Dockerfile-ela-arbiter-2
+      context: ela-arbitrator/arbitrator-2
     ports:
       - 11336:11336
       - 11338:11338
@@ -82,8 +78,7 @@ services:
       - ela-mainchain
       - ela-sidechain-did
     build:
-      context: .
-      dockerfile: Dockerfile-wallet-service
+      context: restful-services/wallet-service
     ports:
       - 8091:8091
     healthcheck:
@@ -102,8 +97,7 @@ services:
       - ela-mainchain
       - ela-sidechain-did
     build:
-      context: .
-      dockerfile: Dockerfile-did-service
+      context: restful-services/did-service
     ports:
       - 8092:8092
     healthcheck:
@@ -140,8 +134,7 @@ services:
     depends_on:
       - ela-mysql
     build:
-      context: .
-      dockerfile: Dockerfile-ela-api-misc
+      context: restful-services/api-misc
     ports:
       - 8093:8093
     healthcheck:
@@ -157,8 +150,8 @@ services:
     container_name: ela-hive-ipfs-peer-1
     image: ela-hive-ipfs-peer-1
     build:
-      context: .
-      dockerfile: Dockerfile-ela-hive-ipfs-peer-1
+      context: ela-hive/hive-ipfs
+      dockerfile: Dockerfile-peer-1
     ports:
       - 38080:8080
     networks:
@@ -169,8 +162,8 @@ services:
     container_name: ela-hive-ipfs-peer-2
     image: ela-hive-ipfs-peer-2
     build:
-      context: .
-      dockerfile: Dockerfile-ela-hive-ipfs-peer-2
+      context: ela-hive/hive-ipfs
+      dockerfile: Dockerfile-peer-2
     ports:
       - 48080:8080
     networks:
@@ -184,8 +177,8 @@ services:
       - ela-hive-ipfs-peer-1
       - ela-hive-ipfs-peer-2
     build:
-      context: .
-      dockerfile: Dockerfile-ela-hive-cluster-master
+      context: ela-hive/hive-cluster
+      dockerfile: Dockerfile-master
     ports:
       - 9094-9096:9094-9096
     networks:
@@ -200,8 +193,8 @@ services:
       - ela-hive-ipfs-peer-2
       - ela-hive-cluster-master
     build:
-      context: .
-      dockerfile: Dockerfile-ela-hive-cluster-slave
+      context: ela-hive/hive-cluster
+      dockerfile: Dockerfile-slave
     ports:
       - 49094-49096:9094-9096
     networks:

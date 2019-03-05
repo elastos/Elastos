@@ -1,0 +1,49 @@
+﻿{
+  "Configuration": {
+    "Magic": 7638401,
+    "Version": 23,
+    "SeedList": [
+
+    ],
+    "HttpInfoPort": 20333,
+    "HttpInfoStart": true,
+    "HttpRestPort": 20334,
+    "HttpWsPort": 20335,
+    "WsHeartbeatInterval": 60,
+    "HttpJsonPort": 20336,
+    "NodePort": 20338,
+    "NodeOpenPort": 20337,
+    "OpenService": true,
+    "PrintLevel": 2,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "IsTLS": false,
+    "CertPath": "./sample-cert.pem",
+    "KeyPath": "./sample-cert-key.pem",
+    "CAPath": "./sample-ca.pem",
+    "FoundationAddress": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf",
+    "MultiCoreNum": 1,
+    "MaxTransactionInBlock": 10000,
+    "MaxBlockSize": 8000000,
+    "MinCrossChainTxFee": 10000,
+    "PowConfiguration": {
+      "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
+      "AutoMining": true,
+      "MinerInfo": "ELA",
+      "MinTxFee": 100,
+      "ActiveNet": "MainNet"
+    },
+    "VoteHeight": 100,
+    "RpcConfiguration": {
+      "User": "",
+      "Pass": "",
+      "WhiteIPList": [
+        "0.0.0.0"
+      ]
+    },
+    "Arbiters": [
+      "0316d572dd0efb765ecfa5429dd4a0cae9c869597e1ec227054b1a91d1a16e7709",
+      "023857c29351900ace44976c667691f32d784a40f3cb2bcfe269bb7f48b6fd2cd7"
+    ]
+  }
+}
