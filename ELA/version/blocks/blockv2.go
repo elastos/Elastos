@@ -27,7 +27,7 @@ func (b *blockV2) GetVersion() uint32 {
 
 func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []interfaces.Producer) ([][]byte,
 	error) {
-	if uint32(len(producers)) < arbitratorsCount {
+	if uint32(len(producers)) < arbitratorsCount/2+1 {
 		return nil, errors.New("producers count less than min arbitrators count")
 	}
 
@@ -35,16 +35,16 @@ func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []
 		return producers[i].Votes() > producers[j].Votes()
 	})
 
-	result := make([][]byte, arbitratorsCount)
-	for i := uint32(0); i < arbitratorsCount; i++ {
-		result[i] = producers[i].NodePublicKey()
+	result := make([][]byte, 0)
+	for i := uint32(0); i < arbitratorsCount && i < uint32(len(producers)); i++ {
+		result = append(result, producers[i].NodePublicKey())
 	}
 	return result, nil
 }
 
 func (b *blockV2) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	if uint32(len(producers)) < startIndex {
-		return nil, errors.New("producers count less than min arbitrators count")
+		return make([][]byte, 0), nil
 	}
 
 	sort.Slice(producers, func(i, j int) bool {

@@ -80,9 +80,15 @@ func (a *Arbitrators) NormalChange(height uint32) error {
 func (a *Arbitrators) IncreaseChainHeight(height uint32) {
 	forceChange, normalChange := a.isNewElection(height + 1)
 	if forceChange {
-		a.ForceChange(height)
+		if err := a.ForceChange(height); err != nil {
+			panic("force change fail when finding an inactive arbitrators" +
+				" transaction")
+		}
 	} else if normalChange {
-		a.NormalChange(height)
+		if err := a.NormalChange(height); err != nil {
+			panic("normal change fail when finding an inactive arbitrators" +
+				" transaction")
+		}
 	} else {
 		a.dutyChangedCount++
 	}
