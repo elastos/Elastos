@@ -10,7 +10,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -710,28 +709,9 @@ func (s *State) processEmergencyInactiveArbitrators(
 	}
 
 	for _, v := range inactivePayload.Arbitrators {
-		pkStr := common.BytesToHexString(v)
-
-		if _, ok := s.activityProducers[pkStr]; ok {
-			addEmergencyInactiveArbitrator(pkStr, s.activityProducers[pkStr])
-		} else {
-			if s.arbiters.IsCRCArbitrator(v) {
-				// add temporary producer obj for crc inactive arbitrator
-				producer := &Producer{
-					info: payload.ProducerInfo{
-						NodePublicKey: v,
-					},
-					registerHeight:        height,
-					votes:                 0,
-					inactiveSince:         0,
-					penalty:               common.Fixed64(0),
-					activateRequestHeight: math.MaxUint32,
-				}
-				addEmergencyInactiveArbitrator(pkStr, producer)
-
-			} else {
-				log.Warn("unknown active producer: ", v)
-			}
+		key := hex.EncodeToString(v)
+		if p, ok := s.activityProducers[key]; ok {
+			addEmergencyInactiveArbitrator(key, p)
 		}
 	}
 

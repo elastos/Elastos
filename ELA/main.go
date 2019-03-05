@@ -94,28 +94,11 @@ func main() {
 	ledger.HeightVersions = versions   // fixme
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(&state.ArbitratorsConfig{
-		ArbitratorsCount: config.Parameters.ArbiterConfiguration.
-			NormalArbitratorsCount + uint32(len(activeNetParams.CRCArbiters)),
-		CandidatesCount: config.Parameters.ArbiterConfiguration.CandidatesCount,
-		CRCArbitrators:  activeNetParams.CRCArbiters,
-		Versions:        versions,
-		OriginArbiters:  activeNetParams.OriginArbiters,
-		GetCurrentHeader: func() (*types.Header, error) {
-			b, err := chainStore.GetBlock(chainStore.GetCurrentBlockHash())
-			if err != nil {
-				return nil, err
-			}
-			return &b.Header, nil
-		},
-		GetBestHeight: func() uint32 {
-			return chainStore.GetHeight()
-		},
-	})
+	arbiters, err := state.NewArbitrators(activeNetParams, versions,
+		chainStore.GetHeight)
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	arbiters.State = state.NewState(arbiters, activeNetParams)
 	verconf.Arbitrators = arbiters
 	ledger.Arbitrators = arbiters // fixme
 
