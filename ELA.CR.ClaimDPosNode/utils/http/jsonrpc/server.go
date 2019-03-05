@@ -10,6 +10,11 @@ import (
 	"sync"
 
 	htp "github.com/elastos/Elastos.ELA/utils/http"
+	"crypto/sha256"
+	"encoding/base64"
+	"crypto/subtle"
+	"github.com/elastos/Elastos.ELA/common/log"
+
 )
 
 const (
@@ -60,11 +65,16 @@ func (r *Response) write(w http.ResponseWriter, httpStatus int) {
 	data, _ := json.Marshal(r)
 	w.Write(data)
 }
-
+type RpcConfiguration struct {
+	User        string   `json:"User"`
+	Pass        string   `json:"Pass"`
+	WhiteIPList []string `json:"WhiteIPList"`
+}
 // Config is the configuration of the JSON-RPC server.
 type Config struct {
 	Path      string
 	ServePort uint16
+	RpcConfiguration     RpcConfiguration
 	NetListen func(port uint16) (net.Listener, error)
 }
 
@@ -133,20 +143,102 @@ func (s *Server) parseParams(method string, array []interface{}) htp.Params {
 	return params
 }
 
+func (s *Server) clientAllowed(r *http.Request) bool {
+	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
+	log.Debugf("WhiteIPList %v \n", s.cfg.RpcConfiguration.WhiteIPList)
+	//this ipAbbr  may be  ::1 when request is localhost
+	ipAbbr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		log.Errorf("RemoteAddr clientAllowed SplitHostPort failure %s \n", r.RemoteAddr)
+		return false
+
+	}
+	//after ParseIP ::1 chg to 0:0:0:0:0:0:0:1 the true ip
+	remoteIp := net.ParseIP(ipAbbr)
+
+	if remoteIp == nil {
+		log.Errorf("clientAllowed ParseIP ipAbbr %s failure  \n", ipAbbr)
+		return false
+	}
+
+	if remoteIp.IsLoopback() {
+		log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
+		return true
+	}
+
+	for _, cfgIp := range s.cfg.RpcConfiguration.WhiteIPList {
+		//WhiteIPList have 0.0.0.0  allow all ip in
+		if cfgIp == "0.0.0.0" {
+			return true
+		}
+		if cfgIp == remoteIp.String() {
+			return true
+		}
+
+	}
+	log.Debugf("RemoteAddr clientAllowed failure %s \n", r.RemoteAddr)
+
+	return false
+}
+
+func (s *Server) checkAuth(r *http.Request) bool {
+	User := s.cfg.RpcConfiguration.User
+	Pass := s.cfg.RpcConfiguration.Pass
+
+	log.Debugf("ServeHTTP checkAuth RpcConfiguration %+v" , s.cfg.RpcConfiguration)
+	if (User == Pass) && (len(User) == 0) {
+		return true
+	}
+	authHeader := r.Header["Authorization"]
+
+	if len(authHeader) <= 0 {
+		return false
+	}
+
+	authSha256 := sha256.Sum256([]byte(authHeader[0]))
+
+	login := User + ":" + Pass
+	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(login))
+	cfgAuthSha256 := sha256.Sum256([]byte(auth))
+
+	resultCmp := subtle.ConstantTimeCompare(authSha256[:], cfgAuthSha256[:])
+	if resultCmp == 1 {
+
+		return true
+	}
+
+	// Request's auth doesn't match  user
+	return false
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	isClientAllowed := s.clientAllowed(r)
+	if !isClientAllowed {
+		log.Warn("HTTP Client ip is not allowd")
+		http.Error(w, "Client ip is not allowd", http.StatusForbidden)
+		return
+	}
 	//JSON RPC commands should be POSTs
 	if r.Method != "POST" {
+		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
 		http.Error(w, "JSON RPC procotol only allows POST method",
 			http.StatusMethodNotAllowed)
 		return
 	}
 
 	if r.Header["Content-Type"][0] != "application/json" {
+		log.Warn("need content type to be application/json")
 		http.Error(w, "need content type to be application/json",
 			http.StatusUnsupportedMediaType)
 		return
 	}
+	isCheckAuthOk := s.checkAuth(r)
 
+	if !isCheckAuthOk {
+		log.Warn("checkAuth client authenticate failed %v",r.RemoteAddr)
+		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
+		return
+	}
 	//read the body of the request
 	body, _ := ioutil.ReadAll(r.Body)
 	var req Request
