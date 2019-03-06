@@ -17,7 +17,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/store"
-	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 type ProposalDispatcherConfig struct {
@@ -294,10 +293,6 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	}
 
 	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	p.cfg.Manager.Broadcast(msg.NewBlock(&types.DposBlock{
-		ConfirmFlag: true,
-		Confirm:     currentVoteSlot,
-	}))
 	inMainChain, isOrphan, err := p.cfg.Manager.AppendConfirm(currentVoteSlot)
 	if err != nil || !inMainChain || isOrphan {
 		log.Error("[AppendConfirm] err:", err.Error())
