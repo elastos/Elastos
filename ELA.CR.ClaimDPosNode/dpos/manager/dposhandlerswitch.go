@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -91,14 +90,12 @@ func (h *DPOSHandlerSwitch) FinishConsensus() {
 func (h *DPOSHandlerSwitch) StartNewProposal(p payload.DPOSProposal) {
 	h.currentHandler.StartNewProposal(p)
 
-	rawData := new(bytes.Buffer)
-	p.Serialize(rawData)
 	proposalEvent := log.ProposalEvent{
 		Proposal:     common.BytesToHexString(p.Sponsor),
 		BlockHash:    p.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: p.Hash(),
-		RawData:      rawData.Bytes(),
+		RawData:      &p,
 		Result:       false,
 	}
 	h.cfg.Monitor.OnProposalArrived(&proposalEvent)
@@ -124,9 +121,8 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 
 	if h.proposalDispatcher.IsProcessingBlockEmpty() {
 		if h.currentHandler.TryStartNewConsensus(b) {
-			rawData := new(bytes.Buffer)
-			b.Header.Serialize(rawData)
-			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height, RawData: rawData.Bytes()}
+			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height,
+				RawData: &b.Header}
 			h.cfg.Monitor.OnConsensusStarted(&c)
 			return true
 		}
@@ -139,9 +135,8 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
 	succeed, finished := h.currentHandler.ProcessAcceptVote(id, p)
 
-	rawData := new(bytes.Buffer)
-	p.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
+		ReceivedTime: time.Now(), Result: true, RawData: &p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished
@@ -150,9 +145,8 @@ func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p payload.DPOSProposa
 func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
 	succeed, finished := h.currentHandler.ProcessRejectVote(id, p)
 
-	rawData := new(bytes.Buffer)
-	p.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
+		ReceivedTime: time.Now(), Result: false, RawData: &p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished

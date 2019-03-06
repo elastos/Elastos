@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
@@ -233,10 +232,14 @@ func (s *DposStore) AddConsensusEvent(event interface{}) error {
 }
 
 func (s *DposStore) addConsensusEvent(cons *log.ConsensusEvent) (uint64, error) {
+	buf := new(bytes.Buffer)
+	if err := cons.RawData.Serialize(buf); err != nil{
+		return 0, err
+	}
 	return s.Insert(ConsensusEventTable, []*interfaces.Field{
 		{"StartTime", cons.StartTime.UnixNano()},
 		{"Height", cons.Height},
-		{"RawData", cons.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 
@@ -277,13 +280,17 @@ func (s *DposStore) AddProposalEvent(event interface{}) error {
 }
 
 func (s *DposStore) addProposalEvent(event *log.ProposalEvent) (uint64, error) {
+	buf := new(bytes.Buffer)
+	if err := event.RawData.Serialize(buf); err != nil{
+		return 0, err
+	}
 	return s.Insert(ProposalEventTable, []*interfaces.Field{
 		{"Proposal", event.Proposal},
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
 		{"ProposalHash", event.ProposalHash},
-		{"RawData", event.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 func (s *DposStore) UpdateProposalEvent(event interface{}) error {
@@ -328,11 +335,7 @@ func (s *DposStore) AddVoteEvent(event interface{}) error {
 }
 
 func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
-	vote := &payload.DPOSProposalVote{}
-	err := vote.Deserialize(bytes.NewReader(event.RawData))
-	if err != nil {
-		return 0, err
-	}
+	vote := event.RawData
 	var proposalId uint64
 	rowIDs, err := s.SelectID(ProposalEventTable, []*interfaces.Field{
 		{"ProposalHash", vote.ProposalHash},
@@ -343,13 +346,18 @@ func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
 		proposalId = rowIDs[0]
 	}
 
+	buf := new(bytes.Buffer)
+	if err = vote.Serialize(buf); err != nil {
+		return 0, err
+	}
+
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
 	return s.Insert(VoteEventTable, []*interfaces.Field{
 		{"ProposalID", proposalId},
 		{"Signer", event.Signer},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
-		{"RawData", event.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 
