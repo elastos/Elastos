@@ -1200,3 +1200,124 @@ result sample:
   "result": true
 }
 ```
+
+#### getconfirmbyheight
+
+description: get block confirm by height of block.
+
+parameters:
+
+| name      | type   | description                                                      |
+| --------- | ------ | ---------------------------------------------------------------- |
+| height    | int    | the hash of block                                                |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data |
+
+result:
+
+| name       | type    | description                    |
+| -------    | ------- | ------------------------------ |
+| sponsor    | string  | the sponsor of the proposal    |
+| viewoffset | uint32  | the viewoffset of the proposal |
+| votes      | string  | the votes of confirm           |
+| signer     | string  | the singner of the proposal    |
+| accept     | bool    | accept or not of the proposal  |
+
+named arguments sample:
+
+```json
+{
+  "method":"getconfirmbyheight",
+  "params":{
+    "height": 300000,
+    "verbosity": 1
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+    "viewoffset": 0,
+    "votes": [
+      {
+        "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+        "accept": true
+      },
+      {
+        "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "accept": true
+      },
+      {
+        "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+        "accept": true
+      }
+    ]
+  }
+}
+```
+
+#### getconfirmbyhash
+
+description: get block confirm by hash of block.
+
+parameters:
+
+| name      | type   | description                                                      |
+| --------- | ------ | ---------------------------------------------------------------- |
+| blockhash | string | the hash of block                                                |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data |
+result:
+
+| name       | type    | description                    |
+| -------    | ------- | ------------------------------ |
+| sponsor    | string  | the sponsor of the proposal    |
+| viewoffset | uint32  | the viewoffset of the proposal |
+| votes      | string  | the votes of confirm           |
+| signer     | string  | the singner of the proposal    |
+| accept     | bool    | accept or not of the proposal  |
+
+named arguments sample:
+
+```json
+{
+  "method":"getconfirmbyhash",
+  "params":{
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
+    "verbosity": 1
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+    "viewoffset": 0,
+    "votes": [
+      {
+        "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+        "accept": true
+      },
+      {
+        "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "accept": true
+      },
+      {
+        "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+        "accept": true
+      }
+    ]
+  }
+}
+```

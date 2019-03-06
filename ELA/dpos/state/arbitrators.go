@@ -394,14 +394,11 @@ func (a *Arbitrators) showArbitersInfo(isInfo bool) {
 	}
 
 	connectionInfoMap := a.getProducersConnectionInfo()
-	a.showArbitersInfoWithOnduty("CURRENT ARBITERS", show,
-		a.currentArbitrators, connectionInfoMap)
-	a.showArbitersInfoWithoutOnduty("NEXT ARBITERS", show,
-		a.nextArbitrators, connectionInfoMap)
-	a.showArbitersInfoWithoutOnduty("CURRENT CANDIDATES", show,
-		a.currentCandidates, connectionInfoMap)
-	a.showArbitersInfoWithoutOnduty("NEXT CANDIDATES", show,
-		a.nextCandidates, connectionInfoMap)
+	crInfo, crParams := a.getArbitersInfoWithOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+	nrInfo, nrParams := a.getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators, connectionInfoMap)
+	ccInfo, ccParams := a.getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates, connectionInfoMap)
+	ncInfo, ncParams := a.getArbitersInfoWithoutOnduty("NEXT CANDIDATES", a.nextCandidates, connectionInfoMap)
+	show(crInfo+nrInfo+ccInfo+ncInfo, append(append(append(crParams, nrParams...), ccParams...), ncParams...)...)
 }
 
 func (a *Arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
@@ -431,29 +428,38 @@ func (a *Arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAd
 	return result
 }
 
-func (a *Arbitrators) showArbitersInfoWithOnduty(title string, show func(format string, a ...interface{}),
-	arbiters [][]byte, connectionInfoMap map[string]p2p.PeerAddr) {
-	show(title)
-	show("%5s %66s %18s %6s", "INDEX", "PUBLICKEY", "NETADDRESS", "ONDUTY")
-	show("----- ", strings.Repeat("-", 66), " ------")
+func (a *Arbitrators) getArbitersInfoWithOnduty(title string, arbiters [][]byte,
+	connectionInfoMap map[string]p2p.PeerAddr) (string, []interface{}) {
+
+	info := "\n" + title + "\nDUTYINDEX: %d\n%5s %66s %21s %6s\n----- " + strings.Repeat("-", 66) +
+		" " + strings.Repeat("-", 21) + " ------\n"
+	params := make([]interface{}, 0)
+	params = append(params, (a.dutyIndex+1)%uint32(len(arbiters)))
+	params = append(params, "INDEX", "PUBLICKEY", "NETADDRESS", "ONDUTY")
 	for i, arbiter := range arbiters {
 		publicKey := common.BytesToHexString(arbiter)
-		var format = "%-5d %-66s %-18s %6t"
-		show(format, i+1, publicKey, bytes.Equal(arbiter, a.GetOnDutyArbitrator()), connectionInfoMap[publicKey].Addr)
+		info += "%-5d %-66s %21s %6t\n"
+		params = append(params, i+1, publicKey,
+			connectionInfoMap[publicKey].Addr, bytes.Equal(arbiter, a.GetOnDutyArbitrator()))
 	}
-	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18), " ------")
+	info += "----- " + strings.Repeat("-", 66) + " " + strings.Repeat("-", 21) + " ------"
+	return info, params
 }
 
-func (a *Arbitrators) showArbitersInfoWithoutOnduty(title string, show func(format string, a ...interface{}),
-	arbiters [][]byte, connectionInfoMap map[string]p2p.PeerAddr) {
-	show("%5s %66s %18s", "INDEX", "PUBLICKEY", "NETADDRESS")
-	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18))
+func (a *Arbitrators) getArbitersInfoWithoutOnduty(title string, arbiters [][]byte,
+	connectionInfoMap map[string]p2p.PeerAddr) (string, []interface{}) {
+
+	info := "\n" + title + "\n%5s %66s %21s\n----- " + strings.Repeat("-", 66) +
+		" " + strings.Repeat("-", 21) + "\n"
+	params := make([]interface{}, 0)
+	params = append(params, "INDEX", "PUBLICKEY", "NETADDRESS")
 	for i, arbiter := range arbiters {
 		publicKey := common.BytesToHexString(arbiter)
-		var format = "%-5d %-66s %-18s"
-		show(format, i+1, publicKey, connectionInfoMap[publicKey].Addr)
+		info += "%-5d %-66s %21s\n"
+		params = append(params, i+1, publicKey, connectionInfoMap[publicKey].Addr)
 	}
-	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18))
+	info += "----- " + strings.Repeat("-", 66) + " " + strings.Repeat("-", 21)
+	return info, params
 }
 
 func NewArbitrators(chainParams *config.Params, versions interfaces.

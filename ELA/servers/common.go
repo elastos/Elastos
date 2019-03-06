@@ -92,6 +92,18 @@ type BlockInfo struct {
 	MinerInfo         string        `json:"minerinfo"`
 }
 
+type VoteInfo struct {
+	Signer string `json:"signer"`
+	Accept bool   `json:"accept"`
+}
+
+type ConfirmInfo struct {
+	BlockHash  string     `json:"blockhash"`
+	Sponsor    string     `json:"sponsor"`
+	ViewOffset uint32     `json:"viewoffset"`
+	Votes      []VoteInfo `json:"votes"`
+}
+
 type NodeState struct {
 	Compile     string // The compile version of this server node
 	ID          uint64 // The nodes's id

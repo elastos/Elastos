@@ -37,6 +37,8 @@ func StartRPCServer() {
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
 	mainMux["getblock"] = GetBlockByHash
+	mainMux["getconfirmbyheight"] = GetConfirmByHeight
+	mainMux["getconfirmbyhash"] = GetConfirmByHash
 	mainMux["getcurrentheight"] = GetBlockHeight
 	mainMux["getblockhash"] = GetBlockHash
 	mainMux["getconnectioncount"] = GetConnectionCount

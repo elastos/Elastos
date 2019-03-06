@@ -440,6 +440,23 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	}
 }
 
+func GetConfirmInfo(confirm *payload.Confirm) ConfirmInfo {
+	votes := make([]VoteInfo, 0)
+	for _, vote := range confirm.Votes {
+		votes = append(votes, VoteInfo{
+			Signer: common.BytesToHexString(vote.Signer),
+			Accept: vote.Accept,
+		})
+	}
+
+	return ConfirmInfo{
+		BlockHash:  confirm.Proposal.BlockHash.String(),
+		Sponsor:    common.BytesToHexString(confirm.Proposal.Sponsor),
+		ViewOffset: confirm.Proposal.ViewOffset,
+		Votes:      votes,
+	}
+}
+
 func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 	block, err := Store.GetBlock(hash)
 	if err != nil {
@@ -454,6 +471,20 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 		return GetBlockInfo(block, true), Success
 	}
 	return GetBlockInfo(block, false), Success
+}
+
+func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
+	confirm, err := Store.GetConfirm(hash)
+	if err != nil {
+		return "", UnknownBlock
+	}
+	if verbose == 0 {
+		w := new(bytes.Buffer)
+		confirm.Serialize(w)
+		return common.BytesToHexString(w.Bytes()), Success
+	}
+
+	return GetConfirmInfo(confirm), Success
 }
 
 func GetBlockByHash(param Params) map[string]interface{} {
@@ -478,6 +509,50 @@ func GetBlockByHash(param Params) map[string]interface{} {
 
 	result, error := getBlock(hash, verbosity)
 
+	return ResponsePack(error, result)
+}
+
+func GetConfirmByHeight(param Params) map[string]interface{} {
+	height, ok := param.Uint("height")
+	if !ok {
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
+	}
+
+	hash, err := Store.GetBlockHash(height)
+	if err != nil {
+		return ResponsePack(UnknownBlock, err.Error())
+	}
+
+	verbosity, ok := param.Uint("verbosity")
+	if !ok {
+		verbosity = 1
+	}
+
+	result, errCode := getConfirm(hash, verbosity)
+	return ResponsePack(errCode, result)
+}
+
+func GetConfirmByHash(param Params) map[string]interface{} {
+	str, ok := param.String("blockhash")
+	if !ok {
+		return ResponsePack(InvalidParams, "block hash not found")
+	}
+
+	var hash common.Uint256
+	hashBytes, err := FromReversedString(str)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid block hash")
+	}
+	if err := hash.Deserialize(bytes.NewReader(hashBytes)); err != nil {
+		ResponsePack(InvalidParams, "invalid block hash")
+	}
+
+	verbosity, ok := param.Uint("verbosity")
+	if !ok {
+		verbosity = 1
+	}
+
+	result, error := getConfirm(hash, verbosity)
 	return ResponsePack(error, result)
 }
 
