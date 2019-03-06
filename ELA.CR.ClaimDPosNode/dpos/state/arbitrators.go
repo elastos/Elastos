@@ -3,6 +3,7 @@ package state
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"math"
 	"sort"
 	"strings"
@@ -181,16 +182,32 @@ func (a *Arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 }
 
 func (a *Arbitrators) GetOnDutyArbitratorByHeight(height uint32) []byte {
-	return a.versions.GetNextOnDutyArbitrator(height, a.dutyIndex, 0)
+	return a.GetNextOnDutyArbitratorV(height, 0)
 }
 
 func (a *Arbitrators) GetOnDutyArbitrator() []byte {
-	return a.GetNextOnDutyArbitrator(0)
+	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, 0)
 }
 
 func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	return a.versions.GetNextOnDutyArbitrator(a.bestHeight()+1,
-		a.dutyIndex, offset)
+	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, offset)
+}
+
+func (a *Arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
+	// main version is >= H1
+	if height >= a.State.chainParams.HeightVersions[2] {
+		arbitrators := a.GetArbitrators()
+		if len(arbitrators) == 0 {
+			return nil
+		}
+		index := (a.dutyIndex + offset) % uint32(len(arbitrators))
+		arbiter := arbitrators[index]
+
+		return arbiter
+	}
+
+	// old version
+	return a.GetNextOnDutyArbitratorV0(height, offset)
 }
 
 func (a *Arbitrators) GetArbitersCount() uint32 {
@@ -217,8 +234,8 @@ func (a *Arbitrators) HasArbitersMinorityCount(num uint32) bool {
 }
 
 func (a *Arbitrators) isNewElection(height uint32) (forceChange bool, normalChange bool) {
-	if a.versions.GetDefaultBlockVersion(height) >= 1 {
-
+	// main version >= H1
+	if height >= a.State.chainParams.HeightVersions[2] {
 		// when change to "H1" or "H2" height should fire new election immediately
 		if height == a.chainParams.HeightVersions[2] || height == a.chainParams.HeightVersions[3] {
 			return true, false
@@ -256,7 +273,7 @@ func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 		}
 	}
 	count := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount + crcCount
-	producers, err := a.versions.GetNormalArbitratorsDesc(height, count, a.getInterfaceProducers())
+	producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
 	if err != nil {
 		return err
 	}
@@ -264,13 +281,64 @@ func (a *Arbitrators) updateNextArbitrators(height uint32) error {
 		a.nextArbitrators = append(a.nextArbitrators, v)
 	}
 
-	candidates, err := a.versions.GetCandidatesDesc(height, count, a.getInterfaceProducers())
+	candidates, err := a.GetCandidatesDesc(height, count, a.State.getProducers())
 	if err != nil {
 		return err
 	}
 	a.nextCandidates = candidates
 
 	return nil
+}
+
+func (a *Arbitrators) GetCandidatesDesc(height, startIndex uint32, producers []*Producer) ([][]byte, error) {
+	// main version >= H2
+	if height >= a.State.chainParams.HeightVersions[3] {
+		if uint32(len(producers)) < startIndex {
+			return make([][]byte, 0), nil
+		}
+
+		sort.Slice(producers, func(i, j int) bool {
+			return producers[i].Votes() > producers[j].Votes()
+		})
+
+		result := make([][]byte, 0)
+		for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.
+			Parameters.ArbiterConfiguration.CandidatesCount; i++ {
+			result = append(result, producers[i].NodePublicKey())
+		}
+		return result, nil
+	}
+
+	// old version [0, H2)
+	return [][]byte{}, nil
+}
+
+func (a *Arbitrators) GetNormalArbitratorsDesc(height uint32,
+	arbitratorsCount uint32, producers []*Producer) ([][]byte, error) {
+	// main version >= H2
+	if height >= a.State.chainParams.HeightVersions[3] {
+		if uint32(len(producers)) < arbitratorsCount/2+1 {
+			return nil, errors.New("producers count less than min arbitrators count")
+		}
+
+		sort.Slice(producers, func(i, j int) bool {
+			return producers[i].Votes() > producers[j].Votes()
+		})
+
+		result := make([][]byte, 0)
+		for i := uint32(0); i < arbitratorsCount && i < uint32(len(producers)); i++ {
+			result = append(result, producers[i].NodePublicKey())
+		}
+		return result, nil
+	}
+
+	// version [H1, H2)
+	if height >= a.State.chainParams.HeightVersions[2] {
+		return a.GetNormalArbitratorsDescV1()
+	}
+
+	// version [0, H1)
+	return a.GetNormalArbitratorsDescV0()
 }
 
 func (a *Arbitrators) sortArbitrators() error {

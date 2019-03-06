@@ -69,17 +69,17 @@ func (h *heightVersions) GetNormalArbitratorsDesc(blockHeight uint32,
 	return v.GetNormalArbitratorsDesc(arbitratorsCount, arbiters)
 }
 
-func (h *heightVersions) GetCandidatesDesc(blockHeight uint32,
-	startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
-	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
-	info := h.versions[heightKey]
-
-	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
-	if v == nil {
-		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
-	}
-	return v.GetCandidatesDesc(startIndex, producers)
-}
+//func (h *heightVersions) GetCandidatesDesc(blockHeight uint32,
+//	startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
+//	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
+//	info := h.versions[heightKey]
+//
+//	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
+//	if v == nil {
+//		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
+//	}
+//	return v.GetCandidatesDesc(startIndex, producers)
+//}
 
 func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
