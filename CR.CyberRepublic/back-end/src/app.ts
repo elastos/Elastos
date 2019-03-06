@@ -20,7 +20,7 @@ import './config';
 let rollbar = null;
 
 if (process.env.NODE_ENV === 'production') {
-    rollbar = new Rollbar({ accessToken: process.env.ROLLBAR_TOKEN });
+    rollbar = new Rollbar(process.env.ROLLBAR_TOKEN);
 }
 
 (async ()=>{
