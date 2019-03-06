@@ -136,14 +136,12 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	log.Info("[StartProposal] send proposal message finished, Proposal Hash: ", dmsg.GetMessageHash(m))
 	p.cfg.Network.BroadcastMessage(m)
 
-	rawData := new(bytes.Buffer)
-	proposal.Serialize(rawData)
 	proposalEvent := log.ProposalEvent{
 		Proposal:     common.BytesToHexString(proposal.Sponsor),
 		BlockHash:    proposal.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
-		RawData:      rawData.Bytes(),
+		RawData:      &proposal,
 		Result:       false,
 	}
 	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
@@ -578,9 +576,8 @@ func (p *ProposalDispatcher) acceptProposal(d payload.DPOSProposal) {
 	p.cfg.Network.BroadcastMessage(voteMsg)
 	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
-	rawData := new(bytes.Buffer)
-	vote.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: true, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
+		ReceivedTime: time.Now(), Result: true, RawData: &vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
@@ -605,9 +602,8 @@ func (p *ProposalDispatcher) rejectProposal(d payload.DPOSProposal) {
 	p.ProcessVote(vote, false)
 	p.cfg.Network.BroadcastMessage(msg)
 
-	rawData := new(bytes.Buffer)
-	vote.Serialize(rawData)
-	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer), ReceivedTime: time.Now(), Result: false, RawData: rawData.Bytes()}
+	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
+		ReceivedTime: time.Now(), Result: false, RawData: &vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
