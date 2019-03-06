@@ -59,7 +59,7 @@ func (a *SideChainPow) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
-	if a.SignedData, err = common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+	if a.SignedData, err = common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload sidechainpow signed data"); err != nil {
 		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}

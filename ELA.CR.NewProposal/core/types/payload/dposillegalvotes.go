@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PayloadIllegalVoteVersion byte = 0x00
+	IllegalVoteVersion byte = 0x00
 )
 
 type VoteEvidence struct {
@@ -82,7 +82,7 @@ func (d *DPOSIllegalVotes) Deserialize(r io.Reader, version byte) error {
 func (d *DPOSIllegalVotes) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
-		d.Serialize(buf, PayloadIllegalVoteVersion)
+		d.Serialize(buf, IllegalVoteVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		d.hash = &hash
 	}

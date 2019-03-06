@@ -21,7 +21,7 @@ func (msg *SidechainIllegalData) MaxLength() uint32 {
 
 func (msg *SidechainIllegalData) Serialize(w io.Writer) error {
 	if err := msg.Data.Serialize(w,
-		payload.PayloadSidechainIllegalDataVersion); err != nil {
+		payload.SidechainIllegalDataVersion); err != nil {
 		return err
 	}
 
@@ -30,7 +30,7 @@ func (msg *SidechainIllegalData) Serialize(w io.Writer) error {
 
 func (msg *SidechainIllegalData) Deserialize(r io.Reader) error {
 	if err := msg.Data.Deserialize(r,
-		payload.PayloadSidechainIllegalDataVersion); err != nil {
+		payload.SidechainIllegalDataVersion); err != nil {
 		return err
 	}
 

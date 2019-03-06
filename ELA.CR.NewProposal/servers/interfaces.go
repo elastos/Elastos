@@ -267,7 +267,7 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	var data payload.SidechainIllegalData
 	buf, _ := common.HexStringToBytes(rawHex)
 	if err := data.DeserializeUnsigned(bytes.NewReader(buf),
-		payload.PayloadSidechainIllegalDataVersion); err != nil {
+		payload.SidechainIllegalDataVersion); err != nil {
 		log.Debug("[json-rpc:SubmitSidechainIllegalData] illegaldata deserialization failed", rawHex)
 		return ResponsePack(InternalError, "illegaldata deserialization failed")
 	}

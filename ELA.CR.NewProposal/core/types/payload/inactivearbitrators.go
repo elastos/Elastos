@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const PayloadInactiveArbitratorsVersion byte = 0x00
+const InactiveArbitratorsVersion byte = 0x00
 
 type InactiveArbitrators struct {
 	Sponsor     []byte
@@ -87,7 +87,7 @@ func (i *InactiveArbitrators) Deserialize(r io.Reader,
 func (i *InactiveArbitrators) Hash() common.Uint256 {
 	if i.hash == nil {
 		buf := new(bytes.Buffer)
-		i.Serialize(buf, PayloadInactiveArbitratorsVersion)
+		i.Serialize(buf, InactiveArbitratorsVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		i.hash = &hash
 	}
