@@ -25,7 +25,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
-	"github.com/elastos/Elastos.ELA/p2p/peer"
 	"github.com/elastos/Elastos.ELA/pow"
 )
 
@@ -175,11 +174,26 @@ func GetNeighbors(param Params) map[string]interface{} {
 
 func GetNodeState(param Params) map[string]interface{} {
 	peers := Server.ConnectedPeers()
-	states := make([]*peer.StatsSnap, 0, len(peers))
+	states := make([]*PeerInfo, 0, len(peers))
 	for _, peer := range peers {
-		states = append(states, peer.ToPeer().StatsSnapshot())
+		snap := peer.ToPeer().StatsSnapshot()
+		states = append(states, &PeerInfo{
+			NetAddress:     snap.Addr,
+			Services:       pact.ServiceFlag(snap.Services).String(),
+			RelayTx:        snap.RelayTx != 0,
+			LastSend:       snap.LastSend.String(),
+			LastRecv:       snap.LastRecv.String(),
+			ConnTime:       snap.ConnTime.String(),
+			TimeOffset:     snap.TimeOffset,
+			Version:        snap.Version,
+			Inbound:        snap.Inbound,
+			StartingHeight: snap.StartingHeight,
+			LastBlock:      snap.LastBlock,
+			LastPingTime:   snap.LastPingTime.String(),
+			LastPingMicros: snap.LastPingMicros,
+		})
 	}
-	return ResponsePack(Success, NodeState{
+	return ResponsePack(Success, ServerInfo{
 		Compile:   Compile,
 		Height:    Chain.GetHeight(),
 		Version:   pact.DPOSStartVersion,
