@@ -21,6 +21,7 @@ import ping from './ping';
 import sso from './sso';
 import permission from './permission';
 import permissionRole from './permission_role';
+import google from './google';
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -88,6 +89,7 @@ router.use('/cvote', cvote);
 router.use('/sso', sso);
 router.use('/permission', permission);
 router.use('/permissionRole', permissionRole);
+router.use('/google', google);
 
 router.use((req, res) => {
     return res.sendStatus(403);
