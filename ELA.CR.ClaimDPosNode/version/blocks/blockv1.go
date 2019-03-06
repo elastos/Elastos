@@ -57,14 +57,27 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 		return nil
 	}
 
-	evidence, err := b.generateBlockEvidence(block)
+	evidence, offset, err := b.generateBlockEvidence(block)
 	if err != nil {
 		return err
 	}
 
-	compareEvidence, err := b.generateBlockEvidence(anotherBlock)
+	compareEvidence, compareOffset, err := b.generateBlockEvidence(anotherBlock)
 	if err != nil {
 		return err
+	}
+
+	// IllegalBlockEvidence tx shall not be created if view offset of two block
+	// confirms is not equal.
+	if offset > compareOffset {
+		// do nothing if view offset of block on chain is less than current
+		// block
+		return nil
+	} else if offset < compareOffset &&
+		block.Hash().IsEqual(anotherBlock.Hash()) {
+		// reorganize chain if view offset of block on chain is more than
+		// current block, and these two blocks should be different
+		return b.cfg.Chain.ReorganizeChain(block)
 	}
 
 	illegalBlocks := &payload.DPOSIllegalBlocks{
@@ -73,8 +86,8 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	}
 
 	asc := true
-	if common.BytesToHexString(evidence.Block) >
-		common.BytesToHexString(compareEvidence.Block) {
+	if common.BytesToHexString(evidence.Header) >
+		common.BytesToHexString(compareEvidence.Header) {
 		asc = false
 	}
 
@@ -102,8 +115,8 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 		Inputs:         []*types.Input{},
 		Fee:            0,
 	}
-	if err := b.cfg.TxMemPool.AppendToTxPool(tx); err == nil {
-		err = b.cfg.TxMemPool.AppendToTxPool(tx)
+	if err := b.cfg.TxMemPool.AppendToTxPool(tx); err != nil {
+		return err
 	}
 
 	return nil
@@ -143,30 +156,30 @@ func (b *blockV1) AssignCoinbaseTxRewards(block *types.Block, totalReward common
 }
 
 func (b *blockV1) generateBlockEvidence(block *types.Block) (
-	*payload.BlockEvidence, error) {
+	*payload.BlockEvidence, uint32, error) {
 	headerBuf := new(bytes.Buffer)
 	if err := block.Header.Serialize(headerBuf); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	confirm, err := b.cfg.ChainStore.GetConfirm(block.Hash())
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	confirmBuf := new(bytes.Buffer)
 	if err = confirm.Serialize(confirmBuf); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	confirmSigners, err := b.getConfirmSigners(confirm)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	return &payload.BlockEvidence{
-		Block:        headerBuf.Bytes(),
+		Header:       headerBuf.Bytes(),
 		BlockConfirm: confirmBuf.Bytes(),
 		Signers:      confirmSigners,
-	}, nil
+	}, confirm.Proposal.ViewOffset, nil
 }
 
 func (b *blockV1) getConfirmSigners(confirm *payload.Confirm) (

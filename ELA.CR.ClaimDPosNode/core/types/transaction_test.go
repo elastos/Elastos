@@ -440,7 +440,7 @@ func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
 		CoinType:    payload.CoinType(rand.Uint32()),
 		BlockHeight: rand.Uint32(),
 		Evidence: payload.BlockEvidence{
-			Block:        []byte(strconv.FormatUint(rand.Uint64(), 10)),
+			Header:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
 			BlockConfirm: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 			Signers: [][]byte{
 				[]byte(strconv.FormatUint(rand.Uint64(), 10)),
@@ -448,7 +448,7 @@ func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
 			},
 		},
 		CompareEvidence: payload.BlockEvidence{
-			Block:        []byte(strconv.FormatUint(rand.Uint64(), 10)),
+			Header:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
 			BlockConfirm: []byte(strconv.FormatUint(rand.Uint64(), 10)),
 			Signers: [][]byte{
 				[]byte(strconv.FormatUint(rand.Uint64(), 10)),
