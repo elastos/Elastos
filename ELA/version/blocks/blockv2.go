@@ -42,23 +42,6 @@ func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []
 	return result, nil
 }
 
-func (b *blockV2) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
-	if uint32(len(producers)) < startIndex {
-		return nil, nil
-	}
-
-	sort.Slice(producers, func(i, j int) bool {
-		return producers[i].Votes() > producers[j].Votes()
-	})
-
-	result := make([][]byte, 0)
-	for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.
-		Parameters.ArbiterConfiguration.CandidatesCount; i++ {
-		result = append(result, producers[i].NodePublicKey())
-	}
-	return result, nil
-}
-
 func (b *blockV2) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
 	rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)

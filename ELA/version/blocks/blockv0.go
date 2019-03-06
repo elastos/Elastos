@@ -48,10 +48,6 @@ func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []i
 	return arbitersByte, nil
 }
 
-func (b *blockV0) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
-	return [][]byte{}, nil
-}
-
 func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	return b.cfg.Chain.ProcessBlock(dposBlock.Block, dposBlock.Confirm)
 }
