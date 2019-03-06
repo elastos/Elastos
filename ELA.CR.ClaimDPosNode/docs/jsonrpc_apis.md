@@ -596,34 +596,33 @@ results:
 
 | name        | type            | description                                                 |
 | ----------- | --------------- | ----------------------------------------------------------- |
-| Compile     | string          | node's compile version                                      |
-| Height      | integer         | current height of local node                                |
-| Version     | integer         | peer-to-peer network protocol version of this node          |
-| Services    | string          | the services provided by this node                          |
-| Port        | integer         | P2P network port                                            |
-| RPCPort     | integer         | JSON-RPC service port                                       |
-| RestPort    | integer         | RESTful service port                                        |
-| WSPort      | integer         | webservice port                                             |
-| Neighbors   | array[neighbor] | neighbor nodes information                                  |
+| compile     | string          | node's compile version                                      |
+| height      | integer         | current height of local node                                |
+| version     | integer         | peer-to-peer network protocol version of this node          |
+| services    | string          | the services provided by this node                          |
+| port        | integer         | P2P network port                                            |
+| rpcport     | integer         | JSON-RPC service port                                       |
+| restport    | integer         | RESTful service port                                        |
+| wsport      | integer         | webservice port                                             |
+| neighbors   | array[neighbor] | neighbor nodes information                                  |
 
 neighbor:
 
 | name           | type    | description                                                     |
 | -------------- | ------- | --------------------------------------------------------------- |
-| ID             | integer | a random number to identify the neighbor instance               |
-| Addr           | string  | network address of the neighbor in host:port format             |
-| Services       | integer | neighbor service type. 4 is spv service and 0 is no spv service |
-| RelayTx        | integer | relay transactions to the neighbor or not (0 true/1 false)      |
-| LastSend       | string  | the last time send a message to the neighbor                    |
-| LastRecv       | string  | the last time received a message from the neighbor              |
-| ConnTime       | string  | the time when this neighbor was connected                       |
-| TimeOffset     | integer | time offset between local time and the time advertised by the neighbor |
-| Version        | integer | peer-to-peer network version advertised by the neighbor         |
-| Inbound        | bool    | the connection direction of the neighbor (inbound/outbound)     |
-| StartingHeight | integer | the height advertised by the neighbor when connected            |
-| LastBlock      | integer | the height of the last block advertised by the neighbor         |
-| LastPingTime   | string  | the last time send a ping message to the neighbor               |
-| LastPingMicros | integer | microseconds to receive pong message after sending last ping message |
+| netaddress     | string  | network address of the neighbor in host:port format             |
+| services       | string  | the services neighbor provides                                  |
+| relaytx        | bool    | relay transactions to the neighbor or not                       |
+| lastsend       | string  | the last time send a message to the neighbor                    |
+| lastrecv       | string  | the last time received a message from the neighbor              |
+| conntime       | string  | the time when this neighbor was connected                       |
+| timeoffset     | integer | time offset between local time and the time advertised by the neighbor |
+| version        | integer | peer-to-peer network version advertised by the neighbor         |
+| inbound        | bool    | the connection direction of the neighbor (inbound/outbound)     |
+| startingheight | integer | the height advertised by the neighbor when connected            |
+| lastblock      | integer | the height of the last block advertised by the neighbor         |
+| lastpingtime   | string  | the last time send a ping message to the neighbor               |
+| lastpingmicros | integer | microseconds to receive pong message after sending last ping message |
 
 argument sample:
 ```json
@@ -638,46 +637,44 @@ argument sample:
     "id": 123456,
     "jsonrpc": "2.0",
     "result": {
-        "Compile": "v0.2.2-203-g8db2",
-        "Height": 0,
-        "Version": 20000,
-        "Services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
-        "Port": 21338,
-        "RPCPort": 21336,
-        "RestPort": 21334,
-        "WSPort": 21335,
-        "Neighbors": [
+        "compile": "v0.2.2-231-g75d2-dirty",
+        "height": 0,
+        "version": 20000,
+        "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+        "port": 21338,
+        "rpcport": 21336,
+        "restport": 21334,
+        "wsport": 21335,
+        "neighbors": [
             {
-                "ID": 1400283839273819327,
-                "Addr": "127.0.0.1:64603",
-                "Services": 7,
-                "RelayTx": 0,
-                "LastSend": "2019-03-01T17:11:52+08:00",
-                "LastRecv": "2019-03-01T17:12:02+08:00",
-                "ConnTime": "2019-03-01T17:10:52.093308+08:00",
-                "TimeOffset": 0,
-                "Version": 20000,
-                "Inbound": true,
-                "StartingHeight": 0,
-                "LastBlock": 0,
-                "LastPingTime": "2019-03-01T17:11:52.094861+08:00",
-                "LastPingMicros": 642
+                "netaddress": "127.0.0.1:57656",
+                "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+                "relaytx": false,
+                "lastsend": "2019-03-06 14:52:03 +0800 CST",
+                "lastrecv": "2019-03-06 14:52:18 +0800 CST",
+                "conntime": "2019-03-06 14:51:33.65298 +0800 CST m=+36.604516146",
+                "timeoffset": 0,
+                "version": 20000,
+                "inbound": true,
+                "startingheight": 0,
+                "lastblock": 0,
+                "lastpingtime": "2019-03-06 14:52:03.658121 +0800 CST m=+66.609840707",
+                "lastpingmicros": 1033
             },
             {
-                "ID": 2598192338369550729,
-                "Addr": "127.0.0.1:24338",
-                "Services": 7,
-                "RelayTx": 0,
-                "LastSend": "2019-03-01T17:12:12+08:00",
-                "LastRecv": "2019-03-01T17:12:12+08:00",
-                "ConnTime": "2019-03-01T17:11:42.762983+08:00",
-                "TimeOffset": 0,
-                "Version": 20000,
-                "Inbound": false,
-                "StartingHeight": 0,
-                "LastBlock": 0,
-                "LastPingTime": "2019-03-01T17:12:12.764714+08:00",
-                "LastPingMicros": 793
+                "netaddress": "127.0.0.1:22338",
+                "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+                "relaytx": false,
+                "lastsend": "2019-03-06 14:52:02 +0800 CST",
+                "lastrecv": "2019-03-06 14:52:02 +0800 CST",
+                "conntime": "2019-03-06 14:51:02.097149 +0800 CST m=+5.048492921",
+                "timeoffset": 0,
+                "version": 20000,
+                "inbound": false,
+                "startingheight": 0,
+                "lastblock": 0,
+                "lastpingtime": "2019-03-06 14:52:02.104806 +0800 CST m=+65.056516088",
+                "lastpingmicros": 541
             }
         ]
     }
