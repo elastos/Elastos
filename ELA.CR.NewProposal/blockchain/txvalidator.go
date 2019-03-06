@@ -1263,8 +1263,8 @@ func CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 		return errors.New("blocks can not be same")
 	}
 
-	if common.BytesToHexString(d.Evidence.Block) >
-		common.BytesToHexString(d.CompareEvidence.Block) {
+	if common.BytesToHexString(d.Evidence.Header) >
+		common.BytesToHexString(d.CompareEvidence.Header) {
 		return errors.New("evidence order error")
 	}
 
@@ -1377,6 +1377,10 @@ func checkDPOSElaIllegalBlockConfirms(d *payload.DPOSIllegalBlocks,
 		return nil, nil, err
 	}
 
+	if confirm.Proposal.ViewOffset != compareConfirm.Proposal.ViewOffset {
+		return nil, nil, errors.New("confirm view offset should not be same")
+	}
+
 	if !confirm.Proposal.BlockHash.IsEqual(header.Hash()) {
 		return nil, nil, errors.New("block and related confirm do not match")
 	}
@@ -1395,13 +1399,13 @@ func checkDPOSElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
 	compareHeader := &Header{}
 
 	data := new(bytes.Buffer)
-	data.Write(d.Evidence.Block)
+	data.Write(d.Evidence.Header)
 	if err := header.Deserialize(data); err != nil {
 		return nil, nil, err
 	}
 
 	data = new(bytes.Buffer)
-	data.Write(d.CompareEvidence.Block)
+	data.Write(d.CompareEvidence.Header)
 	if err := compareHeader.Deserialize(data); err != nil {
 		return nil, nil, err
 	}
@@ -1410,7 +1414,15 @@ func checkDPOSElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
 		return nil, nil, errors.New("block data is illegal")
 	}
 
-	//todo check header content
+	if header.Height != compareHeader.Height {
+		return nil, nil, errors.New("block header height should be same")
+	}
+
+	//todo check header content later if needed
+	// (there is no need to check headers sanity, because arbiters check these
+	// headers already. On the other hand, if arbiters do evil to sign multiple
+	// headers that are not valid, normal node shall not attach to the chain.
+	// So there is no motivation for them to do this.)
 
 	return header, compareHeader, nil
 }

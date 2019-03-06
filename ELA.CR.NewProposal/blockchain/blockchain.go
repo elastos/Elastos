@@ -24,6 +24,9 @@ const (
 	minMemoryNodes   = 20160
 	maxBlockLocators = 500
 	medianTimeBlocks = 11
+
+	// irreversibleHeight defines the max height that the chain be reorganized
+	irreversibleHeight = 6
 )
 
 var (
@@ -734,6 +737,13 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 			return err
 		}
 		confirm, _ := b.db.GetConfirm(*n.Hash)
+
+		// roll back state about the last block before disconnect
+		err = b.state.RollbackTo(block.Height - 1)
+		if err != nil {
+			return err
+		}
+
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
 			return err
@@ -745,10 +755,15 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		n := e.Value.(*BlockNode)
 		block := b.blockCache[*n.Hash]
 		confirm := b.confirmCache[*n.Hash]
+
 		err := b.connectBlock(n, block, confirm)
 		if err != nil {
 			return err
 		}
+
+		// update state after connected block
+		b.state.ProcessBlock(block, confirm)
+
 		delete(b.blockCache, *n.Hash)
 		delete(b.confirmCache, *n.Hash)
 	}
@@ -993,6 +1008,10 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	// the blocks that form the new chain to the main chain starting at the
 	// common ancenstor (the point where the chain forked).
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
+	// forbid reorganize if detaching nodes more than irreversibleHeight
+	if detachNodes.Len() > irreversibleHeight {
+		return false, nil
+	}
 	//for e := detachNodes.Front(); e != nil; e = e.Next() {
 	//	n := e.Value.(*BlockNode)
 	//	fmt.Println("detach", n.Hash)
@@ -1011,6 +1030,31 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	}
 
 	return true, nil
+}
+
+// ReorganizeChain reorganize chain by specify a block, this method shall not
+// be called normally because it can cause reorganizing without node work sum
+// checking
+func (b *BlockChain) ReorganizeChain(block *Block) error {
+	hash := block.Hash()
+	node, ok := b.LookupNodeInIndex(&hash)
+	if !ok {
+		return errors.New("node of the reorganizing block does not exist")
+	}
+
+	detachNodes, attachNodes := b.getReorganizeNodes(node)
+	// forbid reorganize if detaching nodes more than irreversibleHeight
+	if detachNodes.Len() > irreversibleHeight {
+		return nil
+	}
+
+	log.Info("[ReorganizeChain] begin reorganize chain")
+	err := b.reorganizeChain(detachNodes, attachNodes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //(bool, bool, error)

@@ -18,7 +18,7 @@ const (
 )
 
 type BlockEvidence struct {
-	Block        []byte
+	Header       []byte
 	BlockConfirm []byte
 	Signers      [][]byte
 
@@ -35,10 +35,10 @@ type DPOSIllegalBlocks struct {
 }
 
 func (b *BlockEvidence) Serialize(w io.Writer) error {
-	if b.Block == nil {
+	if b.Header == nil {
 		return errors.New("block data can not be null")
 	}
-	if err := common.WriteVarBytes(w, b.Block); err != nil {
+	if err := common.WriteVarBytes(w, b.Header); err != nil {
 		return err
 	}
 	return nil
@@ -46,7 +46,7 @@ func (b *BlockEvidence) Serialize(w io.Writer) error {
 
 func (b *BlockEvidence) Deserialize(r io.Reader) error {
 	var err error
-	if b.Block, err = common.ReadVarBytes(r, pact.MaxBlockSize,
+	if b.Header, err = common.ReadVarBytes(r, pact.MaxBlockSize,
 		"block data"); err != nil {
 		return err
 	}
