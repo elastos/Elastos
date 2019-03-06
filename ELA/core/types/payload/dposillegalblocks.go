@@ -14,7 +14,7 @@ type CoinType uint32
 const (
 	ELACoin = CoinType(0)
 
-	PayloadIllegalBlockVersion byte = 0x00
+	IllegalBlockVersion byte = 0x00
 )
 
 type BlockEvidence struct {
@@ -117,7 +117,7 @@ func (d *DPOSIllegalBlocks) Deserialize(r io.Reader, version byte) error {
 func (d *DPOSIllegalBlocks) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
-		d.Serialize(buf, PayloadIllegalBlockVersion)
+		d.Serialize(buf, IllegalBlockVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		d.hash = &hash
 	}

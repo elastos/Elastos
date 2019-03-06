@@ -21,7 +21,7 @@ func (msg *IllegalVotes) MaxLength() uint32 {
 }
 
 func (msg *IllegalVotes) Serialize(w io.Writer) error {
-	if err := msg.Votes.Serialize(w, payload.PayloadIllegalVoteVersion); err != nil {
+	if err := msg.Votes.Serialize(w, payload.IllegalVoteVersion); err != nil {
 		return err
 	}
 
@@ -29,7 +29,7 @@ func (msg *IllegalVotes) Serialize(w io.Writer) error {
 }
 
 func (msg *IllegalVotes) Deserialize(r io.Reader) error {
-	if err := msg.Votes.Deserialize(r, payload.PayloadIllegalVoteVersion); err != nil {
+	if err := msg.Votes.Deserialize(r, payload.IllegalVoteVersion); err != nil {
 		return err
 	}
 

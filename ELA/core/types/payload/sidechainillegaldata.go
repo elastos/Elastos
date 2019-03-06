@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const PayloadSidechainIllegalDataVersion byte = 0x00
+const SidechainIllegalDataVersion byte = 0x00
 
 type SidechainIllegalEvidence struct {
 	DataHash common.Uint256
@@ -161,7 +161,7 @@ func (s *SidechainIllegalData) Deserialize(r io.Reader, version byte) error {
 func (s *SidechainIllegalData) Hash() common.Uint256 {
 	if s.hash == nil {
 		buf := new(bytes.Buffer)
-		s.Serialize(buf, PayloadSidechainIllegalDataVersion)
+		s.Serialize(buf, SidechainIllegalDataVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		s.hash = &hash
 	}

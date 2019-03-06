@@ -8,7 +8,7 @@ import (
 
 const (
 	// MaxPayloadDataSize is the maximum allowed length of payload data.
-	MaxCoinbasePayloadDataSize = 1024 * 1024 // 1MB
+	MaxPayloadDataSize = 1024 * 1024 // 1MB
 )
 
 const CoinBaseVersion byte = 0x04
@@ -26,7 +26,7 @@ func (a *CoinBase) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *CoinBase) Deserialize(r io.Reader, version byte) error {
-	temp, err := common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+	temp, err := common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload coinbase data")
 	a.Content = temp
 	return err
