@@ -137,7 +137,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	p.cfg.Network.BroadcastMessage(m)
 
 	proposalEvent := log.ProposalEvent{
-		Proposal:     common.BytesToHexString(proposal.Sponsor),
+		Sponsor:      common.BytesToHexString(proposal.Sponsor),
 		BlockHash:    proposal.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: proposal.Hash(),
@@ -178,7 +178,7 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 	p.FinishConsensus()
 
 	proposalEvent := log.ProposalEvent{
-		Proposal:  common.BytesToHexString(proposal),
+		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
 		Result:    true,

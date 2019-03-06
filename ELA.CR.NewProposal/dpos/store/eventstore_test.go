@@ -39,7 +39,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 	proposal.Serialize(buf)
 
 	proposalEvent := &log.ProposalEvent{
-		Proposal:     "A",
+		Sponsor:      "A",
 		BlockHash:    common.Uint256{},
 		ReceivedTime: time.Time{},
 		EndTime:      time.Time{},
@@ -59,7 +59,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 
 func TestEventStore_UpdateProposalEvent(t *testing.T) {
 	proposalEvent := &log.ProposalEvent{
-		Proposal:     "A",
+		Sponsor:      "A",
 		BlockHash:    common.Uint256{},
 		ReceivedTime: time.Time{},
 		EndTime:      time.Now(),

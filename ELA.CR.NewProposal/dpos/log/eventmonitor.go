@@ -9,7 +9,7 @@ import (
 )
 
 type ProposalEvent struct {
-	Proposal     string
+	Sponsor      string
 	BlockHash    common.Uint256
 	ReceivedTime time.Time
 	EndTime      time.Time
