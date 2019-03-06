@@ -2,7 +2,7 @@ import Base from '../Base'
 import GoogleService from '../../service/GoogleService'
 
 export default class extends Base {
-  protected needLogin = true
+  protected needLogin = false
 
   public async action() {
     const service = this.buildService(GoogleService)
