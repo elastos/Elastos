@@ -158,6 +158,7 @@ These are located in the `wallets` folder:
     ```
     {"result":"pong 1.0.1","status":200}
     ```
+
 12. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
 
     This service is running on port 38080 and 48080 since there are two peer nodes running
@@ -172,11 +173,7 @@ These are located in the `wallets` folder:
     Protocol Version: ipfs/0.1.0
     ```
 
-<<<<<<< HEAD
 13. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
-=======
-12. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
->>>>>>> master
 
     This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
     ```
@@ -215,7 +212,7 @@ These are located in the `wallets` folder:
         },
         "peername": "Elastos Hive Privnet"
     }
-```
+    ```
 
     And 9095 exposes Node API endpoints.
     ```
@@ -227,7 +224,7 @@ These are located in the `wallets` folder:
     {"Keys":{}}
     ```
 
-13. Verify that your token sidechain is running correctly[Elastos.ELA.Sidechain.Token](http://github.com/elastos/Elastos.ELA.Sidechain.Token)
+14. Verify that your token sidechain is running correctly[Elastos.ELA.Sidechain.Token](http://github.com/elastos/Elastos.ELA.Sidechain.Token)
 
     Because "HttpRestPort" of token sidechain is not available, currently, it's not connected to the wallet service API so you cannot send any tokens from mainchain to token sidechain. All you can do is check that token sidechain is running properly. When the API layer for token sidechain will be available, this documentation will be updated.
     ```
