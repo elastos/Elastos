@@ -138,8 +138,3 @@ install(TARGETS elatests
 
 install(FILES tests.conf
     DESTINATION "etc/carrier")
-
-if(NOT WIN32)
-    install(PROGRAMS elatests.sh
-        DESTINATION "bin")
-endif()
