@@ -91,7 +91,7 @@ func (h *DPOSHandlerSwitch) StartNewProposal(p payload.DPOSProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	proposalEvent := log.ProposalEvent{
-		Proposal:     common.BytesToHexString(p.Sponsor),
+		Sponsor:      common.BytesToHexString(p.Sponsor),
 		BlockHash:    p.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: p.Hash(),

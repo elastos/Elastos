@@ -9,38 +9,44 @@ type EventLogs struct {
 
 func (e *EventLogs) OnProposalArrived(prop *ProposalEvent) {
 	Info(fmt.Sprintf("[OnProposalArrived] "+
-		"Proposal: %s, "+
+		"Sponsor: %s, "+
 		"BlockHash: %s, "+
 		"ReceivedTime: %s, "+
 		"Result: %t, "+
+		"ViewOffset: %d, "+
 		"ProposalHash: %s",
-		prop.Proposal,
+		prop.Sponsor,
 		prop.BlockHash,
 		prop.ReceivedTime,
 		prop.Result,
+		prop.RawData.ViewOffset,
 		prop.ProposalHash))
 }
 
 func (e *EventLogs) OnProposalFinished(prop *ProposalEvent) {
 	Info(fmt.Sprintf("[OnProposalFinished] "+
-		"Proposal: %s, "+
+		"Sponsor: %s, "+
 		"BlockHash: %s, "+
 		"EndTime: %s, "+
 		"Result: %t, "+
+		"ViewOffset: %d, "+
 		"ProposalHash: %s",
-		prop.Proposal,
+		prop.Sponsor,
 		prop.BlockHash,
 		prop.EndTime,
 		prop.Result,
+		prop.RawData.ViewOffset,
 		prop.ProposalHash))
 }
 
 func (e *EventLogs) OnVoteArrived(vote *VoteEvent) {
 	Info(fmt.Sprintf("[OnVoteArrived] "+
 		"Signer: %s, "+
+		"ProposalHash: %s, "+
 		"ReceivedTime: %s, "+
 		"Result: %t",
 		vote.Signer,
+		vote.RawData.ProposalHash,
 		vote.ReceivedTime,
 		vote.Result))
 }

@@ -285,7 +285,7 @@ func (s *DposStore) addProposalEvent(event *log.ProposalEvent) (uint64, error) {
 		return 0, err
 	}
 	return s.Insert(ProposalEventTable, []*interfaces.Field{
-		{"Proposal", event.Proposal},
+		{"Sponsor", event.Sponsor},
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
@@ -308,7 +308,7 @@ func (s *DposStore) UpdateProposalEvent(event interface{}) error {
 
 func (s *DposStore) updateProposalEvent(event *log.ProposalEvent) ([]uint64, error) {
 	return s.Update(ProposalEventTable, []*interfaces.Field{
-		{"Proposal", event.Proposal},
+		{"Sponsor", event.Sponsor},
 		{"BlockHash", event.BlockHash.Bytes()},
 	}, []*interfaces.Field{
 		{"EndTime", event.EndTime.UnixNano()},
