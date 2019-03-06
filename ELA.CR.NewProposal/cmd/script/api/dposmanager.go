@@ -71,7 +71,7 @@ func newDposManager(L *lua.LState) int {
 		PublicKey:  pubKey,
 	})
 
-	mockManager.EventMonitor = log.NewEventMoniter()
+	mockManager.EventMonitor = log.NewEventMonitor()
 	mockManager.EventMonitor.RegisterListener(&log.EventLogs{})
 
 	mockManager.Handler = NewHandler(DPOSHandlerConfig{

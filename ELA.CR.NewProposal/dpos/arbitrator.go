@@ -157,7 +157,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		return nil, err
 	}
 
-	eventMonitor := log.NewEventMoniter()
+	eventMonitor := log.NewEventMonitor()
 
 	if cfg.EnableEventLog {
 		eventLogs := &log.EventLogs{}
