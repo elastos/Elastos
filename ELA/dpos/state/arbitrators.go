@@ -2,8 +2,10 @@ package state
 
 import (
 	"bytes"
+	"encoding/hex"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
@@ -11,6 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/p2p"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
@@ -51,6 +55,7 @@ func (a *Arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
+	a.showArbitersInfo(true)
 	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
 
 	return nil
@@ -65,6 +70,7 @@ func (a *Arbitrators) NormalChange(height uint32) error {
 		return err
 	}
 
+	a.showArbitersInfo(true)
 	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
 
 	return nil
@@ -84,6 +90,7 @@ func (a *Arbitrators) IncreaseChainHeight(height uint32) {
 		}
 	} else {
 		a.dutyIndex++
+		a.showArbitersInfo(false)
 	}
 }
 
@@ -310,6 +317,75 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 	}
 
 	return nil
+}
+
+func (a *Arbitrators) showArbitersInfo(isInfo bool) {
+	show := log.Debugf
+	if isInfo {
+		show = log.Infof
+	}
+
+	connectionInfoMap := a.getProducersConnectionInfo()
+	a.showArbitersInfoWithOnduty("CURRENT ARBITERS", show,
+		a.currentArbitrators, connectionInfoMap)
+	a.showArbitersInfoWithoutOnduty("NEXT ARBITERS", show,
+		a.nextArbitrators, connectionInfoMap)
+	a.showArbitersInfoWithoutOnduty("CURRENT CANDIDATES", show,
+		a.currentCandidates, connectionInfoMap)
+	a.showArbitersInfoWithoutOnduty("NEXT CANDIDATES", show,
+		a.nextCandidates, connectionInfoMap)
+}
+
+func (a *Arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
+	result = make(map[string]p2p.PeerAddr)
+	crcs := a.chainParams.CRCArbiters
+	for _, c := range crcs {
+		if len(c.PublicKey) != 33 {
+			log.Warn("[getProducersConnectionInfo] invalid public key")
+			continue
+		}
+		pid := peer.PID{}
+		copy(pid[:], c.PublicKey)
+		result[hex.EncodeToString(c.PublicKey)] =
+			p2p.PeerAddr{PID: pid, Addr: c.NetAddress}
+	}
+	for _, p := range a.State.activityProducers {
+		if len(p.Info().NodePublicKey) != 33 {
+			log.Warn("[getProducersConnectionInfo] invalid public key")
+			continue
+		}
+		pid := peer.PID{}
+		copy(pid[:], p.Info().NodePublicKey)
+		result[hex.EncodeToString(p.Info().NodePublicKey)] =
+			p2p.PeerAddr{PID: pid, Addr: p.Info().NetAddress}
+	}
+
+	return result
+}
+
+func (a *Arbitrators) showArbitersInfoWithOnduty(title string, show func(format string, a ...interface{}),
+	arbiters [][]byte, connectionInfoMap map[string]p2p.PeerAddr) {
+	show(title)
+	show("%5s %66s %18s %6s", "INDEX", "PUBLICKEY", "NETADDRESS", "ONDUTY")
+	show("----- ", strings.Repeat("-", 66), " ------")
+	for i, arbiter := range arbiters {
+		publicKey := common.BytesToHexString(arbiter)
+		var format = "%-5d %-66s %-18s %6t"
+		show(format, i+1, publicKey, bytes.Equal(arbiter, a.GetOnDutyArbitrator()), connectionInfoMap[publicKey].Addr)
+	}
+	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18), " ------")
+}
+
+func (a *Arbitrators) showArbitersInfoWithoutOnduty(title string, show func(format string, a ...interface{}),
+	arbiters [][]byte, connectionInfoMap map[string]p2p.PeerAddr) {
+	show("%5s %66s %18s", "INDEX", "PUBLICKEY", "NETADDRESS")
+	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18))
+	for i, arbiter := range arbiters {
+		publicKey := common.BytesToHexString(arbiter)
+		var format = "%-5d %-66s %-18s"
+		show(format, i+1, publicKey, connectionInfoMap[publicKey].Addr)
+	}
+	show("----- ", strings.Repeat("-", 66), " ", strings.Repeat("-", 18))
 }
 
 func NewArbitrators(chainParams *config.Params, versions interfaces.

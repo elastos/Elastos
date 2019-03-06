@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
@@ -111,6 +112,7 @@ var (
 	synclog = wrap(logger, level)
 	peerlog = wrap(logger, level)
 	elanlog = wrap(logger, level)
+	statlog = wrap(logger, level)
 )
 
 // The default amount of logging is none.
@@ -120,4 +122,5 @@ func init() {
 	netsync.UseLogger(synclog)
 	peer.UseLogger(peerlog)
 	elanet.UseLogger(elanlog)
+	state.UseLogger(statlog)
 }

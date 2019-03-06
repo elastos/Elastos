@@ -132,7 +132,6 @@ func (n *network) UpdateProducersInfo() {
 	}
 
 	for k, v := range connectionInfoMap {
-		log.Info("[UpdateProducersInfo] peer id:", v.PID, " addr:", v.Addr)
 		if _, ok := n.directPeers[k]; !ok {
 			n.directPeers[k] = &PeerItem{
 				Address:     v,
