@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -82,6 +83,7 @@ type AbnormalRecovering interface {
 type DPOSManagerConfig struct {
 	PublicKey   []byte
 	Arbitrators interfaces.Arbitrators
+	ChainParams *config.Params
 }
 
 type DPOSManager struct {
@@ -97,6 +99,7 @@ type DPOSManager struct {
 	arbitrators interfaces.Arbitrators
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
+	chainParams *config.Params
 	broadcast   func(p2p.Message)
 }
 
@@ -113,6 +116,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 		publicKey:   cfg.PublicKey,
 		blockCache:  &ConsensusBlockCache{},
 		arbitrators: cfg.Arbitrators,
+		chainParams: cfg.ChainParams,
 	}
 	m.blockCache.Reset()
 
@@ -303,23 +307,44 @@ func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
 }
 
 func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload.DPOSIllegalProposals) {
+	if err := blockchain.CheckDPOSIllegalProposals(proposals); err != nil {
+		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
+		return
+	}
 	d.illegalMonitor.AddEvidence(proposals)
 }
 
 func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIllegalVotes) {
+	if err := blockchain.CheckDPOSIllegalVotes(votes); err != nil {
+		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
+		return
+	}
 	d.illegalMonitor.AddEvidence(votes)
 }
 
 func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
+	if err := blockchain.CheckDPOSIllegalBlocks(i); err != nil {
+		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
+		return
+	}
 	d.illegalMonitor.AddEvidence(i)
 }
 
 func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData) {
+	if err := blockchain.CheckSidechainIllegalEvidence(s); err != nil {
+		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
+		return
+	}
 	d.illegalMonitor.AddEvidence(s)
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
 func (d *DPOSManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
+	if err := blockchain.CheckInactiveArbitrators(tx,
+		d.chainParams.InactiveEliminateCount); err != nil {
+		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
+		return
+	}
 	d.dispatcher.OnInactiveArbitratorsReceived(tx)
 }
 

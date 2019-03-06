@@ -404,20 +404,11 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		return
 	}
 
-	if err = blockchain.CheckInactiveArbitrators(tx,
-		p.cfg.ChainParams.InactiveEliminateCount); err != nil {
-		log.Warn("[OnInactiveArbitratorsReceived] check tx error, details: ",
-			err.Error())
-		return
-	}
-
 	inactivePayload := tx.Payload.(*payload.InactiveArbitrators)
 	if !p.cfg.Consensus.IsArbitratorOnDuty(inactivePayload.Sponsor) {
 		log.Warn("[OnInactiveArbitratorsReceived] sender is not on duty")
 		return
 	}
-
-	p.illegalMonitor.AddEvidence(inactivePayload)
 
 	inactiveArbitratorsMap := make(map[string]interface{})
 	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
@@ -489,11 +480,14 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
 	if signCount > minSignCount {
+		p.illegalMonitor.AddEvidence(p.currentInactiveArbitratorTx.
+			Payload.(*payload.InactiveArbitrators))
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
 
 		blockchain.DefaultLedger.Blockchain.GetState().
 			ProcessSpecialTxPayload(p.currentInactiveArbitratorTx.Payload)
-		if err := p.cfg.Arbitrators.ForceChange(blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
+		if err := p.cfg.Arbitrators.ForceChange(
+			blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 			log.Error("[tryEnterEmergencyState] force change arbitrators"+
 				" error: ", err.Error())
 			return false
@@ -669,8 +663,6 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 		Fee:      0,
 	}
 
-	p.illegalMonitor.AddEvidence(inactivePayload)
-
 	var sign []byte
 	if sign, err = p.cfg.Account.SignTx(tx); err != nil {
 		return nil, err
@@ -714,8 +706,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:       make(map[common.Uint256]payload.DPOSProposalVote),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: cfg.InactiveEliminateCount,
-			Store:       cfg.Store,
-			Arbitrators: cfg.Arbitrators,
+			Store:                  cfg.Store,
+			Arbitrators:            cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{
@@ -730,8 +722,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 	i := &IllegalBehaviorMonitor{
 		dispatcher:      p,
 		cachedProposals: make(map[common.Uint256]*payload.DPOSProposal),
-		evidenceCache: evidenceCache{make(map[common.Uint256]payload.
-			DPOSIllegalData)},
+		evidenceCache: evidenceCache{
+			make(map[common.Uint256]payload.DPOSIllegalData)},
 		manager: cfg.Manager,
 	}
 	p.illegalMonitor = i

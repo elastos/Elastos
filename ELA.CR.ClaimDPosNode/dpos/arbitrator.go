@@ -145,6 +145,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 	dposManager := manager.NewManager(manager.DPOSManagerConfig{
 		PublicKey:   pubKey,
 		Arbitrators: cfg.Arbitrators,
+		ChainParams: cfg.ChainParams,
 	})
 	pk := config.Parameters.GetArbiterID()
 	var id peer.PID
