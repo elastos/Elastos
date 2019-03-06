@@ -19,10 +19,10 @@
 -- Table structure for table `chain_block_header`
 --
 
--- DROP TABLE IF EXISTS `chain_block_header`;
+DROP TABLE IF EXISTS `chain_block_header`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE IF NOT EXISTS `chain_block_header` (
+CREATE TABLE `chain_block_header` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `hash` varchar(64) COLLATE utf8mb4_bin NOT NULL COMMENT 'block hash',
   `weight` int(64) NOT NULL,
@@ -38,10 +38,7 @@ CREATE TABLE IF NOT EXISTS `chain_block_header` (
   `next_block_hash` varchar(64) COLLATE utf8mb4_bin NOT NULL COMMENT 'next block hash',
   `miner_info` varchar(64) COLLATE utf8mb4_bin NOT NULL COMMENT ' miner name',
   `local_system_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `size` int(64) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  INDEX idx_chain_block_header_height (height),
-  INDEX idx_chain_block_header_hash (hash)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='block header';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,3 +52,7 @@ CREATE TABLE IF NOT EXISTS `chain_block_header` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2019-01-09 14:53:22
+
+CREATE INDEX idx_chain_block_header_height ON chain_block_header (height);
+CREATE INDEX idx_chain_block_header_hash ON chain_block_header (hash);
+alter table chain_block_header add size int(64) default 0;

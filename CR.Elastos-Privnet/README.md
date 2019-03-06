@@ -41,16 +41,18 @@ These are located in the `wallets` folder:
 2. The following are the GIT SHAs we're using for each project:
     - Elastos.ELA: tag v0.2.2 3f1e5e6
     - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad
+    - Elastos.ELA.SideChain.Token: 
     - Elastos.ELA.Arbiter: tag v0.0.3 8970efe
     - Elastos.ORG.Wallet.Service: master 49dcbfa
     - Elastos.ORG.DID.Service: master 1ff8c00
-    - Elastos.ORG.API.Misc: master 5322f2e
+    - Elastos.ORG.API.Misc: master 5cb50ec
     - Elastos.NET.Hive.IPFS: dev-master 6a5e240
     - Elastos.NET.Hive.Cluster: dev-master 65033f0
     
 3. Check your ports, here are the following ports these containers expect available:
-    - Mainchain: 20333-20338
-    - DID Sidechain: 20604-20608
+    - Mainchain: 20333-20338 - [http://github.com/elastos/Elastos.ELA](http://github.com/elastos/Elastos.ELA)
+    - DID Sidechain: 20604-20608 - [http://github.com/elastos/Elastos.ELA.SideChain.DID](http://github.com/elastos/Elastos.ELA.SideChain.DID)
+    - Token Sidechain: 20614-20618 - [http://github.com/elastos/Elastos.ELA.SideChain.Token](http://github.com/elastos/Elastos.ELA.SideChain.Token)
     - Wallet Service: 8091 - [https://walletservice.readthedocs.io](https://walletservice.readthedocs.io)
     - DID Service: 8092 - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
     - Add-on API: 8093 - [https://github.com/elastos/Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc)
@@ -87,8 +89,25 @@ These are located in the `wallets` folder:
     ```
     {"Result":"12","Error":0,"Desc":"Success"}
     ```
+ 
+7. Verify that your token sidechain is running correctly [Elastos.ELA.Sidechain.Token](http://github.com/elastos/Elastos.ELA.Sidechain.Token)
 
-7. Verify the Wallet Service is running by checking the miner reward wallet:
+    Because "HttpRestPort" of token sidechain is not available, currently, it's not connected to the wallet service API so you cannot send any tokens from mainchain to token sidechain. All you can do is check that token sidechain is running properly. When the API layer for token sidechain will be available, this documentation will be updated.
+    ```
+    curl -H "Content-Type:application/json" -H "Accept:application/json" --data '{"method":"getbestblockhash"}' http://localhost:20616
+    ```
+
+    Should return something like
+    ```
+    {
+        "id": null,
+        "jsonrpc": "2.0",
+        "result": "86f796f68d7422de0b3b27822697d5c255e653de3fcebfc86bd36828f41ace20",
+        "error": null
+    }
+    ```
+
+8. Verify the Wallet Service is running by checking the miner reward wallet:
 
     ```
     curl http://localhost:8091/api/1/balance/EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE
@@ -99,7 +118,7 @@ These are located in the `wallets` folder:
     {"result":"835.35142952","status":200}
     ```
     
-8. Verify the DID Service is running by checking the pre-loaded wallet:
+9. Verify the DID Service is running by checking the pre-loaded wallet:
 
     ```
     curl http://localhost:8092/api/1/balance/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
@@ -110,7 +129,8 @@ These are located in the `wallets` folder:
     {"result":"12.0","status":200}
     ```
     
-9. Verify that cross-chain mainchain to sidechain transfers work
+10. Verify that cross-chain mainchain to sidechain transfers work
+    NOTE: Make sure to give at least 1-2 minutes(after docker container has started) before you call the following API and do not re-attempt the same command because it might fail otherwise.
     ```
     curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE","privateKey": "2e900f236671edfd39a31e65a938491df5fc9a53b6b16e8ea0d697fe2f0a3d52"}],"receiver": [{"address": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
     ```
@@ -125,7 +145,7 @@ These are located in the `wallets` folder:
     curl http://localhost:20604/api/v1/asset/balances/EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE
     ```
     
-10. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
+11. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
     This service is running on port 8093
     
@@ -138,7 +158,7 @@ These are located in the `wallets` folder:
     ```
     {"result":"pong 1.0.1","status":200}
     ```
-11. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
+12. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
 
     This service is running on port 38080 and 48080 since there are two peer nodes running
     ```
@@ -152,7 +172,11 @@ These are located in the `wallets` folder:
     Protocol Version: ipfs/0.1.0
     ```
 
+<<<<<<< HEAD
+13. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+=======
 12. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+>>>>>>> master
 
     This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
     ```
@@ -161,8 +185,37 @@ These are located in the `wallets` folder:
 
     Should return something like
     ```
-    {"id":"QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","addresses":["/ip4/172.19.0.4/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","/p2p-circuit/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","/ip4/127.0.0.1/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"],"cluster_peers":["QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H","QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"],"cluster_peers_addresses":["/ip4/127.0.0.1/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors","/ip4/172.19.0.5/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors","/p2p-circuit/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"],"version":"0.8.0+git65033f01bb94e5d205e1ed0e80198f050cea212a","commit":"","rpc_protocol_version":"/hivecluster/0.8/rpc","error":"","ipfs":{"id":"QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj","addresses":["/ip4/127.0.0.1/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj","/ip4/172.19.0.3/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj"],"error":""},"peername":"Elastos Hive Privnet"}
-    ```
+    {
+        "id": "QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
+        "addresses": [
+            "/p2p-circuit/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
+            "/ip4/127.0.0.1/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
+            "/ip4/172.19.0.4/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"
+        ],
+        "cluster_peers": [
+            "QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
+            "QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"
+        ],
+        "cluster_peers_addresses": [
+            "/ip4/127.0.0.1/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors",
+            "/ip4/172.19.0.5/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors",
+            "/p2p-circuit/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"
+        ],
+        "version": "0.8.0+git65033f01bb94e5d205e1ed0e80198f050cea212a",
+        "commit": "",
+        "rpc_protocol_version": "/hivecluster/0.8/rpc",
+        "error": "",
+        "ipfs": {
+            "id": "QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj",
+            "addresses": [
+            "/ip4/127.0.0.1/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj",
+            "/ip4/172.19.0.3/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj"
+            ],
+            "error": ""
+        },
+        "peername": "Elastos Hive Privnet"
+    }
+```
 
     And 9095 exposes Node API endpoints.
     ```
@@ -195,30 +248,48 @@ See "Create DID" for how to create a DID, you will receive both a did and a priv
 ```
 GET /api/1/gen/did HTTP/1.1
 ```
+or
+```
+curl http://localhost:8092/api/1/gen/did
+```
+
+Should return something like
+```
+{
+  "result": {
+    "privateKey": "78F3F61DE57C2058FAB709641EAB8880F2312702896F5599FB4A714EBCF3CFFC",
+    "publicKey": "02BDA7DBA5E4E1E24245566AF75E34CC9933FAA99FFFC61081156CC05AE65422E2",
+    "publicAddr": "EJrijXpAJmFmn6Xbjdh8TZgAYKS1KsK26N",
+    "did": "iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw"
+  },
+  "status": 200
+}
+```
 
 [https://didservice.readthedocs.io/en/latest/api_guide.html#create-did](https://didservice.readthedocs.io/en/latest/api_guide.html#create-did)
 
 Then you can call `POST /api/1/setDidInfo` to store data to this DID. There are two private keys, the outer private key
-is the private key of the wallet address that is paying for the store data transaction, you can use the ELA stored on the DID sidechain in `did-sidechain-preloaded.json`
+is the private key of the wallet address that is paying for the store data transaction, you can use the ELA stored on the DID sidechain in `sidechain-preloaded.json`
 for this.
 
+You can put the following in a file. Make sure to change the privateKeys on this file to your own configuration.
 ```
 {
-  "privateKey":"C740869D015E674362B1F441E3EDBE1CBCF4FE8B709AA1A77E5CCA2C92BAF99D", 
-  "settings":{
-      "privateKey":"E763239857B390502289CF75FF06EEEDC3252A302C50E1CBB7E5FAC8A703486F",
-      "info":{
-                  "Tag":"DID Property",
-                  "Ver":"1.0",
-                  "Status":1,
-                  "Properties": [
-                      {
-                          "Key":"clark",
-                          "Value":"hello,world",
-                          "Status": 1
-                      }
-                  ]
-      }
+  "privateKey": "acf6ee13a2256f60f597f55bdd17d0ee772014db7233b50543bebdd1faf9a0da",
+  "settings": {
+    "privateKey": "78F3F61DE57C2058FAB709641EAB8880F2312702896F5599FB4A714EBCF3CFFC",
+    "info": {
+      "Tag": "DID Property",
+      "Ver": "1.0",
+      "Status": 1,
+      "Properties": [
+        {
+          "Key": "clark",
+          "Value": "hello,world",
+          "Status": 1
+        }
+      ]
+    }
   }
 }
 ```
@@ -226,6 +297,26 @@ for this.
 The inner settings struct is the actual DID to modify, so you will use the private key from `/api/1/gen/did` here to specify that DID.
 
 There is a cost of 10,000 SELA per 1kb on this privatenet, actual cost for the mainnet is not finalized.   
+
+And when you want to send a request to post the above file to the DID sidechain with the key "clark" and value "hello,world", do the following(Save the above excerpt into a file named "action_storeinfoon_didchain.json):
+```
+curl -H "Content-type: application/json" -d @action_storeinfoon_didchain.json http://localhost:8092/api/1/setDidInfo
+```
+
+Should return something like
+```
+{"result":"e2fe03663dafa8898d021ba4b80822cbd01279a9d1611cb81531d11407a326bd","status":200}
+```
+
+If you try to set the DID info before letting it be propagated to the block, you might get an error with something like 
+```
+{
+  "result": "double spent UTXO inputs detected, transaction hash: 37393136626431306661653962363231663763396539626530636433653264653535306365313766393632656462663430633839383232383061373761376562, input: cf00f4c5600a5d7ec4f89197a555ba1334e506d3ce4f03b7f98b283765693696, index: 0",
+  "status": 10001
+}
+```
+
+Don't be alarmed. Just wait a couple of minutes and try again.
 
 ### Retrieving the DID info must be on the Misc.API - port 8093
 
@@ -235,9 +326,26 @@ The API call should be `http://localhost:8093/api/1/did/{did}/{key}`
 
 For example if you stored the property key "clark" above, and assuming the did was `iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe`, then calling
 
-`http://localhost:8093/api/1/did/iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe/clark`
+`curl http://localhost:8093/api/1/did/iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe/clark`
 
-Would return the value `"hello,world"`.
+Would return something like
+```
+{
+  "result": {
+    "Did": "icYxVyNWpCxFj83FdV1Jy7MoufkqTay1U7",
+    "Did_status": 1,
+    "Public_key": "0381CD16C976F9C39F5A51C3C32696F5B3FFE5D3119BE939D1DE7A810061251AF6",
+    "Property_key": "clark",
+    "Property_value": "hello,world",
+    "Txid": "9636696537288bf9b7034fced306e53413ba55a59791f8c47e5d0a60c5f400cf",
+    "Block_time": 1551910271,
+    "Height": 472
+  },
+  "status": 200
+}
+```
+
+NOTE: This API is unstable at the moment so things might not work as expected sometimes.
     
 
 ## Elastos Hive - IPFS Storage

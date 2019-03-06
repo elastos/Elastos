@@ -19,10 +19,10 @@
 -- Table structure for table `chain_block_transaction_history`
 --
 
--- DROP TABLE IF EXISTS `chain_block_transaction_history`;
+DROP TABLE IF EXISTS `chain_block_transaction_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE IF NOT EXISTS `chain_block_transaction_history` (
+CREATE TABLE `chain_block_transaction_history` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `address` varchar(34) COLLATE utf8mb4_bin NOT NULL,
   `txid` varchar(64) COLLATE utf8mb4_bin NOT NULL,
@@ -35,11 +35,7 @@ CREATE TABLE IF NOT EXISTS `chain_block_transaction_history` (
   `outputs` mediumtext COLLATE utf8mb4_bin,
   `memo` mediumtext COLLATE utf8mb4_bin,
   `local_system_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `txType` VARCHAR(24) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX idx_chain_block_transaction_history_address (address),
-  INDEX idx_chain_block_transaction_history_txid (txid),
-  INDEX idx_chain_block_transaction_history_txType_height (height, txType)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='synced transaction history based on address';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,3 +49,8 @@ CREATE TABLE IF NOT EXISTS `chain_block_transaction_history` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2018-12-10 10:32:03
+
+CREATE INDEX idx_chain_block_transaction_history_address ON chain_block_transaction_history (address);
+CREATE INDEX idx_chain_block_transaction_history_txid ON chain_block_transaction_history (txid);
+ALTER TABLE chain_block_transaction_history ADD txType VARCHAR(24) NOT NULL;
+CREATE INDEX idx_chain_block_transaction_history_txType_height ON chain_block_transaction_history (height,txType);

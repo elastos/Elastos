@@ -19,10 +19,10 @@
 -- Table structure for table `chain_did_property`
 --
 
--- DROP TABLE IF EXISTS `chain_did_property`;
+DROP TABLE IF EXISTS `chain_did_property`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE IF NOT EXISTS `chain_did_property` (
+CREATE TABLE `chain_did_property` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `did` varchar(34) COLLATE utf8mb4_bin NOT NULL,
   `did_status` tinyint(2) NOT NULL COMMENT 'status of did , ''1'' or ''0''',
@@ -34,9 +34,7 @@ CREATE TABLE IF NOT EXISTS `chain_did_property` (
   `block_time` int(11) NOT NULL,
   `height` int(11) NOT NULL,
   `local_system_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX idx_chain_did_property_property_key (property_key),
-  INDEX idx_chain_did_property_txid (txid)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='did information';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,3 +48,5 @@ CREATE TABLE IF NOT EXISTS `chain_did_property` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2018-12-10 10:32:03
+CREATE INDEX idx_chain_did_property_property_key ON chain_did_property (property_key);
+CREATE INDEX idx_chain_did_property_txid ON chain_did_property (txid);

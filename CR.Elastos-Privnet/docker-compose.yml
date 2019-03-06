@@ -55,7 +55,7 @@ services:
 
   ela-arbitrator-1:
     container_name: ela-arbitrator-1
-    image: ela-arbitrator
+    image: ela-arbitrator-1
     depends_on:
       - ela-mainchain
       - ela-sidechain-did
@@ -70,7 +70,7 @@ services:
 
   ela-arbitrator-2:
     container_name: ela-arbitrator-2
-    image: ela-arbitrator
+    image: ela-arbitrator-2
     depends_on:
       - ela-mainchain
       - ela-sidechain-did

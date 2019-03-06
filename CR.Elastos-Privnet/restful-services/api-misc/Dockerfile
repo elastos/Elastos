@@ -10,9 +10,15 @@ WORKDIR $SRC_DIR
 
 COPY . .
 
+# This binary requires some glibc libraries that are not on alpine by default 
+# so we need to install glibc to make it work
 RUN apk update \
-    && apk add --no-cache curl \
     && apk add --no-cache mysql-client \
+    && apk add --no-cache curl \
+    && apk add --no-cache ca-certificates wget \
+    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk \
+    && apk add glibc-2.28-r0.apk \
     && adduser -h $SRC_DIR -D -g '' elauser \
     && chown -R elauser:elauser $SRC_DIR
 
