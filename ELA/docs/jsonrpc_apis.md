@@ -884,19 +884,23 @@ parameters:
 
 result:
 
-| name           | type   | description                              |
-| -------------- | ------ | ---------------------------------------- |
-| ownerpublickey | string | the owner public key of producer         |
-| nodepublickey  | string | the node public key of the producer      |
-| nickname       | string | the nick name of the producer            |
-| url            | string | the url of the producer                  |
-| location       | uint64 | the location number of the producer      |
-| active         | bool   | if producer has confirmed                |
-| votes          | string | the votes currently held                 |
-| netaddress     | string | the ip address and port of the producer  |
-| index          | uint64 | the index of the producer                |
-| totalvotes     | string | the total votes of registered producers  |
-| totalcounts    | uint64 | the total counts of registered producers |
+| name           | type   | description                               |
+| -------------- | ------ | ----------------------------------------- |
+| ownerpublickey | string | the owner public key of producer          |
+| nodepublickey  | string | the node public key of the producer       |
+| nickname       | string | the nick name of the producer             |
+| url            | string | the url of the producer                   |
+| location       | uint64 | the location number of the producer       |
+| active         | bool   | if producer has confirmed                 |
+| votes          | string | the votes currently held                  |
+| netaddress     | string | the ip address and port of the producer   |
+| state          | string | the current state of the producer         |
+| registerheight | string | the height of cancel producer             |
+| cancelheight   | string | the cancel height of the producer         |
+| inactiveheight | string | the inactive start height of the producer |
+| index          | uint64 | the index of the producer                 |
+| totalvotes     | string | the total votes of registered producers   |
+| totalcounts    | uint64 | the total counts of registered producers  |
 
 named arguments sample:
 
@@ -928,6 +932,10 @@ result sample:
         "active": true,
         "votes": "3.11100000",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 236,
+        "cancelheight": 0,
+        "inactiveheight": 0,
         "index": 0
       },
       {
@@ -939,6 +947,10 @@ result sample:
         "active": true,
         "votes": "2.10000000",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 225,
+        "cancelheight": 0,
+        "inactiveheight": 0,
         "index": 1
       },
       {
@@ -950,6 +962,10 @@ result sample:
         "active": true,
         "votes": "0",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 216,
+        "cancelheight": 0,
+        "inactiveheight": 0,
         "index": 2
       }
     ],
@@ -1207,20 +1223,20 @@ description: get block confirm by height of block.
 
 parameters:
 
-| name      | type   | description                                                      |
-| --------- | ------ | ---------------------------------------------------------------- |
-| height    | int    | the hash of block                                                |
-| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data |
+| name      | type   | description                                                                 |
+| --------- | ------ | --------------------------------------------------------------------------- |
+| height    | int    | the height of block                                                         |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
 
 result:
 
-| name       | type    | description                    |
-| -------    | ------- | ------------------------------ |
-| sponsor    | string  | the sponsor of the proposal    |
-| viewoffset | uint32  | the viewoffset of the proposal |
-| votes      | string  | the votes of confirm           |
-| signer     | string  | the singner of the proposal    |
-| accept     | bool    | accept or not of the proposal  |
+| name       | type           | description                               |
+| -------    | -------------- | ----------------------------------------- |
+| sponsor    | string         | the sponsor nodePublicKey of the proposal |
+| viewoffset | uint32         | the viewoffset of the proposal            |
+| votes      | array[struct]  | the votes of confirm                      |
+| signer     | string         | the singner nodePublicKey of the proposal |
+| accept     | bool           | accept or not of the proposal             |
 
 named arguments sample:
 
@@ -1268,19 +1284,19 @@ description: get block confirm by hash of block.
 
 parameters:
 
-| name      | type   | description                                                      |
-| --------- | ------ | ---------------------------------------------------------------- |
-| blockhash | string | the hash of block                                                |
-| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data |
+| name      | type   | description                                                                 |
+| --------- | ------ | --------------------------------------------------------------------------- |
+| blockhash | string | the hash of block                                                           |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
 result:
 
-| name       | type    | description                    |
-| -------    | ------- | ------------------------------ |
-| sponsor    | string  | the sponsor of the proposal    |
-| viewoffset | uint32  | the viewoffset of the proposal |
-| votes      | string  | the votes of confirm           |
-| signer     | string  | the singner of the proposal    |
-| accept     | bool    | accept or not of the proposal  |
+| name       | type          | description                               |
+| -------    | ------------- | ----------------------------------------- |
+| sponsor    | string        | the sponsor nodePublicKey of the proposal               |
+| viewoffset | uint32        | the viewoffset of the proposal            |
+| votes      | array[struct] | the votes of confirm                      |
+| signer     | string        | the singner nodePublicKey of the proposal |
+| accept     | bool          | accept or not of the proposal             |
 
 named arguments sample:
 
