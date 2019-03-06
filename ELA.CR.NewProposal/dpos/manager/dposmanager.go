@@ -139,7 +139,7 @@ func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
 }
 
 func (d *DPOSManager) Broadcast(msg p2p.Message) {
-	d.broadcast(msg)
+	go d.broadcast(msg)
 }
 
 func (d *DPOSManager) GetPublicKey() []byte {
