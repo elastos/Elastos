@@ -41,7 +41,7 @@ These are located in the `wallets` folder:
 2. The following are the GIT SHAs we're using for each project:
     - Elastos.ELA: tag v0.2.2 3f1e5e6
     - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad
-    - Elastos.ELA.SideChain.Token: 
+    - Elastos.ELA.SideChain.Token: release_v0.0.1 2c21380
     - Elastos.ELA.Arbiter: tag v0.0.3 8970efe
     - Elastos.ORG.Wallet.Service: master 49dcbfa
     - Elastos.ORG.DID.Service: master 1ff8c00
