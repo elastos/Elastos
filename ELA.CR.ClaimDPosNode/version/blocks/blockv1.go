@@ -106,7 +106,7 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	tx := &types.Transaction{
 		Version:        types.TransactionVersion(b.cfg.Versions.GetDefaultTxVersion(block.Height)),
 		TxType:         types.IllegalBlockEvidence,
-		PayloadVersion: payload.PayloadIllegalBlockVersion,
+		PayloadVersion: payload.IllegalBlockVersion,
 		Payload:        illegalBlocks,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,

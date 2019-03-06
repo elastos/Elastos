@@ -142,7 +142,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
 		Version: types.TransactionVersion(blockchain.DefaultLedger.
 			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalProposalEvidence,
-		PayloadVersion: payload.PayloadIllegalProposalVersion,
+		PayloadVersion: payload.IllegalProposalVersion,
 		Payload:        evidences,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
@@ -163,7 +163,7 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 		Version: types.TransactionVersion(blockchain.DefaultLedger.
 			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalSidechainEvidence,
-		PayloadVersion: payload.PayloadSidechainIllegalDataVersion,
+		PayloadVersion: payload.SidechainIllegalDataVersion,
 		Payload:        evidence,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,
@@ -184,7 +184,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
 		Version:        types.TransactionVersion(blockchain.DefaultLedger.
 			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
 		TxType:         types.IllegalVoteEvidence,
-		PayloadVersion: payload.PayloadIllegalVoteVersion,
+		PayloadVersion: payload.IllegalVoteVersion,
 		Payload:        evidences,
 		Attributes:     []*types.Attribute{},
 		LockTime:       0,

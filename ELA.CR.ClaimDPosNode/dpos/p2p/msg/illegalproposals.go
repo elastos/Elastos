@@ -22,7 +22,7 @@ func (msg *IllegalProposals) MaxLength() uint32 {
 
 func (msg *IllegalProposals) Serialize(w io.Writer) error {
 	if err := msg.Proposals.Serialize(w,
-		payload.PayloadIllegalProposalVersion); err != nil {
+		payload.IllegalProposalVersion); err != nil {
 		return err
 	}
 
@@ -31,7 +31,7 @@ func (msg *IllegalProposals) Serialize(w io.Writer) error {
 
 func (msg *IllegalProposals) Deserialize(r io.Reader) error {
 	if err := msg.Proposals.Deserialize(r,
-		payload.PayloadIllegalProposalVersion); err != nil {
+		payload.IllegalProposalVersion); err != nil {
 		return err
 	}
 

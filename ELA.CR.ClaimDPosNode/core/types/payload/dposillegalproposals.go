@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	PayloadIllegalProposalVersion byte = 0x00
+	IllegalProposalVersion byte = 0x00
 )
 
 type ProposalEvidence struct {
@@ -93,7 +93,7 @@ func (d *DPOSIllegalProposals) Deserialize(r io.Reader, version byte) error {
 func (d *DPOSIllegalProposals) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
-		d.Serialize(buf, PayloadIllegalProposalVersion)
+		d.Serialize(buf, IllegalProposalVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		d.hash = &hash
 	}
