@@ -107,9 +107,6 @@ func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bo
 
 func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	bool, bool, error) {
-	if _, ok := bm.confirms[confirm.Proposal.BlockHash]; ok {
-		return false, true, errors.New("duplicate confirm in pool")
-	}
 
 	// verify confirmation
 	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {

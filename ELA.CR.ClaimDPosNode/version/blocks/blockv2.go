@@ -44,7 +44,7 @@ func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []
 
 func (b *blockV2) GetCandidatesDesc(startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
 	if uint32(len(producers)) < startIndex {
-		return make([][]byte, 0), nil
+		return nil, nil
 	}
 
 	sort.Slice(producers, func(i, j int) bool {

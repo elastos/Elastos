@@ -373,7 +373,7 @@ func (s *State) ProducerExists(publicKey []byte) bool {
 func (s *State) SpecialTxExists(hash *common.Uint256) bool {
 	s.mtx.RLock()
 	_, ok := s.specialTxHashes[hash.String()]
-	s.mtx.RLock()
+	s.mtx.RUnlock()
 	return ok
 }
 
