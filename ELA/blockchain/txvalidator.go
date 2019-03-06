@@ -916,7 +916,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		depositAmount += u.Value
 	}
 
-	if depositAmount - producer.Penalty() < MinDepositAmount {
+	if depositAmount-producer.Penalty() < MinDepositAmount {
 		return errors.New("insufficient deposit amount")
 	}
 
@@ -1022,7 +1022,7 @@ func (b *BlockChain) checkIllegalProposalsTransaction(txn *Transaction) error {
 		return errors.New("tx already exists")
 	}
 
-	return b.checkDPOSIllegalProposals(p)
+	return CheckDPOSIllegalProposals(p)
 }
 
 func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
@@ -1035,7 +1035,7 @@ func (b *BlockChain) checkIllegalVotesTransaction(txn *Transaction) error {
 		return errors.New("tx already exists")
 	}
 
-	return b.checkDPOSIllegalVotes(p)
+	return CheckDPOSIllegalVotes(p)
 }
 
 func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
@@ -1048,7 +1048,7 @@ func (b *BlockChain) checkIllegalBlocksTransaction(txn *Transaction) error {
 		return errors.New("tx already exists")
 	}
 
-	return b.CheckDPOSIllegalBlocks(p)
+	return CheckDPOSIllegalBlocks(p)
 }
 
 func (b *BlockChain) checkInactiveArbitratorsTransaction(
@@ -1070,6 +1070,11 @@ func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) 
 	if hash := txn.Hash(); b.state.SpecialTxExists(&hash) {
 		return errors.New("tx already exists")
 	}
+
+	return CheckSidechainIllegalEvidence(p)
+}
+
+func CheckSidechainIllegalEvidence(p *payload.SidechainIllegalData) error {
 
 	if p.IllegalType != payload.SidechainIllegalProposal &&
 		p.IllegalType != payload.SidechainIllegalVote {
@@ -1169,8 +1174,7 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 	return nil
 }
 
-func (b *BlockChain) checkDPOSIllegalProposals(
-	d *payload.DPOSIllegalProposals) error {
+func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 
 	if err := validateProposalEvidence(&d.Evidence); err != nil {
 		return err
@@ -1208,7 +1212,7 @@ func (b *BlockChain) checkDPOSIllegalProposals(
 	return nil
 }
 
-func (b *BlockChain) checkDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
+func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 
 	if err := validateVoteEvidence(&d.Evidence); err != nil {
 		return nil
@@ -1253,7 +1257,7 @@ func (b *BlockChain) checkDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 	return nil
 }
 
-func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
+func CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 
 	if d.Evidence.BlockHash().IsEqual(d.CompareEvidence.BlockHash()) {
 		return errors.New("blocks can not be same")
@@ -1278,7 +1282,7 @@ func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 			return err
 		}
 
-		if err := b.checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
+		if err := checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
 			return err
 		}
 	}
@@ -1286,7 +1290,7 @@ func (b *BlockChain) CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error 
 	return nil
 }
 
-func (b *BlockChain) checkDPOSElaIllegalBlockSigners(
+func checkDPOSElaIllegalBlockSigners(
 	d *payload.DPOSIllegalBlocks, confirm *payload.Confirm,
 	compareConfirm *payload.Confirm) error {
 
