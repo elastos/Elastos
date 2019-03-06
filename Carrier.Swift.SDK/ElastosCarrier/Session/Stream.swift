@@ -52,6 +52,14 @@ public class CarrierStream: NSObject {
 
     /// TODO: add getState
     
+    
+    // Get StreamId
+    // - Return : The streamId
+    @objc(getStreamId)
+    public func getStreamId() -> Int {
+        return streamId
+    }
+    
     @objc(getTransportInfo:)
     public func getTransportInfo() throws -> CarrierTransportInfo {
         var cinfo = CTransportInfo()
