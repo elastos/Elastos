@@ -1,22 +1,39 @@
 package jsonrpc
 
 import (
-	"testing"
-	"github.com/elastos/Elastos.ELA/utils/test"
-	"time"
-	htp "github.com/elastos/Elastos.ELA/utils/http"
 	"bytes"
-	"net/http"
 	"github.com/elastos/Elastos.ELA/common/log"
+	htp "github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/test"
+	"net/http"
+	"testing"
+	"time"
 	//"encoding/json"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"net"
 )
 
 var (
 	logger = log.NewDefault(1, 10000, 10000)
+	urlNotLoopBack string
 )
+
+func init() {
+	ipNotLoopBack := resolveHostIp()
+	if ipNotLoopBack == "" {
+		//t.Error("expecting not found get %", resp.Status)
+		fmt.Printf("ipNotLoopBack  error should exit!!!!!!!!!!!!!!!")
+		return
+	}
+	httpPrefix := "http://"
+	httPostfix := ":20336/api/test"
+
+	urlNotLoopBack = httpPrefix + ipNotLoopBack+ httPostfix
+	fmt.Printf("Before Test init url %v", urlNotLoopBack)
+}
+
 /*
 hope： if no init RpcConfiguration. ip only accept IsLoopback  localhost
 testcase1 : RpcConfiguration no init client no authorization
@@ -196,37 +213,97 @@ func TestServer_NotInitRpcConf1(t *testing.T) {
 	}
 }
 */
+
+func GetInternalIP() string {
+	itf, _ := net.InterfaceByName("en0") //here your interface
+	item, _ := itf.Addrs()
+	var ip net.IP
+	for _, addr := range item {
+		switch v := addr.(type) {
+		case *net.IPNet:
+			if !v.IP.IsLoopback() {
+				if v.IP.To4() != nil {//Verify if IP is IPV4
+					ip = v.IP
+				}
+			}
+		}
+	}
+	if ip != nil {
+		return ip.String()
+	} else {
+		return ""
+	}
+}
+func resolveHostIp() (string) {
+
+	netInterfaceAddresses, err := net.InterfaceAddrs()
+
+	if err != nil { return "" }
+
+	for _, netInterfaceAddress := range netInterfaceAddresses {
+
+		networkIp, ok := netInterfaceAddress.(*net.IPNet)
+
+		if ok && !networkIp.IP.IsLoopback() && networkIp.IP.To4() != nil {
+
+			ip := networkIp.IP.String()
+
+			fmt.Println("Resolved Host IP: " + ip)
+
+			return ip
+		}
+	}
+	return ""
+}
+//func getLocalIp()string {
+//	IpAddr := "127.0.0.1"
+//	addrSlice, err := net.InterfaceAddrs()
+//	fmt.Printf("getLocalIp %v \n", addrSlice);
+//	if nil != err {
+//		log.Error("Get local IP addr failed!!!")
+//		return IpAddr
+//
+//	}
+//	for _, addr := range addrSlice {
+//		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+//			if nil != ipnet.IP.To4() {
+//				IpAddr = ipnet.IP.String()
+//
+//			}
+//		}
+//	}
+//	return IpAddr
+//}
+
 func TestServer_NotInitRpcConf1(t *testing.T) {
 
-	t.Logf("NotInitRpcConf1 request with no authorization and 127.0.0.1 begin")
+	t.Logf("NotInitRpcConf1 request with no authorization and 127.0.0.1 begin resolveHostIp %s", urlNotLoopBack)
 
 	test.SkipShort(t)
 
 	s := NewServer(&Config{
 		ServePort: 20336,
-
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
@@ -234,7 +311,7 @@ func TestServer_NotInitRpcConf1(t *testing.T) {
 	///////////////
 	//var someOne ReqObj
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -253,7 +330,7 @@ func TestServer_NotInitRpcConf1(t *testing.T) {
 
 		t.Logf("request with no authorization   err2 %v resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with no authorization   status %v",  resp.Status)
+			t.Logf("request with no authorization   status %v", resp.Status)
 
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %", resp.Status)
@@ -262,7 +339,7 @@ func TestServer_NotInitRpcConf1(t *testing.T) {
 
 	}()
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -277,25 +354,24 @@ func TestServer_NotInitRpcConf2(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 	//assert.NoError(t, err)
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
@@ -303,14 +379,12 @@ func TestServer_NotInitRpcConf2(t *testing.T) {
 	///////////////
 	//var someOne ReqObj
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
 	///////////////
 	req_new := bytes.NewBuffer([]byte(reqStr))
-
-
 
 	// request with  authorization  and 127.0.0.1
 	go func() {
@@ -322,11 +396,11 @@ func TestServer_NotInitRpcConf2(t *testing.T) {
 		}
 		req.Header.Set("Content-Type", "application/json")
 
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			assert.NoError(t, err)
 			if resp.StatusCode != http.StatusOK {
@@ -334,15 +408,13 @@ func TestServer_NotInitRpcConf2(t *testing.T) {
 			}
 		}
 
-
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 func TestServer_NotInitRpcConf3(t *testing.T) {
 
@@ -365,7 +437,7 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		////t.Logf("client_side Receive POST request len(data) %d",len(data))
 		//for key,value := range data{
 		//	t.Logf("client_side Receive POST key %v value %v",key, value)
@@ -378,13 +450,12 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
@@ -396,7 +467,7 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 	//		age:  88,
 	//	},
 	//}
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	//data ,errw := json.Marshal(reqObj)
 	//t.Logf("json.Marshal-------   %s errw %v", data, errw)
 
@@ -407,7 +478,7 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 	///////////////
 	//var someOne ReqObj
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 		//fmt.Printf("someOne %v",someOne)
 
 	} else {
@@ -425,11 +496,11 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 		}
 		req.Header.Set("Content-Type", "application/json")
 
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			assert.NoError(t, err)
 			if resp.StatusCode != http.StatusOK {
@@ -439,13 +510,10 @@ func TestServer_NotInitRpcConf3(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
-
-
 
 /*
 server config with User and Pass but no whitiplist
@@ -463,38 +531,37 @@ func TestServer_WithUserPassNoIp1(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -509,12 +576,12 @@ func TestServer_WithUserPassNoIp1(t *testing.T) {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %v", resp.Status)
@@ -523,7 +590,7 @@ func TestServer_WithUserPassNoIp1(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -538,38 +605,37 @@ func TestServer_WithUserPassNoIp2(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -589,7 +655,7 @@ func TestServer_WithUserPassNoIp2(t *testing.T) {
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
@@ -598,7 +664,7 @@ func TestServer_WithUserPassNoIp2(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -619,38 +685,37 @@ func TestServer_WithUserPassNoIp3(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -670,7 +735,7 @@ func TestServer_WithUserPassNoIp3(t *testing.T) {
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
@@ -679,7 +744,7 @@ func TestServer_WithUserPassNoIp3(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -700,38 +765,37 @@ func TestServer_WithUserPassNoIp4(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -746,12 +810,12 @@ func TestServer_WithUserPassNoIp4(t *testing.T) {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User,"111")
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, "111")
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
@@ -760,13 +824,10 @@ func TestServer_WithUserPassNoIp4(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
-
-
 
 /*
 server config with User and Pass but no whitiplist
@@ -784,38 +845,37 @@ func TestServer_WithUserPassNoIp5(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -833,7 +893,7 @@ func TestServer_WithUserPassNoIp5(t *testing.T) {
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
@@ -842,11 +902,10 @@ func TestServer_WithUserPassNoIp5(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 func TestServer_NoUserPassWithIp1(t *testing.T) {
 
@@ -859,39 +918,38 @@ func TestServer_NoUserPassWithIp1(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
+		RpcConfiguration: RpcConfiguration{
 			WhiteIPList: []string{
-					"127.0.0.1",
-				},
+				"127.0.0.1",
+			},
 		},
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -909,7 +967,7 @@ func TestServer_NoUserPassWithIp1(t *testing.T) {
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %v", resp.Status)
@@ -918,7 +976,7 @@ func TestServer_NoUserPassWithIp1(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -934,7 +992,7 @@ func TestServer_NoUserPassWithIp2(t *testing.T) {
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
 
-		RpcConfiguration:  RpcConfiguration{
+		RpcConfiguration: RpcConfiguration{
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -942,31 +1000,30 @@ func TestServer_NoUserPassWithIp2(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -976,7 +1033,7 @@ func TestServer_NoUserPassWithIp2(t *testing.T) {
 	go func() {
 
 		client := &http.Client{}
-		req, err := http.NewRequest("POST", "http://192.168.2.194:20336/api/test", req_new)
+		req, err := http.NewRequest("POST", urlNotLoopBack, req_new)
 		if err != nil {
 			// handle error
 		}
@@ -984,7 +1041,7 @@ func TestServer_NoUserPassWithIp2(t *testing.T) {
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusForbidden {
 				t.Error("expecting not found get %v", resp.Status)
@@ -993,11 +1050,10 @@ func TestServer_NoUserPassWithIp2(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 func TestServer_WithUserPassWithIp1(t *testing.T) {
 
@@ -1009,9 +1065,9 @@ func TestServer_WithUserPassWithIp1(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -1019,31 +1075,30 @@ func TestServer_WithUserPassWithIp1(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1058,12 +1113,12 @@ func TestServer_WithUserPassWithIp1(t *testing.T) {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %v", resp.Status)
@@ -1072,7 +1127,7 @@ func TestServer_WithUserPassWithIp1(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -1086,9 +1141,9 @@ func TestServer_WithUserPassWithIp2(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -1096,31 +1151,30 @@ func TestServer_WithUserPassWithIp2(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1130,17 +1184,17 @@ func TestServer_WithUserPassWithIp2(t *testing.T) {
 	go func() {
 
 		client := &http.Client{}
-		req, err := http.NewRequest("POST", "http://192.168.2.194:20336/api/test", req_new)
+		req, err := http.NewRequest("POST", urlNotLoopBack, req_new)
 		if err != nil {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusForbidden {
 				t.Error("expecting not found get %v", resp.Status)
@@ -1149,11 +1203,10 @@ func TestServer_WithUserPassWithIp2(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 func TestServer_WithUserPassWithIp3(t *testing.T) {
 
@@ -1165,9 +1218,9 @@ func TestServer_WithUserPassWithIp3(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -1175,31 +1228,30 @@ func TestServer_WithUserPassWithIp3(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1214,21 +1266,21 @@ func TestServer_WithUserPassWithIp3(t *testing.T) {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth("ElaUser111", s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth("ElaUser111", s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
-			if resp.StatusCode != http.StatusForbidden {
+			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
 			}
 		}
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -1242,9 +1294,9 @@ func TestServer_WithUserPassWithIp4(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -1252,31 +1304,30 @@ func TestServer_WithUserPassWithIp4(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1291,21 +1342,21 @@ func TestServer_WithUserPassWithIp4(t *testing.T) {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, "wrong pass");
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, "wrong pass")
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
-			if resp.StatusCode != http.StatusForbidden {
+			if resp.StatusCode != http.StatusUnauthorized {
 				t.Error("expecting not found get %v", resp.Status)
 			}
 		}
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
@@ -1320,9 +1371,9 @@ func TestServer_WithIp0000_1(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"0.0.0.0",
 			},
@@ -1330,31 +1381,30 @@ func TestServer_WithIp0000_1(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1364,17 +1414,17 @@ func TestServer_WithIp0000_1(t *testing.T) {
 	go func() {
 
 		client := &http.Client{}
-		req, err := http.NewRequest("POST", "http://192.168.2.194:20336/api/test", req_new)
+		req, err := http.NewRequest("POST", urlNotLoopBack, req_new)
 		if err != nil {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %v", resp.Status)
@@ -1383,11 +1433,10 @@ func TestServer_WithIp0000_1(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 func TestServer_WithIp0000_2(t *testing.T) {
 
@@ -1399,9 +1448,9 @@ func TestServer_WithIp0000_2(t *testing.T) {
 		ServePort: 20336,
 		//mention that  no init RpcConfiguration
 		//!!!!!!!!!!!!!!!!!!!!!!
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"0.0.0.0",
 			},
@@ -1409,31 +1458,30 @@ func TestServer_WithIp0000_2(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		return nil, nil
 	}, "level")
 
 	go s.Start()
 
-
 	type Student struct {
-		name  string
-		age     int
+		name string
+		age  int
 	}
 
-	type ReqObj struct{
+	type ReqObj struct {
 		method string
 		params Student
 	}
 
-	var reqObj ReqObj;
+	var reqObj ReqObj
 	reqStr := `{
 	"method":"/api/test",
 	"params":{"name":"junneyang", "age": 88}
 	}`
 	///////////////
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
-		fmt.Printf("reqObj %+v\n",reqObj)
+		fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
 		fmt.Println(err)
 	}
@@ -1443,17 +1491,17 @@ func TestServer_WithIp0000_2(t *testing.T) {
 	go func() {
 
 		client := &http.Client{}
-		req, err := http.NewRequest("POST", "http://192.168.2.194:20336/api/test", req_new)
+		req, err := http.NewRequest("POST", "http://127.0.0.1:20336/api/test", req_new)
 		if err != nil {
 			// handle error
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+		req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 
 		resp, err2 := client.Do(req)
 		t.Logf("request with  authorization   err2 %v  resp%v", err2, resp)
 		if resp != nil {
-			t.Logf("request with  authorization   status %v",  resp.Status)
+			t.Logf("request with  authorization   status %v", resp.Status)
 			//t.Logf("request with  authorization err  %v StatusCode %v", err2, resp.StatusCode)
 			if resp.StatusCode != http.StatusOK {
 				t.Error("expecting not found get %v", resp.Status)
@@ -1462,23 +1510,22 @@ func TestServer_WithIp0000_2(t *testing.T) {
 	}()
 	////////////////
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
 
-
 func TestServer_WithAuth(t *testing.T) {
-	return ;
+	return
 	t.Logf("client_side TestServer_WithAuth begin")
 
 	test.SkipShort(t)
 
 	s := NewServer(&Config{
 		ServePort: 20336,
-		RpcConfiguration:  RpcConfiguration{
-			User:        "ElaUser",
-			Pass:        "Ela123",
+		RpcConfiguration: RpcConfiguration{
+			User: "ElaUser",
+			Pass: "Ela123",
 			WhiteIPList: []string{
 				"127.0.0.1",
 			},
@@ -1486,7 +1533,7 @@ func TestServer_WithAuth(t *testing.T) {
 	})
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test",data)
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
 		//fmt.Fprintf(w,)
 		//t.Logf("client_side data  %s", data)
 
@@ -1512,7 +1559,6 @@ func TestServer_WithAuth(t *testing.T) {
 		t.FailNow()
 	}*/
 
-
 	/////////////////
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", "http://localhost:20336/api/test", req_new)
@@ -1528,7 +1574,7 @@ func TestServer_WithAuth(t *testing.T) {
 	//requestHeader := make(http.Header)
 	//req.Header.Add("Authorization", auth)
 	//req.Header.Set("Authorization", auth)
-	req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass);
+	req.SetBasicAuth(s.cfg.RpcConfiguration.User, s.cfg.RpcConfiguration.Pass)
 	//t.Logf(" client_side req.Header!!!!!!!!  %v", req.Header)
 	res, err5 := client.Do(req)
 	assert.NoError(t, err)
@@ -1536,11 +1582,10 @@ func TestServer_WithAuth(t *testing.T) {
 
 	//////////////// d
 	select {
-	case <-time.After(time.Second*1):
+	case <-time.After(time.Second * 1):
 		s.Stop()
 	}
 }
-
 
 //func TestServer_ServeHTTP(t *testing.T) {
 //
