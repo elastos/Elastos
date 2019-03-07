@@ -45,7 +45,7 @@ These are located in the `wallets` folder:
     - Elastos.ELA.Arbiter: tag v0.0.3 8970efe
     - Elastos.ORG.Wallet.Service: master 49dcbfa
     - Elastos.ORG.DID.Service: master 1ff8c00
-    - Elastos.ORG.API.Misc: master 5cb50ec
+    - Elastos.ORG.API.Misc: master f5bbebab924b71c51974015b6f3655477ed13434
     - Elastos.NET.Hive.IPFS: dev-master 6a5e240
     - Elastos.NET.Hive.Cluster: dev-master 65033f0
     
@@ -224,18 +224,6 @@ These are located in the `wallets` folder:
     {"Keys":{}}
     ```
 
-14. Verify that your token sidechain is running correctly[Elastos.ELA.Sidechain.Token](http://github.com/elastos/Elastos.ELA.Sidechain.Token)
-
-    Because "HttpRestPort" of token sidechain is not available, currently, it's not connected to the wallet service API so you cannot send any tokens from mainchain to token sidechain. All you can do is check that token sidechain is running properly. When the API layer for token sidechain will be available, this documentation will be updated.
-    ```
-    curl -H "Content-Type:application/json" -H "Accept:application/json" --data '{"method":"getbestblockhash"}' http://localhost:20616
-    ```
-
-    Should return something like
-    ```
-    {"id":null,"jsonrpc":"2.0","result":"5aeabb55d9ecf590ec5d189c7d6ee795648b9e000892e9570649cea5e85dbd38","error":null}
-    ```
-
 ## Creating a DID, and Storing/Retrieving Metadata
 
 Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io).
@@ -319,11 +307,13 @@ Don't be alarmed. Just wait a couple of minutes and try again.
 
 This is currently undocumented in the DID service docs because it's broken, so you need to use Misc.API which should be running on port `8093`.
 
-The API call should be `http://localhost:8093/api/1/did/{did}/{key}`
+The API call should be `http://localhost:8094/api/1/did/{did}/{key}`
 
-For example if you stored the property key "clark" above, and assuming the did was `iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe`, then calling
+For example if you stored the property key "clark" above, and assuming the did was `iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw`, then calling
 
-`curl http://localhost:8093/api/1/did/iWNFAVtCuyNSNqHbJRQ3PVKgokCWLyVYHe/clark`
+```
+curl http://localhost:8094/api/1/did/iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw/clark
+```
 
 Would return something like
 ```

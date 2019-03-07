@@ -127,6 +127,45 @@ services:
       - blockchain
     tty: true  
 
+  ela-api-misc-mainchain:
+    container_name: ela-api-misc-mainchain
+    image: ela-api-misc-mainchain
+    depends_on:
+      - ela-mysql
+    build:
+      context: restful-services/api-misc
+      dockerfile: mainchain/Dockerfile
+    ports:
+      - 8093:8093
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
+    tty: true
+
+  ela-api-misc-sidechain-did:
+    container_name: ela-api-misc-sidechain-did
+    image: ela-api-misc-sidechain-did
+    depends_on:
+      - ela-mysql
+      - ela-api-misc-mainchain
+    build:
+      context: restful-services/api-misc
+      dockerfile: sidechain/did/Dockerfile
+    ports:
+      - 8094:8093
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8094/api/1/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
+    tty: true
+
   ela-mysql:
     container_name: ela-mysql
     image: mysql:5.6
@@ -141,24 +180,6 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 20s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-api-misc:
-    container_name: ela-api-misc
-    image: ela-api-misc
-    depends_on:
-      - ela-mysql
-    build:
-      context: restful-services/api-misc
-    ports:
-      - 8093:8093
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
-      interval: 5s
-      timeout: 5s
       retries: 10
     networks:
       - blockchain
