@@ -817,5 +817,17 @@ OPTIONS:
 
 ## 5.回滚
 
-### 回滚区块
+```bash
+./ela-cli rollback --height 20
+```
 
+返回如下：
+```
+current height is 22
+blockhash before rollback: 74858bcb065e89840f27b28a9ff44757eb904f1a7d135206d83b674b9b68fd4e
+blockhash after rollback: 0000000000000000000000000000000000000000000000000000000000000000
+current height is 21
+blockhash before rollback: 18a38afc7942e4bed7040ed393cb761b84e6da222a1a43df0806968c60fcff8a
+blockhash after rollback: 0000000000000000000000000000000000000000000000000000000000000000
+
+```

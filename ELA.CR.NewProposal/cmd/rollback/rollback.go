@@ -41,7 +41,7 @@ func rollbackAction(c *cli.Context) error {
 	}
 	store, err := blockchain.NewLevelDB("elastos/data/chain")
 	if err != nil {
-		fmt.Println("connect leveldb failed! Please check wether there is already a ela process running.", err)
+		fmt.Println("connect leveldb failed! Please check whether there is already a ela process running.", err)
 	}
 
 	chain := blockchain.ChainStore{IStore: store}
