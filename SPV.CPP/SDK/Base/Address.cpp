@@ -36,15 +36,20 @@ namespace Elastos {
 		}
 
 		Address::Address(const CMBlock &pubKey, Prefix prefix) {
-			Key key;
-			key.SetPubKey(pubKey);
-			if (key.Valid()) {
-				_programHash = key.ProgramHash(prefix);
-				CheckValid();
-			} else {
-				Log::error("invalid pubKey {}", Utils::encodeHex(pubKey));
+			if (pubKey.GetSize() == 0) {
 				memset(_programHash.u8, 0, sizeof(_programHash));
 				_isValid = false;
+			} else {
+				Key key;
+				key.SetPubKey(pubKey);
+				if (key.Valid()) {
+					_programHash = key.ProgramHash(prefix);
+					CheckValid();
+				} else {
+					Log::error("invalid pubKey {}", Utils::encodeHex(pubKey));
+					memset(_programHash.u8, 0, sizeof(_programHash));
+					_isValid = false;
+				}
 			}
 		}
 

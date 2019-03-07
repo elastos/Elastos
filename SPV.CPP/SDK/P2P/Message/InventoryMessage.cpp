@@ -44,8 +44,6 @@ namespace Elastos {
 				const uint8_t *transactions[count], *blocks[count];
 				size_t i, txCount = 0, blockCount = 0;
 
-				_peer->info("got inv with {} item(s)", count);
-
 				for (i = 0; i < count; i++) {
 					type = inv_type(UInt32GetLE(&msg[off]));
 					off += sizeof(uint32_t);
@@ -107,7 +105,7 @@ namespace Elastos {
 						}
 					}
 
-					_peer->info("got inv with txCount={}, blockCount={}", txHashes.size(), blockCount);
+					_peer->info("got inv with {} tx {} block item(s)", txHashes.size(), blockCount);
 					_peer->AddKnownTxHashes(txHashes);
 					if (txHashes.size() > 0 || blockCount > 0) {
 						GetDataParameter getDataParam(txHashes, blockHashes);

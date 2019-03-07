@@ -54,7 +54,7 @@ namespace Elastos {
 			memcpy(_pubKey, pubKey, pubKey.GetSize() < sizeof(_pubKey) ? pubKey.GetSize() : sizeof(_pubKey));
 			_compressed = (pubKey.GetSize() <= 33);
 
-			assert(PubKeyIsValid(_pubKey, pubKey.GetSize()));
+			assert(pubKey.GetSize() == 0 || PubKeyIsValid(_pubKey, pubKey.GetSize()));
 
 			return true;
 		}
