@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"math"
 	"sort"
 	"strings"
 	"sync"
@@ -13,7 +12,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
@@ -48,7 +46,7 @@ type Arbitrators struct {
 }
 
 func (a *Arbitrators) ForceChange(height uint32) error {
-	if err := a.updateNextArbitrators(height); err != nil {
+	if err := a.updateNextArbitrators(height + 1); err != nil {
 		return err
 	}
 
@@ -67,7 +65,7 @@ func (a *Arbitrators) NormalChange(height uint32) error {
 		return err
 	}
 
-	if err := a.updateNextArbitrators(height); err != nil {
+	if err := a.updateNextArbitrators(height + 1); err != nil {
 		return err
 	}
 
@@ -196,7 +194,7 @@ func (a *Arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 func (a *Arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	// main version is >= H1
 	if height >= a.State.chainParams.HeightVersions[2] {
-		arbitrators := a.GetArbitrators()
+		arbitrators := a.currentArbitrators
 		if len(arbitrators) == 0 {
 			return nil
 		}
@@ -394,7 +392,13 @@ func (a *Arbitrators) showArbitersInfo(isInfo bool) {
 	}
 
 	connectionInfoMap := a.getProducersConnectionInfo()
-	crInfo, crParams := a.getArbitersInfoWithOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+	var crInfo string
+	crParams := make([]interface{}, 0)
+	if len(a.currentArbitrators) != 0 {
+		crInfo, crParams = a.getArbitersInfoWithOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+	} else {
+		crInfo, crParams = a.getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+	}
 	nrInfo, nrParams := a.getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators, connectionInfoMap)
 	ccInfo, ccParams := a.getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates, connectionInfoMap)
 	ncInfo, ncParams := a.getArbitersInfoWithoutOnduty("NEXT CANDIDATES", a.nextCandidates, connectionInfoMap)
@@ -430,7 +434,6 @@ func (a *Arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAd
 
 func (a *Arbitrators) getArbitersInfoWithOnduty(title string, arbiters [][]byte,
 	connectionInfoMap map[string]p2p.PeerAddr) (string, []interface{}) {
-
 	info := "\n" + title + "\nDUTYINDEX: %d\n%5s %66s %21s %6s\n----- " + strings.Repeat("-", 66) +
 		" " + strings.Repeat("-", 21) + " ------\n"
 	params := make([]interface{}, 0)
@@ -501,25 +504,25 @@ func NewArbitrators(chainParams *config.Params, versions interfaces.
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
 	for _, v := range a.chainParams.CRCArbiters {
-		a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+		//a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
 
 		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
 		if err != nil {
 			return nil, err
 		}
 		a.crcArbitratorsProgramHashes[*hash] = nil
-		a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
-			info: payload.ProducerInfo{
-				OwnerPublicKey: v.PublicKey,
-				NodePublicKey:  v.PublicKey,
-				NetAddress:     v.NetAddress,
-			},
-			registerHeight:        0,
-			votes:                 0,
-			inactiveSince:         0,
-			penalty:               common.Fixed64(0),
-			activateRequestHeight: math.MaxUint32,
-		}
+		//a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
+		//	info: payload.ProducerInfo{
+		//		OwnerPublicKey: v.PublicKey,
+		//		NodePublicKey:  v.PublicKey,
+		//		NetAddress:     v.NetAddress,
+		//	},
+		//	registerHeight:        0,
+		//	votes:                 0,
+		//	inactiveSince:         0,
+		//	penalty:               common.Fixed64(0),
+		//	activateRequestHeight: math.MaxUint32,
+		//}
 	}
 
 	return a, nil

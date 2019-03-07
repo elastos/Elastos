@@ -926,8 +926,11 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// Notify the caller that the new block was accepted into the block
 	// chain.  The caller would typically want to react by relaying the
 	// inventory to other peers.
-	events.Notify(events.ETBlockAccepted, block)
-
+	if block.Height >= config.Parameters.HeightVersions[2] {
+		events.Notify(events.ETBlockConfirmAccepted, block)
+	} else {
+		events.Notify(events.ETBlockAccepted, block)
+	}
 	return inMainChain, nil
 }
 

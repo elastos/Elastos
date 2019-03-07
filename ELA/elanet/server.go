@@ -2,6 +2,7 @@ package elanet
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -158,7 +159,12 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 	block := msgBlock.Serializable.(*types.DposBlock)
 
-	if block.BlockFlag {
+	if block.ConfirmFlag {
+		// Add the block to the known inventory for the peer.
+		blockHash := block.Block.Hash()
+		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
+		sp.AddKnownInventory(iv)
+	} else if block.BlockFlag {
 		// Add the block to the known inventory for the peer.
 		blockHash := block.Block.Hash()
 		iv := msg.NewInvVect(msg.InvTypeBlock, &blockHash)
@@ -236,6 +242,8 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 			err = sp.server.pushTxMsg(sp, &iv.Hash, c, waitChan)
 		case msg.InvTypeBlock:
 			err = sp.server.pushBlockMsg(sp, &iv.Hash, c, waitChan)
+		case msg.InvTypeConfirmedBlock:
+			err = sp.server.pushConfirmedBlockMsg(sp, &iv.Hash, c, waitChan)
 		case msg.InvTypeFilteredBlock:
 			err = sp.server.pushMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
 		default:
@@ -290,7 +298,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Generate inventory message.
 	invMsg := msg.NewInv()
 	for i := range hashList {
-		iv := msg.NewInvVect(msg.InvTypeBlock, hashList[i])
+		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, hashList[i])
 		invMsg.AddInvVect(iv)
 	}
 
@@ -463,16 +471,18 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	waitChan <-chan struct{}) error {
 
 	// Fetch the block from the database.
-	block, err := s.chain.GetDposBlockByHash(*hash)
-	if err != nil {
-		block, err = s.blockMemPool.GetDposBlockByHash(*hash)
-		if err != nil {
+	block, _ := s.blockMemPool.GetDposBlockByHash(*hash)
+	if block == nil {
+		block, _ = s.chain.GetDposBlockByHash(*hash)
+		if block == nil {
 			if doneChan != nil {
 				doneChan <- struct{}{}
 			}
-			return err
+			return errors.New("not found block")
 		}
 	}
+	block.ConfirmFlag = false
+	block.Confirm = nil
 
 	// Once we have fetched data wait for any previous operation to finish.
 	if waitChan != nil {
@@ -498,6 +508,51 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 		best := sp.server.chain.BestChain
 		invMsg := msg.NewInvSize(1)
 		iv := msg.NewInvVect(msg.InvTypeBlock, best.Hash)
+		invMsg.AddInvVect(iv)
+		sp.QueueMessage(invMsg, doneChan)
+		sp.continueHash = nil
+	}
+	return nil
+}
+
+// pushBlockMsg sends a block message for the provided block hash to the
+// connected peer.  An error is returned if the block hash is not known.
+func (s *server) pushConfirmedBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan chan<- struct{},
+	waitChan <-chan struct{}) error {
+
+	// Fetch the block from the database.
+	block, err := s.chain.GetDposBlockByHash(*hash)
+	if block == nil {
+		if doneChan != nil {
+			doneChan <- struct{}{}
+		}
+		return err
+	}
+
+	// Once we have fetched data wait for any previous operation to finish.
+	if waitChan != nil {
+		<-waitChan
+	}
+
+	// We only send the channel for this message if we aren't sending
+	// an inv straight after.
+	var dc chan<- struct{}
+	continueHash := sp.continueHash
+	sendInv := continueHash != nil && continueHash.IsEqual(*hash)
+	if !sendInv {
+		dc = doneChan
+	}
+	sp.QueueMessage(msg.NewBlock(block), dc)
+
+	// When the peer requests the final block that was advertised in
+	// response to a getblocks message which requested more blocks than
+	// would fit into a single message, send it a new inventory message
+	// to trigger it to issue another getblocks message for the next
+	// batch of inventory.
+	if sendInv {
+		best := sp.server.chain.BestChain
+		invMsg := msg.NewInvSize(1)
+		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, best.Hash)
 		invMsg.AddInvVect(iv)
 		sp.QueueMessage(invMsg, doneChan)
 		sp.continueHash = nil

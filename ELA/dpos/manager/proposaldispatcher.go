@@ -175,15 +175,16 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		return false
 	}
 
-	p.FinishConsensus()
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
 		Result:    true,
+		RawData: p.processingProposal,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
+	p.FinishConsensus()
 
 	return true
 }

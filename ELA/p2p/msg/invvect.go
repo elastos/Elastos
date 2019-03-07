@@ -19,10 +19,11 @@ const (
 type InvType uint32
 
 const (
-	InvTypeError         InvType = 0
-	InvTypeTx            InvType = 1
-	InvTypeBlock         InvType = 2
-	InvTypeFilteredBlock InvType = 3
+	InvTypeError InvType = iota
+	InvTypeTx
+	InvTypeBlock
+	InvTypeFilteredBlock
+	InvTypeConfirmedBlock
 )
 
 func (i InvType) String() string {
@@ -35,6 +36,8 @@ func (i InvType) String() string {
 		return "MSG_BLOCK"
 	case InvTypeFilteredBlock:
 		return "MSG_FILTERED_BLOCK"
+	case InvTypeConfirmedBlock:
+		return "MSG_CONFIRMED_BLOCK"
 	default:
 		return fmt.Sprintf("Unknown InvType (%d)", i)
 	}
