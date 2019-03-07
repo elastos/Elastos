@@ -1,7 +1,6 @@
 package blocks
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"testing"
@@ -13,9 +12,9 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/version/verconf"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -79,100 +78,6 @@ func TestBlockVersionInit(t *testing.T) {
 	blockchain.DefaultLedger = &blockchain.Ledger{
 		Arbitrators: arbitratorsMock,
 		Blockchain:  &blockchain.BlockChain{},
-	}
-}
-
-func TestBlockVersionMain_GetNormalArbitratorsDesc(t *testing.T) {
-
-	currentHeight := uint32(1)
-
-	block1 := &types.Block{
-		Header: types.Header{
-			Height: currentHeight,
-		},
-		Transactions: []*types.Transaction{
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: arbitrators[0],
-					NodePublicKey:  arbitrators[0],
-				},
-			},
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: arbitrators[1],
-					NodePublicKey:  arbitrators[1],
-				},
-			},
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: arbitrators[2],
-					NodePublicKey:  arbitrators[2],
-				},
-			},
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: arbitrators[3],
-					NodePublicKey:  arbitrators[3],
-				},
-			},
-		},
-	}
-	cfg.Chain.GetState().ProcessBlock(block1, nil)
-
-	for i := uint32(0); i < 6; i++ {
-		currentHeight++
-		blockEx := &types.Block{
-			Header:       types.Header{Height: currentHeight},
-			Transactions: []*types.Transaction{},
-		}
-		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
-	}
-
-	producers, err := version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
-	assert.Error(t, err, "arbitrators count does not match config value")
-
-	currentHeight += 1
-	block2 := &types.Block{
-		Header: types.Header{
-			Height: currentHeight,
-		},
-		Transactions: []*types.Transaction{
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: arbitrators[4],
-					NodePublicKey:  arbitrators[4],
-				},
-			},
-		},
-	}
-	cfg.Chain.GetState().ProcessBlock(block2, nil)
-
-	for i := uint32(0); i < 6; i++ {
-		currentHeight++
-		blockEx := &types.Block{
-			Header:       types.Header{Height: currentHeight},
-			Transactions: []*types.Transaction{},
-		}
-		cfg.Chain.GetState().ProcessBlock(blockEx, nil)
-	}
-
-	producers, err = version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
-	assert.NoError(t, err)
-	for i := range producers {
-		found := false
-		for _, ar := range arbitrators {
-			if bytes.Equal(ar, producers[i]) {
-				found = true
-				break
-			}
-		}
-
-		assert.True(t, found)
 	}
 }
 

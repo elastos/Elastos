@@ -157,8 +157,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		}
 
 	case ActivateProducer:
-		if err := b.checkActivateProducerTransaction(txn, blockHeight);
-			err != nil {
+		if err := b.checkActivateProducerTransaction(txn, blockHeight); err != nil {
 			log.Warn("[CheckActivateProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
@@ -398,12 +397,13 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
-		if err := DefaultLedger.HeightVersions.CheckCoinbaseMinerReward(blockHeight, txn, totalReward); err != nil {
+		if err := checkCoinbaseMinerReward(blockHeight, txn, totalReward); err != nil {
 			return err
 		}
 
 		return nil
 	}
+
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
@@ -426,7 +426,7 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 
-		if err := DefaultLedger.HeightVersions.CheckOutputProgramHash(blockHeight, txn, output.ProgramHash); err != nil {
+		if err := checkOutputProgramHash(blockHeight, output.ProgramHash); err != nil {
 			return err
 		}
 
@@ -437,6 +437,54 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 		}
 	}
 
+	return nil
+}
+
+func checkCoinbaseMinerReward(height uint32, tx *Transaction, totalReward common.Fixed64) error {
+	// main version >= H2
+	if height >= config.DefaultParams.HeightVersions[3] {
+		minerReward := tx.Outputs[1].Value
+		if common.Fixed64(minerReward) < common.Fixed64(float64(totalReward)*0.35) {
+			return errors.New("reward to miner in coinbase < 35%")
+		}
+		return nil
+	}
+
+	// old version [0, H2)
+	return nil
+}
+
+func checkOutputProgramHash(height uint32, programHash common.Uint168) error {
+	// main version >= 88812
+	if height >= config.DefaultParams.HeightVersions[1] {
+		var empty = common.Uint168{}
+		if programHash.IsEqual(empty) {
+			return nil
+		}
+
+		prefix := contract.PrefixType(programHash[0])
+		switch prefix {
+		case contract.PrefixStandard:
+		case contract.PrefixMultiSig:
+		case contract.PrefixCrossChain:
+		case contract.PrefixDeposit:
+		default:
+			return errors.New("invalid program hash prefix")
+		}
+
+		addr, err := programHash.ToAddress()
+		if err != nil {
+			return errors.New("invalid program hash")
+		}
+		_, err = common.Uint168FromAddress(addr)
+		if err != nil {
+			return errors.New("invalid program hash")
+		}
+
+		return nil
+	}
+
+	// old version [0, 88812)
 	return nil
 }
 
