@@ -526,6 +526,7 @@ public class Carrier: NSObject {
     ///            content.
     ///
     /// - Throws: CarrierError
+    @objc(addFriendWith:withGreeting:error:)
     public func addFriend(with userId: String,
                           withGreeting hello: String) throws {
 

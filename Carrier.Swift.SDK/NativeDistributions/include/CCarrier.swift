@@ -1603,4 +1603,4 @@ internal func ela_clear_error()
 @_silgen_name("ela_get_strerror")
 internal func ela_get_strerror(_ errnum: Int,
                                _ buf: UnsafeMutablePointer<Int8>!,
-                               _ len: Int) -> UnsafeMutablePointer<Int8>!
+                               _ len: Int) -> UnsafeMutablePointer<Int8>?
