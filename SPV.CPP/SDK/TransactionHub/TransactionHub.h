@@ -63,9 +63,7 @@ namespace Elastos {
 			// returns the first unused external address
 			Address GetReceiveAddress() const;
 
-			// writes all addresses previously generated with BRWalletUnusedAddrs() to addrs
-			// returns the number addresses written, or total number available if addrs is NULL
-			std::vector<Address> GetAllAddresses(uint32_t start, size_t count, bool containInternal);
+			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal);
 
 			Address GetVoteDepositAddress() const;
 

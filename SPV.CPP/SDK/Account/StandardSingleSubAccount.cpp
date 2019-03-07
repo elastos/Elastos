@@ -71,13 +71,12 @@ namespace Elastos {
 			return {_address};
 		}
 
-		std::vector<Address> StandardSingleSubAccount::GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const {
-			std::vector<Address> address;
+		size_t StandardSingleSubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
+			addr.clear();
+			if (start == 0 && count > 0)
+				addr.emplace_back(_address);
 
-			if (addrsCount > 0)
-				address.emplace_back(_address);
-
-			return address;
+			return 1;
 		}
 
 		bool StandardSingleSubAccount::ContainsAddress(const Address &address) const {

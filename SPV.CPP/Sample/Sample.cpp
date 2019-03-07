@@ -458,7 +458,7 @@ static void InitWallets(MasterWalletManager *manager) {
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			logger->debug("[{}:{}] all addresses -> {}",
 						  masterWallets[i]->GetId(), subWallets[j]->GetChainId(),
-						  subWallets[j]->GetAllAddress(0, 500).dump());
+						  subWallets[j]->GetAllAddress(0, 20).dump());
 
 		}
 	}
@@ -481,7 +481,8 @@ static void GetBalance(MasterWalletManager *manager,
 					   const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
 
-	logger->debug("[{}:{}] balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
+	logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
+	logger->debug("{}:{} balance info -> {}", masterWalletID, subWalletID, subWallet->GetBalanceInfo().dump());
 }
 
 int main(int argc, char *argv[]) {

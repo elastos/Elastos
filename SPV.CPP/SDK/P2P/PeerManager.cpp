@@ -643,10 +643,9 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->getHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-			UInt168 hash = UINT168_ZERO;
-
 			Address voteDepositAddress = _wallet->GetVoteDepositAddress();
-			std::vector<Address> addrs = _wallet->GetAllAddresses(0, size_t(-1), true);
+			std::vector<Address> addrs;
+			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
 			std::vector<UTXO> utxos = _wallet->getAllUTXOsSafe();
 			uint32_t blockHeight = (_lastBlock->getHeight() > 100) ? _lastBlock->getHeight() - 100 : 0;
 
@@ -656,6 +655,8 @@ namespace Elastos {
 											 utxos.size() + transactions.size() + 100,
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
+
+			UInt168 hash;
 
 			if (voteDepositAddress.Valid()) {
 				hash = voteDepositAddress.ProgramHash();

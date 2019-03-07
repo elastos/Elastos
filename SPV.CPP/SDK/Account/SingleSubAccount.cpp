@@ -39,12 +39,13 @@ namespace Elastos {
 			return true;
 		}
 
-		std::vector<Address> SingleSubAccount::GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const {
-			std::vector<Address> result;
-			if (addrsCount > 0) {
-				result.push_back(GetParent()->GetAddress());
+		size_t SingleSubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
+			addr.clear();
+			if (start == 0 && count > 0) {
+				addr.push_back(GetParent()->GetAddress());
 			}
-			return result;
+
+			return 1;
 		}
 
 		std::vector<Address> SingleSubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {

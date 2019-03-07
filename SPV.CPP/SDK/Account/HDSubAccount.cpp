@@ -132,29 +132,32 @@ namespace Elastos {
 			return false;
 		}
 
-		std::vector<Address> HDSubAccount::GetAllAddresses(uint32_t start, size_t addrsCount, bool containInternal) const {
-			std::vector<Address> result;
+		size_t HDSubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
+			size_t maxCount = externalChain.size() + (containInternal ? internalChain.size() : 0);
+
+			addr.clear();
 
 			if ((!containInternal && start >= externalChain.size()) ||
 				(containInternal && start >= externalChain.size() + internalChain.size())) {
-				return result;
+				return maxCount;
 			}
 
 			_lock->Lock();
 
-			for (size_t i = start; i < externalChain.size() && result.size() < addrsCount; i++) {
-				result.push_back(externalChain[i]);
+			for (size_t i = start; i < externalChain.size() && addr.size() < count; i++) {
+				addr.push_back(externalChain[i]);
 			}
 
-			if (containInternal && result.size() < addrsCount) {
-				for (size_t i = start + result.size(); i < externalChain.size() + internalChain.size() && result.size() < addrsCount; i++) {
-					result.push_back(internalChain[i - externalChain.size()]);
+			if (containInternal) {
+				maxCount += internalChain.size();
+				for (size_t i = start + addr.size(); addr.size() < count && i < externalChain.size() + internalChain.size(); i++) {
+					addr.push_back(internalChain[i - externalChain.size()]);
 				}
 			}
 
 			_lock->Unlock();
 
-			return result;
+			return maxCount;
 		}
 
 		std::vector<Address> HDSubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
@@ -177,8 +180,7 @@ namespace Elastos {
 
 				Address address(pubKey, PrefixStandard);
 
-				if (!address.Valid())
-					break;
+				if (!address.Valid()) break;
 
 				addrChain.push_back(address);
 				count++;

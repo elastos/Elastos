@@ -29,7 +29,7 @@ namespace Elastos {
 
 			virtual void AddUsedAddrs(const TransactionPtr &tx);
 
-			virtual std::vector<Address> GetAllAddresses(uint32_t start, size_t addrsCount, bool internal) const;
+			virtual size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const;
 
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 

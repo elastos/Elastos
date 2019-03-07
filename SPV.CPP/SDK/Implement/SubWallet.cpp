@@ -95,7 +95,8 @@ namespace Elastos {
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) const {
 			nlohmann::json j;
-			std::vector<Address> addresses = _walletManager->getWallet()->GetAllAddresses(start, count, false);
+			std::vector<Address> addresses;
+			size_t maxCount = _walletManager->getWallet()->GetAllAddresses(addresses, start, count, false);
 
 			std::vector<std::string> addrString;
 			for (size_t i = 0; i < addresses.size(); ++i) {
@@ -103,7 +104,7 @@ namespace Elastos {
 			}
 
 			j["Addresses"] = addrString;
-			j["MaxCount"] = addresses.size();
+			j["MaxCount"] = maxCount;
 			return j;
 		}
 

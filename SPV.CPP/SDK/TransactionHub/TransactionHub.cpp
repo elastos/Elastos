@@ -334,8 +334,8 @@ namespace Elastos {
 			return addr[0];
 		}
 
-		std::vector<Address> TransactionHub::GetAllAddresses(uint32_t start, size_t count, bool containInternal) {
-			return _subAccount->GetAllAddresses(start, count, containInternal);
+		size_t TransactionHub::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) {
+			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
 		}
 
 		Address TransactionHub::GetVoteDepositAddress() const {
