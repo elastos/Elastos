@@ -304,17 +304,17 @@ func (n *network) processMessage(msgItem *messageItem) {
 	case msg.CmdReceivedProposal:
 		msgProposal, processed := m.(*msg.Proposal)
 		if processed {
-			n.listener.OnProposalReceived(msgItem.ID, msgProposal.Proposal)
+			n.listener.OnProposalReceived(msgItem.ID, &msgProposal.Proposal)
 		}
 	case msg.CmdAcceptVote:
 		msgVote, processed := m.(*msg.Vote)
 		if processed {
-			n.listener.OnVoteReceived(msgItem.ID, msgVote.Vote)
+			n.listener.OnVoteReceived(msgItem.ID, &msgVote.Vote)
 		}
 	case msg.CmdRejectVote:
 		msgVote, processed := m.(*msg.Vote)
 		if processed {
-			n.listener.OnVoteRejected(msgItem.ID, msgVote.Vote)
+			n.listener.OnVoteRejected(msgItem.ID, &msgVote.Vote)
 		}
 	case msg.CmdPing:
 		msgPing, processed := m.(*msg.Ping)

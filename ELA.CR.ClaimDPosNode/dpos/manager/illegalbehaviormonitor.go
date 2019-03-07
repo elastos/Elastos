@@ -51,14 +51,14 @@ func (i *IllegalBehaviorMonitor) IsBlockValid(block *types.Block) bool {
 	return i.evidenceCache.IsBlockValid(block)
 }
 
-func (i *IllegalBehaviorMonitor) AddProposal(proposal payload.DPOSProposal) {
-	i.cachedProposals[proposal.Hash()] = &proposal
+func (i *IllegalBehaviorMonitor) AddProposal(proposal *payload.DPOSProposal) {
+	i.cachedProposals[proposal.Hash()] = proposal
 }
 
 func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 	i.cachedProposals = make(map[common.Uint256]*payload.DPOSProposal)
 	for k, v := range i.dispatcher.pendingProposals {
-		i.cachedProposals[k] = &v
+		i.cachedProposals[k] = v
 	}
 
 	if !changeView {
@@ -76,8 +76,8 @@ func (i *IllegalBehaviorMonitor) IsLegalProposal(p *payload.DPOSProposal) (*payl
 	}
 
 	for _, pending := range i.dispatcher.pendingProposals {
-		if i.isProposalsIllegal(p, &pending) {
-			return &pending, false
+		if i.isProposalsIllegal(p, pending) {
+			return pending, false
 		}
 	}
 
@@ -279,14 +279,14 @@ func (i *IllegalBehaviorMonitor) isProposalsIllegal(first, second *payload.DPOSP
 
 func (i *IllegalBehaviorMonitor) IsLegalVote(v *payload.DPOSProposalVote) (*payload.DPOSProposalVote, bool) {
 	for _, accept := range i.dispatcher.acceptVotes {
-		if i.isVotesIllegal(v, &accept) {
-			return &accept, false
+		if i.isVotesIllegal(v, accept) {
+			return accept, false
 		}
 	}
 
 	for _, reject := range i.dispatcher.rejectedVotes {
-		if i.isVotesIllegal(v, &reject) {
-			return &reject, false
+		if i.isVotesIllegal(v, reject) {
+			return reject, false
 		}
 	}
 
