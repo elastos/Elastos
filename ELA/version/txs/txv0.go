@@ -1,8 +1,6 @@
 package txs
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
@@ -15,18 +13,6 @@ type txV0 struct {
 
 func (v *txV0) GetVersion() byte {
 	return 0
-}
-
-func (v *txV0) CheckOutputProgramHash(programHash common.Uint168) error {
-	return nil
-}
-
-func (v *txV0) CheckCoinbaseMinerReward(tx *types.Transaction, totalReward common.Fixed64) error {
-	return nil
-}
-
-func (v *txV0) CheckCoinbaseArbitratorsReward(coinbase *types.Transaction, rewardInCoinbase common.Fixed64) error {
-	return nil
 }
 
 func NewTxV0(cfg *verconf.Config) *txV0 {
