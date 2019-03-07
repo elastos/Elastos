@@ -19,10 +19,10 @@ type DPOSEventConditionHandler interface {
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p payload.DPOSProposal)
+	StartNewProposal(p *payload.DPOSProposal)
 
-	ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool)
-	ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool)
+	ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
+	ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
 }
 
 type DPOSHandlerConfig struct {
@@ -87,7 +87,7 @@ func (h *DPOSHandlerSwitch) FinishConsensus() {
 	h.proposalDispatcher.FinishConsensus()
 }
 
-func (h *DPOSHandlerSwitch) StartNewProposal(p payload.DPOSProposal) {
+func (h *DPOSHandlerSwitch) StartNewProposal(p *payload.DPOSProposal) {
 	h.currentHandler.StartNewProposal(p)
 
 	proposalEvent := log.ProposalEvent{
@@ -95,7 +95,7 @@ func (h *DPOSHandlerSwitch) StartNewProposal(p payload.DPOSProposal) {
 		BlockHash:    p.BlockHash,
 		ReceivedTime: time.Now(),
 		ProposalHash: p.Hash(),
-		RawData:      &p,
+		RawData:      p,
 		Result:       false,
 	}
 	h.cfg.Monitor.OnProposalArrived(&proposalEvent)
@@ -132,21 +132,21 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 	return false
 }
 
-func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
+func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (bool, bool) {
 	succeed, finished := h.currentHandler.ProcessAcceptVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: true, RawData: &p}
+		ReceivedTime: time.Now(), Result: true, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished
 }
 
-func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (bool, bool) {
+func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (bool, bool) {
 	succeed, finished := h.currentHandler.ProcessRejectVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: false, RawData: &p}
+		ReceivedTime: time.Now(), Result: false, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished

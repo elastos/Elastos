@@ -92,9 +92,9 @@ func networkPushVote(L *lua.LState) int {
 	vote := checkVote(L, 3)
 
 	if vote.Accept {
-		n.FireVoteReceived(pidFromString(puk), *vote)
+		n.FireVoteReceived(pidFromString(puk), vote)
 	} else {
-		n.FireVoteRejected(pidFromString(puk), *vote)
+		n.FireVoteRejected(pidFromString(puk), vote)
 	}
 
 	return 0
@@ -105,7 +105,7 @@ func networkPushProposal(L *lua.LState) int {
 	puk := L.ToString(2)
 	proposal := checkProposal(L, 3)
 
-	n.FireProposalReceived(pidFromString(puk), *proposal)
+	n.FireProposalReceived(pidFromString(puk), proposal)
 
 	return 0
 }

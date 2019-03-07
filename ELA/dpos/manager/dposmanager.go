@@ -59,9 +59,9 @@ type StatusSyncEventListener interface {
 type NetworkEventListener interface {
 	StatusSyncEventListener
 
-	OnProposalReceived(id dpeer.PID, p payload.DPOSProposal)
-	OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote)
-	OnVoteRejected(id dpeer.PID, p payload.DPOSProposalVote)
+	OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal)
+	OnVoteReceived(id dpeer.PID, p *payload.DPOSProposalVote)
+	OnVoteRejected(id dpeer.PID, p *payload.DPOSProposalVote)
 
 	OnChangeView()
 	OnBadNetwork()
@@ -190,14 +190,14 @@ func (d *DPOSManager) ChangeConsensus(onDuty bool) {
 	d.handler.SwitchTo(onDuty)
 }
 
-func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p payload.DPOSProposal) {
+func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote) {
+func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p *payload.DPOSProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
 	_, finished := d.handler.ProcessAcceptVote(id, p)
@@ -206,7 +206,7 @@ func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p payload.DPOSProposalVote) {
 	}
 }
 
-func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p payload.DPOSProposalVote) {
+func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p *payload.DPOSProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
 	d.handler.ProcessRejectVote(id, p)

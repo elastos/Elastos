@@ -13,7 +13,7 @@ type DPOSOnDutyHandler struct {
 	*DPOSHandlerSwitch
 }
 
-func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
+func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Onduty-ProcessAcceptVote] start")
 	defer log.Info("[Onduty-ProcessAcceptVote] end")
 
@@ -26,7 +26,7 @@ func (h *DPOSOnDutyHandler) ProcessAcceptVote(id peer.PID, p payload.DPOSProposa
 	return false, false
 }
 
-func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposalVote) (succeed bool, finished bool) {
+func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Onduty-ProcessRejectVote] start")
 
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
@@ -37,7 +37,7 @@ func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p payload.DPOSProposa
 	return false, false
 }
 
-func (h *DPOSOnDutyHandler) StartNewProposal(p payload.DPOSProposal) {
+func (h *DPOSOnDutyHandler) StartNewProposal(p *payload.DPOSProposal) {
 }
 
 func (h *DPOSOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {

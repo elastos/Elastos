@@ -1,12 +1,12 @@
 package store
 
 import (
-	"bytes"
 	"crypto/rand"
 	"testing"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
@@ -35,9 +35,6 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 		ViewOffset: 0,
 	}
 
-	buf := new(bytes.Buffer)
-	proposal.Serialize(buf)
-
 	proposalEvent := &log.ProposalEvent{
 		Sponsor:      "A",
 		BlockHash:    common.Uint256{},
@@ -45,7 +42,7 @@ func TestEventStore_AddProposalEvent(t *testing.T) {
 		EndTime:      time.Time{},
 		Result:       false,
 		ProposalHash: common.Uint256{1, 2, 3},
-		RawData:      buf.Bytes(),
+		RawData:      proposal,
 	}
 	id, err := eventStore.addProposalEvent(proposalEvent)
 	if id != 1 {
@@ -76,7 +73,7 @@ func TestEventStore_AddConsensusEvent(t *testing.T) {
 	cons := &log.ConsensusEvent{
 		StartTime: time.Time{},
 		Height:    0,
-		RawData:   []byte{1},
+		RawData:   &types.Header{},
 	}
 	id, err := eventStore.addConsensusEvent(cons)
 
@@ -94,7 +91,7 @@ func TestEventStore_UpdateConsensusEvent(t *testing.T) {
 	cons := &log.ConsensusEvent{
 		StartTime: time.Time{},
 		Height:    0,
-		RawData:   []byte{1},
+		RawData:   &types.Header{},
 	}
 	_, err := eventStore.updateConsensusEvent(cons)
 	if err != nil {
@@ -128,14 +125,11 @@ func TestEventStore_AddVoteEvent(t *testing.T) {
 		Sign:         []byte{1, 2, 3},
 	}
 
-	buf := new(bytes.Buffer)
-	vote.Serialize(buf)
-
 	voteEvent := &log.VoteEvent{
 		Signer:       "A",
 		ReceivedTime: time.Time{},
 		Result:       false,
-		RawData:      buf.Bytes(),
+		RawData:      vote,
 	}
 
 	id, err := eventStore.addVoteEvent(voteEvent)
