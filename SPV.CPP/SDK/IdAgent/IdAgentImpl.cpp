@@ -82,12 +82,7 @@ namespace Elastos {
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
-			CMBlock programHash = Base58::CheckDecode(id);
-
-			if (programHash.GetSize() == 21 && programHash[0] == PrefixIDChain)
-				return true;
-
-			return false;
+			return Address(id).IsIDAddress();
 		}
 
 		CMBlock IdAgentImpl::Sign(const std::string &id, const CMBlock &data, const std::string &passwd) {

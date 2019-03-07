@@ -290,7 +290,7 @@ namespace Elastos {
 					continue;
 				}
 
-				if (fromAddress.IsValid() && fromAddress != o.GetAddress().String()) {
+				if (fromAddress.Valid() && fromAddress != o.GetAddress().String()) {
 					continue;
 				}
 
@@ -385,7 +385,7 @@ namespace Elastos {
 					continue;
 				}
 
-				if (fromAddress.IsValid() && o.GetAddress() != fromAddress ) {
+				if (fromAddress.Valid() && o.GetAddress() != fromAddress) {
 					continue;
 				}
 

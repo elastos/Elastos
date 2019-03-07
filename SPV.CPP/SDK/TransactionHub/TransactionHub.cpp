@@ -162,7 +162,7 @@ namespace Elastos {
 		TransactionHub::createTransaction(const Address &fromAddress, uint64_t amount,
 										  const Address &toAddress, uint64_t fee,
 										  const UInt256 &assetID, bool useVotedUTXO) {
-			ParamChecker::checkCondition(!toAddress.IsValid(), Error::CreateTransaction,
+			ParamChecker::checkCondition(!toAddress.Valid(), Error::CreateTransaction,
 										 "Invalid receiver address " + toAddress.String());
 
 			std::vector<TransactionOutput> outputs;

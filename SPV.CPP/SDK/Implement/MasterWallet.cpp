@@ -373,12 +373,7 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsIdValid(const std::string &id) {
-			CMBlock programHash = Base58::CheckDecode(id);
-
-			if (programHash.GetSize() == 21 && programHash[0] == PrefixIDChain)
-				return true;
-
-			return false;
+			return Address(id).IsIDAddress();
 		}
 
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config,

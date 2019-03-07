@@ -657,7 +657,7 @@ namespace Elastos {
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
-			if (voteDepositAddress.IsValid()) {
+			if (voteDepositAddress.Valid()) {
 				hash = voteDepositAddress.ProgramHash();
 				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
 					filter->insertData(hash.u8, sizeof(hash));

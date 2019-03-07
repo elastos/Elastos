@@ -26,7 +26,9 @@ namespace Elastos {
 
 			~Address();
 
-			bool IsValid() const;
+			bool Valid() const;
+
+			bool IsIDAddress() const;
 
 			std::string String() const;
 
@@ -43,6 +45,9 @@ namespace Elastos {
 			bool operator!=(const std::string &address) const;
 
 			Address &operator=(const Address &address);
+
+		private:
+			void CheckValid();
 
 		private:
 			UInt168 _programHash;

@@ -50,7 +50,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!_depositAddress.IsValid()) {
+			if (!_depositAddress.Valid()) {
 				return false;
 			}
 

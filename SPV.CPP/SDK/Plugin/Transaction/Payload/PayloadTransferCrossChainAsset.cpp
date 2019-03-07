@@ -6,6 +6,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Base58.h>
 #include <SDK/Crypto/Key.h>
+#include <SDK/Base/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -45,17 +46,8 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < len; ++i) {
-				CMBlock programHash = Base58::CheckDecode(_crossChainAddress[i]);
-
-				if (!(programHash.GetSize() == 21 && (
-					programHash[0] == PrefixStandard ||
-					programHash[0] == PrefixCrossChain ||
-					programHash[0] == PrefixMultiSign ||
-					programHash[0] == PrefixIDChain ||
-					programHash[0] == PrefixDeposit ||
-					programHash[0] == PrefixDestroy))) {
+				if (!Address(_crossChainAddress[i]).Valid())
 					return false;
-				}
 
 				if (_crossChainAmount[i] <= 0) {
 					return false;

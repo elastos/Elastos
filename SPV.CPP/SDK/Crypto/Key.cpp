@@ -379,6 +379,10 @@ namespace Elastos {
 			return result;
 		}
 
+		bool Key::Valid() const {
+			return PubKeyIsValid(_pubKey, _compressed ? 33 : 65);
+		}
+
 		bool Key::PubKeyIsValid(const void *pubKey, size_t len) {
 			bool valid = false;
 

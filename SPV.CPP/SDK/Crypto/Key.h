@@ -90,6 +90,8 @@ namespace Elastos {
 
 			bool Verify(const UInt256 &md, const CMBlock &signature) const;
 
+			bool Valid() const;
+
 			static bool PubKeyIsValid(const void *pubKey, size_t len);
 
 		private:

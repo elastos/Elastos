@@ -177,7 +177,7 @@ namespace Elastos {
 
 				Address address(pubKey, PrefixStandard);
 
-				if (!address.IsValid())
+				if (!address.Valid())
 					break;
 
 				addrChain.push_back(address);

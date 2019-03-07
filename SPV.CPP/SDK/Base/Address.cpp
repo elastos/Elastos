@@ -18,39 +18,39 @@ namespace Elastos {
 		}
 
 		Address::Address(const std::string &address) {
-
 			if (address.empty()) {
 				memset(_programHash.u8, 0, sizeof(_programHash));
 				_isValid = false;
 			} else {
 				CMBlock programHash = Base58::CheckDecode(address);
 
-				if (programHash.GetSize() != sizeof(UInt168)) {
+				if (programHash.GetSize() == sizeof(UInt168)) {
+					memcpy(_programHash.u8, programHash, programHash.GetSize());
+					CheckValid();
+				} else {
 					Log::error("invalid address {}", address);
 					memset(_programHash.u8, 0, sizeof(_programHash));
 					_isValid = false;
-				} else {
-					_isValid = true;
-					memcpy(_programHash.u8, programHash, programHash.GetSize());
 				}
 			}
 		}
 
 		Address::Address(const CMBlock &pubKey, Prefix prefix) {
 			Key key;
-			if (!key.SetPubKey(pubKey)) {
+			key.SetPubKey(pubKey);
+			if (key.Valid()) {
+				_programHash = key.ProgramHash(prefix);
+				CheckValid();
+			} else {
 				Log::error("invalid pubKey {}", Utils::encodeHex(pubKey));
 				memset(_programHash.u8, 0, sizeof(_programHash));
 				_isValid = false;
-			} else {
-				_programHash = key.ProgramHash(prefix);
-				_isValid = true;
 			}
 		}
 
 		Address::Address(const UInt168 &programHash) {
 			_programHash = programHash;
-			_isValid = true;
+			CheckValid();
 		}
 
 		Address::Address(const Address &address) {
@@ -61,8 +61,15 @@ namespace Elastos {
 
 		}
 
-		bool Address::IsValid() const {
+		bool Address::Valid() const {
 			return _isValid;
+		}
+
+		bool Address::IsIDAddress() const {
+			if (_isValid && _programHash.u8[0] == PrefixIDChain)
+				return true;
+
+			return false;
 		}
 
 		std::string Address::String() const {
@@ -100,6 +107,19 @@ namespace Elastos {
 
 		bool Address::operator!=(const std::string &address) const {
 			return this->String() != address;
+		}
+
+		void Address::CheckValid() {
+			if (_programHash.u8[0] == PrefixDeposit ||
+				_programHash.u8[0] == PrefixStandard ||
+				_programHash.u8[0] == PrefixCrossChain ||
+				_programHash.u8[0] == PrefixMultiSign ||
+				_programHash.u8[0] == PrefixIDChain ||
+				_programHash.u8[0] == PrefixDeposit) {
+				_isValid = true;
+			} else {
+				_isValid = false;
+			}
 		}
 
 	}
