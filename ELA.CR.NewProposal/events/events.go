@@ -16,9 +16,7 @@ type EventCallback func(*Event)
 
 // Constants for the type of a notification message.
 const (
-	// ETBlockAccepted indicates the associated block was accepted into
-	// the block chain.  Note that this does not necessarily mean it was
-	// added to the main chain.  For that, use ETBlockConnected.
+	// ETBlockAccepted indicates a new block received.
 	ETBlockAccepted EventType = iota
 
 	// ETBlockConnected indicates the associated block was connected to the
@@ -41,6 +39,11 @@ const (
 
 	// ETNewArbiterElection indicates to start the next arbiters election.
 	ETNewArbiterElection
+
+	// ETBlockConfirmAccepted indicates a block with confirm was accepted
+	// into the block chain.  Note that this does not necessarily mean it
+	// was added to the main chain.  For that, use ETBlockConnected.
+	ETBlockConfirmAccepted
 )
 
 // notificationTypeStrings is a map of notification types back to their constant

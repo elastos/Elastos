@@ -25,16 +25,7 @@ func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 	bm.Lock()
 	defer bm.Unlock()
 
-	inMainChain, isOrphan, err := bm.appendConfirm(confirm)
-	if err != nil {
-		return inMainChain, isOrphan, err
-	}
-
-	if block, ok := bm.blocks[confirm.Proposal.Hash()]; ok {
-		events.Notify(events.ETBlockAccepted, block)
-	}
-
-	return inMainChain, isOrphan, err
+	return bm.appendConfirm(confirm)
 }
 
 func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
@@ -184,10 +175,6 @@ func (bm *BlockPool) GetBlock(hash common.Uint256) (*types.Block, bool) {
 func (bm *BlockPool) GetDposBlockByHash(hash common.Uint256) (*types.DposBlock, error) {
 	bm.RLock()
 	defer bm.RUnlock()
-
-	if block, _ := bm.Chain.GetDposBlockByHash(hash); block != nil {
-		return block, nil
-	}
 
 	if block := bm.blocks[hash]; block != nil {
 		confirm := bm.confirms[hash]
