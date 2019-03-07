@@ -28,24 +28,6 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 	s.Version = NewBlockV0(s.Cfg)
 }
 
-func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNormalArbitratorsDesc() {
-	originLedger := blockchain.DefaultLedger
-
-	arbitrators := make([][]byte, 0)
-	for _, v := range config.DefaultParams.OriginArbiters {
-		a, _ := common.HexStringToBytes(v)
-		arbitrators = append(arbitrators, a)
-	}
-
-	producers, err := s.Version.GetNormalArbitratorsDesc(5, cfg.Chain.GetState().GetInterfaceProducers())
-	s.NoError(err)
-	for i := range producers {
-		s.Equal(arbitrators[i], producers[i])
-	}
-
-	blockchain.DefaultLedger = originLedger
-}
-
 func (s *blockVersionV0TestSuite) TestBlockVersionMain_AssignCoinbaseTxRewards() {
 	originLedger := blockchain.DefaultLedger
 	blockchain.DefaultLedger = &blockchain.Ledger{

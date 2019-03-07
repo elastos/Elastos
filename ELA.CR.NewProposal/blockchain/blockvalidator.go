@@ -336,9 +336,64 @@ func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbas
 		return errors.New("Reward amount in coinbase not correct")
 	}
 
-	if err := DefaultLedger.HeightVersions.CheckCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
+	if err := checkCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error {
+	// main version >= H2
+	if height >= config.DefaultParams.HeightVersions[3] {
+		outputAddressMap := make(map[Uint168]Fixed64)
+		for i := 2; i < len(coinbase.Outputs); i++ {
+			outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
+		}
+
+		arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
+		candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
+		if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
+			return errors.New("coinbase output count not match")
+		}
+
+		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
+		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
+		totalTopProducersReward := float64(dposTotalReward) * 0.75
+		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
+		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
+
+		for _, hash := range arbitratorsHashes {
+			amount, ok := outputAddressMap[*hash]
+			if !ok {
+				return errors.New("unknown dpos reward address")
+			}
+
+			if DefaultLedger.Arbitrators.IsCRCArbitratorProgramHash(hash) {
+				if amount != individualBlockConfirmReward {
+					return errors.New("incorrect dpos reward amount")
+				}
+			} else {
+				if amount != individualProducerReward+individualBlockConfirmReward {
+					return errors.New("incorrect dpos reward amount")
+				}
+			}
+		}
+
+		for _, v := range candidatesHashes {
+			amount, ok := outputAddressMap[*v]
+			if !ok {
+				return errors.New("unknown dpos reward address")
+			}
+
+			if amount != individualProducerReward {
+				return errors.New("incorrect dpos reward amount")
+			}
+		}
+
+		return nil
+	}
+
+	// old version [0, H2)
 	return nil
 }

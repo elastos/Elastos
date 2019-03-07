@@ -39,24 +39,6 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	return h.versions[heightKey].DefaultBlockVersion
 }
 
-func (h *heightVersions) CheckOutputProgramHash(blockHeight uint32, tx *types.Transaction, programHash common.Uint168) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(v txs.TxVersion) error {
-		return v.CheckOutputProgramHash(programHash)
-	})
-}
-
-func (h *heightVersions) CheckCoinbaseMinerReward(blockHeight uint32, tx *types.Transaction, totalReward common.Fixed64) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version txs.TxVersion) error {
-		return version.CheckCoinbaseMinerReward(tx, totalReward)
-	})
-}
-
-func (h *heightVersions) CheckCoinbaseArbitratorsReward(blockHeight uint32, tx *types.Transaction, rewardInCoinbase common.Fixed64) error {
-	return h.checkTxCompatibleWithLowVersion(blockHeight, tx, func(version txs.TxVersion) error {
-		return version.CheckCoinbaseArbitratorsReward(tx, rewardInCoinbase)
-	})
-}
-
 func (h *heightVersions) GetNormalArbitratorsDesc(blockHeight uint32,
 	arbitratorsCount uint32, arbiters []interfaces.Producer) ([][]byte, error) {
 	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
@@ -68,18 +50,6 @@ func (h *heightVersions) GetNormalArbitratorsDesc(blockHeight uint32,
 	}
 	return v.GetNormalArbitratorsDesc(arbitratorsCount, arbiters)
 }
-
-//func (h *heightVersions) GetCandidatesDesc(blockHeight uint32,
-//	startIndex uint32, producers []interfaces.Producer) ([][]byte, error) {
-//	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
-//	info := h.versions[heightKey]
-//
-//	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
-//	if v == nil {
-//		return nil, fmt.Errorf("[GetCandidatesDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
-//	}
-//	return v.GetCandidatesDesc(startIndex, producers)
-//}
 
 func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
