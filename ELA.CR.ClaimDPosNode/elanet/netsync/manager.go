@@ -92,10 +92,11 @@ type pauseMsg struct {
 // peerSyncState stores additional information that the SyncManager tracks
 // about a peer.
 type peerSyncState struct {
-	syncCandidate   bool
-	requestQueue    []*msg.InvVect
-	requestedTxns   map[common.Uint256]struct{}
-	requestedBlocks map[common.Uint256]struct{}
+	syncCandidate            bool
+	requestQueue             []*msg.InvVect
+	requestedTxns            map[common.Uint256]struct{}
+	requestedBlocks          map[common.Uint256]struct{}
+	requestedConfirmedBlocks map[common.Uint256]struct{}
 }
 
 // SyncManager is used to communicate block related messages with peers. The
@@ -116,11 +117,12 @@ type SyncManager struct {
 	quit         chan struct{}
 
 	// These fields should only be accessed from the blockHandler thread
-	rejectedTxns    map[common.Uint256]struct{}
-	requestedTxns   map[common.Uint256]struct{}
-	requestedBlocks map[common.Uint256]struct{}
-	syncPeer        *peer.Peer
-	peerStates      map[*peer.Peer]*peerSyncState
+	rejectedTxns             map[common.Uint256]struct{}
+	requestedTxns            map[common.Uint256]struct{}
+	requestedBlocks          map[common.Uint256]struct{}
+	requestedConfirmedBlocks map[common.Uint256]struct{}
+	syncPeer                 *peer.Peer
+	peerStates               map[*peer.Peer]*peerSyncState
 }
 
 // startSync will choose the best peer among the available candidate peers to
@@ -162,6 +164,7 @@ func (sm *SyncManager) startSync() {
 		// we may ignore blocks we need that the last sync peer failed
 		// to send.
 		sm.requestedBlocks = make(map[common.Uint256]struct{})
+		sm.requestedConfirmedBlocks = make(map[common.Uint256]struct{})
 
 		locator, err := sm.chain.LatestBlockLocator()
 		if err != nil {
@@ -206,9 +209,10 @@ func (sm *SyncManager) handleNewPeerMsg(peer *peer.Peer) {
 	// Initialize the peer state
 	isSyncCandidate := sm.isSyncCandidate(peer)
 	sm.peerStates[peer] = &peerSyncState{
-		syncCandidate:   isSyncCandidate,
-		requestedTxns:   make(map[common.Uint256]struct{}),
-		requestedBlocks: make(map[common.Uint256]struct{}),
+		syncCandidate:            isSyncCandidate,
+		requestedTxns:            make(map[common.Uint256]struct{}),
+		requestedBlocks:          make(map[common.Uint256]struct{}),
+		requestedConfirmedBlocks: make(map[common.Uint256]struct{}),
 	}
 
 	// Start syncing by choosing the best candidate if needed.
@@ -246,7 +250,9 @@ func (sm *SyncManager) handleDonePeerMsg(peer *peer.Peer) {
 	for blockHash := range state.requestedBlocks {
 		delete(sm.requestedBlocks, blockHash)
 	}
-
+	for blockHash := range state.requestedConfirmedBlocks {
+		delete(sm.requestedConfirmedBlocks, blockHash)
+	}
 	// Attempt to find a new peer to sync from if the quitting peer is the
 	// sync peer.  Also, reset the headers-first state if in headers-first
 	// mode so
@@ -355,18 +361,29 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 
 	// If we didn't ask for this block then the peer is misbehaving.
 	blockHash := bmsg.block.Block.Hash()
-	if _, exists = state.requestedBlocks[blockHash]; !exists {
-		log.Warnf("Got unrequested block %v from %s -- "+
-			"disconnecting", blockHash, peer.Addr())
-		peer.Disconnect()
-		return
-	}
 
 	// Remove block from request maps. Either chain will know about it and
 	// so we shouldn't have any more instances of trying to fetch it, or we
 	// will fail the insert and thus we'll retry next time we get an inv.
-	delete(state.requestedBlocks, blockHash)
-	delete(sm.requestedBlocks, blockHash)
+	if bmsg.block.ConfirmFlag {
+		if _, exists = state.requestedConfirmedBlocks[blockHash]; !exists {
+			log.Warnf("Got unrequested confirmed block %v from %s -- "+
+				"disconnecting", blockHash, peer.Addr())
+			peer.Disconnect()
+			return
+		}
+		delete(state.requestedConfirmedBlocks, blockHash)
+		delete(sm.requestedConfirmedBlocks, blockHash)
+	} else {
+		if _, exists = state.requestedBlocks[blockHash]; !exists {
+			log.Warnf("Got unrequested block %v from %s -- "+
+				"disconnecting", blockHash, peer.Addr())
+			peer.Disconnect()
+			return
+		}
+		delete(state.requestedBlocks, blockHash)
+		delete(sm.requestedBlocks, blockHash)
+	}
 
 	// Process the block to include validation, best chain selection, orphan
 	// handling, etc.
@@ -406,9 +423,21 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 func (sm *SyncManager) haveInventory(invVect *msg.InvVect) (bool, error) {
 	switch invVect.Type {
 	case msg.InvTypeBlock:
-		// Ask chain if the block is known to it in any form (main
-		// chain, side chain, or orphan).
+		// Ask blockMemPool and chain if the block is known to it in
+		// any form (main chain, side chain, or orphan).
+		if _, ok := sm.blockMemPool.GetBlock(invVect.Hash); ok {
+			return true, nil
+		}
 		return sm.chain.HaveBlock(&invVect.Hash)
+
+	case msg.InvTypeConfirmedBlock:
+		// Ask blockMemPool and chain if the block with confirm is
+		// known to it in (blockMemPool, main chain)
+		block, _ := sm.chain.GetDposBlockByHash(invVect.Hash)
+		if block != nil && block.ConfirmFlag {
+			return true, nil
+		}
+		return false, nil
 
 	case msg.InvTypeTx:
 		// Ask the transaction memory pool if the transaction is known
@@ -416,7 +445,6 @@ func (sm *SyncManager) haveInventory(invVect *msg.InvVect) (bool, error) {
 		if sm.txMemPool.HaveTransaction(invVect.Hash) {
 			return true, nil
 		}
-
 		return false, nil
 	}
 
@@ -440,7 +468,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 	lastBlock := -1
 	invVects := imsg.inv.InvList
 	for i := len(invVects) - 1; i >= 0; i-- {
-		if invVects[i].Type == msg.InvTypeBlock {
+		if invVects[i].Type == msg.InvTypeConfirmedBlock {
 			lastBlock = i
 			break
 		}
@@ -460,6 +488,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 		// Ignore unsupported inventory types.
 		switch iv.Type {
 		case msg.InvTypeBlock:
+		case msg.InvTypeConfirmedBlock:
 		case msg.InvTypeTx:
 		default:
 			continue
@@ -491,7 +520,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 			continue
 		}
 
-		if iv.Type == msg.InvTypeBlock {
+		if iv.Type == msg.InvTypeConfirmedBlock {
 			// The block is an orphan block that we already have.
 			// When the existing orphan was processed, it requested
 			// the missing parent blocks.  When this scenario
@@ -553,7 +582,16 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 				gdmsg.AddInvVect(iv)
 				numRequested++
 			}
-
+		case msg.InvTypeConfirmedBlock:
+			// Request the block and confirm if there is not already
+			// a pending request.
+			if _, exists := sm.requestedConfirmedBlocks[iv.Hash]; !exists {
+				sm.requestedConfirmedBlocks[iv.Hash] = struct{}{}
+				sm.limitMap(sm.requestedConfirmedBlocks, maxRequestedBlocks)
+				state.requestedConfirmedBlocks[iv.Hash] = struct{}{}
+				gdmsg.AddInvVect(iv)
+				numRequested++
+			}
 		case msg.InvTypeTx:
 			// Request the transaction if there is not already a
 			// pending request.
@@ -681,6 +719,24 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		// Generate the inventory vector and relay it.
 		blockHash := block.Hash()
 		iv := msg.NewInvVect(msg.InvTypeBlock, &blockHash)
+		sm.peerNotifier.RelayInventory(iv, block.Header)
+
+	case events.ETBlockConfirmAccepted:
+		// Don't relay if we are not current. Other peers that are
+		// current should already know about it.
+		if !sm.current() {
+			return
+		}
+
+		block, ok := event.Data.(*types.Block)
+		if !ok {
+			log.Warnf("Chain accepted event is not a block.")
+			break
+		}
+
+		// Generate the inventory vector and relay it.
+		blockHash := block.Hash()
+		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
 		sm.peerNotifier.RelayInventory(iv, block.Header)
 
 		// A block has been connected to the main block chain.
@@ -829,17 +885,18 @@ func (sm *SyncManager) Pause() chan<- struct{} {
 // block, tx, and inv updates.
 func New(config *Config) *SyncManager {
 	sm := SyncManager{
-		peerNotifier:    config.PeerNotifier,
-		chain:           config.Chain,
-		versions:        config.Versions,
-		txMemPool:       config.TxMemPool,
-		blockMemPool:    config.BlockMemPool,
-		rejectedTxns:    make(map[common.Uint256]struct{}),
-		requestedTxns:   make(map[common.Uint256]struct{}),
-		requestedBlocks: make(map[common.Uint256]struct{}),
-		peerStates:      make(map[*peer.Peer]*peerSyncState),
-		msgChan:         make(chan interface{}, config.MaxPeers*3),
-		quit:            make(chan struct{}),
+		peerNotifier:             config.PeerNotifier,
+		chain:                    config.Chain,
+		versions:                 config.Versions,
+		txMemPool:                config.TxMemPool,
+		blockMemPool:             config.BlockMemPool,
+		rejectedTxns:             make(map[common.Uint256]struct{}),
+		requestedTxns:            make(map[common.Uint256]struct{}),
+		requestedBlocks:          make(map[common.Uint256]struct{}),
+		requestedConfirmedBlocks: make(map[common.Uint256]struct{}),
+		peerStates:               make(map[*peer.Peer]*peerSyncState),
+		msgChan:                  make(chan interface{}, config.MaxPeers*3),
+		quit:                     make(chan struct{}),
 	}
 
 	events.Subscribe(sm.handleBlockchainEvents)

@@ -279,7 +279,14 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
-	if !d.network.InProducerList() {
+	isCurrentArbiter := false
+	arbiters := d.arbitrators.GetArbitrators()
+	for _, a := range arbiters {
+		if bytes.Equal(a, d.publicKey) {
+			isCurrentArbiter = true
+		}
+	}
+	if !isCurrentArbiter {
 		return
 	}
 
