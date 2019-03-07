@@ -28,9 +28,9 @@ type NetworkMock interface {
 	FireRequestProposal(id peer.PID, hash common.Uint256)
 	FireIllegalProposalReceived(id peer.PID, proposals *payload.DPOSIllegalProposals)
 	FireIllegalVotesReceived(id peer.PID, votes *payload.DPOSIllegalVotes)
-	FireProposalReceived(id peer.PID, p payload.DPOSProposal)
-	FireVoteReceived(id peer.PID, p payload.DPOSProposalVote)
-	FireVoteRejected(id peer.PID, p payload.DPOSProposalVote)
+	FireProposalReceived(id peer.PID, p *payload.DPOSProposal)
+	FireVoteReceived(id peer.PID, p *payload.DPOSProposalVote)
+	FireVoteRejected(id peer.PID, p *payload.DPOSProposalVote)
 	FireChangeView()
 	FireBadNetwork()
 	FireBlockReceived(b *types.Block, confirmed bool)
@@ -173,15 +173,15 @@ func (n *network) FireIllegalVotesReceived(id peer.PID, votes *payload.DPOSIlleg
 	n.listener.OnIllegalVotesReceived(id, votes)
 }
 
-func (n *network) FireProposalReceived(id peer.PID, p payload.DPOSProposal) {
+func (n *network) FireProposalReceived(id peer.PID, p *payload.DPOSProposal) {
 	n.listener.OnProposalReceived(id, p)
 }
 
-func (n *network) FireVoteReceived(id peer.PID, p payload.DPOSProposalVote) {
+func (n *network) FireVoteReceived(id peer.PID, p *payload.DPOSProposalVote) {
 	n.listener.OnVoteReceived(id, p)
 }
 
-func (n *network) FireVoteRejected(id peer.PID, p payload.DPOSProposalVote) {
+func (n *network) FireVoteRejected(id peer.PID, p *payload.DPOSProposalVote) {
 	n.listener.OnVoteRejected(id, p)
 }
 
