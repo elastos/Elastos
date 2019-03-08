@@ -175,13 +175,12 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		return false
 	}
 
-
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
 		Result:    true,
-		RawData: p.processingProposal,
+		RawData:   p.processingProposal,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 	p.FinishConsensus()
@@ -703,8 +702,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:       make(map[common.Uint256]payload.DPOSProposalVote),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: cfg.InactiveEliminateCount,
-			Store:                  cfg.Store,
-			Arbitrators:            cfg.Arbitrators,
+			Store:       cfg.Store,
+			Arbitrators: cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{

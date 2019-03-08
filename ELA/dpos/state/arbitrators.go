@@ -55,7 +55,7 @@ func (a *Arbitrators) ForceChange(height uint32) error {
 	}
 
 	a.showArbitersInfo(true)
-	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+	events.Notify(events.ETNewArbiterElection, a.getNeedConnectArbiters())
 
 	return nil
 }
@@ -70,7 +70,7 @@ func (a *Arbitrators) NormalChange(height uint32) error {
 	}
 
 	a.showArbitersInfo(true)
-	events.Notify(events.ETNewArbiterElection, a.nextArbitrators)
+	events.Notify(events.ETNewArbiterElection, a.getNeedConnectArbiters())
 
 	return nil
 }
@@ -100,6 +100,30 @@ func (a *Arbitrators) DecreaseChainHeight(height uint32) {
 	} else {
 		a.dutyIndex--
 	}
+}
+
+func (a *Arbitrators) GetNeedConnectArbiters() map[string]struct{} {
+	a.mtx.Lock()
+	arbiters := a.getNeedConnectArbiters()
+	a.mtx.Unlock()
+	return arbiters
+}
+
+func (a *Arbitrators) getNeedConnectArbiters() map[string]struct{} {
+	a.mtx.Lock()
+	arbiters := make(map[string]struct{})
+	for _, a := range a.currentArbitrators {
+		arbiters[common.BytesToHexString(a)] = struct{}{}
+	}
+	for _, a := range a.nextArbitrators {
+		arbiters[common.BytesToHexString(a)] = struct{}{}
+	}
+	for _, a := range a.chainParams.CRCArbiters {
+		arbiters[common.BytesToHexString(a.PublicKey)] = struct{}{}
+	}
+	a.mtx.Unlock()
+
+	return arbiters
 }
 
 func (a *Arbitrators) IsArbitrator(pk []byte) bool {

@@ -85,8 +85,7 @@ func (n *network) Start() {
 	n.p2pServer.Start()
 
 	n.UpdateProducersInfo()
-	arbiters := blockchain.DefaultLedger.Arbitrators.GetArbitrators()
-	if err := n.UpdatePeers(arbiters); err != nil {
+	if err := n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetNeedConnectArbiters()); err != nil {
 		log.Error(err)
 	}
 
@@ -158,6 +157,7 @@ func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) 
 		result[hex.EncodeToString(c.PublicKey)] =
 			p2p.PeerAddr{PID: pid, Addr: c.NetAddress}
 	}
+
 	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
 	for _, p := range producers {
 		if len(p.Info().NodePublicKey) != 33 {
@@ -172,42 +172,30 @@ func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) 
 
 	return result
 }
-
 func (n *network) Stop() error {
 	n.quit <- true
 	return n.p2pServer.Stop()
 }
 
-func (n *network) UpdatePeers(arbitrators [][]byte) error {
-	log.Info("[UpdatePeers] arbitrators:", arbitrators)
-	for _, v := range arbitrators {
-		pubKey := common.BytesToHexString(v)
+func (n *network) UpdatePeers(arbitrators map[string]struct{}) error {
+	log.Info("[UpdatePeers] arbitrators:", len(arbitrators))
 
-		n.peersLock.Lock()
-		ad, ok := n.directPeers[pubKey]
-		if !ok {
-			log.Error("can not find arbitrator related connection information, arbitrator public key is: ", pubKey)
-			n.peersLock.Unlock()
-			continue
-		}
-		ad.NeedConnect = true
-		ad.Sequence += uint32(len(arbitrators))
-		n.peersLock.Unlock()
+	roundHeights := uint32(len(blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()))
+	// version >= H2 should plus NormalArbitratorsCount
+	if blockchain.DefaultLedger.Blockchain.GetHeight()+1 >=
+		config.DefaultParams.HeightVersions[3] {
+		roundHeights += config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
 	}
-	for _, c := range blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators() {
-		pubKey := common.BytesToHexString(c.PublicKey)
 
-		n.peersLock.Lock()
-		ad, ok := n.directPeers[pubKey]
-		if !ok {
-			log.Error("can not find crc arbitrator related connection information, arbitrator public key is: ", pubKey)
+	for k, v := range n.directPeers {
+		if _, ok := arbitrators[k]; ok {
+			n.peersLock.Lock()
+			v.NeedConnect = true
+			v.Sequence += roundHeights
 			n.peersLock.Unlock()
-			continue
 		}
-		ad.NeedConnect = true
-		ad.Sequence += uint32(len(arbitrators))
-		n.peersLock.Unlock()
 	}
+
 	n.saveDirectPeers()
 
 	return nil
@@ -231,6 +219,8 @@ func (n *network) ChangeHeight(height uint32) error {
 	if offset == 0 {
 		return nil
 	}
+
+	n.UpdateProducersInfo()
 
 	n.peersLock.Lock()
 	crcArbiters := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
@@ -258,8 +248,6 @@ func (n *network) ChangeHeight(height uint32) error {
 
 	n.p2pServer.ConnectPeers(peers)
 	n.peersLock.Unlock()
-
-	go n.UpdateProducersInfo()
 
 	n.currentHeight = height
 	return nil
