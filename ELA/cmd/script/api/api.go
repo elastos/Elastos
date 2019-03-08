@@ -167,6 +167,7 @@ func initLedger(L *lua.LState) int {
 	}
 
 	ledger := blockchain.Ledger{}
+	blockchain.FoundationAddress = config.DefaultParams.Foundation
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Store = chainStore
