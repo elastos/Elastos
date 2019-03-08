@@ -145,53 +145,6 @@ func (s *heightVersionTestSuit) TestHeightVersions_CheckConfirmedBlockOnFork() {
 	s.Error(err, "height 1 do not support block vmax")
 }
 
-func (s *heightVersionTestSuit) TestHeightVersions_AddBlock() {
-	var err error
-
-	blockV1_h1 := &types.Block{Header: types.Header{Version: 1, Height: s.Height1}}
-	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
-	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
-
-	_, _, err = s.Version.AddBlock(blockV1_h1)
-	s.NoError(err)
-	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
-
-	_, _, err = s.Version.AddBlock(blockV1_h2)
-	s.NoError(err)
-	s.Equal("blockVersionTest1_AddDposBlock", versionsMsg)
-
-	_, _, err = s.Version.AddBlock(blockV1_h3)
-	s.Error(err, "height 3 do not support block v1")
-
-	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
-	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
-	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
-
-	_, _, err = s.Version.AddBlock(blockV2_h1)
-	s.Error(err, "height 1 do not support block v2")
-
-	_, _, err = s.Version.AddBlock(blockV2_h2)
-	s.NoError(err)
-	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
-
-	_, _, err = s.Version.AddBlock(blockV2_h3)
-	s.NoError(err)
-	s.Equal("blockVersionTest2_AddDposBlock", versionsMsg)
-
-	blockVMax_h1 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height1}}
-	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
-	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
-
-	_, _, err = s.Version.AddBlock(blockVMax_h1)
-	s.Error(err, "height 1 do not support block vmax")
-
-	_, _, err = s.Version.AddBlock(blockVMax_h2)
-	s.Error(err, "height 1 do not support block vmax")
-
-	_, _, err = s.Version.AddBlock(blockVMax_h3)
-	s.Error(err, "height 1 do not support block vmax")
-}
-
 func (s *heightVersionTestSuit) TestHeightVersions_AddBlockConfirmConfirm() {
 	var err error
 
@@ -239,53 +192,6 @@ func (s *heightVersionTestSuit) TestHeightVersions_AddBlockConfirmConfirm() {
 	s.Error(err, "height 1 do not support block vmax")
 
 	_, _, err = s.Version.AddDposBlock(&types.DposBlock{BlockFlag: true, Block: blockVMax_h3})
-	s.Error(err, "height 1 do not support block vmax")
-}
-
-func (s *heightVersionTestSuit) TestHeightVersions_AssignCoinbaseTxRewards() {
-	var err error
-
-	blockV1_h1 := &types.Block{Header: types.Header{Version: 1, Height: s.Height1}}
-	blockV1_h2 := &types.Block{Header: types.Header{Version: 1, Height: s.Height2}}
-	blockV1_h3 := &types.Block{Header: types.Header{Version: 1, Height: s.Height3}}
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV1_h1, 0)
-	s.NoError(err)
-	s.Equal("blockVersionTest1_AssignCoinbaseTxRewards", versionsMsg)
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV1_h2, 0)
-	s.NoError(err)
-	s.Equal("blockVersionTest1_AssignCoinbaseTxRewards", versionsMsg)
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV1_h3, 0)
-	s.Error(err, "height 3 do not support block v1")
-
-	blockV2_h1 := &types.Block{Header: types.Header{Version: 2, Height: s.Height1}}
-	blockV2_h2 := &types.Block{Header: types.Header{Version: 2, Height: s.Height2}}
-	blockV2_h3 := &types.Block{Header: types.Header{Version: 2, Height: s.Height3}}
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV2_h1, 0)
-	s.Error(err, "height 1 do not support block v2")
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV2_h2, 0)
-	s.NoError(err)
-	s.Equal("blockVersionTest2_AssignCoinbaseTxRewards", versionsMsg)
-
-	err = s.Version.AssignCoinbaseTxRewards(blockV2_h3, 0)
-	s.NoError(err)
-	s.Equal("blockVersionTest2_AssignCoinbaseTxRewards", versionsMsg)
-
-	blockVMax_h1 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height1}}
-	blockVMax_h2 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height2}}
-	blockVMax_h3 := &types.Block{Header: types.Header{Version: math.MaxUint32, Height: s.Height3}}
-
-	err = s.Version.AssignCoinbaseTxRewards(blockVMax_h1, 0)
-	s.Error(err, "height 1 do not support block vmax")
-
-	err = s.Version.AssignCoinbaseTxRewards(blockVMax_h2, 0)
-	s.Error(err, "height 1 do not support block vmax")
-
-	err = s.Version.AssignCoinbaseTxRewards(blockVMax_h3, 0)
 	s.Error(err, "height 1 do not support block vmax")
 }
 

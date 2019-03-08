@@ -166,18 +166,7 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	inMainChain, isOrphan, err := b.processBlock(block, confirm)
-	if err != nil {
-		return inMainChain, isOrphan, err
-	}
-
-	if !inMainChain && !isOrphan {
-		if err := b.versions.CheckConfirmedBlockOnFork(block); err != nil {
-			return inMainChain, isOrphan, err
-		}
-	}
-
-	return inMainChain, isOrphan, nil
+	return b.processBlock(block, confirm)
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {

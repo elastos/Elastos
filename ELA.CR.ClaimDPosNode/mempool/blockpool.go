@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -13,7 +14,9 @@ import (
 )
 
 type BlockPool struct {
-	Chain *blockchain.BlockChain
+	Chain     *blockchain.BlockChain
+	Store     blockchain.IChainStore
+	IsCurrent func() bool
 
 	sync.RWMutex
 	blocks   map[common.Uint256]*types.Block
@@ -26,6 +29,16 @@ func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 	defer bm.Unlock()
 
 	return bm.appendConfirm(confirm)
+}
+
+func (bm *BlockPool) AddDposBlock(height uint32, dposBlock *types.DposBlock) (bool, bool, error) {
+	// main version >=H1
+	if height >= config.Parameters.HeightVersions[2] {
+		return bm.AppendDposBlock(dposBlock)
+	}
+
+	// old version [0, H1)
+	return bm.Chain.ProcessBlock(dposBlock.Block, dposBlock.Confirm)
 }
 
 func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
@@ -141,6 +154,12 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		inMainChain, isOrphan, err := bm.Chain.ProcessBlock(block, confirm)
 		if err != nil {
 			return inMainChain, isOrphan, errors.New("add block failed," + err.Error())
+		}
+
+		if !inMainChain && !isOrphan {
+			if err := bm.CheckConfirmedBlockOnFork(bm.Store.GetHeight(), block); err != nil {
+				return inMainChain, isOrphan, err
+			}
 		}
 
 		if isOrphan && !inMainChain {

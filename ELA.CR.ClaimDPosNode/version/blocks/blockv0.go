@@ -2,7 +2,6 @@ package blocks
 
 import (
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -21,35 +20,8 @@ func (b *blockV0) GetVersion() uint32 {
 	return 0
 }
 
-func (b *blockV0) GetNextOnDutyArbitrator(dutyChangedCount, offset uint32) []byte {
-	arbitrators, _ := b.GetNormalArbitratorsDesc(0, nil)
-	height := b.cfg.ChainStore.GetHeight()
-	index := (height + offset) % uint32(len(arbitrators))
-	arbitrator := arbitrators[index]
-
-	return arbitrator
-}
-
 func (b *blockV0) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return nil
-}
-
-func (b *blockV0) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
-	[][]byte, error) {
-	arbitersByte := make([][]byte, 0)
-	for _, arbiter := range b.cfg.ChainParams.OriginArbiters {
-		arbiterByte, err := common.HexStringToBytes(arbiter)
-		if err != nil {
-			return nil, err
-		}
-		arbitersByte = append(arbitersByte, arbiterByte)
-	}
-
-	return arbitersByte, nil
-}
-
-func (b *blockV0) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return b.cfg.Chain.ProcessBlock(dposBlock.Block, dposBlock.Confirm)
 }
 
 func (b *blockV0) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

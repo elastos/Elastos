@@ -1,13 +1,9 @@
 package blocks
 
 import (
-	"math"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/verconf"
 	"github.com/stretchr/testify/suite"
 )
@@ -26,71 +22,6 @@ func (s *blockVersionV0TestSuite) SetupTest() {
 		ChainParams: &config.DefaultParams,
 	}
 	s.Version = NewBlockV0(s.Cfg)
-}
-
-func (s *blockVersionV0TestSuite) TestBlockVersionMain_AssignCoinbaseTxRewards() {
-	originLedger := blockchain.DefaultLedger
-	blockchain.DefaultLedger = &blockchain.Ledger{
-		Blockchain: &blockchain.BlockChain{},
-	}
-
-	//reward can be exactly division
-
-	rewardInCoinbase := common.Fixed64(1000)
-	foundationReward := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	minerReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
-	dposTotalReward := rewardInCoinbase - foundationReward - minerReward
-
-	tx := &types.Transaction{
-		Version: types.TransactionVersion(s.Version.GetVersion()),
-		TxType:  types.CoinBase,
-	}
-	tx.Outputs = []*types.Output{
-		{ProgramHash: blockchain.FoundationAddress, Value: 0},
-		{ProgramHash: common.Uint168{}, Value: 0},
-	}
-	block := &types.Block{
-		Transactions: []*types.Transaction{
-			tx,
-		},
-	}
-
-	s.NoError(s.Version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
-
-	s.Equal(foundationReward, tx.Outputs[0].Value)
-	s.Equal(minerReward, tx.Outputs[1].Value)
-	s.Equal(dposTotalReward, tx.Outputs[1].Value)
-
-	//reward can not be exactly division
-
-	rewardInCoinbase = common.Fixed64(999)
-	foundationReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.3))
-	foundationRewardNormal := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	minerReward = common.Fixed64(float64(rewardInCoinbase) * 0.35)
-	dposTotalReward = rewardInCoinbase - foundationRewardNormal - minerReward
-
-	tx = &types.Transaction{
-		Version: types.TransactionVersion(s.Version.GetVersion()),
-		TxType:  types.CoinBase,
-	}
-	tx.Outputs = []*types.Output{
-		{ProgramHash: blockchain.FoundationAddress, Value: 0},
-		{ProgramHash: common.Uint168{}, Value: 0},
-	}
-	block = &types.Block{
-		Transactions: []*types.Transaction{
-			tx,
-		},
-	}
-
-	s.NoError(s.Version.AssignCoinbaseTxRewards(block, rewardInCoinbase))
-
-	s.Equal(foundationRewardNormal, tx.Outputs[0].Value)
-	s.NotEqual(foundationReward, tx.Outputs[0].Value)
-	s.Equal(minerReward, tx.Outputs[1].Value)
-	s.Equal(dposTotalReward, tx.Outputs[2].Value)
-
-	blockchain.DefaultLedger = originLedger
 }
 
 func (s *blockVersionV0TestSuite) TestBlockVersionMain_GetNextOnDutyArbitrator() {
