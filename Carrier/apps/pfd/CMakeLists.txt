@@ -88,9 +88,3 @@ install(FILES server.conf
 install(FILES client.conf
     DESTINATION "etc/carrier"
     RENAME "elapfd-client.conf")
-
-if(NOT WIN32)
-    install(PROGRAMS pfd.sh
-        RENAME elapfd.sh
-        DESTINATION "bin")
-endif()
