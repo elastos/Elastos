@@ -87,6 +87,7 @@ var DefaultParams = Params{
 		1108812, //fixme edit height later
 	},
 	VoteStartHeight:          1008812, //fixme edit height later
+	PublicDPOSHeight:         1108812, //fixme edit height later
 	MaxInactiveRounds:        3,
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
@@ -182,12 +183,6 @@ type Params struct {
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
 
-	// OriginArbiters defines the original arbiters producing the block.
-	OriginArbiters []string
-
-	// CRCArbiters defines the fixed CRC arbiters producing the block.
-	CRCArbiters []CRCArbiter
-
 	// PowLimit defines the highest allowed proof of work value for a block
 	// as a uint256.
 	PowLimit *big.Int
@@ -225,11 +220,28 @@ type Params struct {
 	// MinTransactionFee defines the minimum fee of a transaction.
 	MinTransactionFee int64
 
+	// OriginArbiters defines the original arbiters producing the block.
+	OriginArbiters []string
+
 	// Define height versions about block chain.
 	HeightVersions []uint32
 
-	// VoteStartHeight indicates the height of DPOS consensus begins.
+	// VoteStartHeight (H1) indicates the height of DPOS consensus begins with
+	// only CRC producers participate in producing blocks.
 	VoteStartHeight uint32
+
+	// PublicDPOSHeight (H2) indicates the height when public registered and
+	// elected producers participate in DPOS consensus.
+	PublicDPOSHeight uint32
+
+	// CRCArbiters defines the fixed CRC arbiters producing the block.
+	CRCArbiters []CRCArbiter
+
+	// GeneralArbiters defines the number of general(no-CRC) arbiters.
+	GeneralArbiters int
+
+	// CandidateArbiters defines the number of needed candidate arbiters.
+	CandidateArbiters int
 
 	// MaxInactiveRounds defines the maximum inactive rounds before producer
 	// takes penalty.

@@ -179,7 +179,6 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
-		RawData:   p.processingProposal,
 		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
