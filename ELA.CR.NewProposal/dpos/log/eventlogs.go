@@ -8,6 +8,10 @@ type EventLogs struct {
 }
 
 func (e *EventLogs) OnProposalArrived(prop *ProposalEvent) {
+	offset := uint32(0)
+	if prop.RawData != nil {
+		offset = prop.RawData.ViewOffset
+	}
 	Info(fmt.Sprintf("[OnProposalArrived] "+
 		"Sponsor: %s, "+
 		"BlockHash: %s, "+
@@ -19,11 +23,15 @@ func (e *EventLogs) OnProposalArrived(prop *ProposalEvent) {
 		prop.BlockHash,
 		prop.ReceivedTime,
 		prop.Result,
-		prop.RawData.ViewOffset,
+		offset,
 		prop.ProposalHash))
 }
 
 func (e *EventLogs) OnProposalFinished(prop *ProposalEvent) {
+	offset := uint32(0)
+	if prop.RawData != nil {
+		offset = prop.RawData.ViewOffset
+	}
 	Info(fmt.Sprintf("[OnProposalFinished] "+
 		"Sponsor: %s, "+
 		"BlockHash: %s, "+
@@ -35,18 +43,22 @@ func (e *EventLogs) OnProposalFinished(prop *ProposalEvent) {
 		prop.BlockHash,
 		prop.EndTime,
 		prop.Result,
-		prop.RawData.ViewOffset,
+		offset,
 		prop.ProposalHash))
 }
 
 func (e *EventLogs) OnVoteArrived(vote *VoteEvent) {
+	proposalHash := ""
+	if vote.RawData != nil {
+		proposalHash = vote.RawData.ProposalHash.String()
+	}
 	Info(fmt.Sprintf("[OnVoteArrived] "+
 		"Signer: %s, "+
 		"ProposalHash: %s, "+
 		"ReceivedTime: %s, "+
 		"Result: %t",
 		vote.Signer,
-		vote.RawData.ProposalHash,
+		proposalHash,
 		vote.ReceivedTime,
 		vote.Result))
 }

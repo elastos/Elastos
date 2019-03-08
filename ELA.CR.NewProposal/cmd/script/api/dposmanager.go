@@ -140,6 +140,7 @@ var dposManagerMethods = map[string]lua.LGFunction{
 	"sign_vote":     dposManagerSignVote,
 
 	"check_last_relay": dposManagerCheckLastRelay,
+	"check_confirm_in_block_pool": dposCheckConfirmInBlockPool,
 }
 
 func dposManagerPushBlock(L *lua.LState) int {
@@ -165,6 +166,17 @@ func dposManagerSetOnDuty(L *lua.LState) int {
 	m.Handler.SwitchTo(onDuty)
 
 	return 0
+}
+
+func dposCheckConfirmInBlockPool(L *lua.LState) int {
+	m := checkDposManager(L ,1)
+	blockHash := L.ToString(2)
+	hash, _ := common.Uint256FromHexString(blockHash)
+
+	_, ok := m.Peer.GetBlockPool().GetConfirm(*hash)
+	L.Push(lua.LBool(ok))
+
+	return 1
 }
 
 func dposManagerCheckLastRelay(L *lua.LState) int {
