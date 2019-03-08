@@ -112,7 +112,3 @@ install(TARGETS elashell
 install(FILES elashell.conf
         DESTINATION "etc/carrier"
         RENAME "elashell.conf")
-
-if(NOT WIN32)
-    install(PROGRAMS elashell.sh DESTINATION "bin")
-endif()
