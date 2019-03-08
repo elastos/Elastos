@@ -13,8 +13,8 @@ return suite.run_case(function()
     suite.test.assert_false(suite.dpos.A.manager:is_status_running())
 
     --- generate two blocks within same height
-    local b1 = suite.block_utils.height_one()
-    local b2 = suite.block_utils.height_one()
+    local b1 = block.new(suite.dpos.A.manager)
+    local b2 = block.new(suite.dpos.A.manager)
     suite.test.assert_not_equal(b1:hash(), b2:hash(), "two blocss should not be equal")
 
     --- simulate block arrive event
@@ -25,5 +25,5 @@ return suite.run_case(function()
     suite.dpos.push_block(suite.dpos.A, b1)
     suite.dpos.push_block(suite.dpos.A, b2)
 
-    suite.cs.arbiter_proposal_confirm(suite.dpos.A, prop, b1, false)
+    suite.arbiter_proposal_confirm(suite.dpos.A, prop, b1, false)
 end)

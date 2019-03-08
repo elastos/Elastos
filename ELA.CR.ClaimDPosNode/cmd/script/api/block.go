@@ -1,18 +1,21 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/pow"
 
 	"github.com/yuin/gopher-lua"
 )
 
 const (
 	luaBlockTypeName = "block"
-	minerAddress     = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	minerAddress     = "EWUSe87Qiekzpx7Xqf8RphdwNX5Z84iGEA"
 )
 
 func RegisterBlockType(L *lua.LState) {
@@ -27,11 +30,20 @@ func RegisterBlockType(L *lua.LState) {
 // Constructor
 func newBlock(L *lua.LState) int {
 
-	//tx, _ := pow.CreateCoinbaseTx(minerAddress)
-	var tx types.Transaction
-	block := &types.Block{
-		Transactions: []*types.Transaction{&tx},
+	m := checkDposManager(L, 1)
+
+	service := pow.NewService(&pow.Config{
+		PayToAddr: minerAddress,
+		Chain: blockchain.DefaultLedger.Blockchain,
+		ChainParams: &config.DefaultParams,
+		Versions: blockchain.DefaultLedger.HeightVersions,
+		TxMemPool: m.Peer.GetTxPool(),
+	})
+	block, err := service.GenerateBlock(minerAddress)
+	if err != nil {
+		fmt.Printf("New block error: %s \n", err.Error())
 	}
+	service.SolveBlock(block, nil)
 
 	ud := L.NewUserData()
 	ud.Value = block
