@@ -410,7 +410,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// handling, etc.
 	log.Debugf("Receive block %s at height %d", blockHash,
 		bmsg.block.Block.Height)
-	_, isOrphan, err := sm.versions.AddDposBlock(bmsg.block)
+	_, isOrphan, err := sm.blockMemPool.AddDposBlock(sm.chain.GetHeight(), bmsg.block)
 	if err != nil {
 		reason := fmt.Sprintf("Rejected block %v from %s: %v", blockHash,
 			peer, err)
@@ -790,6 +790,17 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 				// the transaction pool.
 				sm.txMemPool.RemoveTransaction(tx)
 			}
+		}
+	case events.ETIllegalBlockEvidence:
+		tx, ok := event.Data.(*types.Transaction)
+		if !ok {
+			log.Warnf("Illegal evidence event is not a tx")
+			break
+		}
+
+		if err := sm.txMemPool.AppendToTxPool(tx); err != nil {
+			log.Warnf("Illegal evidence tx append to txpool failed", err)
+			break
 		}
 	}
 }

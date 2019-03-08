@@ -39,18 +39,6 @@ func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	return h.versions[heightKey].DefaultBlockVersion
 }
 
-func (h *heightVersions) GetNormalArbitratorsDesc(blockHeight uint32,
-	arbitratorsCount uint32, arbiters []interfaces.Producer) ([][]byte, error) {
-	heightKey := h.findLastAvailableHeightKey(blockHeight + 1)
-	info := h.versions[heightKey]
-
-	v := h.findBlockVersion(&info, info.DefaultBlockVersion)
-	if v == nil {
-		return nil, fmt.Errorf("[GetNormalArbitratorsDesc] Block height %d can not support block version %d", blockHeight, info.DefaultBlockVersion)
-	}
-	return v.GetNormalArbitratorsDesc(arbitratorsCount, arbiters)
-}
-
 func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
 		err := version.CheckConfirmedBlockOnFork(block)
@@ -59,32 +47,12 @@ func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return err
 }
 
-func (h *heightVersions) AddBlock(block *types.Block) (bool, bool, error) {
-	dposBlock := &types.DposBlock{BlockFlag: true, Block: block}
-	return h.checkDposBlock(dposBlock, func(version blocks.BlockVersion) (bool, bool, error) {
-		return version.AddDposBlock(dposBlock)
-	})
-}
-
-func (h *heightVersions) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return h.checkDposBlock(dposBlock, func(version blocks.BlockVersion) (bool, bool, error) {
-		return version.AddDposBlock(dposBlock)
-	})
-}
-
 func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
 		err := version.AssignCoinbaseTxRewards(block, totalReward)
 		return false, false, err
 	})
 	return err
-}
-
-func (h *heightVersions) GetNextOnDutyArbitrator(blockHeight, dutyChangedCount, offset uint32) []byte {
-	heightKey := h.findLastAvailableHeightKey(blockHeight)
-	info := h.versions[heightKey]
-
-	return info.CompatibleBlockVersions[info.DefaultBlockVersion].GetNextOnDutyArbitrator(dutyChangedCount, offset)
 }
 
 func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {

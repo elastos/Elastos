@@ -83,6 +83,7 @@ func main() {
 
 	txMemPool := mempool.NewTxPool()
 	blockMemPool := mempool.NewBlockPool()
+	blockMemPool.Store = chainStore
 	verconf := verconf.Config{
 		ChainStore:   chainStore,
 		ChainParams:  activeNetParams,
@@ -130,6 +131,7 @@ func main() {
 	defer server.Stop()
 	verconf.Server = server
 
+	blockMemPool.IsCurrent = server.IsCurrent
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
 		pwd, err := cmdcom.GetFlagPassword()
@@ -170,11 +172,12 @@ func main() {
 		Chain:       chain,
 		ChainParams: activeNetParams,
 		TxMemPool:   txMemPool,
-		Versions:    versions,
+		BlkMemPool:  blockMemPool,
 		BroadcastBlock: func(block *types.Block) {
 			hash := block.Hash()
 			server.RelayInventory(msg.NewInvVect(msg.InvTypeBlock, &hash), block)
 		},
+		Arbitrators: arbiters,
 	})
 
 	log.Info("Start services")

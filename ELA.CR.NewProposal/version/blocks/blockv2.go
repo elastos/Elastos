@@ -2,15 +2,12 @@ package blocks
 
 import (
 	"errors"
-	"math"
-	"sort"
-
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/version/verconf"
+	"math"
 )
 
 // Ensure blockV2 implement the BlockVersion interface.
@@ -23,23 +20,6 @@ type blockV2 struct {
 
 func (b *blockV2) GetVersion() uint32 {
 	return 2
-}
-
-func (b *blockV2) GetNormalArbitratorsDesc(arbitratorsCount uint32, producers []interfaces.Producer) ([][]byte,
-	error) {
-	if uint32(len(producers)) < arbitratorsCount/2+1 {
-		return nil, errors.New("producers count less than min arbitrators count")
-	}
-
-	sort.Slice(producers, func(i, j int) bool {
-		return producers[i].Votes() > producers[j].Votes()
-	})
-
-	result := make([][]byte, 0)
-	for i := uint32(0); i < arbitratorsCount && i < uint32(len(producers)); i++ {
-		result = append(result, producers[i].NodePublicKey())
-	}
-	return result, nil
 }
 
 func (b *blockV2) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

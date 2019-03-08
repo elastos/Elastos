@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
@@ -104,7 +103,7 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	}
 
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(b.cfg.Versions.GetDefaultTxVersion(block.Height)),
+		Version:        types.TxVersion09,
 		TxType:         types.IllegalBlockEvidence,
 		PayloadVersion: payload.IllegalBlockVersion,
 		Payload:        illegalBlocks,
@@ -120,15 +119,6 @@ func (b *blockV1) CheckConfirmedBlockOnFork(block *types.Block) error {
 	}
 
 	return nil
-}
-
-func (b *blockV1) GetNormalArbitratorsDesc(arbitratorsCount uint32, arbiters []interfaces.Producer) (
-	result [][]byte, err error) {
-	return
-}
-
-func (b *blockV1) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	return b.cfg.BlockMemPool.AppendDposBlock(dposBlock)
 }
 
 func (b *blockV1) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {

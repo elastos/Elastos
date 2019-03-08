@@ -3,7 +3,6 @@ package manager
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -139,8 +138,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
 	evidences *payload.DPOSIllegalProposals) {
 	tx := &types.Transaction{
-		Version: types.TransactionVersion(blockchain.DefaultLedger.
-			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
+		Version:        types.TxVersion09,
 		TxType:         types.IllegalProposalEvidence,
 		PayloadVersion: payload.IllegalProposalVersion,
 		Payload:        evidences,
@@ -160,8 +158,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
 func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 	evidence *payload.SidechainIllegalData) {
 	tx := &types.Transaction{
-		Version: types.TransactionVersion(blockchain.DefaultLedger.
-			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
+		Version:        types.TxVersion09,
 		TxType:         types.IllegalSidechainEvidence,
 		PayloadVersion: payload.SidechainIllegalDataVersion,
 		Payload:        evidence,
@@ -181,8 +178,7 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
 	evidences *payload.DPOSIllegalVotes) {
 	tx := &types.Transaction{
-		Version:        types.TransactionVersion(blockchain.DefaultLedger.
-			HeightVersions.GetDefaultTxVersion(i.dispatcher.CurrentHeight())),
+		Version:        types.TxVersion09,
 		TxType:         types.IllegalVoteEvidence,
 		PayloadVersion: payload.IllegalVoteVersion,
 		Payload:        evidences,
