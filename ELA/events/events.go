@@ -44,6 +44,9 @@ const (
 	// into the block chain.  Note that this does not necessarily mean it
 	// was added to the main chain.  For that, use ETBlockConnected.
 	ETBlockConfirmAccepted
+
+	// ETIllegalEvidence indicates a illegal block received.
+	ETIllegalBlockEvidence
 )
 
 // notificationTypeStrings is a map of notification types back to their constant
