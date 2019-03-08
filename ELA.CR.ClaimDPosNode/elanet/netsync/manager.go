@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
@@ -110,6 +111,7 @@ type SyncManager struct {
 	shutdown     int32
 	chain        *blockchain.BlockChain
 	versions     interfaces.HeightVersions
+	chainParams  *config.Params
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
 	msgChan      chan interface{}
@@ -365,10 +367,29 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// Remove block from request maps. Either chain will know about it and
 	// so we shouldn't have any more instances of trying to fetch it, or we
 	// will fail the insert and thus we'll retry next time we get an inv.
-	if bmsg.block.ConfirmFlag {
+	if bmsg.block.Block.Height < sm.chainParams.HeightVersions[2] {
+		_, confirmedBlockExist := state.requestedConfirmedBlocks[blockHash]
+		if confirmedBlockExist {
+			delete(state.requestedConfirmedBlocks, blockHash)
+			delete(sm.requestedConfirmedBlocks, blockHash)
+		}
+
+		_, blockExist := state.requestedBlocks[blockHash]
+		if blockExist {
+			delete(state.requestedBlocks, blockHash)
+			delete(sm.requestedBlocks, blockHash)
+		}
+
+		if !confirmedBlockExist && !blockExist {
+			log.Warnf("Got unrequested confirmed block %v from %s -- "+
+				"disconnecting", blockHash, peer)
+			peer.Disconnect()
+			return
+		}
+	} else if bmsg.block.ConfirmFlag {
 		if _, exists = state.requestedConfirmedBlocks[blockHash]; !exists {
 			log.Warnf("Got unrequested confirmed block %v from %s -- "+
-				"disconnecting", blockHash, peer.Addr())
+				"disconnecting", blockHash, peer)
 			peer.Disconnect()
 			return
 		}
@@ -377,7 +398,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	} else {
 		if _, exists = state.requestedBlocks[blockHash]; !exists {
 			log.Warnf("Got unrequested block %v from %s -- "+
-				"disconnecting", blockHash, peer.Addr())
+				"disconnecting", blockHash, peer)
 			peer.Disconnect()
 			return
 		}
@@ -887,6 +908,7 @@ func New(config *Config) *SyncManager {
 	sm := SyncManager{
 		peerNotifier:             config.PeerNotifier,
 		chain:                    config.Chain,
+		chainParams:              config.ChainParams,
 		versions:                 config.Versions,
 		txMemPool:                config.TxMemPool,
 		blockMemPool:             config.BlockMemPool,
