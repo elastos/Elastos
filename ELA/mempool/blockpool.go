@@ -31,9 +31,9 @@ func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 	return bm.appendConfirm(confirm)
 }
 
-func (bm *BlockPool) AddDposBlock(height uint32, dposBlock *types.DposBlock) (bool, bool, error) {
+func (bm *BlockPool) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	// main version >=H1
-	if height >= config.Parameters.HeightVersions[2] {
+	if dposBlock.Block.Height >= config.Parameters.HeightVersions[2] {
 		return bm.AppendDposBlock(dposBlock)
 	}
 

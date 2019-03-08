@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -37,7 +36,6 @@ type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
 	state       *state.State
-	versions    interfaces.HeightVersions
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -67,8 +65,7 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params, versions interfaces.HeightVersions,
-	state *state.State) (*BlockChain, error) {
+func New(db IChainStore, chainParams *config.Params, state *state.State) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -77,7 +74,6 @@ func New(db IChainStore, chainParams *config.Params, versions interfaces.HeightV
 		chainParams:         chainParams,
 		db:                  db,
 		state:               state,
-		versions:            versions,
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,

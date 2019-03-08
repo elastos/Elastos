@@ -6,7 +6,6 @@ import (
 	"sync/atomic"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -110,7 +109,6 @@ type SyncManager struct {
 	started      int32
 	shutdown     int32
 	chain        *blockchain.BlockChain
-	versions     interfaces.HeightVersions
 	chainParams  *config.Params
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
@@ -410,7 +408,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// handling, etc.
 	log.Debugf("Receive block %s at height %d", blockHash,
 		bmsg.block.Block.Height)
-	_, isOrphan, err := sm.blockMemPool.AddDposBlock(sm.chain.GetHeight(), bmsg.block)
+	_, isOrphan, err := sm.blockMemPool.AddDposBlock(bmsg.block)
 	if err != nil {
 		reason := fmt.Sprintf("Rejected block %v from %s: %v", blockHash,
 			peer, err)
@@ -920,7 +918,6 @@ func New(config *Config) *SyncManager {
 		peerNotifier:             config.PeerNotifier,
 		chain:                    config.Chain,
 		chainParams:              config.ChainParams,
-		versions:                 config.Versions,
 		txMemPool:                config.TxMemPool,
 		blockMemPool:             config.BlockMemPool,
 		rejectedTxns:             make(map[common.Uint256]struct{}),

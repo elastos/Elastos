@@ -62,8 +62,7 @@ func TestService_Init(t *testing.T) {
 		CurrentArbitrators: arbitrators,
 	}
 
-	chain, err := blockchain.New(chainStore, &config.DefaultParams,
-		nil, state.NewState(arbitratorsMock, &config.DefaultParams))
+	chain, err := blockchain.New(chainStore, &config.DefaultParams, state.NewState(arbitratorsMock, &config.DefaultParams))
 	if err != nil {
 		t.Error(err)
 	}
@@ -154,7 +153,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, pow.AssignCoinbaseTxRewards(config.Parameters.HeightVersions[3], block, rewardInCoinbase))
+	assert.NoError(t, pow.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 
 	assert.Equal(t, foundationReward, tx.Outputs[0].Value)
 	assert.NotEqual(t, minerReward, tx.Outputs[1].Value)
@@ -204,7 +203,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, pow.AssignCoinbaseTxRewards(config.Parameters.HeightVersions[3], block, rewardInCoinbase))
+	assert.NoError(t, pow.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 
 	assert.NotEqual(t, foundationRewardNormal, tx.Outputs[0].Value)
 	assert.Equal(t, foundationReward, tx.Outputs[0].Value)
@@ -251,7 +250,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, pow.AssignCoinbaseTxRewards(config.Parameters.HeightVersions[2], block, rewardInCoinbase))
+	assert.NoError(t, pow.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 	assert.Equal(t, foundationReward, tx.Outputs[0].Value)
 	assert.Equal(t, minerReward, tx.Outputs[1].Value)
 	assert.Equal(t, dposTotalReward, tx.Outputs[1].Value)
@@ -277,7 +276,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, pow.AssignCoinbaseTxRewards(config.Parameters.HeightVersions[2], block, rewardInCoinbase))
+	assert.NoError(t, pow.AssignCoinbaseTxRewards(block, rewardInCoinbase))
 	assert.Equal(t, foundationRewardNormal, tx.Outputs[0].Value)
 	assert.NotEqual(t, foundationReward, tx.Outputs[0].Value)
 	assert.Equal(t, minerReward, tx.Outputs[1].Value)
