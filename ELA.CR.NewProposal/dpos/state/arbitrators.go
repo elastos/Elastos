@@ -110,7 +110,6 @@ func (a *Arbitrators) GetNeedConnectArbiters() map[string]struct{} {
 }
 
 func (a *Arbitrators) getNeedConnectArbiters() map[string]struct{} {
-	a.mtx.Lock()
 	arbiters := make(map[string]struct{})
 	for _, a := range a.currentArbitrators {
 		arbiters[common.BytesToHexString(a)] = struct{}{}
@@ -121,7 +120,6 @@ func (a *Arbitrators) getNeedConnectArbiters() map[string]struct{} {
 	for _, a := range a.chainParams.CRCArbiters {
 		arbiters[common.BytesToHexString(a.PublicKey)] = struct{}{}
 	}
-	a.mtx.Unlock()
 
 	return arbiters
 }

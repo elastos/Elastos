@@ -68,7 +68,7 @@ func (h *DPOSNormalHandler) StartNewProposal(p payload.DPOSProposal) {
 		h.consensus.TryChangeView()
 	}
 
-	h.proposalDispatcher.ProcessProposal(p)
+	h.proposalDispatcher.ProcessProposal(p, false)
 }
 
 func (h *DPOSNormalHandler) ChangeView(firstBlockHash *common.Uint256) {

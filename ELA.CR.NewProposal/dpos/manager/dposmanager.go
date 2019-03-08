@@ -279,6 +279,13 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
+	if confirmed {
+		d.ConfirmBlock()
+		d.changeHeight()
+		log.Info("[OnBlockReceived] received confirmed block")
+		return
+	}
+
 	isCurrentArbiter := false
 	arbiters := d.arbitrators.GetArbitrators()
 	for _, a := range arbiters {
@@ -287,13 +294,6 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		}
 	}
 	if !isCurrentArbiter {
-		return
-	}
-
-	if confirmed {
-		d.ConfirmBlock()
-		d.changeHeight()
-		log.Info("[OnBlockReceived] received confirmed block")
 		return
 	}
 

@@ -26,7 +26,6 @@ type PeerItem struct {
 	Address     p2p.PeerAddr
 	NeedConnect bool
 	Peer        *peer.Peer
-	Sequence    uint32
 }
 
 type blockItem struct {
@@ -75,7 +74,6 @@ func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 				},
 				NeedConnect: true,
 				Peer:        nil,
-				Sequence:    p.Sequence,
 			}
 		}
 	}
@@ -136,7 +134,6 @@ func (n *network) UpdateProducersInfo() {
 				Address:     v,
 				NeedConnect: false,
 				Peer:        nil,
-				Sequence:    0,
 			}
 		}
 	}
@@ -191,7 +188,10 @@ func (n *network) UpdatePeers(arbitrators map[string]struct{}) error {
 		if _, ok := arbitrators[k]; ok {
 			n.peersLock.Lock()
 			v.NeedConnect = true
-			v.Sequence += roundHeights
+			n.peersLock.Unlock()
+		} else {
+			n.peersLock.Lock()
+			v.NeedConnect = false
 			n.peersLock.Unlock()
 		}
 	}
@@ -223,24 +223,6 @@ func (n *network) ChangeHeight(height uint32) error {
 	n.UpdateProducersInfo()
 
 	n.peersLock.Lock()
-	crcArbiters := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
-	crcArbitersMap := make(map[string]struct{}, 0)
-	for _, a := range crcArbiters {
-		crcArbitersMap[common.BytesToHexString(a.PublicKey)] = struct{}{}
-	}
-	for _, v := range n.directPeers {
-		if _, ok := crcArbitersMap[common.BytesToHexString(v.Address.PID[:])]; ok {
-			continue
-		}
-		if v.Sequence < offset {
-			v.NeedConnect = false
-			v.Sequence = 0
-			continue
-		}
-
-		v.Sequence -= offset
-	}
-
 	peers := n.getValidPeers()
 	for i, peer := range peers {
 		log.Info(" peer[", i, "] addr:", peer.Addr, " pid:", common.BytesToHexString(peer.PID[:]))
@@ -294,7 +276,7 @@ func (n *network) InProducerList() bool {
 
 func (n *network) getValidPeers() (result []p2p.PeerAddr) {
 	result = make([]p2p.PeerAddr, 0)
-	if _, ok := n.directPeers[common.BytesToHexString(n.publicKey)]; !ok {
+	if p, _ := n.directPeers[common.BytesToHexString(n.publicKey)]; p == nil || !p.NeedConnect {
 		log.Info("self not in direct peers list")
 		return result
 	}
@@ -430,7 +412,6 @@ func (n *network) saveDirectPeers() {
 		peers = append(peers, &interfaces.DirectPeers{
 			PublicKey: pk,
 			Address:   v.Address.Addr,
-			Sequence:  v.Sequence,
 		})
 	}
 	n.store.SaveDirectPeers(peers)
