@@ -181,7 +181,6 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		EndTime:   time.Now(),
 		RawData:   p.processingProposal,
 		Result:    true,
-		RawData:   p.processingProposal,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 	p.FinishConsensus()
@@ -208,7 +207,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	}
 }
 
-func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal) {
+func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal, force bool) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
@@ -233,9 +232,11 @@ func (p *ProposalDispatcher) ProcessProposal(d payload.DPOSProposal) {
 		return
 	}
 
-	if _, ok := p.pendingProposals[d.Hash()]; ok {
-		log.Info("already have proposal, wait for processing")
-		return
+	if !force {
+		if _, ok := p.pendingProposals[d.Hash()]; ok {
+			log.Info("already have proposal, wait for processing")
+			return
+		}
 	}
 
 	if !blockchain.IsProposalValid(&d) {
@@ -306,7 +307,7 @@ func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
 	if p.cfg.Consensus.IsRunning() {
 		for k, v := range p.pendingProposals {
 			if v.BlockHash.IsEqual(b.Hash()) {
-				p.ProcessProposal(v)
+				p.ProcessProposal(v, true)
 				delete(p.pendingProposals, k)
 				break
 			}
