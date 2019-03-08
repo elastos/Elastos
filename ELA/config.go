@@ -85,8 +85,17 @@ func loadConfigParams() *config.ConfigParams {
 	if len(cfg.HeightVersions) > 0 {
 		activeNetParams.HeightVersions = cfg.HeightVersions
 		if len(cfg.HeightVersions) > 3 {
-			activeNetParams.VoteStartHeight = cfg.HeightVersions[1]
+			activeNetParams.VoteStartHeight = cfg.HeightVersions[2]
+			activeNetParams.PublicDPOSHeight = cfg.HeightVersions[3]
 		}
+	}
+	if cfg.ArbiterConfiguration.NormalArbitratorsCount > 0 {
+		activeNetParams.GeneralArbiters =
+			int(cfg.ArbiterConfiguration.NormalArbitratorsCount)
+	}
+	if cfg.ArbiterConfiguration.CandidatesCount > 0 {
+		activeNetParams.CandidateArbiters =
+			int(cfg.ArbiterConfiguration.CandidatesCount)
 	}
 	if cfg.ArbiterConfiguration.MaxInactiveRounds > 0 {
 		activeNetParams.MaxInactiveRounds =
