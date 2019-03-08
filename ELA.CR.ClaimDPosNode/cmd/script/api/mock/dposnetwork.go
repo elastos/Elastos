@@ -109,7 +109,7 @@ func (n *network) BroadcastMessage(msg p2p.Message) {
 	n.messageList = append(n.messageList, messageItem{ID: nil, Message: msg})
 }
 
-func (n *network) UpdatePeers(arbitrators [][]byte) error {
+func (n *network) UpdatePeers(arbitrators map[string]struct{}) error {
 	return nil
 }
 

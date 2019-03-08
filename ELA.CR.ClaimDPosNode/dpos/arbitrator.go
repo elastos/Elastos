@@ -113,7 +113,7 @@ func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *Arbitrator) OnNewElection(arbiters [][]byte) {
+func (a *Arbitrator) OnNewElection(arbiters map[string]struct{}) {
 	if err := a.network.UpdatePeers(arbiters); err != nil {
 		log.Warn("[OnNewElection] update peers error: ", err)
 	}
@@ -188,8 +188,8 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:                  cfg.Store,
-				Arbitrators:            cfg.Arbitrators,
+				Store:       cfg.Store,
+				Arbitrators: cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
@@ -222,7 +222,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			a.OnConfirmReceived(e.Data.(*payload.Confirm))
 
 		case events.ETNewArbiterElection:
-			a.OnNewElection(e.Data.([][]byte))
+			a.OnNewElection(e.Data.(map[string]struct{}))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)

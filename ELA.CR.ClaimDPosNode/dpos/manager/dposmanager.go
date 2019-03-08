@@ -34,7 +34,7 @@ type DPOSNetwork interface {
 	SendMessageToPeer(id dpeer.PID, msg p2p.Message) error
 	BroadcastMessage(msg p2p.Message)
 
-	UpdatePeers(arbitrators [][]byte) error
+	UpdatePeers(arbitrators map[string]struct{}) error
 	ChangeHeight(height uint32) error
 
 	GetActivePeer() *dpeer.PID
