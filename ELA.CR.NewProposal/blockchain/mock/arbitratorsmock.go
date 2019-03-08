@@ -36,6 +36,10 @@ func (a *ArbitratorsMock) IncreaseChainHeight(height uint32) {
 func (a *ArbitratorsMock) DecreaseChainHeight(height uint32) {
 }
 
+func (a *ArbitratorsMock) GetNeedConnectArbiters() map[string]struct{} {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
 	panic("implement me")
 }
