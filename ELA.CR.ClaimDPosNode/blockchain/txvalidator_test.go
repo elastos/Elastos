@@ -50,7 +50,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.foundationAddress = FoundationAddress
 
 	heightVersions := &mock.HeightVersionsMock{}
-	chainStore, err := NewChainStore("txValidatorTestSuite",
+	chainStore, err := NewChainStore("Chain_UintTest",
 		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)

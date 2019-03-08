@@ -60,8 +60,7 @@ func ConfirmContextCheck(confirm *payload.Confirm) error {
 	return nil
 }
 
-func checkBlockWithConfirmation(block *Block,
-	confirm *payload.Confirm) error {
+func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	if block.Hash() != confirm.Proposal.BlockHash {
 		return errors.New("[CheckBlockWithConfirmation] block " +
 			"confirmation validate failed")

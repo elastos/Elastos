@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -17,6 +18,7 @@ var arbiters *Arbitrators
 var arbitratorList [][]byte
 
 func TestHeightVersionInit(t *testing.T) {
+	test.SkipShort(t)
 	config.Parameters = config.ConfigParams{Configuration: &config.Template}
 	log.NewDefault(
 		config.Parameters.PrintLevel,
@@ -63,6 +65,7 @@ func TestHeightVersionInit(t *testing.T) {
 }
 
 func TestArbitrators_GetNormalArbitratorsDescV0(t *testing.T) {
+	test.SkipShort(t)
 	arbitrators := make([][]byte, 0)
 	for _, v := range config.MainNetParams.OriginArbiters {
 		a, _ := common.HexStringToBytes(v)
@@ -78,6 +81,8 @@ func TestArbitrators_GetNormalArbitratorsDescV0(t *testing.T) {
 }
 
 func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
+
+	test.SkipShort(t)
 	currentHeight := uint32(1)
 	block1 := &types.Block{
 		Header: types.Header{

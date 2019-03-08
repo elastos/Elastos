@@ -1,6 +1,7 @@
 package blocks
 
 import (
+	"github.com/elastos/Elastos.ELA/utils/test"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -78,6 +79,8 @@ func TestBlockVersionInit(t *testing.T) {
 }
 
 func TestBlockVersionMain_GetNextOnDutyArbitrator(t *testing.T) {
+
+	test.SkipShort(t)
 	var currentArbitrator []byte
 
 	currentArbitrator = version.GetNextOnDutyArbitrator(0, 0)

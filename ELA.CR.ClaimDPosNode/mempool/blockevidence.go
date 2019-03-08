@@ -2,7 +2,6 @@ package mempool
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA/events"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -11,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/events"
 )
 
 func (bm *BlockPool) generateBlockEvidence(block *types.Block) (
@@ -130,7 +130,7 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 		tx := &types.Transaction{
 			Version:        types.TxVersion09,
 			TxType:         types.IllegalBlockEvidence,
-			PayloadVersion: payload.PayloadIllegalBlockVersion,
+			PayloadVersion: payload.IllegalBlockVersion,
 			Payload:        illegalBlocks,
 			Attributes:     []*types.Attribute{},
 			LockTime:       0,

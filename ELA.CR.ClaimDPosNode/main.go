@@ -29,8 +29,6 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
-	"github.com/elastos/Elastos.ELA/version"
-	"github.com/elastos/Elastos.ELA/version/verconf"
 )
 
 var (
@@ -84,30 +82,19 @@ func main() {
 	txMemPool := mempool.NewTxPool()
 	blockMemPool := mempool.NewBlockPool()
 	blockMemPool.Store = chainStore
-	verconf := verconf.Config{
-		ChainStore:   chainStore,
-		ChainParams:  activeNetParams,
-		TxMemPool:    txMemPool,
-		BlockMemPool: blockMemPool,
-	}
-	versions := version.NewVersions(&verconf)
-	verconf.Versions = versions
-	ledger.HeightVersions = versions   // fixme
+
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, versions,
-		chainStore.GetHeight)
+	arbiters, err := state.NewArbitrators(activeNetParams, chainStore.GetHeight)
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	verconf.Arbitrators = arbiters
 	ledger.Arbitrators = arbiters // fixme
 
-	chain, err := blockchain.New(chainStore, activeNetParams, versions, arbiters.State)
+	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State)
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	verconf.Chain = chain
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
 
@@ -120,7 +107,6 @@ func main() {
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:        chain,
 		ChainParams:  activeNetParams,
-		Versions:     versions,
 		TxMemPool:    txMemPool,
 		BlockMemPool: blockMemPool,
 	})
@@ -129,7 +115,6 @@ func main() {
 	}
 	server.Start()
 	defer server.Stop()
-	verconf.Server = server
 
 	blockMemPool.IsCurrent = server.IsCurrent
 	if config.Parameters.EnableArbiter {
@@ -164,7 +149,6 @@ func main() {
 	servers.Store = chainStore
 	servers.TxMemPool = txMemPool
 	servers.Server = server
-	servers.Versions = versions
 	servers.Arbiters = arbiters
 	servers.Pow = pow.NewService(&pow.Config{
 		PayToAddr:   cfg.PowConfiguration.PayToAddr,
