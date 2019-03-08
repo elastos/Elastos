@@ -155,9 +155,9 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 	return tx, nil
 }
 
-func (pow *Service) AssignCoinbaseTxRewards(height uint32, block *types.Block, totalReward common.Fixed64) error {
+func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	// main version >= H2
-	if height >= config.Parameters.HeightVersions[3] {
+	if block.Height >= config.Parameters.HeightVersions[3] {
 		rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
 		rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
 
@@ -302,7 +302,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	}
 
 	totalReward := totalTxFee + pow.chainParams.RewardPerBlock
-	pow.AssignCoinbaseTxRewards(pow.chain.GetHeight(), msgBlock, totalReward)
+	pow.AssignCoinbaseTxRewards(msgBlock, totalReward)
 
 	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {
@@ -367,7 +367,7 @@ func (pow *Service) SubmitAuxBlock(hash *common.Uint256, auxPow *auxpow.AuxPow) 
 	}
 
 	msgAuxBlock.Header.AuxPow = *auxPow
-	_, _, err := pow.blkMemPool.AddDposBlock(pow.chain.GetHeight(), &types.DposBlock{
+	_, _, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
 		BlockFlag: true,
 		Block:     msgAuxBlock,
 	})
@@ -402,7 +402,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
 
-				_, _, err := pow.blkMemPool.AddDposBlock(pow.chain.GetHeight(), &types.DposBlock{
+				_, _, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
 					BlockFlag: true,
 					Block:     msgBlock,
 				})
@@ -504,7 +504,7 @@ out:
 			//send the valid block to p2p networkd
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
 
-				inMainChain, isOrphan, err := pow.blkMemPool.AddDposBlock(pow.chain.GetHeight(), &types.DposBlock{
+				inMainChain, isOrphan, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
 					BlockFlag: true,
 					Block:     msgBlock,
 				})

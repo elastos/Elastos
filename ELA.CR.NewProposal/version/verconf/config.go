@@ -16,5 +16,4 @@ type Config struct {
 	TxMemPool    *mempool.TxPool
 	BlockMemPool *mempool.BlockPool
 	Arbitrators  interfaces.Arbitrators
-	Versions     interfaces.HeightVersions
 }

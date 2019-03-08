@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -30,7 +29,6 @@ const (
 type Arbitrators struct {
 	*State
 	chainParams   *config.Params
-	versions      interfaces.HeightVersions
 	bestHeight    func() uint32
 	arbitersCount uint32
 
@@ -487,8 +485,7 @@ func (a *Arbitrators) getArbitersInfoWithoutOnduty(title string, arbiters [][]by
 	return info, params
 }
 
-func NewArbitrators(chainParams *config.Params, versions interfaces.
-	HeightVersions, bestHeight func() uint32) (*Arbitrators, error) {
+func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*Arbitrators, error) {
 
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
@@ -514,7 +511,6 @@ func NewArbitrators(chainParams *config.Params, versions interfaces.
 		NormalArbitratorsCount + uint32(len(chainParams.CRCArbiters))
 	a := &Arbitrators{
 		chainParams:                     chainParams,
-		versions:                        versions,
 		bestHeight:                      bestHeight,
 		arbitersCount:                   arbitersCount,
 		currentArbitrators:              originArbiters,

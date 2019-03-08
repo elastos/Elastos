@@ -37,7 +37,6 @@ var (
 	Server    elanet.Server
 	Arbiter   *dpos.Arbitrator
 	Arbiters  interfaces.Arbitrators
-	Versions  interfaces.HeightVersions
 )
 
 func ToReversedString(hash common.Uint256) string {

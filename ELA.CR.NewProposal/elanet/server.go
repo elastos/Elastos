@@ -818,7 +818,6 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		PeerNotifier: &s,
 		Chain:        cfg.Chain,
 		ChainParams:  cfg.ChainParams,
-		Versions:     cfg.Versions,
 		TxMemPool:    cfg.TxMemPool,
 		BlockMemPool: cfg.BlockMemPool,
 		MaxPeers:     svrCfg.MaxPeers,

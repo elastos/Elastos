@@ -21,9 +21,6 @@ import (
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/utils/signal"
-	"github.com/elastos/Elastos.ELA/version"
-	"github.com/elastos/Elastos.ELA/version/verconf"
-
 	"github.com/yuin/gopher-lua"
 )
 
@@ -150,18 +147,13 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
-	verconf := &verconf.Config{
-		ChainParams: &config.DefaultParams,
-	}
-	versions := version.NewVersions(verconf)
-	verconf.Versions = versions
 	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.DefaultParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.DefaultParams, versions, state.NewState(nil, &config.DefaultParams))
+	chain, err := blockchain.New(chainStore, &config.DefaultParams, state.NewState(nil, &config.DefaultParams))
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
@@ -171,7 +163,6 @@ func initLedger(L *lua.LState) int {
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Store = chainStore
-	blockchain.DefaultLedger.HeightVersions = versions
 
 	if err = chain.InitializeProducersState(interrupt.C); err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())

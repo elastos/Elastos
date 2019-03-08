@@ -2,7 +2,6 @@ package netsync
 
 import (
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -20,7 +19,6 @@ type Config struct {
 	PeerNotifier PeerNotifier
 	Chain        *blockchain.BlockChain
 	ChainParams  *config.Params
-	Versions     interfaces.HeightVersions
 	TxMemPool    *mempool.TxPool
 	BlockMemPool *mempool.BlockPool
 

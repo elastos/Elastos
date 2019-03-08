@@ -33,11 +33,10 @@ func newBlock(L *lua.LState) int {
 	m := checkDposManager(L, 1)
 
 	service := pow.NewService(&pow.Config{
-		PayToAddr: minerAddress,
-		Chain: blockchain.DefaultLedger.Blockchain,
+		PayToAddr:   minerAddress,
+		Chain:       blockchain.DefaultLedger.Blockchain,
 		ChainParams: &config.DefaultParams,
-		Versions: blockchain.DefaultLedger.HeightVersions,
-		TxMemPool: m.Peer.GetTxPool(),
+		TxMemPool:   m.Peer.GetTxPool(),
 	})
 	block, err := service.GenerateBlock(minerAddress)
 	if err != nil {

@@ -15,10 +15,9 @@ var DefaultLedger *Ledger
 
 // Ledger - the struct for ledger
 type Ledger struct {
-	Blockchain     *BlockChain
-	Store          IChainStore
-	Arbitrators    interfaces.Arbitrators
-	HeightVersions interfaces.HeightVersions
+	Blockchain  *BlockChain
+	Store       IChainStore
+	Arbitrators interfaces.Arbitrators
 }
 
 //check weather the transaction contains the doubleSpend.
