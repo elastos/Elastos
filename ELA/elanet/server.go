@@ -817,6 +817,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	s.syncManager = netsync.New(&netsync.Config{
 		PeerNotifier: &s,
 		Chain:        cfg.Chain,
+		ChainParams:  cfg.ChainParams,
 		Versions:     cfg.Versions,
 		TxMemPool:    cfg.TxMemPool,
 		BlockMemPool: cfg.BlockMemPool,
