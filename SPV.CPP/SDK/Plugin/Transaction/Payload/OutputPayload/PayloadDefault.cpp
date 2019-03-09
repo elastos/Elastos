@@ -5,7 +5,7 @@
 #include "PayloadDefault.h"
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -27,11 +27,11 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadDefault::toJson() const {
+		nlohmann::json PayloadDefault::ToJson() const {
 			return nlohmann::json();
 		}
 
-		void PayloadDefault::fromJson(const nlohmann::json &j) {
+		void PayloadDefault::FromJson(const nlohmann::json &j) {
 		}
 
 		IOutputPayload &PayloadDefault::operator=(const IOutputPayload &payload) {

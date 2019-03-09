@@ -21,27 +21,27 @@ namespace Elastos {
 
 			~PayloadRegisterAsset();
 
-			void setAsset(const Asset &asset);
+			void SetAsset(const Asset &asset);
 
-			Asset getAsset() const;
+			Asset GetAsset() const;
 
-			void setAmount(uint64_t amount);
+			void SetAmount(uint64_t amount);
 
-			uint64_t getAmount() const;
+			uint64_t GetAmount() const;
 
-			void setController(const UInt168 &controller);
+			void SetController(const UInt168 &controller);
 
-			const UInt168 &getController() const;
+			const UInt168 &GetController() const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson(uint8_t version) const;
+			virtual nlohmann::json ToJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &jsonData, uint8_t version);
+			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			virtual bool isValid() const;
+			virtual bool IsValid() const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 

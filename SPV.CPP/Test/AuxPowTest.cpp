@@ -21,13 +21,13 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 	SECTION("To json and from json") {
 		AuxPow auxPow = createDummyAuxPow();
 
-		nlohmann::json auxPowJson = auxPow.toJson();
+		nlohmann::json auxPowJson = auxPow.ToJson();
 
 		//SPDLOG_DEBUG(Log::getLogger(),"auxPow json = {}", auxPowJson.dump());
 
 		/* from json and verify */
 		AuxPow auxPowVerify;
-		auxPowVerify.fromJson(auxPowJson);
+		auxPowVerify.FromJson(auxPowJson);
 
 		verrifyAuxPowEqual(auxPow, auxPowVerify);
 	}
@@ -39,7 +39,7 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 		auxPow.Serialize(byteStream);
 
 		AuxPow auxPowVerify;
-		byteStream.setPosition(0);
+		byteStream.SetPosition(0);
 		auxPowVerify.Deserialize(byteStream);
 
 		verrifyAuxPowEqual(auxPow, auxPowVerify, false);

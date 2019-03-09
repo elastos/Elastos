@@ -46,15 +46,15 @@ namespace Elastos {
 			PeerDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~PeerDataSource();
 
-			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool deleteAllPeers(const std::string &iso);
-			size_t getAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool DeleteAllPeers(const std::string &iso);
+			size_t GetAllPeersCount(const std::string &iso) const;
+			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
 		private:
-			bool putPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
 
 		private:
 			/*

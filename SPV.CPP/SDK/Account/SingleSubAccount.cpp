@@ -5,7 +5,7 @@
 #include "SingleSubAccount.h"
 
 #include <SDK/TransactionHub/TransactionHub.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 
 namespace Elastos {
@@ -29,7 +29,7 @@ namespace Elastos {
 			Key key;
 			key.SetPubKey(_parentAccount->GetMultiSignPublicKey());
 
-			ParamChecker::checkLogic(addr != key.GetAddress(PrefixStandard) || addr != key.GetAddress(PrefixDeposit),
+			ErrorChecker::CheckLogic(addr != key.GetAddress(PrefixStandard) || addr != key.GetAddress(PrefixDeposit),
 									 Error::Address, "Can't found pubKey for addr " + addr.String());
 
 			return key.RedeemScript(PrefixStandard);
@@ -63,7 +63,7 @@ namespace Elastos {
 		}
 
 		Key SingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
-			ParamChecker::throwLogicException(Error::AccountNotSupportVote, "This account do not support vote");
+			ErrorChecker::ThrowLogicException(Error::AccountNotSupportVote, "This account do not support vote");
 			return Key();
 		}
 

@@ -20,19 +20,19 @@ namespace Elastos {
 
 		}
 
-		const std::string &BitcoreWalletClientJson::getEncryptedEntropySource() const {
+		const std::string &BitcoreWalletClientJson::GetEncryptedEntropySource() const {
 			return _entropySource;
 		}
 
-		void BitcoreWalletClientJson::setEncryptedEntropySource(const std::string &entropy) {
+		void BitcoreWalletClientJson::SetEncryptedEntropySource(const std::string &entropy) {
 			_entropySource = entropy;
 		}
 
-		const std::string &BitcoreWalletClientJson::getMnemonic() const {
+		const std::string &BitcoreWalletClientJson::GetMnemonic() const {
 			return _mnemonic;
 		}
 
-		void BitcoreWalletClientJson::setMnemonic(const std::string mnemonic) {
+		void BitcoreWalletClientJson::SetMnemonic(const std::string mnemonic) {
 			_mnemonic = mnemonic;
 		}
 

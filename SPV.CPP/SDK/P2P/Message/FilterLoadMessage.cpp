@@ -27,7 +27,7 @@ namespace Elastos {
 			filterLoadParameter.Filter->Serialize(stream);
 			_peer->SetSentFilter(true);
 			_peer->SetSentMempool(false);
-			SendMessage(stream.getBuffer(), Type());
+			SendMessage(stream.GetBuffer(), Type());
 		}
 
 		std::string FilterLoadMessage::Type() const {

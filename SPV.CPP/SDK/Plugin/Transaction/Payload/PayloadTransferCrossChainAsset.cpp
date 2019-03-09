@@ -23,14 +23,14 @@ namespace Elastos {
 			const std::vector<std::string> &crossChainAddress,
 			const std::vector<uint64_t> &outputIndex,
 			const std::vector<uint64_t> &crossChainAmount) {
-			setCrossChainData(crossChainAddress, outputIndex, crossChainAmount);
+			SetCrossChainData(crossChainAddress, outputIndex, crossChainAmount);
 		}
 
 		PayloadTransferCrossChainAsset::~PayloadTransferCrossChainAsset() {
 
 		}
 
-		void PayloadTransferCrossChainAsset::setCrossChainData(
+		void PayloadTransferCrossChainAsset::SetCrossChainData(
 			const std::vector<std::string> &crossChainAddress,
 			const std::vector<uint64_t> &outputIndex,
 			const std::vector<uint64_t> &crossChainAmount) {
@@ -39,7 +39,7 @@ namespace Elastos {
 			_crossChainAmount = crossChainAmount;
 		}
 
-		bool PayloadTransferCrossChainAsset::isValid() const {
+		bool PayloadTransferCrossChainAsset::IsValid() const {
 			size_t len = _crossChainAddress.size();
 			if (len <= 0 || len != _outputIndex.size() || len != _crossChainAmount.size()) {
 				return false;
@@ -57,15 +57,15 @@ namespace Elastos {
 			return true;
 		}
 
-		const std::vector<std::string> &PayloadTransferCrossChainAsset::getCrossChainAddress() const {
+		const std::vector<std::string> &PayloadTransferCrossChainAsset::GetCrossChainAddress() const {
 			return _crossChainAddress;
 		}
 
-		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::getOutputIndex() const {
+		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::GetOutputIndex() const {
 			return _outputIndex;
 		}
 
-		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::getCrossChainAmout() const {
+		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::GetCrossChainAmout() const {
 			return _crossChainAmount;
 		}
 
@@ -80,9 +80,9 @@ namespace Elastos {
 			size_t len = _crossChainAddress.size();
 			ostream.writeVarUint((uint64_t)len);
 			for (size_t i = 0; i < len; ++i) {
-				ostream.writeVarString(_crossChainAddress[i]);
+				ostream.WriteVarString(_crossChainAddress[i]);
 				ostream.writeVarUint(_outputIndex[i]);
-				ostream.writeUint64(_crossChainAmount[i]);
+				ostream.WriteUint64(_crossChainAmount[i]);
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace Elastos {
 			_crossChainAmount.resize(len);
 
 			for (uint64_t i = 0; i < len; ++i) {
-				if (!istream.readVarString(_crossChainAddress[i])) {
+				if (!istream.ReadVarString(_crossChainAddress[i])) {
 					Log::error("Payload transfer cross chain asset deserialize cross chain address fail");
 					return false;
 				}
@@ -108,7 +108,7 @@ namespace Elastos {
 					return false;
 				}
 
-				if (!istream.readUint64(_crossChainAmount[i])) {
+				if (!istream.ReadUint64(_crossChainAmount[i])) {
 					Log::error("Payload transfer cross chain asset deserialize cross chain amount fail");
 					return false;
 				}
@@ -117,7 +117,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadTransferCrossChainAsset::toJson(uint8_t version) const {
+		nlohmann::json PayloadTransferCrossChainAsset::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["CrossChainAddress"] = _crossChainAddress;
@@ -127,7 +127,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadTransferCrossChainAsset::FromJson(const nlohmann::json &j, uint8_t version) {
 			_crossChainAddress = j["CrossChainAddress"].get<std::vector<std::string>>();
 			_outputIndex = j["OutputIndex"].get<std::vector<uint64_t>>();
 			_crossChainAmount = j["CrossChainAmount"].get<std::vector<uint64_t >>();

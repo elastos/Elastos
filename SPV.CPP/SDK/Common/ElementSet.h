@@ -19,7 +19,7 @@ namespace Elastos {
 
 				typename std::set<T>::const_iterator it;
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
-					return UInt256Eq(&hash, &e->getHash()) == 1;
+					return UInt256Eq(&hash, &e->GetHash()) == 1;
 				});
 
 				if (it == _elements.end())
@@ -33,13 +33,13 @@ namespace Elastos {
 					return true;
 				}
 
-				return Contains(tx->getHash());
+				return Contains(tx->GetHash());
 			}
 
 			bool Contains(const UInt256 &hash) const {
 				typename std::set<T>::const_iterator it;
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
-					return UInt256Eq(&hash, &e->getHash()) == 1;
+					return UInt256Eq(&hash, &e->GetHash()) == 1;
 				});
 				return it != _elements.end();
 			}
@@ -55,7 +55,7 @@ namespace Elastos {
 			void Remove(const T &tx) {
 				typename std::set<T>::const_iterator it;
 				for(it = _elements.cbegin(); it != _elements.cend();) {
-					if (UInt256Eq(&tx->getHash(), &(*it)->getHash())) {
+					if (UInt256Eq(&tx->GetHash(), &(*it)->GetHash())) {
 						it = _elements.erase(it);
 					} else {
 						++it;

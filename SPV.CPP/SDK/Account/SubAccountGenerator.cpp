@@ -11,7 +11,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
@@ -35,16 +35,17 @@ namespace Elastos {
 			if (multiSignAccount != nullptr) {
 				return new MultiSignSubAccount(_parentAccount);
 			} else {
-				if (_coinInfo.getSingleAddress()) {
+				if (_coinInfo.GetSingleAddress()) {
 					if (_masterPubKey == nullptr)
 						return new SingleSubAccount(_parentAccount);
 					else
-						return new StandardSingleSubAccount(*_masterPubKey, _votePubKey, _parentAccount, _coinInfo.getIndex());
+						return new StandardSingleSubAccount(*_masterPubKey, _votePubKey, _parentAccount,
+															_coinInfo.GetIndex());
 				} else {
 					if (_masterPubKey == nullptr)
 						return GenerateFromCoinInfo(_parentAccount, _coinInfo);
 					else
-						return GenerateFromHDPath(_parentAccount, _coinInfo.getIndex());
+						return GenerateFromHDPath(_parentAccount, _coinInfo.GetIndex());
 				}
 			}
 		}
@@ -69,21 +70,21 @@ namespace Elastos {
 		}
 
 		ISubAccount *SubAccountGenerator::GenerateFromCoinInfo(IAccount *account, const CoinInfo &coinInfo) {
-			ParamChecker::checkParamNotEmpty(coinInfo.getPublicKey(), "Sub account public key");
-			ParamChecker::checkParamNotEmpty(coinInfo.getChainCode(), "Sub account chain code");
+			ErrorChecker::CheckParamNotEmpty(coinInfo.GetPublicKey(), "Sub account public key");
+			ErrorChecker::CheckParamNotEmpty(coinInfo.GetChainCode(), "Sub account chain code");
 
-			CMBlock pubKey = Utils::decodeHex(coinInfo.getPublicKey());
-			MasterPubKey masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(coinInfo.getChainCode()));
+			CMBlock pubKey = Utils::DecodeHex(coinInfo.GetPublicKey());
+			MasterPubKey masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(coinInfo.GetChainCode()));
 
-			_resultChainCode = Utils::UInt256FromString(coinInfo.getChainCode());
-			_resultPubKey = Utils::decodeHex(coinInfo.getPublicKey());
+			_resultChainCode = Utils::UInt256FromString(coinInfo.GetChainCode());
+			_resultPubKey = Utils::DecodeHex(coinInfo.GetPublicKey());
 
-			return new HDSubAccount(masterPubKey, _votePubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(masterPubKey, _votePubKey, account, _coinInfo.GetIndex());
 		}
 
 		ISubAccount *
 		SubAccountGenerator::GenerateFromHDPath(IAccount *account, uint32_t coinIndex) {
-			return new HDSubAccount(*_masterPubKey, _votePubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(*_masterPubKey, _votePubKey, account, _coinInfo.GetIndex());
 		}
 
 		void SubAccountGenerator::SetMasterPubKey(const MasterPubKeyPtr &masterPubKey) {

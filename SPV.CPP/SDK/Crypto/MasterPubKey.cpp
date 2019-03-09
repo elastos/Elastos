@@ -50,23 +50,23 @@ namespace Elastos {
 		}
 
 		void MasterPubKey::Serialize(ByteStream &stream) const {
-			stream.writeUint32(_fingerPrint);
-			stream.writeBytes(&_chainCode, sizeof(_chainCode));
-			stream.writeBytes(_pubKey, sizeof(_pubKey));
+			stream.WriteUint32(_fingerPrint);
+			stream.WriteBytes(&_chainCode, sizeof(_chainCode));
+			stream.WriteBytes(_pubKey, sizeof(_pubKey));
 		}
 
 		bool MasterPubKey::Deserialize(ByteStream &stream) {
-			if (!stream.readUint32(_fingerPrint)) {
+			if (!stream.ReadUint32(_fingerPrint)) {
 				Log::error("MasterPubKey deserialize fingerPrint fail");
 				return false;
 			}
 
-			if (!stream.readBytes(&_chainCode, sizeof(_chainCode))) {
+			if (!stream.ReadBytes(&_chainCode, sizeof(_chainCode))) {
 				Log::error("MasterPubKey deserialize chainCode fail");
 				return false;
 			}
 
-			if (!stream.readBytes(_pubKey, sizeof(_pubKey))) {
+			if (!stream.ReadBytes(_pubKey, sizeof(_pubKey))) {
 				Log::error("MasterPubKey deserialize pubkey fail");
 				return false;
 			}

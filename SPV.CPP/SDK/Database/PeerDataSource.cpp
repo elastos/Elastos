@@ -5,7 +5,7 @@
 #include "PeerDataSource.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/CMemBlock.h>
 
 #include <sstream>
@@ -15,32 +15,32 @@ namespace Elastos {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite) :
 			TableBase(sqlite) {
-			initializeTable(PEER_DATABASE_CREATE);
+			InitializeTable(PEER_DATABASE_CREATE);
 		}
 
 		PeerDataSource::PeerDataSource(SqliteTransactionType type, Sqlite *sqlite) :
 			TableBase(type, sqlite) {
-			initializeTable(PEER_DATABASE_CREATE);
+			InitializeTable(PEER_DATABASE_CREATE);
 		}
 
 		PeerDataSource::~PeerDataSource() {
 		}
 
-		bool PeerDataSource::putPeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return doTransaction([&iso, &peerEntity, this]() {
-				this->putPeerInternal(iso, peerEntity);
+		bool PeerDataSource::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {
+			return DoTransaction([&iso, &peerEntity, this]() {
+				this->PutPeerInternal(iso, peerEntity);
 			});
 		}
 
-		bool PeerDataSource::putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
-			return doTransaction([&iso, &peerEntities, this] {
+		bool PeerDataSource::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
+			return DoTransaction([&iso, &peerEntities, this] {
 				for (size_t i = 0; i < peerEntities.size(); ++i) {
-					this->putPeerInternal(iso, peerEntities[i]);
+					this->PutPeerInternal(iso, peerEntities[i]);
 				}
 			});
 		}
 
-		bool PeerDataSource::putPeerInternal(const std::string &iso, const PeerEntity &peerEntity) {
+		bool PeerDataSource::PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity) {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << PEER_TABLE_NAME << " (" <<
@@ -51,52 +51,52 @@ namespace Elastos {
 			   ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 										 "Prepare sql " + ss.str());
 
 			CMBlock addr;
 			addr.SetMemFixed(&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
-			_sqlite->bindBlob(stmt, 1, addr, nullptr);
-			_sqlite->bindInt(stmt, 2, peerEntity.port);
-			_sqlite->bindInt64(stmt, 3, peerEntity.timeStamp);
-			_sqlite->bindText(stmt, 4, iso, nullptr);
+			_sqlite->BindBlob(stmt, 1, addr, nullptr);
+			_sqlite->BindInt(stmt, 2, peerEntity.port);
+			_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp);
+			_sqlite->BindText(stmt, 4, iso, nullptr);
 
-			_sqlite->step(stmt);
+			_sqlite->Step(stmt);
 
-			_sqlite->finalize(stmt);
+			_sqlite->Finalize(stmt);
 
 			return true;
 		}
 
-		bool PeerDataSource::deletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return doTransaction([&iso, &peerEntity, this]() {
+		bool PeerDataSource::DeletePeer(const std::string &iso, const PeerEntity &peerEntity) {
+			return DoTransaction([&iso, &peerEntity, this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << PEER_TABLE_NAME <<
 				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
 				   " AND " << PEER_ISO << " = '" << iso << "';";
 
-				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
 			});
 		}
 
-		bool PeerDataSource::deleteAllPeers(const std::string &iso) {
-			return doTransaction([&iso, this]() {
+		bool PeerDataSource::DeleteAllPeers(const std::string &iso) {
+			return DoTransaction([&iso, this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << PEER_TABLE_NAME <<
 				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
-				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
 			});
 		}
 
-		std::vector<PeerEntity> PeerDataSource::getAllPeers(const std::string &iso) const {
+		std::vector<PeerEntity> PeerDataSource::GetAllPeers(const std::string &iso) const {
 			std::vector<PeerEntity> peers;
 
-			doTransaction([&iso, &peers, this]() {
+			DoTransaction([&iso, &peers, this]() {
 				PeerEntity peer;
 				std::stringstream ss;
 
@@ -109,38 +109,38 @@ namespace Elastos {
 				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
 				sqlite3_stmt *stmt;
-				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 											 "Prepare sql " + ss.str());
 
-				while (SQLITE_ROW == _sqlite->step(stmt)) {
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					// id
-					peer.id = _sqlite->columnInt(stmt, 0);
+					peer.id = _sqlite->ColumnInt(stmt, 0);
 
 					// address
-					const uint8_t *paddr = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
-					size_t len = _sqlite->columnBytes(stmt, 1);
+					const uint8_t *paddr = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+					size_t len = _sqlite->ColumnBytes(stmt, 1);
 					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
 					memcpy(peer.address.u8, paddr, len);
 
 					// port
-					peer.port = _sqlite->columnInt(stmt, 2);
+					peer.port = _sqlite->ColumnInt(stmt, 2);
 
 					// timestamp
-					peer.timeStamp = _sqlite->columnInt64(stmt, 3);
+					peer.timeStamp = _sqlite->ColumnInt64(stmt, 3);
 
 					peers.push_back(peer);
 				}
 
-				_sqlite->finalize(stmt);
+				_sqlite->Finalize(stmt);
 			});
 
 			return peers;
 		}
 
-		size_t PeerDataSource::getAllPeersCount(const std::string &iso) const {
+		size_t PeerDataSource::GetAllPeersCount(const std::string &iso) const {
 			size_t count = 0;
 
-			doTransaction([&iso, &count, this]() {
+			DoTransaction([&iso, &count, this]() {
 				std::stringstream ss;
 
 				ss << "SELECT " <<
@@ -148,14 +148,14 @@ namespace Elastos {
 				   " FROM " << PEER_TABLE_NAME << ";";
 
 				sqlite3_stmt *stmt;
-				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 											 "Prepare sql " + ss.str());
 
-				while (SQLITE_ROW == _sqlite->step(stmt)) {
-					count = (uint32_t) _sqlite->columnInt(stmt, 0);
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
 				}
 
-				_sqlite->finalize(stmt);
+				_sqlite->Finalize(stmt);
 			});
 
 			return count;

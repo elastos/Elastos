@@ -21,61 +21,61 @@ namespace Elastos {
 		public:
 			CoinInfo();
 
-			const std::string &getChainId() const;
+			const std::string &GetChainId() const;
 
-			void setChainId(const std::string &id);
+			void SetChainId(const std::string &id);
 
-			uint32_t getEarliestPeerTime() const;
+			uint32_t GetEarliestPeerTime() const;
 
-			void setEaliestPeerTime(uint32_t time);
+			void SetEaliestPeerTime(uint32_t time);
 
-			uint32_t getReconnectSeconds() const;
+			uint32_t GetReconnectSeconds() const;
 
-			void setReconnectSeconds(uint32_t reconnectSeconds);
+			void SetReconnectSeconds(uint32_t reconnectSeconds);
 
-			uint32_t getIndex() const;
+			uint32_t GetIndex() const;
 
-			void setIndex(uint32_t index);
+			void SetIndex(uint32_t index);
 
-			int getUsedMaxAddressIndex() const;
+			int GetUsedMaxAddressIndex() const;
 
-			void setUsedMaxAddressIndex(int index);
+			void SetUsedMaxAddressIndex(int index);
 
-			bool getSingleAddress() const;
+			bool GetSingleAddress() const;
 
-			void setSingleAddress(bool singleAddress);
+			void SetSingleAddress(bool singleAddress);
 
-			uint64_t getFeePerKb() const;
+			uint64_t GetFeePerKb() const;
 
-			void setFeePerKb(uint64_t fee);
+			void SetFeePerKb(uint64_t fee);
 
-			int getForkId() const;
+			int GetForkId() const;
 
-			void setForkId(int forkId);
+			void SetForkId(int forkId);
 
-			SubWalletType getWalletType() const;
+			SubWalletType GetWalletType() const;
 
-			void setWalletType(SubWalletType type);
+			void SetWalletType(SubWalletType type);
 
-			uint64_t getMinFee() const;
+			uint64_t GetMinFee() const;
 
-			void setMinFee(uint64_t fee);
+			void SetMinFee(uint64_t fee);
 
-			const std::string &getGenesisAddress() const;
+			const std::string &GetGenesisAddress() const;
 
-			void setGenesisAddress(const std::string &address);
+			void SetGenesisAddress(const std::string &address);
 
-			bool getEnableP2P() const;
+			bool GetEnableP2P() const;
 
-			void setEnableP2P(bool enable);
+			void SetEnableP2P(bool enable);
 
-			const std::string &getChainCode() const;
+			const std::string &GetChainCode() const;
 
-			void setChainCode(const std::string &code);
+			void SetChainCode(const std::string &code);
 
-			const std::string &getPublicKey() const;
+			const std::string &GetPublicKey() const;
 
-			void setPublicKey(const std::string &pubKey);
+			void SetPublicKey(const std::string &pubKey);
 
 			const std::vector<UInt256> &GetVisibleAssets() const;
 

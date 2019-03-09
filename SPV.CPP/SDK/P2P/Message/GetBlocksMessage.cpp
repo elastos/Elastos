@@ -27,13 +27,13 @@ namespace Elastos {
 			ByteStream msg;
 
 			locatorsCount = getBlocksParameter.locators.size();
-			msg.writeUint32(uint32_t(locatorsCount));
+			msg.WriteUint32(uint32_t(locatorsCount));
 
 			for (i = 0; i < locatorsCount; i++) {
-				msg.writeBytes(&getBlocksParameter.locators[i], sizeof(UInt256));
+				msg.WriteBytes(&getBlocksParameter.locators[i], sizeof(UInt256));
 			}
 
-			msg.writeBytes(&getBlocksParameter.hashStop, sizeof(UInt256));
+			msg.WriteBytes(&getBlocksParameter.hashStop, sizeof(UInt256));
 
 			if (locatorsCount > 0) {
 				_peer->debug("calling getblocks with {} locators: [{},{} {}]",
@@ -42,7 +42,7 @@ namespace Elastos {
 							 (locatorsCount > 2 ? " ...," : ""),
 							 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1], true)
 												: ""));
-				SendMessage(msg.getBuffer(), Type());
+				SendMessage(msg.GetBuffer(), Type());
 			}
 		}
 

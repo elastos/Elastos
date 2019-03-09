@@ -109,13 +109,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Merkle Block save test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
-			REQUIRE(dbm->putMerkleBlocks(ISO, blocksToSave));
+			REQUIRE(dbm->PutMerkleBlocks(ISO, blocksToSave));
 			delete dbm;
 		}
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockEntity> blocksRead = dbm.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksRead = dbm.GetAllMerkleBlocks(ISO);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksToSave[i].blockBytes.GetSize() == blocksRead[i].blockBytes.GetSize());
@@ -127,22 +127,22 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Merkle Block delete test") {
 			DatabaseManager dbm(DBFILE);
 
-			REQUIRE(dbm.deleteAllBlocks(ISO));
+			REQUIRE(dbm.DeleteAllBlocks(ISO));
 
-			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 
 		SECTION("Merkle Block save one by one test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < blocksToSave.size(); ++i) {
-				REQUIRE(dbm.putMerkleBlock(ISO, blocksToSave[i]));
+				REQUIRE(dbm.PutMerkleBlock(ISO, blocksToSave[i]));
 			}
 		}
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockEntity> blocksRead = dbm.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksRead = dbm.GetAllMerkleBlocks(ISO);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
@@ -154,13 +154,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Merkle Block delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<MerkleBlockEntity> blocksBeforeDelete = dbm.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksBeforeDelete = dbm.GetAllMerkleBlocks(ISO);
 
 			for (int i = 0; i < blocksBeforeDelete.size(); ++i) {
-				REQUIRE(dbm.deleteMerkleBlock(ISO, blocksBeforeDelete[i]));
+				REQUIRE(dbm.DeleteMerkleBlock(ISO, blocksBeforeDelete[i]));
 			}
 
-			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 	}
@@ -185,12 +185,12 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer save test") {
 			DatabaseManager dbm(DBFILE);
-			REQUIRE(dbm.putPeers(ISO, peerToSave));
+			REQUIRE(dbm.PutPeers(ISO, peerToSave));
 		}
 
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
+			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
@@ -201,8 +201,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer delete test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
-			REQUIRE(dbm->deleteAllPeers(ISO));
-			std::vector<PeerEntity> peers = dbm->getAllPeers(ISO);
+			REQUIRE(dbm->DeleteAllPeers(ISO));
+			std::vector<PeerEntity> peers = dbm->GetAllPeers(ISO);
 			REQUIRE(peers.size() == 0);
 			delete dbm;
 		}
@@ -210,13 +210,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer save one by one test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < peerToSave.size(); ++i) {
-				REQUIRE(dbm.putPeer(ISO, peerToSave[i]));
+				REQUIRE(dbm.PutPeer(ISO, peerToSave[i]));
 			}
 		}
 
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
+			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
@@ -228,14 +228,14 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<PeerEntity> PeersBeforeDelete = dbm.getAllPeers(ISO);
+			std::vector<PeerEntity> PeersBeforeDelete = dbm.GetAllPeers(ISO);
 			REQUIRE(PeersBeforeDelete.size() == peerToSave.size());
 
 			for (int i = 0; i < PeersBeforeDelete.size(); ++i) {
-				REQUIRE(dbm.deletePeer(ISO, PeersBeforeDelete[i]));
+				REQUIRE(dbm.DeletePeer(ISO, PeersBeforeDelete[i]));
 			}
 
-			std::vector<PeerEntity> PeersAfterDelete = dbm.getAllPeers(ISO);
+			std::vector<PeerEntity> PeersAfterDelete = dbm.GetAllPeers(ISO);
 			REQUIRE(0 == PeersAfterDelete.size());
 		}
 
@@ -273,13 +273,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction save test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < txToSave.size(); ++i) {
-				REQUIRE(dbm.putTransaction(ISO, txToSave[i]));
+				REQUIRE(dbm.PutTransaction(ISO, txToSave[i]));
 			}
 		}
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -296,13 +296,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.updateTransaction(ISO, txToUpdate[i]));
+				REQUIRE(dbm.UpdateTransaction(ISO, txToUpdate[i]));
 			}
 		}
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -319,10 +319,10 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.deleteTxByHash(ISO, txToUpdate[i].txHash));
+				REQUIRE(dbm.DeleteTxByHash(ISO, txToUpdate[i].txHash));
 			}
 
-			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(0 == readTx.size());
 		}
 

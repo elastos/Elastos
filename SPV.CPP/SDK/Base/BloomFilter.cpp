@@ -36,30 +36,30 @@ namespace Elastos {
 		}
 
 		void BloomFilter::Serialize(ByteStream &ostream) const {
-			ostream.writeVarBytes(_filter);
-			ostream.writeUint32(_hashFuncs);
-			ostream.writeUint32(_tweak);
-			ostream.writeByte(_flags);
+			ostream.WriteVarBytes(_filter);
+			ostream.WriteUint32(_hashFuncs);
+			ostream.WriteUint32(_tweak);
+			ostream.WriteByte(_flags);
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH
 		bool BloomFilter::Deserialize(ByteStream &istream) {
-			if (!istream.readVarBytes(_filter)) {
+			if (!istream.ReadVarBytes(_filter)) {
 				Log::error("Bloom filter deserialize filter fail");
 				return false;
 			}
 
-			if (!istream.readUint32(_hashFuncs)) {
+			if (!istream.ReadUint32(_hashFuncs)) {
 				Log::error("Bloom filter deserialize hash funcs fail");
 				return false;
 			}
 
-			if (!istream.readUint32(_tweak)) {
+			if (!istream.ReadUint32(_tweak)) {
 				Log::error("Bloom filter deserialize tweak fail");
 				return false;
 			}
 
-			if (!istream.readByte(_flags)) {
+			if (!istream.ReadByte(_flags)) {
 				Log::error("Bloom filter deserialize flags fail");
 				return false;
 			}
@@ -67,7 +67,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json BloomFilter::toJson() const {
+		nlohmann::json BloomFilter::ToJson() const {
 			nlohmann::json jsonData;
 			jsonData["length"] = _filter.GetSize();
 
@@ -82,7 +82,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void BloomFilter::fromJson(const nlohmann::json &jsonData) {
+		void BloomFilter::FromJson(const nlohmann::json &jsonData) {
 			size_t length = jsonData["length"].get<size_t>();
 
 			_filter.Resize(length);
@@ -96,18 +96,18 @@ namespace Elastos {
 			_tweak = jsonData["tweak"].get<uint32_t>();
 		}
 
-		void BloomFilter::insertData(const void *data, size_t dataLen) {
+		void BloomFilter::InsertData(const void *data, size_t dataLen) {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = calculateHash(data, dataLen, i);
+				idx = CalculateHash(data, dataLen, i);
 				_filter[idx >> 3] |= (1 << (7 & idx));
 			}
 
 			if (data != nullptr) _elemCount++;
 		}
 
-		uint32_t BloomFilter::calculateHash(const void *data, size_t dataLen, uint32_t hashNum) {
+		uint32_t BloomFilter::CalculateHash(const void *data, size_t dataLen, uint32_t hashNum) {
 			return BRMurmur3_32(data, dataLen, hashNum * 0xfba4c795 + _tweak) % (_filter.GetSize() * 8);
 		}
 
@@ -115,7 +115,7 @@ namespace Elastos {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = calculateHash(data, dataLen, i);
+				idx = CalculateHash(data, dataLen, i);
 				if (!(_filter[idx >> 3] & (1 << (7 & idx)))) return false;
 			}
 

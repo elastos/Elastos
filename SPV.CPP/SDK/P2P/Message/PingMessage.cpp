@@ -32,22 +32,22 @@ namespace Elastos {
 			} else {
 				_peer->info("got ping");
 				bool needRelayPing = false, hasPendingTx = false;
-				PeerManager *manager = _peer->getPeerManager();
+				PeerManager *manager = _peer->GetPeerManager();
 
 				PongParameter pongParameter;
 				pongParameter.lastBlockHeight = manager->GetLastBlockHeight();
 				_peer->SendMessage(MSG_PONG, pongParameter);
 
-				if (manager->getConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
-					time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
+				if (manager->GetConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
+					time_after(time(nullptr), manager->GetKeepAliveTimestamp() + 30)) {
 					needRelayPing = true;
 				}
 
-				std::vector<PublishedTransaction> publishedTx = manager->getPublishedTransaction();
+				std::vector<PublishedTransaction> publishedTx = manager->GetPublishedTransaction();
 				for (size_t i = publishedTx.size(); i > 0; i--) {
 					if (publishedTx[i - 1].HasCallback()) {
 						_peer->info("publish pending tx hash = {}, do not disconnect",
-									Utils::UInt256ToString(publishedTx[i - 1].GetTransaction()->getHash(), true));
+									Utils::UInt256ToString(publishedTx[i - 1].GetTransaction()->GetHash(), true));
 						hasPendingTx = true;
 						break;
 					}
@@ -74,11 +74,11 @@ namespace Elastos {
 			const PingParameter &pingParameter = dynamic_cast<const PingParameter &>(param);
 			_peer->SetStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
 
-			_peer->addPongCallback(pingParameter.callback);
+			_peer->AddPongCallback(pingParameter.callback);
 
-			stream.writeUint64(pingParameter.lastBlockHeight);
+			stream.WriteUint64(pingParameter.lastBlockHeight);
 
-			_peer->SendMessage(stream.getBuffer(), MSG_PING);
+			_peer->SendMessage(stream.GetBuffer(), MSG_PING);
 		}
 
 		std::string PingMessage::Type() const {

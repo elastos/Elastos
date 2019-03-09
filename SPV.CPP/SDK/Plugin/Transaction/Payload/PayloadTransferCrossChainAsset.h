@@ -26,26 +26,26 @@ namespace Elastos {
 
 			~PayloadTransferCrossChainAsset();
 
-			void setCrossChainData(const std::vector<std::string> &crossChainAddress,
-			                   const std::vector<uint64_t> &outputIndex,
-			                   const std::vector<uint64_t> &crossChainAmount);
+			void SetCrossChainData(const std::vector<std::string> &crossChainAddress,
+								   const std::vector<uint64_t> &outputIndex,
+								   const std::vector<uint64_t> &crossChainAmount);
 
-			const std::vector<std::string> &getCrossChainAddress() const;
+			const std::vector<std::string> &GetCrossChainAddress() const;
 
-			const std::vector<uint64_t> &getOutputIndex() const;
+			const std::vector<uint64_t> &GetOutputIndex() const;
 
-			const std::vector<uint64_t> &getCrossChainAmout() const;
+			const std::vector<uint64_t> &GetCrossChainAmout() const;
 
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson(uint8_t version) const;
+			virtual nlohmann::json ToJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &jsonData, uint8_t version);
+			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			virtual bool isValid() const;
+			virtual bool IsValid() const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 

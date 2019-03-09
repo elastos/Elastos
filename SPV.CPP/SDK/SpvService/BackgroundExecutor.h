@@ -21,11 +21,11 @@ namespace Elastos {
 
 			virtual ~BackgroundExecutor();
 
-			virtual void execute(const Runnable &runnable);
+			virtual void Execute(const Runnable &runnable);
 
-			void stopThread();
+			void StopThread();
 
-			void initThread(uint8_t threadCount);
+			void InitThread(uint8_t threadCount);
 
 		protected:
 			boost::asio::io_service _workerService;

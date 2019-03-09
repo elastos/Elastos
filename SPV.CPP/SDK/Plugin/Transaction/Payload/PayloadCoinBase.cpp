@@ -36,21 +36,21 @@ namespace Elastos {
 		}
 
 		void PayloadCoinBase::Serialize(ByteStream &ostream, uint8_t version) const {
-			ostream.writeVarBytes(_coinBaseData);
+			ostream.WriteVarBytes(_coinBaseData);
 		}
 
 		bool PayloadCoinBase::Deserialize(ByteStream &istream, uint8_t version) {
-			return istream.readVarBytes(_coinBaseData);
+			return istream.ReadVarBytes(_coinBaseData);
 		}
 
-		nlohmann::json PayloadCoinBase::toJson(uint8_t version) const {
+		nlohmann::json PayloadCoinBase::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["CoinBaseData"] = Utils::encodeHex(_coinBaseData);
+			j["CoinBaseData"] = Utils::EncodeHex(_coinBaseData);
 			return j;
 		}
 
-		void PayloadCoinBase::fromJson(const nlohmann::json &j, uint8_t version) {
-			_coinBaseData = Utils::decodeHex(j["CoinBaseData"].get<std::string>());
+		void PayloadCoinBase::FromJson(const nlohmann::json &j, uint8_t version) {
+			_coinBaseData = Utils::DecodeHex(j["CoinBaseData"].get<std::string>());
 
 		}
 

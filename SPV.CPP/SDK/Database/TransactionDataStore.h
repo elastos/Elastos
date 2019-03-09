@@ -52,15 +52,15 @@ namespace Elastos {
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool putTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool deleteAllTransactions(const std::string &iso);
-			size_t getAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
-			bool updateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool deleteTxByHash(const std::string &iso, const std::string &hash);
+			bool PutTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool DeleteAllTransactions(const std::string &iso);
+			size_t GetAllTransactionsCount(const std::string &iso) const;
+			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			bool UpdateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 
 		private:
-			bool selectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
+			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
 
 		private:
 			/*

@@ -4,7 +4,7 @@
 
 #include "IdAgentImpl.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MasterWallet.h>
 #include <SDK/Account/StandardAccount.h>
@@ -56,7 +56,7 @@ namespace Elastos {
 		std::string
 		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
-			ParamChecker::checkParam(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
+			ErrorChecker::CheckParam(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
 
 			IdItem item(purpose, index);
 			std::string existedId;
@@ -65,7 +65,7 @@ namespace Elastos {
 			}
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
 			const MasterPubKey &mpk = standardAccount->GetIDMasterPubKey();
@@ -75,7 +75,7 @@ namespace Elastos {
 			Key key;
 			key.SetPubKey(pubKey);
 			std::string id = key.GetAddress(PrefixIDChain);
-			item.PublicKey = Utils::encodeHex(pubKey);
+			item.PublicKey = Utils::EncodeHex(pubKey);
 			_info.Ids[id] = item;
 
 			return id;
@@ -92,7 +92,7 @@ namespace Elastos {
 
 		std::string IdAgentImpl::Sign(const std::string &id, const std::string &message, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return Utils::encodeHex(key->Sign(message));
+			return Utils::EncodeHex(key->Sign(message));
 		}
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {
@@ -104,11 +104,11 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknown ID " + id);
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknown ID " + id);
 			IdItem item = _info.Ids[id];
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
 			UInt512 seed = standardAccount->DeriveSeed(password);
@@ -131,7 +131,7 @@ namespace Elastos {
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return Utils::encodeHex(key->RedeemScript(PrefixIDChain));
+			return Utils::EncodeHex(key->RedeemScript(PrefixIDChain));
 		}
 
 		const IdAgentInfo &IdAgentImpl::GetIdAgentInfo() const {
@@ -139,7 +139,7 @@ namespace Elastos {
 		}
 
 		std::string IdAgentImpl::GetPublicKey(const std::string &id) const {
-			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
 			return _info.Ids.find(id)->second.PublicKey;
 		}
 

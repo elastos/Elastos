@@ -8,7 +8,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Base/Address.h>
 
 #include <Core/BRInt.h>
@@ -80,7 +80,7 @@ namespace Elastos {
 		}
 
 		void MultiSignAccount::checkSigners() const {
-			ParamChecker::checkCondition(_me == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(_me == nullptr, Error::WrongAccountType,
 										 "Readonly account do not support this operation.");
 		}
 
@@ -93,7 +93,7 @@ namespace Elastos {
 				Key key;
 				std::vector<CMBlock> pubKeys;
 				for (size_t i = 0; i < _coSigners.size(); ++i) {
-					pubKeys.push_back(Utils::decodeHex(_coSigners[i]));
+					pubKeys.push_back(Utils::DecodeHex(_coSigners[i]));
 				}
 				if (_me != nullptr) {
 					pubKeys.push_back(_me->GetMultiSignPublicKey());
@@ -129,7 +129,7 @@ namespace Elastos {
 			if (_me != nullptr) {
 				nlohmann::json basicInfo = _me->GetBasicInfo();
 				innerType = basicInfo["Type"];
-				signers.push_back(Utils::encodeHex(_me->GetMultiSignPublicKey()));
+				signers.push_back(Utils::EncodeHex(_me->GetMultiSignPublicKey()));
 			} else {
 				innerType = "Readonly";
 			}

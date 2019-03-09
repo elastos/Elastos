@@ -19,38 +19,38 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IdAuxPow :
+		class IDAuxPow :
 			public ELAMessageSerializable {
 		public:
-			IdAuxPow();
+			IDAuxPow();
 
-			IdAuxPow(const IdAuxPow &auxPow);
+			IDAuxPow(const IDAuxPow &auxPow);
 
-			~IdAuxPow();
+			~IDAuxPow();
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
-			IdAuxPow &operator=(const IdAuxPow &idAuxPow);
+			IDAuxPow &operator=(const IDAuxPow &idAuxPow);
 
-			void setIdAuxMerkleBranch(const std::vector<UInt256> &idAuxMerkleBranch);
-			void setIdAuxMerkleIndex(uint32_t index);
-			void setIdAuxBlockTx(const Transaction &tx);
-			void setMainBlockHeader(ELAMerkleBlock *blockHeader);
+			void SetIdAuxMerkleBranch(const std::vector<UInt256> &idAuxMerkleBranch);
+			void SetIdAuxMerkleIndex(uint32_t index);
+			void SetIdAuxBlockTx(const Transaction &tx);
+			void SetMainBlockHeader(ELAMerkleBlock *blockHeader);
 
-			const std::vector<UInt256> &getIdAuxMerkleBranch() const;
-			uint32_t getIdAuxMerkleIndex() const;
-			const Transaction &getIdAuxBlockTx() const;
-			ELAMerkleBlock *getMainBlockHeader() const;
+			const std::vector<UInt256> &GetIdAuxMerkleBranch() const;
+			uint32_t GetIdAuxMerkleIndex() const;
+			const Transaction &GetIdAuxBlockTx() const;
+			ELAMerkleBlock *GetMainBlockHeader() const;
 
 		private:
-			nlohmann::json mainBlockHeaderToJson() const;
-			void mainBlockHeaderFromJson(const nlohmann::json &j);
+			nlohmann::json MainBlockHeaderToJson() const;
+			void MainBlockHeaderFromJson(const nlohmann::json &j);
 
 		private:
 			std::vector<UInt256> _idAuxMerkleBranch;

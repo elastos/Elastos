@@ -73,43 +73,43 @@ namespace Elastos {
 			} Type;
 		}
 
-		class ParamChecker {
+		class ErrorChecker {
 		public:
 
-			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg);
+			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg);
 
-			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg, uint64_t data);
+			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg, uint64_t data);
 
-			static void throwParamException(Error::Code err, const std::string &msg);
+			static void ThrowParamException(Error::Code err, const std::string &msg);
 
-			static void throwLogicException(Error::Code err, const std::string &msg);
+			static void ThrowLogicException(Error::Code err, const std::string &msg);
 
-			static void checkParam(bool condition, Error::Code err, const std::string &msg);
+			static void CheckParam(bool condition, Error::Code err, const std::string &msg);
 
-			static void checkLogic(bool condition, Error::Code err, const std::string &msg);
+			static void CheckLogic(bool condition, Error::Code err, const std::string &msg);
 
-			static void checkCondition(bool condition, Error::Code err, const std::string &msg,
+			static void CheckCondition(bool condition, Error::Code err, const std::string &msg,
 									   Exception::Type type = Exception::LogicError);
 
-			static void checkCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data,
+			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data,
 									   Exception::Type type = Exception::LogicError);
 
-			static void checkPassword(const std::string &password, const std::string &msg);
+			static void CheckPassword(const std::string &password, const std::string &msg);
 
-			static void checkPasswordWithNullLegal(const std::string &password, const std::string &msg);
+			static void CheckPasswordWithNullLegal(const std::string &password, const std::string &msg);
 
-			static void checkParamNotEmpty(const std::string &argument, const std::string &msg);
+			static void CheckParamNotEmpty(const std::string &argument, const std::string &msg);
 
 			static void CheckDecrypt(bool condition);
 
-			static void checkJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg);
+			static void CheckJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg);
 
-			static void checkPathExists(const boost::filesystem::path &path);
+			static void CheckPathExists(const boost::filesystem::path &path);
 
-			static void checkPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount,
-												const std::string &msg);
+			static void CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount,
+											 const std::string &msg);
 
-			static void checkPrivateKey(const std::string &key);
+			static void CheckPrivateKey(const std::string &key);
 		};
 
 	}

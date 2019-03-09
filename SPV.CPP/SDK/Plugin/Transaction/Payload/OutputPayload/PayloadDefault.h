@@ -21,9 +21,9 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
 			virtual IOutputPayload &operator=(const IOutputPayload &payload);
 

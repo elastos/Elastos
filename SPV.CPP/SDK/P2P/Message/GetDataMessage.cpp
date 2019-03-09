@@ -54,7 +54,7 @@ namespace Elastos {
 						case inv_tx:
 							tx = FireRequestedTx(hash);
 
-							if (tx != nullptr && tx->getSize() < TX_MAX_SIZE) {
+							if (tx != nullptr && tx->GetSize() < TX_MAX_SIZE) {
 								TransactionParameter txParam;
 								txParam.tx = tx;
 								_peer->SendMessage(MSG_TX, txParam);
@@ -73,12 +73,12 @@ namespace Elastos {
 				if (notfound.size() > 0) {
 					ByteStream stream;
 
-					stream.writeUint32(uint32_t(notfound.size()));
+					stream.WriteUint32(uint32_t(notfound.size()));
 					for (size_t i = 0; i < notfound.size(); ++i) {
-						stream.writeBytes(notfound[i].item, sizeof(inv_item));
+						stream.WriteBytes(notfound[i].item, sizeof(inv_item));
 					}
 
-					SendMessage(stream.getBuffer(), MSG_NOTFOUND);
+					SendMessage(stream.GetBuffer(), MSG_NOTFOUND);
 				}
 			}
 			return true;
@@ -99,20 +99,20 @@ namespace Elastos {
 
 			if (count > 0) {
 				ByteStream stream;
-				stream.writeUint32(count);
+				stream.WriteUint32(count);
 
 				for (i = 0; i < txCount && i < count; i++) {
-					stream.writeUint32(uint32_t(inv_tx));
-					stream.writeBytes(&getDataParameter.txHashes[i], sizeof(UInt256));
+					stream.WriteUint32(uint32_t(inv_tx));
+					stream.WriteBytes(&getDataParameter.txHashes[i], sizeof(UInt256));
 				}
 
 				for (i = 0; i < blockCount && txCount + i < count; i++) {
-					stream.writeUint32(uint32_t(inv_filtered_block));
-					stream.writeBytes(&getDataParameter.blockHashes[i], sizeof(UInt256));
+					stream.WriteUint32(uint32_t(inv_filtered_block));
+					stream.WriteBytes(&getDataParameter.blockHashes[i], sizeof(UInt256));
 				}
 
 				_peer->SetSentGetdata(true);
-				SendMessage(stream.getBuffer(), Type());
+				SendMessage(stream.GetBuffer(), Type());
 			}
 		}
 

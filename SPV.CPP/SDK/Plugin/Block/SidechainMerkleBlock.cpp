@@ -26,52 +26,52 @@ namespace Elastos {
 		}
 
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
-			MerkleBlockBase::serializeNoAux(ostream);
+			MerkleBlockBase::SerializeNoAux(ostream);
 			idAuxPow.Serialize(ostream);
-			ostream.writeUint8(1);
-			MerkleBlockBase::serializeAfterAux(ostream);
+			ostream.WriteUint8(1);
+			MerkleBlockBase::SerializeAfterAux(ostream);
 		}
 
 		bool SidechainMerkleBlock::Deserialize(ByteStream &istream) {
-			if (!MerkleBlockBase::deserializeNoAux(istream) || !idAuxPow.Deserialize(istream))
+			if (!MerkleBlockBase::DeserializeNoAux(istream) || !idAuxPow.Deserialize(istream))
 				return false;
 
-			istream.drop(1);
-			if (!MerkleBlockBase::deserializeAfterAux(istream))
+			istream.Drop(1);
+			if (!MerkleBlockBase::DeserializeAfterAux(istream))
 				return false;
 
-			getHash();
+			GetHash();
 
 			return true;
 		}
 
-		nlohmann::json SidechainMerkleBlock::toJson() const {
-			nlohmann::json j = MerkleBlockBase::toJson();
-			j["IdAuxPow"] = idAuxPow.toJson();
+		nlohmann::json SidechainMerkleBlock::ToJson() const {
+			nlohmann::json j = MerkleBlockBase::ToJson();
+			j["IdAuxPow"] = idAuxPow.ToJson();
 
 			return j;
 		}
 
-		void SidechainMerkleBlock::fromJson(const nlohmann::json &j) {
-			MerkleBlockBase::fromJson(j);
+		void SidechainMerkleBlock::FromJson(const nlohmann::json &j) {
+			MerkleBlockBase::FromJson(j);
 			nlohmann::json auxPowJson = j["IdAuxPow"];
-			idAuxPow.fromJson(auxPowJson);
+			idAuxPow.FromJson(auxPowJson);
 		}
 
-		const UInt256 &SidechainMerkleBlock::getHash() const {
+		const UInt256 &SidechainMerkleBlock::GetHash() const {
 			UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_blockHash, &zero)) {
 				ByteStream ostream;
-				MerkleBlockBase::serializeNoAux(ostream);
+				MerkleBlockBase::SerializeNoAux(ostream);
 				UInt256 hash = UINT256_ZERO;
-				CMBlock buf = ostream.getBuffer();
+				CMBlock buf = ostream.GetBuffer();
 				BRSHA256_2(&hash, buf, buf.GetSize());
 				UInt256Set((void *) &_blockHash, hash);
 			}
 			return _blockHash;
 		}
 
-		bool SidechainMerkleBlock::isValid(uint32_t currentTime) const {
+		bool SidechainMerkleBlock::IsValid(uint32_t currentTime) const {
 			// target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
 			// bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
@@ -102,7 +102,7 @@ namespace Elastos {
 			return r;
 		}
 
-		std::string SidechainMerkleBlock::getBlockType() const {
+		std::string SidechainMerkleBlock::GetBlockType() const {
 			return "SideStandard";
 		}
 

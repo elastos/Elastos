@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "IdMerkleBlock.h"
+#include "IDMerkleBlock.h"
 
 #include <SDK/Common/Utils.h>
 
@@ -12,14 +12,14 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		IdMerkleBlock *IdMerkleBlockNew() {
-			return new IdMerkleBlock;
+		IDMerkleBlock *IDMerkleBlockNew() {
+			return new IDMerkleBlock;
 		}
 
-		IdMerkleBlock *IdMerkleBlockCopy(const IdMerkleBlock *orig) {
+		IDMerkleBlock *IDMerkleBlockCopy(const IDMerkleBlock *orig) {
 			assert(orig != nullptr);
 
-			IdMerkleBlock *cpy = IdMerkleBlockNew();
+			IDMerkleBlock *cpy = IDMerkleBlockNew();
 			cpy->raw = orig->raw;
 			cpy->idAuxPow = orig->idAuxPow;
 
@@ -30,7 +30,7 @@ namespace Elastos {
 			return cpy;
 		}
 
-		void IdMerkleBlockFree(IdMerkleBlock *idBlock) {
+		void IDMerkleBlockFree(IDMerkleBlock *idBlock) {
 			assert(idBlock != nullptr);
 
 			BRMerkleBlock *block = (BRMerkleBlock *)idBlock;
@@ -41,7 +41,7 @@ namespace Elastos {
 			delete idBlock;
 		}
 
-		IdMerkleBlock &IdMerkleBlock::operator=(const IdMerkleBlock &orig) {
+		IDMerkleBlock &IDMerkleBlock::operator=(const IDMerkleBlock &orig) {
 			this->raw = orig.raw;
 			this->raw.hashes = nullptr;
 			this->raw.flags = nullptr;

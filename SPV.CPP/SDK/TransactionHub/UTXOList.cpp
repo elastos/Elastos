@@ -5,7 +5,7 @@
 #include "UTXOList.h"
 
 #include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 #include <boost/bind.hpp>
 
@@ -45,7 +45,7 @@ namespace Elastos {
 		}
 
 		void UTXOList::AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms) {
-			_utxos.emplace_back(input.getTransctionHash(), input.getIndex(), amount, confirms);
+			_utxos.emplace_back(input.GetTransctionHash(), input.GetIndex(), amount, confirms);
 		}
 
 		void UTXOList::AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {

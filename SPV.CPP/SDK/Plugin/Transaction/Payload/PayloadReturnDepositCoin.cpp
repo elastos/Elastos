@@ -25,11 +25,11 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadReturnDepositCoin::toJson(uint8_t version) const {
+		nlohmann::json PayloadReturnDepositCoin::ToJson(uint8_t version) const {
 			return nlohmann::json();
 		}
 
-		void PayloadReturnDepositCoin::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadReturnDepositCoin::FromJson(const nlohmann::json &j, uint8_t version) {
 
 		}
 

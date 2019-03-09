@@ -46,7 +46,7 @@ namespace Elastos {
 					_programHash = key.ProgramHash(prefix);
 					CheckValid();
 				} else {
-					Log::error("invalid pubKey {}", Utils::encodeHex(pubKey));
+					Log::error("invalid pubKey {}", Utils::EncodeHex(pubKey));
 					memset(_programHash.u8, 0, sizeof(_programHash));
 					_isValid = false;
 				}

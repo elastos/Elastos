@@ -5,7 +5,7 @@
 #include "SubAccountBase.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 
 namespace Elastos {
@@ -62,15 +62,16 @@ namespace Elastos {
 			Key key;
 			ByteStream stream;
 
-			ParamChecker::checkParam(tx->IsSigned(), Error::AlreadySigned, "Transaction signed");
-			ParamChecker::checkParam(tx->getPrograms().empty(), Error::InvalidTransaction, "Invalid transaction program");
+			ErrorChecker::CheckParam(tx->IsSigned(), Error::AlreadySigned, "Transaction signed");
+			ErrorChecker::CheckParam(tx->GetPrograms().empty(), Error::InvalidTransaction,
+									 "Invalid transaction program");
 
 			UInt256 md = tx->GetShaData();
 
-			std::vector<Program> &programs = tx->getPrograms();
+			std::vector<Program> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
 				std::vector<CMBlock> publicKeys = programs[i].DecodePublicKey();
-				ParamChecker::checkLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
+				ErrorChecker::CheckLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
 
 				bool found = false;
 				for (size_t k = 0; k < publicKeys.size(); ++k) {
@@ -78,21 +79,21 @@ namespace Elastos {
 					if (found)
 						break;
 				}
-				ParamChecker::checkLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
+				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
-				stream.setPosition(0);
-				if (programs[i].getParameter().GetSize() > 0) {
-					ByteStream verifyStream(programs[i].getParameter());
+				stream.SetPosition(0);
+				if (programs[i].GetParameter().GetSize() > 0) {
+					ByteStream verifyStream(programs[i].GetParameter());
 					CMBlock signature;
-					while (verifyStream.readVarBytes(signature)) {
-						ParamChecker::checkLogic(key.Verify(md, signature), Error::AlreadySigned, "Already signed");
+					while (verifyStream.ReadVarBytes(signature)) {
+						ErrorChecker::CheckLogic(key.Verify(md, signature), Error::AlreadySigned, "Already signed");
 					}
-					stream.writeBytes(programs[i].getParameter());
+					stream.WriteBytes(programs[i].GetParameter());
 				}
 
 				CMBlock signedData = key.Sign(md);
-				stream.writeVarBytes(signedData);
-				programs[i].setParameter(stream.getBuffer());
+				stream.WriteVarBytes(signedData);
+				programs[i].SetParameter(stream.GetBuffer());
 			}
 		}
 

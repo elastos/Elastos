@@ -24,27 +24,27 @@ namespace Elastos {
 
 			~TransactionInput();
 
-			const UInt256 &getTransctionHash() const;
+			const UInt256 &GetTransctionHash() const;
 
-			void setTransactionHash(const UInt256 &hash);
+			void SetTransactionHash(const UInt256 &hash);
 
-			uint32_t getIndex() const;
+			uint32_t GetIndex() const;
 
-			void setIndex(uint32_t index);
+			void SetIndex(uint32_t index);
 
-			uint32_t getSequence() const;
+			uint32_t GetSequence() const;
 
-			void setSequence(uint32_t sequence);
+			void SetSequence(uint32_t sequence);
 
 			void Serialize(ByteStream &ostream) const;
 
 			bool Deserialize(ByteStream &istream);
 
-			nlohmann::json toJson() const;
+			nlohmann::json ToJson() const;
 
-			void fromJson(const nlohmann::json &jsonData);
+			void FromJson(const nlohmann::json &j);
 
-			size_t getSize() const;
+			size_t GetSize() const;
 
 		private:
 			UInt256 _txHash;

@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "IdAuxPow.h"
+#include "IDAuxPow.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ByteStream.h>
@@ -13,19 +13,19 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		IdAuxPow::IdAuxPow() {
+		IDAuxPow::IDAuxPow() {
 			_idAuxMerkleIndex = 0;
 			_mainBlockHeader = ELAMerkleBlockNew();
 		}
 
-		IdAuxPow::IdAuxPow(const IdAuxPow &idAuxPow) {
+		IDAuxPow::IDAuxPow(const IDAuxPow &idAuxPow) {
 			_idAuxMerkleBranch = idAuxPow._idAuxMerkleBranch;
 			_idAuxMerkleIndex = idAuxPow._idAuxMerkleIndex;
 			_idAuxBlockTx = idAuxPow._idAuxBlockTx;
 			_mainBlockHeader = ELAMerkleBlockCopy(idAuxPow._mainBlockHeader);
 		}
 
-		IdAuxPow &IdAuxPow::operator=(const IdAuxPow &idAuxPow) {
+		IDAuxPow &IDAuxPow::operator=(const IDAuxPow &idAuxPow) {
 			_idAuxMerkleBranch = idAuxPow._idAuxMerkleBranch;
 			_idAuxMerkleIndex = idAuxPow._idAuxMerkleIndex;
 			_idAuxBlockTx = idAuxPow._idAuxBlockTx;
@@ -34,80 +34,80 @@ namespace Elastos {
 			return *this;
 		}
 
-		IdAuxPow::~IdAuxPow() {
+		IDAuxPow::~IDAuxPow() {
 			ELAMerkleBlockFree(_mainBlockHeader);
 		}
 
-		void IdAuxPow::Serialize(ByteStream &stream) const {
+		void IDAuxPow::Serialize(ByteStream &stream) const {
 			_idAuxBlockTx.Serialize(stream);
 
-			stream.writeUint32((uint32_t)_idAuxMerkleBranch.size());
+			stream.WriteUint32((uint32_t) _idAuxMerkleBranch.size());
 
 			for (size_t i = 0; i < _idAuxMerkleBranch.size(); ++i) {
-				stream.writeBytes(_idAuxMerkleBranch[i].u8, sizeof(_idAuxMerkleBranch[i]));
+				stream.WriteBytes(_idAuxMerkleBranch[i].u8, sizeof(_idAuxMerkleBranch[i]));
 			}
 
-			stream.writeUint32(_idAuxMerkleIndex);
+			stream.WriteUint32(_idAuxMerkleIndex);
 
-			stream.writeUint32(_mainBlockHeader->raw.version);
-			stream.writeBytes(_mainBlockHeader->raw.prevBlock.u8, sizeof(_mainBlockHeader->raw.prevBlock.u8));
-			stream.writeBytes(_mainBlockHeader->raw.merkleRoot.u8, sizeof(_mainBlockHeader->raw.merkleRoot.u8));
-			stream.writeUint32(_mainBlockHeader->raw.timestamp);
-			stream.writeUint32(_mainBlockHeader->raw.target);
-			stream.writeUint32(_mainBlockHeader->raw.nonce);
-			stream.writeUint32(_mainBlockHeader->raw.height);
+			stream.WriteUint32(_mainBlockHeader->raw.version);
+			stream.WriteBytes(_mainBlockHeader->raw.prevBlock.u8, sizeof(_mainBlockHeader->raw.prevBlock.u8));
+			stream.WriteBytes(_mainBlockHeader->raw.merkleRoot.u8, sizeof(_mainBlockHeader->raw.merkleRoot.u8));
+			stream.WriteUint32(_mainBlockHeader->raw.timestamp);
+			stream.WriteUint32(_mainBlockHeader->raw.target);
+			stream.WriteUint32(_mainBlockHeader->raw.nonce);
+			stream.WriteUint32(_mainBlockHeader->raw.height);
 
 			_mainBlockHeader->auxPow.Serialize(stream);
 		}
 
-		bool IdAuxPow::Deserialize(ByteStream &stream) {
+		bool IDAuxPow::Deserialize(ByteStream &stream) {
 			if (!_idAuxBlockTx.Deserialize(stream)) {
 				return false;
 			}
 
 			uint32_t size = 0;
 
-			if (!stream.readUint32(size)) {
+			if (!stream.ReadUint32(size)) {
 				return false;
 			}
 
 			_idAuxMerkleBranch.resize(size);
 			for (size_t i = 0; i < size; ++i) {
-				if (!stream.readBytes(_idAuxMerkleBranch[i].u8, sizeof(_idAuxMerkleBranch[i]))) {
+				if (!stream.ReadBytes(_idAuxMerkleBranch[i].u8, sizeof(_idAuxMerkleBranch[i]))) {
 					return false;
 				}
 			}
 
-			if (!stream.readUint32(_idAuxMerkleIndex)) {
+			if (!stream.ReadUint32(_idAuxMerkleIndex)) {
 				return false;
 			}
 
-			if (!stream.readUint32(_mainBlockHeader->raw.version)) {
+			if (!stream.ReadUint32(_mainBlockHeader->raw.version)) {
 				return false;
 			}
-			if (!stream.readBytes(_mainBlockHeader->raw.prevBlock.u8, sizeof(_mainBlockHeader->raw.prevBlock.u8))) {
+			if (!stream.ReadBytes(_mainBlockHeader->raw.prevBlock.u8, sizeof(_mainBlockHeader->raw.prevBlock.u8))) {
 				return false;
 			}
-			if (!stream.readBytes(_mainBlockHeader->raw.merkleRoot.u8, sizeof(_mainBlockHeader->raw.merkleRoot.u8))) {
+			if (!stream.ReadBytes(_mainBlockHeader->raw.merkleRoot.u8, sizeof(_mainBlockHeader->raw.merkleRoot.u8))) {
 				return false;
 			}
-			if (!stream.readUint32(_mainBlockHeader->raw.timestamp)) {
+			if (!stream.ReadUint32(_mainBlockHeader->raw.timestamp)) {
 				return false;
 			}
-			if (!stream.readUint32(_mainBlockHeader->raw.target)) {
+			if (!stream.ReadUint32(_mainBlockHeader->raw.target)) {
 				return false;
 			}
-			if (!stream.readUint32(_mainBlockHeader->raw.nonce)) {
+			if (!stream.ReadUint32(_mainBlockHeader->raw.nonce)) {
 				return false;
 			}
-			if (!stream.readUint32(_mainBlockHeader->raw.height)) {
+			if (!stream.ReadUint32(_mainBlockHeader->raw.height)) {
 				return false;
 			}
 
 			return _mainBlockHeader->auxPow.Deserialize(stream);
 		}
 
-		nlohmann::json IdAuxPow::mainBlockHeaderToJson() const {
+		nlohmann::json IDAuxPow::MainBlockHeaderToJson() const {
 			nlohmann::json j;
 
 			j["BlockHash"] = Utils::UInt256ToString(_mainBlockHeader->raw.blockHash, true);
@@ -125,15 +125,15 @@ namespace Elastos {
 			}
 			j["Hashes"] = hashes;
 
-			j["Flags"] = Utils::encodeHex(_mainBlockHeader->raw.flags, _mainBlockHeader->raw.flagsLen);;
+			j["Flags"] = Utils::EncodeHex(_mainBlockHeader->raw.flags, _mainBlockHeader->raw.flagsLen);;
 			j["Height"] = _mainBlockHeader->raw.height;
 
-			j["AuxPow"] = _mainBlockHeader->auxPow.toJson();
+			j["AuxPow"] = _mainBlockHeader->auxPow.ToJson();
 
 			return j;
 		}
 
-		void IdAuxPow::mainBlockHeaderFromJson(const nlohmann::json &j) {
+		void IDAuxPow::MainBlockHeaderFromJson(const nlohmann::json &j) {
 
 			std::string blockHash = j["BlockHash"].get<std::string>();
 			_mainBlockHeader->raw.blockHash = Utils::UInt256FromString(blockHash, true);
@@ -154,7 +154,7 @@ namespace Elastos {
 				hashes[i] = Utils::UInt256FromString(hashArray[i], true);
 			}
 
-			CMBlock flags = Utils::decodeHex(j["Flags"].get<std::string>());
+			CMBlock flags = Utils::DecodeHex(j["Flags"].get<std::string>());
 			_mainBlockHeader->raw.flagsLen = flags.GetSize();
 
 			BRMerkleBlockSetTxHashes(&_mainBlockHeader->raw, hashes, _mainBlockHeader->raw.hashesCount,
@@ -162,10 +162,10 @@ namespace Elastos {
 
 			_mainBlockHeader->raw.height = j["Height"].get<uint32_t>();
 
-			_mainBlockHeader->auxPow.fromJson(j["AuxPow"]);
+			_mainBlockHeader->auxPow.FromJson(j["AuxPow"]);
 		}
 
-		nlohmann::json IdAuxPow::toJson() const {
+		nlohmann::json IDAuxPow::ToJson() const {
 			nlohmann::json j;
 
 			size_t len = _idAuxMerkleBranch.size();
@@ -176,13 +176,13 @@ namespace Elastos {
 			j["IdAuxMerkleBranch"] = auxMerkleBranch;
 
 			j["IdAuxMerkleIndex"] = _idAuxMerkleIndex;
-			j["IdAuxBlockTx"] = _idAuxBlockTx.toJson();
-			j["MainBlockHeader"] = mainBlockHeaderToJson();
+			j["IdAuxBlockTx"] = _idAuxBlockTx.ToJson();
+			j["MainBlockHeader"] = MainBlockHeaderToJson();
 
 			return j;
 		}
 
-		void IdAuxPow::fromJson(const nlohmann::json &j) {
+		void IDAuxPow::FromJson(const nlohmann::json &j) {
 			std::vector<std::string> idAuxMerkleBranch = j["IdAuxMerkleBranch"];
 			_idAuxMerkleBranch.resize(idAuxMerkleBranch.size());
 			for (size_t i = 0; i < _idAuxMerkleBranch.size(); ++i) {
@@ -190,42 +190,42 @@ namespace Elastos {
 			}
 
 			_idAuxMerkleIndex = j["IdAuxMerkleIndex"].get<uint32_t>();
-			_idAuxBlockTx.fromJson(j["IdAuxBlockTx"]);
-			mainBlockHeaderFromJson(j["MainBlockHeader"]);
+			_idAuxBlockTx.FromJson(j["IdAuxBlockTx"]);
+			MainBlockHeaderFromJson(j["MainBlockHeader"]);
 		}
 
-		void IdAuxPow::setIdAuxMerkleBranch(const std::vector<UInt256> &idAuxMerkleBranch) {
+		void IDAuxPow::SetIdAuxMerkleBranch(const std::vector<UInt256> &idAuxMerkleBranch) {
 			_idAuxMerkleBranch = idAuxMerkleBranch;
 		}
 
-		void IdAuxPow::setIdAuxMerkleIndex(uint32_t index) {
+		void IDAuxPow::SetIdAuxMerkleIndex(uint32_t index) {
 			_idAuxMerkleIndex = index;
 		}
 
-		void IdAuxPow::setIdAuxBlockTx(const Transaction &tx) {
+		void IDAuxPow::SetIdAuxBlockTx(const Transaction &tx) {
 			_idAuxBlockTx = tx;
 		}
 
-		void IdAuxPow::setMainBlockHeader(ELAMerkleBlock *blockHeader) {
+		void IDAuxPow::SetMainBlockHeader(ELAMerkleBlock *blockHeader) {
 			if (_mainBlockHeader) {
 				ELAMerkleBlockFree(_mainBlockHeader);
 			}
 			_mainBlockHeader = blockHeader;
 		}
 
-		const std::vector<UInt256> &IdAuxPow::getIdAuxMerkleBranch() const {
+		const std::vector<UInt256> &IDAuxPow::GetIdAuxMerkleBranch() const {
 			return _idAuxMerkleBranch;
 		}
 
-		uint32_t IdAuxPow::getIdAuxMerkleIndex() const {
+		uint32_t IDAuxPow::GetIdAuxMerkleIndex() const {
 			return _idAuxMerkleIndex;
 		}
 
-		const Transaction &IdAuxPow::getIdAuxBlockTx() const {
+		const Transaction &IDAuxPow::GetIdAuxBlockTx() const {
 			return _idAuxBlockTx;
 		}
 
-		ELAMerkleBlock *IdAuxPow::getMainBlockHeader() const {
+		ELAMerkleBlock *IDAuxPow::GetMainBlockHeader() const {
 			return _mainBlockHeader;
 		}
 

@@ -86,15 +86,15 @@ public:
 
 		tryInitCoinConfig();
 		CoinInfo info;
-		info.setEaliestPeerTime(0);
-		info.setWalletType(subWalletType);
-		info.setIndex(coinTypeIndex);
-		info.setSingleAddress(singleAddress);
-		info.setUsedMaxAddressIndex(0);
-		info.setChainId(chainID);
-		info.setFeePerKb(feePerKb);
-		info.setChainCode("0000000000000000000000000000000000000000000000000000000000000000");
-		info.setPublicKey("038bc7fbfa77b10b85cdf9ef75c0d994924adab73a7a7486e9c392398899faac33");
+		info.SetEaliestPeerTime(0);
+		info.SetWalletType(subWalletType);
+		info.SetIndex(coinTypeIndex);
+		info.SetSingleAddress(singleAddress);
+		info.SetUsedMaxAddressIndex(0);
+		info.SetChainId(chainID);
+		info.SetFeePerKb(feePerKb);
+		info.SetChainCode("0000000000000000000000000000000000000000000000000000000000000000");
+		info.SetPublicKey("038bc7fbfa77b10b85cdf9ef75c0d994924adab73a7a7486e9c392398899faac33");
 		std::vector<CoinInfo> coinInfoList = {info};
 		restoreSubWallets(coinInfoList);
 
@@ -599,11 +599,11 @@ TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
 	KeyStore keyStore("Data");
 	masterWallet->restoreKeyStoreWrapper(keyStore, payPassword);
 
-	IAccount *account = keyStore.createAccountFromJson(payPassword);
-	CHECK(keyStore.json().getMnemonic() == mnemonic);
+	IAccount *account = keyStore.CreateAccountFromJson(payPassword);
+	CHECK(keyStore.json().GetMnemonic() == mnemonic);
 	CHECK(account->GetEncryptedPhrasePassword() == masterWallet->getEncryptedPhrasePassword());
 
-	std::vector<CoinInfo> coinInfoList = keyStore.json().getCoinInfoList();
+	std::vector<CoinInfo> coinInfoList = keyStore.json().GetCoinInfoList();
 	REQUIRE(coinInfoList.size() == 2);
 }
 

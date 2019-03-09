@@ -24,42 +24,42 @@ namespace Elastos {
 			ByteStream stream(msg);
 
 			uint32_t version = 0;
-			if (!stream.readUint32(version)) {
+			if (!stream.ReadUint32(version)) {
 				_peer->error("malformed version message, parse version fail");
 				return false;
 			}
 			_peer->SetVersion(version);
 
 			uint64_t services = 0;
-			if (!stream.readUint64(services)) {
+			if (!stream.ReadUint64(services)) {
 				_peer->error("malformed version message, parse services fail");
 				return false;
 			}
 			_peer->SetServices(services);
 
 			uint32_t timestamp = 0;
-			if (!stream.readUint32(timestamp)) {
+			if (!stream.ReadUint32(timestamp)) {
 				_peer->error("malformed version message, parse timestamp fail");
 				return false;
 			}
 			_peer->SetTimestamp(timestamp);
 
 			uint16_t port = 0;
-			if (!stream.readUint16(port)) {
+			if (!stream.ReadUint16(port)) {
 				_peer->error("malformed version message, parse port fail");
 				return false;
 			}
 //			_peer->SetPort(port);
 
 			uint64_t nonce = 0;
-			if (!stream.readUint64(nonce)) {
+			if (!stream.ReadUint64(nonce)) {
 				_peer->error("malformed version message, parse nonce fail");
 				return false;
 			}
 			_peer->SetNonce(nonce);
 
 			uint64_t height = 0;
-			if (!stream.readUint64(height)) {
+			if (!stream.ReadUint64(height)) {
 				_peer->error("malformed version message, parse height fail");
 				return false;
 			}
@@ -74,16 +74,16 @@ namespace Elastos {
 		void VersionMessage::Send(const SendMessageParameter &param) {
 			ByteStream stream;
 
-			stream.writeUint32(PROTOCOL_VERSION);
-			stream.writeUint64(ENABLED_SERVICES);
-			stream.writeUint32(uint32_t(time(nullptr)));
-			stream.writeUint16(_peer->GetPort());
+			stream.WriteUint32(PROTOCOL_VERSION);
+			stream.WriteUint64(ENABLED_SERVICES);
+			stream.WriteUint32(uint32_t(time(nullptr)));
+			stream.WriteUint16(_peer->GetPort());
 			_peer->SetNonce(((uint64_t)BRRand(0) << 32) | (uint64_t)BRRand(0));
-			stream.writeUint64(_peer->GetNonce());
-			stream.writeUint64(0);
-			stream.writeUint8(0);
+			stream.WriteUint64(_peer->GetNonce());
+			stream.WriteUint64(0);
+			stream.WriteUint8(0);
 
-			SendMessage(stream.getBuffer(), Type());
+			SendMessage(stream.GetBuffer(), Type());
 		}
 
 		std::string VersionMessage::Type() const {

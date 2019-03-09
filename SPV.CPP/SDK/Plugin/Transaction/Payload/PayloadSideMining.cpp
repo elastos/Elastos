@@ -67,42 +67,42 @@ namespace Elastos {
 		}
 
 		void PayloadSideMining::Serialize(ByteStream &ostream, uint8_t version) const {
-			ostream.writeBytes(_sideBlockHash.u8, sizeof(UInt256));
-			ostream.writeBytes(_sideGenesisHash.u8, sizeof(UInt256));
-			ostream.writeUint32(_blockHeight);
-			ostream.writeVarBytes(_signedData);
+			ostream.WriteBytes(_sideBlockHash.u8, sizeof(UInt256));
+			ostream.WriteBytes(_sideGenesisHash.u8, sizeof(UInt256));
+			ostream.WriteUint32(_blockHeight);
+			ostream.WriteVarBytes(_signedData);
 		}
 
 		bool PayloadSideMining::Deserialize(ByteStream &istream, uint8_t version) {
-			if (!istream.readBytes(_sideBlockHash.u8, sizeof(UInt256)))
+			if (!istream.ReadBytes(_sideBlockHash.u8, sizeof(UInt256)))
 				return false;
 
-			if (!istream.readBytes(_sideGenesisHash.u8, sizeof(UInt256)))
+			if (!istream.ReadBytes(_sideGenesisHash.u8, sizeof(UInt256)))
 				return false;
 
-			if (!istream.readUint32(_blockHeight))
+			if (!istream.ReadUint32(_blockHeight))
 				return false;
 
-			return istream.readVarBytes(_signedData);
+			return istream.ReadVarBytes(_signedData);
 
 		}
 
-		nlohmann::json PayloadSideMining::toJson(uint8_t version) const {
+		nlohmann::json PayloadSideMining::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["SideBlockHash"] = Utils::UInt256ToString(_sideBlockHash, true);
 			j["SideGenesisHash"] = Utils::UInt256ToString(_sideGenesisHash, true);
 			j["BlockHeight"] = _blockHeight;
-			j["SignedData"] = Utils::encodeHex(_signedData);
+			j["SignedData"] = Utils::EncodeHex(_signedData);
 
 			return j;
 		}
 
-		void PayloadSideMining::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadSideMining::FromJson(const nlohmann::json &j, uint8_t version) {
 			_sideBlockHash = Utils::UInt256FromString(j["SideBlockHash"].get<std::string>(), true);
 			_sideGenesisHash = Utils::UInt256FromString(j["SideGenesisHash"].get<std::string>(), true);
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
-			_signedData = Utils::decodeHex(j["SignedData"].get<std::string>());
+			_signedData = Utils::DecodeHex(j["SignedData"].get<std::string>());
 		}
 
 		IPayload &PayloadSideMining::operator=(const IPayload &payload) {

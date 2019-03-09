@@ -19,18 +19,18 @@ namespace Elastos {
 
 			~KeyStore();
 
-			bool open(const boost::filesystem::path &path, const std::string &password);
+			bool Open(const boost::filesystem::path &path, const std::string &password);
 
 			// to support old web keystore temporary
 			bool Import(const nlohmann::json &json, const std::string &passwd, const std::string &phrasePasswd);
 
 			bool Import(const nlohmann::json &json, const std::string &password);
 
-			bool save(const boost::filesystem::path &path, const std::string &password);
+			bool Save(const boost::filesystem::path &path, const std::string &password);
 
 			bool Export(nlohmann::json &json, const std::string &password);
 
-			bool isOld();
+			bool IsOld();
 
 			bool HasPhrasePassword() const;
 
@@ -38,18 +38,18 @@ namespace Elastos {
 
 			ElaNewWalletJson &json();
 
-			IAccount *createAccountFromJson(const std::string &payPassword) const;
+			IAccount *CreateAccountFromJson(const std::string &payPassword) const;
 
-			void initJsonFromAccount(IAccount *account, const std::string &payPassword);
+			void InitJsonFromAccount(IAccount *account, const std::string &payPassword);
 
 		private:
-			void initAccountByType(IAccount *account, const std::string &payPassword);
+			void InitAccountByType(IAccount *account, const std::string &payPassword);
 
-			void initStandardAccount(IAccount *account, const std::string &payPassword);
+			void InitStandardAccount(IAccount *account, const std::string &payPassword);
 
-			void initSimpleAccount(IAccount *account, const std::string &payPassword);
+			void InitSimpleAccount(IAccount *account, const std::string &payPassword);
 
-			void initMultiSignAccount(IAccount *account, const std::string &payPassword);
+			void InitMultiSignAccount(IAccount *account, const std::string &payPassword);
 
 		private:
 

@@ -17,74 +17,74 @@ namespace Elastos {
 
 			virtual ~MerkleBlockBase();
 
-			uint32_t getVersion() const;
+			uint32_t GetVersion() const;
 
-			void setVersion(uint32_t version);
+			void SetVersion(uint32_t version);
 
-			const UInt256 &getPrevBlockHash() const;
+			const UInt256 &GetPrevBlockHash() const;
 
-			void setPrevBlockHash(const UInt256 &hash);
+			void SetPrevBlockHash(const UInt256 &hash);
 
-			virtual const UInt256 &getRootBlockHash() const;
+			virtual const UInt256 &GetRootBlockHash() const;
 
-			virtual void setRootBlockHash(const UInt256 &hash);
+			virtual void SetRootBlockHash(const UInt256 &hash);
 
-			virtual uint32_t getTimestamp() const;
+			virtual uint32_t GetTimestamp() const;
 
-			virtual void setTimestamp(uint32_t timestamp);
+			virtual void SetTimestamp(uint32_t timestamp);
 
-			uint32_t getTarget() const;
+			uint32_t GetTarget() const;
 
-			void setTarget(uint32_t target);
+			void SetTarget(uint32_t target);
 
-			uint32_t getNonce() const;
+			uint32_t GetNonce() const;
 
-			void setNonce(uint32_t nonce);
+			void SetNonce(uint32_t nonce);
 
-			uint32_t getTransactionCount() const;
+			uint32_t GetTransactionCount() const;
 
-			void setTransactionCount(uint32_t count);
+			void SetTransactionCount(uint32_t count);
 
-			const std::vector<UInt256> &getHashes() const;
+			const std::vector<UInt256> &GetHashes() const;
 
-			void setHashes(const std::vector<UInt256> &hashes);
+			void SetHashes(const std::vector<UInt256> &hashes);
 
-			const std::vector<uint8_t> &getFlags() const;
+			const std::vector<uint8_t> &GetFlags() const;
 
-			void setFlags(const std::vector<uint8_t> &flags);
+			void SetFlags(const std::vector<uint8_t> &flags);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual void FromJson(const nlohmann::json &j);
 
-			virtual const UInt256 &getHash() const { return _blockHash;}
+			virtual const UInt256 &GetHash() const { return _blockHash;}
 
-			virtual void setHash(const UInt256 &hash);
+			virtual void SetHash(const UInt256 &hash);
 
-			virtual uint32_t getHeight() const;
+			virtual uint32_t GetHeight() const;
 
-			virtual void setHeight(uint32_t height);
+			virtual void SetHeight(uint32_t height);
 
-			virtual bool isValid(uint32_t currentTime) const { return false;}
+			virtual bool IsValid(uint32_t currentTime) const { return false;}
 
-			virtual bool isEqual(const IMerkleBlock *block) const;
+			virtual bool IsEqual(const IMerkleBlock *block) const;
 
-			virtual std::string getBlockType() const { return "";}
+			virtual std::string GetBlockType() const { return "";}
 
 			size_t MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const;
 
 		protected:
-			void serializeNoAux(ByteStream &ostream) const;
+			void SerializeNoAux(ByteStream &ostream) const;
 
-			bool deserializeNoAux(ByteStream &istream);
+			bool DeserializeNoAux(ByteStream &istream);
 
-			void serializeAfterAux(ByteStream &ostream) const;
+			void SerializeAfterAux(ByteStream &ostream) const;
 
-			bool deserializeAfterAux(ByteStream &istream);
+			bool DeserializeAfterAux(ByteStream &istream);
 
 			UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
 
-			size_t merkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx, int depth) const;
+			size_t MerkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx, int depth) const;
 
 			int ceilLog2(int x) const;
 

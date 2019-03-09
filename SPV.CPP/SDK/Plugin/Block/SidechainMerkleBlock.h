@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
 #include "MerkleBlockBase.h"
-#include <SDK/Plugin/Block/IdAuxPow.h>
+#include <SDK/Plugin/Block/IDAuxPow.h>
 
 #include <fruit/fruit.h>
 
@@ -24,18 +24,18 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual void FromJson(const nlohmann::json &);
 
-			virtual const UInt256 &getHash() const;
+			virtual const UInt256 &GetHash() const;
 
-			virtual bool isValid(uint32_t currentTime) const;
+			virtual bool IsValid(uint32_t currentTime) const;
 
-			virtual std::string getBlockType() const;
+			virtual std::string GetBlockType() const;
 
 		private:
-			IdAuxPow idAuxPow;
+			IDAuxPow idAuxPow;
 		};
 
 		class ISidechainMerkleBlockFactory {

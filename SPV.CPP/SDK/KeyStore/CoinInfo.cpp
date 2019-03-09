@@ -24,51 +24,51 @@ namespace Elastos {
 
 		}
 
-		const std::string &CoinInfo::getChainId() const {
+		const std::string &CoinInfo::GetChainId() const {
 			return _chainId;
 		}
 
-		void CoinInfo::setChainId(const std::string &id) {
+		void CoinInfo::SetChainId(const std::string &id) {
 			_chainId = id;
 		}
 
-		uint32_t CoinInfo::getEarliestPeerTime() const {
+		uint32_t CoinInfo::GetEarliestPeerTime() const {
 			return _earliestPeerTime;
 		}
 
-		void CoinInfo::setEaliestPeerTime(uint32_t time) {
+		void CoinInfo::SetEaliestPeerTime(uint32_t time) {
 			_earliestPeerTime = time;
 		}
 
-		uint32_t CoinInfo::getIndex() const {
+		uint32_t CoinInfo::GetIndex() const {
 			return 0;//_index;
 		}
 
-		void CoinInfo::setIndex(uint32_t index) {
+		void CoinInfo::SetIndex(uint32_t index) {
 			_index = 0;//index;
 		}
 
-		int CoinInfo::getUsedMaxAddressIndex() const {
+		int CoinInfo::GetUsedMaxAddressIndex() const {
 			return _usedMaxAddressIndex;
 		}
 
-		void CoinInfo::setUsedMaxAddressIndex(int index) {
+		void CoinInfo::SetUsedMaxAddressIndex(int index) {
 			_usedMaxAddressIndex = index;
 		}
 
-		bool CoinInfo::getSingleAddress() const {
+		bool CoinInfo::GetSingleAddress() const {
 			return _singleAddress;
 		}
 
-		void CoinInfo::setSingleAddress(bool singleAddress) {
+		void CoinInfo::SetSingleAddress(bool singleAddress) {
 			_singleAddress = singleAddress;
 		}
 
-		uint64_t CoinInfo::getFeePerKb() const {
+		uint64_t CoinInfo::GetFeePerKb() const {
 			return _feePerKb;
 		}
 
-		void CoinInfo::setFeePerKb(uint64_t fee) {
+		void CoinInfo::SetFeePerKb(uint64_t fee) {
 			_feePerKb = fee;
 		}
 
@@ -90,7 +90,7 @@ namespace Elastos {
 			j["Index"] = 0;//p._index;
 			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["SingleAddress"] = p._singleAddress;
-			j["WalletType"] = int(p.getWalletType());
+			j["WalletType"] = int(p.GetWalletType());
 			j["MinFee"] = p._minFee;
 			j["FeePerKB"] = p._feePerKb;
 			j["EnableP2P"] = p._enableP2P;
@@ -120,67 +120,67 @@ namespace Elastos {
 				p._visibleAssets = {Asset::GetELAAssetID()};
 		}
 
-		int CoinInfo::getForkId() const {
+		int CoinInfo::GetForkId() const {
 			return _forkId;
 		}
 
-		void CoinInfo::setForkId(int forkId) {
+		void CoinInfo::SetForkId(int forkId) {
 			_forkId = forkId;
 		}
 
-		SubWalletType CoinInfo::getWalletType() const {
+		SubWalletType CoinInfo::GetWalletType() const {
 			return _walletType;
 		}
 
-		void CoinInfo::setWalletType(SubWalletType type) {
+		void CoinInfo::SetWalletType(SubWalletType type) {
 			_walletType = type;
 		}
 
-		uint64_t CoinInfo::getMinFee() const {
+		uint64_t CoinInfo::GetMinFee() const {
 			return _minFee;
 		}
 
-		void CoinInfo::setMinFee(uint64_t fee) {
+		void CoinInfo::SetMinFee(uint64_t fee) {
 			_minFee = fee;
 		}
 
-		const std::string &CoinInfo::getGenesisAddress() const {
+		const std::string &CoinInfo::GetGenesisAddress() const {
 			return _genesisAddress;
 		}
 
-		void CoinInfo::setGenesisAddress(const std::string &address) {
+		void CoinInfo::SetGenesisAddress(const std::string &address) {
 			_genesisAddress = address;
 		}
 
-		bool CoinInfo::getEnableP2P() const {
+		bool CoinInfo::GetEnableP2P() const {
 			return _enableP2P;
 		}
 
-		void CoinInfo::setEnableP2P(bool enable) {
+		void CoinInfo::SetEnableP2P(bool enable) {
 			_enableP2P = enable;
 		}
 
-		uint32_t CoinInfo::getReconnectSeconds() const {
+		uint32_t CoinInfo::GetReconnectSeconds() const {
 			return _reconnectSeconds;
 		}
 
-		void CoinInfo::setReconnectSeconds(uint32_t reconnectSeconds) {
+		void CoinInfo::SetReconnectSeconds(uint32_t reconnectSeconds) {
 			_reconnectSeconds = reconnectSeconds;
 		}
 
-		const std::string &CoinInfo::getChainCode() const {
+		const std::string &CoinInfo::GetChainCode() const {
 			return _chainCode;
 		}
 
-		void CoinInfo::setChainCode(const std::string &code) {
+		void CoinInfo::SetChainCode(const std::string &code) {
 			_chainCode = code;
 		}
 
-		const std::string &CoinInfo::getPublicKey() const {
+		const std::string &CoinInfo::GetPublicKey() const {
 			return _publicKey;
 		}
 
-		void CoinInfo::setPublicKey(const std::string &pubKey) {
+		void CoinInfo::SetPublicKey(const std::string &pubKey) {
 			_publicKey = pubKey;
 		}
 

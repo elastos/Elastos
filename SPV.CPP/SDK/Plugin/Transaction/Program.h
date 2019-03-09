@@ -33,21 +33,21 @@ namespace Elastos {
 
 			nlohmann::json GetSignedInfo(const UInt256 &md) const;
 
-			const CMBlock &getCode() const;
+			const CMBlock &GetCode() const;
 
-			const CMBlock &getParameter() const;
+			const CMBlock &GetParameter() const;
 
-			void setCode(const CMBlock &code);
+			void SetCode(const CMBlock &code);
 
-			void setParameter(const CMBlock &parameter);
+			void SetParameter(const CMBlock &parameter);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &jsonData);
 
 		private:
 			CMBlock _code;

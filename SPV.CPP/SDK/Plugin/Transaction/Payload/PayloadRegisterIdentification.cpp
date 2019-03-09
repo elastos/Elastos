@@ -4,7 +4,7 @@
 
 #include "PayloadRegisterIdentification.h"
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 
 namespace Elastos {
@@ -23,23 +23,23 @@ namespace Elastos {
 
 		}
 
-		const std::string &PayloadRegisterIdentification::getId() const {
+		const std::string &PayloadRegisterIdentification::GetID() const {
 			return _id;
 		}
 
-		void PayloadRegisterIdentification::setId(const std::string &id) {
+		void PayloadRegisterIdentification::SetID(const std::string &id) {
 			_id = id;
 		}
 
-		const CMBlock &PayloadRegisterIdentification::getSign() const {
+		const CMBlock &PayloadRegisterIdentification::GetSign() const {
 			return _sign;
 		}
 
-		void PayloadRegisterIdentification::setSign(const CMBlock &sign) {
+		void PayloadRegisterIdentification::SetSign(const CMBlock &sign) {
 			_sign = sign;
 		}
 
-		bool PayloadRegisterIdentification::isValid() const {
+		bool PayloadRegisterIdentification::IsValid() const {
 			if (_id.empty() || _contents.empty() || _sign.GetSize() <= 0) {
 				return false;
 			}
@@ -51,29 +51,29 @@ namespace Elastos {
 			assert(!_id.empty());
 			assert(!_contents.empty());
 
-			ostream.writeVarString(_id);
-			ostream.writeVarBytes(_sign);
+			ostream.WriteVarString(_id);
+			ostream.WriteVarBytes(_sign);
 
 			ostream.writeVarUint(_contents.size());
 			for (size_t i = 0; i < _contents.size(); ++i) {
-				ostream.writeVarString(_contents[i].Path);
+				ostream.WriteVarString(_contents[i].Path);
 
 				ostream.writeVarUint(_contents[i].Values.size());
 				for (size_t j = 0; j < _contents[i].Values.size(); ++j) {
-					ostream.writeBytes(_contents[i].Values[j].DataHash.u8, sizeof(_contents[i].Values[j].DataHash));
-					ostream.writeVarString(_contents[i].Values[j].Proof);
-					ostream.writeVarString(_contents[i].Values[j].Info);
+					ostream.WriteBytes(_contents[i].Values[j].DataHash.u8, sizeof(_contents[i].Values[j].DataHash));
+					ostream.WriteVarString(_contents[i].Values[j].Proof);
+					ostream.WriteVarString(_contents[i].Values[j].Info);
 				}
 			}
 		}
 
 		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream, uint8_t version) {
-			if (!istream.readVarString(_id)) {
+			if (!istream.ReadVarString(_id)) {
 				Log::error("Payload register identification deserialize id fail");
 				return false;
 			}
 
-			if (!istream.readVarBytes(_sign)) {
+			if (!istream.ReadVarBytes(_sign)) {
 				Log::error("Payload register identification deserialize sign fail");
 				return false;
 			}
@@ -88,7 +88,7 @@ namespace Elastos {
 			for (uint64_t i = 0; i < size; ++i) {
 				SignContent content;
 
-				if (!istream.readVarString(content.Path)) {
+				if (!istream.ReadVarString(content.Path)) {
 					Log::error("Payload register identification deserialize path fail");
 					return false;
 				}
@@ -102,17 +102,17 @@ namespace Elastos {
 				for (size_t j = 0; j < valueSize; ++j) {
 					ValueItem value;
 
-					if (!istream.readBytes(value.DataHash.u8, sizeof(value.DataHash))) {
+					if (!istream.ReadBytes(value.DataHash.u8, sizeof(value.DataHash))) {
 						Log::error("Payload register identification deserialize data hash fail");
 						return false;
 					}
 
-					if (!istream.readVarString(value.Proof)) {
+					if (!istream.ReadVarString(value.Proof)) {
 						Log::error("Payload register identification deserialize proof fail");
 						return false;
 					}
 
-					if (!istream.readVarString(value.Info)) {
+					if (!istream.ReadVarString(value.Info)) {
 						Log::error("Payload register identification deserialize proof fail");
 						return false;
 					}
@@ -125,10 +125,10 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterIdentification::toJson(uint8_t version) const {
+		nlohmann::json PayloadRegisterIdentification::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["Id"] = _id;
-			j["Sign"] = Utils::encodeHex(_sign);
+			j["Sign"] = Utils::EncodeHex(_sign);
 
 			std::vector<nlohmann::json> contents;
 			for (int i = 0; i < _contents.size(); ++i) {
@@ -151,10 +151,10 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRegisterIdentification::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadRegisterIdentification::FromJson(const nlohmann::json &j, uint8_t version) {
 			_id = j["Id"].get<std::string>();
 			if (j.find("Sign") != j.end())
-				_sign = Utils::decodeHex(j["Sign"].get<std::string>());
+				_sign = Utils::DecodeHex(j["Sign"].get<std::string>());
 
 			std::vector<nlohmann::json> contents = j["Contents"];
 			_contents.clear();
@@ -177,52 +177,52 @@ namespace Elastos {
 			}
 		}
 
-		const std::string &PayloadRegisterIdentification::getPath(size_t index) const {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		const std::string &PayloadRegisterIdentification::GetPath(size_t index) const {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Path;
 		}
 
-		void PayloadRegisterIdentification::setPath(const std::string &path, size_t index) {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		void PayloadRegisterIdentification::SetPath(const std::string &path, size_t index) {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Path = path;
 		}
 
-		const UInt256 &PayloadRegisterIdentification::getDataHash(size_t index, size_t valueIndex) const {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		const UInt256 &PayloadRegisterIdentification::GetDataHash(size_t index, size_t valueIndex) const {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Values[valueIndex].DataHash;
 		}
 
-		void PayloadRegisterIdentification::setDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex) {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		void PayloadRegisterIdentification::SetDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex) {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Values[valueIndex].DataHash = dataHash;
 		}
 
-		const std::string &PayloadRegisterIdentification::getProof(size_t index, size_t valueIndex) const {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		const std::string &PayloadRegisterIdentification::GetProof(size_t index, size_t valueIndex) const {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Values[valueIndex].Proof;
 		}
 
-		void PayloadRegisterIdentification::setProof(const std::string &proof, size_t index, size_t valueIndex) {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		void PayloadRegisterIdentification::SetProof(const std::string &proof, size_t index, size_t valueIndex) {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Values[valueIndex].Proof = proof;
 		}
 
-		size_t PayloadRegisterIdentification::getContentCount() const {
+		size_t PayloadRegisterIdentification::GetContentCount() const {
 			return _contents.size();
 		}
 
-		void PayloadRegisterIdentification::addContent(const PayloadRegisterIdentification::SignContent &content) {
+		void PayloadRegisterIdentification::AddContent(const PayloadRegisterIdentification::SignContent &content) {
 			_contents.push_back(content);
 		}
 
-		void PayloadRegisterIdentification::removeContent(size_t index) {
-			ParamChecker::checkCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
+		void PayloadRegisterIdentification::RemoveContent(size_t index) {
+			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents.erase(_contents.begin() + index);
 		}

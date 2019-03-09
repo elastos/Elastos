@@ -66,61 +66,57 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			uint64_t calculateFee(uint64_t feePerKb);
+			uint64_t CalculateFee(uint64_t feePerKb);
 
-			uint64_t getTxFee(const boost::shared_ptr<TransactionHub> &wallet);
+			uint64_t GetTxFee(const boost::shared_ptr<TransactionHub> &wallet);
 
-			bool isRegistered() const;
+			bool IsRegistered() const;
 
-			bool &isRegistered();
+			bool &IsRegistered();
 
-			const UInt256 &getHash() const;
+			const UInt256 &GetHash() const;
 
-			void resetHash();
+			void ResetHash();
 
-			const TxVersion &getVersion() const;
+			const TxVersion &GetVersion() const;
 
-			void setVersion(const TxVersion &version);
+			void SetVersion(const TxVersion &version);
 
-			const std::vector<TransactionOutput> &getOutputs() const;
+			const std::vector<TransactionOutput> &GetOutputs() const;
 
-			std::vector<TransactionOutput> &getOutputs();
+			std::vector<TransactionOutput> &GetOutputs();
 
 			void SetOutputs(const std::vector<TransactionOutput> &outputs);
 
 			void AddOutput(const TransactionOutput &output);
 
-			const std::vector<TransactionInput> &getInputs() const;
+			const std::vector<TransactionInput> &GetInputs() const;
 
-			std::vector<TransactionInput> &getInputs();
+			std::vector<TransactionInput> &GetInputs();
 
-			void AddInput(const TransactionInput &input);
+			void AddInput(const TransactionInput &Input);
 
 			bool ContainInput(const UInt256 &hash, uint32_t n) const;
 
-			void setTransactionType(Type type, const PayloadPtr &payload = nullptr);
+			void SetTransactionType(Type type, const PayloadPtr &payload = nullptr);
 
-			Type getTransactionType() const;
+			Type GetTransactionType() const;
 
-			uint32_t getLockTime() const;
+			uint32_t GetLockTime() const;
 
-			void setLockTime(uint32_t lockTime);
+			void SetLockTime(uint32_t lockTime);
 
-			uint32_t getBlockHeight() const;
+			uint32_t GetBlockHeight() const;
 
-			void setBlockHeight(uint32_t height);
+			void SetBlockHeight(uint32_t height);
 
-			uint32_t getTimestamp() const;
+			uint32_t GetTimestamp() const;
 
-			void setTimestamp(uint32_t timestamp);
+			void SetTimestamp(uint32_t timestamp);
 
-			void addOutput(const TransactionOutput &output);
+			void RemoveChangeOutput();
 
-			void removeChangeOutput();
-
-			void addInput(const TransactionInput &input);
-
-			size_t getSize();
+			size_t GetSize();
 
 			nlohmann::json GetSignedInfo() const;
 
@@ -128,51 +124,51 @@ namespace Elastos {
 
 			bool IsValid() const;
 
-			UInt256 getReverseHash();
+			UInt256 GetReverseHash();
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &jsonData);
 
-			static uint64_t getMinOutputAmount();
+			static uint64_t GetMinOutputAmount();
 
-			const IPayload *getPayload() const;
+			const IPayload *GetPayload() const;
 
-			IPayload *getPayload();
+			IPayload *GetPayload();
 
 			void SetPayload(const PayloadPtr &payload);
 
-			void addAttribute(const Attribute &attribute);
+			void AddAttribute(const Attribute &attribute);
 
-			void addProgram(const Program &program);
+			void AddProgram(const Program &program);
 
-			void clearPrograms();
+			void ClearPrograms();
 
-			const std::vector<Attribute> &getAttributes() const;
+			const std::vector<Attribute> &GetAttributes() const;
 
-			const std::vector<Program> &getPrograms() const;
+			const std::vector<Program> &GetPrograms() const;
 
-			std::vector<Program> &getPrograms();
+			std::vector<Program> &GetPrograms();
 
-			const std::string getRemark() const;
+			const std::string GetRemark() const;
 
-			void setRemark(const std::string &remark);
+			void SetRemark(const std::string &remark);
 
 			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet, uint32_t confirms, bool detail);
 
-			uint8_t	getPayloadVersion() const;
+			uint8_t	GetPayloadVersion() const;
 
-			void setPayloadVersion(uint8_t version);
+			void SetPayloadVersion(uint8_t version);
 
-			uint64_t getFee() const;
+			uint64_t GetFee() const;
 
-			void setFee(uint64_t fee);
+			void SetFee(uint64_t fee);
 
 			const std::string &GetAssetTableID() const;
 
 			void SetAssetTableID(const std::string &assetTableID);
 
-			void serializeUnsigned(ByteStream &ostream) const;
+			void SerializeUnsigned(ByteStream &ostream) const;
 
 			UInt256 GetShaData() const;
 
@@ -180,7 +176,7 @@ namespace Elastos {
 
 			void Cleanup();
 
-			void initPayloadFromType(Type type);
+			void InitPayloadFromType(Type type);
 
 			bool IsEqual(const Transaction *tx) const;
 
@@ -188,7 +184,7 @@ namespace Elastos {
 
 		private:
 
-			void reinit();
+			void Reinit();
 
 
 		private:

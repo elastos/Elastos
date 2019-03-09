@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_SPVSERVICE_H__
 #define __ELASTOS_SDK_SPVSERVICE_H__
 
-#include "TransactionCreationParams.h"
 #include "CoreSpvService.h"
 #include "BackgroundExecutor.h"
 
@@ -39,17 +38,17 @@ namespace Elastos {
 
 			virtual ~SpvService();
 
-			void start();
+			void Start();
 
-			void stop();
+			void Stop();
 
-			size_t getAllTransactionsCount();
+			size_t GetAllTransactionsCount();
 
-			void registerWalletListener(AssetTransactions::Listener *listener);
+			void RegisterWalletListener(AssetTransactions::Listener *listener);
 
-			void registerPeerManagerListener(PeerManager::Listener *listener);
+			void RegisterPeerManagerListener(PeerManager::Listener *listener);
 
-			void publishTransaction(const TransactionPtr &transaction);
+			void PublishTransaction(const TransactionPtr &transaction);
 
 			virtual const WalletPtr &getWallet();
 
@@ -100,9 +99,9 @@ namespace Elastos {
 
 			virtual const WalletListenerPtr &createWalletListener();
 
-			void startReconnect(uint32_t time);
+			void StartReconnect(uint32_t time);
 
-			void resetReconnect();
+			void ResetReconnect();
 
 			void UpdateAssets();
 

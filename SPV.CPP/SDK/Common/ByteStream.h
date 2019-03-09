@@ -16,10 +16,6 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class ByteStream {
-			enum ByteOrder {
-				LittleEndian,
-				BigEndian
-			};
 		public:
 
 			ByteStream();
@@ -33,52 +29,50 @@ namespace Elastos {
 			~ByteStream();
 
 		public:
-			void reset();
+			void Reset();
 
-			void setPosition(uint64_t position);
+			void SetPosition(uint64_t position);
 
-			uint64_t position();
+			uint64_t Position();
 
-			uint64_t length();
+			uint64_t Length();
 
-			void drop(size_t bytes);
+			void Drop(size_t bytes);
 
-			CMBlock getBuffer();
+			CMBlock GetBuffer();
 
 		public:
-			void increasePosition(size_t len);
+			bool ReadByte(uint8_t &val);
 
-			bool readByte(uint8_t &val);
+			bool ReadUint8(uint8_t &val);
 
-			bool readUint8(uint8_t &val);
+			void WriteByte(uint8_t val);
 
-			void writeByte(uint8_t val);
+			void WriteUint8(uint8_t val);
 
-			void writeUint8(uint8_t val);
+			bool ReadUint16(uint16_t &val);
 
-			bool readUint16(uint16_t &val, ByteOrder byteOrder = LittleEndian);
+			void WriteUint16(uint16_t val);
 
-			void writeUint16(uint16_t val, ByteOrder byteOrder = LittleEndian);
+			bool ReadUint32(uint32_t &val);
 
-			bool readUint32(uint32_t &val, ByteOrder byteOrder = LittleEndian);
+			void WriteUint32(uint32_t val);
 
-			void writeUint32(uint32_t val, ByteOrder byteOrder = LittleEndian);
+			bool ReadUint64(uint64_t &val);
 
-			bool readUint64(uint64_t &val, ByteOrder byteOrder = LittleEndian);
+			void WriteUint64(uint64_t val);
 
-			void writeUint64(uint64_t val, ByteOrder byteOrder = LittleEndian);
+			bool ReadBytes(void *buf, size_t len);
 
-			bool readBytes(void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			void WriteBytes(const void *buf, size_t len);
 
-			void writeBytes(const void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			void WriteBytes(const CMBlock &buf);
 
-			void writeBytes(const CMBlock &buf, ByteOrder byteOrder = LittleEndian);
+			bool ReadVarBytes(CMBlock &bytes);
 
-			bool readVarBytes(CMBlock &bytes);
+			void WriteVarBytes(const void *bytes, size_t len);
 
-			void writeVarBytes(const void *bytes, size_t len);
-
-			void writeVarBytes(const CMBlock &bytes);
+			void WriteVarBytes(const CMBlock &bytes);
 
 			template <class T>
 			bool readVarUint(T &value) {
@@ -86,32 +80,30 @@ namespace Elastos {
 				uint64_t ui;
 				ui = BRVarInt(&_buf[_pos], 9, &len);
 				value = ui;
-				return readBytes(nullptr, len);
+				return ReadBytes(nullptr, len);
 			}
 
 			template <class T>
 			void writeVarUint(const T &value) {
 				size_t len = BRVarIntSet(nullptr, 0, value);
 
-				ensureCapacity(position() + len);
-				BRVarIntSet(&_buf[position()], len, value);
+				EnsureCapacity(Position() + len);
+				BRVarIntSet(&_buf[Position()], len, value);
 
-				increasePosition(len);
-				_count = position();
+				IncreasePosition(len);
+				_count = Position();
 			}
 
-			bool readVarString(char *str, size_t strSize);
+			bool ReadVarString(std::string &str);
 
-			bool readVarString(std::string &str);
-
-			void writeVarString(const char *str);
-
-			void writeVarString(const std::string &str);
+			void WriteVarString(const std::string &str);
 
 		private:
-			void ensureCapacity(uint64_t newsize);
+			void IncreasePosition(size_t len);
 
-			bool checkSize(uint64_t readSize);
+			void EnsureCapacity(uint64_t newsize);
+
+			bool CheckSize(uint64_t readSize);
 
 		private:
 			uint64_t _pos, _count;

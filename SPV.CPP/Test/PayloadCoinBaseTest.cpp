@@ -20,7 +20,7 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 		ByteStream stream;
 		p1.Serialize(stream, 0);
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
 	}
@@ -28,8 +28,8 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 	SECTION("to json and from json") {
 		PayloadCoinBase p1(getRandCMBlock(50)), p2;
 
-		nlohmann::json p1Json = p1.toJson(0);
-		p2.fromJson(p1Json, 0);
+		nlohmann::json p1Json = p1.ToJson(0);
+		p2.FromJson(p1Json, 0);
 
 		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
 	}

@@ -24,7 +24,7 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 		ByteStream stream;
 		p1.Serialize(stream, 0);
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 
 		REQUIRE(UInt256Eq(&p1.GetSideBlockHash(), &p2.GetSideBlockHash()));
@@ -41,9 +41,9 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 		p1.SetBlockHeight(getRandUInt32());
 		p1.SetSignedData(getRandCMBlock(100));
 
-		nlohmann::json p1Json = p1.toJson(0);
+		nlohmann::json p1Json = p1.ToJson(0);
 
-		p2.fromJson(p1Json, 0);
+		p2.FromJson(p1Json, 0);
 
 		REQUIRE(UInt256Eq(&p1.GetSideBlockHash(), &p2.GetSideBlockHash()));
 		REQUIRE(UInt256Eq(&p1.GetSideGenesisHash(), &p2.GetSideGenesisHash()));

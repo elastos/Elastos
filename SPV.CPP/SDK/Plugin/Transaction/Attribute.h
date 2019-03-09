@@ -38,15 +38,15 @@ namespace Elastos {
 
 			const CMBlock &GetData() const;
 
-			bool isValid() const;
+			bool IsValid() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &jsonData);
 
 		private:
 			Usage _usage;

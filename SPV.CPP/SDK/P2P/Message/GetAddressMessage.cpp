@@ -22,7 +22,7 @@ namespace Elastos {
 
 		void GetAddressMessage::Send(const SendMessageParameter &param) {
 			_peer->SetSentGetaddr(true);
-			_peer->getPeerManager()->SetKeepAliveTimestamp(time(nullptr));
+			_peer->GetPeerManager()->SetKeepAliveTimestamp(time(nullptr));
 			SendMessage(CMBlock(), Type());
 		}
 

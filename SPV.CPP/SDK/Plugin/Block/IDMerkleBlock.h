@@ -6,28 +6,28 @@
 #define __ELASTOS_SDK_IDMERKLEBLOCK_H__
 
 #include <Core/BRMerkleBlock.h>
-#include <SDK/Plugin/Block/IdAuxPow.h>
+#include <SDK/Plugin/Block/IDAuxPow.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct IdMerkleBlock {
-			IdMerkleBlock() {
+		struct IDMerkleBlock {
+			IDMerkleBlock() {
 				memset(&this->raw, 0, sizeof(this->raw));
 				this->raw.height = BLOCK_UNKNOWN_HEIGHT;
 			}
 
 			BRMerkleBlock raw;
-			IdAuxPow idAuxPow;
+			IDAuxPow idAuxPow;
 
-			IdMerkleBlock &operator=(const IdMerkleBlock &idMerkleBlock);
+			IDMerkleBlock &operator=(const IDMerkleBlock &idMerkleBlock);
 		};
 
-		IdMerkleBlock *IdMerkleBlockNew();
+		IDMerkleBlock *IDMerkleBlockNew();
 
-		IdMerkleBlock *IdMerkleBlockCopy(const IdMerkleBlock *block);
+		IDMerkleBlock *IDMerkleBlockCopy(const IDMerkleBlock *block);
 
-		void IdMerkleBlockFree(IdMerkleBlock *block);
+		void IDMerkleBlockFree(IDMerkleBlock *block);
 
 	}
 }

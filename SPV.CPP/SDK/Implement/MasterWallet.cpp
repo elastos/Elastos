@@ -13,7 +13,7 @@
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 #include <Config.h>
 
@@ -152,7 +152,7 @@ namespace Elastos {
 			for (size_t i = 0; i < sizeof(entropy); ++i) {
 				entropy.u8[i] = Utils::getRandomByte();
 			}
-			const std::vector<std::string> &words = mnemonic.words();
+			const std::vector<std::string> &words = mnemonic.Words();
 			const char *wordList[words.size()];
 			for (size_t i = 0; i < words.size(); i++) {
 				wordList[i] = words[i].c_str();
@@ -205,8 +205,8 @@ namespace Elastos {
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKb) {
 
-			ParamChecker::checkParamNotEmpty(chainID, "Chain ID");
-			ParamChecker::checkParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
+			ErrorChecker::CheckParamNotEmpty(chainID, "Chain ID");
+			ErrorChecker::CheckParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
 
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
@@ -217,17 +217,17 @@ namespace Elastos {
 			CoinInfo info;
 			tryInitCoinConfig();
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
-			info.setWalletType(coinConfig.Type);
-			info.setIndex(coinConfig.Index);
-			info.setMinFee(coinConfig.MinFee);
-			info.setGenesisAddress(coinConfig.GenesisAddress);
-			info.setEnableP2P(coinConfig.EnableP2P);
-			info.setReconnectSeconds(coinConfig.ReconnectSeconds);
+			info.SetWalletType(coinConfig.Type);
+			info.SetIndex(coinConfig.Index);
+			info.SetMinFee(coinConfig.MinFee);
+			info.SetGenesisAddress(coinConfig.GenesisAddress);
+			info.SetEnableP2P(coinConfig.EnableP2P);
+			info.SetReconnectSeconds(coinConfig.ReconnectSeconds);
 
-			info.setSingleAddress(_localStore.IsSingleAddress());
-			info.setUsedMaxAddressIndex(0);
-			info.setChainId(chainID);
-			info.setFeePerKb(feePerKb);
+			info.SetSingleAddress(_localStore.IsSingleAddress());
+			info.SetUsedMaxAddressIndex(0);
+			info.SetChainId(chainID);
+			info.SetFeePerKb(feePerKb);
 
 			SubWallet *subWallet = SubWalletFactoryMethod(info, coinConfig, ChainParams(coinConfig), this);
 			_createdWallets[chainID] = subWallet;
@@ -239,23 +239,23 @@ namespace Elastos {
 		void MasterWallet::restoreSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 
 			for (int i = 0; i < coinInfoList.size(); ++i) {
-				if (_createdWallets.find(coinInfoList[i].getChainId()) != _createdWallets.end()) continue;
+				if (_createdWallets.find(coinInfoList[i].GetChainId()) != _createdWallets.end()) continue;
 
-				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
-				_createdWallets[coinInfoList[i].getChainId()] =
+				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].GetChainId());
+				_createdWallets[coinInfoList[i].GetChainId()] =
 						SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig), this);
 			}
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
-			ParamChecker::checkParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
-			ParamChecker::checkParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
+			ErrorChecker::CheckParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
+			ErrorChecker::CheckParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
 
 			if (std::find_if(_createdWallets.begin(), _createdWallets.end(),
 							 [wallet](const WalletMap::value_type &item) {
 								 return item.second == wallet;
 							 }) == _createdWallets.end())
-				ParamChecker::checkCondition(true, Error::Wallet,
+				ErrorChecker::CheckCondition(true, Error::Wallet,
 											 "Specified sub wallet is not belong to current master wallet.");
 
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
@@ -270,7 +270,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
-			return Utils::encodeHex(_localStore.Account()->GetMultiSignPublicKey());
+			return Utils::EncodeHex(_localStore.Account()->GetMultiSignPublicKey());
 		}
 
 		// to support old web keystore
@@ -279,12 +279,12 @@ namespace Elastos {
 
 			KeyStore keyStore(_rootPath);
 
-			ParamChecker::checkCondition(!keyStore.Import(keystoreContent, backupPassword, phrasePassword),
+			ErrorChecker::CheckCondition(!keyStore.Import(keystoreContent, backupPassword, phrasePassword),
 										 Error::WrongPasswd, "Wrong backup password");
 
-			ParamChecker::checkCondition(!keyStore.isOld(), Error::KeyStore,
+			ErrorChecker::CheckCondition(!keyStore.IsOld(), Error::KeyStore,
 										 "This interface use for support old keystore");
-			ParamChecker::checkCondition(!keyStore.HasPhrasePassword(), Error::KeyStore,
+			ErrorChecker::CheckCondition(!keyStore.HasPhrasePassword(), Error::KeyStore,
 										 "This keystore should has phrase password");
 
 			Log::getLogger()->info("Import from old keystore");
@@ -297,13 +297,14 @@ namespace Elastos {
 											  const std::string &payPassword) {
 
 			KeyStore keyStore(_rootPath);
-			ParamChecker::checkCondition(!keyStore.Import(keystoreContent, backupPassword), Error::WrongPasswd,
+			ErrorChecker::CheckCondition(!keyStore.Import(keystoreContent, backupPassword), Error::WrongPasswd,
 										 "Wrong backup password");
 
-			if (keyStore.isOld()) {
+			if (keyStore.IsOld()) {
 				Log::info("Import from old keystore");
 				if (keyStore.HasPhrasePassword()) {
-					ParamChecker::checkCondition(true, Error::KeyStoreNeedPhrasePassword, "Old keystore need Phrase password");
+					ErrorChecker::CheckCondition(true, Error::KeyStoreNeedPhrasePassword,
+												 "Old keystore need Phrase password");
 				}
 				_initFrom = ImportFromOldKeyStore;
 			}
@@ -323,14 +324,14 @@ namespace Elastos {
 			restoreKeyStore(keyStore, payPassword);
 
 			nlohmann::json result;
-			ParamChecker::checkCondition(!keyStore.Export(result, backupPassword), Error::KeyStore, "Export key error.");
+			ErrorChecker::CheckCondition(!keyStore.Export(result, backupPassword), Error::KeyStore, "Export key error.");
 
 			return result;
 		}
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 			std::string encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(mnemonic, encryptedMnemonic, payPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(mnemonic, encryptedMnemonic, payPassword));
 			return true;
 		}
 
@@ -342,11 +343,11 @@ namespace Elastos {
 
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
-				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
+				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].GetChainId());
 				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig,
 															   ChainParams(coinConfig), this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
-				ParamChecker::checkCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
+				ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 											 "Recover sub wallet error");
 				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainId()] = subWallet;
@@ -357,19 +358,19 @@ namespace Elastos {
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 
-			ParamChecker::checkParamNotEmpty(message, "Sign message");
-			ParamChecker::checkPassword(payPassword, "Pay");
+			ErrorChecker::CheckParamNotEmpty(message, "Sign message");
+			ErrorChecker::CheckPassword(payPassword, "Pay");
 
 			Key key = _localStore.Account()->DeriveMultiSignKey(payPassword);
-			return Utils::encodeHex(key.Sign(message));
+			return Utils::EncodeHex(key.Sign(message));
 		}
 
 		bool MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
 
 			Key key;
-			key.SetPubKey(Utils::decodeHex(publicKey));
-			return key.Verify(message, Utils::decodeHex(signature));
+			key.SetPubKey(Utils::DecodeHex(publicKey));
+			return key.Verify(message, Utils::DecodeHex(signature));
 		}
 
 		bool MasterWallet::IsIdValid(const std::string &id) {
@@ -383,14 +384,14 @@ namespace Elastos {
 			CoinInfo fixedInfo = info;
 
 			if (_initFrom == CreateNormal) {
-				fixedInfo.setEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
+				fixedInfo.SetEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
 			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic ||
 					   _initFrom == ImportFromOldKeyStore) {
-				fixedInfo.setEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
+				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			} else if (_initFrom == ImportFromKeyStore || _initFrom == ImportFromLocalStore) {
-				fixedInfo.setEaliestPeerTime(info.getEarliestPeerTime());
+				fixedInfo.SetEaliestPeerTime(info.GetEarliestPeerTime());
 			} else {
-				fixedInfo.setEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
+				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			}
 
 			std::vector<UInt256> visibleAssets;
@@ -398,11 +399,11 @@ namespace Elastos {
 			fixedInfo.SetVisibleAssets(visibleAssets);
 
 			Log::info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
-								   fixedInfo.getEarliestPeerTime());
+					  fixedInfo.GetEarliestPeerTime());
 
-			fixedInfo.setGenesisAddress(config.GenesisAddress);
+			fixedInfo.SetGenesisAddress(config.GenesisAddress);
 
-			switch (fixedInfo.getWalletType()) {
+			switch (fixedInfo.GetWalletType()) {
 				case Mainchain:
 					return new MainchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Sidechain:
@@ -424,25 +425,25 @@ namespace Elastos {
 		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
 			PayloadRegisterIdentification payload;
 			nlohmann::json payLoadJson = nlohmann::json::parse(message);
-			payload.fromJson(payLoadJson, 0);
+			payload.FromJson(payLoadJson, 0);
 
 			ByteStream ostream;
 			payload.Serialize(ostream, 0);
 
 			nlohmann::json j;
-			CMBlock signedData = _idAgentImpl->Sign(id, ostream.getBuffer(), password);
+			CMBlock signedData = _idAgentImpl->Sign(id, ostream.GetBuffer(), password);
 
-			ostream.setPosition(0);
-			ostream.writeVarBytes(signedData);
-			j["Parameter"] = Utils::encodeHex(ostream.getBuffer());
+			ostream.SetPosition(0);
+			ostream.WriteVarBytes(signedData);
+			j["Parameter"] = Utils::EncodeHex(ostream.GetBuffer());
 			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
 			return j;
 		}
 
 		std::string MasterWallet::Sign(const std::string &id, const std::string &message, const std::string &password) {
-			ParamChecker::checkParamNotEmpty(id, "Master wallet id");
-			ParamChecker::checkParamNotEmpty(message, "Master wallet sign message");
-			ParamChecker::checkPassword(password, "Master wallet sign");
+			ErrorChecker::CheckParamNotEmpty(id, "Master wallet id");
+			ErrorChecker::CheckParamNotEmpty(message, "Master wallet sign message");
+			ErrorChecker::CheckPassword(password, "Master wallet sign");
 
 			return _idAgentImpl->Sign(id, message, password);
 		}
@@ -492,7 +493,7 @@ namespace Elastos {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = _rootPath;
 				configPath /= COIN_COINFIG_FILE;
-				ParamChecker::checkPathExists(configPath);
+				ErrorChecker::CheckPathExists(configPath);
 				_coinConfigReader.Load(configPath);
 			}
 		}
@@ -536,27 +537,27 @@ namespace Elastos {
 		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword) {
 			tryInitCoinConfig();
 
-			IAccount *account = keyStore.createAccountFromJson(payPassword);
+			IAccount *account = keyStore.CreateAccountFromJson(payPassword);
 			if (!account->IsReadOnly()) {
-				ParamChecker::checkPassword(payPassword, "Pay");
+				ErrorChecker::CheckPassword(payPassword, "Pay");
 			}
 
 			_localStore.Reset(account);
-			_localStore.IsSingleAddress() = keyStore.json().getIsSingleAddress();
+			_localStore.IsSingleAddress() = keyStore.json().GetIsSingleAddress();
 			initSubWalletsPubKeyMap(payPassword);
-			initSubWallets(keyStore.json().getCoinInfoList());
+			initSubWallets(keyStore.json().GetCoinInfoList());
 		}
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
-			keyStore.initJsonFromAccount(_localStore.Account(), payPassword);
+			keyStore.InitJsonFromAccount(_localStore.Account(), payPassword);
 
-			keyStore.json().clearCoinInfo();
+			keyStore.json().ClearCoinInfo();
 			std::for_each(_createdWallets.begin(), _createdWallets.end(),
 						  [&keyStore](const WalletMap::value_type &item) {
 							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
-							  keyStore.json().addCoinInfo(subWallet->_info);
+							  keyStore.json().AddCoinInfo(subWallet->_info);
 						  });
-			keyStore.json().setIsSingleAddress(_localStore.IsSingleAddress());
+			keyStore.json().SetIsSingleAddress(_localStore.IsSingleAddress());
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {

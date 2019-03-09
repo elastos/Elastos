@@ -27,54 +27,54 @@ namespace Elastos {
 
 		}
 
-		const UInt256 &TransactionInput::getTransctionHash() const {
+		const UInt256 &TransactionInput::GetTransctionHash() const {
 			return _txHash;
 		}
 
-		void TransactionInput::setTransactionHash(const UInt256 &hash) {
+		void TransactionInput::SetTransactionHash(const UInt256 &hash) {
 			_txHash = hash;
 		}
 
-		uint32_t TransactionInput::getIndex() const {
+		uint32_t TransactionInput::GetIndex() const {
 			return _index;
 		}
 
-		void TransactionInput::setIndex(uint32_t index) {
+		void TransactionInput::SetIndex(uint32_t index) {
 			_index = index;
 		}
 
-		uint32_t TransactionInput::getSequence() const {
+		uint32_t TransactionInput::GetSequence() const {
 			return _sequence;
 		}
 
-		void TransactionInput::setSequence(uint32_t sequence) {
+		void TransactionInput::SetSequence(uint32_t sequence) {
 			_sequence = sequence;
 		}
 
-		size_t TransactionInput::getSize() const {
+		size_t TransactionInput::GetSize() const {
 			return sizeof(_txHash) + sizeof(_index) + sizeof(_sequence);
 		}
 
 		void TransactionInput::Serialize(ByteStream &ostream) const {
-			ostream.writeBytes(_txHash.u8, sizeof(UInt256));
-			ostream.writeUint16(uint16_t(_index));
-			ostream.writeUint32(_sequence);
+			ostream.WriteBytes(_txHash.u8, sizeof(UInt256));
+			ostream.WriteUint16(uint16_t(_index));
+			ostream.WriteUint32(_sequence);
 		}
 
 		bool TransactionInput::Deserialize(ByteStream &istream) {
-			if (!istream.readBytes(_txHash.u8, sizeof(_txHash))) {
+			if (!istream.ReadBytes(_txHash.u8, sizeof(_txHash))) {
 				Log::error("deserialize tx's txHash error");
 				return false;
 			}
 
 			uint16_t index;
-			if (!istream.readUint16(index)) {
+			if (!istream.ReadUint16(index)) {
 				Log::error("deserialize tx index error");
 				return false;
 			}
 			_index = index;
 
-			if (!istream.readUint32(_sequence)) {
+			if (!istream.ReadUint32(_sequence)) {
 				Log::error("deserialize tx sequence error");
 				return false;
 			}
@@ -82,7 +82,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json TransactionInput::toJson() const {
+		nlohmann::json TransactionInput::ToJson() const {
 			nlohmann::json jsonData;
 			jsonData["TxHash"] = Utils::UInt256ToString(_txHash, true);
 			jsonData["Index"] = _index;
@@ -90,7 +90,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void TransactionInput::fromJson(const nlohmann::json &jsonData) {
+		void TransactionInput::FromJson(const nlohmann::json &jsonData) {
 			_txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
 			_index = jsonData["Index"].get<uint32_t>();
 			_sequence = jsonData["Sequence"].get<uint32_t>();

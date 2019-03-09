@@ -4,7 +4,7 @@
 
 #include "MultiSignSubAccount.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Plugin/Transaction/Program.h>
 
@@ -18,12 +18,12 @@ namespace Elastos {
 		MultiSignSubAccount::MultiSignSubAccount(IAccount *account) :
 				SingleSubAccount(account) {
 			_multiSignAccount = dynamic_cast<MultiSignAccount *>(account);
-			ParamChecker::checkCondition(_multiSignAccount == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(_multiSignAccount == nullptr, Error::WrongAccountType,
 										 "Multi-sign sub account do not allow account that are not multi-sign type.");
 		}
 
 		CMBlock MultiSignSubAccount::GetRedeemScript(const Address &addr) const {
-			ParamChecker::checkLogic(_multiSignAccount->GetAddress() != addr, Error::Address,
+			ErrorChecker::CheckLogic(_multiSignAccount->GetAddress() != addr, Error::Address,
 									 "Can't found pubKey for addr " + addr.String());
 			return _multiSignAccount->GetRedeemScript();
 		}
@@ -48,7 +48,7 @@ namespace Elastos {
 		}
 
 		Key MultiSignSubAccount::DeriveVoteKey(const std::string &payPasswd) {
-			ParamChecker::throwLogicException(Error::AccountNotSupportVote, "This account do not support vote");
+			ErrorChecker::ThrowLogicException(Error::AccountNotSupportVote, "This account do not support vote");
 			return Key();
 		}
 

@@ -292,7 +292,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncStarted() {
-			_executor->execute(Runnable([this]() -> void {
+			_executor->Execute(Runnable([this]() -> void {
 				try {
 					_listener->syncStarted();
 				}
@@ -306,7 +306,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
-			_executor->execute(Runnable([this, currentHeight, estimatedHeight]() -> void {
+			_executor->Execute(Runnable([this, currentHeight, estimatedHeight]() -> void {
 				try {
 					_listener->syncProgress(currentHeight, estimatedHeight);
 				} catch (std::exception ex) {
@@ -318,7 +318,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncStopped(const std::string &error) {
-			_executor->execute(Runnable([this, error]() -> void {
+			_executor->Execute(Runnable([this, error]() -> void {
 				try {
 					_listener->syncStopped(error);
 				}
@@ -332,7 +332,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::txStatusUpdate() {
-			_executor->execute(Runnable([this]() -> void {
+			_executor->Execute(Runnable([this]() -> void {
 				try {
 					_listener->txStatusUpdate();
 				}
@@ -346,7 +346,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
-			_executor->execute(Runnable([this, replace, blocks]() -> void {
+			_executor->Execute(Runnable([this, replace, blocks]() -> void {
 				try {
 					_listener->saveBlocks(replace, blocks);
 				}
@@ -360,7 +360,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
-			_executor->execute(Runnable([this, replace, peers]() -> void {
+			_executor->Execute(Runnable([this, replace, peers]() -> void {
 				try {
 					_listener->savePeers(replace, peers);
 				}
@@ -376,7 +376,7 @@ namespace Elastos {
 		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 
 			bool result = true;
-			_executor->execute(Runnable([this, result]() -> void {
+			_executor->Execute(Runnable([this, result]() -> void {
 				try {
 					_listener->networkIsReachable();
 				}
@@ -392,7 +392,7 @@ namespace Elastos {
 
 		void WrappedExecutorPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
 
-			_executor->execute(Runnable([this, hash, result]() -> void {
+			_executor->Execute(Runnable([this, hash, result]() -> void {
 				try {
 					_listener->txPublished(hash, result);
 				}
@@ -406,7 +406,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
-			_executor->execute(Runnable([this, blockHeight]() -> void {
+			_executor->Execute(Runnable([this, blockHeight]() -> void {
 				try {
 					if (_listener)
 						_listener->blockHeightIncreased(blockHeight);
@@ -421,7 +421,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncIsInactive(uint32_t time) {
-			_reconnectExecutor->execute(Runnable([this, time]() -> void {
+			_reconnectExecutor->Execute(Runnable([this, time]() -> void {
 				try {
 					_listener->syncIsInactive(time);
 				}
@@ -498,7 +498,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorTransactionHubListener::balanceChanged(const UInt256 &asset, uint64_t balance) {
-			_executor->execute(Runnable([this, asset, balance]() -> void {
+			_executor->Execute(Runnable([this, asset, balance]() -> void {
 				try {
 					_listener->balanceChanged(asset, balance);
 				}
@@ -512,7 +512,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
-			_executor->execute(Runnable([this, transaction]() -> void {
+			_executor->Execute(Runnable([this, transaction]() -> void {
 				try {
 					_listener->onTxAdded(transaction);
 				}
@@ -527,7 +527,7 @@ namespace Elastos {
 
 		void WrappedExecutorTransactionHubListener::onTxUpdated(
 				const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			_executor->execute(Runnable([this, hash, blockHeight, timeStamp]() -> void {
+			_executor->Execute(Runnable([this, hash, blockHeight, timeStamp]() -> void {
 				try {
 					_listener->onTxUpdated(hash, blockHeight, timeStamp);
 				}
@@ -542,7 +542,7 @@ namespace Elastos {
 
 		void WrappedExecutorTransactionHubListener::onTxDeleted(
 				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
-			_executor->execute(Runnable([this, hash, assetID, notifyUser, recommendRescan]() -> void {
+			_executor->Execute(Runnable([this, hash, assetID, notifyUser, recommendRescan]() -> void {
 				try {
 					_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 				}

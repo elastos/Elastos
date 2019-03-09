@@ -17,15 +17,15 @@ namespace Elastos {
 		public:
 			virtual ~IPayload();
 
-			virtual CMBlock getData(uint8_t versin) const;
+			virtual CMBlock GetData(uint8_t versin) const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const = 0;
 			virtual bool Deserialize(ByteStream &istream, uint8_t version) = 0;
 
-			virtual nlohmann::json toJson(uint8_t version) const = 0;
-			virtual void fromJson(const nlohmann::json &, uint8_t version) = 0;
+			virtual nlohmann::json ToJson(uint8_t version) const = 0;
+			virtual void FromJson(const nlohmann::json &j, uint8_t version) = 0;
 
-			virtual bool isValid() const;
+			virtual bool IsValid() const;
 
 			virtual IPayload &operator=(const IPayload &payload) = 0;
 		};

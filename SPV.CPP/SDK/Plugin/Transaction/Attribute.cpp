@@ -39,7 +39,7 @@ namespace Elastos {
 			return _data;
 		}
 
-		bool Attribute::isValid() const {
+		bool Attribute::IsValid() const {
 			return (_usage == Attribute::Usage::Description ||
 					_usage == Attribute::Usage::DescriptionUrl ||
 					_usage == Attribute::Usage::Memo ||
@@ -49,12 +49,12 @@ namespace Elastos {
 		}
 
 		void Attribute::Serialize(ByteStream &ostream) const {
-			ostream.writeUint8(_usage);
-			ostream.writeVarBytes(_data);
+			ostream.WriteUint8(_usage);
+			ostream.WriteVarBytes(_data);
 		}
 
 		bool Attribute::Deserialize(ByteStream &istream) {
-			if (!istream.readBytes(&_usage, 1)) {
+			if (!istream.ReadBytes(&_usage, 1)) {
 				Log::error("Attribute deserialize usage fail");
 				return false;
 			}
@@ -64,7 +64,7 @@ namespace Elastos {
 //				return false;
 //			}
 
-			if (!istream.readVarBytes(_data)) {
+			if (!istream.ReadVarBytes(_data)) {
 				Log::error("Attribute deserialize data fail");
 				return false;
 			}
@@ -72,17 +72,17 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Attribute::toJson() const {
+		nlohmann::json Attribute::ToJson() const {
 			nlohmann::json jsonData;
 			jsonData["Usage"] = _usage;
-			jsonData["Data"] = Utils::encodeHex(_data);
+			jsonData["Data"] = Utils::EncodeHex(_data);
 
 			return jsonData;
 		}
 
-		void Attribute::fromJson(const nlohmann::json &jsonData) {
+		void Attribute::FromJson(const nlohmann::json &jsonData) {
 			_usage = jsonData["Usage"].get<Usage>();
-			_data = Utils::decodeHex(jsonData["Data"].get<std::string>());
+			_data = Utils::DecodeHex(jsonData["Data"].get<std::string>());
 		}
 	}
 }

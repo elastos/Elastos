@@ -12,18 +12,18 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		BackgroundExecutor::BackgroundExecutor(uint8_t threadCount) {
-			initThread(threadCount);
+			InitThread(threadCount);
 		}
 
 		BackgroundExecutor::~BackgroundExecutor() {
-			stopThread();
+			StopThread();
 		}
 
-		void BackgroundExecutor::execute(const Runnable &runnable) {
+		void BackgroundExecutor::Execute(const Runnable &runnable) {
 			_workerService.post(runnable.Closure);
 		}
 
-		void BackgroundExecutor::initThread(uint8_t threadCount) {
+		void BackgroundExecutor::InitThread(uint8_t threadCount) {
 			_workerService.restart();
 			_workerLoop = boost::shared_ptr<io_service::work>(new io_service::work(_workerService));
 
@@ -32,7 +32,7 @@ namespace Elastos {
 			}
 		}
 
-		void BackgroundExecutor::stopThread() {
+		void BackgroundExecutor::StopThread() {
 			if (!_workerService.stopped()) {
 				_workerService.stop();
 				while (!_workerService.stopped());

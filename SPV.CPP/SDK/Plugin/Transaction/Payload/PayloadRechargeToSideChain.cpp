@@ -30,10 +30,10 @@ namespace Elastos {
 
 		void PayloadRechargeToSideChain::Serialize(ByteStream &ostream, uint8_t version) const {
 			if (version == PayloadRechargeToSideChain::V0) {
-				ostream.writeVarBytes(_merkeProof);
-				ostream.writeVarBytes(_mainChainTransaction);
+				ostream.WriteVarBytes(_merkeProof);
+				ostream.WriteVarBytes(_mainChainTransaction);
 			} else if (version == PayloadRechargeToSideChain::V1) {
-				ostream.writeBytes(&_mainChainTxHash, sizeof(_mainChainTxHash));
+				ostream.WriteBytes(&_mainChainTxHash, sizeof(_mainChainTxHash));
 			} else {
 				Log::error("Serialize: invalid recharge to side chain payload version = {}", version);
 			}
@@ -41,17 +41,17 @@ namespace Elastos {
 
 		bool PayloadRechargeToSideChain::Deserialize(ByteStream &istream, uint8_t version) {
 			if (version == PayloadRechargeToSideChain::V0) {
-				if (!istream.readVarBytes(_merkeProof)) {
+				if (!istream.ReadVarBytes(_merkeProof)) {
 					Log::error("Deserialize: recharge to side chain payload read merkle proof");
 					return false;
 				}
 
-				if (!istream.readVarBytes(_mainChainTransaction)) {
+				if (!istream.ReadVarBytes(_mainChainTransaction)) {
 					Log::error("Deserialize: recharge to side chain payload read tx");
 					return false;
 				}
 			} else if (version == PayloadRechargeToSideChain::V1) {
-				if (!istream.readBytes(&_mainChainTxHash, sizeof(_mainChainTxHash))) {
+				if (!istream.ReadBytes(&_mainChainTxHash, sizeof(_mainChainTxHash))) {
 					Log::error("Deserialize: recharge to side chain payload read tx hash");
 					return false;
 				}
@@ -63,12 +63,12 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRechargeToSideChain::toJson(uint8_t version) const {
+		nlohmann::json PayloadRechargeToSideChain::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			if (version == PayloadRechargeToSideChain::V0) {
-				j["MerkleProof"] = Utils::encodeHex(_merkeProof);
-				j["MainChainTransaction"] = Utils::encodeHex(_mainChainTransaction);
+				j["MerkleProof"] = Utils::EncodeHex(_merkeProof);
+				j["MainChainTransaction"] = Utils::EncodeHex(_mainChainTransaction);
 			} else if (version == PayloadRechargeToSideChain::V1) {
 				j["MainChaianTxHash"] = Utils::UInt256ToString(_mainChainTxHash, true);
 			} else {
@@ -78,10 +78,10 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRechargeToSideChain::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadRechargeToSideChain::FromJson(const nlohmann::json &j, uint8_t version) {
 			if (version == PayloadRechargeToSideChain::V0) {
-				_merkeProof = Utils::decodeHex(j["MerkleProof"].get<std::string>());
-				_mainChainTransaction = Utils::decodeHex(j["MainChainTransaction"].get<std::string>());
+				_merkeProof = Utils::DecodeHex(j["MerkleProof"].get<std::string>());
+				_mainChainTransaction = Utils::DecodeHex(j["MainChainTransaction"].get<std::string>());
 			} else if (version == PayloadRechargeToSideChain::V1) {
 				_mainChainTxHash = Utils::UInt256FromString(j["MainChainTxHash"].get<std::string>(), true);
 			} else {

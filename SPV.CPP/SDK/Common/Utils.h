@@ -51,11 +51,11 @@ namespace Elastos {
 
 			static bool Decrypt(CMBlock &data, const std::string &ctBase64, const std::string &passwd);
 
-			static std::string encodeHex(const CMBlock &in);
+			static std::string EncodeHex(const CMBlock &in);
 
-			static std::string encodeHex(const uint8_t *hex, size_t hexLen);
+			static std::string EncodeHex(const uint8_t *hex, size_t hexLen);
 
-			static CMBlock decodeHex(const std::string &s);
+			static CMBlock DecodeHex(const std::string &s);
 
 			static std::string UInt168ToAddress(const UInt168 &u);
 

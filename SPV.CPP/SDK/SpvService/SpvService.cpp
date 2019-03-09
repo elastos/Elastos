@@ -29,7 +29,7 @@ namespace Elastos {
 				CoreSpvService(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(proto._databaseManager.getPath()),
+				_databaseManager(proto._databaseManager.GetPath()),
 				_reconnectTimer(nullptr),
 				_forkId(proto._forkId) {
 			init(proto._subAccount, proto._earliestPeerTime, proto._reconnectSeconds);
@@ -51,10 +51,10 @@ namespace Elastos {
 
 		}
 
-		void SpvService::start() {
-			_reconnectExecutor.execute(Runnable([this]() -> void {
+		void SpvService::Start() {
+			_reconnectExecutor.Execute(Runnable([this]() -> void {
 				try {
-					getPeerManager()->connect();
+					getPeerManager()->Connect();
 				}
 				catch (std::exception ex) {
 					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
@@ -65,7 +65,7 @@ namespace Elastos {
 			}));
 		}
 
-		void SpvService::stop() {
+		void SpvService::Stop() {
 			if (_reconnectTimer != nullptr) {
 				_reconnectTimer->cancel();
 				_reconnectTimer = nullptr;
@@ -73,27 +73,27 @@ namespace Elastos {
 
 			_peerManager->SetReconnectTaskCount(0);
 
-			getPeerManager()->disconnect();
+			getPeerManager()->Disconnect();
 
-			_executor.stopThread();
-			_reconnectExecutor.stopThread();
+			_executor.StopThread();
+			_reconnectExecutor.StopThread();
 		}
 
-		void SpvService::publishTransaction(const TransactionPtr &transaction) {
-			nlohmann::json sendingTx = transaction->toJson();
+		void SpvService::PublishTransaction(const TransactionPtr &transaction) {
+			nlohmann::json sendingTx = transaction->ToJson();
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
 
 			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
-			SPVLOG_DEBUG("raw tx {}", Utils::encodeHex(byteStream.getBuffer()));
+			SPVLOG_DEBUG("raw tx {}", Utils::EncodeHex(byteStream.GetBuffer()));
 
-			if (getPeerManager()->getConnectStatus() != Peer::Connected) {
+			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
 				if (_reconnectTimer != nullptr)
 					_reconnectTimer->cancel();
-				getPeerManager()->connect();
+				getPeerManager()->Connect();
 			}
 
-			getPeerManager()->publishTransaction(transaction);
+			getPeerManager()->PublishTransaction(transaction);
 			getWallet()->RegisterRemark(transaction);
 		}
 
@@ -113,24 +113,24 @@ namespace Elastos {
 			ByteStream stream;
 			tx->Serialize(stream);
 
-			CMBlock data = stream.getBuffer();
+			CMBlock data = stream.GetBuffer();
 
-			std::string txHash = Utils::UInt256ToString(tx->getHash(), true);
+			std::string txHash = Utils::UInt256ToString(tx->GetHash(), true);
 			std::string remark = _wallet->GetRemark(txHash);
-			tx->setRemark(remark);
+			tx->SetRemark(remark);
 
-			TransactionEntity txEntity(data, tx->getBlockHeight(), tx->getTimestamp(), tx->GetAssetTableID(),
-									   tx->getRemark(), txHash);
-			_databaseManager.putTransaction(ISO, txEntity);
+			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), tx->GetAssetTableID(),
+									   tx->GetRemark(), txHash);
+			_databaseManager.PutTransaction(ISO, txEntity);
 
-			if (tx->getTransactionType() == Transaction::RegisterAsset) {
-				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
+			if (tx->GetTransactionType() == Transaction::RegisterAsset) {
+				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->GetPayload());
 
-				Asset asset = registerAsset->getAsset();
+				Asset asset = registerAsset->GetAsset();
 				std::string assetID = Utils::UInt256ToString(asset.GetHash(), true);
 				ByteStream stream;
 				asset.Serialize(stream);
-				AssetEntity assetEntity(assetID, registerAsset->getAmount(), stream.getBuffer(), txHash);
+				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBuffer(), txHash);
 				_databaseManager.PutAsset(ISO, assetEntity);
 
 				UpdateAssets();
@@ -149,7 +149,7 @@ namespace Elastos {
 			txEntity.blockHeight = blockHeight;
 			txEntity.timeStamp = timeStamp;
 			txEntity.txHash = hash;
-			_databaseManager.updateTransaction(ISO, txEntity);
+			_databaseManager.UpdateTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, blockHeight, timeStamp](AssetTransactions::Listener *listener) {
@@ -159,7 +159,7 @@ namespace Elastos {
 
 		void SpvService::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
 										bool recommendRescan) {
-			_databaseManager.deleteTxByHash(ISO, hash);
+			_databaseManager.DeleteTxByHash(ISO, hash);
 			if (!assetID.empty()) {
 				_databaseManager.DeleteAsset(ISO, assetID);
 				UpdateAssets();
@@ -203,34 +203,34 @@ namespace Elastos {
 		void SpvService::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 			if (replace) {
-				_databaseManager.deleteAllBlocks(ISO);
+				_databaseManager.DeleteAllBlocks(ISO);
 			}
 
 			ByteStream ostream;
 			std::vector<MerkleBlockEntity> merkleBlockList;
 			MerkleBlockEntity blockEntity;
 			for (size_t i = 0; i < blocks.size(); ++i) {
-				if (blocks[i]->getHeight() == 0)
+				if (blocks[i]->GetHeight() == 0)
 					continue;
 
 #ifndef NDEBUG
 				if (blocks.size() == 1) {
 					Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
 							_peerManager->GetID(),
-							blocks[i]->getHeight(),
-							Utils::UInt256ToString(blocks[i]->getHash(), true),
-							blocks[i]->getTimestamp(),
-							blocks[i]->getTarget());
+							   blocks[i]->GetHeight(),
+							Utils::UInt256ToString(blocks[i]->GetHash(), true),
+							   blocks[i]->GetTimestamp(),
+							   blocks[i]->GetTarget());
 				}
 #endif
 
-				ostream.setPosition(0);
+				ostream.SetPosition(0);
 				blocks[i]->Serialize(ostream);
-				blockEntity.blockBytes = ostream.getBuffer();
-				blockEntity.blockHeight = blocks[i]->getHeight();
+				blockEntity.blockBytes = ostream.GetBuffer();
+				blockEntity.blockHeight = blocks[i]->GetHeight();
 				merkleBlockList.push_back(blockEntity);
 			}
-			_databaseManager.putMerkleBlocks(ISO, merkleBlockList);
+			_databaseManager.PutMerkleBlocks(ISO, merkleBlockList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -241,7 +241,7 @@ namespace Elastos {
 		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
-				_databaseManager.deleteAllPeers(ISO);
+				_databaseManager.DeleteAllPeers(ISO);
 			}
 
 			std::vector<PeerEntity> peerEntityList;
@@ -252,7 +252,7 @@ namespace Elastos {
 				peerEntity.timeStamp = peers[i].Timestamp;
 				peerEntityList.push_back(peerEntity);
 			}
-			_databaseManager.putPeers(ISO, peerEntityList);
+			_databaseManager.PutPeers(ISO, peerEntityList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &peers](PeerManager::Listener *listener) {
@@ -290,34 +290,34 @@ namespace Elastos {
 
 			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 
-			_executor.stopThread();
-			if (_peerManager->getConnectStatus() == Peer::Connected) {
-				_peerManager->disconnect();
+			_executor.StopThread();
+			if (_peerManager->GetConnectStatus() == Peer::Connected) {
+				_peerManager->Disconnect();
 			}
 
-			_executor.initThread(BACKGROUND_THREAD_COUNT);
-			startReconnect(time);
+			_executor.InitThread(BACKGROUND_THREAD_COUNT);
+			StartReconnect(time);
 		}
 
-		size_t SpvService::getAllTransactionsCount() {
-			return _databaseManager.getAllTransactionsCount(ISO);
+		size_t SpvService::GetAllTransactionsCount() {
+			return _databaseManager.GetAllTransactionsCount(ISO);
 		}
 
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadTransactions() {
 			std::vector<TransactionPtr> txs;
 
-			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
+			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
 				TransactionPtr transaction(new Transaction());
 
 				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
-				transaction->setRemark(txsEntity[i].remark);
+				transaction->SetRemark(txsEntity[i].remark);
 				transaction->SetAssetTableID(txsEntity[i].assetID);
-				transaction->setBlockHeight(txsEntity[i].blockHeight);
-				transaction->setTimestamp(txsEntity[i].timeStamp);
+				transaction->SetBlockHeight(txsEntity[i].blockHeight);
+				transaction->SetTimestamp(txsEntity[i].timeStamp);
 
 				txs.push_back(transaction);
 			}
@@ -328,13 +328,13 @@ namespace Elastos {
 		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {
 			std::vector<MerkleBlockPtr> blocks;
 
-			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.GetAllMerkleBlocks(ISO);
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
 				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes));
-				block->setHeight(blocksEntity[i].blockHeight);
+				block->SetHeight(blocksEntity[i].blockHeight);
 				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
-				stream.setPosition(0);
+				stream.SetPosition(0);
 				if (!block->Deserialize(stream)) {
 					Log::error("{} block deserialize fail", _peerManager->GetID());
 				}
@@ -347,7 +347,7 @@ namespace Elastos {
 		std::vector<PeerInfo> SpvService::loadPeers() {
 			std::vector<PeerInfo> peers;
 
-			std::vector<PeerEntity> peersEntity = _databaseManager.getAllPeers(ISO);
+			std::vector<PeerEntity> peersEntity = _databaseManager.GetAllPeers(ISO);
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
 				peers.push_back(PeerInfo(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
@@ -364,16 +364,16 @@ namespace Elastos {
 			std::string assetStringID = Utils::UInt256ToString(defaultAssetID, true);
 			if (!_databaseManager.GetAssetDetails(ISO, assetStringID, defaultAssetEntity)) {
 				Asset defaultAsset;
-				defaultAsset.setName("ELA");
-				defaultAsset.setPrecision(0x08);
-				defaultAsset.setAssetType(Asset::AssetType::Token);
+				defaultAsset.SetName("ELA");
+				defaultAsset.SetPrecision(0x08);
+				defaultAsset.SetAssetType(Asset::AssetType::Token);
 				defaultAsset.SetHash(defaultAssetID);
 
 				ByteStream stream;
 				defaultAsset.Serialize(stream);
 
 				defaultAssetEntity.AssetID = assetStringID;
-				defaultAssetEntity.Asset = stream.getBuffer();
+				defaultAssetEntity.Asset = stream.GetBuffer();
 
 				// TODO how to set these two value?
 				defaultAssetEntity.Amount = 0;
@@ -415,15 +415,15 @@ namespace Elastos {
 			return _walletListener;
 		}
 
-		void SpvService::registerWalletListener(AssetTransactions::Listener *listener) {
+		void SpvService::RegisterWalletListener(AssetTransactions::Listener *listener) {
 			_walletListeners.push_back(listener);
 		}
 
-		void SpvService::registerPeerManagerListener(PeerManager::Listener *listener) {
+		void SpvService::RegisterPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
 		}
 
-		void SpvService::startReconnect(uint32_t time) {
+		void SpvService::StartReconnect(uint32_t time) {
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(time)));
 
@@ -440,15 +440,15 @@ namespace Elastos {
 			_peerManager->Unlock();
 
 			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
+					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 			_reconnectService.restart();
 			_reconnectService.run_one();
 		}
 
-		void SpvService::resetReconnect() {
+		void SpvService::ResetReconnect() {
 			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
 			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
+					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 		}
 
 		void SpvService::UpdateAssets() {

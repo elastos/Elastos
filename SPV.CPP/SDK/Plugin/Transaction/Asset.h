@@ -29,33 +29,33 @@ namespace Elastos {
 
 			~Asset();
 
-			void setName(const std::string &name);
+			void SetName(const std::string &name);
 
-			std::string getName() const;
+			std::string GetName() const;
 
-			void setDescription(const std::string &desc);
+			void SetDescription(const std::string &desc);
 
-			std::string getDescription() const;
+			std::string GetDescription() const;
 
-			void setAssetType(Asset::AssetType type);
+			void SetAssetType(Asset::AssetType type);
 
-			Asset::AssetType getAssetType() const;
+			Asset::AssetType GetAssetType() const;
 
-			void setAssetRecordType(Asset::AssetRecordType type);
+			void SetAssetRecordType(Asset::AssetRecordType type);
 
-			Asset::AssetRecordType getAssetRecordType() const;
+			Asset::AssetRecordType GetAssetRecordType() const;
 
-			void setPrecision(uint8_t precision);
+			void SetPrecision(uint8_t precision);
 
-			uint8_t getPrecision() const;
+			uint8_t GetPrecision() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &jsonData);
 
 			virtual UInt256 &GetHash() const;
 

@@ -24,11 +24,11 @@ namespace Elastos {
 			size_t locatorsCount = getHeadersParameter.locators.size();
 			ByteStream msg;
 
-			msg.writeUint32(uint32_t(locatorsCount));
+			msg.WriteUint32(uint32_t(locatorsCount));
 			for (size_t i = 0; i < locatorsCount; ++i) {
-				msg.writeBytes(&getHeadersParameter.locators[i], sizeof(UInt256));
+				msg.WriteBytes(&getHeadersParameter.locators[i], sizeof(UInt256));
 			}
-			msg.writeBytes(&getHeadersParameter.hashStop, sizeof(UInt256));
+			msg.WriteBytes(&getHeadersParameter.hashStop, sizeof(UInt256));
 
 			if (locatorsCount > 0) {
 				_peer->debug("calling getheaders with {} locators: [{},{} {}]",
@@ -37,7 +37,7 @@ namespace Elastos {
 							 (locatorsCount > 2 ? " ...," : ""),
 							 (locatorsCount > 1 ? Utils::UInt256ToString(
 								 getHeadersParameter.locators[locatorsCount - 1], true) : ""));
-				SendMessage(msg.getBuffer(), Type());
+				SendMessage(msg.GetBuffer(), Type());
 			}
 		}
 

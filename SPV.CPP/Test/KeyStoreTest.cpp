@@ -23,7 +23,7 @@ TEST_CASE("createAccountFromJson test", "[createAccountFromJson]") {
 		KeyStore ks("Data");
 		ks.Import(j, password);
 
-		IAccount *account = ks.createAccountFromJson(password);
+		IAccount *account = ks.CreateAccountFromJson(password);
 		REQUIRE(account->GetType() == "Standard");
 	}
 }

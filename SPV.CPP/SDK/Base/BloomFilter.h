@@ -31,15 +31,15 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &jsonData);
 
-			void insertData(const void *data, size_t dataLen);
+			void InsertData(const void *data, size_t dataLen);
 
 			bool ContainsData(const void *data, size_t dataLen);
 
-			uint32_t calculateHash(const void *data, size_t dataLen, uint32_t hashNum);
+			uint32_t CalculateHash(const void *data, size_t dataLen, uint32_t hashNum);
 
 		private:
 			CMBlock _filter;

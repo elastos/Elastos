@@ -185,10 +185,10 @@ namespace Elastos {
 			UInt256 hash;
 			ByteStream stream;
 
-			stream.writeUint32(index);
-			stream.writeBytes(uri.data(), uri.length());
+			stream.WriteUint32(index);
+			stream.WriteBytes(uri.data(), uri.length());
 
-			CMBlock data = stream.getBuffer();
+			CMBlock data = stream.GetBuffer();
 
 			BRSHA256(&hash, data, data.GetSize());
 

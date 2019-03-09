@@ -26,75 +26,76 @@ namespace Elastos {
 
 		}
 
-		bool DatabaseManager::putTransaction(const std::string &iso, const TransactionEntity &tx) {
-			return _transactionDataStore.putTransaction(iso, tx);
+		bool DatabaseManager::PutTransaction(const std::string &iso, const TransactionEntity &tx) {
+			return _transactionDataStore.PutTransaction(iso, tx);
 		}
 
-		bool DatabaseManager::deleteAllTransactions(const std::string &iso) {
-			return _transactionDataStore.deleteAllTransactions(iso);
+		bool DatabaseManager::DeleteAllTransactions(const std::string &iso) {
+			return _transactionDataStore.DeleteAllTransactions(iso);
 		}
 
-		size_t DatabaseManager::getAllTransactionsCount(const std::string &iso) const {
-			return _transactionDataStore.getAllTransactionsCount(iso);
+		size_t DatabaseManager::GetAllTransactionsCount(const std::string &iso) const {
+			return _transactionDataStore.GetAllTransactionsCount(iso);
 		}
 
-		std::vector<TransactionEntity> DatabaseManager::getAllTransactions(const std::string &iso) const {
-			return _transactionDataStore.getAllTransactions(iso);
+		std::vector<TransactionEntity> DatabaseManager::GetAllTransactions(const std::string &iso) const {
+			return _transactionDataStore.GetAllTransactions(iso);
 		}
 
-		bool DatabaseManager::updateTransaction(const std::string &iso, const TransactionEntity &txEntity) {
-			return _transactionDataStore.updateTransaction(iso, txEntity);
+		bool DatabaseManager::UpdateTransaction(const std::string &iso, const TransactionEntity &txEntity) {
+			return _transactionDataStore.UpdateTransaction(iso, txEntity);
 		}
 
-		bool DatabaseManager::deleteTxByHash(const std::string &iso, const std::string &hash) {
-			return _transactionDataStore.deleteTxByHash(iso, hash);
+		bool DatabaseManager::DeleteTxByHash(const std::string &iso, const std::string &hash) {
+			return _transactionDataStore.DeleteTxByHash(iso, hash);
 		}
 
-		bool DatabaseManager::putPeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.putPeer(iso, peerEntity);
+		bool DatabaseManager::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {
+			return _peerDataSource.PutPeer(iso, peerEntity);
 		}
 
-		bool DatabaseManager::putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
-			return _peerDataSource.putPeers(iso, peerEntities);
+		bool DatabaseManager::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
+			return _peerDataSource.PutPeers(iso, peerEntities);
 		}
 
-		bool DatabaseManager::deletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.deletePeer(iso, peerEntity);
+		bool DatabaseManager::DeletePeer(const std::string &iso, const PeerEntity &peerEntity) {
+			return _peerDataSource.DeletePeer(iso, peerEntity);
 		}
 
-		bool DatabaseManager::deleteAllPeers(const std::string &iso) {
-			return _peerDataSource.deleteAllPeers(iso);
+		bool DatabaseManager::DeleteAllPeers(const std::string &iso) {
+			return _peerDataSource.DeleteAllPeers(iso);
 		}
 
-		std::vector<PeerEntity> DatabaseManager::getAllPeers(const std::string &iso) const {
-			return _peerDataSource.getAllPeers(iso);
+		std::vector<PeerEntity> DatabaseManager::GetAllPeers(const std::string &iso) const {
+			return _peerDataSource.GetAllPeers(iso);
 		}
 
-		size_t DatabaseManager::getAllPeersCount(const std::string &iso) const {
-			return _peerDataSource.getAllPeersCount(iso);
+		size_t DatabaseManager::GetAllPeersCount(const std::string &iso) const {
+			return _peerDataSource.GetAllPeersCount(iso);
 		}
 
-		bool DatabaseManager::putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return _merkleBlockDataSource.putMerkleBlock(iso, blockEntity);
+		bool DatabaseManager::PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+			return _merkleBlockDataSource.PutMerkleBlock(iso, blockEntity);
 		}
 
-		bool DatabaseManager::putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities) {
-			return _merkleBlockDataSource.putMerkleBlocks(iso, blockEntities);
+		bool DatabaseManager::PutMerkleBlocks(const std::string &iso,
+											  const std::vector<MerkleBlockEntity> &blockEntities) {
+			return _merkleBlockDataSource.PutMerkleBlocks(iso, blockEntities);
 		}
 
-		bool DatabaseManager::deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return _merkleBlockDataSource.deleteMerkleBlock(iso, blockEntity);
+		bool DatabaseManager::DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+			return _merkleBlockDataSource.DeleteMerkleBlock(iso, blockEntity);
 		}
 
-		bool DatabaseManager::deleteAllBlocks(const std::string &iso) {
-			return _merkleBlockDataSource.deleteAllBlocks(iso);
+		bool DatabaseManager::DeleteAllBlocks(const std::string &iso) {
+			return _merkleBlockDataSource.DeleteAllBlocks(iso);
 		}
 
-		std::vector<MerkleBlockEntity> DatabaseManager::getAllMerkleBlocks(const std::string &iso) const {
-			return _merkleBlockDataSource.getAllMerkleBlocks(iso);
+		std::vector<MerkleBlockEntity> DatabaseManager::GetAllMerkleBlocks(const std::string &iso) const {
+			return _merkleBlockDataSource.GetAllMerkleBlocks(iso);
 		}
 
-		const boost::filesystem::path &DatabaseManager::getPath() const {
+		const boost::filesystem::path &DatabaseManager::GetPath() const {
 			return _path;
 		}
 

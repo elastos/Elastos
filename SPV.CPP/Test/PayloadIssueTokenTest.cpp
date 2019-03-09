@@ -18,12 +18,12 @@ TEST_CASE("PayloadRechargeToSideChain test", "[PayloadRechargeToSideChain]") {
 	PayloadRechargeToSideChain p1(merkleProof, mainChainTx);
 	ByteStream stream;
 	p1.Serialize(stream, 0);
-	stream.setPosition(0);
+	stream.SetPosition(0);
 	PayloadRechargeToSideChain p2;
 	REQUIRE(p2.Deserialize(stream, 0));
 
-	CMBlock data1 = p1.getData(0);
-	CMBlock data2 = p2.getData(0);
+	CMBlock data1 = p1.GetData(0);
+	CMBlock data2 = p2.GetData(0);
 
 	REQUIRE(data1.GetSize() == data2.GetSize());
 	REQUIRE(0 == memcmp(data1, data2, data1.GetSize()));

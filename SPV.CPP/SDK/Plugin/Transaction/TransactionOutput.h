@@ -52,21 +52,21 @@ namespace Elastos {
 
 			Address GetAddress() const;
 
-			uint64_t getAmount() const;
+			uint64_t GetAmount() const;
 
-			void setAmount(uint64_t amount);
+			void SetAmount(uint64_t amount);
 
-			const UInt256 &getAssetId() const;
+			const UInt256 &GetAssetId() const;
 
-			void setAssetId(const UInt256 &assetId);
+			void SetAssetId(const UInt256 &assetId);
 
-			uint32_t getOutputLock() const;
+			uint32_t GetOutputLock() const;
 
-			void setOutputLock(uint32_t outputLock);
+			void SetOutputLock(uint32_t outputLock);
 
-			const UInt168 &getProgramHash() const;
+			const UInt168 &GetProgramHash() const;
 
-			void setProgramHash(const UInt168 &hash);
+			void SetProgramHash(const UInt168 &hash);
 
 			const Type &GetType() const;
 
@@ -80,13 +80,13 @@ namespace Elastos {
 
 			OutputPayloadPtr GeneratePayload(const Type &type);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &j);
+			virtual void FromJson(const nlohmann::json &j);
 
-			nlohmann::json toJson(uint8_t txVersion) const;
+			nlohmann::json ToJson(uint8_t txVersion) const;
 
-			void fromJson(const nlohmann::json &j, uint8_t txVersion);
+			void FromJson(const nlohmann::json &j, uint8_t txVersion);
 
 			size_t GetSize() const;
 

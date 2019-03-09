@@ -10,7 +10,7 @@
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -43,7 +43,7 @@ namespace Elastos {
 
 			pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
 			key.SetPubKey(pubKey);
-			ParamChecker::checkLogic(addr != _address, Error::Address, "Can't found pubKey for addr " + addr.String());
+			ErrorChecker::CheckLogic(addr != _address, Error::Address, "Can't found pubKey for addr " + addr.String());
 			return key.RedeemScript(PrefixStandard);
 		}
 

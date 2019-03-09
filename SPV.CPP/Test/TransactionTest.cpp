@@ -30,7 +30,7 @@ TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 		tx1.Serialize(stream);
 
 		Transaction tx2;
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(tx2.Deserialize(stream));
 
 		verifyTransaction(tx1, tx2, false);
@@ -50,10 +50,10 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 		initTransaction(tx1, Transaction::TxVersion::V09);
 
-		nlohmann::json txJson = tx1.toJson();
+		nlohmann::json txJson = tx1.ToJson();
 
 		Transaction tx2;
-		tx2.fromJson(txJson);
+		tx2.FromJson(txJson);
 
 		verifyTransaction(tx1, tx2, true);
 	}

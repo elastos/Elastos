@@ -40,47 +40,47 @@ namespace Elastos {
 
 		}
 
-		uint32_t MerkleBlockBase::getVersion() const {
+		uint32_t MerkleBlockBase::GetVersion() const {
 			return _version;
 		}
 
-		void MerkleBlockBase::setVersion(uint32_t version) {
+		void MerkleBlockBase::SetVersion(uint32_t version) {
 			_version = version;
 		}
 
-		const UInt256 &MerkleBlockBase::getPrevBlockHash() const {
+		const UInt256 &MerkleBlockBase::GetPrevBlockHash() const {
 			return _prevBlock;
 		}
 
-		const UInt256 &MerkleBlockBase::getRootBlockHash() const {
+		const UInt256 &MerkleBlockBase::GetRootBlockHash() const {
 			return _merkleRoot;
 		}
 
-		uint32_t MerkleBlockBase::getTimestamp() const {
+		uint32_t MerkleBlockBase::GetTimestamp() const {
 			return _timestamp;
 		}
 
-		uint32_t MerkleBlockBase::getTarget() const {
+		uint32_t MerkleBlockBase::GetTarget() const {
 			return _target;
 		}
 
-		uint32_t MerkleBlockBase::getNonce() const {
+		uint32_t MerkleBlockBase::GetNonce() const {
 			return _nonce;
 		}
 
-		uint32_t MerkleBlockBase::getTransactionCount() const {
+		uint32_t MerkleBlockBase::GetTransactionCount() const {
 			return _totalTx;
 		}
 
-		uint32_t MerkleBlockBase::getHeight() const {
+		uint32_t MerkleBlockBase::GetHeight() const {
 			return _height;
 		}
 
-		void MerkleBlockBase::setHeight(uint32_t height) {
+		void MerkleBlockBase::SetHeight(uint32_t height) {
 			_height = height;
 		}
 
-		nlohmann::json MerkleBlockBase::toJson() const {
+		nlohmann::json MerkleBlockBase::ToJson() const {
 			nlohmann::json j;
 
 			std::vector<std::string> hashes;
@@ -110,7 +110,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void MerkleBlockBase::fromJson(const nlohmann::json &j) {
+		void MerkleBlockBase::FromJson(const nlohmann::json &j) {
 
 			_blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>(), true);
 			_version = j["Version"].get<uint32_t>();
@@ -136,35 +136,35 @@ namespace Elastos {
 			_height = j["Height"].get<uint32_t>();
 		}
 
-		void MerkleBlockBase::setTimestamp(uint32_t timestamp) {
+		void MerkleBlockBase::SetTimestamp(uint32_t timestamp) {
 			_timestamp = timestamp;
 		}
 
-		void MerkleBlockBase::setPrevBlockHash(const UInt256 &hash) {
+		void MerkleBlockBase::SetPrevBlockHash(const UInt256 &hash) {
 			UInt256Set(&_prevBlock, hash);
 		}
 
-		void MerkleBlockBase::setRootBlockHash(const UInt256 &hash) {
+		void MerkleBlockBase::SetRootBlockHash(const UInt256 &hash) {
 			UInt256Set(&_merkleRoot, hash);
 		}
 
-		void MerkleBlockBase::setTarget(uint32_t target) {
+		void MerkleBlockBase::SetTarget(uint32_t target) {
 			_target = target;
 		}
 
-		void MerkleBlockBase::setNonce(uint32_t nonce) {
+		void MerkleBlockBase::SetNonce(uint32_t nonce) {
 			_nonce = nonce;
 		}
 
-		void MerkleBlockBase::setTransactionCount(uint32_t count) {
+		void MerkleBlockBase::SetTransactionCount(uint32_t count) {
 			_totalTx = count;
 		}
 
-		const std::vector<UInt256> &MerkleBlockBase::getHashes() const {
+		const std::vector<UInt256> &MerkleBlockBase::GetHashes() const {
 			return _hashes;
 		}
 
-		void MerkleBlockBase::setHashes(const std::vector<UInt256> &hashes) {
+		void MerkleBlockBase::SetHashes(const std::vector<UInt256> &hashes) {
 			_hashes.clear();
 			UInt256 temp;
 			for (size_t i = 0; i < hashes.size(); ++i) {
@@ -173,81 +173,81 @@ namespace Elastos {
 			}
 		}
 
-		const std::vector<uint8_t> &MerkleBlockBase::getFlags() const {
+		const std::vector<uint8_t> &MerkleBlockBase::GetFlags() const {
 			return _flags;
 		}
 
-		void MerkleBlockBase::setFlags(const std::vector<uint8_t> &flags) {
+		void MerkleBlockBase::SetFlags(const std::vector<uint8_t> &flags) {
 			_flags = flags;
 		}
 
-		void MerkleBlockBase::serializeNoAux(ByteStream &ostream) const {
-			ostream.writeUint32(_version);
-			ostream.writeBytes(_prevBlock.u8, sizeof(UInt256));
-			ostream.writeBytes(_merkleRoot.u8, sizeof(UInt256));
-			ostream.writeUint32(_timestamp);
-			ostream.writeUint32(_target);
-			ostream.writeUint32(_nonce);
-			ostream.writeUint32(_height);
+		void MerkleBlockBase::SerializeNoAux(ByteStream &ostream) const {
+			ostream.WriteUint32(_version);
+			ostream.WriteBytes(_prevBlock.u8, sizeof(UInt256));
+			ostream.WriteBytes(_merkleRoot.u8, sizeof(UInt256));
+			ostream.WriteUint32(_timestamp);
+			ostream.WriteUint32(_target);
+			ostream.WriteUint32(_nonce);
+			ostream.WriteUint32(_height);
 		}
 
-		bool MerkleBlockBase::deserializeNoAux(ByteStream &istream) {
-			if (!istream.readUint32(_version))
+		bool MerkleBlockBase::DeserializeNoAux(ByteStream &istream) {
+			if (!istream.ReadUint32(_version))
 				return false;
 
-			if (!istream.readBytes(_prevBlock.u8, sizeof(UInt256)))
+			if (!istream.ReadBytes(_prevBlock.u8, sizeof(UInt256)))
 				return false;
 
-			if (!istream.readBytes(_merkleRoot.u8, sizeof(UInt256)))
+			if (!istream.ReadBytes(_merkleRoot.u8, sizeof(UInt256)))
 				return false;
 
-			if (!istream.readUint32(_timestamp))
+			if (!istream.ReadUint32(_timestamp))
 				return false;
 
-			if (!istream.readUint32(_target))
+			if (!istream.ReadUint32(_target))
 				return false;
 
-			if (!istream.readUint32(_nonce))
+			if (!istream.ReadUint32(_nonce))
 				return false;
 
-			if (!istream.readUint32(_height))
+			if (!istream.ReadUint32(_height))
 				return false;
 
 			return true;
 		}
 
-		void MerkleBlockBase::serializeAfterAux(ByteStream &ostream) const {
-			ostream.writeUint8(1);    //correspond to serialization of node, should add one byte here
+		void MerkleBlockBase::SerializeAfterAux(ByteStream &ostream) const {
+			ostream.WriteUint8(1);    //correspond to serialization of node, should add one byte here
 
-			ostream.writeUint32(_totalTx);
+			ostream.WriteUint32(_totalTx);
 
-			ostream.writeUint32((uint32_t) _hashes.size());
+			ostream.WriteUint32((uint32_t) _hashes.size());
 			for (size_t i = 0; i < _hashes.size(); ++i) {
-				ostream.writeBytes(_hashes[i].u8, sizeof(UInt256));
+				ostream.WriteBytes(_hashes[i].u8, sizeof(UInt256));
 			}
 
-			ostream.writeVarBytes(_flags.data(), _flags.size());
+			ostream.WriteVarBytes(_flags.data(), _flags.size());
 		}
 
-		bool MerkleBlockBase::deserializeAfterAux(ByteStream &istream) {
-			istream.drop(1);    //correspond to serialization of node, should get one byte here
+		bool MerkleBlockBase::DeserializeAfterAux(ByteStream &istream) {
+			istream.Drop(1);    //correspond to serialization of node, should get one byte here
 
-			if (!istream.readUint32(_totalTx))
+			if (!istream.ReadUint32(_totalTx))
 				return false;
 
 			uint32_t hashesCount = 0;
-			if (!istream.readUint32(hashesCount))
+			if (!istream.ReadUint32(hashesCount))
 				return false;
 
 			for (size_t i = 0; i < hashesCount; ++i) {
 				UInt256 hash;
-				if (!istream.readBytes(hash.u8, sizeof(UInt256)))
+				if (!istream.ReadBytes(hash.u8, sizeof(UInt256)))
 					return false;
 				_hashes.push_back(hash);
 			}
 
 			CMBlock flags;
-			if (!istream.readVarBytes(flags))
+			if (!istream.ReadVarBytes(flags))
 				return false;
 
 			for (int j = 0; j < flags.GetSize(); ++j) {
@@ -260,11 +260,11 @@ namespace Elastos {
 		size_t MerkleBlockBase::MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const {
 			size_t hashIdx = 0, flagIdx = 0;
 
-			return merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, 0);
+			return MerkleBlockTxHashesR(txHashes, hashIdx, flagIdx, 0);
 		}
 
-		size_t MerkleBlockBase::merkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx,
-																   int depth) const {
+		size_t MerkleBlockBase::MerkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx,
+													 int depth) const {
 			uint8_t flag;
 
 			if (flagIdx / 8 < _flags.size() && hashIdx < _hashes.size()) {
@@ -278,8 +278,8 @@ namespace Elastos {
 
 					hashIdx++;
 				} else {
-					merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // left branch
-					merkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // right branch
+					MerkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // left branch
+					MerkleBlockTxHashesR(txHashes, hashIdx, flagIdx, depth + 1); // right branch
 				}
 			}
 
@@ -319,12 +319,12 @@ namespace Elastos {
 			return md;
 		}
 
-		void MerkleBlockBase::setHash(const UInt256 &hash) {
+		void MerkleBlockBase::SetHash(const UInt256 &hash) {
 			memcpy(_blockHash.u8, hash.u8, sizeof(_blockHash));
 		}
 
-		bool MerkleBlockBase::isEqual(const IMerkleBlock *block) const {
-			return (block == this || UInt256Eq(&getHash(), &block->getHash()));
+		bool MerkleBlockBase::IsEqual(const IMerkleBlock *block) const {
+			return (block == this || UInt256Eq(&GetHash(), &block->GetHash()));
 		}
 	}
 }

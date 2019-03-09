@@ -41,20 +41,20 @@ TEST_CASE("Utils test", "[Utils]") {
 
 	SECTION("Key encodeHex and decodeHex test") {
 		CMBlock data = getRandCMBlock(100);
-		std::string str = Utils::encodeHex(data);
-		CMBlock decodeData = Utils::decodeHex(str);
+		std::string str = Utils::EncodeHex(data);
+		CMBlock decodeData = Utils::DecodeHex(str);
 		REQUIRE(decodeData == data);
 
 		std::string dataString = "67577843c17b43dd10d9dbdd1a9db255b4b5d11f0254659ac147b567449aca99";
-		CMBlock dataDecode = Utils::decodeHex(dataString);
-		REQUIRE(dataString == Utils::encodeHex(dataDecode));
+		CMBlock dataDecode = Utils::DecodeHex(dataString);
+		REQUIRE(dataString == Utils::EncodeHex(dataDecode));
 	}
 
 	SECTION("ProgramHash and AddressHash Test") {
 		UInt168 expectedHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");
 		std::string redeemScript = "21022c9652d3ad5cc065aa9147dc2ad022f80001e8ed233de20f352950d351d472b7ac";
 
-		UInt168 hash = Key::CodeToProgramHash(PrefixStandard, Utils::decodeHex(redeemScript));
+		UInt168 hash = Key::CodeToProgramHash(PrefixStandard, Utils::DecodeHex(redeemScript));
 
 		REQUIRE(UInt168Eq(&hash, &expectedHash) == 1);
 

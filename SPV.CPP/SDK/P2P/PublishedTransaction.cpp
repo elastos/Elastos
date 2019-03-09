@@ -37,7 +37,7 @@ namespace Elastos {
 		}
 
 		void PublishedTransaction::FireCallback(int code, const std::string &reason) {
-			_callback(_tx->getHash(), code, reason);
+			_callback(_tx->GetHash(), code, reason);
 		}
 
 		const PublishedTxCallback &PublishedTransaction::GetCallback() const {

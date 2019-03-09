@@ -67,7 +67,7 @@ namespace Elastos {
 					}
 
 					for (size_t i = 0; r && i < count; i++) {
-						PeerManager *manager = _peer->getPeerManager();
+						PeerManager *manager = _peer->GetPeerManager();
 						MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
 						ByteStream stream(&msg[off + 81 + i], 81, false);
 
@@ -76,8 +76,8 @@ namespace Elastos {
 							return false;
 						}
 
-						if (! block->isValid((uint32_t)now)) {
-							_peer->error("Invalid block header: {}", Utils::UInt256ToString(block->getHash(), true));
+						if (!block->IsValid((uint32_t) now)) {
+							_peer->error("Invalid block header: {}", Utils::UInt256ToString(block->GetHash(), true));
 							return false;
 						}
 						FireRelayedBlock(block);

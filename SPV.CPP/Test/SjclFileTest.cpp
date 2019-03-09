@@ -18,32 +18,32 @@ TEST_CASE("Json convert", "[SjclFile]") {
 
 	SECTION("to json and from json") {
 		SjclFile s1, s2;
-		s1.setIv("n2JUTJ0/yrLdCDPfIcqAzw==");
-		s1.setV(uint32_t(1));
-		s1.setIter(uint32_t(10000));
-		s1.setKs(uint32_t(256));
-		s1.setTs(uint32_t(64));
-		s1.setMode("ccm");
-		s1.setAdata("");
-		s1.setCipher("aes");
-		s1.setSalt("ZRVja4LFrFY=");
-		s1.setCt("FCuQWGYz3onE/lRt/7vCl5A=");
+		s1.SetIv("n2JUTJ0/yrLdCDPfIcqAzw==");
+		s1.SetV(uint32_t(1));
+		s1.SetIter(uint32_t(10000));
+		s1.SetKs(uint32_t(256));
+		s1.SetTs(uint32_t(64));
+		s1.SetMode("ccm");
+		s1.SetAdata("");
+		s1.SetCipher("aes");
+		s1.SetSalt("ZRVja4LFrFY=");
+		s1.SetCt("FCuQWGYz3onE/lRt/7vCl5A=");
 
 		nlohmann::json json;
 		json << s1;
 
 		json >> s2;
 
-		REQUIRE(s1.getIv() == s2.getIv());
-		REQUIRE(s1.getV() == s2.getV());
-		REQUIRE(s1.getIter() == s2.getIter());
-		REQUIRE(s1.getKs() == s2.getKs());
-		REQUIRE(s1.getTs() == s2.getTs());
-		REQUIRE(s1.getMode() == s2.getMode());
-		REQUIRE(s1.getAdata() == s2.getAdata());
-		REQUIRE(s1.getCipher() == s2.getCipher());
-		REQUIRE(s1.getSalt() == s2.getSalt());
-		REQUIRE(s1.getCt() == s2.getCt());
+		REQUIRE(s1.GetIv() == s2.GetIv());
+		REQUIRE(s1.GetV() == s2.GetV());
+		REQUIRE(s1.GetIter() == s2.GetIter());
+		REQUIRE(s1.GetKs() == s2.GetKs());
+		REQUIRE(s1.GetTs() == s2.GetTs());
+		REQUIRE(s1.GetMode() == s2.GetMode());
+		REQUIRE(s1.GetAdata() == s2.GetAdata());
+		REQUIRE(s1.GetCipher() == s2.GetCipher());
+		REQUIRE(s1.GetSalt() == s2.GetSalt());
+		REQUIRE(s1.GetCt() == s2.GetCt());
 	}
 
 }

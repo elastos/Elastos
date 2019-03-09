@@ -90,31 +90,31 @@ namespace Elastos {
 			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
 			* status changes)
 			*/
-			void connect();
+			void Connect();
 
 			/**
 			* Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
 			* savePeers() callbacks to fire)
 			*/
-			void disconnect();
+			void Disconnect();
 
-			void rescan();
+			void Rescan();
 
-			uint32_t getSyncStartHeight() const;
+			uint32_t GetSyncStartHeight() const;
 
-			uint32_t getEstimatedBlockHeight() const;
+			uint32_t GetEstimatedBlockHeight() const;
 
 			uint32_t GetLastBlockHeight() const;
 
 			uint32_t GetLastBlockTimestamp() const;
 
-			time_t getKeepAliveTimestamp() const;
+			time_t GetKeepAliveTimestamp() const;
 
 			void SetKeepAliveTimestamp(time_t t);
 
-			double getSyncProgress(uint32_t startHeight);
+			double GetSyncProgress(uint32_t startHeight);
 
-			Peer::ConnectStatus getConnectStatus() const;
+			Peer::ConnectStatus GetConnectStatus() const;
 
 			bool SyncSucceeded() const;
 
@@ -124,31 +124,31 @@ namespace Elastos {
 
 			void SetReconnectEnableStatus(bool status);
 
-			void setFixedPeer(UInt128 address, uint16_t port);
+			void SetFixedPeer(UInt128 address, uint16_t port);
 
-			void setFixedPeers(const std::vector<PeerInfo> &peers);
+			void SetFixedPeers(const std::vector<PeerInfo> &peers);
 
-			bool useFixedPeer(const std::string &node, int port);
+			bool UseFixedPeer(const std::string &node, int port);
 
-			std::string getCurrentPeerName() const;
+			std::string GetCurrentPeerName() const;
 
-			std::string getDownloadPeerName() const;
+			std::string GetDownloadPeerName() const;
 
-			const PeerPtr getDownloadPeer() const;
+			const PeerPtr GetDownloadPeer() const;
 
-			size_t getPeerCount() const;
+			size_t GetPeerCount() const;
 
-			void publishTransaction(const TransactionPtr &transaction);
+			void PublishTransaction(const TransactionPtr &transaction);
 
-			void publishTransaction(const TransactionPtr &transaction, const Peer::PeerPubTxCallback &callback);
+			void PublishTransaction(const TransactionPtr &transaction, const Peer::PeerPubTxCallback &callback);
 
-			uint64_t getRelayCount(const UInt256 &txHash) const;
+			uint64_t GetRelayCount(const UInt256 &txHash) const;
 
-			void asyncConnect(const boost::system::error_code &error);
+			void AsyncConnect(const boost::system::error_code &error);
 
-			const std::vector<PublishedTransaction> getPublishedTransaction() const;
+			const std::vector<PublishedTransaction> GetPublishedTransaction() const;
 
-			const std::vector<UInt256> getPublishedTransactionHashes() const;
+			const std::vector<UInt256> GetPublishedTransactionHashes() const;
 
 			int ReconnectTaskCount() const;
 
@@ -191,86 +191,86 @@ namespace Elastos {
 			virtual void OnThreadCleanup(const PeerPtr &peer);
 
 		private:
-			void fireSyncStarted();
+			void FireSyncStarted();
 
-			void fireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
 
-			void fireSyncStopped(int error);
+			void FireSyncStopped(int error);
 
-			void fireTxStatusUpdate();
+			void FireTxStatusUpdate();
 
-			void fireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
+			void FireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			void fireSavePeers(bool replace, const std::vector<PeerInfo> &peers);
+			void FireSavePeers(bool replace, const std::vector<PeerInfo> &peers);
 
-			bool fireNetworkIsReachable();
+			bool FireNetworkIsReachable();
 
-			void fireTxPublished(const UInt256 &hash, int code, const std::string &reason);
+			void FireTxPublished(const UInt256 &hash, int code, const std::string &reason);
 
-			void fireThreadCleanup();
+			void FireThreadCleanup();
 
-			void fireBlockHeightIncreased(uint32_t height);
+			void FireBlockHeightIncreased(uint32_t height);
 
-			void fireSyncIsInactive(uint32_t time);
+			void FireSyncIsInactive(uint32_t time);
 
-			int verifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+			int VerifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
 								 const BlockSet &blockSet);
 
-			int verifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
+			int VerifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
 									  uint32_t transitionTime, uint32_t targetTimeSpan, uint32_t targetTimePerBlock);
 
-			void loadBloomFilter(const PeerPtr &peer);
+			void LoadBloomFilter(const PeerPtr &peer);
 
-			void updateBloomFilter();
+			void UpdateBloomFilter();
 
-			void findPeers();
+			void FindPeers();
 
-			void sortPeers();
+			void SortPeers();
 
-			void syncStopped();
+			void SyncStopped();
 
-			void addTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback);
+			void AddTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback);
 
-			void publishPendingTx(const PeerPtr &peer);
+			void PublishPendingTx(const PeerPtr &peer);
 
 			size_t
-			addPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			AddPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
 
 			bool
-			removePeerFromList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			RemovePeerFromList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
 
-			void peerMisbehaving(const PeerPtr &peer);
+			void PeerMisbehaving(const PeerPtr &peer);
 
-			std::vector<UInt128> addressLookup(const std::string &hostname);
+			std::vector<UInt128> AddressLookup(const std::string &hostname);
 
-			bool verifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer);
+			bool VerifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer);
 
-			std::vector<UInt256> getBlockLocators();
+			std::vector<UInt256> GetBlockLocators();
 
-			void loadMempools();
+			void LoadMempools();
 
 			void ResendUnconfirmedTx(const PeerPtr &peer);
 
-			void requestUnrelayedTx(const PeerPtr &peer);
+			void RequestUnrelayedTx(const PeerPtr &peer);
 
-			bool peerListHasPeer(const std::vector<TransactionPeerList> &peerList, const UInt256 &txhash,
+			bool PeerListHasPeer(const std::vector<TransactionPeerList> &peerList, const UInt256 &txhash,
 								 const PeerPtr &peer);
 
 			size_t PeerListCount(const std::vector<TransactionPeerList> &list, const UInt256 &txhash);
 
-			void loadBloomFilterDone(const PeerPtr &peer, int success);
+			void LoadBloomFilterDone(const PeerPtr &peer, int success);
 
-			void updateFilterRerequestDone(const PeerPtr &peer, int success);
+			void UpdateFilterRerequestDone(const PeerPtr &peer, int success);
 
-			void updateFilterLoadDone(const PeerPtr &peer, int success);
+			void UpdateFilterLoadDone(const PeerPtr &peer, int success);
 
-			void updateFilterPingDone(const PeerPtr &peer, int success);
+			void UpdateFilterPingDone(const PeerPtr &peer, int success);
 
-			void mempoolDone(const PeerPtr &peer, int success);
+			void MempoolDone(const PeerPtr &peer, int success);
 
-			void requestUnrelayedTxGetDataDone(const PeerPtr &peer, int success);
+			void RequestUnrelayedTxGetDataDone(const PeerPtr &peer, int success);
 
-			void publishTxInvDone(const PeerPtr &peer, int success);
+			void PublishTxInvDone(const PeerPtr &peer, int success);
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;

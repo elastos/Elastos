@@ -33,7 +33,7 @@ namespace Elastos {
 				_peer->error("got tx message before loading filter");
 				return false;
 			} else {
-				txHash = tx->getHash();
+				txHash = tx->GetHash();
 				_peer->debug("got tx: {}", Utils::UInt256ToString(txHash, true));
 
 				FireRelayedTx(tx);
@@ -58,9 +58,9 @@ namespace Elastos {
 
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
-			CMBlock buf = stream.getBuffer();
-			_peer->info("sending tx: tx hash = {}", Utils::UInt256ToString(txParam.tx->getHash(), true));
-			SendMessage(stream.getBuffer(), Type());
+			CMBlock buf = stream.GetBuffer();
+			_peer->info("sending tx: tx hash = {}", Utils::UInt256ToString(txParam.tx->GetHash(), true));
+			SendMessage(stream.GetBuffer(), Type());
 		}
 
 		std::string TransactionMessage::Type() const {

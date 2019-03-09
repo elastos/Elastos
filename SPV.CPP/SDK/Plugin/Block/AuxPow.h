@@ -25,69 +25,69 @@ namespace Elastos {
 
 			~AuxPow();
 
-			void setAuxMerkleBranch(const std::vector<UInt256> &hashes);
-			void setCoinBaseMerkle(const std::vector<UInt256> &hashes);
-			void setAuxMerkleIndex(uint32_t index);
-			void setParMerkleIndex(uint32_t index);
-			void setParentHash(const UInt256 &hash);
-			uint32_t getAuxMerkleIndex() const;
-			uint32_t getParMerkleIndex() const;
-			const UInt256 &getParentHash() const;
-			const std::vector<UInt256> &getAuxMerkleBranch() const;
-			const std::vector<UInt256> &getParCoinBaseMerkle() const;
+			void SetAuxMerkleBranch(const std::vector<UInt256> &hashes);
+			void SetCoinBaseMerkle(const std::vector<UInt256> &hashes);
+			void SetAuxMerkleIndex(uint32_t index);
+			void SetParMerkleIndex(uint32_t index);
+			void SetParentHash(const UInt256 &hash);
+			uint32_t GetAuxMerkleIndex() const;
+			uint32_t GetParMerkleIndex() const;
+			const UInt256 &GetParentHash() const;
+			const std::vector<UInt256> &GetAuxMerkleBranch() const;
+			const std::vector<UInt256> &GetParCoinBaseMerkle() const;
 
-			UInt256 getParBlockHeaderHash() const;
+			UInt256 GetParBlockHeaderHash() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
-			BRTransaction *getBTCTransaction() const;
+			BRTransaction *GetBTCTransaction() const;
 
-			void setBTCTransaction(BRTransaction *transaction);
+			void SetBTCTransaction(BRTransaction *transaction);
 
-			BRMerkleBlock *getParBlockHeader() const;
+			BRMerkleBlock *GetParBlockHeader() const;
 
-			void setParBlockHeader(BRMerkleBlock *block);
+			void SetParBlockHeader(BRMerkleBlock *block);
 
 			AuxPow &operator=(const AuxPow &auxPow);
 
 		private:
-			void serializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const;
+			void SerializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const;
 
-			bool deserializeBtcTransaction(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTransaction(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const;
+			void SerializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const;
 
-			bool deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const;
+			void SerializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const;
 
-			bool deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const;
+			void SerializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const;
 
-			bool deserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b);
+			bool DeserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b);
 
-			nlohmann::json transactionToJson() const;
+			nlohmann::json TransactionToJson() const;
 
-			void transactionFromJson(const nlohmann::json &jsonData);
+			void TransactionFromJson(const nlohmann::json &jsonData);
 
-			nlohmann::json txInputsToJson(const BRTxInput &input) const;
+			nlohmann::json TxInputsToJson(const BRTxInput &input) const;
 
-			void txInputsFromJson(const nlohmann::json &input);
+			void TxInputsFromJson(const nlohmann::json &input);
 
-			nlohmann::json txOutputsToJson(const BRTxOutput &output) const;
+			nlohmann::json TxOutputsToJson(const BRTxOutput &output) const;
 
-			void txOutputsFromJson(const nlohmann::json &output);
+			void TxOutputsFromJson(const nlohmann::json &output);
 
-			nlohmann::json  merkleBlockToJson() const;
+			nlohmann::json  MerkleBlockToJson() const;
 
-			void merkleBlockFromJson(nlohmann::json jsonData);
+			void MerkleBlockFromJson(nlohmann::json jsonData);
 		private:
 			std::vector<UInt256> _auxMerkleBranch;
 			uint32_t             _auxMerkleIndex;

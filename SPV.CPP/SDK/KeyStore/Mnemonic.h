@@ -17,7 +17,7 @@ namespace Elastos {
 
 			Mnemonic(const boost::filesystem::path &rootPath);
 
-			const std::vector<std::string> &words() const;
+			const std::vector<std::string> &Words() const;
 
 			void LoadLanguage(const std::string &language);
 

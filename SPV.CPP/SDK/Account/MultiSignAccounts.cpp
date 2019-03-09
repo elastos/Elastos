@@ -4,7 +4,7 @@
 
 #include "MultiSignAccounts.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -88,7 +88,7 @@ namespace Elastos {
 		}
 
 		void MultiSignAccounts::checkCurrentAccount() const {
-			ParamChecker::checkCondition(_currentAccount == nullptr, Error::NoCurrentMultiSinAccount,
+			ErrorChecker::CheckCondition(_currentAccount == nullptr, Error::NoCurrentMultiSinAccount,
 										 "Do not have current account");
 		}
 

@@ -5,7 +5,7 @@
 #include "Transaction.h"
 #include "Program.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
@@ -51,7 +51,7 @@ namespace Elastos {
 
 			ByteStream stream(_parameter);
 			CMBlock signature;
-			while (stream.readVarBytes(signature)) {
+			while (stream.ReadVarBytes(signature)) {
 				bool verified = false;
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
 					key.SetPubKey(publicKeys[i]);
@@ -100,11 +100,11 @@ namespace Elastos {
 			ByteStream stream(_parameter);
 			CMBlock signature;
 			nlohmann::json signers;
-			while (stream.readVarBytes(signature)) {
+			while (stream.ReadVarBytes(signature)) {
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
 					key.SetPubKey(publicKeys[i]);
 					if (key.Verify(md, signature)) {
-						signers.push_back(Utils::encodeHex(publicKeys[i]));
+						signers.push_back(Utils::EncodeHex(publicKeys[i]));
 						break;
 					}
 				}
@@ -136,47 +136,47 @@ namespace Elastos {
 			ByteStream stream(_code);
 
 			if (signType == SignTypeMultiSign) {
-				stream.drop(1);
+				stream.Drop(1);
 			} else if (signType != SignTypeStandard) {
 				Log::error("unsupport sign type");
 				return publicKeys;
 			}
 
-			while (stream.readVarBytes(pubKey)) {
+			while (stream.ReadVarBytes(pubKey)) {
 				publicKeys.push_back(pubKey);
 			}
 
 			return publicKeys;
 		}
 
-		const CMBlock &Program::getCode() const {
+		const CMBlock &Program::GetCode() const {
 			return _code;
 		}
 
-		const CMBlock &Program::getParameter() const {
+		const CMBlock &Program::GetParameter() const {
 			return _parameter;
 		}
 
-		void Program::setCode(const CMBlock &code) {
+		void Program::SetCode(const CMBlock &code) {
 			_code = code;
 		}
 
-		void Program::setParameter(const CMBlock &parameter) {
+		void Program::SetParameter(const CMBlock &parameter) {
 			_parameter = parameter;
 		}
 
 		void Program::Serialize(ByteStream &ostream) const {
-			ostream.writeVarBytes(_parameter);
-			ostream.writeVarBytes(_code);
+			ostream.WriteVarBytes(_parameter);
+			ostream.WriteVarBytes(_code);
 		}
 
 		bool Program::Deserialize(ByteStream &istream) {
-			if (!istream.readVarBytes(_parameter)) {
+			if (!istream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
 			}
 
-			if (!istream.readVarBytes(_code)) {
+			if (!istream.ReadVarBytes(_code)) {
 				Log::error("Program deserialize code fail");
 				return false;
 			}
@@ -184,18 +184,18 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Program::toJson() const {
+		nlohmann::json Program::ToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["Parameter"] = Utils::encodeHex(_parameter);
-			jsonData["Code"] = Utils::encodeHex(_code);
+			jsonData["Parameter"] = Utils::EncodeHex(_parameter);
+			jsonData["Code"] = Utils::EncodeHex(_code);
 
 			return jsonData;
 		}
 
-		void Program::fromJson(const nlohmann::json &jsonData) {
-			_parameter = Utils::decodeHex(jsonData["Parameter"].get<std::string>());
-			_code = Utils::decodeHex(jsonData["Code"].get<std::string>());
+		void Program::FromJson(const nlohmann::json &jsonData) {
+			_parameter = Utils::DecodeHex(jsonData["Parameter"].get<std::string>());
+			_code = Utils::DecodeHex(jsonData["Code"].get<std::string>());
 		}
 
 	}

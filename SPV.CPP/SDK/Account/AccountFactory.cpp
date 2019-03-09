@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include "AccountFactory.h"
 #include "StandardAccount.h"
 #include "SimpleAccount.h"
@@ -26,7 +26,7 @@ namespace Elastos {
 			} else if (accountType == "MultiSign") {
 				result = new MultiSignAccount(rootPath);
 			} else {
-				ParamChecker::checkCondition(true, Error::WrongAccountType, "Invalid account type");
+				ErrorChecker::CheckCondition(true, Error::WrongAccountType, "Invalid account type");
 			}
 
 			result->FromJson(j[accountName]);

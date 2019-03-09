@@ -27,7 +27,7 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 		merkleBlock->Serialize(stream);
 
 		MerkleBlock mb;
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		mb.Deserialize(stream);
 
 		verifyELAMerkleBlock(static_cast<const MerkleBlock &>(*merkleBlock), mb);
@@ -50,54 +50,54 @@ TEST_CASE("Json convert", "[json]") {
 		};
 		uint8_t flags[] = {1, 2, 3, 4, 5, 6};
 
-		mb.setVersion(11111);
-		mb.setPrevBlockHash(Utils::UInt256FromString(
-				"00000000000000000f9cfece8494800d3dcbf9583232825da640c8703bcd27e7", true));
-		mb.setRootBlockHash(Utils::UInt256FromString(
-				"000000000000000001630546cde8482cc183708f076a5e4d6f51cd24518e8f85", true));
-		mb.setTimestamp(22222);
-		mb.setTarget( 33333);
-		mb.setNonce( 44444);
-		mb.setTransactionCount(55555);
+		mb.SetVersion(11111);
+		mb.SetPrevBlockHash(Utils::UInt256FromString(
+			"00000000000000000f9cfece8494800d3dcbf9583232825da640c8703bcd27e7", true));
+		mb.SetRootBlockHash(Utils::UInt256FromString(
+			"000000000000000001630546cde8482cc183708f076a5e4d6f51cd24518e8f85", true));
+		mb.SetTimestamp(22222);
+		mb.SetTarget(33333);
+		mb.SetNonce(44444);
+		mb.SetTransactionCount(55555);
 
 		std::vector<UInt256> hashList;
 		for (int i = 0; i < hashes.size(); ++i) {
 			hashList.push_back(Utils::UInt256FromString(hashes[i], true));
 		}
-		mb.setHashes(hashList);
+		mb.SetHashes(hashList);
 
 		std::vector<uint8_t> flagList;
 		for (int i = 0; i < sizeof(flags) / sizeof(flags[0]); ++i) {
 			flagList.push_back(flags[i]);
 		}
-		mb.setFlags(flagList);
+		mb.SetFlags(flagList);
 
-		mb.setHeight(1000);
+		mb.SetHeight(1000);
 
-		std::string blockHash = Utils::UInt256ToString(mb.getHash(), true);
+		std::string blockHash = Utils::UInt256ToString(mb.GetHash(), true);
 
-		nlohmann::json j = mb.toJson();
+		nlohmann::json j = mb.ToJson();
 
 		REQUIRE(blockHash == j["BlockHash"].get<std::string>());
-		REQUIRE(mb.getVersion() == j["Version"].get<uint32_t>());
-		REQUIRE(Utils::UInt256ToString(mb.getPrevBlockHash(), true) == j["PrevBlock"].get<std::string>());
-		REQUIRE(Utils::UInt256ToString(mb.getRootBlockHash(), true) == j["MerkleRoot"].get<std::string>());
-		REQUIRE(mb.getTimestamp() == j["Timestamp"].get<uint32_t>());
-		REQUIRE(mb.getTarget() == j["Target"].get<uint32_t>());
-		REQUIRE(mb.getNonce() == j["Nonce"].get<uint32_t>());
+		REQUIRE(mb.GetVersion() == j["Version"].get<uint32_t>());
+		REQUIRE(Utils::UInt256ToString(mb.GetPrevBlockHash(), true) == j["PrevBlock"].get<std::string>());
+		REQUIRE(Utils::UInt256ToString(mb.GetRootBlockHash(), true) == j["MerkleRoot"].get<std::string>());
+		REQUIRE(mb.GetTimestamp() == j["Timestamp"].get<uint32_t>());
+		REQUIRE(mb.GetTarget() == j["Target"].get<uint32_t>());
+		REQUIRE(mb.GetNonce() == j["Nonce"].get<uint32_t>());
 
 		std::vector<std::string> jhashes = j["Hashes"].get<std::vector<std::string>>();
-		REQUIRE(jhashes.size() == mb.getHashes().size());
-		for (int i = 0; i < mb.getHashes().size(); ++i) {
+		REQUIRE(jhashes.size() == mb.GetHashes().size());
+		for (int i = 0; i < mb.GetHashes().size(); ++i) {
 			REQUIRE(jhashes[i] == hashes[i]);
 		}
 
 		std::vector<uint8_t> jflags = j["Flags"].get<std::vector<uint8_t>>();
-		REQUIRE(mb.getFlags().size() == jflags.size());
-		for (int i = 0; i < mb.getFlags().size(); ++i) {
-			REQUIRE(jflags[i] == mb.getFlags()[i]);
+		REQUIRE(mb.GetFlags().size() == jflags.size());
+		for (int i = 0; i < mb.GetFlags().size(); ++i) {
+			REQUIRE(jflags[i] == mb.GetFlags()[i]);
 		}
-		REQUIRE(mb.getHeight() == j["Height"].get<uint32_t>());
+		REQUIRE(mb.GetHeight() == j["Height"].get<uint32_t>());
 	}
 
 	SECTION("Convert from json") {
@@ -123,28 +123,28 @@ TEST_CASE("Json convert", "[json]") {
 				{"Version",    11111}
 		};
 
-		mb.fromJson(j);
+		mb.FromJson(j);
 
-		REQUIRE(0 == memcmp(mb.getHash().u8, Utils::UInt256FromString(j["BlockHash"].get<std::string>(), true).u8,
+		REQUIRE(0 == memcmp(mb.GetHash().u8, Utils::UInt256FromString(j["BlockHash"].get<std::string>(), true).u8,
 							sizeof(UInt256)));
-		REQUIRE(j["Version"].get<uint32_t>() == mb.getVersion());
-		REQUIRE(0 == memcmp(mb.getPrevBlockHash().u8, Utils::UInt256FromString(j["PrevBlock"].get<std::string>(), true).u8,
+		REQUIRE(j["Version"].get<uint32_t>() == mb.GetVersion());
+		REQUIRE(0 == memcmp(mb.GetPrevBlockHash().u8, Utils::UInt256FromString(j["PrevBlock"].get<std::string>(), true).u8,
 							sizeof(UInt256)));
-		REQUIRE(0 == memcmp(mb.getRootBlockHash().u8, Utils::UInt256FromString(j["MerkleRoot"].get<std::string>(), true).u8,
+		REQUIRE(0 == memcmp(mb.GetRootBlockHash().u8, Utils::UInt256FromString(j["MerkleRoot"].get<std::string>(), true).u8,
 							sizeof(UInt256)));
-		REQUIRE(mb.getTimestamp() == j["Timestamp"].get<uint32_t>());
-		REQUIRE(mb.getTarget() == j["Target"].get<uint32_t>());
-		REQUIRE(mb.getNonce() == j["Nonce"].get<uint32_t>());
-		REQUIRE(mb.getTransactionCount() == j["TotalTx"].get<uint32_t>());
+		REQUIRE(mb.GetTimestamp() == j["Timestamp"].get<uint32_t>());
+		REQUIRE(mb.GetTarget() == j["Target"].get<uint32_t>());
+		REQUIRE(mb.GetNonce() == j["Nonce"].get<uint32_t>());
+		REQUIRE(mb.GetTransactionCount() == j["TotalTx"].get<uint32_t>());
 		std::vector<std::string> jhashes = j["Hashes"].get<std::vector<std::string>>();
-		REQUIRE(mb.getHashes().size() == jhashes.size());
+		REQUIRE(mb.GetHashes().size() == jhashes.size());
 		for (int i = 0; i < jhashes.size(); ++i) {
-			REQUIRE(Utils::UInt256ToString(mb.getHashes()[i], true) == jhashes[i]);
+			REQUIRE(Utils::UInt256ToString(mb.GetHashes()[i], true) == jhashes[i]);
 		}
 		std::vector<uint8_t> jflags = j["Flags"].get<std::vector<uint8_t>>();
-		REQUIRE(jflags.size() == mb.getFlags().size());
+		REQUIRE(jflags.size() == mb.GetFlags().size());
 		for (int i = 0; i < jflags.size(); ++i) {
-			REQUIRE(jflags[i] == mb.getFlags()[i]);
+			REQUIRE(jflags[i] == mb.GetFlags()[i]);
 		}
 	}
 

@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 
-#include <SDK/Plugin/Block/IdAuxPow.h>
+#include <SDK/Plugin/Block/IDAuxPow.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
@@ -19,7 +19,7 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 	srand((unsigned int)time(nullptr));
 
 	SECTION("Serialize and deserialize") {
-		IdAuxPow ap1;
+		IDAuxPow ap1;
 
 		std::vector<UInt256> hashes;
 		hashes.resize(20);
@@ -27,13 +27,13 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 			hashes[i] = getRandUInt256();
 		}
 
-		ap1.setIdAuxMerkleBranch(hashes);
-		ap1.setIdAuxMerkleIndex(getRandUInt32());
+		ap1.SetIdAuxMerkleBranch(hashes);
+		ap1.SetIdAuxMerkleIndex(getRandUInt32());
 
 		Transaction tx;
 		initTransaction(tx, Transaction::TxVersion::V09);
 
-		ap1.setIdAuxBlockTx(tx);
+		ap1.SetIdAuxBlockTx(tx);
 
 		ELAMerkleBlock *block = ELAMerkleBlockNew();
 		block->raw.blockHash = getRandUInt256();
@@ -51,32 +51,32 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 		}
 		CMBlock flags = getRandCMBlock(5);
 		BRMerkleBlockSetTxHashes(&block->raw, hashes.data(), hashes.size(), flags, flags.GetSize());
-		ap1.setMainBlockHeader(block);
+		ap1.SetMainBlockHeader(block);
 
 		ByteStream stream;
 		ap1.Serialize(stream);
 
 
 //		 verify
-		IdAuxPow ap2;
-		stream.setPosition(0);
+		IDAuxPow ap2;
+		stream.SetPosition(0);
 		REQUIRE(ap2.Deserialize(stream));
 
-		const std::vector<UInt256> &hashes1 = ap1.getIdAuxMerkleBranch();
-		const std::vector<UInt256> &hashes2 = ap2.getIdAuxMerkleBranch();
+		const std::vector<UInt256> &hashes1 = ap1.GetIdAuxMerkleBranch();
+		const std::vector<UInt256> &hashes2 = ap2.GetIdAuxMerkleBranch();
 		REQUIRE(hashes1.size() == hashes2.size());
 		for (size_t i = 0; i < hashes1.size(); ++i) {
 			REQUIRE(UInt256Eq(&hashes1[i], &hashes2[i]));
 		}
 
-		ELAMerkleBlock *b1 = ap1.getMainBlockHeader();
-		ELAMerkleBlock *b2 = ap2.getMainBlockHeader();
+		ELAMerkleBlock *b1 = ap1.GetMainBlockHeader();
+		ELAMerkleBlock *b2 = ap2.GetMainBlockHeader();
 
-		REQUIRE(b1->auxPow.getParBlockHeader()->nonce == b2->auxPow.getParBlockHeader()->nonce);
-		REQUIRE(b1->auxPow.getParBlockHeader()->target == b2->auxPow.getParBlockHeader()->target);
+		REQUIRE(b1->auxPow.GetParBlockHeader()->nonce == b2->auxPow.GetParBlockHeader()->nonce);
+		REQUIRE(b1->auxPow.GetParBlockHeader()->target == b2->auxPow.GetParBlockHeader()->target);
 
-		const Transaction &tx1 = ap1.getIdAuxBlockTx();
-		const Transaction &tx2 = ap2.getIdAuxBlockTx();
+		const Transaction &tx1 = ap1.GetIdAuxBlockTx();
+		const Transaction &tx2 = ap2.GetIdAuxBlockTx();
 
 		verifyTransaction(tx1, tx2, false);
 	}

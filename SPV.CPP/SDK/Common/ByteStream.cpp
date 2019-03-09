@@ -36,7 +36,7 @@ namespace Elastos {
 			}
 		}
 
-		void ByteStream::ensureCapacity(uint64_t newsize) {
+		void ByteStream::EnsureCapacity(uint64_t newsize) {
 			if ((int64_t)(newsize - _size) > 0) {
 				uint64_t oldCapacity = _size;
 				uint64_t newCapacity = oldCapacity << 1;
@@ -57,41 +57,39 @@ namespace Elastos {
 			}
 		}
 
-		bool ByteStream::checkSize(uint64_t readSize) {
+		bool ByteStream::CheckSize(uint64_t readSize) {
 			if (_pos + readSize > _count)
 				return false;
 			return true;
 		}
 
-		void ByteStream::setPosition(uint64_t position) {
+		void ByteStream::SetPosition(uint64_t position) {
 			_pos = position;
 		}
 
-		uint64_t ByteStream::position() {
+		uint64_t ByteStream::Position() {
 			return _pos;
 		}
 
-		uint64_t ByteStream::length() {
+		uint64_t ByteStream::Length() {
 			return _count;
 		}
 
-		CMBlock ByteStream::getBuffer() {
+		CMBlock ByteStream::GetBuffer() {
 			if (_count <= 0) {
 				return CMBlock();
 			}
 
-			CMBlock buff((size_t)_count);
-			memcpy(buff, _buf, _count);
-			return buff;
+			return CMBlock(_buf, (size_t)_count);
 		}
 
-		void ByteStream::drop(size_t bytes) {
-			if (checkSize(bytes))
+		void ByteStream::Drop(size_t bytes) {
+			if (CheckSize(bytes))
 				_pos += bytes;
 		}
 
-		void ByteStream::reset() {
-			this->setPosition(0);
+		void ByteStream::Reset() {
+			this->SetPosition(0);
 			this->_size = 0;
 			if (this->_buf != nullptr) {
 				delete[] this->_buf;
@@ -100,143 +98,115 @@ namespace Elastos {
 			this->_count = 0;
 		}
 
-		void ByteStream::increasePosition(size_t len) {
+		void ByteStream::IncreasePosition(size_t len) {
 			_pos += len;
 		}
 
-		bool ByteStream::readByte(uint8_t &val) {
-			return readBytes(&val, 1);
+		bool ByteStream::ReadByte(uint8_t &val) {
+			return ReadBytes(&val, 1);
 		}
 
-		bool ByteStream::readUint8(uint8_t &val) {
-			return readBytes(&val, 1);
+		bool ByteStream::ReadUint8(uint8_t &val) {
+			return ReadBytes(&val, 1);
 		}
 
-		void ByteStream::writeUint8(uint8_t val) {
-			writeBytes(&val, 1);
+		void ByteStream::WriteUint8(uint8_t val) {
+			WriteBytes(&val, 1);
 		}
 
-		void ByteStream::writeByte(uint8_t val) {
-			writeBytes(&val, 1);
+		void ByteStream::WriteByte(uint8_t val) {
+			WriteBytes(&val, 1);
 		}
 
-		bool ByteStream::readUint16(uint16_t &val, ByteOrder byteOrder) {
-			return readBytes(&val, sizeof(uint16_t), byteOrder);
+		bool ByteStream::ReadUint16(uint16_t &val) {
+			return ReadBytes(&val, sizeof(uint16_t));
 		}
 
-		void ByteStream::writeUint16(uint16_t val, ByteOrder byteOrder) {
-			writeBytes(&val, sizeof(uint16_t), byteOrder);
+		void ByteStream::WriteUint16(uint16_t val) {
+			WriteBytes(&val, sizeof(uint16_t));
 		}
 
-		bool ByteStream::readUint32(uint32_t &val, ByteOrder byteOrder) {
-			return readBytes(&val, sizeof(uint32_t), byteOrder);
+		bool ByteStream::ReadUint32(uint32_t &val) {
+			return ReadBytes(&val, sizeof(uint32_t));
 		}
 
-		void ByteStream::writeUint32(uint32_t val, ByteOrder byteOrder) {
-			writeBytes(&val, sizeof(uint32_t), byteOrder);
+		void ByteStream::WriteUint32(uint32_t val) {
+			WriteBytes(&val, sizeof(uint32_t));
 		}
 
-		bool ByteStream::readUint64(uint64_t &val, ByteOrder byteOrder) {
-			return readBytes(&val, sizeof(uint64_t), byteOrder);
+		bool ByteStream::ReadUint64(uint64_t &val) {
+			return ReadBytes(&val, sizeof(uint64_t));
 		}
 
-		void ByteStream::writeUint64(uint64_t val, ByteOrder byteOrder) {
-			writeBytes(&val, sizeof(uint64_t), byteOrder);
+		void ByteStream::WriteUint64(uint64_t val) {
+			WriteBytes(&val, sizeof(uint64_t));
 		}
 
-		bool ByteStream::readBytes(void *buf, size_t len, ByteOrder byteOrder) {
-			if (!checkSize(len))
+		bool ByteStream::ReadBytes(void *buf, size_t len) {
+			if (!CheckSize(len))
 				return false;
 
-			size_t pos = position();
+			size_t pos = Position();
 
 			if (buf != nullptr) {
-				if (byteOrder == LittleEndian) {
-					memcpy(buf, &_buf[pos], len);
-				} else {
-					for (size_t i = 0; i < len; ++i) {
-						((uint8_t *)buf)[i] = _buf[len - 1 - i + pos];
-					}
-				}
+				memcpy(buf, &_buf[pos], len);
 			}
 
-			increasePosition(len);
+			IncreasePosition(len);
 
 			return true;
 		}
 
-		void ByteStream::writeBytes(const void *buf, size_t len, ByteOrder byteOrder) {
-			ensureCapacity(position() + len);
+		void ByteStream::WriteBytes(const void *buf, size_t len) {
+			EnsureCapacity(Position() + len);
 
-			size_t pos = position();
+			size_t pos = Position();
 
-			if (byteOrder == LittleEndian) {
-				memcpy(&_buf[pos], buf, len);
-			} else {
-				for (size_t i = 0; i < len; ++i) {
-					_buf[pos + i] = ((uint8_t *)buf)[len - i - 1];
-				}
-			}
+			memcpy(&_buf[pos], buf, len);
 
-			increasePosition(len);
-			_count = position();
+			IncreasePosition(len);
+			_count = Position();
 		}
 
-		void ByteStream::writeBytes(const CMBlock &buf, ByteOrder byteOrder) {
-			writeBytes(buf, buf.GetSize(), byteOrder);
+		void ByteStream::WriteBytes(const CMBlock &buf) {
+			WriteBytes(buf, buf.GetSize());
 		}
 
-		bool ByteStream::readVarBytes(CMBlock &bytes) {
+		bool ByteStream::ReadVarBytes(CMBlock &bytes) {
 			uint64_t length = 0;
 			if (!readVarUint(length)) {
 				return false;
 			}
 
-			if (!checkSize(length))
+			if (!CheckSize(length))
 				return false;
 
 			bytes = CMBlock((size_t)length);
-			return readBytes(bytes, bytes.GetSize());
+			return ReadBytes(bytes, bytes.GetSize());
 		}
 
-		void ByteStream::writeVarBytes(const void *bytes, size_t len) {
+		void ByteStream::WriteVarBytes(const void *bytes, size_t len) {
 			writeVarUint((uint64_t)len);
-			writeBytes(bytes, len);
+			WriteBytes(bytes, len);
 		}
 
-		void ByteStream::writeVarBytes(const CMBlock &bytes) {
+		void ByteStream::WriteVarBytes(const CMBlock &bytes) {
 			writeVarUint((uint64_t)bytes.GetSize());
-			writeBytes(bytes, bytes.GetSize());
+			WriteBytes(bytes, bytes.GetSize());
 		}
 
-		bool ByteStream::readVarString(char *str, size_t strSize) {
+		bool ByteStream::ReadVarString(std::string &str) {
 			CMBlock bytes;
-			if (!readVarBytes(bytes)) {
+			if (!ReadVarBytes(bytes)) {
 				return false;
 			}
-			size_t len = bytes.GetSize() > strSize - 1 ? strSize - 1 : bytes.GetSize();
-			strncpy(str, (const char *)(const void *)bytes, len);
-			str[len] = '\0';
+			str = std::string((const char *)bytes, (size_t)bytes.GetSize());
 
 			return true;
 		}
 
-		bool ByteStream::readVarString(std::string &str) {
-			CMBlock bytes;
-			if (!readVarBytes(bytes)) {
-				return false;
-			}
-			str = std::string((const char *)(const void *)bytes, (size_t)bytes.GetSize());
-
-			return true;
-		}
-
-		void ByteStream::writeVarString(const char *str) {
-			writeVarBytes(str, strlen(str));
-		}
-
-		void ByteStream::writeVarString(const std::string &str) {
-			writeVarBytes(str.c_str(), str.length());
+		void ByteStream::WriteVarString(const std::string &str) {
+			WriteVarBytes(str.c_str(), str.length());
 		}
 
 	}

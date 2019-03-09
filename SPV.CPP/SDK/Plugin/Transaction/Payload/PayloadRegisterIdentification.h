@@ -33,41 +33,41 @@ namespace Elastos {
 
 			~PayloadRegisterIdentification();
 
-			const std::string &getId() const;
+			const std::string &GetID() const;
 
-			void setId(const std::string &id);
+			void SetID(const std::string &id);
 
-			const std::string &getPath(size_t index) const;
+			const std::string &GetPath(size_t index) const;
 
-			void setPath(const std::string &path, size_t index);
+			void SetPath(const std::string &path, size_t index);
 
-			const UInt256 &getDataHash(size_t index, size_t valueIndex) const;
+			const UInt256 &GetDataHash(size_t index, size_t valueIndex) const;
 
-			void setDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex);
+			void SetDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex);
 
-			const std::string &getProof(size_t index, size_t valueIndex) const;
+			const std::string &GetProof(size_t index, size_t valueIndex) const;
 
-			void setProof(const std::string &proof, size_t index, size_t valueIndex);
+			void SetProof(const std::string &proof, size_t index, size_t valueIndex);
 
-			size_t getContentCount() const;
+			size_t GetContentCount() const;
 
-			void addContent(const SignContent &content);
+			void AddContent(const SignContent &content);
 
-			void removeContent(size_t index);
+			void RemoveContent(size_t index);
 
-			const CMBlock &getSign() const;
+			const CMBlock &GetSign() const;
 
-			void setSign(const CMBlock &sign);
+			void SetSign(const CMBlock &sign);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(ByteStream &istream, uint8_t version);
 
-			virtual nlohmann::json toJson(uint8_t version) const;
+			virtual nlohmann::json ToJson(uint8_t version) const;
 
-			virtual void fromJson(const nlohmann::json &, uint8_t version);
+			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			virtual bool isValid() const;
+			virtual bool IsValid() const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 

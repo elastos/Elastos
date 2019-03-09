@@ -12,22 +12,22 @@
 using namespace Elastos::ElaWallet;
 
 static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const PayloadTransferCrossChainAsset &p2) {
-	const std::vector<std::string> &addresses1 = p1.getCrossChainAddress();
-	const std::vector<std::string> &addresses2 = p2.getCrossChainAddress();
+	const std::vector<std::string> &addresses1 = p1.GetCrossChainAddress();
+	const std::vector<std::string> &addresses2 = p2.GetCrossChainAddress();
 	REQUIRE(addresses1.size() == addresses2.size());
 	for (size_t i = 0; i < addresses1.size(); ++i) {
 		REQUIRE(addresses1[i] == addresses2[i]);
 	}
 
-	const std::vector<uint64_t> &indexes1 = p1.getOutputIndex();
-	const std::vector<uint64_t> &indexes2 = p2.getOutputIndex();
+	const std::vector<uint64_t> &indexes1 = p1.GetOutputIndex();
+	const std::vector<uint64_t> &indexes2 = p2.GetOutputIndex();
 	REQUIRE(indexes1.size() == indexes2.size());
 	for (size_t i = 0; i < indexes1.size(); ++i) {
 		REQUIRE(indexes1[i] == indexes2[i]);
 	}
 
-	const std::vector<uint64_t> &amounts1 = p1.getCrossChainAmout();
-	const std::vector<uint64_t> &amounts2 = p2.getCrossChainAmout();
+	const std::vector<uint64_t> &amounts1 = p1.GetCrossChainAmout();
+	const std::vector<uint64_t> &amounts2 = p2.GetCrossChainAmout();
 	REQUIRE(amounts1.size() == amounts2.size());
 	for (size_t i = 0; i < amounts1.size(); ++i) {
 		REQUIRE(amounts1[i] == amounts2[i]);
@@ -43,8 +43,8 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 		p1.Serialize(stream1, 0);
 		p2.Serialize(stream2, 0);
 
-		CMBlock buffer1 = stream1.getBuffer();
-		CMBlock buffer2 = stream2.getBuffer();
+		CMBlock buffer1 = stream1.GetBuffer();
+		CMBlock buffer2 = stream2.GetBuffer();
 
 		REQUIRE((buffer1 == buffer2));
 
@@ -62,15 +62,15 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 			crossChainIndex.push_back(getRandUInt64());
 			crossChainAmount.push_back(getRandUInt64());
 		}
-		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
+		p1.SetCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
 		ByteStream stream;
 		p1.Serialize(stream, 0);
-		CMBlock data1 = stream.getBuffer();
+		CMBlock data1 = stream.GetBuffer();
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		p2.Deserialize(stream, 0);
-		CMBlock data2 = p2.getData(0);
+		CMBlock data2 = p2.GetData(0);
 
 		REQUIRE((data1 == data2));
 
@@ -89,11 +89,11 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 			crossChainAmount.push_back(getRandUInt64());
 		}
 
-		p1.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
+		p1.SetCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
-		nlohmann::json jsonData = p1.toJson(0);
+		nlohmann::json jsonData = p1.ToJson(0);
 
-		p2.fromJson(jsonData, 0);
+		p2.FromJson(jsonData, 0);
 
 		verifyPayload(p1, p2);
 	}

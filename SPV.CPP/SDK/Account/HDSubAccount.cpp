@@ -7,7 +7,7 @@
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
@@ -63,8 +63,8 @@ namespace Elastos {
 				}
 			}
 
-			ParamChecker::checkLogic(pubKey.GetSize() == 0, Error::Address, "Can't found pubKey for addr " +
-				addr.String());
+			ErrorChecker::CheckLogic(pubKey.GetSize() == 0, Error::Address, "Can't found pubKey for addr " +
+																			addr.String());
 
 			key.SetPubKey(pubKey);
 			return key.RedeemScript(PrefixStandard);
@@ -205,8 +205,8 @@ namespace Elastos {
 			if (tx == nullptr)
 				return;
 
-			for (size_t j = 0; j < tx->getOutputs().size(); j++) {
-				usedAddrs.insert(tx->getOutputs()[j].GetAddress());
+			for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
+				usedAddrs.insert(tx->GetOutputs()[j].GetAddress());
 			}
 		}
 

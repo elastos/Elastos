@@ -34,34 +34,34 @@ namespace Elastos {
 		}
 
 		void AuxPow::Serialize(ByteStream &ostream) const {
-			serializeBtcTransaction(ostream, _parCoinBaseTx);
+			SerializeBtcTransaction(ostream, _parCoinBaseTx);
 
-			ostream.writeBytes(_parentHash.u8, sizeof(UInt256));
+			ostream.WriteBytes(_parentHash.u8, sizeof(UInt256));
 
 			ostream.writeVarUint(uint64_t(_parCoinBaseMerkle.size()));
 			for (uint64_t i = 0; i < _parCoinBaseMerkle.size(); ++i) {
-				ostream.writeBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256));
+				ostream.WriteBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256));
 			}
 
-			ostream.writeUint32(_parMerkleIndex);
+			ostream.WriteUint32(_parMerkleIndex);
 
 			ostream.writeVarUint(uint64_t(_auxMerkleBranch.size()));
 			for (uint64_t i = 0; i < _auxMerkleBranch.size(); ++i) {
-				ostream.writeBytes(_auxMerkleBranch[i].u8, sizeof(UInt256));
+				ostream.WriteBytes(_auxMerkleBranch[i].u8, sizeof(UInt256));
 			}
 
-			ostream.writeUint32(_auxMerkleIndex);
+			ostream.WriteUint32(_auxMerkleIndex);
 
-			serializeBtcBlockHeader(ostream, _parBlockHeader);
+			SerializeBtcBlockHeader(ostream, _parBlockHeader);
 		}
 
 		bool AuxPow::Deserialize(ByteStream &istream) {
-			if (!deserializeBtcTransaction(istream, _parCoinBaseTx)) {
+			if (!DeserializeBtcTransaction(istream, _parCoinBaseTx)) {
 				Log::error("deserialize AuxPow btc tx error");
 				return false;
 			}
 
-			if (!istream.readBytes(_parentHash.u8, sizeof(UInt256))) {
+			if (!istream.ReadBytes(_parentHash.u8, sizeof(UInt256))) {
 				Log::error("deserialize AuxPow parentHash error");
 				return false;
 			}
@@ -74,13 +74,13 @@ namespace Elastos {
 
 			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
 			for (uint64_t i = 0; i < parCoinBaseMerkleCount; ++i) {
-				if (!istream.readBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256))) {
+				if (!istream.ReadBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256))) {
 					Log::error("deserialize AuxPow parCoinBaseMerkle[{}] error", i);
 					return false;
 				}
 			}
 
-			if (!istream.readUint32(_parMerkleIndex)) {
+			if (!istream.ReadUint32(_parMerkleIndex)) {
 				Log::error("deserialize AuxPow parMerkleIndex error");
 				return false;
 			}
@@ -93,18 +93,18 @@ namespace Elastos {
 
 			_auxMerkleBranch.resize(auxMerkleBranchCount);
 			for (uint64_t i = 0; i < auxMerkleBranchCount; ++i) {
-				if (!istream.readBytes(_auxMerkleBranch[i].u8, sizeof(UInt256))) {
+				if (!istream.ReadBytes(_auxMerkleBranch[i].u8, sizeof(UInt256))) {
 					Log::error("deserialize AuxPow auxMerkleBranch error");
 					return false;
 				}
 			}
 
-			if (!istream.readUint32(_auxMerkleIndex)) {
+			if (!istream.ReadUint32(_auxMerkleIndex)) {
 				Log::error("deserialize AuxPow auxMerkleIndex error");
 				return false;
 			}
 
-			if (!deserializeBtcBlockHeader(istream, _parBlockHeader)) {
+			if (!DeserializeBtcBlockHeader(istream, _parBlockHeader)) {
 				Log::error("deserialize AuxPow btc block header error");
 				return false;
 			}
@@ -112,24 +112,24 @@ namespace Elastos {
 			return true;
 		}
 
-		void AuxPow::serializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const {
-			ostream.writeUint32(tx->version);
+		void AuxPow::SerializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const {
+			ostream.WriteUint32(tx->version);
 
 			ostream.writeVarUint(uint64_t(tx->inCount));
 			for (uint64_t i = 0; i < tx->inCount; ++i) {
-				serializeBtcTxIn(ostream, &tx->inputs[i]);
+				SerializeBtcTxIn(ostream, &tx->inputs[i]);
 			}
 
 			ostream.writeVarUint(uint64_t(tx->outCount));
 			for (uint64_t i = 0; i < tx->outCount; ++i) {
-				serializeBtcTxOut(ostream, &tx->outputs[i]);
+				SerializeBtcTxOut(ostream, &tx->outputs[i]);
 			}
 
-			ostream.writeUint32(tx->lockTime);
+			ostream.WriteUint32(tx->lockTime);
 		}
 
-		bool AuxPow::deserializeBtcTransaction(ByteStream &istream, BRTransaction *tx) {
-			if (!istream.readUint32(tx->version)) {
+		bool AuxPow::DeserializeBtcTransaction(ByteStream &istream, BRTransaction *tx) {
+			if (!istream.ReadUint32(tx->version)) {
 				Log::error("deserialize version error");
 				return false;
 			}
@@ -140,7 +140,7 @@ namespace Elastos {
 				return false;
 			}
 			for (uint64_t i = 0; i < inCount; ++i) {
-				if (!deserializeBtcTxIn(istream, tx)) {
+				if (!DeserializeBtcTxIn(istream, tx)) {
 					Log::error("deserialize input[{}] error", i);
 					return false;
 				}
@@ -152,13 +152,13 @@ namespace Elastos {
 				return false;
 			}
 			for (uint64_t i = 0; i < outCount; ++i) {
-				if (!deserializeBtcTxOut(istream, tx)) {
+				if (!DeserializeBtcTxOut(istream, tx)) {
 					Log::error("deserialize output[{}] error", i);
 					return false;
 				}
 			}
 
-			if (!istream.readUint32(tx->lockTime)) {
+			if (!istream.ReadUint32(tx->lockTime)) {
 				Log::error("deserialize lockTime error");
 				return false;
 			}
@@ -166,34 +166,34 @@ namespace Elastos {
 			return true;
 		}
 
-		void AuxPow::serializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const {
-			ostream.writeBytes(in->txHash.u8, sizeof(UInt256));
-			ostream.writeUint32(in->index);
-			ostream.writeVarBytes(in->signature, in->sigLen);
-			ostream.writeUint32(in->sequence);
+		void AuxPow::SerializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const {
+			ostream.WriteBytes(in->txHash.u8, sizeof(UInt256));
+			ostream.WriteUint32(in->index);
+			ostream.WriteVarBytes(in->signature, in->sigLen);
+			ostream.WriteUint32(in->sequence);
 		}
 
-		bool AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
+		bool AuxPow::DeserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
 			UInt256 txHash;
-			if (!istream.readBytes(txHash.u8, sizeof(UInt256))) {
+			if (!istream.ReadBytes(txHash.u8, sizeof(UInt256))) {
 				Log::error("deserialize txHash error");
 				return false;
 			}
 
 			uint32_t index = 0;
-			if (!istream.readUint32(index)) {
+			if (!istream.ReadUint32(index)) {
 				Log::error("deserialize index error");
 				return false;
 			}
 
 			CMBlock signature;
-			if (!istream.readVarBytes(signature)) {
+			if (!istream.ReadVarBytes(signature)) {
 				Log::error("deserialize signature error");
 				return false;
 			}
 
 			uint32_t sequence = 0;
-			if (!istream.readUint32(sequence)) {
+			if (!istream.ReadUint32(sequence)) {
 				Log::error("deserialize sequence error");
 				return false;
 			}
@@ -203,20 +203,20 @@ namespace Elastos {
 			return true;
 		}
 
-		void AuxPow::serializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const {
-			ostream.writeUint64(out->amount);
-			ostream.writeVarBytes(out->script, out->scriptLen);
+		void AuxPow::SerializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const {
+			ostream.WriteUint64(out->amount);
+			ostream.WriteVarBytes(out->script, out->scriptLen);
 		}
 
-		bool AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
+		bool AuxPow::DeserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
 			uint64_t amount = 0;
-			if (!istream.readUint64(amount)) {
+			if (!istream.ReadUint64(amount)) {
 				Log::error("deserialize amount error");
 				return false;
 			}
 
 			CMBlock script;
-			if (!istream.readVarBytes(script)) {
+			if (!istream.ReadVarBytes(script)) {
 				Log::error("deserialize script error");
 				return false;
 			}
@@ -225,53 +225,53 @@ namespace Elastos {
 			return true;
 		}
 
-		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const {
-			ostream.writeUint32(b->version);
-			ostream.writeBytes(b->prevBlock.u8, sizeof(UInt256));
-			ostream.writeBytes(b->merkleRoot.u8, sizeof(UInt256));
-			ostream.writeUint32(b->timestamp);
-			ostream.writeUint32(b->target);
-			ostream.writeUint32(b->nonce);
+		void AuxPow::SerializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const {
+			ostream.WriteUint32(b->version);
+			ostream.WriteBytes(b->prevBlock.u8, sizeof(UInt256));
+			ostream.WriteBytes(b->merkleRoot.u8, sizeof(UInt256));
+			ostream.WriteUint32(b->timestamp);
+			ostream.WriteUint32(b->target);
+			ostream.WriteUint32(b->nonce);
 		}
 
-		bool AuxPow::deserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b) {
-			if (!istream.readUint32(b->version)) {
+		bool AuxPow::DeserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b) {
+			if (!istream.ReadUint32(b->version)) {
 				Log::error("deserialize version error");
 				return false;
 			}
 
-			if (!istream.readBytes(b->prevBlock.u8, sizeof(UInt256))) {
+			if (!istream.ReadBytes(b->prevBlock.u8, sizeof(UInt256))) {
 				Log::error("deserialize prevBlock error");
 				return false;
 			}
 
-			if (!istream.readBytes(b->merkleRoot.u8, sizeof(UInt256))) {
+			if (!istream.ReadBytes(b->merkleRoot.u8, sizeof(UInt256))) {
 				Log::error("deserialize merkleRoot error");
 				return false;
 			}
 
-			if (!istream.readUint32(b->timestamp)) {
+			if (!istream.ReadUint32(b->timestamp)) {
 				Log::error("deserialize timestamp error");
 				return false;
 			}
 
-			if (!istream.readUint32(b->target)) {
+			if (!istream.ReadUint32(b->target)) {
 				Log::error("deserialize target error");
 				return false;
 			}
 
-			if (!istream.readUint32(b->nonce)) {
+			if (!istream.ReadUint32(b->nonce)) {
 				Log::error("deserialize nonce error");
 				return false;
 			}
 			return true;
 		}
 
-		UInt256 AuxPow::getParBlockHeaderHash() const {
+		UInt256 AuxPow::GetParBlockHeaderHash() const {
 			ByteStream stream;
-			serializeBtcBlockHeader(stream, _parBlockHeader);
+			SerializeBtcBlockHeader(stream, _parBlockHeader);
 			UInt256 hash = UINT256_ZERO;
-			CMBlock buf = stream.getBuffer();
+			CMBlock buf = stream.GetBuffer();
 			BRSHA256_2(&hash, buf, buf.GetSize());
 			return hash;
 		}
@@ -280,13 +280,13 @@ namespace Elastos {
 			operator=(auxPow);
 		}
 
-		void AuxPow::setBTCTransaction(BRTransaction *transaction) {
+		void AuxPow::SetBTCTransaction(BRTransaction *transaction) {
 			if (_parCoinBaseTx != nullptr)
 				BRTransactionFree(_parCoinBaseTx);
 			_parCoinBaseTx = transaction;
 		}
 
-		void AuxPow::setParBlockHeader(BRMerkleBlock *block) {
+		void AuxPow::SetParBlockHeader(BRMerkleBlock *block) {
 			if (_parBlockHeader != nullptr)
 				BRMerkleBlockFree(nullptr, _parBlockHeader);
 			_parBlockHeader = block;
@@ -296,22 +296,22 @@ namespace Elastos {
 			_auxMerkleBranch = auxPow._auxMerkleBranch;
 			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
 			_auxMerkleIndex = auxPow._auxMerkleIndex;
-			setBTCTransaction(BRTransactionCopy(auxPow._parCoinBaseTx));
+			SetBTCTransaction(BRTransactionCopy(auxPow._parCoinBaseTx));
 			_parMerkleIndex = auxPow._parMerkleIndex;
-			setParBlockHeader(BRMerkleBlockCopy(auxPow._parBlockHeader));
+			SetParBlockHeader(BRMerkleBlockCopy(auxPow._parBlockHeader));
 			UInt256Set(&_parentHash, auxPow._parentHash);
 			return *this;
 		}
 
-		BRTransaction *AuxPow::getBTCTransaction() const {
+		BRTransaction *AuxPow::GetBTCTransaction() const {
 			return _parCoinBaseTx;
 		}
 
-		BRMerkleBlock *AuxPow::getParBlockHeader() const {
+		BRMerkleBlock *AuxPow::GetParBlockHeader() const {
 			return _parBlockHeader;
 		}
 
-		nlohmann::json AuxPow::toJson() const {
+		nlohmann::json AuxPow::ToJson() const {
 			nlohmann::json jsonData;
 
 			size_t len = _auxMerkleBranch.size();
@@ -329,15 +329,15 @@ namespace Elastos {
 			jsonData["ParCoinBaseMerkle"] = parCoinBaseMerkle;
 
 			jsonData["AuxMerkleIndex"] = _auxMerkleIndex;
-			jsonData["Transaction"] = transactionToJson();
+			jsonData["Transaction"] = TransactionToJson();
 			jsonData["ParMerkleIndex"] = _parMerkleIndex;
-			jsonData["ParBlockHeader"] = merkleBlockToJson();
+			jsonData["ParBlockHeader"] = MerkleBlockToJson();
 			jsonData["ParentHash"] = Utils::UInt256ToString(_parentHash, true);
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::transactionToJson() const {
+		nlohmann::json AuxPow::TransactionToJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["TxHash"] = Utils::UInt256ToString(_parCoinBaseTx->txHash, true);
@@ -345,13 +345,13 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> inputs(_parCoinBaseTx->inCount);
 			for (size_t i = 0; i < _parCoinBaseTx->inCount; ++i) {
-				inputs[i] = txInputsToJson(_parCoinBaseTx->inputs[i]);;
+				inputs[i] = TxInputsToJson(_parCoinBaseTx->inputs[i]);;
 			}
 			jsonData["Inputs"] = inputs;
 
 			std::vector<nlohmann::json> outputs(_parCoinBaseTx->outCount);
 			for (size_t i = 0; i < _parCoinBaseTx->outCount; ++i) {
-				outputs[i] = txOutputsToJson(_parCoinBaseTx->outputs[i]);
+				outputs[i] = TxOutputsToJson(_parCoinBaseTx->outputs[i]);
 			}
 			jsonData["Outputs"] = outputs;
 
@@ -362,31 +362,31 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::txInputsToJson(const BRTxInput &input) const {
+		nlohmann::json AuxPow::TxInputsToJson(const BRTxInput &input) const {
 			nlohmann::json jsonData;
 
 			jsonData["TxHash"] = Utils::UInt256ToString(input.txHash, true);
 			jsonData["Index"] = input.index;
 			jsonData["Address"] = std::string(input.address);
 			jsonData["Amount"] = input.amount;
-			jsonData["Script"] = Utils::encodeHex(input.script, input.scriptLen);
-			jsonData["Signature"] = Utils::encodeHex(input.signature, input.sigLen);
+			jsonData["Script"] = Utils::EncodeHex(input.script, input.scriptLen);
+			jsonData["Signature"] = Utils::EncodeHex(input.signature, input.sigLen);
 			jsonData["Sequence"] = input.sequence;
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::txOutputsToJson(const BRTxOutput &output) const {
+		nlohmann::json AuxPow::TxOutputsToJson(const BRTxOutput &output) const {
 			nlohmann::json jsonData;
 
 			jsonData["Address"] = std::string(output.address);
 			jsonData["Amount"] = output.amount;
-			jsonData["Script"] = Utils::encodeHex(output.script, output.scriptLen);
+			jsonData["Script"] = Utils::EncodeHex(output.script, output.scriptLen);
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::merkleBlockToJson() const {
+		nlohmann::json AuxPow::MerkleBlockToJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["BlockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash, true);
@@ -404,13 +404,13 @@ namespace Elastos {
 			}
 			jsonData["Hashes"] = hashes;
 
-			jsonData["Flags"] = Utils::encodeHex(_parBlockHeader->flags, _parBlockHeader->flagsLen);;
+			jsonData["Flags"] = Utils::EncodeHex(_parBlockHeader->flags, _parBlockHeader->flagsLen);;
 			jsonData["Height"] = _parBlockHeader->height;
 
 			return jsonData;
 		}
 
-		void AuxPow::fromJson(const nlohmann::json &jsonData) {
+		void AuxPow::FromJson(const nlohmann::json &jsonData) {
 			std::vector<std::string> auxMerkleBranch = jsonData["AuxMerkleBranch"];
 			_auxMerkleBranch.resize(auxMerkleBranch.size());
 			for (size_t i = 0; i < _auxMerkleBranch.size(); ++i) {
@@ -424,24 +424,24 @@ namespace Elastos {
 			}
 
 			_auxMerkleIndex = jsonData["AuxMerkleIndex"].get<uint32_t>();
-			transactionFromJson(jsonData["Transaction"]);
+			TransactionFromJson(jsonData["Transaction"]);
 			_parMerkleIndex = jsonData["ParMerkleIndex"].get<uint32_t>();
-			merkleBlockFromJson(jsonData["ParBlockHeader"]);
+			MerkleBlockFromJson(jsonData["ParBlockHeader"]);
 			_parentHash = Utils::UInt256FromString(jsonData["ParentHash"].get<std::string>(), true);
 		}
 
-		void AuxPow::transactionFromJson(const nlohmann::json &jsonData) {
+		void AuxPow::TransactionFromJson(const nlohmann::json &jsonData) {
 			_parCoinBaseTx->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
 			_parCoinBaseTx->version = jsonData["Version"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
 			for (size_t i = 0; i < inputs.size(); ++i) {
-				txInputsFromJson(inputs[i]);
+				TxInputsFromJson(inputs[i]);
 			}
 
 			std::vector<nlohmann::json> outputs = jsonData["Outputs"];
 			for (size_t i = 0; i < outputs.size(); ++i) {
-				txOutputsFromJson(outputs[i]);
+				TxOutputsFromJson(outputs[i]);
 			}
 
 			_parCoinBaseTx->lockTime = jsonData["LockTime"].get<uint32_t>();
@@ -449,7 +449,7 @@ namespace Elastos {
 			_parCoinBaseTx->timestamp = jsonData["Timestamp"].get<uint32_t>();
 		}
 
-		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) {
+		void AuxPow::MerkleBlockFromJson(nlohmann::json jsonData) {
 
 			std::string blockHash = jsonData["BlockHash"].get<std::string>();
 			_parBlockHeader->blockHash = Utils::UInt256FromString(blockHash, true);
@@ -470,7 +470,7 @@ namespace Elastos {
 				hashes[i] = Utils::UInt256FromString(hashArray[i], true);
 			}
 
-			CMBlock flags = Utils::decodeHex(jsonData["Flags"].get<std::string>());
+			CMBlock flags = Utils::DecodeHex(jsonData["Flags"].get<std::string>());
 			_parBlockHeader->flagsLen = flags.GetSize();
 
 			BRMerkleBlockSetTxHashes(_parBlockHeader, hashes, _parBlockHeader->hashesCount,
@@ -479,12 +479,12 @@ namespace Elastos {
 			_parBlockHeader->height = jsonData["Height"].get<uint32_t>();
 		}
 
-		void AuxPow::txInputsFromJson(const nlohmann::json &input) {
+		void AuxPow::TxInputsFromJson(const nlohmann::json &input) {
 			UInt256 hash = Utils::UInt256FromString(input["TxHash"], true);
 			uint32_t index = input["Index"].get<uint32_t>();
 			uint64_t amount = input["Amount"].get<uint64_t>();
-			CMBlock script = Utils::decodeHex(input["Script"].get<std::string>());
-			CMBlock signature = Utils::decodeHex(input["Signature"].get<std::string>());
+			CMBlock script = Utils::DecodeHex(input["Script"].get<std::string>());
+			CMBlock signature = Utils::DecodeHex(input["Signature"].get<std::string>());
 			uint32_t sequence = input["Sequence"].get<uint32_t>();
 
 			BRTransactionAddInput(_parCoinBaseTx, hash, index, amount,
@@ -493,49 +493,49 @@ namespace Elastos {
 								  sequence);
 		}
 
-		void AuxPow::txOutputsFromJson(const nlohmann::json &output) {
+		void AuxPow::TxOutputsFromJson(const nlohmann::json &output) {
 			uint64_t amount = output["Amount"].get<uint64_t>();
-			CMBlock script = Utils::decodeHex(output["Script"].get<std::string>());
+			CMBlock script = Utils::DecodeHex(output["Script"].get<std::string>());
 			BRTransactionAddOutput(_parCoinBaseTx, amount, script, script.GetSize());
 		}
 
-		void AuxPow::setAuxMerkleBranch(const std::vector<UInt256> &hashes) {
+		void AuxPow::SetAuxMerkleBranch(const std::vector<UInt256> &hashes) {
 			_auxMerkleBranch = hashes;
 		}
 
-		void AuxPow::setCoinBaseMerkle(const std::vector<UInt256> &hashes) {
+		void AuxPow::SetCoinBaseMerkle(const std::vector<UInt256> &hashes) {
 			_parCoinBaseMerkle = hashes;
 		}
 
-		void AuxPow::setAuxMerkleIndex(uint32_t index) {
+		void AuxPow::SetAuxMerkleIndex(uint32_t index) {
 			_auxMerkleIndex = index;
 		}
 
-		void AuxPow::setParMerkleIndex(uint32_t index) {
+		void AuxPow::SetParMerkleIndex(uint32_t index) {
 			_parMerkleIndex = index;
 		}
 
-		void AuxPow::setParentHash(const UInt256 &hash) {
+		void AuxPow::SetParentHash(const UInt256 &hash) {
 			_parentHash = hash;
 		}
 
-		uint32_t AuxPow::getAuxMerkleIndex() const {
+		uint32_t AuxPow::GetAuxMerkleIndex() const {
 			return _auxMerkleIndex;
 		}
 
-		uint32_t AuxPow::getParMerkleIndex() const {
+		uint32_t AuxPow::GetParMerkleIndex() const {
 			return _parMerkleIndex;
 		}
 
-		const UInt256 &AuxPow::getParentHash() const {
+		const UInt256 &AuxPow::GetParentHash() const {
 			return _parentHash;
 		}
 
-		const std::vector<UInt256> &AuxPow::getAuxMerkleBranch() const {
+		const std::vector<UInt256> &AuxPow::GetAuxMerkleBranch() const {
 			return _auxMerkleBranch;
 		}
 
-		const std::vector<UInt256> &AuxPow::getParCoinBaseMerkle() const {
+		const std::vector<UInt256> &AuxPow::GetParCoinBaseMerkle() const {
 			return _parCoinBaseMerkle;
 		}
 

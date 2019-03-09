@@ -19,45 +19,45 @@ namespace Elastos {
 
 			virtual ~SjclFile();
 
-			const std::string &getIv() const;
+			const std::string &GetIv() const;
 
-			void setIv(const std::string &iv);
+			void SetIv(const std::string &iv);
 
-			uint32_t getV() const;
+			uint32_t GetV() const;
 
-			void setV(uint32_t value);
+			void SetV(uint32_t value);
 
-			uint32_t getIter() const;
+			uint32_t GetIter() const;
 
-			void setIter(uint32_t value);
+			void SetIter(uint32_t value);
 
-			uint32_t getKs() const;
+			uint32_t GetKs() const;
 
-			void setKs(uint32_t value);
+			void SetKs(uint32_t value);
 
-			uint32_t getTs() const;
+			uint32_t GetTs() const;
 
-			void setTs(uint32_t value);
+			void SetTs(uint32_t value);
 
-			const std::string &getMode() const;
+			const std::string &GetMode() const;
 
-			void setMode(const std::string &mode);
+			void SetMode(const std::string &mode);
 
-			const std::string &getAdata() const;
+			const std::string &GetAdata() const;
 
-			void setAdata(const std::string &adata);
+			void SetAdata(const std::string &adata);
 
-			const std::string &getCipher() const;
+			const std::string &GetCipher() const;
 
-			void setCipher(const std::string &cipher);
+			void SetCipher(const std::string &cipher);
 
-			const std::string &getSalt() const;
+			const std::string &GetSalt() const;
 
-			void setSalt(const std::string &salt);
+			void SetSalt(const std::string &salt);
 
-			const std::string &getCt() const;
+			const std::string &GetCt() const;
 
-			void setCt(const std::string &ct);
+			void SetCt(const std::string &ct);
 
 		private:
 			JSON_SM_LS(SjclFile);

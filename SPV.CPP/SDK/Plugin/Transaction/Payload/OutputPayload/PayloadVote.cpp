@@ -5,7 +5,7 @@
 #include "PayloadVote.h"
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -35,21 +35,21 @@ namespace Elastos {
 		}
 
 		void PayloadVote::Serialize(ByteStream &ostream) const {
-			ostream.writeUint8(_version);
+			ostream.WriteUint8(_version);
 
 			ostream.writeVarUint(_content.size());
 			for (size_t i = 0; i < _content.size(); ++i) {
-				ostream.writeUint8(_content[i].type);
+				ostream.WriteUint8(_content[i].type);
 				const std::vector<CMBlock> &candidates = _content[i].candidates;
 				ostream.writeVarUint(candidates.size());
 				for (size_t j = 0; j < candidates.size(); ++j) {
-					ostream.writeVarBytes(candidates[j]);
+					ostream.WriteVarBytes(candidates[j]);
 				}
 			}
 		}
 
 		bool PayloadVote::Deserialize(ByteStream &istream) {
-			if (!istream.readUint8(_version)) {
+			if (!istream.ReadUint8(_version)) {
 				Log::error("payload vote deserialize version error");
 				return false;
 			}
@@ -63,7 +63,7 @@ namespace Elastos {
 			_content.clear();
 			for (size_t i = 0; i < contentCount; ++i) {
 				uint8_t type;
-				if (!istream.readUint8(type)) {
+				if (!istream.ReadUint8(type)) {
 					Log::error("payload vote deserialize type error");
 					return false;
 				}
@@ -76,7 +76,7 @@ namespace Elastos {
 				std::vector<CMBlock> candidates;
 				for (size_t j = 0; j < candidateCount; ++j) {
 					CMBlock candidate;
-					if (!istream.readVarBytes(candidate)) {
+					if (!istream.ReadVarBytes(candidate)) {
 						Log::error("payload vote deserialize candidate error");
 						return false;
 					}
@@ -89,7 +89,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadVote::toJson() const {
+		nlohmann::json PayloadVote::ToJson() const {
 			nlohmann::json j;
 			j["Version"] = _version;
 			std::vector<nlohmann::json> voteContent;
@@ -98,7 +98,7 @@ namespace Elastos {
 				content["Type"] = _content[i].type;
 				std::vector<std::string> candidates;
 				for (size_t j = 0; j < _content[i].candidates.size(); ++j) {
-					candidates.push_back(Utils::encodeHex(_content[i].candidates[j]));
+					candidates.push_back(Utils::EncodeHex(_content[i].candidates[j]));
 				}
 				content["Candidates"] = candidates;
 				voteContent.push_back(content);
@@ -108,7 +108,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadVote::fromJson(const nlohmann::json &j) {
+		void PayloadVote::FromJson(const nlohmann::json &j) {
 			_version = j["Version"];
 			_content.clear();
 			nlohmann::json voteContent = j["VoteContent"];
@@ -117,7 +117,7 @@ namespace Elastos {
 				std::vector<CMBlock> candidates;
 				nlohmann::json candidatesJson = (*it)["Candidates"];
 				for (nlohmann::json::iterator cit = candidatesJson.begin(); cit != candidatesJson.end(); ++cit) {
-					candidates.push_back(Utils::decodeHex(*cit));
+					candidates.push_back(Utils::DecodeHex(*cit));
 				}
 				_content.emplace_back(type, candidates);
 			}

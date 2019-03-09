@@ -9,7 +9,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Base58.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
@@ -157,7 +157,7 @@ namespace Elastos {
 				}
 
 				if (data.GetSize() < sizeof(UInt256) || data.GetSize() > sizeof(UInt256) + 2) { // treat as hex string
-					data = Utils::decodeHex(privKey);
+					data = Utils::DecodeHex(privKey);
 				}
 
 				if ((data.GetSize() == sizeof(UInt256) + 1 || data.GetSize() == sizeof(UInt256) + 2) && data[0] == version) {
@@ -218,10 +218,10 @@ namespace Elastos {
 				}
 			}
 
-			ParamChecker::checkCondition(uniqueSigners.size() < m, Error::MultiSignersCount,
+			ErrorChecker::CheckCondition(uniqueSigners.size() < m, Error::MultiSignersCount,
 										 "Required sign count greater than signers");
 
-			ParamChecker::checkCondition(uniqueSigners.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
+			ErrorChecker::CheckCondition(uniqueSigners.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
 										 "Signers should less than 205.");
 
 			std::vector<CMBlock> sortedSigners;
@@ -233,16 +233,16 @@ namespace Elastos {
 					  boost::bind(&Key::Compare, this, _1, _2));
 
 			ByteStream stream;
-			stream.writeUint8(uint8_t(OP_1 + m - 1));
+			stream.WriteUint8(uint8_t(OP_1 + m - 1));
 			for (size_t i = 0; i < sortedSigners.size(); i++) {
-				stream.writeUint8(uint8_t(sortedSigners[i].GetSize()));
-				stream.writeBytes(sortedSigners[i], sortedSigners[i].GetSize());
+				stream.WriteUint8(uint8_t(sortedSigners[i].GetSize()));
+				stream.WriteBytes(sortedSigners[i], sortedSigners[i].GetSize());
 			}
 
-			stream.writeUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
-			stream.writeUint8(SignTypeMultiSign);
+			stream.WriteUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
+			stream.WriteUint8(SignTypeMultiSign);
 
-			return stream.getBuffer();
+			return stream.GetBuffer();
 		}
 
 		CMBlock Key::RedeemScript(Prefix prefix) const {
@@ -250,11 +250,11 @@ namespace Elastos {
 
 			ByteStream stream(size + 2);
 
-			stream.writeUint8(size);
-			stream.writeBytes(_pubKey, size);
-			stream.writeUint8(PrefixToSignType(prefix));
+			stream.WriteUint8(size);
+			stream.WriteBytes(_pubKey, size);
+			stream.WriteUint8(PrefixToSignType(prefix));
 
-			return stream.getBuffer();
+			return stream.GetBuffer();
 		}
 
 		UInt168 Key::CodeToProgramHash(Prefix prefix, const CMBlock &code) {

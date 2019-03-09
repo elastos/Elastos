@@ -29,7 +29,7 @@ namespace Elastos {
 		bool MerkleBlockMessage::Accept(const CMBlock &msg) {
 			ByteStream stream(msg);
 
-			PeerManager *manager = _peer->getPeerManager();
+			PeerManager *manager = _peer->GetPeerManager();
 			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
 
 			if (block == nullptr) {
@@ -38,13 +38,13 @@ namespace Elastos {
 			}
 
 			if (!block->Deserialize(stream)) {
-				_peer->debug("merkle block orignal data: {}", Utils::encodeHex(msg));
+				_peer->debug("merkle block orignal data: {}", Utils::EncodeHex(msg));
 				_peer->error("merkle block deserialize with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
-			if (!block->isValid((uint32_t) time(nullptr))) {
-				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->getHash(), true));
+			if (!block->IsValid((uint32_t) time(nullptr))) {
+				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->GetHash(), true));
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
 				_peer->error("got merkleblock message before loading a filter");

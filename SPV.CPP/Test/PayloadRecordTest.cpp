@@ -19,21 +19,21 @@ TEST_CASE("PayloadRecord test", "PayloadRecord") {
 
 		p1.Serialize(stream, 0);
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 
-		REQUIRE(p1.getRecordType() == p2.getRecordType());
-		REQUIRE((p1.getRecordData() == p2.getRecordData()));
+		REQUIRE(p1.GetRecordType() == p2.GetRecordType());
+		REQUIRE((p1.GetRecordData() == p2.GetRecordData()));
 	}
 
 	SECTION("to json and from json") {
 		PayloadRecord p1(getRandString(20), getRandCMBlock(50)), p2;
 
-		nlohmann::json p1Json = p1.toJson(0);
+		nlohmann::json p1Json = p1.ToJson(0);
 
-		p2.fromJson(p1Json, 0);
+		p2.FromJson(p1Json, 0);
 
-		REQUIRE(p1.getRecordType() == p2.getRecordType());
-		REQUIRE(p1.getRecordData() == p2.getRecordData());
+		REQUIRE(p1.GetRecordType() == p2.GetRecordType());
+		REQUIRE(p1.GetRecordData() == p2.GetRecordData());
 	}
 }

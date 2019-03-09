@@ -22,7 +22,7 @@ namespace Elastos {
 			ByteStream stream(msg);
 
 			std::string type;
-			if (!stream.readVarString(type)) {
+			if (!stream.ReadVarString(type)) {
 				_peer->error("malformed reject message, read var string 'type' error");
 				return false;
 			}
@@ -32,20 +32,20 @@ namespace Elastos {
 			}
 
 			uint8_t code;
-			if (!stream.readByte(code)) {
+			if (!stream.ReadByte(code)) {
 				_peer->error("malformed reject message, read code error");
 				return false;
 			}
 
 			std::string reason;
-			if (!stream.readVarString(reason)) {
+			if (!stream.ReadVarString(reason)) {
 				_peer->error("malformed reject message, read reason error");
 				return false;
 			}
 
 			UInt256 txHash = UINT256_ZERO;
 			if (hashLen == sizeof(UInt256)) {
-				if (!stream.readBytes(txHash.u8, sizeof(UInt256))) {
+				if (!stream.ReadBytes(txHash.u8, sizeof(UInt256))) {
 					_peer->error("malformed reject message, read tx hash error");
 					return false;
 				}

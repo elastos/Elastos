@@ -6,10 +6,14 @@
 #include "MasterWallet.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterProducer.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadCancelProducer.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadUpdateProducer.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 #include <Config.h>
 
 #include <vector>
@@ -45,15 +49,16 @@ namespace Elastos {
 
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "Side chain message error: " + std::string(e.what()));
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+												  "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.getMinFee(),
+			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.GetMinFee(),
 													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
-			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
+			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
@@ -65,17 +70,17 @@ namespace Elastos {
 			uint64_t location,
 			const std::string &payPasswd) const {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			ParamChecker::checkPassword(payPasswd, "Generate payload");
+			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 
-			CMBlock ownerPubKey = Utils::decodeHex(ownerPublicKey);
-			ParamChecker::checkParam(!Key::PubKeyIsValid(ownerPubKey, ownerPubKey.GetSize()), Error::PubKeyFormat,
+			CMBlock ownerPubKey = Utils::DecodeHex(ownerPublicKey);
+			ErrorChecker::CheckParam(!Key::PubKeyIsValid(ownerPubKey, ownerPubKey.GetSize()), Error::PubKeyFormat,
 									 "Invalid owner public key");
 
-			CMBlock nodePubKey = Utils::decodeHex(nodePublicKey);
-			ParamChecker::checkParam(!Key::PubKeyIsValid(nodePubKey, nodePubKey.GetSize()), Error::PubKeyFormat,
+			CMBlock nodePubKey = Utils::DecodeHex(nodePublicKey);
+			ErrorChecker::CheckParam(!Key::PubKeyIsValid(nodePubKey, nodePubKey.GetSize()), Error::PubKeyFormat,
 									 "Invalid node public key");
 
 			PayloadRegisterProducer pr;
@@ -88,37 +93,37 @@ namespace Elastos {
 
 			ByteStream ostream;
 			pr.SerializeUnsigned(ostream, 0);
-			CMBlock prUnsigned = ostream.getBuffer();
+			CMBlock prUnsigned = ostream.GetBuffer();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
 			pr.SetSignature(key.Sign(prUnsigned));
 
-			return pr.toJson(0);
+			return pr.ToJson(0);
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCancelProducerPayload(
 			const std::string &publicKey,
 			const std::string &payPasswd) const {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			ParamChecker::checkPassword(payPasswd, "Generate payload");
+			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = publicKey.size() >> 1;
-			ParamChecker::checkParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
+			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 									 "Public key length should be 33 or 65 bytes");
 
 			PayloadCancelProducer pc;
-			pc.SetPublicKey(Utils::decodeHex(publicKey));
+			pc.SetPublicKey(Utils::DecodeHex(publicKey));
 
 			ByteStream ostream;
 			pc.SerializeUnsigned(ostream, 0);
-			CMBlock pcUnsigned = ostream.getBuffer();
+			CMBlock pcUnsigned = ostream.GetBuffer();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
 			pc.SetSignature(key.Sign(pcUnsigned));
 
-			return pc.toJson(0);
+			return pc.ToJson(0);
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRegisterProducerTransaction(
@@ -129,17 +134,18 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			ParamChecker::checkParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
+			ErrorChecker::CheckParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
 
 			PayloadRegisterProducer *payloadRegisterProducer = new PayloadRegisterProducer();
 			try {
-				payloadRegisterProducer->fromJson(payload, 0);
+				payloadRegisterProducer->FromJson(payload, 0);
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+												  "Payload format err: " + std::string(e.what()));
 			}
 			PayloadPtr iPayload = PayloadPtr(payloadRegisterProducer);
 
@@ -150,9 +156,9 @@ namespace Elastos {
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
 													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
-			tx->setTransactionType(Transaction::RegisterProducer, iPayload);
+			tx->SetTransactionType(Transaction::RegisterProducer, iPayload);
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(
@@ -162,27 +168,28 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			PayloadUpdateProducer *payloadUpdateProducer = new PayloadUpdateProducer();
 			try {
-				payloadUpdateProducer->fromJson(payload, 0);
+				payloadUpdateProducer->FromJson(payload, 0);
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+												  "Payload format err: " + std::string(e.what()));
 			}
 			PayloadPtr iPayload = PayloadPtr(payloadUpdateProducer);
 
 			std::string toAddress = CreateAddress();
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
-			tx->setTransactionType(Transaction::UpdateProducer, iPayload);
+			tx->SetTransactionType(Transaction::UpdateProducer, iPayload);
 
-			if (tx->getOutputs().size() > 1) {
-				tx->getOutputs().erase(tx->getOutputs().begin());
+			if (tx->GetOutputs().size() > 1) {
+				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(
@@ -192,27 +199,28 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			PayloadCancelProducer *payloadCancelProducer = new PayloadCancelProducer();
 			try {
-				payloadCancelProducer->fromJson(payload, 0);
+				payloadCancelProducer->FromJson(payload, 0);
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "Payload format err: " + std::string(e.what()));
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+												  "Payload format err: " + std::string(e.what()));
 			}
 			PayloadPtr iPayload = PayloadPtr(payloadCancelProducer);
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(),
 										 memo, remark, useVotedUTXO);
 
-			tx->setTransactionType(Transaction::CancelProducer, iPayload);
+			tx->SetTransactionType(Transaction::CancelProducer, iPayload);
 
-			if (tx->getOutputs().size() > 1) {
-				tx->getOutputs().erase(tx->getOutputs().begin());
+			if (tx->GetOutputs().size() > 1) {
+				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
@@ -220,7 +228,7 @@ namespace Elastos {
 			const std::string &memo,
 			const std::string &remark) {
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			Key key;
@@ -229,20 +237,20 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
 
-			tx->setTransactionType(Transaction::ReturnDepositCoin);
+			tx->SetTransactionType(Transaction::ReturnDepositCoin);
 
-			if (tx->getOutputs().size() > 1) {
-				tx->getOutputs().erase(tx->getOutputs().begin() + tx->getOutputs().size() - 1);
+			if (tx->GetOutputs().size() > 1) {
+				tx->GetOutputs().erase(tx->GetOutputs().begin() + tx->GetOutputs().size() - 1);
 			}
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		std::string MainchainSubWallet::GetPublicKeyForVote() const {
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			return Utils::encodeHex(_subAccount->GetVotePublicKey());
+			return Utils::EncodeHex(_subAccount->GetVotePublicKey());
 		}
 
 		nlohmann::json
@@ -254,73 +262,74 @@ namespace Elastos {
 			const std::string &remark,
 			bool useVotedUTXO) {
 
-			ParamChecker::checkJsonArray(publicKeys, 1, "Candidates public keys");
-			ParamChecker::checkParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
+			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
+			ErrorChecker::CheckParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
 			PayloadVote::VoteContent voteContent;
 			voteContent.type = PayloadVote::Type::Delegate;
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
 				if (!(*it).is_string()) {
-					ParamChecker::throwParamException(Error::Code::JsonFormatError, "Vote produce public keys is not string");
+					ErrorChecker::ThrowParamException(Error::Code::JsonFormatError,
+													  "Vote produce public keys is not string");
 				}
 
-				voteContent.candidates.push_back(Utils::decodeHex((*it).get<std::string>()));
+				voteContent.candidates.push_back(Utils::DecodeHex((*it).get<std::string>()));
 			}
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
 
-			const std::vector<TransactionInput> &inputs = tx->getInputs();
+			const std::vector<TransactionInput> &inputs = tx->GetInputs();
 
-			TransactionPtr txInput = _walletManager->getWallet()->transactionForHash(inputs[0].getTransctionHash());
+			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0].GetTransctionHash());
 
-			ParamChecker::checkLogic(txInput == nullptr, Error::GetTransactionInput, "Get tx input error");
-			ParamChecker::checkLogic(txInput->getOutputs().size() <= inputs[0].getIndex(), Error::GetTransactionInput,
+			ErrorChecker::CheckLogic(txInput == nullptr, Error::GetTransactionInput, "Get tx input error");
+			ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0].GetIndex(), Error::GetTransactionInput,
 									 "Input index larger than output size.");
-			const UInt168 &inputProgramHash = txInput->getOutputs()[inputs[0].getIndex()].getProgramHash();
+			const UInt168 &inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
 
-			tx->setTransactionType(Transaction::TransferAsset);
-			std::vector<TransactionOutput> &outputs = tx->getOutputs();
+			tx->SetTransactionType(Transaction::TransferAsset);
+			std::vector<TransactionOutput> &outputs = tx->GetOutputs();
 			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
 			outputs[0].SetPayload(payload);
-			outputs[0].setProgramHash(inputProgramHash);
+			outputs[0].SetProgramHash(inputProgramHash);
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
 			WalletPtr wallet = _walletManager->getWallet();
-			std::vector<UTXO> utxos = wallet->getAllUTXOsSafe();
+			std::vector<UTXO> utxos = wallet->GetAllUTXOsSafe();
 			nlohmann::json j;
 			std::map<std::string, uint64_t> votedList;
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				TransactionPtr tx = wallet->transactionForHash(utxos[i].hash);
-				if (!tx || utxos[i].n >= tx->getOutputs().size() ||
-					tx->getOutputs()[utxos[i].n].GetType() != TransactionOutput::VoteOutput ||
-					tx->getVersion() < Transaction::TxVersion::V09 ||
-					tx->getTransactionType() != Transaction::TransferAsset) {
+				TransactionPtr tx = wallet->TransactionForHash(utxos[i].hash);
+				if (!tx || utxos[i].n >= tx->GetOutputs().size() ||
+					tx->GetOutputs()[utxos[i].n].GetType() != TransactionOutput::VoteOutput ||
+					tx->GetVersion() < Transaction::TxVersion::V09 ||
+					tx->GetTransactionType() != Transaction::TransferAsset) {
 					continue;
 				}
 
-				const TransactionOutput &output = tx->getOutputs()[utxos[i].n];
+				const TransactionOutput &output = tx->GetOutputs()[utxos[i].n];
 				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output.GetPayload().get());
 				if (pv == nullptr) {
 					continue;
 				}
 
-				uint64_t stake = output.getAmount();
+				uint64_t stake = output.GetAmount();
 				const std::vector<PayloadVote::VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
 							  [&votedList, &stake](const PayloadVote::VoteContent &vc) {
 								  if (vc.type == PayloadVote::Type::Delegate) {
 									  std::for_each(vc.candidates.cbegin(), vc.candidates.cend(),
 													[&votedList, &stake](const CMBlock &candidate) {
-														std::string c = Utils::encodeHex(candidate);
+														std::string c = Utils::EncodeHex(candidate);
 														if (votedList.find(c) != votedList.end()) {
 															votedList[c] += stake;
 														} else {
@@ -338,26 +347,26 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
-			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->getAllTransactions();
+			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->GetAllTransactions();
 			nlohmann::json j;
 
-			ParamChecker::checkLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
+			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
 			for (size_t i = 0; i < allTxs.size(); ++i) {
-				if (allTxs[i]->getBlockHeight() == TX_UNCONFIRMED) {
+				if (allTxs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
 
-				if (allTxs[i]->getTransactionType() == Transaction::RegisterProducer) {
-					const PayloadRegisterProducer *pr = dynamic_cast<const PayloadRegisterProducer *>(allTxs[i]->getPayload());
+				if (allTxs[i]->GetTransactionType() == Transaction::RegisterProducer) {
+					const PayloadRegisterProducer *pr = dynamic_cast<const PayloadRegisterProducer *>(allTxs[i]->GetPayload());
 					if (pr) {
 						nlohmann::json info;
 
-						info["OwnerPublicKey"] = Utils::encodeHex(pr->GetPublicKey());
-						info["NodePublicKey"] = Utils::encodeHex(pr->GetNodePublicKey());
+						info["OwnerPublicKey"] = Utils::EncodeHex(pr->GetPublicKey());
+						info["NodePublicKey"] = Utils::EncodeHex(pr->GetNodePublicKey());
 						info["NickName"] = pr->GetNickName();
 						info["URL"] = pr->GetUrl();
 						info["Location"] = pr->GetLocation();
@@ -366,13 +375,13 @@ namespace Elastos {
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->getTransactionType() == Transaction::UpdateProducer) {
-					const PayloadUpdateProducer *pu = dynamic_cast<const PayloadUpdateProducer *>(allTxs[i]->getPayload());
+				} else if (allTxs[i]->GetTransactionType() == Transaction::UpdateProducer) {
+					const PayloadUpdateProducer *pu = dynamic_cast<const PayloadUpdateProducer *>(allTxs[i]->GetPayload());
 					if (pu) {
 						nlohmann::json info;
 
-						info["OwnerPublicKey"] = Utils::encodeHex(pu->GetPublicKey());
-						info["NodePublicKey"] = Utils::encodeHex(pu->GetNodePublicKey());
+						info["OwnerPublicKey"] = Utils::EncodeHex(pu->GetPublicKey());
+						info["NodePublicKey"] = Utils::EncodeHex(pu->GetNodePublicKey());
 						info["NickName"] = pu->GetNickName();
 						info["URL"] = pu->GetUrl();
 						info["Location"] = pu->GetLocation();
@@ -381,8 +390,8 @@ namespace Elastos {
 						j["Stataus"] = "Registered";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->getTransactionType() == Transaction::CancelProducer) {
-					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->getPayload());
+				} else if (allTxs[i]->GetTransactionType() == Transaction::CancelProducer) {
+					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->GetPayload());
 					if (pc) {
 						j["Status"] = "Canceled";
 						j["Info"] = nlohmann::json();

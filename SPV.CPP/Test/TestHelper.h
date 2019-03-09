@@ -83,29 +83,29 @@ namespace Elastos {
 		}
 
 		static void initTransaction(Transaction &tx, const Transaction::TxVersion &version) {
-			tx.setVersion(version);
-			tx.setLockTime(getRandUInt32());
-			tx.setBlockHeight(getRandUInt32());
-			tx.setTimestamp(getRandUInt32());
-			tx.setTransactionType(Transaction::TransferAsset);
-			tx.setPayloadVersion(getRandUInt8());
-			tx.setFee(getRandUInt64());
-			tx.setRemark(getRandString(40));
+			tx.SetVersion(version);
+			tx.SetLockTime(getRandUInt32());
+			tx.SetBlockHeight(getRandUInt32());
+			tx.SetTimestamp(getRandUInt32());
+			tx.SetTransactionType(Transaction::TransferAsset);
+			tx.SetPayloadVersion(getRandUInt8());
+			tx.SetFee(getRandUInt64());
+			tx.SetRemark(getRandString(40));
 
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionInput input;
-				input.setTransactionHash(getRandUInt256());
-				input.setIndex(getRandUInt16());
-				input.setSequence(getRandUInt32());
-				tx.addInput(input);
+				input.SetTransactionHash(getRandUInt256());
+				input.SetIndex(getRandUInt16());
+				input.SetSequence(getRandUInt32());
+				tx.AddInput(input);
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionOutput output;
-				output.setAmount(getRandUInt64());
-				output.setAssetId(getRandUInt256());
-				output.setOutputLock(getRandUInt32());
-				output.setProgramHash(getRandUInt168());
+				output.SetAmount(getRandUInt64());
+				output.SetAssetId(getRandUInt256());
+				output.SetOutputLock(getRandUInt32());
+				output.SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
 					output.SetType(TransactionOutput::Type(i % 2));
 					if (output.GetType() == TransactionOutput::VoteOutput) {
@@ -119,56 +119,56 @@ namespace Elastos {
 						output.SetPayload(OutputPayloadPtr(new PayloadDefault()));
 					}
 				}
-				tx.addOutput(output);
+				tx.AddOutput(output);
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
 				CMBlock data = getRandCMBlock(25);
-				tx.addAttribute(Attribute(Attribute::Script, data));
+				tx.AddAttribute(Attribute(Attribute::Script, data));
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
 				CMBlock code = getRandCMBlock(25);
 				CMBlock parameter = getRandCMBlock(25);
-				tx.addProgram(Program(code, parameter));
+				tx.AddProgram(Program(code, parameter));
 			}
 
-			tx.getHash();
+			tx.GetHash();
 		}
 
 		static void verifyTransaction(const Transaction &tx1, const Transaction &tx2, bool checkAll = true) {
-			REQUIRE(tx1.getLockTime() == tx2.getLockTime());
-			REQUIRE(tx1.getTransactionType() == tx2.getTransactionType());
-			REQUIRE(tx1.getPayloadVersion() == tx2.getPayloadVersion());
-			REQUIRE(tx1.getVersion() == tx2.getVersion());
+			REQUIRE(tx1.GetLockTime() == tx2.GetLockTime());
+			REQUIRE(tx1.GetTransactionType() == tx2.GetTransactionType());
+			REQUIRE(tx1.GetPayloadVersion() == tx2.GetPayloadVersion());
+			REQUIRE(tx1.GetVersion() == tx2.GetVersion());
 			if (checkAll) {
-				REQUIRE(tx1.getBlockHeight() == tx2.getBlockHeight());
-				REQUIRE(tx1.getTimestamp() == tx2.getTimestamp());
-				REQUIRE(tx1.getFee() == tx2.getFee());
-				REQUIRE(tx1.getRemark() == tx2.getRemark());
+				REQUIRE(tx1.GetBlockHeight() == tx2.GetBlockHeight());
+				REQUIRE(tx1.GetTimestamp() == tx2.GetTimestamp());
+				REQUIRE(tx1.GetFee() == tx2.GetFee());
+				REQUIRE(tx1.GetRemark() == tx2.GetRemark());
 			}
 
-			REQUIRE(tx1.getOutputs().size() == tx2.getOutputs().size());
-			REQUIRE(UInt256Eq(&tx1.getHash(), &tx2.getHash()));
-			REQUIRE(tx1.getInputs().size() == tx2.getInputs().size());
-			for (size_t i = 0; i < tx1.getInputs().size(); ++i) {
+			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
+			REQUIRE(UInt256Eq(&tx1.GetHash(), &tx2.GetHash()));
+			REQUIRE(tx1.GetInputs().size() == tx2.GetInputs().size());
+			for (size_t i = 0; i < tx1.GetInputs().size(); ++i) {
 				TransactionInput in1, in2;
-				in1 = tx1.getInputs()[i];
-				in2 = tx2.getInputs()[i];
-				REQUIRE(UInt256Eq(&in1.getTransctionHash(), &in2.getTransctionHash()));
-				REQUIRE(in1.getIndex() == in2.getIndex());
-				REQUIRE(in1.getSequence() == in2.getSequence());
+				in1 = tx1.GetInputs()[i];
+				in2 = tx2.GetInputs()[i];
+				REQUIRE(UInt256Eq(&in1.GetTransctionHash(), &in2.GetTransctionHash()));
+				REQUIRE(in1.GetIndex() == in2.GetIndex());
+				REQUIRE(in1.GetSequence() == in2.GetSequence());
 			}
 
-			REQUIRE(tx1.getOutputs().size() == tx2.getOutputs().size());
-			for (size_t i = 0; i < tx2.getOutputs().size(); ++i) {
+			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
+			for (size_t i = 0; i < tx2.GetOutputs().size(); ++i) {
 				TransactionOutput o1, o2;
-				o1 = tx1.getOutputs()[i];
-				o2 = tx2.getOutputs()[i];
-				REQUIRE(UInt256Eq(&o2.getAssetId(), &o1.getAssetId()));
-				REQUIRE(UInt168Eq(&o2.getProgramHash(), &o1.getProgramHash()));
-				REQUIRE(o2.getOutputLock() == o1.getOutputLock());
-				REQUIRE(o2.getAmount() == o1.getAmount());
+				o1 = tx1.GetOutputs()[i];
+				o2 = tx2.GetOutputs()[i];
+				REQUIRE(UInt256Eq(&o2.GetAssetId(), &o1.GetAssetId()));
+				REQUIRE(UInt168Eq(&o2.GetProgramHash(), &o1.GetProgramHash()));
+				REQUIRE(o2.GetOutputLock() == o1.GetOutputLock());
+				REQUIRE(o2.GetAmount() == o1.GetAmount());
 
 				REQUIRE(o1.GetType() == o2.GetType());
 				OutputPayloadPtr p1 = o1.GetPayload();
@@ -200,22 +200,22 @@ namespace Elastos {
 				}
 			}
 
-			REQUIRE(tx1.getAttributes().size() == tx2.getAttributes().size());
-			for (size_t i = 0; i < tx1.getAttributes().size(); ++i) {
+			REQUIRE(tx1.GetAttributes().size() == tx2.GetAttributes().size());
+			for (size_t i = 0; i < tx1.GetAttributes().size(); ++i) {
 				Attribute attr1, attr2;
-				attr1 = tx1.getAttributes()[i];
-				attr2 = tx2.getAttributes()[i];
+				attr1 = tx1.GetAttributes()[i];
+				attr2 = tx2.GetAttributes()[i];
 				REQUIRE(attr1.GetUsage() == attr2.GetUsage());
 				REQUIRE((attr1.GetData() == attr2.GetData()));
 			}
 
-			REQUIRE(tx1.getPrograms().size() == tx2.getPrograms().size());
-			for (size_t i = 0; i < tx2.getPrograms().size(); ++i) {
+			REQUIRE(tx1.GetPrograms().size() == tx2.GetPrograms().size());
+			for (size_t i = 0; i < tx2.GetPrograms().size(); ++i) {
 				Program p1, p2;
-				p1 = tx1.getPrograms()[i];
-				p2 = tx2.getPrograms()[i];
-				REQUIRE((p1.getCode() == p2.getCode()));
-				REQUIRE((p1.getParameter() == p2.getParameter()));
+				p1 = tx1.GetPrograms()[i];
+				p2 = tx2.GetPrograms()[i];
+				REQUIRE((p1.GetCode() == p2.GetCode()));
+				REQUIRE((p1.GetParameter() == p2.GetParameter()));
 			}
 		}
 
@@ -227,17 +227,17 @@ namespace Elastos {
 			for (size_t i = 0; i < hashes.size(); ++i) {
 				hashes[i] = getRandUInt256();
 			}
-			auxPow.setAuxMerkleBranch(hashes);
+			auxPow.SetAuxMerkleBranch(hashes);
 
 			for (size_t i = 0; i < hashes.size(); ++i) {
 				hashes[i] = getRandUInt256();
 			}
-			auxPow.setCoinBaseMerkle(hashes);
+			auxPow.SetCoinBaseMerkle(hashes);
 
-			auxPow.setAuxMerkleIndex(123);
-			auxPow.setParMerkleIndex(456);
+			auxPow.SetAuxMerkleIndex(123);
+			auxPow.SetParMerkleIndex(456);
 
-			auxPow.setParentHash(getRandUInt256());
+			auxPow.SetParentHash(getRandUInt256());
 
 			// init transaction
 			BRTransaction *tx = BRTransactionNew();
@@ -256,7 +256,7 @@ namespace Elastos {
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
 			tx->timestamp = rand();
-			auxPow.setBTCTransaction(tx);
+			auxPow.SetBTCTransaction(tx);
 
 			// init merkle block
 			BRMerkleBlock *block = BRMerkleBlockNew(nullptr);
@@ -277,36 +277,36 @@ namespace Elastos {
 			block->flagsLen = flags.GetSize();
 			BRMerkleBlockSetTxHashes(block, MBHashes, ARRAY_SIZE(MBHashes), flags, flags.GetSize());
 			block->height = rand();
-			auxPow.setParBlockHeader(block);
+			auxPow.SetParBlockHeader(block);
 
 			return auxPow;
 		}
 
 		static void verrifyAuxPowEqual(const AuxPow &auxPow, const AuxPow &auxPowVerify, bool checkAll = true) {
-			const std::vector<UInt256> &origMerkleBranch = auxPow.getAuxMerkleBranch();
-			const std::vector<UInt256> &merkleBranch = auxPowVerify.getAuxMerkleBranch();
+			const std::vector<UInt256> &origMerkleBranch = auxPow.GetAuxMerkleBranch();
+			const std::vector<UInt256> &merkleBranch = auxPowVerify.GetAuxMerkleBranch();
 			REQUIRE(merkleBranch.size() == origMerkleBranch.size());
 			for (size_t i = 0; i < merkleBranch.size(); ++i) {
 				REQUIRE(UInt256Eq(&merkleBranch[i], &origMerkleBranch[i]));
 			}
 
-			const std::vector<UInt256> &origCoinBaseMerkle = auxPow.getParCoinBaseMerkle();
-			const std::vector<UInt256> &coinBaseMerkle = auxPowVerify.getParCoinBaseMerkle();
+			const std::vector<UInt256> &origCoinBaseMerkle = auxPow.GetParCoinBaseMerkle();
+			const std::vector<UInt256> &coinBaseMerkle = auxPowVerify.GetParCoinBaseMerkle();
 			REQUIRE(origCoinBaseMerkle.size() == coinBaseMerkle.size());
 			for (size_t i = 0; i < coinBaseMerkle.size(); ++i) {
 				REQUIRE(UInt256Eq(&coinBaseMerkle[i], &origCoinBaseMerkle[i]));
 			}
 
-			REQUIRE(auxPow.getAuxMerkleIndex() == auxPowVerify.getAuxMerkleIndex());
-			REQUIRE(auxPow.getParMerkleIndex() == auxPowVerify.getParMerkleIndex());
+			REQUIRE(auxPow.GetAuxMerkleIndex() == auxPowVerify.GetAuxMerkleIndex());
+			REQUIRE(auxPow.GetParMerkleIndex() == auxPowVerify.GetParMerkleIndex());
 
-			const UInt256 &parentHash = auxPow.getParentHash();
-			const UInt256 &parentHashVerify = auxPowVerify.getParentHash();
+			const UInt256 &parentHash = auxPow.GetParentHash();
+			const UInt256 &parentHashVerify = auxPowVerify.GetParentHash();
 			REQUIRE(UInt256Eq(&parentHash, &parentHashVerify));
 
 			// verify transaction
-			BRTransaction *origTxn = auxPow.getBTCTransaction();
-			BRTransaction *txn = auxPowVerify.getBTCTransaction();
+			BRTransaction *origTxn = auxPow.GetBTCTransaction();
+			BRTransaction *txn = auxPowVerify.GetBTCTransaction();
 			if (checkAll) {
 				REQUIRE(origTxn->blockHeight == txn->blockHeight);
 				REQUIRE(UInt256Eq(&origTxn->txHash, &txn->txHash));
@@ -342,8 +342,8 @@ namespace Elastos {
 			}
 
 			// verify merkle block
-			BRMerkleBlock *origBlock = auxPow.getParBlockHeader();
-			BRMerkleBlock *blockVerify = auxPowVerify.getParBlockHeader();
+			BRMerkleBlock *origBlock = auxPow.GetParBlockHeader();
+			BRMerkleBlock *blockVerify = auxPowVerify.GetParBlockHeader();
 			if (checkAll) {
 				REQUIRE(UInt256Eq(&origBlock->blockHash, &blockVerify->blockHash));
 			}
@@ -368,9 +368,9 @@ namespace Elastos {
 		}
 
 		static void setMerkleBlockValues(MerkleBlock *block) {
-			block->setHeight((uint32_t) rand());
-			block->setTimestamp((uint32_t) rand());
-			block->setVersion((uint32_t) rand());
+			block->SetHeight((uint32_t) rand());
+			block->SetTimestamp((uint32_t) rand());
+			block->SetVersion((uint32_t) rand());
 
 			std::vector<uint8_t> flags;
 			for (size_t i = 0; i < 10; ++i) {
@@ -382,25 +382,25 @@ namespace Elastos {
 				hashes.push_back(getRandUInt256());
 			}
 
-			block->setRootBlockHash(getRandUInt256());
-			block->setNonce((uint32_t) rand());
-			block->setPrevBlockHash(getRandUInt256());
-			block->setTarget((uint32_t) rand());
-			block->setTransactionCount((uint32_t) rand());
+			block->SetRootBlockHash(getRandUInt256());
+			block->SetNonce((uint32_t) rand());
+			block->SetPrevBlockHash(getRandUInt256());
+			block->SetTarget((uint32_t) rand());
+			block->SetTransactionCount((uint32_t) rand());
 
 			AuxPow auxPow;
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
 				hashes.push_back(getRandUInt256());
 			}
-			auxPow.setAuxMerkleBranch(hashes);
+			auxPow.SetAuxMerkleBranch(hashes);
 
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
 				hashes.push_back(getRandUInt256());
 			}
-			auxPow.setCoinBaseMerkle(hashes);
-			auxPow.setAuxMerkleIndex(rand());
+			auxPow.SetCoinBaseMerkle(hashes);
+			auxPow.SetAuxMerkleIndex(rand());
 
 			BRTransaction *tx = BRTransactionNew();
 			tx->txHash = getRandUInt256();
@@ -418,31 +418,31 @@ namespace Elastos {
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
 			tx->timestamp = rand();
-			auxPow.setBTCTransaction(tx);
-			block->setAuxPow(auxPow);
+			auxPow.SetBTCTransaction(tx);
+			block->SetAuxPow(auxPow);
 		}
 
 		static void verifyELAMerkleBlock(const MerkleBlock &newBlock, const MerkleBlock &block) {
 
-			REQUIRE(UInt256Eq(&newBlock.getHash(), &block.getHash()));
-			REQUIRE(newBlock.getHeight() == block.getHeight());
-			REQUIRE(newBlock.getTimestamp() == block.getTimestamp());
-			REQUIRE(newBlock.getVersion() == block.getVersion());
-			REQUIRE(newBlock.getFlags().size() == block.getFlags().size());
-			for (size_t i = 0; i < block.getFlags().size(); ++i) {
-				REQUIRE(newBlock.getFlags()[i] == block.getFlags()[i]);
+			REQUIRE(UInt256Eq(&newBlock.GetHash(), &block.GetHash()));
+			REQUIRE(newBlock.GetHeight() == block.GetHeight());
+			REQUIRE(newBlock.GetTimestamp() == block.GetTimestamp());
+			REQUIRE(newBlock.GetVersion() == block.GetVersion());
+			REQUIRE(newBlock.GetFlags().size() == block.GetFlags().size());
+			for (size_t i = 0; i < block.GetFlags().size(); ++i) {
+				REQUIRE(newBlock.GetFlags()[i] == block.GetFlags()[i]);
 			}
-			REQUIRE(newBlock.getHashes().size() == block.getHashes().size());
-			for (size_t i = 0; i < block.getHashes().size(); ++i) {
-				REQUIRE(UInt256Eq(&newBlock.getHashes()[i], &block.getHashes()[i]));
+			REQUIRE(newBlock.GetHashes().size() == block.GetHashes().size());
+			for (size_t i = 0; i < block.GetHashes().size(); ++i) {
+				REQUIRE(UInt256Eq(&newBlock.GetHashes()[i], &block.GetHashes()[i]));
 			}
-			REQUIRE(UInt256Eq(&newBlock.getRootBlockHash(), &block.getRootBlockHash()));
-			REQUIRE(newBlock.getNonce() == block.getNonce());
-			REQUIRE(UInt256Eq(&newBlock.getPrevBlockHash(), &block.getPrevBlockHash()));
-			REQUIRE(newBlock.getTarget() == block.getTarget());
-			REQUIRE(newBlock.getTransactionCount() == block.getTransactionCount());
+			REQUIRE(UInt256Eq(&newBlock.GetRootBlockHash(), &block.GetRootBlockHash()));
+			REQUIRE(newBlock.GetNonce() == block.GetNonce());
+			REQUIRE(UInt256Eq(&newBlock.GetPrevBlockHash(), &block.GetPrevBlockHash()));
+			REQUIRE(newBlock.GetTarget() == block.GetTarget());
+			REQUIRE(newBlock.GetTransactionCount() == block.GetTransactionCount());
 
-			verrifyAuxPowEqual(newBlock.getAuxPow(), block.getAuxPow(), false);
+			verrifyAuxPowEqual(newBlock.GetAuxPow(), block.GetAuxPow(), false);
 		}
 
 	}

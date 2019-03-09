@@ -4,7 +4,7 @@
 
 #include "CoinConfig.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 #include <fstream>
 
@@ -61,8 +61,8 @@ namespace Elastos {
 		}
 
 		const CoinConfig &CoinConfigReader::FindConfig(const std::string &chainId) {
-			ParamChecker::checkParam(_configMap.find(chainId) == _configMap.end(), Error::IDNotFound,
-										 "Chain id " + chainId + " not found");
+			ErrorChecker::CheckParam(_configMap.find(chainId) == _configMap.end(), Error::IDNotFound,
+									 "Chain id " + chainId + " not found");
 			return _configMap[chainId];
 		}
 

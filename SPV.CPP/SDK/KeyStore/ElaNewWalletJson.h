@@ -20,39 +20,39 @@ namespace Elastos {
 
 			~ElaNewWalletJson();
 
-			void addCoinInfo(const CoinInfo &info);
+			void AddCoinInfo(const CoinInfo &info);
 
-			void clearCoinInfo();
+			void ClearCoinInfo();
 
-			const std::vector<CoinInfo> &getCoinInfoList() const;
+			const std::vector<CoinInfo> &GetCoinInfoList() const;
 
-			const std::string &getType() const;
+			const std::string &GetType() const;
 
-			void setType(const std::string &type);
+			void SetType(const std::string &type);
 
-			const std::string &getLanguage() const;
+			const std::string &GetLanguage() const;
 
-			void setLanguage(const std::string &language);
+			void SetLanguage(const std::string &language);
 
-			const std::vector<std::string> &getCoSigners() const;
+			const std::vector<std::string> &GetCoSigners() const;
 
-			void setCoSigners(const std::vector<std::string> &coSigners);
+			void SetCoSigners(const std::vector<std::string> &coSigners);
 
-			uint32_t getRequiredSignCount() const;
+			uint32_t GetRequiredSignCount() const;
 
-			void setRequiredSignCount(uint32_t count);
+			void SetRequiredSignCount(uint32_t count);
 
-			const std::string &getPrivateKey() const;
+			const std::string &GetPrivateKey() const;
 
-			void setPrivateKey(const std::string &key);
+			void SetPrivateKey(const std::string &key);
 
-			const std::string &getPhrasePassword() const;
+			const std::string &GetPhrasePassword() const;
 
-			void setPhrasePassword(const std::string &phrasePassword);
+			void SetPhrasePassword(const std::string &phrasePassword);
 
-			bool getIsSingleAddress() const;
+			bool GetIsSingleAddress() const;
 
-			void setIsSingleAddress(bool value);
+			void SetIsSingleAddress(bool value);
 
 		private:
 			JSON_SM_LS(ElaNewWalletJson);

@@ -20,7 +20,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 #include <Core/BRCrypto.h>
 #include <Core/BRAddress.h>
@@ -47,7 +47,7 @@ namespace Elastos {
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false),
 				_txHash(UINT256_ZERO) {
-			initPayloadFromType(_type);
+			InitPayloadFromType(_type);
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
@@ -56,7 +56,7 @@ namespace Elastos {
 
 		Transaction &Transaction::operator=(const Transaction &orig) {
 			_isRegistered = orig._isRegistered;
-			_txHash = orig.getHash();
+			_txHash = orig.GetHash();
 			_assetTableID = orig._assetTableID;
 
 			_version = orig._version;
@@ -68,7 +68,7 @@ namespace Elastos {
 			_payloadVersion = orig._payloadVersion;
 			_fee = orig._fee;
 
-			initPayloadFromType(orig._type);
+			InitPayloadFromType(orig._type);
 
 			*_payload = *orig._payload;
 
@@ -99,55 +99,55 @@ namespace Elastos {
 		Transaction::~Transaction() {
 		}
 
-		bool Transaction::isRegistered() const {
+		bool Transaction::IsRegistered() const {
 			return _isRegistered;
 		}
 
-		bool &Transaction::isRegistered() {
+		bool &Transaction::IsRegistered() {
 			return _isRegistered;
 		}
 
-		void Transaction::resetHash() {
+		void Transaction::ResetHash() {
 			UInt256Set(&_txHash, UINT256_ZERO);
 		}
 
-		const UInt256 &Transaction::getHash() const {
+		const UInt256 &Transaction::GetHash() const {
 			if (UInt256IsZero(&_txHash)) {
 				ByteStream ostream;
-				serializeUnsigned(ostream);
-				CMBlock buff = ostream.getBuffer();
+				SerializeUnsigned(ostream);
+				CMBlock buff = ostream.GetBuffer();
 				BRSHA256_2(&_txHash, buff, buff.GetSize());
 			}
 			return _txHash;
 		}
 
-		const Transaction::TxVersion &Transaction::getVersion() const {
+		const Transaction::TxVersion &Transaction::GetVersion() const {
 			return _version;
 		}
 
-		void Transaction::setVersion(const TxVersion &version) {
+		void Transaction::SetVersion(const TxVersion &version) {
 			_version = version;
 		}
 
-		void Transaction::setTransactionType(Type t, const PayloadPtr &payload) {
+		void Transaction::SetTransactionType(Type t, const PayloadPtr &payload) {
 			if (_type != t) {
 				_type = t;
 				if (payload != nullptr) {
 					_payload = payload;
 				} else {
-					initPayloadFromType(_type);
+					InitPayloadFromType(_type);
 				}
 			}
 		}
 
-		Transaction::Type Transaction::getTransactionType() const {
+		Transaction::Type Transaction::GetTransactionType() const {
 			return _type;
 		}
 
-		void Transaction::reinit() {
+		void Transaction::Reinit() {
 			Cleanup();
 			_type = DEFAULT_PAYLOAD_TYPE;
-			initPayloadFromType(_type);
+			InitPayloadFromType(_type);
 
 			_version = TxVersion::Default;
 			_lockTime = TX_LOCKTIME;
@@ -156,11 +156,11 @@ namespace Elastos {
 			_fee = 0;
 		}
 
-		const std::vector<TransactionOutput> &Transaction::getOutputs() const {
+		const std::vector<TransactionOutput> &Transaction::GetOutputs() const {
 			return _outputs;
 		}
 
-		std::vector<TransactionOutput> &Transaction::getOutputs() {
+		std::vector<TransactionOutput> &Transaction::GetOutputs() {
 			return _outputs;
 		}
 
@@ -172,21 +172,21 @@ namespace Elastos {
 			_outputs.push_back(output);
 		}
 
-		const std::vector<TransactionInput> &Transaction::getInputs() const {
+		const std::vector<TransactionInput> &Transaction::GetInputs() const {
 			return _inputs;
 		}
 
-		std::vector<TransactionInput>& Transaction::getInputs() {
+		std::vector<TransactionInput>& Transaction::GetInputs() {
 			return _inputs;
 		}
 
-		void Transaction::AddInput(const TransactionInput &input) {
-			_inputs.push_back(input);
+		void Transaction::AddInput(const TransactionInput &Input) {
+			_inputs.push_back(Input);
 		}
 
 		bool Transaction::ContainInput(const UInt256 &hash, uint32_t n) const {
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				if (UInt256Eq(&_inputs[i].getTransctionHash(), &hash) && n == _inputs[i].getIndex()) {
+				if (UInt256Eq(&_inputs[i].GetTransctionHash(), &hash) && n == _inputs[i].GetIndex()) {
 					return true;
 				}
 			}
@@ -194,50 +194,42 @@ namespace Elastos {
 			return false;
 		}
 
-		uint32_t Transaction::getLockTime() const {
+		uint32_t Transaction::GetLockTime() const {
 
 			return _lockTime;
 		}
 
-		void Transaction::setLockTime(uint32_t t) {
+		void Transaction::SetLockTime(uint32_t t) {
 
 			_lockTime = t;
 		}
 
-		uint32_t Transaction::getBlockHeight() const {
+		uint32_t Transaction::GetBlockHeight() const {
 			return _blockHeight;
 		}
 
-		void Transaction::setBlockHeight(uint32_t height) {
+		void Transaction::SetBlockHeight(uint32_t height) {
 			_blockHeight = height;
 		}
 
-		uint32_t Transaction::getTimestamp() const {
+		uint32_t Transaction::GetTimestamp() const {
 			return _timestamp;
 		}
 
-		void Transaction::setTimestamp(uint32_t t) {
+		void Transaction::SetTimestamp(uint32_t t) {
 			_timestamp = t;
 		}
 
-		void Transaction::addOutput(const TransactionOutput &o) {
-			_outputs.push_back(o);
-		}
-
-		void Transaction::removeChangeOutput() {
+		void Transaction::RemoveChangeOutput() {
 			if (_outputs.size() > 1) {
 				_outputs.erase(_outputs.begin() + _outputs.size() - 1);
 			}
 		}
 
-		void Transaction::addInput(const TransactionInput &input) {
-			_inputs.push_back(input);
-		}
-
-		size_t Transaction::getSize() {
+		size_t Transaction::GetSize() {
 			ByteStream ostream;
 			Serialize(ostream);
-			return ostream.getBuffer().GetSize();
+			return ostream.GetBuffer().GetSize();
 		}
 
 		nlohmann::json Transaction::GetSignedInfo() const {
@@ -274,13 +266,13 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < _attributes.size(); ++i) {
-				if (!_attributes[i].isValid()) {
+				if (!_attributes[i].IsValid()) {
 					Log::error("tx attribute is invalid");
 					return false;
 				}
 			}
 
-			if (_payload == nullptr || !_payload->isValid()) {
+			if (_payload == nullptr || !_payload->IsValid()) {
 				Log::error("tx payload invalid");
 				return false;
 			}
@@ -300,21 +292,21 @@ namespace Elastos {
 			return true;
 		}
 
-		UInt256 Transaction::getReverseHash() {
+		UInt256 Transaction::GetReverseHash() {
 
 			return UInt256Reverse(&_txHash);
 		}
 
-		uint64_t Transaction::getMinOutputAmount() {
+		uint64_t Transaction::GetMinOutputAmount() {
 
 			return TX_MIN_OUTPUT_AMOUNT;
 		}
 
-		const IPayload *Transaction::getPayload() const {
+		const IPayload *Transaction::GetPayload() const {
 			return _payload.get();
 		}
 
-		IPayload *Transaction::getPayload() {
+		IPayload *Transaction::GetPayload() {
 			return _payload.get();
 		}
 
@@ -322,40 +314,40 @@ namespace Elastos {
 			_payload = payload;
 		}
 
-		void Transaction::addAttribute(const Attribute &attribute) {
+		void Transaction::AddAttribute(const Attribute &attribute) {
 			_attributes.push_back(attribute);
 		}
 
-		const std::vector<Attribute> &Transaction::getAttributes() const {
+		const std::vector<Attribute> &Transaction::GetAttributes() const {
 			return _attributes;
 		}
 
-		void Transaction::addProgram(const Program &program) {
+		void Transaction::AddProgram(const Program &program) {
 			_programs.push_back(program);
 		}
 
-		const std::vector<Program> &Transaction::getPrograms() const {
+		const std::vector<Program> &Transaction::GetPrograms() const {
 			return _programs;
 		}
 
-		std::vector<Program> &Transaction::getPrograms() {
+		std::vector<Program> &Transaction::GetPrograms() {
 			return _programs;
 		}
 
-		void Transaction::clearPrograms() {
+		void Transaction::ClearPrograms() {
 			_programs.clear();
 		}
 
-		const std::string Transaction::getRemark() const {
+		const std::string Transaction::GetRemark() const {
 			return _remark;
 		}
 
-		void Transaction::setRemark(const std::string &remark) {
+		void Transaction::SetRemark(const std::string &remark) {
 			_remark = remark;
 		}
 
 		void Transaction::Serialize(ByteStream &ostream) const {
-			serializeUnsigned(ostream);
+			SerializeUnsigned(ostream);
 
 			ostream.writeVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
@@ -363,15 +355,15 @@ namespace Elastos {
 			}
 		}
 
-		void Transaction::serializeUnsigned(ByteStream &ostream) const {
+		void Transaction::SerializeUnsigned(ByteStream &ostream) const {
 			if (_version >= TxVersion::V09) {
-				ostream.writeByte(_version);
+				ostream.WriteByte(_version);
 			}
-			ostream.writeByte(_type);
+			ostream.WriteByte(_type);
 
-			ostream.writeByte(_payloadVersion);
+			ostream.WriteByte(_payloadVersion);
 
-			ParamChecker::checkCondition(_payload == nullptr, Error::Transaction,
+			ErrorChecker::CheckCondition(_payload == nullptr, Error::Transaction,
 										 "payload should not be null");
 
 			_payload->Serialize(ostream, _payloadVersion);
@@ -391,14 +383,14 @@ namespace Elastos {
 				_outputs[i].Serialize(ostream, _version);
 			}
 
-			ostream.writeUint32(_lockTime);
+			ostream.WriteUint32(_lockTime);
 		}
 
 		bool Transaction::Deserialize(ByteStream &istream) {
-			reinit();
+			Reinit();
 
 			uint8_t flagByte = 0;
-			if (!istream.readByte(flagByte)) {
+			if (!istream.ReadByte(flagByte)) {
 				Log::error("deserialize flag byte error");
 				return false;
 			}
@@ -406,7 +398,7 @@ namespace Elastos {
 			if (flagByte >= TxVersion::V09) {
 				_version = static_cast<TxVersion>(flagByte);
 				uint8_t txType = 0;
-				if (!istream.readByte(txType)) {
+				if (!istream.ReadByte(txType)) {
 					Log::error("deserialize type error");
 					return false;
 				}
@@ -416,10 +408,10 @@ namespace Elastos {
 				_type = static_cast<Type>(flagByte);
 			}
 
-			if (!istream.readByte(_payloadVersion))
+			if (!istream.ReadByte(_payloadVersion))
 				return false;
 
-			initPayloadFromType(_type);
+			InitPayloadFromType(_type);
 
 			if (_payload == nullptr) {
 				Log::error("new _payload with _type={} when deserialize error", _type);
@@ -471,7 +463,7 @@ namespace Elastos {
 				_outputs.push_back(output);
 			}
 
-			if (!istream.readUint32(_lockTime)) {
+			if (!istream.ReadUint32(_lockTime)) {
 				Log::error("deserialize tx lock time error");
 				return false;
 			}
@@ -492,19 +484,19 @@ namespace Elastos {
 			}
 
 			ByteStream ostream;
-			serializeUnsigned(ostream);
-			CMBlock buff = ostream.getBuffer();
+			SerializeUnsigned(ostream);
+			CMBlock buff = ostream.GetBuffer();
 			BRSHA256_2(&_txHash, buff, buff.GetSize());
 
 			return true;
 		}
 
-		nlohmann::json Transaction::toJson() const {
+		nlohmann::json Transaction::ToJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["IsRegistered"] = _isRegistered;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(getHash(), true);
+			jsonData["TxHash"] = Utils::UInt256ToString(GetHash(), true);
 			jsonData["Version"] = _version;
 			jsonData["LockTime"] = _lockTime;
 			jsonData["BlockHeight"] = _blockHeight;
@@ -512,29 +504,29 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> inputsJson(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				inputsJson[i] = _inputs[i].toJson();
+				inputsJson[i] = _inputs[i].ToJson();
 			}
 			jsonData["Inputs"] = inputsJson;
 
 			jsonData["Type"] = (uint8_t) _type;
 			jsonData["PayloadVersion"] = _payloadVersion;
-			jsonData["PayLoad"] = _payload->toJson(_payloadVersion);
+			jsonData["PayLoad"] = _payload->ToJson(_payloadVersion);
 
 			std::vector<nlohmann::json> attributesJson(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); ++i) {
-				attributesJson[i] = _attributes[i].toJson();
+				attributesJson[i] = _attributes[i].ToJson();
 			}
 			jsonData["Attributes"] = attributesJson;
 
 			std::vector<nlohmann::json> programsJson(_programs.size());
 			for (size_t i = 0; i < _programs.size(); ++i) {
-				programsJson[i] = _programs[i].toJson();
+				programsJson[i] = _programs[i].ToJson();
 			}
 			jsonData["Programs"] = programsJson;
 
 			std::vector<nlohmann::json> outputsJson(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				outputsJson[i] = _outputs[i].toJson(_version);
+				outputsJson[i] = _outputs[i].ToJson(_version);
 			}
 			jsonData["Outputs"] = outputsJson;
 
@@ -545,8 +537,8 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Transaction::fromJson(const nlohmann::json &jsonData) {
-			reinit();
+		void Transaction::FromJson(const nlohmann::json &jsonData) {
+			Reinit();
 
 			try {
 				_isRegistered = jsonData["IsRegistered"];
@@ -561,38 +553,38 @@ namespace Elastos {
 				std::vector<nlohmann::json> inputJsons = jsonData["Inputs"];
 				for (size_t i = 0; i < inputJsons.size(); ++i) {
 					TransactionInput input;
-					input.fromJson(inputJsons[i]);
+					input.FromJson(inputJsons[i]);
 					_inputs.push_back(input);
 				}
 
 				_type = Type(jsonData["Type"].get<uint8_t>());
 				_payloadVersion = jsonData["PayloadVersion"];
-				initPayloadFromType(_type);
+				InitPayloadFromType(_type);
 
 				if (_payload == nullptr) {
 					Log::error("_payload is nullptr when convert from json");
 				} else {
-					_payload->fromJson(jsonData["PayLoad"], _payloadVersion);
+					_payload->FromJson(jsonData["PayLoad"], _payloadVersion);
 				}
 
 				std::vector<nlohmann::json> attributesJson = jsonData["Attributes"];
 				for (size_t i = 0; i < attributesJson.size(); ++i) {
 					Attribute attribute;
-					attribute.fromJson(attributesJson[i]);
+					attribute.FromJson(attributesJson[i]);
 					_attributes.push_back(attribute);
 				}
 
 				std::vector<nlohmann::json> programsJson = jsonData["Programs"];
 				for (size_t i = 0; i < programsJson.size(); ++i) {
 					Program program;
-					program.fromJson(programsJson[i]);
+					program.FromJson(programsJson[i]);
 					_programs.push_back(program);
 				}
 
 				std::vector<nlohmann::json> outputsJson = jsonData["Outputs"];
 				for (size_t i = 0; i < outputsJson.size(); ++i) {
 					TransactionOutput output;
-					output.fromJson(outputsJson[i], _version);
+					output.FromJson(outputsJson[i], _version);
 					_outputs.push_back(output);
 				}
 
@@ -600,26 +592,26 @@ namespace Elastos {
 
 				_remark = jsonData["Remark"].get<std::string>();
 			} catch (const std::bad_cast &e) {
-				ParamChecker::throwLogicException(Error::Code::JsonFormatError, "tx from json: " +
+				ErrorChecker::ThrowLogicException(Error::Code::JsonFormatError, "tx from json: " +
 																				std::string(e.what()));
 			}
 		}
 
-		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
-			return ((getSize() + 999) / 1000) * feePerKb;
+		uint64_t Transaction::CalculateFee(uint64_t feePerKb) {
+			return ((GetSize() + 999) / 1000) * feePerKb;
 		}
 
-		uint64_t Transaction::getTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
+		uint64_t Transaction::GetTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
 			uint64_t fee = 0, inputAmount = 0, outputAmount = 0;
 
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
+				const TransactionPtr &tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
 				if (tx == nullptr) continue;
-				inputAmount += tx->getOutputs()[_inputs[i].getIndex()].getAmount();
+				inputAmount += tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
 			}
 
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				outputAmount += _outputs[i].getAmount();
+				outputAmount += _outputs[i].GetAmount();
 			}
 
 			if (inputAmount >= outputAmount)
@@ -629,8 +621,8 @@ namespace Elastos {
 		}
 
 		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
-			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash(), true));
-			setRemark(remark);
+			std::string remark = wallet->GetRemark(Utils::UInt256ToString(GetHash(), true));
+			SetRemark(remark);
 
 			std::string addr;
 			nlohmann::json summary, outputPayload;
@@ -640,10 +632,10 @@ namespace Elastos {
 
 			std::map<std::string, uint64_t> inputList;
 			for (size_t i = 0; i < _inputs.size(); i++) {
-				TransactionPtr tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
+				TransactionPtr tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
 				if (tx) {
-					uint64_t spentAmount = tx->getOutputs()[_inputs[i].getIndex()].getAmount();
-					addr = tx->getOutputs()[_inputs[i].getIndex()].GetAddress().String();
+					uint64_t spentAmount = tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
+					addr = tx->GetOutputs()[_inputs[i].GetIndex()].GetAddress().String();
 
 					if (detail) {
 						if (inputList.find(addr) == inputList.end()) {
@@ -653,7 +645,7 @@ namespace Elastos {
 						}
 					}
 
-					if (wallet->containsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
+					if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 						// sent or moved
 						direction = "Sent";
 						inputAmount += spentAmount;
@@ -663,11 +655,11 @@ namespace Elastos {
 
 			std::map<std::string, uint64_t> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				uint64_t oAmount = _outputs[i].getAmount();
+				uint64_t oAmount = _outputs[i].GetAmount();
 				addr = _outputs[i].GetAddress().String();
 
 				if (_outputs[i].GetType() == TransactionOutput::VoteOutput) {
-					outputPayload = _outputs[i].GetPayload()->toJson();
+					outputPayload = _outputs[i].GetPayload()->ToJson();
 					outputPayload["Amount"] = oAmount;
 					outputPayloads.push_back(outputPayload);
 				}
@@ -676,7 +668,7 @@ namespace Elastos {
 					direction = "Deposit";
 				}
 
-				if (wallet->containsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
+				if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
@@ -711,25 +703,25 @@ namespace Elastos {
 				amount = 0;
 			}
 
-			summary["TxHash"] = Utils::UInt256ToString(getHash(), true);
+			summary["TxHash"] = Utils::UInt256ToString(GetHash(), true);
 			summary["Status"] = confirms <= 6 ? "Pending" : "Confirmed";
 			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
-			summary["Timestamp"] = getTimestamp();
+			summary["Timestamp"] = GetTimestamp();
 			summary["Direction"] = direction;
 			summary["Amount"] = amount;
-			summary["Type"] = getTransactionType();
-			summary["Height"] = getBlockHeight();
+			summary["Type"] = GetTransactionType();
+			summary["Height"] = GetBlockHeight();
 			if (detail) {
 				summary["Fee"] = fee;
-				summary["Remark"] = getRemark();
+				summary["Remark"] = GetRemark();
 				summary["Inputs"] = inputList;
 				summary["Outputs"] = outputList;
-				summary["Payload"] = _payload->toJson(_payloadVersion);
+				summary["Payload"] = _payload->ToJson(_payloadVersion);
 				summary["OutputPayload"] = outputPayloads;
 
 				std::vector<nlohmann::json> attributes;
 				for (int i = 0; i < _attributes.size(); ++i) {
-					attributes.push_back(_attributes[i].toJson());
+					attributes.push_back(_attributes[i].ToJson());
 				}
 				summary["Attribute"] = attributes;
 			}
@@ -739,14 +731,14 @@ namespace Elastos {
 
 		UInt256 Transaction::GetShaData() const {
 			ByteStream ostream;
-			serializeUnsigned(ostream);
-			CMBlock data = ostream.getBuffer();
+			SerializeUnsigned(ostream);
+			CMBlock data = ostream.GetBuffer();
 			UInt256 shaData;
 			BRSHA256(&shaData, data, data.GetSize());
 			return shaData;
 		}
 
-		void Transaction::initPayloadFromType(Type type) {
+		void Transaction::InitPayloadFromType(Type type) {
 			if (type == CoinBase) {
 				_payload = PayloadPtr(new PayloadCoinBase());
 			} else if (type == RegisterAsset) {
@@ -787,24 +779,24 @@ namespace Elastos {
 			_payload.reset();
 		}
 
-		uint8_t Transaction::getPayloadVersion() const {
+		uint8_t Transaction::GetPayloadVersion() const {
 			return _payloadVersion;
 		}
 
-		void Transaction::setPayloadVersion(uint8_t version) {
+		void Transaction::SetPayloadVersion(uint8_t version) {
 			_payloadVersion = version;
 		}
 
-		uint64_t Transaction::getFee() const {
+		uint64_t Transaction::GetFee() const {
 			return _fee;
 		}
 
-		void Transaction::setFee(uint64_t f) {
+		void Transaction::SetFee(uint64_t f) {
 			_fee = f;
 		}
 
 		bool Transaction::IsEqual(const Transaction *tx) const {
-			return (tx == this || UInt256Eq(&_txHash, &tx->getHash()));
+			return (tx == this || UInt256Eq(&_txHash, &tx->GetHash()));
 		}
 
 		uint32_t Transaction::GetConfirms(uint32_t walletBlockHeight) const {
@@ -817,7 +809,7 @@ namespace Elastos {
 		UInt256 Transaction::GetAssetID() const {
 			UInt256 result = UINT256_ZERO;
 			if (!_outputs.empty())
-				result = _outputs.begin()->getAssetId();
+				result = _outputs.begin()->GetAssetId();
 			return result;
 		}
 

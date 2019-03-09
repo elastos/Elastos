@@ -5,7 +5,7 @@
 #include "ChainParams.h"
 
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 #include <Core/BRMerkleBlock.h>
 
@@ -31,7 +31,7 @@ namespace Elastos {
 			} else if ("RegNet" == config.NetType || "RegTest" == config.NetType) {
 				RegNetParamsInit(config.Type);
 			} else {
-				ParamChecker::checkCondition(true, Error::WrongNetType,
+				ErrorChecker::CheckCondition(true, Error::WrongNetType,
 											 "Invalid net type " + config.NetType + " in coin config");
 			}
 
@@ -398,7 +398,7 @@ namespace Elastos {
 			} else if (type == Idchain) {
 				MainNetIDChainParamsInit();
 			} else {
-				ParamChecker::checkCondition(true, Error::InvalidCoinType,
+				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");
 			}
 		}
@@ -409,7 +409,7 @@ namespace Elastos {
 			} else if (type == Idchain) {
 				TestNetIDChainParamsInit();
 			} else {
-				ParamChecker::checkCondition(true, Error::InvalidCoinType,
+				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");
 			}
 		}
@@ -420,7 +420,7 @@ namespace Elastos {
 			} else if (type == Idchain) {
 				RegNetIDChainParamsInit();
 			} else {
-				ParamChecker::checkCondition(true, Error::InvalidCoinType,
+				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");
 			}
 		}

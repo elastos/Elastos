@@ -26,14 +26,14 @@ namespace Elastos {
 			bool sentMempool = _peer->SentMempool();
 			_peer->SetSentMempool(true);
 
-			if (!sentMempool && _peer->getMemPoolCallback().empty()) {
+			if (!sentMempool && _peer->GetMemPoolCallback().empty()) {
 				_peer->AddKnownTxHashes(mempoolParameter.KnownTxHashes);
 
 				if (!mempoolParameter.CompletionCallback.empty()) {
 					gettimeofday(&tv, NULL);
 
-					_peer->setMempoolTime(tv.tv_sec + (double)tv.tv_usec/1000000 + 10.0);
-					_peer->setMempoolCallback(mempoolParameter.CompletionCallback);
+					_peer->SetMempoolTime(tv.tv_sec + (double) tv.tv_usec / 1000000 + 10.0);
+					_peer->SetMempoolCallback(mempoolParameter.CompletionCallback);
 				}
 
 				_peer->SendMessage(CMBlock(), Type());

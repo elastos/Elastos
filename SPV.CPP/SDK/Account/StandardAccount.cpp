@@ -5,7 +5,7 @@
 #include "StandardAccount.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/BIPs/BIP32Sequence.h>
 #include <SDK/Base/Address.h>
 
@@ -23,7 +23,7 @@ namespace Elastos {
 
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(boost::filesystem::path(_rootPath)));
 			std::string standardPhrase;
-			ParamChecker::checkCondition(!_mnemonic->PhraseIsValid(phrase, standardPhrase),
+			ErrorChecker::CheckCondition(!_mnemonic->PhraseIsValid(phrase, standardPhrase),
 										 Error::Mnemonic, "Invalid mnemonic words");
 			_language = _mnemonic->GetLanguage();
 
@@ -83,18 +83,18 @@ namespace Elastos {
 			j["Mnemonic"] = p.GetEncryptedMnemonic();
 			j["PhrasePassword"] = p.GetEncryptedPhrasePassword();
 			j["Language"] = p.GetLanguage();
-			j["PublicKey"] = Utils::encodeHex(p.GetMultiSignPublicKey());
+			j["PublicKey"] = Utils::EncodeHex(p.GetMultiSignPublicKey());
 			j["IDChainCode"] = Utils::UInt256ToString(p.GetIDMasterPubKey().GetChainCode());
-			j["IDMasterKeyPubKey"] = Utils::encodeHex(p.GetIDMasterPubKey().GetPubKey());
+			j["IDMasterKeyPubKey"] = Utils::EncodeHex(p.GetIDMasterPubKey().GetPubKey());
 		}
 
 		void from_json(const nlohmann::json &j, StandardAccount &p) {
 			p._encryptedMnemonic = j["Mnemonic"].get<std::string>();
 			p._encryptedPhrasePass = j["PhrasePassword"].get<std::string>();
 			p._language = j["Language"].get<std::string>();
-			p._multiSignPublicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
+			p._multiSignPublicKey = Utils::DecodeHex(j["PublicKey"].get<std::string>());
 			UInt256 chainCode = Utils::UInt256FromString(j["IDChainCode"].get<std::string>());
-			CMBlock pubKey = Utils::decodeHex(j["IDMasterKeyPubKey"].get<std::string>());
+			CMBlock pubKey = Utils::DecodeHex(j["IDMasterKeyPubKey"].get<std::string>());
 			p._masterIDPubKey = MasterPubKey(pubKey, chainCode);
 			p._mnemonic->LoadLanguage(p._language);
 		}
@@ -103,10 +103,10 @@ namespace Elastos {
 			UInt512 result;
 
 			std::string phrase;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrase, GetEncryptedMnemonic(), payPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrase, GetEncryptedMnemonic(), payPassword));
 
 			std::string phrasePassword;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrasePassword, GetEncryptedPhrasePassword(), payPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrasePassword, GetEncryptedPhrasePassword(), payPassword));
 
 			BRBIP39DeriveKey(&result, phrase.c_str(), phrasePassword.c_str());
 
@@ -136,12 +136,12 @@ namespace Elastos {
 		}
 
 		void StandardAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			ParamChecker::checkPassword(newPassword, "New");
+			ErrorChecker::CheckPassword(newPassword, "New");
 
 			CMBlock key;
 			std::string phrasePasswd, phrase;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, GetEncryptedPhrasePassword(), oldPassword));
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(phrase, GetEncryptedMnemonic(), oldPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, GetEncryptedPhrasePassword(), oldPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrase, GetEncryptedMnemonic(), oldPassword));
 
 			Utils::Encrypt(_encryptedPhrasePass, phrasePasswd, newPassword);
 			Utils::Encrypt(_encryptedMnemonic, phrase, newPassword);

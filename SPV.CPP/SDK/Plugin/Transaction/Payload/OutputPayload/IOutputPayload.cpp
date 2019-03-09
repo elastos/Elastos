@@ -15,7 +15,7 @@ namespace Elastos {
 			ByteStream stream;
 			Serialize(stream);
 
-			return stream.getBuffer();
+			return stream.GetBuffer();
 		}
 
 	}

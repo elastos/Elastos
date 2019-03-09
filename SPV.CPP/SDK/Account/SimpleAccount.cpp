@@ -6,7 +6,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Base/Address.h>
 
 #include <Core/BRCrypto.h>
@@ -15,7 +15,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		SimpleAccount::SimpleAccount(const std::string &privKey, const std::string &payPassword) {
-			CMBlock keyData = Utils::decodeHex(privKey);
+			CMBlock keyData = Utils::DecodeHex(privKey);
 			Utils::Encrypt(_encryptedKey, keyData, payPassword);
 
 			assert(keyData.GetSize() == sizeof(UInt256));
@@ -35,7 +35,7 @@ namespace Elastos {
 
 		Key SimpleAccount::DeriveMultiSignKey(const std::string &payPassword) {
 			CMBlock keyData;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(keyData, _encryptedKey, payPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(keyData, _encryptedKey, payPassword));
 
 			UInt256 secret;
 			memcpy(secret.u8, keyData, keyData.GetSize() < sizeof(UInt256) ? keyData.GetSize() : sizeof(UInt256));
@@ -52,16 +52,16 @@ namespace Elastos {
 		}
 
 		UInt512 SimpleAccount::DeriveSeed(const std::string &payPassword) {
-			ParamChecker::checkCondition(true, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(true, Error::WrongAccountType,
 										 "Simple account can not derive seed");
 			return UINT512_ZERO;
 		}
 
 		void SimpleAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			ParamChecker::checkPassword(newPassword, "New");
+			ErrorChecker::CheckPassword(newPassword, "New");
 
 			CMBlock key;
-			ParamChecker::CheckDecrypt(!Utils::Decrypt(key, _encryptedKey, oldPassword));
+			ErrorChecker::CheckDecrypt(!Utils::Decrypt(key, _encryptedKey, oldPassword));
 
 			Utils::Encrypt(_encryptedKey, key, newPassword);
 
@@ -83,13 +83,13 @@ namespace Elastos {
 		}
 
 		const std::string &SimpleAccount::GetEncryptedMnemonic() const {
-			ParamChecker::checkCondition(true, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(true, Error::WrongAccountType,
 										 "Simple account can not get mnemonic");
 			return _emptyString;
 		}
 
 		const std::string &SimpleAccount::GetEncryptedPhrasePassword() const {
-			ParamChecker::checkCondition(true, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(true, Error::WrongAccountType,
 										 "Simple account can not get phrase password");
 			return _emptyString;
 		}
@@ -104,7 +104,7 @@ namespace Elastos {
 
 
 		const MasterPubKey &SimpleAccount::GetIDMasterPubKey() const {
-			ParamChecker::checkCondition(true, Error::WrongAccountType, "Simple account can not get ID master pubkey");
+			ErrorChecker::CheckCondition(true, Error::WrongAccountType, "Simple account can not get ID master pubkey");
 			return MasterPubKey();
 		}
 
@@ -114,12 +114,12 @@ namespace Elastos {
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {
 			j["Key"] = p._encryptedKey;
-			j["PublicKey"] = Utils::encodeHex(p.GetMultiSignPublicKey());
+			j["PublicKey"] = Utils::EncodeHex(p.GetMultiSignPublicKey());
 		}
 
 		void from_json(const nlohmann::json &j, SimpleAccount &p) {
 			p._encryptedKey = j["Key"].get<std::string>();
-			p._publicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
+			p._publicKey = Utils::DecodeHex(j["PublicKey"].get<std::string>());
 		}
 
 		nlohmann::json SimpleAccount::GetBasicInfo() const {

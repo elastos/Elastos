@@ -21,27 +21,27 @@ namespace Elastos {
 			~DatabaseManager();
 
 			// Transaction's database interface
-			bool putTransaction(const std::string &iso, const TransactionEntity &tx);
-			bool deleteAllTransactions(const std::string &iso);
-			size_t getAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
-			bool updateTransaction(const std::string &iso, const TransactionEntity &txEntity);
-			bool deleteTxByHash(const std::string &iso, const std::string &hash);
+			bool PutTransaction(const std::string &iso, const TransactionEntity &tx);
+			bool DeleteAllTransactions(const std::string &iso);
+			size_t GetAllTransactionsCount(const std::string &iso) const;
+			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			bool UpdateTransaction(const std::string &iso, const TransactionEntity &txEntity);
+			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 
 			// Peer's database interface
-			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool deleteAllPeers(const std::string &iso);
-			size_t getAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool DeleteAllPeers(const std::string &iso);
+			size_t GetAllPeersCount(const std::string &iso) const;
+			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
 			// MerkleBlock's database interface
-			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool deleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
+			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool DeleteAllBlocks(const std::string &iso);
+			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
 
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
@@ -51,7 +51,7 @@ namespace Elastos {
 			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
 			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
-			const boost::filesystem::path &getPath() const;
+			const boost::filesystem::path &GetPath() const;
 
 		private:
 			boost::filesystem::path _path;

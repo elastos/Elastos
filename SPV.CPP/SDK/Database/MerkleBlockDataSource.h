@@ -41,14 +41,14 @@ namespace Elastos {
 			MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~MerkleBlockDataSource();
 
-			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool deleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
+			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool DeleteAllBlocks(const std::string &iso);
+			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
 
 		private:
-			bool putMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
 
 
 		private:

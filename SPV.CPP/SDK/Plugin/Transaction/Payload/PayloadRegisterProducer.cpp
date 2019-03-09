@@ -79,36 +79,36 @@ namespace Elastos {
 		}
 
 		void PayloadRegisterProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.writeVarBytes(_ownerPublicKey);
-			ostream.writeVarBytes(_nodePublicKey);
-			ostream.writeVarString(_nickName);
-			ostream.writeVarString(_url);
-			ostream.writeUint64(_location);
-			ostream.writeVarString(_address);
+			ostream.WriteVarBytes(_ownerPublicKey);
+			ostream.WriteVarBytes(_nodePublicKey);
+			ostream.WriteVarString(_nickName);
+			ostream.WriteVarString(_url);
+			ostream.WriteUint64(_location);
+			ostream.WriteVarString(_address);
 		}
 
 		bool PayloadRegisterProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
-			if (!istream.readVarBytes(_ownerPublicKey)) {
+			if (!istream.ReadVarBytes(_ownerPublicKey)) {
 				Log::error("Deserialize: read public key");
 				return false;
 			}
-			if (!istream.readVarBytes(_nodePublicKey)) {
+			if (!istream.ReadVarBytes(_nodePublicKey)) {
 				Log::error("Deserialize: read node public key");
 				return false;
 			}
-			if (!istream.readVarString(_nickName)) {
+			if (!istream.ReadVarString(_nickName)) {
 				Log::error("Deserialize: read nick name");
 				return false;
 			}
-			if (!istream.readVarString(_url)) {
+			if (!istream.ReadVarString(_url)) {
 				Log::error("Deserialize: read url");
 				return false;
 			}
-			if (!istream.readUint64(_location)) {
+			if (!istream.ReadUint64(_location)) {
 				Log::error("Deserialize: read location");
 				return false;
 			}
-			if (!istream.readVarString(_address)) {
+			if (!istream.ReadVarString(_address)) {
 				Log::error("Deserialize: read address");
 				return false;
 			}
@@ -118,7 +118,7 @@ namespace Elastos {
 
 		void PayloadRegisterProducer::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
-			ostream.writeVarBytes(_signature);
+			ostream.WriteVarBytes(_signature);
 		}
 
 		bool PayloadRegisterProducer::Deserialize(ByteStream &istream, uint8_t version) {
@@ -127,7 +127,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.readVarBytes(_signature)) {
+			if (!istream.ReadVarBytes(_signature)) {
 				Log::error("Deserialize: register producer payload read signature");
 				return false;
 			}
@@ -135,26 +135,26 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterProducer::toJson(uint8_t version) const {
+		nlohmann::json PayloadRegisterProducer::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["OwnerPublicKey"] = Utils::encodeHex(_ownerPublicKey);
-			j["NodePublicKey"] = Utils::encodeHex(_nodePublicKey);
+			j["OwnerPublicKey"] = Utils::EncodeHex(_ownerPublicKey);
+			j["NodePublicKey"] = Utils::EncodeHex(_nodePublicKey);
 			j["NickName"] = _nickName;
 			j["Url"] = _url;
 			j["Location"] = _location;
 			j["Address"] = _address;
-			j["Signature"] = Utils::encodeHex(_signature);
+			j["Signature"] = Utils::EncodeHex(_signature);
 			return j;
 		}
 
-		void PayloadRegisterProducer::fromJson(const nlohmann::json &j, uint8_t version) {
-			_ownerPublicKey = Utils::decodeHex(j["OwnerPublicKey"].get<std::string>());
-			_nodePublicKey = Utils::decodeHex(j["NodePublicKey"].get<std::string>());
+		void PayloadRegisterProducer::FromJson(const nlohmann::json &j, uint8_t version) {
+			_ownerPublicKey = Utils::DecodeHex(j["OwnerPublicKey"].get<std::string>());
+			_nodePublicKey = Utils::DecodeHex(j["NodePublicKey"].get<std::string>());
 			_nickName = j["NickName"].get<std::string>();
 			_url = j["Url"].get<std::string>();
 			_location = j["Location"].get<uint64_t>();
 			_address = j["Address"].get<std::string>();
-			_signature = Utils::decodeHex(j["Signature"].get<std::string>());
+			_signature = Utils::DecodeHex(j["Signature"].get<std::string>());
 		}
 
 		IPayload &PayloadRegisterProducer::operator=(const IPayload &payload) {

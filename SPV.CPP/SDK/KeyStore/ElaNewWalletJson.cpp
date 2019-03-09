@@ -16,15 +16,15 @@ namespace Elastos {
 
 		}
 
-		void ElaNewWalletJson::addCoinInfo(const CoinInfo &info) {
+		void ElaNewWalletJson::AddCoinInfo(const CoinInfo &info) {
 			_coinInfoList.push_back(info);
 		}
 
-		void ElaNewWalletJson::clearCoinInfo() {
+		void ElaNewWalletJson::ClearCoinInfo() {
 			_coinInfoList.clear();
 		}
 
-		const std::vector<CoinInfo> &ElaNewWalletJson::getCoinInfoList() const {
+		const std::vector<CoinInfo> &ElaNewWalletJson::GetCoinInfoList() const {
 			return _coinInfoList;
 		}
 
@@ -68,59 +68,59 @@ namespace Elastos {
 			p._isSingleAddress = j.find("IsSingleAddress") != j.end() ? j["IsSingleAddress"].get<bool>() : false;
 		}
 
-		const std::string& ElaNewWalletJson::getType() const {
+		const std::string& ElaNewWalletJson::GetType() const {
 			return _type;
 		}
 
-		void ElaNewWalletJson::setType(const std::string &type) {
+		void ElaNewWalletJson::SetType(const std::string &type) {
 			_type = type;
 		}
 
-		const std::string &ElaNewWalletJson::getLanguage() const {
+		const std::string &ElaNewWalletJson::GetLanguage() const {
 			return _language;
 		}
 
-		void ElaNewWalletJson::setLanguage(const std::string &la) {
+		void ElaNewWalletJson::SetLanguage(const std::string &la) {
 			_language = la;
 		}
 
-		const std::vector<std::string> &ElaNewWalletJson::getCoSigners() const {
+		const std::vector<std::string> &ElaNewWalletJson::GetCoSigners() const {
 			return _coSigners;
 		}
 
-		void ElaNewWalletJson::setCoSigners(const std::vector<std::string> &coSigners) {
+		void ElaNewWalletJson::SetCoSigners(const std::vector<std::string> &coSigners) {
 			_coSigners = coSigners;
 		}
 
-		uint32_t ElaNewWalletJson::getRequiredSignCount() const {
+		uint32_t ElaNewWalletJson::GetRequiredSignCount() const {
 			return _requiredSignCount;
 		}
 
-		void ElaNewWalletJson::setRequiredSignCount(uint32_t count) {
+		void ElaNewWalletJson::SetRequiredSignCount(uint32_t count) {
 			_requiredSignCount = count;
 		}
 
-		const std::string &ElaNewWalletJson::getPrivateKey() const {
+		const std::string &ElaNewWalletJson::GetPrivateKey() const {
 			return _privateKey;
 		}
 
-		void ElaNewWalletJson::setPrivateKey(const std::string &key) {
+		void ElaNewWalletJson::SetPrivateKey(const std::string &key) {
 			_privateKey = key;
 		}
 
-		const std::string &ElaNewWalletJson::getPhrasePassword() const {
+		const std::string &ElaNewWalletJson::GetPhrasePassword() const {
 			return _phrasePassword;
 		}
 
-		void ElaNewWalletJson::setPhrasePassword(const std::string &phrasePassword) {
+		void ElaNewWalletJson::SetPhrasePassword(const std::string &phrasePassword) {
 			_phrasePassword = phrasePassword;
 		}
 
-		void ElaNewWalletJson::setIsSingleAddress(bool value) {
+		void ElaNewWalletJson::SetIsSingleAddress(bool value) {
 			_isSingleAddress = value;
 		}
 
-		bool ElaNewWalletJson::getIsSingleAddress() const {
+		bool ElaNewWalletJson::GetIsSingleAddress() const {
 			return _isSingleAddress;
 		}
 

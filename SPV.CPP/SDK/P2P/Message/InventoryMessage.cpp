@@ -122,13 +122,13 @@ namespace Elastos {
 						_peer->SendMessage(MSG_GETBLOCKS, param);
 					}
 
-					if (txCount > 0 && !_peer->getMemPoolCallback().empty()) {
+					if (txCount > 0 && !_peer->GetMemPoolCallback().empty()) {
 						_peer->info("got initial mempool response");
 						PingParameter pingParameter;
-						pingParameter.callback = _peer->getMemPoolCallback();
-						pingParameter.lastBlockHeight = _peer->getPeerManager()->GetLastBlockHeight();
+						pingParameter.callback = _peer->GetMemPoolCallback();
+						pingParameter.lastBlockHeight = _peer->GetPeerManager()->GetLastBlockHeight();
 						_peer->SendMessage(MSG_PING, pingParameter);
-						_peer->resetMemPool();
+						_peer->ResetMemPool();
 					}
 				}
 			}
@@ -149,14 +149,14 @@ namespace Elastos {
 				size_t i;
 				ByteStream stream;
 
-				stream.writeUint32(uint32_t(txCount));
+				stream.WriteUint32(uint32_t(txCount));
 				for (size_t i = 0; i < txCount; i++) {
-					stream.writeUint32(uint32_t(inv_tx));  // version
-					stream.writeBytes(&_peer->KnownTxHashes()[knownCount + i], sizeof(UInt256));
+					stream.WriteUint32(uint32_t(inv_tx));  // version
+					stream.WriteBytes(&_peer->KnownTxHashes()[knownCount + i], sizeof(UInt256));
 				}
 
 				_peer->info("sending inv tx count={} type={}", txCount, inv_tx);
-				SendMessage(stream.getBuffer(), Type());
+				SendMessage(stream.GetBuffer(), Type());
 			}
 		}
 

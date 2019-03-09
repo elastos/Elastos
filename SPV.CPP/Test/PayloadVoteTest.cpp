@@ -27,7 +27,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		ByteStream stream;
 		p1.Serialize(stream);
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream));
 
 		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
@@ -53,8 +53,8 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		}
 		PayloadVote p1(voteContent), p2;
 
-		nlohmann::json p1Json = p1.toJson();
-		REQUIRE_NOTHROW(p2.fromJson(p1Json));
+		nlohmann::json p1Json = p1.ToJson();
+		REQUIRE_NOTHROW(p2.FromJson(p1Json));
 
 		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
 		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();

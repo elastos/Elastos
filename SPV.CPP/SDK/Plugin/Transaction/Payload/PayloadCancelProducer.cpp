@@ -34,16 +34,16 @@ namespace Elastos {
 		}
 
 		void PayloadCancelProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.writeVarBytes(_publicKey);
+			ostream.WriteVarBytes(_publicKey);
 		}
 
 		bool PayloadCancelProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
-			return istream.readVarBytes(_publicKey);
+			return istream.ReadVarBytes(_publicKey);
 		}
 
 		void PayloadCancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
-			ostream.writeVarBytes(_signature);
+			ostream.WriteVarBytes(_signature);
 		}
 
 		bool PayloadCancelProducer::Deserialize(ByteStream &istream, uint8_t version) {
@@ -52,7 +52,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.readVarBytes(_signature)) {
+			if (!istream.ReadVarBytes(_signature)) {
 				Log::error("Deserialize: cancel producer payload read signature");
 				return false;
 			}
@@ -60,16 +60,16 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadCancelProducer::toJson(uint8_t version) const {
+		nlohmann::json PayloadCancelProducer::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["PublicKey"] = Utils::encodeHex(_publicKey);
-			j["Signature"] = Utils::encodeHex(_signature);
+			j["PublicKey"] = Utils::EncodeHex(_publicKey);
+			j["Signature"] = Utils::EncodeHex(_signature);
 			return j;
 		}
 
-		void PayloadCancelProducer::fromJson(const nlohmann::json &j, uint8_t version) {
-			_publicKey = Utils::decodeHex(j["PublicKey"].get<std::string>());
-			_signature = Utils::decodeHex(j["Signature"].get<std::string>());
+		void PayloadCancelProducer::FromJson(const nlohmann::json &j, uint8_t version) {
+			_publicKey = Utils::DecodeHex(j["PublicKey"].get<std::string>());
+			_signature = Utils::DecodeHex(j["Signature"].get<std::string>());
 		}
 
 		IPayload &PayloadCancelProducer::operator=(const IPayload &payload) {

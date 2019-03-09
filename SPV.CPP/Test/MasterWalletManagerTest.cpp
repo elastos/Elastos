@@ -6,7 +6,7 @@
 
 #include <catch.hpp>
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Implement/MainchainSubWallet.h>
 #include <SDK/Implement/IdChainSubWallet.h>

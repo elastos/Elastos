@@ -5,7 +5,7 @@
 #include "MasterWalletStore.h"
 
 #include <SDK/Common/ByteStream.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/StandardAccount.h>
 #include <SDK/Account/MultiSignAccount.h>
@@ -25,7 +25,7 @@ namespace Elastos {
 		}
 
 		void MasterWalletStore::Load(const boost::filesystem::path &path) {
-			ParamChecker::checkPathExists(path);
+			ErrorChecker::CheckPathExists(path);
 
 			std::ifstream i(path.string());
 			nlohmann::json j;
@@ -115,15 +115,15 @@ namespace Elastos {
 			const MasterPubKeyMap &map = p.GetMasterPubKeyMap();
 			for (MasterPubKeyMap::const_iterator it = map.cbegin(); it != map.cend(); it++) {
 				ByteStream stream;
-				stream.setPosition(0);
+				stream.SetPosition(0);
 				it->second->Serialize(stream);
-				masterPubKey[it->first] = Utils::encodeHex(stream.getBuffer());
+				masterPubKey[it->first] = Utils::EncodeHex(stream.GetBuffer());
 			}
 			j["MasterPubKey"] = masterPubKey;
 
 			nlohmann::json votePubKey;
 			for (VotePubKeyMap::const_iterator it = p.GetVotePublicKeyMap().cbegin(); it != p.GetVotePublicKeyMap().cend(); ++it) {
-				votePubKey[it->first] = Utils::encodeHex(it->second);
+				votePubKey[it->first] = Utils::EncodeHex(it->second);
 			}
 			j["VotePublicKey"] = votePubKey;
 		}
@@ -143,7 +143,7 @@ namespace Elastos {
 			MasterPubKeyMap masterPubKeyMap;
 			nlohmann::json masterPubKeyJson = j["MasterPubKey"];
 			for (nlohmann::json::iterator it = masterPubKeyJson.begin(); it != masterPubKeyJson.end(); ++it) {
-				CMBlock value = Utils::decodeHex(it.value());
+				CMBlock value = Utils::DecodeHex(it.value());
 				MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey());
 				ByteStream stream(value);
 				masterPubKey->Deserialize(stream);
@@ -154,7 +154,7 @@ namespace Elastos {
 			VotePubKeyMap votePubKeyMap;
 			nlohmann::json votePubKeyJson = j["VotePublicKey"];
 			for (nlohmann::json::iterator it = votePubKeyJson.begin(); it != votePubKeyJson.end(); ++it) {
-				votePubKeyMap[it.key()] = Utils::decodeHex(it.value());
+				votePubKeyMap[it.key()] = Utils::DecodeHex(it.value());
 			}
 			p.SetVotePublicKeyMap(votePubKeyMap);
 		}

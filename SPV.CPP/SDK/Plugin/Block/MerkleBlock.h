@@ -34,19 +34,19 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual nlohmann::json ToJson() const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual void FromJson(const nlohmann::json &j);
 
-			virtual const UInt256 &getHash() const;
+			virtual const UInt256 &GetHash() const;
 
-			virtual bool isValid(uint32_t currentTime) const;
+			virtual bool IsValid(uint32_t currentTime) const;
 
-			virtual std::string getBlockType() const { return "ELA"; }
+			virtual std::string GetBlockType() const { return "ELA"; }
 
-			const AuxPow &getAuxPow() const;
+			const AuxPow &GetAuxPow() const;
 
-			void setAuxPow(const AuxPow &pow);
+			void SetAuxPow(const AuxPow &pow);
 
 		private:
 			AuxPow _auxPow;

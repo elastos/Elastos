@@ -23,9 +23,9 @@ namespace Elastos {
 			virtual ~TableBase();
 
 		protected:
-			void initializeTable(const std::string &constructScript);
+			void InitializeTable(const std::string &constructScript);
 
-			bool doTransaction(const boost::function<void()> &fun) const;
+			bool DoTransaction(const boost::function<void()> &fun) const;
 
 		protected:
 			Sqlite *_sqlite;

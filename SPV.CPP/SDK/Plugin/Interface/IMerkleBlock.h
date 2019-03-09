@@ -18,43 +18,43 @@ namespace Elastos {
 		public:
 			virtual ~IMerkleBlock() {}
 
-			virtual uint32_t getHeight() const = 0;
+			virtual uint32_t GetHeight() const = 0;
 
-			virtual void setHeight(uint32_t height) = 0;
+			virtual void SetHeight(uint32_t height) = 0;
 
-			virtual uint32_t getTimestamp() const = 0;
+			virtual uint32_t GetTimestamp() const = 0;
 
-			virtual void setTimestamp(uint32_t timestamp) = 0;
+			virtual void SetTimestamp(uint32_t timestamp) = 0;
 
-			virtual uint32_t getTarget() const = 0;
+			virtual uint32_t GetTarget() const = 0;
 
-			virtual void setTarget(uint32_t target) = 0;
+			virtual void SetTarget(uint32_t target) = 0;
 
-			virtual const UInt256 &getPrevBlockHash() const = 0;
+			virtual const UInt256 &GetPrevBlockHash() const = 0;
 
-			virtual void setPrevBlockHash(const UInt256 &hash) = 0;
+			virtual void SetPrevBlockHash(const UInt256 &hash) = 0;
 
-			virtual const UInt256 &getRootBlockHash() const = 0;
+			virtual const UInt256 &GetRootBlockHash() const = 0;
 
-			virtual void setRootBlockHash(const UInt256 &hash) = 0;
+			virtual void SetRootBlockHash(const UInt256 &hash) = 0;
 
-			virtual uint32_t getNonce() const = 0;
+			virtual uint32_t GetNonce() const = 0;
 
-			virtual void setNonce(uint32_t nonce) = 0;
+			virtual void SetNonce(uint32_t nonce) = 0;
 
-			virtual uint32_t getTransactionCount() const = 0;
+			virtual uint32_t GetTransactionCount() const = 0;
 
-			virtual void setTransactionCount(uint32_t count) = 0;
+			virtual void SetTransactionCount(uint32_t count) = 0;
 
-			virtual const UInt256 &getHash() const = 0;
+			virtual const UInt256 &GetHash() const = 0;
 
-			virtual void setHash(const UInt256 &hash) = 0;
+			virtual void SetHash(const UInt256 &hash) = 0;
 
-			virtual bool isValid(uint32_t currentTime) const = 0;
+			virtual bool IsValid(uint32_t currentTime) const = 0;
 
-			virtual bool isEqual(const IMerkleBlock *block) const = 0;
+			virtual bool IsEqual(const IMerkleBlock *block) const = 0;
 
-			virtual std::string getBlockType() const = 0;
+			virtual std::string GetBlockType() const = 0;
 
 			virtual size_t MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const = 0;
 		};

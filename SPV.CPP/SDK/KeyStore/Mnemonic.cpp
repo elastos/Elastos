@@ -4,7 +4,7 @@
 
 #include "Mnemonic.h"
 
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 
 #include <Core/BRInt.h>
 #include <Core/BRBIP39WordsEn.h>
@@ -33,7 +33,7 @@ namespace Elastos {
 		}
 
 		void Mnemonic::LoadPath(const boost::filesystem::path &filePath) {
-			ParamChecker::checkCondition(!boost::filesystem::exists(filePath),
+			ErrorChecker::CheckCondition(!boost::filesystem::exists(filePath),
 										 Error::Mnemonic, "load mnemonic: " + filePath.string() + " do not exist!");
 
 			std::fstream infile(filePath.string());
@@ -42,7 +42,7 @@ namespace Elastos {
 				_words.push_back(line);
 			}
 
-			ParamChecker::checkCondition(_words.size() != BIP39_WORDLIST_COUNT, Error::Mnemonic,
+			ErrorChecker::CheckCondition(_words.size() != BIP39_WORDLIST_COUNT, Error::Mnemonic,
 										 "Mnemonic words count is " + std::to_string(_words.size()) +
 										 ", expected " + std::to_string(BIP39_WORDLIST_COUNT));
 		}
@@ -71,7 +71,7 @@ namespace Elastos {
 				return true;
 			}
 
-			ParamChecker::checkPathExists(_i18nPath);
+			ErrorChecker::CheckPathExists(_i18nPath);
 
 			for (fs::directory_iterator it{_i18nPath}; it != fs::directory_iterator{}; ++it) {
 
@@ -80,7 +80,7 @@ namespace Elastos {
 					filePath.filename().string().find(MNEMONIC_PREFIX) == 0 &&
 					filePath.extension().string() == MNEMONIC_EXTENSION) {
 					std::string language = filePath.stem().string().substr(strlen(MNEMONIC_PREFIX));
-					ParamChecker::checkCondition(language.empty(), Error::Mnemonic,
+					ErrorChecker::CheckCondition(language.empty(), Error::Mnemonic,
 												 "load mnemonic: " + filePath.string() + " filename invalid");
 					LoadLanguage(language);
 					standardPhrase = PhraseCheck(phrase);
@@ -112,7 +112,7 @@ namespace Elastos {
 			return _language;
 		}
 
-		const std::vector<std::string> &Mnemonic::words() const {
+		const std::vector<std::string> &Mnemonic::Words() const {
 			return _words;
 		}
 

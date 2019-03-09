@@ -5,7 +5,7 @@
 #include "SidechainSubWallet.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 
 #include <Core/BRAddress.h>
@@ -43,20 +43,21 @@ namespace Elastos {
 
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
-				ParamChecker::throwParamException(Error::JsonFormatError, "main chain message error: " + std::string(e.what()));
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+												  "main chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.getMinFee(),
+			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.GetMinFee(),
 													Asset::GetELAAssetID(), memo, remark);
-			ParamChecker::checkLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
+			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
-			tx->setTransactionType(Transaction::TransferCrossChainAsset, payload);
+			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			return _info.getGenesisAddress();
+			return _info.GetGenesisAddress();
 		}
 
 		nlohmann::json SidechainSubWallet::GetBasicInfo() const {
@@ -72,7 +73,7 @@ namespace Elastos {
 											  const std::string &remark) {
 			UInt256 asset = Utils::UInt256FromString(assetID, true);
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, asset, memo, remark);
-			return tx->toJson();
+			return tx->ToJson();
 		}
 
 		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) const {
@@ -80,7 +81,8 @@ namespace Elastos {
 		}
 
 		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) const {
-			return _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID, true), AssetTransactions::Total);
+			return _walletManager->getWallet()->GetBalance(Utils::UInt256FromString(assetID, true),
+														   AssetTransactions::Total);
 		}
 
 		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {

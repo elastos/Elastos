@@ -12,11 +12,11 @@
 using namespace Elastos::ElaWallet;
 
 static void initAsset(Asset &asset) {
-	asset.setName(getRandString(20));
-	asset.setDescription(getRandString(50));
-	asset.setPrecision(getRandUInt8());
-	asset.setAssetType(Asset::AssetType::Share);
-	asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+	asset.SetName(getRandString(20));
+	asset.SetDescription(getRandString(50));
+	asset.SetPrecision(getRandUInt8());
+	asset.SetAssetType(Asset::AssetType::Share);
+	asset.SetAssetRecordType(Asset::AssetRecordType::Balance);
 }
 
 TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
@@ -26,28 +26,28 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
 		Asset asset;
 		initAsset(asset);
-		p1.setAsset(asset);
-		p1.setAmount(getRandUInt64());
-		p1.setController(getRandUInt168());
+		p1.SetAsset(asset);
+		p1.SetAmount(getRandUInt64());
+		p1.SetController(getRandUInt168());
 
 		ByteStream stream;
 
 		p1.Serialize(stream, 0);
 
-		stream.setPosition(0);
+		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 
-		Asset asset1 = p1.getAsset();
-		Asset asset2 = p2.getAsset();
-		REQUIRE(asset1.getName() == asset2.getName());
-		REQUIRE(asset1.getDescription() == asset2.getDescription());
-		REQUIRE(asset1.getPrecision() == asset2.getPrecision());
-		REQUIRE(asset1.getAssetType() == asset2.getAssetType());
-		REQUIRE(asset1.getAssetRecordType() == asset2.getAssetRecordType());
+		Asset asset1 = p1.GetAsset();
+		Asset asset2 = p2.GetAsset();
+		REQUIRE(asset1.GetName() == asset2.GetName());
+		REQUIRE(asset1.GetDescription() == asset2.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
 		REQUIRE(UInt256Eq(&asset1.GetHash(), &asset2.GetHash()));
 
-		REQUIRE(p1.getAmount() == p2.getAmount());
-		REQUIRE(UInt168Eq(&p1.getController(), &p2.getController()));
+		REQUIRE(p1.GetAmount() == p2.GetAmount());
+		REQUIRE(UInt168Eq(&p1.GetController(), &p2.GetController()));
 	}
 
 	SECTION("toJson fromJson test") {
@@ -55,26 +55,26 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
 		Asset asset;
 		initAsset(asset);
-		p1.setAsset(asset);
-		p1.setAmount(getRandUInt64());
-		p1.setController(getRandUInt168());
+		p1.SetAsset(asset);
+		p1.SetAmount(getRandUInt64());
+		p1.SetController(getRandUInt168());
 
 		ByteStream stream;
 
-		nlohmann::json p1Json = p1.toJson(0);
+		nlohmann::json p1Json = p1.ToJson(0);
 
-		p2.fromJson(p1Json, 0);
+		p2.FromJson(p1Json, 0);
 
-		Asset asset1 = p1.getAsset();
-		Asset asset2 = p2.getAsset();
-		REQUIRE(asset1.getName() == asset2.getName());
-		REQUIRE(asset1.getDescription() == asset2.getDescription());
-		REQUIRE(asset1.getPrecision() == asset2.getPrecision());
-		REQUIRE(asset1.getAssetType() == asset2.getAssetType());
-		REQUIRE(asset1.getAssetRecordType() == asset2.getAssetRecordType());
+		Asset asset1 = p1.GetAsset();
+		Asset asset2 = p2.GetAsset();
+		REQUIRE(asset1.GetName() == asset2.GetName());
+		REQUIRE(asset1.GetDescription() == asset2.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
 		REQUIRE(UInt256Eq(&asset1.GetHash(), &asset2.GetHash()));
 
-		REQUIRE(p1.getAmount() == p2.getAmount());
-		REQUIRE(UInt168Eq(&p1.getController(), &p2.getController()));
+		REQUIRE(p1.GetAmount() == p2.GetAmount());
+		REQUIRE(UInt168Eq(&p1.GetController(), &p2.GetController()));
 	}
 }

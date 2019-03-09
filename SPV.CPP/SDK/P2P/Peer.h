@@ -94,7 +94,7 @@ namespace Elastos {
 		public:
 			Peer(PeerManager *manager, uint32_t magicNumber);
 
-			void initDefaultMessages();
+			void InitDefaultMessages();
 
 			~Peer();
 
@@ -144,25 +144,25 @@ namespace Elastos {
 
 			void RerequestBlocks(const UInt256 &fromBlock);
 
-			void scheduleDisconnect(double time);
+			void ScheduleDisconnect(double time);
 
 			bool NeedsFilterUpdate() const;
 
 			void SetNeedsFilterUpdate(bool needsFilterUpdate);
 
-			const std::string &getHost() const;
+			const std::string &GetHost() const;
 
 			uint32_t GetVersion() const;
 
 			void SetVersion(uint32_t version);
 
-			const std::string &getUserAgent() const;
+			const std::string &GetUserAgent() const;
 
 			uint32_t GetLastBlock() const;
 
 			void SetLastBlock(uint32_t height);
 
-			uint64_t getFeePerKb() const;
+			uint64_t GetFeePerKb() const;
 
 			bool IsEqual(const Peer *peer) const;
 
@@ -230,21 +230,21 @@ namespace Elastos {
 
 			void SetDisconnectTime(double time);
 
-			void addPongCallback(const PeerCallback &callback);
+			void AddPongCallback(const PeerCallback &callback);
 
-			PeerCallback popPongCallback();
+			PeerCallback PopPongCallback();
 
-			const std::deque<PeerCallback> &getPongCallbacks() const;
+			const std::deque<PeerCallback> &GetPongCallbacks() const;
 
-			const PeerCallback &getMemPoolCallback() const;
+			const PeerCallback &GetMemPoolCallback() const;
 
-			void setMempoolCallback(const PeerCallback &callback);
+			void SetMempoolCallback(const PeerCallback &callback);
 
-			void setMempoolTime(double time);
+			void SetMempoolTime(double time);
 
-			void resetMemPool();
+			void ResetMemPool();
 
-			PeerManager *getPeerManager() const;
+			PeerManager *GetPeerManager() const;
 
 			uint8_t GetFlags() const;
 
@@ -264,85 +264,85 @@ namespace Elastos {
 			inline void trace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::trace(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::trace(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void debug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::debug(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::debug(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::info(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::info(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void warn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::warn(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::warn(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void error(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::error(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::error(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void critical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{} {}:{} ";
 				peerFmt += fmt;
-				Log::critical(peerFmt.c_str(), _managerID, getHost(), GetPort(), arg1, args...);
+				Log::critical(peerFmt.c_str(), _managerID, GetHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename T>
 			inline void trace(const T &msg) {
-				Log::trace("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::trace("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void debug(const T &msg) {
-				Log::debug("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::debug("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void info(const T &msg) {
-				Log::info("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::info("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void warn(const T &msg) {
-				Log::warn("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::warn("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void error(const T &msg) {
-				Log::error("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::error("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void critical(const T &msg) {
-				Log::critical("{} {}:{} {}", _managerID, getHost(), GetPort(), msg);
+				Log::critical("{} {}:{} {}", _managerID, GetHost(), GetPort(), msg);
 			}
 
 		private:
 
-			void initSingleMessage(Message *message);
+			void InitSingleMessage(Message *message);
 
-			bool networkIsReachable() const;
+			bool NetworkIsReachable() const;
 
-			bool acceptMessage(const CMBlock &msg, const std::string &type);
+			bool AcceptMessage(const CMBlock &msg, const std::string &type);
 
-			int openSocket(int domain, double timeout, int *error);
+			int OpenSocket(int domain, double timeout, int *error);
 
-			void peerThreadRoutine();
+			void PeerThreadRoutine();
 
 		private:
 			friend class Message;

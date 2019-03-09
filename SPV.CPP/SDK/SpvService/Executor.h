@@ -20,7 +20,7 @@ namespace Elastos {
 
 		class Executor {
 		public:
-			virtual void execute(const Runnable &runnable) = 0;
+			virtual void Execute(const Runnable &runnable) = 0;
 		};
 
 	}

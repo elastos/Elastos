@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "ParamChecker.h"
+#include "ErrorChecker.h"
 #include "Utils.h"
 #include "Log.h"
 #include "Base64.h"
@@ -111,7 +111,7 @@ namespace Elastos {
 			return result;
 		}
 
-		CMBlock Utils::decodeHex(const std::string &source) {
+		CMBlock Utils::DecodeHex(const std::string &source) {
 			CMBlock target;
 			if (source.length() % 2 != 0) {
 				Log::error("Decode '{}' fail: length is not even", source);
@@ -131,7 +131,7 @@ namespace Elastos {
 			return target;
 		}
 
-		std::string Utils::encodeHex(const uint8_t *hex, size_t hexLen) {
+		std::string Utils::EncodeHex(const uint8_t *hex, size_t hexLen) {
 			std::string str;
 			str.reserve(2 * hexLen + 1);
 
@@ -143,8 +143,8 @@ namespace Elastos {
 			return str;
 		}
 
-		std::string Utils::encodeHex(const CMBlock &in) {
-			return encodeHex(in, in.GetSize());
+		std::string Utils::EncodeHex(const CMBlock &in) {
+			return EncodeHex(in, in.GetSize());
 		}
 
 		bool Utils::Encrypt(std::string &ctBase64, const std::string &data, const std::string &passwd) {

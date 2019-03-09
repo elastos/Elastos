@@ -30,34 +30,34 @@ namespace Elastos {
 		PayloadRecord::~PayloadRecord() {
 		}
 
-		void PayloadRecord::setRecordType(const std::string &recordType) {
+		void PayloadRecord::SetRecordType(const std::string &recordType) {
 			_recordType = recordType;
 		}
 
-		void PayloadRecord::setRecordData(const CMBlock &recordData) {
+		void PayloadRecord::SetRecordData(const CMBlock &recordData) {
 			_recordData = recordData;
 		}
 
-		std::string PayloadRecord::getRecordType() const {
+		std::string PayloadRecord::GetRecordType() const {
 			return _recordType;
 		}
 
-		CMBlock PayloadRecord::getRecordData() const {
+		CMBlock PayloadRecord::GetRecordData() const {
 			return _recordData;
 		}
 
 		void PayloadRecord::Serialize(ByteStream &ostream, uint8_t version) const {
-			ostream.writeVarString(_recordType);
-			ostream.writeVarBytes(_recordData);
+			ostream.WriteVarString(_recordType);
+			ostream.WriteVarBytes(_recordData);
 		}
 
 		bool PayloadRecord::Deserialize(ByteStream &istream, uint8_t version) {
-			if (!istream.readVarString(_recordType)) {
+			if (!istream.ReadVarString(_recordType)) {
 				Log::error("Payload record deserialize type fail");
 				return false;
 			}
 
-			if (!istream.readVarBytes(_recordData)) {
+			if (!istream.ReadVarBytes(_recordData)) {
 				Log::error("Payload record deserialize data fail");
 				return false;
 			}
@@ -65,18 +65,18 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRecord::toJson(uint8_t version) const {
+		nlohmann::json PayloadRecord::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["RecordType"] = _recordType;
-			j["RecordData"] = Utils::encodeHex(_recordData);
+			j["RecordData"] = Utils::EncodeHex(_recordData);
 
 			return j;
 		}
 
-		void PayloadRecord::fromJson(const nlohmann::json &j, uint8_t version) {
+		void PayloadRecord::FromJson(const nlohmann::json &j, uint8_t version) {
 			_recordType = j["RecordType"].get<std::string>();
-			_recordData = Utils::decodeHex(j["RecordData"].get<std::string>());
+			_recordData = Utils::DecodeHex(j["RecordData"].get<std::string>());
 		}
 
 		IPayload &PayloadRecord::operator=(const IPayload &payload) {

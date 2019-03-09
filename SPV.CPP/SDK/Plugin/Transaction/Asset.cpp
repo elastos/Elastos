@@ -30,76 +30,76 @@ namespace Elastos {
 
 		}
 
-		void Asset::setName(const std::string &name) {
+		void Asset::SetName(const std::string &name) {
 			_name = name;
 		}
 
-		std::string Asset::getName() const {
+		std::string Asset::GetName() const {
 			return _name;
 		}
 
-		void Asset::setDescription(const std::string &desc) {
+		void Asset::SetDescription(const std::string &desc) {
 			_description = desc;
 		}
 
-		std::string Asset::getDescription() const {
+		std::string Asset::GetDescription() const {
 			return _description;
 		}
 
-		void Asset::setAssetType(Asset::AssetType type) {
+		void Asset::SetAssetType(Asset::AssetType type) {
 			_assetType = type;
 		}
 
-		Asset::AssetType Asset::getAssetType() const {
+		Asset::AssetType Asset::GetAssetType() const {
 			return _assetType;
 		}
 
-		void Asset::setAssetRecordType(Asset::AssetRecordType type) {
+		void Asset::SetAssetRecordType(Asset::AssetRecordType type) {
 			_recordType = type;
 		}
 
-		Asset::AssetRecordType Asset::getAssetRecordType() const {
+		Asset::AssetRecordType Asset::GetAssetRecordType() const {
 			return _recordType;
 		}
 
-		void Asset::setPrecision(uint8_t precision) {
+		void Asset::SetPrecision(uint8_t precision) {
 			_precision = precision;
 		}
 
-		uint8_t Asset::getPrecision() const {
+		uint8_t Asset::GetPrecision() const {
 			return _precision;
 		}
 
 		void Asset::Serialize(ByteStream &ostream) const {
-			ostream.writeVarString(_name);
-			ostream.writeVarString(_description);
-			ostream.writeBytes(&_precision, 1);
-			ostream.writeBytes(&_assetType, 1);
-			ostream.writeBytes(&_recordType, 1);
+			ostream.WriteVarString(_name);
+			ostream.WriteVarString(_description);
+			ostream.WriteBytes(&_precision, 1);
+			ostream.WriteBytes(&_assetType, 1);
+			ostream.WriteBytes(&_recordType, 1);
 		}
 
 		bool Asset::Deserialize(ByteStream &istream) {
-			if (!istream.readVarString(_name)) {
+			if (!istream.ReadVarString(_name)) {
 				Log::error("Asset payload deserialize name fail");
 				return false;
 			}
 
-			if (!istream.readVarString(_description)) {
+			if (!istream.ReadVarString(_description)) {
 				Log::error("Asset payload deserialize description fail");
 				return false;
 			}
 
-			if (!istream.readBytes(&_precision, 1)) {
+			if (!istream.ReadBytes(&_precision, 1)) {
 				Log::error("Asset payload deserialize precision fail");
 				return false;
 			}
 
-			if (!istream.readBytes(&_assetType, 1)) {
+			if (!istream.ReadBytes(&_assetType, 1)) {
 				Log::error("Asset payload deserialize asset type fail");
 				return false;
 			}
 
-			if (!istream.readBytes(&_recordType, 1)) {
+			if (!istream.ReadBytes(&_recordType, 1)) {
 				Log::error("Asset payload deserialize record type fail");
 				return false;
 			}
@@ -107,7 +107,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Asset::toJson() const {
+		nlohmann::json Asset::ToJson() const {
 			nlohmann::json j;
 
 			j["Name"] = _name;
@@ -119,7 +119,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void Asset::fromJson(const nlohmann::json &j) {
+		void Asset::FromJson(const nlohmann::json &j) {
 			_name = j["Name"].get<std::string>();
 			_description = j["Description"].get<std::string>();
 			_precision = j["Precision"].get<uint8_t>();
@@ -131,8 +131,8 @@ namespace Elastos {
 			static UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_elaAsset, &zero)) {
 				Transaction elaCoin;
-				elaCoin.setTransactionType(Transaction::RegisterAsset);
-				_elaAsset = elaCoin.getHash();
+				elaCoin.SetTransactionType(Transaction::RegisterAsset);
+				_elaAsset = elaCoin.GetHash();
 			}
 			return _elaAsset;
 		}
@@ -141,7 +141,7 @@ namespace Elastos {
 			if (UInt256IsZero(&_hash)) {
 				ByteStream ostream;
 				Serialize(ostream);
-				CMBlock buff = ostream.getBuffer();
+				CMBlock buff = ostream.GetBuffer();
 				BRSHA256_2(&_hash, buff, buff.GetSize());
 			}
 			return _hash;

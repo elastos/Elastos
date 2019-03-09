@@ -15,83 +15,83 @@ namespace Elastos {
 
 		}
 
-		const std::string &SjclFile::getIv() const {
+		const std::string &SjclFile::GetIv() const {
 			return _iv;
 		}
 
-		void SjclFile::setIv(const std::string &iv) {
+		void SjclFile::SetIv(const std::string &iv) {
 			_iv = iv;
 		}
 
-		uint32_t SjclFile::getV() const {
+		uint32_t SjclFile::GetV() const {
 			return _v;
 		}
 
-		void SjclFile::setV(uint32_t value) {
+		void SjclFile::SetV(uint32_t value) {
 			_v = value;
 		}
 
-		uint32_t SjclFile::getIter() const {
+		uint32_t SjclFile::GetIter() const {
 			return _iter;
 		}
 
-		void SjclFile::setIter(uint32_t value) {
+		void SjclFile::SetIter(uint32_t value) {
 			_iter = value;
 		}
 
-		uint32_t SjclFile::getKs() const {
+		uint32_t SjclFile::GetKs() const {
 			return _ks;
 		}
 
-		void SjclFile::setKs(uint32_t value) {
+		void SjclFile::SetKs(uint32_t value) {
 			_ks = value;
 		}
 
-		uint32_t SjclFile::getTs() const {
+		uint32_t SjclFile::GetTs() const {
 			return _ts;
 		}
 
-		void SjclFile::setTs(uint32_t value) {
+		void SjclFile::SetTs(uint32_t value) {
 			_ts = value;
 		}
 
-		const std::string &SjclFile::getMode() const {
+		const std::string &SjclFile::GetMode() const {
 			return _mode;
 		}
 
-		void SjclFile::setMode(const std::string &mode) {
+		void SjclFile::SetMode(const std::string &mode) {
 			_mode = mode;
 		}
 
-		const std::string &SjclFile::getAdata() const {
+		const std::string &SjclFile::GetAdata() const {
 			return _adata;
 		}
 
-		void SjclFile::setAdata(const std::string &adata) {
+		void SjclFile::SetAdata(const std::string &adata) {
 			_adata = adata;
 		}
 
-		const std::string &SjclFile::getCipher() const {
+		const std::string &SjclFile::GetCipher() const {
 			return _cipher;
 		}
 
-		void SjclFile::setCipher(const std::string &cipher) {
+		void SjclFile::SetCipher(const std::string &cipher) {
 			_cipher = cipher;
 		}
 
-		const std::string &SjclFile::getSalt() const {
+		const std::string &SjclFile::GetSalt() const {
 			return _salt;
 		}
 
-		void SjclFile::setSalt(const std::string &salt) {
+		void SjclFile::SetSalt(const std::string &salt) {
 			_salt = salt;
 		}
 
-		const std::string &SjclFile::getCt() const {
+		const std::string &SjclFile::GetCt() const {
 			return _ct;
 		}
 
-		void SjclFile::setCt(const std::string &ct) {
+		void SjclFile::SetCt(const std::string &ct) {
 			_ct = ct;
 		}
 
@@ -108,29 +108,29 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const SjclFile &p) {
-			j["iv"] = p.getIv();
-			j["v"] = p.getV();
-			j["iter"] = p.getIter();
-			j["ks"] = p.getKs();
-			j["ts"] = p.getTs();
-			j["mode"] = p.getMode();
-			j["adata"] = p.getAdata();
-			j["cipher"] = p.getCipher();
-			j["salt"] = p.getSalt();
-			j["ct"] = p.getCt();
+			j["iv"] = p.GetIv();
+			j["v"] = p.GetV();
+			j["iter"] = p.GetIter();
+			j["ks"] = p.GetKs();
+			j["ts"] = p.GetTs();
+			j["mode"] = p.GetMode();
+			j["adata"] = p.GetAdata();
+			j["cipher"] = p.GetCipher();
+			j["salt"] = p.GetSalt();
+			j["ct"] = p.GetCt();
 		}
 
 		void from_json(const nlohmann::json &j, SjclFile &p) {
-			p.setIv(j["iv"].get<std::string>());
-			p.setV(j["v"].get<uint32_t>());
-			p.setIter(j["iter"].get<uint32_t>());
-			p.setKs(j["ks"].get<uint32_t>());
-			p.setTs(j["ts"].get<uint32_t>());
-			p.setMode(j["mode"].get<std::string>());
-			p.setAdata(j["adata"].get<std::string>());
-			p.setCipher(j["cipher"].get<std::string>());
-			p.setSalt(j["salt"].get<std::string>());
-			p.setCt(j["ct"].get<std::string>());
+			p.SetIv(j["iv"].get<std::string>());
+			p.SetV(j["v"].get<uint32_t>());
+			p.SetIter(j["iter"].get<uint32_t>());
+			p.SetKs(j["ks"].get<uint32_t>());
+			p.SetTs(j["ts"].get<uint32_t>());
+			p.SetMode(j["mode"].get<std::string>());
+			p.SetAdata(j["adata"].get<std::string>());
+			p.SetCipher(j["cipher"].get<std::string>());
+			p.SetSalt(j["salt"].get<std::string>());
+			p.SetCt(j["ct"].get<std::string>());
 		}
 	}
 }

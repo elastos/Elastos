@@ -149,7 +149,7 @@ namespace Elastos {
 			if (_status == Peer::Disconnected || _waitingForNetwork) {
 				_status = Peer::Connecting;
 
-				if (0 && !networkIsReachable()) { // delay until network is reachable
+				if (0 && !NetworkIsReachable()) { // delay until network is reachable
 					if (!_waitingForNetwork) info("waiting for network reachability");
 					_waitingForNetwork = 1;
 				} else {
@@ -158,7 +158,7 @@ namespace Elastos {
 					gettimeofday(&tv, NULL);
 					_disconnectTime = tv.tv_sec + (double) tv.tv_usec / 1000000 + CONNECT_TIMEOUT;
 
-					boost::thread workThread(boost::bind(&Peer::peerThreadRoutine, this));
+					boost::thread workThread(boost::bind(&Peer::PeerThreadRoutine, this));
 				}
 			}
 		}
@@ -232,7 +232,7 @@ namespace Elastos {
 			}
 		}
 
-		void Peer::scheduleDisconnect(double seconds) {
+		void Peer::ScheduleDisconnect(double seconds) {
 			struct timeval tv;
 
 			gettimeofday(&tv, NULL);
@@ -247,7 +247,7 @@ namespace Elastos {
 			_needsFilterUpdate = needsFilterUpdate;
 		}
 
-		const std::string &Peer::getHost() const {
+		const std::string &Peer::GetHost() const {
 			if (_host.empty()) {
 				_host = _info.GetHost();
 			}
@@ -263,7 +263,7 @@ namespace Elastos {
 			_version = version;
 		}
 
-		const std::string &Peer::getUserAgent() const {
+		const std::string &Peer::GetUserAgent() const {
 			return _useragent;
 		}
 
@@ -275,7 +275,7 @@ namespace Elastos {
 			_lastblock = height;
 		}
 
-		uint64_t Peer::getFeePerKb() const {
+		uint64_t Peer::GetFeePerKb() const {
 			return _feePerKb;
 		}
 
@@ -283,7 +283,7 @@ namespace Elastos {
 			return (this == otherPeer || _info == otherPeer->GetPeerInfo());
 		}
 
-		bool Peer::networkIsReachable() const {
+		bool Peer::NetworkIsReachable() const {
 			//fixme [refactor]
 			return true;
 		}
@@ -292,11 +292,11 @@ namespace Elastos {
 			return _info.IsIPv4();
 		}
 
-		void Peer::peerThreadRoutine() {
+		void Peer::PeerThreadRoutine() {
 
 			int socket, error = 0;
 
-			if (openSocket(PF_INET6, CONNECT_TIMEOUT, &error)) {
+			if (OpenSocket(PF_INET6, CONNECT_TIMEOUT, &error)) {
 				struct timeval tv;
 				double time = 0, msgTimeout;
 				uint8_t header[HEADER_LENGTH];
@@ -402,7 +402,7 @@ namespace Elastos {
 												" SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
 												Utils::UInt256ToString(hash, true));
 									error = EPROTO;
-								} else if (!acceptMessage(payload, type)) error = EPROTO;
+								} else if (!AcceptMessage(payload, type)) error = EPROTO;
 							}
 						}
 					}
@@ -416,7 +416,7 @@ namespace Elastos {
 			info("disconnected");
 
 			while (!_pongCallbackList.empty()) {
-				Peer::PeerCallback pongCallback = popPongCallback();
+				Peer::PeerCallback pongCallback = PopPongCallback();
 				if (pongCallback) pongCallback(0);
 			}
 
@@ -433,32 +433,32 @@ namespace Elastos {
 			_listener = nullptr;
 		}
 
-		void Peer::initDefaultMessages() {
-			initSingleMessage(new VersionMessage(shared_from_this()));
-			initSingleMessage(new VerackMessage(shared_from_this()));
-			initSingleMessage(new AddressMessage(shared_from_this()));
-			initSingleMessage(new InventoryMessage(shared_from_this()));
-			initSingleMessage(new GetDataMessage(shared_from_this()));
-			initSingleMessage(new NotFoundMessage(shared_from_this()));
-			initSingleMessage(new GetBlocksMessage(shared_from_this()));
-			initSingleMessage(new GetHeadersMessage(shared_from_this()));
-			initSingleMessage(new TransactionMessage(shared_from_this()));
-			initSingleMessage(new HeadersMessage(shared_from_this()));
-			initSingleMessage(new MempoolMessage(shared_from_this()));
-			initSingleMessage(new PingMessage(shared_from_this()));
-			initSingleMessage(new PongMessage(shared_from_this()));
-			initSingleMessage(new FilterLoadMessage(shared_from_this()));
-			initSingleMessage(new MerkleBlockMessage(shared_from_this()));
-			initSingleMessage(new GetAddressMessage(shared_from_this()));
-			initSingleMessage(new RejectMessage(shared_from_this()));
+		void Peer::InitDefaultMessages() {
+			InitSingleMessage(new VersionMessage(shared_from_this()));
+			InitSingleMessage(new VerackMessage(shared_from_this()));
+			InitSingleMessage(new AddressMessage(shared_from_this()));
+			InitSingleMessage(new InventoryMessage(shared_from_this()));
+			InitSingleMessage(new GetDataMessage(shared_from_this()));
+			InitSingleMessage(new NotFoundMessage(shared_from_this()));
+			InitSingleMessage(new GetBlocksMessage(shared_from_this()));
+			InitSingleMessage(new GetHeadersMessage(shared_from_this()));
+			InitSingleMessage(new TransactionMessage(shared_from_this()));
+			InitSingleMessage(new HeadersMessage(shared_from_this()));
+			InitSingleMessage(new MempoolMessage(shared_from_this()));
+			InitSingleMessage(new PingMessage(shared_from_this()));
+			InitSingleMessage(new PongMessage(shared_from_this()));
+			InitSingleMessage(new FilterLoadMessage(shared_from_this()));
+			InitSingleMessage(new MerkleBlockMessage(shared_from_this()));
+			InitSingleMessage(new GetAddressMessage(shared_from_this()));
+			InitSingleMessage(new RejectMessage(shared_from_this()));
 		}
 
-		bool Peer::acceptMessage(const CMBlock &msg, const std::string &type) {
+		bool Peer::AcceptMessage(const CMBlock &msg, const std::string &type) {
 			bool r = false;
 
 			if (_currentBlock != nullptr && MSG_TX != type) { // if we receive a non-tx message, merkleblock is done
 				this->error("incomplete merkleblock {}, expected {} more tx, got {}",
-							Utils::UInt256ToString(_currentBlock->getHash(), true),
+							Utils::UInt256ToString(_currentBlock->GetHash(), true),
 							_currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
@@ -587,7 +587,7 @@ namespace Elastos {
 			return std::string(strerror(errnum));
 		}
 
-		int Peer::openSocket(int domain, double timeout, int *error) {
+		int Peer::OpenSocket(int domain, double timeout, int *error) {
 			struct sockaddr_storage addr;
 			struct timeval tv;
 			fd_set fds;
@@ -646,7 +646,7 @@ namespace Elastos {
 						r = 0;
 					}
 				} else if (err && domain == PF_INET6 && IsIPv4()) {
-					return openSocket(PF_INET, timeout, error); // fallback to IPv4
+					return OpenSocket(PF_INET, timeout, error); // fallback to IPv4
 				} else if (err) r = 0;
 
 				if (r) info("socket connected");
@@ -674,15 +674,15 @@ namespace Elastos {
 			_startTime = time;
 		}
 
-		void Peer::addPongCallback(const PeerCallback &callback) {
+		void Peer::AddPongCallback(const PeerCallback &callback) {
 			_pongCallbackList.push_back(callback);
 		}
 
-		PeerManager *Peer::getPeerManager() const {
+		PeerManager *Peer::GetPeerManager() const {
 			return _manager;
 		}
 
-		const std::deque<Peer::PeerCallback> &Peer::getPongCallbacks() const {
+		const std::deque<Peer::PeerCallback> &Peer::GetPongCallbacks() const {
 			return _pongCallbackList;
 		}
 
@@ -702,7 +702,7 @@ namespace Elastos {
 			_disconnectTime = time;
 		}
 
-		Peer::PeerCallback Peer::popPongCallback() {
+		Peer::PeerCallback Peer::PopPongCallback() {
 			PeerCallback callback = _pongCallbackList.front();
 			_pongCallbackList.pop_front();
 			return callback;
@@ -732,24 +732,24 @@ namespace Elastos {
 			return _currentBlock;
 		}
 
-		const Peer::PeerCallback &Peer::getMemPoolCallback() const {
+		const Peer::PeerCallback &Peer::GetMemPoolCallback() const {
 			return _mempoolCallback;
 		}
 
-		void Peer::resetMemPool() {
+		void Peer::ResetMemPool() {
 			_mempoolCallback = PeerCallback();
 			_mempoolTime = DBL_MAX;
 		}
 
-		void Peer::setMempoolCallback(const Peer::PeerCallback &callback) {
+		void Peer::SetMempoolCallback(const Peer::PeerCallback &callback) {
 			_mempoolCallback = callback;
 		}
 
-		void Peer::setMempoolTime(double time) {
+		void Peer::SetMempoolTime(double time) {
 			_mempoolTime = time;
 		}
 
-		void Peer::initSingleMessage(Message *message) {
+		void Peer::InitSingleMessage(Message *message) {
 			_messages[message->Type()] = MessagePtr(message);
 		}
 

@@ -25,7 +25,7 @@ namespace Elastos {
 			if (sizeof(uint64_t) > msg.GetSize()) {
 				_peer->warn("malformed pong message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
 				r = false;
-			} else if (_peer->getPongCallbacks().empty()) {
+			} else if (_peer->GetPongCallbacks().empty()) {
 				_peer->warn("got unexpected pong");
 				r = false;
 			} else {
@@ -41,8 +41,8 @@ namespace Elastos {
 					_peer->info("got pong");
 				}
 
-				if (_peer->getPongCallbacks().size() > 0) {
-					Peer::PeerCallback callback = _peer->popPongCallback();
+				if (_peer->GetPongCallbacks().size() > 0) {
+					Peer::PeerCallback callback = _peer->PopPongCallback();
 					if (!callback.empty()) callback(1);
 				}
 			}
@@ -53,8 +53,8 @@ namespace Elastos {
 		void PongMessage::Send(const SendMessageParameter &param) {
 			const PongParameter &pongParameter = dynamic_cast<const PongParameter &>(param);
 			ByteStream stream;
-			stream.writeUint64(pongParameter.lastBlockHeight);
-			_peer->SendMessage(stream.getBuffer(), Type());
+			stream.WriteUint64(pongParameter.lastBlockHeight);
+			_peer->SendMessage(stream.GetBuffer(), Type());
 		}
 
 		std::string PongMessage::Type() const {
