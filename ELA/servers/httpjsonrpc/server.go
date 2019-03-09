@@ -199,7 +199,6 @@ func clientAllowed(r *http.Request) bool {
 	}
 
 	if remoteIp.IsLoopback() {
-		log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
 		return true
 	}
 

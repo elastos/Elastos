@@ -11,12 +11,12 @@ import (
 	//"encoding/json"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
-	logger = log.NewDefault(1, 10000, 10000)
+	logger = log.NewDefault(3, 10000, 10000)
 	urlNotLoopBack string
 )
 
@@ -276,8 +276,8 @@ func resolveHostIp() (string) {
 //}
 
 func TestServer_NotInitRpcConf1(t *testing.T) {
-
-	t.Logf("NotInitRpcConf1 request with no authorization and 127.0.0.1 begin resolveHostIp %s", urlNotLoopBack)
+	now := time.Now()
+	t.Logf("NotInitRpcConf1 %v request with no authorization and 127.0.0.1  expect ok now ", now)
 
 	test.SkipShort(t)
 
@@ -344,8 +344,9 @@ func TestServer_NotInitRpcConf1(t *testing.T) {
 	}
 }
 func TestServer_NotInitRpcConf2(t *testing.T) {
+	now := time.Now()
 
-	t.Logf(" NotInitRpcConf2 request with  authorization  and 127.0.0.1 begin")
+	t.Logf(" NotInitRpcConf2 request with  authorization  and 127.0.0.1 begin now %v", now)
 
 	test.SkipShort(t)
 

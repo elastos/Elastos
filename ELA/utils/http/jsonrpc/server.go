@@ -144,8 +144,8 @@ func (s *Server) parseParams(method string, array []interface{}) htp.Params {
 }
 
 func (s *Server) clientAllowed(r *http.Request) bool {
-	log.Debugf("RemoteAddr %s \n", r.RemoteAddr)
-	log.Debugf("WhiteIPList %v \n", s.cfg.RpcConfiguration.WhiteIPList)
+	log.Infof("RemoteAddr %s \n", r.RemoteAddr)
+	log.Infof("WhiteIPList %v \n", s.cfg.RpcConfiguration.WhiteIPList)
 	//this ipAbbr  may be  ::1 when request is localhost
 	ipAbbr, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
@@ -162,7 +162,7 @@ func (s *Server) clientAllowed(r *http.Request) bool {
 	}
 
 	if remoteIp.IsLoopback() {
-		log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
+		//log.Debugf("remoteIp %s IsLoopback\n", remoteIp)
 		return true
 	}
 
@@ -185,7 +185,7 @@ func (s *Server) checkAuth(r *http.Request) bool {
 	User := s.cfg.RpcConfiguration.User
 	Pass := s.cfg.RpcConfiguration.Pass
 
-	log.Debugf("ServeHTTP checkAuth RpcConfiguration %+v" , s.cfg.RpcConfiguration)
+	log.Infof("ServeHTTP checkAuth RpcConfiguration %+v" , s.cfg.RpcConfiguration)
 	if (User == Pass) && (len(User) == 0) {
 		return true
 	}
