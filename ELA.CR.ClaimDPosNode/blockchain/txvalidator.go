@@ -250,17 +250,17 @@ func checkVoteProducerOutputs(outputs []*Output, references map[*Input]*Output, 
 	for _, o := range outputs {
 		if o.Type == OTVote {
 			if _, ok := programHashes[o.ProgramHash]; !ok {
-				return errors.New("Invalid vote output")
+				return errors.New("the output address of vote tx should exist in its input")
 			}
 			payload, ok := o.Payload.(*outputpayload.VoteOutput)
 			if !ok {
-				return errors.New("Invalid vote output payload")
+				return errors.New("invalid vote output payload")
 			}
 			for _, content := range payload.Contents {
 				if content.VoteType == outputpayload.Delegate {
 					for _, candidate := range content.Candidates {
 						if _, ok := pds[common.BytesToHexString(candidate)]; !ok {
-							return fmt.Errorf("Invalid vote output payload candidate: %s", common.BytesToHexString(candidate))
+							return fmt.Errorf("invalid vote output payload candidate: %s", common.BytesToHexString(candidate))
 						}
 					}
 				}
@@ -752,7 +752,7 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 	}
 
 	for _, v := range references {
-		if bytes.Compare(v.ProgramHash[0:1], []byte{common.PrefixCrossChain}) != 0 {
+		if bytes.Compare(v.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
 		}
 	}
@@ -788,7 +788,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 			return errors.New("duplicated cross chain address in payload")
 		}
 		csAddresses[payloadObj.CrossChainAddresses[i]] = struct{}{}
-		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{common.PrefixCrossChain}) != 0 {
+		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction output address, without \"X\" at beginning")
 		}
 		if payloadObj.CrossChainAddresses[i] == "" {

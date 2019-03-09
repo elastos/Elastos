@@ -11,15 +11,16 @@ USAGE:
 
 COMMANDS:
    Account:
-     create, c    Create a account
-     account, a   Show account address and public key
-     balance, b   Check account balance
-     add          Add a standard account
-     addmultisig  Add a multi-signature account
-     delete       Delete an account
-     import       Import an account by private key hex string
-     export       Export all account private keys in hex string
-     depositaddr  Generate deposit address
+     create, c       Create a account
+     account, a      Show account address and public key
+     balance, b      Check account balance
+     add             Add a standard account
+     addmultisig     Add a multi-signature account
+     delete          Delete an account
+     import          Import an account by private key hex string
+     export          Export all account private keys in hex string
+     depositaddr     Generate deposit address
+     crosschainaddr  Generate cross chain address
 
    Transaction:
      buildtx  Build a transaction
@@ -213,7 +214,21 @@ EQJP3XT7rshteqE1D3u9nBqXL7xQrfzVh1 03f69479d0f6aa11aae5fbe5e5bfca201d717d9fa97a4
 DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD
 ```
 
-### 1.10 构造交易
+### 1.10 生成冻结地址
+
+通过侧链创世块哈希，生成对应侧链的冻结地址。
+
+```
+./ela-cli wallet crosschainaddr 56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3
+```
+
+返回如下：
+
+```
+XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+```
+
+### 2.1 构造交易
 
 构造交易命令 buildtx 用于构造转账交易的内容，构造出来的交易在发送到 ela 节点前，还需要用的私钥签名。
 
@@ -227,7 +242,7 @@ DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD
 
 -- wallet <file>, -w <file> 参数用于设定所使用的 keystore 文件路径。
 
-#### 1.10.1 构造单签交易
+#### 2.1.1 构造单签交易
 
 ```
 ./ela-cli wallet buildtx --to EJbTbWd8a9rdutUfvBxhcrvEeNy21tW1Ee --amount 0.1 --fee 0.01
@@ -240,7 +255,7 @@ Hex:  090200010013373934373338313938363837333037373435330139eaa4137a047cdaac7112
 File:  to_be_signed.txn
 ```
 
-#### 1.10.2 构造多签交易
+#### 2.1.2 构造多签交易
 
 from 地址需要存在于所指定的 keystore 文件中，可使用 -w 参数指定 keystore 文件，默认为 keystore.dat。
 
@@ -255,7 +270,7 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  to_be_signed.txn
 ```
 
-### 1.11 对交易签名
+### 2.2 对交易签名
 
 使用 buildtx 命令构造的交易，需要通过花费地址的私钥签名后，才是有效的交易。
 
@@ -267,7 +282,7 @@ File:  to_be_signed.txn
 
 -- password <value>, -p <value> 用于设定 keystore 密码。也可以根据提示设定。
 
-#### 1.11.1 单签
+#### 2.2.1 单签
 
 指定构造好的单签交易：
 
@@ -285,7 +300,7 @@ Hex:  090200010013373934373338313938363837333037373435330139eaa4137a047cdaac7112
 File:  ready_to_send.txn
 ```
 
-#### 1.11.2 多签
+#### 2.2.2 多签
 
 指定构造好的多签交易，附加第一个签名：
 
@@ -329,7 +344,7 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  ready_to_send.txn
 ```
 
-### 1.12 发送交易
+### 2.3 发送交易
 
 发送交易命令可以将已签名完成的交易发送至 ela 节点。
 
@@ -343,7 +358,7 @@ File:  ready_to_send.txn
 5b9673a813b90dd73f6d21f478736c7e08bba114c3772618fca232341af683b5
 ```
 
-### 1.13 查看交易
+### 2.4 查看交易
 
 查看交易命令可以解析原始交易字节中的内容。可使用 --hex 或 --file 指定原始交易。
 
@@ -388,7 +403,7 @@ Transaction: {
 	}
 ```
 
-## 2.信息查询
+## 3.信息查询
 
 ```
 NAME:
@@ -412,7 +427,7 @@ OPTIONS:
    --help, -h  show help
 ```
 
-### 2.1 查看节点连接数
+### 3.1 查看节点连接数
 
 ```
 ./ela-cli info getconnectioncount
@@ -424,7 +439,7 @@ OPTIONS:
 1
 ```
 
-### 2.2 查看邻居节点
+### 3.2 查看邻居节点
 
 ```
 ./ela-cli info getneighbors
@@ -438,7 +453,7 @@ OPTIONS:
 ]
 ```
 
-### 2.3 查看节点状态
+### 3.3 查看节点状态
 
 ```
 ./ela-cli info getnodestate
@@ -467,7 +482,7 @@ OPTIONS:
 ]
 ```
 
-### 2.4 获取节点当前高度
+### 3.4 获取节点当前高度
 
 ```
 ./ela-cli info getcurrentheight
@@ -479,7 +494,7 @@ OPTIONS:
 395
 ```
 
-### 2.5 获取最高区块hash
+### 3.5 获取最高区块hash
 
 ```
 ./ela-cli info getbestblockhash
@@ -491,7 +506,7 @@ OPTIONS:
 "0affad77eacef8d5e69bebd1edd24b43ca8d8948dade9e23b14a9d8ceca060e6"
 ```
 
-### 2.6 获取区块 hash
+### 3.6 获取区块 hash
 
 获取块高为 100 的区块 hash
 
@@ -505,7 +520,7 @@ OPTIONS:
 "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415"
 ```
 
-### 2.7 获取区块信息
+### 3.7 获取区块信息
 
 通过区块 hash 获取区块信息：
 
@@ -695,7 +710,7 @@ OPTIONS:
 }
 ```
 
-### 2.8 获取原始交易信息
+### 3.8 获取原始交易信息
 
 ```
 ./ela-cli info getrawtransaction 17296308c322aee00274da494e0b9a08423b65d170bd2235c3b658f7030fd9b9
@@ -707,7 +722,7 @@ OPTIONS:
 "0902000100133233313431363030303939333439323932373506f9a9deeaf33bde5646567b129c8da3fee08db6210a8d17f359caf6e3b353bf320100ffffffff01ac3c65375d4f0f882a7b76639e3408c1b1fa39731ace92a352e1b650ce35a20100ffffffffe85c7e34e11fd8e1257333d509fc1828f8feef1120b0822940be9c88ee58c31d0100ffffffffdce53502041b2a22a354ffbf03d1c0aed9ff44f731aec4d3a2376c84cbc5696b0100ffffffff8234bf50743e34707a48d9c0cc31ccef29c6f3013b44170ee73835099e3574c60100ffffffffcb1210fe4fbd42cd71c4a5ce46a7862e3e4e557cc5ee6c1d3189208525ecf6de0100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300ca9a3b0000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b9481100b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3d4d634030000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141403c72d894b0138348a7640f689b0c4003f1a91969e1b1a1f767303f0fda8226fee42f4b15ac650a8df31a68000fc979036a29dec4383be0571f7bf1bcf3c1cd842321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
 ```
 
-### 2.9 查看交易池
+### 3.9 查看交易池
 
 ```
 ./ela-cli info getrawmempool
@@ -801,21 +816,21 @@ OPTIONS:
 
 
 
-## 3.挖矿
+## 4.挖矿
 
-### 3.1 开启cpu挖矿
+### 4.1 开启cpu挖矿
 
-### 3.2 离散挖矿
+### 4.2 离散挖矿
 
 
 
-## 4.lua脚本
+## 5.lua脚本
 
 ### 运行lua脚本
 
 
 
-## 5.回滚
+## 6.回滚
 
 ```bash
 ./ela-cli rollback --height 20

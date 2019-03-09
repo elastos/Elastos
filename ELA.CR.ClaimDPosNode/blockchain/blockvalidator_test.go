@@ -55,13 +55,11 @@ func TestCheckBlockSanity(t *testing.T) {
 	}
 	defer chainStore.Close()
 
-	heightVersions := &mock.HeightVersionsMock{}
-	chain, _ := New(chainStore, &config.DefaultParams, heightVersions, state.NewState(nil, &config.DefaultParams))
+	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(nil, &config.DefaultParams))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
-			Blockchain:     chain,
-			HeightVersions: heightVersions,
-			Store:          chainStore,
+			Blockchain: chain,
+			Store:      chainStore,
 		}
 	}
 
