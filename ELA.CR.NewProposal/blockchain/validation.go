@@ -21,9 +21,10 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 
 	for i, program := range programs {
 		programHash := programHashes[i]
+		prefixType := contract.GetPrefixType(programHash)
 
 		// TODO: this implementation will be deprecated
-		if programHash[0] == common.PrefixCrossChain {
+		if prefixType == contract.PrefixCrossChain {
 			if err := checkCrossChainSignatures(*program, data); err != nil {
 				return err
 			}
@@ -37,13 +38,12 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 			return errors.New("the data hashes is different with corresponding program code")
 		}
 
-		prefixType := contract.PrefixType(programHash[0])
 		if prefixType == contract.PrefixStandard || prefixType == contract.PrefixDeposit {
 			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}
 
-		} else if programHash[0] == common.PrefixMultisig {
+		} else if prefixType == contract.PrefixMultiSig {
 			if err := checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
@@ -156,7 +156,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := signatures[i:i+crypto.SignatureScriptLength][1:]
+		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
 		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
