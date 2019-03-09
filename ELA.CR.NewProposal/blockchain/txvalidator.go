@@ -492,8 +492,12 @@ func checkOutputPayload(txType TxType, output *Output) error {
 	// OTVote information can only be placed in TransferAsset transaction.
 	if txType == TransferAsset {
 		switch output.Type {
-		case OTNone:
 		case OTVote:
+			if contract.GetPrefixType(output.ProgramHash) !=
+				contract.PrefixStandard {
+				return errors.New("output address should be standard")
+			}
+		case OTNone:
 		default:
 			return errors.New("transaction type dose not match the output payload type")
 		}
