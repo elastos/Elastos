@@ -72,7 +72,9 @@ func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error)
 		// The caller would typically want to react by relaying the inventory
 		// to other peers.
 		events.Notify(events.ETBlockAccepted, block)
-		events.Notify(events.ETNewBlockReceived, dposBlock)
+		if block.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
+			events.Notify(events.ETNewBlockReceived, dposBlock)
+		}
 		return inMainChain, isOrphan, nil
 	}
 

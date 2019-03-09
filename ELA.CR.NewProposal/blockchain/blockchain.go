@@ -913,6 +913,13 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// inventory to other peers.
 	if block.Height >= config.Parameters.HeightVersions[2] {
 		events.Notify(events.ETBlockConfirmAccepted, block)
+	} else if block.Height == config.Parameters.HeightVersions[2]-1 {
+		events.Notify(events.ETNewBlockReceived, &DposBlock{
+			BlockFlag:   true,
+			Block:       block,
+			ConfirmFlag: true,
+		})
+		events.Notify(events.ETBlockAccepted, block)
 	} else {
 		events.Notify(events.ETBlockAccepted, block)
 	}
