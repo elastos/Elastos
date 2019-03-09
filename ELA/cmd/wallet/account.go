@@ -113,6 +113,12 @@ var accountCommand = []cli.Command{
 		Usage:    "Generate deposit address",
 		Action:   generateDepositAddress,
 	},
+	{
+		Category: "Account",
+		Name:     "crosschainaddr",
+		Usage:    "Generate cross chain address",
+		Action:   generateCrossChainAddress,
+	},
 }
 
 func createAccount(c *cli.Context) error {
@@ -394,11 +400,40 @@ func generateDepositAddress(c *cli.Context) error {
 		}
 	}
 
+	if contract.GetPrefixType(*programHash) != contract.PrefixStandard {
+		return errors.New("standard address expected")
+	}
+
 	codeHash := programHash.ToCodeHash()
 	depositHash := common.Uint168FromCodeHash(byte(contract.PrefixDeposit), codeHash)
 	address, err := depositHash.ToAddress()
 	if err != nil {
-		return nil
+		return err
+	}
+	fmt.Println(address)
+
+	return nil
+}
+
+func generateCrossChainAddress(c *cli.Context) error {
+	if c.NArg() < 1 {
+		cmdcom.PrintErrorMsg("Missing argument. The side chain genesis block hash expected.")
+		cli.ShowCommandHelpAndExit(c, "crosschainaddress", 1)
+	}
+	hashBytes, err := common.HexStringToBytes(c.Args().First())
+	if err != nil {
+		return err
+	}
+
+	hash, err := common.Uint256FromBytes(common.BytesReverse(hashBytes))
+	if err != nil {
+		return err
+	}
+
+	code := contract.CreateCrossChainRedeemScript(*hash)
+	address, err := common.ToProgramHash(byte(contract.PrefixCrossChain), code).ToAddress()
+	if err != nil {
+		return err
 	}
 	fmt.Println(address)
 

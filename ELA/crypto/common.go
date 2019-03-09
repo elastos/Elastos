@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"bytes"
 	"errors"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -20,15 +19,6 @@ const (
 	// 1byte n + 1byte OP_CHECKMULTISIG
 	MinMultiSignCodeLength = 71
 )
-
-func CreateCrossChainRedeemScript(genesisHash common.Uint256) []byte {
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(genesisHash.Bytes())))
-	buf.Write(genesisHash.Bytes())
-	buf.WriteByte(byte(common.CROSSCHAIN))
-
-	return buf.Bytes()
-}
 
 func ParseMultisigScript(code []byte) ([][]byte, error) {
 	if len(code) < MinMultiSignCodeLength || code[len(code)-1] != common.MULTISIG {

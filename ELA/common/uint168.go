@@ -15,10 +15,6 @@ const (
 	STANDARD   = 0xAC
 	MULTISIG   = 0xAE
 	CROSSCHAIN = 0xAF
-
-	PrefixStandard   = 0x21
-	PrefixMultisig   = 0x12
-	PrefixCrossChain = 0x4B
 )
 
 type Uint168 [UINT168SIZE]uint8

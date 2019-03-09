@@ -49,22 +49,18 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = *foundation
 	s.foundationAddress = FoundationAddress
 
-	heightVersions := &mock.HeightVersionsMock{}
 	chainStore, err := NewChainStore("Chain_UintTest",
 		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, &config.DefaultParams,
-		heightVersions, state.NewState(&mock.ArbitratorsMock{}, &config.DefaultParams))
+	s.Chain, err = New(chainStore, &config.DefaultParams, state.NewState(&mock.ArbitratorsMock{}, &config.DefaultParams))
 	if err != nil {
 		s.Error(err)
 	}
 
 	s.OriginalLedger = DefaultLedger
-	DefaultLedger = &Ledger{
-		HeightVersions: heightVersions,
-	}
+	DefaultLedger = &Ledger{}
 }
 
 func (s *txValidatorTestSuite) TearDownSuite() {
