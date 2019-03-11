@@ -44,8 +44,11 @@ func AzureBlobstoreUpload(path string, name string, config AzureBlobstoreConfig)
 		fmt.Printf("would upload %q to %s/%s/%s\n", path, config.Account, config.Container, name)
 		return nil
 	}
+
 	// Create an authenticated client against the Azure cloud
-	credential := azblob.NewSharedKeyCredential(config.Account, config.Token)
+	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
+	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ", err) }
+
 	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", config.Account))
@@ -67,7 +70,11 @@ func AzureBlobstoreUpload(path string, name string, config AzureBlobstoreConfig)
 
 // AzureBlobstoreList lists all the files contained within an azure blobstore.
 func AzureBlobstoreList(config AzureBlobstoreConfig) ([]azblob.BlobItem, error) {
-	credential := azblob.NewSharedKeyCredential(config.Account, config.Token)
+
+	// Create an authenticated client against the Azure cloud
+	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
+	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ", err) }
+
 	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", config.Account))
@@ -94,8 +101,11 @@ func AzureBlobstoreDelete(config AzureBlobstoreConfig, blobs []azblob.BlobItem) 
 		}
 		return nil
 	}
+
 	// Create an authenticated client against the Azure cloud
-	credential := azblob.NewSharedKeyCredential(config.Account, config.Token)
+	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
+	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ", err) }
+
 	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", config.Account))
