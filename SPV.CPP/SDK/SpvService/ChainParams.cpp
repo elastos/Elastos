@@ -371,6 +371,15 @@ namespace Elastos {
 			_checkpoints.emplace_back(167328, "6e2f2e1c1d1bcee1cda1cf231548f298395d1ff3fe799a7448ce72ece4be142a", 1547022886, 525706056);
 			_checkpoints.emplace_back(169344, "a86b24ebfd01c6db2cb79043ff9edbd16edfc92f4f93dbfab1e579fa63286e1f", 1547372501, 536931941);
 			_checkpoints.emplace_back(171360, "9aaa94df9967ab17ebdeaa092dc7a7bdd8bce560374312881d9ad076cee95e01", 1547677822, 536991628);
+			_checkpoints.emplace_back(173376, "c82e4c016a86ddcfa256e8d7e872bf2be40a41a26fff7830f1647419b1063535", 1547978697, 537059094);
+			_checkpoints.emplace_back(177408, "c91ecf4ee685cc8c47784efba2237e7571f516bbd4f0f76788d061211a2d1970", 1548509762, 537228734);
+			_checkpoints.emplace_back(181440, "68778ebec156a94810fc3a26cb2738bf3b7ddf3780503633c5a079bed5262fe6", 1549017465, 537342962);
+			_checkpoints.emplace_back(187488, "b09d8db40d497e67d9c75a6cb0a78331053851a1a9b39c9f28bee8e5856837c8", 1549784847, 537593934);
+			_checkpoints.emplace_back(189504, "1f3bb82ccf67c871878c1385867b50a764f0e287e32bfc6a629e7b84c66e6460", 1550058057, 537887753);
+			_checkpoints.emplace_back(193536, "9b73014a04f79ee6ffb11fa0e9e34e9eb969cebe5be82c05e81fdd8803e77ccc", 1550625933, 539075664);
+			_checkpoints.emplace_back(195552, "b00e02d1b42b8fcfdfa06663cb33b17ec65398164ab901844c16cc1aa53f5377", 1550879731, 539440815);
+			_checkpoints.emplace_back(199584, "6bdfcf51a9512a61fe48c75591e733f716be679ea13bbb9d9ad65912dd78d30e", 1551401692, 540766560);
+			_checkpoints.emplace_back(203616, "e1b62cfd7cdf3ec6863dcf1cc2fa025e13af2ee7b0e4aff90f85750b87bc3bab", 1551958709, 544545113);
 			_standardPort = 22866;
 			_magicNumber = 20180627;
 			_services = 0;
@@ -385,6 +394,7 @@ namespace Elastos {
 			_dnsSeeds.emplace_back("did-regtest-004.elastos.org");
 			_dnsSeeds.emplace_back("did-regtest-005.elastos.org");
 			_checkpoints.emplace_back(0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407);
+			_checkpoints.emplace_back(2016,  "fb29c3de03ab8dbdc9e50ee882efc9a8115697a7681593ec1c587dd8ddc0da70", 1548438160, 505759638);
 			_standardPort = 22608;
 			_magicNumber = 201901171;
 			_services = 0;
