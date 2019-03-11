@@ -118,6 +118,10 @@ namespace Elastos {
 			p._me = AccountPtr(AccountFactory::CreateFromJson(p._rootPath, j, "InnerAccount", "InnerAccountType"));
 			p._coSigners = j["CoSigners"].get<std::vector<std::string>>();
 			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
+
+			const CMBlock &code = p.GetRedeemScript();
+			UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
+			p._address = Address(programHash);
 		}
 
 		nlohmann::json MultiSignAccount::GetBasicInfo() const {
