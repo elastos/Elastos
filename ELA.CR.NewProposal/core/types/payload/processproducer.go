@@ -14,15 +14,11 @@ type ProducerOperation byte
 
 const (
 	ProcessProducerVersion byte = 0x00
-
-	POCancel   ProducerOperation = 0x01
-	POActivate ProducerOperation = 0x02
 )
 
 type ProcessProducer struct {
 	OwnerPublicKey []byte
 	Signature      []byte
-	Operation      ProducerOperation
 }
 
 func (a *ProcessProducer) Data(version byte) []byte {
@@ -53,11 +49,6 @@ func (a *ProcessProducer) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[ProcessProducer], write owner public key failed")
 	}
 
-	err = common.WriteUint8(w, uint8(a.Operation))
-	if err != nil {
-		return errors.New("[ProcessProducer], write operation failed")
-	}
-
 	return nil
 }
 
@@ -81,13 +72,6 @@ func (a *ProcessProducer) DeserializeUnsigned(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[ProcessProducer], read owner public key failed")
 	}
-
-	var op uint8
-	op, err = common.ReadUint8(r)
-	if err != nil {
-		return errors.New("[ProcessProducer], read operation failed")
-	}
-	a.Operation = ProducerOperation(op)
 
 	return err
 }

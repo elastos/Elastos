@@ -299,7 +299,6 @@ func RegisterCancelProducerType(L *lua.LState) {
 func newProcessProducer(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
 	client := checkClient(L, 2)
-	operation := L.ToInt(3)
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -308,7 +307,6 @@ func newProcessProducer(L *lua.LState) int {
 	}
 	processProducer := &payload.ProcessProducer{
 		OwnerPublicKey: []byte(publicKey),
-		Operation:      payload.ProducerOperation(operation),
 	}
 
 	cpSignBuf := new(bytes.Buffer)
@@ -412,8 +410,7 @@ func RegisterActivateProducerType(L *lua.LState) {
 
 func checkActivateProducer(L *lua.LState, idx int) *payload.ProcessProducer {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.ProcessProducer);
-		ok && v.Operation == payload.POActivate {
+	if v, ok := ud.Value.(*payload.ProcessProducer); ok {
 		return v
 	}
 	L.ArgError(1, "ActivateProducer expected")

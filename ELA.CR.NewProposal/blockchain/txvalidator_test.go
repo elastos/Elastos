@@ -49,7 +49,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = *foundation
 	s.foundationAddress = FoundationAddress
 
-	chainStore, err := NewChainStore("Chain_UintTest",
+	chainStore, err := NewChainStore("Chain_UnitTest",
 		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
@@ -673,7 +673,6 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	txn.TxType = types.CancelProducer
 	cancelPayload := &payload.ProcessProducer{
 		OwnerPublicKey: publicKey1,
-		Operation:      payload.POCancel,
 	}
 	txn.Payload = cancelPayload
 
@@ -701,7 +700,6 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 	txn.TxType = types.ActivateProducer
 	activatePayload := &payload.ProcessProducer{
 		OwnerPublicKey: publicKey1,
-		Operation:      payload.POActivate,
 	}
 	txn.Payload = activatePayload
 
@@ -759,12 +757,14 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	programHash, _ := common.Uint168FromAddress("EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR")
+
 	outputs := []*types.Output{
 		{
 			AssetID:     common.Uint256{},
 			Value:       1.0,
 			OutputLock:  0,
-			ProgramHash: common.Uint168{123},
+			ProgramHash: *programHash,
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
 				Version: 0,
@@ -782,7 +782,7 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 			AssetID:     common.Uint256{},
 			Value:       1.0,
 			OutputLock:  0,
-			ProgramHash: common.Uint168{123},
+			ProgramHash: *programHash,
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
 				Version: 0,
@@ -790,6 +790,25 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 					{
 						VoteType:   outputpayload.Delegate,
 						Candidates: [][]byte{},
+					},
+				},
+			},
+		},
+		{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: *programHash,
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					{
+						VoteType: outputpayload.Delegate,
+						Candidates: [][]byte{
+							publicKey1,
+							publicKey1,
+						},
 					},
 				},
 			},
@@ -806,7 +825,6 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 					{
 						VoteType: outputpayload.Delegate,
 						Candidates: [][]byte{
-							publicKey1,
 							publicKey1,
 						},
 					},
@@ -826,6 +844,9 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 
 	err = checkOutputPayload(types.TransferAsset, outputs[2])
 	s.EqualError(err, "duplicate candidate")
+
+	err = checkOutputPayload(types.TransferAsset, outputs[3])
+	s.EqualError(err, "output address should be standard")
 }
 
 func (s *txValidatorTestSuite) TestCheckVoteProducerOutputs() {
