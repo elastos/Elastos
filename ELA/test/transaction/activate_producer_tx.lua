@@ -18,8 +18,8 @@ local fee = 0.001
 -- deposit params
 local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
 
--- cancel producer payload: publickey, wallet
-local ap_payload = activateproducer.new(own_publickey, wallet, 2)
+-- activate producer payload: publickey, wallet
+local ap_payload = activateproducer.new(own_publickey, wallet)
 print(ap_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

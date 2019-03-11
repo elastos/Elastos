@@ -250,7 +250,6 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.ProcessProducer{
 		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Operation:      payload.POCancel,
 		Signature:      randomSignature(),
 	}
 
@@ -268,7 +267,6 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 
 	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
 	s.True(bytes.Equal(p1.Signature, p2.Signature))
-	s.Equal(p1.Operation, p2.Operation)
 }
 
 func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
@@ -276,7 +274,6 @@ func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
 	txn.Payload = &payload.ProcessProducer{
 		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Operation:      payload.POActivate,
 		Signature:      randomSignature(),
 	}
 
@@ -294,7 +291,6 @@ func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 
 	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
 	s.True(bytes.Equal(p1.Signature, p2.Signature))
-	s.Equal(p1.Operation, p2.Operation)
 }
 
 func (s *transactionSuite) TestUpdateProducer_SerializeDeserialize() {

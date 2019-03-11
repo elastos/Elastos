@@ -70,7 +70,7 @@ var DefaultParams = Params{
 		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 	},
 	CRCArbiters: []CRCArbiter{
-		//todo add CRC arbiters
+	//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
