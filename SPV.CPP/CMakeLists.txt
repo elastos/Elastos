@@ -200,7 +200,7 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 	endif()
 
 	set(SPVSDK_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
-	set(COMBIN_STATIC_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/platforms/scripts/combin_static_libraries.sh)
+	set(COMBIN_STATIC_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/Platforms/Scripts/combin_static_libraries.sh)
 
 	set(
 		COMPOSE_COMMAND
