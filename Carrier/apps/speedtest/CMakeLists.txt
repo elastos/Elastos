@@ -49,7 +49,7 @@ if(HAVE_SIGACTION)
     add_definitions(-DHAVE_SIGACTION=1)
 endif()
 
-set(SRC speedtest.c config.c)
+set(SRC speedtest.c config.c md5.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread)
@@ -98,9 +98,3 @@ install(TARGETS elaspeedtest
 install(FILES speedtest.conf
         DESTINATION "etc/carrier"
         RENAME "elaspeedtest.conf")
-
-if(NOT WIN32)
-    install(PROGRAMS speedtest.sh
-            DESTINATION "bin"
-            RENAME "elaspeedtest.sh")
-endif()

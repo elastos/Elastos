@@ -61,6 +61,7 @@
 #include <ela_session.h>
 
 #include "config.h"
+#include "md5.h"
 
 #define CONFIG_NAME   "elaspeedtest.conf"
 
@@ -76,11 +77,6 @@ typedef enum RUNNING_MODE {
     ACTIVE_MODE,
     PASSIVE_MODE
 } RUNNING_MODE;
-
-typedef enum PROCESS_MODE {
-    PARENT_MODE,
-    CHILD_MODE
-} PROCESS_MODE;
 
 static bool g_connected = false;
 static char g_peer_id[ELA_MAX_ID_LEN+1] = {0};
@@ -115,105 +111,6 @@ static void stream_add(ElaCarrier *, int, char **);
 static void stream_bulk_write(ElaCarrier *, int, char **);
 static void stream_bulk_receive(ElaCarrier *, int, char **);
 static void stream_get_info(ElaCarrier *, int, char **);
-
-static void close_pipe(void)
-{
-    if (g_fd[0] > 0)
-        close(g_fd[0]);
-
-    if (g_fd[1] > 0)
-        close(g_fd[1]);
-}
-
-static int create_pipe(void)
-{
-    int ret = pipe(g_fd);
-
-    if (ret < 0)
-        goto error_exit;
-
-    return 0;
-
-error_exit:
-    close_pipe();
-    return -1;
-}
-
-static int setup_pipe(PROCESS_MODE mode)
-{
-    if (mode == PARENT_MODE) {
-        close(g_fd[1]);
-        g_fd[1] = -1;
-    } else {
-        int ret = 0;
-
-        close(g_fd[0]);
-        g_fd[0] = -1;
-
-        ret = dup2(g_fd[1], STDOUT_FILENO);
-        if (ret < 0) {
-            close_pipe();
-            return -1;
-        }
-
-        setbuf(stdout, NULL);
-    }
-
-    return 0;
-}
-
-static int generate_checksum(char **argv, char *buf, int size)
-{
-    pid_t pid = 0;
-    int status = 0;
-
-    status = create_pipe();
-    if (status < 0) {
-        return -1;
-    }
-
-    pid = fork();
-    if (pid < 0) {
-        return -1;
-    } else if (pid == 0) {
-        status = setup_pipe(CHILD_MODE);
-        if (status < 0)
-            exit(-1);
-
-        if (execvp(*argv, argv) < 0) {
-            exit(-1);
-        }
-    } else {
-        FILE *fp = NULL;
-        char md5[64] = {0};
-
-        while (wait(&status) != pid);
-        if (status != 0)
-            return -1;
-
-        status = setup_pipe(PARENT_MODE);
-        if (status < 0)
-            return -1;
-
-        fp = fdopen(g_fd[0], "r");
-        if (fp == NULL) {
-            close_pipe();
-            return -1;
-        }
-
-        fscanf(fp, "%32s", md5);
-        fclose(fp);
-        close_pipe();
-        if (strlen(md5) > size - 1)
-            return -1;
-
-        strcpy(buf, md5);
-
-        return status;
-    }
-
-    return 0;
-}
 
 static void log_print(const char *format, va_list args)
 {
@@ -426,7 +323,7 @@ static void invite(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
 
-    if (argc != 3) {
+    if (argc != 2) {
         output("Invalid invocation.\n");
         return;
     }
@@ -577,12 +474,11 @@ static void stream_on_data(ElaSession *ws, int stream, const void *data,
 
         if (session_ctx.bytes == g_data_len) {
             char *arg[2] = {NULL, NULL};
-            char *md5sum_arg[4] = {(char*)"md5sum", (char*)"-b", g_transferred_file, NULL};
             char buf[64] = {0};
             int ret = 0;
 
             close(trans_fd);
-            ret = generate_checksum(md5sum_arg, buf, sizeof(buf));
+            ret = get_file_md5(g_transferred_file, buf, sizeof(buf));
             if (ret < 0)
                 output("passive end generated checksum unsuccessfully.");
 
@@ -1035,13 +931,12 @@ static void message_callback(ElaCarrier *w, const char *from,
         g_data_len = atoi((const char *)msg);
         output("Got data length: %zu.\n", g_data_len);
     } else {
-        char *arg[] = {(char*)"md5sum", (char*)"-b", g_transferred_file, NULL};
         char buf[64] = {0};
         int ret = 0;
 
         output("Got md5 checksum from peer:%s\n", msg);
 
-        ret = generate_checksum(arg, buf, sizeof(buf));
+        ret = get_file_md5(g_transferred_file, buf, sizeof(buf));
         if (ret < 0)
             output("active end generated checksum unsuccessfully.");
         else
