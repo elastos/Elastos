@@ -296,7 +296,7 @@ func (a *Arbitrators) changeCurrentArbitrators() error {
 		return err
 	}
 
-	a.dutyIndex = 1
+	a.dutyIndex = 0
 	return nil
 }
 

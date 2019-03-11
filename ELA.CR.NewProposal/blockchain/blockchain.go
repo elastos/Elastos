@@ -124,7 +124,7 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err er
 	bestHeight := b.db.GetHeight()
 	done := make(chan struct{})
 	go func() {
-		for i := b.chainParams.VoteStartHeight - 1; i <= bestHeight; i++ {
+		for i := b.chainParams.VoteStartHeight; i <= bestHeight; i++ {
 			hash, e := b.db.GetBlockHash(i)
 			if e != nil {
 				err = e
@@ -904,7 +904,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		return false, err
 	}
 
-	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
+	if inMainChain && block.Height >= b.chainParams.VoteStartHeight {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 	}
 
@@ -1069,8 +1069,8 @@ func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool,
 
 	// The block must not already exist as an orphan.
 	if _, exists := b.orphans[blockHash]; exists {
-		str := fmt.Sprintf("already have block (orphan) %v", blockHash)
-		return false, false, fmt.Errorf(str)
+		log.Debugf("already have block (orphan) %v", blockHash)
+		return false, true, nil
 	}
 
 	log.Debugf("[ProcessBLock] orphan already exist= %v", exists)

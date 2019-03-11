@@ -97,6 +97,7 @@ type Configuration struct {
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
 	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 	HeightVersions       []uint32             `json:"HeightVersions"`
+	VoteStartHeight      uint32               `json:"VoteStartHeight"`
 }
 
 type ArbiterConfiguration struct {
