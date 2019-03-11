@@ -136,7 +136,7 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err er
 				break
 			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
-			b.state.ProcessBlock(block, confirm)
+			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 		}
 		done <- struct{}{}
 	}()
@@ -747,7 +747,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		// update state after connected block
-		b.state.ProcessBlock(block, confirm)
+		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 
 		delete(b.blockCache, *n.Hash)
 		delete(b.confirmCache, *n.Hash)
@@ -905,7 +905,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && block.Height >= config.Parameters.HeightVersions[1] {
-		b.state.ProcessBlock(block, confirm)
+		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 	}
 
 	// Notify the caller that the new block was accepted into the block

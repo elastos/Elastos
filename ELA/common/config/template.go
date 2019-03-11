@@ -35,7 +35,7 @@ var Template = Configuration{
 		NormalArbitratorsCount:   5,
 		CandidatesCount:          0,
 		EmergencyInactivePenalty: 500 * 100000000,
-		MaxInactiveRounds:        3,
+		MaxInactiveRounds:        720 * 2,
 		InactivePenalty:          100 * 100000000,
 		InactiveEliminateCount:   12,
 		EnableEventRecord:        false,

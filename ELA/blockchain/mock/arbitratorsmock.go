@@ -3,6 +3,8 @@ package mock
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
@@ -30,10 +32,12 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
-func (a *ArbitratorsMock) IncreaseChainHeight(height uint32) {
+func (a *ArbitratorsMock) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
+	panic("implement me")
 }
 
-func (a *ArbitratorsMock) DecreaseChainHeight(height uint32) {
+func (a *ArbitratorsMock) RollbackTo(height uint32) error {
+	panic("implement me")
 }
 
 func (a *ArbitratorsMock) GetNeedConnectArbiters() map[string]struct{} {

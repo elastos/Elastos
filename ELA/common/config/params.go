@@ -88,7 +88,7 @@ var DefaultParams = Params{
 	},
 	VoteStartHeight:          1008812, //fixme edit height later
 	PublicDPOSHeight:         1108812, //fixme edit height later
-	MaxInactiveRounds:        3,
+	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
 	InactiveEliminateCount:   12,
