@@ -40,14 +40,13 @@ func (i *InactiveArbitrators) Serialize(w io.Writer,
 		return err
 	}
 
-	if err := common.WriteVarUint(w, uint64(len(i.Arbitrators))); err != nil {
-		return err
-	}
-
 	if err := common.WriteUint32(w, i.BlockHeight); err != nil {
 		return err
 	}
 
+	if err := common.WriteVarUint(w, uint64(len(i.Arbitrators))); err != nil {
+		return err
+	}
 	for _, v := range i.Arbitrators {
 		if err := common.WriteVarBytes(w, v); err != nil {
 			return err
@@ -64,15 +63,14 @@ func (i *InactiveArbitrators) Deserialize(r io.Reader,
 		return err
 	}
 
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return err
-	}
-
 	if i.BlockHeight, err = common.ReadUint32(r); err != nil {
 		return err
 	}
 
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return err
+	}
 	i.Arbitrators = make([][]byte, count)
 	for u := uint64(0); u < count; u++ {
 		if i.Arbitrators[u], err = common.ReadVarBytes(r,
