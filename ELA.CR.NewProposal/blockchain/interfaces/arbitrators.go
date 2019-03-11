@@ -3,12 +3,14 @@ package interfaces
 import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type Arbitrators interface {
 	ForceChange(height uint32) error
-	IncreaseChainHeight(height uint32)
-	DecreaseChainHeight(height uint32)
+	ProcessBlock(block *types.Block, confirm *payload.Confirm)
+	RollbackTo(height uint32) error
 
 	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte

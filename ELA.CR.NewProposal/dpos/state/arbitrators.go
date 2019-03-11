@@ -11,6 +11,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
@@ -41,6 +43,19 @@ type Arbitrators struct {
 	nextArbitrators                 [][]byte
 	nextCandidates                  [][]byte
 	crcArbitratorsProgramHashes     map[common.Uint168]interface{}
+}
+
+func (a *Arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
+	a.State.ProcessBlock(block, confirm)
+	a.IncreaseChainHeight(block.Height)
+}
+
+func (a *Arbitrators) RollbackTo(height uint32) error {
+	if err := a.State.RollbackTo(height); err != nil {
+		return err
+	}
+	a.DecreaseChainHeight(height)
+	return nil
 }
 
 func (a *Arbitrators) ForceChange(height uint32) error {
@@ -74,6 +89,9 @@ func (a *Arbitrators) NormalChange(height uint32) error {
 }
 
 func (a *Arbitrators) IncreaseChainHeight(height uint32) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
 	forceChange, normalChange := a.isNewElection(height + 1)
 	if forceChange {
 		if err := a.ForceChange(height); err != nil {
@@ -92,6 +110,8 @@ func (a *Arbitrators) IncreaseChainHeight(height uint32) {
 }
 
 func (a *Arbitrators) DecreaseChainHeight(height uint32) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
 
 	if a.dutyIndex == 0 {
 		//todo complete me
@@ -518,7 +538,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*Arbi
 		nextArbitrators:                 originArbiters,
 		nextCandidates:                  make([][]byte, 0),
 	}
-	a.State = NewState(a, chainParams)
+	a.State = NewState(chainParams, a.GetArbitrators)
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
 	for _, v := range a.chainParams.CRCArbiters {
