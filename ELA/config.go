@@ -82,10 +82,12 @@ func loadConfigParams() *config.ConfigParams {
 			activeNetParams.CRCArbiters = arbiters
 		}
 	}
+	if cfg.VoteStartHeight > 0 {
+		activeNetParams.VoteStartHeight = cfg.VoteStartHeight
+	}
 	if len(cfg.HeightVersions) > 0 {
 		activeNetParams.HeightVersions = cfg.HeightVersions
 		if len(cfg.HeightVersions) > 3 {
-			activeNetParams.VoteStartHeight = cfg.HeightVersions[2]
 			activeNetParams.PublicDPOSHeight = cfg.HeightVersions[3]
 		}
 	}
