@@ -119,7 +119,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 			},
 		},
 	}
-	arbiters.State.ProcessBlock(block1, nil)
+	arbiters.ProcessBlock(block1, nil)
 
 	for i := uint32(0); i < 6; i++ {
 		currentHeight++
@@ -127,7 +127,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 			Header:       types.Header{Height: currentHeight},
 			Transactions: []*types.Transaction{},
 		}
-		arbiters.State.ProcessBlock(blockEx, nil)
+		arbiters.ProcessBlock(blockEx, nil)
 	}
 
 	// main version
@@ -149,7 +149,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 			},
 		},
 	}
-	arbiters.State.ProcessBlock(block2, nil)
+	arbiters.ProcessBlock(block2, nil)
 
 	for i := uint32(0); i < 6; i++ {
 		currentHeight++
@@ -157,7 +157,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 			Header:       types.Header{Height: currentHeight},
 			Transactions: []*types.Transaction{},
 		}
-		arbiters.State.ProcessBlock(blockEx, nil)
+		arbiters.ProcessBlock(blockEx, nil)
 	}
 
 	// main version
