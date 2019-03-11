@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
@@ -79,6 +80,13 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
 	c.currentView.ResetView(now)
 
+	viewEvent := log.ViewEvent{
+		OnDutyArbitrator: common.BytesToHexString(c.GetOnDutyArbitrator()),
+		StartTime:        time.Now(),
+		Offset:           c.GetViewOffset(),
+		Height:           c.manager.dispatcher.CurrentHeight(),
+	}
+	c.manager.dispatcher.cfg.EventMonitor.OnViewStarted(&viewEvent)
 }
 
 func (c *Consensus) GetViewOffset() uint32 {
