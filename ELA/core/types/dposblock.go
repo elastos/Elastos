@@ -19,13 +19,10 @@ func (b *DposBlock) Serialize(w io.Writer) error {
 		return errors.New("Block serialize failed," + err.Error())
 	}
 
-	var haveConfirm uint8
-	if b.HaveConfirm {
-		haveConfirm = uint8(1)
-	}
-	if err := common.WriteUint8(w, haveConfirm); err != nil {
+	if err := common.WriteElement(w, b.HaveConfirm); err != nil {
 		return errors.New("Confirm flag serialize failed," + err.Error())
 	}
+
 	if b.HaveConfirm {
 		if err := b.Confirm.Serialize(w); err != nil {
 			return errors.New("Confirm serialize failed," + err.Error())
@@ -40,17 +37,15 @@ func (b *DposBlock) Deserialize(r io.Reader) error {
 		return errors.New("Block dserialize failed," + err.Error())
 	}
 
-	haveConfirm, err := common.ReadUint8(r)
-	if err != nil {
+	if err := common.ReadElement(r, &b.HaveConfirm); err != nil {
 		return errors.New("Confirm flag dserialize failed," + err.Error())
 	}
-	b.HaveConfirm = haveConfirm == 1
+
 	if b.HaveConfirm {
 		b.Confirm = new(payload.Confirm)
 		if err := b.Confirm.Deserialize(r); err != nil {
 			return errors.New("Confirm serialize failed," + err.Error())
 		}
 	}
-
 	return nil
 }
