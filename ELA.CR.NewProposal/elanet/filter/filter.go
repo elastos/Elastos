@@ -8,30 +8,13 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
-type TxFilterType uint8
-
 const (
 	// FTBloom indicates the TxFilter's Filter is a bloom filter.
-	FTBloom = iota
+	FTBloom uint8 = iota
 
-	// FTTxType indicates the TxFilter's Filter is a transaction type filter.
-	FTTxType
+	// FTDPOS indicates the TxFilter's Filter is a DPOS filter.
+	FTDPOS
 )
-
-// Map of tx filter types back to their constant names for pretty printing.
-var tftStrings = map[TxFilterType]string{
-	FTBloom:  "FTBloom",
-	FTTxType: "FTTxType",
-}
-
-// String returns the TxFilterType in human-readable form.
-func (f TxFilterType) String() string {
-	s, ok := tftStrings[f]
-	if ok {
-		return s
-	}
-	return fmt.Sprintf("FTType%d", f)
-}
 
 // TxFilter indicates the methods a transaction filter should implement.
 type TxFilter interface {
@@ -46,18 +29,18 @@ type TxFilter interface {
 }
 
 type Filter struct {
-	newFilter func(TxFilterType) TxFilter
+	newFilter func(uint8) TxFilter
 
 	mtx    sync.Mutex
 	filter TxFilter
 }
 
 func (f *Filter) load(filter *msg.TxFilterLoad) error {
-	filterType := TxFilterType(filter.Type)
+	filterType := filter.Type
 
 	tf := f.newFilter(filterType)
 	if tf == nil {
-		return fmt.Errorf("unknown txfilter type %s", filterType)
+		return fmt.Errorf("unknown txfilter type %d", filterType)
 	}
 
 	err := tf.Load(filter.Data)
@@ -104,6 +87,6 @@ func (f *Filter) Match(tx *types.Transaction) bool {
 	return match
 }
 
-func New(newFilter func(filterType TxFilterType) TxFilter) *Filter {
+func New(newFilter func(uint8) TxFilter) *Filter {
 	return &Filter{newFilter: newFilter}
 }

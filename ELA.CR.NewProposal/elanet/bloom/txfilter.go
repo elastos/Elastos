@@ -9,11 +9,11 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
-type txFilter struct {
+type TxFilter struct {
 	filter *Filter
 }
 
-func (f *txFilter) Load(filter []byte) error {
+func (f *TxFilter) Load(filter []byte) error {
 	var fl msg.FilterLoad
 	err := fl.Deserialize(bytes.NewReader(filter))
 	if err != nil {
@@ -25,7 +25,7 @@ func (f *txFilter) Load(filter []byte) error {
 	return nil
 }
 
-func (f *txFilter) Add(filter []byte) error {
+func (f *TxFilter) Add(filter []byte) error {
 	if f.filter == nil || !f.filter.IsLoaded() {
 		return fmt.Errorf("filter not loaded")
 	}
@@ -35,10 +35,10 @@ func (f *txFilter) Add(filter []byte) error {
 	return nil
 }
 
-func (f *txFilter) Match(tx *types.Transaction) bool {
+func (f *TxFilter) Match(tx *types.Transaction) bool {
 	return f.filter.MatchTxAndUpdate(tx)
 }
 
 func NewTxFilter() filter.TxFilter {
-	return &txFilter{}
+	return &TxFilter{}
 }
