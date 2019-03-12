@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"math"
 	"sort"
 	"strings"
 	"sync"
@@ -426,8 +427,12 @@ func (a *Arbitrators) getArbitersCount() uint32 {
 
 func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
-	for index, v := range a.currentArbitrators {
-		hash, err := contract.PublicKeyToStandardProgramHash(v)
+	for index, nodePublicKey := range a.currentArbitrators {
+		producer := a.GetProducer(nodePublicKey)
+		if producer == nil {
+			return errors.New("get producer by node public key failed")
+		}
+		hash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
 		if err != nil {
 			return err
 		}
@@ -435,8 +440,12 @@ func (a *Arbitrators) updateArbitratorsProgramHashes() error {
 	}
 
 	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
-	for index, v := range a.currentCandidates {
-		hash, err := contract.PublicKeyToStandardProgramHash(v)
+	for index, nodePublicKey := range a.currentCandidates {
+		producer := a.GetProducer(nodePublicKey)
+		if producer == nil {
+			return errors.New("get producer by node public key failed")
+		}
+		hash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
 		if err != nil {
 			return err
 		}
@@ -570,18 +579,18 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*Arbi
 			return nil, err
 		}
 		a.crcArbitratorsProgramHashes[*hash] = nil
-		//a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
-		//	info: payload.ProducerInfo{
-		//		OwnerPublicKey: v.PublicKey,
-		//		NodePublicKey:  v.PublicKey,
-		//		NetAddress:     v.NetAddress,
-		//	},
-		//	registerHeight:        0,
-		//	votes:                 0,
-		//	inactiveSince:         0,
-		//	penalty:               common.Fixed64(0),
-		//	activateRequestHeight: math.MaxUint32,
-		//}
+		a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
+			info: payload.ProducerInfo{
+				OwnerPublicKey: v.PublicKey,
+				NodePublicKey:  v.PublicKey,
+				NetAddress:     v.NetAddress,
+			},
+			registerHeight:        0,
+			votes:                 0,
+			inactiveSince:         0,
+			penalty:               common.Fixed64(0),
+			activateRequestHeight: math.MaxUint32,
+		}
 	}
 
 	return a, nil
