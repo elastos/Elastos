@@ -17,7 +17,7 @@
     "MaxPerLogSize": 0,
     "DisableTxFilters": false,
     "MainChainFoundationAddress": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf",
-    "FoundationAddress": "Ed1wqkSeEPE7jAtfRf7XnqKiCxxUEx97j6",
+    "FoundationAddress": "EXsaApogiq8DUfBvgh3jBcmNCVq3JTpH31",
     "PowConfiguration": {
       "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
       "AutoMining": true,
