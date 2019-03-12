@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	core "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
@@ -231,8 +232,8 @@ func (v *Validator) checkOutputProgramHash(programHash common.Uint168) bool {
 		return true
 	}
 
-	switch programHash[0] {
-	case common.PrefixStandard, common.PrefixMultisig, common.PrefixCrossChain:
+	switch contract.PrefixType(programHash[0]) {
+	case contract.PrefixStandard, contract.PrefixMultiSig, contract.PrefixCrossChain:
 		return true
 	}
 
@@ -586,7 +587,7 @@ func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transacti
 			str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
 			return ruleError(ErrCrossChain, str)
 		}
-		if !bytes.Equal(programHash[0:1], []byte{common.PrefixStandard}) && !bytes.Equal(programHash[0:1], []byte{common.PrefixMultisig}) {
+		if !bytes.Equal(programHash[0:1], []byte{byte(contract.PrefixStandard)}) && !bytes.Equal(programHash[0:1], []byte{byte(contract.PrefixMultiSig)}) {
 			str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
 			return ruleError(ErrCrossChain, str)
 		}
@@ -636,7 +637,7 @@ func GenesisToProgramHash(genesisHash *common.Uint256) (*common.Uint168, error) 
 	buf.Write(genesisHash.Bytes())
 	buf.WriteByte(byte(common.CROSSCHAIN))
 
-	return common.ToProgramHash(common.PrefixCrossChain, buf.Bytes()), nil
+	return common.ToProgramHash(byte(contract.PrefixCrossChain), buf.Bytes()), nil
 }
 
 func (v *Validator) TxProgramHashes(tx *types.Transaction) ([]common.Uint168, error) {
