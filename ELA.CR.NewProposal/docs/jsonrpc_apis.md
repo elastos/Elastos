@@ -1337,3 +1337,57 @@ result sample:
   }
 }
 ```
+#### getarbitersinfo
+
+description: get arbiters and candidates about current and next turn.
+
+result:
+
+| name | type | description                       |
+| ---- | ---- | --------------------------------- |
+| arbiters | array[string] | get node public keys about arbiters of current turn |
+| candidates | array[string]  | get node public keys about candidates of current turn |
+| nextarbiters | array[string]  | get node public keys about arbiters of next turn |
+| nextcandidates | array[string]  | get node public keys about candidates of next turn |
+| ondutyarbiter | string  | get node public key of current on duty arbiter |
+| currentturnstartheight | integer  | get height of current turn |
+| nextturnstartheight | integer  | get an estimate height of next turn |
+
+named arguments sample:
+
+```json
+{
+  "method": "getarbitersinfo"
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "arbiters": [
+            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+        ],
+        "candidates": [],
+        "nextarbiters": [
+            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+        ],
+        "nextcandidates": [],
+        "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+        "currentturnstartheight": 200,
+        "nextturnstartheight": 212
+    }
+}
+```

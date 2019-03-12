@@ -71,6 +71,7 @@ func StartRPCServer() {
 
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin
+	mainMux["getarbitersinfo"] = GetArbitersInfo
 
 	rpcServeMux := http.NewServeMux()
 	server := http.Server{
