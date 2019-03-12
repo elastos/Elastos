@@ -201,21 +201,25 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalVote(
 	firstProposal, ok := i.cachedProposals[first.ProposalHash]
 	if !ok {
 		log.Warn("[ProcessIllegalVote] found proposal error")
+		return
 	}
 
 	secondProposal, ok := i.cachedProposals[second.ProposalHash]
 	if !ok {
 		log.Warn("[ProcessIllegalVote] found proposal error")
+		return
 	}
 
 	firstEvidence, err := i.generateProposalEvidence(firstProposal)
 	if err != nil {
 		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
+		return
 	}
 
 	secondEvidence, err := i.generateProposalEvidence(secondProposal)
 	if err != nil {
 		log.Warn("[ProcessIllegalProposal] generate evidence error: ", err)
+		return
 	}
 
 	asc := true
