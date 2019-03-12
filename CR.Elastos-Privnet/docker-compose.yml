@@ -192,7 +192,7 @@ services:
       context: ela-hive/hive-ipfs
       dockerfile: Dockerfile
     ports:
-      - 38080:8080 
+      - 9093:8080 
     networks:
       - hive
     tty: true

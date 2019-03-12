@@ -57,8 +57,8 @@ These are located in the `wallets` folder:
     - Wallet Service: 8091 - [https://walletservice.readthedocs.io](https://walletservice.readthedocs.io)
     - DID Service: 8092 - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
     - Misc API: 8093-8094 - [https://github.com/elastos/Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc)
-    - HIVE IPFS: 38080 - [http://github.com/elastos/Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
-    - HIVE Cluster: 9094-9095 - [http://github.com/elastos/Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+    - HIVE IPFS: 9093 - [http://github.com/elastos/Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
+    - HIVE Cluster: 9094-9096 - [http://github.com/elastos/Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
     
     ##### Note: DID Service's - `getDidInfo` method is currently broken, but available on the Misc API - port 8094
     
@@ -173,7 +173,7 @@ These are located in the `wallets` folder:
 12. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
 
     ```
-    curl http://localhost:38080/version
+    curl http://localhost:9093/version
     ```
 
     Should return
