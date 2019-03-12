@@ -85,10 +85,8 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 		}
 
 		if isEmergencyCandidate {
-			blockchain.DefaultLedger.Blockchain.GetState().
-				ProcessSpecialTxPayload(p)
-
-			if err := a.cfg.Arbitrators.ForceChange(blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
+			if err := a.cfg.Arbitrators.ProcessSpecialTxPayload(p,
+				blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 				log.Error("[OnInactiveArbitratorsTxReceived] force change "+
 					"arbitrators error: ", err)
 			}
@@ -188,8 +186,8 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:       cfg.Store,
-				Arbitrators: cfg.Arbitrators,
+				Store:                  cfg.Store,
+				Arbitrators:            cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)

@@ -487,9 +487,8 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 			Payload.(*payload.InactiveArbitrators))
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
 
-		blockchain.DefaultLedger.Blockchain.GetState().
-			ProcessSpecialTxPayload(p.currentInactiveArbitratorTx.Payload)
-		if err := p.cfg.Arbitrators.ForceChange(
+		if err := p.cfg.Arbitrators.ProcessSpecialTxPayload(
+			p.currentInactiveArbitratorTx.Payload,
 			blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 			log.Error("[tryEnterEmergencyState] force change arbitrators"+
 				" error: ", err.Error())
