@@ -385,7 +385,8 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 	case types.RegisterProducer, types.UpdateProducer, types.CancelProducer,
 		types.ActivateProducer, types.IllegalProposalEvidence,
 		types.IllegalVoteEvidence, types.IllegalBlockEvidence,
-		types.IllegalSidechainEvidence:
+		types.IllegalSidechainEvidence, types.InactiveArbitrators,
+		types.ReturnDepositCoin:
 		return true
 
 	// Transactions will change the votes state.
