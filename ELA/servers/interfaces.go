@@ -304,6 +304,47 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 	return ResponsePack(Success, result)
 }
 
+func GetArbitersInfo(params Params) map[string]interface{} {
+	type arbitersInfo struct {
+		Arbiters       []string `json:"arbiters"`
+		Candidates     []string `json:"candidates"`
+		NextArbiters   []string `json:"nextarbiters"`
+		NextCandidates []string `json:"nextcandidates"`
+		OnDutyArbiter  string   `json:"ondutyarbiter"`
+
+		CurrentTurnStartHeight uint32 `json:"currentturnstartheight"`
+		NextTurnStartHeight    uint32 `json:"nextturnstartheight"`
+	}
+
+	dutyIndex := Arbiters.GetDutyIndex()
+	result := &arbitersInfo{
+		Arbiters:       make([]string, 0),
+		Candidates:     make([]string, 0),
+		NextArbiters:   make([]string, 0),
+		NextCandidates: make([]string, 0),
+		OnDutyArbiter:  common.BytesToHexString(Arbiters.GetOnDutyArbitrator()),
+
+		CurrentTurnStartHeight: Store.GetHeight() - dutyIndex,
+		NextTurnStartHeight: Store.GetHeight() +
+			Arbiters.GetArbitersCount() - dutyIndex,
+	}
+	for _, v := range Arbiters.GetArbitrators() {
+		result.Arbiters = append(result.Arbiters, common.BytesToHexString(v))
+	}
+	for _, v := range Arbiters.GetCandidates() {
+		result.Candidates = append(result.Candidates, common.BytesToHexString(v))
+	}
+	for _, v := range Arbiters.GetNextArbitrators() {
+		result.NextArbiters = append(result.NextArbiters,
+			common.BytesToHexString(v))
+	}
+	for _, v := range Arbiters.GetNextCandidates() {
+		result.NextCandidates = append(result.NextCandidates,
+			common.BytesToHexString(v))
+	}
+	return ResponsePack(Success, result)
+}
+
 func GetInfo(param Params) map[string]interface{} {
 	RetVal := struct {
 		Version       int    `json:"version"`
