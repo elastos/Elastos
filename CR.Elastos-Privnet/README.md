@@ -39,15 +39,15 @@ These are located in the `wallets` folder:
     - Docker Machine 0.16.1
 
 2. The following are the GIT SHAs we're using for each project:
-    - Elastos.ELA: tag v0.2.2 3f1e5e6
-    - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad
-    - Elastos.ELA.SideChain.Token: release_v0.0.1 2c21380
-    - Elastos.ELA.Arbiter: tag v0.0.3 8970efe
-    - Elastos.ORG.Wallet.Service: master 49dcbfa
-    - Elastos.ORG.DID.Service: master 1ff8c00
-    - Elastos.ORG.API.Misc: master f5bbebab924b71c51974015b6f3655477ed13434
-    - Elastos.NET.Hive.IPFS: dev-master 6a5e240
-    - Elastos.NET.Hive.Cluster: dev-master 65033f0
+    - Elastos.ELA: tag v0.2.2 3f1e5e6435468d735f7fcd12e8d0706832c6ed31
+    - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad42ad32315c692c61b1ab340341080d08f
+    - Elastos.ELA.SideChain.Token: release_v0.0.1 2c2138019d5946e80e4fc909227e5e85a7cf19d2
+    - Elastos.ELA.Arbiter: tag v0.0.3 8970efe9fec3d77f4d4bab6c19505b33cdb11dec
+    - Elastos.ORG.Wallet.Service: master 6f079a98421656a9286d87127049eb75f49df277
+    - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
+    - Elastos.ORG.API.Misc: master 78c2c6a621cf088dacbce6f40e0080b873719aee
+    - Elastos.NET.Hive.IPFS: dev-master 6a5e24032b0d0c79e06a103f1b4078a648fa0e2e
+    - Elastos.NET.Hive.Cluster: dev-master 390b912df5cf496b7c9e6e5d3f6e0fb897a76db1
     
 3. Check your ports, here are the following ports these containers expect available:
     - Mainchain: 20333-20338 - [http://github.com/elastos/Elastos.ELA](http://github.com/elastos/Elastos.ELA)
@@ -147,7 +147,7 @@ These are located in the `wallets` folder:
     
 11. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
-    This service is running on port 8093
+    The service for mainchain is running on port 8093 and for DID sidechain is running on port 8094
     
     ```
     curl http://localhost:8093/api/1/ping
@@ -159,9 +159,18 @@ These are located in the `wallets` folder:
     {"result":"pong 1.0.1","status":200}
     ```
 
+    ```
+    curl http://localhost:8094/api/1/ping
+    ```
+    
+    Should return
+    
+    ```
+    {"result":"pong 1.0.1","status":200}
+    ```
+
 12. Verify that your HIVE IPFS peers are working correctly [Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
 
-    This service is running on port 38080 and 48080 since there are two peer nodes running
     ```
     curl http://localhost:38080/version
     ```
@@ -175,7 +184,9 @@ These are located in the `wallets` folder:
 
 13. Verify that your HIVE Cluster is working correctly [Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
 
-    This service is running on port 9094-9095 and 49094-49095 since there are two cluster nodes running. 9094 exposes Cluster API endpoints.
+    This service is running on port 9094-9095. There is only one node for the cluster so there's no redundant setup as this is a test environment. 
+    
+    9094 exposes Cluster API endpoints.
     ```
     curl http://localhost:9094/id
     ```
@@ -187,17 +198,12 @@ These are located in the `wallets` folder:
         "addresses": [
             "/p2p-circuit/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
             "/ip4/127.0.0.1/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
-            "/ip4/172.19.0.4/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"
+            "/ip4/172.19.0.3/tcp/9096/ipfs/QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"
         ],
         "cluster_peers": [
-            "QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
-            "QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"
+            "QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H"
         ],
-        "cluster_peers_addresses": [
-            "/ip4/127.0.0.1/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors",
-            "/ip4/172.19.0.5/tcp/9096/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors",
-            "/p2p-circuit/ipfs/QmXgeSALT56nSjNTw4qLXsH5cqNffTCkGsz5TBM7gwLors"
-        ],
+        "cluster_peers_addresses": [],
         "version": "0.8.0+git65033f01bb94e5d205e1ed0e80198f050cea212a",
         "commit": "",
         "rpc_protocol_version": "/hivecluster/0.8/rpc",
@@ -206,7 +212,7 @@ These are located in the `wallets` folder:
             "id": "QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj",
             "addresses": [
             "/ip4/127.0.0.1/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj",
-            "/ip4/172.19.0.3/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj"
+            "/ip4/172.19.0.2/tcp/4001/ipfs/QmQNhoWCQivT7sJSezu8PnNpjA4rjKRxWHa47tFmkW3mHj"
             ],
             "error": ""
         },
@@ -231,10 +237,6 @@ Generally you will use the DID Service running on port `8092` for this - [https:
 See "Create DID" for how to create a DID, you will receive both a did and a private key, store this somewhere.
 
 ```
-GET /api/1/gen/did HTTP/1.1
-```
-or
-```
 curl http://localhost:8092/api/1/gen/did
 ```
 
@@ -251,13 +253,21 @@ Should return something like
 }
 ```
 
+NOTE: For your use, a DID has already been created and you can find about it at test/did_example.json
+
 [https://didservice.readthedocs.io/en/latest/api_guide.html#create-did](https://didservice.readthedocs.io/en/latest/api_guide.html#create-did)
 
 Then you can call `POST /api/1/setDidInfo` to store data to this DID. There are two private keys, the outer private key
 is the private key of the wallet address that is paying for the store data transaction, you can use the ELA stored on the DID sidechain in `sidechain-preloaded.json`
 for this.
 
-You can put the following in a file. Make sure to change the privateKeys on this file to your own configuration.
+We will use the pre-configured DID to store info. Refer to test/action_storeinfoon_didchain.json for what to pass in the body of the request to this API endpoint.
+
+```
+cat test/action_storeinfoon_didchain.json
+```
+
+Should return
 ```
 {
   "privateKey": "acf6ee13a2256f60f597f55bdd17d0ee772014db7233b50543bebdd1faf9a0da",
@@ -279,13 +289,13 @@ You can put the following in a file. Make sure to change the privateKeys on this
 }
 ```
 
-The inner settings struct is the actual DID to modify, so you will use the private key from `/api/1/gen/did` here to specify that DID.
+The inner settings struct is the actual DID to modify, so you will use the private key from `/api/1/gen/did` here to specify that DID. For this example, you can use the file as is.
 
 There is a cost of 10,000 SELA per 1kb on this privatenet, actual cost for the mainnet is not finalized.   
 
 And when you want to send a request to post the above file to the DID sidechain with the key "clark" and value "hello,world", do the following(Save the above excerpt into a file named "action_storeinfoon_didchain.json):
 ```
-curl -H "Content-type: application/json" -d @action_storeinfoon_didchain.json http://localhost:8092/api/1/setDidInfo
+curl -H "Content-type: application/json" -d @test/action_storeinfoon_didchain.json http://localhost:8092/api/1/setDidInfo
 ```
 
 Should return something like
@@ -319,20 +329,20 @@ Would return something like
 ```
 {
   "result": {
-    "Did": "icYxVyNWpCxFj83FdV1Jy7MoufkqTay1U7",
+    "Did": "iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw",
     "Did_status": 1,
-    "Public_key": "0381CD16C976F9C39F5A51C3C32696F5B3FFE5D3119BE939D1DE7A810061251AF6",
+    "Public_key": "02BDA7DBA5E4E1E24245566AF75E34CC9933FAA99FFFC61081156CC05AE65422E2",
     "Property_key": "clark",
     "Property_value": "hello,world",
-    "Txid": "9636696537288bf9b7034fced306e53413ba55a59791f8c47e5d0a60c5f400cf",
-    "Block_time": 1551910271,
-    "Height": 472
+    "Txid": "4f65869f32ee2ad5397829178ea7ab7b0ef40284ccdac489f3de8db8d5f2000b",
+    "Block_time": 1552402320,
+    "Height": 1570
   },
   "status": 200
 }
 ```
 
-NOTE: This API is unstable at the moment so things might not work as expected sometimes.
+NOTE: This API is unstable at the moment so things might not work as expected sometimes. If you encounter any issues, please submit a github issue and we'll look into it.
     
 
 ## Elastos Hive - IPFS Storage
@@ -341,12 +351,16 @@ Let's try to create a simple file and then push it to Elastos Hive using the API
 
 1. Add the content "This is Elastos" to the cluster. Note that doing this will automatically pin this file to the cluster too.
     ```
-    curl -F file="This is Elastos" "http://localhost:9095/api/v0/file/add"
+    curl -F file="Hello, World" "http://localhost:9095/api/v0/file/add"
     ```
 
     Should return something like
     ```
-    {"Name":"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg","Hash":"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg","Size":"23"}
+    {
+        "Name": "QmTev1ZgJkHgFYiCX7MgELEDJuMygPNGcinqBa2RmfnGFu",
+        "Hash": "QmTev1ZgJkHgFYiCX7MgELEDJuMygPNGcinqBa2RmfnGFu",
+        "Size": "20"
+    }
     ```
 
 2. Let's verify that something was indeed pinned to the cluster
@@ -356,24 +370,24 @@ Let's try to create a simple file and then push it to Elastos Hive using the API
 
     Should return something like
     ```
-    {"Keys":{"QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg":{"Type":"recursive"}}}
+    {"Keys":{"QmTev1ZgJkHgFYiCX7MgELEDJuMygPNGcinqBa2RmfnGFu":{"Type":"recursive"}}}
     ```
 
 3. Retrieve the content from the hash using the cluster-slave
     ```
-    curl http://localhost:49095/api/v0/file/cat?arg=QmSDL6wJhKsTNudiLJoTkMU2tq2siH2DYQcyFN2Qz7JURg
+    curl http://localhost:9095/api/v0/file/cat?arg=QmTev1ZgJkHgFYiCX7MgELEDJuMygPNGcinqBa2RmfnGFu
     ```
 
-    Note that even if we added the content via port 9095(ela-hive-cluster-master), we're now using port 49095(ela-hive-cluster-slave) to retrieve the result because we know that they're part of the same cluster and the same network. The above should return
+    Should return
     ```
-    This is Elastos
+    Hello, World
     ```
 
-4. Let's push the content to the cluster by directly interacting with the IPFS peer nodes
+4. Let's push some random content to the cluster by directly interacting with the IPFS peer nodes
     ```
     echo "This is Elastos" > hello.txt
-    docker cp hello.txt ela-hive-ipfs-peer-1:/tmp/hello.txt
-    docker exec ela-hive-ipfs-peer-1 ipfs add /tmp/hello.txt
+    docker cp hello.txt ela-hive-ipfs-peer:/tmp/hello.txt
+    docker exec ela-hive-ipfs-peer ipfs add /tmp/hello.txt
     ```
 
     Should return something like
@@ -383,10 +397,10 @@ Let's try to create a simple file and then push it to Elastos Hive using the API
 
 5. Check that this content was added to the cluster by trying to read this hash
     ```
-    docker exec ela-hive-ipfs-peer-2 ipfs cat QmZVtqcb9AAz4xSXkWupWgA9mHDLwtksuem2fhNbNkYwbA
+    docker exec ela-hive-ipfs-peer ipfs cat QmZVtqcb9AAz4xSXkWupWgA9mHDLwtksuem2fhNbNkYwbA
     ```
 
-    Note that even if I added file from ela-hive-ipfs-peer-1 container, I'm using ela-hive-ipfs-peer-2 to cat out the content from the cluster. This is because these two peer nodes are part of the same IPFS swarm. The above should return
+    Should return
     ```
     This is Elastos
     ```
