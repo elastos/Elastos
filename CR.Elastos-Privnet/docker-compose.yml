@@ -127,6 +127,45 @@ services:
       - blockchain
     tty: true  
 
+  ela-api-misc-mainchain:
+    container_name: ela-api-misc-mainchain
+    image: ela-api-misc-mainchain
+    depends_on:
+      - ela-mysql
+    build:
+      context: restful-services/api-misc
+      dockerfile: mainchain/Dockerfile
+    ports:
+      - 8093:8093
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
+    tty: true
+
+  ela-api-misc-sidechain-did:
+    container_name: ela-api-misc-sidechain-did
+    image: ela-api-misc-sidechain-did
+    depends_on:
+      - ela-mysql
+      - ela-api-misc-mainchain
+    build:
+      context: restful-services/api-misc
+      dockerfile: sidechain/did/Dockerfile
+    ports:
+      - 8094:8093
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8094/api/1/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - blockchain
+    tty: true
+
   ela-mysql:
     container_name: ela-mysql
     image: mysql:5.6
@@ -146,75 +185,28 @@ services:
       - blockchain
     tty: true
 
-  ela-api-misc:
-    container_name: ela-api-misc
-    image: ela-api-misc
-    depends_on:
-      - ela-mysql
-    build:
-      context: restful-services/api-misc
-    ports:
-      - 8093:8093
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-hive-ipfs-peer-1:
-    container_name: ela-hive-ipfs-peer-1
-    image: ela-hive-ipfs-peer-1
+  ela-hive-ipfs-peer:
+    container_name: ela-hive-ipfs-peer
+    image: ela-hive-ipfs-peer
     build:
       context: ela-hive/hive-ipfs
-      dockerfile: Dockerfile-peer-1
+      dockerfile: Dockerfile
     ports:
       - 38080:8080 
     networks:
       - hive
     tty: true
 
-  ela-hive-ipfs-peer-2:
-    container_name: ela-hive-ipfs-peer-2
-    image: ela-hive-ipfs-peer-2
-    build:
-      context: ela-hive/hive-ipfs
-      dockerfile: Dockerfile-peer-2
-    ports:
-      - 48080:8080
-    networks:
-      - hive
-    tty: true
-
-  ela-hive-cluster-master:
-    container_name: ela-hive-cluster-master
-    image: ela-hive-cluster-master
+  ela-hive-cluster:
+    container_name: ela-hive-cluster
+    image: ela-hive-cluster
     depends_on:
-      - ela-hive-ipfs-peer-1
-      - ela-hive-ipfs-peer-2
+      - ela-hive-ipfs-peer
     build:
       context: ela-hive/hive-cluster
-      dockerfile: Dockerfile-master
+      dockerfile: Dockerfile
     ports:
       - 9094-9096:9094-9096
-    networks:
-      - hive
-    tty: true
-
-  ela-hive-cluster-slave:
-    container_name: ela-hive-cluster-slave
-    image: ela-hive-cluster-slave
-    depends_on:
-      - ela-hive-ipfs-peer-1
-      - ela-hive-ipfs-peer-2
-      - ela-hive-cluster-master
-    build:
-      context: ela-hive/hive-cluster
-      dockerfile: Dockerfile-slave
-    ports:
-      - 49094-49096:9094-9096
     networks:
       - hive
     tty: true
