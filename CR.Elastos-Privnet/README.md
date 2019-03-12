@@ -29,7 +29,8 @@ These are located in the `wallets` folder:
 
 - `foundation.json` - This is where the genesis block's 33 million ELA is created
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
-- `did-sidechain-preloaded.json` - Pre-loaded transferred ELA from the mainchain to this DID sidechain wallet 
+- `sidechain-did-preloaded.json` - Pre-loaded transferred ELA from the mainchain to this DID sidechain wallet 
+- `sidechain-token-preloaded.json` - Pre-loaded transferred ELA from the mainchain to this Token sidechain wallet 
 
 ## How to Run
 
@@ -55,11 +56,11 @@ These are located in the `wallets` folder:
     - Token Sidechain: 20614-20618 - [http://github.com/elastos/Elastos.ELA.SideChain.Token](http://github.com/elastos/Elastos.ELA.SideChain.Token)
     - Wallet Service: 8091 - [https://walletservice.readthedocs.io](https://walletservice.readthedocs.io)
     - DID Service: 8092 - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
-    - Add-on API: 8093 - [https://github.com/elastos/Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc)
-    - HIVE IPFS: 38080, 48080 - [http://github.com/elastos/Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
-    - HIVE Cluster: 9094-9095, 49094-49095 - [http://github.com/elastos/Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
+    - Misc API: 8093-8094 - [https://github.com/elastos/Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc)
+    - HIVE IPFS: 38080 - [http://github.com/elastos/Elastos.NET.Hive.IPFS](http://github.com/elastos/Elastos.NET.Hive.IPFS)
+    - HIVE Cluster: 9094-9095 - [http://github.com/elastos/Elastos.NET.Hive.Cluster](http://github.com/elastos/Elastos.NET.Hive.Cluster)
     
-    ##### Note: DID Service's - `getDidInfo` method is currently broken, but available on the Add-on API - port 8093
+    ##### Note: DID Service's - `getDidInfo` method is currently broken, but available on the Misc API - port 8094
     
 4. Just run with docker-compose from within the directory:
     
