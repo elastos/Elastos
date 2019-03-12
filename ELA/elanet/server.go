@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
+	"github.com/elastos/Elastos.ELA/elanet/filter/sidefilter"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
@@ -65,12 +66,12 @@ type serverPeer struct {
 // newServerPeer returns a new serverPeer instance. The peer needs to be set by
 // the caller.
 func newServerPeer(s *server) *serverPeer {
-	filter := filter.New(func(filterType filter.TxFilterType) filter.TxFilter {
-		switch filterType {
+	filter := filter.New(func(typ uint8) filter.TxFilter {
+		switch typ {
 		case filter.FTBloom:
 			return bloom.NewTxFilter()
-		case filter.FTTxType:
-			return filter.NewTxTypeFilter()
+		case filter.FTDPOS:
+			return sidefilter.New(s.chain.GetState())
 		}
 		return nil
 	})

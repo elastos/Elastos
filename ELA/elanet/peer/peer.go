@@ -667,6 +667,9 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		case *msg.FilterLoad:
 			listeners.OnFilterLoad(p, m)
 
+		case *msg.TxFilterLoad:
+			listeners.OnTxFilterLoad(p, m)
+
 		case *msg.Reject:
 			listeners.OnReject(p, m)
 
