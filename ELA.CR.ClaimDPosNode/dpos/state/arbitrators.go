@@ -58,6 +58,14 @@ func (a *Arbitrators) RollbackTo(height uint32) error {
 	return nil
 }
 
+func (a *Arbitrators) GetDutyIndex() uint32 {
+	a.mtx.Lock()
+	index := a.dutyIndex
+	a.mtx.Unlock()
+
+	return index
+}
+
 func (a *Arbitrators) ForceChange(height uint32) error {
 	if err := a.updateNextArbitrators(height + 1); err != nil {
 		return err

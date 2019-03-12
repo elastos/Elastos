@@ -18,6 +18,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 	GetNeedConnectArbiters() map[string]struct{}
+	GetDutyIndex() uint32
 
 	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool

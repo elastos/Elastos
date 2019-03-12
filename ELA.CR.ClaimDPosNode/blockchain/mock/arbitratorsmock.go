@@ -32,6 +32,10 @@ type ArbitratorsMock struct {
 	MajorityCount              uint32
 }
 
+func (a *ArbitratorsMock) GetDutyIndex() uint32 {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	panic("implement me")
 }
