@@ -50,6 +50,19 @@ func (a *Arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm)
 	a.IncreaseChainHeight(block.Height)
 }
 
+func (a *Arbitrators) ProcessSpecialTxPayload(p types.Payload,
+	height uint32) error {
+	switch p.(type) {
+	case *payload.DPOSIllegalBlocks, *payload.InactiveArbitrators:
+		a.State.ProcessSpecialTxPayload(p)
+		return a.ForceChange(height)
+	default:
+		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
+	}
+
+	return nil
+}
+
 func (a *Arbitrators) RollbackTo(height uint32) error {
 	if err := a.State.RollbackTo(height); err != nil {
 		return err
