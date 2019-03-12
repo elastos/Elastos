@@ -159,12 +159,12 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 	block := msgBlock.Serializable.(*types.DposBlock)
 
-	if block.ConfirmFlag {
+	if block.HaveConfirm {
 		// Add the block to the known inventory for the peer.
 		blockHash := block.Block.Hash()
 		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
 		sp.AddKnownInventory(iv)
-	} else if block.BlockFlag {
+	} else {
 		// Add the block to the known inventory for the peer.
 		blockHash := block.Block.Hash()
 		iv := msg.NewInvVect(msg.InvTypeBlock, &blockHash)
@@ -481,7 +481,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 			return errors.New("not found block")
 		}
 	}
-	block.ConfirmFlag = false
+	block.HaveConfirm = false
 	block.Confirm = nil
 
 	// Once we have fetched data wait for any previous operation to finish.

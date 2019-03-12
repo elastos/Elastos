@@ -224,8 +224,7 @@ func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
 	log.Info("[ProcessBlock] received block:", block.Hash().String())
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
 		if _, _, err := d.blockPool.AppendDposBlock(&types.DposBlock{
-			BlockFlag: true,
-			Block:     block,
+			Block: block,
 		}); err != nil {
 			log.Error("[OnBlock] err: ", err.Error())
 		}

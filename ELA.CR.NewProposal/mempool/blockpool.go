@@ -44,7 +44,7 @@ func (bm *BlockPool) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error
 func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	bm.Lock()
 	defer bm.Unlock()
-	if !dposBlock.ConfirmFlag {
+	if !dposBlock.HaveConfirm {
 		return bm.appendBlock(dposBlock)
 	}
 	return bm.appendBlockAndConfirm(dposBlock)
@@ -80,7 +80,7 @@ func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error)
 
 	copyBlock := *dposBlock
 	confirm := bm.confirms[hash]
-	copyBlock.ConfirmFlag = confirm != nil
+	copyBlock.HaveConfirm = confirm != nil
 	copyBlock.Confirm = confirm
 
 	// notify new block received
@@ -200,9 +200,8 @@ func (bm *BlockPool) GetDposBlockByHash(hash common.Uint256) (*types.DposBlock, 
 	if block := bm.blocks[hash]; block != nil {
 		confirm := bm.confirms[hash]
 		return &types.DposBlock{
-			BlockFlag:   true,
 			Block:       block,
-			ConfirmFlag: confirm != nil,
+			HaveConfirm: confirm != nil,
 			Confirm:     confirm,
 		}, nil
 	}
