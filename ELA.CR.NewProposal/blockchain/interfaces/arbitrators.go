@@ -8,8 +8,8 @@ import (
 )
 
 type Arbitrators interface {
-	ForceChange(height uint32) error
 	ProcessBlock(block *types.Block, confirm *payload.Confirm)
+	ProcessSpecialTxPayload(p types.Payload, height uint32) error
 	RollbackTo(height uint32) error
 
 	IsArbitrator(pk []byte) bool

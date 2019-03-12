@@ -73,9 +73,6 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 			break
 		}
 	}
-	if inactivePayload != nil {
-		DefaultLedger.Blockchain.state.ProcessSpecialTxPayload(inactivePayload)
-	}
 
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
@@ -85,7 +82,8 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 		}
 		return err
 	} else if inactivePayload != nil {
-		if err := DefaultLedger.Arbitrators.ForceChange(block.Height); err != nil {
+		if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
+			inactivePayload, block.Height); err != nil {
 			panic("force change fail when finding an inactive arbitrators" +
 				" transaction")
 		}

@@ -36,6 +36,10 @@ func (a *ArbitratorsMock) GetDutyIndex() uint32 {
 	panic("implement me")
 }
 
+func (a *ArbitratorsMock) ProcessSpecialTxPayload(p types.Payload, height uint32) error {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	panic("implement me")
 }
@@ -86,10 +90,6 @@ func (a *ArbitratorsMock) GetDutyChangeCount() uint32 {
 
 func (a *ArbitratorsMock) SetDutyChangeCount(count uint32) {
 	a.DutyChangedCount = count
-}
-
-func (a *ArbitratorsMock) ForceChange(height uint32) error {
-	return nil
 }
 
 func (a *ArbitratorsMock) GetArbitrators() [][]byte {
