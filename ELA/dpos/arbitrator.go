@@ -214,7 +214,7 @@ func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
 		switch e.Type {
 		case events.ETNewBlockReceived:
 			block := e.Data.(*types.DposBlock)
-			a.OnBlockReceived(block.Block, block.ConfirmFlag)
+			a.OnBlockReceived(block.Block, block.HaveConfirm)
 
 		case events.ETConfirmAccepted:
 			a.OnConfirmReceived(e.Data.(*payload.Confirm))

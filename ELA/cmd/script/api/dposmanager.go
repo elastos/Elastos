@@ -139,7 +139,7 @@ var dposManagerMethods = map[string]lua.LGFunction{
 	"sign_proposal": dposManagerSignProposal,
 	"sign_vote":     dposManagerSignVote,
 
-	"check_last_relay": dposManagerCheckLastRelay,
+	"check_last_relay":            dposManagerCheckLastRelay,
 	"check_confirm_in_block_pool": dposCheckConfirmInBlockPool,
 }
 
@@ -169,7 +169,7 @@ func dposManagerSetOnDuty(L *lua.LState) int {
 }
 
 func dposCheckConfirmInBlockPool(L *lua.LState) int {
-	m := checkDposManager(L ,1)
+	m := checkDposManager(L, 1)
 	blockHash := L.ToString(2)
 	hash, _ := common.Uint256FromHexString(blockHash)
 
@@ -196,21 +196,16 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 			if dposBlock, ok := relayedConfirm.Serializable.(*types.
 				DposBlock); ok {
 
-				if dposBlock.BlockFlag && dposBlock.ConfirmFlag {
+				if dposBlock.HaveConfirm {
 					b := checkBlock(L, 3)
 					c := checkConfirm(L, 4)
 					if b != nil && c != nil {
 						result = b.Hash().IsEqual(dposBlock.Block.Hash()) && confirmsEqual(c, dposBlock.Confirm)
 					}
-				} else if dposBlock.BlockFlag {
+				} else {
 					b := checkBlock(L, 3)
 					if b != nil {
 						result = b.Hash().IsEqual(dposBlock.Block.Hash())
-					}
-				} else if dposBlock.ConfirmFlag {
-					c := checkConfirm(L, 3)
-					if c != nil {
-						result = confirmsEqual(c, dposBlock.Confirm)
 					}
 				}
 			}

@@ -183,9 +183,8 @@ func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 	if block, _ := b.db.GetBlock(hash); block != nil {
 		confirm, _ := b.db.GetConfirm(hash)
 		return &DposBlock{
-			BlockFlag:   true,
 			Block:       block,
-			ConfirmFlag: confirm != nil,
+			HaveConfirm: confirm != nil,
 			Confirm:     confirm,
 		}, nil
 	}
@@ -196,9 +195,8 @@ func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 	if orphan := b.orphans[hash]; orphan != nil {
 		confirm := b.orphanConfirms[hash]
 		return &DposBlock{
-			BlockFlag:   true,
 			Block:       orphan.Block,
-			ConfirmFlag: confirm != nil,
+			HaveConfirm: confirm != nil,
 			Confirm:     confirm,
 		}, nil
 	}
@@ -915,9 +913,8 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		events.Notify(events.ETBlockConfirmAccepted, block)
 	} else if block.Height == config.Parameters.HeightVersions[2]-1 {
 		events.Notify(events.ETNewBlockReceived, &DposBlock{
-			BlockFlag:   true,
 			Block:       block,
-			ConfirmFlag: true,
+			HaveConfirm: true,
 		})
 		events.Notify(events.ETBlockAccepted, block)
 	} else {
