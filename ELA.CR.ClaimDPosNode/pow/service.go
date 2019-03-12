@@ -368,8 +368,7 @@ func (pow *Service) SubmitAuxBlock(hash *common.Uint256, auxPow *auxpow.AuxPow) 
 
 	msgAuxBlock.Header.AuxPow = *auxPow
 	_, _, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
-		BlockFlag: true,
-		Block:     msgAuxBlock,
+		Block: msgAuxBlock,
 	})
 	return err
 }
@@ -403,8 +402,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
 
 				_, _, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
-					BlockFlag: true,
-					Block:     msgBlock,
+					Block: msgBlock,
 				})
 				if err != nil {
 					continue
@@ -505,8 +503,7 @@ out:
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
 
 				inMainChain, isOrphan, err := pow.blkMemPool.AddDposBlock(&types.DposBlock{
-					BlockFlag: true,
-					Block:     msgBlock,
+					Block: msgBlock,
 				})
 				if err != nil {
 					log.Debug(err)

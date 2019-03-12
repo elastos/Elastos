@@ -341,24 +341,6 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		return
 	}
 
-	// If we get useless block then the peer is misbehaving.
-	if !bmsg.block.BlockFlag && !bmsg.block.ConfirmFlag {
-		log.Warnf("Received useless block from peer %s", peer)
-		peer.Disconnect()
-		return
-	}
-
-	// If we get a confirm, append to block pool.
-	if !bmsg.block.BlockFlag && bmsg.block.ConfirmFlag {
-		blockHash := bmsg.block.Confirm.Proposal.BlockHash
-		log.Debugf("Receive confirm for block %s", blockHash)
-		_, _, err := sm.blockMemPool.AppendConfirm(bmsg.block.Confirm)
-		if err != nil {
-			log.Warnf("Receive invalid confirm %s, %s from %s", bmsg.block.Confirm.Proposal.BlockHash, err, peer.Addr())
-		}
-		return
-	}
-
 	// If we didn't ask for this block then the peer is misbehaving.
 	blockHash := bmsg.block.Block.Hash()
 
@@ -384,7 +366,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 			peer.Disconnect()
 			return
 		}
-	} else if bmsg.block.ConfirmFlag {
+	} else if bmsg.block.HaveConfirm {
 		if _, exists = state.requestedConfirmedBlocks[blockHash]; !exists {
 			log.Warnf("Got unrequested confirmed block %v from %s -- "+
 				"disconnecting", blockHash, peer)
@@ -453,7 +435,7 @@ func (sm *SyncManager) haveInventory(invVect *msg.InvVect) (bool, error) {
 		// Ask blockMemPool and chain if the block with confirm is
 		// known to it in (blockMemPool, main chain)
 		block, _ := sm.chain.GetDposBlockByHash(invVect.Hash)
-		if block != nil && block.ConfirmFlag {
+		if block != nil && block.HaveConfirm {
 			return true, nil
 		}
 		return false, nil

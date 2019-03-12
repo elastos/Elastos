@@ -229,7 +229,7 @@ func transactionAppendEnough(L *lua.LState) int {
 
 	var availabelUtxos []servers.UTXOInfo
 	for _, utxo := range utxos {
-		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 101 {
 			continue
 		}
 		availabelUtxos = append(availabelUtxos, utxo)
