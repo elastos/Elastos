@@ -161,52 +161,44 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 }
 
 func TestArbitrators_GetNextOnDutyArbitratorV0(t *testing.T) {
-	currentArbitrator := arbiters.getNextOnDutyArbitratorV0(0, 0)
+	currentArbitrator := arbiters.getNextOnDutyArbitratorV0(1, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(1, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[1],
 		common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(2, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[2],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(3, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[3],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(4, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[4],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(5, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 0)
-	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
-		common.BytesToHexString(currentArbitrator))
-
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 1)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[1],
 		common.BytesToHexString(currentArbitrator))
 
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 2)
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(3, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[2],
 		common.BytesToHexString(currentArbitrator))
 
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 3)
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(4, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[3],
 		common.BytesToHexString(currentArbitrator))
 
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 4)
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(5, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[4],
 		common.BytesToHexString(currentArbitrator))
 
-	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 5)
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 1)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
+		common.BytesToHexString(currentArbitrator))
+
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 2)
+	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[1],
+		common.BytesToHexString(currentArbitrator))
+
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 3)
+	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[2],
+		common.BytesToHexString(currentArbitrator))
+
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 4)
+	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[3],
+		common.BytesToHexString(currentArbitrator))
+
+	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 5)
+	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[4],
 		common.BytesToHexString(currentArbitrator))
 }
 

@@ -239,10 +239,6 @@ func (a *arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
 	return result
 }
 
-func (a *arbitrators) GetOnDutyArbitratorByHeight(height uint32) []byte {
-	return a.GetNextOnDutyArbitratorV(height, 0)
-}
-
 func (a *arbitrators) GetOnDutyArbitrator() []byte {
 	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, 0)
 }
