@@ -577,7 +577,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	}
 
 	// Fetch the block from the database.
-	blk, err := s.chain.GetBlockByHash(*hash)
+	blk, err := s.chain.GetDposBlockByHash(*hash)
 	if err != nil {
 		if doneChan != nil {
 			doneChan <- struct{}{}

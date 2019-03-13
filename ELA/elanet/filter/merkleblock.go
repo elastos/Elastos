@@ -89,7 +89,7 @@ func (m *mBlock) traverseAndBuild(height, pos uint32) {
 }
 
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlock(block *types.Block, filter *Filter) (*msg.MerkleBlock, []uint32) {
+func NewMerkleBlock(block *types.DposBlock, filter *Filter) (*msg.MerkleBlock, []uint32) {
 	NumTx := uint32(len(block.Transactions))
 	mBlock := mBlock{
 		NumTx:       NumTx,
@@ -119,9 +119,18 @@ func NewMerkleBlock(block *types.Block, filter *Filter) (*msg.MerkleBlock, []uin
 	// Build the depth-first partial merkle tree.
 	mBlock.traverseAndBuild(height, 0)
 
+	// Create block header.
+	header := &types.DPOSHeader{
+		Header:      block.Header,
+		HaveConfirm: block.HaveConfirm,
+	}
+	if block.HaveConfirm {
+		header.Confirm = *block.Confirm
+	}
+
 	// Create and return the merkle block.
 	merkleBlock := &msg.MerkleBlock{
-		Header:       &block.Header,
+		Header:       header,
 		Transactions: mBlock.NumTx,
 		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
