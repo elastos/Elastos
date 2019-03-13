@@ -171,16 +171,17 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 
 	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
+	var result = true
 	if !p.TryAppendAndBroadcastConfirmBlockMsg() {
 		log.Warn("Add block failed, no need to broadcast confirm message")
-		return false
+		result = false
 	}
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   time.Now(),
-		Result:    true,
+		Result:    result,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 	p.FinishConsensus()
