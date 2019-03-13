@@ -60,8 +60,6 @@ func (a *Arbitrators) ProcessSpecialTxPayload(p types.Payload,
 	default:
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
-
-	return nil
 }
 
 func (a *Arbitrators) RollbackTo(height uint32) error {

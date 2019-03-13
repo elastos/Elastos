@@ -55,7 +55,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	}
 	defer chainStore.Close()
 
-	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(nil, &config.DefaultParams))
+	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,
