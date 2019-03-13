@@ -14,10 +14,13 @@ type OutputType byte
 
 const (
 	// OTNone indicates there is no payload for this output.
-	OTNone OutputType = 0x00
+	OTNone OutputType = iota
 
 	// OTVote indicates the output payload is a vote.
-	OTVote OutputType = 0x01
+	OTVote
+
+	// OTMapping indicates the output payload is a mapping.
+	OTMapping
 )
 
 type OutputPayload interface {
@@ -126,6 +129,8 @@ func getOutputPayload(outputType OutputType) (OutputPayload, error) {
 		op = new(outputpayload.DefaultOutput)
 	case OTVote:
 		op = new(outputpayload.VoteOutput)
+	case OTMapping:
+		op = new(outputpayload.Mapping)
 	default:
 		return nil, errors.New("invalid transaction output type")
 	}
