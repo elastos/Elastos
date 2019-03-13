@@ -5,7 +5,7 @@ import (
 )
 
 // 0 - H1
-func (a *Arbitrators) GetNormalArbitratorsDescV0() ([][]byte, error) {
+func (a *arbitrators) getNormalArbitratorsDescV0() ([][]byte, error) {
 	arbitersByte := make([][]byte, 0)
 	for _, arbiter := range a.State.chainParams.OriginArbiters {
 		arbiterByte, err := common.HexStringToBytes(arbiter)
@@ -19,13 +19,13 @@ func (a *Arbitrators) GetNormalArbitratorsDescV0() ([][]byte, error) {
 }
 
 // H1 - H2
-func (a *Arbitrators) GetNormalArbitratorsDescV1() ([][]byte, error) {
+func (a *arbitrators) getNormalArbitratorsDescV1() ([][]byte, error) {
 	return [][]byte{}, nil
 }
 
 // 0 - H1
-func (a *Arbitrators) GetNextOnDutyArbitratorV0(height, offset uint32) []byte {
-	arbitrators, _ := a.GetNormalArbitratorsDescV0()
+func (a *arbitrators) getNextOnDutyArbitratorV0(height, offset uint32) []byte {
+	arbitrators, _ := a.getNormalArbitratorsDescV0()
 	index := (height + offset) % uint32(len(arbitrators))
 	arbiter := arbitrators[index]
 

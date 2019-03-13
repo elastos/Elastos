@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -826,7 +825,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 }
 
 func TestState_InactiveProducer_Normal(t *testing.T) {
-	arbitrators := &mock.ArbitratorsMock{}
+	arbitrators := &ArbitratorsMock{}
 	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.
@@ -907,7 +906,7 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 }
 
 func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
-	arbitrators := &mock.ArbitratorsMock{}
+	arbitrators := &ArbitratorsMock{}
 	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.
@@ -996,7 +995,7 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 }
 
 func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
-	arbitrators := &mock.ArbitratorsMock{}
+	arbitrators := &ArbitratorsMock{}
 	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.

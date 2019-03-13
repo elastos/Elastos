@@ -11,7 +11,6 @@ import (
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -36,7 +35,7 @@ var (
 	Pow       *pow.Service
 	Server    elanet.Server
 	Arbiter   *dpos.Arbitrator
-	Arbiters  interfaces.Arbitrators
+	Arbiters  state.Arbitrators
 )
 
 func ToReversedString(hash common.Uint256) string {

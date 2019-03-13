@@ -7,7 +7,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -124,7 +123,7 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	}
 
 	originLedger := DefaultLedger
-	arbitratorsMock := &mock.ArbitratorsMock{
+	arbitratorsMock := &state.ArbitratorsMock{
 		CurrentArbitrators:         arbitrators,
 		CurrentCandidates:          candidates,
 		CurrentArbitratorsPrograms: arbitratorHashes,

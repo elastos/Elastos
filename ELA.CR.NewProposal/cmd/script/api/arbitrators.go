@@ -1,8 +1,8 @@
 package api
 
 import (
-	mock2 "github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -48,7 +48,7 @@ func newArbitrators(L *lua.LState) int {
 		arbitersByte = append(arbitersByte, arbiterByte)
 	}
 
-	a := mock2.NewArbitratorsMock(arbitersByte, 0, MajorityCount)
+	a := state.NewArbitratorsMock(arbitersByte, 0, MajorityCount)
 
 	ud := L.NewUserData()
 	ud.Value = a
@@ -59,9 +59,9 @@ func newArbitrators(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Attribute and returns this *Attribute.
-func checkArbitrators(L *lua.LState, idx int) *mock2.ArbitratorsMock {
+func checkArbitrators(L *lua.LState, idx int) *state.ArbitratorsMock {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*mock2.ArbitratorsMock); ok {
+	if v, ok := ud.Value.(*state.ArbitratorsMock); ok {
 		return v
 	}
 	L.ArgError(1, "arbitrators expected")

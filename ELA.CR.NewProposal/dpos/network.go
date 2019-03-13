@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -18,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	elap2p "github.com/elastos/Elastos.ELA/p2p"
 	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
 )
@@ -45,7 +45,7 @@ type network struct {
 	proposalDispatcher *manager.ProposalDispatcher
 	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
-	store              interfaces.IDposStore
+	store              store.IDposStore
 	publicKey          []byte
 
 	p2pServer    p2p.Server
@@ -63,7 +63,7 @@ func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
 	n.publicKey = dnConfig.PublicKey
-	if peers, err := dnConfig.Store.GetDirectPeers(); err == nil {
+	if peers, err := n.store.GetDirectPeers(); err == nil {
 		for _, p := range peers {
 			pid := peer.PID{}
 			copy(pid[:], p.PublicKey)
@@ -400,7 +400,7 @@ func (n *network) processMessage(msgItem *messageItem) {
 }
 
 func (n *network) saveDirectPeers() {
-	var peers []*interfaces.DirectPeers
+	var peers []*store.DirectPeers
 	for k, v := range n.directPeers {
 		if !v.NeedConnect {
 			continue
@@ -409,7 +409,7 @@ func (n *network) saveDirectPeers() {
 		if err != nil {
 			continue
 		}
-		peers = append(peers, &interfaces.DirectPeers{
+		peers = append(peers, &store.DirectPeers{
 			PublicKey: pk,
 			Address:   v.Address.Addr,
 		})

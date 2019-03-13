@@ -1,4 +1,4 @@
-package mock
+package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
