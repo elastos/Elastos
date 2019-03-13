@@ -20,6 +20,6 @@ deploy:
         - dev
         - /(release).{7}/
 script:
-  - go test -v -short ./... | grep FAIL
+  - go test -v -short ./...
   - make cli
   - ./util.sh test
