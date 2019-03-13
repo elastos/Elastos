@@ -835,11 +835,6 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// check ip
-	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
-		return err
-	}
-
 	// check duplication of node.
 	if b.state.ProducerExists(info.NodePublicKey) {
 		return fmt.Errorf("producer already registered")
@@ -988,11 +983,6 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 
 	// check url
 	if err := checkStringField(info.Url, "Url"); err != nil {
-		return err
-	}
-
-	// check ip
-	if err := checkStringField(info.NetAddress, "NetAddress"); err != nil {
 		return err
 	}
 
