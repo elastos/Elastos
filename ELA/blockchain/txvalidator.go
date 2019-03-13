@@ -480,6 +480,7 @@ func checkOutputPayload(txType TxType, output *Output) error {
 				return errors.New("output address should be standard")
 			}
 		case OTNone:
+		case OTMapping:
 		default:
 			return errors.New("transaction type dose not match the output payload type")
 		}
