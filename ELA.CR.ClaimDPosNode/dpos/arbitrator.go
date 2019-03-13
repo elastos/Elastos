@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -15,18 +14,19 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
-type ArbitratorConfig struct {
+type Config struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
 	Params            config.ArbiterConfiguration
-	Arbitrators       interfaces.Arbitrators
-	Store             interfaces.IDposStore
+	Arbitrators       state.Arbitrators
+	Store             store.IDposStore
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
 	ChainParams       *config.Params
@@ -34,7 +34,7 @@ type ArbitratorConfig struct {
 }
 
 type Arbitrator struct {
-	cfg            ArbitratorConfig
+	cfg            Config
 	enableViewLoop bool
 	network        *network
 	dposManager    *manager.DPOSManager
@@ -125,7 +125,7 @@ func (a *Arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte, cfg ArbitratorConfig) (*Arbitrator, error) {
+func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
 		cfg.Params.MaxLogsSize)
 

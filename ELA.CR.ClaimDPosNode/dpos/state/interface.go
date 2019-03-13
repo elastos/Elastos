@@ -1,4 +1,4 @@
-package interfaces
+package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"

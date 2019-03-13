@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -13,6 +12,8 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -21,7 +22,7 @@ import (
 
 type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
-	Store              interfaces.IDposStore
+	Store              store.IDposStore
 	PublicKey          []byte
 }
 
@@ -82,7 +83,7 @@ type AbnormalRecovering interface {
 
 type DPOSManagerConfig struct {
 	PublicKey   []byte
-	Arbitrators interfaces.Arbitrators
+	Arbitrators state.Arbitrators
 	ChainParams *config.Params
 }
 
@@ -96,7 +97,7 @@ type DPOSManager struct {
 	consensus      *Consensus
 	illegalMonitor *IllegalBehaviorMonitor
 
-	arbitrators interfaces.Arbitrators
+	arbitrators state.Arbitrators
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
 	chainParams *config.Params
@@ -154,7 +155,7 @@ func (d *DPOSManager) GetBlockCache() *ConsensusBlockCache {
 	return d.blockCache
 }
 
-func (d *DPOSManager) GetArbitrators() interfaces.Arbitrators {
+func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 	return d.arbitrators
 }
 

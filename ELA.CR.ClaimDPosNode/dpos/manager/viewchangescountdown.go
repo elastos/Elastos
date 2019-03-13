@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 type ViewChangesCountDown struct {
 	dispatcher  *ProposalDispatcher
 	consensus   *Consensus
-	arbitrators interfaces.Arbitrators
+	arbitrators state.Arbitrators
 
 	timeoutRefactor               uint32
 	inactiveArbitratorsEliminated bool

@@ -121,9 +121,8 @@ const (
 // State is a memory database storing DPOS producers state, like pending
 // producers active producers and their votes.
 type State struct {
-	// GetCurrentArbiters defines methods about get current arbiters
-	GetCurrentArbiters func() [][]byte
-	//arbiters    interfaces.Arbitrators
+	// getArbiters defines methods about get current arbiters
+	getArbiters func() [][]byte
 	chainParams *config.Params
 
 	mtx               sync.RWMutex
@@ -831,7 +830,7 @@ func (s *State) countArbitratorsInactivity(height uint32,
 	}
 
 	arbiters := make(map[string]bool)
-	for _, a := range s.GetCurrentArbiters() {
+	for _, a := range s.getArbiters() {
 		arbiters[common.BytesToHexString(a)] = false
 	}
 	for _, v := range confirm.Votes {
@@ -949,17 +948,17 @@ func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 	return &State{
-		chainParams:        chainParams,
-		GetCurrentArbiters: getArbiters,
-		nodeOwnerKeys:      make(map[string]string),
-		pendingProducers:   make(map[string]*Producer),
-		activityProducers:  make(map[string]*Producer),
-		inactiveProducers:  make(map[string]*Producer),
-		canceledProducers:  make(map[string]*Producer),
-		illegalProducers:   make(map[string]*Producer),
-		votes:              make(map[string]*types.Output),
-		nicknames:          make(map[string]struct{}),
-		specialTxHashes:    make(map[string]struct{}),
-		history:            newHistory(maxHistoryCapacity),
+		chainParams:       chainParams,
+		getArbiters:       getArbiters,
+		nodeOwnerKeys:     make(map[string]string),
+		pendingProducers:  make(map[string]*Producer),
+		activityProducers: make(map[string]*Producer),
+		inactiveProducers: make(map[string]*Producer),
+		canceledProducers: make(map[string]*Producer),
+		illegalProducers:  make(map[string]*Producer),
+		votes:             make(map[string]*types.Output),
+		nicknames:         make(map[string]struct{}),
+		specialTxHashes:   make(map[string]struct{}),
+		history:           newHistory(maxHistoryCapacity),
 	}
 }

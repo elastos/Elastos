@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -64,7 +63,7 @@ func main() {
 	// Initializes the foundation address
 	blockchain.FoundationAddress = activeNetParams.Foundation
 
-	var dposStore interfaces.IDposStore
+	var dposStore store.IDposStore
 	chainStore, err := blockchain.NewChainStore(dataDir,
 		activeNetParams.GenesisBlock)
 	if err != nil {
@@ -123,7 +122,7 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		arbitrator, err := dpos.NewArbitrator(pwd, dpos.ArbitratorConfig{
+		arbitrator, err := dpos.NewArbitrator(pwd, dpos.Config{
 			EnableEventLog: true,
 			EnableEventRecord: config.Parameters.ArbiterConfiguration.
 				EnableEventRecord,

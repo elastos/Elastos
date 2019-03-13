@@ -10,16 +10,14 @@ import (
 
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
-	"github.com/elastos/Elastos.ELA/errors"
-
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -67,7 +65,7 @@ func TestTxPoolInit(t *testing.T) {
 		arbiterByte, _ := common.HexStringToBytes(arbiter)
 		arbitersByte = append(arbitersByte, arbiterByte)
 	}
-	arbitrators := mock.NewArbitratorsMock(arbitersByte, 0, 3)
+	arbitrators := state.NewArbitratorsMock(arbitersByte, 0, 3)
 
 	chain, err := blockchain.New(chainStore, &config.DefaultParams,
 		state.NewState(&config.DefaultParams, nil))

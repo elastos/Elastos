@@ -3,7 +3,6 @@ package store
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -15,7 +14,7 @@ type persistDutyChangedCountTask struct {
 }
 
 type persistDirectPeersTask struct {
-	peers []*interfaces.DirectPeers
+	peers []*DirectPeers
 	reply chan bool
 }
 
@@ -51,7 +50,7 @@ func (s *DposStore) handlePersistDposDutyChangedCount(count uint32) {
 	s.saveDposDutyChangedCount(count)
 }
 
-func (s *DposStore) handlePersistDirectPeers(p []*interfaces.DirectPeers) {
+func (s *DposStore) handlePersistDirectPeers(p []*DirectPeers) {
 	s.saveDirectPeers(p)
 }
 
@@ -61,20 +60,20 @@ func (s *DposStore) SaveDposDutyChangedCount(c uint32) {
 	<-reply
 }
 
-func (s *DposStore) SaveDirectPeers(p []*interfaces.DirectPeers) {
+func (s *DposStore) SaveDirectPeers(p []*DirectPeers) {
 	reply := make(chan bool)
 	s.persistCh <- &persistDirectPeersTask{peers: p, reply: reply}
 	<-reply
 }
 
-func (s *DposStore) GetDirectPeers() ([]*interfaces.DirectPeers, error) {
+func (s *DposStore) GetDirectPeers() ([]*DirectPeers, error) {
 	key := []byte{byte(DPOSDirectPeers)}
 	data, err := s.db.Get(key)
 	if err != nil {
 		return nil, err
 	}
 
-	var peers []*interfaces.DirectPeers
+	var peers []*DirectPeers
 	r := bytes.NewReader(data)
 
 	count, err := common.ReadVarUint(r, 0)
@@ -98,7 +97,7 @@ func (s *DposStore) GetDirectPeers() ([]*interfaces.DirectPeers, error) {
 			return nil, err
 		}
 
-		peers = append(peers, &interfaces.DirectPeers{
+		peers = append(peers, &DirectPeers{
 			PublicKey: publicKey,
 			Address:   address,
 			Sequence:  sequence,
@@ -118,7 +117,7 @@ func (s *DposStore) saveDposDutyChangedCount(count uint32) {
 	batch.Commit()
 }
 
-func (s *DposStore) saveDirectPeers(p []*interfaces.DirectPeers) {
+func (s *DposStore) saveDirectPeers(p []*DirectPeers) {
 	log.Debug("SaveDirectPeers()")
 	batch := s.db.NewBatch()
 	if err := s.persistDirectPeers(batch, p); err != nil {
