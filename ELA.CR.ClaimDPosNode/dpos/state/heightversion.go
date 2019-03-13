@@ -26,7 +26,7 @@ func (a *arbitrators) getNormalArbitratorsDescV1() ([][]byte, error) {
 // 0 - H1
 func (a *arbitrators) getNextOnDutyArbitratorV0(height, offset uint32) []byte {
 	arbitrators, _ := a.getNormalArbitratorsDescV0()
-	index := (height + offset) % uint32(len(arbitrators))
+	index := (height - 1 + offset) % uint32(len(arbitrators))
 	arbiter := arbitrators[index]
 
 	return arbiter
