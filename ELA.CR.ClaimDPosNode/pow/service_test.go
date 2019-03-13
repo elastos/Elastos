@@ -13,13 +13,11 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/version/verconf"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var pow *Service
-var cfg *verconf.Config
 var arbitratorsMock *mock.ArbitratorsMock
 var arbitrators [][]byte
 var originLedger *blockchain.Ledger
@@ -66,11 +64,6 @@ func TestService_Init(t *testing.T) {
 		state.NewState(&config.DefaultParams, nil))
 	if err != nil {
 		t.Error(err)
-	}
-
-	cfg = &verconf.Config{
-		Chain:       chain,
-		Arbitrators: arbitratorsMock,
 	}
 
 	originLedger = blockchain.DefaultLedger
