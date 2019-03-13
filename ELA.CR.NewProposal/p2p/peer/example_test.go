@@ -2,11 +2,12 @@ package peer_test
 
 import (
 	"fmt"
+	"math/rand"
+	"net"
+
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
-	"math/rand"
-	"net"
 )
 
 func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
