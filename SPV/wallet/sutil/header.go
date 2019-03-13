@@ -11,7 +11,7 @@ import (
 var _ util.BlockHeader = (*Header)(nil)
 
 type Header struct {
-	*types.Header
+	*types.DPOSHeader
 }
 
 func (h *Header) Previous() common.Uint256 {
@@ -30,10 +30,10 @@ func (h *Header) PowHash() common.Uint256 {
 	return h.AuxPow.ParBlockHeader.Hash()
 }
 
-func NewHeader(orgHeader *types.Header) util.BlockHeader {
-	return &Header{Header: orgHeader}
+func NewHeader(orgHeader *types.DPOSHeader) util.BlockHeader {
+	return &Header{DPOSHeader: orgHeader}
 }
 
 func NewEmptyHeader() util.BlockHeader {
-	return &Header{&types.Header{}}
+	return &Header{DPOSHeader: &types.DPOSHeader{}}
 }

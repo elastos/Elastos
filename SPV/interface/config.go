@@ -10,7 +10,7 @@ import (
 )
 
 func newBlockHeader() util.BlockHeader {
-	return iutil.NewHeader(&types.Header{})
+	return iutil.NewHeader(&types.DPOSHeader{})
 }
 
 func newTransaction() util.Transaction {
@@ -20,5 +20,6 @@ func newTransaction() util.Transaction {
 // GenesisHeader creates a specific genesis header by the given
 // foundation address.
 func GenesisHeader(foundation *common.Uint168) util.BlockHeader {
-	return iutil.NewHeader(&config.GenesisBlock(foundation).Header)
+	return iutil.NewHeader(&types.DPOSHeader{
+		Header: config.GenesisBlock(foundation).Header})
 }
