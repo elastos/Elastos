@@ -62,7 +62,8 @@ func TestService_Init(t *testing.T) {
 		CurrentArbitrators: arbitrators,
 	}
 
-	chain, err := blockchain.New(chainStore, &config.DefaultParams, state.NewState(arbitratorsMock, &config.DefaultParams))
+	chain, err := blockchain.New(chainStore, &config.DefaultParams,
+		state.NewState(&config.DefaultParams, nil))
 	if err != nil {
 		t.Error(err)
 	}
@@ -148,6 +149,9 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		{ProgramHash: common.Uint168{}, Value: 0},
 	}
 	block := &types.Block{
+		Header: types.Header{
+			Height:  config.Parameters.HeightVersions[3],
+		},
 		Transactions: []*types.Transaction{
 			tx,
 		},
@@ -198,6 +202,9 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 		{ProgramHash: common.Uint168{}, Value: 0},
 	}
 	block = &types.Block{
+		Header: types.Header{
+			Height:  config.Parameters.HeightVersions[3],
+		},
 		Transactions: []*types.Transaction{
 			tx,
 		},

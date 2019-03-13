@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/version/blocks"
@@ -23,23 +22,23 @@ type VersionInfo struct {
 	CompatibleBlockVersions map[uint32]blocks.BlockVersion
 }
 
-type heightVersions struct {
+type HeightVersions struct {
 	txVersionBoundary uint32
 	versions          map[uint32]VersionInfo
 	sortedHeights     []uint32
 }
 
-func (h *heightVersions) GetDefaultTxVersion(blockHeight uint32) byte {
+func (h *HeightVersions) GetDefaultTxVersion(blockHeight uint32) byte {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	return h.versions[heightKey].DefaultTxVersion
 }
 
-func (h *heightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
+func (h *HeightVersions) GetDefaultBlockVersion(blockHeight uint32) uint32 {
 	heightKey := h.findLastAvailableHeightKey(blockHeight)
 	return h.versions[heightKey].DefaultBlockVersion
 }
 
-func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
+func (h *HeightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
 		err := version.CheckConfirmedBlockOnFork(block)
 		return false, false, err
@@ -47,7 +46,7 @@ func (h *heightVersions) CheckConfirmedBlockOnFork(block *types.Block) error {
 	return err
 }
 
-func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
+func (h *HeightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	_, _, err := h.checkBlock(block, func(version blocks.BlockVersion) (bool, bool, error) {
 		err := version.AssignCoinbaseTxRewards(block, totalReward)
 		return false, false, err
@@ -55,7 +54,7 @@ func (h *heightVersions) AssignCoinbaseTxRewards(block *types.Block, totalReward
 	return err
 }
 
-func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
+func (h *HeightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx *types.Transaction, txFun TxCheckMethod) error {
 	if tx == nil {
 		return errors.New("Transaction is null")
 	}
@@ -74,11 +73,11 @@ func (h *heightVersions) checkTxCompatibleWithLowVersion(blockHeight uint32, tx 
 	return txFun(txVersion)
 }
 
-func (h *heightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction) txs.TxVersion {
+func (h *HeightVersions) findTxVersion(blockHeight uint32, info *VersionInfo, tx *types.Transaction) txs.TxVersion {
 	return info.CompatibleTxVersions[byte(tx.Version)]
 }
 
-func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMethod) (bool, bool, error) {
+func (h *HeightVersions) checkBlock(block *types.Block, blockFun BlockCheckMethod) (bool, bool, error) {
 	heightKey := h.findLastAvailableHeightKey(block.Height)
 	info := h.versions[heightKey]
 
@@ -89,10 +88,7 @@ func (h *heightVersions) checkBlock(block *types.Block, blockFun BlockCheckMetho
 	return blockFun(v)
 }
 
-func (h *heightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirmFun BlockConfirmCheckMethod) (bool, bool, error) {
-	if dposBlock == nil || !dposBlock.BlockFlag {
-		return false, false, fmt.Errorf("[checkBlockConfirm] received block confirm with nil block")
-	}
+func (h *HeightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirmFun BlockConfirmCheckMethod) (bool, bool, error) {
 	heightKey := h.findLastAvailableHeightKey(dposBlock.Block.Height)
 	info := h.versions[heightKey]
 
@@ -104,11 +100,11 @@ func (h *heightVersions) checkDposBlock(dposBlock *types.DposBlock, blockConfirm
 	return blockConfirmFun(v)
 }
 
-func (h *heightVersions) findBlockVersion(info *VersionInfo, version uint32) blocks.BlockVersion {
+func (h *HeightVersions) findBlockVersion(info *VersionInfo, version uint32) blocks.BlockVersion {
 	return info.CompatibleBlockVersions[version]
 }
 
-func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
+func (h *HeightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
 	for i := 0; i < len(h.sortedHeights)-1; i++ {
 		if blockHeight >= h.sortedHeights[i] && blockHeight < h.sortedHeights[i+1] {
 			return h.sortedHeights[i]
@@ -118,8 +114,8 @@ func (h *heightVersions) findLastAvailableHeightKey(blockHeight uint32) uint32 {
 	return h.sortedHeights[len(h.sortedHeights)-1]
 }
 
-func NewHeightVersions(versions map[uint32]VersionInfo, txVersionBoundary uint32) interfaces.HeightVersions {
-	h := &heightVersions{
+func NewHeightVersions(versions map[uint32]VersionInfo, txVersionBoundary uint32) *HeightVersions {
+	h := &HeightVersions{
 		versions:          versions,
 		sortedHeights:     []uint32{},
 		txVersionBoundary: txVersionBoundary,

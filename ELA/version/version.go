@@ -3,7 +3,6 @@ package version
 import (
 	"os"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/version/blocks"
 	"github.com/elastos/Elastos.ELA/version/heights"
@@ -15,7 +14,7 @@ const (
 	versionCount = 4
 )
 
-func NewVersions(cfg *verconf.Config) interfaces.HeightVersions {
+func NewVersions(cfg *verconf.Config) *heights.HeightVersions {
 	if len(cfg.ChainParams.HeightVersions) < versionCount {
 		log.Fatal("insufficient height version count")
 		os.Exit(1)

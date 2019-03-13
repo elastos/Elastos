@@ -117,7 +117,7 @@ func mockIllegalBlockTx(publicKey []byte) *types.Transaction {
 }
 
 func TestState_ProcessTransaction(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 	config.Parameters = config.ConfigParams{
 		Configuration: &config.Configuration{
 			HeightVersions: []uint32{0, 100, 200, 300},
@@ -225,7 +225,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 }
 
 func TestState_ProcessBlock(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 100 producers info.
 	producers := make([]*payload.ProducerInfo, 100)
@@ -398,7 +398,7 @@ func TestState_ProcessBlock(t *testing.T) {
 }
 
 func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -454,7 +454,7 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 }
 
 func TestState_Rollback(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -505,7 +505,7 @@ func TestState_Rollback(t *testing.T) {
 }
 
 func TestState_GetHistory(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -651,7 +651,7 @@ func TestState_GetHistory(t *testing.T) {
 }
 
 func TestState_NicknameExists(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -716,7 +716,7 @@ func TestState_NicknameExists(t *testing.T) {
 }
 
 func TestState_ProducerExists(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -770,7 +770,7 @@ func TestState_ProducerExists(t *testing.T) {
 }
 
 func TestState_IsDPOSTransaction(t *testing.T) {
-	state := NewState(&mock.ArbitratorsMock{}, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, nil)
 
 	producer := &payload.ProducerInfo{
 		OwnerPublicKey: make([]byte, 33),
@@ -827,7 +827,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 
 func TestState_InactiveProducer_Normal(t *testing.T) {
 	arbitrators := &mock.ArbitratorsMock{}
-	state := NewState(arbitrators, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -871,14 +871,21 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 	}
 
 	currentHeight := 11
+	config.DefaultParams.PublicDPOSHeight = 11
+	config.DefaultParams.MaxInactiveRounds = 10
 
-	// simulate producers[0] confirming block failed for continuous three rounds
+	// simulate producers[0] do not sign for continuous 11 blocks
 	for round := 0; round < 3; round++ {
-		for arIndex := 1; arIndex <= 5; arIndex++ {
+		for arIndex := 1; arIndex <= 4; arIndex++ {
 			state.ProcessBlock(mockBlock(uint32(currentHeight)),
 				&payload.Confirm{
 					Proposal: payload.DPOSProposal{
 						Sponsor: producers[arIndex].NodePublicKey,
+					},
+					Votes: []payload.DPOSProposalVote{
+						{
+							Signer: producers[arIndex].NodePublicKey,
+						},
 					},
 				})
 			currentHeight++
@@ -901,7 +908,7 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 
 func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 	arbitrators := &mock.ArbitratorsMock{}
-	state := NewState(arbitrators, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -945,17 +952,24 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 	}
 
 	currentHeight := 11
+	config.DefaultParams.PublicDPOSHeight = 11
+	config.DefaultParams.MaxInactiveRounds = 10
 
-	// simulate producers[0] confirming block failed for total three rounds,
+	// simulate producers[0] do not sign for over 10 blocks,
 	// but is not continuous
 	for round := 0; round < 4; round++ {
-		for arIndex := 1; arIndex <= 5; arIndex++ {
+		for arIndex := 1; arIndex <= 4; arIndex++ {
 
-			if round == 2 && arIndex == 5 {
+			if round == 2 && arIndex == 4 {
 				state.ProcessBlock(mockBlock(uint32(currentHeight)),
 					&payload.Confirm{
 						Proposal: payload.DPOSProposal{
 							Sponsor: producers[0].NodePublicKey,
+						},
+						Votes: []payload.DPOSProposalVote{
+							{
+								Signer: producers[0].NodePublicKey,
+							},
 						},
 					})
 			} else {
@@ -963,6 +977,11 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 					&payload.Confirm{
 						Proposal: payload.DPOSProposal{
 							Sponsor: producers[arIndex].NodePublicKey,
+						},
+						Votes: []payload.DPOSProposalVote{
+							{
+								Signer: producers[arIndex].NodePublicKey,
+							},
 						},
 					})
 			}
@@ -978,7 +997,7 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 
 func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	arbitrators := &mock.ArbitratorsMock{}
-	state := NewState(arbitrators, &config.DefaultParams)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -1022,14 +1041,21 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	}
 
 	currentHeight := 11
+	config.DefaultParams.PublicDPOSHeight = 11
+	config.DefaultParams.MaxInactiveRounds = 10
 
-	// simulate producers[0] confirming block failed for continuous three rounds
+	// simulate producers[0] do not sign for continuous 11 blocks
 	for round := 0; round < 3; round++ {
-		for arIndex := 1; arIndex <= 5; arIndex++ {
+		for arIndex := 1; arIndex <= 4; arIndex++ {
 			state.ProcessBlock(mockBlock(uint32(currentHeight)),
 				&payload.Confirm{
 					Proposal: payload.DPOSProposal{
 						Sponsor: producers[arIndex].NodePublicKey,
+					},
+					Votes: []payload.DPOSProposalVote{
+						{
+							Signer: producers[arIndex].NodePublicKey,
+						},
 					},
 				})
 			currentHeight++
@@ -1039,6 +1065,13 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	// only producer[0] will be inactive
 	if !assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
 		!assert.True(t, state.isInactiveProducer(producers[0].NodePublicKey)) {
+		t.FailNow()
+	}
+
+	// check penalty
+	inactiveProducer := state.GetProducer(producers[0].NodePublicKey)
+	if !assert.Equal(t, inactiveProducer.Penalty(),
+		state.chainParams.InactivePenalty) {
 		t.FailNow()
 	}
 

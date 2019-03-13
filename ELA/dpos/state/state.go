@@ -844,11 +844,12 @@ func (s *State) countArbitratorsInactivity(height uint32,
 
 		if producer, ok := s.activityProducers[key]; ok {
 			countingHeight := producer.inactiveCountingHeight
+			signed := v
 
 			s.history.append(height, func() {
-				s.tryUpdateInactivity(key, producer, v, height)
+				s.tryUpdateInactivity(key, producer, signed, height)
 			}, func() {
-				s.tryRevertInactivity(key, producer, v, height, countingHeight)
+				s.tryRevertInactivity(key, producer, signed, height, countingHeight)
 			})
 		}
 	}
@@ -859,6 +860,10 @@ func (s *State) tryRevertInactivity(key string, producer *Producer,
 	if signed {
 		producer.inactiveCountingHeight = startHeight
 		return
+	}
+
+	if producer.inactiveCountingHeight == height {
+		producer.inactiveCountingHeight = 0
 	}
 
 	if producer.state == Inactivate {
@@ -874,8 +879,11 @@ func (s *State) tryUpdateInactivity(key string, producer *Producer,
 		return
 	}
 
-	if producer.inactiveCountingHeight != 0 &&
-		height-producer.inactiveCountingHeight > s.chainParams.MaxInactiveRounds {
+	if producer.inactiveCountingHeight == 0 {
+		producer.inactiveCountingHeight = height
+	}
+
+	if height-producer.inactiveCountingHeight > s.chainParams.MaxInactiveRounds {
 		s.setInactiveProducer(producer, key, height)
 		producer.inactiveCountingHeight = 0
 	}
