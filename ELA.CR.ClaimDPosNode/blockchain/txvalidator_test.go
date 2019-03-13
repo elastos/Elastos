@@ -8,7 +8,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -49,12 +48,12 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = *foundation
 	s.foundationAddress = FoundationAddress
 
-	chainStore, err := NewChainStore("Chain_UnitTest",
+	chainStore, err := NewChainStore("Chain_UnitTest1",
 		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, &config.DefaultParams, state.NewState(&mock.ArbitratorsMock{}, &config.DefaultParams))
+	s.Chain, err = New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
 	if err != nil {
 		s.Error(err)
 	}

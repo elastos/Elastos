@@ -28,7 +28,7 @@ var ProposalEventTable = &interfaces.DBTable{
 	PrimaryKey: 7,
 	Indexes:    []uint64{1, 2, 6},
 	Fields: []string{
-		"Proposal",
+		"Sponsor",
 		"BlockHash",
 		"ReceivedTime",
 		"EndTime",
