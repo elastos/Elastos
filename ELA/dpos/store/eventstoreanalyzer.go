@@ -3,15 +3,15 @@ package store
 import (
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
 type EventStoreAnalyzerConfig struct {
 	InactiveEliminateCount uint32
-	Store                  interfaces.IDposStore
-	Arbitrators            interfaces.Arbitrators
+	Store                  IDposStore
+	Arbitrators            state.Arbitrators
 }
 
 type EventStoreAnalyzer struct {

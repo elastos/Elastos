@@ -12,7 +12,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -20,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -38,7 +38,7 @@ type Config struct {
 	TxMemPool      *mempool.TxPool
 	BlkMemPool     *mempool.BlockPool
 	BroadcastBlock func(block *types.Block)
-	Arbitrators    interfaces.Arbitrators
+	Arbitrators    state.Arbitrators
 }
 
 type AuxBlockPool struct {
@@ -78,7 +78,7 @@ type Service struct {
 	txMemPool   *mempool.TxPool
 	blkMemPool  *mempool.BlockPool
 	broadcast   func(block *types.Block)
-	arbiters    interfaces.Arbitrators
+	arbiters    state.Arbitrators
 
 	mutex           sync.Mutex
 	started         bool

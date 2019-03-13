@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 )
 
@@ -15,7 +14,7 @@ type eventTask interface{}
 type persistTask interface{}
 
 // Ensure DposStore implement the IDposStore interface.
-var _ interfaces.IDposStore = (*DposStore)(nil)
+var _ IDposStore = (*DposStore)(nil)
 
 type DposStore struct {
 	db Database
@@ -50,49 +49,49 @@ func (s *DposStore) Close() error {
 	return nil
 }
 
-func (s *DposStore) Create(table *interfaces.DBTable) error {
+func (s *DposStore) Create(table *DBTable) error {
 	buf := new(bytes.Buffer)
 	if err := table.Serialize(buf); err != nil {
 		return err
 	}
 
-	key := interfaces.GetTableKey(table.Name)
+	key := GetTableKey(table.Name)
 	_, err := s.db.Get(key)
 	if err == nil {
 		return fmt.Errorf("already exist table: %s", table.Name)
 	}
 
-	if err := s.db.Put(interfaces.GetTableIDKey(table.Name), interfaces.Uint64ToBytes(uint64(0))); err != nil {
+	if err := s.db.Put(GetTableIDKey(table.Name), Uint64ToBytes(uint64(0))); err != nil {
 		return err
 	}
 
 	return s.db.Put(key, buf.Bytes())
 }
 
-func (s *DposStore) Insert(table *interfaces.DBTable, fields []*interfaces.Field) (uint64, error) {
+func (s *DposStore) Insert(table *DBTable, fields []*Field) (uint64, error) {
 	batch := s.db.NewBatch()
 	tableName := table.Name
 
 	// key: tableName_rowID
 	// value: [colvalue1, colvalue2, colvalue3, ...]
-	idBytes, err := s.db.Get(interfaces.GetTableIDKey(table.Name))
+	idBytes, err := s.db.Get(GetTableIDKey(table.Name))
 	if err != nil {
 		return 0, err
 	}
-	id := interfaces.BytesToUint64(idBytes)
+	id := BytesToUint64(idBytes)
 	rowID := id + 1
 	data, err := table.Data(fields)
 	if err != nil {
 		return 0, err
 	}
-	batch.Put(interfaces.GetRowKey(tableName, rowID), data)
+	batch.Put(GetRowKey(tableName, rowID), data)
 
 	for _, f := range fields {
 		col := table.Column(f.Name)
 		if col == table.PrimaryKey {
 			buf := new(bytes.Buffer)
 			common.WriteUint64(buf, rowID)
-			key := interfaces.GetIndexKey(tableName, table.PrimaryKey, f.Data())
+			key := GetIndexKey(tableName, table.PrimaryKey, f.Data())
 			if _, err := s.db.Get(key); err == nil {
 				return 0, errors.New("duplicated primary")
 			}
@@ -102,11 +101,11 @@ func (s *DposStore) Insert(table *interfaces.DBTable, fields []*interfaces.Field
 		}
 		for _, index := range table.Indexes {
 			if col == index {
-				key := interfaces.GetIndexKey(tableName, col, f.Data())
+				key := GetIndexKey(tableName, col, f.Data())
 				var indexes []uint64
 				indexData, err := s.db.Get(key)
 				if err == nil {
-					indexes, err = interfaces.BytesToUint64List(indexData)
+					indexes, err = BytesToUint64List(indexData)
 					if err != nil {
 						return 0, err
 					}
@@ -114,7 +113,7 @@ func (s *DposStore) Insert(table *interfaces.DBTable, fields []*interfaces.Field
 				indexes = append(indexes, rowID)
 				// key: tableName_IndexID_ColumnValue
 				// value: [rowID1,rowID2,rowID3,...]
-				indexListBytes, err := interfaces.Uint64ListToBytes(indexes)
+				indexListBytes, err := Uint64ListToBytes(indexes)
 				if err != nil {
 					return 0, err
 				}
@@ -124,14 +123,14 @@ func (s *DposStore) Insert(table *interfaces.DBTable, fields []*interfaces.Field
 	}
 
 	// update id
-	batch.Put(interfaces.GetTableIDKey(table.Name), interfaces.Uint64ToBytes(rowID))
+	batch.Put(GetTableIDKey(table.Name), Uint64ToBytes(rowID))
 	if err := batch.Commit(); err != nil {
 		return 0, err
 	}
 	return rowID, nil
 }
 
-func (s *DposStore) Select(table *interfaces.DBTable, inputFields []*interfaces.Field) ([][]*interfaces.Field, error) {
+func (s *DposStore) Select(table *DBTable, inputFields []*Field) ([][]*Field, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -140,7 +139,7 @@ func (s *DposStore) Select(table *interfaces.DBTable, inputFields []*interfaces.
 	return s.selectValuesFromRowIDs(table, ids)
 }
 
-func (s *DposStore) SelectID(table *interfaces.DBTable, inputFields []*interfaces.Field) ([]uint64, error) {
+func (s *DposStore) SelectID(table *DBTable, inputFields []*Field) ([]uint64, error) {
 	ids, err := s.selectRowIDs(table, inputFields)
 	if err != nil {
 		return nil, err
@@ -148,10 +147,10 @@ func (s *DposStore) SelectID(table *interfaces.DBTable, inputFields []*interface
 	return ids, nil
 }
 
-func (s *DposStore) selectValuesFromRowIDs(table *interfaces.DBTable, rowIDs []uint64) ([][]*interfaces.Field, error) {
-	var result [][]*interfaces.Field
+func (s *DposStore) selectValuesFromRowIDs(table *DBTable, rowIDs []uint64) ([][]*Field, error) {
+	var result [][]*Field
 	for _, rowID := range rowIDs {
-		columnsData, err := s.db.Get(interfaces.GetRowKey(table.Name, rowID))
+		columnsData, err := s.db.Get(GetRowKey(table.Name, rowID))
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +164,7 @@ func (s *DposStore) selectValuesFromRowIDs(table *interfaces.DBTable, rowIDs []u
 	return result, nil
 }
 
-func (s *DposStore) selectRowIDs(table *interfaces.DBTable, inputFields []*interfaces.Field) ([]uint64, error) {
+func (s *DposStore) selectRowIDs(table *DBTable, inputFields []*Field) ([]uint64, error) {
 	idsCount := make(map[uint64]uint32)
 	for _, f := range inputFields {
 		rowIDs, err := s.selectRowsByField(table, f)
@@ -187,23 +186,23 @@ func (s *DposStore) selectRowIDs(table *interfaces.DBTable, inputFields []*inter
 
 // because if one field is neither primary key nor index key, requires full table lookup
 // only sport select from primary key or index column
-func (s *DposStore) selectRowsByField(table *interfaces.DBTable, inputField *interfaces.Field) ([]uint64, error) {
+func (s *DposStore) selectRowsByField(table *DBTable, inputField *Field) ([]uint64, error) {
 	col := table.Column(inputField.Name)
 	if col == table.PrimaryKey {
-		rowIDBytes, err := s.db.Get(interfaces.GetIndexKey(table.Name, col, inputField.Data()))
+		rowIDBytes, err := s.db.Get(GetIndexKey(table.Name, col, inputField.Data()))
 		if err != nil {
 			return nil, err
 		}
-		rowID := interfaces.BytesToUint64(rowIDBytes)
+		rowID := BytesToUint64(rowIDBytes)
 		return []uint64{rowID}, nil
 	}
 	for _, index := range table.Indexes {
 		if col == index {
-			rowIDBytes, err := s.db.Get(interfaces.GetIndexKey(table.Name, col, inputField.Data()))
+			rowIDBytes, err := s.db.Get(GetIndexKey(table.Name, col, inputField.Data()))
 			if err != nil {
 				return nil, err
 			}
-			rowIDs, err := interfaces.BytesToUint64List(rowIDBytes)
+			rowIDs, err := BytesToUint64List(rowIDBytes)
 			if err != nil {
 				return nil, err
 			}
@@ -213,7 +212,7 @@ func (s *DposStore) selectRowsByField(table *interfaces.DBTable, inputField *int
 	return nil, errors.New("not found in table")
 }
 
-func (s *DposStore) Update(table *interfaces.DBTable, inputFields []*interfaces.Field, updateFields []*interfaces.Field) ([]uint64, error) {
+func (s *DposStore) Update(table *DBTable, inputFields []*Field, updateFields []*Field) ([]uint64, error) {
 	batch := s.db.NewBatch()
 	if err := s.checkUpdateFields(table, updateFields); err != nil {
 		return nil, err
@@ -235,11 +234,11 @@ func (s *DposStore) Update(table *interfaces.DBTable, inputFields []*interfaces.
 	return ids, nil
 }
 
-func (s *DposStore) checkUpdateFields(table *interfaces.DBTable, updateFields []*interfaces.Field) error {
+func (s *DposStore) checkUpdateFields(table *DBTable, updateFields []*Field) error {
 	// check updateFields include exist primary key value
 	for _, f := range updateFields {
 		if table.Column(f.Name) == table.PrimaryKey {
-			if _, err := s.db.Get(interfaces.GetIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
+			if _, err := s.db.Get(GetIndexKey(table.Name, table.PrimaryKey, f.Data())); err == nil {
 				return err
 			}
 		}
@@ -248,7 +247,7 @@ func (s *DposStore) checkUpdateFields(table *interfaces.DBTable, updateFields []
 	return nil
 }
 
-func (s *DposStore) updateRow(batch Batch, table *interfaces.DBTable, rowID uint64, updateFields []*interfaces.Field) error {
+func (s *DposStore) updateRow(batch Batch, table *DBTable, rowID uint64, updateFields []*Field) error {
 	oldFields, err := s.getFieldsByRowID(table, rowID)
 	if err != nil {
 		return err
@@ -287,9 +286,9 @@ func (s *DposStore) updateRow(batch Batch, table *interfaces.DBTable, rowID uint
 	return nil
 }
 
-func (s *DposStore) updateRowData(batch Batch, table *interfaces.DBTable, oldFields []*interfaces.Field, updateFields []*interfaces.Field, rowID uint64) error {
+func (s *DposStore) updateRowData(batch Batch, table *DBTable, oldFields []*Field, updateFields []*Field, rowID uint64) error {
 	// update row data
-	newFieldMap := make(map[string]*interfaces.Field)
+	newFieldMap := make(map[string]*Field)
 	for _, f := range oldFields {
 		newFieldMap[f.Name] = f
 	}
@@ -297,7 +296,7 @@ func (s *DposStore) updateRowData(batch Batch, table *interfaces.DBTable, oldFie
 		newFieldMap[f.Name] = f
 	}
 
-	var newFields []*interfaces.Field
+	var newFields []*Field
 	for _, v := range newFieldMap {
 		newFields = append(newFields, v)
 	}
@@ -306,32 +305,32 @@ func (s *DposStore) updateRowData(batch Batch, table *interfaces.DBTable, oldFie
 	if err != nil {
 		return err
 	}
-	batch.Put(interfaces.GetRowKey(table.Name, rowID), data)
+	batch.Put(GetRowKey(table.Name, rowID), data)
 	return nil
 }
 
-func (s *DposStore) updatePrimaryKeyValue(batch Batch, table *interfaces.DBTable, oldFields []*interfaces.Field, rowID uint64, column uint64, newData []byte) error {
+func (s *DposStore) updatePrimaryKeyValue(batch Batch, table *DBTable, oldFields []*Field, rowID uint64, column uint64, newData []byte) error {
 	var oldData []byte
 	for _, field := range oldFields {
 		if table.Column(field.Name) == table.PrimaryKey {
 			oldData = field.Data()
 		}
 	}
-	oldIndexKey := interfaces.GetIndexKey(table.Name, column, oldData)
+	oldIndexKey := GetIndexKey(table.Name, column, oldData)
 	batch.Delete(oldIndexKey)
-	newIndexKey := interfaces.GetIndexKey(table.Name, column, newData)
-	batch.Put(newIndexKey, interfaces.Uint64ToBytes(rowID))
+	newIndexKey := GetIndexKey(table.Name, column, newData)
+	batch.Put(newIndexKey, Uint64ToBytes(rowID))
 	return nil
 }
 
-func (s *DposStore) updateIndexKeyValue(batch Batch, table *interfaces.DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
+func (s *DposStore) updateIndexKeyValue(batch Batch, table *DBTable, rowID uint64, column uint64, oldData []byte, newData []byte) error {
 	// if exist index column before, need update old record
-	oldIndexKey := interfaces.GetIndexKey(table.Name, column, oldData)
+	oldIndexKey := GetIndexKey(table.Name, column, oldData)
 	rowIDBytes, err := s.db.Get(oldIndexKey)
 	if err != nil {
 		return err
 	}
-	rowIDs, err := interfaces.BytesToUint64List(rowIDBytes)
+	rowIDs, err := BytesToUint64List(rowIDBytes)
 	if err != nil {
 		return err
 	}
@@ -344,7 +343,7 @@ func (s *DposStore) updateIndexKeyValue(batch Batch, table *interfaces.DBTable, 
 				newRowIDs = append(newRowIDs, r)
 			}
 		}
-		rowIDsListBytes, err := interfaces.Uint64ListToBytes(newRowIDs)
+		rowIDsListBytes, err := Uint64ListToBytes(newRowIDs)
 		if err != nil {
 			return err
 		}
@@ -352,15 +351,15 @@ func (s *DposStore) updateIndexKeyValue(batch Batch, table *interfaces.DBTable, 
 	}
 
 	// update or add new record
-	newIndexKey := interfaces.GetIndexKey(table.Name, column, newData)
+	newIndexKey := GetIndexKey(table.Name, column, newData)
 	newRowIDBytes, err := s.db.Get(newIndexKey)
 	if err == nil {
-		rowIDs, err := interfaces.BytesToUint64List(rowIDBytes)
+		rowIDs, err := BytesToUint64List(rowIDBytes)
 		if err != nil {
 			return err
 		}
 		rowIDs = append(rowIDs, rowID)
-		rowIDsListBytes, err := interfaces.Uint64ListToBytes(rowIDs)
+		rowIDsListBytes, err := Uint64ListToBytes(rowIDs)
 		if err != nil {
 			return err
 		}
@@ -371,8 +370,8 @@ func (s *DposStore) updateIndexKeyValue(batch Batch, table *interfaces.DBTable, 
 	return nil
 }
 
-func (s *DposStore) getFieldsByRowID(table *interfaces.DBTable, rowID uint64) ([]*interfaces.Field, error) {
-	columnsData, err := s.db.Get(interfaces.GetRowKey(table.Name, rowID))
+func (s *DposStore) getFieldsByRowID(table *DBTable, rowID uint64) ([]*Field, error) {
+	columnsData, err := s.db.Get(GetRowKey(table.Name, rowID))
 	if err != nil {
 		return nil, fmt.Errorf("not found row id")
 	}
@@ -385,23 +384,23 @@ func (s *DposStore) getFieldsByRowID(table *interfaces.DBTable, rowID uint64) ([
 	return fields, nil
 }
 
-func (s *DposStore) deleteTable(table *interfaces.DBTable) error {
+func (s *DposStore) deleteTable(table *DBTable) error {
 	buf := new(bytes.Buffer)
 	if err := table.Serialize(buf); err != nil {
 		return err
 	}
 
-	key := interfaces.GetTableKey(table.Name)
+	key := GetTableKey(table.Name)
 	_, err := s.db.Get(key)
 	if err != nil {
 		return fmt.Errorf("not exist table: %s", table.Name)
 	}
-	rowCount, err := s.db.Get(interfaces.GetTableIDKey(table.Name))
+	rowCount, err := s.db.Get(GetTableIDKey(table.Name))
 	if err != nil {
 		return err
 	}
 	var rowIDs []uint64
-	for i := uint64(0); i < interfaces.BytesToUint64(rowCount); i++ {
+	for i := uint64(0); i < BytesToUint64(rowCount); i++ {
 		rowIDs = append(rowIDs, i+1)
 	}
 	fields, err := s.selectValuesFromRowIDs(table, rowIDs)
@@ -419,20 +418,20 @@ func (s *DposStore) deleteTable(table *interfaces.DBTable) error {
 		for _, f := range fs {
 			// delete primary value
 			if table.Column(f.Name) == table.PrimaryKey {
-				batch.Delete(interfaces.GetIndexKey(table.Name, table.PrimaryKey, f.Data()))
+				batch.Delete(GetIndexKey(table.Name, table.PrimaryKey, f.Data()))
 			}
 			// delete index value
 			if _, ok := indexes[table.Column(f.Name)]; ok {
-				batch.Delete(interfaces.GetIndexKey(table.Name, table.Column(f.Name), f.Data()))
+				batch.Delete(GetIndexKey(table.Name, table.Column(f.Name), f.Data()))
 			}
 		}
 		// delete row data
-		batch.Delete(interfaces.GetRowKey(table.Name, uint64(rowID)))
+		batch.Delete(GetRowKey(table.Name, uint64(rowID)))
 	}
 	// delete row count
-	batch.Delete(interfaces.GetTableIDKey(table.Name))
+	batch.Delete(GetTableIDKey(table.Name))
 	// delete table key
-	batch.Delete(interfaces.GetTableKey(table.Name))
+	batch.Delete(GetTableKey(table.Name))
 
 	return batch.Commit()
 }

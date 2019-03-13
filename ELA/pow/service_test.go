@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -18,7 +17,7 @@ import (
 )
 
 var pow *Service
-var arbitratorsMock *mock.ArbitratorsMock
+var arbitratorsMock *state.ArbitratorsMock
 var arbitrators [][]byte
 var originLedger *blockchain.Ledger
 
@@ -56,7 +55,7 @@ func TestService_Init(t *testing.T) {
 		a, _ := common.HexStringToBytes(v)
 		arbitrators = append(arbitrators, a)
 	}
-	arbitratorsMock = &mock.ArbitratorsMock{
+	arbitratorsMock = &state.ArbitratorsMock{
 		CurrentArbitrators: arbitrators,
 	}
 
@@ -143,7 +142,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	}
 	block := &types.Block{
 		Header: types.Header{
-			Height:  config.Parameters.HeightVersions[3],
+			Height: config.Parameters.HeightVersions[3],
 		},
 		Transactions: []*types.Transaction{
 			tx,
@@ -196,7 +195,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	}
 	block = &types.Block{
 		Header: types.Header{
-			Height:  config.Parameters.HeightVersions[3],
+			Height: config.Parameters.HeightVersions[3],
 		},
 		Transactions: []*types.Transaction{
 			tx,
