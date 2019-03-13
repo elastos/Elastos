@@ -15,6 +15,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 )
@@ -181,7 +183,7 @@ func (w *spvwallet) Close() error {
 	return w.db.Close()
 }
 
-func (w *spvwallet) GetFilter() *bloom.Filter {
+func (w *spvwallet) GetFilter() *msg.TxFilterLoad {
 	utxos, err := w.db.UTXOs().GetAll()
 	if err != nil {
 		waltlog.Debugf("GetAll UTXOs error: %v", err)
@@ -202,16 +204,16 @@ func (w *spvwallet) GetFilter() *bloom.Filter {
 
 	elements := uint32(len(addrs) + len(outpoints))
 
-	filter := bloom.NewFilter(elements, 0, 0)
+	f := bloom.NewFilter(elements, 0, 0)
 	for _, addr := range addrs {
-		filter.Add(addr.Bytes())
+		f.Add(addr.Bytes())
 	}
 
 	for _, op := range outpoints {
-		filter.Add(op.Bytes())
+		f.Add(op.Bytes())
 	}
 
-	return filter
+	return f.ToTxFilterMsg(filter.FTBloom)
 }
 
 func (w *spvwallet) NotifyNewAddress(hash []byte) {
@@ -343,7 +345,7 @@ func NewWallet(dataDir string) (*spvwallet, error) {
 			ChainStore:     chainStore,
 			NewTransaction: newTransaction,
 			NewBlockHeader: sutil.NewEmptyHeader,
-			GetFilter:      w.GetFilter,
+			GetTxFilter:    w.GetFilter,
 			StateNotifier:  &w,
 		})
 	if err != nil {

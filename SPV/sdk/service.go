@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	speer "github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -82,8 +81,7 @@ func newService(cfg *Config) (*service, error) {
 	}
 
 	// Create sync manager instance.
-	syncCfg := sync.NewDefaultConfig(chain, cfg.CandidateFlags,
-		service.updateFilter)
+	syncCfg := sync.NewDefaultConfig(chain, cfg.CandidateFlags, cfg.GetTxFilter)
 	syncCfg.MaxPeers = maxPeers
 	if cfg.StateNotifier != nil {
 		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
@@ -134,10 +132,6 @@ func newService(cfg *Config) (*service, error) {
 func (s *service) start() {
 	go s.peerHandler()
 	go s.txHandler()
-}
-
-func (s *service) updateFilter() *bloom.Filter {
-	return s.cfg.GetFilter()
 }
 
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
@@ -434,11 +428,8 @@ func (s *service) IsCurrent() bool {
 }
 
 func (s *service) UpdateFilter() {
-	// Update bloom filter
-	filter := s.updateFilter()
-
 	// Broadcast filterload message to connected peers.
-	s.IServer.BroadcastMessage(filter.GetFilterLoadMsg())
+	s.IServer.BroadcastMessage(s.cfg.GetTxFilter())
 }
 
 func (s *service) Start() {

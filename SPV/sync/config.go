@@ -2,8 +2,8 @@ package sync
 
 import (
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -16,16 +16,16 @@ type Config struct {
 	MaxPeers       int
 	CandidateFlags []uint64
 
-	UpdateFilter        func() *bloom.Filter
+	GetTxFilter         func() *msg.TxFilterLoad
 	TransactionAnnounce func(tx util.Transaction)
 }
 
 func NewDefaultConfig(chain *blockchain.BlockChain, candidateFlags []uint64,
-	updateFilter func() *bloom.Filter) *Config {
+	getTxFilter func() *msg.TxFilterLoad) *Config {
 	return &Config{
 		Chain:          chain,
 		CandidateFlags: candidateFlags,
 		MaxPeers:       defaultMaxPeers,
-		UpdateFilter:   updateFilter,
+		GetTxFilter:    getTxFilter,
 	}
 }

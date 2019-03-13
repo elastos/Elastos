@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	"math"
 	"math/rand"
 	"strconv"
@@ -13,12 +12,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/database"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 )
 
 var (
@@ -98,14 +98,14 @@ func (wallet *Wallet) NewSubAccount(password []byte) (*common.Uint168, error) {
 }
 
 func (wallet *Wallet) AddMultiSignAccount(m int, publicKeys ...*crypto.PublicKey) (*common.Uint168, error) {
-	redeemScript, err := contract.CreateMultiSigRedeemScript(m, publicKeys)
+	contract, err := contract.CreateMultiSigContract(m, publicKeys)
 	if err != nil {
 		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
 	}
 
-	programHash := common.ToProgramHash(common.PrefixMultisig, redeemScript)
+	programHash := contract.ToProgramHash()
 
-	err = wallet.AddAddress(programHash, redeemScript, sutil.TypeMulti)
+	err = wallet.AddAddress(programHash, contract.Code, sutil.TypeMulti)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (wallet *Wallet) Sign(password []byte, tx *types.Transaction) (*types.Trans
 func (wallet *Wallet) signStandardTransaction(tx *types.Transaction) (*types.Transaction, error) {
 	code := tx.Programs[0].Code
 	// Get signer
-	programHash := common.ToProgramHash(common.PrefixStandard, code)
+	programHash := common.ToProgramHash(byte(contract.PrefixStandard), code)
 	// Check if current user is a valid signer
 	account := wallet.Keystore.GetAccountByProgramHash(programHash)
 	if account == nil {
@@ -279,7 +279,7 @@ func (wallet *Wallet) signMultiSigTransaction(tx *types.Transaction) (*types.Tra
 	var account *sdk.Account
 	for i, publicKey := range publicKeys {
 		code := append(publicKey, common.STANDARD)
-		programHash := common.ToProgramHash(common.PrefixStandard, code)
+		programHash := common.ToProgramHash(byte(contract.PrefixStandard), code)
 		account = wallet.Keystore.GetAccountByProgramHash(programHash)
 		if account != nil {
 			signerIndex = i

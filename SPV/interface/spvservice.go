@@ -18,6 +18,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
@@ -93,7 +94,7 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
-		GetFilter:      service.GetFilter,
+		GetTxFilter:    service.GetFilter,
 		StateNotifier:  service,
 	}
 
@@ -187,13 +188,13 @@ func (s *spvservice) HeaderStore() database.Headers {
 	return s.headers
 }
 
-func (s *spvservice) GetFilter() *bloom.Filter {
+func (s *spvservice) GetFilter() *msg.TxFilterLoad {
 	addrs := s.db.Addrs().GetAll()
-	filter := bloom.NewFilter(uint32(len(addrs)), math.MaxUint32, 0)
+	f := bloom.NewFilter(uint32(len(addrs)), math.MaxUint32, 0)
 	for _, address := range addrs {
-		filter.Add(address.Bytes())
+		f.Add(address.Bytes())
 	}
-	return filter
+	return f.ToTxFilterMsg(filter.FTDPOS)
 }
 
 func (s *spvservice) putTx(batch store.DataBatch, utx util.Transaction,
