@@ -397,10 +397,6 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
-		if err := checkCoinbaseMinerReward(blockHeight, txn, totalReward); err != nil {
-			return err
-		}
-
 		return nil
 	}
 
@@ -437,20 +433,6 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 		}
 	}
 
-	return nil
-}
-
-func checkCoinbaseMinerReward(height uint32, tx *Transaction, totalReward common.Fixed64) error {
-	// main version >= H2
-	if height >= config.DefaultParams.HeightVersions[3] {
-		minerReward := tx.Outputs[1].Value
-		if common.Fixed64(minerReward) < common.Fixed64(float64(totalReward)*0.35) {
-			return errors.New("reward to miner in coinbase < 35%")
-		}
-		return nil
-	}
-
-	// old version [0, H2)
 	return nil
 }
 

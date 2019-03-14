@@ -23,9 +23,12 @@ type Arbitrators interface {
 	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
+	IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool
 
-	GetArbitratorsProgramHashes() []*common.Uint168
-	GetCandidatesProgramHashes() []*common.Uint168
+	GetCurrentOwnerProgramHashes() []*common.Uint168
+	GetCandidateOwnerProgramHashes() []*common.Uint168
+	GetOwnerVotes(programHash *common.Uint168) common.Fixed64
+	GetTotalVotesInRound() common.Fixed64
 
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
