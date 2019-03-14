@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import { constant } from '../constant';
 import { permissions } from '../utility';
 import * as moment from 'moment';
+import { mail } from '../utility'
 
 let tm = null;
 
@@ -17,41 +18,80 @@ const restrictedFields = {
 
 export default class extends Base {
 
-    public async create(param): Promise<Document>{
-        const db_cvote = this.getDBModel('CVote');
-        const db_user = this.getDBModel('User');
-        const currentUserId = _.get(this.currentUser, '_id')
-        const {
-            title, type, content, published, proposedBy, motionId, isConflict, notes,
-        } = param;
+  public async create(param): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote');
+    const db_user = this.getDBModel('User');
+    const currentUserId = _.get(this.currentUser, '_id')
+    const {
+      title, type, content, published, proposedBy, motionId, isConflict, notes,
+    } = param;
 
-        const councilMembers = await db_user.find({role: constant.USER_ROLE.COUNCIL});
-        const voteResult = []
-        _.each(councilMembers, user => {
-          // use ObjectId.equals
-          const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-          voteResult.push({ votedBy: user._id, value })
-        })
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const voteResult = []
+    _.each(councilMembers, user => {
+      // use ObjectId.equals
+      const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+      voteResult.push({ votedBy: user._id, value })
+      // send email
+    })
 
-        const doc: any = {
-            title,
-            type,
-            published,
-            content,
-            proposedBy,
-            motionId,
-            isConflict,
-            notes,
-            voteResult,
-            voteHistory: voteResult,
-            createdBy : this.currentUser._id
-        };
+    const vid = await this.getNewVid()
+    const status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT
 
-        const vid = await this.getNewVid();
-        doc.vid = vid;
-        doc.status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT;
+    const doc: any = {
+      title,
+      vid,
+      status,
+      type,
+      published,
+      content,
+      proposedBy,
+      motionId,
+      isConflict,
+      notes,
+      voteResult,
+      voteHistory: voteResult,
+      createdBy: this.currentUser._id
+    };
+    try {
+      const res = await db_cvote.save(doc);
+      // notify council member to vote
+      if (published) {
+        this.notifyCouncil(res, councilMembers)
+      }
 
-        return await db_cvote.save(doc);
+      return res
+    } catch (error) {
+      console.log('error happened: ', error)
+      return
+    }
+  }
+
+  private async notifyCouncil(cvote: any, users: Array<any>) {
+    const { title, _id } = cvote
+    const toMails = _.map(users, 'email')
+    console.log(toMails, '-----')
+
+    const body = `
+      <p>There is a new proposal added:</p>
+      <br />
+      <p>${title}</p>
+      <br />
+      <p>click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const formatUsername = (user) => {
+      const firstName = user.profile && user.profile.firstName
+      const lastName = user.profile && user.profile.lastName
+
+      if (_.isEmpty(firstName) && _.isEmpty(lastName)) {
+          return user.username
+      }
+
+      return [firstName, lastName].join(' ')
     }
 
     const recVariables = _.zipObject(toMails, _.map(users, (user) => {
