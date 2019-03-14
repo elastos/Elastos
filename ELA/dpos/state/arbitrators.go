@@ -329,9 +329,9 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
 	a.currentCandidates = a.nextCandidates
 
-	if err := a.sortArbitrators(); err != nil {
-		return err
-	}
+	sort.Slice(a.currentArbitrators, func(i, j int) bool {
+		return bytes.Compare(a.currentArbitrators[i], a.currentArbitrators[j]) < 0
+	})
 
 	if err := a.updateOwnerProgramHashes(); err != nil {
 		return err
@@ -401,6 +401,9 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 		}
 
 		sort.Slice(producers, func(i, j int) bool {
+			if producers[i].votes == producers[j].votes {
+				return bytes.Compare(producers[i].info.NodePublicKey, producers[j].NodePublicKey()) < 0
+			}
 			return producers[i].Votes() > producers[j].Votes()
 		})
 
@@ -418,26 +421,6 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 
 	// version [0, H1)
 	return a.getNormalArbitratorsDescV0()
-}
-
-func (a *arbitrators) sortArbitrators() error {
-
-	strArbitrators := make([]string, len(a.currentArbitrators))
-	for i := 0; i < len(strArbitrators); i++ {
-		strArbitrators[i] = common.BytesToHexString(a.currentArbitrators[i])
-	}
-	sort.Strings(strArbitrators)
-
-	a.currentArbitrators = make([][]byte, len(strArbitrators))
-	for i := 0; i < len(strArbitrators); i++ {
-		value, err := common.HexStringToBytes(strArbitrators[i])
-		if err != nil {
-			return err
-		}
-		a.currentArbitrators[i] = value
-	}
-
-	return nil
 }
 
 func (a *arbitrators) getArbitersCount() uint32 {
