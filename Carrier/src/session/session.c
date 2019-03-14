@@ -1442,7 +1442,7 @@ int ela_stream_open_port_forwarding(ElaSession *ws, int stream,
     if (!host || !*host)
         host = "127.0.0.1"; // Default bind to localhost only
 
-    if (!s->mux)
+    if (!s->mux || !s->portforwarding)
         rc = ELA_GENERAL_ERROR(ELAERR_WRONG_STATE);
     else
         rc = s->mux->portforwarding.open(s->mux, service, protocol, host, port);
@@ -1471,7 +1471,7 @@ int ela_stream_close_port_forwarding(ElaSession *ws, int stream,
         return -1;
     }
 
-    if (!s->mux)
+    if (!s->mux || !s->portforwarding)
         rc = ELA_GENERAL_ERROR(ELAERR_WRONG_STATE);
     else
         rc = s->mux->portforwarding.close(s->mux, portforwarding);
