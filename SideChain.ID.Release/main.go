@@ -236,6 +236,8 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("getidentificationtxbyidandpath", service.GetIdentificationTxByIdAndPath, "id", "path")
 	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
+	s.RegisterAction("getillegalevidencebyheight", service.GetIllegalEvidenceByHeight, "height")
+	s.RegisterAction("checkillegalevidence", service.CheckIllegalEvidence, "evidence")
 
 	return s
 }

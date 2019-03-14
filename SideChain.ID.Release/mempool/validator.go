@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 )
 
 type validator struct {
@@ -102,8 +103,8 @@ func (v *validator) checkTransactionOutput(txn *types.Transaction) error {
 }
 
 func checkOutputProgramHash(programHash common.Uint168) bool {
-	switch programHash[0] {
-	case common.PrefixStandard, common.PrefixMultisig, common.PrefixCrossChain,
+	switch contract.PrefixType(programHash[0]) {
+	case contract.PrefixStandard, contract.PrefixMultiSig, contract.PrefixCrossChain,
 		pact.PrefixRegisterId:
 		return true
 	}
