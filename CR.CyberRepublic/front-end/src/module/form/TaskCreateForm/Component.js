@@ -282,7 +282,8 @@ class C extends BaseComponent {
         const taskDesc_el = (
             <ReactQuill
                 modules={{
-                    toolbar: TOOLBAR_OPTIONS
+                    toolbar: TOOLBAR_OPTIONS,
+                    autoLinks: true,
                 }}
             />
         )
@@ -296,7 +297,8 @@ class C extends BaseComponent {
         const taskDescBreakdown_el = (
             <ReactQuill
                 modules={{
-                    toolbar: TOOLBAR_OPTIONS
+                    toolbar: TOOLBAR_OPTIONS,
+                    autoLinks: true,
                 }}
             />
         )

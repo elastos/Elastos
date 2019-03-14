@@ -122,6 +122,7 @@ class C extends BaseComponent {
         style={{ background: 'white' }}
         modules={{
           toolbar: TOOLBAR_OPTIONS,
+          autoLinks: true,
         }}
       />
     )
