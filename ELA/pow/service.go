@@ -198,6 +198,9 @@ func (pow *Service) distributeDposReward(coinBaseTx *types.Transaction, reward c
 	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
 	totalVotesInRound := pow.arbiters.GetTotalVotesInRound()
+	if totalVotesInRound == common.Fixed64(0) {
+		panic("total votes in round equal 0")
+	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
 	realDposReward := common.Fixed64(0)

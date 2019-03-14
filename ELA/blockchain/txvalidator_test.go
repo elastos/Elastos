@@ -952,35 +952,3 @@ func TestCheckOutputProgramHash(t *testing.T) {
 	programHash[0] = 0x34
 	assert.NoError(t, checkOutputProgramHash(88811, programHash))
 }
-
-func TestCheckCoinbaseMinerReward(t *testing.T) {
-	totalReward := config.DefaultParams.RewardPerBlock
-	tx := &types.Transaction{
-		Version: 0,
-		TxType:  types.CoinBase,
-	}
-
-	// reward to foundation in coinbase = 30%, reward to miner in coinbase >= 35%
-	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
-	minerReward := common.Fixed64(float64(totalReward) * 0.35)
-	dposReward := totalReward - foundationReward - minerReward
-	tx.Outputs = []*types.Output{
-		{ProgramHash: FoundationAddress, Value: foundationReward},
-		{ProgramHash: common.Uint168{}, Value: minerReward},
-		{ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err := checkCoinbaseMinerReward(config.Parameters.HeightVersions[3], tx, totalReward)
-	assert.NoError(t, err)
-
-	// reward to foundation in coinbase = 30%, reward to miner in coinbase < 35%
-	foundationReward = common.Fixed64(float64(totalReward) * 0.3)
-	minerReward = common.Fixed64(float64(totalReward) * 0.3499999)
-	dposReward = totalReward - foundationReward - minerReward
-	tx.Outputs = []*types.Output{
-		{ProgramHash: FoundationAddress, Value: foundationReward},
-		{ProgramHash: common.Uint168{}, Value: minerReward},
-		{ProgramHash: common.Uint168{}, Value: dposReward},
-	}
-	err = checkCoinbaseMinerReward(config.Parameters.HeightVersions[3], tx, totalReward)
-	assert.EqualError(t, err, "reward to miner in coinbase < 35%")
-}

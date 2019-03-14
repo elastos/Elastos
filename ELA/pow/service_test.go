@@ -100,37 +100,58 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	candidateHashes := make([]*common.Uint168, 0)
 	arbitratorHashMap := make(map[common.Uint168]interface{})
 	candidateHashMap := make(map[common.Uint168]interface{})
+	ownerVotes := make(map[common.Uint168]common.Fixed64)
+	totalVotesInRound := 0
 
-	for _, v := range arbitratorsStr {
+	for i, v := range arbitratorsStr {
+		vote := i + 10
 		a, _ := common.HexStringToBytes(v)
 		arbitrators = append(arbitrators, a)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		arbitratorHashes = append(arbitratorHashes, hash)
 		arbitratorHashMap[*hash] = nil
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
 	}
 	fmt.Println()
-	for _, v := range candidatesStr {
+	for i, v := range candidatesStr {
+		vote := i + 1
 		a, _ := common.HexStringToBytes(v)
 		candidates = append(candidates, a)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		candidateHashes = append(candidateHashes, hash)
 		candidateHashMap[*hash] = nil
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
 	}
 
 	arbitratorsMock.CurrentCandidates = candidates
-	arbitratorsMock.CurrentArbitratorsPrograms = arbitratorHashes
-	arbitratorsMock.CurrentCandidatesPrograms = candidateHashes
+	arbitratorsMock.CurrentOwnerProgramHashes = arbitratorHashes
+	arbitratorsMock.CandidateOwnerProgramHashes = candidateHashes
+	arbitratorsMock.OwnerVotesInRound = ownerVotes
+	arbitratorsMock.TotalVotesInRound = common.Fixed64(totalVotesInRound)
 
 	//reward can be exactly division
 	rewardInCoinbase := common.Fixed64(1000)
 	foundationReward := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	minerReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
-	dposTotalReward := rewardInCoinbase - foundationReward - minerReward
+	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
+	minerReward := rewardInCoinbase - foundationReward - dposTotalReward
 	totalBlockConfirmReward := float64(dposTotalReward) * 0.25
 	totalTopProducersReward := float64(dposTotalReward) * 0.75
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(5+5)))
-	arbitratorsChange := dposTotalReward - (individualProducerReward+individualBlockConfirmReward)*5 - individualProducerReward*5
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
+	realReward := common.Fixed64(0)
+	for hash, vote := range ownerVotes {
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		if _, ok := arbitratorHashMap[hash]; ok {
+			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+		}
+
+		if _, ok := candidateHashMap[hash]; ok {
+			realReward = realReward + individualProducerReward
+		}
+	}
+	arbitratorsChange := dposTotalReward - realReward
 
 	tx := &types.Transaction{
 		Version: types.TxVersion09,
@@ -159,12 +180,16 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	for i := 2; i < 12; i++ {
 		found := false
 		if _, ok := arbitratorHashMap[tx.Outputs[i].ProgramHash]; ok {
+			vote := ownerVotes[tx.Outputs[i].ProgramHash]
+			individualProducerReward := common.Fixed64(float64(vote) * rewardPerVote)
 			assert.Equal(t, individualBlockConfirmReward+individualProducerReward,
 				tx.Outputs[i].Value)
 			found = true
 		}
 
 		if _, ok := candidateHashMap[tx.Outputs[i].ProgramHash]; ok {
+			vote := ownerVotes[tx.Outputs[i].ProgramHash]
+			individualProducerReward := common.Fixed64(float64(vote) * rewardPerVote)
 			assert.Equal(t, individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
@@ -177,13 +202,24 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	rewardInCoinbase = common.Fixed64(999)
 	foundationReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.3))
 	foundationRewardNormal := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	minerReward = common.Fixed64(float64(rewardInCoinbase) * 0.35)
-	dposTotalReward = rewardInCoinbase - foundationReward - minerReward
+	dposTotalReward = common.Fixed64(float64(rewardInCoinbase) * 0.35)
+	minerReward = rewardInCoinbase - foundationReward - dposTotalReward
 	totalBlockConfirmReward = float64(dposTotalReward) * 0.25
-	totalTopProducersReward = float64(dposTotalReward) * 0.75
+	totalTopProducersReward = float64(dposTotalReward) - totalBlockConfirmReward
 	individualBlockConfirmReward = common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
-	individualProducerReward = common.Fixed64(math.Floor(totalTopProducersReward / float64(5+5)))
-	arbitratorsChange = dposTotalReward - (individualProducerReward+individualBlockConfirmReward)*5 - individualProducerReward*5
+	rewardPerVote = totalTopProducersReward / float64(totalVotesInRound)
+	realReward = common.Fixed64(0)
+	for hash, vote := range ownerVotes {
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		if _, ok := arbitratorHashMap[hash]; ok {
+			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+		}
+
+		if _, ok := candidateHashMap[hash]; ok {
+			realReward = realReward + individualProducerReward
+		}
+	}
+	arbitratorsChange = dposTotalReward - realReward
 
 	tx = &types.Transaction{
 		Version: types.TxVersion09,
@@ -211,12 +247,16 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	for i := 2; i < 12; i++ {
 		found := false
 		if _, ok := arbitratorHashMap[tx.Outputs[i].ProgramHash]; ok {
+			vote := ownerVotes[tx.Outputs[i].ProgramHash]
+			individualProducerReward := common.Fixed64(float64(vote) * rewardPerVote)
 			assert.Equal(t,
 				individualBlockConfirmReward+individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
 
 		if _, ok := candidateHashMap[tx.Outputs[i].ProgramHash]; ok {
+			vote := ownerVotes[tx.Outputs[i].ProgramHash]
+			individualProducerReward := common.Fixed64(float64(vote) * rewardPerVote)
 			assert.Equal(t, individualProducerReward, tx.Outputs[i].Value)
 			found = true
 		}
