@@ -188,29 +188,30 @@ func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward comm
 }
 
 func (pow *Service) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	arbitratorsHashes :=
-		pow.arbiters.GetArbitratorsProgramHashes()
-	if len(arbitratorsHashes) == 0 {
+	ownerHashes := pow.arbiters.GetCurrentOwnerProgramHashes()
+	if len(ownerHashes) == 0 {
 		return 0, errors.New("not found arbiters when distributeDposReward")
 	}
-	candidatesHashes := pow.arbiters.GetCandidatesProgramHashes()
+	candidateOwnerHashes := pow.arbiters.GetCandidateOwnerProgramHashes()
 
 	totalBlockConfirmReward := float64(reward) * 0.25
-	totalTopProducersReward := float64(reward) * 0.75
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
+	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
+	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
+	totalVotesInRound := pow.arbiters.GetTotalVotesInRound()
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
 	realDposReward := common.Fixed64(0)
-	for _, v := range arbitratorsHashes {
+	for _, ownerHash := range ownerHashes {
+		votes := pow.arbiters.GetOwnerVotes(ownerHash)
+		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
 		reward := individualBlockConfirmReward + individualProducerReward
-		if pow.arbiters.IsCRCArbitratorProgramHash(v) {
+		if pow.arbiters.IsCRCArbitratorProgramHash(ownerHash) {
 			reward = individualBlockConfirmReward
 		}
-
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:     config.ELAAssetID,
 			Value:       reward,
-			ProgramHash: *v,
+			ProgramHash: *ownerHash,
 			Type:        types.OTNone,
 			Payload:     &outputpayload.DefaultOutput{},
 		})
@@ -218,12 +219,13 @@ func (pow *Service) distributeDposReward(coinBaseTx *types.Transaction, reward c
 		realDposReward += reward
 	}
 
-	for _, v := range candidatesHashes {
-
+	for _, ownerHash := range candidateOwnerHashes {
+		votes := pow.arbiters.GetOwnerVotes(ownerHash)
+		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:     config.ELAAssetID,
 			Value:       individualProducerReward,
-			ProgramHash: *v,
+			ProgramHash: *ownerHash,
 			Type:        types.OTNone,
 			Payload:     &outputpayload.DefaultOutput{},
 		})

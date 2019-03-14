@@ -9,27 +9,31 @@ import (
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
 	return &ArbitratorsMock{
-		CurrentArbitrators:         arbitersByte,
-		CurrentCandidates:          make([][]byte, 0),
-		NextArbitrators:            make([][]byte, 0),
-		NextCandidates:             make([][]byte, 0),
-		CurrentArbitratorsPrograms: make([]*common.Uint168, 0),
-		CurrentCandidatesPrograms:  make([]*common.Uint168, 0),
-		DutyChangedCount:           0,
-		MajorityCount:              majorityCount,
+		CurrentArbitrators:          arbitersByte,
+		CurrentCandidates:           make([][]byte, 0),
+		NextArbitrators:             make([][]byte, 0),
+		NextCandidates:              make([][]byte, 0),
+		CurrentOwnerProgramHashes:   make([]*common.Uint168, 0),
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+		DutyChangedCount:            0,
+		MajorityCount:               majorityCount,
 	}
 }
 
 //mock object of arbitrators
 type ArbitratorsMock struct {
-	CurrentArbitrators         [][]byte
-	CurrentCandidates          [][]byte
-	NextArbitrators            [][]byte
-	NextCandidates             [][]byte
-	CurrentArbitratorsPrograms []*common.Uint168
-	CurrentCandidatesPrograms  []*common.Uint168
-	DutyChangedCount           uint32
-	MajorityCount              uint32
+	CurrentArbitrators          [][]byte
+	CurrentCandidates           [][]byte
+	NextArbitrators             [][]byte
+	NextCandidates              [][]byte
+	CurrentOwnerProgramHashes   []*common.Uint168
+	CandidateOwnerProgramHashes []*common.Uint168
+	OwnerVotesInRound           map[common.Uint168]common.Fixed64
+	TotalVotesInRound           common.Fixed64
+	DutyChangedCount            uint32
+	MajorityCount               uint32
 }
 
 func (a *ArbitratorsMock) GetDutyIndex() uint32 {
@@ -73,6 +77,10 @@ func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbiter {
 }
 
 func (a *ArbitratorsMock) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
+	return false
+}
+
+func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
 	return false
 }
 
@@ -136,16 +144,28 @@ func (a *ArbitratorsMock) SetNextCandidates(ca [][]byte) {
 	a.NextCandidates = ca
 }
 
-func (a *ArbitratorsMock) GetArbitratorsProgramHashes() []*common.Uint168 {
-	return a.CurrentArbitratorsPrograms
+func (a *ArbitratorsMock) GetCurrentOwnerProgramHashes() []*common.Uint168 {
+	result := a.CurrentOwnerProgramHashes
+
+	return result
 }
 
-func (a *ArbitratorsMock) GetNormalArbitratorsProgramHashes() []*common.Uint168 {
-	return a.CurrentArbitratorsPrograms
+func (a *ArbitratorsMock) GetCandidateOwnerProgramHashes() []*common.Uint168 {
+	result := a.CandidateOwnerProgramHashes
+
+	return result
 }
 
-func (a *ArbitratorsMock) GetCandidatesProgramHashes() []*common.Uint168 {
-	return a.CurrentCandidatesPrograms
+func (a *ArbitratorsMock) GetOwnerVotes(programHash *common.Uint168) common.Fixed64 {
+	result := a.OwnerVotesInRound[*programHash]
+
+	return result
+}
+
+func (a *ArbitratorsMock) GetTotalVotesInRound() common.Fixed64 {
+	result := a.TotalVotesInRound
+
+	return result
 }
 
 func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {

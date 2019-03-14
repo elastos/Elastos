@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"math"
 	"sort"
 	"strings"
 	"sync"
@@ -35,15 +34,20 @@ type arbitrators struct {
 	bestHeight    func() uint32
 	arbitersCount uint32
 
-	mtx                             sync.Mutex
-	dutyIndex                       uint32
-	currentArbitrators              [][]byte
-	currentCandidates               [][]byte
-	currentArbitratorsProgramHashes []*common.Uint168
-	currentCandidatesProgramHashes  []*common.Uint168
-	nextArbitrators                 [][]byte
-	nextCandidates                  [][]byte
-	crcArbitratorsProgramHashes     map[common.Uint168]interface{}
+	mtx                sync.Mutex
+	dutyIndex          uint32
+	currentArbitrators [][]byte
+	currentCandidates  [][]byte
+
+	currentOwnerProgramHashes   []*common.Uint168
+	candidateOwnerProgramHashes []*common.Uint168
+	ownerVotesInRound           map[common.Uint168]common.Fixed64
+	totalVotesInRound           common.Fixed64
+
+	nextArbitrators             [][]byte
+	nextCandidates              [][]byte
+	crcArbitratorsProgramHashes map[common.Uint168]interface{}
+	crcArbitratorsNodePublicKey map[string]interface{}
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -210,6 +214,11 @@ func (a *arbitrators) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
 	return ok
 }
 
+func (a *arbitrators) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
+	_, ok := a.crcArbitratorsNodePublicKey[nodePublicKeyHex]
+	return ok
+}
+
 func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	for _, v := range a.chainParams.CRCArbiters {
 		if bytes.Equal(v.PublicKey, pk) {
@@ -223,17 +232,33 @@ func (a *arbitrators) GetCRCArbitrators() []config.CRCArbiter {
 	return a.chainParams.CRCArbiters
 }
 
-func (a *arbitrators) GetArbitratorsProgramHashes() []*common.Uint168 {
+func (a *arbitrators) GetCurrentOwnerProgramHashes() []*common.Uint168 {
 	a.mtx.Lock()
-	result := a.currentArbitratorsProgramHashes
+	result := a.currentOwnerProgramHashes
 	a.mtx.Unlock()
 
 	return result
 }
 
-func (a *arbitrators) GetCandidatesProgramHashes() []*common.Uint168 {
+func (a *arbitrators) GetCandidateOwnerProgramHashes() []*common.Uint168 {
 	a.mtx.Lock()
-	result := a.currentCandidatesProgramHashes
+	result := a.candidateOwnerProgramHashes
+	a.mtx.Unlock()
+
+	return result
+}
+
+func (a *arbitrators) GetOwnerVotes(programHash *common.Uint168) common.Fixed64 {
+	a.mtx.Lock()
+	result := a.ownerVotesInRound[*programHash]
+	a.mtx.Unlock()
+
+	return result
+}
+
+func (a *arbitrators) GetTotalVotesInRound() common.Fixed64 {
+	a.mtx.Lock()
+	result := a.totalVotesInRound
 	a.mtx.Unlock()
 
 	return result
@@ -308,7 +333,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 		return err
 	}
 
-	if err := a.updateArbitratorsProgramHashes(); err != nil {
+	if err := a.updateOwnerProgramHashes(); err != nil {
 		return err
 	}
 
@@ -419,31 +444,49 @@ func (a *arbitrators) getArbitersCount() uint32 {
 	return uint32(len(a.currentArbitrators))
 }
 
-func (a *arbitrators) updateArbitratorsProgramHashes() error {
-	a.currentArbitratorsProgramHashes = make([]*common.Uint168, len(a.currentArbitrators))
-	for index, nodePublicKey := range a.currentArbitrators {
-		producer := a.GetProducer(nodePublicKey)
-		if producer == nil {
-			return errors.New("get producer by node public key failed")
+func (a *arbitrators) updateOwnerProgramHashes() error {
+	a.currentOwnerProgramHashes = make([]*common.Uint168, 0)
+	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
+	for _, nodePublicKey := range a.currentArbitrators {
+		if a.IsCRCArbitratorNodePublicKey(common.BytesToHexString(nodePublicKey)) {
+			ownerPublicKey := nodePublicKey // crc node public key is its owner public key for now
+			programHash, err := contract.PublicKeyToStandardProgramHash(ownerPublicKey)
+			if err != nil {
+				return err
+			}
+			a.currentOwnerProgramHashes = append(a.currentOwnerProgramHashes, programHash)
+		} else {
+			producer := a.GetProducer(nodePublicKey)
+			if producer == nil {
+				return errors.New("get producer by node public key failed")
+			}
+			ownerPublicKey := producer.OwnerPublicKey()
+			programHash, err := contract.PublicKeyToStandardProgramHash(ownerPublicKey)
+			if err != nil {
+				return err
+			}
+			a.currentOwnerProgramHashes = append(a.currentOwnerProgramHashes, programHash)
+			a.ownerVotesInRound[*programHash] = producer.Votes()
+			a.totalVotesInRound += producer.Votes()
 		}
-		hash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
-		if err != nil {
-			return err
-		}
-		a.currentArbitratorsProgramHashes[index] = hash
 	}
 
-	a.currentCandidatesProgramHashes = make([]*common.Uint168, len(a.currentCandidates))
-	for index, nodePublicKey := range a.currentCandidates {
+	a.candidateOwnerProgramHashes = make([]*common.Uint168, 0)
+	for _, nodePublicKey := range a.currentCandidates {
+		if a.IsCRCArbitratorNodePublicKey(common.BytesToHexString(nodePublicKey)) {
+			continue
+		}
 		producer := a.GetProducer(nodePublicKey)
 		if producer == nil {
 			return errors.New("get producer by node public key failed")
 		}
-		hash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
+		programHash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
 		if err != nil {
 			return err
 		}
-		a.currentCandidatesProgramHashes[index] = hash
+		a.candidateOwnerProgramHashes = append(a.candidateOwnerProgramHashes, programHash)
+		a.ownerVotesInRound[*programHash] = producer.Votes()
+		a.totalVotesInRound += producer.Votes()
 	}
 
 	return nil
@@ -554,17 +597,18 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 	arbitersCount := config.Parameters.ArbiterConfiguration.
 		NormalArbitratorsCount + uint32(len(chainParams.CRCArbiters))
 	a := &arbitrators{
-		chainParams:                     chainParams,
-		bestHeight:                      bestHeight,
-		arbitersCount:                   arbitersCount,
-		currentArbitrators:              originArbiters,
-		currentArbitratorsProgramHashes: originArbitersProgramHashes,
-		nextArbitrators:                 originArbiters,
-		nextCandidates:                  make([][]byte, 0),
+		chainParams:               chainParams,
+		bestHeight:                bestHeight,
+		arbitersCount:             arbitersCount,
+		currentArbitrators:        originArbiters,
+		currentOwnerProgramHashes: originArbitersProgramHashes,
+		nextArbitrators:           originArbiters,
+		nextCandidates:            make([][]byte, 0),
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
 
 	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
+	a.crcArbitratorsNodePublicKey = make(map[string]interface{})
 	for _, v := range a.chainParams.CRCArbiters {
 		//a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
 
@@ -572,19 +616,20 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		if err != nil {
 			return nil, err
 		}
-		a.crcArbitratorsProgramHashes[*hash] = nil
-		a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
-			info: payload.ProducerInfo{
-				OwnerPublicKey: v.PublicKey,
-				NodePublicKey:  v.PublicKey,
-				NetAddress:     v.NetAddress,
-			},
-			registerHeight:        0,
-			votes:                 0,
-			inactiveSince:         0,
-			penalty:               common.Fixed64(0),
-			activateRequestHeight: math.MaxUint32,
-		}
+		a.crcArbitratorsProgramHashes[*hash] = nil                                // program hash generated by crc OWNER public key
+		a.crcArbitratorsNodePublicKey[common.BytesToHexString(v.PublicKey)] = nil // here need crc NODE public key
+		//a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
+		//	info: payload.ProducerInfo{
+		//		OwnerPublicKey: v.PublicKey,
+		//		NodePublicKey:  v.PublicKey,
+		//		NetAddress:     v.NetAddress,
+		//	},
+		//	registerHeight:        0,
+		//	votes:                 0,
+		//	inactiveSince:         0,
+		//	penalty:               common.Fixed64(0),
+		//	activateRequestHeight: math.MaxUint32,
+		//}
 	}
 
 	return a, nil

@@ -351,19 +351,20 @@ func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, reward
 			outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
 		}
 
-		arbitratorsHashes := DefaultLedger.Arbitrators.GetArbitratorsProgramHashes()
-		candidatesHashes := DefaultLedger.Arbitrators.GetCandidatesProgramHashes()
-		if len(arbitratorsHashes)+len(candidatesHashes) != len(coinbase.Outputs)-2 {
+		currentOwnerHashes := DefaultLedger.Arbitrators.GetCurrentOwnerProgramHashes()
+		candidateOwnerHashes := DefaultLedger.Arbitrators.GetCandidateOwnerProgramHashes()
+		if len(currentOwnerHashes)+len(candidateOwnerHashes) != len(coinbase.Outputs)-2 {
 			return errors.New("coinbase output count not match")
 		}
 
 		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
 		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
-		totalTopProducersReward := float64(dposTotalReward) * 0.75
-		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(arbitratorsHashes))))
-		individualProducerReward := Fixed64(math.Floor(totalTopProducersReward / float64(int(config.Parameters.ArbiterConfiguration.NormalArbitratorsCount)+len(candidatesHashes))))
+		totalTopProducersReward := float64(dposTotalReward) - totalBlockConfirmReward
+		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(currentOwnerHashes))))
+		totalVotesInRound := DefaultLedger.Arbitrators.GetTotalVotesInRound()
+		rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
-		for _, hash := range arbitratorsHashes {
+		for _, hash := range currentOwnerHashes {
 			amount, ok := outputAddressMap[*hash]
 			if !ok {
 				return errors.New("unknown dpos reward address")
@@ -374,18 +375,22 @@ func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, reward
 					return errors.New("incorrect dpos reward amount")
 				}
 			} else {
+				votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
+				individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
 				if amount != individualProducerReward+individualBlockConfirmReward {
 					return errors.New("incorrect dpos reward amount")
 				}
 			}
 		}
 
-		for _, v := range candidatesHashes {
-			amount, ok := outputAddressMap[*v]
+		for _, hash := range candidateOwnerHashes {
+			amount, ok := outputAddressMap[*hash]
 			if !ok {
 				return errors.New("unknown dpos reward address")
 			}
 
+			votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
+			individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
 			if amount != individualProducerReward {
 				return errors.New("incorrect dpos reward amount")
 			}
