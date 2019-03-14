@@ -7,6 +7,7 @@ package peer_test
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"testing"
@@ -18,6 +19,19 @@ import (
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
+
+func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
+	switch cmd {
+	case p2p.CmdVersion:
+		message = new(msg.Version)
+	case p2p.CmdVerAck:
+		message = new(msg.VerAck)
+	default:
+		err = fmt.Errorf("unknown message type %s", cmd)
+	}
+
+	return message, err
+}
 
 // conn mocks a network connection by implementing the net.Conn interface.  It
 // is used to test peer connection without actually opening a network
