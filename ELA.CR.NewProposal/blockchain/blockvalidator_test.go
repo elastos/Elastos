@@ -107,27 +107,37 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	candidates := make([][]byte, 0)
 	arbitratorHashes := make([]*common.Uint168, 0)
 	candidateHashes := make([]*common.Uint168, 0)
+	ownerVotes := make(map[common.Uint168]common.Fixed64)
+	totalVotesInRound := 0
 
-	for _, v := range arbitratorsStr {
+	for i, v := range arbitratorsStr {
+		vote := i + 10
 		a, _ := common.HexStringToBytes(v)
 		arbitrators = append(arbitrators, a)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		arbitratorHashes = append(arbitratorHashes, hash)
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
 	}
 	fmt.Println()
-	for _, v := range candidatesStr {
+	for i, v := range candidatesStr {
+		vote := i + 1
 		a, _ := common.HexStringToBytes(v)
 		candidates = append(candidates, a)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		candidateHashes = append(candidateHashes, hash)
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
 	}
 
 	originLedger := DefaultLedger
 	arbitratorsMock := &state.ArbitratorsMock{
-		CurrentArbitrators:         arbitrators,
-		CurrentCandidates:          candidates,
-		CurrentArbitratorsPrograms: arbitratorHashes,
-		CurrentCandidatesPrograms:  candidateHashes,
+		CurrentArbitrators:          arbitrators,
+		CurrentCandidates:           candidates,
+		CurrentOwnerProgramHashes:   arbitratorHashes,
+		CandidateOwnerProgramHashes: candidateHashes,
+		OwnerVotesInRound:           ownerVotes,
+		TotalVotesInRound:           common.Fixed64(totalVotesInRound),
 	}
 	DefaultLedger = &Ledger{
 		Arbitrators: arbitratorsMock,
@@ -135,11 +145,11 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	DefaultLedger.Arbitrators = arbitratorsMock
 
 	rewardInCoinbase := common.Fixed64(1000)
-	dposTotalReward := common.Fixed64(float64(rewardInCoinbase) * 0.35)
+	dposTotalReward := float64(rewardInCoinbase) * 0.35
 	totalBlockConfirmReward := float64(dposTotalReward) * 0.25
-	totalTopProducersReward := float64(dposTotalReward) * 0.75
+	totalTopProducersReward := dposTotalReward - totalBlockConfirmReward
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
-	individualProducerReward := common.Fixed64(math.Floor(totalTopProducersReward / float64(5+5)))
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 	tx := &types.Transaction{
 		Version: 0,
 		TxType:  types.CoinBase,
@@ -152,11 +162,15 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
 
 	for _, v := range arbitratorHashes {
+		vote := ownerVotes[*v]
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
 	}
 	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
 
 	for _, v := range candidateHashes {
+		vote := ownerVotes[*v]
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})
 	}
 	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
