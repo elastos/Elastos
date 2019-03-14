@@ -118,7 +118,8 @@ class C extends BaseComponent {
         const textarea_el = (
             <ReactQuill
                 modules={{
-                    toolbar: TOOLBAR_OPTIONS
+                    toolbar: TOOLBAR_OPTIONS,
+                    autoLinks: true,
                 }}
             />
         )

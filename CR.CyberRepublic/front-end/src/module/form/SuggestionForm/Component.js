@@ -89,6 +89,7 @@ class C extends BaseComponent {
         placeholder="Description"
         modules={{
           toolbar: TOOLBAR_OPTIONS,
+          autoLinks: true,
         }}
       />
     )
