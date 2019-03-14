@@ -357,9 +357,9 @@ func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, reward
 			return errors.New("coinbase output count not match")
 		}
 
-		dposTotalReward := Fixed64(float64(rewardInCoinbase) * 0.35)
-		totalBlockConfirmReward := float64(dposTotalReward) * 0.25
-		totalTopProducersReward := float64(dposTotalReward) - totalBlockConfirmReward
+		dposTotalReward := float64(rewardInCoinbase) * 0.35
+		totalBlockConfirmReward := dposTotalReward * 0.25
+		totalTopProducersReward := dposTotalReward - totalBlockConfirmReward
 		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(currentOwnerHashes))))
 		totalVotesInRound := DefaultLedger.Arbitrators.GetTotalVotesInRound()
 		rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
