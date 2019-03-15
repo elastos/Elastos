@@ -39,10 +39,10 @@ type arbitrators struct {
 	*State
 	chainParams   *config.Params
 	bestHeight    func() uint32
-	arbitersCount uint32
+	arbitersCount int
 
 	mtx                sync.Mutex
-	dutyIndex          uint32
+	dutyIndex          int
 	currentArbitrators [][]byte
 	currentCandidates  [][]byte
 
@@ -81,7 +81,7 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 	return nil
 }
 
-func (a *arbitrators) GetDutyIndex() uint32 {
+func (a *arbitrators) GetDutyIndex() int {
 	a.mtx.Lock()
 	index := a.dutyIndex
 	a.mtx.Unlock()
@@ -332,7 +332,7 @@ func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 		if len(arbitrators) == 0 {
 			return nil
 		}
-		index := (a.dutyIndex + offset) % uint32(len(arbitrators))
+		index := (a.dutyIndex + int(offset)) % len(arbitrators)
 		arbiter := arbitrators[index]
 
 		return arbiter
@@ -342,26 +342,26 @@ func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	return a.getNextOnDutyArbitratorV0(height, offset)
 }
 
-func (a *arbitrators) GetArbitersCount() uint32 {
+func (a *arbitrators) GetArbitersCount() int {
 	a.mtx.Lock()
-	result := a.getArbitersCount()
+	result := len(a.currentArbitrators)
 	a.mtx.Unlock()
 	return result
 }
 
-func (a *arbitrators) GetArbitersMajorityCount() uint32 {
+func (a *arbitrators) GetArbitersMajorityCount() int {
 	a.mtx.Lock()
-	minSignCount := uint32(float64(a.getArbitersCount()) *
+	minSignCount := int(float64(len(a.currentArbitrators)) *
 		majoritySignRatioNumerator / majoritySignRatioDenominator)
 	a.mtx.Unlock()
 	return minSignCount
 }
 
-func (a *arbitrators) HasArbitersMajorityCount(num uint32) bool {
+func (a *arbitrators) HasArbitersMajorityCount(num int) bool {
 	return num > a.GetArbitersMajorityCount()
 }
 
-func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
+func (a *arbitrators) HasArbitersMinorityCount(num int) bool {
 	return num >= a.arbitersCount-a.GetArbitersMajorityCount()
 }
 
@@ -410,7 +410,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	crcCount := uint32(0)
+	var crcCount int
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.chainParams.CRCArbiters {
 		if !a.isInactiveProducer(v.PublicKey) {
@@ -419,7 +419,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 			crcCount++
 		}
 	}
-	count := config.Parameters.ArbiterConfiguration.NormalArbitratorsCount + crcCount
+	count := a.chainParams.GeneralArbiters + crcCount
 	producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
 	if err != nil {
 		return err
@@ -437,10 +437,11 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	return nil
 }
 
-func (a *arbitrators) GetCandidatesDesc(height, startIndex uint32, producers []*Producer) ([][]byte, error) {
+func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
+	producers []*Producer) ([][]byte, error) {
 	// main version >= H2
 	if height >= a.State.chainParams.HeightVersions[3] {
-		if uint32(len(producers)) < startIndex {
+		if len(producers) < startIndex {
 			return make([][]byte, 0), nil
 		}
 
@@ -449,34 +450,35 @@ func (a *arbitrators) GetCandidatesDesc(height, startIndex uint32, producers []*
 		})
 
 		result := make([][]byte, 0)
-		for i := startIndex; i < uint32(len(producers)) && i < startIndex+config.
-			Parameters.ArbiterConfiguration.CandidatesCount; i++ {
+		for i := startIndex; i < len(producers) && i < startIndex+a.
+			chainParams.CandidateArbiters; i++ {
 			result = append(result, producers[i].NodePublicKey())
 		}
 		return result, nil
 	}
 
 	// old version [0, H2)
-	return [][]byte{}, nil
+	return nil, nil
 }
 
 func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
-	arbitratorsCount uint32, producers []*Producer) ([][]byte, error) {
+	arbitratorsCount int, producers []*Producer) ([][]byte, error) {
 	// main version >= H2
 	if height >= a.State.chainParams.HeightVersions[3] {
-		if uint32(len(producers)) < arbitratorsCount/2+1 {
+		if len(producers) < arbitratorsCount/2+1 {
 			return nil, errors.New("producers count less than min arbitrators count")
 		}
 
 		sort.Slice(producers, func(i, j int) bool {
 			if producers[i].votes == producers[j].votes {
-				return bytes.Compare(producers[i].info.NodePublicKey, producers[j].NodePublicKey()) < 0
+				return bytes.Compare(producers[i].info.NodePublicKey,
+					producers[j].NodePublicKey()) < 0
 			}
 			return producers[i].Votes() > producers[j].Votes()
 		})
 
 		result := make([][]byte, 0)
-		for i := uint32(0); i < arbitratorsCount && i < uint32(len(producers)); i++ {
+		for i := 0; i < arbitratorsCount && i < len(producers); i++ {
 			result = append(result, producers[i].NodePublicKey())
 		}
 		return result, nil
@@ -489,10 +491,6 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 
 	// version [0, H1)
 	return a.getNormalArbitratorsDescV0()
-}
-
-func (a *arbitrators) getArbitersCount() uint32 {
-	return uint32(len(a.currentArbitrators))
 }
 
 func (a *arbitrators) updateOwnerProgramHashes() error {
@@ -595,7 +593,7 @@ func (a *arbitrators) getArbitersInfoWithOnduty(title string, arbiters [][]byte,
 	info := "\n" + title + "\nDUTYINDEX: %d\n%5s %66s %21s %6s\n----- " + strings.Repeat("-", 66) +
 		" " + strings.Repeat("-", 21) + " ------\n"
 	params := make([]interface{}, 0)
-	params = append(params, (a.dutyIndex+1)%uint32(len(arbiters)))
+	params = append(params, (a.dutyIndex+1)%len(arbiters))
 	params = append(params, "INDEX", "PUBLICKEY", "NETADDRESS", "ONDUTY")
 	for i, arbiter := range arbiters {
 		publicKey := common.BytesToHexString(arbiter)
@@ -657,8 +655,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		crcArbitratorsProgramHashes[*hash] = nil
 	}
 
-	arbitersCount := config.Parameters.ArbiterConfiguration.
-		NormalArbitratorsCount + uint32(len(chainParams.CRCArbiters))
+	arbitersCount := chainParams.GeneralArbiters + len(chainParams.CRCArbiters)
 	a := &arbitrators{
 		chainParams:                 chainParams,
 		bestHeight:                  bestHeight,

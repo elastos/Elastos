@@ -332,14 +332,13 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 
 func GetArbitersInfo(params Params) map[string]interface{} {
 	type arbitersInfo struct {
-		Arbiters       []string `json:"arbiters"`
-		Candidates     []string `json:"candidates"`
-		NextArbiters   []string `json:"nextarbiters"`
-		NextCandidates []string `json:"nextcandidates"`
-		OnDutyArbiter  string   `json:"ondutyarbiter"`
-
-		CurrentTurnStartHeight uint32 `json:"currentturnstartheight"`
-		NextTurnStartHeight    uint32 `json:"nextturnstartheight"`
+		Arbiters               []string `json:"arbiters"`
+		Candidates             []string `json:"candidates"`
+		NextArbiters           []string `json:"nextarbiters"`
+		NextCandidates         []string `json:"nextcandidates"`
+		OnDutyArbiter          string   `json:"ondutyarbiter"`
+		CurrentTurnStartHeight int      `json:"currentturnstartheight"`
+		NextTurnStartHeight    int      `json:"nextturnstartheight"`
 	}
 
 	dutyIndex := Arbiters.GetDutyIndex()
@@ -350,8 +349,8 @@ func GetArbitersInfo(params Params) map[string]interface{} {
 		NextCandidates: make([]string, 0),
 		OnDutyArbiter:  common.BytesToHexString(Arbiters.GetOnDutyArbitrator()),
 
-		CurrentTurnStartHeight: Store.GetHeight() - dutyIndex,
-		NextTurnStartHeight: Store.GetHeight() +
+		CurrentTurnStartHeight: int(Store.GetHeight()) - dutyIndex,
+		NextTurnStartHeight: int(Store.GetHeight()) +
 			Arbiters.GetArbitersCount() - dutyIndex,
 	}
 	for _, v := range Arbiters.GetArbitrators() {

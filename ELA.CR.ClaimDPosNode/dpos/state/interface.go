@@ -19,7 +19,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
-	GetDutyIndex() uint32
+	GetDutyIndex() int
 
 	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool
@@ -34,8 +34,8 @@ type Arbitrators interface {
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
 
-	GetArbitersCount() uint32
-	GetArbitersMajorityCount() uint32
-	HasArbitersMajorityCount(num uint32) bool
-	HasArbitersMinorityCount(num uint32) bool
+	GetArbitersCount() int
+	GetArbitersMajorityCount() int
+	HasArbitersMajorityCount(num int) bool
+	HasArbitersMinorityCount(num int) bool
 }
