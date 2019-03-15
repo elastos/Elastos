@@ -23,7 +23,6 @@ func TestEventStore_Open(t *testing.T) {
 	}
 
 	store.StartEventRecord()
-	store.StartArbitratorsRecord()
 	eventStore = store
 }
 
