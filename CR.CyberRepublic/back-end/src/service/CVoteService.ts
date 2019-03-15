@@ -16,6 +16,17 @@ const restrictedFields = {
   ]
 }
 
+const formatUsername = (user) => {
+  const firstName = user.profile && user.profile.firstName
+  const lastName = user.profile && user.profile.lastName
+
+  if (_.isEmpty(firstName) && _.isEmpty(lastName)) {
+      return user.username
+  }
+
+  return [firstName, lastName].join(' ')
+}
+
 export default class extends Base {
 
   public async create(param): Promise<Document> {
@@ -57,7 +68,18 @@ export default class extends Base {
       const res = await db_cvote.save(doc);
       // notify council member to vote
       if (published) {
-        this.notifyCouncil(res, councilMembers)
+        const subject = `New Proposal: ${title}`
+        const body = `
+          <p>There is a new proposal added:</p>
+          <br />
+          <p>${title}</p>
+          <br />
+          <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${res._id}">${process.env.SERVER_URL}/proposals/${res._id}</a></p>
+          <br /> <br />
+          <p>Thanks</p>
+          <p>Cyber Republic</p>
+        `
+        this.notifyCouncil(res, councilMembers, subject, body)
       }
 
       return res
@@ -67,33 +89,8 @@ export default class extends Base {
     }
   }
 
-  private async notifyCouncil(cvote: any, users: Array<any>) {
-    const { title, _id } = cvote
+  private async notifyCouncil(cvote: any, users: Array<any>, subject: string, body: any) {
     const toMails = _.map(users, 'email')
-    console.log(toMails, '-----')
-
-    const body = `
-      <p>There is a new proposal added:</p>
-      <br />
-      <p>${title}</p>
-      <br />
-      <p>click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
-      <br /> <br />
-      <p>Thanks</p>
-      <p>Cyber Republic</p>
-    `
-
-    const formatUsername = (user) => {
-      const firstName = user.profile && user.profile.firstName
-      const lastName = user.profile && user.profile.lastName
-
-      if (_.isEmpty(firstName) && _.isEmpty(lastName)) {
-          return user.username
-      }
-
-      return [firstName, lastName].join(' ')
-    }
-
     const recVariables = _.zipObject(toMails, _.map(users, (user) => {
       return {
         _id: user._id,
@@ -104,11 +101,11 @@ export default class extends Base {
     const mailObj = {
       to: toMails,
       // toName: ownerToName,
-      subject: `New Proposal: ${title}`,
+      subject,
       body,
       recVariables,
     }
-    console.log(mailObj, '====mailObj')
+
     mail.send(mailObj)
   }
 
@@ -156,7 +153,7 @@ export default class extends Base {
       }
 
     }
-
+    this.notifyCouncilToVote()
     return list;
   }
 
@@ -238,9 +235,9 @@ export default class extends Base {
     return n + 1;
   }
 
-  public isExpired(data): Boolean {
+  public isExpired(data: any, extraTime = 0): Boolean {
     const ct = moment(data.createdAt).valueOf();
-    if (Date.now() - ct > constant.CVOTE_EXPIRATION) {
+    if (Date.now() - ct - extraTime > constant.CVOTE_EXPIRATION) {
       return true;
     }
     return false;
@@ -308,6 +305,48 @@ export default class extends Base {
     return await this.getById(_id);
   }
 
+  private async notifyCouncilToVote() {
+    // find cvote before 1 day expiration without vote yet for each council member
+    const db_cvote = this.getDBModel('CVote');
+    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - 24 * 60 * 1000 * 1000)
+    const unvotedCVotes = await db_cvote.getDBInstance().find(
+      {
+        createdAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
+        notified: false,
+        status: constant.CVOTE_STATUS.PROPOSED
+      }
+    ).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    _.each(unvotedCVotes, cvote => {
+      _.each(cvote.voteResult, result => {
+        if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
+          // send email to council member to notify to vote
+          const { title, _id } = cvote
+          const subject = `Proposal Vote Reminder: ${title}`
+          const body = `
+            <p>You only got 24 hours to vote this proposal:</p>
+            <br />
+            <p>${title}</p>
+            <br />
+            <p>Click this link to vote: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
+            <br /> <br />
+            <p>Thanks</p>
+            <p>Cyber Republic</p>
+          `
+          const mailObj = {
+            to: result.votedBy.email,
+            toName: formatUsername(result.votedBy),
+            subject,
+            body,
+          }
+          mail.send(mailObj)
+
+          // update notified to true
+          db_cvote.update({ _id: cvote._id }, { $set: { notified: true }})
+        }
+      })
+    })
+  }
   private async eachJob() {
     const db_cvote = this.getDBModel('CVote');
     const list = await db_cvote.find({
@@ -338,8 +377,10 @@ export default class extends Base {
         $in: idsActive
       }
     }, {
-        status: constant.CVOTE_STATUS.ACTIVE
-      });
+      status: constant.CVOTE_STATUS.ACTIVE
+    });
+
+    this.notifyCouncilToVote()
   }
 
   public cronjob() {

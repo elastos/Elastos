@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
-import { constant } from '../../constant'
 import * as _ from 'lodash'
+import { constant } from '../../constant'
+import { SubscriberSchema } from './SubscriberSchema'
 
 
 export const CVoteResultSchema = {
@@ -86,5 +87,10 @@ export const CVote = {
     status : {
         type : String,
         enum: _.values(constant.CVOTE_STATUS)
-    }
+    },
+    subscribers: [SubscriberSchema],
+    notified: {
+        type: Boolean,
+        default: false,
+    },
 }
