@@ -98,6 +98,10 @@ func loadConfigParams() *config.ConfigParams {
 		activeNetParams.GeneralArbiters =
 			cfg.ArbiterConfiguration.NormalArbitratorsCount
 	}
+	if cfg.ArbiterConfiguration.PreConnectOffset > 0 {
+		activeNetParams.PreConnectOffset =
+			cfg.ArbiterConfiguration.PreConnectOffset
+	}
 	if cfg.ArbiterConfiguration.CandidatesCount > 0 {
 		activeNetParams.CandidateArbiters =
 			cfg.ArbiterConfiguration.CandidatesCount

@@ -380,17 +380,17 @@ func (a *arbitrators) HasArbitersMinorityCount(num int) bool {
 func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 
 	// special change points:
-	//		H1 - PreConnectHeight -> 	[updateNext, H1]: update next arbiters and let CRC arbiters prepare to connect
+	//		H1 - PreConnectOffset -> 	[updateNext, H1]: update next arbiters and let CRC arbiters prepare to connect
 	//		H1 -> 						[normalChange, H1]: should change to new election (that only have CRC arbiters)
-	//		H2 - PreConnectHeight -> 	[updateNext, H2]: update next arbiters and let normal arbiters prepare to connect
+	//		H2 - PreConnectOffset -> 	[updateNext, H2]: update next arbiters and let normal arbiters prepare to connect
 	//		H2 -> 						[normalChange, H2]: should change to new election (arbiters will have both CRC and normal arbiters)
 	if height == a.State.chainParams.CRCOnlyDPOSHeight-
-		config.Parameters.ArbiterConfiguration.PreConnectHeight {
+		a.State.chainParams.PreConnectOffset {
 		return updateNext, a.State.chainParams.CRCOnlyDPOSHeight
 	} else if height == a.State.chainParams.CRCOnlyDPOSHeight {
 		return normalChange, a.State.chainParams.CRCOnlyDPOSHeight
 	} else if height == a.State.chainParams.PublicDPOSHeight-
-		config.Parameters.ArbiterConfiguration.PreConnectHeight {
+		a.State.chainParams.PreConnectOffset {
 		return updateNext, a.State.chainParams.PublicDPOSHeight
 	} else if height == a.State.chainParams.PublicDPOSHeight {
 		return normalChange, a.State.chainParams.PublicDPOSHeight

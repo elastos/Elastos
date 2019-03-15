@@ -119,7 +119,7 @@ type ArbiterConfiguration struct {
 	InactivePenalty          common.Fixed64   `json:"InactivePenalty"`
 	InactiveEliminateCount   uint32           `json:"InactiveEliminateCount"`
 	EnableEventRecord        bool             `json:"EnableEventRecord"`
-	PreConnectHeight         uint32           `json:"PreConnectHeight"`
+	PreConnectOffset         uint32           `json:"PreConnectOffset"`
 }
 
 type Seed struct {
