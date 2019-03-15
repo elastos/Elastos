@@ -109,6 +109,49 @@ export default class extends Base {
     mail.send(mailObj)
   }
 
+  private async notifyCouncilToVote() {
+    // find cvote before 1 day expiration without vote yet for each council member
+    const db_cvote = this.getDBModel('CVote');
+    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - 24 * 60 * 1000 * 1000)
+    const unvotedCVotes = await db_cvote.getDBInstance().find(
+      {
+        createdAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
+        notified: { $ne: true },
+        status: constant.CVOTE_STATUS.PROPOSED
+      }
+    ).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    _.each(unvotedCVotes, cvote => {
+      _.each(cvote.voteResult, result => {
+        if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
+          // send email to council member to notify to vote
+          const { title, _id } = cvote
+          const subject = `Proposal Vote Reminder: ${title}`
+          const body = `
+            <p>You only got 24 hours to vote this proposal:</p>
+            <br />
+            <p>${title}</p>
+            <br />
+            <p>Click this link to vote: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
+            <br /> <br />
+            <p>Thanks</p>
+            <p>Cyber Republic</p>
+          `
+          const mailObj = {
+            to: result.votedBy.email,
+            toName: formatUsername(result.votedBy),
+            subject,
+            body,
+          }
+          mail.send(mailObj)
+
+          // update notified to true
+          db_cvote.update({ _id: cvote._id }, { $set: { notified: true }})
+        }
+      })
+    })
+  }
+
   /**
    * List proposals, only an admin may request and view private records
    *
@@ -305,48 +348,6 @@ export default class extends Base {
     return await this.getById(_id);
   }
 
-  private async notifyCouncilToVote() {
-    // find cvote before 1 day expiration without vote yet for each council member
-    const db_cvote = this.getDBModel('CVote');
-    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - 24 * 60 * 1000 * 1000)
-    const unvotedCVotes = await db_cvote.getDBInstance().find(
-      {
-        createdAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
-        notified: false,
-        status: constant.CVOTE_STATUS.PROPOSED
-      }
-    ).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-
-    _.each(unvotedCVotes, cvote => {
-      _.each(cvote.voteResult, result => {
-        if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
-          // send email to council member to notify to vote
-          const { title, _id } = cvote
-          const subject = `Proposal Vote Reminder: ${title}`
-          const body = `
-            <p>You only got 24 hours to vote this proposal:</p>
-            <br />
-            <p>${title}</p>
-            <br />
-            <p>Click this link to vote: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
-            <br /> <br />
-            <p>Thanks</p>
-            <p>Cyber Republic</p>
-          `
-          const mailObj = {
-            to: result.votedBy.email,
-            toName: formatUsername(result.votedBy),
-            subject,
-            body,
-          }
-          mail.send(mailObj)
-
-          // update notified to true
-          db_cvote.update({ _id: cvote._id }, { $set: { notified: true }})
-        }
-      })
-    })
-  }
   private async eachJob() {
     const db_cvote = this.getDBModel('CVote');
     const list = await db_cvote.find({
