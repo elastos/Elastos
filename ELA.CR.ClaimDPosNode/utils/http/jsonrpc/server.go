@@ -308,7 +308,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) RegisterTestAction() {
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		return data, nil
+		return nil, nil
 	}, "level")
 }
 
