@@ -33,9 +33,28 @@ func (f *Filter) Add(data []byte) error {
 	return f.TxFilter.Add(data)
 }
 
-// Match returns if a transaction matches the filter.
-func (f *Filter) Match(tx *types.Transaction) bool {
-	return f.TxFilter.Match(tx) || f.state.IsDPOSTransaction(tx)
+// MatchConfirmed returns if a confirmed (packed into a block) transaction
+// matches the filter.
+func (f *Filter) MatchConfirmed(tx *types.Transaction) bool {
+	return f.TxFilter.MatchConfirmed(tx) || f.state.IsDPOSTransaction(tx)
+}
+
+// MatchUnconfirmed returns if a unconfirmed (not packed into a block yet)
+// transaction matches the filter.
+func (f *Filter) MatchUnconfirmed(tx *types.Transaction) bool {
+	switch tx.TxType {
+	case types.IllegalProposalEvidence:
+		fallthrough
+	case types.IllegalVoteEvidence:
+		fallthrough
+	case types.IllegalBlockEvidence:
+		fallthrough
+	case types.IllegalSidechainEvidence:
+		fallthrough
+	case types.InactiveArbitrators:
+		return true
+	}
+	return false
 }
 
 // New returns a new Filter instance.

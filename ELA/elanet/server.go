@@ -118,7 +118,7 @@ func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 		// or only the transactions that match the filter when there is
 		// one.
 		txId := tx.Hash()
-		if !sp.filter.IsLoaded() || sp.filter.Match(tx) {
+		if !sp.filter.IsLoaded() || sp.filter.MatchUnconfirmed(tx) {
 			iv := msg.NewInvVect(msg.InvTypeTx, &txId)
 			invMsg.AddInvVect(iv)
 			if len(invMsg.InvList)+1 > msg.MaxInvPerMsg {
@@ -644,7 +644,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 			// Don't relay the transaction if there is a bloom
 			// filter loaded and the transaction doesn't match it.
 			if sp.filter.IsLoaded() &&
-				!sp.filter.Match(tx) {
+				!sp.filter.MatchUnconfirmed(tx) {
 				continue
 			}
 		}
