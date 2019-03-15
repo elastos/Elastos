@@ -39,8 +39,7 @@ func ConfirmContextCheck(confirm *payload.Confirm) error {
 		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
 	}
 
-	if len(signers) <= int(DefaultLedger.Arbitrators.
-		GetArbitersMajorityCount()) {
+	if len(signers) <= DefaultLedger.Arbitrators.GetArbitersMajorityCount() {
 		return errors.New("[ConfirmContextCheck] signers less than " +
 			"majority count")
 	}

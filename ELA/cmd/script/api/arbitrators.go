@@ -83,7 +83,7 @@ func arbitratorsGetDutyIndex(L *lua.LState) int {
 func arbitratorsSetDutyIndex(L *lua.LState) int {
 	a := checkArbitrators(L, 1)
 	index := L.ToInt(2)
-	a.SetDutyChangeCount(uint32(index))
+	a.SetDutyChangeCount(index)
 
 	return 0
 }

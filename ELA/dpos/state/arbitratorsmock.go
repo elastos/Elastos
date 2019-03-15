@@ -8,7 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 )
 
-func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
+func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *ArbitratorsMock {
 	return &ArbitratorsMock{
 		CurrentArbitrators:          arbitersByte,
 		CurrentCandidates:           make([][]byte, 0),
@@ -33,11 +33,11 @@ type ArbitratorsMock struct {
 	CandidateOwnerProgramHashes []*common.Uint168
 	OwnerVotesInRound           map[common.Uint168]common.Fixed64
 	TotalVotesInRound           common.Fixed64
-	DutyChangedCount            uint32
-	MajorityCount               uint32
+	DutyChangedCount            int
+	MajorityCount               int
 }
 
-func (a *ArbitratorsMock) GetDutyIndex() uint32 {
+func (a *ArbitratorsMock) GetDutyIndex() int {
 	panic("implement me")
 }
 
@@ -85,19 +85,19 @@ func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) 
 	return false
 }
 
-func (a *ArbitratorsMock) GetArbitersCount() uint32 {
-	return uint32(len(a.CurrentArbitrators))
+func (a *ArbitratorsMock) GetArbitersCount() int {
+	return len(a.CurrentArbitrators)
 }
 
-func (a *ArbitratorsMock) GetArbitersMajorityCount() uint32 {
+func (a *ArbitratorsMock) GetArbitersMajorityCount() int {
 	return a.MajorityCount
 }
 
-func (a *ArbitratorsMock) GetDutyChangeCount() uint32 {
+func (a *ArbitratorsMock) GetDutyChangeCount() int {
 	return a.DutyChangedCount
 }
 
-func (a *ArbitratorsMock) SetDutyChangeCount(count uint32) {
+func (a *ArbitratorsMock) SetDutyChangeCount(count int) {
 	a.DutyChangedCount = count
 }
 
@@ -121,11 +121,11 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 	return a.NextCandidates
 }
 
-func (a *ArbitratorsMock) GetDutyChangedCount() uint32 {
+func (a *ArbitratorsMock) GetDutyChangedCount() int {
 	return a.DutyChangedCount
 }
 
-func (a *ArbitratorsMock) SetDutyChangedCount(count uint32) {
+func (a *ArbitratorsMock) SetDutyChangedCount(count int) {
 	a.DutyChangedCount = count
 }
 
@@ -177,14 +177,14 @@ func (a *ArbitratorsMock) GetNextOnDutyArbitrator(offset uint32) []byte {
 	if len(a.CurrentArbitrators) == 0 {
 		return nil
 	}
-	index := (a.DutyChangedCount + offset) % uint32(len(a.CurrentArbitrators))
+	index := (a.DutyChangedCount + int(offset)) % len(a.CurrentArbitrators)
 	return a.CurrentArbitrators[index]
 }
 
-func (a *ArbitratorsMock) HasArbitersMajorityCount(num uint32) bool {
+func (a *ArbitratorsMock) HasArbitersMajorityCount(num int) bool {
 	return num > a.MajorityCount
 }
 
-func (a *ArbitratorsMock) HasArbitersMinorityCount(num uint32) bool {
-	return num >= uint32(len(a.CurrentArbitrators))-a.MajorityCount
+func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
+	return num >= len(a.CurrentArbitrators)-a.MajorityCount
 }

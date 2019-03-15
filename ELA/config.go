@@ -96,11 +96,11 @@ func loadConfigParams() *config.ConfigParams {
 	}
 	if cfg.ArbiterConfiguration.NormalArbitratorsCount > 0 {
 		activeNetParams.GeneralArbiters =
-			int(cfg.ArbiterConfiguration.NormalArbitratorsCount)
+			cfg.ArbiterConfiguration.NormalArbitratorsCount
 	}
 	if cfg.ArbiterConfiguration.CandidatesCount > 0 {
 		activeNetParams.CandidateArbiters =
-			int(cfg.ArbiterConfiguration.CandidatesCount)
+			cfg.ArbiterConfiguration.CandidatesCount
 	}
 	if cfg.ArbiterConfiguration.MaxInactiveRounds > 0 {
 		activeNetParams.MaxInactiveRounds =
