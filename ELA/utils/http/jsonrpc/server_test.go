@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Arbiter/config"
-	"github.com/elastos/Elastos.ELA.Arbiter/log"
 	"github.com/elastos/Elastos.ELA/utils/test"
 	"net"
 	"net/http"
@@ -49,7 +47,7 @@ func isRunServer() bool {
 }
 func init() {
 
-	log.Init("./Elastos", 1, 0, 0)
+	//log.Init("./Elastos", 1, 0, 0)
 	initUrl()
 	initReqObject()
 }
@@ -155,9 +153,7 @@ func Wait(s *Server) {
 		s.Stop()
 	}
 }
-func InitConf(conf config.RpcConfiguration) {
-	config.Parameters.RpcConfiguration = conf
-}
+
 
 func TestServer_NotInitRpcConf(t *testing.T) {
 
