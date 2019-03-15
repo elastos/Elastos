@@ -10,7 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
+	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -36,7 +36,7 @@ type DPOSNetwork interface {
 	SendMessageToPeer(id dpeer.PID, msg p2p.Message) error
 	BroadcastMessage(msg p2p.Message)
 
-	UpdatePeers(arbitrators map[string]*dposp2p.PeerAddr) error
+	UpdatePeers(arbitrators map[string]*dp2p.PeerAddr) error
 	GetActivePeer() *dpeer.PID
 }
 
