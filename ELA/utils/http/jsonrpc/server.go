@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"sync"
 
-	htp "github.com/elastos/Elastos.ELA/utils/http"
 	"crypto/sha256"
-	"encoding/base64"
 	"crypto/subtle"
+	"encoding/base64"
 	"github.com/elastos/Elastos.ELA/common/log"
+	htp "github.com/elastos/Elastos.ELA/utils/http"
 )
 
 const (
@@ -27,8 +27,9 @@ const (
 	InternalError  = -32603
 	//-32000 to -32099	Server error, waiting for defining
 )
+
 //if  we want to run server_test.go, set this to be true (add one test action)
-var bRegistTestAction bool = true
+var bRegistTestAction bool = false
 
 // Handler is the registered method to handle a http request.
 type Handler func(htp.Params) (interface{}, error)
@@ -66,17 +67,19 @@ func (r *Response) write(w http.ResponseWriter, httpStatus int) {
 	data, _ := json.Marshal(r)
 	w.Write(data)
 }
+
 type RpcConfiguration struct {
 	User        string   `json:"User"`
 	Pass        string   `json:"Pass"`
 	WhiteIPList []string `json:"WhiteIPList"`
 }
+
 // Config is the configuration of the JSON-RPC server.
 type Config struct {
-	Path      string
-	ServePort uint16
-	RpcConfiguration     RpcConfiguration
-	NetListen func(port uint16) (net.Listener, error)
+	Path             string
+	ServePort        uint16
+	RpcConfiguration RpcConfiguration
+	NetListen        func(port uint16) (net.Listener, error)
 }
 
 // Server is the JSON-RPC server instance class.
