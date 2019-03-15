@@ -896,10 +896,10 @@ result:
 | votes          | string | the votes currently held                  |
 | netaddress     | string | the ip address and port of the producer   |
 | state          | string | the current state of the producer         |
-| registerheight | string | the height of cancel producer             |
-| cancelheight   | string | the cancel height of the producer         |
-| inactiveheight | string | the inactive start height of the producer |
-| illegalheight  | string | the illegal start height of the producer  |
+| registerheight | uint32 | the height of cancel producer             |
+| cancelheight   | uint32 | the cancel height of the producer         |
+| inactiveheight | uint32 | the inactive start height of the producer |
+| illegalheight  | uint32 | the illegal start height of the producer  |
 | index          | uint64 | the index of the producer                 |
 | totalvotes     | string | the total votes of registered producers   |
 | totalcounts    | uint64 | the total counts of registered producers  |
@@ -970,8 +970,8 @@ result sample:
         "registerheight": 216,
         "cancelheight": 0,
         "inactiveheight": 0,
-         "illegalheight": 0,
-         "index": 2
+        "illegalheight": 0,
+        "index": 2
       }
     ],
     "totalvotes": "5.21100000",
