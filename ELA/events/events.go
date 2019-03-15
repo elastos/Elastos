@@ -37,8 +37,8 @@ const (
 	// ETConfirmAccepted indicates a block confirmed message received.
 	ETConfirmAccepted
 
-	// ETNewArbiterElection indicates to start the next arbiters election.
-	ETNewArbiterElection
+	// ETDirectPeersChanged indicates direct peers has changed.
+	ETDirectPeersChanged
 
 	// ETBlockConfirmAccepted indicates a block with confirm was accepted
 	// into the block chain.  Note that this does not necessarily mean it
@@ -58,7 +58,7 @@ var notificationTypeStrings = map[EventType]string{
 	ETTransactionAccepted: "ETTransactionAccepted",
 	ETNewBlockReceived:    "ETNewBlockReceived",
 	ETConfirmAccepted:     "ETConfirmAccepted",
-	ETNewArbiterElection:  "ETNewArbiterElection",
+	ETDirectPeersChanged:  "ETDirectPeersChanged",
 }
 
 // String returns the EventType in human-readable form.

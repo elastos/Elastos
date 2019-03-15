@@ -51,7 +51,8 @@
       "MaxAllowedInactiveRounds": 3,
       "InactivePenalty": 10000000000,
       "InactiveEliminateCount": 12,
-      "EnableEventRecord": false
+      "EnableEventRecord": false,
+      "PreConnectHeight": 360
     },
     "RpcConfiguration": {
       "User": "ElaUser",

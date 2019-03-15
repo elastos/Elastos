@@ -87,6 +87,9 @@ func loadConfigParams() *config.ConfigParams {
 	}
 	if len(cfg.HeightVersions) > 0 {
 		activeNetParams.HeightVersions = cfg.HeightVersions
+		if len(cfg.HeightVersions) > 2 {
+			activeNetParams.CRCOnlyDPOSHeight = cfg.HeightVersions[2]
+		}
 		if len(cfg.HeightVersions) > 3 {
 			activeNetParams.PublicDPOSHeight = cfg.HeightVersions[3]
 		}

@@ -70,7 +70,7 @@ var DefaultParams = Params{
 		"03ab3ecd1148b018d480224520917c6c3663a3631f198e3b25cf4c9c76786b7850",
 	},
 	CRCArbiters: []CRCArbiter{
-	//todo add CRC arbiters
+		//todo add CRC arbiters
 	},
 	PowLimit:           powLimit,
 	PowLimitBits:       0x1f0008ff,
@@ -86,7 +86,8 @@ var DefaultParams = Params{
 		1008812, //fixme edit height later
 		1108812, //fixme edit height later
 	},
-	VoteStartHeight:          1008812, //fixme edit height later
+	VoteStartHeight:          88812, //fixme edit height later
+	CRCOnlyDPOSHeight:        1008812, //fixme edit height later
 	PublicDPOSHeight:         1108812, //fixme edit height later
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          100 * 100000000,
@@ -226,9 +227,13 @@ type Params struct {
 	// Define height versions about block chain.
 	HeightVersions []uint32
 
-	// VoteStartHeight (H1) indicates the height of DPOS consensus begins with
-	// only CRC producers participate in producing blocks.
+	// VoteStartHeight indicates the height of starting register producer and
+	// vote related.
 	VoteStartHeight uint32
+
+	// CRCOnlyDPOSHeight (H1) indicates the height of DPOS consensus begins with
+	// only CRC producers participate in producing blocks.
+	CRCOnlyDPOSHeight uint32
 
 	// PublicDPOSHeight (H2) indicates the height when public registered and
 	// elected producers participate in DPOS consensus.
