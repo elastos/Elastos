@@ -67,6 +67,18 @@ export default class extends BaseComponent {
         dataIndex: 'proposedBy',
       },
       {
+        title: I18N.get('council.voting.votingEndsIn'),
+        dataIndex: 'createdAt',
+        key: 'endsIn',
+        render: (createdAt, item) => {
+          if (item.status === CVOTE_STATUS.DRAFT) return null
+          const endsInFloat = moment.duration(moment(createdAt).add(7, 'd').diff(moment())).as('days')
+          if (endsInFloat < 0) return I18N.get('council.voting.votingEndsIn.ended')
+          if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          return `${Math.floor(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
+        },
+      },
+      {
         title: I18N.get('council.voting.voteByCouncil'),
         render: (id, item) => this.voteDataByUser(item),
       },

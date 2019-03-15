@@ -667,6 +667,10 @@ const zh = {
   'council.voting.voteBy': '投票人',
   'council.voting.voteByCouncil': '委员会投票结果',
   'council.voting.councilMembersVotes': '委员会成员投票',
+  'council.voting.votingEndsIn': '投票剩余时间',
+  'council.voting.votingEndsIn.ended': '已结束',
+  'council.voting.votingEndsIn.day': '天',
+  'council.voting.votingEndsIn.days': '天',
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
 

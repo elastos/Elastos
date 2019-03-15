@@ -667,6 +667,10 @@ const en = {
   'council.voting.voteBy': 'Vote By',
   'council.voting.voteByCouncil': 'Votes by Council Members',
   'council.voting.councilMembersVotes': 'Council Members Votes',
+  'council.voting.votingEndsIn': 'Voting Ends In',
+  'council.voting.votingEndsIn.ended': 'Ended',
+  'council.voting.votingEndsIn.day': 'Day',
+  'council.voting.votingEndsIn.days': 'Days',
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
 
