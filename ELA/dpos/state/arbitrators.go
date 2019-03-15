@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -54,7 +55,7 @@ type arbitrators struct {
 	nextArbitrators             [][]byte
 	nextCandidates              [][]byte
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
-	crcArbitratorsNodePublicKey map[string]interface{}
+	crcArbitratorsNodePublicKey map[string]*Producer
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -279,6 +280,17 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 		}
 	}
 	return false
+}
+
+func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	key := hex.EncodeToString(publicKey)
+	if producer, ok := a.crcArbitratorsNodePublicKey[key]; ok {
+		return producer
+	}
+	return nil
 }
 
 func (a *arbitrators) GetCRCArbitrators() []config.CRCArbiter {
@@ -643,16 +655,22 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		originArbitersProgramHashes[i] = hash
 	}
 
-	crcNodeMap := make(map[string]interface{})
+	crcNodeMap := make(map[string]*Producer)
 	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
 	for _, v := range chainParams.CRCArbiters {
-		crcNodeMap[common.BytesToHexString(v.PublicKey)] = nil
-
 		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
 		if err != nil {
 			return nil, err
 		}
 		crcArbitratorsProgramHashes[*hash] = nil
+		crcNodeMap[common.BytesToHexString(v.PublicKey)] = &Producer{ // here need crc NODE public key
+			info: payload.ProducerInfo{
+				OwnerPublicKey: v.PublicKey,
+				NodePublicKey:  v.PublicKey,
+				NetAddress:     v.NetAddress,
+			},
+			activateRequestHeight: math.MaxUint32,
+		}
 	}
 
 	arbitersCount := chainParams.GeneralArbiters + len(chainParams.CRCArbiters)

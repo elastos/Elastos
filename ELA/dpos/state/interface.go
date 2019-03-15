@@ -21,6 +21,7 @@ type Arbitrators interface {
 	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
 	GetDutyIndex() int
 
+	GetCRCProducer(publicKey []byte) *Producer
 	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool

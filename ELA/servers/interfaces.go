@@ -318,8 +318,13 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 
 	result := make([]peerInfo, 0)
 	for _, p := range peers {
-		producer := blockchain.DefaultLedger.Blockchain.GetState().
-			GetProducer(p.PID[:])
+		producer := Arbiters.GetCRCProducer(p.PID[:])
+		if producer == nil {
+			if producer = blockchain.DefaultLedger.Blockchain.GetState().
+				GetProducer(p.PID[:]); producer == nil {
+				continue
+			}
+		}
 		result = append(result, peerInfo{
 			OwnerPublicKey: common.BytesToHexString(producer.OwnerPublicKey()),
 			NodePublicKey:  common.BytesToHexString(producer.NodePublicKey()),
