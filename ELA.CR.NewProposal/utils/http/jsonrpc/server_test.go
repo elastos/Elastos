@@ -11,10 +11,12 @@ import (
 	"net/http"
 	"testing"
 	"time"
+	htp "github.com/elastos/Elastos.ELA/utils/http"
+
 )
 
 //if bRunServer is true .run server for every testcase
-var bRunServer bool = false
+var bRunServer bool = true
 
 var (
 	urlNotLoopBack string
@@ -52,10 +54,15 @@ func init() {
 	initReqObject()
 }
 
-func InitNewServer(conf config.RpcConfiguration) {
-	pServer = new(http.Server)
-	//InitConf(conf)
+func registerTestAction(s *Server, t *testing.T ){
+
+	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
+		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
+
+		return nil, nil
+	}, "level")
 }
+
 func initReqObject() {
 
 	type ReqObj struct {
@@ -74,29 +81,6 @@ func initReqObject() {
 	///////////////
 	req_new = bytes.NewBuffer([]byte(reqStr))
 }
-
-/*
-hope： if no init RpcConfiguration. ip only accept IsLoopback  localhost
-testcase1 : RpcConfiguration no init client no authorization
-testcase1 : RpcConfiguration no init client have authorization
-
-testcase2 : RpcConfiguration have User and Pass no ip.  User and Pass are correct
-testcase2 : RpcConfiguration have User and Pass no ip.  User and Pass are wrong
-testcase2 : RpcConfiguration have User and Pass no ip.  User is wrong
-testcase2 : RpcConfiguration have User and Pass no ip.  Pass is  wrong
-testcase2 : RpcConfiguration have User and Pass no ip.  client no authorization
-
-
-testcase3 : RpcConfiguration have ip no User and Pass. Ip is allowed
-testcase3 : RpcConfiguration have ip no User and Pass. Ip is forbid    *
-
-testcase4 : RpcConfiguration have ip  User and Pass. All  is correct
-testcase4 : RpcConfiguration have ip  User and Pass. ip  is wrong      *
-testcase4 : RpcConfiguration have ip  User and Pass. User  is wrong
-testcase4 : RpcConfiguration have ip  User and Pass. Pass  is wrong
-
-testcase5 : whiteiplist 0.0.0.0  allow all ip
-*/
 
 func GetInternalIP() string {
 	itf, _ := net.InterfaceByName("en0") //here your interface
@@ -191,6 +175,8 @@ func TestServer_NotInitRpcConf(t *testing.T) {
 		RpcConfiguration: svrConf,
 	})
 
+	registerTestAction(s, t)
+
 	if isRunServer() {
 		go s.Start()
 	}
@@ -252,6 +238,8 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		ServePort:        20336,
 		RpcConfiguration: svrConf,
 	})
+
+	registerTestAction(s, t)
 
 	if isRunServer() {
 		go s.Start()
@@ -350,6 +338,8 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		RpcConfiguration: svrConf,
 	})
 
+	registerTestAction(s, t)
+
 	if isRunServer() {
 		go s.Start()
 	}
@@ -411,6 +401,8 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		ServePort:        20336,
 		RpcConfiguration: svrConf,
 	})
+
+	registerTestAction(s, t)
 
 	if isRunServer() {
 		go s.Start()
@@ -474,6 +466,8 @@ func TestServer_WithIp0000(t *testing.T) {
 		ServePort:        20336,
 		RpcConfiguration: svrConf,
 	})
+
+	registerTestAction(s, t)
 
 	if isRunServer() {
 		go s.Start()
