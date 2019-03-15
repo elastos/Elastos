@@ -185,6 +185,13 @@ export default class extends Base {
       query.published = param.published
     }
 
+    const userRole = _.get(this.currentUser, 'role')
+    if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
+      query['voteResult.value'] = constant.CVOTE_RESULT.UNDECIDED
+      query.published = true
+      query.status = constant.CVOTE_STATUS.PROPOSED
+    }
+
     const list = await db_cvote.list(query, {
       createdAt: -1
     }, 100);

@@ -703,6 +703,10 @@ const zh = {
   'council.voting.voteResult.opposed': '反对',
   'council.voting.voteResult.abstention': '弃权',
 
+  'council.voting.voteResult.show': '显示',
+  'council.voting.voteResult.all': '所有',
+  'council.voting.voteResult.unvoted': '未投票',
+
   // Landing
   'landing.elastos': 'Elastos',
   'landing.alpha': 'ALPHA',
