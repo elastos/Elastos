@@ -91,8 +91,6 @@ type Configuration struct {
 	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
-	VoteHeight           uint32               `json:"VoteHeight"`
-	Arbiters             []string             `json:"Arbiters"`
 	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
 	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
