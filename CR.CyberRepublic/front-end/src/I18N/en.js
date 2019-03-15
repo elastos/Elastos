@@ -667,6 +667,10 @@ const en = {
   'council.voting.voteBy': 'Vote By',
   'council.voting.voteByCouncil': 'Votes by Council Members',
   'council.voting.councilMembersVotes': 'Council Members Votes',
+  'council.voting.votingEndsIn': 'Voting Ends In',
+  'council.voting.votingEndsIn.ended': 'Ended',
+  'council.voting.votingEndsIn.day': 'Day',
+  'council.voting.votingEndsIn.days': 'Days',
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
 
@@ -698,6 +702,10 @@ const en = {
   'council.voting.voteResult.yes': 'Vote Yes',
   'council.voting.voteResult.opposed': 'Opposed',
   'council.voting.voteResult.abstention': 'Abstained',
+
+  'council.voting.voteResult.show': 'Show',
+  'council.voting.voteResult.all': 'All',
+  'council.voting.voteResult.unvoted': 'Unvoted by You',
 
   // Landing
   'landing.elastos': 'Elastos',

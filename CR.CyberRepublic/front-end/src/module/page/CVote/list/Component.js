@@ -11,7 +11,12 @@ import CreateForm from '../create/Container'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
-import { Container, List, Item, ItemUndecided } from './style'
+import { Container, List, Item, ItemUndecided, StyledButton, VoteFilter } from './style'
+
+const FILTERS = {
+  ALL: 'all',
+  UNVOTED: CVOTE_RESULT.UNDECIDED,
+}
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -21,6 +26,7 @@ export default class extends BaseComponent {
       list: null,
       loading: true,
       creating: false,
+      voteResult: FILTERS.ALL,
     }
   }
 
@@ -29,7 +35,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { canManage } = this.props
+    const { canManage, isCouncil } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -65,6 +71,18 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.author'),
         dataIndex: 'proposedBy',
+      },
+      {
+        title: I18N.get('council.voting.votingEndsIn'),
+        dataIndex: 'createdAt',
+        key: 'endsIn',
+        render: (createdAt, item) => {
+          if (item.status === CVOTE_STATUS.DRAFT) return null
+          const endsInFloat = moment.duration(moment(createdAt).add(7, 'd').diff(moment())).as('days')
+          if (endsInFloat < 0) return I18N.get('council.voting.votingEndsIn.ended')
+          if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          return `${Math.floor(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
+        },
       },
       {
         title: I18N.get('council.voting.voteByCouncil'),
@@ -109,12 +127,28 @@ export default class extends BaseComponent {
       </Col>
     )
     const createFormNode = this.renderCreateForm()
+    const filterBtnGroup = (
+      <Button.Group className="filter-group">
+        <StyledButton
+          className={(this.state.voteResult === FILTERS.ALL && 'selected') || ''}
+          onClick={this.clearFilters}
+        >
+          {I18N.get('council.voting.voteResult.all')}
+        </StyledButton>
+        <StyledButton
+          className={(this.state.voteResult === FILTERS.UNVOTED && 'selected') || ''}
+          onClick={() => this.setFilter(FILTERS.UNVOTED)}
+        >
+          {I18N.get('council.voting.voteResult.unvoted')}
+        </StyledButton>
+      </Button.Group>
+    )
     return (
       <Container>
         <Row type="flex" align="middle" justify="end">
           {createBtn}
         </Row>
-        <Row type="flex" align="middle" justify="space-between">
+        <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
           <Col lg={8} md={8} sm={12} xs={24}>
             <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
               {I18N.get('council.voting.proposalList')}
@@ -122,6 +156,12 @@ export default class extends BaseComponent {
           </Col>
           <Col lg={8} md={8} sm={12} xs={24}>
             {statusIndicator}
+            {isCouncil && (
+              <VoteFilter>
+                <span>{`${I18N.get('council.voting.voteResult.show')}: `}</span>
+                {filterBtnGroup}
+              </VoteFilter>
+            )}
           </Col>
         </Row>
         <Table
@@ -132,21 +172,51 @@ export default class extends BaseComponent {
         />
         {createFormNode}
       </Container>
-
     )
+  }
+
+  getQuery = () => {
+    const query = {}
+    if (this.state.voteResult === FILTERS.UNVOTED) {
+      query.voteResult = FILTERS.UNVOTED
+    }
+    return query
   }
 
   refetch = async () => {
     this.ord_loading(true);
     const { listData, canManage } = this.props
+    const param = this.getQuery()
     try {
-      const list = await listData({}, canManage);
+      const list = await listData(param, canManage);
       this.setState({ list });
     } catch (error) {
       // do sth
     }
 
     this.ord_loading(false);
+  }
+
+  onFilterChanged = (value) => {
+    switch (value) {
+      case FILTERS.ALL:
+        this.clearFilters()
+        break
+      case FILTERS.UNVOTED:
+        this.setFilter(FILTERS.UNVOTED)
+        break
+      default:
+        this.clearFilters()
+        break
+    }
+  }
+
+  clearFilters = () => {
+    this.setState({ voteResult: FILTERS.ALL }, this.refetch)
+  }
+
+  setFilter = (voteResult) => {
+    this.setState({ voteResult }, this.refetch)
   }
 
   renderCreateForm() {
