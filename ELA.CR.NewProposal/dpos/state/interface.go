@@ -5,6 +5,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/p2p"
 )
 
 type Arbitrators interface {
@@ -17,7 +18,7 @@ type Arbitrators interface {
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
-	GetNeedConnectArbiters() map[string]struct{}
+	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
 	GetDutyIndex() uint32
 
 	GetCRCArbitrators() []config.CRCArbiter

@@ -111,9 +111,9 @@ func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *Arbitrator) OnNewElection(arbiters map[string]struct{}) {
+func (a *Arbitrator) OnPeersChanged(arbiters map[string]*dposp2p.PeerAddr) {
 	if err := a.network.UpdatePeers(arbiters); err != nil {
-		log.Warn("[OnNewElection] update peers error: ", err)
+		log.Warn("[OnPeersChanged] update peers error: ", err)
 	}
 }
 
@@ -219,8 +219,8 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 		case events.ETConfirmAccepted:
 			a.OnConfirmReceived(e.Data.(*payload.Confirm))
 
-		case events.ETNewArbiterElection:
-			a.OnNewElection(e.Data.(map[string]struct{}))
+		case events.ETDirectPeersChanged:
+			a.OnPeersChanged(e.Data.(map[string]*dposp2p.PeerAddr))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)

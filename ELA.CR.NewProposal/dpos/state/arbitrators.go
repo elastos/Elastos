@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -18,6 +19,8 @@ import (
 	"github.com/elastos/Elastos.ELA/events"
 )
 
+type ChangeType byte
+
 const (
 	// majoritySignRatioNumerator defines the ratio numerator to achieve
 	// majority signatures.
@@ -26,6 +29,10 @@ const (
 	// majoritySignRatioDenominator defines the ratio denominator to achieve
 	// majority signatures.
 	majoritySignRatioDenominator = float64(3)
+
+	none         = ChangeType(0x00)
+	updateNext   = ChangeType(0x01)
+	normalChange = ChangeType(0x02)
 )
 
 type arbitrators struct {
@@ -83,6 +90,7 @@ func (a *arbitrators) GetDutyIndex() uint32 {
 }
 
 func (a *arbitrators) ForceChange(height uint32) error {
+	a.mtx.Lock()
 	if err := a.updateNextArbitrators(height + 1); err != nil {
 		return err
 	}
@@ -92,44 +100,61 @@ func (a *arbitrators) ForceChange(height uint32) error {
 	}
 
 	a.showArbitersInfo(true)
-	events.Notify(events.ETNewArbiterElection, a.getNeedConnectArbiters())
+	a.mtx.Unlock()
+
+	events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters(height))
 
 	return nil
 }
 
 func (a *arbitrators) NormalChange(height uint32) error {
 	if err := a.changeCurrentArbitrators(); err != nil {
+		log.Warn("[NormalChange] change current arbiters error: ", err)
 		return err
 	}
 
 	if err := a.updateNextArbitrators(height + 1); err != nil {
+		log.Warn("[NormalChange] update next arbiters error: ", err)
 		return err
 	}
 
 	a.showArbitersInfo(true)
-	events.Notify(events.ETNewArbiterElection, a.getNeedConnectArbiters())
 
 	return nil
 }
 
 func (a *arbitrators) IncreaseChainHeight(height uint32) {
-	a.mtx.Lock()
-	defer a.mtx.Unlock()
+	trace := true
+	notify := true
 
-	forceChange, normalChange := a.isNewElection(height + 1)
-	if forceChange {
-		if err := a.ForceChange(height); err != nil {
-			panic("force change fail when finding an inactive arbitrators" +
-				" transaction")
+	a.mtx.Lock()
+
+	changeType, versionHeight := a.getChangeType(height + 1)
+	switch changeType {
+	case updateNext:
+		if err := a.updateNextArbitrators(versionHeight); err != nil {
+			log.Error("[IncreaseChainHeight] update next arbiters error: ", err)
 		}
-	} else if normalChange {
+	case normalChange:
 		if err := a.NormalChange(height); err != nil {
 			panic("normal change fail when finding an inactive arbitrators" +
-				" transaction")
+				" transaction, height: " + strconv.FormatUint(uint64(height), 10))
 		}
-	} else {
+		trace = false
+	case none:
 		a.dutyIndex++
+		notify = false
+	}
+
+	if trace {
 		a.showArbitersInfo(false)
+	}
+
+	a.mtx.Unlock()
+
+	if notify {
+		events.Notify(events.ETDirectPeersChanged,
+			a.GetNeedConnectArbiters(versionHeight))
 	}
 }
 
@@ -144,26 +169,54 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) {
 	}
 }
 
-func (a *arbitrators) GetNeedConnectArbiters() map[string]struct{} {
-	a.mtx.Lock()
-	arbiters := a.getNeedConnectArbiters()
-	a.mtx.Unlock()
+func (a *arbitrators) GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr {
+	arbiters := make(map[string]*p2p.PeerAddr)
+
+	if height >= a.chainParams.CRCOnlyDPOSHeight {
+		a.mtx.Lock()
+		for _, v := range a.chainParams.CRCArbiters {
+			str := common.BytesToHexString(v.PublicKey)
+			arbiters[str] = a.generatePeerAddr(v.PublicKey, v.NetAddress)
+		}
+
+		for _, v := range a.currentArbitrators {
+			str := common.BytesToHexString(v)
+			if _, exist := arbiters[str]; exist {
+				continue
+			}
+			arbiters[str] = a.getArbiterPeerAddr(v)
+		}
+
+		for _, v := range a.nextArbitrators {
+			str := common.BytesToHexString(v)
+			if _, exist := arbiters[str]; exist {
+				continue
+			}
+			arbiters[str] = a.getArbiterPeerAddr(v)
+		}
+		a.mtx.Unlock()
+	}
+
 	return arbiters
 }
 
-func (a *arbitrators) getNeedConnectArbiters() map[string]struct{} {
-	arbiters := make(map[string]struct{})
-	for _, a := range a.currentArbitrators {
-		arbiters[common.BytesToHexString(a)] = struct{}{}
-	}
-	for _, a := range a.nextArbitrators {
-		arbiters[common.BytesToHexString(a)] = struct{}{}
-	}
-	for _, a := range a.chainParams.CRCArbiters {
-		arbiters[common.BytesToHexString(a.PublicKey)] = struct{}{}
+func (a *arbitrators) getArbiterPeerAddr(pk []byte) *p2p.PeerAddr {
+	producer := a.GetProducer(pk)
+	if producer == nil {
+		return nil
 	}
 
-	return arbiters
+	return a.generatePeerAddr(pk, producer.info.NetAddress)
+}
+
+func (a *arbitrators) generatePeerAddr(pk []byte, ip string) *p2p.PeerAddr {
+	pid := peer.PID{}
+	copy(pid[:], pk)
+
+	return &p2p.PeerAddr{
+		PID:  pid,
+		Addr: ip,
+	}
 }
 
 func (a *arbitrators) IsArbitrator(pk []byte) bool {
@@ -312,17 +365,32 @@ func (a *arbitrators) HasArbitersMinorityCount(num uint32) bool {
 	return num >= a.arbitersCount-a.GetArbitersMajorityCount()
 }
 
-func (a *arbitrators) isNewElection(height uint32) (forceChange bool, normalChange bool) {
-	// main version >= H1
-	if height >= a.State.chainParams.HeightVersions[2] {
-		// when change to "H1" or "H2" height should fire new election immediately
-		if height == a.chainParams.HeightVersions[2] || height == a.chainParams.HeightVersions[3] {
-			return true, false
-		}
-		return false, a.dutyIndex == a.arbitersCount-1
+func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
+
+	// special change points:
+	//		H1 - PreConnectHeight -> 	[updateNext, H1]: update next arbiters and let CRC arbiters prepare to connect
+	//		H1 -> 						[normalChange, H1]: should change to new election (that only have CRC arbiters)
+	//		H2 - PreConnectHeight -> 	[updateNext, H2]: update next arbiters and let normal arbiters prepare to connect
+	//		H2 -> 						[normalChange, H2]: should change to new election (arbiters will have both CRC and normal arbiters)
+	if height == a.State.chainParams.CRCOnlyDPOSHeight-
+		config.Parameters.ArbiterConfiguration.PreConnectHeight {
+		return updateNext, a.State.chainParams.CRCOnlyDPOSHeight
+	} else if height == a.State.chainParams.CRCOnlyDPOSHeight {
+		return normalChange, a.State.chainParams.CRCOnlyDPOSHeight
+	} else if height == a.State.chainParams.PublicDPOSHeight-
+		config.Parameters.ArbiterConfiguration.PreConnectHeight {
+		return updateNext, a.State.chainParams.PublicDPOSHeight
+	} else if height == a.State.chainParams.PublicDPOSHeight {
+		return normalChange, a.State.chainParams.PublicDPOSHeight
 	}
 
-	return false, false
+	// main version >= H2
+	if height > a.State.chainParams.PublicDPOSHeight &&
+		a.dutyIndex == a.arbitersCount-1 {
+		return normalChange, height
+	}
+
+	return none, height
 }
 
 func (a *arbitrators) changeCurrentArbitrators() error {
@@ -577,43 +645,32 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		originArbitersProgramHashes[i] = hash
 	}
 
-	arbitersCount := config.Parameters.ArbiterConfiguration.
-		NormalArbitratorsCount + uint32(len(chainParams.CRCArbiters))
-	a := &arbitrators{
-		chainParams:               chainParams,
-		bestHeight:                bestHeight,
-		arbitersCount:             arbitersCount,
-		currentArbitrators:        originArbiters,
-		currentOwnerProgramHashes: originArbitersProgramHashes,
-		nextArbitrators:           originArbiters,
-		nextCandidates:            make([][]byte, 0),
-	}
-	a.State = NewState(chainParams, a.GetArbitrators)
-
-	a.crcArbitratorsProgramHashes = make(map[common.Uint168]interface{})
-	a.crcArbitratorsNodePublicKey = make(map[string]interface{})
-	for _, v := range a.chainParams.CRCArbiters {
-		//a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+	crcNodeMap := make(map[string]interface{})
+	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
+	for _, v := range chainParams.CRCArbiters {
+		crcNodeMap[common.BytesToHexString(v.PublicKey)] = nil
 
 		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
 		if err != nil {
 			return nil, err
 		}
-		a.crcArbitratorsProgramHashes[*hash] = nil                                // program hash generated by crc OWNER public key
-		a.crcArbitratorsNodePublicKey[common.BytesToHexString(v.PublicKey)] = nil // here need crc NODE public key
-		//a.activityProducers[a.getProducerKey(v.PublicKey)] = &Producer{
-		//	info: payload.ProducerInfo{
-		//		OwnerPublicKey: v.PublicKey,
-		//		NodePublicKey:  v.PublicKey,
-		//		NetAddress:     v.NetAddress,
-		//	},
-		//	registerHeight:        0,
-		//	votes:                 0,
-		//	inactiveSince:         0,
-		//	penalty:               common.Fixed64(0),
-		//	activateRequestHeight: math.MaxUint32,
-		//}
+		crcArbitratorsProgramHashes[*hash] = nil
 	}
+
+	arbitersCount := config.Parameters.ArbiterConfiguration.
+		NormalArbitratorsCount + uint32(len(chainParams.CRCArbiters))
+	a := &arbitrators{
+		chainParams:                 chainParams,
+		bestHeight:                  bestHeight,
+		arbitersCount:               arbitersCount,
+		currentArbitrators:          originArbiters,
+		currentOwnerProgramHashes:   originArbitersProgramHashes,
+		nextArbitrators:             originArbiters,
+		nextCandidates:              make([][]byte, 0),
+		crcArbitratorsNodePublicKey: crcNodeMap,
+		crcArbitratorsProgramHashes: crcArbitratorsProgramHashes,
+	}
+	a.State = NewState(chainParams, a.GetArbitrators)
 
 	return a, nil
 }

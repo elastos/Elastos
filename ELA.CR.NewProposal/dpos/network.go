@@ -40,10 +40,8 @@ type messageItem struct {
 
 type network struct {
 	listener           manager.NetworkEventListener
-	currentHeight      uint32
 	account            account.DposAccount
 	proposalDispatcher *manager.ProposalDispatcher
-	directPeers        map[string]*PeerItem
 	peersLock          sync.Mutex
 	store              store.IDposStore
 	publicKey          []byte
@@ -63,27 +61,14 @@ func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
 	n.publicKey = dnConfig.PublicKey
-	if peers, err := n.store.GetDirectPeers(); err == nil {
-		for _, p := range peers {
-			pid := peer.PID{}
-			copy(pid[:], p.PublicKey)
-			n.directPeers[common.BytesToHexString(p.PublicKey)] = &PeerItem{
-				Address: p2p.PeerAddr{
-					PID:  pid,
-					Addr: p.Address,
-				},
-				NeedConnect: true,
-				Peer:        nil,
-			}
-		}
-	}
 }
 
 func (n *network) Start() {
 	n.p2pServer.Start()
 
-	n.UpdateProducersInfo()
-	if err := n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.GetNeedConnectArbiters()); err != nil {
+	if err := n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.
+		GetNeedConnectArbiters(blockchain.DefaultLedger.Blockchain.GetHeight()));
+		err != nil {
 		log.Error(err)
 	}
 
@@ -108,37 +93,6 @@ func (n *network) Start() {
 			}
 		}
 	}()
-}
-
-func (n *network) UpdateProducersInfo() {
-	log.Info("[UpdateProducersInfo] start")
-	defer log.Info("[UpdateProducersInfo] end")
-	connectionInfoMap := n.getProducersConnectionInfo()
-
-	n.peersLock.Lock()
-	defer n.peersLock.Unlock()
-
-	needDeletedPeers := make([]string, 0)
-	for k := range n.directPeers {
-		if _, ok := connectionInfoMap[k]; !ok {
-			needDeletedPeers = append(needDeletedPeers, k)
-		}
-	}
-	for _, v := range needDeletedPeers {
-		delete(n.directPeers, v)
-	}
-
-	for k, v := range connectionInfoMap {
-		if _, ok := n.directPeers[k]; !ok {
-			n.directPeers[k] = &PeerItem{
-				Address:     v,
-				NeedConnect: false,
-				Peer:        nil,
-			}
-		}
-	}
-
-	n.saveDirectPeers()
 }
 
 func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
@@ -169,34 +123,31 @@ func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) 
 
 	return result
 }
+
 func (n *network) Stop() error {
 	n.quit <- true
 	return n.p2pServer.Stop()
 }
 
-func (n *network) UpdatePeers(arbitrators map[string]struct{}) error {
-	log.Info("[UpdatePeers] arbitrators:", len(arbitrators))
+func (n *network) UpdatePeers(peers map[string]*p2p.PeerAddr) error {
+	log.Info("[UpdatePeers] peers:", len(peers), " height: ",
+		blockchain.DefaultLedger.Blockchain.GetHeight())
 
-	roundHeights := uint32(len(blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()))
-	// version >= H2 should plus NormalArbitratorsCount
-	if blockchain.DefaultLedger.Blockchain.GetHeight()+1 >=
-		config.DefaultParams.HeightVersions[3] {
-		roundHeights += config.Parameters.ArbiterConfiguration.NormalArbitratorsCount
+	if p, _ := peers[common.BytesToHexString(n.publicKey)]; p == nil {
+		return errors.New("self not in direct peers list")
 	}
 
-	for k, v := range n.directPeers {
-		if _, ok := arbitrators[k]; ok {
-			n.peersLock.Lock()
-			v.NeedConnect = true
-			n.peersLock.Unlock()
-		} else {
-			n.peersLock.Lock()
-			v.NeedConnect = false
-			n.peersLock.Unlock()
+	var peerList []p2p.PeerAddr
+	for k, v := range peers {
+		if v == nil {
+			log.Info("peer[", k, "] address empty")
+			continue
 		}
+		log.Info("peer[", k, "] addr:", v.Addr, " pid:",
+			common.BytesToHexString(v.PID[:]))
+		peerList = append(peerList, *v)
 	}
-
-	n.saveDirectPeers()
+	n.p2pServer.ConnectPeers(peerList)
 
 	return nil
 }
@@ -206,33 +157,9 @@ func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
 }
 
 func (n *network) BroadcastMessage(msg elap2p.Message) {
-	log.Info("[BroadcastMessage] current connected peers:", len(n.getValidPeers()))
+	log.Info("[BroadcastMessage] current connected peers:",
+		len(n.p2pServer.ConnectedPeers()))
 	n.p2pServer.BroadcastMessage(msg)
-}
-
-func (n *network) ChangeHeight(height uint32) error {
-	if height != 0 && height < n.currentHeight {
-		return errors.New("changing height lower than current height")
-	}
-
-	offset := height - n.currentHeight
-	if offset == 0 {
-		return nil
-	}
-
-	n.UpdateProducersInfo()
-
-	n.peersLock.Lock()
-	peers := n.getValidPeers()
-	for i, peer := range peers {
-		log.Info(" peer[", i, "] addr:", peer.Addr, " pid:", common.BytesToHexString(peer.PID[:]))
-	}
-
-	n.p2pServer.ConnectPeers(peers)
-	n.peersLock.Unlock()
-
-	n.currentHeight = height
-	return nil
 }
 
 func (n *network) GetActivePeer() *peer.PID {
@@ -268,24 +195,6 @@ func (n *network) PostSidechainIllegalDataTask(s *payload.SidechainIllegalData) 
 
 func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 	n.confirmReceivedChan <- p
-}
-
-func (n *network) InProducerList() bool {
-	return len(n.getValidPeers()) != 0
-}
-
-func (n *network) getValidPeers() (result []p2p.PeerAddr) {
-	result = make([]p2p.PeerAddr, 0)
-	if p, _ := n.directPeers[common.BytesToHexString(n.publicKey)]; p == nil || !p.NeedConnect {
-		log.Info("self not in direct peers list")
-		return result
-	}
-	for _, v := range n.directPeers {
-		if v.NeedConnect {
-			result = append(result, v.Address)
-		}
-	}
-	return result
 }
 
 func (n *network) notifyFlag(flag p2p.NotifyFlag) {
@@ -399,24 +308,6 @@ func (n *network) processMessage(msgItem *messageItem) {
 	}
 }
 
-func (n *network) saveDirectPeers() {
-	var peers []*store.DirectPeers
-	for k, v := range n.directPeers {
-		if !v.NeedConnect {
-			continue
-		}
-		pk, err := common.HexStringToBytes(k)
-		if err != nil {
-			continue
-		}
-		peers = append(peers, &store.DirectPeers{
-			PublicKey: pk,
-			Address:   v.Address.Addr,
-		})
-	}
-	n.store.SaveDirectPeers(peers)
-}
-
 func (n *network) changeView() {
 	n.listener.OnChangeView()
 }
@@ -446,7 +337,6 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*network, error) {
 	network := &network{
 		listener:                 listener,
-		directPeers:              make(map[string]*PeerItem),
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		changeViewChan:           make(chan bool),
@@ -454,7 +344,6 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAcc
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
 		sidechainIllegalEvidence: make(chan *payload.SidechainIllegalData),
-		currentHeight:            blockchain.DefaultLedger.Blockchain.GetHeight() - 1,
 		account:                  dposAccount,
 	}
 

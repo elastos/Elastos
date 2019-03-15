@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -35,11 +36,8 @@ type DPOSNetwork interface {
 	SendMessageToPeer(id dpeer.PID, msg p2p.Message) error
 	BroadcastMessage(msg p2p.Message)
 
-	UpdatePeers(arbitrators map[string]struct{}) error
-	ChangeHeight(height uint32) error
-
+	UpdatePeers(arbitrators map[string]*dposp2p.PeerAddr) error
 	GetActivePeer() *dpeer.PID
-	InProducerList() bool
 }
 
 type StatusSyncEventListener interface {
@@ -369,10 +367,6 @@ func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 }
 
 func (d *DPOSManager) changeHeight() {
-	if err := d.network.ChangeHeight(d.dispatcher.CurrentHeight()); err != nil {
-		log.Error("Error occurred with change height: ", err)
-		return
-	}
 	d.changeOnDuty()
 }
 

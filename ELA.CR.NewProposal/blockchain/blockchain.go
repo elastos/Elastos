@@ -722,9 +722,11 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		confirm, _ := b.db.GetConfirm(*n.Hash)
 
 		// roll back state about the last block before disconnect
-		err = b.state.RollbackTo(block.Height - 1)
-		if err != nil {
-			return err
+		if block.Height-1 >= b.chainParams.VoteStartHeight {
+			err = b.state.RollbackTo(block.Height - 1)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = b.disconnectBlock(n, block, confirm)
@@ -745,7 +747,9 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		// update state after connected block
-		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+		if block.Height >= b.chainParams.VoteStartHeight {
+			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+		}
 
 		delete(b.blockCache, *n.Hash)
 		delete(b.confirmCache, *n.Hash)
@@ -902,7 +906,10 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		return false, err
 	}
 
-	if inMainChain && block.Height >= b.chainParams.VoteStartHeight {
+	if inMainChain && (block.Height >= b.chainParams.VoteStartHeight ||
+	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectHeight)
+		block.Height == b.chainParams.CRCOnlyDPOSHeight-
+			config.Parameters.ArbiterConfiguration.PreConnectHeight) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 	}
 
