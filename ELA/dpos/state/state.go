@@ -62,6 +62,7 @@ type Producer struct {
 	inactiveCountingHeight uint32
 	inactiveSince          uint32
 	activateRequestHeight  uint32
+	illegalHeight          uint32
 	penalty                common.Fixed64
 	votes                  common.Fixed64
 }
@@ -105,6 +106,10 @@ func (p *Producer) Penalty() common.Fixed64 {
 
 func (p *Producer) InactiveSince() uint32 {
 	return p.inactiveSince
+}
+
+func (p *Producer) IllegalHeight() uint32 {
+	return p.illegalHeight
 }
 
 const (
@@ -741,11 +746,13 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 		if producer, ok := s.activityProducers[key]; ok {
 			s.history.append(height, func() {
 				producer.state = FoundBad
+				producer.illegalHeight = height
 				s.illegalProducers[key] = producer
 				delete(s.activityProducers, key)
 				delete(s.nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Activate
+				producer.illegalHeight = 0
 				s.activityProducers[key] = producer
 				delete(s.illegalProducers, key)
 				s.nicknames[producer.info.NickName] = struct{}{}
@@ -756,11 +763,13 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 		if producer, ok := s.canceledProducers[key]; ok {
 			s.history.append(height, func() {
 				producer.state = FoundBad
+				producer.illegalHeight = height
 				s.illegalProducers[key] = producer
 				delete(s.canceledProducers, key)
 				delete(s.nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Canceled
+				producer.illegalHeight = 0
 				s.canceledProducers[key] = producer
 				delete(s.illegalProducers, key)
 				s.nicknames[producer.info.NickName] = struct{}{}

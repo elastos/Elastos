@@ -899,6 +899,7 @@ result:
 | registerheight | string | the height of cancel producer             |
 | cancelheight   | string | the cancel height of the producer         |
 | inactiveheight | string | the inactive start height of the producer |
+| illegalheight  | string | the illegal start height of the producer  |
 | index          | uint64 | the index of the producer                 |
 | totalvotes     | string | the total votes of registered producers   |
 | totalcounts    | uint64 | the total counts of registered producers  |
@@ -937,6 +938,7 @@ result sample:
         "registerheight": 236,
         "cancelheight": 0,
         "inactiveheight": 0,
+        "illegalheight": 0,
         "index": 0
       },
       {
@@ -952,6 +954,7 @@ result sample:
         "registerheight": 225,
         "cancelheight": 0,
         "inactiveheight": 0,
+        "illegalheight": 0,
         "index": 1
       },
       {
@@ -967,7 +970,8 @@ result sample:
         "registerheight": 216,
         "cancelheight": 0,
         "inactiveheight": 0,
-        "index": 2
+         "illegalheight": 0,
+         "index": 2
       }
     ],
     "totalvotes": "5.21100000",
