@@ -228,13 +228,6 @@ func (s *State) GetProducers() []*Producer {
 	return producers
 }
 
-//func (s *State) GetInterfaceProducers() []interfaces.Producer {
-//	s.mtx.RLock()
-//	producers := s.getProducers()
-//	s.mtx.RUnlock()
-//	return producers
-//}
-
 func (s *State) getProducers() []*Producer {
 	producers := make([]*Producer, 0, len(s.activityProducers))
 	for _, producer := range s.activityProducers {

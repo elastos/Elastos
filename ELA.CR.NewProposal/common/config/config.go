@@ -112,8 +112,8 @@ type ArbiterConfiguration struct {
 	MaxPerLogSize            int64            `json:"MaxPerLogSize"`
 	OriginArbiters           []string         `json:"OriginArbiters"`
 	CRCArbiters              []CRCArbiterInfo `json:"CRCArbiters"`
-	NormalArbitratorsCount   uint32           `json:"NormalArbitratorsCount"`
-	CandidatesCount          uint32           `json:"CandidatesCount"`
+	NormalArbitratorsCount   int              `json:"NormalArbitratorsCount"`
+	CandidatesCount          int              `json:"CandidatesCount"`
 	EmergencyInactivePenalty common.Fixed64   `json:"EmergencyInactivePenalty"`
 	MaxInactiveRounds        uint32           `json:"MaxInactiveRounds"`
 	InactivePenalty          common.Fixed64   `json:"InactivePenalty"`

@@ -534,7 +534,7 @@ func (p *ProposalDispatcher) countAcceptedVote(v *payload.DPOSProposalVote) (
 		log.Info("[countAcceptedVote] Received needed sign, collect it into AcceptVotes!")
 		p.acceptVotes[v.Hash()] = v
 
-		if p.cfg.Manager.GetArbitrators().HasArbitersMajorityCount(uint32(len(p.acceptVotes))) {
+		if p.cfg.Manager.GetArbitrators().HasArbitersMajorityCount(len(p.acceptVotes)) {
 			log.Info("Collect majority signs, finish proposal.")
 			return true, p.FinishProposal()
 		}
@@ -553,7 +553,7 @@ func (p *ProposalDispatcher) countRejectedVote(v *payload.DPOSProposalVote) (
 		log.Info("[countRejectedVote] Received invalid sign, collect it into RejectedVotes!")
 		p.rejectedVotes[v.Hash()] = v
 
-		if p.cfg.Manager.GetArbitrators().HasArbitersMinorityCount(uint32(len(p.rejectedVotes))) {
+		if p.cfg.Manager.GetArbitrators().HasArbitersMinorityCount(len(p.rejectedVotes)) {
 			p.CleanProposals(true)
 			p.cfg.Consensus.ChangeView()
 			return true, true

@@ -48,5 +48,5 @@ func (c *ViewChangesCountDown) IsTimeOut() bool {
 	}
 
 	return c.consensus.GetViewOffset() >=
-		c.arbitrators.GetArbitersCount()*c.timeoutRefactor
+		uint32(c.arbitrators.GetArbitersCount())*c.timeoutRefactor
 }
