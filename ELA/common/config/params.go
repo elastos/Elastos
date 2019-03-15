@@ -242,6 +242,10 @@ type Params struct {
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []CRCArbiter
 
+	// PreConnectOffset defines the offset blocks to pre-connect to the block
+	// producers.
+	PreConnectOffset uint32
+
 	// GeneralArbiters defines the number of general(no-CRC) arbiters.
 	GeneralArbiters int
 
