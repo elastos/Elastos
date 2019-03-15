@@ -104,6 +104,8 @@ namespace Elastos {
 			UInt256 chainCode;
 			if (account->GetType() == "MultiSign") {
 				MultiSignAccount *multiSignAccount = static_cast<MultiSignAccount *>(account);
+				if (multiSignAccount->GetInnerAccount() == nullptr)
+					return nullptr;
 				if ("Simple" == multiSignAccount->GetInnerAccount()->GetType()) {
 					Key key = account->DeriveMultiSignKey(payPassword);
 					return MasterPubKeyPtr(new MasterPubKey(key.PubKey(), chainCode));

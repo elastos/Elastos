@@ -116,8 +116,12 @@ namespace Elastos {
 			for (MasterPubKeyMap::const_iterator it = map.cbegin(); it != map.cend(); it++) {
 				ByteStream stream;
 				stream.SetPosition(0);
-				it->second->Serialize(stream);
-				masterPubKey[it->first] = Utils::EncodeHex(stream.GetBuffer());
+				if (it->second) {
+					it->second->Serialize(stream);
+					masterPubKey[it->first] = Utils::EncodeHex(stream.GetBuffer());
+				} else {
+					masterPubKey[it->first] = "";
+				}
 			}
 			j["MasterPubKey"] = masterPubKey;
 
