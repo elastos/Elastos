@@ -24,8 +24,13 @@ type TxFilter interface {
 	// Add adds new data into filter.
 	Add(data []byte) error
 
-	// Match returns if a transaction matches the filter.
-	Match(tx *types.Transaction) bool
+	// MatchConfirmed returns if a confirmed (packed into a block) transaction
+	// matches the filter.
+	MatchConfirmed(tx *types.Transaction) bool
+
+	// MatchUnconfirmed returns if a unconfirmed (not packed into a block yet)
+	// transaction matches the filter.
+	MatchUnconfirmed(tx *types.Transaction) bool
 }
 
 type Filter struct {
@@ -80,9 +85,16 @@ func (f *Filter) Clear() {
 	f.mtx.Unlock()
 }
 
-func (f *Filter) Match(tx *types.Transaction) bool {
+func (f *Filter) MatchConfirmed(tx *types.Transaction) bool {
 	f.mtx.Lock()
-	match := f.filter.Match(tx)
+	match := f.filter.MatchConfirmed(tx)
+	f.mtx.Unlock()
+	return match
+}
+
+func (f *Filter) MatchUnconfirmed(tx *types.Transaction) bool {
+	f.mtx.Lock()
+	match := f.filter.MatchUnconfirmed(tx)
 	f.mtx.Unlock()
 	return match
 }

@@ -35,7 +35,11 @@ func (f *TxFilter) Add(filter []byte) error {
 	return nil
 }
 
-func (f *TxFilter) Match(tx *types.Transaction) bool {
+func (f *TxFilter) MatchConfirmed(tx *types.Transaction) bool {
+	return f.filter.MatchTxAndUpdate(tx)
+}
+
+func (f *TxFilter) MatchUnconfirmed(tx *types.Transaction) bool {
 	return f.filter.MatchTxAndUpdate(tx)
 }
 
