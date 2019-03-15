@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
+	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -109,20 +110,12 @@ func (n *network) BroadcastMessage(msg p2p.Message) {
 	n.messageList = append(n.messageList, messageItem{ID: nil, Message: msg})
 }
 
-func (n *network) UpdatePeers(arbitrators map[string]struct{}) error {
-	return nil
-}
-
-func (n *network) ChangeHeight(height uint32) error {
+func (n *network) UpdatePeers(arbitrators map[string]*dposp2p.PeerAddr) error {
 	return nil
 }
 
 func (n *network) GetActivePeer() *peer.PID {
 	return nil
-}
-
-func (n *network) InProducerList() bool {
-	return true
 }
 
 func (n *network) FirePing(id peer.PID, height uint32) {

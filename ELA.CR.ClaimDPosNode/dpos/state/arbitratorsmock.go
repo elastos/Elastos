@@ -5,6 +5,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/p2p"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount uint32) *ArbitratorsMock {
@@ -52,7 +53,7 @@ func (a *ArbitratorsMock) RollbackTo(height uint32) error {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetNeedConnectArbiters() map[string]struct{} {
+func (a *ArbitratorsMock) GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr {
 	panic("implement me")
 }
 
