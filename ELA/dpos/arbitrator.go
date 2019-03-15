@@ -201,7 +201,6 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 	})
 
 	cfg.Store.StartEventRecord()
-	cfg.Store.StartArbitratorsRecord()
 
 	a := Arbitrator{
 		enableViewLoop: true,

@@ -43,16 +43,8 @@ type IEventRecord interface {
 	UpdateConsensusEvent(event interface{}) error
 }
 
-type IArbitratorsRecord interface {
-	StartArbitratorsRecord()
-
-	GetDirectPeers() ([]*DirectPeers, error)
-	SaveDirectPeers(peers []*DirectPeers)
-}
-
 // IDposStore provides func for dpos
 type IDposStore interface {
 	IDBOperator
 	IEventRecord
-	IArbitratorsRecord
 }
