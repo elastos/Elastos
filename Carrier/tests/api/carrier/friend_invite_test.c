@@ -154,8 +154,7 @@ static void test_friend_invite_confirm(void)
 
     const char* hello = "hello";
     rc = ela_invite_friend(wctxt->carrier, robotid, NULL, hello,
-                               strlen(hello) + 1,
-                               friend_invite_response_cb, wctxt);
+                           strlen(hello), friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     char in[32] = {0};
@@ -178,9 +177,8 @@ static void test_friend_invite_confirm(void)
         CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
         CU_ASSERT_EQUAL(extra->status, 0);
         CU_ASSERT_PTR_NULL(extra->reason);
-        CU_ASSERT_STRING_EQUAL(extra->data, invite_rsp_data);
-        CU_ASSERT_EQUAL(strlen(extra->data), strlen(invite_rsp_data));
-        CU_ASSERT_EQUAL(extra->len, strlen(invite_rsp_data) + 1);
+        CU_ASSERT_NSTRING_EQUAL(extra->data, invite_rsp_data, extra->len);
+        CU_ASSERT_EQUAL(extra->len, strlen(invite_rsp_data));
 
         FREE_ANYWAY(extra->from);
         FREE_ANYWAY(extra->data);
@@ -203,7 +201,7 @@ static void test_friend_invite_reject(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* hello = "hello";
-    rc = ela_invite_friend(wctxt->carrier, robotid, NULL, hello, strlen(hello) + 1,
+    rc = ela_invite_friend(wctxt->carrier, robotid, NULL, hello, strlen(hello),
                                friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 

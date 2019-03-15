@@ -172,20 +172,20 @@ static int group_message_routine(TestContext *ctx)
     int rc;
 
     rc = ela_group_send_message(wctx->carrier, wctx->groupid,
-                                msg, strlen(msg) + 1);
+                                msg, strlen(msg));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     // wait until robot having received group message
     rc = read_ack("%32s %32s", cmd, result);
     CU_ASSERT_TRUE_FATAL(rc == 2);
     CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gmsg") == 0);
-    CU_ASSERT_TRUE_FATAL(strcmp(result, msg) == 0);
+    CU_ASSERT_TRUE_FATAL(strncmp(result, msg, strlen(msg)) == 0);
 
     cond_wait(wctx->group_cond);
     ela_get_userid(wctx->carrier, userid, sizeof(userid));
     CU_ASSERT_TRUE_FATAL(strcmp(extra->from, userid) == 0);
-    CU_ASSERT_TRUE_FATAL(strcmp(extra->msg, msg) == 0);
-    CU_ASSERT_EQUAL_FATAL(extra->msglen, strlen(msg) + 1);
+    CU_ASSERT_TRUE_FATAL(strncmp(extra->msg, msg, strlen(msg)) == 0);
+    CU_ASSERT_EQUAL_FATAL(extra->msglen, strlen(msg));
     FREE_ANYWAY(extra->from);
 
     return 0;
@@ -207,7 +207,7 @@ static void test_group_message_to_myself(void)
     CU_ASSERT_FATAL(strlen(groupid) > 0);
 
     rc = ela_group_send_message(wctx->carrier, groupid, "hello",
-                                strlen("hello") + 1);
+                                strlen("hello"));
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_DHT_ERROR(ELAERR_WRONG_STATE));
 

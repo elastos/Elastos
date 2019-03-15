@@ -368,7 +368,7 @@ static void fmsg(TestContext *context, int argc, char *argv[])
 
     CHK_ARGS(argc == 3);
 
-    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]) + 1);
+    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]));
     if (rc < 0)
         vlogE("Send message to friend %s error (0x%x)",
               argv[1], ela_get_error());
@@ -462,7 +462,7 @@ static void freplyinvite(TestContext *context, int argc, char *argv[])
 
     if (strcmp(argv[2], "confirm") == 0) {
         msg = argv[3];
-        msg_len = strlen(argv[3]) + 1;
+        msg_len = strlen(argv[3]);
     } else if (strcmp(argv[2], "refuse") == 0) {
         status = -1; // TODO: fix to correct status code.
         reason = argv[3];

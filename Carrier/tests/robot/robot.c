@@ -235,9 +235,9 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
                              const void *msg, size_t len, void *context)
 {
     vlogD("Received message from %s", from);
-    vlogD(" msg: %s", (const char *)msg);
+    vlogD(" msg: %.*s", len, (const char *)msg);
 
-    write_ack("%s\n", msg);
+    write_ack("%.*s\n", len, msg);
 }
 
 static void friend_invite_cb(ElaCarrier *w, const char *from, const char *bundle,
@@ -246,13 +246,13 @@ static void friend_invite_cb(ElaCarrier *w, const char *from, const char *bundle
     CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
 
     vlogD("Recevied friend invite from %s", from);
-    vlogD(" data: %s", (const char *)data);
+    vlogD(" data: %.*s", len, (const char *)data);
 
     if (bundle)
         extra->bundle = strdup(bundle);
 
     if (len <= ELA_MAX_APP_MESSAGE_LEN)
-        write_ack("data %s\n", data);
+        write_ack("data %.*s\n", len, data);
     else {
         extra->data = (char*)malloc(len);
         memcpy(extra->data, data, len);
@@ -294,7 +294,7 @@ static void group_message_cb(ElaCarrier *carrier, const char *groupid,
 
     assert(!strcmp(groupid, wctx->extra->groupid));
 
-    write_ack("gmsg %s\n", message);
+    write_ack("gmsg %.*s\n", length, message);
 }
 
 static void group_title_cb(ElaCarrier *carrier, const char *groupid,

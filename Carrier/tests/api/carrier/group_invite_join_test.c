@@ -198,14 +198,14 @@ static int group_invite_after_joining_cb(TestContext *ctx)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     rc = ela_group_send_message(wctx->carrier, wctx->groupid,
-                                msg, strlen(msg) + 1);
+                                msg, strlen(msg));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     // wait until robot having received group message
     rc = read_ack("%32s %32s", cmd, result);
     CU_ASSERT_TRUE_FATAL(rc == 2);
     CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gmsg") == 0);
-    CU_ASSERT_TRUE_FATAL(strcmp(result, msg) == 0);
+    CU_ASSERT_TRUE_FATAL(strncmp(result, msg, strlen(msg)) == 0);
 
     return 0;
 }

@@ -142,7 +142,7 @@ static void test_send_message_to_friend(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* out = "message-test";
-    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out) + 1);
+    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     char in[64];
@@ -175,9 +175,8 @@ static void test_send_message_from_friend(void)
     CU_ASSERT_TRUE(bRet);
     if (bRet) {
         CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
-        CU_ASSERT_STRING_EQUAL(extra->msg, msg);
-        CU_ASSERT_EQUAL(strlen(extra->msg), strlen(msg));
-        CU_ASSERT_EQUAL(extra->len, strlen(msg) + 1);
+        CU_ASSERT_NSTRING_EQUAL(extra->msg, msg, extra->len);
+        CU_ASSERT_EQUAL(extra->len, strlen(msg));
 
         FREE_ANYWAY(extra->from);
         FREE_ANYWAY(extra->msg);
