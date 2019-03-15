@@ -100,7 +100,7 @@ func NewMerkleBlock(block *types.DposBlock, filter *Filter) (*msg.MerkleBlock, [
 	// Find and keep track of any transactions that match the filter.
 	var matchedIndexes []uint32
 	for index, tx := range block.Transactions {
-		if filter.Match(tx) {
+		if filter.MatchConfirmed(tx) {
 			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
 			matchedIndexes = append(matchedIndexes, uint32(index))
 		} else {
