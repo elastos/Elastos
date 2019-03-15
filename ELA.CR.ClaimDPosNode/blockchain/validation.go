@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -205,12 +204,11 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 		arbitratorsMap[common.BytesToHexString(arbitrator)] = nil
 	}
 
-	// todo improve me when height version refactoring
-	if DefaultLedger.Blockchain.GetHeight() >
-		config.Parameters.HeightVersions[1] {
-		for _, crc := range DefaultLedger.Arbitrators.GetCRCArbitrators() {
+	if DefaultLedger.Blockchain.GetHeight() >=
+		DefaultLedger.Blockchain.chainParams.CRCOnlyDPOSHeight-1 {
+		for _, crc := range DefaultLedger.Arbitrators.GetArbitrators() {
 			if _, exist :=
-				arbitratorsMap[common.BytesToHexString(crc.PublicKey)]; !exist {
+				arbitratorsMap[common.BytesToHexString(crc)]; !exist {
 				return errors.New("not all crc arbitrators participated in" +
 					" crosschain multi-sign")
 			}
