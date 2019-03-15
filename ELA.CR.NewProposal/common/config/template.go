@@ -39,7 +39,7 @@ var Template = Configuration{
 		InactivePenalty:          100 * 100000000,
 		InactiveEliminateCount:   12,
 		EnableEventRecord:        false,
-		PreConnectHeight:         360,
+		PreConnectOffset:         360,
 	},
 	RpcConfiguration: RpcConfiguration{
 		User:        "",

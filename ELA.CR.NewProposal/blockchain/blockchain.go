@@ -907,9 +907,9 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && (block.Height >= b.chainParams.VoteStartHeight ||
-	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectHeight)
-		block.Height == b.chainParams.CRCOnlyDPOSHeight-
-			config.Parameters.ArbiterConfiguration.PreConnectHeight) {
+		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
+			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 	}
 
