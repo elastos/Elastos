@@ -14,7 +14,6 @@ import (
 	"encoding/base64"
 	"crypto/subtle"
 	"github.com/elastos/Elastos.ELA/common/log"
-
 )
 
 const (
@@ -28,6 +27,8 @@ const (
 	InternalError  = -32603
 	//-32000 to -32099	Server error, waiting for defining
 )
+//if  we want to run server_test.go, set this to be true (add one test action)
+var bRegistTestAction bool = true
 
 // Handler is the registered method to handle a http request.
 type Handler func(htp.Params) (interface{}, error)
@@ -111,9 +112,13 @@ func (s *Server) Start() error {
 		listener, err = net.Listen("tcp", fmt.Sprint(":", s.cfg.ServePort))
 	}
 	if err != nil {
+		fmt.Printf("Start error err %v \n", err)
 		return err
 	}
 
+	if bRegistTestAction {
+		s.RegisterTestAction()
+	}
 	if s.cfg.Path == "" {
 		s.server = &http.Server{Handler: s}
 	} else {
@@ -144,8 +149,6 @@ func (s *Server) parseParams(method string, array []interface{}) htp.Params {
 }
 
 func (s *Server) clientAllowed(r *http.Request) bool {
-	log.Infof("RemoteAddr %s \n", r.RemoteAddr)
-	log.Infof("WhiteIPList %v \n", s.cfg.RpcConfiguration.WhiteIPList)
 	//this ipAbbr  may be  ::1 when request is localhost
 	ipAbbr, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
@@ -176,7 +179,6 @@ func (s *Server) clientAllowed(r *http.Request) bool {
 		}
 
 	}
-	log.Debugf("RemoteAddr clientAllowed failure %s \n", r.RemoteAddr)
 
 	return false
 }
@@ -185,7 +187,7 @@ func (s *Server) checkAuth(r *http.Request) bool {
 	User := s.cfg.RpcConfiguration.User
 	Pass := s.cfg.RpcConfiguration.Pass
 
-	log.Infof("ServeHTTP checkAuth RpcConfiguration %+v" , s.cfg.RpcConfiguration)
+	//log.Infof("ServeHTTP checkAuth RpcConfiguration %+v" , s.cfg.RpcConfiguration)
 	if (User == Pass) && (len(User) == 0) {
 		return true
 	}
@@ -214,20 +216,21 @@ func (s *Server) checkAuth(r *http.Request) bool {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	isClientAllowed := s.clientAllowed(r)
 	if !isClientAllowed {
-		log.Warn("HTTP Client ip is not allowd")
+		//log.Warn("HTTP Client ip is not allowd")
 		http.Error(w, "Client ip is not allowd", http.StatusForbidden)
 		return
 	}
 	//JSON RPC commands should be POSTs
 	if r.Method != "POST" {
-		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
+		//log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
 		http.Error(w, "JSON RPC procotol only allows POST method",
 			http.StatusMethodNotAllowed)
 		return
 	}
 
 	if r.Header["Content-Type"][0] != "application/json" {
-		log.Warn("need content type to be application/json")
+		//log.Warn("need content type to be application/json")
+
 		http.Error(w, "need content type to be application/json",
 			http.StatusUnsupportedMediaType)
 		return
@@ -235,7 +238,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	isCheckAuthOk := s.checkAuth(r)
 
 	if !isCheckAuthOk {
-		log.Warn("checkAuth client authenticate failed %v",r.RemoteAddr)
+		//log.Warn("checkAuth client authenticate failed %v",r.RemoteAddr)
 		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
 		return
 	}
@@ -299,6 +302,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	resp.Result = result
 	resp.write(w, http.StatusOK)
+}
+func (s *Server) RegisterTestAction() {
+	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
+		return data, nil
+	}, "level")
 }
 
 // NewServer creates and return a JSON-RPC server instance.
