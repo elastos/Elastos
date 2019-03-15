@@ -1,5 +1,6 @@
 ﻿{
   "Configuration": {
+    "ActiveNet": "main",
     "Magic": 7630401,
     "Version": 23,
     "SeedList": [
@@ -23,10 +24,9 @@
       "MinTxFee": 100,
       "InstantBlock": false
     },
-    "VoteHeight": 100,
     "EnableArbiter": false,
     "ArbiterConfiguration": {
-      "Name": "",
+      "PublicKey": "030c756d9ac85337b3c9a4d94a70e2d3f99c6cbb6f78becbfc08baa3df830e5fb4",
       "Magic": 7630403,
       "NodePort": 30338,
       "ProtocolVersion": 0,
@@ -35,20 +35,35 @@
       "SignTolerance": 5,
       "MaxLogsSize": 0,
       "MaxPerLogSize": 0,
-      "MaxConnections": 100,
-      "NormalArbitratorsCount": 5,
-      "CandidatesCount": 0,
+      "OriginArbiters": [
+        "02f3876d0973210d5af7eb44cc11029eb63a102e424f0dc235c60adb80265e426e",
+        "03c96f2469b43dd8d0e6fa3041a6cee727e0a3a6658a9c28d91e547d11ba8014a1",
+        "036d25d54fb7a40bc7c3e836a26c9e30d5294bc46f6918ad61d0937960f13307bc",
+        "0248ddc9ac60f1e5b9e9a26719a8a20e1447e6f2bbb0d31597646f1feb9704f291",
+        "02e34e47a06955ef1ec0d325c9edada34a0df6e519530344cc85f5942d061223b3"
+      ],
       "CRCArbiters": [
         {
-          "PublicKey": "030c756d9ac85337b3c9a4d94a70e2d3f99c6cbb6f78becbfc08baa3df830e5fb4",
-          "NetAddress": "127.0.0.1:20348"
+          "PublicKey": "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
+          "NetAddress": "127.0.0.1:10078"
+        },
+        {
+          "PublicKey": "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
+          "NetAddress": "127.0.0.1:10178"
+        },
+        {
+          "PublicKey": "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
+          "NetAddress": "127.0.0.1:10278"
+        },
+        {
+          "PublicKey": "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
+          "NetAddress": "127.0.0.1:10378"
         }
       ],
-      "EmergencyTriggerTimeSpan": 3600,
-      "EmergencyDuration": 604800,
+      "NormalArbitratorsCount": 24,
+      "CandidatesCount": 72,
       "EmergencyInactivePenalty": 50000000000,
-      "InactivePercentage": 0.1,
-      "MaxAllowedInactiveRounds": 3,
+      "MaxInactiveRounds": 1440,
       "InactivePenalty": 10000000000,
       "InactiveEliminateCount": 12,
       "EnableEventRecord": false,
@@ -56,8 +71,8 @@
     },
     "RpcConfiguration": {
       "User": "ElaUser",
-      "Pass": "Ela123" ,
-      "WhiteIPList":[
+      "Pass": "Ela123",
+      "WhiteIPList": [
         "127.0.0.1"
       ]
     },
@@ -66,6 +81,7 @@
       88812,
       1008812,
       1108812
-    ]
+    ],
+    "VoteStartHeight": 88812
   }
 }
