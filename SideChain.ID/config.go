@@ -56,6 +56,11 @@ type config struct {
 			MinTxFee     int64
 			InstantBlock bool
 		}
+		RpcConfiguration struct {
+			User        string
+			Pass        string
+			WhiteIPList []string
+		}
 	}
 }
 
@@ -71,6 +76,9 @@ type appConfig struct {
 	MaxLogsFolderSize int64
 	MaxPerLogFileSize int64
 	MonitorState      bool
+	RPCUser           string
+	RPCPass           string
+	RPCWhiteList      []string
 }
 
 func loadNewConfig() (*appConfig, error) {
@@ -141,6 +149,11 @@ func loadNewConfig() (*appConfig, error) {
 	if config.Magic > 0 {
 		activeNetParams.Magic = config.Magic
 	}
+
+	appCfg.RPCUser = cfg.Configuration.RpcConfiguration.User
+	appCfg.RPCPass = cfg.Configuration.RpcConfiguration.Pass
+	appCfg.RPCWhiteList = cfg.Configuration.RpcConfiguration.WhiteIPList
+
 	if config.SeedList != nil {
 		activeNetParams.SeedList = *config.SeedList
 	}

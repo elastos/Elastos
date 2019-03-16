@@ -32,6 +32,13 @@
       "MinerInfo": "DID",
       "MinTxFee": 100,
       "InstantBlock": false
+    },
+    "RpcConfiguration": {
+        "User": "ElaUser",
+        "Pass": "Ela123",
+        "WhiteIPList": [
+            "127.0.0.1"
+        ]
     }
   }
 }
