@@ -220,7 +220,12 @@ func main() {
 }
 
 func newJsonRpcServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
-	s := jsonrpc.NewServer(&jsonrpc.Config{ServePort: port})
+	s := jsonrpc.NewServer(&jsonrpc.Config{
+		ServePort: port,
+		User:      cfg.RPCUser,
+		Pass:      cfg.RPCPass,
+		WhiteList: cfg.RPCWhiteList,
+	})
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getblock", service.GetBlockByHash, "blockhash", "verbosity")
