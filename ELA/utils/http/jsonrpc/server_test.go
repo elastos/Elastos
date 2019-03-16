@@ -34,7 +34,7 @@ func initUrl() {
 		return
 	}
 	httpPrefix := "http://"
-	httPostfix := ":20336/getmainchainblockheight"
+	httPostfix := ":20336"
 
 	urlNotLoopBack = httpPrefix + ipNotLoopBack + httPostfix
 	fmt.Printf("Before Test init url %v", urlNotLoopBack)
@@ -440,7 +440,75 @@ func TestServer_WithIp0000(t *testing.T) {
 		User:        "ElaUser",
 		Pass:        "Ela123",
 		WhiteIPList: []string{"0.0.0.0"},
+		//WhiteIPList: []string{"192.168.2.194"},
+
 	}
+
+	s := NewServer(&Config{
+		ServePort:        20336,
+		RpcConfiguration: svrConf,
+	})
+
+	registerTestAction(s, t)
+
+	if isRunServer() {
+		go s.Start()
+	}
+
+	urlNotLoopbackWithAuthTest := func(url string, withAuthorization bool, expectStatus int, t *testing.T) {
+		clientAuthUser = svrConf.User
+		clientAuthPass = svrConf.Pass
+		initReqObject()
+		PostReq(url, withAuthorization, expectStatus, t)
+
+	}
+	urlNotLoopbackWithAuthTest(urlNotLoopBack, true, http.StatusOK, t)
+
+	urlLoopbackWithAuthTest := func(url string, withAuthorization bool, expectStatus int, t *testing.T) {
+		clientAuthUser = svrConf.User
+		clientAuthPass = svrConf.Pass
+		initReqObject()
+		PostReq(url, withAuthorization, expectStatus, t)
+
+	}
+	urlLoopbackWithAuthTest(urlLoopBack, true, http.StatusOK, t)
+
+	urlLocalhostWithAuthTest := func(url string, withAuthorization bool, expectStatus int, t *testing.T) {
+		clientAuthUser = svrConf.User
+		clientAuthPass = svrConf.Pass
+		initReqObject()
+		PostReq(url, withAuthorization, expectStatus, t)
+
+	}
+	urlLocalhostWithAuthTest(urlLocalhost, true, http.StatusOK, t)
+
+	urlLoopbackWithAuthWrongUserTest := func(url string, withAuthorization bool, expectStatus int, t *testing.T) {
+		clientAuthUser = "111"
+		clientAuthPass = svrConf.Pass
+		initReqObject()
+		PostReq(url, withAuthorization, expectStatus, t)
+
+	}
+	urlLoopbackWithAuthWrongUserTest(urlLoopBack, true, http.StatusUnauthorized, t)
+
+	Wait(s)
+}
+
+func TestServer_WithIpNotLoopBackIp(t *testing.T) {
+
+
+	t.Logf("TestServer_WithIpNotLoopBackIp begin")
+	ipNotLoopBack := resolveHostIp()
+
+	test.SkipShort(t)
+	svrConf := RpcConfiguration{
+		User:        "ElaUser",
+		Pass:        "Ela123",
+		WhiteIPList: []string{ipNotLoopBack},
+		//WhiteIPList: []string{"192.168.2.194"},
+
+	}
+	t.Logf("TestServer_WithIpNotLoopBackIp %v", svrConf)
 
 	s := NewServer(&Config{
 		ServePort:        20336,
