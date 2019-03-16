@@ -27,6 +27,12 @@ const (
 	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering | pact.SFNodeBloom
 )
 
+// newPeerMsg represent a new connected peer.
+type newPeerMsg svr.IPeer
+
+// donePeerMsg represent a disconnected peer.
+type donePeerMsg svr.IPeer
+
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
 type relayMsg struct {
@@ -42,8 +48,7 @@ type server struct {
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
 
-	newPeers  chan svr.IPeer
-	donePeers chan svr.IPeer
+	peerQueue chan interface{}
 	relayInv  chan relayMsg
 	quit      chan struct{}
 	services  pact.ServiceFlag
@@ -708,37 +713,9 @@ func (s *server) peerHandler() {
 out:
 	for {
 		select {
-		// New peers connected to the server.
-		case p := <-s.newPeers:
-			sp := newServerPeer(s)
-			sp.Peer = peer.New(p, &peer.Listeners{
-				OnMemPool:      sp.OnMemPool,
-				OnTx:           sp.OnTx,
-				OnBlock:        sp.OnBlock,
-				OnInv:          sp.OnInv,
-				OnNotFound:     sp.OnNotFound,
-				OnGetData:      sp.OnGetData,
-				OnGetBlocks:    sp.OnGetBlocks,
-				OnFilterAdd:    sp.OnFilterAdd,
-				OnFilterClear:  sp.OnFilterClear,
-				OnFilterLoad:   sp.OnFilterLoad,
-				OnTxFilterLoad: sp.OnTxFilterLoad,
-				OnReject:       sp.OnReject,
-			})
-
-			peers[p] = sp
-			s.syncManager.NewPeer(sp.Peer)
-
-			// Disconnected peers.
-		case p := <-s.donePeers:
-			sp, ok := peers[p]
-			if !ok {
-				log.Errorf("unknown done peer %v", p)
-				continue
-			}
-
-			delete(peers, p)
-			s.syncManager.DonePeer(sp.Peer)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(peers, p)
 
 			// New inventory to potentially be relayed to other peers.
 		case invMsg := <-s.relayInv:
@@ -756,12 +733,46 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		case <-s.relayInv:
 		default:
 			break cleanup
 		}
+	}
+}
+
+// handlePeerMsg deals with adding and removing peers.
+func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
+	switch p := p.(type) {
+	case newPeerMsg:
+		sp := newServerPeer(s)
+		sp.Peer = peer.New(p, &peer.Listeners{
+			OnMemPool:      sp.OnMemPool,
+			OnTx:           sp.OnTx,
+			OnBlock:        sp.OnBlock,
+			OnInv:          sp.OnInv,
+			OnNotFound:     sp.OnNotFound,
+			OnGetData:      sp.OnGetData,
+			OnGetBlocks:    sp.OnGetBlocks,
+			OnFilterAdd:    sp.OnFilterAdd,
+			OnFilterClear:  sp.OnFilterClear,
+			OnFilterLoad:   sp.OnFilterLoad,
+			OnTxFilterLoad: sp.OnTxFilterLoad,
+			OnReject:       sp.OnReject,
+		})
+
+		peers[p] = sp
+		s.syncManager.NewPeer(sp.Peer)
+
+	case donePeerMsg:
+		sp, ok := peers[p]
+		if !ok {
+			log.Errorf("unknown done peer %v", p)
+			return
+		}
+
+		delete(peers, p)
+		s.syncManager.DonePeer(sp.Peer)
 	}
 }
 
@@ -772,12 +783,12 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p svr.IPeer) {
-	s.newPeers <- p
+	s.peerQueue <- newPeerMsg(p)
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p svr.IPeer) {
-	s.donePeers <- p
+	s.peerQueue <- donePeerMsg(p)
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
@@ -842,8 +853,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		chain:        cfg.Chain,
 		txMemPool:    cfg.TxMemPool,
 		blockMemPool: cfg.BlockMemPool,
-		newPeers:     make(chan svr.IPeer, svrCfg.MaxPeers),
-		donePeers:    make(chan svr.IPeer, svrCfg.MaxPeers),
+		peerQueue:    make(chan interface{}, svrCfg.MaxPeers),
 		relayInv:     make(chan relayMsg, svrCfg.MaxPeers),
 		quit:         make(chan struct{}),
 		services:     services,
