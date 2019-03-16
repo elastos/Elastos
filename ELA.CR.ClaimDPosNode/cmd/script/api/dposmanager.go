@@ -87,15 +87,16 @@ func newDposManager(L *lua.LState) int {
 		Network:      n,
 		Manager:      dposManager,
 		Account:      mockManager.Account,
+		ChainParams:  &config.DefaultParams,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
-			Store:       nil,
-			Arbitrators: a,
+			Store:                  nil,
+			Arbitrators:            a,
 		},
 	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
 
-	mockManager.Peer = mock.NewPeerMock()
+	mockManager.Peer = mock.NewPeerMock(&config.DefaultParams)
 	dposManager.Initialize(mockManager.Handler, mockManager.Dispatcher,
 		mockManager.Consensus, n, mockManager.IllegalMonitor,
 		mockManager.Peer.GetBlockPool(), mockManager.Peer.GetTxPool(),
@@ -193,8 +194,8 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 		}
 	case relayBlockConfirm:
 		if relayedConfirm, ok := m.Peer.GetLastRelay().(*msg.Block); ok {
-			if dposBlock, ok := relayedConfirm.Serializable.(*types.
-				DposBlock); ok {
+			if dposBlock, ok := relayedConfirm.Serializable.(*types.DposBlock);
+				ok {
 
 				if dposBlock.HaveConfirm {
 					b := checkBlock(L, 3)

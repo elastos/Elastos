@@ -115,7 +115,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 	}
 
 	// main version
-	producers, err := arbiters.GetNormalArbitratorsDesc(arbiters.State.chainParams.HeightVersions[3], 10, arbiters.State.getProducers())
+	producers, err := arbiters.GetNormalArbitratorsDesc(arbiters.State.chainParams.PublicDPOSHeight, 10, arbiters.State.getProducers())
 	assert.Error(t, err, "arbitrators count does not match config value")
 
 	currentHeight += 1
@@ -145,7 +145,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 	}
 
 	// main version
-	producers, err = arbiters.GetNormalArbitratorsDesc(arbiters.State.chainParams.HeightVersions[3], 5, arbiters.State.getProducers())
+	producers, err = arbiters.GetNormalArbitratorsDesc(arbiters.State.chainParams.PublicDPOSHeight, 5, arbiters.State.getProducers())
 	assert.NoError(t, err)
 	for i := range producers {
 		found := false
@@ -203,7 +203,7 @@ func TestArbitrators_GetNextOnDutyArbitratorV0(t *testing.T) {
 }
 
 func TestArbitrators_GetNextOnDutyArbitrator(t *testing.T) {
-	bestHeight = arbiters.State.chainParams.HeightVersions[2] - 1
+	bestHeight = arbiters.State.chainParams.CRCOnlyDPOSHeight - 1
 	arbiters.dutyIndex = 0
 
 	sortedArbiters := arbiters.State.chainParams.OriginArbiters

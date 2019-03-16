@@ -72,21 +72,16 @@ var DefaultParams = Params{
 	CRCArbiters: []CRCArbiter{
 		//todo add CRC arbiters
 	},
-	PowLimit:           powLimit,
-	PowLimitBits:       0x1f0008ff,
-	TargetTimespan:     24 * time.Hour,  // 24 hours
-	TargetTimePerBlock: 2 * time.Minute, // 2 minute
-	AdjustmentFactor:   4,               // 25% less, 400% more
-	RewardPerBlock:     rewardPerBlock(2 * time.Minute),
-	CoinbaseMaturity:   100,
-	MinTransactionFee:  100,
-	HeightVersions: []uint32{
-		0,
-		88812,
-		1008812, //fixme edit height later
-		1108812, //fixme edit height later
-	},
-	VoteStartHeight:          88812, //fixme edit height later
+	PowLimit:                 powLimit,
+	PowLimitBits:             0x1f0008ff,
+	TargetTimespan:           24 * time.Hour,  // 24 hours
+	TargetTimePerBlock:       2 * time.Minute, // 2 minute
+	AdjustmentFactor:         4,               // 25% less, 400% more
+	RewardPerBlock:           rewardPerBlock(2 * time.Minute),
+	CoinbaseMaturity:         100,
+	MinTransactionFee:        100,
+	OutputHashCheckHeight:    88812,
+	VoteStartHeight:          88812,   //fixme edit height later
 	CRCOnlyDPOSHeight:        1008812, //fixme edit height later
 	PublicDPOSHeight:         1108812, //fixme edit height later
 	MaxInactiveRounds:        720 * 2,
@@ -118,12 +113,10 @@ func (p *Params) TestNet() *Params {
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
-	copy.HeightVersions = []uint32{
-		0,
-		0,
-		1008812, //fixme edit height later
-		1108812, //fixme edit height later
-	}
+	copy.OutputHashCheckHeight = 0
+	copy.VoteStartHeight = 0         //fixme edit height later
+	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
+	copy.PublicDPOSHeight = 1108812  //fixme edit height later
 	return &copy
 }
 
@@ -139,12 +132,10 @@ func (p *Params) RegNet() *Params {
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
-	copy.HeightVersions = []uint32{
-		0,
-		0,
-		1008812, //fixme edit height later
-		1108812, //fixme edit height later
-	}
+	copy.OutputHashCheckHeight = 0
+	copy.VoteStartHeight = 0         //fixme edit height later
+	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
+	copy.PublicDPOSHeight = 1108812  //fixme edit height later
 	return &copy
 }
 
@@ -224,8 +215,8 @@ type Params struct {
 	// OriginArbiters defines the original arbiters producing the block.
 	OriginArbiters []string
 
-	// Define height versions about block chain.
-	HeightVersions []uint32
+	// OutputHashCheckHeight defines the height begin to check output hash.
+	OutputHashCheckHeight uint32
 
 	// VoteStartHeight indicates the height of starting register producer and
 	// vote related.

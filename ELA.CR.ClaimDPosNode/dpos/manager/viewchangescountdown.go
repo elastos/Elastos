@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
@@ -42,8 +41,8 @@ func (c *ViewChangesCountDown) SetEliminated() {
 }
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
-	//todo improve me when height versions refactor is done
-	if c.dispatcher.CurrentHeight() <= config.Parameters.HeightVersions[3] || c.timeoutRefactor == 0 {
+	if c.dispatcher.CurrentHeight() <= c.dispatcher.cfg.ChainParams.
+		PublicDPOSHeight || c.timeoutRefactor == 0 {
 		return false
 	}
 

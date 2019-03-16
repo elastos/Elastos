@@ -30,7 +30,7 @@ func TestService_Init(t *testing.T) {
 	)
 
 	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+		&config.DefaultParams)
 	if err != nil {
 		t.Error(err)
 	}
@@ -74,6 +74,7 @@ func TestService_Init(t *testing.T) {
 	pow = NewService(&Config{
 		Chain:       chain,
 		Arbitrators: arbitratorsMock,
+		ChainParams: &config.DefaultParams,
 	})
 }
 
@@ -163,7 +164,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	}
 	block := &types.Block{
 		Header: types.Header{
-			Height: config.Parameters.HeightVersions[3],
+			Height: config.DefaultParams.PublicDPOSHeight,
 		},
 		Transactions: []*types.Transaction{
 			tx,
@@ -231,7 +232,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	}
 	block = &types.Block{
 		Header: types.Header{
-			Height: config.Parameters.HeightVersions[3],
+			Height: config.DefaultParams.PublicDPOSHeight,
 		},
 		Transactions: []*types.Transaction{
 			tx,

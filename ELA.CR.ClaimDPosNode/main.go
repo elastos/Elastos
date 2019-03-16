@@ -64,8 +64,7 @@ func main() {
 	blockchain.FoundationAddress = activeNetParams.Foundation
 
 	var dposStore store.IDposStore
-	chainStore, err := blockchain.NewChainStore(dataDir,
-		activeNetParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(dataDir, activeNetParams)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -79,7 +78,7 @@ func main() {
 	defer dposStore.Close()
 
 	txMemPool := mempool.NewTxPool()
-	blockMemPool := mempool.NewBlockPool()
+	blockMemPool := mempool.NewBlockPool(activeNetParams)
 	blockMemPool.Store = chainStore
 
 	blockchain.DefaultLedger = &ledger // fixme
