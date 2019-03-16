@@ -64,7 +64,7 @@ func main() {
 	blockchain.FoundationAddress = activeNetParams.Foundation
 
 	var dposStore store.IDposStore
-	chainStore, err := blockchain.NewChainStore(dataDir, activeNetParams)
+	chainStore, err := blockchain.NewChainStore(dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
 	}
