@@ -173,7 +173,7 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) {
 func (a *arbitrators) GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr {
 	arbiters := make(map[string]*p2p.PeerAddr)
 
-	if height >= a.chainParams.CRCOnlyDPOSHeight {
+	if height >= a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		a.mtx.Lock()
 		for _, v := range a.chainParams.CRCArbiters {
 			str := common.BytesToHexString(v.PublicKey)

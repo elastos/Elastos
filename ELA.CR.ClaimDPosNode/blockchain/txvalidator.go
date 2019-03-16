@@ -438,7 +438,7 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 func checkOutputProgramHash(height uint32, programHash common.Uint168) error {
 	// main version >= 88812
-	if height >= config.DefaultParams.OutputHashCheckHeight {
+	if height >= config.DefaultParams.CheckAddressHeight {
 		var empty = common.Uint168{}
 		if programHash.IsEqual(empty) {
 			return nil

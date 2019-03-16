@@ -85,8 +85,8 @@ func loadConfigParams() *config.ConfigParams {
 	if cfg.VoteStartHeight > 0 {
 		activeNetParams.VoteStartHeight = cfg.VoteStartHeight
 	}
-	if cfg.OutputHashCheckHeight > 0 {
-		activeNetParams.OutputHashCheckHeight = cfg.OutputHashCheckHeight
+	if cfg.CheckAddressHeight > 0 {
+		activeNetParams.CheckAddressHeight = cfg.CheckAddressHeight
 	}
 	if cfg.CRCOnlyDPOSHeight > 0 {
 		activeNetParams.CRCOnlyDPOSHeight = cfg.CRCOnlyDPOSHeight
