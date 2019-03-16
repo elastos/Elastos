@@ -339,7 +339,7 @@ func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 
 func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	// main version is >= H1
-	if height >= a.State.chainParams.HeightVersions[2] {
+	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
 		arbitrators := a.currentArbitrators
 		if len(arbitrators) == 0 {
 			return nil
@@ -452,7 +452,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
 	producers []*Producer) ([][]byte, error) {
 	// main version >= H2
-	if height >= a.State.chainParams.HeightVersions[3] {
+	if height >= a.State.chainParams.PublicDPOSHeight {
 		if len(producers) < startIndex {
 			return make([][]byte, 0), nil
 		}
@@ -476,7 +476,7 @@ func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
 func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	arbitratorsCount int, producers []*Producer) ([][]byte, error) {
 	// main version >= H2
-	if height >= a.State.chainParams.HeightVersions[3] {
+	if height >= a.State.chainParams.PublicDPOSHeight {
 		if len(producers) < arbitratorsCount/2+1 {
 			return nil, errors.New("producers count less than min arbitrators count")
 		}
@@ -497,7 +497,7 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	}
 
 	// version [H1, H2)
-	if height >= a.State.chainParams.HeightVersions[2] {
+	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
 		return a.getNormalArbitratorsDescV1()
 	}
 

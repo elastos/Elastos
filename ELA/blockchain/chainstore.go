@@ -45,24 +45,26 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
+	chainParams        *config.Params
 	currentBlockHeight uint32
 }
 
-func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
+func NewChainStore(dataDir string, params *config.Params) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
 
 	s := &ChainStore{
-		IStore: db,
-		taskCh: make(chan persistTask, TaskChanCap),
-		quit:   make(chan chan bool, 1),
+		IStore:      db,
+		chainParams: params,
+		taskCh:      make(chan persistTask, TaskChanCap),
+		quit:        make(chan chan bool, 1),
 	}
 
 	go s.taskHandler()
 
-	s.init(genesisBlock)
+	s.init(params.GenesisBlock)
 
 	return s, nil
 }
@@ -477,7 +479,7 @@ func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
-	if b.Height >= config.Parameters.HeightVersions[2] {
+	if b.Height >= c.chainParams.CRCOnlyDPOSHeight {
 		if err := c.persistConfirm(confirm); err != nil {
 			return err
 		}

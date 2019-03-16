@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -20,10 +21,10 @@ type PeerMock interface {
 	Broadcast(msg p2p.Message)
 }
 
-func NewPeerMock() PeerMock {
+func NewPeerMock(params *config.Params) PeerMock {
 	p := &peerMock{
 		TxPool:    mempool.NewTxPool(),
-		BlockPool: mempool.NewBlockPool(),
+		BlockPool: mempool.NewBlockPool(params),
 		relayList: make([]p2p.Message, 0),
 	}
 	p.BlockPool.Chain = blockchain.DefaultLedger.Blockchain

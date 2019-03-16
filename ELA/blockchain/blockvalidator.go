@@ -345,7 +345,7 @@ func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbas
 
 func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error {
 	// main version >= H2
-	if height >= config.DefaultParams.HeightVersions[3] {
+	if height >= config.DefaultParams.PublicDPOSHeight {
 		outputAddressMap := make(map[Uint168]Fixed64)
 		for i := 2; i < len(coinbase.Outputs); i++ {
 			outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value

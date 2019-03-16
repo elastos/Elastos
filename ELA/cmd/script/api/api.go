@@ -147,7 +147,7 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", &config.DefaultParams)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}

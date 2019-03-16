@@ -809,7 +809,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 		return err
 	}
 
-	if block.Height >= config.Parameters.HeightVersions[2] {
+	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
 		if err := checkBlockWithConfirmation(block, confirm); err != nil {
 			return errors.New("block confirmation validate failed")
 		}
@@ -916,9 +916,9 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// Notify the caller that the new block was accepted into the block
 	// chain.  The caller would typically want to react by relaying the
 	// inventory to other peers.
-	if block.Height >= config.Parameters.HeightVersions[2] {
+	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
 		events.Notify(events.ETBlockConfirmAccepted, block)
-	} else if block.Height == config.Parameters.HeightVersions[2]-1 {
+	} else if block.Height == b.chainParams.CRCOnlyDPOSHeight-1 {
 		events.Notify(events.ETNewBlockReceived, &DposBlock{
 			Block:       block,
 			HaveConfirm: true,
