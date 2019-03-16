@@ -746,7 +746,15 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	}
 
 	arbitratorsBytes := Arbiters.GetArbitrators()
-	index := int(block.Header.Height) % len(arbitratorsBytes)
+	Arbiters.GetOnDutyArbitrator()
+	var index int
+	if block.Height >= config.Parameters.PublicDPOSHeight-1 {
+		index = int(block.Height-config.Parameters.PublicDPOSHeight+1) % len(arbitratorsBytes)
+	} else if block.Height >= config.Parameters.CRCOnlyDPOSHeight-1 {
+		index = int(block.Height-config.Parameters.CRCOnlyDPOSHeight+1) % len(arbitratorsBytes)
+	} else {
+		index = int(block.Header.Height) % len(arbitratorsBytes)
+	}
 
 	var arbitrators []string
 	for _, data := range arbitratorsBytes {
