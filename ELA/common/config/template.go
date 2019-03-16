@@ -46,7 +46,7 @@ var Template = Configuration{
 		Pass:        "",
 		WhiteIPList: []string{"127.0.0.1"},
 	},
-	OutputHashCheckHeight: 88812,
+	CheckAddressHeight: 88812,
 	VoteStartHeight: 88812,
 	CRCOnlyDPOSHeight: 1008812, //fixme edit height later
 	PublicDPOSHeight: 1108812, //fixme edit height later
