@@ -49,7 +49,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.foundationAddress = FoundationAddress
 
 	chainStore, err := NewChainStore("Chain_UnitTest1",
-		&config.DefaultParams)
+		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}

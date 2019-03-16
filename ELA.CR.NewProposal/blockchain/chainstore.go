@@ -8,7 +8,6 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -45,11 +44,10 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
-	chainParams        *config.Params
 	currentBlockHeight uint32
 }
 
-func NewChainStore(dataDir string, params *config.Params) (IChainStore, error) {
+func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
@@ -57,14 +55,13 @@ func NewChainStore(dataDir string, params *config.Params) (IChainStore, error) {
 
 	s := &ChainStore{
 		IStore:      db,
-		chainParams: params,
 		taskCh:      make(chan persistTask, TaskChanCap),
 		quit:        make(chan chan bool, 1),
 	}
 
 	go s.taskHandler()
 
-	s.init(params.GenesisBlock)
+	s.init(genesisBlock)
 
 	return s, nil
 }
@@ -479,10 +476,8 @@ func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
-	if b.Height >= c.chainParams.CRCOnlyDPOSHeight {
-		if err := c.persistConfirm(confirm); err != nil {
-			return err
-		}
+	if err := c.persistConfirm(confirm); err != nil {
+		return err
 	}
 	return c.BatchCommit()
 }
@@ -525,6 +520,9 @@ func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) {
 }
 
 func (c *ChainStore) persistConfirm(confirm *payload.Confirm) error {
+	if confirm == nil {
+		return nil
+	}
 	if err := c.PersistConfirm(confirm); err != nil {
 		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
 		return err

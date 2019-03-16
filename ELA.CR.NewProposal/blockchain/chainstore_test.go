@@ -16,7 +16,7 @@ var sidechainTxHash common.Uint256
 
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
-	temp, err := NewChainStore("Chain_UnitTest", &config.DefaultParams)
+	temp, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
 	testChainStore = temp.(*ChainStore)
 	testChainStore.NewBatch()
 	if err != nil {
