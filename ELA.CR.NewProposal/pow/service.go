@@ -95,10 +95,10 @@ type Service struct {
 	lastBlock *types.Block
 }
 
-func GetDefaultTxVersion(height uint32) types.TransactionVersion {
+func (pow *Service) GetDefaultTxVersion(height uint32) types.TransactionVersion {
 	var v types.TransactionVersion = 0
 	// when block height greater than H2 use the version TxVersion09
-	if height >= config.Parameters.HeightVersions[3] {
+	if height >= pow.chainParams.PublicDPOSHeight {
 		v = types.TxVersion09
 	}
 	return v
@@ -112,7 +112,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 
 	currentHeight := pow.chain.GetHeight() + 1
 	tx := &types.Transaction{
-		Version:        GetDefaultTxVersion(currentHeight),
+		Version:        pow.GetDefaultTxVersion(currentHeight),
 		TxType:         types.CoinBase,
 		PayloadVersion: payload.CoinBaseVersion,
 		Payload: &payload.CoinBase{
@@ -157,7 +157,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 
 func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward common.Fixed64) error {
 	// main version >= H2
-	if block.Height >= config.Parameters.HeightVersions[3] {
+	if block.Height >= pow.chainParams.PublicDPOSHeight {
 		rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
 		rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
 

@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"errors"
 	"sort"
@@ -131,10 +130,6 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 		return err
 	}
 
-	if err := checkCrossChainArbitrators(publicKeys); err != nil {
-		return err
-	}
-
 	return verifyMultisigSignatures(m, n, publicKeys, program.Parameter, data)
 }
 
@@ -155,7 +150,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
+		sign := signatures[i:i+crypto.SignatureScriptLength][1:]
 		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
@@ -176,43 +171,6 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	// Check signatures count
 	if len(verified) < m {
 		return errors.New("matched signatures not enough")
-	}
-
-	return nil
-}
-
-func checkCrossChainArbitrators(publicKeys [][]byte) error {
-	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
-	if len(arbitrators) != len(publicKeys) {
-		return errors.New("invalid arbitrator count")
-	}
-
-	arbitratorsMap := make(map[string]interface{})
-	for _, arbitrator := range arbitrators {
-		found := false
-		for _, pk := range publicKeys {
-			if bytes.Equal(arbitrator, pk[1:]) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return errors.New("invalid cross chain arbitrators")
-		}
-
-		arbitratorsMap[common.BytesToHexString(arbitrator)] = nil
-	}
-
-	if DefaultLedger.Blockchain.GetHeight() >=
-		DefaultLedger.Blockchain.chainParams.CRCOnlyDPOSHeight-1 {
-		for _, crc := range DefaultLedger.Arbitrators.GetArbitrators() {
-			if _, exist :=
-				arbitratorsMap[common.BytesToHexString(crc)]; !exist {
-				return errors.New("not all crc arbitrators participated in" +
-					" crosschain multi-sign")
-			}
-		}
 	}
 
 	return nil

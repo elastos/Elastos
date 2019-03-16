@@ -85,14 +85,14 @@ func loadConfigParams() *config.ConfigParams {
 	if cfg.VoteStartHeight > 0 {
 		activeNetParams.VoteStartHeight = cfg.VoteStartHeight
 	}
-	if len(cfg.HeightVersions) > 0 {
-		activeNetParams.HeightVersions = cfg.HeightVersions
-		if len(cfg.HeightVersions) > 2 {
-			activeNetParams.CRCOnlyDPOSHeight = cfg.HeightVersions[2]
-		}
-		if len(cfg.HeightVersions) > 3 {
-			activeNetParams.PublicDPOSHeight = cfg.HeightVersions[3]
-		}
+	if cfg.OutputHashCheckHeight > 0 {
+		activeNetParams.OutputHashCheckHeight = cfg.OutputHashCheckHeight
+	}
+	if cfg.CRCOnlyDPOSHeight > 0 {
+		activeNetParams.CRCOnlyDPOSHeight = cfg.CRCOnlyDPOSHeight
+	}
+	if cfg.PublicDPOSHeight > 0 {
+		activeNetParams.PublicDPOSHeight = cfg.PublicDPOSHeight
 	}
 	if cfg.ArbiterConfiguration.NormalArbitratorsCount > 0 {
 		activeNetParams.GeneralArbiters =

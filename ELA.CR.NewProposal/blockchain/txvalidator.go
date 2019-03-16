@@ -438,7 +438,7 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 func checkOutputProgramHash(height uint32, programHash common.Uint168) error {
 	// main version >= 88812
-	if height >= config.DefaultParams.HeightVersions[1] {
+	if height >= config.DefaultParams.OutputHashCheckHeight {
 		var empty = common.Uint168{}
 		if programHash.IsEqual(empty) {
 			return nil
@@ -737,6 +737,54 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 	for _, v := range references {
 		if bytes.Compare(v.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
+		}
+	}
+
+	for _, p := range txn.Programs {
+		publicKeys, err := crypto.ParseCrossChainScript(p.Code)
+		if err != nil {
+			return err
+		}
+
+		if err := b.checkCrossChainArbitrators(publicKeys); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
+	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
+	if len(arbitrators) != len(publicKeys) {
+		return errors.New("invalid arbitrator count")
+	}
+
+	arbitratorsMap := make(map[string]interface{})
+	for _, arbitrator := range arbitrators {
+		found := false
+		for _, pk := range publicKeys {
+			if bytes.Equal(arbitrator, pk[1:]) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return errors.New("invalid cross chain arbitrators")
+		}
+
+		arbitratorsMap[common.BytesToHexString(arbitrator)] = nil
+	}
+
+	if DefaultLedger.Blockchain.GetHeight()+1 >=
+		b.chainParams.CRCOnlyDPOSHeight {
+		for _, crc := range DefaultLedger.Arbitrators.GetArbitrators() {
+			if _, exist :=
+				arbitratorsMap[common.BytesToHexString(crc)]; !exist {
+				return errors.New("not all crc arbitrators participated in" +
+					" crosschain multi-sign")
+			}
 		}
 	}
 

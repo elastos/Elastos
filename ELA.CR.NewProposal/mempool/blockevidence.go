@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -63,7 +62,7 @@ func (bm *BlockPool) getConfirmSigners(confirm *payload.Confirm) ([][]byte, erro
 
 func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block) error {
 	// main version >= H2
-	if height >= config.Parameters.HeightVersions[2] {
+	if height >= bm.chainParams.CRCOnlyDPOSHeight {
 		if !bm.IsCurrent() {
 			return nil
 		}

@@ -72,30 +72,32 @@ type CRCArbiterInfo struct {
 }
 
 type Configuration struct {
-	ActiveNet            string               `json:"ActiveNet"`
-	Magic                uint32               `json:"Magic"`
-	FoundationAddress    string               `json:"FoundationAddress"`
-	Version              int                  `json:"Version"`
-	SeedList             []string             `json:"SeedList"`
-	HttpRestPort         int                  `json:"HttpRestPort"`
-	MinCrossChainTxFee   int                  `json:"MinCrossChainTxFee"`
-	RestCertPath         string               `json:"RestCertPath"`
-	RestKeyPath          string               `json:"RestKeyPath"`
-	HttpInfoPort         uint16               `json:"HttpInfoPort"`
-	HttpInfoStart        bool                 `json:"HttpInfoStart"`
-	HttpWsPort           int                  `json:"HttpWsPort"`
-	HttpJsonPort         int                  `json:"HttpJsonPort"`
-	NodePort             uint16               `json:"NodePort"`
-	PrintLevel           uint8                `json:"PrintLevel"`
-	MaxLogsSize          int64                `json:"MaxLogsSize"`
-	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
-	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
-	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
-	EnableArbiter        bool                 `json:"EnableArbiter"`
-	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
-	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
-	HeightVersions       []uint32             `json:"HeightVersions"`
-	VoteStartHeight      uint32               `json:"VoteStartHeight"`
+	ActiveNet             string               `json:"ActiveNet"`
+	Magic                 uint32               `json:"Magic"`
+	FoundationAddress     string               `json:"FoundationAddress"`
+	Version               int                  `json:"Version"`
+	SeedList              []string             `json:"SeedList"`
+	HttpRestPort          int                  `json:"HttpRestPort"`
+	MinCrossChainTxFee    int                  `json:"MinCrossChainTxFee"`
+	RestCertPath          string               `json:"RestCertPath"`
+	RestKeyPath           string               `json:"RestKeyPath"`
+	HttpInfoPort          uint16               `json:"HttpInfoPort"`
+	HttpInfoStart         bool                 `json:"HttpInfoStart"`
+	HttpWsPort            int                  `json:"HttpWsPort"`
+	HttpJsonPort          int                  `json:"HttpJsonPort"`
+	NodePort              uint16               `json:"NodePort"`
+	PrintLevel            uint8                `json:"PrintLevel"`
+	MaxLogsSize           int64                `json:"MaxLogsSize"`
+	MaxPerLogSize         int64                `json:"MaxPerLogSize"`
+	MaxTxsInBlock         int                  `json:"MaxTransactionInBlock"`
+	PowConfiguration      PowConfiguration     `json:"PowConfiguration"`
+	EnableArbiter         bool                 `json:"EnableArbiter"`
+	ArbiterConfiguration  ArbiterConfiguration `json:"ArbiterConfiguration"`
+	RpcConfiguration      RpcConfiguration     `json:"RpcConfiguration"`
+	OutputHashCheckHeight uint32               `json:"OutputHashCheckHeight"`
+	VoteStartHeight       uint32               `json:"VoteStartHeight"`
+	CRCOnlyDPOSHeight     uint32               `json:"CRCOnlyDPOSHeight"`
+	PublicDPOSHeight      uint32               `json:"PublicDPOSHeight"`
 }
 
 type ArbiterConfiguration struct {

@@ -48,7 +48,7 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore("Chain_UnitTest", &config.DefaultParams)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -159,21 +159,21 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		{ProgramHash: common.Uint168{}, Value: common.Fixed64(float64(rewardInCoinbase) * 0.35)},
 	}
 
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
+	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
 
 	for _, v := range arbitratorHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
 	}
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
+	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
 
 	for _, v := range candidateHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})
 	}
-	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.HeightVersions[3], tx, rewardInCoinbase))
+	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
 
 	DefaultLedger = originLedger
 }

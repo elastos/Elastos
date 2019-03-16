@@ -347,7 +347,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// Remove block from request maps. Either chain will know about it and
 	// so we shouldn't have any more instances of trying to fetch it, or we
 	// will fail the insert and thus we'll retry next time we get an inv.
-	if bmsg.block.Block.Height < sm.chainParams.HeightVersions[2] {
+	if bmsg.block.Block.Height < sm.chainParams.CRCOnlyDPOSHeight {
 		_, confirmedBlockExist := state.requestedConfirmedBlocks[blockHash]
 		if confirmedBlockExist {
 			delete(state.requestedConfirmedBlocks, blockHash)

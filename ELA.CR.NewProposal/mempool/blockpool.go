@@ -19,8 +19,9 @@ type BlockPool struct {
 	IsCurrent func() bool
 
 	sync.RWMutex
-	blocks   map[common.Uint256]*types.Block
-	confirms map[common.Uint256]*payload.Confirm
+	blocks      map[common.Uint256]*types.Block
+	confirms    map[common.Uint256]*payload.Confirm
+	chainParams *config.Params
 }
 
 func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
@@ -33,7 +34,7 @@ func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
 
 func (bm *BlockPool) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	// main version >=H1
-	if dposBlock.Block.Height >= config.Parameters.HeightVersions[2] {
+	if dposBlock.Block.Height >= bm.chainParams.CRCOnlyDPOSHeight {
 		return bm.AppendDposBlock(dposBlock)
 	}
 
@@ -224,9 +225,10 @@ func (bm *BlockPool) GetConfirm(hash common.Uint256) (
 	return confirm, ok
 }
 
-func NewBlockPool() *BlockPool {
+func NewBlockPool(params *config.Params) *BlockPool {
 	return &BlockPool{
-		blocks:   make(map[common.Uint256]*types.Block),
-		confirms: make(map[common.Uint256]*payload.Confirm),
+		blocks:      make(map[common.Uint256]*types.Block),
+		confirms:    make(map[common.Uint256]*payload.Confirm),
+		chainParams: params,
 	}
 }

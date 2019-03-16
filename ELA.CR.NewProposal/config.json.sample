@@ -76,12 +76,9 @@
         "127.0.0.1"
       ]
     },
-    "HeightVersions": [
-      0,
-      88812,
-      1008812,
-      1108812
-    ],
+    "OutputHashCheckHeight": 88812,
+    "CRCOnlyDPOSHeight": 1008812,
+    "PublicDPOSHeight": 1108812,
     "VoteStartHeight": 88812
   }
 }
