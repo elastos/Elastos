@@ -58,6 +58,12 @@ func (a simpleAddr) Network() string {
 // Ensure simpleAddr implements the net.Addr interface.
 var _ net.Addr = simpleAddr{}
 
+// newPeerMsg represent a new connected peer.
+type newPeerMsg *serverPeer
+
+// donePeerMsg represent a disconnected peer.
+type donePeerMsg *serverPeer
+
 // broadcastMsg provides the ability to house a message to be broadcast
 // to all connected peers except specified excluded peers.
 type broadcastMsg struct {
@@ -118,8 +124,7 @@ type server struct {
 
 	cfg         Config
 	connManager *connmgr.ConnManager
-	newPeers    chan *serverPeer
-	donePeers   chan *serverPeer
+	peerQueue   chan interface{}
 	query       chan interface{}
 	broadcast   chan broadcastMsg
 	wg          sync.WaitGroup
@@ -534,7 +539,7 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.donePeers <- sp
+	s.peerQueue <- donePeerMsg(sp)
 	close(sp.quit)
 }
 
@@ -552,13 +557,9 @@ func (s *server) peerHandler() {
 out:
 	for {
 		select {
-		// New peers connected to the server.
-		case p := <-s.newPeers:
-			s.handleAddPeerMsg(state, p)
-
-			// Disconnected peers.
-		case p := <-s.donePeers:
-			s.handleDonePeerMsg(state, p)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(state, p)
 
 			// Message to broadcast to all connected peers except those
 			// which are excluded by the message.
@@ -584,8 +585,7 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		case <-s.broadcast:
 		case <-s.query:
 		default:
@@ -595,9 +595,21 @@ cleanup:
 	s.wg.Done()
 }
 
+// handlePeerMsg deals with adding/removing and ban peer message.
+func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
+	switch sp := sp.(type) {
+	case newPeerMsg:
+		s.handleAddPeerMsg(state, sp)
+
+	case donePeerMsg:
+		s.handleDonePeerMsg(state, sp)
+
+	}
+}
+
 // AddPeer adds a new peer that has already been connected to the server.
 func (s *server) AddPeer(sp *serverPeer) {
-	s.newPeers <- sp
+	s.peerQueue <- newPeerMsg(sp)
 }
 
 // BroadcastMessage sends msg to all peers currently connected to the server
@@ -778,8 +790,7 @@ func NewServer(origCfg *Config) (*server, error) {
 
 	s := server{
 		cfg:       cfg,
-		newPeers:  make(chan *serverPeer, maxPeers),
-		donePeers: make(chan *serverPeer, maxPeers),
+		peerQueue: make(chan interface{}, maxPeers),
 		query:     make(chan interface{}),
 		broadcast: make(chan broadcastMsg, maxPeers),
 		quit:      make(chan struct{}),
