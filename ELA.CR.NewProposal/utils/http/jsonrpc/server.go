@@ -29,7 +29,7 @@ const (
 )
 
 //if  we want to run server_test.go, set this to be true (add one test action)
-var bRegistTestAction bool = false
+//var bRegistTestAction bool = false
 
 // Handler is the registered method to handle a http request.
 type Handler func(htp.Params) (interface{}, error)
@@ -119,9 +119,9 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	if bRegistTestAction {
-		s.RegisterTestAction()
-	}
+	//if bRegistTestAction {
+	//	s.RegisterTestAction()
+	//}
 	if s.cfg.Path == "" {
 		s.server = &http.Server{Handler: s}
 	} else {
@@ -306,11 +306,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp.Result = result
 	resp.write(w, http.StatusOK)
 }
-func (s *Server) RegisterTestAction() {
-	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
-		return nil, nil
-	}, "level")
-}
+//func (s *Server) RegisterTestAction() {
+//	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
+//		return nil, nil
+//	}, "level")
+//}
 
 // NewServer creates and return a JSON-RPC server instance.
 func NewServer(cfg *Config) *Server {
