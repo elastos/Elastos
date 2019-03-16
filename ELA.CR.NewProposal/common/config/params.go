@@ -80,7 +80,7 @@ var DefaultParams = Params{
 	RewardPerBlock:           rewardPerBlock(2 * time.Minute),
 	CoinbaseMaturity:         100,
 	MinTransactionFee:        100,
-	OutputHashCheckHeight:    88812,
+	CheckAddressHeight:       88812,
 	VoteStartHeight:          88812,   //fixme edit height later
 	CRCOnlyDPOSHeight:        1008812, //fixme edit height later
 	PublicDPOSHeight:         1108812, //fixme edit height later
@@ -113,7 +113,7 @@ func (p *Params) TestNet() *Params {
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
-	copy.OutputHashCheckHeight = 0
+	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 0         //fixme edit height later
 	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
 	copy.PublicDPOSHeight = 1108812  //fixme edit height later
@@ -132,7 +132,7 @@ func (p *Params) RegNet() *Params {
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
-	copy.OutputHashCheckHeight = 0
+	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 0         //fixme edit height later
 	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
 	copy.PublicDPOSHeight = 1108812  //fixme edit height later
@@ -215,8 +215,8 @@ type Params struct {
 	// OriginArbiters defines the original arbiters producing the block.
 	OriginArbiters []string
 
-	// OutputHashCheckHeight defines the height begin to check output hash.
-	OutputHashCheckHeight uint32
+	// CheckAddressHeight defines the height begin to check output hash.
+	CheckAddressHeight uint32
 
 	// VoteStartHeight indicates the height of starting register producer and
 	// vote related.

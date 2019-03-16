@@ -76,7 +76,7 @@
         "127.0.0.1"
       ]
     },
-    "OutputHashCheckHeight": 88812,
+    "CheckAddressHeight": 88812,
     "CRCOnlyDPOSHeight": 1008812,
     "PublicDPOSHeight": 1108812,
     "VoteStartHeight": 88812

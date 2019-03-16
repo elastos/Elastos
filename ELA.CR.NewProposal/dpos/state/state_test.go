@@ -119,7 +119,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 	state := NewState(&config.DefaultParams, nil)
 	config.Parameters = config.ConfigParams{
 		Configuration: &config.Configuration{
-			OutputHashCheckHeight: 100,
+			CheckAddressHeight: 100,
 			CRCOnlyDPOSHeight: 200,
 			PublicDPOSHeight: 300,
 		},
