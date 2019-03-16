@@ -1153,14 +1153,17 @@ func CheckInactiveArbitrators(txn *Transaction,
 		return err
 	}
 
-	if len(p.Arbitrators) != int(inactiveArbitratorsCount) {
-		return errors.New("number of arbitrators must be " +
+	if len(p.Arbitrators) > int(inactiveArbitratorsCount) {
+		return errors.New("number of arbitrators must less equal than " +
 			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
 	}
 	for _, v := range p.Arbitrators {
 		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists {
-			return errors.New("inactive arbitrator is not belong to CRC " +
+			return errors.New("inactive arbitrator is not belong to " +
 				"arbitrators")
+		}
+		if DefaultLedger.Arbitrators.IsCRCArbitrator(v) {
+			return errors.New("inactive arbiters should not include CRC")
 		}
 	}
 
