@@ -99,6 +99,13 @@ func (f *Filter) MatchUnconfirmed(tx *types.Transaction) bool {
 	return match
 }
 
+func (f *Filter) Filter() TxFilter {
+	f.mtx.Lock()
+	filter := f.filter
+	f.mtx.Unlock()
+	return filter
+}
+
 func New(newFilter func(uint8) TxFilter) *Filter {
 	return &Filter{newFilter: newFilter}
 }

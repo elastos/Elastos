@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/elanet/filter/sidefilter"
@@ -299,7 +300,11 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Generate inventory message.
 	invMsg := msg.NewInv()
 	for i := range hashList {
-		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, hashList[i])
+		invType := msg.InvTypeConfirmedBlock
+		if sp.filter.IsLoaded() { // Compatible for SPV client.
+			invType = msg.InvTypeBlock
+		}
+		iv := msg.NewInvVect(invType, hashList[i])
 		invMsg.AddInvVect(iv)
 	}
 
@@ -587,7 +592,27 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 
 	// Generate a merkle block by filtering the requested block according
 	// to the filter for the peer.
-	merkle, matchedTxIndices := filter.NewMerkleBlock(blk, sp.filter)
+	merkle, matchedTxIndices := filter.NewMerkleBlock(blk.Transactions,
+		sp.filter)
+
+	// Create block header.
+	switch sp.filter.Filter().(type) {
+	// Compatible with old version SPV clients.
+	case *bloom.TxFilter:
+		merkle.Header = &blk.Header
+
+	// Side chain needs DPOS header format to receive confirm.
+	case *sidefilter.Filter:
+		var confirm payload.Confirm
+		if blk.HaveConfirm {
+			confirm = *blk.Confirm
+		}
+		merkle.Header = &types.DPOSHeader{
+			Header:      blk.Header,
+			HaveConfirm: blk.HaveConfirm,
+			Confirm:     confirm,
+		}
+	}
 
 	// Once we have fetched data wait for any previous operation to finish.
 	if waitChan != nil {
@@ -647,6 +672,17 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 				!sp.filter.MatchUnconfirmed(tx) {
 				continue
 			}
+		}
+
+		// Compatible for old version SPV client.
+		if sp.filter.IsLoaded() {
+			// Do not send unconfirmed block to SPV client.
+			if rmsg.invVect.Type == msg.InvTypeBlock {
+				continue
+			}
+
+			// Change inv type to InvTypeBlock for compatible.
+			rmsg.invVect.Type = msg.InvTypeBlock
 		}
 
 		// Queue the inventory to be relayed with the next batch.
