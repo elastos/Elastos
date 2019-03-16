@@ -89,8 +89,8 @@ func (m *mBlock) traverseAndBuild(height, pos uint32) {
 }
 
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlock(block *types.DposBlock, filter *Filter) (*msg.MerkleBlock, []uint32) {
-	NumTx := uint32(len(block.Transactions))
+func NewMerkleBlock(txs []*types.Transaction, filter *Filter) (*msg.MerkleBlock, []uint32) {
+	NumTx := uint32(len(txs))
 	mBlock := mBlock{
 		NumTx:       NumTx,
 		AllHashes:   make([]*common.Uint256, 0, NumTx),
@@ -99,7 +99,7 @@ func NewMerkleBlock(block *types.DposBlock, filter *Filter) (*msg.MerkleBlock, [
 
 	// Find and keep track of any transactions that match the filter.
 	var matchedIndexes []uint32
-	for index, tx := range block.Transactions {
+	for index, tx := range txs {
 		if filter.MatchConfirmed(tx) {
 			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
 			matchedIndexes = append(matchedIndexes, uint32(index))
@@ -119,18 +119,8 @@ func NewMerkleBlock(block *types.DposBlock, filter *Filter) (*msg.MerkleBlock, [
 	// Build the depth-first partial merkle tree.
 	mBlock.traverseAndBuild(height, 0)
 
-	// Create block header.
-	header := &types.DPOSHeader{
-		Header:      block.Header,
-		HaveConfirm: block.HaveConfirm,
-	}
-	if block.HaveConfirm {
-		header.Confirm = *block.Confirm
-	}
-
 	// Create and return the merkle block.
 	merkleBlock := &msg.MerkleBlock{
-		Header:       header,
 		Transactions: mBlock.NumTx,
 		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
