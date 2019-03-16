@@ -843,6 +843,8 @@ func (s *State) countArbitratorsInactivity(height uint32,
 		buf, _ := common.HexStringToBytes(k)
 		key := s.getProducerKey(buf)
 
+		// CRC producers are not in the activityProducers,
+		// so they will not be inactive
 		if producer, ok := s.activityProducers[key]; ok {
 			countingHeight := producer.inactiveCountingHeight
 			signed := v
