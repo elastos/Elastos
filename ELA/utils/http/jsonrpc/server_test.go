@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/utils/test"
 	"net"
 	"net/http"
 	"testing"
 	"time"
+	"github.com/elastos/Elastos.ELA/utils/test"
 	htp "github.com/elastos/Elastos.ELA/utils/http"
 
 )
@@ -47,9 +47,7 @@ func isRunServer() bool {
 }
 func init() {
 
-	//log.Init("./Elastos", 1, 0, 0)
 	initUrl()
-	initReqObject()
 }
 
 func registerTestAction(s *Server, t *testing.T ){
@@ -74,7 +72,8 @@ func initReqObject() {
 	if err := json.Unmarshal([]byte(reqStr), &reqObj); err == nil {
 		//fmt.Printf("reqObj %+v\n", reqObj)
 	} else {
-		//fmt.Println(err)
+		fmt.Println(err)
+		return
 	}
 	///////////////
 	req_new = bytes.NewBuffer([]byte(reqStr))
@@ -248,7 +247,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLocalhostWithAuthTest end")
 
 	}
 	urlLocalhostWithAuthTest(urlLocalhost, true, http.StatusOK, t)
@@ -259,7 +257,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLoopBackWithAuthTest end")
 
 	}
 	urlLoopBackWithAuthTest(urlLoopBack, true, http.StatusOK, t)
@@ -269,7 +266,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlNotLoopBackWithAuthTest end")
 
 	}
 	urlNotLoopBackWithAuthTest(urlNotLoopBack, true, http.StatusForbidden, t)
@@ -280,7 +276,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = "1111"
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLocalhostWithAuthWrongUserPassTest end")
 
 	}
 	urlLocalhostWithAuthWrongUserPassTest(urlLocalhost, true, http.StatusUnauthorized, t)
@@ -290,7 +285,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLocalhostWithAuthWrongUserTest end")
 
 	}
 
@@ -301,7 +295,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = "123"
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLocalhostWithAuthWrongPassTest end")
 
 	}
 	urlLocalhostWithAuthWrongPassTest(urlLocalhost, true, http.StatusUnauthorized, t)
@@ -311,7 +304,6 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 		clientAuthPass = "123"
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		//t.Logf("TestServer_WithUserPassNoIp    urlLocalhostNoAuthTest end")
 
 	}
 	urlLocalhostNoAuthTest(urlLocalhost, false, http.StatusUnauthorized, t)
@@ -344,7 +336,6 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_NoUserPassWithIp    urlLocalhostNoAuthTest end")
 
 	}
 	urlLocalhostNoAuthTest(urlLocalhost, false, http.StatusOK, t)
@@ -354,7 +345,6 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_NoUserPassWithIp    urlLoopBackNoAuthTest end")
 
 	}
 	urlLoopBackNoAuthTest(urlLoopBack, false, http.StatusOK, t)
@@ -364,7 +354,6 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_NoUserPassWithIp    urlNotLoopBacktNoAuthTest end")
 
 	}
 	urlNotLoopBacktNoAuthTest(urlNotLoopBack, false, http.StatusForbidden, t)
@@ -374,7 +363,6 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_NoUserPassWithIp    urlLoopBackWithAuthTest end")
 
 	}
 	urlLoopBackWithAuthTest(urlLoopBack, true, http.StatusOK, t)
@@ -409,7 +397,6 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithUserPassWithIp    urlLoopbackWithAuthTest end")
 
 	}
 	urlLoopbackWithAuthTest(urlLoopBack, true, http.StatusOK, t)
@@ -419,7 +406,6 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithUserPassWithIp    urlNotLoopbackWithAuthTest end")
 
 	}
 	urlNotLoopbackWithAuthTest(urlNotLoopBack, true, http.StatusForbidden, t)
@@ -429,7 +415,6 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithUserPassWithIp    urlLoopbackWithAuthWrongUserTest end")
 
 	}
 	urlLoopbackWithAuthWrongUserTest(urlLoopBack, true, http.StatusUnauthorized, t)
@@ -439,7 +424,6 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		clientAuthPass = "1111"
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithUserPassWithIp    urlLoopbackWithAuthWrongPassTest end")
 
 	}
 	urlLoopbackWithAuthWrongPassTest(urlLoopBack, true, http.StatusUnauthorized, t)
@@ -474,7 +458,6 @@ func TestServer_WithIp0000(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithIp0000    urlNotLoopbackWithAuthTest end")
 
 	}
 	urlNotLoopbackWithAuthTest(urlNotLoopBack, true, http.StatusOK, t)
@@ -484,7 +467,6 @@ func TestServer_WithIp0000(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithIp0000    urlLoopbackWithAuthTest end")
 
 	}
 	urlLoopbackWithAuthTest(urlLoopBack, true, http.StatusOK, t)
@@ -494,7 +476,6 @@ func TestServer_WithIp0000(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithIp0000    urlLocalhostWithAuthTest end")
 
 	}
 	urlLocalhostWithAuthTest(urlLocalhost, true, http.StatusOK, t)
@@ -504,7 +485,6 @@ func TestServer_WithIp0000(t *testing.T) {
 		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
-		t.Logf("TestServer_WithIp0000    urlLoopbackWithAuthWrongUserTest end")
 
 	}
 	urlLoopbackWithAuthWrongUserTest(urlLoopBack, true, http.StatusUnauthorized, t)
