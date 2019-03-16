@@ -30,7 +30,7 @@ func TestService_Init(t *testing.T) {
 	)
 
 	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		&config.DefaultParams)
+		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err)
 	}
