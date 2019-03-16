@@ -117,14 +117,6 @@ func mockIllegalBlockTx(publicKey []byte) *types.Transaction {
 
 func TestState_ProcessTransaction(t *testing.T) {
 	state := NewState(&config.DefaultParams, nil)
-	config.Parameters = config.ConfigParams{
-		Configuration: &config.Configuration{
-			CheckAddressHeight: 100,
-			CRCOnlyDPOSHeight: 200,
-			PublicDPOSHeight: 300,
-		},
-		ChainParam: nil,
-	}
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
