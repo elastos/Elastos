@@ -71,7 +71,7 @@ namespace Elastos {
 				_reconnectTimer = nullptr;
 			}
 
-			_peerManager->SetReconnectTaskCount(0);
+			getPeerManager()->SetReconnectTaskCount(0);
 
 			getPeerManager()->Disconnect();
 
@@ -84,7 +84,7 @@ namespace Elastos {
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
 
-			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
+			Log::debug("{} publish tx {}", getPeerManager()->GetID(), sendingTx.dump());
 			SPVLOG_DEBUG("raw tx {}", Utils::EncodeHex(byteStream.GetBuffer()));
 
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {

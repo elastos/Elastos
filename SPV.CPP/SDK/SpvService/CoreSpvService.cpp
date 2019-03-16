@@ -36,13 +36,7 @@ namespace Elastos {
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(new TransactionHub(loadAssets(), loadTransactions(), _subAccount, createWalletListener()));
 			}
-		}
 
-		const WalletPtr &CoreSpvService::getWallet() {
-			return _wallet;
-		}
-
-		const PeerManagerPtr &CoreSpvService::getPeerManager() {
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						_chainParams,
@@ -54,7 +48,13 @@ namespace Elastos {
 						createPeerManagerListener(),
 						_pluginTypes));
 			}
+		}
 
+		const WalletPtr &CoreSpvService::getWallet() {
+			return _wallet;
+		}
+
+		const PeerManagerPtr &CoreSpvService::getPeerManager() {
 			return _peerManager;
 		}
 
