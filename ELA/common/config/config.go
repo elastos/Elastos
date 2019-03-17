@@ -28,27 +28,27 @@ var (
 	TestNet = ChainParams{
 		Name:               "TestNet",
 		PowLimit:           powLimit,
-		PowLimitBits:       0x1e1da5ff,
-		TargetTimePerBlock: time.Second * 10,
-		TargetTimespan:     time.Second * 10 * 10,
+		PowLimitBits:       0x1f0008ff,
+		TargetTimePerBlock: time.Minute * 2,
+		TargetTimespan:     time.Minute * 2 * 720,
 		AdjustmentFactor:   int64(4),
 		MaxOrphanBlocks:    10000,
 		MinMemoryNodes:     20160,
 		CoinbaseLockTime:   100,
-		RewardPerBlock:     rewardPerBlock(time.Second * 10),
+		RewardPerBlock:     rewardPerBlock(time.Minute * 2),
 	}
 
 	RegNet = ChainParams{
 		Name:               "RegNet",
 		PowLimit:           powLimit,
-		PowLimitBits:       0x207fffff,
-		TargetTimePerBlock: time.Second * 1,
-		TargetTimespan:     time.Second * 1 * 10,
+		PowLimitBits:       0x1f0008ff,
+		TargetTimePerBlock: time.Minute * 2,
+		TargetTimespan:     time.Second * 2 * 720,
 		AdjustmentFactor:   int64(4),
 		MaxOrphanBlocks:    10000,
 		MinMemoryNodes:     20160,
 		CoinbaseLockTime:   100,
-		RewardPerBlock:     rewardPerBlock(time.Second * 1),
+		RewardPerBlock:     rewardPerBlock(time.Minute * 2),
 	}
 )
 
@@ -74,26 +74,26 @@ type CRCArbiterInfo struct {
 type Configuration struct {
 	ActiveNet            string               `json:"ActiveNet"`
 	Magic                uint32               `json:"Magic"`
-	FoundationAddress    string               `json:"FoundationAddress"`
 	Version              int                  `json:"Version"`
 	SeedList             []string             `json:"SeedList"`
-	HttpRestPort         int                  `json:"HttpRestPort"`
-	MinCrossChainTxFee   int                  `json:"MinCrossChainTxFee"`
-	RestCertPath         string               `json:"RestCertPath"`
-	RestKeyPath          string               `json:"RestKeyPath"`
 	HttpInfoPort         uint16               `json:"HttpInfoPort"`
 	HttpInfoStart        bool                 `json:"HttpInfoStart"`
+	HttpRestPort         int                  `json:"HttpRestPort"`
 	HttpWsPort           int                  `json:"HttpWsPort"`
 	HttpJsonPort         int                  `json:"HttpJsonPort"`
 	NodePort             uint16               `json:"NodePort"`
 	PrintLevel           uint8                `json:"PrintLevel"`
 	MaxLogsSize          int64                `json:"MaxLogsSize"`
 	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
+	RestCertPath         string               `json:"RestCertPath"`
+	RestKeyPath          string               `json:"RestKeyPath"`
 	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
+	MinCrossChainTxFee   int                  `json:"MinCrossChainTxFee"`
+	FoundationAddress    string               `json:"FoundationAddress"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
+	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 	EnableArbiter        bool                 `json:"EnableArbiter"`
 	ArbiterConfiguration ArbiterConfiguration `json:"ArbiterConfiguration"`
-	RpcConfiguration     RpcConfiguration     `json:"RpcConfiguration"`
 	CheckAddressHeight   uint32               `json:"CheckAddressHeight"`
 	VoteStartHeight      uint32               `json:"VoteStartHeight"`
 	CRCOnlyDPOSHeight    uint32               `json:"CRCOnlyDPOSHeight"`
