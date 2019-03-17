@@ -24,6 +24,13 @@
       "MinTxFee": 100,
       "InstantBlock": false
     },
+    "RpcConfiguration": {
+      "User": "ElaUser",
+      "Pass": "Ela123",
+      "WhiteIPList": [
+        "127.0.0.1"
+      ]
+    },
     "EnableArbiter": false,
     "ArbiterConfiguration": {
       "PublicKey": "030c756d9ac85337b3c9a4d94a70e2d3f99c6cbb6f78becbfc08baa3df830e5fb4",
@@ -69,16 +76,9 @@
       "EnableEventRecord": false,
       "PreConnectOffset": 360
     },
-    "RpcConfiguration": {
-      "User": "ElaUser",
-      "Pass": "Ela123",
-      "WhiteIPList": [
-        "127.0.0.1"
-      ]
-    },
     "CheckAddressHeight": 88812,
+    "VoteStartHeight": 88812,
     "CRCOnlyDPOSHeight": 1008812,
-    "PublicDPOSHeight": 1108812,
-    "VoteStartHeight": 88812
+    "PublicDPOSHeight": 1108812
   }
 }

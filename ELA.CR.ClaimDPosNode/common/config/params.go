@@ -97,11 +97,12 @@ func (p *Params) TestNet() *Params {
 	copy.DefaultPort = 21338
 
 	copy.SeedList = []string{
-		"node-testnet-001.elastos.org",
 		"node-testnet-002.elastos.org",
 		"node-testnet-003.elastos.org",
 		"node-testnet-004.elastos.org",
 		"node-testnet-005.elastos.org",
+		"node-testnet-006.elastos.org",
+		"node-testnet-007.elastos.org",
 	}
 
 	copy.Foundation = testNetFoundation
@@ -123,6 +124,18 @@ func (p *Params) TestNet() *Params {
 // RegNet returns the network parameters for the test network.
 func (p *Params) RegNet() *Params {
 	copy := *p
+	copy.Magic = 2018002
+	copy.DefaultPort = 22338
+
+	copy.SeedList = []string{
+		"node-regtest-102.eadd.co",
+		"node-regtest-103.eadd.co",
+		"node-regtest-104.eadd.co",
+		"node-regtest-105.eadd.co",
+		"node-regtest-106.eadd.co",
+		"node-regtest-107.eadd.co",
+	}
+
 	copy.Foundation = testNetFoundation
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.OriginArbiters = []string{
@@ -145,7 +158,7 @@ func (p *Params) InstantBlock() *Params {
 	copy.PowLimitBits = 0x207fffff
 	copy.TargetTimespan = 10 * time.Second
 	copy.TargetTimePerBlock = 1 * time.Second
-	copy.RewardPerBlock = rewardPerBlock(1 * time.Second)
+	copy.RewardPerBlock = rewardPerBlock(2 * time.Minute)
 	return &copy
 }
 
