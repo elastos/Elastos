@@ -2,7 +2,6 @@ package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -22,7 +21,7 @@ type Arbitrators interface {
 	GetDutyIndex() int
 
 	GetCRCProducer(publicKey []byte) *Producer
-	GetCRCArbitrators() []config.CRCArbiter
+	GetCRCArbitrators() map[string]*Producer
 	IsCRCArbitrator(pk []byte) bool
 	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 	IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool

@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/stretchr/testify/assert"
+	"sort"
 )
 
 var arbiters *arbitrators
@@ -25,7 +26,7 @@ func TestHeightVersionInit(t *testing.T) {
 		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
 		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
-	config.Parameters.ArbiterConfiguration.CRCArbiters = []config.CRCArbiterInfo{
+	config.Parameters.ArbiterConfiguration.CRCArbiters = []config.CRCArbiter{
 		{PublicKey: "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"},
 		{PublicKey: "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"},
 		{PublicKey: "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"},
@@ -40,6 +41,7 @@ func TestHeightVersionInit(t *testing.T) {
 	}
 
 	activeNetParams := &config.DefaultParams
+	activeNetParams.CRCArbiters = config.Parameters.ArbiterConfiguration.CRCArbiters
 	var err error
 	bestHeight = 0
 	arbiters, err = NewArbitrators(activeNetParams, func() uint32 {
@@ -205,44 +207,49 @@ func TestArbitrators_GetNextOnDutyArbitratorV0(t *testing.T) {
 func TestArbitrators_GetNextOnDutyArbitrator(t *testing.T) {
 	bestHeight = arbiters.State.chainParams.CRCOnlyDPOSHeight - 1
 	arbiters.dutyIndex = 0
+	arbiters.updateNextArbitrators(bestHeight + 1)
+	arbiters.changeCurrentArbitrators()
 
-	sortedArbiters := arbiters.State.chainParams.OriginArbiters
+	sortedArbiters := arbiters.State.chainParams.CRCArbiters
+	sort.Slice(sortedArbiters, func(i, j int) bool {
+		return sortedArbiters[i].PublicKey < sortedArbiters[j].PublicKey
+	})
 
 	currentArbitrator := arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[0], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[0].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(1)
-	assert.Equal(t, sortedArbiters[1], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[1].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(2)
-	assert.Equal(t, sortedArbiters[2], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[2].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(3)
-	assert.Equal(t, sortedArbiters[3], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[3].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(4)
-	assert.Equal(t, sortedArbiters[4], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[4].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(5)
-	assert.Equal(t, sortedArbiters[0], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[0].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	arbiters.dutyIndex = 1
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[1], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[1].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	arbiters.dutyIndex = 2
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[2], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[2].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	arbiters.dutyIndex = 3
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[3], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[3].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	arbiters.dutyIndex = 4
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[4], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[4].PublicKey, common.BytesToHexString(currentArbitrator))
 
 	arbiters.dutyIndex = 5
 	currentArbitrator = arbiters.GetNextOnDutyArbitrator(0)
-	assert.Equal(t, sortedArbiters[0], common.BytesToHexString(currentArbitrator))
+	assert.Equal(t, sortedArbiters[0].PublicKey, common.BytesToHexString(currentArbitrator))
 }
