@@ -169,27 +169,31 @@ export default class extends Base {
 
     const db_cvote = this.getDBModel('CVote');
     const db_user = this.getDBModel('User');
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
     const query: any = {};
 
     if (!param.published) {
       if (!this.isLoggedIn() || !this.canManageProposal()) {
         throw 'cvoteservice.list - unpublished proposals only visible to council/secretary';
+      } else if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
+        query.voteResult = {
+          $elemMatch: {
+            value: constant.CVOTE_RESULT.UNDECIDED,
+            votedBy: currentUserId
+          }
+        }
+        query.published = true
+        query.status = constant.CVOTE_STATUS.PROPOSED
       } else {
         // only owner can list his own proposal
         query.$or = [
-          { createdBy: _.get(this.currentUser, '_id'), published: false },
+          { createdBy: currentUserId, published: false },
           { published: true },
         ]
       }
     } else {
       query.published = param.published
-    }
-
-    const userRole = _.get(this.currentUser, 'role')
-    if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
-      query['voteResult.value'] = constant.CVOTE_RESULT.UNDECIDED
-      query.published = true
-      query.status = constant.CVOTE_STATUS.PROPOSED
     }
 
     const list = await db_cvote.list(query, {
