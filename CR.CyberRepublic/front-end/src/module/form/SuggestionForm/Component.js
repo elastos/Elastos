@@ -15,6 +15,7 @@ import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import sanitizeHtml from 'sanitize-html'
 import './style.scss'
+import { TranslateButton, CopyButton, ModalBody, TranslationText } from './style'
 
 const FormItem = Form.Item
 
@@ -27,7 +28,8 @@ class C extends BaseComponent {
 
     this.state = {
       isTranslateModalOpen: false,
-      showRules: false
+      showRules: false,
+      translation: '',
     }
   }
   //   componentDidMount() {
@@ -127,26 +129,38 @@ class C extends BaseComponent {
     }
   }
 
-  translate = () => {
-    console.log('translate: ', this.props.form.getFieldsValue(['title', 'description']));
+  translate = async () => {
+    const { gTranslate } = this.props
+    const formValues = this.props.form.getFieldsValue(['title', 'description'])
+    console.log('translate: ', formValues);
+    this.setState({ isTranslateModalOpen: true, translation: 'Translating...' })
+    const res = await gTranslate({ text: formValues.title + formValues.description })
+    this.setState({ translation: res.translation })
+    console.log('res is: ', res.translation)
   }
 
   renderTranslationModal() {
-    const { isTranslateModalOpen } = this.state
-    if (!isTranslateModalOpen) return null
-    const translation = 'Translating...'
-    // TODO: translation
-    // translation =
+    const { isTranslateModalOpen, translation } = this.state
+    const copyBtn = <CopyButton onClick={this.copy}>{I18N.get('suggestion.copy')}</CopyButton>
     return (
       <Modal
         className="translate-modal-container"
-        visible={this.state.isTranslateModalOpen}
+        visible={isTranslateModalOpen}
         onOk={this.showTranslate}
-        onCancel={this.showCreateForm}
+        onCancel={this.showTranslate}
         footer={null}
         width="70%"
+        closable
+        centered
+        style={{ minWidth: 400 }}
       >
-        {translation}
+        <ModalBody>
+          <TranslationText>{translation}</TranslationText>
+          <Row type="flex" justify="space-between">
+            <span>{I18N.get('suggestion.translatedByGoogle')}</span>
+            {copyBtn}
+          </Row>
+        </ModalBody>
       </Modal>
     )
   }
@@ -155,6 +169,10 @@ class C extends BaseComponent {
     this.setState({
       showTranslate: !this.state.isTranslateModalOpen,
     })
+  }
+
+  copy = () => {
+
   }
 
   renderHeader() {
@@ -224,17 +242,6 @@ class C extends BaseComponent {
     const rulesNode = this.renderRules()
     const p = this.getInputProps()
 
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 20 },
-      },
-    }
-
     const formContent = (
       <div>
         <FormItem className="form-title">
@@ -246,18 +253,25 @@ class C extends BaseComponent {
         <FormItem className="form-link">
           {p.link}
         </FormItem>
-        <FormItem wrapperCol={{ xs: { span: 24, offset: 0 }, sm: { span: 12, offset: 8 } }} className="form-actions">
-          <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-            {I18N.get('suggestion.submit')}
-          </Button>
+        <FormItem className="form-link">
+          <TranslateButton onClick={this.translate}>{I18N.get('suggestion.translate')}</TranslateButton>
         </FormItem>
+        <Row type="flex" justify="center">
+          <Col xs={24} sm={12} md={6}>
+            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
+              {I18N.get('suggestion.cancel')}
+            </Button>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
+              {I18N.get('suggestion.submit')}
+            </Button>
+          </Col>
+        </Row>
       </div>
     )
     // TODO
-    // const translationModal = this.renderTranslationModal()
+    const translationModal = this.renderTranslationModal()
     return (
       <div className="c_SuggestionForm">
         {headerNode}
@@ -268,7 +282,7 @@ class C extends BaseComponent {
           </Form>
         }
         {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
-        {/* {translationModal} */}
+        {translationModal}
       </div>
     )
   }

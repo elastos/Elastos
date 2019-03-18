@@ -245,6 +245,7 @@ const zh = {
   'suggestion.follow': '关注',
   'suggestion.reportAbuse': '举报滥用',
   'suggestion.translate': '翻译成英语',
+  'suggestion.translatedByGoogle': '由Google翻译',
   'suggestion.councilMember': '委员会成员',
   'suggestion.copy': '复制',
   'suggestion.back': '返回',

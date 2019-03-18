@@ -245,6 +245,7 @@ const en = {
   'suggestion.follow': 'Follow',
   'suggestion.reportAbuse': 'Report Abuse',
   'suggestion.translate': 'Translate in English',
+  'suggestion.translatedByGoogle': 'Translated by Google',
   'suggestion.councilMember': 'Council Member',
   'suggestion.copy': 'COPY',
   'suggestion.back': 'Back',
