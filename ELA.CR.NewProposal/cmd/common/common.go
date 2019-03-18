@@ -11,7 +11,7 @@ import (
 )
 
 func LocalServer() string {
-	return "http://localhost" + ":" + strconv.Itoa(config.Parameters.HttpJsonPort)
+	return "http://localhost" + ":" + strconv.Itoa(config.Template.HttpJsonPort)
 }
 
 func PrintError(c *cli.Context, err error, cmd string) {
