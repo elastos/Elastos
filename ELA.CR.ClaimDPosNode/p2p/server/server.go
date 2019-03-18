@@ -485,7 +485,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 			}
 		}
 
-		sp.SendMessage(bmsg.message, nil)
+		go sp.SendMessage(bmsg.message, nil)
 	})
 }
 
