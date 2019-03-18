@@ -311,12 +311,6 @@ class C extends StandardPage {
     }
   }
 
-  gotoEditPage = () => {
-    const { match, history } = this.props
-    const id = _.get(match, 'params.id')
-    history.push(`/cvote/edit/${id}`)
-  }
-
   renderVoteResults() {
     const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.state.data
     const { avatar_map: avatarMap } = this.props

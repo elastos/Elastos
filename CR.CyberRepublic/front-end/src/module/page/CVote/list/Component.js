@@ -247,11 +247,7 @@ export default class extends BaseComponent {
   }
 
   toDetail(id) {
-    this.props.history.push(`/cvote/${id}`);
-  }
-
-  toCreate = () => {
-    this.props.history.push('/cvote/create');
+    this.props.history.push(`/proposals/${id}`);
   }
 
   voteDataByUser = (data) => {
