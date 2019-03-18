@@ -142,6 +142,10 @@ func setArbitrators(L *lua.LState) int {
 }
 
 func initLedger(L *lua.LState) int {
+	config.Parameters = config.ConfigParams{
+		Configuration: &config.Template,
+		ChainParam:    &config.MainNet,
+	}
 	logLevel := uint8(L.ToInt(1))
 
 	log.NewDefault(logLevel, 0, 0)
