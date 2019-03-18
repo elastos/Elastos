@@ -26,6 +26,9 @@ const (
 	// negotiateTimeout is the duration of inactivity before we timeout a
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 30 * time.Second
+
+	// writeTimeout is the duration of write message before we time out a peer.
+	writeTimeout = 30 * time.Second
 )
 
 // outMsg is used to house a message to be sent along with a channel to signal
@@ -517,7 +520,18 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	// Handle write message timeout.
+	doneChan := make(chan error)
+	go func() {
+		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	}()
+
+	select {
+	case err := <-doneChan:
+		return err
+	case <-time.After(writeTimeout):
+	}
+	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
