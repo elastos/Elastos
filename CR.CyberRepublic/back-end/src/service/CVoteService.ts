@@ -12,7 +12,8 @@ const restrictedFields = {
   update: [
     '_id',
     'createdBy',
-    'createdAt'
+    'createdAt',
+    'proposedAt',
   ]
 }
 
@@ -37,15 +38,6 @@ export default class extends Base {
       title, type, content, published, proposedBy, motionId, isConflict, notes,
     } = param;
 
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
-    const voteResult = []
-    _.each(councilMembers, user => {
-      // use ObjectId.equals
-      const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-      voteResult.push({ votedBy: user._id, value })
-      // send email
-    })
-
     const vid = await this.getNewVid()
     const status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT
 
@@ -60,10 +52,22 @@ export default class extends Base {
       motionId,
       isConflict,
       notes,
-      voteResult,
-      voteHistory: voteResult,
       createdBy: this.currentUser._id
     };
+
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const voteResult = []
+    if (published) {
+      doc.proposedAt = Date.now()
+      _.each(councilMembers, user => {
+        // use ObjectId.equals
+        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+        voteResult.push({ votedBy: user._id, value })
+      })
+      doc.voteResult = voteResult
+      doc.voteHistory = voteResult
+    }
+
     try {
       const res = await db_cvote.save(doc);
       // notify council member to vote
@@ -79,7 +83,9 @@ export default class extends Base {
           <p>Thanks</p>
           <p>Cyber Republic</p>
         `
-        this.notifyCouncil(res, councilMembers, subject, body)
+        const toUsers = _.filter(councilMembers, user => !user._id.equals(currentUserId))
+        console.log('to Users: ', toUsers)
+        this.notifyCouncil(res)
       }
 
       return res
@@ -89,9 +95,26 @@ export default class extends Base {
     }
   }
 
-  private async notifyCouncil(cvote: any, users: Array<any>, subject: string, body: any) {
-    const toMails = _.map(users, 'email')
-    const recVariables = _.zipObject(toMails, _.map(users, (user) => {
+  private async notifyCouncil(cvote: any) {
+    const db_user = this.getDBModel('User');
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const toUsers = _.filter(councilMembers, user => !user._id.equals(currentUserId))
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = `New Proposal: ${cvote.title}`
+    const body = `
+      <p>There is a new proposal added:</p>
+      <br />
+      <p>${cvote.title}</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+    console.log('to Users: ', toUsers)
+    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
       return {
         _id: user._id,
         username: formatUsername(user)
@@ -111,11 +134,11 @@ export default class extends Base {
 
   private async notifyCouncilToVote() {
     // find cvote before 1 day expiration without vote yet for each council member
-    const db_cvote = this.getDBModel('CVote');
-    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - 24 * 60 * 1000 * 1000)
+    const db_cvote = this.getDBModel('CVote')
+    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - constant.ONE_DAY)
     const unvotedCVotes = await db_cvote.getDBInstance().find(
       {
-        createdAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
+        proposedAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
         notified: { $ne: true },
         status: constant.CVOTE_STATUS.PROPOSED
       }
@@ -197,7 +220,8 @@ export default class extends Base {
     }
 
     const list = await db_cvote.list(query, {
-      createdAt: -1
+      vid: -1,
+      // createdAt: -1
     }, 100);
 
     for (const item of list) {
@@ -205,9 +229,8 @@ export default class extends Base {
         const u = await db_user.findOne({ _id: item.createdBy });
         item.createdBy = u.username;
       }
-
     }
-    this.notifyCouncilToVote()
+
     return list;
   }
 
@@ -217,7 +240,9 @@ export default class extends Base {
    * @returns {Promise<"mongoose".Document>}
    */
   public async update(param): Promise<Document> {
-    const db_cvote = this.getDBModel('CVote');
+    const db_user = this.getDBModel('User')
+    const db_cvote = this.getDBModel('CVote')
+    const currentUserId = _.get(this.currentUser, '_id')
     const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
 
     if (!this.currentUser || !this.currentUser._id) {
@@ -244,14 +269,30 @@ export default class extends Base {
     if (published === true && cur.status === constant.CVOTE_STATUS.DRAFT) {
       doc.status = constant.CVOTE_STATUS.PROPOSED
       doc.published = published
+      doc.proposedAt = Date.now()
+      const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
+      const voteResult = []
+      _.each(councilMembers, user => {
+        // use ObjectId.equals
+        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
+        voteResult.push({ votedBy: user._id, value })
+        // send email
+      })
+      doc.voteResult = voteResult
+      doc.voteHistory = voteResult
     }
 
     // always allow secretary to edit notes
     if (notes) doc.notes = notes
-
-    await db_cvote.update({ _id }, doc);
-
-    return await this.getById(_id);
+    try {
+      await db_cvote.update({ _id }, doc)
+      const res = await this.getById(_id)
+      this.notifyCouncil(res)
+      return res
+    } catch (error) {
+      console.log('error happened: ', error)
+      return
+    }
   }
 
   public async finishById(id): Promise<any> {
@@ -290,7 +331,7 @@ export default class extends Base {
   }
 
   public isExpired(data: any, extraTime = 0): Boolean {
-    const ct = moment(data.createdAt).valueOf();
+    const ct = moment(data.proposedAt || data.createdAt).valueOf();
     if (Date.now() - ct - extraTime > constant.CVOTE_EXPIRATION) {
       return true;
     }

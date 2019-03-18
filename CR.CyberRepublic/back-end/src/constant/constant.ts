@@ -139,6 +139,8 @@ export const CVOTE_RESULT = {
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
+export const ONE_DAY = 1000 * 60 * 60 * 24
+
 export const USER_SKILLSET = {
     DESIGN: create(['LOGO_DESIGN', 'FLYERS', 'PACKAGING', 'ILLUSTRATION', 'INFOGRAPHIC', 'PRODUCT_DESIGN',
         'MERCHANDISE', 'PHOTOSHOP']),

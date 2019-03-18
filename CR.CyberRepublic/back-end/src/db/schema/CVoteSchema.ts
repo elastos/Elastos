@@ -81,9 +81,11 @@ export const CVote = {
     published: {
         type: Boolean,
         default: false,
-        required: true
     },
-
+    proposedAt: {
+        type: Date,
+        // default: Date.now,
+    },
     status : {
         type : String,
         enum: _.values(constant.CVOTE_STATUS)
