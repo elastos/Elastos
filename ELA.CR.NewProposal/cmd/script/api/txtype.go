@@ -163,12 +163,7 @@ func transactionSign(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	client := checkClient(L, 2)
 
-	acc, err := client.GetDefaultAccount()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
+	acc := client.GetMainAccount()
 	program := pg.Program{
 		Code:      acc.RedeemScript,
 		Parameter: []byte{},
@@ -177,7 +172,7 @@ func transactionSign(L *lua.LState) int {
 		&program,
 	}
 
-	txn, err = client.Sign(txn)
+	txn, err := client.Sign(txn)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
