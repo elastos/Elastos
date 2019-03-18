@@ -6,9 +6,6 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
-
-const MaxTxPerBlock = 100000
-
 // Ensure Block implement p2p.Message interface.
 var _ p2p.Message = (*Block)(nil)
 

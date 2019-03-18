@@ -126,15 +126,14 @@ func main() {
 			printErrorAndExit(err)
 		}
 		arbitrator, err := dpos.NewArbitrator(pwd, dpos.Config{
-			EnableEventLog: true,
-			EnableEventRecord: config.Parameters.ArbiterConfiguration.
-				EnableEventRecord,
-			Params:       cfg.ArbiterConfiguration,
-			ChainParams:  activeNetParams,
-			Arbitrators:  arbiters,
-			Store:        dposStore,
-			TxMemPool:    txMemPool,
-			BlockMemPool: blockMemPool,
+			EnableEventLog:    true,
+			EnableEventRecord: false,
+			Params:            cfg.ArbiterConfiguration,
+			ChainParams:       activeNetParams,
+			Arbitrators:       arbiters,
+			Store:             dposStore,
+			TxMemPool:         txMemPool,
+			BlockMemPool:      blockMemPool,
 			Broadcast: func(msg p2p.Message) {
 				server.BroadcastMessage(msg)
 			},

@@ -15,7 +15,6 @@
     "PrintLevel": 0,
     "MaxLogsSize": 0,
     "MaxPerLogSize": 0,
-    "MaxTransactionInBlock": 10000,
     "MinCrossChainTxFee": 10000,
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
