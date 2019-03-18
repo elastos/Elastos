@@ -103,21 +103,6 @@ func (ac *Account) PubKey() *crypto.PublicKey {
 	return ac.PublicKey
 }
 
-// Get account redeem script
-//func (a *Account) RedeemScript() []byte {
-//	return a.RedeemScript
-//}
-//
-//// Get account program hash
-//func (a *Account) ProgramHash() *common.Uint168 {
-//	return a.ProgramHash
-//}
-//
-//// Get account address
-//func (a *Account) Address() string {
-//	return a.Address
-//}
-
 // Sign data with account
 func (ac *Account) Sign(data []byte) ([]byte, error) {
 	signature, err := crypto.Sign(ac.PrivateKey, data)

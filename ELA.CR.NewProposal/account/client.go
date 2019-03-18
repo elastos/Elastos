@@ -330,8 +330,10 @@ func (cl *Client) GetAccounts() []*Account {
 	}
 
 	sort.Slice(accounts, func(i, j int) bool {
-		return bytes.Compare(accounts[i].ProgramHash[:],
-			accounts[j].ProgramHash[:]) > 0
+		if cl.mainAccount == accounts[i].ProgramHash.ToCodeHash() {
+			return true
+		}
+		return false
 	})
 
 	return accounts
