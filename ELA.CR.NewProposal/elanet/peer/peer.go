@@ -483,7 +483,8 @@ out:
 				// If this is a new block, then we'll blast it
 				// out immediately, sipping the inv trickle
 				// queue.
-				if iv.Type == msg.InvTypeBlock || iv.Type == msg.InvTypeConfirmedBlock {
+				if iv.Type == msg.InvTypeBlock ||
+					iv.Type == msg.InvTypeConfirmedBlock {
 					invMsg := msg.NewInvSize(1)
 					invMsg.AddInvVect(iv)
 					waiting = queuePacket(outMsg{msg: invMsg},
