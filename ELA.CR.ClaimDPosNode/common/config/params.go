@@ -145,8 +145,34 @@ func (p *Params) RegNet() *Params {
 		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
+	pk1, _ := common.HexStringToBytes("0306e3deefee78e0e25f88e98f1f3290ccea98f08dd3a890616755f1a066c4b9b8")
+	pk2, _ := common.HexStringToBytes("02b56a669d713db863c60171001a2eb155679cad186e9542486b93fa31ace78303")
+	pk3, _ := common.HexStringToBytes("0250c5019a00f8bb4fd59bb6d613c70a39bb3026b87cfa247fd26f59fd04987855")
+	pk4, _ := common.HexStringToBytes("02e00112e3e9defe0f38f33aaa55551c8fcad6aea79ab2b0f1ec41517fdd05950a")
+	pk5, _ := common.HexStringToBytes("020aa2d111866b59c70c5acc60110ef81208dcdc6f17f570e90d5c65b83349134f")
+	pk6, _ := common.HexStringToBytes("03cd41a8ed6104c1170332b02810237713369d0934282ca9885948960ae483a06d")
+	pk7, _ := common.HexStringToBytes("02939f638f3923e6d990a70a2126590d5b31a825a0f506958b99e0a42b731670ca")
+	pk8, _ := common.HexStringToBytes("032ade27506951c25127b0d2cb61d164e0bad8aec3f9c2e6785725a6ab6f4ad493")
+	pk9, _ := common.HexStringToBytes("03f716b21d7ae9c62789a5d48aefb16ba1e797b04a2ec1424cd6d3e2e0b43db8cb")
+	pk10, _ := common.HexStringToBytes("03488b0aace5fe5ee5a1564555819074b96cee1db5e7be1d74625240ef82ddd295")
+	pk11, _ := common.HexStringToBytes("03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8")
+	pk12, _ := common.HexStringToBytes("03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300")
+	copy.CRCArbiters = []CRCArbiter{
+		{pk1, "127.0.0.1"},
+		{pk2, "127.0.0.1"},
+		{pk3, "127.0.0.1"},
+		{pk4, "127.0.0.1"},
+		{pk5, "127.0.0.1"},
+		{pk6, "127.0.0.1"},
+		{pk7, "127.0.0.1"},
+		{pk8, "127.0.0.1"},
+		{pk9, "127.0.0.1"},
+		{pk10, "127.0.0.1"},
+		{pk11, "127.0.0.1"},
+		{pk12, "127.0.0.1"},
+	}
 	copy.CheckAddressHeight = 0
-	copy.VoteStartHeight = 0         //fixme edit height later
+	copy.VoteStartHeight = 170000    //fixme edit height later
 	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
 	copy.PublicDPOSHeight = 1108812  //fixme edit height later
 	return &copy
