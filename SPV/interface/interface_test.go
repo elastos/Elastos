@@ -142,17 +142,13 @@ func TestNewSPVService(t *testing.T) {
 	sync.UseLogger(synclog)
 
 	seedList := []string{
-		"node-regtest-201.elastos.org:22866",
-		"node-regtest-202.elastos.org:22866",
-		"node-regtest-203.elastos.org:22866",
-		"node-regtest-204.elastos.org:22866",
-		"node-regtest-205.elastos.org:22866",
-		"node-regtest-206.elastos.org:22866",
-		"node-regtest-207.elastos.org:22866",
+		"node-testnet-001.elastos.org:21866",
+		"node-testnet-002.elastos.org:21866",
+		"node-testnet-003.elastos.org:21866",
 	}
 
 	config := &Config{
-		Magic:          20180627,
+		Magic:          2018001,
 		Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
 		SeedList:       seedList,
 		DefaultPort:    22866,

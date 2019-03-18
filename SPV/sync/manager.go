@@ -448,8 +448,6 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 func (sm *SyncManager) haveInventory(invVect *msg.InvVect) bool {
 	switch invVect.Type {
 	case msg.InvTypeBlock:
-		fallthrough
-	case msg.InvTypeConfirmedBlock:
 		// Ask chain if the block is known to it in any form (main
 		// chain, side chain, or orphan).
 		return sm.cfg.Chain.HaveBlock(&invVect.Hash)
@@ -497,7 +495,6 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 		// Ignore unsupported inventory types.
 		switch iv.Type {
 		case msg.InvTypeBlock:
-		case msg.InvTypeConfirmedBlock:
 		case msg.InvTypeTx:
 		default:
 			continue
@@ -536,8 +533,6 @@ func (sm *SyncManager) requestQueuedInv(peer *peer.Peer, state *peerSyncState) {
 
 		switch iv.Type {
 		case msg.InvTypeBlock:
-			fallthrough
-		case msg.InvTypeConfirmedBlock:
 			// Request the block if there is not already a pending
 			// request.
 			if _, exists := sm.requestedBlocks[iv.Hash]; !exists {
