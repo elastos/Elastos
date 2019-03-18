@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -138,8 +138,8 @@ func (a *arbitrators) IncreaseChainHeight(height uint32) {
 		}
 	case normalChange:
 		if err := a.NormalChange(height); err != nil {
-			panic("normal change fail when finding an inactive arbitrators" +
-				" transaction, height: " + strconv.FormatUint(uint64(height), 10))
+			panic(fmt.Sprintf("normal change failed, %s height: %d",
+				err, height))
 		}
 		trace = false
 	case none:
