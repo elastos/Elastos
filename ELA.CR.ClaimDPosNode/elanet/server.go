@@ -680,7 +680,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 		}
 
 		// Compatible for old version SPV client.
-		if sp.filter.IsLoaded() {
+		if rmsg.invVect.Type != msg.InvTypeTx && sp.filter.IsLoaded() {
 			// Do not send unconfirmed block to SPV client.
 			if rmsg.invVect.Type == msg.InvTypeBlock {
 				continue
