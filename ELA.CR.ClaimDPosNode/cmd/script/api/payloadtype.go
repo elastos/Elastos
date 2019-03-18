@@ -156,11 +156,7 @@ func newUpdateProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc, err := client.GetDefaultAccount()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	acc := client.GetMainAccount()
 	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -243,11 +239,7 @@ func newRegisterProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc, err := client.GetDefaultAccount()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	acc := client.GetMainAccount()
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -315,11 +307,7 @@ func newProcessProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc, err := client.GetDefaultAccount()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	acc := client.GetMainAccount()
 	rpSig, err := crypto.Sign(acc.PrivKey(), cpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
