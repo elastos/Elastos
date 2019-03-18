@@ -71,10 +71,7 @@ func NewDposAccount(password []byte) (DposAccount, error) {
 	if err != nil {
 		return nil, err
 	}
-	acc, err := client.GetDefaultAccount()
-	if err != nil {
-		return nil, err
-	}
+	acc := client.GetMainAccount()
 
 	return &dposAccount{acc}, nil
 }

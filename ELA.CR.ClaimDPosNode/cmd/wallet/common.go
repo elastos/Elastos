@@ -30,7 +30,7 @@ func FormatOutput(o []byte) error {
 	return err
 }
 
-func ShowAccountInfo(client *account.ClientImpl) error {
+func ShowAccountInfo(client *account.Client) error {
 	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PUBLIC KEY")
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
@@ -96,7 +96,7 @@ func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, er
 	var availableUTXOs []servers.UTXOInfo
 	var lockedUTXOs []servers.UTXOInfo
 	for _, utxo := range UTXOs {
-		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 101 {
 			lockedUTXOs = append(lockedUTXOs, utxo)
 			continue
 		}

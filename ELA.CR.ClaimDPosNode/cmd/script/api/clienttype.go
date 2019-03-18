@@ -25,7 +25,7 @@ func newClient(L *lua.LState) int {
 	name := L.ToString(1)
 	pwd := L.ToString(2)
 	create := L.ToBool(3)
-	var wallet *account.ClientImpl
+	var wallet *account.Client
 	if create {
 		wallet, _ = account.Create(name, []byte(pwd))
 	} else {
@@ -41,9 +41,9 @@ func newClient(L *lua.LState) int {
 }
 
 // Checks whether the first lua argument is a *LUserData with *Wallet and returns this *Wallet.
-func checkClient(L *lua.LState, idx int) *account.ClientImpl {
+func checkClient(L *lua.LState, idx int) *account.Client {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*account.ClientImpl); ok {
+	if v, ok := ud.Value.(*account.Client); ok {
 		return v
 	}
 	L.ArgError(1, "Wallet expected")
@@ -67,7 +67,7 @@ func clientGet(L *lua.LState) int {
 
 func getWalletAddr(L *lua.LState) int {
 	wallet := checkClient(L, 1)
-	acc, _ := wallet.GetDefaultAccount()
+	acc := wallet.GetMainAccount()
 	addr, _ := acc.ProgramHash.ToAddress()
 
 	L.Push(lua.LString(addr))
@@ -77,7 +77,7 @@ func getWalletAddr(L *lua.LState) int {
 
 func getWalletPubkey(L *lua.LState) int {
 	wallet := checkClient(L, 1)
-	acc, _ := wallet.GetDefaultAccount()
+	acc := wallet.GetMainAccount()
 	pubkey, _ := acc.PublicKey.EncodePoint(true)
 	L.Push(lua.LString(hex.EncodeToString(pubkey)))
 
