@@ -673,6 +673,7 @@ const zh = {
   'council.voting.votingEndsIn.days': '天',
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
+  'council.voting.proposedAt': '提案日期',
 
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',

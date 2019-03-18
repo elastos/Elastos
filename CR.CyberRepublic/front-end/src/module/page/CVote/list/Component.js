@@ -74,11 +74,11 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.votingEndsIn'),
-        dataIndex: 'createdAt',
+        dataIndex: 'proposedAt',
         key: 'endsIn',
-        render: (createdAt, item) => {
+        render: (proposedAt, item) => {
           if (item.status === CVOTE_STATUS.DRAFT) return null
-          const endsInFloat = moment.duration(moment(createdAt).add(7, 'd').diff(moment())).as('days')
+          const endsInFloat = moment.duration(moment(proposedAt).add(7, 'd').diff(moment())).as('days')
           if (endsInFloat < 0) return I18N.get('council.voting.votingEndsIn.ended')
           if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
           return `${Math.floor(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
@@ -93,9 +93,9 @@ export default class extends BaseComponent {
         render: (id, item) => I18N.get(`cvoteStatus.${item.status}`) || '',
       },
       {
-        title: I18N.get('council.voting.createdAt'),
-        dataIndex: 'createdAt',
-        render: createdAt => moment(createdAt).format('MMM D, YYYY'),
+        title: I18N.get('council.voting.proposedAt'),
+        dataIndex: 'proposedAt',
+        render: (proposedAt, doc) => doc.published && moment(proposedAt || doc.createdAt).format('MMM D, YYYY'),
       },
     ]
 

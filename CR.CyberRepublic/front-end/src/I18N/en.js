@@ -673,6 +673,7 @@ const en = {
   'council.voting.votingEndsIn.days': 'Days',
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
+  'council.voting.proposedAt': 'Proposed',
 
   'council.voting.type.newMotion': 'New Motion',
   'council.voting.type.motionAgainst': 'Motion Against',
