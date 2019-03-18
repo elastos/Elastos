@@ -8,6 +8,13 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
+/*
+A ELA standard account is a set of private key, public key, redeem script, program hash and address data.
+redeem script is (script content length)+(script content)+(script type),
+program hash is the sha256 value of redeem script and converted to ripemd160 format with a (Type) prefix.
+address is the base58 format of program hash, which is the string value show up on user interface as account address.
+With account, you can get the transfer address or sign transaction etc.
+*/
 type Account struct {
 	PrivateKey   []byte
 	PublicKey    *crypto.PublicKey
@@ -16,6 +23,7 @@ type Account struct {
 	Address      string
 }
 
+// Create an account instance with private key and public key
 func NewAccount() (*Account, error) {
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
 	signatureContract, err := contract.CreateStandardContract(pubKey)
@@ -85,10 +93,36 @@ func NewMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Account, error) {
 	}, nil
 }
 
+// Get account private key
 func (ac *Account) PrivKey() []byte {
 	return ac.PrivateKey
 }
 
+// Get account public key
 func (ac *Account) PubKey() *crypto.PublicKey {
 	return ac.PublicKey
+}
+
+// Get account redeem script
+//func (a *Account) RedeemScript() []byte {
+//	return a.RedeemScript
+//}
+//
+//// Get account program hash
+//func (a *Account) ProgramHash() *common.Uint168 {
+//	return a.ProgramHash
+//}
+//
+//// Get account address
+//func (a *Account) Address() string {
+//	return a.Address
+//}
+
+// Sign data with account
+func (ac *Account) Sign(data []byte) ([]byte, error) {
+	signature, err := crypto.Sign(ac.PrivateKey, data)
+	if err != nil {
+		return nil, err
+	}
+	return signature, nil
 }

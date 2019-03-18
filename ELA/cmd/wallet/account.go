@@ -300,7 +300,7 @@ func importAccount(c *cli.Context) error {
 	}
 
 	pwd := []byte(pwdHex)
-	var client *account.ClientImpl
+	var client *account.Client
 	if _, err := os.Open(walletPath); os.IsNotExist(err) {
 		// create a keystore file
 		if pwdHex == "" {
