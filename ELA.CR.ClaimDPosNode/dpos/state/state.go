@@ -140,6 +140,7 @@ type State struct {
 	votes             map[string]*types.Output
 	nicknames         map[string]struct{}
 	specialTxHashes   map[string]struct{}
+	preBlockArbiters  map[string]struct{}
 	history           *history
 
 	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
@@ -831,36 +832,46 @@ func (s *State) countArbitratorsInactivity(height uint32,
 		return
 	}
 
-	arbiters := make(map[string]bool)
+	// changingArbiters indicates the arbiters that should reset inactive
+	// counting state. With the value of true means the producer is on duty or
+	// is not current arbiter any more, or just becoming current arbiter; and
+	// false means producer is arbiter in both heights and not on duty.
+	changingArbiters := make(map[string]bool)
+	for k := range s.preBlockArbiters {
+		changingArbiters[k] = true
+	}
+	s.preBlockArbiters = make(map[string]struct{})
 	for _, a := range s.getArbiters() {
-		arbiters[common.BytesToHexString(a)] = false
-	}
-	for _, v := range confirm.Votes {
-		arbiters[common.BytesToHexString(v.Signer)] = true
-	}
-
-	for k, v := range arbiters {
-		buf, _ := common.HexStringToBytes(k)
-		key := s.getProducerKey(buf)
-
-		// CRC producers are not in the activityProducers,
-		// so they will not be inactive
-		if producer, ok := s.activityProducers[key]; ok {
-			countingHeight := producer.inactiveCountingHeight
-			signed := v
-
-			s.history.append(height, func() {
-				s.tryUpdateInactivity(key, producer, signed, height)
-			}, func() {
-				s.tryRevertInactivity(key, producer, signed, height, countingHeight)
-			})
+		key := s.getProducerKey(a)
+		s.preBlockArbiters[key] = struct{}{}
+		if _, exist := changingArbiters[key]; exist {
+			changingArbiters[key] = false
 		}
+	}
+	changingArbiters[s.getProducerKey(confirm.Proposal.Sponsor)] = true
+
+	// CRC producers are not in the activityProducers,
+	// so they will not be inactive
+	for k, v := range changingArbiters {
+		key := k // avoiding pass iterator to closure
+		producer, ok := s.activityProducers[ key ]
+		if !ok {
+			continue
+		}
+		countingHeight := producer.inactiveCountingHeight
+		needReset := v // avoiding pass iterator to closure
+
+		s.history.append(height, func() {
+			s.tryUpdateInactivity(key, producer, needReset, height)
+		}, func() {
+			s.tryRevertInactivity(key, producer, needReset, height, countingHeight)
+		})
 	}
 }
 
 func (s *State) tryRevertInactivity(key string, producer *Producer,
-	signed bool, height, startHeight uint32) {
-	if signed {
+	needReset bool, height, startHeight uint32) {
+	if needReset {
 		producer.inactiveCountingHeight = startHeight
 		return
 	}
@@ -876,8 +887,8 @@ func (s *State) tryRevertInactivity(key string, producer *Producer,
 }
 
 func (s *State) tryUpdateInactivity(key string, producer *Producer,
-	signed bool, height uint32) {
-	if signed {
+	needReset bool, height uint32) {
+	if needReset {
 		producer.inactiveCountingHeight = 0
 		return
 	}
@@ -886,7 +897,7 @@ func (s *State) tryUpdateInactivity(key string, producer *Producer,
 		producer.inactiveCountingHeight = height
 	}
 
-	if height-producer.inactiveCountingHeight > s.chainParams.MaxInactiveRounds {
+	if height-producer.inactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
 		s.setInactiveProducer(producer, key, height)
 		producer.inactiveCountingHeight = 0
 	}
@@ -963,6 +974,7 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 		votes:             make(map[string]*types.Output),
 		nicknames:         make(map[string]struct{}),
 		specialTxHashes:   make(map[string]struct{}),
+		preBlockArbiters:  make(map[string]struct{}),
 		history:           newHistory(maxHistoryCapacity),
 	}
 }

@@ -875,11 +875,6 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 					Proposal: payload.DPOSProposal{
 						Sponsor: producers[arIndex].NodePublicKey,
 					},
-					Votes: []payload.DPOSProposalVote{
-						{
-							Signer: producers[arIndex].NodePublicKey,
-						},
-					},
 				})
 			currentHeight++
 		}
@@ -959,22 +954,12 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 						Proposal: payload.DPOSProposal{
 							Sponsor: producers[0].NodePublicKey,
 						},
-						Votes: []payload.DPOSProposalVote{
-							{
-								Signer: producers[0].NodePublicKey,
-							},
-						},
 					})
 			} else {
 				state.ProcessBlock(mockBlock(uint32(currentHeight)),
 					&payload.Confirm{
 						Proposal: payload.DPOSProposal{
 							Sponsor: producers[arIndex].NodePublicKey,
-						},
-						Votes: []payload.DPOSProposalVote{
-							{
-								Signer: producers[arIndex].NodePublicKey,
-							},
 						},
 					})
 			}
@@ -1044,11 +1029,6 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 				&payload.Confirm{
 					Proposal: payload.DPOSProposal{
 						Sponsor: producers[arIndex].NodePublicKey,
-					},
-					Votes: []payload.DPOSProposalVote{
-						{
-							Signer: producers[arIndex].NodePublicKey,
-						},
 					},
 				})
 			currentHeight++
