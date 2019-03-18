@@ -2,7 +2,6 @@ package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -77,7 +76,7 @@ func (a *ArbitratorsMock) GetCRCProducer(publicKey []byte) *Producer {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbiter {
+func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
 	panic("implement me")
 }
 

@@ -175,9 +175,9 @@ func (a *arbitrators) GetNeedConnectArbiters(height uint32) map[string]*p2p.Peer
 
 	if height >= a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		a.mtx.Lock()
-		for _, v := range a.chainParams.CRCArbiters {
-			str := common.BytesToHexString(v.PublicKey)
-			arbiters[str] = a.generatePeerAddr(v.PublicKey, v.NetAddress)
+		for k, v := range a.crcArbitratorsNodePublicKey {
+			arbiters[k] = a.generatePeerAddr(v.info.NodePublicKey,
+				v.info.NetAddress)
 		}
 
 		for _, v := range a.currentArbitrators {
@@ -274,12 +274,8 @@ func (a *arbitrators) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool
 }
 
 func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
-	for _, v := range a.chainParams.CRCArbiters {
-		if bytes.Equal(v.PublicKey, pk) {
-			return true
-		}
-	}
-	return false
+	_, ok := a.crcArbitratorsNodePublicKey[hex.EncodeToString(pk)]
+	return ok
 }
 
 func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
@@ -293,8 +289,8 @@ func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
 	return nil
 }
 
-func (a *arbitrators) GetCRCArbitrators() []config.CRCArbiter {
-	return a.chainParams.CRCArbiters
+func (a *arbitrators) GetCRCArbitrators() map[string]*Producer {
+	return a.crcArbitratorsNodePublicKey
 }
 
 func (a *arbitrators) GetCurrentOwnerProgramHashes() []*common.Uint168 {
@@ -424,9 +420,9 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	var crcCount int
 	a.nextArbitrators = make([][]byte, 0)
-	for _, v := range a.chainParams.CRCArbiters {
-		if !a.isInactiveProducer(v.PublicKey) {
-			a.nextArbitrators = append(a.nextArbitrators, v.PublicKey)
+	for _, v := range a.crcArbitratorsNodePublicKey {
+		if !a.isInactiveProducer(v.info.NodePublicKey) {
+			a.nextArbitrators = append(a.nextArbitrators, v.info.NodePublicKey)
 		} else {
 			crcCount++
 		}
@@ -575,16 +571,10 @@ func (a *arbitrators) showArbitersInfo(isInfo bool) {
 
 func (a *arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
 	result = make(map[string]p2p.PeerAddr)
-	crcs := a.chainParams.CRCArbiters
-	for _, c := range crcs {
-		if len(c.PublicKey) != 33 {
-			log.Warn("[getProducersConnectionInfo] invalid public key")
-			continue
-		}
+	for k, v := range a.crcArbitratorsNodePublicKey {
 		pid := peer.PID{}
-		copy(pid[:], c.PublicKey)
-		result[hex.EncodeToString(c.PublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: c.NetAddress}
+		copy(pid[:], v.info.NodePublicKey)
+		result[k] = p2p.PeerAddr{PID: pid, Addr: v.info.NetAddress}
 	}
 	for _, p := range a.State.activityProducers {
 		if len(p.Info().NodePublicKey) != 33 {
@@ -658,15 +648,19 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 	crcNodeMap := make(map[string]*Producer)
 	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
 	for _, v := range chainParams.CRCArbiters {
-		hash, err := contract.PublicKeyToStandardProgramHash(v.PublicKey)
+		pubKey, err := hex.DecodeString(v.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		hash, err := contract.PublicKeyToStandardProgramHash(pubKey)
 		if err != nil {
 			return nil, err
 		}
 		crcArbitratorsProgramHashes[*hash] = nil
-		crcNodeMap[common.BytesToHexString(v.PublicKey)] = &Producer{ // here need crc NODE public key
+		crcNodeMap[v.PublicKey] = &Producer{ // here need crc NODE public key
 			info: payload.ProducerInfo{
-				OwnerPublicKey: v.PublicKey,
-				NodePublicKey:  v.PublicKey,
+				OwnerPublicKey: pubKey,
+				NodePublicKey:  pubKey,
 				NetAddress:     v.NetAddress,
 			},
 			activateRequestHeight: math.MaxUint32,
@@ -678,7 +672,6 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		chainParams:                 chainParams,
 		bestHeight:                  bestHeight,
 		arbitersCount:               arbitersCount,
-		currentArbitrators:          originArbiters,
 		currentOwnerProgramHashes:   originArbitersProgramHashes,
 		nextArbitrators:             originArbiters,
 		nextCandidates:              make([][]byte, 0),
