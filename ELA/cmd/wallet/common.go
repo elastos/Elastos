@@ -67,12 +67,12 @@ func ShowAccountBalance(walletPath string) error {
 		return err
 	}
 
-	for _, a := range storeAccounts {
+	for i, a := range storeAccounts {
 		available, locked, err := getAddressBalance(a.Address)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%5d %34s %-20s%22s \n", 0, a.Address, available.String(), "("+locked.String()+")")
+		fmt.Printf("%5d %34s %-20s%22s \n", i, a.Address, available.String(), "("+locked.String()+")")
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 	}
 

@@ -35,6 +35,7 @@ var accountCommand = []cli.Command{
 		Usage:    "Show account address and public key",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
+			AccountPasswordFlag,
 		},
 		Action: accountInfo,
 	},
@@ -150,11 +151,18 @@ func accountInfo(c *cli.Context) error {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
-	password, err := cmdcom.GetPassword()
-	if err != nil {
-		return err
+	pwdHex := c.String("password")
+
+	pwd := []byte(pwdHex)
+	if pwdHex == "" {
+		var err error
+		pwd, err = cmdcom.GetPassword()
+		if err != nil {
+			return err
+		}
 	}
-	client, err := account.Open(walletPath, password)
+
+	client, err := account.Open(walletPath, pwd)
 	if err != nil {
 		return err
 	}
