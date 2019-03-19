@@ -687,7 +687,13 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 			}
 
 			// Change inv type to InvTypeBlock for compatible.
-			rmsg.invVect.Type = msg.InvTypeBlock
+			copyInvVect := &msg.InvVect{
+				Type: msg.InvTypeBlock,
+				Hash: rmsg.invVect.Hash,
+			}
+
+			go sp.QueueInventory(copyInvVect)
+			continue
 		}
 
 		// Queue the inventory to be relayed with the next batch.
