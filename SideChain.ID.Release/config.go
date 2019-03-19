@@ -60,6 +60,7 @@ type config struct {
 }
 
 type appConfig struct {
+	NodePort          uint16
 	HttpRestPort      uint16
 	HttpJsonPort      uint16
 	HttpWsPort        uint16
@@ -115,6 +116,7 @@ func loadNewConfig() (*appConfig, error) {
 
 	config := cfg.Configuration
 	powCfg := cfg.Configuration.PowConfiguration
+
 	if config.HttpRestPort > 0 {
 		appCfg.HttpRestPort = config.HttpRestPort
 	}
@@ -143,6 +145,7 @@ func loadNewConfig() (*appConfig, error) {
 		activeNetParams.SeedList = *config.SeedList
 	}
 	if config.NodePort > 0 {
+		appCfg.NodePort = config.NodePort
 		activeNetParams.DefaultPort = config.NodePort
 	}
 	if len(config.FoundationAddress) > 0 {

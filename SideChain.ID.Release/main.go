@@ -163,22 +163,31 @@ func main() {
 	}
 
 	eladlog.Info("5. --Start the RPC service")
-	service := sv.NewHttpService(&service.Config{
-		Server:                      server,
-		Chain:                       chain,
-		Store:                       idChainStore.ChainStore,
-		GenesisAddress:              genesisAddress,
-		TxMemPool:                   txPool,
-		PowService:                  powService,
-		SpvService:                  spvService,
-		SetLogLevel:                 setLogLevel,
-		GetBlockInfo:                service.GetBlockInfo,
-		GetTransactionInfo:          sv.GetTransactionInfo,
-		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
-		GetTransaction:              service.GetTransaction,
-		GetPayloadInfo:              sv.GetPayloadInfo,
-		GetPayload:                  service.GetPayload,
-	}, idChainStore)
+	serviceCfg := sv.Config{
+		Config: service.Config{
+			Server:                      server,
+			Chain:                       chain,
+			Store:                       idChainStore.ChainStore,
+			GenesisAddress:              genesisAddress,
+			TxMemPool:                   txPool,
+			PowService:                  powService,
+			SpvService:                  spvService,
+			SetLogLevel:                 setLogLevel,
+			GetBlockInfo:                service.GetBlockInfo,
+			GetTransactionInfo:          sv.GetTransactionInfo,
+			GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
+			GetTransaction:              service.GetTransaction,
+			GetPayloadInfo:              sv.GetPayloadInfo,
+			GetPayload:                  service.GetPayload,
+		},
+		Compile:  Version,
+		NodePort: cfg.NodePort,
+		RPCPort:  cfg.HttpJsonPort,
+		RestPort: cfg.HttpRestPort,
+		WSPort:   cfg.HttpWsPort,
+		Store:    idChainStore,
+	}
+	service := sv.NewHttpService(&serviceCfg)
 
 	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
 	defer rpcServer.Stop()
@@ -196,7 +205,7 @@ func main() {
 		}
 	}()
 
-	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, service.Config)
+	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, &serviceCfg.Config)
 	defer socketServer.Stop()
 	go func() {
 		if err := socketServer.Start(); err != nil {
@@ -210,7 +219,7 @@ func main() {
 	<-interrupt.C
 }
 
-func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Server {
+func newJsonRpcServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
 	s := jsonrpc.NewServer(&jsonrpc.Config{ServePort: port})
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
@@ -221,6 +230,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("getrawmempool", service.GetTransactionPool)
 	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
+	s.RegisterAction("getnodestate", service.GetNodeState)
 	s.RegisterAction("sendrechargetransaction", service.SendRechargeToSideChainTxByHash)
 	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getreceivedbyaddress", service.GetReceivedByAddress, "address")
