@@ -8,7 +8,7 @@ import {
   Spin,
 } from 'antd'
 import I18N from '@/I18N'
-import { TranslateButton, ModalBody, TranslationText, Container } from './style'
+import { TranslateButton, ModalBody, TranslationText, Container, Footer } from './style'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -45,7 +45,7 @@ export default class extends BaseComponent {
       >
         <ModalBody>
           {translationNode}
-          <div>{I18N.get('suggestion.translatedByGoogle')}</div>
+          <Footer>{I18N.get('suggestion.translatedByGoogle')}</Footer>
         </ModalBody>
       </Modal>
     )
