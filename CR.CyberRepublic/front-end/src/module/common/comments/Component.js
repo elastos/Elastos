@@ -11,6 +11,7 @@ import moment from 'moment'
 import _ from 'lodash'
 import I18N from '@/I18N'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
+import Translation from '@/module/common/Translation/Container'
 import MediaQuery from 'react-responsive'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import linkifyStr from 'linkifyjs/string';
@@ -379,12 +380,21 @@ class C extends BaseComponent {
               <h5>
                 {enrichComment(item.comment)}
               </h5>
+              {this.renderTranslationBtn(item.comment)}
               <hr />
               {item.description}
             </div>
           </List.Item>
         )}
       />
+    )
+  }
+
+  renderTranslationBtn(text) {
+    return (
+      <div style={{ marginBottom: 20 }}>
+        <Translation text={text} />
+      </div>
     )
   }
 
