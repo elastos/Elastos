@@ -14,8 +14,8 @@ Pod::Spec.new do |s|
   s.swift_version = '4.0'
   s.description  = 'Elastos carrier ios sdk framework distribution.'
   s.homepage     = "https://www.elastos.org"
-  s.license      = { :type => "MIT", :file => "LICENSE" }
-  s.author             = { "carrier-dev" => "release@elastos.org" }
+  s.license      = { :type => "GPLv3", :file => "LICENSE" }
+  s.author       = { "carrier-dev" => "release@elastos.org" }
   s.platform     = :ios, "9.0"
   s.ios.deployment_target = "9.0"
   s.source       = { :git => "https://github.com/elastos/Elastos.NET.Carrier.iOS.SDK.git", :tag => s.version  }
