@@ -10,7 +10,6 @@ import {
   Button,
   Icon,
   Modal,
-  message,
   Spin,
 } from 'antd'
 import I18N from '@/I18N'
@@ -18,7 +17,7 @@ import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import sanitizeHtml from 'sanitize-html'
 import './style.scss'
-import { TranslateButton, CopyButton, ModalBody, TranslationText } from './style'
+import { TranslateButton, ModalBody, TranslationText } from './style'
 
 const FormItem = Form.Item
 
@@ -33,7 +32,6 @@ class C extends BaseComponent {
       isTranslateModalOpen: false,
       showRules: false,
       translation: '',
-      copied: false,
     }
   }
   //   componentDidMount() {
@@ -87,7 +85,7 @@ class C extends BaseComponent {
     const { getFieldDecorator } = this.props.form
 
     const input_el = (
-      <Input size="large" placeholder="Title" onSelect={this.onSelect} />
+      <Input size="large" placeholder="Title" />
     )
 
     const textarea_el = (
@@ -97,7 +95,6 @@ class C extends BaseComponent {
           toolbar: TOOLBAR_OPTIONS,
           autoLinks: true,
         }}
-        onSelect={this.onSelect}
       />
     )
 
@@ -134,27 +131,21 @@ class C extends BaseComponent {
     }
   }
 
-  onSelect = () => {
-    const selectedText = window.getSelection().toString()
-    console.log(selectedText)
-    this.setState({ selectedText })
-  }
-
   translate = async () => {
     const { gTranslate } = this.props
-    const { selectedText } = this.state
-    const formValues = this.props.form.getFieldsValue(['title', 'description'])
-    console.log('translate: ', formValues);
-    this.setState({ isTranslateModalOpen: true, translation: <Spin /> })
-    const res = await gTranslate({ text: selectedText })
-    // const res = await gTranslate({ text: formValues.title + formValues.description })
+    const { title, description } = this.props.form.getFieldsValue(['title', 'description'])
+    console.log('translate: ', title, description);
+    this.setState({ isTranslateModalOpen: true, translation: '' })
+    const origText = `<h1>${title}</h1>${description}`
+    const res = await gTranslate({ text: origText })
     this.setState({ translation: res.translation })
     console.log('res is: ', res.translation)
   }
 
   renderTranslationModal() {
     const { isTranslateModalOpen, translation } = this.state
-    const copyBtn = <CopyButton>{I18N.get('suggestion.copy')}</CopyButton>
+    const translationNode = translation ? <TranslationText dangerouslySetInnerHTML={{ __html: translation }} /> : <Spin />
+
     return (
       <Modal
         className="translate-modal-container"
@@ -168,13 +159,8 @@ class C extends BaseComponent {
         style={{ minWidth: 400 }}
       >
         <ModalBody>
-          <TranslationText>{translation}</TranslationText>
-          <Row type="flex" justify="space-between">
-            <span>{I18N.get('suggestion.translatedByGoogle')}</span>
-            <CopyToClipboard text={this.state.translation} onCopy={this.onCopy}>
-              {copyBtn}
-            </CopyToClipboard>
-          </Row>
+          {translationNode}
+          <div>{I18N.get('suggestion.translatedByGoogle')}</div>
         </ModalBody>
       </Modal>
     )
@@ -185,11 +171,6 @@ class C extends BaseComponent {
     this.setState({
       isTranslateModalOpen: !isTranslateModalOpen,
     })
-  }
-
-  onCopy = () => {
-    this.setState({ copied: true })
-    message.success(I18N.get('suggestion.copied'))
   }
 
   renderHeader() {
