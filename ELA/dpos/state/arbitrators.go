@@ -131,7 +131,6 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
-	a.showArbitersInfo(true)
 	a.mtx.Unlock()
 
 	events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters(height))
@@ -150,14 +149,11 @@ func (a *arbitrators) NormalChange(height uint32) error {
 		return err
 	}
 
-	a.showArbitersInfo(true)
-
 	return nil
 }
 
 func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
-	trace := true
-	notify := true
+	var notify = true
 
 	a.mtx.Lock()
 
@@ -178,15 +174,10 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 				" transaction, height: " + strconv.FormatUint(uint64(
 				block.Height), 10))
 		}
-		trace = false
 	case none:
 		a.accumulateReward(block)
 		a.dutyIndex++
 		notify = false
-	}
-
-	if trace {
-		a.showArbitersInfo(false)
 	}
 
 	a.mtx.Unlock()
@@ -633,10 +624,19 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 	return nil
 }
 
-func (a *arbitrators) showArbitersInfo(isInfo bool) {
-	show := log.Debugf
-	if isInfo {
-		show = log.Infof
+func (a *arbitrators) DumpInfo() {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	var printer func(string, ...interface{})
+	changeType, _ := a.getChangeType(a.State.history.height + 1)
+	switch changeType {
+	case updateNext:
+		fallthrough
+	case normalChange:
+		printer = log.Debugf
+	case none:
+		printer = log.Infof
 	}
 
 	connectionInfoMap := a.getProducersConnectionInfo()
@@ -650,7 +650,7 @@ func (a *arbitrators) showArbitersInfo(isInfo bool) {
 	nrInfo, nrParams := a.getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators, connectionInfoMap)
 	ccInfo, ccParams := a.getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates, connectionInfoMap)
 	ncInfo, ncParams := a.getArbitersInfoWithoutOnduty("NEXT CANDIDATES", a.nextCandidates, connectionInfoMap)
-	show(crInfo+nrInfo+ccInfo+ncInfo, append(append(append(crParams, nrParams...), ccParams...), ncParams...)...)
+	printer(crInfo+nrInfo+ccInfo+ncInfo, append(append(append(crParams, nrParams...), ccParams...), ncParams...)...)
 }
 
 func (a *arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
