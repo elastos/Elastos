@@ -61,16 +61,13 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	}
 
 	transactions := block.Transactions
-	for index, tx := range transactions {
-		// The first transaction in a block must be a coinbase.
-		if index == 0 {
-			if !tx.IsCoinBaseTx() {
-				return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
-			}
-			continue
-		}
+	// The first transaction in a block must be a coinbase.
+	if !transactions[0].IsCoinBaseTx() {
+		return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
+	}
 
-		// A block must not have more than one coinbase.
+	// A block must not have more than one coinbase.
+	for _, tx := range transactions[1:] {
 		if tx.IsCoinBaseTx() {
 			return errors.New("[PowCheckBlockSanity] block contains second coinbase")
 		}
