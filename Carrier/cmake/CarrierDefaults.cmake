@@ -59,7 +59,7 @@ else()
 endif()
 
 if(APPLE)
-    set(CMAKE_INSTALL_RPATH "@execuable_path/Frameworks;@loader_path/Frameworks")
+    set(CMAKE_INSTALL_RPATH "@execuable_path/Frameworks;@loader_path/Frameworks;@loader_path/../lib")
 else()
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
