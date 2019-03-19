@@ -248,6 +248,7 @@ const en = {
   'suggestion.translatedByGoogle': 'Translated by Google',
   'suggestion.councilMember': 'Council Member',
   'suggestion.copy': 'COPY',
+  'suggestion.copied': 'Copied',
   'suggestion.back': 'Back',
   'suggestion.viewAll': 'View All',
   'suggestion.mySuggestions': 'My Suggestions',

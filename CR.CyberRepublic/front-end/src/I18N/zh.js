@@ -248,6 +248,7 @@ const zh = {
   'suggestion.translatedByGoogle': '由Google翻译',
   'suggestion.councilMember': '委员会成员',
   'suggestion.copy': '复制',
+  'suggestion.copied': '已复制',
   'suggestion.back': '返回',
   'suggestion.viewAll': '查看所有',
   'suggestion.mySuggestions': '我的建议',
