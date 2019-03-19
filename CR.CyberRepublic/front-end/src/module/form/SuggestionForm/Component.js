@@ -1,7 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
 import {
   Row,
   Col,
@@ -9,15 +8,13 @@ import {
   Input,
   Button,
   Icon,
-  Modal,
-  Spin,
 } from 'antd'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
+import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
 import './style.scss'
-import { TranslateButton, ModalBody, TranslationText } from './style'
 
 const FormItem = Form.Item
 
@@ -29,9 +26,7 @@ class C extends BaseComponent {
     super(props)
 
     this.state = {
-      isTranslateModalOpen: false,
       showRules: false,
-      translation: '',
     }
   }
   //   componentDidMount() {
@@ -131,46 +126,15 @@ class C extends BaseComponent {
     }
   }
 
-  translate = async () => {
-    const { gTranslate } = this.props
+  renderTranslationBtn() {
     const { title, description } = this.props.form.getFieldsValue(['title', 'description'])
-    console.log('translate: ', title, description);
-    this.setState({ isTranslateModalOpen: true, translation: '' })
-    const origText = `<h1>${title}</h1>${description}`
-    const res = await gTranslate({ text: origText })
-    this.setState({ translation: res.translation })
-    console.log('res is: ', res.translation)
-  }
-
-  renderTranslationModal() {
-    const { isTranslateModalOpen, translation } = this.state
-    const translationNode = translation ? <TranslationText dangerouslySetInnerHTML={{ __html: translation }} /> : <Spin />
+    const text = `<h1>${title}</h1>${description}`
 
     return (
-      <Modal
-        className="translate-modal-container"
-        visible={isTranslateModalOpen}
-        onOk={this.showTranslate}
-        onCancel={this.showTranslate}
-        footer={null}
-        width="70%"
-        closable
-        centered
-        style={{ minWidth: 400 }}
-      >
-        <ModalBody>
-          {translationNode}
-          <div>{I18N.get('suggestion.translatedByGoogle')}</div>
-        </ModalBody>
-      </Modal>
+      <div>
+        <Translation text={text} />
+      </div>
     )
-  }
-
-  showTranslate = () => {
-    const { isTranslateModalOpen } = this.state
-    this.setState({
-      isTranslateModalOpen: !isTranslateModalOpen,
-    })
   }
 
   renderHeader() {
@@ -239,6 +203,7 @@ class C extends BaseComponent {
     const headerNode = this.renderHeader()
     const rulesNode = this.renderRules()
     const p = this.getInputProps()
+    const translationBtn = this.renderTranslationBtn()
 
     const formContent = (
       <div>
@@ -252,7 +217,7 @@ class C extends BaseComponent {
           {p.link}
         </FormItem>
         <FormItem className="form-link">
-          <TranslateButton onClick={this.translate}>{I18N.get('suggestion.translate')}</TranslateButton>
+          {translationBtn}
         </FormItem>
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
@@ -268,8 +233,7 @@ class C extends BaseComponent {
         </Row>
       </div>
     )
-    // TODO
-    const translationModal = this.renderTranslationModal()
+
     return (
       <div className="c_SuggestionForm">
         {headerNode}
@@ -279,8 +243,6 @@ class C extends BaseComponent {
             {formContent}
           </Form>
         }
-        {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
-        {translationModal}
       </div>
     )
   }
