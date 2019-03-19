@@ -92,7 +92,7 @@
 
 const char* ela_get_version(void)
 {
-    return "elacarrier-5.0.1";
+    return carrier_version;
 }
 
 static bool is_valid_key(const char *key)
