@@ -8,11 +8,11 @@ import {
   Input,
   Button,
   Icon,
-  Modal,
 } from 'antd'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
+import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
 import './style.scss'
 
@@ -26,8 +26,7 @@ class C extends BaseComponent {
     super(props)
 
     this.state = {
-      isTranslateModalOpen: false,
-      showRules: false
+      showRules: false,
     }
   }
   //   componentDidMount() {
@@ -127,34 +126,15 @@ class C extends BaseComponent {
     }
   }
 
-  translate = () => {
-    console.log('translate: ', this.props.form.getFieldsValue(['title', 'description']));
-  }
+  renderTranslationBtn() {
+    const { title, description } = this.props.form.getFieldsValue(['title', 'description'])
+    const text = `<h1>${title}</h1>${description}`
 
-  renderTranslationModal() {
-    const { isTranslateModalOpen } = this.state
-    if (!isTranslateModalOpen) return null
-    const translation = 'Translating...'
-    // TODO: translation
-    // translation =
     return (
-      <Modal
-        className="translate-modal-container"
-        visible={this.state.isTranslateModalOpen}
-        onOk={this.showTranslate}
-        onCancel={this.showCreateForm}
-        footer={null}
-        width="70%"
-      >
-        {translation}
-      </Modal>
+      <div>
+        <Translation text={text} />
+      </div>
     )
-  }
-
-  showTranslate = () => {
-    this.setState({
-      showTranslate: !this.state.isTranslateModalOpen,
-    })
   }
 
   renderHeader() {
@@ -223,17 +203,7 @@ class C extends BaseComponent {
     const headerNode = this.renderHeader()
     const rulesNode = this.renderRules()
     const p = this.getInputProps()
-
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 20 },
-      },
-    }
+    const translationBtn = this.renderTranslationBtn()
 
     const formContent = (
       <div>
@@ -246,18 +216,24 @@ class C extends BaseComponent {
         <FormItem className="form-link">
           {p.link}
         </FormItem>
-        <FormItem wrapperCol={{ xs: { span: 24, offset: 0 }, sm: { span: 12, offset: 8 } }} className="form-actions">
-          <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-            {I18N.get('suggestion.submit')}
-          </Button>
+        <FormItem className="form-link">
+          {translationBtn}
         </FormItem>
+        <Row type="flex" justify="center">
+          <Col xs={24} sm={12} md={6}>
+            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
+              {I18N.get('suggestion.cancel')}
+            </Button>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
+              {I18N.get('suggestion.submit')}
+            </Button>
+          </Col>
+        </Row>
       </div>
     )
-    // TODO
-    // const translationModal = this.renderTranslationModal()
+
     return (
       <div className="c_SuggestionForm">
         {headerNode}
@@ -267,8 +243,6 @@ class C extends BaseComponent {
             {formContent}
           </Form>
         }
-        {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
-        {/* {translationModal} */}
       </div>
     )
   }

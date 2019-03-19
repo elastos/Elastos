@@ -5,6 +5,7 @@ import StandardPage from '../../StandardPage';
 import Comments from '@/module/common/comments/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import Translation from '@/module/common/Translation/Container'
 import MySuggestion from '../my_list/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component";
@@ -56,6 +57,11 @@ export default class extends StandardPage {
             </Row>
             <Row>
               <Col>
+                {translationBtn}
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 {actionsNode}
               </Col>
             </Row>
@@ -69,7 +75,7 @@ export default class extends StandardPage {
             <Row gutter={24}>
               <Col span={15}>
                 {detailNode}
-                {/* {translationBtn} */}
+                {translationBtn}
                 {actionsNode}
                 {commentNode}
               </Col>
@@ -135,11 +141,14 @@ export default class extends StandardPage {
     )
   }
 
-  // TODO
   renderTranslationBtn() {
-    const { detail } = this.props
+    const { title, desc } = this.props.detail
+    const text = `<h1>${title}</h1>${desc}`
+
     return (
-      <div>Translate in English</div>
+      <div style={{ marginTop: 20 }}>
+        <Translation text={text} />
+      </div>
     )
   }
 
