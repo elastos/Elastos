@@ -8,7 +8,7 @@ import {
   Spin,
 } from 'antd'
 import I18N from '@/I18N'
-import { TranslateButton, ModalBody, TranslationText, Container, Footer } from './style'
+import { TranslateButton, ModalBody, TranslationText, Container, Footer, LangText } from './style'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -20,10 +20,14 @@ export default class extends BaseComponent {
     }
   }
 
-  translate = async () => {
+  translate = async (lang) => {
     const { gTranslate, text } = this.props
-    this.setState({ isTranslateModalOpen: true, translation: '' })
-    const res = await gTranslate({ text })
+    this.setState({
+      isTranslateModalOpen: true,
+      translation: '',
+      selectedLang: lang,
+    })
+    const res = await gTranslate({ text, target: lang })
     this.setState({ translation: res.translation })
   }
 
@@ -59,8 +63,14 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
+    const { selectedLang } = this.state
     const btn = (
-      <TranslateButton onClick={this.translate}>{I18N.get('suggestion.translate')}</TranslateButton>
+      <TranslateButton>
+        <span>{I18N.get('suggestion.translate')}</span>
+        <LangText onClick={() => this.translate('en')} type="en" selectedLang={selectedLang}>{I18N.get('suggestion.translate.en')}</LangText>
+        <span> | </span>
+        <LangText onClick={() => this.translate('zh')} type="zh" selectedLang={selectedLang}>{I18N.get('suggestion.translate.zh')}</LangText>
+      </TranslateButton>
     )
     const translationModal = this.renderTranslationModal()
     return (

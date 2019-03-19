@@ -9,23 +9,21 @@ export const ModalBody = styled.div`
 export const TranslationText = styled.div`
 `
 
-export const TranslateButton = styled.div`
-  font-size: 13px;
-  line-height: normal;
-  color: rgba(3, 30, 40, 0.4);
-  cursor: pointer;
-  `
-
-export const CopyButton = styled.div`
-  font-weight: 500;
-  font-size: 16px;
-  line-height: normal;
-  color: #008D85;
-  cursor: pointer;
-`
-
 export const Footer = styled.div`
   margin-top: 30px;
   font-weight: bold;
   font-size: 12px;
+`
+
+export const TranslateButton = styled.div`
+  font-size: 13px;
+  line-height: normal;
+  color: rgba(3, 30, 40, 0.4);
+  `
+
+export const LangText = styled.span`
+  font-weight: ${props => (props.selectedLang === props.type ? 'bold' : 'normal')};
+  text-decoration: underline;
+  font-size: 12px;
+  cursor: pointer;
 `
