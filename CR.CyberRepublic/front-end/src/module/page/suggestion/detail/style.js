@@ -2,10 +2,10 @@ import { breakPoint } from '@/constants/breakPoint'
 import { text } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
+import { Button } from 'antd'
 
 export const Container = styled.div`
-  padding: 0 50px 80px;
-  width: 80vw;
+  padding-left: 100px;
   margin: 80px auto 0;
 
   @media only screen and (max-width: ${breakPoint.lg}) {
@@ -29,11 +29,15 @@ export const Desc = styled.div`
   color: black;
 `
 
-export const Link = styled.div`
+export const StyledLink = styled.div`
   color: ${text.lightGray};
   margin-top: ${gap.gap_2};
-  `
-// export const Actions = styled.div`
-//   margin-top: 27px;
-//   margin-bottom: 50px;
-// `
+`
+
+export const BtnGroup = styled.div`
+  margin: ${gap.gap_2} 0;
+`
+
+export const StyledButton = styled(Button)`
+  width: 200px;
+`

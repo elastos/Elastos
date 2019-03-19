@@ -1,20 +1,20 @@
 import React from 'react';
 import _ from 'lodash'
-import { Row, Col, Spin } from 'antd'
-import StandardPage from '../../StandardPage';
+import { Row, Col, Spin, Button, Modal } from 'antd'
+import MediaQuery from 'react-responsive'
 import Comments from '@/module/common/comments/Container'
+import Footer from '@/module/layout/Footer/Container'
+import BackLink from "@/module/shared/BackLink/Component"
+import Translation from '@/module/common/Translation/Container'
+import SuggestionForm from '@/module/form/SuggestionForm/Container'
+import I18N from '@/I18N'
+import { LG_WIDTH } from '@/config/constant'
+import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
-import Translation from '@/module/common/Translation/Container'
 import MySuggestion from '../my_list/Container'
-import Footer from '@/module/layout/Footer/Container'
-import BackLink from "@/module/shared/BackLink/Component";
 
-import I18N from '@/I18N'
-import MediaQuery from 'react-responsive'
-import { LG_WIDTH } from '@/config/constant'
-
-import { Container, Title, Desc, Link } from './style'
+import { Container, Title, Desc, StyledLink, BtnGroup, StyledButton } from './style'
 
 export default class extends StandardPage {
   constructor(props) {
@@ -24,6 +24,7 @@ export default class extends StandardPage {
     this.state = {
       isDropdownActionOpen: false,
       showMobile: false,
+      showForm: false,
     }
   }
 
@@ -45,6 +46,7 @@ export default class extends StandardPage {
     const actionsNode = this.renderActionsNode()
     const ownerActionsNode = this.renderOwnerActionsNode()
     const councilActionsNode = this.renderCouncilActionsNode()
+    const editForm = this.renderEditForm()
     const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     return (
@@ -76,6 +78,7 @@ export default class extends StandardPage {
               <Col span={9}>{mySuggestionNode}</Col>
             </Row>
           </MediaQuery>
+          {editForm}
         </Container>
         <Footer />
       </div>
@@ -108,13 +111,40 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail } = this.props
-    return <ActionsContainer data={detail} />
+    const { detail, currentUserId } = this.props
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id')
+    const res = isOwner && (
+      <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showEditForm}>
+        {I18N.get('suggestion.btnText.edit')}
+      </StyledButton>
+    )
+    return res
   }
 
   renderCouncilActionsNode() {
-    const { detail } = this.props
-    return <ActionsContainer data={detail} />
+    const { detail, consider, needMoreInfo, makeIntoProposal, isCouncil } = this.props
+    const res = isCouncil && (
+      <BtnGroup>
+        <Row type="flex" justify="flex-start">
+          <Col xs={24} sm={8}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={consider}>
+              {I18N.get('suggestion.btnText.consider')}
+            </StyledButton>
+          </Col>
+          <Col xs={24} sm={8}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={needMoreInfo}>
+              {I18N.get('suggestion.btnText.needMoreInfo')}
+            </StyledButton>
+          </Col>
+          <Col xs={24} sm={8}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-primary" onClick={makeIntoProposal}>
+              {I18N.get('suggestion.btnText.makeIntoProposal')}
+            </StyledButton>
+          </Col>
+        </Row>
+      </BtnGroup>
+    )
+    return res
   }
 
   renderTitleNode() {
@@ -139,9 +169,9 @@ export default class extends StandardPage {
     }
 
     return (
-      <Link>
+      <StyledLink>
         {I18N.get('from.TaskCreateForm.label.info')}: <a href={detail.link} target="_blank">{detail.link}</a>
-      </Link>
+      </StyledLink>
     )
   }
 
@@ -169,9 +199,35 @@ export default class extends StandardPage {
     )
   }
 
-  showDropdownActions = () => {
+  renderEditForm() {
+    return (
+      <Modal
+        className="project-detail-nobar"
+        visible={this.state.showForm}
+        onOk={this.showEditForm}
+        onCancel={this.showEditForm}
+        footer={null}
+        width="70%"
+      >
+        { this.state.showForm
+          && <SuggestionForm showEditForm={this.showEditForm} refetch={this.refetch} />
+        }
+      </Modal>
+    )
+  }
+
+  showEditForm = () => {
+    const { showForm } = this.state
+
     this.setState({
-      isDropdownActionOpen: !this.state.isDropdownActionOpen,
+      showForm: !showForm,
+    })
+  }
+
+  showDropdownActions = () => {
+    const { isDropdownActionOpen } = this.state
+    this.setState({
+      isDropdownActionOpen: !isDropdownActionOpen,
     })
   }
 

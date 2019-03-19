@@ -148,16 +148,16 @@
 .ant-btn.cr-btn {
   border-radius: 0;
   border: 1px solid #0F2631;
-  background-color: $bg_blue;
+  // background-color: $bg_blue;
+  padding: 0 30px;
+  min-width: 155px;
+  height: 40px;
 
   > span {
     color: #000;
     font-size: 16px;
     line-height: 16px;
   }
-  padding: 0 30px;
-  min-width: 155px;
-  height: 40px;
 }
 
 .ant-btn.cr-btn-komu {

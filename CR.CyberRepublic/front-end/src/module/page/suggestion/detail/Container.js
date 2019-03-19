@@ -18,6 +18,7 @@ export default createContainer(Component, (state) => {
     ...state.suggestion,
     page,
     currentUserId: state.user.current_user_id,
+    isCouncil: state.user.is_council,
   }
 }, () => {
   const service = new SuggestionService()

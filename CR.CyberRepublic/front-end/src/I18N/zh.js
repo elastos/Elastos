@@ -268,6 +268,12 @@ const zh = {
   'suggestion.cancel': '取消',
   'suggestion.submit': '提交',
 
+  // Suggestion Button Text
+  'suggestion.btnText.edit': '编辑',
+  'suggestion.btnText.consider': '考虑',
+  'suggestion.btnText.needMoreInfo': '需要更多信息',
+  'suggestion.btnText.makeIntoProposal': '转化为提案',
+
   // suggestion error
   'suggestion.create.error.titleRequired': '建议标题为必填项',
   'suggestion.create.error.descriptionRequired': '建议描述为必填项',
