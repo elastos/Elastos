@@ -34,4 +34,6 @@ type Arbitrators interface {
 	GetArbitersMajorityCount() int
 	HasArbitersMajorityCount(num int) bool
 	HasArbitersMinorityCount(num int) bool
+
+	DumpInfo()
 }
