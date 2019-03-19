@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
@@ -45,6 +46,7 @@ type server struct {
 	svr.IServer
 	syncManager  *netsync.SyncManager
 	chain        *blockchain.BlockChain
+	chainParams  *config.Params
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
 
@@ -651,6 +653,9 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 // handleRelayInvMsg deals with relaying inventory to peers that are not already
 // known to have it.  It is invoked from the peerHandler goroutine.
 func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMsg) {
+	// TODO remove after main net growth higher than H1 for efficiency.
+	current := s.chain.GetHeight()
+
 	for _, sp := range peers {
 		if !sp.Connected() {
 			continue
@@ -681,18 +686,17 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 
 		// Compatible for old version SPV client.
 		if rmsg.invVect.Type != msg.InvTypeTx && sp.filter.IsLoaded() {
-			// Do not send unconfirmed block to SPV client.
-			if rmsg.invVect.Type == msg.InvTypeBlock {
+			// Do not send unconfirmed block to SPV client after H1.
+			if current > s.chainParams.CRCOnlyDPOSHeight &&
+				rmsg.invVect.Type == msg.InvTypeBlock {
 				continue
 			}
 
 			// Change inv type to InvTypeBlock for compatible.
-			copyInvVect := &msg.InvVect{
-				Type: msg.InvTypeBlock,
-				Hash: rmsg.invVect.Hash,
-			}
+			invVect := *rmsg.invVect
+			invVect.Type = msg.InvTypeBlock
 
-			go sp.QueueInventory(copyInvVect)
+			go sp.QueueInventory(&invVect)
 			continue
 		}
 
@@ -857,6 +861,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 
 	s := server{
 		chain:        cfg.Chain,
+		chainParams:  cfg.ChainParams,
 		txMemPool:    cfg.TxMemPool,
 		blockMemPool: cfg.BlockMemPool,
 		peerQueue:    make(chan interface{}, svrCfg.MaxPeers),
