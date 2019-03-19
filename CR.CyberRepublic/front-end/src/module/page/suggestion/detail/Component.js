@@ -14,7 +14,7 @@ import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
 import { LG_WIDTH } from '@/config/constant'
 
-import './style.scss'
+import { Container, Title, Desc, Link } from './style'
 
 export default class extends StandardPage {
   constructor(props) {
@@ -43,46 +43,40 @@ export default class extends StandardPage {
     const detailNode = this.renderDetail()
     const translationBtn = this.renderTranslationBtn()
     const actionsNode = this.renderActionsNode()
+    const ownerActionsNode = this.renderOwnerActionsNode()
+    const councilActionsNode = this.renderCouncilActionsNode()
     const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     return (
       <div>
-        <div className="p_SuggestionDetail">
-          <BackLink link="/suggestion" />
+        <Container>
           <MediaQuery maxWidth={LG_WIDTH}>
-            <Row>
-              <Col>
-                {detailNode}
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                {translationBtn}
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                {actionsNode}
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                {commentNode}
-              </Col>
-            </Row>
+            <div><BackLink link="/suggestion" style={{ position: 'relative', left: 0, marginBottom: 15 }} /></div>
+            <div>
+              {detailNode}
+              {translationBtn}
+              {actionsNode}
+              {ownerActionsNode}
+              {councilActionsNode}
+            </div>
+            <div>{mySuggestionNode}</div>
+            <div>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
+            <BackLink link="/suggestion" />
             <Row gutter={24}>
               <Col span={15}>
                 {detailNode}
                 {translationBtn}
                 {actionsNode}
+                {ownerActionsNode}
+                {councilActionsNode}
                 {commentNode}
               </Col>
               <Col span={9}>{mySuggestionNode}</Col>
             </Row>
           </MediaQuery>
-        </div>
+        </Container>
         <Footer />
       </div>
     )
@@ -113,17 +107,27 @@ export default class extends StandardPage {
     return <ActionsContainer data={detail} />
   }
 
+  renderOwnerActionsNode() {
+    const { detail } = this.props
+    return <ActionsContainer data={detail} />
+  }
+
+  renderCouncilActionsNode() {
+    const { detail } = this.props
+    return <ActionsContainer data={detail} />
+  }
+
   renderTitleNode() {
     const { detail } = this.props
     return (
-      <div className="detail-title">{detail.title}</div>
+      <Title>{detail.title}</Title>
     )
   }
 
   renderDescNode() {
     const { detail } = this.props
     return (
-      <div className="detail-desc" dangerouslySetInnerHTML={{ __html: detail.desc }} />
+      <Desc dangerouslySetInnerHTML={{ __html: detail.desc }} />
     )
   }
 
@@ -135,9 +139,9 @@ export default class extends StandardPage {
     }
 
     return (
-      <div className="detail-link">
+      <Link>
         {I18N.get('from.TaskCreateForm.label.info')}: <a href={detail.link} target="_blank">{detail.link}</a>
-      </div>
+      </Link>
     )
   }
 
