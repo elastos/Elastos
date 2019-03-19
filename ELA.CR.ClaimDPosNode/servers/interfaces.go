@@ -1375,8 +1375,10 @@ func VerifyAndSendTx(tx *Transaction) ErrCode {
 		return errCode
 	}
 
-	// Broadcast to peer-to-peer network.
-	Server.BroadcastMessage(msg.NewTx(tx))
+	// Relay tx inventory to other peers.
+	txHash := tx.Hash()
+	iv := msg.NewInvVect(msg.InvTypeTx, &txHash)
+	Server.RelayInventory(iv, tx)
 
 	return Success
 }
