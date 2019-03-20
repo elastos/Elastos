@@ -2,7 +2,12 @@ import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate } from '../utility'
-import user from 'src/router/user';
+
+const emptyDoc = {
+  title: '',
+  desc: '',
+  link: '',
+}
 
 export default class extends Base {
   private model: any
@@ -16,12 +21,17 @@ export default class extends Base {
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
-    // build document object
-    const doc = {
+
+    const docCore = {
       title,
       desc,
       link,
+    }
+    // build document object
+    const doc = {
+      ...docCore,
       createdBy: _.get(this.currentUser, '_id'),
+      editHistory: [emptyDoc, docCore],
     }
     // save the document
     return await this.model.save(doc)
@@ -33,21 +43,33 @@ export default class extends Base {
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
-    if (!userId.equals(currDoc.createdBy)) {
+    if (!userId.equals(_.get(currDoc, 'createdBy'))) {
       throw 'Only owner can edit suggestion'
     }
 
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
+
     // build document object
     const doc = {
       title,
       desc,
       link,
     }
+
     // update the document
-    await this.model.update({_id: id}, {$set: doc})
+    if (_.has(currDoc, 'editHistory')) {
+      await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
+    } else {
+      const firstHistoryItem = {
+        title: currDoc.title,
+        desc: currDoc.desc,
+        link: currDoc.link,
+      }
+      // for old data
+      await this.model.update({_id: id}, {$set: { ...doc, editHistory: [emptyDoc, firstHistoryItem, doc] }})
+    }
 
     return await this.show({ id })
   }
