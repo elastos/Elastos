@@ -672,6 +672,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32) (*arbi
 		chainParams:                 chainParams,
 		bestHeight:                  bestHeight,
 		arbitersCount:               arbitersCount,
+		currentArbitrators:          originArbiters,
 		currentOwnerProgramHashes:   originArbitersProgramHashes,
 		nextArbitrators:             originArbiters,
 		nextCandidates:              make([][]byte, 0),
