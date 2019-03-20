@@ -45,7 +45,7 @@ export default class extends StandardPage {
     const translationBtn = this.renderTranslationBtn()
     const actionsNode = this.renderActionsNode()
     const ownerActionsNode = this.renderOwnerActionsNode()
-    const councilActionsNode = this.renderCouncilActionsNode()
+    // const councilActionsNode = this.renderCouncilActionsNode()
     const editForm = this.renderEditForm()
     const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
@@ -59,10 +59,10 @@ export default class extends StandardPage {
               {translationBtn}
               {actionsNode}
               {ownerActionsNode}
-              {councilActionsNode}
+              {/* {councilActionsNode} */}
             </div>
             <div>{mySuggestionNode}</div>
-            <div>{commentNode}</div>
+            <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <BackLink link="/suggestion" />
@@ -72,8 +72,8 @@ export default class extends StandardPage {
                 {translationBtn}
                 {actionsNode}
                 {ownerActionsNode}
-                {councilActionsNode}
-                {commentNode}
+                {/* {councilActionsNode} */}
+                <div style={{ marginTop: 60 }}>{commentNode}</div>
               </Col>
               <Col span={9}>{mySuggestionNode}</Col>
             </Row>
