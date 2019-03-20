@@ -3,25 +3,32 @@ package elanet
 import (
 	"testing"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/elanet/peer"
+	svr "github.com/elastos/Elastos.ELA/p2p/server"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPeerMsg(t *testing.T) {
-	p1 := newPeerMsg{nil}
-	p2 := donePeerMsg{nil}
+	p := &peer.Peer{}
+	p1 := newPeerMsg{p}
+	p2 := donePeerMsg{p}
 
 	peers := make(chan interface{}, 2)
 	peers <- p1
 	peers <- p2
 
 	go func() {
+		set := make(map[svr.IPeer]struct{})
 		for p := range peers {
-			switch p.(type) {
+			switch p := p.(type) {
 			case newPeerMsg:
-				t.Log("newPeerMsg")
+				set[p.IPeer] = struct{}{}
 			case donePeerMsg:
-				t.Log("donePeerMsg")
+				_, ok := set[p.IPeer]
+				assert.Equal(t, true, ok)
 			default:
-				t.Log("unknown msg")
+				t.FailNow()
 			}
 		}
 	}()
