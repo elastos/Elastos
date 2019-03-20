@@ -26,6 +26,25 @@ export default class extends Base {
     return await this.model.save(doc)
   }
 
+  public async update(param: any): Promise<Document> {
+    // get param
+    const { id, title, desc, link } = param
+    console.log('param is: ', param)
+    // validation
+    this.validateTitle(title)
+    this.validateDesc(desc)
+    // build document object
+    const doc = {
+      title,
+      desc,
+      link,
+    }
+    // update the document
+    await this.model.update({_id: id}, {$set: doc})
+
+    return await this.show({ id })
+  }
+
   public async list(param: any): Promise<Object> {
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search'])
     const cursor = this.model.getDBInstance()

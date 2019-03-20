@@ -267,6 +267,7 @@ const en = {
   'suggestion.search': 'Search',
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',
+  'suggestion.header.edit': 'Edit Suggestion',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',

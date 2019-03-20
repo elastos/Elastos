@@ -267,6 +267,7 @@ const zh = {
   'suggestion.search': '搜索',
   'suggestion.cancel': '取消',
   'suggestion.submit': '提交',
+  'suggestion.header.edit': '编辑',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',

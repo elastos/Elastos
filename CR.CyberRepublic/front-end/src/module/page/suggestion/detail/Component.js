@@ -125,7 +125,7 @@ export default class extends StandardPage {
     const { detail, consider, needMoreInfo, makeIntoProposal, isCouncil } = this.props
     const res = isCouncil && (
       <BtnGroup>
-        <Row type="flex" justify="flex-start">
+        <Row type="flex" justify="start">
           <Col xs={24} sm={8}>
             <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={consider}>
               {I18N.get('suggestion.btnText.consider')}
@@ -199,7 +199,26 @@ export default class extends StandardPage {
     )
   }
 
-  renderEditForm() {
+  onFormSubmit = async (param) => {
+    try {
+      await this.props.update(param)
+      this.showEditForm()
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  renderEditForm = () => {
+    const { detail } = this.props
+
+    const props = {
+      onFormCancel: this.showEditForm,
+      onFormSubmit: this.onFormSubmit,
+      header: I18N.get('suggestion.header.edit'),
+      data: detail,
+    }
+
     return (
       <Modal
         className="project-detail-nobar"
@@ -210,7 +229,7 @@ export default class extends StandardPage {
         width="70%"
       >
         { this.state.showForm
-          && <SuggestionForm showEditForm={this.showEditForm} refetch={this.refetch} />
+          && <SuggestionForm {...props} />
         }
       </Modal>
     )

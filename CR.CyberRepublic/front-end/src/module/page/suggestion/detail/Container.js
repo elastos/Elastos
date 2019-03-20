@@ -34,7 +34,9 @@ export default createContainer(Component, (state) => {
         incViewsNum,
       })
     },
-
+    async update(param) {
+      return service.update(param)
+    },
     resetDetail() {
       return service.resetDetail()
     },

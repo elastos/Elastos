@@ -1,5 +1,7 @@
 import styled from 'styled-components'
-import { Button } from 'antd'
+
+export const Container = styled.div`
+`
 
 export const ModalBody = styled.div`
   padding: 20px;
