@@ -17,6 +17,7 @@ export default class extends BaseComponent {
     this.state = {
       isTranslateModalOpen: false,
       translation: '',
+      selectedLang: I18N.getLang(),
     }
   }
 

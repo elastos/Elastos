@@ -36,10 +36,12 @@ class C extends BaseComponent {
   handleSubmit(e) {
     e.preventDefault()
 
-    this.props.form.validateFields(async (err, values) => {
+    const { form, onFormSubmit, data } = this.props
+
+    form.validateFields(async (err, values) => {
       if (!err) {
         if (_.isEmpty(values.description)) {
-          this.props.form.setFields({
+          form.setFields({
             description: {
               errors: [new Error(I18N.get('suggestion.create.error.descriptionRequired'))],
             },
@@ -48,7 +50,7 @@ class C extends BaseComponent {
           return
         }
         if (_.isEmpty(values.description)) {
-          this.props.form.setFields({
+          form.setFields({
             title: {
               errors: [new Error(I18N.get('suggestion.create.error.titleRequired'))],
             },
@@ -57,27 +59,25 @@ class C extends BaseComponent {
           return
         }
 
-        const createParams = {
+        const param = {
           title: values.title,
           desc: sanitizeHtml(values.description, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
           }),
-          link: values.link
+          link: values.link,
         }
 
-        try {
-          await this.props.create(createParams)
-          this.props.showCreateForm()
-          this.props.refetch()
-        } catch (error) {
-          // console.log(error)
+        if (_.get(data, '_id')) {
+          param.id = _.get(data, '_id')
         }
+        onFormSubmit(param)
       }
     })
   }
 
   getInputProps() {
     const { getFieldDecorator } = this.props.form
+    const { data } = this.props
 
     const input_el = (
       <Input size="large" placeholder="Title" />
@@ -102,7 +102,7 @@ class C extends BaseComponent {
         { required: true, message: I18N.get('suggestion.create.error.titleRequired') },
         { min: 4, message: I18N.get('suggestion.create.error.titleTooShort') },
       ],
-      initialValue: '',
+      initialValue: _.get(data, 'title', ''),
     })
 
     const description_fn = getFieldDecorator('description', {
@@ -110,19 +110,20 @@ class C extends BaseComponent {
         { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
         { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
       ],
-      initialValue: ''
+      initialValue: _.get(data, 'desc', ''),
     })
 
     const link_fn = getFieldDecorator('link', {
       rules: [
-        {type: 'url'}
-      ]
+        { type: 'url' },
+      ],
+      initialValue: _.get(data, 'link', ''),
     })
 
     return {
       title: title_fn(input_el),
       description: description_fn(textarea_el),
-      link: link_fn(link_el)
+      link: link_fn(link_el),
     }
   }
 
@@ -221,7 +222,7 @@ class C extends BaseComponent {
         </FormItem>
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
-            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
+            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>
               {I18N.get('suggestion.cancel')}
             </Button>
           </Col>

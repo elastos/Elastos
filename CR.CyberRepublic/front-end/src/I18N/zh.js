@@ -267,6 +267,16 @@ const zh = {
   'suggestion.search': '搜索',
   'suggestion.cancel': '取消',
   'suggestion.submit': '提交',
+  'suggestion.header.edit': '编辑',
+  'suggestion.editHistory': '编辑历史',
+  'suggestion.showEditHistory': '查看编辑历史',
+  'suggestion.edited': '编辑于',
+
+  // Suggestion Button Text
+  'suggestion.btnText.edit': '编辑',
+  'suggestion.btnText.consider': '考虑',
+  'suggestion.btnText.needMoreInfo': '需要更多信息',
+  'suggestion.btnText.makeIntoProposal': '转化为提案',
 
   // suggestion error
   'suggestion.create.error.titleRequired': '建议标题为必填项',

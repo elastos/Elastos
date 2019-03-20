@@ -113,6 +113,12 @@ export default class extends BaseComponent {
     const content = (
       <div className="popover-actions">
         <IconText
+          component={<Icon type="edit" />}
+          text={I18N.get('suggestion.showEditHistory')}
+          onClick={this.gotoEditHistory}
+          className="history-icon"
+        />
+        <IconText
           component={!!FollowIcon && <FollowIcon />}
           text={I18N.get('suggestion.follow')}
           onClick={() => this.handleClick('isSubscribed')}
@@ -150,6 +156,12 @@ export default class extends BaseComponent {
       state: action,
     }
     return params
+  }
+
+  gotoEditHistory = () => {
+    const { data: { _id, editHistory }, history, saveEditHistory } = this.props
+    saveEditHistory(editHistory)
+    history.push(`/suggestion/history/${_id}`)
   }
 
   // use setState to change UI state for better UX

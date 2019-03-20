@@ -4,20 +4,31 @@ import { SubscriberSchema } from './SubscriberSchema'
 import { constant } from '../../constant'
 import * as _ from 'lodash'
 
-export const Suggestion = {
+const SuggestionCore = {
     title: {
         type: String,
         required: true,
-        minlength: 1,
-        maxLength: 100,
+        // minlength: 1,
+        // maxLength: 150,
     },
     desc: {
         type: String,
         required: true,
-        minlength: 1,
+        // minlength: 1,
         // maxLength: 10000,
     },
     link: String,
+}
+
+export const Suggestion = {
+    ...SuggestionCore,
+    editHistory: [{
+        ...SuggestionCore,
+        updatedAt: {
+            type: Date,
+            default: Date.now,
+        }
+    }],
     likes: {
         type: [Schema.Types.ObjectId],
         default: [],

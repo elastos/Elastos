@@ -29,6 +29,7 @@ class SuggestionRedux extends BaseRedux {
       detail: {},
       sortBy: null,
       filter: {},
+      edit_history: [],
     };
   }
 }

@@ -267,6 +267,16 @@ const en = {
   'suggestion.search': 'Search',
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',
+  'suggestion.header.edit': 'Edit Suggestion',
+  'suggestion.editHistory': 'Edit History',
+  'suggestion.showEditHistory': 'Show Edit History',
+  'suggestion.edited': 'Edited',
+
+  // Suggestion Button Text
+  'suggestion.btnText.edit': 'Edit Suggestion',
+  'suggestion.btnText.consider': 'Consider',
+  'suggestion.btnText.needMoreInfo': 'Need More Info',
+  'suggestion.btnText.makeIntoProposal': 'Make into Proposal',
 
   // suggestion error
   'suggestion.create.error.titleRequired': 'Suggestion title is required',
