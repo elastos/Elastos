@@ -22,7 +22,13 @@ const SuggestionCore = {
 
 export const Suggestion = {
     ...SuggestionCore,
-    editHistory: [SuggestionCore],
+    editHistory: [{
+        ...SuggestionCore,
+        updatedAt: {
+            type: Date,
+            default: Date.now,
+        }
+    }],
     likes: {
         type: [Schema.Types.ObjectId],
         default: [],

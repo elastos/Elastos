@@ -268,6 +268,9 @@ const en = {
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',
   'suggestion.header.edit': 'Edit Suggestion',
+  'suggestion.editHistory': 'Edit History',
+  'suggestion.showEditHistory': 'Show Edit History',
+  'suggestion.edited': 'Edited',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',

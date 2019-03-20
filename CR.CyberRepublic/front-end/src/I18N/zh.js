@@ -268,6 +268,9 @@ const zh = {
   'suggestion.cancel': '取消',
   'suggestion.submit': '提交',
   'suggestion.header.edit': '编辑',
+  'suggestion.editHistory': '编辑历史',
+  'suggestion.showEditHistory': '查看编辑历史',
+  'suggestion.edited': '编辑于',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',

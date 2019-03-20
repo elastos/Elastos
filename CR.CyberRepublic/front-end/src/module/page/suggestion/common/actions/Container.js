@@ -50,6 +50,9 @@ const mapDispatch = () => {
     resetAll() {
       return service.resetAll()
     },
+    saveEditHistory(data) {
+      return service.saveEditHistory(data)
+    },
   }
 }
 

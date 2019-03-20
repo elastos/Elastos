@@ -1,0 +1,33 @@
+import { bg, text } from "@/constants/color"
+import styled from 'styled-components'
+import { Container as PContainer } from '../detail/style'
+
+export const Container = styled(PContainer)`
+  padding: 0 150px;
+`
+
+export const Header = styled.h2`
+  font-size: 30px;
+`
+
+export const List = styled.div`
+  margin-bottom: 40px;
+`
+
+export const Item = styled.div`
+  padding: 30px 0;
+  &:not(:last-child) {
+    border-bottom: 1px solid #E5E5E5;
+  }
+`
+
+export const Title = styled.h4`
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.65);
+  margin-top: 8px;
+  margin-bottom: 0;
+  display: block;
+`
+
+export const Desc = styled.div`
+`
