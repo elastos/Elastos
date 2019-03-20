@@ -2,6 +2,7 @@ import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate } from '../utility'
+import user from 'src/router/user';
 
 export default class extends Base {
   private model: any
@@ -29,7 +30,13 @@ export default class extends Base {
   public async update(param: any): Promise<Document> {
     // get param
     const { id, title, desc, link } = param
-    console.log('param is: ', param)
+    const userId = _.get(this.currentUser, '_id')
+    const currDoc = await this.model.getDBInstance().findById(id)
+
+    if (!userId.equals(currDoc.createdBy)) {
+      throw 'Only owner can edit suggestion'
+    }
+
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
