@@ -775,17 +775,17 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnReject:       sp.OnReject,
 		})
 
-		peers[p] = sp
+		peers[p.IPeer] = sp
 		s.syncManager.NewPeer(sp.Peer)
 
 	case donePeerMsg:
-		sp, ok := peers[p]
+		sp, ok := peers[p.IPeer]
 		if !ok {
 			log.Errorf("unknown done peer %v", p)
 			return
 		}
 
-		delete(peers, p)
+		delete(peers, p.IPeer)
 		s.syncManager.DonePeer(sp.Peer)
 	}
 }
