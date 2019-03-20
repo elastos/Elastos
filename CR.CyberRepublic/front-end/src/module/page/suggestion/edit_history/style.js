@@ -1,5 +1,5 @@
-import { bg, text } from "@/constants/color"
 import styled from 'styled-components'
+import { breakPoint } from '@/constants/breakPoint'
 import { Container as PContainer } from '../detail/style'
 
 export const Container = styled(PContainer)`
@@ -8,6 +8,10 @@ export const Container = styled(PContainer)`
 
 export const Header = styled.h2`
   font-size: 30px;
+  padding-top: 0;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    padding-top: 30px;
+  }
 `
 
 export const List = styled.div`

@@ -2,6 +2,7 @@ import React from 'react';
 import _ from 'lodash'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
+import BackLink from "@/module/shared/BackLink/Component"
 import StandardPage from '../../StandardPage';
 
 import { Container, Header, Title, Desc, List, Item } from './style'
@@ -16,7 +17,8 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { dataList } = this.props
+    const { dataList, match } = this.props
+    const id = _.get(match, 'params.id')
     const listNode = this.renderList()
 
     if (_.isEmpty(dataList)) {
@@ -26,6 +28,7 @@ export default class extends StandardPage {
     const headerNode = this.renderHeader()
     return (
       <Container>
+        <BackLink link={`/suggestion/${id}`} />
         {headerNode}
         {listNode}
       </Container>
@@ -68,7 +71,4 @@ export default class extends StandardPage {
     getDetail({ id, incViewsNum: false })
   }
 
-  linkSuggestionDetail(suggestionId) {
-    this.props.history.push(`/suggestion/${suggestionId}`)
-  }
 }
