@@ -32,6 +32,3 @@ export const Title = styled.h4`
   margin-bottom: 0;
   display: block;
 `
-
-export const Desc = styled.div`
-`

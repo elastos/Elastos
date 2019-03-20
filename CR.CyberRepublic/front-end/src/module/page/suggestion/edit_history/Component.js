@@ -3,9 +3,10 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import BackLink from "@/module/shared/BackLink/Component"
-import StandardPage from '../../StandardPage';
+import StandardPage from '../../StandardPage'
+import Diff from './Diff'
 
-import { Container, Header, Title, Desc, List, Item } from './style'
+import { Container, Header, Title, List, Item } from './style'
 
 export default class extends StandardPage {
   componentDidMount() {
@@ -19,11 +20,12 @@ export default class extends StandardPage {
   ord_renderContent() {
     const { dataList, match } = this.props
     const id = _.get(match, 'params.id')
-    const listNode = this.renderList()
 
     if (_.isEmpty(dataList)) {
-      return <div className="center">{I18N.get('suggestion.nodata')}</div>
+      // return <div className="center">{I18N.get('suggestion.nodata')}</div>
+      return null
     }
+    const listNode = this.renderList()
 
     const headerNode = this.renderHeader()
     return (
@@ -43,12 +45,17 @@ export default class extends StandardPage {
 
   renderList() {
     const { dataList } = this.props
-    const result = _.map(dataList, data => this.renderItem(data))
+    const result = []
+
+    for (let i = dataList.length - 1; i > 0; i -= 1) {
+      const item = this.renderItem(dataList[i - 1], dataList[i])
+      result.push(item)
+    }
     return <List>{result}</List>
   }
 
-  renderItem = (data) => {
-    const { _id, title, desc, link, updatedAt } = data
+  renderItem = (dataOld, dataNew) => {
+    const { _id, updatedAt } = dataNew
     const metaNode = (
       <div>
         <span style={{ marginRight: 5 }}>{I18N.get('suggestion.edited')}</span>
@@ -58,8 +65,9 @@ export default class extends StandardPage {
     return (
       <Item key={_id}>
         {metaNode}
-        <Title>{title}</Title>
-        <Desc dangerouslySetInnerHTML={{ __html: desc }} />
+        <Title><Diff inputA={dataOld.title} inputB={dataNew.title} type="words" /></Title>
+        <Diff inputA={dataOld.desc} inputB={dataNew.desc} type="words" />
+        {/* <Desc dangerouslySetInnerHTML={{ __html: <Diff inputA={dataOld.desc} inputB={dataNew.desc} type="words" /> }} /> */}
       </Item>
     )
   }
