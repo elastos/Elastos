@@ -39,10 +39,14 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 }
 
 // newPeerMsg represent a new connected peer.
-type newPeerMsg p2psvr.IPeer
+type newPeerMsg struct {
+	p2psvr.IPeer
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg p2psvr.IPeer
+type donePeerMsg struct {
+	p2psvr.IPeer
+}
 
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
@@ -719,12 +723,12 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p p2psvr.IPeer) {
-	s.peerQueue <- newPeerMsg(p)
+	s.peerQueue <- newPeerMsg{p}
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p p2psvr.IPeer) {
-	s.peerQueue <- donePeerMsg(p)
+	s.peerQueue <- donePeerMsg{p}
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
