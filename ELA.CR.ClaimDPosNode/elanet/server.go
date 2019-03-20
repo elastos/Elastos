@@ -29,10 +29,14 @@ const (
 )
 
 // newPeerMsg represent a new connected peer.
-type newPeerMsg svr.IPeer
+type newPeerMsg struct {
+	svr.IPeer
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg svr.IPeer
+type donePeerMsg struct {
+	svr.IPeer
+}
 
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
@@ -724,8 +728,8 @@ out:
 	for {
 		select {
 		// Deal with peer messages.
-		case p := <-s.peerQueue:
-			s.handlePeerMsg(peers, p)
+		case peer := <-s.peerQueue:
+			s.handlePeerMsg(peers, peer)
 
 			// New inventory to potentially be relayed to other peers.
 		case invMsg := <-s.relayInv:
@@ -793,12 +797,12 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p svr.IPeer) {
-	s.peerQueue <- newPeerMsg(p)
+	s.peerQueue <- newPeerMsg{p}
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p svr.IPeer) {
-	s.peerQueue <- donePeerMsg(p)
+	s.peerQueue <- donePeerMsg{p}
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
