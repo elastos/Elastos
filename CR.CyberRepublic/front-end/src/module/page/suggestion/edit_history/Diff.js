@@ -33,8 +33,8 @@ export default ({ type, inputA, inputB }) => {
     // return <span key={index} style={spanStyle}>{part.value}</span>
   });
   return (
-    <pre className="diff-result">
+    <div className="diff-result">
       {result}
-    </pre>
+    </div>
   );
 }

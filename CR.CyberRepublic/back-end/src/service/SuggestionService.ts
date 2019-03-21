@@ -59,7 +59,7 @@ export default class extends Base {
     }
 
     // update the document
-    if (_.has(currDoc, 'editHistory')) {
+    if (!_.isEmpty(currDoc.editHistory)) {
       await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
     } else {
       const firstHistoryItem = {
