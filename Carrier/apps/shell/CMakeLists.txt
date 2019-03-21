@@ -19,6 +19,11 @@ if(HAVE_UNISTD_H)
     add_definitions(-DHAVE_UNISTD_H=1)
 endif()
 
+check_include_file(getopt.h HAVE_GETOPT_H)
+if(HAVE_GETOPT_H)
+    add_definitions(-DHAVE_GETOPT_H=1)
+endif()
+
 check_include_file(process.h HAVE_PROCESS_H)
 if(HAVE_PROCESS_H)
     add_definitions(-DHAVE_PROCESS_H=1)

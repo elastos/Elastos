@@ -24,8 +24,8 @@
 #define __TASSEMBLIES_H__
 
 #include <string.h>
-#include <rc_mem.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
+
 #include "ela_carrier_impl.h"
 
 typedef struct TransactedAssembly {

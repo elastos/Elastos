@@ -29,9 +29,7 @@
 #include "udp_eventfd.h"
 #endif
 
-#include <linkedhashtable.h>
-#include <ids_heap.h>
-#include <socket.h>
+#include <crystal.h>
 
 #include "fdset.h"
 

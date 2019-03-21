@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 #include <errno.h>
@@ -32,8 +31,7 @@
 #endif
 
 #include <CUnit/Basic.h>
-#include <vlog.h>
-#include <socket.h>
+#include <crystal.h>
 
 #include "ela_carrier.h"
 

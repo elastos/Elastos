@@ -24,7 +24,7 @@
 #define __SPEEDTEST__CONFIG_H__
 
 #include <stdbool.h>
-#include <rc_mem.h>
+#include <crystal.h>
 
 #include <ela_carrier.h>
 

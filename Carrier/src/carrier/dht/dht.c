@@ -55,7 +55,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#include <vlog.h>
+#include <crystal.h>
 
 #include "dht.h"
 #include "dht_callbacks.h"

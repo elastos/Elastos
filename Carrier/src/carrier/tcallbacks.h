@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <linkedhashtable.h>
+#include <crystal.h>
 
 #define TRANSACTION_EXPIRE_INTERVAL     (5 * 60) // 5m
 

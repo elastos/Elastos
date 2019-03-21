@@ -35,11 +35,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
-
-#include <linkedhashtable.h>
+#include <crystal.h>
 
 #include <ela_session.h>
 #include "ela_filetransfer.h"

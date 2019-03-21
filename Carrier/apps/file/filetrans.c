@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
-#include <getopt.h>
+#include <crystal.h>
 #include <limits.h>
 #include <pthread.h>
 #include <inttypes.h>
@@ -53,17 +53,16 @@
 #ifdef HAVE_LIBGEN_H
 #include <libgen.h>
 #endif
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
 #include <conio.h>
 #endif
 
-#include <vlog.h>
-#include <rc_mem.h>
 #include <ela_carrier.h>
 #include <ela_filetransfer.h>
-#include <linkedlist.h>
 
 #include "config.h"
 

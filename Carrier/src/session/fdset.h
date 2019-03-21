@@ -31,7 +31,7 @@
 #include <sys/eventfd.h>
 #endif
 
-#include <socket.h>
+#include <crystal.h>
 
 #include "udp_eventfd.h"
 

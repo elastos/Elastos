@@ -25,8 +25,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include <vlog.h>
-#include <bitset.h>
+#include <crystal.h>
 
 #include "elacp.h"
 #include "elacp_generated.h"

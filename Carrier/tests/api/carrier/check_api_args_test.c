@@ -28,10 +28,7 @@
 #endif
 
 #include <CUnit/Basic.h>
-#include <vlog.h>
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
+#include <crystal.h>
 
 #include "ela_carrier.h"
 

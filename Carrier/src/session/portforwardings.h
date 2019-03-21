@@ -23,8 +23,7 @@
 #ifndef __PORTFORWARDINGS_H__
 #define __PORTFORWARDINGS_H__
 
-#include <rc_mem.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
 #include "portforwarding.h"
 
 // Turn off warning for int -> ptr and ptr -> int convert

@@ -34,9 +34,7 @@
 #include <winsock2.h>
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
+#include <crystal.h>
 
 typedef struct Condition {
     pthread_mutex_t mutex;

@@ -26,12 +26,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <linkedhashtable.h>
-#include <linkedlist.h>
-#include <ids_heap.h>
+#include <crystal.h>
 
-#include "bitset.h"
-#include "socket.h"
 #include "flex_buffer.h"
 #include "session.h"
 #include "ela_session.h"

@@ -32,15 +32,13 @@
 #include <unistd.h>
 #endif
 
+#include <crystal.h>
 #if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
 
 // Undefine Windows defined MOUSE_MOVED for PDCurses
 #undef MOUSE_MOVED
 #endif
 #include <curses.h>
-
-#include "spopen.h"
 
 WINDOW *tests_out_border, *tests_out_win;
 WINDOW *tests_log_border, *tests_log_win;

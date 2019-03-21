@@ -28,13 +28,7 @@
 #include <unistd.h>
 #endif
 
-#include <rc_mem.h>
-#include <vlog.h>
-#include <time_util.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
+#include <crystal.h>
 
 #include "flex_buffer.h"
 #include "session.h"

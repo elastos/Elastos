@@ -25,9 +25,7 @@
 
 #include <stdlib.h>
 
-#include <crypto.h>
-#include <linkedhashtable.h>
-#include <linkedlist.h>
+#include <crystal.h>
 
 #include "ela_carrier.h"
 

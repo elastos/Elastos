@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 
-#include <socket.h>
+#include <crystal.h>
 
 typedef uint64_t eventfd_t;
 

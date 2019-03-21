@@ -55,10 +55,7 @@
 #endif
 #endif
 
-#include <rc_mem.h>
-#include <crypto.h>
-#include <base58.h>
-#include <vlog.h>
+#include <crystal.h>
 
 #include <ela_carrier.h>
 #include <ela_session.h>

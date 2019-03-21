@@ -25,8 +25,7 @@
 #include <string.h>
 
 #include <CUnit/Basic.h>
-#include <vlog.h>
-
+#include <crystal.h>
 #include "ela_carrier.h"
 
 #include "cond.h"

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 #include <CUnit/Basic.h>
-#include <vlog.h>
+#include <crystal.h>
 
 #include "ela_carrier.h"
 #include "ela_filetransfer.h"

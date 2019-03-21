@@ -25,14 +25,10 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
 #endif
 
 #include "ela_filetransfer.h"

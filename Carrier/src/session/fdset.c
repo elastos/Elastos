@@ -28,8 +28,7 @@
 #include <unistd.h>
 #endif
 
-#include <vlog.h>
-#include <socket.h>
+#include <crystal.h>
 
 #include "fdset.h"
 

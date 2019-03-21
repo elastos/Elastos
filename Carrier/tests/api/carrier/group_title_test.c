@@ -29,12 +29,8 @@
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
-
+#include <crystal.h>
 #include <CUnit/Basic.h>
-#include <vlog.h>
 
 #include "ela_carrier.h"
 #include "cond.h"

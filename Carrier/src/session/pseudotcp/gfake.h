@@ -30,9 +30,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#include <rc_mem.h>
-#include <vlog.h>
-#include <time_util.h>
+#include <crystal.h>
 
 #ifdef  __cplusplus
 #define G_BEGIN_DECLS  extern "C" {

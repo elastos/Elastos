@@ -53,15 +53,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#include <socket.h>
-#include <rc_mem.h>
-#include <time_util.h>
-#include <base58.h>
-#include <vlog.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
+#include <crystal.h>
 
 #include "flex_buffer.h"
 #include "ela_session.h"

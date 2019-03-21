@@ -19,6 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#if __linux__
+#define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +30,7 @@
 #include <ctype.h>
 #include <signal.h>
 #include <stdarg.h>
-#include <getopt.h>
+#include <crystal.h>
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
@@ -54,22 +57,23 @@
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
 #endif
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
 #include <io.h>
 
 // Undefine Windows defined MOUSE_MOVED for PDCurses
 #undef MOUSE_MOVED
 #endif
+
 #include <curses.h>
 
 #ifdef __linux__
-#define __USE_GNU
 #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 #endif
 
-#include <rc_mem.h>
 #include <pthread.h>
 
 #include <ela_carrier.h>

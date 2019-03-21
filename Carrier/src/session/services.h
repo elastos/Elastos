@@ -24,8 +24,7 @@
 #define __SERVICES_H__
 
 #include <string.h>
-#include <rc_mem.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
 #include "portforwarding.h"
 
 static inline

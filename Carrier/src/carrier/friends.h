@@ -25,7 +25,7 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
 
 #include "ela_carrier.h"
 

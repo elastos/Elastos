@@ -25,11 +25,7 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include <rc_mem.h>
-#include <time_util.h>
-#include <linkedlist.h>
-#include <socket.h>
-#include <vlog.h>
+#include <crystal.h>
 #include <pjmedia.h>
 
 #include "ela_session.h"

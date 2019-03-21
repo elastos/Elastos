@@ -24,9 +24,7 @@
 #include <assert.h>
 #include <sys/types.h>
 
-#include <vlog.h>
-#include <rc_mem.h>
-#include <crypto.h>
+#include <crystal.h>
 
 #include "flex_buffer.h"
 #include "session.h"

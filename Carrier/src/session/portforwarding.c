@@ -35,9 +35,7 @@
 #include "udp_eventfd.h"
 #endif
 
-#include <rc_mem.h>
-#include <socket.h>
-#include <vlog.h>
+#include <crystal.h>
 
 #include "ela_session.h"
 #include "session.h"

@@ -23,8 +23,7 @@
 #ifndef __CHANNELS_H__
 #define __CHANNELS_H__
 
-#include <rc_mem.h>
-#include <linkedhashtable.h>
+#include <crystal.h>
 #include "multiplex_handler.h"
 
 // Turn off warning for int -> ptr and ptr -> int convert

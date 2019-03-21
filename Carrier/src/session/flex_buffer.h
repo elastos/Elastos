@@ -35,7 +35,7 @@
 #include <malloc.h>
 #endif
 
-#include <vlog.h>
+#include <crystal.h>
 
 #include "ela_session.h"
 

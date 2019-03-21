@@ -34,11 +34,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#include <bitset.h>
-#include <crypto.h>
-#include <linkedlist.h>
-#include <linkedhashtable.h>
-#include <ids_heap.h>
+#include <crystal.h>
 
 #include "ela_session.h"
 #include "stream_handler.h"

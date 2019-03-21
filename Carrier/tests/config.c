@@ -30,7 +30,7 @@
 #endif
 
 #include <libconfig.h>
-#include <rc_mem.h>
+#include <crystal.h>
 
 #include "config.h"
 

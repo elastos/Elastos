@@ -33,9 +33,7 @@
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-
-#include <socket.h>
-#include <vlog.h>
+#include <crystal.h>
 
 #include "ela_carrier.h"
 #include "ela_session.h"

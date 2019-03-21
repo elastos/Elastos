@@ -56,15 +56,7 @@
 #include <winsock2.h>
 #endif
 
-#include <rc_mem.h>
-#include <base58.h>
-#include <vlog.h>
-#include <crypto.h>
-#include <linkedlist.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <posix_helper.h>
-#endif
+#include <crystal.h>
 
 #if !(defined(_WIN32) || defined(_WIN64))
 #define O_BINARY 0
