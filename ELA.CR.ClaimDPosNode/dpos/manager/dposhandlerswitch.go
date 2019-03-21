@@ -57,6 +57,10 @@ func NewHandler(cfg DPOSHandlerConfig) *DPOSHandlerSwitch {
 	return h
 }
 
+func (h *DPOSHandlerSwitch) IsAbnormal() bool {
+	return h.isAbnormal
+}
+
 func (h *DPOSHandlerSwitch) Initialize(dispatcher *ProposalDispatcher,
 	consensus *Consensus) {
 	h.proposalDispatcher = dispatcher

@@ -114,7 +114,7 @@ func (n *network) UpdatePeers(arbitrators map[string]*dposp2p.PeerAddr) error {
 	return nil
 }
 
-func (n *network) GetActivePeer() *peer.PID {
+func (n *network) GetActivePeers() []dposp2p.Peer {
 	return nil
 }
 
@@ -171,7 +171,7 @@ func (n *network) FireProposalReceived(id peer.PID, p *payload.DPOSProposal) {
 }
 
 func (n *network) FireVoteReceived(id peer.PID, p *payload.DPOSProposalVote) {
-	n.listener.OnVoteReceived(id, p)
+	n.listener.OnVoteAccepted(id, p)
 }
 
 func (n *network) FireVoteRejected(id peer.PID, p *payload.DPOSProposalVote) {
