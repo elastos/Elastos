@@ -2,36 +2,58 @@ package elanet
 
 import (
 	"testing"
-	"time"
 
-	"github.com/elastos/Elastos.ELA/elanet/peer"
+	"github.com/elastos/Elastos.ELA/elanet/netsync"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
 	svr "github.com/elastos/Elastos.ELA/p2p/server"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPeerMsg(t *testing.T) {
-	p := &peer.Peer{}
-	p1 := newPeerMsg{p}
-	p2 := donePeerMsg{p}
+// iPeer fakes a server.IPeer for test.
+type iPeer struct {
+	*peer.Peer
+}
 
-	peers := make(chan interface{}, 2)
-	peers <- p1
-	peers <- p2
+func (p *iPeer) ToPeer() *peer.Peer {
+	return p.Peer
+}
 
-	go func() {
-		set := make(map[svr.IPeer]struct{})
-		for p := range peers {
-			switch p := p.(type) {
-			case newPeerMsg:
-				set[p.IPeer] = struct{}{}
-			case donePeerMsg:
-				_, ok := set[p.IPeer]
-				assert.Equal(t, true, ok)
-			default:
-				t.FailNow()
-			}
-		}
-	}()
+func (p *iPeer) AddBanScore(persistent, transient uint32, reason string) {}
 
-	<-time.After(time.Millisecond)
+func (p *iPeer) BanScore() uint32 { return 0 }
+
+// mockPeer creates a fake server.IPeer instance.
+func mockPeer() svr.IPeer {
+	return &iPeer{Peer: &peer.Peer{}}
+}
+
+// TestHandlePeerMsg tests the adding/removing peer messages.
+func TestHandlePeerMsg(t *testing.T) {
+	peers := make(map[svr.IPeer]*serverPeer)
+
+	s := &server{
+		syncManager: netsync.New(&netsync.Config{MaxPeers: 2}),
+	}
+
+	// New peers should be added.
+	p1, p2, p3 := mockPeer(), mockPeer(), mockPeer()
+	s.handlePeerMsg(peers, newPeerMsg{p1})
+	s.handlePeerMsg(peers, newPeerMsg{p2})
+	assert.Equal(t, 2, len(peers))
+
+	// Unknown done peer should not change peers.
+	s.handlePeerMsg(peers, donePeerMsg{p3})
+	assert.Equal(t, 2, len(peers))
+
+	// p1 should be removed.
+	s.handlePeerMsg(peers, donePeerMsg{p1})
+	assert.Equal(t, 1, len(peers))
+
+	// Same peer can not be removed twice.
+	s.handlePeerMsg(peers, donePeerMsg{p1})
+	assert.Equal(t, 1, len(peers))
+
+	// New peer can be added.
+	s.handlePeerMsg(peers, newPeerMsg{p3})
+	assert.Equal(t, 2, len(peers))
 }
