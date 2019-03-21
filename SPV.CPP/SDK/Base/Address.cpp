@@ -120,7 +120,7 @@ namespace Elastos {
 				_programHash.u8[0] == PrefixCrossChain ||
 				_programHash.u8[0] == PrefixMultiSign ||
 				_programHash.u8[0] == PrefixIDChain ||
-				_programHash.u8[0] == PrefixDeposit) {
+				_programHash.u8[0] == PrefixDestroy) {
 				_isValid = true;
 			} else {
 				_isValid = false;
