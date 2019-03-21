@@ -7,13 +7,13 @@ import * as _ from 'lodash'
 const SuggestionCore = {
     title: {
         type: String,
-        required: true,
+        // required: true,
         // minlength: 1,
         // maxLength: 150,
     },
     desc: {
         type: String,
-        required: true,
+        // required: true,
         // minlength: 1,
         // maxLength: 10000,
     },

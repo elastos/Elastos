@@ -26,7 +26,9 @@ const StyledSpan = styled.span`
 `
 
 export default ({ type, inputA, inputB }) => {
-  const diff = fnMap[type || 'chars'](turndownService.turndown(inputA), turndownService.turndown(inputB));
+  const diffA = inputA ? turndownService.turndown(inputA) : ''
+  const diffB = inputB ? turndownService.turndown(inputB) : ''
+  const diff = fnMap[type || 'chars'](diffA, diffB);
   const result = diff.map((part, index) => {
     const spanStyle = {}
     if (part.added || part.removed) {

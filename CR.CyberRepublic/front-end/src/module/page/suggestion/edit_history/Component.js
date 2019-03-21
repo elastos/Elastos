@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash'
+import { Spin } from 'antd'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import BackLink from "@/module/shared/BackLink/Component"
@@ -7,6 +8,12 @@ import StandardPage from '../../StandardPage'
 import Diff from './Diff'
 
 import { Container, Header, Title, List, Item } from './style'
+
+const emptyDoc = {
+  title: '',
+  desc: '',
+  link: '',
+}
 
 export default class extends StandardPage {
   componentDidMount() {
@@ -18,21 +25,23 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { dataList, match } = this.props
+    const { dataList, match, loading, detail } = this.props
     const id = _.get(match, 'params.id')
-
-    if (_.isEmpty(dataList)) {
-      // return <div className="center">{I18N.get('suggestion.nodata')}</div>
-      return null
+    let content
+    if (loading) {
+      content = <div className="center"><Spin size="large" /></div>
+    } else if (!_.isEmpty(detail) && _.isEmpty(dataList)) {
+      content = this.renderEmpty()
+    } else if (!_.isEmpty(dataList)) {
+      content = this.renderList()
     }
-    const listNode = this.renderList()
 
     const headerNode = this.renderHeader()
     return (
       <Container>
         <BackLink link={`/suggestion/${id}`} />
         {headerNode}
-        {listNode}
+        {content}
       </Container>
     )
   }
@@ -51,6 +60,20 @@ export default class extends StandardPage {
       const item = this.renderItem(dataList[i - 1], dataList[i])
       result.push(item)
     }
+    return <List>{result}</List>
+  }
+
+  renderEmpty() {
+    const { detail: { _id, title, desc, updatedAt } } = this.props
+    const newData = {
+      _id,
+      title,
+      desc,
+      updatedAt,
+    }
+    const item = this.renderItem(emptyDoc, newData)
+    const result = [item]
+
     return <List>{result}</List>
   }
 

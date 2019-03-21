@@ -7,6 +7,8 @@ import SuggestionService from '@/service/SuggestionService'
 
 const mapState = state => ({
   dataList: _.get(state.suggestion.detail, 'editHistory'),
+  loading: _.get(state.suggestion.detail, 'loading'),
+  detail: state.suggestion.detail,
 })
 
 const mapDispatch = () => {
