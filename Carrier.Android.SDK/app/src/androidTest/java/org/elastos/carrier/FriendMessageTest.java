@@ -76,18 +76,11 @@ public class FriendMessageTest {
 		public void onFriendMessage(Carrier carrier, String from, byte[] message) {
 			TestContext.Bundle bundle = mContext.getExtra();
 			bundle.setFrom(from);
-			bundle.setExtraData(getActualValue(message));
+			bundle.setExtraData(new String(message));
 
 			Log.d(TAG, String.format("Friend message %s ", from));
 			commonSyncher.wakeup();
 		}
-	}
-
-	private static String getActualValue(byte[] data) {
-		//The string from robot has '\n', delete it.
-		byte[] newArray = new byte[data.length - 1];
-		System.arraycopy(data, 0, newArray, 0, data.length - 1);
-		return new String(newArray);
 	}
 
 	@Test
@@ -104,7 +97,7 @@ public class FriendMessageTest {
 
 			String[] args = robot.readAck();
 			assertTrue(args != null && args.length == 1);
-			assertEquals(out, getActualValue(args[0].getBytes()));
+			assertEquals(out, args[0]);
 		}
 		catch (CarrierException e) {
 			e.printStackTrace();

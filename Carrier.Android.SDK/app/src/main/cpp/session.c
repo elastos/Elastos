@@ -302,13 +302,12 @@ bool onChannelOpenCallback(ElaSession *ws, int stream, int channel,
     CallbackContext* cc = (CallbackContext*)context;
     int needDetach = 0;
     JNIEnv* env;
-    jstring jcookie;
+    jstring jcookie = NULL;
     jboolean jresult;
 
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
-    assert(cookie);
 
     env = attachJvm(&needDetach);
     if (!env) {
@@ -316,10 +315,12 @@ bool onChannelOpenCallback(ElaSession *ws, int stream, int channel,
         return false;
     }
 
-    jcookie = (*env)->NewStringUTF(env, cookie);
-    if (!jcookie) {
-        detachJvm(env, needDetach);
-        return false;
+    if (cookie != NULL) {
+        jcookie = (*env)->NewStringUTF(env, cookie);
+        if (!jcookie) {
+            detachJvm(env, needDetach);
+            return false;
+        }
     }
 
     if (!callBooleanMethod(env, cc->clazz, cc->handler, "onChannelOpen",
@@ -330,7 +331,9 @@ bool onChannelOpenCallback(ElaSession *ws, int stream, int channel,
         logE("Invoke java callback 'boolean onChanneOpen(Stream, int, String)' error");
     }
 
-    (*env)->DeleteLocalRef(env, jcookie);
+    if (jcookie) {
+        (*env)->DeleteLocalRef(env, jcookie);
+    }
     detachJvm(env, needDetach);
 
     return (bool)jresult;
