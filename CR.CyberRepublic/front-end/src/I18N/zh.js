@@ -271,11 +271,11 @@ const zh = {
   'suggestion.editHistory': '编辑历史',
   'suggestion.showEditHistory': '查看编辑历史',
   'suggestion.edited': '编辑于',
-  'suggestion.form.fields.1': 'Suggestion',
-  'suggestion.form.fields.2': 'Benefits to Elastos Community/Ecosystem ',
-  'suggestion.form.fields.3': 'Funding Estimated (USD)',
-  'suggestion.form.fields.4': 'Timeline suggested',
-  'suggestion.form.fields.5': 'Links',
+  'suggestion.form.fields.1': '建议',
+  'suggestion.form.fields.2': '对于亦来云社区/生态系统的好处 ',
+  'suggestion.form.fields.3': '预估资金（USD）',
+  'suggestion.form.fields.4': '建议时间线',
+  'suggestion.form.fields.5': '相关链接',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
