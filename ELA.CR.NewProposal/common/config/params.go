@@ -179,9 +179,9 @@ func (p *Params) RegNet() *Params {
 	}
 
 	copy.CheckAddressHeight = 0
-	copy.VoteStartHeight = 170000    //fixme edit height later
-	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
-	copy.PublicDPOSHeight = 1108812  //fixme edit height later
+	copy.VoteStartHeight = 170000
+	copy.CRCOnlyDPOSHeight = 211000
+	copy.PublicDPOSHeight = 1000000
 	return &copy
 }
 
