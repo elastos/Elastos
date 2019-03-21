@@ -282,11 +282,13 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	})
 
 	for _, tx := range txs {
-		totalTxsSize = totalTxsSize + tx.GetSize()
-		if totalTxsSize > pact.MaxBlockSize {
-			break
+		size := totalTxsSize + tx.GetSize()
+		if size > pact.MaxBlockSize {
+			continue
 		}
-		if txCount >= config.Parameters.MaxTxsInBlock {
+		totalTxsSize = size
+		if txCount >= pact.MaxTxPerBlock {
+			log.Warn("txCount reached max MaxTxPerBlock")
 			break
 		}
 
