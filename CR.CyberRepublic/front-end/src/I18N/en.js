@@ -246,7 +246,7 @@ const en = {
   'suggestion.reportAbuse': 'Report Abuse',
   'suggestion.translate': 'Translate in: ',
   'suggestion.translate.en': 'English',
-  'suggestion.translate.zh': 'Chinese',
+  'suggestion.translate.zh': '简体中文',
   'suggestion.translatedByGoogle': 'Translated by Google',
   'suggestion.councilMember': 'Council Member',
   'suggestion.copy': 'COPY',
