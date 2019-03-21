@@ -169,6 +169,10 @@ namespace Elastos {
 			if (account.GetType() != GetType() || IsReadOnly() != account.IsReadOnly())
 				return false;
 
+			if (!IsReadOnly() && !account.IsReadOnly()) {
+				return account.GetMultiSignPublicKey() == GetMultiSignPublicKey() && account.GetAddress() == GetAddress();
+			}
+
 			return account.GetAddress() == GetAddress();
 		}
 
