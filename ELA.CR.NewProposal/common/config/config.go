@@ -88,7 +88,6 @@ type Configuration struct {
 	MaxPerLogSize        int64                `json:"MaxPerLogSize"`
 	RestCertPath         string               `json:"RestCertPath"`
 	RestKeyPath          string               `json:"RestKeyPath"`
-	MaxTxsInBlock        int                  `json:"MaxTransactionInBlock"`
 	MinCrossChainTxFee   int                  `json:"MinCrossChainTxFee"`
 	FoundationAddress    string               `json:"FoundationAddress"`
 	PowConfiguration     PowConfiguration     `json:"PowConfiguration"`
