@@ -3,7 +3,6 @@ package dpos
 import (
 	"encoding/hex"
 	"errors"
-	"math/rand"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -152,24 +151,12 @@ func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
 }
 
 func (n *network) BroadcastMessage(msg elap2p.Message) {
-	log.Info("[BroadcastMessage] current connected peers:",
-		len(n.p2pServer.ConnectedPeers()))
+	log.Info("[BroadcastMessage] msg:", msg.CMD())
 	n.p2pServer.BroadcastMessage(msg)
 }
 
-func (n *network) GetActivePeer() *peer.PID {
-	peers := n.p2pServer.ConnectedPeers()
-	log.Debug("[GetActivePeer] current connected peers:", len(peers))
-	if len(peers) == 0 {
-		return nil
-	}
-	if len(peers) == 1 {
-		id := peers[0].PID()
-		return &id
-	}
-	i := rand.Int31n(int32(len(peers)) - 1)
-	id := peers[i].PID()
-	return &id
+func (n *network) GetActivePeers() []p2p.Peer {
+	return n.p2pServer.ConnectedPeers()
 }
 
 func (n *network) PostChangeViewTask() {
@@ -213,7 +200,7 @@ func (n *network) processMessage(msgItem *messageItem) {
 	case msg.CmdAcceptVote:
 		msgVote, processed := m.(*msg.Vote)
 		if processed {
-			n.listener.OnVoteReceived(msgItem.ID, &msgVote.Vote)
+			n.listener.OnVoteAccepted(msgItem.ID, &msgVote.Vote)
 		}
 	case msg.CmdRejectVote:
 		msgVote, processed := m.(*msg.Vote)

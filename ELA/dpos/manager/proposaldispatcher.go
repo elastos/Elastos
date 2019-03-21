@@ -48,19 +48,11 @@ type ProposalDispatcher struct {
 	illegalMonitor *IllegalBehaviorMonitor
 }
 
-func (p *ProposalDispatcher) OnAbnormalStateDetected() {
-	p.RequestAbnormalRecovering()
-}
-
 func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 	height := p.CurrentHeight()
 	msgItem := &dmsg.RequestConsensus{Height: height}
-	peerID := p.cfg.Network.GetActivePeer()
-	if peerID == nil {
-		log.Error("[RequestAbnormalRecovering] can not find active peer")
-		return
-	}
-	p.cfg.Network.SendMessageToPeer(*peerID, msgItem)
+	log.Info("[RequestAbnormalRecovering] broadcast message to peers")
+	p.cfg.Network.BroadcastMessage(msgItem)
 }
 
 func (p *ProposalDispatcher) GetProcessingBlock() *types.Block {
