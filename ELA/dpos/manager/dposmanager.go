@@ -37,7 +37,7 @@ type DPOSNetwork interface {
 	BroadcastMessage(msg p2p.Message)
 
 	UpdatePeers(arbitrators map[string]*dp2p.PeerAddr) error
-	GetActivePeer() *dpeer.PID
+	GetActivePeers() []dp2p.Peer
 }
 
 type StatusSyncEventListener interface {
@@ -59,7 +59,7 @@ type NetworkEventListener interface {
 	StatusSyncEventListener
 
 	OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal)
-	OnVoteReceived(id dpeer.PID, p *payload.DPOSProposalVote)
+	OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote)
 	OnVoteRejected(id dpeer.PID, p *payload.DPOSProposalVote)
 
 	OnChangeView()
@@ -100,6 +100,10 @@ type DPOSManager struct {
 	txPool      *mempool.TxPool
 	chainParams *config.Params
 	broadcast   func(p2p.Message)
+
+	notHandledVotes      int
+	neededMajorityStatus int
+	statusMap            map[uint32]map[string]*dmsg.ConsensusStatus
 }
 
 func (d *DPOSManager) AppendConfirm(confirm *payload.Confirm) (bool, bool, error) {
@@ -135,6 +139,7 @@ func (d *DPOSManager) Initialize(handler *DPOSHandlerSwitch,
 	d.blockPool = blockPool
 	d.txPool = txPool
 	d.broadcast = broadcast
+	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 }
 
 func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
@@ -160,8 +165,9 @@ func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 func (d *DPOSManager) Recover() {
 	d.changeHeight()
 	for {
-		if peerID := d.network.GetActivePeer(); peerID != nil {
-			d.handler.RequestAbnormalRecovering()
+		log.Info("Recover when start")
+		if d.recoverAbnormalState() {
+			log.Info("Recover finished")
 			return
 		}
 
@@ -178,7 +184,10 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
 	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 
-	d.handler.TryStartNewConsensus(b)
+	if d.handler.TryStartNewConsensus(b) {
+		d.notHandledVotes = 0
+		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
+	}
 }
 
 func (d *DPOSManager) ConfirmBlock() {
@@ -196,12 +205,21 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 	d.handler.StartNewProposal(p)
 }
 
-func (d *DPOSManager) OnVoteReceived(id dpeer.PID, p *payload.DPOSProposalVote) {
+func (d *DPOSManager) OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
-	_, finished := d.handler.ProcessAcceptVote(id, p)
+	succeed, finished := d.handler.ProcessAcceptVote(id, p)
 	if finished {
 		d.changeHeight()
+	} else if !succeed {
+		d.notHandledVotes++
+		if d.arbitrators.HasArbitersMinorityCount(d.notHandledVotes) {
+			log.Info("[OnVoteAccepted] has minority not handled votes, need recover")
+			if d.recoverAbnormalState() {
+				log.Info("[OnVoteAccepted] recover start")
+			}
+			log.Error("[OnVoteAccepted] has no active peers recover failed")
+		}
 	}
 }
 
@@ -261,16 +279,45 @@ func (d *DPOSManager) OnRequestConsensus(id dpeer.PID, height uint32) {
 }
 
 func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus) {
-	log.Info("[OnResponseConsensus], status:", *status)
-	d.handler.RecoverAbnormal(status)
+	log.Info("[OnResponseConsensus] status:", *status)
+	if !d.handler.isAbnormal {
+		return
+	}
+	log.Info("[OnResponseConsensus] collect recover status")
+	if _, ok := d.statusMap[status.ViewOffset]; !ok {
+		d.statusMap[status.ViewOffset] = make(map[string]*dmsg.ConsensusStatus)
+	}
+	d.statusMap[status.ViewOffset][common.BytesToHexString(id[:])] = status
+	if len(d.statusMap[status.ViewOffset]) >= d.neededMajorityStatus {
+		log.Infof("[OnResponseConsensus] recover received %d status at "+
+			"viewoffset:%d", len(d.statusMap[status.ViewOffset]), status.ViewOffset)
+		d.handler.RecoverAbnormal(status)
+		d.notHandledVotes = 0
+		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
+	}
 }
 
 func (d *DPOSManager) OnBadNetwork() {
-	d.dispatcher.OnAbnormalStateDetected()
+	if d.recoverAbnormalState() {
+		log.Info("[OnBadNetwork] start recover")
+	}
+	log.Error("[OnBadNetwork] has no active peers recover failed")
+}
+
+func (d *DPOSManager) recoverAbnormalState() bool {
+	if peers := d.network.GetActivePeers(); len(peers) != 0 {
+		log.Error("[recoverAbnormalState] can not find active peer")
+		d.neededMajorityStatus = len(peers)/3 + 1
+		d.handler.RequestAbnormalRecovering()
+		return true
+	}
+	return false
 }
 
 func (d *DPOSManager) OnChangeView() {
-	d.consensus.TryChangeView()
+	if d.consensus.TryChangeView() {
+		d.notHandledVotes = 0
+	}
 }
 
 func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
