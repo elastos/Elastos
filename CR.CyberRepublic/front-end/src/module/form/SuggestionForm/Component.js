@@ -104,13 +104,20 @@ class C extends BaseComponent {
       ],
       initialValue: _.get(data, 'title', ''),
     })
+    const descInitValue = `
+      <p><strong>${I18N.get('suggestion.form.fields.1')}</strong></p>
+      <p><strong>${I18N.get('suggestion.form.fields.2')}</strong></p>
+      <p><strong>${I18N.get('suggestion.form.fields.3')}</strong></p>
+      <p><strong>${I18N.get('suggestion.form.fields.4')}</strong></p>
+      <p><strong>${I18N.get('suggestion.form.fields.5')}</strong></p>
+    `
 
     const description_fn = getFieldDecorator('description', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
         { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
       ],
-      initialValue: _.get(data, 'desc', ''),
+      initialValue: _.get(data, 'desc', descInitValue),
     })
 
     const link_fn = getFieldDecorator('link', {

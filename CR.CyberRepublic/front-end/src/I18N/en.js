@@ -271,6 +271,11 @@ const en = {
   'suggestion.editHistory': 'Edit History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
+  'suggestion.form.fields.1': 'Suggestion',
+  'suggestion.form.fields.2': 'Benefits to Elastos Community/Ecosystem ',
+  'suggestion.form.fields.3': 'Funding Estimated (USD)',
+  'suggestion.form.fields.4': 'Timeline suggested',
+  'suggestion.form.fields.5': 'Links',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
