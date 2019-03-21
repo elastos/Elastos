@@ -89,6 +89,9 @@ var DefaultParams = Params{
 	InactivePenalty:          100 * 100000000,
 	EmergencyInactivePenalty: 500 * 100000000,
 	InactiveEliminateCount:   12,
+	GeneralArbiters:          24,
+	CandidateArbiters:        72,
+	PreConnectOffset:         360,
 }
 
 // TestNet returns the network parameters for the test network.
