@@ -50,7 +50,20 @@ Use Apple Xcode to generate **ElastosCarrier.framework**.
 
 ## Tests
 
-To complete.
+TODO.
+
+## CocoaPods
+
+The distribution has been published to CocoaPods platform. So, the simple way to use **ElastosCarrier.framework** is just to add the following line to your **Podfile**:
+
+```
+  pod "ElastosCarrierSDK"
+```
+
+Then run the command below to install it before open your iOS workspace:
+```shell
+$ pod install
+```
 
 ## Build Docs
 
@@ -72,7 +85,7 @@ https://github.com/tomaz/appledoc
 
 ### 2. Object-C APIs Docs
 
-To complete
+TODO.
 
 ## Thanks
 
