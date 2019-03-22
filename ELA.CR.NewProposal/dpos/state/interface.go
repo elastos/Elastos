@@ -18,6 +18,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
+	GetDutyIndexByHeight(height uint32) int
 	GetDutyIndex() int
 
 	GetCRCProducer(publicKey []byte) *Producer

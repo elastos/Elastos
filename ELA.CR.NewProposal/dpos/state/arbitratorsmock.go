@@ -36,6 +36,10 @@ type ArbitratorsMock struct {
 	MajorityCount               int
 }
 
+func (a *ArbitratorsMock) GetDutyIndexByHeight(height uint32) int {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) GetDutyIndex() int {
 	panic("implement me")
 }
