@@ -247,6 +247,7 @@ public class CarrierFileTransferManager: NSObject {
     /// Get a carrier filetransfer manager instance.
     ///
     /// - Returns: The carrier filetransfer manager or nil
+    @objc(sharedInstance)
     public static func sharedInstance() -> CarrierFileTransferManager? {
         return filetransferManager
     }
@@ -262,6 +263,7 @@ public class CarrierFileTransferManager: NSObject {
     }
 
     ///  Clean up carrier session manager.
+    @objc(cleanup)
     public func cleanup() {
 
         objc_sync_enter(self)
@@ -290,6 +292,7 @@ public class CarrierFileTransferManager: NSObject {
     /// - Returns: The new CarrierFileTransfer
     ///
     /// - Throws: CarrierError
+    @objc(createFileTransferToAddress:withFileInfo:delegate:)
     public func createFileTransfer(to address: String,
                                    withFileInfo fileInfo: CarrierFileTransferInfo?,
                                    delegate: CarrierFileTransferDelegate)

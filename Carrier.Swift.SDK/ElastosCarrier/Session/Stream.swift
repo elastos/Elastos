@@ -46,6 +46,7 @@ public class CarrierStream: NSObject {
     ///
     /// - Returns: The stream type defined in CarrierStreamType
     ///
+    @objc(getType)
     public func getType() -> CarrierStreamType {
         return type
     }

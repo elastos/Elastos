@@ -57,6 +57,7 @@ public class Carrier: NSObject {
     /// Get current carrier node version.
     ///
     /// - Returns: The current carrier node version.
+    @objc(getVersion)
     public static func getVersion() -> String {
         return String(cString: ela_get_version())
     }
@@ -66,6 +67,7 @@ public class Carrier: NSObject {
     /// - Parameter address: The carrier address to be check
     ///
     /// - Returns: True if carrier address is valid, otherwise false
+    @objc(isValidAddress:)
     public static func isValidAddress(_ address: String) -> Bool {
         return (Base58.decode(address)?.count == 38)
     }
@@ -75,6 +77,7 @@ public class Carrier: NSObject {
     /// - Parameter id: The carrier id to be check
     ///
     /// - Returns: True if carrier id is valid, otherwise false
+    @objc(isValidUserId:)
     public static func isValidUserId(_ id: String) -> Bool {
         return (Base58.decode(id)?.count == 32)
     }
@@ -84,6 +87,7 @@ public class Carrier: NSObject {
     /// - Parameter address: The carrier node address.
     ///
     /// - Returns: Valid Id if carrier node address is valid, otherwise nil
+    @objc(getUserIdFromAddress:)
     public static func getUserIdFromAddress(_ address: String) -> String? {
         if let addr = Base58.decode(address), addr.count == 38 {
             return Base58.encode(Array(addr.prefix(32)))
@@ -96,6 +100,7 @@ public class Carrier: NSObject {
     /// Default level to control log output is `CarrierLogLevel.Info`
     ///
     /// - Parameter level: The log level
+    @objc(setLogLevel:)
     public static func setLogLevel(_ level: CarrierLogLevel) {
         Log.setLevel(level)
         ela_log_init(convertCarrierLogLevelToCLogLevel(level), nil, nil)
@@ -109,6 +114,7 @@ public class Carrier: NSObject {
     ///   - delegate: The delegate for carrier node to comply with
     ///
     /// - Throws: CarrierError
+    @objc(initializeSharedInstance:delegate:error:)
     public static func initializeSharedInstance(options: CarrierOptions,
                                    delegate: CarrierDelegate) throws {
         if (carrierInst == nil) {
@@ -141,6 +147,7 @@ public class Carrier: NSObject {
     /// Get a carrier node singleton instance.
     ///
     /// - Returns: The carrier node instance or ni
+    @objc(sharedInstance)
     public static func sharedInstance() -> Carrier? {
         return carrierInst
     }
@@ -165,6 +172,7 @@ public class Carrier: NSObject {
     /// - Parameter iterateInterval: Internal loop interval, in milliseconds
     ///
     /// - Throws: CarrierError
+    @objc(start:error:)
     public func start(iterateInterval: Int = 0) throws {
         guard iterateInterval >= 0 else {
             throw CarrierError.InvalidArgument
@@ -190,6 +198,7 @@ public class Carrier: NSObject {
     ///
     /// After calling the method, the carrier node instance becomes invalid,
     /// and can not be refered any more.
+    @objc(kill)
     public func kill() {
         objc_sync_enter(self)
 
@@ -211,6 +220,7 @@ public class Carrier: NSObject {
     /// Get node address associated with carrier node instance.
     ///
     /// Returns: The node address
+    @objc(getAddress)
     public func getAddress() -> String {
         let len = Carrier.MAX_ADDRESS_LEN + 1
         var data = Data(count: len);
@@ -227,6 +237,7 @@ public class Carrier: NSObject {
     /// Get node identifier associated with the carrier node instance.
     ///
     /// - Returns: The node identifier
+    @objc(getNodeId)
     public func getNodeId() -> String {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len)
@@ -243,6 +254,7 @@ public class Carrier: NSObject {
     /// Get user identifier associated with the carrier node instance.
     ///
     /// - Returns: The user identifier
+    @objc(getUserId)
     public func getUserId() -> String {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len)
@@ -265,6 +277,7 @@ public class Carrier: NSObject {
     /// - Parameter newNospam: The new nospam to address.
     ///
     /// - Throws: CarrierError
+    @objc(setSelfNospam:error:)
     public func setSelfNospam(_ newNospam: UInt32) throws {
         let result = ela_set_self_nospam(ccarrier, newNospam)
 
@@ -320,6 +333,7 @@ public class Carrier: NSObject {
     /// - Parameter newUserInfo: The new user information to set
     ///
     /// - Throws: CarrierError
+    @objc(setSelfUserInfo:error:)
     public func setSelfUserInfo(_ newUserInfo: CarrierUserInfo) throws {
         var cinfo = convertCarrierUserInfoToCUserInfo(newUserInfo)
         let result = ela_set_self_info(ccarrier, &cinfo)
@@ -359,6 +373,7 @@ public class Carrier: NSObject {
     /// - Parameter newPresence: The new presence status to friends.
     ///
     /// - Throws: CarrierError
+    @objc(setSelfPresence:error:)
     public func setSelfPresence(_ newPresence: CarrierPresenceStatus) throws {
         let presence = convertCarrierPresenceStatusToCPresenceStatus(newPresence)
         let result = ela_set_self_presence(ccarrier, presence)
@@ -406,6 +421,7 @@ public class Carrier: NSObject {
     /// Check if carrier node instance is being ready.
     ///
     /// - Returns: true if the carrier node instance is ready, or false if not
+    @objc(isReady)
     public func isReady() -> Bool {
         return ela_is_ready(ccarrier)
     }
@@ -557,6 +573,7 @@ public class Carrier: NSObject {
     ///   - userId: The user id who want be friend with current user
     ///
     /// - Throws: CarrierError
+    @objc(acceptFriend:error:)
     public func acceptFriend(with userId: String) throws {
 
         let result = userId.withCString { (cuserId) -> Int32 in
@@ -581,6 +598,7 @@ public class Carrier: NSObject {
     /// - Parameter friendId: The target user id to remove friendship.
     ///
     /// - Throws: CarrierError
+    @objc(removeFriend:error:)
     public func removeFriend(_ friendId: String) throws {
         let result = friendId.withCString { (cfriendId) -> Int32 in
             return ela_remove_friend(ccarrier, cfriendId)
@@ -654,6 +672,7 @@ public class Carrier: NSObject {
     ///   - responseHandler: The callback to receive invite reponse
     ///
     /// - Throws: CarrierError
+    @objc(sendInviteFriendRequest:data:responseHandler:error:)
     public func sendInviteFriendRequest(to target: String,
                                         withData data: String,
                                         responseHandler: @escaping CarrierFriendInviteResponseHandler) throws {
@@ -719,6 +738,7 @@ public class Carrier: NSObject {
     ///           If the status is error, this will be ignored.
     ///
     /// - Throws:   CarrierError
+    @objc(replyFriendInviteRequest:status:resson:data:error:)
     public func replyFriendInviteRequest(to target: String,
                                          withStatus status: Int,
                                          reason: String?,
@@ -790,6 +810,7 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
+    @objc(createGroupwithDelegate:error:)
     public func createGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);

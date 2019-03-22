@@ -146,6 +146,7 @@ public class CarrierSessionManager: NSObject {
     /// Get a carrier session manager instance.
     ///
     /// - Returns: The carrier session manager or nil
+    @objc(sharedInstance)
     public static func sharedInstance() -> CarrierSessionManager? {
         return sessionMgr;
     }
@@ -161,6 +162,7 @@ public class CarrierSessionManager: NSObject {
     }
 
     ///  Clean up carrier session manager.
+    @objc(cleanup)
     public func cleanup() {
 
         objc_sync_enter(self)
@@ -187,6 +189,7 @@ public class CarrierSessionManager: NSObject {
     /// - Returns: The new CarrierSession
     ///
     /// - Throws: CarrierError
+    @objc(createSession:error:)
     public func createSession(to target: String)
         throws -> CarrierSession {
 

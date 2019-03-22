@@ -53,7 +53,8 @@ public class CarrierGroup: NSObject {
         leave()
     }
 
-    func leave() {
+    @objc(leave)
+   public func leave() {
         objc_sync_enter(self)
 
         if (!didLeave) {
@@ -73,6 +74,7 @@ public class CarrierGroup: NSObject {
     /// - Returns:
     ///     The groupid in string.
     ///
+    @objc(getId)
     public func getId() -> String {
         return self.groupid
     }

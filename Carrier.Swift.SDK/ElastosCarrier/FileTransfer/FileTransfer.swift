@@ -49,6 +49,7 @@ public class CarrierFileTransfer: NSObject {
 
     /// Close a filetransfer to friend. All resources associated with current
     /// filetransfer will be destroyed.
+    @objc(close)
     public func close() {
         objc_sync_enter(self)
         if !didClose {
@@ -65,6 +66,7 @@ public class CarrierFileTransfer: NSObject {
     /// Get remote friend id.
     ///
     /// - Returns: The remote peer userid or userid@nodeid
+    @objc(getPeer)
     public func getPeer() -> String {
         return address;
     }
