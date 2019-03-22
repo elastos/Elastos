@@ -84,8 +84,8 @@ namespace Elastos {
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
 
-			Log::debug("{} publish tx {}", getPeerManager()->GetID(), sendingTx.dump());
-			SPVLOG_DEBUG("raw tx {}", Utils::EncodeHex(byteStream.GetBuffer()));
+			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
+			SPVLOG_DEBUG("raw tx {}", byteStream.GetBytes().getHex());
 
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
 				if (_reconnectTimer != nullptr)
@@ -102,7 +102,7 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged(const UInt256 &asset, uint64_t balance) {
+		void SpvService::balanceChanged(const uint256 &asset, uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &balance](AssetTransactions::Listener *listener) {
 							  listener->balanceChanged(asset, balance);
@@ -113,9 +113,9 @@ namespace Elastos {
 			ByteStream stream;
 			tx->Serialize(stream);
 
-			CMBlock data = stream.GetBuffer();
+			bytes_t data = stream.GetBytes();
 
-			std::string txHash = Utils::UInt256ToString(tx->GetHash(), true);
+			std::string txHash = tx->GetHash().GetHex();
 			std::string remark = _wallet->GetRemark(txHash);
 			tx->SetRemark(remark);
 
@@ -127,10 +127,10 @@ namespace Elastos {
 				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->GetPayload());
 
 				Asset asset = registerAsset->GetAsset();
-				std::string assetID = Utils::UInt256ToString(asset.GetHash(), true);
+				std::string assetID = asset.GetHash().GetHex();
 				ByteStream stream;
 				asset.Serialize(stream);
-				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBuffer(), txHash);
+				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBytes(), txHash);
 				_databaseManager.PutAsset(ISO, assetEntity);
 
 				UpdateAssets();
@@ -145,7 +145,6 @@ namespace Elastos {
 		void SpvService::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionEntity txEntity;
 
-			txEntity.buff.Clear();
 			txEntity.blockHeight = blockHeight;
 			txEntity.timeStamp = timeStamp;
 			txEntity.txHash = hash;
@@ -218,15 +217,15 @@ namespace Elastos {
 					Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
 							_peerManager->GetID(),
 							   blocks[i]->GetHeight(),
-							Utils::UInt256ToString(blocks[i]->GetHash(), true),
+							   blocks[i]->GetHash().GetHex(),
 							   blocks[i]->GetTimestamp(),
 							   blocks[i]->GetTarget());
 				}
 #endif
 
-				ostream.SetPosition(0);
+				ostream.Reset();
 				blocks[i]->Serialize(ostream);
-				blockEntity.blockBytes = ostream.GetBuffer();
+				blockEntity.blockBytes = ostream.GetBytes();
 				blockEntity.blockHeight = blocks[i]->GetHeight();
 				merkleBlockList.push_back(blockEntity);
 			}
@@ -310,16 +309,16 @@ namespace Elastos {
 			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr transaction(new Transaction());
+				TransactionPtr tx(new Transaction());
 
-				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
-				transaction->Deserialize(byteStream);
-				transaction->SetRemark(txsEntity[i].remark);
-				transaction->SetAssetTableID(txsEntity[i].assetID);
-				transaction->SetBlockHeight(txsEntity[i].blockHeight);
-				transaction->SetTimestamp(txsEntity[i].timeStamp);
+				ByteStream byteStream(txsEntity[i].buff);
+				tx->Deserialize(byteStream);
+				tx->SetRemark(txsEntity[i].remark);
+				tx->SetAssetTableID(txsEntity[i].assetID);
+				tx->SetBlockHeight(txsEntity[i].blockHeight);
+				tx->SetTimestamp(txsEntity[i].timeStamp);
 
-				txs.push_back(transaction);
+				txs.push_back(tx);
 			}
 
 			return txs;
@@ -333,8 +332,7 @@ namespace Elastos {
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
 				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes));
 				block->SetHeight(blocksEntity[i].blockHeight);
-				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
-				stream.SetPosition(0);
+				ByteStream stream(blocksEntity[i].blockBytes);
 				if (!block->Deserialize(stream)) {
 					Log::error("{} block deserialize fail", _peerManager->GetID());
 				}
@@ -360,8 +358,8 @@ namespace Elastos {
 			std::vector<Asset> assets;
 
 			AssetEntity defaultAssetEntity;
-			UInt256 defaultAssetID = Asset::GetELAAssetID();
-			std::string assetStringID = Utils::UInt256ToString(defaultAssetID, true);
+			uint256 defaultAssetID = Asset::GetELAAssetID();
+			std::string assetStringID = defaultAssetID.GetHex();
 			if (!_databaseManager.GetAssetDetails(ISO, assetStringID, defaultAssetEntity)) {
 				Asset defaultAsset;
 				defaultAsset.SetName("ELA");
@@ -373,7 +371,7 @@ namespace Elastos {
 				defaultAsset.Serialize(stream);
 
 				defaultAssetEntity.AssetID = assetStringID;
-				defaultAssetEntity.Asset = stream.GetBuffer();
+				defaultAssetEntity.Asset = stream.GetBytes();
 
 				// TODO how to set these two value?
 				defaultAssetEntity.Amount = 0;
@@ -388,7 +386,7 @@ namespace Elastos {
 				Asset asset;
 				ByteStream stream(assetsEntity[i].Asset);
 				if (asset.Deserialize(stream)) {
-					asset.SetHash(Utils::UInt256FromString(assetsEntity[i].AssetID, true));
+					asset.SetHash(uint256(assetsEntity[i].AssetID));
 					assets.push_back(asset);
 				}
 			}
@@ -460,7 +458,7 @@ namespace Elastos {
 				if (!asset.Deserialize(stream)) {
 					Log::error("{} Update assets deserialize fail", _peerManager->GetID());
 				} else {
-					asset.SetHash(Utils::UInt256FromString(entity.AssetID, true));
+					asset.SetHash(uint256(entity.AssetID));
 					assetArray.push_back(asset);
 				}
 			});
@@ -481,7 +479,7 @@ namespace Elastos {
 				Log::error("{} Asset {} deserialize fail", _peerManager->GetID(), assetID);
 				return Asset();
 			}
-			asset.SetHash(Utils::UInt256FromString(assetEntity.AssetID, true));
+			asset.SetHash(uint256(assetEntity.AssetID));
 
 			return asset;
 		}

@@ -184,18 +184,18 @@ namespace Elastos {
 			_publicKey = pubKey;
 		}
 
-		const std::vector<UInt256> &CoinInfo::GetVisibleAssets() const {
+		const std::vector<uint256> &CoinInfo::GetVisibleAssets() const {
 			return _visibleAssets;
 		}
 
-		void CoinInfo::SetVisibleAssets(const std::vector<UInt256> &assets) {
+		void CoinInfo::SetVisibleAssets(const std::vector<uint256> &assets) {
 			_visibleAssets = assets;
 		}
 
 		nlohmann::json CoinInfo::VisibleAssetsToJson() const {
 			std::vector<std::string> assets;
-			std::for_each(_visibleAssets.begin(), _visibleAssets.end(), [&assets](const UInt256 &asset) {
-				assets.push_back(Utils::UInt256ToString(asset, true));
+			std::for_each(_visibleAssets.begin(), _visibleAssets.end(), [&assets](const uint256 &asset) {
+				assets.push_back(asset.GetHex());
 			});
 			nlohmann::json j;
 			std::for_each(assets.begin(), assets.end(), [&j](const std::string &asset) {
@@ -208,7 +208,7 @@ namespace Elastos {
 			_visibleAssets.clear();
 			std::vector<std::string> assets = j.get<std::vector<std::string>>();
 			std::for_each(assets.begin(), assets.end(), [this](const std::string &assetStr) {
-				_visibleAssets.push_back(Utils::UInt256FromString(assetStr, true));
+				_visibleAssets.push_back(uint256(assetStr));
 			});
 		}
 

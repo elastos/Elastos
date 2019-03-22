@@ -22,13 +22,13 @@ namespace Elastos {
 										 "Multi-sign sub account do not allow account that are not multi-sign type.");
 		}
 
-		CMBlock MultiSignSubAccount::GetRedeemScript(const Address &addr) const {
+		bytes_t MultiSignSubAccount::GetRedeemScript(const Address &addr) const {
 			ErrorChecker::CheckLogic(_multiSignAccount->GetAddress() != addr, Error::Address,
 									 "Can't found pubKey for addr " + addr.String());
 			return _multiSignAccount->GetRedeemScript();
 		}
 
-		bool MultiSignSubAccount::FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) {
+		bool MultiSignSubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
 			if (GetMultiSignPublicKey() == pubKey) {
 				key = DeriveMultiSignKey(payPasswd);
 				return true;
@@ -43,8 +43,8 @@ namespace Elastos {
 			return j;
 		}
 
-		CMBlock MultiSignSubAccount::GetVotePublicKey() const {
-			return CMBlock();
+		bytes_t MultiSignSubAccount::GetVotePublicKey() const {
+			return bytes_t();
 		}
 
 		Key MultiSignSubAccount::DeriveVoteKey(const std::string &payPasswd) {

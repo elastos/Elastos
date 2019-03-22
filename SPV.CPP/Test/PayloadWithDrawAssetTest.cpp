@@ -20,22 +20,21 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 
 		p1.SetBlockHeight(rand());
 		p1.SetGenesisBlockAddress(getRandString(100));
-		std::vector<UInt256> hashes;
+		std::vector<uint256> hashes;
 		for (size_t i = 0; i < 20; ++i) {
-			hashes.push_back(getRandUInt256());
+			hashes.push_back(getRanduint256());
 		}
 		p1.SetSideChainTransacitonHash(hashes);
 		p1.Serialize(stream, 0);
 
-		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 
 		REQUIRE(p1.GetBlockHeight() == p2.GetBlockHeight());
 		REQUIRE(p1.GetGenesisBlockAddress() == p2.GetGenesisBlockAddress());
-		std::vector<UInt256> pbHashes = p2.GetSideChainTransacitonHash();
+		std::vector<uint256> pbHashes = p2.GetSideChainTransacitonHash();
 		REQUIRE(hashes.size() == pbHashes.size());
 		for (size_t i = 0; i < pbHashes.size(); ++i) {
-			REQUIRE(UInt256Eq(&hashes[i], &pbHashes[i]));
+			REQUIRE(hashes[i] == pbHashes[i]);
 		}
 	}
 
@@ -44,9 +43,9 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 
 		p1.SetBlockHeight(rand());
 		p1.SetGenesisBlockAddress(getRandString(100));
-		std::vector<UInt256> hashes;
+		std::vector<uint256> hashes;
 		for (size_t i = 0; i < 20; ++i) {
-			hashes.push_back(getRandUInt256());
+			hashes.push_back(getRanduint256());
 		}
 		p1.SetSideChainTransacitonHash(hashes);
 
@@ -56,10 +55,10 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 
 		REQUIRE(p1.GetBlockHeight() == p2.GetBlockHeight());
 		REQUIRE(p1.GetGenesisBlockAddress() == p2.GetGenesisBlockAddress());
-		std::vector<UInt256> pbHashes = p2.GetSideChainTransacitonHash();
+		const std::vector<uint256> &pbHashes = p2.GetSideChainTransacitonHash();
 		REQUIRE(hashes.size() == pbHashes.size());
 		for (size_t i = 0; i < pbHashes.size(); ++i) {
-			REQUIRE(UInt256Eq(&hashes[i], &pbHashes[i]));
+			REQUIRE(hashes[i] == pbHashes[i]);
 		}
 	}
 

@@ -6,7 +6,6 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
-#include <Core/BRInt.h>
 #include <Core/BRCrypto.h>
 
 #include <cstring>
@@ -14,15 +13,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		UInt256 Asset::_elaAsset = UINT256_ZERO;
+		uint256 Asset::_elaAsset = 0;
 
 		Asset::Asset() :
 				_name(""),
 				_description(""),
 				_precision(0),
 				_assetType(AssetType::Share),
-				_recordType(AssetRecordType::Unspent),
-				_hash(UINT256_ZERO) {
+				_recordType(AssetRecordType::Unspent) {
 
 		}
 
@@ -78,7 +76,7 @@ namespace Elastos {
 			ostream.WriteBytes(&_recordType, 1);
 		}
 
-		bool Asset::Deserialize(ByteStream &istream) {
+		bool Asset::Deserialize(const ByteStream &istream) {
 			if (!istream.ReadVarString(_name)) {
 				Log::error("Asset payload deserialize name fail");
 				return false;
@@ -127,9 +125,8 @@ namespace Elastos {
 			_recordType = j["RecordType"].get<AssetRecordType>();
 		}
 
-		const UInt256 &Asset::GetELAAssetID() {
-			static UInt256 zero = UINT256_ZERO;
-			if (UInt256Eq(&_elaAsset, &zero)) {
+		const uint256 &Asset::GetELAAssetID() {
+			if (_elaAsset == 0) {
 				Transaction elaCoin;
 				elaCoin.SetTransactionType(Transaction::RegisterAsset);
 				_elaAsset = elaCoin.GetHash();
@@ -137,17 +134,16 @@ namespace Elastos {
 			return _elaAsset;
 		}
 
-		UInt256 &Asset::GetHash() const {
-			if (UInt256IsZero(&_hash)) {
-				ByteStream ostream;
-				Serialize(ostream);
-				CMBlock buff = ostream.GetBuffer();
-				BRSHA256_2(&_hash, buff, buff.GetSize());
+		uint256 &Asset::GetHash() const {
+			if (_hash == 0) {
+				ByteStream stream;
+				Serialize(stream);
+				_hash = sha256_2(stream.GetBytes());
 			}
 			return _hash;
 		}
 
-		void Asset::SetHash(const UInt256 &hash) {
+		void Asset::SetHash(const uint256 &hash) {
 			_hash = hash;
 		}
 

@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTER_H__
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
 #include <boost/shared_ptr.hpp>
@@ -29,20 +28,20 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &jsonData);
 
-			void InsertData(const void *data, size_t dataLen);
+			void InsertData(const bytes_t &data);
 
-			bool ContainsData(const void *data, size_t dataLen);
+			bool ContainsData(const bytes_t &data);
 
-			uint32_t CalculateHash(const void *data, size_t dataLen, uint32_t hashNum);
+			uint32_t CalculateHash(const bytes_t &data, uint32_t hashNum);
 
 		private:
-			CMBlock _filter;
+			bytes_t _filter;
 			uint32_t _hashFuncs;
 			size_t _elemCount;
 			uint32_t _tweak;

@@ -34,7 +34,6 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
 		p1.Serialize(stream, 0);
 
-		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 
 		Asset asset1 = p1.GetAsset();
@@ -44,10 +43,10 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
 		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
 		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
-		REQUIRE(UInt256Eq(&asset1.GetHash(), &asset2.GetHash()));
+		REQUIRE(asset1.GetHash() == asset2.GetHash());
 
 		REQUIRE(p1.GetAmount() == p2.GetAmount());
-		REQUIRE(UInt168Eq(&p1.GetController(), &p2.GetController()));
+		REQUIRE(p1.GetController() == p2.GetController());
 	}
 
 	SECTION("toJson fromJson test") {
@@ -72,9 +71,9 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
 		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
 		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
-		REQUIRE(UInt256Eq(&asset1.GetHash(), &asset2.GetHash()));
+		REQUIRE(asset1.GetHash() == asset2.GetHash());
 
 		REQUIRE(p1.GetAmount() == p2.GetAmount());
-		REQUIRE(UInt168Eq(&p1.GetController(), &p2.GetController()));
+		REQUIRE(p1.GetController() == p2.GetController());
 	}
 }

@@ -5,7 +5,7 @@
 #include "FilterLoadMessage.h"
 
 #include <SDK/P2P/Peer.h>
-#include <SDK/Base/BloomFilter.h>
+#include <SDK/BIPs/BloomFilter.h>
 #include <SDK/Common/ByteStream.h>
 
 namespace Elastos {
@@ -16,7 +16,7 @@ namespace Elastos {
 
 		}
 
-		bool FilterLoadMessage::Accept(const CMBlock &msg) {
+		bool FilterLoadMessage::Accept(const bytes_t &msg) {
 			_peer->error("dropping {} message", Type());
 			return false;
 		}
@@ -27,7 +27,7 @@ namespace Elastos {
 			filterLoadParameter.Filter->Serialize(stream);
 			_peer->SetSentFilter(true);
 			_peer->SetSentMempool(false);
-			SendMessage(stream.GetBuffer(), Type());
+			SendMessage(stream.GetBytes(), Type());
 		}
 
 		std::string FilterLoadMessage::Type() const {

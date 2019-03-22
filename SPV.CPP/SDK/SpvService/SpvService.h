@@ -12,7 +12,6 @@
 #include <SDK/Database/DatabaseManager.h>
 #include <SDK/KeyStore/KeyStore.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Common/CMemBlock.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/function.hpp>
@@ -55,7 +54,7 @@ namespace Elastos {
 			Asset FindAsset(const std::string &assetID) const;
 
 		public:
-			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 

@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_BYTESTREAM_H__
 #define __ELASTOS_SDK_BYTESTREAM_H__
 
-#include "CMemBlock.h"
-#include <Core/BRAddress.h>
+#include "typedefs.h"
+#include "uint256.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -20,96 +20,86 @@ namespace Elastos {
 
 			ByteStream();
 
-			ByteStream(uint64_t size);
+			ByteStream(size_t size);
 
-			ByteStream(const void *buf, size_t size, bool autorelease = true);
+			ByteStream(const void *buf, size_t size);
 
-			ByteStream(const CMBlock &buf);
+			ByteStream(const bytes_t &buf);
 
 			~ByteStream();
 
 		public:
 			void Reset();
 
-			void SetPosition(uint64_t position);
+			uint64_t size() const;
 
-			uint64_t Position();
+			void Skip(size_t bytes = 1) const;
 
-			uint64_t Length();
-
-			void Drop(size_t bytes);
-
-			CMBlock GetBuffer();
+			const bytes_t &GetBytes() const;
 
 		public:
-			bool ReadByte(uint8_t &val);
+			bool ReadByte(uint8_t &val) const;
 
-			bool ReadUint8(uint8_t &val);
+			bool ReadUint8(uint8_t &val) const;
+
+			bool ReadUint16(uint16_t &val) const;
+
+			bool ReadUint32(uint32_t &val) const;
+
+			bool ReadUint64(uint64_t &val) const;
+
+			bool ReadBytes(void *buf, size_t len) const;
+
+			bool ReadBytes(bytes_t &bytes, size_t len) const;
+
+			bool ReadBytes(uint128 &u) const;
+
+			bool ReadBytes(uint160 &u) const;
+
+			bool ReadBytes(uint168 &u) const;
+
+			bool ReadBytes(uint256 &u) const;
+
+			bool ReadVarBytes(bytes_t &bytes) const;
+
+			bool ReadVarUint(uint64_t &len) const;
+
+			bool ReadVarString(std::string &str) const;
+
 
 			void WriteByte(uint8_t val);
 
 			void WriteUint8(uint8_t val);
 
-			bool ReadUint16(uint16_t &val);
-
 			void WriteUint16(uint16_t val);
-
-			bool ReadUint32(uint32_t &val);
 
 			void WriteUint32(uint32_t val);
 
-			bool ReadUint64(uint64_t &val);
-
 			void WriteUint64(uint64_t val);
-
-			bool ReadBytes(void *buf, size_t len);
 
 			void WriteBytes(const void *buf, size_t len);
 
-			void WriteBytes(const CMBlock &buf);
+			void WriteBytes(const bytes_t &bytes);
 
-			bool ReadVarBytes(CMBlock &bytes);
+			void WriteBytes(const uint128 &u);
+
+			void WriteBytes(const uint160 &u);
+
+			void WriteBytes(const uint168 &u);
+
+			void WriteBytes(const uint256 &u);
 
 			void WriteVarBytes(const void *bytes, size_t len);
 
-			void WriteVarBytes(const CMBlock &bytes);
+			void WriteVarBytes(const bytes_t &bytes);
 
-			template <class T>
-			bool readVarUint(T &value) {
-				size_t len = 0;
-				uint64_t ui;
-				ui = BRVarInt(&_buf[_pos], 9, &len);
-				value = ui;
-				return ReadBytes(nullptr, len);
-			}
-
-			template <class T>
-			void writeVarUint(const T &value) {
-				size_t len = BRVarIntSet(nullptr, 0, value);
-
-				EnsureCapacity(Position() + len);
-				BRVarIntSet(&_buf[Position()], len, value);
-
-				IncreasePosition(len);
-				_count = Position();
-			}
-
-			bool ReadVarString(std::string &str);
+			void WriteVarUint(uint64_t len);
 
 			void WriteVarString(const std::string &str);
 
 		private:
-			void IncreasePosition(size_t len);
-
-			void EnsureCapacity(uint64_t newsize);
-
-			bool CheckSize(uint64_t readSize);
-
-		private:
-			uint64_t _pos, _count;
-			uint64_t _size;
-			uint8_t *_buf;
-			bool _autorelease;
+			mutable size_t _rpos;
+			bytes_t _buf;
 		};
 
 	}

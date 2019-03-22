@@ -7,9 +7,6 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRAddress.h>
-#include <Core/BRInt.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -18,7 +15,7 @@ namespace Elastos {
 
 		}
 
-		PayloadRecord::PayloadRecord(const std::string &recordType, const CMBlock &recordData) {
+		PayloadRecord::PayloadRecord(const std::string &recordType, const bytes_t &recordData) {
 			_recordType = recordType;
 			_recordData = recordData;
 		}
@@ -34,7 +31,7 @@ namespace Elastos {
 			_recordType = recordType;
 		}
 
-		void PayloadRecord::SetRecordData(const CMBlock &recordData) {
+		void PayloadRecord::SetRecordData(const bytes_t &recordData) {
 			_recordData = recordData;
 		}
 
@@ -42,7 +39,7 @@ namespace Elastos {
 			return _recordType;
 		}
 
-		CMBlock PayloadRecord::GetRecordData() const {
+		bytes_t PayloadRecord::GetRecordData() const {
 			return _recordData;
 		}
 
@@ -51,7 +48,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_recordData);
 		}
 
-		bool PayloadRecord::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadRecord::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarString(_recordType)) {
 				Log::error("Payload record deserialize type fail");
 				return false;
@@ -69,14 +66,14 @@ namespace Elastos {
 			nlohmann::json j;
 
 			j["RecordType"] = _recordType;
-			j["RecordData"] = Utils::EncodeHex(_recordData);
+			j["RecordData"] = _recordData.getHex();
 
 			return j;
 		}
 
 		void PayloadRecord::FromJson(const nlohmann::json &j, uint8_t version) {
 			_recordType = j["RecordType"].get<std::string>();
-			_recordData = Utils::DecodeHex(j["RecordData"].get<std::string>());
+			_recordData.setHex(j["RecordData"].get<std::string>());
 		}
 
 		IPayload &PayloadRecord::operator=(const IPayload &payload) {
@@ -91,7 +88,7 @@ namespace Elastos {
 		}
 
 		PayloadRecord &PayloadRecord::operator=(const PayloadRecord &payload) {
-			_recordData.Memcpy(payload._recordData);
+			_recordData = payload._recordData;
 			_recordType = payload._recordType;
 
 			return *this;

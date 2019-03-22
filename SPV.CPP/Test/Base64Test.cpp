@@ -13,25 +13,16 @@ using namespace Elastos::ElaWallet;
 TEST_CASE( "Decode method test", "[Base64]" ) {
 
 	SECTION("test1") {
-		const unsigned char expect[] = {
-			0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56
-		};
-		CMBlock expectData;
-		expectData.SetMemFixed(expect, sizeof(expect));
+		bytes_t expectData("6515636B82C5AC56");
 
-		CMBlock actual = Base64::Decode("ZRVja4LFrFY=");
+		bytes_t actual = Base64::Decode("ZRVja4LFrFY=");
 		REQUIRE((actual == expectData));
 	}
 
 	SECTION("test2") {
-		const unsigned char expect[] = {
-			0x9F, 0x62, 0x54, 0x4C, 0x9D, 0x3F, 0xCA, 0xB2,
-			0xDD, 0x08, 0x33, 0xDF, 0x21, 0xCA, 0x80, 0xCF
-		};
-		CMBlock expectData;
-		expectData.SetMemFixed(expect, sizeof(expect));
+		bytes_t expectData("9F62544C9D3FCAB2DD0833DF21CA80CF");
 
-		CMBlock actual = Base64::Decode("n2JUTJ0/yrLdCDPfIcqAzw==");
+		bytes_t actual = Base64::Decode("n2JUTJ0/yrLdCDPfIcqAzw==");
 		REQUIRE((actual == expectData));
 	}
 

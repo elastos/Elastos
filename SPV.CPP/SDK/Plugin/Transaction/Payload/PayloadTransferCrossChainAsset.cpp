@@ -4,9 +4,9 @@
 
 #include "PayloadTransferCrossChainAsset.h"
 #include <SDK/Common/Log.h>
-#include <SDK/Common/Base58.h>
-#include <SDK/Crypto/Key.h>
-#include <SDK/Base/Address.h>
+#include <SDK/BIPs/Base58.h>
+#include <SDK/BIPs/Key.h>
+#include <SDK/BIPs/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -78,17 +78,17 @@ namespace Elastos {
 			}
 
 			size_t len = _crossChainAddress.size();
-			ostream.writeVarUint((uint64_t)len);
+			ostream.WriteVarUint((uint64_t)len);
 			for (size_t i = 0; i < len; ++i) {
 				ostream.WriteVarString(_crossChainAddress[i]);
-				ostream.writeVarUint(_outputIndex[i]);
+				ostream.WriteVarUint(_outputIndex[i]);
 				ostream.WriteUint64(_crossChainAmount[i]);
 			}
 		}
 
-		bool PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadTransferCrossChainAsset::Deserialize(const ByteStream &istream, uint8_t version) {
 			uint64_t len = 0;
-			if (!istream.readVarUint(len)) {
+			if (!istream.ReadVarUint(len)) {
 				Log::error("Payload transfer cross chain asset deserialize fail");
 				return false;
 			}
@@ -103,7 +103,7 @@ namespace Elastos {
 					return false;
 				}
 
-				if (!istream.readVarUint(_outputIndex[i])) {
+				if (!istream.ReadVarUint(_outputIndex[i])) {
 					Log::error("Payload transfer cross chain asset deserialize output index fail");
 					return false;
 				}

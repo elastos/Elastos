@@ -23,7 +23,7 @@ namespace Elastos {
 		void PayloadDefault::Serialize(ByteStream &ostream) const {
 		}
 
-		bool PayloadDefault::Deserialize(ByteStream &istream) {
+		bool PayloadDefault::Deserialize(const ByteStream &istream) {
 			return true;
 		}
 

@@ -16,7 +16,7 @@ namespace Elastos {
 
 			}
 
-			AssetEntity(const std::string &assetID, uint64_t amount, const CMBlock &Asset, const std::string &txHash) :
+			AssetEntity(const std::string &assetID, uint64_t amount, const bytes_t &Asset, const std::string &txHash) :
 					AssetID(assetID),
 					Amount(amount),
 					TxHash(txHash),
@@ -25,7 +25,7 @@ namespace Elastos {
 
 			std::string AssetID;
 			uint64_t Amount;
-			CMBlock Asset;
+			bytes_t Asset;
 			std::string TxHash;
 		};
 

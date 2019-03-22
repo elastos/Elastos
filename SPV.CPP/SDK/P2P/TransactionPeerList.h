@@ -7,16 +7,14 @@
 
 #include "Peer.h"
 
-#include <Core/BRInt.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 
 		class TransactionPeerList {
 		public:
-			TransactionPeerList(const UInt256 &txHash, const std::vector<PeerPtr> &peers);
+			TransactionPeerList(const uint256 &txHash, const std::vector<PeerPtr> &peers);
 
-			const UInt256 &GetTransactionHash() const;
+			const uint256 &GetTransactionHash() const;
 
 			const std::vector<PeerPtr> &GetPeers() const;
 
@@ -25,7 +23,7 @@ namespace Elastos {
 			void RemovePeerAt(size_t index);
 
 		private:
-			UInt256 _txHash;
+			uint256 _txHash;
 			std::vector<PeerPtr> _peers;
 		};
 

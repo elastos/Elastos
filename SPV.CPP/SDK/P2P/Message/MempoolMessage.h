@@ -13,7 +13,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct MempoolParameter : public SendMessageParameter {
-			std::vector<UInt256> KnownTxHashes;
+			std::vector<uint256> KnownTxHashes;
 			boost::function<void(int)> CompletionCallback;
 		};
 
@@ -21,7 +21,7 @@ namespace Elastos {
 		public:
 			explicit MempoolMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const CMBlock &msg);
+			virtual bool Accept(const bytes_t &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

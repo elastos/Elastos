@@ -5,6 +5,7 @@
 #include "Sqlite.h"
 
 #include <SDK/Common/Log.h>
+#include <SDK/Common/typedefs.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
@@ -80,8 +81,12 @@ namespace Elastos {
 			return IsValid() && SQLITE_OK == sqlite3_finalize(pStmt);
 		}
 
-		bool Sqlite::BindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack) {
-			return IsValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob, blob.GetSize(), callBack);
+		bool Sqlite::BindBlob(sqlite3_stmt *pStmt, int idx, const void *blob, size_t size, BindCallBack callBack) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob, size, callBack);
+		}
+
+		bool Sqlite::BindBlob(sqlite3_stmt *pStmt, int idx, const bytes_t &blob, BindCallBack callBack) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, &blob[0], blob.size(), callBack);
 		}
 
 		bool Sqlite::BindDouble(sqlite3_stmt *pStmt, int idx, double d) {

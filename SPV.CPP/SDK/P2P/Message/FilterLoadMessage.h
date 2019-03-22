@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_FILTERLoadMESSAGE_H__
 
 #include "Message.h"
-#include <SDK/Base/BloomFilter.h>
+#include <SDK/BIPs/BloomFilter.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +19,7 @@ namespace Elastos {
 		public:
 			explicit FilterLoadMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const CMBlock &msg);
+			virtual bool Accept(const bytes_t &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

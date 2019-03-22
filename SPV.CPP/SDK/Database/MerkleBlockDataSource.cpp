@@ -105,17 +105,14 @@ namespace Elastos {
 											 "prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					CMBlock blockBytes;
 					// id
 					merkleBlock.id = _sqlite->ColumnInt(stmt, 0);
 
 					// blockBytes
 					const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = _sqlite->ColumnBytes(stmt, 1);
-					blockBytes.Resize(len);
-					memcpy(blockBytes, pblob, len);
 
-					merkleBlock.blockBytes = blockBytes;
+					merkleBlock.blockBytes.assign(pblob, pblob + len);
 
 					// blockHeight
 					merkleBlock.blockHeight = _sqlite->ColumnInt(stmt, 2);

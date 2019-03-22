@@ -6,7 +6,6 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,7 +21,7 @@ namespace Elastos {
 		}
 
 		PayloadWithDrawAsset::PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
-		                                           const std::vector<UInt256> &sideChainTransactionHash) {
+		                                           const std::vector<uint256> &sideChainTransactionHash) {
 			_blockHeight = blockHeight;
 			_genesisBlockAddress = genesisBlockAddress;
 			_sideChainTransactionHash = sideChainTransactionHash;
@@ -47,25 +46,25 @@ namespace Elastos {
 			return _genesisBlockAddress;
 		}
 
-		void PayloadWithDrawAsset::SetSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash) {
+		void PayloadWithDrawAsset::SetSideChainTransacitonHash(const std::vector<uint256> &sideChainTransactionHash) {
 			_sideChainTransactionHash = sideChainTransactionHash;
 		}
 
-		const std::vector<UInt256> &PayloadWithDrawAsset::GetSideChainTransacitonHash() const {
+		const std::vector<uint256> &PayloadWithDrawAsset::GetSideChainTransacitonHash() const {
 			return _sideChainTransactionHash;
 		}
 
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteUint32(_blockHeight);
 			ostream.WriteVarString(_genesisBlockAddress);
-			ostream.writeVarUint((uint64_t)_sideChainTransactionHash.size());
+			ostream.WriteVarUint((uint64_t)_sideChainTransactionHash.size());
 
 			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
-				ostream.WriteBytes(_sideChainTransactionHash[i].u8, sizeof(UInt256));
+				ostream.WriteBytes(_sideChainTransactionHash[i]);
 			}
 		}
 
-		bool PayloadWithDrawAsset::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadWithDrawAsset::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadUint32(_blockHeight)) {
 				Log::error("Payload with draw asset deserialize block height fail");
 				return false;
@@ -77,14 +76,14 @@ namespace Elastos {
 			}
 
 			uint64_t len = 0;
-			if (!istream.readVarUint(len)) {
+			if (!istream.ReadVarUint(len)) {
 				Log::error("Payload with draw asset deserialize side chain tx hash len fail");
 				return false;
 			}
 
 			_sideChainTransactionHash.resize(len);
 			for (uint64_t i = 0; i < len; ++i) {
-				if (!istream.ReadBytes(_sideChainTransactionHash[i].u8, sizeof(UInt256))) {
+				if (!istream.ReadBytes(_sideChainTransactionHash[i])) {
 					Log::error("Payload with draw asset deserialize side chain tx hash[{}] fail", i);
 					return false;
 				}
@@ -100,8 +99,7 @@ namespace Elastos {
 			j["GenesisBlockAddress"] = _genesisBlockAddress;
 			std::vector<std::string> hashes;
 			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
-				std::string str = Utils::UInt256ToString(_sideChainTransactionHash[i], true);
-				hashes.push_back(str);
+				hashes.push_back(_sideChainTransactionHash[i].GetHex());
 			}
 			j["SideChainTransactionHash"] = hashes;
 
@@ -115,7 +113,7 @@ namespace Elastos {
 			std::vector<std::string> hashes = j["SideChainTransactionHash"].get<std::vector<std::string>>();
 			_sideChainTransactionHash.resize(hashes.size());
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				_sideChainTransactionHash[i] = Utils::UInt256FromString(hashes[i], true);
+				_sideChainTransactionHash[i].SetHex(hashes[i]);
 			}
 		}
 

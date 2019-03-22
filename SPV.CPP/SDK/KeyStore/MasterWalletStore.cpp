@@ -11,6 +11,7 @@
 #include <SDK/Account/MultiSignAccount.h>
 #include <SDK/Account/SimpleAccount.h>
 #include <SDK/Account/AccountFactory.h>
+#include <SDK/BIPs/Base58.h>
 
 #include <fstream>
 
@@ -50,9 +51,9 @@ namespace Elastos {
 			_subWalletsInfoList = infoList;
 		}
 
-		MasterPubKeyPtr MasterWalletStore::GetMasterPubKey(const std::string &chainID) const {
+		HDKeychain MasterWalletStore::GetMasterPubKey(const std::string &chainID) const {
 			if (_subWalletsPubKeyMap.find(chainID) == _subWalletsPubKeyMap.end()) {
-				return nullptr;
+				return HDKeychain();
 			}
 			return _subWalletsPubKeyMap[chainID];
 		}
@@ -69,9 +70,9 @@ namespace Elastos {
 			return _votePublicKeyMap;
 		}
 
-		CMBlock MasterWalletStore::GetVotePublicKey(const std::string &chainID) const {
+		bytes_t MasterWalletStore::GetVotePublicKey(const std::string &chainID) const {
 			if (_votePublicKeyMap.find(chainID) == _votePublicKeyMap.end())
-				return CMBlock();
+				return bytes_t();
 
 			return _votePublicKeyMap[chainID];
 		}
@@ -115,10 +116,11 @@ namespace Elastos {
 			const MasterPubKeyMap &map = p.GetMasterPubKeyMap();
 			for (MasterPubKeyMap::const_iterator it = map.cbegin(); it != map.cend(); it++) {
 				ByteStream stream;
-				stream.SetPosition(0);
-				if (it->second) {
-					it->second->Serialize(stream);
-					masterPubKey[it->first] = Utils::EncodeHex(stream.GetBuffer());
+				if (it->second.valid()) {
+					stream.WriteUint32(0);
+					stream.WriteBytes(it->second.chain_code());
+					stream.WriteBytes(it->second.pubkey());
+					masterPubKey[it->first] = stream.GetBytes().getHex();
 				} else {
 					masterPubKey[it->first] = "";
 				}
@@ -127,7 +129,7 @@ namespace Elastos {
 
 			nlohmann::json votePubKey;
 			for (VotePubKeyMap::const_iterator it = p.GetVotePublicKeyMap().cbegin(); it != p.GetVotePublicKeyMap().cend(); ++it) {
-				votePubKey[it->first] = Utils::EncodeHex(it->second);
+				votePubKey[it->first] = it->second.getHex();
 			}
 			j["VotePublicKey"] = votePubKey;
 		}
@@ -147,18 +149,19 @@ namespace Elastos {
 			MasterPubKeyMap masterPubKeyMap;
 			nlohmann::json masterPubKeyJson = j["MasterPubKey"];
 			for (nlohmann::json::iterator it = masterPubKeyJson.begin(); it != masterPubKeyJson.end(); ++it) {
-				CMBlock value = Utils::DecodeHex(it.value());
-				MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey());
-				ByteStream stream(value);
-				masterPubKey->Deserialize(stream);
-				masterPubKeyMap[it.key()] = masterPubKey;
+				ByteStream stream(bytes_t(it.value().get<std::string>()));
+				stream.Skip(4);
+				bytes_t pubKey, chainCode;
+				stream.ReadBytes(chainCode, 32);
+				stream.ReadBytes(pubKey, 33);
+				masterPubKeyMap[it.key()] = HDKeychain(pubKey, chainCode);
 			}
 			p.SetMasterPubKeyMap(masterPubKeyMap);
 
 			VotePubKeyMap votePubKeyMap;
 			nlohmann::json votePubKeyJson = j["VotePublicKey"];
 			for (nlohmann::json::iterator it = votePubKeyJson.begin(); it != votePubKeyJson.end(); ++it) {
-				votePubKeyMap[it.key()] = Utils::DecodeHex(it.value());
+				votePubKeyMap[it.key()] = bytes_t(it.value().get<std::string>());
 			}
 			p.SetVotePublicKeyMap(votePubKeyMap);
 		}

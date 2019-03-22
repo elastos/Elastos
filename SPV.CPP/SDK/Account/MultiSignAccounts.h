@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
 #include <SDK/Account/MultiSignAccount.h>
-#include <SDK/Base/Address.h>
+#include <SDK/BIPs/Address.h>
 
 #include <vector>
 #include <map>
@@ -30,7 +30,7 @@ namespace Elastos {
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -44,9 +44,9 @@ namespace Elastos {
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual CMBlock GetMultiSignPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
 			virtual Address GetAddress();
 

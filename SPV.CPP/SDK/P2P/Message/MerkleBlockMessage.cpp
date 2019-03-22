@@ -26,7 +26,7 @@ namespace Elastos {
 
 		}
 
-		bool MerkleBlockMessage::Accept(const CMBlock &msg) {
+		bool MerkleBlockMessage::Accept(const bytes_t &msg) {
 			ByteStream stream(msg);
 
 			PeerManager *manager = _peer->GetPeerManager();
@@ -38,23 +38,24 @@ namespace Elastos {
 			}
 
 			if (!block->Deserialize(stream)) {
-				_peer->debug("merkle block orignal data: {}", Utils::EncodeHex(msg));
+				_peer->debug("merkle block orignal data: {}", msg.getHex());
 				_peer->error("merkle block deserialize with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
 			if (!block->IsValid((uint32_t) time(nullptr))) {
-				_peer->error("invalid merkleblock: {}", Utils::UInt256ToString(block->GetHash(), true));
+				_peer->error("invalid merkleblock: {}", block->GetHash().GetHex());
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
 				_peer->error("got merkleblock message before loading a filter");
 				return false;
 			} else {
-				std::vector<UInt256> txHashes;
+				std::vector<uint256> txHashes;
 				block->MerkleBlockTxHashes(txHashes);
 
 				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive
-					if (_peer->KnownTxHashSet().Contains(txHashes[i - 1])) continue;
+					if (_peer->KnownTxHashSet().find(txHashes[i - 1]) != _peer->KnownTxHashSet().end())
+						continue;
 					_peer->AddCurrentBlockTxHash(txHashes[i - 1]);
 				}
 			}

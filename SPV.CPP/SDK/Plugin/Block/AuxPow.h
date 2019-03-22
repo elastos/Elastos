@@ -7,7 +7,6 @@
 
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
-#include <Core/BRInt.h>
 #include <Core/BRTransaction.h>
 #include <Core/BRMerkleBlock.h>
 
@@ -16,8 +15,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class AuxPow :
-				public ELAMessageSerializable {
+		class AuxPow {
 		public:
 			AuxPow();
 
@@ -25,26 +23,22 @@ namespace Elastos {
 
 			~AuxPow();
 
-			void SetAuxMerkleBranch(const std::vector<UInt256> &hashes);
-			void SetCoinBaseMerkle(const std::vector<UInt256> &hashes);
+			void SetAuxMerkleBranch(const std::vector<uint256> &hashes);
+			void SetCoinBaseMerkle(const std::vector<uint256> &hashes);
 			void SetAuxMerkleIndex(uint32_t index);
 			void SetParMerkleIndex(uint32_t index);
-			void SetParentHash(const UInt256 &hash);
+			void SetParentHash(const uint256 &hash);
 			uint32_t GetAuxMerkleIndex() const;
 			uint32_t GetParMerkleIndex() const;
-			const UInt256 &GetParentHash() const;
-			const std::vector<UInt256> &GetAuxMerkleBranch() const;
-			const std::vector<UInt256> &GetParCoinBaseMerkle() const;
+			const uint256 &GetParentHash() const;
+			const std::vector<uint256> &GetAuxMerkleBranch() const;
+			const std::vector<uint256> &GetParCoinBaseMerkle() const;
 
-			UInt256 GetParBlockHeaderHash() const;
+			uint256 GetParBlockHeaderHash() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
-
-			virtual nlohmann::json ToJson() const;
-
-			virtual void FromJson(const nlohmann::json &j);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			BRTransaction *GetBTCTransaction() const;
 
@@ -59,43 +53,28 @@ namespace Elastos {
 		private:
 			void SerializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const;
 
-			bool DeserializeBtcTransaction(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTransaction(const ByteStream &istream, BRTransaction *tx);
 
 			void SerializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const;
 
-			bool DeserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTxIn(const ByteStream &istream, BRTransaction *tx);
 
 			void SerializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const;
 
-			bool DeserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
+			bool DeserializeBtcTxOut(const ByteStream &istream, BRTransaction *tx);
 
 			void SerializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const;
 
-			bool DeserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b);
+			bool DeserializeBtcBlockHeader(const ByteStream &istream, BRMerkleBlock *b);
 
-			nlohmann::json TransactionToJson() const;
-
-			void TransactionFromJson(const nlohmann::json &jsonData);
-
-			nlohmann::json TxInputsToJson(const BRTxInput &input) const;
-
-			void TxInputsFromJson(const nlohmann::json &input);
-
-			nlohmann::json TxOutputsToJson(const BRTxOutput &output) const;
-
-			void TxOutputsFromJson(const nlohmann::json &output);
-
-			nlohmann::json  MerkleBlockToJson() const;
-
-			void MerkleBlockFromJson(nlohmann::json jsonData);
 		private:
-			std::vector<UInt256> _auxMerkleBranch;
+			std::vector<uint256> _auxMerkleBranch;
 			uint32_t             _auxMerkleIndex;
 			BRTransaction       *_parCoinBaseTx;
-			std::vector<UInt256> _parCoinBaseMerkle;
+			std::vector<uint256> _parCoinBaseMerkle;
 			uint32_t             _parMerkleIndex;
 			BRMerkleBlock       *_parBlockHeader;
-			UInt256              _parentHash;
+			uint256              _parentHash;
 		};
 
 	}

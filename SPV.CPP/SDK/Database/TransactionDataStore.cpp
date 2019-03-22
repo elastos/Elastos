@@ -155,10 +155,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
-					CMBlock buff;
-					buff.Resize(len);
-					memcpy(buff, pdata, len);
-					tx.buff = buff;
+					tx.buff.assign(pdata, pdata + len);
 					tx.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 					tx.assetID = _sqlite->ColumnText(stmt, 4);
@@ -241,10 +238,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 0);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 0);
 
-					CMBlock buff;
-					buff.Resize(len);
-					memcpy(buff, pdata, len);
-					txEntity.buff = buff;
+					txEntity.buff.assign(pdata, pdata + len);
 					txEntity.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					txEntity.assetID = _sqlite->ColumnText(stmt, 3);

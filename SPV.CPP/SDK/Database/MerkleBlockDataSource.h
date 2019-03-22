@@ -8,7 +8,6 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <Core/BRInt.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -22,7 +21,7 @@ namespace Elastos {
 			{
 			}
 
-			MerkleBlockEntity(long i, CMBlock bytes, uint32_t h) :
+			MerkleBlockEntity(long i, const bytes_t &bytes, uint32_t h) :
 				id(i),
 				blockBytes(bytes),
 				blockHeight(h)
@@ -30,7 +29,7 @@ namespace Elastos {
 			}
 
 			long id;
-			CMBlock blockBytes;
+			bytes_t blockBytes;
 			uint32_t blockHeight;
 		};
 

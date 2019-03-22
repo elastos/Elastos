@@ -9,8 +9,6 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRArray.h>
-
 #define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
 
 namespace Elastos {
@@ -20,66 +18,59 @@ namespace Elastos {
 
 		}
 
-		bool GetDataMessage::Accept(const CMBlock &msg) {
-
-			size_t off = 0;
+		bool GetDataMessage::Accept(const bytes_t &msg) {
+			ByteStream stream(msg);
 			uint32_t count = 0;
 
-			count = UInt32GetLE(&msg[off]);
-			off += sizeof(count);
-
-			if (off == 0 || off + 36 * count > msg.GetSize()) {
-				_peer->error("malformed getdata message, length is {}, should {} for {} item(s)",
-							 msg.GetSize(), sizeof(count) + 36 * count, count);
+			if (!stream.ReadUint32(count)) {
+				_peer->error("malformed getdata message, read count fail");
 				return false;
-			} else if (count > MAX_GETDATA_HASHES) {
-				_peer->error("dropping getdata message, {} is too many items, max is {}",
-							 count, MAX_GETDATA_HASHES);
+			}
+
+			if (count > MAX_GETDATA_HASHES || 36 * count + 4 > msg.size()) {
+				_peer->error("dropping getdata message, invalid count = {}", count);
 				return false;
-			} else {
-				struct inv_item {
-					uint8_t item[36];
-				};
+			}
 
-				std::vector<inv_item> notfound;
+			ByteStream notfound;
+			TransactionPtr tx;
 
-				TransactionPtr tx;
+			_peer->info("got getdata with {} item(s)", count);
+			for (size_t i = 0; i < count; i++) {
+				uint32_t type;
+				if (!stream.ReadUint32(type)) {
+					_peer->error("read inv type fail");
+					return false;
+				}
 
-				_peer->info("got getdata with {} item(s)", count);
-				for (size_t i = 0; i < count; i++) {
-					inv_type type = (inv_type) UInt32GetLE(&msg[off]);
-					UInt256 hash;
-					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
-					switch (type) {
-						case inv_tx:
-							tx = FireRequestedTx(hash);
+				uint256 hash;
+				if (!stream.ReadBytes(hash)) {
+					_peer->error("read inv hash fail");
+					return false;
+				}
 
-							if (tx != nullptr && tx->GetSize() < TX_MAX_SIZE) {
-								TransactionParameter txParam;
-								txParam.tx = tx;
-								_peer->SendMessage(MSG_TX, txParam);
-								break;
-							}
+				switch (type) {
+					case inv_tx:
+						tx = FireRequestedTx(hash);
 
-							// fall through
-						default:
-							_peer->info("not found with type = {}, hash = {}", type, Utils::UInt256ToString(hash, true));
-							notfound.push_back(*(struct inv_item *) &msg[off]);
+						if (tx != nullptr && tx->GetSize() < TX_MAX_SIZE) {
+							TransactionParameter txParam;
+							txParam.tx = tx;
+							_peer->SendMessage(MSG_TX, txParam);
 							break;
-					}
+						}
 
-					off += 36;
+						// fall through
+					default:
+						notfound.WriteUint32(type);
+						notfound.WriteBytes(hash);
+						_peer->info("not found with type = {}, hash = {}", type, hash.GetHex());
+						break;
 				}
-				if (notfound.size() > 0) {
-					ByteStream stream;
+			}
 
-					stream.WriteUint32(uint32_t(notfound.size()));
-					for (size_t i = 0; i < notfound.size(); ++i) {
-						stream.WriteBytes(notfound[i].item, sizeof(inv_item));
-					}
-
-					SendMessage(stream.GetBuffer(), MSG_NOTFOUND);
-				}
+			if (notfound.GetBytes().size() > 0) {
+				SendMessage(notfound.GetBytes(), MSG_NOTFOUND);
 			}
 			return true;
 		}
@@ -103,16 +94,16 @@ namespace Elastos {
 
 				for (i = 0; i < txCount && i < count; i++) {
 					stream.WriteUint32(uint32_t(inv_tx));
-					stream.WriteBytes(&getDataParameter.txHashes[i], sizeof(UInt256));
+					stream.WriteBytes(getDataParameter.txHashes[i]);
 				}
 
 				for (i = 0; i < blockCount && txCount + i < count; i++) {
 					stream.WriteUint32(uint32_t(inv_filtered_block));
-					stream.WriteBytes(&getDataParameter.blockHashes[i], sizeof(UInt256));
+					stream.WriteBytes(getDataParameter.blockHashes[i]);
 				}
 
 				_peer->SetSentGetdata(true);
-				SendMessage(stream.GetBuffer(), Type());
+				SendMessage(stream.GetBytes(), Type());
 			}
 		}
 

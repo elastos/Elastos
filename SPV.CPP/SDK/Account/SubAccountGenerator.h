@@ -24,20 +24,20 @@ namespace Elastos {
 
 			void SetParentAccount(IAccount *account);
 
-			void SetMasterPubKey(const MasterPubKeyPtr &masterPubKey);
+			void SetMasterPubKey(const HDKeychain &masterPubKey);
 
-			void SetVotePubKey(const CMBlock &pubKey);
+			void SetVotePubKey(const bytes_t &pubKey);
 
 			void Clean();
 
-			const CMBlock &GetResultPublicKey() const;
+			const bytes_t &GetResultPublicKey() const;
 
-			const UInt256 &GetResultChainCode() const;
+			const bytes_t &GetResultChainCode() const;
 
-			static MasterPubKeyPtr
+			static HDKeychain
 			GenerateMasterPubKey(IAccount *account, uint32_t coinIndex, const std::string &payPassword);
 
-			static CMBlock GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd);
+			static bytes_t GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd);
 
 		private:
 			ISubAccount *GenerateFromCoinInfo(IAccount *account, const CoinInfo &coinInfo);
@@ -48,10 +48,10 @@ namespace Elastos {
 			CoinInfo _coinInfo;
 			IAccount *_parentAccount;
 
-			CMBlock _votePubKey;
-			CMBlock _resultPubKey;
-			UInt256 _resultChainCode;
-			MasterPubKeyPtr _masterPubKey;
+			bytes_t _votePubKey;
+			bytes_t _resultPubKey;
+			bytes_t _resultChainCode;
+			HDKeychain _masterPubKey;
 		};
 
 	}

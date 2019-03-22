@@ -33,7 +33,7 @@ namespace Elastos {
 
 		}
 
-		CMBlock SubAccountBase::GetMultiSignPublicKey() const {
+		bytes_t SubAccountBase::GetMultiSignPublicKey() const {
 			return _parentAccount->GetMultiSignPublicKey();
 		}
 
@@ -41,15 +41,11 @@ namespace Elastos {
 			return _parentAccount->DeriveMultiSignKey(payPassword);
 		}
 
-		CMBlock SubAccountBase::GetVotePublicKey() const {
+		bytes_t SubAccountBase::GetVotePublicKey() const {
 			return _votePublicKey;
 		}
 
 		bool SubAccountBase::IsDepositAddress(const Address &address) const {
-			if (GetVotePublicKey().GetSize() == 0) {
-				return false;
-			}
-
 			if (!_depositAddress.Valid()) {
 				return false;
 			}
@@ -60,17 +56,18 @@ namespace Elastos {
 		void SubAccountBase::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {
 			std::string addr;
 			Key key;
+			bytes_t signature;
 			ByteStream stream;
 
 			ErrorChecker::CheckParam(tx->IsSigned(), Error::AlreadySigned, "Transaction signed");
 			ErrorChecker::CheckParam(tx->GetPrograms().empty(), Error::InvalidTransaction,
 									 "Invalid transaction program");
 
-			UInt256 md = tx->GetShaData();
+			uint256 md = tx->GetShaData();
 
 			std::vector<Program> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
-				std::vector<CMBlock> publicKeys = programs[i].DecodePublicKey();
+				std::vector<bytes_t> publicKeys = programs[i].DecodePublicKey();
 				ErrorChecker::CheckLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
 
 				bool found = false;
@@ -81,23 +78,22 @@ namespace Elastos {
 				}
 				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
-				stream.SetPosition(0);
-				if (programs[i].GetParameter().GetSize() > 0) {
+				stream.Reset();
+				if (programs[i].GetParameter().size() > 0) {
 					ByteStream verifyStream(programs[i].GetParameter());
-					CMBlock signature;
 					while (verifyStream.ReadVarBytes(signature)) {
 						ErrorChecker::CheckLogic(key.Verify(md, signature), Error::AlreadySigned, "Already signed");
 					}
 					stream.WriteBytes(programs[i].GetParameter());
 				}
 
-				CMBlock signedData = key.Sign(md);
-				stream.WriteVarBytes(signedData);
-				programs[i].SetParameter(stream.GetBuffer());
+				signature = key.Sign(md);
+				stream.WriteVarBytes(signature);
+				programs[i].SetParameter(stream.GetBytes());
 			}
 		}
 
-		bool SubAccountBase::FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) {
+		bool SubAccountBase::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
 			if (GetVotePublicKey() == pubKey) {
 				key = DeriveVoteKey(payPasswd);
 				return true;

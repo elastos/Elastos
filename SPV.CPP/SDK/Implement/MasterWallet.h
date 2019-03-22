@@ -10,7 +10,6 @@
 #include <SDK/KeyStore/KeyStore.h>
 #include <SDK/KeyStore/CoinInfo.h>
 #include <SDK/KeyStore/MasterWalletStore.h>
-#include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/IdAgent/IdAgentImpl.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
@@ -52,7 +51,7 @@ namespace Elastos {
 
 			bool IsEqual(const MasterWallet &wallet) const;
 
-			MasterPubKeyPtr GetMasterPubKey(const std::string &chainID) const;
+			HDKeychain GetMasterPubKey(const std::string &chainID) const;
 
 		public: //override from IMasterWallet
 

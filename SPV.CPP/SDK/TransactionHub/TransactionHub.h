@@ -11,10 +11,9 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Base/Lockable.h>
-#include <SDK/Base/Address.h>
+#include <SDK/Common/Lockable.h>
+#include <SDK/BIPs/Address.h>
 #include <SDK/Common/ElementSet.h>
-#include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/weak_ptr.hpp>
@@ -58,7 +57,7 @@ namespace Elastos {
 
 			std::string GetRemark(const std::string &txHash);
 
-			uint64_t GetBalanceWithAddress(const UInt256 &assetID, const Address &address, AssetTransactions::BalanceType type) const;
+			uint64_t GetBalanceWithAddress(const uint256 &assetID, const Address &address, AssetTransactions::BalanceType type) const;
 
 			// returns the first unused external address
 			Address GetReceiveAddress() const;
@@ -75,11 +74,11 @@ namespace Elastos {
 			// true if the address was previously used as an input or output in any wallet transaction
 			bool AddressIsUsed(const Address &address);
 
-			uint64_t GetBalance(const UInt256 &assetID, AssetTransactions::BalanceType type) const;
+			uint64_t GetBalance(const uint256 &assetID, AssetTransactions::BalanceType type) const;
 
-			uint64_t GetFeePerKb(const UInt256 &assetID) const;
+			uint64_t GetFeePerKb(const uint256 &assetID) const;
 
-			void SetFeePerKb(const UInt256 &assetID, uint64_t fee);
+			void SetFeePerKb(const uint256 &assetID, uint64_t fee);
 
 			uint64_t GetMaxFeePerKb();
 
@@ -90,17 +89,17 @@ namespace Elastos {
 			TransactionPtr
 			CreateTransaction(const Address &fromAddress, uint64_t amount,
 							  const Address &toAddress, uint64_t fee,
-							  const UInt256 &assetID, bool useVotedUTXO);
+							  const uint256 &assetID, bool useVotedUTXO);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 
 			bool RegisterTransaction(const TransactionPtr &tx);
 
-			void RemoveTransaction(const UInt256 &transactionHash);
+			void RemoveTransaction(const uint256 &transactionHash);
 
-			void UpdateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
-			TransactionPtr TransactionForHash(const UInt256 &transactionHash);
+			TransactionPtr TransactionForHash(const uint256 &transactionHash);
 
 			std::vector<TransactionPtr> GetAllTransactions() const;
 
@@ -122,7 +121,7 @@ namespace Elastos {
 
 			void UpdateBalance();
 
-			std::vector<UTXO> GetUTXOsSafe(const UInt256 &assetID) const;
+			std::vector<UTXO> GetUTXOsSafe(const uint256 &assetID) const;
 
 			std::vector<UTXO> GetAllUTXOsSafe();
 

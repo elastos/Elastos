@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_UTXOSET_H__
 
 #include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <Core/BRInt.h>
 
 #include <vector>
 
@@ -14,22 +13,19 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct UTXO {
-			UTXO() : hash(UINT256_ZERO), n(0), amount(0) {}
+			UTXO() : n(0), amount(0) {}
 
-			UTXO(const UInt256 &h, uint32_t i, uint64_t a, uint32_t c) :
+			UTXO(const uint256 &h, uint32_t i, uint64_t a, uint32_t c) :
+					hash(h),
 					n(i),
 					amount(a) {
-				memcpy(hash.u8, h.u8, sizeof(h));
 			}
 
 			bool operator<(const UTXO &otherUtxo) {
-				if (UInt256Eq(&hash, &otherUtxo.hash))
-					return UInt256LessThan(&hash, &otherUtxo.hash) == 1;
-				else
-					return n < otherUtxo.n;
+				return hash < otherUtxo.hash && n < otherUtxo.n;
 			}
 
-			UInt256 hash;
+			uint256 hash;
 			uint32_t n;
 			uint64_t amount;
 		};
@@ -38,7 +34,7 @@ namespace Elastos {
 		public:
 			bool Contains(const UTXO &o) const;
 
-			bool Contains(const UInt256 &hash, uint32_t n) const;
+			bool Contains(const uint256 &hash, uint32_t n) const;
 
 			UTXO &operator[](size_t i);
 
@@ -50,7 +46,7 @@ namespace Elastos {
 
 			void AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms);
 
-			void AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms);
+			void AddUTXO(const uint256 &hash, uint32_t index, uint64_t amount, uint32_t confirms);
 
 			void RemoveAt(size_t index);
 

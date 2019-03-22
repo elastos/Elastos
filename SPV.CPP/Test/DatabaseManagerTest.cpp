@@ -38,7 +38,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		std::vector<AssetEntity> assets;
 		for (int i = 0; i < 20; ++i) {
 			AssetEntity asset;
-			asset.Asset = getRandCMBlock(100);
+			asset.Asset = getRandBytes(100);
 			asset.AssetID = getRandString(64);
 			asset.TxHash = getRandString(64);
 			asset.Amount = rand();
@@ -51,8 +51,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		REQUIRE(assetsVerify.size() > 0);
 		REQUIRE(assetsVerify.size() == assets.size());
 		for (size_t i = 0; i < assets.size(); ++i) {
-			REQUIRE(assets[i].Asset.GetSize() == assetsVerify[i].Asset.GetSize());
-			REQUIRE(!memcmp(assets[i].Asset, assetsVerify[i].Asset, assets[i].Asset.GetSize()));
+			REQUIRE(assets[i].Asset == assetsVerify[i].Asset);
 			REQUIRE(assets[i].AssetID == assetsVerify[i].AssetID);
 			REQUIRE(assets[i].TxHash == assetsVerify[i].TxHash);
 			REQUIRE(assets[i].Amount == assetsVerify[i].Amount);
@@ -75,15 +74,14 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		std::vector<AssetEntity> assetsUpdate;
 		assetsVerify[idx].TxHash = getRandString(64);
 		assetsVerify[idx].Amount = rand();
-		assetsVerify[idx].Asset = getRandCMBlock(200);
+		assetsVerify[idx].Asset = getRandBytes(200);
 		assetsUpdate.push_back(assetsVerify[idx]);
 		REQUIRE(dm.PutAssets(ISO, assetsUpdate));
 
 		REQUIRE(dm.GetAssetDetails(ISO, assetsVerify[idx].AssetID, assetGot));
 		REQUIRE(assetsVerify[idx].TxHash == assetGot.TxHash);
 		REQUIRE(assetsVerify[idx].Amount == assetGot.Amount);
-		REQUIRE(assetsVerify[idx].Asset.GetSize() == assetGot.Asset.GetSize());
-		REQUIRE(!memcmp(assetsVerify[idx].Asset, assetGot.Asset, assetGot.Asset.GetSize()));
+		REQUIRE(assetsVerify[idx].Asset == assetGot.Asset);
 
 		// delete all
 		REQUIRE(dm.DeleteAllAssets(ISO));
@@ -100,7 +98,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (uint64_t i = 0; i < TEST_MERKLEBLOCK_RECORD_CNT; ++i) {
 				MerkleBlockEntity block;
 
-				block.blockBytes = getRandCMBlock(40);
+				block.blockBytes = getRandBytes(40);
 				block.blockHeight = static_cast<uint32_t>(i);
 
 				blocksToSave.push_back(block);
@@ -118,9 +116,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<MerkleBlockEntity> blocksRead = dbm.GetAllMerkleBlocks(ISO);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
-				REQUIRE(blocksToSave[i].blockBytes.GetSize() == blocksRead[i].blockBytes.GetSize());
+				REQUIRE(blocksToSave[i].blockBytes == blocksRead[i].blockBytes);
 				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
-				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, blocksRead[i].blockBytes.GetSize()));
 			}
 		}
 
@@ -146,8 +143,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
-				REQUIRE(blocksToSave[i].blockBytes.GetSize() == blocksRead[i].blockBytes.GetSize());
-				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, blocksRead[i].blockBytes.GetSize()));
+				REQUIRE(blocksToSave[i].blockBytes == blocksRead[i].blockBytes);
 			}
 		}
 
@@ -173,8 +169,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer Prepare for test") {
 			for (int i = 0; i < TEST_PEER_RECORD_CNT; i++) {
 				PeerEntity peer;
-				CMBlock addr = getRandCMBlock(sizeof(UInt128));
-				memcpy(peer.address.u8, addr, addr.GetSize());
+				peer.address = getRandUInt128();
 				peer.port = (uint16_t)rand();
 				peer.timeStamp = (uint64_t)rand();
 				peerToSave.push_back(peer);
@@ -193,7 +188,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
-				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
+				REQUIRE(peers[i].address == peerToSave[i].address);
 				REQUIRE(peers[i].port == peerToSave[i].port);
 				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
 			}
@@ -219,7 +214,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
-				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
+				REQUIRE(peers[i].address == peerToSave[i].address);
 				REQUIRE(peers[i].port == peerToSave[i].port);
 				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
 			}
@@ -250,7 +245,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionEntity tx;
 
-				tx.buff = getRandCMBlock(35);
+				tx.buff = getRandBytes(35);
 				tx.blockHeight = (uint32_t)rand();
 				tx.timeStamp = (uint32_t)rand();
 				tx.txHash = getRandString(25);
@@ -261,7 +256,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionEntity tx;
 
-				tx.buff = getRandCMBlock(49);
+				tx.buff = getRandBytes(49);
 				tx.blockHeight = (uint32_t)rand();
 				tx.timeStamp = (uint32_t)rand();
 				tx.txHash = txToSave[i].txHash;
@@ -283,8 +278,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(txToSave[i].buff.GetSize() == readTx[i].buff.GetSize());
-				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, txToSave[i].buff.GetSize()));
+				REQUIRE(txToSave[i].buff == readTx[i].buff);
 				REQUIRE(readTx[i].txHash == txToSave[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToSave[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToSave[i].blockHeight);
@@ -306,8 +300,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(txToSave[i].buff.GetSize() == readTx[i].buff.GetSize());
-				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, txToSave[i].buff.GetSize()));
+				REQUIRE(txToSave[i].buff == readTx[i].buff);
 				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);

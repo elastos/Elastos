@@ -20,21 +20,20 @@ namespace Elastos {
 
 		}
 
-		bool TransactionMessage::Accept(const CMBlock &msg) {
+		bool TransactionMessage::Accept(const bytes_t &msg) {
 			ByteStream stream(msg);
 			TransactionPtr tx = TransactionPtr(new Transaction());
 
-			UInt256 txHash;
 
 			if (!tx->Deserialize(stream)) {
-				_peer->error("malformed tx message with length: {}", msg.GetSize());
+				_peer->error("malformed tx message with length: {}", msg.size());
 				return false;
 			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
 				_peer->error("got tx message before loading filter");
 				return false;
 			} else {
-				txHash = tx->GetHash();
-				_peer->debug("got tx: {}", Utils::UInt256ToString(txHash, true));
+				uint256 txHash = tx->GetHash();
+				_peer->debug("got tx: {}", txHash.GetHex());
 
 				FireRelayedTx(tx);
 
@@ -58,9 +57,8 @@ namespace Elastos {
 
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
-			CMBlock buf = stream.GetBuffer();
-			_peer->info("sending tx: tx hash = {}", Utils::UInt256ToString(txParam.tx->GetHash(), true));
-			SendMessage(stream.GetBuffer(), Type());
+			_peer->info("sending tx: tx hash = {}", txParam.tx->GetHash().GetHex());
+			SendMessage(stream.GetBytes(), Type());
 		}
 
 		std::string TransactionMessage::Type() const {

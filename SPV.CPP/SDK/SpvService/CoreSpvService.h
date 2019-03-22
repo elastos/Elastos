@@ -10,7 +10,6 @@
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/P2P/PeerManager.h>
 #include <SDK/SpvService/ChainParams.h>
-#include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/thread.hpp>
@@ -34,15 +33,15 @@ namespace Elastos {
 			virtual const PeerManagerPtr &getPeerManager();
 
 		public: //override from Wallet
-			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
 
 			// func txAdded(_ tx: BRTxRef)
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
+			// func txUpdated(_ txHashes: [uint256], blockHeight: UInt32, timestamp: UInt32)
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
+			// func txDeleted(_ txHash: uint256, notifyUser: Bool, recommendRescan: Bool)
 			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		public: //override from PeerManager
@@ -180,7 +179,7 @@ namespace Elastos {
 		public:
 			WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener);
 
-			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
@@ -197,7 +196,7 @@ namespace Elastos {
 		public:
 			WrappedExecutorTransactionHubListener(AssetTransactions::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged(const UInt256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

@@ -17,13 +17,13 @@ namespace Elastos {
 				Message(peer) {
 		}
 
-		bool PongMessage::Accept(const CMBlock &msg) {
+		bool PongMessage::Accept(const bytes_t &msg) {
 			struct timeval tv;
 			double pingTime;
 			bool r = true;
 
-			if (sizeof(uint64_t) > msg.GetSize()) {
-				_peer->warn("malformed pong message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
+			if (sizeof(uint64_t) > msg.size()) {
+				_peer->warn("malformed pong message, length is {}, should be {}", msg.size(), sizeof(uint64_t));
 				r = false;
 			} else if (_peer->GetPongCallbacks().empty()) {
 				_peer->warn("got unexpected pong");
@@ -54,7 +54,7 @@ namespace Elastos {
 			const PongParameter &pongParameter = dynamic_cast<const PongParameter &>(param);
 			ByteStream stream;
 			stream.WriteUint64(pongParameter.lastBlockHeight);
-			_peer->SendMessage(stream.GetBuffer(), Type());
+			_peer->SendMessage(stream.GetBytes(), Type());
 		}
 
 		std::string PongMessage::Type() const {

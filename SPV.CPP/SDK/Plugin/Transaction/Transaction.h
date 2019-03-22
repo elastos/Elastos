@@ -10,7 +10,7 @@
 #include "Attribute.h"
 #include "TransactionInput.h"
 
-#include <SDK/Crypto/Key.h>
+#include <SDK/BIPs/Key.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
@@ -64,7 +64,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			uint64_t CalculateFee(uint64_t feePerKb);
 
@@ -74,7 +74,7 @@ namespace Elastos {
 
 			bool &IsRegistered();
 
-			const UInt256 &GetHash() const;
+			const uint256 &GetHash() const;
 
 			void ResetHash();
 
@@ -96,7 +96,7 @@ namespace Elastos {
 
 			void AddInput(const TransactionInput &Input);
 
-			bool ContainInput(const UInt256 &hash, uint32_t n) const;
+			bool ContainInput(const uint256 &hash, uint32_t n) const;
 
 			void SetTransactionType(Type type, const PayloadPtr &payload = nullptr);
 
@@ -123,8 +123,6 @@ namespace Elastos {
 			bool IsSigned() const;
 
 			bool IsValid() const;
-
-			UInt256 GetReverseHash();
 
 			virtual nlohmann::json ToJson() const;
 
@@ -170,9 +168,9 @@ namespace Elastos {
 
 			void SerializeUnsigned(ByteStream &ostream) const;
 
-			UInt256 GetShaData() const;
+			uint256 GetShaData() const;
 
-			UInt256 GetAssetID() const;
+			uint256 GetAssetID() const;
 
 			void Cleanup();
 
@@ -189,7 +187,7 @@ namespace Elastos {
 
 		private:
 			bool _isRegistered;
-			mutable UInt256 _txHash;
+			mutable uint256 _txHash;
 			std::string _assetTableID;
 
 			TxVersion _version; // uint8_t

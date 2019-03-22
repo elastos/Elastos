@@ -4,205 +4,252 @@
 
 #include "ByteStream.h"
 
-#include <SDK/Common/CMemBlock.h>
-
-#include <Core/BRAddress.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 
 
+#define VAR_INT16_HEADER  0xfd
+#define VAR_INT32_HEADER  0xfe
+#define VAR_INT64_HEADER  0xff
+#define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
+
 		ByteStream::ByteStream()
-				: _pos(0), _count(0), _size(0), _buf(nullptr), _autorelease(true) {
+				: _rpos(0) {
 		}
 
-		ByteStream::ByteStream(uint64_t size)
-				: _pos(0), _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) {
-			memset(_buf, 0, sizeof(uint8_t) * size);
+		ByteStream::ByteStream(size_t size)
+				: _rpos(0) {
+			_buf.reserve(size);
 		}
 
-		ByteStream::ByteStream(const void *buf, size_t size, bool autorelease)
-				: _pos(0), _count(size), _size(size), _buf((uint8_t *) buf), _autorelease(autorelease) {
+		ByteStream::ByteStream(const void *buf, size_t size)
+				: _rpos(0), _buf((const unsigned char *)buf, size)  {
 		}
 
-		ByteStream::ByteStream(const CMBlock &buf)
-				: _pos(0), _count(buf.GetSize()), _size(buf.GetSize()), _buf(buf), _autorelease(false) {
+		ByteStream::ByteStream(const bytes_t &buf)
+				: _rpos(0), _buf(buf) {
 		}
 
 		ByteStream::~ByteStream() {
-			if (_autorelease) {
-				delete[]_buf;
-				_buf = nullptr;
-			}
 		}
 
-		void ByteStream::EnsureCapacity(uint64_t newsize) {
-			if ((int64_t)(newsize - _size) > 0) {
-				uint64_t oldCapacity = _size;
-				uint64_t newCapacity = oldCapacity << 1;
-				int64_t diff = newCapacity - newsize;
-				if (diff < 0)
-					newCapacity = newsize;
-				if (newCapacity <= 0) {
-					if (newsize <= 0) // overflow
-						return;
-					newCapacity = UINT64_MAX;
-				}
-				uint8_t *newBuf = new uint8_t[newCapacity];
-				memset(newBuf, 0, newCapacity);
-				memcpy(newBuf, _buf, oldCapacity);
-				delete[] _buf;
-				_buf = newBuf;
-				_size = newCapacity;
-			}
+		uint64_t ByteStream::size() const {
+			return _buf.size();
 		}
 
-		bool ByteStream::CheckSize(uint64_t readSize) {
-			if (_pos + readSize > _count)
-				return false;
-			return true;
+		const bytes_t &ByteStream::GetBytes() const {
+			return _buf;
 		}
 
-		void ByteStream::SetPosition(uint64_t position) {
-			_pos = position;
-		}
-
-		uint64_t ByteStream::Position() {
-			return _pos;
-		}
-
-		uint64_t ByteStream::Length() {
-			return _count;
-		}
-
-		CMBlock ByteStream::GetBuffer() {
-			if (_count <= 0) {
-				return CMBlock();
-			}
-
-			return CMBlock(_buf, (size_t)_count);
-		}
-
-		void ByteStream::Drop(size_t bytes) {
-			if (CheckSize(bytes))
-				_pos += bytes;
+		void ByteStream::Skip(size_t bytes) const {
+			if (_rpos + bytes <= _buf.size())
+				_rpos += bytes;
 		}
 
 		void ByteStream::Reset() {
-			this->SetPosition(0);
-			this->_size = 0;
-			if (this->_buf != nullptr) {
-				delete[] this->_buf;
-				this->_buf = nullptr;
+			_rpos = 0;
+			_buf.clear();
+		}
+
+		bool ByteStream::ReadByte(uint8_t &val) const {
+			return ReadBytes(&val, 1);
+		}
+
+		bool ByteStream::ReadUint8(uint8_t &val) const {
+			return ReadBytes(&val, 1);
+		}
+
+		bool ByteStream::ReadUint16(uint16_t &val) const {
+			return ReadBytes(&val, sizeof(uint16_t));
+		}
+
+		bool ByteStream::ReadUint32(uint32_t &val) const {
+			return ReadBytes(&val, sizeof(uint32_t));
+		}
+
+		bool ByteStream::ReadUint64(uint64_t &val) const {
+			return ReadBytes(&val, sizeof(uint64_t));
+		}
+
+		bool ByteStream::ReadBytes(void *buf, size_t len) const {
+			if (_rpos + len > _buf.size())
+				return false;
+
+			memcpy(buf, &_buf[_rpos], len);
+			_rpos += len;
+
+			return true;
+		}
+
+		bool ByteStream::ReadBytes(bytes_t &bytes, size_t len) const {
+			if (_rpos + len > _buf.size())
+				return false;
+
+			bytes.assign(_buf.begin() + _rpos, _buf.begin() + _rpos + len);
+
+			_rpos += len;
+			return true;
+		}
+
+		bool ByteStream::ReadBytes(uint128 &u) const {
+			if (_rpos + u.size() > _buf.size())
+				return false;
+
+			memcpy(u.begin(), &_buf[_rpos], u.size());
+			_rpos += u.size();
+			return true;
+		}
+
+		bool ByteStream::ReadBytes(uint160 &u) const {
+			if (_rpos + u.size() > _buf.size())
+				return false;
+
+			memcpy(u.begin(), &_buf[_rpos], u.size());
+			_rpos += u.size();
+			return true;
+		}
+
+		bool ByteStream::ReadBytes(uint168 &u) const {
+			if (_rpos + u.size() > _buf.size())
+				return false;
+
+			memcpy(u.begin(), &_buf[_rpos], u.size());
+			_rpos += u.size();
+			return true;
+		}
+
+		bool ByteStream::ReadBytes(uint256 &u) const {
+			if (_rpos + u.size() > _buf.size())
+				return false;
+
+			memcpy(u.begin(), &_buf[_rpos], u.size());
+			_rpos += u.size();
+			return true;
+		}
+
+		bool ByteStream::ReadVarBytes(bytes_t &bytes) const {
+			uint64_t length = 0;
+			if (!ReadVarUint(length)) {
+				return false;
 			}
-			this->_count = 0;
+
+			return ReadBytes(bytes, length);
 		}
 
-		void ByteStream::IncreasePosition(size_t len) {
-			_pos += len;
+		bool ByteStream::ReadVarUint(uint64_t &len) const {
+			if (_rpos + 1 > _buf.size())
+				return false;
+
+			uint8_t h = _buf[_rpos++];
+
+			switch (h) {
+				case VAR_INT16_HEADER:
+					if (_rpos + 2 > _buf.size())
+						return false;
+					len = *(uint16_t *)&_buf[_rpos];
+					_rpos += 2;
+					break;
+
+				case VAR_INT32_HEADER:
+					if (_rpos + 4 > _buf.size())
+						return false;
+					len = *(uint32_t *)&_buf[_rpos];
+					_rpos += 4;
+					break;
+
+				case VAR_INT64_HEADER:
+					if (_rpos + 8 > _buf.size())
+						return false;
+					len = *(uint64_t *)&_buf[_rpos];
+					_rpos += 8;
+					break;
+
+				default:
+					len = h;
+					break;
+			}
+
+			return true;
 		}
 
-		bool ByteStream::ReadByte(uint8_t &val) {
-			return ReadBytes(&val, 1);
+		bool ByteStream::ReadVarString(std::string &str) const {
+			bytes_t bytes;
+			if (!ReadVarBytes(bytes)) {
+				return false;
+			}
+			str = std::string((const char *)bytes.data(), bytes.size());
+
+			return true;
 		}
 
-		bool ByteStream::ReadUint8(uint8_t &val) {
-			return ReadBytes(&val, 1);
-		}
 
 		void ByteStream::WriteUint8(uint8_t val) {
-			WriteBytes(&val, 1);
+			_buf.push_back(val);
 		}
 
 		void ByteStream::WriteByte(uint8_t val) {
-			WriteBytes(&val, 1);
-		}
-
-		bool ByteStream::ReadUint16(uint16_t &val) {
-			return ReadBytes(&val, sizeof(uint16_t));
+			_buf.push_back(val);
 		}
 
 		void ByteStream::WriteUint16(uint16_t val) {
 			WriteBytes(&val, sizeof(uint16_t));
 		}
 
-		bool ByteStream::ReadUint32(uint32_t &val) {
-			return ReadBytes(&val, sizeof(uint32_t));
-		}
-
 		void ByteStream::WriteUint32(uint32_t val) {
 			WriteBytes(&val, sizeof(uint32_t));
-		}
-
-		bool ByteStream::ReadUint64(uint64_t &val) {
-			return ReadBytes(&val, sizeof(uint64_t));
 		}
 
 		void ByteStream::WriteUint64(uint64_t val) {
 			WriteBytes(&val, sizeof(uint64_t));
 		}
 
-		bool ByteStream::ReadBytes(void *buf, size_t len) {
-			if (!CheckSize(len))
-				return false;
-
-			size_t pos = Position();
-
-			if (buf != nullptr) {
-				memcpy(buf, &_buf[pos], len);
-			}
-
-			IncreasePosition(len);
-
-			return true;
-		}
-
 		void ByteStream::WriteBytes(const void *buf, size_t len) {
-			EnsureCapacity(Position() + len);
-
-			size_t pos = Position();
-
-			memcpy(&_buf[pos], buf, len);
-
-			IncreasePosition(len);
-			_count = Position();
+			_buf += bytes_t(buf, len);
 		}
 
-		void ByteStream::WriteBytes(const CMBlock &buf) {
-			WriteBytes(buf, buf.GetSize());
+		void ByteStream::WriteBytes(const bytes_t &bytes) {
+			_buf += bytes;
 		}
 
-		bool ByteStream::ReadVarBytes(CMBlock &bytes) {
-			uint64_t length = 0;
-			if (!readVarUint(length)) {
-				return false;
-			}
+		void ByteStream::WriteBytes(const uint128 &u) {
+			_buf += u.bytes();
+		}
 
-			if (!CheckSize(length))
-				return false;
+		void ByteStream::WriteBytes(const uint160 &u) {
+			_buf += u.bytes();
+		}
 
-			bytes = CMBlock((size_t)length);
-			return ReadBytes(bytes, bytes.GetSize());
+		void ByteStream::WriteBytes(const uint168 &u) {
+			_buf += u.bytes();
+		}
+
+		void ByteStream::WriteBytes(const uint256 &u) {
+			_buf += u.bytes();
 		}
 
 		void ByteStream::WriteVarBytes(const void *bytes, size_t len) {
-			writeVarUint((uint64_t)len);
+			WriteVarUint((uint64_t)len);
 			WriteBytes(bytes, len);
 		}
 
-		void ByteStream::WriteVarBytes(const CMBlock &bytes) {
-			writeVarUint((uint64_t)bytes.GetSize());
-			WriteBytes(bytes, bytes.GetSize());
+		void ByteStream::WriteVarBytes(const bytes_t &bytes) {
+			WriteVarUint((uint64_t)bytes.size());
+			WriteBytes(bytes);
 		}
 
-		bool ByteStream::ReadVarString(std::string &str) {
-			CMBlock bytes;
-			if (!ReadVarBytes(bytes)) {
-				return false;
+		void ByteStream::WriteVarUint(uint64_t len) {
+			if (len < VAR_INT16_HEADER) {
+				_buf.push_back((uint8_t)len);
+			} else if (len <= UINT16_MAX) {
+				_buf.push_back(VAR_INT16_HEADER);
+				_buf += bytes_t((unsigned char *)&len, 2);
+			} else if (len <= UINT32_MAX) {
+				_buf.push_back(VAR_INT32_HEADER);
+				_buf += bytes_t((unsigned char *)&len, 4);
+			} else {
+				_buf.push_back(VAR_INT64_HEADER);
+				_buf += bytes_t((unsigned char *)&len, 8);
 			}
-			str = std::string((const char *)bytes, (size_t)bytes.GetSize());
-
-			return true;
 		}
 
 		void ByteStream::WriteVarString(const std::string &str) {

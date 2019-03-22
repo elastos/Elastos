@@ -18,19 +18,19 @@ namespace Elastos {
 
 			~PayloadCancelProducer();
 
-			const CMBlock &GetPublicKey() const;
+			const bytes_t &GetPublicKey() const;
 
-			void SetPublicKey(const CMBlock &key);
+			void SetPublicKey(const bytes_t &key);
 
-			void SetSignature(const CMBlock &signature);
+			void SetSignature(const bytes_t &signature);
 
 			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeUnsigned(ByteStream &istream, uint8_t version);
+			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -41,8 +41,8 @@ namespace Elastos {
 			PayloadCancelProducer &operator=(const PayloadCancelProducer &payload);
 
 		private:
-			CMBlock _publicKey;
-			CMBlock _signature;
+			bytes_t _publicKey;
+			bytes_t _signature;
 		};
 
 	}

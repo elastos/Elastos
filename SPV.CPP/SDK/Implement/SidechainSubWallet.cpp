@@ -71,7 +71,7 @@ namespace Elastos {
 		SidechainSubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 											  uint64_t amount, const std::string &assetID, const std::string &memo,
 											  const std::string &remark) {
-			UInt256 asset = Utils::UInt256FromString(assetID, true);
+			uint256 asset = uint256(assetID);
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, asset, memo, remark);
 			return tx->ToJson();
 		}
@@ -81,12 +81,11 @@ namespace Elastos {
 		}
 
 		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) const {
-			return _walletManager->getWallet()->GetBalance(Utils::UInt256FromString(assetID, true),
-														   AssetTransactions::Total);
+			return _walletManager->getWallet()->GetBalance(uint256(assetID), AssetTransactions::Total);
 		}
 
 		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
-			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID, true), address, AssetTransactions::Total);
+			return _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address, AssetTransactions::Total);
 		}
 
 		nlohmann::json SidechainSubWallet::GetAllSupportedAssets() const {

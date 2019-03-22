@@ -6,7 +6,6 @@
 
 #include "catch.hpp"
 #include "TestHelper.h"
-#include <Core/BRInt.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 
 using namespace Elastos::ElaWallet;
@@ -43,8 +42,8 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 		p1.Serialize(stream1, 0);
 		p2.Serialize(stream2, 0);
 
-		CMBlock buffer1 = stream1.GetBuffer();
-		CMBlock buffer2 = stream2.GetBuffer();
+		bytes_t buffer1 = stream1.GetBytes();
+		bytes_t buffer2 = stream2.GetBytes();
 
 		REQUIRE((buffer1 == buffer2));
 
@@ -66,11 +65,10 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 
 		ByteStream stream;
 		p1.Serialize(stream, 0);
-		CMBlock data1 = stream.GetBuffer();
+		bytes_t data1 = stream.GetBytes();
 
-		stream.SetPosition(0);
 		p2.Deserialize(stream, 0);
-		CMBlock data2 = p2.GetData(0);
+		bytes_t data2 = p2.GetData(0);
 
 		REQUIRE((data1 == data2));
 

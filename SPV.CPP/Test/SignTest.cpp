@@ -25,7 +25,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		nlohmann::json content = "{\"Attributes\":[{\"Data\":\"353634383333303934\",\"Usage\":0}],\"BlockHeight\":2147483647,\"Fee\":10000,\"Inputs\":[{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":200000000,\"Index\":0,\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"Sequence\":4294967295,\"Signature\":\"\",\"TxHash\":\"e77c3bea963d124311076d4737372cbb23aef8d63d5eadaad578455d481cc025\"}],\"IsRegistered\":false,\"LockTime\":0,\"Outputs\":[{\"Address\":\"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ\",\"Amount\":10000000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"21db215de2758b7d743f66e4c66cfcc35dc54ccbcb\",\"Script\":\"76a914db215de2758b7d743f66e4c66cfcc35dc54ccbcb88ac\",\"ScriptLen\":25,\"SignType\":172},{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":189990000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"12134a742f7782c295d3ea18cb59cd0101b21b1a2f\",\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"ScriptLen\":25,\"SignType\":174}],\"PayLoad\":null,\"PayloadVersion\":0,\"Programs\":[],\"Remark\":\"\",\"Timestamp\":0,\"TxHash\":\"80a0eb3c6bbce2c21d542c7ce9d248fe013fc1c757addd7fcee04b14098d5fa7\",\"Type\":2,\"Version\":1}"_json;
 		tx->FromJson(content);
 
-		CMBlock key;
+		bytes_t key;
 		std::string payPassword = "payPassword";
 		std::vector<std::string> coSigners;
 
@@ -42,8 +42,8 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		std::vector<Address> addrs;
 		subAccount1->GetAllAddresses(addrs, 0, 100, true);
-		CMBlock code = subAccount1->GetRedeemScript(addrs[0]);
-		tx->AddProgram(Program(code, CMBlock()));
+		bytes_t code = subAccount1->GetRedeemScript(addrs[0]);
+		tx->AddProgram(Program(code, bytes_t()));
 
 		REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPassword));
 		REQUIRE_THROWS(subAccount1->SignTransaction(tx, payPassword));
@@ -65,8 +65,8 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE(tx->IsSigned());
 
 		SECTION("Simple account should not support vote") {
-			CMBlock votePubKey = subAccount1->GetVotePublicKey();
-			REQUIRE(votePubKey.GetSize() == 0);
+			bytes_t votePubKey = subAccount1->GetVotePublicKey();
+			REQUIRE(votePubKey.size() == 0);
 			REQUIRE_THROWS(subAccount1->DeriveVoteKey(payPassword));
 		}
 	}
@@ -85,46 +85,46 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		Lockable lock;
 
 		StandardAccount *account1 = new StandardAccount("./Data", phrase1, phrasePassword, payPassword);
-		MasterPubKeyPtr mpk1 = SubAccountGenerator::GenerateMasterPubKey(account1, coinIndex, payPassword);
-		CMBlock votePubKey1 = SubAccountGenerator::GenerateVotePubKey(account1, coinIndex, payPassword);
-		HDSubAccount hd1(*mpk1, votePubKey1, account1, coinIndex);
+		HDKeychain mpk1 = SubAccountGenerator::GenerateMasterPubKey(account1, coinIndex, payPassword);
+		bytes_t votePubKey1 = SubAccountGenerator::GenerateVotePubKey(account1, coinIndex, payPassword);
+		HDSubAccount hd1(mpk1, votePubKey1, account1, coinIndex);
 		hd1.InitAccount({}, &lock);
-		CMBlock multiSignPubKey1 = account1->GetMultiSignPublicKey();
+		bytes_t multiSignPubKey1 = account1->GetMultiSignPublicKey();
 
 		StandardAccount *account2 = new StandardAccount("./Data", phrase2, phrasePassword, payPassword);
-		MasterPubKeyPtr mpk2 = SubAccountGenerator::GenerateMasterPubKey(account2, coinIndex, payPassword);
-		CMBlock votePubKey2 = SubAccountGenerator::GenerateVotePubKey(account2, coinIndex, payPassword);
-		HDSubAccount hd2(*mpk2, votePubKey2, account2, coinIndex);
+		HDKeychain mpk2 = SubAccountGenerator::GenerateMasterPubKey(account2, coinIndex, payPassword);
+		bytes_t votePubKey2 = SubAccountGenerator::GenerateVotePubKey(account2, coinIndex, payPassword);
+		HDSubAccount hd2(mpk2, votePubKey2, account2, coinIndex);
 		hd2.InitAccount({}, &lock);
-		CMBlock multiSignPubKey2 = account2->GetMultiSignPublicKey();
+		bytes_t multiSignPubKey2 = account2->GetMultiSignPublicKey();
 
-		StandardSingleSubAccount ss2(*mpk2, votePubKey2, account2, coinIndex);
+		StandardSingleSubAccount ss2(mpk2, votePubKey2, account2, coinIndex);
 		REQUIRE(multiSignPubKey2 == ss2.GetMultiSignPublicKey());
 
 		StandardAccount *account3 = new StandardAccount("./Data", phrase3, phrasePassword, payPassword);
-		MasterPubKeyPtr mpk3 = SubAccountGenerator::GenerateMasterPubKey(account3, coinIndex, payPassword);
-		CMBlock votePubKey3 = SubAccountGenerator::GenerateVotePubKey(account3, coinIndex, payPassword);
-		HDSubAccount hd3(*mpk3, votePubKey3, account3, coinIndex);
+		HDKeychain mpk3 = SubAccountGenerator::GenerateMasterPubKey(account3, coinIndex, payPassword);
+		bytes_t votePubKey3 = SubAccountGenerator::GenerateVotePubKey(account3, coinIndex, payPassword);
+		HDSubAccount hd3(mpk3, votePubKey3, account3, coinIndex);
 		hd3.InitAccount({}, &lock);
-		CMBlock multiSignPubKey3 = account3->GetMultiSignPublicKey();
+		bytes_t multiSignPubKey3 = account3->GetMultiSignPublicKey();
 
 		StandardAccount *account4 = new StandardAccount("./Data", phrase4, phrasePassword, payPassword);
-		MasterPubKeyPtr mpk4 = SubAccountGenerator::GenerateMasterPubKey(account4, coinIndex, payPassword);
-		CMBlock votePubKey4 = SubAccountGenerator::GenerateVotePubKey(account4, coinIndex, payPassword);
-		HDSubAccount hd4(*mpk4, votePubKey4, account4, coinIndex);
+		HDKeychain mpk4 = SubAccountGenerator::GenerateMasterPubKey(account4, coinIndex, payPassword);
+		bytes_t votePubKey4 = SubAccountGenerator::GenerateVotePubKey(account4, coinIndex, payPassword);
+		HDSubAccount hd4(mpk4, votePubKey4, account4, coinIndex);
 		hd4.InitAccount({}, &lock);
-		CMBlock multiSignPubKey4 = account4->GetMultiSignPublicKey();
+		bytes_t multiSignPubKey4 = account4->GetMultiSignPublicKey();
 
 		SECTION("Standard address sign test") {
 			std::vector<Address> addresses;
 			hd1.GetAllAddresses(addresses, 0, 100, true);
 
 			REQUIRE(!addresses.empty());
-			CMBlock redeemScript = hd1.GetRedeemScript(addresses[addresses.size() - 1]);
+			bytes_t redeemScript = hd1.GetRedeemScript(addresses[addresses.size() - 1]);
 
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
-			tx->AddProgram(Program(redeemScript, CMBlock()));
+			tx->AddProgram(Program(redeemScript, bytes_t()));
 
 
 			REQUIRE_THROWS(hd3.SignTransaction(tx, payPassword));
@@ -138,7 +138,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			tx->GetPrograms().clear();
 			redeemScript = hd2.GetRedeemScript(ssAddresses[0]);
-			tx->AddProgram(Program(redeemScript, CMBlock()));
+			tx->AddProgram(Program(redeemScript, bytes_t()));
 			REQUIRE_THROWS(hd1.SignTransaction(tx, payPassword));
 			REQUIRE_THROWS(hd3.SignTransaction(tx, payPassword));
 
@@ -150,15 +150,13 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		}
 
 		SECTION("Vote deposit address sign test") {
-			Key key;
-			key.SetPubKey(votePubKey1);
-			std::string addr = key.GetAddress(PrefixDeposit);
-			CMBlock redeemScript = hd1.GetRedeemScript(addr);
+			std::string addr = Address(PrefixDeposit, votePubKey1).String();
+			bytes_t redeemScript = hd1.GetRedeemScript(addr);
 
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
 
-			tx->AddProgram(Program(redeemScript, CMBlock()));
+			tx->AddProgram(Program(redeemScript, bytes_t()));
 
 
 			REQUIRE_THROWS(hd2.SignTransaction(tx, payPassword));
@@ -173,17 +171,17 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			tx->FromJson(content);
 
 			std::vector<std::string> coSigners;
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey1));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey2));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey3));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey4));
+			coSigners.push_back(multiSignPubKey1.getHex());
+			coSigners.push_back(multiSignPubKey2.getHex());
+			coSigners.push_back(multiSignPubKey3.getHex());
+			coSigners.push_back(multiSignPubKey4.getHex());
 			MultiSignAccount *multiSignAccount = new MultiSignAccount(nullptr, coSigners, requiredSignCount);
 			MultiSignSubAccount ms(multiSignAccount);
 			std::vector<Address> addresses;
 			ms.GetAllAddresses(addresses, 0, 1, true);
 			REQUIRE(!addresses.empty());
-			CMBlock redeemScript = ms.GetRedeemScript(addresses[0]);;
-			tx->AddProgram(Program(redeemScript, CMBlock()));
+			bytes_t redeemScript = ms.GetRedeemScript(addresses[0]);;
+			tx->AddProgram(Program(redeemScript, bytes_t()));
 
 			REQUIRE_NOTHROW(hd1.SignTransaction(tx, payPassword));
 			REQUIRE(!tx->IsSigned());
@@ -204,9 +202,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			MultiSignAccount *multiSignAccount1 = new MultiSignAccount(account1,
 				{
-					Utils::EncodeHex(multiSignPubKey2),
-					Utils::EncodeHex(multiSignPubKey3),
-					Utils::EncodeHex(multiSignPubKey4)
+					multiSignPubKey2.getHex(),
+					multiSignPubKey3.getHex(),
+					multiSignPubKey4.getHex()
 				}, requiredSignCount);
 			MultiSignSubAccount ms1(multiSignAccount1);
 			std::vector<Address> addresses1;
@@ -214,9 +212,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			MultiSignAccount *multiSignAccount2 = new MultiSignAccount(account2,
 				{
-					Utils::EncodeHex(multiSignPubKey1),
-					Utils::EncodeHex(multiSignPubKey3),
-					Utils::EncodeHex(multiSignPubKey4)
+					multiSignPubKey1.getHex(),
+					multiSignPubKey3.getHex(),
+					multiSignPubKey4.getHex()
 				}, requiredSignCount);
 			MultiSignSubAccount ms2(multiSignAccount2);
 			std::vector<Address> addresses2;
@@ -224,9 +222,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			MultiSignAccount *multiSignAccount3 = new MultiSignAccount(account3,
 				{
-					Utils::EncodeHex(multiSignPubKey1),
-					Utils::EncodeHex(multiSignPubKey2),
-					Utils::EncodeHex(multiSignPubKey4)
+					multiSignPubKey1.getHex(),
+					multiSignPubKey2.getHex(),
+					multiSignPubKey4.getHex()
 				}, requiredSignCount);
 			MultiSignSubAccount ms3(multiSignAccount3);
 			std::vector<Address> addresses3;
@@ -234,19 +232,19 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			MultiSignAccount *multiSignAccount4 = new MultiSignAccount(account4,
 				{
-					Utils::EncodeHex(multiSignPubKey1),
-					Utils::EncodeHex(multiSignPubKey2),
-					Utils::EncodeHex(multiSignPubKey3)
+					multiSignPubKey1.getHex(),
+					multiSignPubKey2.getHex(),
+					multiSignPubKey3.getHex()
 				}, requiredSignCount);
 			MultiSignSubAccount ms4(multiSignAccount4);
 			std::vector<Address> addresses4;
 			ms4.GetAllAddresses(addresses4, 0, 10, true);
 
 			std::vector<std::string> coSigners;
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey1));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey2));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey3));
-			coSigners.push_back(Utils::EncodeHex(multiSignPubKey4));
+			coSigners.push_back(multiSignPubKey1.getHex());
+			coSigners.push_back(multiSignPubKey2.getHex());
+			coSigners.push_back(multiSignPubKey3.getHex());
+			coSigners.push_back(multiSignPubKey4.getHex());
 			MultiSignAccount *multiSignAccount5 = new MultiSignAccount(nullptr, coSigners, requiredSignCount);
 			MultiSignSubAccount ms5(multiSignAccount5);
 			std::vector<Address> addresses5;
@@ -257,9 +255,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			REQUIRE(addresses1.size() == addresses3.size());
 			REQUIRE(addresses1.size() == addresses4.size());
 			REQUIRE(addresses1.size() == addresses5.size());
-			CMBlock redeemScript = ms1.GetRedeemScript(addresses1[0]);
+			bytes_t redeemScript = ms1.GetRedeemScript(addresses1[0]);
 
-			tx->AddProgram(Program(redeemScript, CMBlock()));
+			tx->AddProgram(Program(redeemScript, bytes_t()));
 
 
 			REQUIRE(!tx->IsSigned());

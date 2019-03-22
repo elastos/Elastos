@@ -7,8 +7,9 @@
 
 #include "IdItem.h"
 
-#include <SDK/Crypto/Key.h>
+#include <SDK/BIPs/Key.h>
 #include <SDK/Common/Mstream.h>
+#include <SDK/BIPs/Address.h>
 
 #include <map>
 #include <vector>
@@ -35,13 +36,13 @@ namespace Elastos {
 
 			~IdAgentImpl();
 
-			std::string DeriveIdAndKeyForPurpose(
+			Address DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
 					uint32_t index);
 
 			bool IsIdValid(const std::string &id);
 
-			CMBlock Sign(const std::string &id, const CMBlock &data, const std::string &passwd);
+			bytes_t Sign(const std::string &id, const bytes_t &data, const std::string &passwd);
 
 			std::string Sign(
 					const std::string &id,
@@ -54,7 +55,7 @@ namespace Elastos {
 
 			const IdAgentInfo &GetIdAgentInfo() const;
 
-			std::string GetPublicKey(const std::string &id) const;
+			bytes_t GetPublicKey(const std::string &id) const;
 
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);

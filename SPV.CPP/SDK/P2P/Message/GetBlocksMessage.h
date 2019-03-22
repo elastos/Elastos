@@ -11,12 +11,12 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct GetBlocksParameter : public SendMessageParameter {
-			std::vector<UInt256> locators;
-			UInt256 hashStop;
+			std::vector<uint256> locators;
+			uint256 hashStop;
 
 			GetBlocksParameter() { memset(&hashStop, 0, sizeof(hashStop)); }
 
-			GetBlocksParameter(const std::vector<UInt256> &locators, const UInt256 &hashStop) :
+			GetBlocksParameter(const std::vector<uint256> &locators, const uint256 &hashStop) :
 				locators(locators), hashStop(hashStop)
 			{}
 		};
@@ -25,7 +25,7 @@ namespace Elastos {
 		public:
 			explicit GetBlocksMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const CMBlock &msg);
+			virtual bool Accept(const bytes_t &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

@@ -23,11 +23,11 @@ namespace Elastos {
 				VoteContent() : type(Type::Delegate) {
 				}
 
-				VoteContent(Type t, const std::vector<CMBlock> &c) : type(t), candidates(c) {
+				VoteContent(Type t, const std::vector<bytes_t> &c) : type(t), candidates(c) {
 				}
 
 				Type type;
-				std::vector<CMBlock> candidates;
+				std::vector<bytes_t> candidates;
 			};
 
 		public:
@@ -45,7 +45,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			virtual nlohmann::json ToJson() const;
 

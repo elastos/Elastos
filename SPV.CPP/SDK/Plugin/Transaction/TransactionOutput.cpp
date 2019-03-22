@@ -7,7 +7,7 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Crypto/Key.h>
+#include <SDK/BIPs/Key.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
@@ -21,10 +21,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionOutput::TransactionOutput() :
-				_assetId(UINT256_ZERO),
 				_amount(0),
 				_outputLock(0),
-				_programHash(UINT168_ZERO),
 				_outputType(Type::Default) {
 			_payload = GeneratePayload(_outputType);
 		}
@@ -39,7 +37,7 @@ namespace Elastos {
 			*_payload = *output.GetPayload();
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const Address &addr, const UInt256 &assetID,
+		TransactionOutput::TransactionOutput(uint64_t a, const Address &addr, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
 			_amount(a),
 			_outputLock(0),
@@ -53,7 +51,7 @@ namespace Elastos {
 			}
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash, const UInt256 &assetID,
+		TransactionOutput::TransactionOutput(uint64_t a, const uint168 &programHash, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
 			_amount(a),
 			_outputLock(0),
@@ -83,14 +81,14 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
-			ostream.WriteBytes(_assetId.u8, sizeof(_assetId));
+			ostream.WriteBytes(_assetId);
 			ostream.WriteUint64(_amount);
 			ostream.WriteUint32(_outputLock);
-			ostream.WriteBytes(_programHash.u8, sizeof(_programHash));
+			ostream.WriteBytes(_programHash);
 		}
 
-		bool TransactionOutput::Deserialize(ByteStream &istream) {
-			if (!istream.ReadBytes(_assetId.u8, sizeof(_assetId))) {
+		bool TransactionOutput::Deserialize(const ByteStream &istream) {
+			if (!istream.ReadBytes(_assetId)) {
 				Log::error("deserialize output assetid error");
 				return false;
 			}
@@ -105,7 +103,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.ReadBytes(_programHash.u8, sizeof(_programHash))) {
+			if (!istream.ReadBytes(_programHash)) {
 				Log::error("deserialize output program hash error");
 				return false;
 			}
@@ -122,7 +120,7 @@ namespace Elastos {
 			}
 		}
 
-		bool TransactionOutput::Deserialize(ByteStream &istream, uint8_t txVersion) {
+		bool TransactionOutput::Deserialize(const ByteStream &istream, uint8_t txVersion) {
 			if (!Deserialize(istream)) {
 				Log::error("tx output deserialize default part error");
 				return false;
@@ -151,11 +149,11 @@ namespace Elastos {
 			return true;
 		}
 
-		const UInt256 &TransactionOutput::GetAssetId() const {
+		const uint256 &TransactionOutput::GetAssetId() const {
 			return _assetId;
 		}
 
-		void TransactionOutput::SetAssetId(const UInt256 &assetId) {
+		void TransactionOutput::SetAssetId(const uint256 &assetId) {
 			_assetId = assetId;
 		}
 
@@ -167,11 +165,11 @@ namespace Elastos {
 			_outputLock = lock;
 		}
 
-		const UInt168 &TransactionOutput::GetProgramHash() const {
+		const uint168 &TransactionOutput::GetProgramHash() const {
 			return _programHash;
 		}
 
-		void TransactionOutput::SetProgramHash(const UInt168 &hash) {
+		void TransactionOutput::SetProgramHash(const uint168 &hash) {
 			_programHash = hash;
 		}
 
@@ -218,18 +216,18 @@ namespace Elastos {
 			nlohmann::json j;
 
 			j["Amount"] = _amount;
-			j["AssetId"] = Utils::UInt256ToString(_assetId, true);
+			j["AssetId"] = _assetId.GetHex();
 			j["OutputLock"] = _outputLock;
-			j["ProgramHash"] = Utils::EncodeHex(_programHash.u8, sizeof(_programHash));
+			j["ProgramHash"] = _programHash.GetHex();
 			j["Address"] = Address(_programHash).String();
 			return j;
 		}
 
 		void TransactionOutput::FromJson(const nlohmann::json &j) {
 			_amount = j["Amount"].get<uint64_t>();
-			_assetId = Utils::UInt256FromString(j["AssetId"].get<std::string>(), true);
+			_assetId.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
-			_programHash = Utils::UInt168FromString(j["ProgramHash"].get<std::string>());
+			_programHash.SetHex(j["ProgramHash"].get<std::string>());
 		}
 
 		nlohmann::json TransactionOutput::ToJson(uint8_t txVersion) const {
@@ -254,7 +252,7 @@ namespace Elastos {
 		}
 
 		size_t TransactionOutput::GetSize() const {
-			return sizeof(_assetId) + sizeof(_amount) + sizeof(_outputLock) + sizeof(_programHash);
+			return _assetId.size() + sizeof(_amount) + sizeof(_outputLock) + _programHash.size();
 		}
 
 	}

@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_PAYLOADSIDEMINING_H
 
 #include "IPayload.h"
-#include <Core/BRInt.h>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,30 +18,30 @@ namespace Elastos {
 
 			PayloadSideMining(const PayloadSideMining &payload);
 
-			PayloadSideMining(const UInt256 &sideBlockHash, const UInt256 &sideGensisHash, uint32_t height, const CMBlock &signedData);
+			PayloadSideMining(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData);
 
 			~PayloadSideMining();
 
-            void SetSideBlockHash(const UInt256 &sideBlockHash);
+            void SetSideBlockHash(const uint256 &sideBlockHash);
 
-            void SetSideGenesisHash(const UInt256 &sideGensisHash);
+            void SetSideGenesisHash(const uint256 &sideGensisHash);
 
             void SetBlockHeight(uint32_t height);
 
-            void SetSignedData(const CMBlock &signedData);
+            void SetSignedData(const bytes_t &signedData);
 
-            const UInt256 &GetSideBlockHash() const;
+            const uint256 &GetSideBlockHash() const;
 
-            const UInt256 &GetSideGenesisHash() const;
+            const uint256 &GetSideGenesisHash() const;
 
             const uint32_t &GetBlockHeight() const;
 
-            const CMBlock &GetSignedData() const;
+            const bytes_t &GetSignedData() const;
 
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -52,10 +52,10 @@ namespace Elastos {
 			PayloadSideMining &operator=(const PayloadSideMining &payload);
 
 		private:
-			UInt256 _sideBlockHash;
-			UInt256 _sideGenesisHash;
+			uint256 _sideBlockHash;
+			uint256 _sideGenesisHash;
 			uint32_t _blockHeight;
-			CMBlock _signedData;
+			bytes_t _signedData;
 		};
 	}
 }

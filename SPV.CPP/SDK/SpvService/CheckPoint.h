@@ -6,8 +6,7 @@
 #define __ELASTOS_SDK_CHECKPOINT_H__
 
 #include <SDK/Common/Mstream.h>
-
-#include <Core/BRInt.h>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -16,7 +15,7 @@ namespace Elastos {
 		public:
 			CheckPoint(uint32_t height, const std::string &hash, time_t timestamp, uint32_t target);
 
-			CheckPoint(uint32_t height, const UInt256 &hash, time_t timestamp, uint32_t target);
+			CheckPoint(uint32_t height, const uint256 &hash, time_t timestamp, uint32_t target);
 
 			~CheckPoint();
 
@@ -24,7 +23,7 @@ namespace Elastos {
 
 			const uint32_t &GetHeight() const;
 
-			const UInt256 &GetHash() const;
+			const uint256 &GetHash() const;
 
 			const time_t &GetTimestamp() const;
 
@@ -32,7 +31,7 @@ namespace Elastos {
 
 		private:
 			uint32_t _height;
-			UInt256 _hash;
+			uint256 _hash;
 			time_t _timestamp;
 			uint32_t _target;
 		};

@@ -9,7 +9,6 @@
 #include "Message/MempoolMessage.h"
 #include "Message/GetDataMessage.h"
 #include "Message/InventoryMessage.h"
-#include "Message/GetHeadersMessage.h"
 
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Block/ELAMerkleBlock.h>
@@ -17,12 +16,8 @@
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/arith_uint256.h>
-#include <SDK/Common/Base58.h>
-#include <SDK/Base/BloomFilter.h>
-#include <SDK/BIPs/BIP32Sequence.h>
-
-#include <Core/BRArray.h>
+#include <SDK/BIPs/Base58.h>
+#include <SDK/BIPs/BloomFilter.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -81,11 +76,11 @@ namespace Elastos {
 			return result;
 		}
 
-		void PeerManager::FireTxPublished(const UInt256 &hash, int code, const std::string &reason) {
+		void PeerManager::FireTxPublished(const uint256 &hash, int code, const std::string &reason) {
 			nlohmann::json result;
 			result["Code"] = code;
 			result["Reason"] = reason;
-			std::string txID = Utils::UInt256ToString(hash, true);
+			std::string txID = hash.GetHex();
 
 			if (!_listener.expired()) {
 				_listener.lock()->txPublished(txID, result);
@@ -191,7 +186,7 @@ namespace Elastos {
 
 				orphan->SetPrevBlockHash(block->GetPrevBlockHash());
 				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend();) {
-					if (UInt256Eq(&orphan->GetPrevBlockHash(), &(*it)->GetPrevBlockHash())) {
+					if (orphan->GetPrevBlockHash() == (*it)->GetPrevBlockHash()) {
 						it = _orphans.erase(it);
 						break;
 					} else {
@@ -202,7 +197,7 @@ namespace Elastos {
 				orphan->SetPrevBlockHash(block->GetHash());
 				block = nullptr;
 				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend(); ++it) {
-					if (UInt256Eq(&orphan->GetPrevBlockHash(), &(*it)->GetPrevBlockHash())) {
+					if (orphan->GetPrevBlockHash() == (*it)->GetPrevBlockHash()) {
 						block = *it;
 					}
 				}
@@ -342,7 +337,7 @@ namespace Elastos {
 				for (size_t i = checkpoints.size(); i > 0; i--) {
 					if (i - 1 == 0 ||
 						checkpoints[i - 1].GetTimestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
-						UInt256 hash = checkpoints[i - 1].GetHash();
+						uint256 hash = checkpoints[i - 1].GetHash();
 						_lastBlock = _blocks.Get(hash);
 						break;
 					}
@@ -436,25 +431,25 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::SetFixedPeer(UInt128 address, uint16_t port) {
+		void PeerManager::SetFixedPeer(uint128 address, uint16_t port) {
 			Disconnect();
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-				_maxConnectCount = UInt128IsZero(&address) ? PEER_MAX_CONNECTIONS : 1;
+				_maxConnectCount = (address == 0) ? PEER_MAX_CONNECTIONS : 1;
 				_fixedPeer = PeerInfo(address, port, 0, 0);
 				_peers.clear();
 			}
 		}
 
 		bool PeerManager::UseFixedPeer(const std::string &node, int port) {
-			UInt128 address = UINT128_ZERO;
+			uint128 address;
 			uint16_t _port = (uint16_t) port;
 
 			if (!node.empty()) {
 				struct in_addr addr;
 				if (inet_pton(AF_INET, node.c_str(), &addr) != 1) return false;
-				address.u16[5] = 0xffff;
-				address.u32[3] = addr.s_addr;
+				*(uint16_t *)&address.begin()[10] = 0xffff;
+				*(uint32_t *)&address.begin()[12] = addr.s_addr;
 				if (port == 0)
 					_port = _chainParams.GetStandardPort();
 			} else {
@@ -554,15 +549,16 @@ namespace Elastos {
 			}
 		}
 
-		uint64_t PeerManager::GetRelayCount(const UInt256 &txHash) const {
+		uint64_t PeerManager::GetRelayCount(const uint256 &txHash) const {
 			size_t count = 0;
 
-			assert(!UInt256IsZero(&txHash));
+			assert(txHash != 0);
 
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				for (size_t i = _txRelays.size(); i > 0; i--) {
-					if (!UInt256Eq(&_txRelays[i - 1].GetTransactionHash(), &txHash)) continue;
+					if (_txRelays[i - 1].GetTransactionHash() != txHash)
+						continue;
 					count = _txRelays[i - 1].GetPeers().size();
 					break;
 				}
@@ -599,35 +595,35 @@ namespace Elastos {
 											   uint32_t targetTimePerBlock) {
 			int r = 1;
 
-			assert(block != nullptr);
-			assert(previous != nullptr);
-
-			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
-
-			if (!previous || !UInt256Eq(&(block->GetPrevBlockHash()), &(previous->GetHash())) ||
-				block->GetHeight() != previous->GetHeight() + 1)
-				r = 0;
-			if (r && (block->GetHeight() % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
-
-			if (r && (block->GetHeight() % blocksPerRetarget) == 0) {
-				uint32_t timespan = previous->GetTimestamp() - transitionTime;
-
-				arith_uint256 target;
-				target.SetCompact(previous->GetTarget());
-
+//			assert(block != nullptr);
+//			assert(previous != nullptr);
+//
+//			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
+//
+//			if (!previous || !uint256Eq(&(block->GetPrevBlockHash()), &(previous->GetHash())) ||
+//				block->GetHeight() != previous->GetHeight() + 1)
+//				r = 0;
+//			if (r && (block->GetHeight() % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
+//
+//			if (r && (block->GetHeight() % blocksPerRetarget) == 0) {
+//				uint32_t timespan = previous->GetTimestamp() - transitionTime;
+//
+//				arith_uint256 target;
+//				target.SetCompact(previous->GetTarget());
+//
 				// limit difficulty transition to -75% or +400%
-				if (timespan < targetTimeSpan / 4) timespan = uint32_t(targetTimeSpan) / 4;
-				if (timespan > targetTimeSpan * 4) timespan = uint32_t(targetTimeSpan) * 4;
+//				if (timespan < targetTimeSpan / 4) timespan = uint32_t(targetTimeSpan) / 4;
+//				if (timespan > targetTimeSpan * 4) timespan = uint32_t(targetTimeSpan) * 4;
 
 				// TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
 				// lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
-				target *= timespan;
-				target /= targetTimeSpan;
+//				target *= timespan;
+//				target /= targetTimeSpan;
 
-				uint32_t actualTargetCompact = target.GetCompact();
-				if (block->GetTarget() != actualTargetCompact) r = 0;
-			} else if (r && previous->GetHeight() != 0 && block->GetTarget() != previous->GetTarget()) r = 0;
-
+//				uint32_t actualTargetCompact = target.GetCompact();
+//				if (block->GetTarget() != actualTargetCompact) r = 0;
+//			} else if (r && previous->GetHeight() != 0 && block->GetTarget() != previous->GetTarget()) r = 0;
+//
 			return r;
 		}
 
@@ -656,52 +652,51 @@ namespace Elastos {
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
-			UInt168 hash;
+			bytes_t hash;
 
 			if (voteDepositAddress.Valid()) {
-				hash = voteDepositAddress.ProgramHash();
-				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
-					filter->InsertData(hash.u8, sizeof(hash));
+				hash = voteDepositAddress.ProgramHash().bytes();
+				if (!filter->ContainsData(hash)) {
+					filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				hash = addrs[i].ProgramHash();
+				hash = addrs[i].ProgramHash().bytes();
 
-				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
-					filter->InsertData(hash.u8, sizeof(hash));
+				if (addrs[i].Valid() && !filter->ContainsData(hash)) {
+					filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < _wallet->GetListeningAddrs().size(); ++i) {
-				hash = Address(_wallet->GetListeningAddrs()[i]).ProgramHash();
+				hash = Address(_wallet->GetListeningAddrs()[i]).ProgramHash().bytes();
 
-				if (!filter->ContainsData(hash.u8, sizeof(hash))) {
-					filter->InsertData(hash.u8, sizeof(hash));
+				if (!filter->ContainsData(hash)) {
+					filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
-				CMBlock o(sizeof(UInt256) + sizeof(uint32_t));
+				bytes_t o = utxos[i].hash.bytes();
+				o.append(utxos[i].n);
 
-				UInt256Set(o, utxos[i].hash);
-				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-				if (!filter->ContainsData(o, o.GetSize()))
-					filter->InsertData(o, o.GetSize());
+				if (!filter->ContainsData(o))
+					filter->InsertData(o);
 			}
 
 			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
 				for (size_t j = 0; j < transactions[i]->GetInputs().size(); j++) {
 					const TransactionInput &input = transactions[i]->GetInputs()[j];
 					const TransactionPtr &tx = _wallet->TransactionForHash(input.GetTransctionHash());
-					CMBlock o(sizeof(UInt256) + sizeof(uint32_t));
 
 					if (tx && input.GetIndex() < tx->GetOutputs().size() &&
 						_wallet->ContainsAddress(tx->GetOutputs()[input.GetIndex()].GetAddress())) {
-						UInt256Set(o, input.GetTransctionHash());
-						UInt32SetLE(&o[sizeof(UInt256)], input.GetIndex());
-						if (!filter->ContainsData(o, o.GetSize()))
-							filter->InsertData(o, o.GetSize());
+
+						bytes_t o = input.GetTransctionHash().bytes();
+						o.append(input.GetIndex());
+						if (!filter->ContainsData(o))
+							filter->InsertData(o);
 					}
 				}
 			}
@@ -732,17 +727,17 @@ namespace Elastos {
 					_peers.push_back(_fiexedPeers[i]);
 					_peers[i].Timestamp = now;
 				}
-			} else if (!UInt128IsZero(&_fixedPeer.Address)) {
+			} else if (_fixedPeer.Address != 0) {
 				_peers.push_back(_fixedPeer);
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
 			} else {
-				std::vector<UInt128> addrList;
+				std::vector<uint128> addrList;
 				const std::vector<std::string> &dnsSeeds = _chainParams.GetDNSSeeds();
 				for (size_t i = 0; i < dnsSeeds.size(); i++) {
 					addrList = AddressLookup(dnsSeeds[i]);
-					for (std::vector<UInt128>::iterator addr = addrList.begin();
-						 addr != addrList.end() && !UInt128IsZero(&(*addr)); addr++) {
+					for (std::vector<uint128>::iterator addr = addrList.begin();
+						 addr != addrList.end() && (*addr) != 0; addr++) {
 						_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
 					}
 				}
@@ -815,10 +810,10 @@ namespace Elastos {
 			PeerPtr peer = peerPtr;
 
 			{
-				std::vector<UInt256> recoverHashes;
+				std::vector<uint256> recoverHashes;
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
 					if (!_publishedTx[i - 1].HasCallback()) {
-						peer->info("recover tx {} to known tx list of peer", Utils::UInt256ToString(_publishedTxHashes[i - 1], true));
+						peer->info("recover tx {} to known tx list of peer", _publishedTxHashes[i - 1].GetHex());
 						recoverHashes.push_back(_publishedTxHashes[i - 1]);
 					}
 				}
@@ -894,9 +889,9 @@ namespace Elastos {
 					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
 					// we do not reset connect failure count yet incase this request times out
 //					if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
-						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), UINT256_ZERO));
+						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), uint256()));
 //					} else {
-//						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), UINT256_ZERO));
+//						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), uint256_ZERO));
 //					}
 				} else { // we're already synced
 					_connectFailureCount = 0; // reset connect failure count
@@ -1067,10 +1062,10 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("relayed tx: {}", Utils::UInt256ToString(tx->GetHash(), true));
+				peer->info("relayed tx: {}", tx->GetHash().GetHex());
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
-					if (UInt256Eq(&_publishedTxHashes[i - 1], &tx->GetHash())) {
+					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
 						pubTx = _publishedTx[i - 1];
 						_publishedTx[i - 1].ResetCallback();
 						relayCount = AddPeerToList(peer, tx->GetHash(), _txRelays);
@@ -1114,13 +1109,13 @@ namespace Elastos {
 						std::vector<Address> externalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 						std::vector<Address> internalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
-						UInt168 hash;
+						bytes_t hash;
 
 						for (std::vector<Address>::iterator externalIt = externalAddrs.begin(), internalIt = internalAddrs.begin();
 							 externalIt != externalAddrs.end() || internalIt != internalAddrs.end();) {
 							if (externalIt != externalAddrs.end()) {
-								hash = (*externalIt).ProgramHash();
-								if (!_bloomFilter->ContainsData(hash.u8, sizeof(hash))) {
+								hash = (*externalIt).ProgramHash().bytes();
+								if (!_bloomFilter->ContainsData(hash)) {
 									_bloomFilter.reset();
 									UpdateBloomFilter();
 									break;
@@ -1129,8 +1124,8 @@ namespace Elastos {
 							}
 
 							if (internalIt != internalAddrs.end()) {
-								hash = (*internalIt).ProgramHash();
-								if (!_bloomFilter->ContainsData(hash.u8, sizeof(hash))) {
+								hash = (*internalIt).ProgramHash().bytes();
+								if (!_bloomFilter->ContainsData(hash)) {
 									_bloomFilter.reset();
 									UpdateBloomFilter();
 									break;
@@ -1151,7 +1146,7 @@ namespace Elastos {
 			if (pubTx.HasCallback()) pubTx.FireCallback(0, "success");
 		}
 
-		void PeerManager::OnHasTx(const PeerPtr &peer, const UInt256 &txHash) {
+		void PeerManager::OnHasTx(const PeerPtr &peer, const uint256 &txHash) {
 			int isWalletTx = 0, hasPendingCallbacks = 0;
 			size_t relayCount = 0;
 			PublishedTransaction pubTx;
@@ -1159,10 +1154,10 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
-				peer->info("has tx: {}", Utils::UInt256ToString(txHash, true));
+				peer->info("has tx: {}", txHash.GetHex());
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
-					if (UInt256Eq(&(_publishedTxHashes[i - 1]), &txHash)) {
+					if (_publishedTxHashes[i - 1] == txHash) {
 						if (!tx) tx = _publishedTx[i - 1].GetTransaction();
 						pubTx = _publishedTx[i - 1];
 						_publishedTx[i - 1].ResetCallback();
@@ -1192,7 +1187,7 @@ namespace Elastos {
 					// set timestamp when tx is verified
 					if (relayCount >= _maxConnectCount && tx && tx->GetBlockHeight() == TX_UNCONFIRMED &&
 						tx->GetTimestamp() == 0) {
-						std::vector<UInt256> hashes = {txHash};
+						std::vector<uint256> hashes = {txHash};
 						_wallet->UpdateTransactions(hashes, TX_UNCONFIRMED, (uint32_t) time(NULL));
 					}
 
@@ -1204,17 +1199,17 @@ namespace Elastos {
 			_wallet->UpdateBalance();
 		}
 
-		void PeerManager::OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason) {
+		void PeerManager::OnRejectedTx(const PeerPtr &peer, const uint256 &txHash, uint8_t code, const std::string &reason) {
 
 			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("rejected tx: {}", Utils::UInt256ToString(txHash, true));
+				peer->info("rejected tx: {}", txHash.GetHex());
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
 				RemovePeerFromList(peer, txHash, _txRequests);
 
 				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
-					if (UInt256Eq(&_publishedTxHashes[i - 1], &(tx->GetHash()))) {
+					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
 						pubTx = _publishedTx[i - 1];
 						if (code != 0x12) {
 							_publishedTx[i - 1].ResetCallback();
@@ -1260,7 +1255,7 @@ namespace Elastos {
 			MerkleBlockPtr b, b2, prev, next;
 			uint32_t txTime = 0;
 			std::vector<MerkleBlockPtr> saveBlocks;
-			std::vector<UInt256> txHashes;
+			std::vector<uint256> txHashes;
 			block->MerkleBlockTxHashes(txHashes);
 
 			{
@@ -1310,9 +1305,9 @@ namespace Elastos {
 					}
 				} else if (!prev) { // block is an orphan
 					peer->info("relayed orphan block {}, previous {}, last block is {}, height {}",
-							   Utils::UInt256ToString(block->GetHash(), true),
-							   Utils::UInt256ToString(block->GetPrevBlockHash(), true),
-							   Utils::UInt256ToString(_lastBlock->GetHash(), true),
+							   block->GetHash().GetHex(),
+							   block->GetPrevBlockHash().GetHex(),
+							   _lastBlock->GetHash().GetHex(),
 							   _lastBlock->GetHeight());
 
 					if (block->GetHeight() + 7 * 24 * 60 * 60 <
@@ -1322,7 +1317,7 @@ namespace Elastos {
 						if (_lastBlock->GetHeight() >= peer->GetLastBlock() &&
 							(!_lastOrphan || !_lastOrphan->IsEqual(block.get()))) {
 							peer->info("calling getblocks");
-							GetBlocksParameter getBlocksParameter(GetBlockLocators(), UINT256_ZERO);
+							GetBlocksParameter getBlocksParameter(GetBlockLocators(), uint256());
 							peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 						}
 
@@ -1333,8 +1328,7 @@ namespace Elastos {
 				} else if (!VerifyBlock(block, prev, peer)) { // block is invalid
 					peer->warn("relayed invalid block");
 					PeerMisbehaving(peer);
-				} else if (UInt256Eq(&block->GetPrevBlockHash(),
-									 &_lastBlock->GetHash())) { // new block extends main chain
+				} else if (block->GetPrevBlockHash() == _lastBlock->GetHash()) { // new block extends main chain
 					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->GetHeight() >= peer->GetLastBlock()) {
 						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
@@ -1400,7 +1394,7 @@ namespace Elastos {
 					_lastOrphan = block;
 				} else if (block->GetHeight() <= _chainParams.GetLastCheckpoint().GetHeight()) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
-							   block->GetHeight(), Utils::UInt256ToString(block->GetHash(), true));
+							   block->GetHeight(), block->GetHash().GetHex());
 				} else { // new block is on a fork
 					peer->warn("chain fork reached height {}", block->GetHeight());
 					_blocks.Insert(block);
@@ -1451,9 +1445,9 @@ namespace Elastos {
 					if (block->GetHeight() > _estimatedHeight) _estimatedHeight = block->GetHeight();
 
 					// check if the next block was received as an orphan
-					UInt256 prevBlockHash = block->GetHash();
+					uint256 prevBlockHash = block->GetHash();
 					for (std::set<MerkleBlockPtr>::iterator it = _orphans.begin(); it != _orphans.end(); ++it) {
-						if (UInt256Eq(&(*it)->GetPrevBlockHash(), &prevBlockHash)) {
+						if ((*it)->GetPrevBlockHash() == prevBlockHash) {
 							next = *it;
 							_orphans.erase(it);
 							break;
@@ -1500,8 +1494,8 @@ namespace Elastos {
 			FireSyncIsInactive(_reconnectSeconds);
 		}
 
-		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
-									 const std::vector<UInt256> &blockHashes) {
+		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
+									 const std::vector<uint256> &blockHashes) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			for (size_t i = 0; i < txHashes.size(); i++) {
 				RemovePeerFromList(peer, txHashes[i], _txRelays);
@@ -1529,14 +1523,14 @@ namespace Elastos {
 			}
 		}
 
-		const TransactionPtr &PeerManager::OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) {
+		const TransactionPtr &PeerManager::OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) {
 			int hasPendingCallbacks = 0, error = 0;
 			PublishedTransaction pubTx;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
-					if (UInt256Eq(&_publishedTxHashes[i - 1], &txHash)) {
+					if (_publishedTxHashes[i - 1] == txHash) {
 						pubTx = _publishedTx[i - 1];
 //						_publishedTx[i - 1].ResetCallback();
 					} else if (_publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
@@ -1585,8 +1579,8 @@ namespace Elastos {
 			return publishedTx;
 		}
 
-		const std::vector<UInt256> PeerManager::GetPublishedTransactionHashes() const {
-			std::vector<UInt256> publishedTxHashes;
+		const std::vector<uint256> PeerManager::GetPublishedTransactionHashes() const {
+			std::vector<uint256> publishedTxHashes;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				publishedTxHashes = _publishedTxHashes;
@@ -1604,9 +1598,9 @@ namespace Elastos {
 		}
 
 		size_t
-		PeerManager::AddPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &list) {
+		PeerManager::AddPeerToList(const PeerPtr &peer, const uint256 &txHash, std::vector<TransactionPeerList> &list) {
 			for (size_t i = list.size(); i > 0; i--) {
-				if (!UInt256Eq(&list[i - 1].GetTransactionHash(), &txHash)) continue;
+				if (list[i - 1].GetTransactionHash() != txHash) continue;
 
 				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
 					if (list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get()))
@@ -1621,10 +1615,10 @@ namespace Elastos {
 			return 1;
 		}
 
-		bool PeerManager::RemovePeerFromList(const PeerPtr &peer, const UInt256 &txHash,
+		bool PeerManager::RemovePeerFromList(const PeerPtr &peer, const uint256 &txHash,
 											 std::vector<TransactionPeerList> &list) {
 			for (size_t i = list.size(); i > 0; i--) {
-				if (!UInt256Eq(&list[i - 1].GetTransactionHash(), &txHash)) continue;
+				if (list[i - 1].GetTransactionHash() != txHash) continue;
 
 				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
 					if (!list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) continue;
@@ -1689,7 +1683,7 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			if ((peer->GetFlags() & PEER_FLAG_NEEDSUPDATE) == 0) {
-				peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), UINT256_ZERO));
+				peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), uint256()));
 			}
 		}
 
@@ -1765,25 +1759,24 @@ namespace Elastos {
 			}
 		}
 
-		std::vector<UInt128> PeerManager::AddressLookup(const std::string &hostname) {
+		std::vector<uint128> PeerManager::AddressLookup(const std::string &hostname) {
 			struct addrinfo hints, *servinfo, *p;
-			std::vector<UInt128> addrList;
+			std::vector<uint128> addrList;
 
 			memset(&hints, 0, sizeof(hints));
 			hints.ai_socktype = SOCK_STREAM;
 			hints.ai_family = PF_UNSPEC;
 			if (getaddrinfo(hostname.c_str(), NULL, &hints, &servinfo) == 0) {
 				for (p = servinfo; p != NULL; p = p->ai_next) {
-					UInt128 addr;
-					memset(&addr, 0, sizeof(addr));
+					uint128 addr;
 					char host[INET6_ADDRSTRLEN];
 					if (p->ai_family == AF_INET) {
-						addr.u16[5] = 0xffff;
-						addr.u32[3] = ((struct sockaddr_in *) p->ai_addr)->sin_addr.s_addr;
-						inet_ntop(AF_INET, &addr.u32[3], host, sizeof(host));
+						*(uint16_t *)&addr.begin()[10] = 0xffff;
+						*(uint32_t *)&addr.begin()[12] = ((struct sockaddr_in *) p->ai_addr)->sin_addr.s_addr;
+						inet_ntop(AF_INET, &addr.begin()[12], host, sizeof(host));
 					} else if (p->ai_family == AF_INET6) {
-						addr = *(UInt128 *) &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr;
-						inet_ntop(AF_INET6, &addr, host, sizeof(host));
+						memcpy(addr.begin(), &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr, addr.size());
+						inet_ntop(AF_INET6, addr.begin(), host, sizeof(host));
 					}
 					Log::debug("{} {} -> {}", GetID(), hostname, host);
 					addrList.push_back(addr);
@@ -1799,14 +1792,14 @@ namespace Elastos {
 		bool PeerManager::VerifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer) {
 			bool r = true;
 
-			if (!prev || !UInt256Eq(&block->GetPrevBlockHash(), &prev->GetHash()) ||
+			if (!prev || block->GetPrevBlockHash() != prev->GetHash() ||
 				block->GetHeight() != prev->GetHeight() + 1)
 				r = false;
 
 			// check if we hit a difficulty transition, and find previous transition time
 			if (r && (block->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0) {
 				MerkleBlockPtr b = block;
-				UInt256 prevBlock;
+				uint256 prevBlock;
 
 				for (uint32_t i = 0; b && i < BLOCK_DIFFICULTY_INTERVAL; i++) {
 					b = _blocks.Get(b->GetPrevBlockHash());
@@ -1814,7 +1807,7 @@ namespace Elastos {
 
 				if (!b) {
 					peer->warn("missing previous difficulty tansition, can't verify block: {}",
-							   Utils::UInt256ToString(block->GetHash(), true));
+							   block->GetHash().GetHex());
 					r = false;
 				} else prevBlock = b->GetPrevBlockHash();
 
@@ -1831,7 +1824,7 @@ namespace Elastos {
 			//fixme figure out why difficult validation fails occasionally
 			if (0 && VerifyDifficulty(_chainParams, block, _blocks)) {
 				peer->error("relayed block with invalid difficulty target {}, blockHash: {}", block->GetTarget(),
-							Utils::UInt256ToString(block->GetHash()));
+							block->GetHash().GetHex());
 				r = false;
 			}
 
@@ -1841,8 +1834,8 @@ namespace Elastos {
 				// verify blockchain checkpoints
 				if (checkpoint && !block->IsEqual(checkpoint.get())) {
 					peer->warn("relayed a block that differs from the checkpoint at height {}, blockHash: {}, "
-							   "expected: {}", block->GetHeight(), Utils::UInt256ToString(block->GetHash(), true),
-							   Utils::UInt256ToString(checkpoint->GetHash(), true));
+							   "expected: {}", block->GetHeight(), block->GetHash().GetHex(),
+							   checkpoint->GetHash().GetHex());
 					r = false;
 				}
 			}
@@ -1850,13 +1843,13 @@ namespace Elastos {
 			return r;
 		}
 
-		std::vector<UInt256> PeerManager::GetBlockLocators() {
+		std::vector<uint256> PeerManager::GetBlockLocators() {
 			// append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
 			// finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
 			MerkleBlockPtr block = _lastBlock;
 			int32_t step = 1, i = 0, j;
 
-			std::vector<UInt256> locators;
+			std::vector<uint256> locators;
 			while (block != nullptr && block->GetHeight() > 0) {
 				locators.push_back(block->GetHash());
 				if (++i >= 10) step *= 2;
@@ -1921,7 +1914,7 @@ namespace Elastos {
 
 		void PeerManager::ResendUnconfirmedTx(const PeerPtr &peer) {
 			std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
-			std::vector<UInt256> txHashes;
+			std::vector<uint256> txHashes;
 
 			for (size_t i = 0; i < tx.size(); i++) {
 				if (!PeerListHasPeer(_txRelays, tx[i]->GetHash(), peer) &&
@@ -1951,7 +1944,7 @@ namespace Elastos {
 
 		void PeerManager::RequestUnrelayedTx(const PeerPtr &peer) {
 			std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
-			std::vector<UInt256> txHashes;
+			std::vector<uint256> txHashes;
 
 			for (size_t i = 0; i < tx.size(); i++) {
 				if (!PeerListHasPeer(_txRelays, tx[i]->GetHash(), peer) &&
@@ -1974,10 +1967,10 @@ namespace Elastos {
 			} else peer->SetFlags(peer->GetFlags() | PEER_FLAG_SYNCED);
 		}
 
-		bool PeerManager::PeerListHasPeer(const std::vector<TransactionPeerList> &peerList, const UInt256 &txhash,
+		bool PeerManager::PeerListHasPeer(const std::vector<TransactionPeerList> &peerList, const uint256 &txhash,
 										  const PeerPtr &peer) {
 			for (size_t i = peerList.size(); i > 0; i--) {
-				if (!UInt256Eq(&peerList[i - 1].GetTransactionHash(), &txhash)) continue;
+				if (peerList[i - 1].GetTransactionHash() != txhash) continue;
 
 				for (size_t j = peerList[i - 1].GetPeers().size(); j > 0; j--) {
 					if (peerList[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) return true;
@@ -2008,7 +2001,7 @@ namespace Elastos {
 			// don't remove transactions until we're connected to maxConnectCount peers, and all peers have finished
 			// relaying their mempools
 			if (count >= _maxConnectCount) {
-				UInt256 hash;
+				uint256 hash;
 				std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
 
 				for (size_t i = tx.size(); i > 0; i--) {
@@ -2023,8 +2016,7 @@ namespace Elastos {
 
 					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
 						PeerListCount(_txRequests, hash) == 0) {
-						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(),
-								   Utils::UInt256ToString(hash, true));
+						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
 						assert(tx[i - 1]->GetBlockHeight() == TX_UNCONFIRMED);
 						_wallet->RemoveTransaction(hash);
 					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
@@ -2035,9 +2027,9 @@ namespace Elastos {
 			}
 		}
 
-		size_t PeerManager::PeerListCount(const std::vector<TransactionPeerList> &list, const UInt256 &txhash) {
+		size_t PeerManager::PeerListCount(const std::vector<TransactionPeerList> &list, const uint256 &txhash) {
 			for (size_t i = list.size(); i > 0; i--) {
-				if (UInt256Eq(&list[i - 1].GetTransactionHash(), &txhash)) return list[i - 1].GetPeers().size();
+				if (list[i - 1].GetTransactionHash() == txhash) return list[i - 1].GetPeers().size();
 			}
 
 			return 0;

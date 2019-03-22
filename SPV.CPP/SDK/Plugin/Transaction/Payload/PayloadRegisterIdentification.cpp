@@ -31,16 +31,16 @@ namespace Elastos {
 			_id = id;
 		}
 
-		const CMBlock &PayloadRegisterIdentification::GetSign() const {
+		const bytes_t &PayloadRegisterIdentification::GetSign() const {
 			return _sign;
 		}
 
-		void PayloadRegisterIdentification::SetSign(const CMBlock &sign) {
+		void PayloadRegisterIdentification::SetSign(const bytes_t &sign) {
 			_sign = sign;
 		}
 
 		bool PayloadRegisterIdentification::IsValid() const {
-			if (_id.empty() || _contents.empty() || _sign.GetSize() <= 0) {
+			if (_id.empty() || _contents.empty() || _sign.size() <= 0) {
 				return false;
 			}
 			return true;
@@ -54,20 +54,20 @@ namespace Elastos {
 			ostream.WriteVarString(_id);
 			ostream.WriteVarBytes(_sign);
 
-			ostream.writeVarUint(_contents.size());
+			ostream.WriteVarUint(_contents.size());
 			for (size_t i = 0; i < _contents.size(); ++i) {
 				ostream.WriteVarString(_contents[i].Path);
 
-				ostream.writeVarUint(_contents[i].Values.size());
+				ostream.WriteVarUint(_contents[i].Values.size());
 				for (size_t j = 0; j < _contents[i].Values.size(); ++j) {
-					ostream.WriteBytes(_contents[i].Values[j].DataHash.u8, sizeof(_contents[i].Values[j].DataHash));
+					ostream.WriteBytes(_contents[i].Values[j].DataHash);
 					ostream.WriteVarString(_contents[i].Values[j].Proof);
 					ostream.WriteVarString(_contents[i].Values[j].Info);
 				}
 			}
 		}
 
-		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadRegisterIdentification::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarString(_id)) {
 				Log::error("Payload register identification deserialize id fail");
 				return false;
@@ -79,7 +79,7 @@ namespace Elastos {
 			}
 
 			uint64_t size;
-			if (!istream.readVarUint(size)) {
+			if (!istream.ReadVarUint(size)) {
 				Log::error("Payload register identification deserialize content size fail");
 				return false;
 			}
@@ -94,7 +94,7 @@ namespace Elastos {
 				}
 
 				uint64_t valueSize;
-				if (!istream.readVarUint(valueSize)) {
+				if (!istream.ReadVarUint(valueSize)) {
 					Log::error("Payload register identification deserialize value size fail");
 					return false;
 				}
@@ -102,7 +102,7 @@ namespace Elastos {
 				for (size_t j = 0; j < valueSize; ++j) {
 					ValueItem value;
 
-					if (!istream.ReadBytes(value.DataHash.u8, sizeof(value.DataHash))) {
+					if (!istream.ReadBytes(value.DataHash)) {
 						Log::error("Payload register identification deserialize data hash fail");
 						return false;
 					}
@@ -128,7 +128,7 @@ namespace Elastos {
 		nlohmann::json PayloadRegisterIdentification::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["Id"] = _id;
-			j["Sign"] = Utils::EncodeHex(_sign);
+			j["Sign"] = _sign.getHex();
 
 			std::vector<nlohmann::json> contents;
 			for (int i = 0; i < _contents.size(); ++i) {
@@ -138,7 +138,7 @@ namespace Elastos {
 				std::vector<nlohmann::json> values;
 				for (int k = 0; k < _contents[i].Values.size(); ++k) {
 					nlohmann::json value;
-					value["DataHash"] = Utils::UInt256ToString(_contents[i].Values[k].DataHash, true);
+					value["DataHash"] = _contents[i].Values[k].DataHash.GetHex();
 					value["Proof"] = _contents[i].Values[k].Proof;
 					value["Info"] = _contents[i].Values[k].Info;
 					values.push_back(value);
@@ -154,7 +154,7 @@ namespace Elastos {
 		void PayloadRegisterIdentification::FromJson(const nlohmann::json &j, uint8_t version) {
 			_id = j["Id"].get<std::string>();
 			if (j.find("Sign") != j.end())
-				_sign = Utils::DecodeHex(j["Sign"].get<std::string>());
+				_sign.setHex(j["Sign"].get<std::string>());
 
 			std::vector<nlohmann::json> contents = j["Contents"];
 			_contents.clear();
@@ -166,7 +166,7 @@ namespace Elastos {
 				std::vector<nlohmann::json> values = contents[i]["Values"];
 				for (int k = 0; k < values.size(); ++k) {
 					ValueItem value;
-					value.DataHash = Utils::UInt256FromString(values[k]["DataHash"].get<std::string>(), true);
+					value.DataHash.SetHex(values[k]["DataHash"].get<std::string>());
 					value.Proof = values[k]["Proof"].get<std::string>();
 					if (values[k].find("Info") != values[k].end())
 						value.Info = values[k]["Info"].get<std::string>();
@@ -189,13 +189,13 @@ namespace Elastos {
 			_contents[index].Path = path;
 		}
 
-		const UInt256 &PayloadRegisterIdentification::GetDataHash(size_t index, size_t valueIndex) const {
+		const uint256 &PayloadRegisterIdentification::GetDataHash(size_t index, size_t valueIndex) const {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Values[valueIndex].DataHash;
 		}
 
-		void PayloadRegisterIdentification::SetDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex) {
+		void PayloadRegisterIdentification::SetDataHash(const uint256 &dataHash, size_t index, size_t valueIndex) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Values[valueIndex].DataHash = dataHash;
@@ -239,7 +239,7 @@ namespace Elastos {
 
 		PayloadRegisterIdentification &PayloadRegisterIdentification::operator=(const PayloadRegisterIdentification &payload) {
 			_id = payload._id;
-			_sign.Memcpy(payload._sign);
+			_sign = payload._sign;
 			_contents = payload._contents;
 
 			return *this;

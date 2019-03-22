@@ -12,8 +12,6 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		PayloadSideMining::PayloadSideMining() :
-			_sideBlockHash(UINT256_ZERO),
-			_sideGenesisHash(UINT256_ZERO),
 			_blockHeight(0) {
 
 		}
@@ -23,9 +21,9 @@ namespace Elastos {
 		}
 
 
-		PayloadSideMining::PayloadSideMining(const UInt256 &sideBlockHash, const UInt256 &sideGensisHash, uint32_t height, const CMBlock &signedData) {
-			UInt256Set(&_sideBlockHash, sideBlockHash);
-			UInt256Set(&_sideGenesisHash, sideGensisHash);
+		PayloadSideMining::PayloadSideMining(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData) {
+			_sideBlockHash = sideBlockHash;
+			_sideGenesisHash = sideGensisHash;
 			_blockHeight = height;
 			_signedData = signedData;
 		}
@@ -34,11 +32,11 @@ namespace Elastos {
 
 		}
 
-		void PayloadSideMining::SetSideBlockHash(const UInt256 &sideBlockHash) {
+		void PayloadSideMining::SetSideBlockHash(const uint256 &sideBlockHash) {
 			_sideBlockHash = sideBlockHash;
 		}
 
-		void PayloadSideMining::SetSideGenesisHash(const UInt256 &sideGensisHash) {
+		void PayloadSideMining::SetSideGenesisHash(const uint256 &sideGensisHash) {
 			_sideGenesisHash = sideGensisHash;
 		}
 
@@ -46,15 +44,15 @@ namespace Elastos {
 			_blockHeight = height;
 		}
 
-		void PayloadSideMining::SetSignedData(const CMBlock &signedData) {
+		void PayloadSideMining::SetSignedData(const bytes_t &signedData) {
 			_signedData = signedData;
 		}
 
-		const UInt256 &PayloadSideMining::GetSideBlockHash() const {
+		const uint256 &PayloadSideMining::GetSideBlockHash() const {
 			return _sideBlockHash;
 		}
 
-		const UInt256 &PayloadSideMining::GetSideGenesisHash() const {
+		const uint256 &PayloadSideMining::GetSideGenesisHash() const {
 			return _sideGenesisHash;
 		}
 
@@ -62,22 +60,22 @@ namespace Elastos {
 			return _blockHeight;
 		}
 
-		const CMBlock &PayloadSideMining::GetSignedData() const {
+		const bytes_t &PayloadSideMining::GetSignedData() const {
 			return _signedData;
 		}
 
 		void PayloadSideMining::Serialize(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_sideBlockHash.u8, sizeof(UInt256));
-			ostream.WriteBytes(_sideGenesisHash.u8, sizeof(UInt256));
+			ostream.WriteBytes(_sideBlockHash);
+			ostream.WriteBytes(_sideGenesisHash);
 			ostream.WriteUint32(_blockHeight);
 			ostream.WriteVarBytes(_signedData);
 		}
 
-		bool PayloadSideMining::Deserialize(ByteStream &istream, uint8_t version) {
-			if (!istream.ReadBytes(_sideBlockHash.u8, sizeof(UInt256)))
+		bool PayloadSideMining::Deserialize(const ByteStream &istream, uint8_t version) {
+			if (!istream.ReadBytes(_sideBlockHash))
 				return false;
 
-			if (!istream.ReadBytes(_sideGenesisHash.u8, sizeof(UInt256)))
+			if (!istream.ReadBytes(_sideGenesisHash))
 				return false;
 
 			if (!istream.ReadUint32(_blockHeight))
@@ -90,19 +88,19 @@ namespace Elastos {
 		nlohmann::json PayloadSideMining::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
-			j["SideBlockHash"] = Utils::UInt256ToString(_sideBlockHash, true);
-			j["SideGenesisHash"] = Utils::UInt256ToString(_sideGenesisHash, true);
+			j["SideBlockHash"] = _sideBlockHash.GetHex();
+			j["SideGenesisHash"] = _sideGenesisHash.GetHex();
 			j["BlockHeight"] = _blockHeight;
-			j["SignedData"] = Utils::EncodeHex(_signedData);
+			j["SignedData"] = _signedData.getHex();
 
 			return j;
 		}
 
 		void PayloadSideMining::FromJson(const nlohmann::json &j, uint8_t version) {
-			_sideBlockHash = Utils::UInt256FromString(j["SideBlockHash"].get<std::string>(), true);
-			_sideGenesisHash = Utils::UInt256FromString(j["SideGenesisHash"].get<std::string>(), true);
+			_sideBlockHash.SetHex(j["SideBlockHash"].get<std::string>());
+			_sideGenesisHash.SetHex(j["SideGenesisHash"].get<std::string>());
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
-			_signedData = Utils::DecodeHex(j["SignedData"].get<std::string>());
+			_signedData.setHex(j["SignedData"].get<std::string>());
 		}
 
 		IPayload &PayloadSideMining::operator=(const IPayload &payload) {
@@ -120,7 +118,7 @@ namespace Elastos {
 			_sideBlockHash = payload._sideBlockHash;
 			_sideGenesisHash = payload._sideGenesisHash;
 			_blockHeight = payload._blockHeight;
-			_signedData.Memcpy(payload._signedData);
+			_signedData = payload._signedData;
 
 			return *this;
 		}

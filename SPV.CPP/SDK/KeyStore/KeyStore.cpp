@@ -7,10 +7,9 @@
 
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Base64.h>
-#include <SDK/Crypto/Crypto.h>
+#include <SDK/Crypto/AES.h>
 #include <SDK/Account/StandardAccount.h>
 #include <SDK/Account/SimpleAccount.h>
 #include <SDK/Account/MultiSignAccount.h>
@@ -62,12 +61,10 @@ namespace Elastos {
 				return false;
 			}
 
-			CMBlock plainText;
-			ErrorChecker::CheckDecrypt(!Crypto::Decrypt(plainText, sjcl.GetCt(), passwd, sjcl.GetSalt(), sjcl.GetIv(),
-														sjcl.GetAdata(), sjcl.GetKs() == 128 ? true : false));
+			bytes_t plaintext = AES::DecryptCCM(sjcl.GetCt(), passwd, sjcl.GetSalt(), sjcl.GetIv(), sjcl.GetAdata(),
+												sjcl.GetKs());
 
-			std::string plainString(plainText, plainText.GetSize());
-			nlohmann::json walletJson = nlohmann::json::parse(plainString);
+			nlohmann::json walletJson = nlohmann::json::parse(std::string((char *)&plaintext[0], plaintext.size()));
 			walletJson >> _walletJson;
 
 			return true;
@@ -86,29 +83,26 @@ namespace Elastos {
 
 		bool KeyStore::Export(nlohmann::json &json, const std::string &passwd) {
 
-			std::string ctBase64;
-
 			nlohmann::json plainJson;
 			plainJson << _walletJson;
 
-			std::string plainString = plainJson.dump();
-			std::string saltBase64, ivBase64;
-			Crypto::GenerateSaltAndIV(saltBase64, ivBase64);
-			std::string adataBase64 = "";
-			bool AES128 = false;
-			Crypto::Encrypt(ctBase64, plainString, passwd, saltBase64, ivBase64, adataBase64, AES128);
+			std::string plaintext = plainJson.dump();
+
+			std::string salt = AES::RandomSalt().getBase64();
+			std::string iv = AES::RandomIV().getBase64();
+			std::string ciphertext = AES::EncryptCCM(bytes_t(plaintext.c_str(), plaintext.size()), passwd, salt, iv);
 
 			SjclFile sjcl;
-			sjcl.SetIv(ivBase64);
+			sjcl.SetIv(iv);
 			sjcl.SetV(1);
-			sjcl.SetIter(10000);
-			sjcl.SetKs(AES128 ? 128 : 256);
+			sjcl.SetIter(AES_DEFAULT_ITER);
+			sjcl.SetKs(AES_DEFAULT_KS);
 			sjcl.SetTs(64);
 			sjcl.SetMode("ccm");
-			sjcl.SetAdata(adataBase64);
+			sjcl.SetAdata("");
 			sjcl.SetCipher("aes");
-			sjcl.SetSalt(saltBase64);
-			sjcl.SetCt(ctBase64);
+			sjcl.SetSalt(salt);
+			sjcl.SetCt(ciphertext);
 
 			json << sjcl;
 
@@ -171,13 +165,15 @@ namespace Elastos {
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(account);
 			if (standardAccount == nullptr) return;
 
-			std::string phrase;
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrase, standardAccount->GetEncryptedMnemonic(), payPassword));
+			bytes_t bytes = AES::DecryptCCM(standardAccount->GetEncryptedMnemonic(), payPassword);
+			std::string phrase = std::string((char *)bytes.data(), bytes.size());
+
 			_walletJson.SetMnemonic(phrase);
 			_walletJson.SetLanguage(standardAccount->GetLanguage());
-			std::string phrasePasswd;
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(phrasePasswd, standardAccount->GetEncryptedPhrasePassword(),
-													   payPassword));
+
+			bytes = AES::DecryptCCM(standardAccount->GetEncryptedPhrasePassword(), payPassword);
+			std::string phrasePasswd = std::string((char *)bytes.data(), bytes.size());
+
 			_walletJson.SetPhrasePassword(phrasePasswd);
 			if (phrasePasswd.empty()) {
 				_walletJson.SetHasPhrasePassword(false);
@@ -190,16 +186,20 @@ namespace Elastos {
 			SimpleAccount *simpleAccount = dynamic_cast<SimpleAccount *>(account);
 			if (simpleAccount == nullptr) return;
 
-			CMBlock privKey;
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(privKey, simpleAccount->GetEncryptedKey(), payPassword));
-			_walletJson.SetPrivateKey(Utils::EncodeHex(privKey));
+			bytes_t prvkey = AES::DecryptCCM(simpleAccount->GetEncryptedKey(), payPassword);
+			_walletJson.SetPrivateKey(prvkey.getHex());
 		}
 
 		void KeyStore::InitMultiSignAccount(IAccount *account, const std::string &payPassword) {
 			MultiSignAccount *multiSignAccount = dynamic_cast<MultiSignAccount *>(account);
 			if (multiSignAccount == nullptr) return;
 
-			_walletJson.SetCoSigners(multiSignAccount->GetCoSigners());
+			const std::vector<bytes_t> &coSigners = multiSignAccount->GetCoSigners();
+			std::vector<std::string> signers;
+			for (size_t i = 0; i < coSigners.size(); ++i)
+				signers.push_back(coSigners[i].getHex());
+
+			_walletJson.SetCoSigners(signers);
 			_walletJson.SetRequiredSignCount(multiSignAccount->GetRequiredSignCount());
 
 			if (multiSignAccount->GetInnerAccount() != nullptr)

@@ -15,8 +15,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		typedef std::map<std::string, MasterPubKeyPtr> MasterPubKeyMap;
-		typedef std::map<std::string, CMBlock> VotePubKeyMap;
+		typedef std::map<std::string, HDKeychain> MasterPubKeyMap;
+		typedef std::map<std::string, bytes_t> VotePubKeyMap;
 
 		class MasterWalletStore {
 		public:
@@ -40,7 +40,7 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList);
 
-			MasterPubKeyPtr GetMasterPubKey(const std::string &chainID) const;
+			HDKeychain GetMasterPubKey(const std::string &chainID) const;
 
 			const MasterPubKeyMap &GetMasterPubKeyMap() const;
 
@@ -48,7 +48,7 @@ namespace Elastos {
 
 			const VotePubKeyMap &GetVotePublicKeyMap() const;
 
-			CMBlock GetVotePublicKey(const std::string &chainID) const;
+			bytes_t GetVotePublicKey(const std::string &chainID) const;
 
 			void SetVotePublicKeyMap(const VotePubKeyMap &publicKey);
 

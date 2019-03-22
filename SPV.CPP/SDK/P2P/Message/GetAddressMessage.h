@@ -14,7 +14,7 @@ namespace Elastos {
 		public:
 			explicit GetAddressMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const CMBlock &msg);
+			virtual bool Accept(const bytes_t &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

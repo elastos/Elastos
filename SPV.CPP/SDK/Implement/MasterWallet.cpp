@@ -9,12 +9,12 @@
 #include "MasterWallet.h"
 
 #include <SDK/Account/SubAccountGenerator.h>
-#include <SDK/Crypto/MasterPubKey.h>
+#include <SDK/Crypto/AES.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/BIP32Sequence.h>
+#include <SDK/BIPs/Base58.h>
 #include <Config.h>
 
 #include <Core/BRBIP39Mnemonic.h>
@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <boost/filesystem.hpp>
-#include <SDK/Common/Base58.h>
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -146,21 +145,22 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			UInt128 entropy;
+			uint128 entropy;
 			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
 
-			for (size_t i = 0; i < sizeof(entropy); ++i) {
-				entropy.u8[i] = Utils::getRandomByte();
+			for (size_t i = 0; i < entropy.size(); ++i) {
+				entropy.begin()[i] = Utils::getRandomByte();
 			}
+
 			const std::vector<std::string> &words = mnemonic.Words();
 			const char *wordList[words.size()];
 			for (size_t i = 0; i < words.size(); i++) {
 				wordList[i] = words[i].c_str();
 			}
-			size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, entropy.u8, sizeof(entropy));
+			size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, entropy.begin(), entropy.size());
 
 			char phrase[phraselen];
-			BRBIP39Encode(phrase, phraselen, wordList, entropy.u8, sizeof(entropy));
+			BRBIP39Encode(phrase, phraselen, wordList, entropy.begin(), entropy.size());
 
 			return phrase;
 		}
@@ -184,7 +184,7 @@ namespace Elastos {
 			_localStore.Save(path);
 		}
 
-		MasterPubKeyPtr MasterWallet::GetMasterPubKey(const std::string &chainID) const {
+		HDKeychain MasterWallet::GetMasterPubKey(const std::string &chainID) const {
 			return _localStore.GetMasterPubKey(chainID);
 		}
 
@@ -270,7 +270,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
-			return Utils::EncodeHex(_localStore.Account()->GetMultiSignPublicKey());
+			return _localStore.Account()->GetMultiSignPublicKey().getHex();
 		}
 
 		// to support old web keystore
@@ -331,7 +331,8 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 			std::string encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(mnemonic, encryptedMnemonic, payPassword));
+			bytes_t bytes = AES::DecryptCCM(encryptedMnemonic, payPassword);
+			mnemonic = std::string((char *)bytes.data(), bytes.size());
 			return true;
 		}
 
@@ -362,15 +363,15 @@ namespace Elastos {
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 
 			Key key = _localStore.Account()->DeriveMultiSignKey(payPassword);
-			return Utils::EncodeHex(key.Sign(message));
+			return key.Sign(message).getHex();
 		}
 
 		bool MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
 
 			Key key;
-			key.SetPubKey(Utils::DecodeHex(publicKey));
-			return key.Verify(message, Utils::DecodeHex(signature));
+			key.SetPubKey(bytes_t(publicKey));
+			return key.Verify(message, bytes_t(signature));
 		}
 
 		bool MasterWallet::IsIdValid(const std::string &id) {
@@ -394,7 +395,7 @@ namespace Elastos {
 				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			}
 
-			std::vector<UInt256> visibleAssets;
+			std::vector<uint256> visibleAssets;
 			visibleAssets.push_back(Asset::GetELAAssetID());
 			fixedInfo.SetVisibleAssets(visibleAssets);
 
@@ -418,7 +419,7 @@ namespace Elastos {
 
 		std::string
 		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
-			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
+			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index).String();
 		}
 
 		nlohmann::json
@@ -431,11 +432,11 @@ namespace Elastos {
 			payload.Serialize(ostream, 0);
 
 			nlohmann::json j;
-			CMBlock signedData = _idAgentImpl->Sign(id, ostream.GetBuffer(), password);
+			bytes_t signedData = _idAgentImpl->Sign(id, ostream.GetBytes(), password);
 
-			ostream.SetPosition(0);
+			ostream.Reset();
 			ostream.WriteVarBytes(signedData);
-			j["Parameter"] = Utils::EncodeHex(ostream.GetBuffer());
+			j["Parameter"] = ostream.GetBytes().getHex();
 			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
 			return j;
 		}
@@ -456,7 +457,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey(const std::string &id) const {
-			return _idAgentImpl->GetPublicKey(id);
+			return _idAgentImpl->GetPublicKey(id).getHex();
 		}
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
@@ -470,18 +471,7 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) const {
-			CMBlock programHash = Base58::CheckDecode(address);
-			if (programHash.GetSize() == 21) {
-				if (programHash[0] == PrefixStandard ||
-					programHash[0] == PrefixCrossChain ||
-					programHash[0] == PrefixMultiSign ||
-					programHash[0] == PrefixIDChain ||
-					programHash[0] == PrefixDeposit ||
-					programHash[0] == PrefixDestroy)
-					return true;
-			}
-
-			return false;
+			return Address(address).Valid();
 		}
 
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
@@ -514,7 +504,7 @@ namespace Elastos {
 								  votePubKeyMap[item.first] = SubAccountGenerator::GenerateVotePubKey(
 									  _localStore.Account(), item.second, payPassword);
 							  } else {
-								  votePubKeyMap[item.first] = CMBlock();
+								  votePubKeyMap[item.first] = bytes_t();
 							  }
 						  });
 			_localStore.SetMasterPubKeyMap(subWalletsPubKeyMap);

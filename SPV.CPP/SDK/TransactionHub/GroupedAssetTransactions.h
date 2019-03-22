@@ -7,7 +7,6 @@
 
 #include <SDK/TransactionHub/UTXOList.h>
 #include <SDK/Common/ElementSet.h>
-#include <SDK/Common/UInt256ValueSet.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Account/ISubAccount.h>
@@ -33,7 +32,7 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				virtual void balanceChanged(const UInt256 &asset, uint64_t balance) = 0;
+				virtual void balanceChanged(const uint256 &asset, uint64_t balance) = 0;
 
 				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
@@ -58,9 +57,9 @@ namespace Elastos {
 
 			bool Exist(const TransactionPtr &tx);
 
-			bool Exist(const UInt256 &hash);
+			bool Exist(const uint256 &hash);
 
-			const TransactionPtr GetExistTransaction(const UInt256 &hash) const;
+			const TransactionPtr GetExistTransaction(const uint256 &hash) const;
 
 			void SortTransaction();
 
@@ -96,27 +95,22 @@ namespace Elastos {
 
 			bool RegisterTransaction(const TransactionPtr &tx);
 
-			void RemoveTransaction(const UInt256 &txHash);
+			void RemoveTransaction(const uint256 &txHash);
 
 			uint64_t AmountSentByTx(const TransactionPtr &tx);
 
 			bool WalletContainsTx(const TransactionPtr &tx);
 
-			void UpdateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
 		protected:
-			void balanceChanged(const UInt256 &asset, uint64_t balance);
+			void balanceChanged(const uint256 &asset, uint64_t balance);
 
 			void txAdded(const TransactionPtr &tx);
 
-			void txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void txUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
-			void txDeleted(const UInt256 &txHash, const UInt256 &assetID, bool notifyUser, bool recommendRescan);
-
-		private:
-			uint64_t getMinOutputAmount();
-
-			uint64_t getMaxOutputAmount();
+			void txDeleted(const uint256 &txHash, const uint256 &assetID, bool notifyUser, bool recommendRescan);
 
 		private:
 			typedef ElementSet<TransactionPtr> TransactionSet;
@@ -145,42 +139,42 @@ namespace Elastos {
 
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
 
-			std::vector<TransactionPtr> GetTransactions(const UInt256 &assetID) const;
+			std::vector<TransactionPtr> GetTransactions(const uint256 &assetID) const;
 
 			std::vector<TransactionPtr> GetAllTransactions() const;
 
-			const std::vector<UTXO> &GetUTXOs(const UInt256 &assetID) const;
+			const std::vector<UTXO> &GetUTXOs(const uint256 &assetID) const;
 
-			const std::vector<UTXO> GetAllUTXOs() const;
+			std::vector<UTXO> GetAllUTXOs() const;
 
 			void Append(const TransactionPtr &transaction);
 
 			bool Empty() const;
 
-			void ForEach(const boost::function<void(const UInt256 &, const AssetTransactionsPtr &)> &fun);
+			void ForEach(const boost::function<void(const uint256 &, const AssetTransactionsPtr &)> &fun);
 
 			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
 
 			void UpdateAssets(const std::vector<Asset> &assetArray);
 
-			AssetTransactionsPtr &operator[](const UInt256 &assetID);
+			AssetTransactionsPtr &operator[](const uint256 &assetID);
 
-			const AssetTransactionsPtr &Get(const UInt256 &assetID) const;
+			const AssetTransactionsPtr &Get(const uint256 &assetID) const;
 
 			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs, const Address &fromAddress,
 										  uint64_t fee, bool useVotedUTXO);
 
 			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress);
 
-			TransactionPtr TransactionForHash(const UInt256 &transactionHash);
+			TransactionPtr TransactionForHash(const uint256 &txHash);
 
-			TransactionPtr TransactionForHash(const UInt256 &transactionHash, const UInt256 &assetID);
+			TransactionPtr TransactionForHash(const uint256 &transactionHash, const uint256 &assetID);
 
 			bool RegisterTransaction(const TransactionPtr &tx);
 
-			void RemoveTransaction(const UInt256 &txHash);
+			void RemoveTransaction(const uint256 &txHash);
 
-			void UpdateTransactions(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
 			void SetTxUnconfirmedAfter(uint32_t blockHeight);
 
@@ -194,17 +188,17 @@ namespace Elastos {
 
 			bool ContainsAsset(const std::string &assetID);
 
-			bool ContainsAsset(const UInt256 &assetID);
+			bool ContainsAsset(const uint256 &assetID);
 
 			uint32_t GetBlockHeight() const;
 
 			void SetBlockHeight(uint32_t height);
 
 		private:
-			UInt256 GetUniqueAssetID(const std::vector<TransactionOutput> &outputs) const;
+			uint256 GetUniqueAssetID(const std::vector<TransactionOutput> &outputs) const;
 
 		private:
-			typedef UInt256ValueMap<AssetTransactionsPtr> AssetTransactionMap;
+			typedef std::map<uint256, AssetTransactionsPtr> AssetTransactionMap;
 			mutable AssetTransactionMap _groupedTransactions;
 
 			uint32_t _blockHeight;

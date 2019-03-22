@@ -6,9 +6,8 @@
 #define __ELASTOS_SDK_IACCOUNT_H__
 
 
-#include <SDK/Crypto/Key.h>
-#include <SDK/Crypto/MasterPubKey.h>
-#include <SDK/Base/Address.h>
+#include <SDK/BIPs/Key.h>
+#include <SDK/BIPs/Address.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,7 +23,7 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword) = 0;
+			virtual uint512 DeriveSeed(const std::string &payPassword) = 0;
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword) = 0;
 
@@ -44,9 +43,9 @@ namespace Elastos {
 
 			virtual const std::string &GetEncryptedPhrasePassword() const = 0;
 
-			virtual CMBlock GetMultiSignPublicKey() const = 0;
+			virtual bytes_t GetMultiSignPublicKey() const = 0;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
+			virtual const HDKeychain &GetIDMasterPubKey() const = 0;
 
 			virtual Address GetAddress() const = 0;
 		};

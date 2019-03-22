@@ -14,7 +14,7 @@ namespace Elastos {
 		public:
 			PayloadRecord();
 
-			PayloadRecord(const std::string &recordType, const CMBlock &recordData);
+			PayloadRecord(const std::string &recordType, const bytes_t &recordData);
 
 			PayloadRecord(const PayloadRecord &payload);
 
@@ -22,15 +22,15 @@ namespace Elastos {
 
 			void SetRecordType(const std::string &recordType);
 
-			void SetRecordData(const CMBlock &recordData);
+			void SetRecordData(const bytes_t &recordData);
 
 			std::string GetRecordType() const;
 
-			CMBlock GetRecordData() const;
+			bytes_t GetRecordData() const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -42,7 +42,7 @@ namespace Elastos {
 
 		private:
 			std::string _recordType;
-			CMBlock _recordData;
+			bytes_t _recordData;
 		};
 	}
 }

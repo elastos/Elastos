@@ -16,9 +16,9 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 	SECTION("Serialize and deserialize") {
 		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<CMBlock> candidates;
+			std::vector<bytes_t> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandCMBlock(33));
+				candidates.push_back(getRandBytes(33));
 			}
 			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
@@ -27,7 +27,6 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		ByteStream stream;
 		p1.Serialize(stream);
 
-		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream));
 
 		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
@@ -45,9 +44,9 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 	SECTION("to json and from json") {
 		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<CMBlock> candidates;
+			std::vector<bytes_t> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandCMBlock(33));
+				candidates.push_back(getRandBytes(33));
 			}
 			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
@@ -71,9 +70,9 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 	SECTION("operator= test") {
 		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<CMBlock> candidates;
+			std::vector<bytes_t> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandCMBlock(33));
+				candidates.push_back(getRandBytes(33));
 			}
 			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}
@@ -96,9 +95,9 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 	SECTION("copy construct test") {
 		std::vector<PayloadVote::VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<CMBlock> candidates;
+			std::vector<bytes_t> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandCMBlock(33));
+				candidates.push_back(getRandBytes(33));
 			}
 			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
 		}

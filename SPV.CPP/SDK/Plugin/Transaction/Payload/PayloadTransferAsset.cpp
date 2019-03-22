@@ -24,7 +24,7 @@ namespace Elastos {
 
 		}
 
-		bool PayloadTransferAsset::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadTransferAsset::Deserialize(const ByteStream &istream, uint8_t version) {
 			return true;
 		}
 

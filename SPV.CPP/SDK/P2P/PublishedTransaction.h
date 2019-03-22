@@ -12,7 +12,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		typedef boost::function<void(const UInt256 &, int, const std::string &)> PublishedTxCallback;
+		typedef boost::function<void(const uint256 &, int, const std::string &)> PublishedTxCallback;
 
 		class PublishedTransaction {
 		public:

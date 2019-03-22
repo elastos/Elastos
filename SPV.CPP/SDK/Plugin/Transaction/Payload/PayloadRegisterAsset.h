@@ -7,7 +7,6 @@
 
 #include "IPayload.h"
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -29,13 +28,13 @@ namespace Elastos {
 
 			uint64_t GetAmount() const;
 
-			void SetController(const UInt168 &controller);
+			void SetController(const uint168 &controller);
 
-			const UInt168 &GetController() const;
+			const uint168 &GetController() const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -50,7 +49,7 @@ namespace Elastos {
 		private:
 			Asset _asset;
 			uint64_t _amount;
-			UInt168 _controller;
+			uint168 _controller;
 		};
 	}
 }

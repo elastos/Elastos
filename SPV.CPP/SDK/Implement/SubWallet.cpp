@@ -47,9 +47,9 @@ namespace Elastos {
 				generator.SetVotePubKey(_parent->_localStore.GetVotePublicKey(_info.GetChainId()));
 				_subAccount = SubAccountPtr(generator.Generate());
 
-				_info.SetChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));
-				if (generator.GetResultPublicKey().GetSize() > 0)
-					_info.SetPublicKey(Utils::EncodeHex(generator.GetResultPublicKey()));
+				_info.SetChainCode(generator.GetResultChainCode().getHex());
+				if (generator.GetResultPublicKey().size() > 0)
+					_info.SetPublicKey(generator.GetResultPublicKey().getHex());
 			}
 
 			_walletManager = WalletManagerPtr(
@@ -123,7 +123,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
-													uint64_t amount, const UInt256 &assetID, const std::string &memo,
+													uint64_t amount, const uint256 &assetID, const std::string &memo,
 													const std::string &remark, bool useVotedUTXO) const {
 			const WalletPtr &wallet = _walletManager->getWallet();
 			TransactionPtr tx = wallet->CreateTransaction(fromAddress, amount, toAddress, _info.GetMinFee(),
@@ -141,8 +141,8 @@ namespace Elastos {
 
 				if (uniqueAddress.find(addr) == uniqueAddress.end()) {
 					uniqueAddress.insert(addr);
-					CMBlock code = _subAccount->GetRedeemScript(addr);
-					tx->AddProgram(Program(code, CMBlock()));
+					bytes_t code = _subAccount->GetRedeemScript(addr);
+					tx->AddProgram(Program(code, bytes_t()));
 				}
 			}
 
@@ -151,9 +151,9 @@ namespace Elastos {
 			}
 			tx->SetRemark(remark);
 
-			tx->AddAttribute(Attribute(Attribute::Nonce, CMBlock(std::to_string(std::rand()))));
+			tx->AddAttribute(Attribute(Attribute::Nonce, bytes_t(std::to_string(std::rand()))));
 			if (!memo.empty()) {
-				tx->AddAttribute(Attribute(Attribute::Memo, CMBlock(memo)));
+				tx->AddAttribute(Attribute(Attribute::Memo, bytes_t(memo)));
 			}
 
 			return tx;
@@ -195,7 +195,7 @@ namespace Elastos {
 			for (size_t i = 0; i < realCount; ++i) {
 				uint32_t confirms = 0;
 				uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
-				std::string hash = Utils::UInt256ToString(transactions[i]->GetHash(), true);
+				std::string hash = transactions[i]->GetHash().GetHex();
 
 				confirms = transactions[i]->GetConfirms(lastBlockHeight);
 
@@ -213,7 +213,7 @@ namespace Elastos {
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
 
 			Key key = _subAccount->DeriveMultiSignKey(payPassword);
-			return Utils::EncodeHex(key.Sign(message));
+			return key.Sign(message).getHex();
 		}
 
 		bool SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
@@ -226,10 +226,10 @@ namespace Elastos {
 			return std::max(transaction->CalculateFee(feePerKb), _info.GetMinFee());
 		}
 
-		void SubWallet::balanceChanged(const UInt256 &asset, uint64_t balance) {
+		void SubWallet::balanceChanged(const uint256 &asset, uint64_t balance) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&asset, &balance](ISubWalletCallback *callback) {
-							  callback->OnBalanceChanged(Utils::UInt256ToString(asset, true), balance);
+							  callback->OnBalanceChanged(asset.GetHex(), balance);
 						  });
 		}
 
@@ -237,7 +237,7 @@ namespace Elastos {
 			if (transaction == nullptr)
 				return;
 
-			std::string txHash = Utils::UInt256ToString(transaction->GetHash(), true);
+			std::string txHash = transaction->GetHash().GetHex();
 			_confirmingTxs[txHash] = transaction;
 
 			if (transaction->GetTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
@@ -255,8 +255,7 @@ namespace Elastos {
 			}
 
 			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
-				_confirmingTxs[hash] = _walletManager->getWallet()->TransactionForHash(
-					Utils::UInt256FromString(hash, true));
+				_confirmingTxs[hash] = _walletManager->getWallet()->TransactionForHash(uint256(hash));
 			}
 
 			uint32_t txBlockHeight = _confirmingTxs[hash]->GetBlockHeight();
@@ -299,7 +298,7 @@ namespace Elastos {
 			publishTransaction(transaction);
 
 			nlohmann::json j;
-			j["TxHash"] = Utils::UInt256ToString(transaction->GetHash(), true);
+			j["TxHash"] = transaction->GetHash().GetHex();
 			j["Fee"] = transaction->GetFee();
 			return j;
 		}
@@ -339,9 +338,8 @@ namespace Elastos {
 				}
 			}
 
-			if (addressOrTxid.length() == sizeof(UInt256) * 2) {
-				UInt256 Txid = Utils::UInt256FromString(addressOrTxid, true);
-				if (UInt256Eq(&Txid, &transaction->GetHash())) {
+			if (addressOrTxid.length() == 64) {
+				if (uint256(addressOrTxid) == transaction->GetHash()) {
 					return true;
 				}
 			}
@@ -436,7 +434,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetPublicKey() const {
-			return Utils::EncodeHex(_subAccount->GetMultiSignPublicKey());
+			return _subAccount->GetMultiSignPublicKey().getHex();
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {

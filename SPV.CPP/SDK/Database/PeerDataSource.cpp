@@ -6,7 +6,6 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/CMemBlock.h>
 
 #include <sstream>
 
@@ -54,9 +53,7 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 										 "Prepare sql " + ss.str());
 
-			CMBlock addr;
-			addr.SetMemFixed(&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
-			_sqlite->BindBlob(stmt, 1, addr, nullptr);
+			_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr);
 			_sqlite->BindInt(stmt, 2, peerEntity.port);
 			_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp);
 			_sqlite->BindText(stmt, 4, iso, nullptr);
@@ -119,8 +116,9 @@ namespace Elastos {
 					// address
 					const uint8_t *paddr = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = _sqlite->ColumnBytes(stmt, 1);
-					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
-					memcpy(peer.address.u8, paddr, len);
+					assert(len == peer.address.size());
+					len = len <= peer.address.size() ? len : peer.address.size();
+					memcpy(peer.address.begin(), paddr, len);
 
 					// port
 					peer.port = _sqlite->ColumnInt(stmt, 2);

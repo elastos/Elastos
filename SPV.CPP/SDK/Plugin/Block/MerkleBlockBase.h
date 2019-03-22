@@ -21,13 +21,13 @@ namespace Elastos {
 
 			void SetVersion(uint32_t version);
 
-			const UInt256 &GetPrevBlockHash() const;
+			const uint256 &GetPrevBlockHash() const;
 
-			void SetPrevBlockHash(const UInt256 &hash);
+			void SetPrevBlockHash(const uint256 &hash);
 
-			virtual const UInt256 &GetRootBlockHash() const;
+			virtual const uint256 &GetRootBlockHash() const;
 
-			virtual void SetRootBlockHash(const UInt256 &hash);
+			virtual void SetRootBlockHash(const uint256 &hash);
 
 			virtual uint32_t GetTimestamp() const;
 
@@ -45,21 +45,17 @@ namespace Elastos {
 
 			void SetTransactionCount(uint32_t count);
 
-			const std::vector<UInt256> &GetHashes() const;
+			const std::vector<uint256> &GetHashes() const;
 
-			void SetHashes(const std::vector<UInt256> &hashes);
+			void SetHashes(const std::vector<uint256> &hashes);
 
 			const std::vector<uint8_t> &GetFlags() const;
 
 			void SetFlags(const std::vector<uint8_t> &flags);
 
-			virtual nlohmann::json ToJson() const;
+			virtual const uint256 &GetHash() const { return _blockHash;}
 
-			virtual void FromJson(const nlohmann::json &j);
-
-			virtual const UInt256 &GetHash() const { return _blockHash;}
-
-			virtual void SetHash(const UInt256 &hash);
+			virtual void SetHash(const uint256 &hash);
 
 			virtual uint32_t GetHeight() const;
 
@@ -71,34 +67,34 @@ namespace Elastos {
 
 			virtual std::string GetBlockType() const { return "";}
 
-			size_t MerkleBlockTxHashes(std::vector<UInt256> &txHashes) const;
+			size_t MerkleBlockTxHashes(std::vector<uint256> &txHashes) const;
 
 		protected:
 			void SerializeNoAux(ByteStream &ostream) const;
 
-			bool DeserializeNoAux(ByteStream &istream);
+			bool DeserializeNoAux(const ByteStream &istream);
 
 			void SerializeAfterAux(ByteStream &ostream) const;
 
-			bool DeserializeAfterAux(ByteStream &istream);
+			bool DeserializeAfterAux(const ByteStream &istream);
 
-			UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
+			uint256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
 
-			size_t MerkleBlockTxHashesR(std::vector<UInt256> &txHashes, size_t &hashIdx, size_t &flagIdx, int depth) const;
+			size_t MerkleBlockTxHashesR(std::vector<uint256> &txHashes, size_t &hashIdx, size_t &flagIdx, int depth) const;
 
 			int ceilLog2(int x) const;
 
 		protected:
-			UInt256 _blockHash;
+			mutable uint256 _blockHash;
 			uint32_t _version;
-			UInt256 _prevBlock;
-			UInt256 _merkleRoot;
+			uint256 _prevBlock;
+			uint256 _merkleRoot;
 			uint32_t _timestamp; // time interval since unix epoch
 			uint32_t _target;
 			uint32_t _nonce;
 			uint32_t _totalTx;
-			std::vector<UInt256> _hashes;
-			std::vector<uint8_t> _flags;
+			std::vector<uint256> _hashes;
+			bytes_t _flags;
 			uint32_t _height;
 		};
 

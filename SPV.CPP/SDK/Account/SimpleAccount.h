@@ -13,7 +13,7 @@ namespace Elastos {
 
 		class SimpleAccount : public IAccount {
 		public:
-			SimpleAccount(const std::string &privKey, const std::string &payPassword);
+			SimpleAccount(const bytes_t &privKey, const std::string &payPassword);
 
 			virtual nlohmann::json GetBasicInfo() const;
 
@@ -21,7 +21,7 @@ namespace Elastos {
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd, uint32_t coinIndex, uint32_t account, uint32_t change);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -43,11 +43,11 @@ namespace Elastos {
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual CMBlock GetMultiSignPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual CMBlock GetVotePublicKey() const;
+			virtual bytes_t GetVotePublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
 			virtual Address GetAddress() const;
 
@@ -67,7 +67,7 @@ namespace Elastos {
 		private:
 
 			std::string _emptyString;
-			CMBlock _publicKey;
+			bytes_t _publicKey;
 			std::string _encryptedKey; // encode with base64
 		};
 

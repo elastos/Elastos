@@ -11,11 +11,11 @@ namespace Elastos {
 
 		}
 
-		CMBlock IOutputPayload::getData() const {
+		bytes_t IOutputPayload::getData() const {
 			ByteStream stream;
 			Serialize(stream);
 
-			return stream.GetBuffer();
+			return stream.GetBytes();
 		}
 
 	}

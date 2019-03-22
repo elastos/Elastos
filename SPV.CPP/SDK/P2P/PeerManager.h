@@ -10,9 +10,8 @@
 #include "PublishedTransaction.h"
 
 #include <SDK/TransactionHub/TransactionHub.h>
-#include <SDK/Common/CMemBlock.h>
-#include <SDK/Base/Lockable.h>
-#include <SDK/Base/BloomFilter.h>
+#include <SDK/Common/Lockable.h>
+#include <SDK/BIPs/BloomFilter.h>
 #include <SDK/SpvService/ChainParams.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
@@ -124,7 +123,7 @@ namespace Elastos {
 
 			void SetReconnectEnableStatus(bool status);
 
-			void SetFixedPeer(UInt128 address, uint16_t port);
+			void SetFixedPeer(uint128 address, uint16_t port);
 
 			void SetFixedPeers(const std::vector<PeerInfo> &peers);
 
@@ -142,13 +141,13 @@ namespace Elastos {
 
 			void PublishTransaction(const TransactionPtr &transaction, const Peer::PeerPubTxCallback &callback);
 
-			uint64_t GetRelayCount(const UInt256 &txHash) const;
+			uint64_t GetRelayCount(const uint256 &txHash) const;
 
 			void AsyncConnect(const boost::system::error_code &error);
 
 			const std::vector<PublishedTransaction> GetPublishedTransaction() const;
 
-			const std::vector<UInt256> GetPublishedTransactionHashes() const;
+			const std::vector<uint256> GetPublishedTransactionHashes() const;
 
 			int ReconnectTaskCount() const;
 
@@ -171,20 +170,20 @@ namespace Elastos {
 
 			virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx);
 
-			virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash);
+			virtual void OnHasTx(const PeerPtr &peer, const uint256 &txHash);
 
-			virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason);
+			virtual void OnRejectedTx(const PeerPtr &peer, const uint256 &txHash, uint8_t code, const std::string &reason);
 
 			virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block);
 
 			virtual void OnRelayedPingMsg(const PeerPtr &peer);
 
-			virtual void OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
-									const std::vector<UInt256> &blockHashes);
+			virtual void OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
+									const std::vector<uint256> &blockHashes);
 
 			virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb);
 
-			virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash);
+			virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const uint256 &txHash);
 
 			virtual bool OnNetworkIsReachable(const PeerPtr &peer);
 
@@ -205,7 +204,7 @@ namespace Elastos {
 
 			bool FireNetworkIsReachable();
 
-			void FireTxPublished(const UInt256 &hash, int code, const std::string &reason);
+			void FireTxPublished(const uint256 &hash, int code, const std::string &reason);
 
 			void FireThreadCleanup();
 
@@ -234,18 +233,18 @@ namespace Elastos {
 			void PublishPendingTx(const PeerPtr &peer);
 
 			size_t
-			AddPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			AddPeerToList(const PeerPtr &peer, const uint256 &txHash, std::vector<TransactionPeerList> &peerList);
 
 			bool
-			RemovePeerFromList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			RemovePeerFromList(const PeerPtr &peer, const uint256 &txHash, std::vector<TransactionPeerList> &peerList);
 
 			void PeerMisbehaving(const PeerPtr &peer);
 
-			std::vector<UInt128> AddressLookup(const std::string &hostname);
+			std::vector<uint128> AddressLookup(const std::string &hostname);
 
 			bool VerifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer);
 
-			std::vector<UInt256> GetBlockLocators();
+			std::vector<uint256> GetBlockLocators();
 
 			void LoadMempools();
 
@@ -253,10 +252,10 @@ namespace Elastos {
 
 			void RequestUnrelayedTx(const PeerPtr &peer);
 
-			bool PeerListHasPeer(const std::vector<TransactionPeerList> &peerList, const UInt256 &txhash,
+			bool PeerListHasPeer(const std::vector<TransactionPeerList> &peerList, const uint256 &txhash,
 								 const PeerPtr &peer);
 
-			size_t PeerListCount(const std::vector<TransactionPeerList> &list, const UInt256 &txhash);
+			size_t PeerListCount(const std::vector<TransactionPeerList> &list, const uint256 &txhash);
 
 			void LoadBloomFilterDone(const PeerPtr &peer, int success);
 
@@ -294,7 +293,7 @@ namespace Elastos {
 			MerkleBlockPtr _lastBlock, _lastOrphan;
 			std::vector<TransactionPeerList> _txRelays, _txRequests;
 			std::vector<PublishedTransaction> _publishedTx;
-			std::vector<UInt256> _publishedTxHashes;
+			std::vector<uint256> _publishedTxHashes;
 
 			PluginType _pluginType;
 			WalletPtr _wallet;

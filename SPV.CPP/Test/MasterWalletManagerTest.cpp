@@ -169,6 +169,21 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 		REQUIRE(masterWallet != nullptr);
 
 		REQUIRE_FALSE(masterWallet->GetPublicKey().empty());
+
+		masterWalletManager->DestroyWallet(masterWalletId);
+	}
+
+	SECTION("Verify multi sign public key") {
+		std::string mnemonic = "令 厘 选 健 爱 轨 烯 距 握 译 控 礼";
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId + "1", mnemonic, "", payPassword, false);
+
+		REQUIRE(masterWallet != nullptr);
+
+		REQUIRE("023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664" == masterWalletManager->GetMultiSignPubKey(mnemonic, ""));
+
+		REQUIRE(masterWallet->GetPublicKey() == "023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664");
+
+		masterWalletManager->DestroyWallet(masterWalletId + "1");
 	}
 }
 
@@ -988,9 +1003,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		std::string backupPassword = "backupPassword";
 		payPassword = "";
 
-		CHECK_THROWS_AS(
-				masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword),
-				std::invalid_argument);
+		REQUIRE_THROWS(masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword));
 	}
 	SECTION("ExportWalletWithKeystore backupPassword invalid str ") {
 

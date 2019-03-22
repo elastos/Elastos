@@ -9,28 +9,17 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRAddress.h>
-#include <Core/BRInt.h>
-
-#define SignatureScriptLength 65
-
 namespace Elastos {
 	namespace ElaWallet {
 
 		Program::Program() {
-			_code.Resize(0);
-			_parameter.Resize(0);
 		}
 
 		Program::Program(const Program &program) {
-			this->_code.Resize(program._code.GetSize());
-			memcpy(this->_code, program._code, program._code.GetSize());
-
-			this->_parameter.Resize(program._parameter.GetSize());
-			memcpy(this->_parameter, program._parameter, program._parameter.GetSize());
+			operator=(program);
 		}
 
-		Program::Program(const CMBlock &code, const CMBlock &parameter) :
+		Program::Program(const bytes_t &code, const bytes_t &parameter) :
 				_parameter(parameter),
 				_code(code) {
 
@@ -39,18 +28,24 @@ namespace Elastos {
 		Program::~Program() {
 		}
 
-		bool Program::VerifySignature(const UInt256 &md) const {
+		Program &Program::operator=(const Program &p) {
+			_code = p._code;
+			_parameter = p._parameter;
+			return *this;
+		}
+
+		bool Program::VerifySignature(const uint256 &md) const {
 			Key key;
 			uint8_t signatureCount = 0;
 
-			std::vector<CMBlock> publicKeys = DecodePublicKey();
+			std::vector<bytes_t> publicKeys = DecodePublicKey();
 			if (publicKeys.empty()) {
 				Log::error("Redeem script without public key");
 				return false;
 			}
 
 			ByteStream stream(_parameter);
-			CMBlock signature;
+			bytes_t signature;
 			while (stream.ReadVarBytes(signature)) {
 				bool verified = false;
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
@@ -68,9 +63,9 @@ namespace Elastos {
 				}
 			}
 
-			if (SignType(_code[_code.GetSize() - 1]) == SignTypeMultiSign) {
+			if (SignType(_code.back()) == SignTypeMultiSign) {
 				uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
-				uint8_t n = (uint8_t)(_code[_code.GetSize() - 2] - OP_1 + 1);
+				uint8_t n = (uint8_t)(_code[_code.size() - 2] - OP_1 + 1);
 
 				if (signatureCount < m) {
 					Log::error("Signature not enough for multi sign");
@@ -81,7 +76,7 @@ namespace Elastos {
 					Log::error("Too many signers");
 					return false;
 				}
-			} else if (SignType(_code[_code.GetSize() - 1]) == SignTypeStandard) {
+			} else if (SignType(_code.back()) == SignTypeStandard) {
 				if (publicKeys.size() != signatureCount) {
 					return false;
 				}
@@ -90,34 +85,34 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Program::GetSignedInfo(const UInt256 &md) const {
+		nlohmann::json Program::GetSignedInfo(const uint256 &md) const {
 			nlohmann::json info;
-			std::vector<CMBlock> publicKeys = DecodePublicKey();
+			std::vector<bytes_t> publicKeys = DecodePublicKey();
 			if (publicKeys.empty())
 				return info;
 
 			Key key;
 			ByteStream stream(_parameter);
-			CMBlock signature;
+			bytes_t signature;
 			nlohmann::json signers;
 			while (stream.ReadVarBytes(signature)) {
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
 					key.SetPubKey(publicKeys[i]);
 					if (key.Verify(md, signature)) {
-						signers.push_back(Utils::EncodeHex(publicKeys[i]));
+						signers.push_back(publicKeys[i].getHex());
 						break;
 					}
 				}
 			}
 
-			if (SignType(_code[_code.GetSize() - 1]) == SignTypeMultiSign) {
+			if (SignType(_code.back()) == SignTypeMultiSign) {
 				uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
-				uint8_t n = (uint8_t)(_code[_code.GetSize() - 2] - OP_1 + 1);
+				uint8_t n = (uint8_t)(_code[_code.size() - 2] - OP_1 + 1);
 				info["SignType"] = "MultiSign";
 				info["M"] = m;
 				info["N"] = n;
 				info["Signers"] = signers;
-			} else if (SignType(_code[_code.GetSize() - 1]) == SignTypeStandard) {
+			} else if (SignType(_code.back()) == SignTypeStandard) {
 				info["SignType"] = "Standard";
 				info["Signers"] = signers;
 			}
@@ -125,18 +120,18 @@ namespace Elastos {
 			return info;
 		}
 
-		std::vector<CMBlock> Program::DecodePublicKey() const {
-			std::vector<CMBlock> publicKeys;
-			if (_code.GetSize() < 33 + 2)
+		std::vector<bytes_t> Program::DecodePublicKey() const {
+			std::vector<bytes_t> publicKeys;
+			if (_code.size() < 33 + 2)
 				return publicKeys;
 
-			SignType signType = SignType(_code[_code.GetSize() - 1]);
-			CMBlock pubKey;
+			SignType signType = SignType(_code[_code.size() - 1]);
+			bytes_t pubKey;
 
 			ByteStream stream(_code);
 
 			if (signType == SignTypeMultiSign) {
-				stream.Drop(1);
+				stream.Skip(1);
 			} else if (signType != SignTypeStandard) {
 				Log::error("unsupport sign type");
 				return publicKeys;
@@ -149,19 +144,19 @@ namespace Elastos {
 			return publicKeys;
 		}
 
-		const CMBlock &Program::GetCode() const {
+		const bytes_t &Program::GetCode() const {
 			return _code;
 		}
 
-		const CMBlock &Program::GetParameter() const {
+		const bytes_t &Program::GetParameter() const {
 			return _parameter;
 		}
 
-		void Program::SetCode(const CMBlock &code) {
+		void Program::SetCode(const bytes_t &code) {
 			_code = code;
 		}
 
-		void Program::SetParameter(const CMBlock &parameter) {
+		void Program::SetParameter(const bytes_t &parameter) {
 			_parameter = parameter;
 		}
 
@@ -170,7 +165,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_code);
 		}
 
-		bool Program::Deserialize(ByteStream &istream) {
+		bool Program::Deserialize(const ByteStream &istream) {
 			if (!istream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
@@ -187,15 +182,15 @@ namespace Elastos {
 		nlohmann::json Program::ToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["Parameter"] = Utils::EncodeHex(_parameter);
-			jsonData["Code"] = Utils::EncodeHex(_code);
+			jsonData["Parameter"] = _parameter.getHex();
+			jsonData["Code"] = _code.getHex();
 
 			return jsonData;
 		}
 
 		void Program::FromJson(const nlohmann::json &jsonData) {
-			_parameter = Utils::DecodeHex(jsonData["Parameter"].get<std::string>());
-			_code = Utils::DecodeHex(jsonData["Code"].get<std::string>());
+			_parameter.setHex(jsonData["Parameter"].get<std::string>());
+			_code.setHex(jsonData["Code"].get<std::string>());
 		}
 
 	}

@@ -6,9 +6,7 @@
 #define __ELASTOS_SDK_PAYLOADIDCHAIN_H__
 
 #include "IPayload.h"
-#include <SDK/Common/CMemBlock.h>
-
-#include <Core/BRInt.h>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -16,7 +14,7 @@ namespace Elastos {
 		class PayloadRegisterIdentification : public IPayload {
 		public:
 			struct ValueItem {
-				UInt256 DataHash;
+				uint256 DataHash;
 				std::string Proof;
 				std::string Info;
 			};
@@ -41,9 +39,9 @@ namespace Elastos {
 
 			void SetPath(const std::string &path, size_t index);
 
-			const UInt256 &GetDataHash(size_t index, size_t valueIndex) const;
+			const uint256 &GetDataHash(size_t index, size_t valueIndex) const;
 
-			void SetDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex);
+			void SetDataHash(const uint256 &dataHash, size_t index, size_t valueIndex);
 
 			const std::string &GetProof(size_t index, size_t valueIndex) const;
 
@@ -55,13 +53,13 @@ namespace Elastos {
 
 			void RemoveContent(size_t index);
 
-			const CMBlock &GetSign() const;
+			const bytes_t &GetSign() const;
 
-			void SetSign(const CMBlock &sign);
+			void SetSign(const bytes_t &sign);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -75,7 +73,7 @@ namespace Elastos {
 
 		private:
 			std::string _id;
-			CMBlock _sign;
+			bytes_t _sign;
 			std::vector<SignContent> _contents;
 		};
 

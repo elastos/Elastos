@@ -63,7 +63,7 @@ namespace Elastos {
 
 			virtual ~Message();
 
-			virtual bool Accept(const CMBlock &msg) = 0;
+			virtual bool Accept(const bytes_t &msg) = 0;
 
 			virtual void Send(const SendMessageParameter &param) = 0;
 
@@ -80,25 +80,25 @@ namespace Elastos {
 
 			void FireRelayedTx(const TransactionPtr &tx);
 
-			void FireHasTx(const UInt256 &txHash);
+			void FireHasTx(const uint256 &txHash);
 
-			void FireRejectedTx(const UInt256 &txHash, uint8_t code, const std::string &reason);
+			void FireRejectedTx(const uint256 &txHash, uint8_t code, const std::string &reason);
 
 			void FireRelayedBlock(const MerkleBlockPtr &block);
 
 			void FireRelayedPingMsg();
 
-			void FireNotfound(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes);
+			void FireNotfound(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes);
 
 			void FireSetFeePerKb(uint64_t feePerKb);
 
-			const TransactionPtr &FireRequestedTx(const UInt256 &txHash);
+			const TransactionPtr &FireRequestedTx(const uint256 &txHash);
 
 			bool FireNetworkIsReachable();
 
 			void FireThreadCleanup();
 
-			void SendMessage(const CMBlock &msg, const std::string &type);
+			void SendMessage(const bytes_t &msg, const std::string &type);
 
 		protected:
 			MessagePeerPtr _peer;

@@ -14,7 +14,7 @@ namespace Elastos {
 
 		}
 
-		bool GetAddressMessage::Accept(const CMBlock &msg) {
+		bool GetAddressMessage::Accept(const bytes_t &msg) {
 			_peer->info("got getaddr");
 			_peer->SendMessage(MSG_ADDR, Message::DefaultParam);
 			return true;
@@ -23,7 +23,7 @@ namespace Elastos {
 		void GetAddressMessage::Send(const SendMessageParameter &param) {
 			_peer->SetSentGetaddr(true);
 			_peer->GetPeerManager()->SetKeepAliveTimestamp(time(nullptr));
-			SendMessage(CMBlock(), Type());
+			SendMessage(bytes_t(), Type());
 		}
 
 		std::string GetAddressMessage::Type() const {

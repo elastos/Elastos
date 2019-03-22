@@ -26,8 +26,6 @@ TEST_CASE("Asset test", "[Asset]") {
 		ByteStream stream;
 		asset.Serialize(stream);
 
-		stream.SetPosition(0);
-
 		Asset asset1;
 		asset1.Deserialize(stream);
 

@@ -8,8 +8,7 @@
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Base/Address.h>
-#include <Core/BRInt.h>
+#include <SDK/BIPs/Address.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -32,21 +31,21 @@ namespace Elastos {
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const Address &toAddress, const UInt256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput(uint64_t amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-			TransactionOutput(uint64_t amount, const UInt168 &programHash, const UInt256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput(uint64_t amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			void Serialize(ByteStream &ostream, uint8_t txVersion) const;
 
-			bool Deserialize(ByteStream &istream, uint8_t txVersion);
+			bool Deserialize(const ByteStream &istream, uint8_t txVersion);
 
 			bool IsValid() const;
 
@@ -56,17 +55,17 @@ namespace Elastos {
 
 			void SetAmount(uint64_t amount);
 
-			const UInt256 &GetAssetId() const;
+			const uint256 &GetAssetId() const;
 
-			void SetAssetId(const UInt256 &assetId);
+			void SetAssetId(const uint256 &assetId);
 
 			uint32_t GetOutputLock() const;
 
 			void SetOutputLock(uint32_t outputLock);
 
-			const UInt168 &GetProgramHash() const;
+			const uint168 &GetProgramHash() const;
 
-			void SetProgramHash(const UInt168 &hash);
+			void SetProgramHash(const uint168 &hash);
 
 			const Type &GetType() const;
 
@@ -92,9 +91,9 @@ namespace Elastos {
 
 		private:
 			uint64_t _amount;
-			UInt256 _assetId;
+			uint256 _assetId;
 			uint32_t _outputLock;
-			UInt168 _programHash;
+			uint168 _programHash;
 
 			Type _outputType;
 

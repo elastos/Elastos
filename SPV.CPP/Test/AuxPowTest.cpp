@@ -18,19 +18,6 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 
 	srand((unsigned int) time(nullptr));
 
-	SECTION("To json and from json") {
-		AuxPow auxPow = createDummyAuxPow();
-
-		nlohmann::json auxPowJson = auxPow.ToJson();
-
-		//SPDLOG_DEBUG(Log::getLogger(),"auxPow json = {}", auxPowJson.dump());
-
-		/* from json and verify */
-		AuxPow auxPowVerify;
-		auxPowVerify.FromJson(auxPowJson);
-
-		verrifyAuxPowEqual(auxPow, auxPowVerify);
-	}
 	SECTION("Serialize and deserialize") {
 
 		AuxPow auxPow = createDummyAuxPow();
@@ -39,7 +26,6 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 		auxPow.Serialize(byteStream);
 
 		AuxPow auxPowVerify;
-		byteStream.SetPosition(0);
 		auxPowVerify.Deserialize(byteStream);
 
 		verrifyAuxPowEqual(auxPow, auxPowVerify, false);

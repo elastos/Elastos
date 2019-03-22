@@ -17,11 +17,11 @@ namespace Elastos {
 		public:
 			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners, uint32_t requiredSignCount);
 
-			const CMBlock &GetRedeemScript() const;
+			const bytes_t &GetRedeemScript() const;
 
 			IAccount *GetInnerAccount() const;
 
-			const std::vector<std::string> &GetCoSigners() const;
+			const std::vector<bytes_t> &GetCoSigners() const;
 
 			uint32_t GetRequiredSignCount() const;
 
@@ -29,7 +29,7 @@ namespace Elastos {
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -49,9 +49,9 @@ namespace Elastos {
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual CMBlock GetMultiSignPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
 			virtual Address GetAddress() const;
 
@@ -71,9 +71,9 @@ namespace Elastos {
 			void checkSigners() const;
 
 		private:
-			mutable CMBlock _redeemScript;
+			mutable bytes_t _redeemScript;
 			AccountPtr _me;
-			std::vector<std::string> _coSigners;
+			std::vector<bytes_t> _coSigners;
 			uint32_t _requiredSignCount;
 			mutable Address _address;
 			std::string _rootPath;

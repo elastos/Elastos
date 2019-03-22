@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
 
 #include "IPayload.h"
-#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +18,7 @@ namespace Elastos {
 			PayloadWithDrawAsset(const PayloadWithDrawAsset &payload);
 
 			PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
-								 const std::vector<UInt256> &sideChainTransactionHash);
+								 const std::vector<uint256> &sideChainTransactionHash);
 
 			~PayloadWithDrawAsset();
 
@@ -31,13 +30,13 @@ namespace Elastos {
 
 			const std::string &GetGenesisBlockAddress() const;
 
-			void SetSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash);
+			void SetSideChainTransacitonHash(const std::vector<uint256> &sideChainTransactionHash);
 
-			const std::vector<UInt256> &GetSideChainTransacitonHash() const;
+			const std::vector<uint256> &GetSideChainTransacitonHash() const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -50,7 +49,7 @@ namespace Elastos {
 		private:
 			uint32_t _blockHeight;
 			std::string _genesisBlockAddress;
-			std::vector<UInt256> _sideChainTransactionHash;
+			std::vector<uint256> _sideChainTransactionHash;
 		};
 	}
 }

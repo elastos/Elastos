@@ -14,7 +14,7 @@ namespace Elastos {
 
 		bool UTXOList::Contains(const UTXO &o) const {
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (UInt256Eq(&o.hash, &_utxos[i].hash) && _utxos[i].n == o.n) {
+				if (o.hash == _utxos[i].hash && _utxos[i].n == o.n) {
 					return true;
 				}
 			}
@@ -22,9 +22,9 @@ namespace Elastos {
 			return false;
 		}
 
-		bool UTXOList::Contains(const UInt256 &hash, uint32_t n) const {
+		bool UTXOList::Contains(const uint256 &hash, uint32_t n) const {
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (UInt256Eq(&hash, &_utxos[i].hash) && _utxos[i].n == n) {
+				if (hash == _utxos[i].hash && _utxos[i].n == n) {
 					return true;
 				}
 			}
@@ -48,7 +48,7 @@ namespace Elastos {
 			_utxos.emplace_back(input.GetTransctionHash(), input.GetIndex(), amount, confirms);
 		}
 
-		void UTXOList::AddUTXO(const UInt256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {
+		void UTXOList::AddUTXO(const uint256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {
 			_utxos.emplace_back(hash, index, amount, confirms);
 		}
 

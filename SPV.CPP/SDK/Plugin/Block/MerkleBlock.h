@@ -9,8 +9,6 @@
 #include "AuxPow.h"
 #include "ELAMerkleBlock.h"
 
-#include <SDK/Common/CMemBlock.h>
-
 #include <fruit/fruit.h>
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
@@ -32,13 +30,9 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
-			virtual nlohmann::json ToJson() const;
-
-			virtual void FromJson(const nlohmann::json &j);
-
-			virtual const UInt256 &GetHash() const;
+			virtual const uint256 &GetHash() const;
 
 			virtual bool IsValid(uint32_t currentTime) const;
 

@@ -10,9 +10,6 @@
 #include <SDK/P2P/Peer.h>
 #include <SDK/P2P/PeerManager.h>
 
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRArray.h>
-
 #include <sys/time.h>
 
 namespace Elastos {
@@ -23,11 +20,11 @@ namespace Elastos {
 
 		}
 
-		bool PingMessage::Accept(const CMBlock &msg) {
+		bool PingMessage::Accept(const bytes_t &msg) {
 			bool r = true;
 
-			if (sizeof(uint64_t) > msg.GetSize()) {
-				_peer->warn("malformed ping message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
+			if (sizeof(uint64_t) > msg.size()) {
+				_peer->warn("malformed ping message, length is {}, should be {}", msg.size(), sizeof(uint64_t));
 				r = false;
 			} else {
 				_peer->info("got ping");
@@ -47,7 +44,7 @@ namespace Elastos {
 				for (size_t i = publishedTx.size(); i > 0; i--) {
 					if (publishedTx[i - 1].HasCallback()) {
 						_peer->info("publish pending tx hash = {}, do not disconnect",
-									Utils::UInt256ToString(publishedTx[i - 1].GetTransaction()->GetHash(), true));
+									publishedTx[i - 1].GetTransaction()->GetHash().GetHex());
 						hasPendingTx = true;
 						break;
 					}
@@ -78,7 +75,7 @@ namespace Elastos {
 
 			stream.WriteUint64(pingParameter.lastBlockHeight);
 
-			_peer->SendMessage(stream.GetBuffer(), MSG_PING);
+			_peer->SendMessage(stream.GetBytes(), MSG_PING);
 		}
 
 		std::string PingMessage::Type() const {

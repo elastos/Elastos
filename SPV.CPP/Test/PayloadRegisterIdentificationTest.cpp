@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include <Core/BRInt.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 
@@ -65,7 +64,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1, true);
+		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
 		payload.AddContent(content);
 
@@ -73,7 +72,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2, true);
+		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
 		payload.AddContent(content2);
 
@@ -86,11 +85,11 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 
 		REQUIRE(payload.GetPath(0) == payload2.GetPath(0));
 		REQUIRE(payload.GetProof(0, 0) == payload2.GetProof(0, 0));
-		REQUIRE(UInt256Eq(&payload.GetDataHash(0, 0), &payload2.GetDataHash(0, 0)));
+		REQUIRE(payload.GetDataHash(0, 0) == payload2.GetDataHash(0, 0));
 
 		REQUIRE(payload.GetPath(1) == payload2.GetPath(1));
 		REQUIRE(payload.GetProof(1, 0) == payload2.GetProof(1, 0));
-		REQUIRE(UInt256Eq(&payload.GetDataHash(1, 0), &payload2.GetDataHash(1, 0)));
+		REQUIRE(payload.GetDataHash(1, 0) == payload2.GetDataHash(1, 0));
 	}
 }
 
@@ -105,7 +104,7 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1, true);
+		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
 		payload.AddContent(content);
 
@@ -113,14 +112,13 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2, true);
+		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
 		payload.AddContent(content2);
 
 		ByteStream stream;
 		payload.Serialize(stream, 0);
 
-		stream.SetPosition(0);
 		PayloadRegisterIdentification payload2;
 		payload2.Deserialize(stream, 0);
 
@@ -128,10 +126,10 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 
 		REQUIRE(payload.GetPath(0) == payload2.GetPath(0));
 		REQUIRE(payload.GetProof(0, 0) == payload2.GetProof(0, 0));
-		REQUIRE(UInt256Eq(&payload.GetDataHash(0, 0), &payload2.GetDataHash(0, 0)));
+		REQUIRE(payload.GetDataHash(0, 0) == payload2.GetDataHash(0, 0));
 
 		REQUIRE(payload.GetPath(1) == payload2.GetPath(1));
 		REQUIRE(payload.GetProof(1, 0) == payload2.GetProof(1, 0));
-		REQUIRE(UInt256Eq(&payload.GetDataHash(1, 0), &payload2.GetDataHash(1, 0)));
+		REQUIRE(payload.GetDataHash(1, 0) == payload2.GetDataHash(1, 0));
 	}
 }

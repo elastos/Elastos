@@ -6,39 +6,19 @@
 
 #include <catch.hpp>
 
-#include <SDK/Crypto/Key.h>
+#include "TestHelper.h"
+
+#include <SDK/BIPs/Key.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/KeyStore/Mnemonic.h>
-#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRBIP39Mnemonic.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
 
 using namespace Elastos::ElaWallet;
-
-TEST_CASE("Key test", "[Key]") {
-
-	SECTION("Contructor with string and CMBlock") {
-
-		std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
-		std::string phrasePasswd = "";
-		//init master public key and private key
-		UInt512 seed;
-		BRBIP39DeriveKey(&seed, phrase.c_str(), phrasePasswd.c_str());
-
-		//init id chain derived master public key
-		UInt256 chainCode;
-
-		Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5,
-											 44 | BIP32_HARD, 0 | BIP32_HARD, 0 | BIP32_HARD, 0, 0);
-
-		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == key.GetAddress(PrefixStandard));
-	}
-
-}
-
 
 TEST_CASE("Key sign pressure test", "[KeySign]") {
 
@@ -47,14 +27,24 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 #else
 #define LOOP_COUNT 1
 #endif
+	std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
+	std::string phrasePasswd = "";
 
-	std::string message = "mymessage";
+	uint512 seed;
+	BRBIP39DeriveKey(seed.begin(), phrase.c_str(), phrasePasswd.c_str());
+
+	HDKeychain child = HDKeychain(HDSeed(seed.bytes()).getExtendedKey(true)).getChild("44'/0'/0'/0/0");
+
+	Key key1, key2;
+
+	key1.SetPrvKey(child.privkey());
+	key2.SetPubKey(child.pubkey());
+
 	for (int i = 0; i < LOOP_COUNT; ++i) {
-		Key key;
-		key.SetPrivKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
+		std::string message = getRandString(120);
 
-		CMBlock signedData = key.Sign(message);
-		REQUIRE(key.Verify(message, signedData));
+		bytes_t signedData = key1.Sign(message);
+		REQUIRE(key2.Verify(message, signedData));
 	}
 }
 

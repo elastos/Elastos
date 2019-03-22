@@ -12,18 +12,15 @@
 #include "Message/GetDataMessage.h"
 #include "Message/NotFoundMessage.h"
 #include "Message/GetBlocksMessage.h"
-#include "Message/GetHeadersMessage.h"
 #include "Message/TransactionMessage.h"
 #include "Message/MerkleBlockMessage.h"
 #include "Message/MempoolMessage.h"
 #include "Message/PongMessage.h"
 #include "Message/FilterLoadMessage.h"
 #include "Message/GetAddressMessage.h"
-#include "Message/HeadersMessage.h"
 #include "Message/RejectMessage.h"
 
 #include <SDK/Common/Log.h>
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Common/Utils.h>
 
 #include <Core/BRCrypto.h>
@@ -77,11 +74,11 @@ namespace Elastos {
 		Peer::~Peer() {
 		}
 
-		const UInt128 &Peer::getAddress() const {
+		const uint128 &Peer::getAddress() const {
 			return _info.Address;
 		}
 
-		void Peer::setAddress(const UInt128 &addr) {
+		void Peer::setAddress(const uint128 &addr) {
 			_info.Address = addr;
 		}
 
@@ -176,33 +173,33 @@ namespace Elastos {
 		}
 
 		// sends a bitcoin protocol message to peer
-		void Peer::SendMessage(const CMBlock &message, const std::string &type) {
-			if (message.GetSize() > MAX_MSG_LENGTH) {
-				this->error("failed to send {}, length {} is too long", type, message.GetSize());
+		void Peer::SendMessage(const bytes_t &message, const std::string &type) {
+			if (message.size() > MAX_MSG_LENGTH) {
+				this->error("failed to send {}, length {} is too long", type, message.size());
 			} else {
-				uint8_t buf[HEADER_LENGTH + message.GetSize()], hash[32];
-				size_t off = 0;
 				ssize_t n = 0;
 				struct timeval tv;
 				int socket, error = 0;
+				ByteStream stream;
 
-				UInt32SetLE(&buf[off], _magicNumber);
-				off += sizeof(uint32_t);
-				strncpy((char *) &buf[off], type.c_str(), 12);
-				off += 12;
-				UInt32SetLE(&buf[off], (uint32_t) message.GetSize());
-				off += sizeof(uint32_t);
-				BRSHA256_2(hash, message, message.GetSize());
-				memcpy(&buf[off], hash, sizeof(uint32_t));
-				off += sizeof(uint32_t);
-				memcpy(&buf[off], message, message.GetSize());
+				stream.WriteUint32(_magicNumber);
+				stream.WriteBytes(bytes_t(type.c_str(), type.size()));
+				if (type.size() < 12)
+					stream.WriteBytes(bytes_t(12 - type.size(), 0));
+				stream.WriteUint32(message.size());
+				bytes_t hash = sha256_2(message);
+				stream.WriteUint32(*(uint32_t *)hash.data());
+				stream.WriteBytes(message);
+
+				const bytes_t &buf = stream.GetBytes();
+
 				this->info("sending {}", type);
 				size_t msgLen = 0;
 				socket = _socket;
 				if (socket < 0) error = ENOTCONN;
 
-				while (socket >= 0 && !error && msgLen < sizeof(buf)) {
-					n = send(socket, &buf[msgLen], sizeof(buf) - msgLen, MSG_NOSIGNAL);
+				while (socket >= 0 && !error && msgLen < buf.size()) {
+					n = send(socket, &buf[msgLen], buf.size() - msgLen, MSG_NOSIGNAL);
 					if (n >= 0) {
 						msgLen += n;
 					}
@@ -219,10 +216,10 @@ namespace Elastos {
 			}
 		}
 
-		void Peer::RerequestBlocks(const UInt256 &fromBlock) {
+		void Peer::RerequestBlocks(const uint256 &fromBlock) {
 			size_t i = _knownBlockHashes.size();
 
-			while (i > 0 && ! UInt256Eq(&(_knownBlockHashes[i - 1]), &fromBlock)) i--;
+			while (i > 0 && _knownBlockHashes[i - 1] != fromBlock) i--;
 
 			if (i > 0) {
 				_knownBlockHashes.erase(_knownBlockHashes.begin(), _knownBlockHashes.begin() + i - 1);
@@ -300,7 +297,7 @@ namespace Elastos {
 				struct timeval tv;
 				double time = 0, msgTimeout;
 				uint8_t header[HEADER_LENGTH];
-				CMBlock payload;
+				bytes_t payload;
 				size_t len = 0;
 				ssize_t n = 0;
 
@@ -356,15 +353,14 @@ namespace Elastos {
 						error = EPROTO;
 					} else if (len == HEADER_LENGTH) {
 						std::string type = (const char *) (&header[4]);
-						uint32_t msgLen = UInt32GetLE(&header[16]);
-						uint32_t checksum = UInt32GetLE(&header[20]);
-						UInt256 hash;
+						uint32_t msgLen = *(uint32_t*)&header[16];
+						uint32_t checksum = *(uint32_t*)(&header[20]);
 
 						if (msgLen > MAX_MSG_LENGTH) { // check message length
 							this->error("error reading {}, message length {} is too long", type, msgLen);
 							error = EPROTO;
 						} else {
-							payload.Resize(size_t(msgLen));
+							payload.resize(size_t(msgLen));
 							len = 0;
 							socket = _socket;
 							msgTimeout = time + MESSAGE_TIMEOUT;
@@ -395,12 +391,11 @@ namespace Elastos {
 									this->error("read message error: {}", FormatError(error));
 								}
 							} else if (len == msgLen) {
-								BRSHA256_2(&hash, payload, msgLen);
+								bytes_t hash = sha256_2(payload);;
 
-								if (UInt32GetLE(&hash) != checksum) { // verify checksum
-									this->error("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
-												" SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
-												Utils::UInt256ToString(hash, true));
+								if (*(uint32_t *)(&hash[0]) != checksum) { // verify checksum
+									this->error("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},",
+												type, UInt32GetLE(&hash), checksum, msgLen);
 									error = EPROTO;
 								} else if (!AcceptMessage(payload, type)) error = EPROTO;
 							}
@@ -441,9 +436,7 @@ namespace Elastos {
 			InitSingleMessage(new GetDataMessage(shared_from_this()));
 			InitSingleMessage(new NotFoundMessage(shared_from_this()));
 			InitSingleMessage(new GetBlocksMessage(shared_from_this()));
-			InitSingleMessage(new GetHeadersMessage(shared_from_this()));
 			InitSingleMessage(new TransactionMessage(shared_from_this()));
-			InitSingleMessage(new HeadersMessage(shared_from_this()));
 			InitSingleMessage(new MempoolMessage(shared_from_this()));
 			InitSingleMessage(new PingMessage(shared_from_this()));
 			InitSingleMessage(new PongMessage(shared_from_this()));
@@ -453,19 +446,18 @@ namespace Elastos {
 			InitSingleMessage(new RejectMessage(shared_from_this()));
 		}
 
-		bool Peer::AcceptMessage(const CMBlock &msg, const std::string &type) {
+		bool Peer::AcceptMessage(const bytes_t &msg, const std::string &type) {
 			bool r = false;
 
 			if (_currentBlock != nullptr && MSG_TX != type) { // if we receive a non-tx message, merkleblock is done
 				this->error("incomplete merkleblock {}, expected {} more tx, got {}",
-							Utils::UInt256ToString(_currentBlock->GetHash(), true),
-							_currentBlockTxHashes.size(), type);
+							_currentBlock->GetHash().GetHex(), _currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
 				r = 0;
 			} else if (_messages.find(type) != _messages.end())
 				r = _messages[type]->Accept(msg);
-			else this->error("dropping {}, length {}, not implemented", type, msg.GetSize());
+			else this->error("dropping {}, length {}, not implemented", type, msg.size());
 
 			return r;
 		}
@@ -526,24 +518,24 @@ namespace Elastos {
 			_sentGetblocks = sent;
 		}
 
-		const std::vector<UInt256> &Peer::CurrentBlockTxHashes() const {
+		const std::vector<uint256> &Peer::CurrentBlockTxHashes() const {
 			return _currentBlockTxHashes;
 		}
 
-		void Peer::AddCurrentBlockTxHash(const UInt256 &hash) {
+		void Peer::AddCurrentBlockTxHash(const uint256 &hash) {
 			_currentBlockTxHashes.push_back(hash);
 		}
 
-		void Peer::CurrentBlockTxHashesRemove(const UInt256 &hash) {
+		void Peer::CurrentBlockTxHashesRemove(const uint256 &hash) {
 			for (size_t i = 0; i < _currentBlockTxHashes.size(); ++i) {
-				if (UInt256Eq(&hash, &_currentBlockTxHashes[i])) {
+				if (hash == _currentBlockTxHashes[i]) {
 					_currentBlockTxHashes.erase(_currentBlockTxHashes.begin() + i);
 					break;
 				}
 			}
 		}
 
-		const std::vector<UInt256> &Peer::GetKnownBlockHashes() const {
+		const std::vector<uint256> &Peer::GetKnownBlockHashes() const {
 			return _knownBlockHashes;
 		}
 
@@ -553,32 +545,32 @@ namespace Elastos {
 			}
 		}
 
-		void Peer::AddKnownBlockHash(const UInt256 &hash) {
+		void Peer::AddKnownBlockHash(const uint256 &hash) {
 			_knownBlockHashes.push_back(hash);
 		}
 
 
-		const std::vector<UInt256>& Peer::KnownTxHashes() const {
+		const std::vector<uint256>& Peer::KnownTxHashes() const {
 			return _knownTxHashes;
 		}
 
-		const UInt256 &Peer::LastBlockHash() const {
+		const uint256 &Peer::LastBlockHash() const {
 			return _lastBlockHash;
 		}
 
-		void Peer::SetLastBlockHash(const UInt256 &hash) {
+		void Peer::SetLastBlockHash(const uint256 &hash) {
 			_lastBlockHash = hash;
 		}
 
-		const UInt256ValueSet &Peer::KnownTxHashSet() const {
+		const std::set<uint256> &Peer::KnownTxHashSet() const {
 			return _knownTxHashSet;
 		}
 
-		void Peer::AddKnownTxHashes(const std::vector<UInt256> &txHashes) {
+		void Peer::AddKnownTxHashes(const std::vector<uint256> &txHashes) {
 			for (size_t i = 0; i < txHashes.size(); i++) {
-				if (! _knownTxHashSet.Contains(txHashes[i])) {
+				if (_knownTxHashSet.find(txHashes[i]) == _knownTxHashSet.end()) {
 					_knownTxHashes.push_back(txHashes[i]);
-					_knownTxHashSet.Insert(txHashes[i]);
+					_knownTxHashSet.insert(txHashes[i]);
 				}
 			}
 		}
@@ -624,7 +616,7 @@ namespace Elastos {
 					addrLen = sizeof(struct sockaddr_in6);
 				} else {
 					((struct sockaddr_in *) &addr)->sin_family = AF_INET;
-					((struct sockaddr_in *) &addr)->sin_addr = *(struct in_addr *) &_info.Address.u32[3];
+					((struct sockaddr_in *) &addr)->sin_addr = *(struct in_addr *) &_info.Address.begin()[12];
 					((struct sockaddr_in *) &addr)->sin_port = htons(_info.Port);
 					addrLen = sizeof(struct sockaddr_in);
 				}

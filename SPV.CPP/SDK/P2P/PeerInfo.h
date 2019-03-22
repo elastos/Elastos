@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_PEERINFO_H__
 #define __ELASTOS_SDK_PEERINFO_H__
 
-#include <Core/BRInt.h>
 
+#include <SDK/Common/uint256.h>
 #include <sys/types.h>
 #include <string>
 
@@ -18,7 +18,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct PeerInfo {
-			UInt128 Address; // IPv6 address of peer
+			uint128 Address; // IPv6 address of peer
 			uint16_t Port; // port number for peer connection
 			uint64_t Services; // bitcoin network services supported by peer
 			uint64_t Timestamp; // timestamp reported by peer
@@ -26,9 +26,9 @@ namespace Elastos {
 
 			PeerInfo();
 
-			PeerInfo(const UInt128 &addr, uint16_t port, uint64_t timestamp);
+			PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp);
 
-			PeerInfo(const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
+			PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
 
 			PeerInfo(const PeerInfo &peerInfo);
 

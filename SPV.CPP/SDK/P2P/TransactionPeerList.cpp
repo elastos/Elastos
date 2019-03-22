@@ -7,12 +7,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		TransactionPeerList::TransactionPeerList(const UInt256 &txHash, const std::vector<PeerPtr> &peers) :
-			_peers(peers) {
-			memcpy(_txHash.u8, txHash.u8, sizeof(txHash));
+		TransactionPeerList::TransactionPeerList(const uint256 &txHash, const std::vector<PeerPtr> &peers) :
+			_peers(peers),
+			_txHash(txHash) {
 		}
 
-		const UInt256 &TransactionPeerList::GetTransactionHash() const {
+		const uint256 &TransactionPeerList::GetTransactionHash() const {
 			return _txHash;
 		}
 

@@ -14,10 +14,10 @@ namespace Elastos {
 			_height(height),
 			_timestamp(timestamp),
 			_target(target) {
-			_hash = Utils::UInt256FromString(hash, true);
+			_hash.SetHex(hash);
 		}
 
-		CheckPoint::CheckPoint(uint32_t height, const UInt256 &hash, time_t timestamp, uint32_t target) :
+		CheckPoint::CheckPoint(uint32_t height, const uint256 &hash, time_t timestamp, uint32_t target) :
 			_height(height),
 			_hash(hash),
 			_timestamp(timestamp),
@@ -31,7 +31,7 @@ namespace Elastos {
 			return _height;
 		}
 
-		const UInt256 &CheckPoint::GetHash() const {
+		const uint256 &CheckPoint::GetHash() const {
 			return _hash;
 		}
 

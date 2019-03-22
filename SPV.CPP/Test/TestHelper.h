@@ -24,14 +24,18 @@ namespace Elastos {
 			return u;
 		}
 
-		static CMBlock getRandCMBlock(size_t size) {
-			CMBlock block(size);
+		static bytes_t getRandBytes(size_t size) {
+			bytes_t block(size);
 
 			for (size_t i = 0; i < size; ++i) {
 				block[i] = (uint8_t) rand();
 			}
 
 			return block;
+		}
+
+		static uint256 getRanduint256(void) {
+			return uint256(getRandBytes(32));
 		}
 
 		static std::string getRandHexString(size_t length) {
@@ -74,12 +78,12 @@ namespace Elastos {
 			return uint8_t(rand());
 		}
 
-		static UInt168 getRandUInt168(void) {
-			UInt168 u;
-			for (size_t i = 0; i < ARRAY_SIZE(u.u8); ++i) {
-				u.u8[i] = rand();
-			}
-			return u;
+		static uint128 getRandUInt128(void) {
+			return uint128(getRandBytes(16));
+		}
+
+		static uint168 getRandUInt168(void) {
+			return uint168(getRandBytes(21));
 		}
 
 		static void initTransaction(Transaction &tx, const Transaction::TxVersion &version) {
@@ -94,7 +98,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionInput input;
-				input.SetTransactionHash(getRandUInt256());
+				input.SetTransactionHash(getRanduint256());
 				input.SetIndex(getRandUInt16());
 				input.SetSequence(getRandUInt32());
 				tx.AddInput(input);
@@ -103,15 +107,15 @@ namespace Elastos {
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionOutput output;
 				output.SetAmount(getRandUInt64());
-				output.SetAssetId(getRandUInt256());
+				output.SetAssetId(getRanduint256());
 				output.SetOutputLock(getRandUInt32());
 				output.SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
 					output.SetType(TransactionOutput::Type(i % 2));
 					if (output.GetType() == TransactionOutput::VoteOutput) {
-						std::vector<CMBlock> candidates;
+						std::vector<bytes_t> candidates;
 						for (size_t i = 0; i < 50; ++i) {
-							candidates.push_back(getRandCMBlock(33));
+							candidates.push_back(getRandBytes(33));
 						}
 						PayloadVote::VoteContent vc(PayloadVote::Delegate, candidates);
 						output.SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
@@ -123,13 +127,13 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
-				CMBlock data = getRandCMBlock(25);
+				bytes_t data = getRandBytes(25);
 				tx.AddAttribute(Attribute(Attribute::Script, data));
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
-				CMBlock code = getRandCMBlock(25);
-				CMBlock parameter = getRandCMBlock(25);
+				bytes_t code = getRandBytes(25);
+				bytes_t parameter = getRandBytes(25);
 				tx.AddProgram(Program(code, parameter));
 			}
 
@@ -149,13 +153,13 @@ namespace Elastos {
 			}
 
 			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
-			REQUIRE(UInt256Eq(&tx1.GetHash(), &tx2.GetHash()));
+			REQUIRE(tx1.GetHash() == tx2.GetHash());
 			REQUIRE(tx1.GetInputs().size() == tx2.GetInputs().size());
 			for (size_t i = 0; i < tx1.GetInputs().size(); ++i) {
 				TransactionInput in1, in2;
 				in1 = tx1.GetInputs()[i];
 				in2 = tx2.GetInputs()[i];
-				REQUIRE(UInt256Eq(&in1.GetTransctionHash(), &in2.GetTransctionHash()));
+				REQUIRE(in1.GetTransctionHash() == in2.GetTransctionHash());
 				REQUIRE(in1.GetIndex() == in2.GetIndex());
 				REQUIRE(in1.GetSequence() == in2.GetSequence());
 			}
@@ -165,8 +169,8 @@ namespace Elastos {
 				TransactionOutput o1, o2;
 				o1 = tx1.GetOutputs()[i];
 				o2 = tx2.GetOutputs()[i];
-				REQUIRE(UInt256Eq(&o2.GetAssetId(), &o1.GetAssetId()));
-				REQUIRE(UInt168Eq(&o2.GetProgramHash(), &o1.GetProgramHash()));
+				REQUIRE(o2.GetAssetId() == o1.GetAssetId());
+				REQUIRE(o2.GetProgramHash() == o1.GetProgramHash());
 				REQUIRE(o2.GetOutputLock() == o1.GetOutputLock());
 				REQUIRE(o2.GetAmount() == o1.GetAmount());
 
@@ -184,8 +188,8 @@ namespace Elastos {
 
 					for (size_t j = 0; j < vc1.size(); ++j) {
 						REQUIRE(vc1[j].type == vc2[j].type);
-						const std::vector<CMBlock> &cand1 = vc1[j].candidates;
-						const std::vector<CMBlock> &cand2 = vc2[j].candidates;
+						const std::vector<bytes_t> &cand1 = vc1[j].candidates;
+						const std::vector<bytes_t> &cand2 = vc2[j].candidates;
 
 						REQUIRE(cand1.size() == cand2.size());
 						for (size_t k = 0; k < cand1.size(); ++k) {
@@ -223,35 +227,35 @@ namespace Elastos {
 		static AuxPow createDummyAuxPow() {
 			AuxPow auxPow;
 
-			std::vector<UInt256> hashes(3);
+			std::vector<uint256> hashes(3);
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				hashes[i] = getRandUInt256();
+				hashes[i] = getRanduint256();
 			}
 			auxPow.SetAuxMerkleBranch(hashes);
 
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				hashes[i] = getRandUInt256();
+				hashes[i] = getRanduint256();
 			}
 			auxPow.SetCoinBaseMerkle(hashes);
 
 			auxPow.SetAuxMerkleIndex(123);
 			auxPow.SetParMerkleIndex(456);
 
-			auxPow.SetParentHash(getRandUInt256());
+			auxPow.SetParentHash(getRanduint256());
 
 			// init transaction
 			BRTransaction *tx = BRTransactionNew();
 			tx->txHash = getRandUInt256();
 			tx->version = rand();
 			for (size_t i = 0; i < 3; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				CMBlock signature = getRandCMBlock(28);
+				bytes_t script = getRandBytes(25);
+				bytes_t signature = getRandBytes(28);
 				BRTransactionAddInput(tx, getRandUInt256(), i, rand(),
-									  script, script.GetSize(), signature, signature.GetSize(), rand());
+									  &script[0], script.size(), &signature[0], signature.size(), rand());
 			}
 			for (size_t i = 0; i < 4; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				BRTransactionAddOutput(tx, rand(), script, script.GetSize());
+				bytes_t script = getRandBytes(25);
+				BRTransactionAddOutput(tx, rand(), &script[0], script.size());
 			}
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
@@ -273,9 +277,9 @@ namespace Elastos {
 				MBHashes[i] = getRandUInt256();
 			}
 			block->hashesCount = ARRAY_SIZE(MBHashes);
-			CMBlock flags = getRandCMBlock(5);
-			block->flagsLen = flags.GetSize();
-			BRMerkleBlockSetTxHashes(block, MBHashes, ARRAY_SIZE(MBHashes), flags, flags.GetSize());
+			bytes_t flags = getRandBytes(5);
+			block->flagsLen = flags.size();
+			BRMerkleBlockSetTxHashes(block, MBHashes, ARRAY_SIZE(MBHashes), &flags[0], flags.size());
 			block->height = rand();
 			auxPow.SetParBlockHeader(block);
 
@@ -283,26 +287,26 @@ namespace Elastos {
 		}
 
 		static void verrifyAuxPowEqual(const AuxPow &auxPow, const AuxPow &auxPowVerify, bool checkAll = true) {
-			const std::vector<UInt256> &origMerkleBranch = auxPow.GetAuxMerkleBranch();
-			const std::vector<UInt256> &merkleBranch = auxPowVerify.GetAuxMerkleBranch();
+			const std::vector<uint256> &origMerkleBranch = auxPow.GetAuxMerkleBranch();
+			const std::vector<uint256> &merkleBranch = auxPowVerify.GetAuxMerkleBranch();
 			REQUIRE(merkleBranch.size() == origMerkleBranch.size());
 			for (size_t i = 0; i < merkleBranch.size(); ++i) {
-				REQUIRE(UInt256Eq(&merkleBranch[i], &origMerkleBranch[i]));
+				REQUIRE(merkleBranch[i] == origMerkleBranch[i]);
 			}
 
-			const std::vector<UInt256> &origCoinBaseMerkle = auxPow.GetParCoinBaseMerkle();
-			const std::vector<UInt256> &coinBaseMerkle = auxPowVerify.GetParCoinBaseMerkle();
+			const std::vector<uint256> &origCoinBaseMerkle = auxPow.GetParCoinBaseMerkle();
+			const std::vector<uint256> &coinBaseMerkle = auxPowVerify.GetParCoinBaseMerkle();
 			REQUIRE(origCoinBaseMerkle.size() == coinBaseMerkle.size());
 			for (size_t i = 0; i < coinBaseMerkle.size(); ++i) {
-				REQUIRE(UInt256Eq(&coinBaseMerkle[i], &origCoinBaseMerkle[i]));
+				REQUIRE(coinBaseMerkle[i] == origCoinBaseMerkle[i]);
 			}
 
 			REQUIRE(auxPow.GetAuxMerkleIndex() == auxPowVerify.GetAuxMerkleIndex());
 			REQUIRE(auxPow.GetParMerkleIndex() == auxPowVerify.GetParMerkleIndex());
 
-			const UInt256 &parentHash = auxPow.GetParentHash();
-			const UInt256 &parentHashVerify = auxPowVerify.GetParentHash();
-			REQUIRE(UInt256Eq(&parentHash, &parentHashVerify));
+			const uint256 &parentHash = auxPow.GetParentHash();
+			const uint256 &parentHashVerify = auxPowVerify.GetParentHash();
+			REQUIRE(parentHash == parentHashVerify);
 
 			// verify transaction
 			BRTransaction *origTxn = auxPow.GetBTCTransaction();
@@ -377,27 +381,27 @@ namespace Elastos {
 				flags.push_back((uint8_t) rand());
 			}
 
-			std::vector<UInt256> hashes;
+			std::vector<uint256> hashes;
 			for (size_t i = 0; i < 10; ++i) {
-				hashes.push_back(getRandUInt256());
+				hashes.push_back(getRanduint256());
 			}
 
-			block->SetRootBlockHash(getRandUInt256());
+			block->SetRootBlockHash(getRanduint256());
 			block->SetNonce((uint32_t) rand());
-			block->SetPrevBlockHash(getRandUInt256());
+			block->SetPrevBlockHash(getRanduint256());
 			block->SetTarget((uint32_t) rand());
 			block->SetTransactionCount((uint32_t) rand());
 
 			AuxPow auxPow;
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
-				hashes.push_back(getRandUInt256());
+				hashes.push_back(getRanduint256());
 			}
 			auxPow.SetAuxMerkleBranch(hashes);
 
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
-				hashes.push_back(getRandUInt256());
+				hashes.push_back(getRanduint256());
 			}
 			auxPow.SetCoinBaseMerkle(hashes);
 			auxPow.SetAuxMerkleIndex(rand());
@@ -406,14 +410,14 @@ namespace Elastos {
 			tx->txHash = getRandUInt256();
 			tx->version = (uint32_t) rand();
 			for (size_t i = 0; i < 10; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				CMBlock signature = getRandCMBlock(35);
-				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t) rand(), (uint64_t) rand(), script,
-									  script.GetSize(), signature, signature.GetSize(), (uint32_t) rand());
+				bytes_t script = getRandBytes(25);
+				bytes_t signature = getRandBytes(35);
+				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t) rand(), (uint64_t) rand(), &script[0],
+									  script.size(), &signature[0], signature.size(), (uint32_t) rand());
 			}
 			for (size_t i = 0; i < 10; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				BRTransactionAddOutput(tx, rand(), script, script.GetSize());
+				bytes_t script = getRandBytes(25);
+				BRTransactionAddOutput(tx, rand(), &script[0], script.size());
 			}
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
@@ -424,7 +428,7 @@ namespace Elastos {
 
 		static void verifyELAMerkleBlock(const MerkleBlock &newBlock, const MerkleBlock &block) {
 
-			REQUIRE(UInt256Eq(&newBlock.GetHash(), &block.GetHash()));
+			REQUIRE(newBlock.GetHash() == block.GetHash());
 			REQUIRE(newBlock.GetHeight() == block.GetHeight());
 			REQUIRE(newBlock.GetTimestamp() == block.GetTimestamp());
 			REQUIRE(newBlock.GetVersion() == block.GetVersion());
@@ -434,11 +438,11 @@ namespace Elastos {
 			}
 			REQUIRE(newBlock.GetHashes().size() == block.GetHashes().size());
 			for (size_t i = 0; i < block.GetHashes().size(); ++i) {
-				REQUIRE(UInt256Eq(&newBlock.GetHashes()[i], &block.GetHashes()[i]));
+				REQUIRE(newBlock.GetHashes()[i] == block.GetHashes()[i]);
 			}
-			REQUIRE(UInt256Eq(&newBlock.GetRootBlockHash(), &block.GetRootBlockHash()));
+			REQUIRE(newBlock.GetRootBlockHash() == block.GetRootBlockHash());
 			REQUIRE(newBlock.GetNonce() == block.GetNonce());
-			REQUIRE(UInt256Eq(&newBlock.GetPrevBlockHash(), &block.GetPrevBlockHash()));
+			REQUIRE(newBlock.GetPrevBlockHash() == block.GetPrevBlockHash());
 			REQUIRE(newBlock.GetTarget() == block.GetTarget());
 			REQUIRE(newBlock.GetTransactionCount() == block.GetTransactionCount());
 

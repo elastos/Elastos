@@ -25,14 +25,16 @@ namespace Elastos {
 			return j;
 		}
 
-		CMBlock SingleSubAccount::GetRedeemScript(const Address &addr) const {
-			Key key;
-			key.SetPubKey(_parentAccount->GetMultiSignPublicKey());
+		bytes_t SingleSubAccount::GetRedeemScript(const Address &addr) const {
+			// TODO fix here later
+			bytes_t pubkey = _parentAccount->GetMultiSignPublicKey();
+			Address standard(PrefixStandard, pubkey);
+			Address deposit(PrefixDeposit, pubkey);
 
-			ErrorChecker::CheckLogic(addr != key.GetAddress(PrefixStandard) || addr != key.GetAddress(PrefixDeposit),
+			ErrorChecker::CheckLogic(addr != standard && addr != deposit,
 									 Error::Address, "Can't found pubKey for addr " + addr.String());
 
-			return key.RedeemScript(PrefixStandard);
+			return standard.RedeemScript();
 		}
 
 		bool SingleSubAccount::IsSingleAddress() const {

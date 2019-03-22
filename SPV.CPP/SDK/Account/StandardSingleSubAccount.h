@@ -12,12 +12,12 @@ namespace Elastos {
 
 		class StandardSingleSubAccount : public SingleSubAccount {
 		public:
-			StandardSingleSubAccount(const MasterPubKey &masterPubKey, const CMBlock &votePubKey,
+			StandardSingleSubAccount(const HDKeychain &masterPubKey, const bytes_t &votePubKey,
 									 IAccount *account, uint32_t coinIndex);
 
-			virtual CMBlock GetRedeemScript(const Address &addr) const;
+			virtual bytes_t GetRedeemScript(const Address &addr) const;
 
-			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
+			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 

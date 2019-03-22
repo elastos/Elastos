@@ -25,111 +25,109 @@ namespace Elastos {
 
 		}
 
-		bool InventoryMessage::Accept(const CMBlock &msg) {
-			size_t off = 0;
-			inv_type type;
+		bool InventoryMessage::Accept(const bytes_t &msg) {
+			ByteStream stream(msg);
+			uint32_t type;
 
-			size_t count = UInt32GetLE(&msg[off]);
-			off += sizeof(uint32_t);
-
-			if (off + count * 36 > msg.GetSize()) {
-				_peer->error("malformed inv message, length is {}, should be {} for {} item(s)", msg.GetSize(),
-							 off + count * 36, count);
+			uint32_t count;
+			if (!stream.ReadUint32(count)) {
+				_peer->error("inv msg read count fail");
 				return false;
-			} else if (count > MAX_GETDATA_HASHES) {
-				_peer->error("dropping inv message, {} is too many items, max is {}", count,
-							 MAX_GETDATA_HASHES);
+			}
+
+			if (count > MAX_GETDATA_HASHES) {
+				_peer->error("dropping inv message, {} is too many items, max is {}", count, MAX_GETDATA_HASHES);
+				return false;
+			}
+
+			std::vector<uint256> transactions, blocks;
+			uint256 hash;
+			size_t i;
+
+			for (i = 0; i < count; i++) {
+				if (!stream.ReadUint32(type)) {
+					_peer->error("inv msg read type fail");
+					return false;
+				}
+
+				if (type == inv_block) {
+					if (!stream.ReadBytes(hash)) {
+						_peer->error("inv msg read block hash fail");
+						return false;
+					}
+					blocks.push_back(hash);
+				} else if (type == inv_tx) {
+					if (!stream.ReadBytes(hash)) {
+						_peer->error("inv msg read tx hash fail");
+						return false;
+					}
+					transactions.push_back(hash);
+				}
+			}
+
+			if (transactions.size() > 0 && !_peer->SentFilter() && !_peer->SentMempool() && !_peer->SentGetblocks()) {
+				_peer->error("got inv message before loading a filter");
+				return false;
+			} else if (transactions.size() > 10000) { // sanity check
+				_peer->error("too many transactions, disconnecting");
+				return false;
+			} else if (_peer->GetCurrentBlockHeight() > 0 && blocks.size() > 2 && blocks.size() < MAX_BLOCKS_COUNT &&
+					   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blocks.size() <
+					   _peer->GetLastBlock()) {
+				_peer->error("non-standard inv, {} is fewer block hash(es) than expected", blocks.size());
 				return false;
 			} else {
-				const uint8_t *transactions[count], *blocks[count];
-				size_t i, txCount = 0, blockCount = 0;
+				if (!_peer->SentFilter() && !_peer->SentGetblocks())
+					blocks.clear();
+				if (blocks.size() > 0) {
+					if (blocks.size() == 1 && _peer->LastBlockHash() == blocks[0]) blocks.clear();
+					if (blocks.size() == 1) _peer->SetLastBlockHash(blocks[0]);
+				}
 
-				for (i = 0; i < count; i++) {
-					type = inv_type(UInt32GetLE(&msg[off]));
-					off += sizeof(uint32_t);
+				for (i = 0; i < blocks.size(); i++) {
+					// remember blockHashes in case we need to re-request them with an updated bloom filter
+					_peer->AddKnownBlockHash(blocks[i]);
+				}
 
-					if (type == inv_block) {
-						blocks[blockCount++] = &msg[off];
-						off += sizeof(UInt256);
-					} else if (type == inv_tx) {
-						transactions[txCount++] = &msg[off];
-						off += sizeof(UInt256);
+				while (_peer->GetKnownBlockHashes().size() > MAX_GETDATA_HASHES) {
+					_peer->KnownBlockHashesRemoveRange(0, _peer->GetKnownBlockHashes().size() / 3);
+				}
+
+				if (_peer->NeedsFilterUpdate()) blocks.clear();
+
+				std::vector<uint256> txHashes;
+				for (i = 0; i < transactions.size(); i++) {
+					if (_peer->KnownTxHashSet().find(transactions[i]) != _peer->KnownTxHashSet().end()) {
+						FireHasTx(hash);
+					} else {
+						txHashes.push_back(hash);
 					}
 				}
 
-				if (txCount > 0 && !_peer->SentFilter() && !_peer->SentMempool() && !_peer->SentGetblocks()) {
-					_peer->error("got inv message before loading a filter");
-					return false;
-				} else if (txCount > 10000) { // sanity check
-					_peer->error("too many transactions, disconnecting");
-					return false;
-				} else if (_peer->GetCurrentBlockHeight() > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
-						   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blockCount <
-						   _peer->GetLastBlock()) {
-					_peer->error("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
-					return false;
-				} else {
-					if (!_peer->SentFilter() && !_peer->SentGetblocks()) blockCount = 0;
-					UInt256 blockHash;
-					if (blockCount > 0) {
-						UInt256Get(&blockHash, blocks[0]);
-						if (blockCount == 1 && UInt256Eq(&(_peer->LastBlockHash()), &blockHash)) blockCount = 0;
-						if (blockCount == 1) _peer->SetLastBlockHash(*(const UInt256 *) blocks[0]);
-					}
+				_peer->info("got inv with {} tx {} block item(s)", txHashes.size(), blocks.size());
+				_peer->AddKnownTxHashes(txHashes);
+				if (txHashes.size() > 0 || blocks.size() > 0) {
+					GetDataParameter getDataParam(txHashes, blocks);
+					_peer->SendMessage(MSG_GETDATA, getDataParam);
+				}
 
-					UInt256 hash;
-					std::vector<UInt256> blockHashes, txHashes;
+				// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
+				if (blocks.size() >= MAX_BLOCKS_COUNT) {
+					GetBlocksParameter param;
+					param.locators.push_back(blocks.back());
+					param.locators.push_back(blocks.front());
+					param.hashStop = 0;
 
-					blockHashes.reserve(blockCount);
-					txHashes.reserve(txCount);
+					_peer->SendMessage(MSG_GETBLOCKS, param);
+				}
 
-					for (i = 0; i < blockCount; i++) {
-						blockHashes.push_back(*(UInt256 *) blocks[i]);
-						// remember blockHashes in case we need to re-request them with an updated bloom filter
-						_peer->AddKnownBlockHash(*(const UInt256 *) blocks[i]);
-					}
-
-					while (_peer->GetKnownBlockHashes().size() > MAX_GETDATA_HASHES) {
-						_peer->KnownBlockHashesRemoveRange(0, _peer->GetKnownBlockHashes().size() / 3);
-					}
-
-					if (_peer->NeedsFilterUpdate()) blockCount = 0;
-
-					for (i = 0; i < txCount; i++) {
-						hash = *(UInt256 *) transactions[i];
-
-						if (_peer->KnownTxHashSet().Contains(hash)) {
-							FireHasTx(hash);
-						} else {
-							txHashes.push_back(hash);
-						}
-					}
-
-					_peer->info("got inv with {} tx {} block item(s)", txHashes.size(), blockCount);
-					_peer->AddKnownTxHashes(txHashes);
-					if (txHashes.size() > 0 || blockCount > 0) {
-						GetDataParameter getDataParam(txHashes, blockHashes);
-						_peer->SendMessage(MSG_GETDATA, getDataParam);
-					}
-
-					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
-					if (blockCount >= MAX_BLOCKS_COUNT) {
-						GetBlocksParameter param;
-						param.locators.push_back(blockHashes[blockCount - 1]);
-						param.locators.push_back(blockHashes[0]);
-						param.hashStop = UINT256_ZERO;
-
-						_peer->SendMessage(MSG_GETBLOCKS, param);
-					}
-
-					if (txCount > 0 && !_peer->GetMemPoolCallback().empty()) {
-						_peer->info("got initial mempool response");
-						PingParameter pingParameter;
-						pingParameter.callback = _peer->GetMemPoolCallback();
-						pingParameter.lastBlockHeight = _peer->GetPeerManager()->GetLastBlockHeight();
-						_peer->SendMessage(MSG_PING, pingParameter);
-						_peer->ResetMemPool();
-					}
+				if (transactions.size() > 0 && !_peer->GetMemPoolCallback().empty()) {
+					_peer->info("got initial mempool response");
+					PingParameter pingParameter;
+					pingParameter.callback = _peer->GetMemPoolCallback();
+					pingParameter.lastBlockHeight = _peer->GetPeerManager()->GetLastBlockHeight();
+					_peer->SendMessage(MSG_PING, pingParameter);
+					_peer->ResetMemPool();
 				}
 			}
 
@@ -152,11 +150,11 @@ namespace Elastos {
 				stream.WriteUint32(uint32_t(txCount));
 				for (size_t i = 0; i < txCount; i++) {
 					stream.WriteUint32(uint32_t(inv_tx));  // version
-					stream.WriteBytes(&_peer->KnownTxHashes()[knownCount + i], sizeof(UInt256));
+					stream.WriteBytes(_peer->KnownTxHashes()[knownCount + i]);
 				}
 
 				_peer->info("sending inv tx count={} type={}", txCount, inv_tx);
-				SendMessage(stream.GetBuffer(), Type());
+				SendMessage(stream.GetBytes(), Type());
 			}
 		}
 

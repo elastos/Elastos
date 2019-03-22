@@ -11,10 +11,10 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct GetDataParameter : public SendMessageParameter {
-			std::vector<UInt256> txHashes;
-			std::vector<UInt256> blockHashes;
+			std::vector<uint256> txHashes;
+			std::vector<uint256> blockHashes;
 
-			GetDataParameter(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) :
+			GetDataParameter(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes) :
 				txHashes(txHashes), blockHashes(blockHashes) {
 
 			}
@@ -24,7 +24,7 @@ namespace Elastos {
 		public:
 			explicit GetDataMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const CMBlock &msg);
+			virtual bool Accept(const bytes_t &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

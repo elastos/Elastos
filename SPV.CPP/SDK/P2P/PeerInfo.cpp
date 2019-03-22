@@ -14,7 +14,6 @@ namespace Elastos {
 		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
 
 		PeerInfo::PeerInfo() :
-				Address(UINT128_ZERO),
 				Port(0),
 				Timestamp(0),
 				Services(SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM),
@@ -22,7 +21,7 @@ namespace Elastos {
 
 		}
 
-		PeerInfo::PeerInfo(const UInt128 &addr, uint16_t port, uint64_t timestamp) :
+		PeerInfo::PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp) :
 				Port(port),
 				Timestamp(timestamp),
 				Address(addr),
@@ -30,7 +29,7 @@ namespace Elastos {
 				Flags(0) {
 		}
 
-		PeerInfo::PeerInfo(const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
+		PeerInfo::PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
 				Port(port),
 				Timestamp(timestamp),
 				Services(services),
@@ -53,7 +52,7 @@ namespace Elastos {
 		}
 
 		bool PeerInfo::operator==(const PeerInfo &info) const {
-			return (UInt128Eq(&Address, &info.Address) &&
+			return (Address == info.Address &&
 					Port == info.Port);
 		}
 
@@ -62,20 +61,20 @@ namespace Elastos {
 		}
 
 		size_t PeerInfo::GetHash() const {
-			uint32_t address = Address.u32[3], port = Port;
+			uint32_t address = Address.Get32(3), port = Port;
 
 			// (((FNV_OFFSET xor address)*FNV_PRIME) xor port)*FNV_PRIME
 			return (size_t) ((((0x811C9dc5 ^ address) * 0x01000193) ^ port) * 0x01000193);
 		}
 
 		bool PeerInfo::IsIPv4() const {
-			return (Address.u64[0] == 0 && Address.u16[4] == 0 && Address.u16[5] == 0xffff);
+			return (Address.Get64(0) == 0 && Address.Get32(2) == 0xffff0000);
 		}
 
 		std::string PeerInfo::GetHost() const {
 			char temp[INET6_ADDRSTRLEN];
 			if (IsIPv4()) {
-				inet_ntop(AF_INET, &Address.u32[3], temp, sizeof(temp));
+				inet_ntop(AF_INET, Address.end() - 4 , temp, sizeof(temp));
 			} else {
 				inet_ntop(AF_INET6, &Address, temp, sizeof(temp));
 			}

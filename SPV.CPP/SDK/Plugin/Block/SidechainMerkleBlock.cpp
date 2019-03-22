@@ -32,11 +32,11 @@ namespace Elastos {
 			MerkleBlockBase::SerializeAfterAux(ostream);
 		}
 
-		bool SidechainMerkleBlock::Deserialize(ByteStream &istream) {
+		bool SidechainMerkleBlock::Deserialize(const ByteStream &istream) {
 			if (!MerkleBlockBase::DeserializeNoAux(istream) || !idAuxPow.Deserialize(istream))
 				return false;
 
-			istream.Drop(1);
+			istream.Skip(1);
 			if (!MerkleBlockBase::DeserializeAfterAux(istream))
 				return false;
 
@@ -45,28 +45,11 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json SidechainMerkleBlock::ToJson() const {
-			nlohmann::json j = MerkleBlockBase::ToJson();
-			j["IdAuxPow"] = idAuxPow.ToJson();
-
-			return j;
-		}
-
-		void SidechainMerkleBlock::FromJson(const nlohmann::json &j) {
-			MerkleBlockBase::FromJson(j);
-			nlohmann::json auxPowJson = j["IdAuxPow"];
-			idAuxPow.FromJson(auxPowJson);
-		}
-
-		const UInt256 &SidechainMerkleBlock::GetHash() const {
-			UInt256 zero = UINT256_ZERO;
-			if (UInt256Eq(&_blockHash, &zero)) {
+		const uint256 &SidechainMerkleBlock::GetHash() const {
+			if (_blockHash == 0) {
 				ByteStream ostream;
 				MerkleBlockBase::SerializeNoAux(ostream);
-				UInt256 hash = UINT256_ZERO;
-				CMBlock buf = ostream.GetBuffer();
-				BRSHA256_2(&hash, buf, buf.GetSize());
-				UInt256Set((void *) &_blockHash, hash);
+				_blockHash = sha256_2(ostream.GetBytes());
 			}
 			return _blockHash;
 		}
@@ -77,11 +60,11 @@ namespace Elastos {
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
 			const uint32_t size = _target >> 24, target = _target & 0x00ffffff;
 			size_t hashIdx = 0, flagIdx = 0;
-			UInt256 merkleRoot = MerkleBlockBase::MerkleBlockRootR(&hashIdx, &flagIdx, 0), t = UINT256_ZERO;
+			uint256 merkleRoot = MerkleBlockBase::MerkleBlockRootR(&hashIdx, &flagIdx, 0), t;
 			int r = 1;
 
 			// check if merkle root is correct
-			if (_totalTx > 0 && !UInt256Eq(&(merkleRoot), &(_merkleRoot))) r = 0;
+			if (_totalTx > 0 && merkleRoot != _merkleRoot) r = 0;
 
 			// check if timestamp is too far in future
 			if (_timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
@@ -89,11 +72,11 @@ namespace Elastos {
 			// check if proof-of-work target is out of range
 			if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
 
-			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
-			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
-
 			//todo verify block hash
-//			UInt256 auxBlockHash = _merkleBlock->auxPow.getParBlockHeaderHash();
+//			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
+//			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
+
+//			uint256 auxBlockHash = _merkleBlock->auxPow.getParBlockHeaderHash();
 //			for (int i = sizeof(t) - 1; r && i >= 0; i--) { // check proof-of-work
 //				if (auxBlockHash.u8[i] < t.u8[i]) break;
 //				if (auxBlockHash.u8[i] > t.u8[i]) r = 0;

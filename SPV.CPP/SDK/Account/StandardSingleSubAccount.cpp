@@ -7,7 +7,6 @@
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <Core/BRCrypto.h>
 #include <SDK/Common/ErrorChecker.h>
@@ -15,52 +14,44 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		StandardSingleSubAccount::StandardSingleSubAccount(const MasterPubKey &masterPubKey,
-														   const CMBlock &votePubKey,
+		StandardSingleSubAccount::StandardSingleSubAccount(const HDKeychain &masterPubKey,
+														   const bytes_t &votePubKey,
 														   IAccount *account,
 														   uint32_t coinIndex) :
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
 				_votePublicKey = votePubKey;
-				if (votePubKey.GetSize() > 0)
-					_depositAddress = Address(votePubKey, PrefixDeposit);
+				if (votePubKey.size() > 0)
+					_depositAddress = Address(PrefixDeposit, votePubKey);
 
-				CMBlock pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
-
-				_address = Address(pubKey, PrefixStandard);
+				_address = Address(PrefixStandard, _masterPubKey.getChild("0/0").pubkey());
 		}
 
-		CMBlock StandardSingleSubAccount::GetRedeemScript(const Address &addr) const {
-			CMBlock pubKey;
+		bytes_t StandardSingleSubAccount::GetRedeemScript(const Address &addr) const {
+			bytes_t pubKey;
 			Key key;
 
 			if (IsDepositAddress(addr)) {
 				pubKey = GetVotePublicKey();
-				key.SetPubKey(pubKey);
-				return key.RedeemScript(PrefixDeposit);
+				return Address(PrefixDeposit, pubKey).RedeemScript();
 			}
 
-			pubKey = BIP32Sequence::PubKey(_masterPubKey, 0, 0);
-			key.SetPubKey(pubKey);
+			key.SetPubKey(_masterPubKey.getChild("0/0").pubkey());
 			ErrorChecker::CheckLogic(addr != _address, Error::Address, "Can't found pubKey for addr " + addr.String());
-			return key.RedeemScript(PrefixStandard);
+			return _address.RedeemScript();
 		}
 
-		bool StandardSingleSubAccount::FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) {
+		bool StandardSingleSubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
 			if (SubAccountBase::FindKey(key, pubKey, payPasswd)) {
 				return true;
 			}
 
-			if (pubKey == BIP32Sequence::PubKey(_masterPubKey, 0, 0)) {
-				UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
-				UInt256 chainCode;
-				key = BIP32Sequence::PrivKeyPath(seed.u8, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
-												 _coinIndex | BIP32_HARD,
-												 BIP32::Account::Default | BIP32_HARD,
-												 BIP32::External, 0);
-				var_clean(&seed);
-				var_clean(&chainCode);
+			if (pubKey == _masterPubKey.getChild("0/0").pubkey()) {
+				HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
+				HDKeychain rootKey(hdseed.getExtendedKey(true));
+
+				key = rootKey.getChild("44'/0'/0'/0/0");
 				return true;
 			}
 
@@ -87,18 +78,10 @@ namespace Elastos {
 		}
 
 		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
-			UInt512 seed = _parentAccount->DeriveSeed(payPasswd);
-
-			UInt256 chainCode;
-
-			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 5, 44 | BIP32_HARD,
-												 _coinIndex | BIP32_HARD, BIP32::Account::Vote | BIP32_HARD,
-												 BIP32::External, 0);
-
-			var_clean(&seed);
-			var_clean(&chainCode);
-
-			return key;
+			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+			// account is 1
+			return rootKey.getChild("44'/0'/1'/0/0");
 		}
 
 	}

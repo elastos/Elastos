@@ -7,8 +7,6 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRInt.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -116,10 +114,7 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 2);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 2);
 
-					CMBlock buff;
-					buff.Resize(len);
-					memcpy(buff, pdata, len);
-					asset.Asset = buff;
+					asset.Asset.assign(pdata, pdata + len);
 					asset.TxHash = _sqlite->ColumnText(stmt, 3);
 
 					assets.push_back(asset);
@@ -154,10 +149,7 @@ namespace Elastos {
 				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
-				CMBlock buff;
-				buff.Resize(len);
-				memcpy(buff, pdata, len);
-				asset.Asset = buff;
+				asset.Asset.assign(pdata, pdata + len);
 				asset.TxHash = _sqlite->ColumnText(stmt, 2);
 			}
 

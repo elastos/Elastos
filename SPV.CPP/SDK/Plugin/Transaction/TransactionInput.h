@@ -5,10 +5,8 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONINPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Common/ByteStream.h>
 
-#include <Core/BRInt.h>
 #include <nlohmann/json.hpp>
 
 #include <string>
@@ -20,13 +18,13 @@ namespace Elastos {
 		public:
 			TransactionInput();
 
-			TransactionInput(const UInt256 &txHash, uint32_t index);
+			TransactionInput(const uint256 &txHash, uint32_t index);
 
 			~TransactionInput();
 
-			const UInt256 &GetTransctionHash() const;
+			const uint256 &GetTransctionHash() const;
 
-			void SetTransactionHash(const UInt256 &hash);
+			void SetTransactionHash(const uint256 &hash);
 
 			uint32_t GetIndex() const;
 
@@ -38,7 +36,7 @@ namespace Elastos {
 
 			void Serialize(ByteStream &ostream) const;
 
-			bool Deserialize(ByteStream &istream);
+			bool Deserialize(const ByteStream &istream);
 
 			nlohmann::json ToJson() const;
 
@@ -47,7 +45,7 @@ namespace Elastos {
 			size_t GetSize() const;
 
 		private:
-			UInt256 _txHash;
+			uint256 _txHash;
 			uint32_t _index;
 			uint32_t _sequence;
 		};

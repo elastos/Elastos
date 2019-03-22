@@ -75,13 +75,12 @@ namespace Elastos {
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 
-			CMBlock ownerPubKey = Utils::DecodeHex(ownerPublicKey);
-			ErrorChecker::CheckParam(!Key::PubKeyIsValid(ownerPubKey, ownerPubKey.GetSize()), Error::PubKeyFormat,
-									 "Invalid owner public key");
+			Key verifyPubKey;
+			bytes_t ownerPubKey = bytes_t(ownerPublicKey);
+			verifyPubKey.SetPubKey(ownerPubKey);
 
-			CMBlock nodePubKey = Utils::DecodeHex(nodePublicKey);
-			ErrorChecker::CheckParam(!Key::PubKeyIsValid(nodePubKey, nodePubKey.GetSize()), Error::PubKeyFormat,
-									 "Invalid node public key");
+			bytes_t nodePubKey = bytes_t(nodePublicKey);
+			verifyPubKey.SetPubKey(nodePubKey);
 
 			PayloadRegisterProducer pr;
 			pr.SetPublicKey(ownerPubKey);
@@ -93,7 +92,7 @@ namespace Elastos {
 
 			ByteStream ostream;
 			pr.SerializeUnsigned(ostream, 0);
-			CMBlock prUnsigned = ostream.GetBuffer();
+			bytes_t prUnsigned = ostream.GetBytes();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
 			pr.SetSignature(key.Sign(prUnsigned));
@@ -114,11 +113,11 @@ namespace Elastos {
 									 "Public key length should be 33 or 65 bytes");
 
 			PayloadCancelProducer pc;
-			pc.SetPublicKey(Utils::DecodeHex(publicKey));
+			pc.SetPublicKey(publicKey);
 
 			ByteStream ostream;
 			pc.SerializeUnsigned(ostream, 0);
-			CMBlock pcUnsigned = ostream.GetBuffer();
+			bytes_t pcUnsigned = ostream.GetBytes();
 
 			Key key = _subAccount->DeriveVoteKey(payPasswd);
 			pc.SetSignature(key.Sign(pcUnsigned));
@@ -149,9 +148,8 @@ namespace Elastos {
 			}
 			PayloadPtr iPayload = PayloadPtr(payloadRegisterProducer);
 
-			Key key;
-			key.SetPubKey(payloadRegisterProducer->GetPublicKey());
-			std::string toAddress = key.GetAddress(PrefixDeposit);
+			bytes_t pubkey = payloadRegisterProducer->GetPublicKey();
+			std::string toAddress = Address(PrefixDeposit, pubkey).String();
 
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
 													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
@@ -231,9 +229,8 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			Key key;
-			key.SetPubKey(_subAccount->GetVotePublicKey());
-			std::string fromAddress = key.GetAddress(PrefixDeposit);
+			bytes_t pubkey(_subAccount->GetVotePublicKey());
+			std::string fromAddress = Address(PrefixDeposit, pubkey).String();
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
 
@@ -250,7 +247,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			return Utils::EncodeHex(_subAccount->GetVotePublicKey());
+			return _subAccount->GetVotePublicKey().getHex();
 		}
 
 		nlohmann::json
@@ -273,7 +270,7 @@ namespace Elastos {
 													  "Vote produce public keys is not string");
 				}
 
-				voteContent.candidates.push_back(Utils::DecodeHex((*it).get<std::string>()));
+				voteContent.candidates.push_back((*it).get<std::string>());
 			}
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
@@ -287,7 +284,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(txInput == nullptr, Error::GetTransactionInput, "Get tx input error");
 			ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0].GetIndex(), Error::GetTransactionInput,
 									 "Input index larger than output size.");
-			const UInt168 &inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
+			const uint168 &inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
 
 			tx->SetTransactionType(Transaction::TransferAsset);
 			std::vector<TransactionOutput> &outputs = tx->GetOutputs();
@@ -328,8 +325,8 @@ namespace Elastos {
 							  [&votedList, &stake](const PayloadVote::VoteContent &vc) {
 								  if (vc.type == PayloadVote::Type::Delegate) {
 									  std::for_each(vc.candidates.cbegin(), vc.candidates.cend(),
-													[&votedList, &stake](const CMBlock &candidate) {
-														std::string c = Utils::EncodeHex(candidate);
+													[&votedList, &stake](const bytes_t &candidate) {
+														std::string c = candidate.getHex();
 														if (votedList.find(c) != votedList.end()) {
 															votedList[c] += stake;
 														} else {
@@ -365,8 +362,8 @@ namespace Elastos {
 					if (pr) {
 						nlohmann::json info;
 
-						info["OwnerPublicKey"] = Utils::EncodeHex(pr->GetPublicKey());
-						info["NodePublicKey"] = Utils::EncodeHex(pr->GetNodePublicKey());
+						info["OwnerPublicKey"] = pr->GetPublicKey().getHex();
+						info["NodePublicKey"] = pr->GetNodePublicKey().getHex();
 						info["NickName"] = pr->GetNickName();
 						info["URL"] = pr->GetUrl();
 						info["Location"] = pr->GetLocation();
@@ -380,8 +377,8 @@ namespace Elastos {
 					if (pu) {
 						nlohmann::json info;
 
-						info["OwnerPublicKey"] = Utils::EncodeHex(pu->GetPublicKey());
-						info["NodePublicKey"] = Utils::EncodeHex(pu->GetNodePublicKey());
+						info["OwnerPublicKey"] = pu->GetPublicKey().getHex();
+						info["NodePublicKey"] = pu->GetNodePublicKey().getHex();
 						info["NickName"] = pu->GetNickName();
 						info["URL"] = pu->GetUrl();
 						info["Location"] = pu->GetLocation();

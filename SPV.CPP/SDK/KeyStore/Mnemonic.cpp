@@ -5,8 +5,8 @@
 #include "Mnemonic.h"
 
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/uint256.h>
 
-#include <Core/BRInt.h>
 #include <Core/BRBIP39WordsEn.h>
 
 #include <fstream>
@@ -53,11 +53,11 @@ namespace Elastos {
 				wordList[i] = _words[i].c_str();
 			}
 
-			UInt128 entropy = UINT128_ZERO;
-			size_t entropyLen = BRBIP39Decode(entropy.u8, sizeof(entropy), wordList, phrase.c_str());
+			uint128 entropy;
+			size_t entropyLen = BRBIP39Decode(entropy.begin(), entropy.size(), wordList, phrase.c_str());
 			if (entropyLen > 0) {
-				char standardPhrase[BRBIP39Encode(NULL, 0, wordList, entropy.u8, sizeof(entropy))];
-				BRBIP39Encode(standardPhrase, sizeof(standardPhrase), wordList, entropy.u8, sizeof(entropy));
+				char standardPhrase[BRBIP39Encode(NULL, 0, wordList, entropy.begin(), entropy.size())];
+				BRBIP39Encode(standardPhrase, sizeof(standardPhrase), wordList, entropy.begin(), entropy.size());
 				return std::string(standardPhrase);
 			}
 			return std::string();

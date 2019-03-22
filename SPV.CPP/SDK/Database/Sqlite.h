@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_SQLITE_H__
 #define __ELASTOS_SDK_SQLITE_H__
 
-#include <SDK/Common/CMemBlock.h>
+#include <SDK/Common/typedefs.h>
 
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
@@ -41,7 +41,8 @@ namespace Elastos {
 			bool Prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
 			int Step(sqlite3_stmt *pStmt);
 			bool Finalize(sqlite3_stmt *pStmt);
-			bool BindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack);
+			bool BindBlob(sqlite3_stmt *pStmt, int idx, const bytes_t &blob, BindCallBack callBack);
+			bool BindBlob(sqlite3_stmt *pStmt, int idx, const void *blob, size_t size, BindCallBack callBack);
 			bool BindDouble(sqlite3_stmt *pStmt, int idx, double d);
 			bool BindInt(sqlite3_stmt *pStmt, int idx, int i);
 			bool BindInt64(sqlite3_stmt *pStmt, int idx, int64_t i);

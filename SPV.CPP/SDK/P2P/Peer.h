@@ -10,8 +10,6 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ElementSet.h>
-#include <SDK/Common/UInt256ValueSet.h>
-#include <SDK/Common/CMemBlock.h>
 
 #include <deque>
 #include <boost/shared_ptr.hpp>
@@ -60,21 +58,21 @@ namespace Elastos {
 
 				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) = 0;
 
-				virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
+				virtual void OnHasTx(const PeerPtr &peer, const uint256 &txHash) = 0;
 
-				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code, const std::string &reason) = 0;
+				virtual void OnRejectedTx(const PeerPtr &peer, const uint256 &txHash, uint8_t code, const std::string &reason) = 0;
 
 				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) = 0;
 
 				virtual void OnRelayedPingMsg(const PeerPtr &peer) = 0;
 
 				virtual void
-				OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
-						   const std::vector<UInt256> &blockHashes) = 0;
+				OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
+						   const std::vector<uint256> &blockHashes) = 0;
 
 				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) = 0;
 
-				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
+				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) = 0;
 
 				virtual bool OnNetworkIsReachable(const PeerPtr &peer) = 0;
 
@@ -83,13 +81,7 @@ namespace Elastos {
 
 			typedef boost::function<void(int)> PeerCallback;
 
-			typedef boost::function<void(const UInt256 &, int, const std::string &)> PeerPubTxCallback;
-
-			struct UInt256Compare {
-				bool operator()(const UInt256 *first, const UInt256 *second) const {
-					return UInt256LessThan(first, second) == 1;
-				}
-			};
+			typedef boost::function<void(const uint256 &, int, const std::string &)> PeerPubTxCallback;
 
 		public:
 			Peer(PeerManager *manager, uint32_t magicNumber);
@@ -104,9 +96,9 @@ namespace Elastos {
 
 			void SendMessage(const std::string &msgType, const SendMessageParameter &parameter);
 
-			const UInt128 &getAddress() const;
+			const uint128 &getAddress() const;
 
-			void setAddress(const UInt128 &addr);
+			void setAddress(const uint128 &addr);
 
 			uint16_t GetPort() const;
 
@@ -140,9 +132,9 @@ namespace Elastos {
 
 			void Disconnect();
 
-			void SendMessage(const CMBlock &message, const std::string &type);
+			void SendMessage(const bytes_t &message, const std::string &type);
 
-			void RerequestBlocks(const UInt256 &fromBlock);
+			void RerequestBlocks(const uint256 &fromBlock);
 
 			void ScheduleDisconnect(double time);
 
@@ -194,27 +186,27 @@ namespace Elastos {
 
 			void SetSentGetblocks(bool sent);
 
-			const std::vector<UInt256> &CurrentBlockTxHashes() const;
+			const std::vector<uint256> &CurrentBlockTxHashes() const;
 
-			void AddCurrentBlockTxHash(const UInt256 &hash);
+			void AddCurrentBlockTxHash(const uint256 &hash);
 
-			void CurrentBlockTxHashesRemove(const UInt256 &hash);
+			void CurrentBlockTxHashesRemove(const uint256 &hash);
 
-			const std::vector<UInt256> &GetKnownBlockHashes() const;
+			const std::vector<uint256> &GetKnownBlockHashes() const;
 
 			void KnownBlockHashesRemoveRange(size_t index, size_t len);
 
-			void AddKnownBlockHash(const UInt256 &hash);
+			void AddKnownBlockHash(const uint256 &hash);
 
-			const std::vector<UInt256> &KnownTxHashes() const;
+			const std::vector<uint256> &KnownTxHashes() const;
 
-			const UInt256 &LastBlockHash() const;
+			const uint256 &LastBlockHash() const;
 
-			void SetLastBlockHash(const UInt256 &hash);
+			void SetLastBlockHash(const uint256 &hash);
 
-			const UInt256ValueSet &KnownTxHashSet() const;
+			const std::set<uint256> &KnownTxHashSet() const;
 
-			void AddKnownTxHashes(const std::vector<UInt256> &txHashes);
+			void AddKnownTxHashes(const std::vector<uint256> &txHashes);
 
 			bool IsIPv4() const;
 
@@ -338,7 +330,7 @@ namespace Elastos {
 
 			bool NetworkIsReachable() const;
 
-			bool AcceptMessage(const CMBlock &msg, const std::string &type);
+			bool AcceptMessage(const bytes_t &msg, const std::string &type);
 
 			int OpenSocket(int domain, double timeout, int *error);
 
@@ -361,10 +353,10 @@ namespace Elastos {
 			double _startTime, _pingTime;
 			volatile double _disconnectTime, _mempoolTime;
 			bool _sentVerack, _gotVerack, _sentGetaddr, _sentFilter, _sentGetdata, _sentMempool, _sentGetblocks;
-			UInt256 _lastBlockHash;
+			uint256 _lastBlockHash;
 			MerkleBlockPtr _currentBlock;
-			std::vector<UInt256> _currentBlockTxHashes, _knownBlockHashes, _knownTxHashes;
-			UInt256ValueSet _knownTxHashSet;
+			std::vector<uint256> _currentBlockTxHashes, _knownBlockHashes, _knownTxHashes;
+			std::set<uint256> _knownTxHashSet;
 			volatile int _socket;
 
 			PeerCallback _mempoolCallback;

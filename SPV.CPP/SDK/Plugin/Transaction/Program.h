@@ -5,10 +5,8 @@
 #ifndef __ELASTOS_SDK_PROGRAM_H__
 #define __ELASTOS_SDK_PROGRAM_H__
 
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
-#include <Core/BRInt.h>
 #include <boost/shared_ptr.hpp>
 
 namespace Elastos {
@@ -23,35 +21,37 @@ namespace Elastos {
 
 			Program(const Program &program);
 
-			Program(const CMBlock &code, const CMBlock &parameter);
+			Program(const bytes_t &code, const bytes_t &parameter);
 
 			~Program();
 
-			std::vector<CMBlock> DecodePublicKey() const;
+			Program &operator=(const Program &tx);
 
-			bool VerifySignature(const UInt256 &md) const;
+			std::vector<bytes_t> DecodePublicKey() const;
 
-			nlohmann::json GetSignedInfo(const UInt256 &md) const;
+			bool VerifySignature(const uint256 &md) const;
 
-			const CMBlock &GetCode() const;
+			nlohmann::json GetSignedInfo(const uint256 &md) const;
 
-			const CMBlock &GetParameter() const;
+			const bytes_t &GetCode() const;
 
-			void SetCode(const CMBlock &code);
+			const bytes_t &GetParameter() const;
 
-			void SetParameter(const CMBlock &parameter);
+			void SetCode(const bytes_t &code);
+
+			void SetParameter(const bytes_t &parameter);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &jsonData);
 
 		private:
-			CMBlock _code;
-			CMBlock _parameter;
+			bytes_t _code;
+			bytes_t _parameter;
 		};
 
 		typedef boost::shared_ptr<Program> ProgramPtr;

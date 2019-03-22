@@ -7,10 +7,8 @@
 
 #include <SDK/Account/IAccount.h>
 #include <SDK/KeyStore/Mnemonic.h>
-#include <SDK/Common/CMemBlock.h>
-#include <SDK/Crypto/MasterPubKey.h>
 #include <SDK/Common/Mstream.h>
-#include <SDK/Base/Address.h>
+#include <SDK/BIPs/Address.h>
 
 #include <nlohmann/json.hpp>
 
@@ -28,7 +26,7 @@ namespace Elastos {
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -48,15 +46,15 @@ namespace Elastos {
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual CMBlock GetMultiSignPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
 			virtual Address GetAddress() const;
 
 			const std::string &GetLanguage() const;
 
-			MasterPubKey DeriveIDMasterPubKey(const std::string &payPasswd);
+			HDKeychain DeriveIDMasterPubKey(const std::string &payPasswd);
 
 		private:
 			friend class AccountFactory;
@@ -74,8 +72,8 @@ namespace Elastos {
 		private:
 			std::string _encryptedMnemonic;
 			std::string _encryptedPhrasePass;
-			CMBlock _multiSignPublicKey;
-			MasterPubKey _masterIDPubKey;
+			bytes_t _multiSignPublicKey;
+			HDKeychain _masterIDPubKey;
 			std::string _language;
 
 			boost::shared_ptr<Mnemonic> _mnemonic;

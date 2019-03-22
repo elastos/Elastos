@@ -10,7 +10,6 @@
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
-#include <Core/BRInt.h>
 #include <Core/BRTransaction.h>
 #include <Core/BRMerkleBlock.h>
 
@@ -19,8 +18,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IDAuxPow :
-			public ELAMessageSerializable {
+		class IDAuxPow {
 		public:
 			IDAuxPow();
 
@@ -30,30 +28,22 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
-
-			virtual nlohmann::json ToJson() const;
-
-			virtual void FromJson(const nlohmann::json &j);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			IDAuxPow &operator=(const IDAuxPow &idAuxPow);
 
-			void SetIdAuxMerkleBranch(const std::vector<UInt256> &idAuxMerkleBranch);
+			void SetIdAuxMerkleBranch(const std::vector<uint256> &idAuxMerkleBranch);
 			void SetIdAuxMerkleIndex(uint32_t index);
 			void SetIdAuxBlockTx(const Transaction &tx);
 			void SetMainBlockHeader(ELAMerkleBlock *blockHeader);
 
-			const std::vector<UInt256> &GetIdAuxMerkleBranch() const;
+			const std::vector<uint256> &GetIdAuxMerkleBranch() const;
 			uint32_t GetIdAuxMerkleIndex() const;
 			const Transaction &GetIdAuxBlockTx() const;
 			ELAMerkleBlock *GetMainBlockHeader() const;
 
 		private:
-			nlohmann::json MainBlockHeaderToJson() const;
-			void MainBlockHeaderFromJson(const nlohmann::json &j);
-
-		private:
-			std::vector<UInt256> _idAuxMerkleBranch;
+			std::vector<uint256> _idAuxMerkleBranch;
 			uint32_t _idAuxMerkleIndex;
 			Transaction _idAuxBlockTx;
 			ELAMerkleBlock *_mainBlockHeader;

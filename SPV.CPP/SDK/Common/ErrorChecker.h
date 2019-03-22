@@ -8,7 +8,6 @@
 #include <string>
 #include <boost/filesystem.hpp>
 
-#include "CMemBlock.h"
 #include "nlohmann/json.hpp"
 
 namespace Elastos {
@@ -62,6 +61,8 @@ namespace Elastos {
 				PrivateKeyNotFound = 20044,
 				InvalidRedeemScript = 20045,
 				AlreadySigned = 20046,
+				EncryptError = 20047,
+				VerifyError = 20048,
 				Other = 29999,
 			} Code;
 		}

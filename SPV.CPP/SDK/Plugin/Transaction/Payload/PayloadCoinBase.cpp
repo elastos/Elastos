@@ -6,8 +6,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 
-#include <Core/BRInt.h>
-
 #include <cstring>
 
 namespace Elastos {
@@ -16,7 +14,7 @@ namespace Elastos {
 
 		}
 
-		PayloadCoinBase::PayloadCoinBase(const CMBlock &coinBaseData) {
+		PayloadCoinBase::PayloadCoinBase(const bytes_t &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
@@ -27,11 +25,11 @@ namespace Elastos {
 		PayloadCoinBase::~PayloadCoinBase() {
 		}
 
-		void PayloadCoinBase::SetCoinBaseData(const CMBlock &coinBaseData) {
+		void PayloadCoinBase::SetCoinBaseData(const bytes_t &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
-		const CMBlock &PayloadCoinBase::GetCoinBaseData() const {
+		const bytes_t &PayloadCoinBase::GetCoinBaseData() const {
 			return _coinBaseData;
 		}
 
@@ -39,18 +37,18 @@ namespace Elastos {
 			ostream.WriteVarBytes(_coinBaseData);
 		}
 
-		bool PayloadCoinBase::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadCoinBase::Deserialize(const ByteStream &istream, uint8_t version) {
 			return istream.ReadVarBytes(_coinBaseData);
 		}
 
 		nlohmann::json PayloadCoinBase::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["CoinBaseData"] = Utils::EncodeHex(_coinBaseData);
+			j["CoinBaseData"] = _coinBaseData.getHex();
 			return j;
 		}
 
 		void PayloadCoinBase::FromJson(const nlohmann::json &j, uint8_t version) {
-			_coinBaseData = Utils::DecodeHex(j["CoinBaseData"].get<std::string>());
+			_coinBaseData.setHex(j["CoinBaseData"].get<std::string>());
 
 		}
 
@@ -66,7 +64,7 @@ namespace Elastos {
 		}
 
 		PayloadCoinBase &PayloadCoinBase::operator=(const PayloadCoinBase &payload) {
-			_coinBaseData.Memcpy(payload._coinBaseData);
+			_coinBaseData = payload._coinBaseData;
 			return *this;
 		}
 

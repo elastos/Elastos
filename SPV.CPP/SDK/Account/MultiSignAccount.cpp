@@ -9,9 +9,7 @@
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/Base/Address.h>
-
-#include <Core/BRInt.h>
+#include <SDK/BIPs/Address.h>
 
 #include <set>
 #include <boost/bind.hpp>
@@ -22,12 +20,16 @@ namespace Elastos {
 		MultiSignAccount::MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners,
 										   uint32_t requiredSignCount) :
 			_me(me),
-			_requiredSignCount(requiredSignCount),
-			_coSigners(coSigners) {
+			_requiredSignCount(requiredSignCount) {
 
-			const CMBlock &code = GetRedeemScript();
-			UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
-			_address = Address(programHash);
+			for (size_t i = 0; i < coSigners.size(); ++i)
+				_coSigners.push_back(bytes_t(coSigners[i]));
+
+			std::vector<bytes_t> pubKeys(_coSigners.begin(), _coSigners.end());
+			if (_me != nullptr)
+				pubKeys.push_back(_me->GetMultiSignPublicKey());
+
+			_address = Address(PrefixMultiSign, pubKeys, _requiredSignCount);
 		}
 
 		MultiSignAccount::MultiSignAccount(const std::string &rootPath) : _rootPath(rootPath) {
@@ -39,7 +41,7 @@ namespace Elastos {
 			return _me->DeriveMultiSignKey(payPassword);
 		}
 
-		UInt512 MultiSignAccount::DeriveSeed(const std::string &payPassword) {
+		uint512 MultiSignAccount::DeriveSeed(const std::string &payPassword) {
 			checkSigners();
 			return _me->DeriveSeed(payPassword);
 		}
@@ -69,12 +71,12 @@ namespace Elastos {
 			return _me->GetEncryptedPhrasePassword();
 		}
 
-		CMBlock MultiSignAccount::GetMultiSignPublicKey() const {
+		bytes_t MultiSignAccount::GetMultiSignPublicKey() const {
 			checkSigners();
 			return _me->GetMultiSignPublicKey();
 		}
 
-		const MasterPubKey &MultiSignAccount::GetIDMasterPubKey() const {
+		const HDKeychain &MultiSignAccount::GetIDMasterPubKey() const {
 			checkSigners();
 			return _me->GetIDMasterPubKey();
 		}
@@ -88,21 +90,8 @@ namespace Elastos {
 			return _address;
 		}
 
-		const CMBlock &MultiSignAccount::GetRedeemScript() const {
-			if (_redeemScript.GetSize() == 0) {
-				Key key;
-				std::vector<CMBlock> pubKeys;
-				for (size_t i = 0; i < _coSigners.size(); ++i) {
-					pubKeys.push_back(Utils::DecodeHex(_coSigners[i]));
-				}
-				if (_me != nullptr) {
-					pubKeys.push_back(_me->GetMultiSignPublicKey());
-				}
-
-				_redeemScript = key.MultiSignRedeemScript(_requiredSignCount, pubKeys);
-			}
-
-			return _redeemScript;
+		const bytes_t &MultiSignAccount::GetRedeemScript() const {
+			return _address.RedeemScript();
 		}
 
 		void to_json(nlohmann::json &j, const MultiSignAccount &p) {
@@ -110,30 +99,43 @@ namespace Elastos {
 				j["InnerAccount"] = p._me->ToJson();
 				j["InnerAccountType"] = p._me->GetType();
 			}
-			j["CoSigners"] = p._coSigners;
+			std::vector<std::string> coSigners;
+			for (size_t i = 0; i < p._coSigners.size(); ++i) {
+				coSigners.push_back(p._coSigners[i].getHex());
+			}
+			j["CoSigners"] = coSigners;
 			j["RequiredSignCount"] = p._requiredSignCount;
 		}
 
 		void from_json(const nlohmann::json &j, MultiSignAccount &p) {
 			p._me = AccountPtr(AccountFactory::CreateFromJson(p._rootPath, j, "InnerAccount", "InnerAccountType"));
-			p._coSigners = j["CoSigners"].get<std::vector<std::string>>();
 			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
 
-			const CMBlock &code = p.GetRedeemScript();
-			UInt168 programHash = Key::CodeToProgramHash(PrefixMultiSign, code);
-			p._address = Address(programHash);
+			std::vector<std::string> coSigners = j["CoSigners"].get<std::vector<std::string>>();
+			for (size_t i = 0; i < coSigners.size(); ++i)
+				p._coSigners.push_back(bytes_t(coSigners[i]));
+
+			std::vector<bytes_t> pubKeys(p._coSigners.begin(), p._coSigners.end());
+			if (p._me != nullptr)
+				pubKeys.push_back(p._me->GetMultiSignPublicKey());
+
+			p._address = Address(PrefixMultiSign, pubKeys, p._requiredSignCount);
 		}
 
 		nlohmann::json MultiSignAccount::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Type"] = "Multi-Sign";
 			nlohmann::json details;
-			std::vector<std::string> signers = _coSigners;
+
+			std::vector<std::string> signers;
+			for (size_t i = 0; i < _coSigners.size(); ++i)
+				signers.push_back(_coSigners[i].getHex());
+
 			std::string innerType;
 			if (_me != nullptr) {
 				nlohmann::json basicInfo = _me->GetBasicInfo();
 				innerType = basicInfo["Type"];
-				signers.push_back(Utils::EncodeHex(_me->GetMultiSignPublicKey()));
+				signers.push_back(_me->GetMultiSignPublicKey().getHex());
 			} else {
 				innerType = "Readonly";
 			}
@@ -153,7 +155,7 @@ namespace Elastos {
 			return _me.get();
 		}
 
-		const std::vector<std::string> &MultiSignAccount::GetCoSigners() const {
+		const std::vector<bytes_t> &MultiSignAccount::GetCoSigners() const {
 			return _coSigners;
 		}
 

@@ -6,8 +6,6 @@
 #include "CommonConfig.h"
 #include "Log.h"
 
-#include <Core/BRBIP39Mnemonic.h>
-
 #include <sstream>
 #include <stdexcept>
 
@@ -122,6 +120,7 @@ namespace Elastos {
 
 				std::string pubKey = (*it).get<std::string>();
 
+				// TODO fix here later
 				ErrorChecker::CheckCondition(pubKey.find("xpub") != -1, Error::PubKeyFormat,
 											 msg + " public key is not support xpub");
 
@@ -135,6 +134,7 @@ namespace Elastos {
 		}
 
 		void ErrorChecker::CheckPrivateKey(const std::string &key) {
+			// TODO fix here later
 			ErrorChecker::CheckCondition(key.find("xprv") != -1, Error::InvalidArgument,
 										 "Private key is not support xprv");
 

@@ -6,7 +6,6 @@
 #define SPVSDK_SUBACCOUNTBASE_H
 
 #include "ISubAccount.h"
-#include "SDK/Crypto/MasterPubKey.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -23,23 +22,23 @@ namespace Elastos {
 
 			virtual void ClearUsedAddresses();
 
-			virtual CMBlock GetMultiSignPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual CMBlock GetVotePublicKey() const;
+			virtual bytes_t GetVotePublicKey() const;
 
 			virtual bool IsDepositAddress(const Address &address) const;
 
 			virtual void SignTransaction(const TransactionPtr &transaction, const std::string &payPassword);
 
-			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd);
+			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
 		protected:
 			mutable Address _depositAddress;
-			CMBlock _votePublicKey;
+			bytes_t _votePublicKey;
 			IAccount *_parentAccount;
-			MasterPubKey _masterPubKey;
+			HDKeychain _masterPubKey;
 			uint32_t _coinIndex;
 		};
 

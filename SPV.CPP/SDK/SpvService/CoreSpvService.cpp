@@ -58,7 +58,7 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		void CoreSpvService::balanceChanged(const UInt256 &asset, uint64_t balance) {
+		void CoreSpvService::balanceChanged(const uint256 &asset, uint64_t balance) {
 
 		}
 
@@ -438,7 +438,7 @@ namespace Elastos {
 				_listener(listener) {
 		}
 
-		void WrappedExceptionTransactionHubListener::balanceChanged(const UInt256 &asset, uint64_t balance) {
+		void WrappedExceptionTransactionHubListener::balanceChanged(const uint256 &asset, uint64_t balance) {
 			try {
 				_listener->balanceChanged(asset, balance);
 			}
@@ -497,7 +497,7 @@ namespace Elastos {
 				_executor(executor) {
 		}
 
-		void WrappedExecutorTransactionHubListener::balanceChanged(const UInt256 &asset, uint64_t balance) {
+		void WrappedExecutorTransactionHubListener::balanceChanged(const uint256 &asset, uint64_t balance) {
 			_executor->Execute(Runnable([this, asset, balance]() -> void {
 				try {
 					_listener->balanceChanged(asset, balance);

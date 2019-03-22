@@ -14,19 +14,19 @@ namespace Elastos {
 		public:
 			PayloadCoinBase();
 
-			PayloadCoinBase(const CMBlock &coinBaseData);
+			PayloadCoinBase(const bytes_t &coinBaseData);
 
 			PayloadCoinBase(const PayloadCoinBase &payload);
 
 			~PayloadCoinBase();
 
-			void SetCoinBaseData(const CMBlock &coinBaseData);
+			void SetCoinBaseData(const bytes_t &coinBaseData);
 
-			const CMBlock &GetCoinBaseData() const;
+			const bytes_t &GetCoinBaseData() const;
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -37,7 +37,7 @@ namespace Elastos {
 			PayloadCoinBase &operator=(const PayloadCoinBase &payload);
 
 		private:
-			CMBlock _coinBaseData;
+			bytes_t _coinBaseData;
 		};
 	}
 }

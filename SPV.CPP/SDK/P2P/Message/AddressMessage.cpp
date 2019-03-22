@@ -20,19 +20,21 @@ namespace Elastos {
 
 		}
 
-		bool AddressMessage::Accept(const CMBlock &msg) {
-			size_t off = 0;
-			size_t count = UInt64GetLE(&msg[off]);
-			off += sizeof(uint64_t);
+		bool AddressMessage::Accept(const bytes_t &msg) {
+			ByteStream stream(msg);
+			uint64_t count = 0;
 
-			bool r = true;
-			if (off == 0 || off + count * 30 > msg.GetSize()) {
-				_peer->error("malformed addr message, length is {}, should be {} for {} address(es)", msg.GetSize(),
-							 BRVarIntSize(count) + 30 * count, count);
-				r = false;
-			} else if (count > 1000) {
+			if (!stream.ReadUint64(count)) {
+				_peer->error("addr message read count fail");
+				return false;
+			}
+
+			if (count > 1000) {
 				_peer->error("dropping addr message, {} is too many addresses, max is 1000", count);
-			} else if (_peer->SentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
+				return false;
+			}
+
+			if (_peer->SentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
 				std::vector<PeerInfo> peers;
 				peers.reserve(count);
 
@@ -41,15 +43,29 @@ namespace Elastos {
 				_peer->info("got addr with {} address(es)", count);
 
 				for (size_t i = 0; i < count; i++) {
-					uint64_t timestamp = UInt64GetLE(&msg[off]);
-					off += sizeof(uint64_t);
-					uint64_t services = UInt64GetLE(&msg[off]);
-					off += sizeof(uint64_t);
-					UInt128 address;
-					UInt128Get(&address, &msg[off]);
-					off += sizeof(UInt128);
-					uint16_t port = UInt16GetLE(&msg[off]);
-					off += sizeof(uint16_t);
+					uint64_t timestamp;
+					if (!stream.ReadUint64(timestamp)) {
+						_peer->error("addr msg read timestamp fail");
+						return false;
+					}
+
+					uint64_t services;
+					if (!stream.ReadUint64(services)) {
+						_peer->error("addr msg read services fail");
+						return false;
+					}
+
+					uint128 address;
+					if (!stream.ReadBytes(address)) {
+						_peer->error("addr msg read addr fail");
+						return false;
+					}
+
+					uint16_t port;
+					if (!stream.ReadUint16(port)) {
+						_peer->error("addr msg read port fail");
+						return false;
+					}
 					PeerInfo p(address, port, timestamp, services);
 
 					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
@@ -65,8 +81,8 @@ namespace Elastos {
 					}
 
 					if (!p.IsIPv4() || p.Port == 0 || (p.IsIPv4() &&
-						p.Address.u8[12] == 127 && p.Address.u8[13] == 0 &&
-						p.Address.u8[14] == 0 && p.Address.u8[15] == 1)) {
+						p.Address.begin()[12] == 127 && p.Address.begin()[13] == 0 &&
+						p.Address.begin()[14] == 0 && p.Address.begin()[15] == 1)) {
 						_peer->warn("peers[{}] = {}:{} timestamp = {}, services = {} dropped",
 									i, p.GetHost(), p.Port, p.Timestamp, p.Services);
 						continue;
@@ -86,16 +102,15 @@ namespace Elastos {
 				if (peers.size() > 0) FireRelayedPeers(peers);
 			}
 
-			return r;
+			return true;
 		}
 
 		void AddressMessage::Send(const SendMessageParameter &param) {
-			CMBlock msg;
-			msg.Resize(BRVarIntSize(0));
-			BRVarIntSet(msg, msg.GetSize(), 0);
+			ByteStream stream;
+			stream.WriteVarUint(0);
 
 			//TODO: send peer addresses we know about
-//			SendMessage(msg, Type());
+//			SendMessage(stream.GetBytes(), Type());
 		}
 
 		std::string AddressMessage::Type() const {

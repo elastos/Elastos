@@ -7,26 +7,18 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/Base/Address.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/BIPs/Address.h>
+#include <SDK/Crypto/AES.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		SimpleAccount::SimpleAccount(const std::string &privKey, const std::string &payPassword) {
-			CMBlock keyData = Utils::DecodeHex(privKey);
-			Utils::Encrypt(_encryptedKey, keyData, payPassword);
+		SimpleAccount::SimpleAccount(const bytes_t &privKey, const std::string &payPassword) {
+			_encryptedKey = AES::EncryptCCM(privKey, payPassword);
 
-			assert(keyData.GetSize() == sizeof(UInt256));
-
-			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize() < sizeof(UInt256) ? keyData.GetSize() : sizeof(UInt256));
-			Key key(secret, true);
+			Key key;
+			ErrorChecker::CheckLogic(!key.SetPrvKey(privKey), Error::Key, "Invalid private key");
 			_publicKey = key.PubKey();
-
-			memset(keyData, 0, keyData.GetSize());
-			var_clean(&secret);
 		}
 
 		SimpleAccount::SimpleAccount() {
@@ -34,15 +26,11 @@ namespace Elastos {
 		}
 
 		Key SimpleAccount::DeriveMultiSignKey(const std::string &payPassword) {
-			CMBlock keyData;
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(keyData, _encryptedKey, payPassword));
+			bytes_t prvKey = AES::DecryptCCM(_encryptedKey, payPassword);
 
-			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize() < sizeof(UInt256) ? keyData.GetSize() : sizeof(UInt256));
-			Key key(secret, true);
+			Key key(prvKey);
 
-			memset(keyData, 0, keyData.GetSize());
-			var_clean(&secret);
+			prvKey.clean();
 
 			return key;
 		}
@@ -51,21 +39,19 @@ namespace Elastos {
 			return DeriveMultiSignKey(payPasswd);
 		}
 
-		UInt512 SimpleAccount::DeriveSeed(const std::string &payPassword) {
+		uint512 SimpleAccount::DeriveSeed(const std::string &payPassword) {
 			ErrorChecker::CheckCondition(true, Error::WrongAccountType,
 										 "Simple account can not derive seed");
-			return UINT512_ZERO;
+			return uint512();
 		}
 
 		void SimpleAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
 			ErrorChecker::CheckPassword(newPassword, "New");
 
-			CMBlock key;
-			ErrorChecker::CheckDecrypt(!Utils::Decrypt(key, _encryptedKey, oldPassword));
+			bytes_t key = AES::DecryptCCM(_encryptedKey, oldPassword);
+			_encryptedKey = AES::EncryptCCM(key, newPassword);
 
-			Utils::Encrypt(_encryptedKey, key, newPassword);
-
-			memset(key, 0, key.GetSize());
+			key.clean();
 		}
 
 		nlohmann::json SimpleAccount::ToJson() const {
@@ -94,32 +80,32 @@ namespace Elastos {
 			return _emptyString;
 		}
 
-		CMBlock SimpleAccount::GetMultiSignPublicKey() const {
+		bytes_t SimpleAccount::GetMultiSignPublicKey() const {
 			return _publicKey;
 		}
 
-		CMBlock SimpleAccount::GetVotePublicKey() const {
+		bytes_t SimpleAccount::GetVotePublicKey() const {
 			return _publicKey;
 		}
 
 
-		const MasterPubKey &SimpleAccount::GetIDMasterPubKey() const {
+		const HDKeychain &SimpleAccount::GetIDMasterPubKey() const {
 			ErrorChecker::CheckCondition(true, Error::WrongAccountType, "Simple account can not get ID master pubkey");
-			return MasterPubKey();
+			return HDKeychain();
 		}
 
 		Address SimpleAccount::GetAddress() const {
-			return Address(_publicKey, PrefixStandard);
+			return Address(PrefixStandard, _publicKey);
 		}
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {
 			j["Key"] = p._encryptedKey;
-			j["PublicKey"] = Utils::EncodeHex(p.GetMultiSignPublicKey());
+			j["PublicKey"] = p.GetMultiSignPublicKey().getHex();
 		}
 
 		void from_json(const nlohmann::json &j, SimpleAccount &p) {
 			p._encryptedKey = j["Key"].get<std::string>();
-			p._publicKey = Utils::DecodeHex(j["PublicKey"].get<std::string>());
+			p._publicKey.setHex(j["PublicKey"].get<std::string>());
 		}
 
 		nlohmann::json SimpleAccount::GetBasicInfo() const {

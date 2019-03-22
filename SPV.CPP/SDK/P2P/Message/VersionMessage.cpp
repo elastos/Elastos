@@ -20,7 +20,7 @@ namespace Elastos {
 
 		}
 
-		bool VersionMessage::Accept(const CMBlock &msg) {
+		bool VersionMessage::Accept(const bytes_t &msg) {
 			ByteStream stream(msg);
 
 			uint32_t version = 0;
@@ -83,7 +83,7 @@ namespace Elastos {
 			stream.WriteUint64(0);
 			stream.WriteUint8(0);
 
-			SendMessage(stream.GetBuffer(), Type());
+			SendMessage(stream.GetBytes(), Type());
 		}
 
 		std::string VersionMessage::Type() const {

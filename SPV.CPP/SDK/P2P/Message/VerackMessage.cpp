@@ -15,7 +15,7 @@ namespace Elastos {
 
 		}
 
-		bool VerackMessage::Accept(const CMBlock &msg) {
+		bool VerackMessage::Accept(const bytes_t &msg) {
 			if (_peer->GotVerack()) {
 				_peer->error("got unexcepted verack");
 			} else {
@@ -40,8 +40,7 @@ namespace Elastos {
 		}
 
 		void VerackMessage::Send(const SendMessageParameter &param) {
-			CMBlock msg;
-			SendMessage(msg, Type());
+			SendMessage(bytes_t(), Type());
 			_peer->SetSentVerack(true);
 		}
 

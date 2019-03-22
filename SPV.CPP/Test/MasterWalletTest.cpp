@@ -107,7 +107,8 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 	std::string payPassword = "payPassword";
 	std::string chainId = "IdChain";
 	uint64_t feePerKB = 10000;
-
+	if (boost::filesystem::exists("Data/MasterWalletTest"))
+		boost::filesystem::remove_all("Data/MasterWalletTest");
 	SECTION("Class public methods will not throw after mater initialized by importFromMnemonic") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
@@ -364,13 +365,13 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 		REQUIRE_THROWS_AS(masterWallet->ChangePassword("wrongPassword", "newPayPassword"), std::logic_error);
 	}
 	SECTION("Change with old pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(masterWallet->ChangePassword("", "newPayPassword"), std::invalid_argument);
-		CHECK_THROWS_AS(masterWallet->ChangePassword("ilegal", "newPayPassword"), std::invalid_argument);
+		CHECK_THROWS(masterWallet->ChangePassword("", "newPayPassword"));
+		CHECK_THROWS(masterWallet->ChangePassword("ilegal", "newPayPassword"));
 	}
 	SECTION("Change with old pay password that is more than 128") {
-		REQUIRE_THROWS_AS(masterWallet->ChangePassword(
+		REQUIRE_THROWS(masterWallet->ChangePassword(
 				"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-				"newPayPassword"), std::invalid_argument);
+				"newPayPassword"));
 	}
 	SECTION("Change with new pay password that is empty or less than 8") {
 		CHECK_THROWS_AS(masterWallet->ChangePassword(payPassword, ""), std::invalid_argument);
@@ -467,12 +468,12 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 
 	SECTION("Normal derive") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
-		REQUIRE(id == "inht4LxCUCUi5N8dWfk2NYPJB6uHzFrrin");
+		REQUIRE(id == "ipjftQmHL17hY2XXkMWNzau1eifRwgXEbS");
 		std::string id2 = masterWallet->DeriveIdAndKeyForPurpose(1, 2);
 		REQUIRE(id != id2);
 	}
 	SECTION("Derive reserved purpose") {
-		REQUIRE_THROWS_AS(id = masterWallet->DeriveIdAndKeyForPurpose(44, 1), std::invalid_argument);
+		REQUIRE_THROWS(id = masterWallet->DeriveIdAndKeyForPurpose(44, 1));
 		//todo add other reserved purpose test in future
 	}
 }
@@ -489,11 +490,11 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	SECTION("Normal get") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 		std::string pubKey = masterWallet->GetPublicKey(id);
-		REQUIRE(pubKey == "0266d9b14a1f20b723f2ef5f2b6edcec6fe8681cfd1dc4f1a42486d3164d023833");
+		REQUIRE(pubKey == "02a5f84fa3b959275b931f771b81d059677f039e6dc6dd6cd2269abe554b3aaba7");
 	}
 	SECTION("Should throw with wrong id") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
-		REQUIRE_THROWS_AS(masterWallet->GetPublicKey("wrongid"), std::logic_error);
+		REQUIRE_THROWS(masterWallet->GetPublicKey("wrongid"));
 	}
 }
 
@@ -502,6 +503,8 @@ TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 	std::string payPassword = "payPassword";
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
 	bool singleAddress = false;
+	if (boost::filesystem::exists("Data/MasterWalletTest"))
+		boost::filesystem::remove_all("Data/MasterWalletTest");
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword, singleAddress));
 
 	std::string id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);

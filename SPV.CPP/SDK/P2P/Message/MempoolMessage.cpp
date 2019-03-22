@@ -14,7 +14,7 @@ namespace Elastos {
 
 		}
 
-		bool MempoolMessage::Accept(const CMBlock &msg) {
+		bool MempoolMessage::Accept(const bytes_t &msg) {
 			_peer->info("drop {} message, not implemented.", Type());
 			return false;
 		}
@@ -36,9 +36,9 @@ namespace Elastos {
 					_peer->SetMempoolCallback(mempoolParameter.CompletionCallback);
 				}
 
-				_peer->SendMessage(CMBlock(), Type());
+				_peer->SendMessage(bytes_t(), Type());
 			} else {
-				_peer->SendMessage(CMBlock(), Type());
+				_peer->SendMessage(bytes_t(), Type());
 //				_peer->info("mempool request already sent");
 //				if (mempoolParameter.CompletionCallback) mempoolParameter.CompletionCallback(0);
 			}

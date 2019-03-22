@@ -8,7 +8,7 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <Core/BRInt.h>
+#include <SDK/Common/uint256.h>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
@@ -19,13 +19,12 @@ namespace Elastos {
 		struct PeerEntity {
 			PeerEntity() :
 				id(0),
-				address({0}),
 				port(0),
 				timeStamp(0)
 			{
 			}
 
-			PeerEntity(long i, const UInt128 &addr, uint16_t p, uint64_t ts) :
+			PeerEntity(long i, const uint128 &addr, uint16_t p, uint64_t ts) :
 				id(i),
 				address(addr),
 				port(p),
@@ -34,7 +33,7 @@ namespace Elastos {
 			}
 
 			long id;
-			UInt128 address;
+			uint128 address;
 			uint16_t port;
 			uint64_t timeStamp;
 		};

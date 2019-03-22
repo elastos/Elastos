@@ -5,9 +5,7 @@
 #ifndef __ELASTOS_SDK_UTILS_H__
 #define __ELASTOS_SDK_UTILS_H__
 
-#include <SDK/Common/CMemBlock.h>
-
-#include <Core/BRInt.h>
+#include "typedefs.h"
 
 #include <string>
 #include <cassert>
@@ -21,18 +19,6 @@ namespace Elastos {
 		class Utils {
 		public:
 
-			static std::string UInt256ToString(const UInt256 &u256, bool reverse = false);
-
-			static UInt256 UInt256FromString(const std::string &u256, bool reverse = false);
-
-			static std::string UInt168ToString(const UInt168 &u168);
-
-			static UInt168 UInt168FromString(const std::string &str);
-
-			static std::string UInt128ToString(const UInt128 &u128);
-
-			static UInt128 UInt128FromString(const std::string &str);
-
 			static inline uint8_t getRandomByte() {
 				std::random_device rd;
 				std::mt19937_64 gen(rd());
@@ -41,30 +27,8 @@ namespace Elastos {
 				return dice();
 			}
 
-			static bool Encrypt(std::string &ctBase64, const std::string &data, const std::string &passwd);
-
-			static bool Decrypt(std::string &data, const std::string &ctBase64, const std::string &passwd);
-
-			static bool Encrypt(std::string &ctBase64, const void *data, size_t len, const std::string &passwd);
-
-			static bool Encrypt(std::string &ctBase64, const CMBlock &data, const std::string &passwd);
-
-			static bool Decrypt(CMBlock &data, const std::string &ctBase64, const std::string &passwd);
-
-			static std::string EncodeHex(const CMBlock &in);
-
-			static std::string EncodeHex(const uint8_t *hex, size_t hexLen);
-
-			static CMBlock DecodeHex(const std::string &s);
-
-			static std::string UInt168ToAddress(const UInt168 &u);
-
-			static bool UInt168FromAddress(UInt168 &u, const std::string &address);
-
-			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
-
 		private:
-			static CMBlock GetRandom(size_t bits);
+			static bytes_t GetRandom(size_t bits);
 		};
 	}
 }

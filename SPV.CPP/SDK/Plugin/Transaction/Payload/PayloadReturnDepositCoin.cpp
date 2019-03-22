@@ -21,7 +21,7 @@ namespace Elastos {
 
 		}
 
-		bool PayloadReturnDepositCoin::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadReturnDepositCoin::Deserialize(const ByteStream &istream, uint8_t version) {
 			return true;
 		}
 

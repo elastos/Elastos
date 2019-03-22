@@ -8,21 +8,20 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/BIPs/Base58.h>
+#include <SDK/Common/Base64.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/ELAPlugin.h>
 #include <SDK/Plugin/IDPlugin.h>
-#include <SDK/BIPs/BIP32Sequence.h>
 #include <Interface/MasterWalletManager.h>
 #include <Config.h>
 
-#include <Core/BRBase58.h>
 #include <Core/BRBIP39Mnemonic.h>
 #include <Core/BRCrypto.h>
 
 #include <boost/filesystem.hpp>
-#include <SDK/Common/Base64.h>
 
 using namespace boost::filesystem;
 
@@ -75,30 +74,31 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(!mnemonic.PhraseIsValid(phrase, standardPhrase),
 										 Error::Mnemonic, "Invalid mnemonic words");
 
-			UInt512 seed;
-			BRBIP39DeriveKey(&seed, standardPhrase.c_str(), phrasePassword.c_str());
+			uint512 seed;
+			BRBIP39DeriveKey(seed.begin(), standardPhrase.c_str(), phrasePassword.c_str());
 
-			Key key = BIP32Sequence::APIAuthKey(&seed, sizeof(seed));
 
-			var_clean(&seed);
+			HDSeed hdseed(seed.bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+
+			bytes_t pubkey = rootKey.getChild("1'/0").pubkey();
+
+			seed = 0;
 			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 
-			return Utils::EncodeHex(key.PubKey());
+			return pubkey.getHex();
 		}
 
 		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) const {
-			CMBlock privKeyHex = Utils::DecodeHex(privKey);
-			ErrorChecker::CheckCondition(privKeyHex.GetSize() != sizeof(UInt256), Error::PubKeyFormat,
+			bytes_t prvkey(privKey);
+
+			ErrorChecker::CheckCondition(prvkey.size() != 32, Error::PubKeyFormat,
 										 "Private key length do not as expected");
-			Key key;
-			UInt256 secret;
-			memcpy(secret.u8, privKeyHex, sizeof(secret));
-			key.SetSecret(secret, true);
+			Key key(prvkey);
 
-			var_clean(&secret);
-			memset(privKeyHex, 0, privKeyHex.GetSize());
+			prvkey.clean();
 
-			return Utils::EncodeHex(key.PubKey());
+			return key.PubKey().getHex();
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(
@@ -334,24 +334,12 @@ namespace Elastos {
 
 			ByteStream stream;
 			txn.Serialize(stream);
-			CMBlock hex = stream.GetBuffer();
-
-			std::string algorithm = "base64";
-			std::string hexString = Base64::Encode(hex);
-			if (hexString.empty()) {
-				size_t len = BRBase58CheckEncode(NULL, 0, hex, hex.GetSize());
-				char buf[len + 1];
-
-				BRBase58CheckEncode(buf, sizeof(buf), hex, hex.GetSize());
-
-				algorithm = "base58";
-				hexString = std::string(buf);
-			}
+			bytes_t hex = stream.GetBytes();
 
 			nlohmann::json result;
 
-			result["Algorithm"] = algorithm;
-			result["Data"] = hexString;
+			result["Algorithm"] = "base64";
+			result["Data"] = hex.getBase64();
 
 			return result;
 		}
@@ -359,28 +347,27 @@ namespace Elastos {
 		nlohmann::json MasterWalletManager::DecodeTransactionFromString(const nlohmann::json &cipher) {
 			Transaction txn;
 
+			if (cipher.find("Algorithm") == cipher.end() || cipher.find("Data") == cipher.end()) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input");
+			}
+
 			std::string algorithm = cipher["Algorithm"].get<std::string>();
 			std::string data = cipher["Data"].get<std::string>();
 
-			CMBlock rawHex;
+			bytes_t rawHex;
 			if (algorithm == "base64") {
-				rawHex = Base64::Decode(data);
+				rawHex.setBase64(data);
 			} else if (algorithm == "base58") {
-				size_t len = BRBase58CheckDecode(NULL, 0, data.c_str());
-				ErrorChecker::CheckCondition(len == 0, Error::Transaction,
-											 "Decode tx from base58 error");
-
-				rawHex.Resize(len);
-				BRBase58CheckDecode(rawHex, rawHex.GetSize(), data.c_str());
+				if (!Base58::CheckDecode(data, rawHex)) {
+					ErrorChecker::ThrowLogicException(Error::Transaction, "Decode tx from base58 error");
+				}
 			} else {
 				ErrorChecker::CheckCondition(true, Error::Transaction,
 											 "Decode tx with unknown algorithm");
 			}
 
-			ByteStream stream;
-			stream.WriteBytes(rawHex, rawHex.GetSize());
-			stream.SetPosition(0);
-			txn.Deserialize(stream);
+			ByteStream stream(rawHex);
+			ErrorChecker::CheckParam(!txn.Deserialize(stream), Error::InvalidArgument, "Invalid input: deserialize fail");
 
 			return txn.ToJson();
 		}

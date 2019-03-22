@@ -8,10 +8,9 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MasterWallet.h>
 #include <SDK/Account/StandardAccount.h>
-#include <SDK/BIPs/BIP32Sequence.h>
 
 #include <algorithm>
-#include <SDK/Common/Base58.h>
+#include <SDK/BIPs/Base58.h>
 
 using namespace nlohmann;
 
@@ -53,7 +52,7 @@ namespace Elastos {
 
 		}
 
-		std::string
+		Address
 		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
 			ErrorChecker::CheckParam(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
@@ -68,31 +67,27 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
-			const MasterPubKey &mpk = standardAccount->GetIDMasterPubKey();
+			const HDKeychain &mpk = standardAccount->GetIDMasterPubKey();
 
-			CMBlock pubKey = BIP32Sequence::PubKey(mpk, purpose, index);
-
-			Key key;
-			key.SetPubKey(pubKey);
-			std::string id = key.GetAddress(PrefixIDChain);
-			item.PublicKey = Utils::EncodeHex(pubKey);
-			_info.Ids[id] = item;
-
-			return id;
+			bytes_t pubKey = mpk.getChild(purpose).getChild(index).pubkey();
+			Address address(PrefixIDChain, pubKey);
+			item.PublicKey = pubKey;
+			_info.Ids[address.String()] = item;
+			return address;
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
 			return Address(id).IsIDAddress();
 		}
 
-		CMBlock IdAgentImpl::Sign(const std::string &id, const CMBlock &data, const std::string &passwd) {
+		bytes_t IdAgentImpl::Sign(const std::string &id, const bytes_t &data, const std::string &passwd) {
 			KeyPtr key = generateKey(id, passwd);
 			return key->Sign(data);
 		}
 
 		std::string IdAgentImpl::Sign(const std::string &id, const std::string &message, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return Utils::EncodeHex(key->Sign(message));
+			return key->Sign(message).getHex();
 		}
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {
@@ -104,18 +99,19 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknown ID " + id);
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IdItem item = _info.Ids[id];
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
 			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
-			UInt512 seed = standardAccount->DeriveSeed(password);
-			UInt256 chainCode;
-			Key key = BIP32Sequence::PrivKeyPath(&seed, sizeof(seed), chainCode, 3, 0 | BIP32_HARD, item.Purpose,
-												 item.Index);
-			var_clean(&seed);
+
+			HDSeed hdseed(standardAccount->DeriveSeed(password).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+
+			HDKeychain key = rootKey.getChild("44'/0'/0'").getChild(item.Purpose).getChild(item.Index);
+
 			return KeyPtr(new Key(key));
 		}
 
@@ -130,15 +126,22 @@ namespace Elastos {
 		}
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
-			KeyPtr key = generateKey(id, password);
-			return Utils::EncodeHex(key->RedeemScript(PrefixIDChain));
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
+			IdItem item = _info.Ids[id];
+
+			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
+										 "This account can not create ID");
+
+			bytes_t pubkey = standardAccount->GetIDMasterPubKey().getChild(item.Purpose).getChild(item.Index).pubkey();
+			return Address(PrefixIDChain, pubkey).RedeemScript().getHex();
 		}
 
 		const IdAgentInfo &IdAgentImpl::GetIdAgentInfo() const {
 			return _info;
 		}
 
-		std::string IdAgentImpl::GetPublicKey(const std::string &id) const {
+		bytes_t IdAgentImpl::GetPublicKey(const std::string &id) const {
 			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
 			return _info.Ids.find(id)->second.PublicKey;
 		}

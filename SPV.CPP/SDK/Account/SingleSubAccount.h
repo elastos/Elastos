@@ -18,7 +18,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual CMBlock GetRedeemScript(const Address &addr) const;
+			virtual bytes_t GetRedeemScript(const Address &addr) const;
 
 			virtual bool IsSingleAddress() const;
 

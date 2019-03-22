@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_ATTRIBUTE_H__
 
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <SDK/Common/CMemBlock.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -30,19 +29,21 @@ namespace Elastos {
 
 			Attribute(const Attribute &attr);
 
-			Attribute(Usage usage, const CMBlock &data);
+			Attribute(Usage usage, const bytes_t &data);
 
 			~Attribute();
 
+			Attribute&operator=(const Attribute &attr);
+
 			Usage GetUsage() const;
 
-			const CMBlock &GetData() const;
+			const bytes_t &GetData() const;
 
 			bool IsValid() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			virtual nlohmann::json ToJson() const;
 
@@ -50,7 +51,7 @@ namespace Elastos {
 
 		private:
 			Usage _usage;
-			CMBlock _data;
+			bytes_t _data;
 		};
 
 		typedef boost::shared_ptr<Attribute> AttributePtr;

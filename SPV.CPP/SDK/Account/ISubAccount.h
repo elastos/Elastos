@@ -7,8 +7,8 @@
 
 #include "IAccount.h"
 
-#include <SDK/Crypto/Key.h>
-#include <SDK/Base/Address.h>
+#include <SDK/BIPs/Key.h>
+#include <SDK/BIPs/Address.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <boost/shared_ptr.hpp>
@@ -44,11 +44,11 @@ namespace Elastos {
 
 			virtual void InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) = 0;
 
-			virtual CMBlock GetRedeemScript(const Address &addr) const = 0;
+			virtual bytes_t GetRedeemScript(const Address &addr) const = 0;
 
-			virtual bool FindKey(Key &key, const CMBlock &pubKey, const std::string &payPasswd) = 0;
+			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) = 0;
 
-			virtual CMBlock GetMultiSignPublicKey() const = 0;
+			virtual bytes_t GetMultiSignPublicKey() const = 0;
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword) = 0;
 
@@ -70,7 +70,7 @@ namespace Elastos {
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd) = 0;
 
-			virtual CMBlock GetVotePublicKey() const = 0;
+			virtual bytes_t GetVotePublicKey() const = 0;
 
 		};
 

@@ -7,8 +7,8 @@
 
 #include <SDK/Implement/SubWalletType.h>
 #include <SDK/Common/Mstream.h>
+#include <SDK/Common/uint256.h>
 
-#include <Core/BRInt.h>
 #include <nlohmann/json.hpp>
 
 #include <string>
@@ -77,9 +77,9 @@ namespace Elastos {
 
 			void SetPublicKey(const std::string &pubKey);
 
-			const std::vector<UInt256> &GetVisibleAssets() const;
+			const std::vector<uint256> &GetVisibleAssets() const;
 
-			void SetVisibleAssets(const std::vector<UInt256> &assets);
+			void SetVisibleAssets(const std::vector<uint256> &assets);
 
 			nlohmann::json VisibleAssetsToJson() const;
 
@@ -106,7 +106,7 @@ namespace Elastos {
 			std::string _publicKey;
 			std::string _chainCode;
 			std::string _genesisAddress;
-			std::vector<UInt256> _visibleAssets;
+			std::vector<uint256> _visibleAssets;
 		};
 
 	}

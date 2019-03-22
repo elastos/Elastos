@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_IOUTPUTPAYLOAD_H__
 #define __ELASTOS_SDK_IOUTPUTPAYLOAD_H__
 
-#include <SDK/Common/CMemBlock.h>
 #include <SDK/Common/ByteStream.h>
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
@@ -17,10 +16,10 @@ namespace Elastos {
 		public:
 			virtual ~IOutputPayload();
 
-			virtual CMBlock getData() const;
+			virtual bytes_t getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const = 0;
-			virtual bool Deserialize(ByteStream &istream) = 0;
+			virtual bool Deserialize(const ByteStream &istream) = 0;
 
 			virtual nlohmann::json ToJson() const = 0;
 			virtual void FromJson(const nlohmann::json &j) = 0;

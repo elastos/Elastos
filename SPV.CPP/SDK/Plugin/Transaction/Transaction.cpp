@@ -46,7 +46,7 @@ namespace Elastos {
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false),
-				_txHash(UINT256_ZERO) {
+				_txHash(0) {
 			InitPayloadFromType(_type);
 		}
 
@@ -108,15 +108,14 @@ namespace Elastos {
 		}
 
 		void Transaction::ResetHash() {
-			UInt256Set(&_txHash, UINT256_ZERO);
+			_txHash = 0;
 		}
 
-		const UInt256 &Transaction::GetHash() const {
-			if (UInt256IsZero(&_txHash)) {
-				ByteStream ostream;
-				SerializeUnsigned(ostream);
-				CMBlock buff = ostream.GetBuffer();
-				BRSHA256_2(&_txHash, buff, buff.GetSize());
+		const uint256 &Transaction::GetHash() const {
+			if (_txHash == 0) {
+				ByteStream stream;
+				SerializeUnsigned(stream);
+				_txHash = sha256_2(stream.GetBytes());
 			}
 			return _txHash;
 		}
@@ -184,9 +183,9 @@ namespace Elastos {
 			_inputs.push_back(Input);
 		}
 
-		bool Transaction::ContainInput(const UInt256 &hash, uint32_t n) const {
+		bool Transaction::ContainInput(const uint256 &hash, uint32_t n) const {
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				if (UInt256Eq(&_inputs[i].GetTransctionHash(), &hash) && n == _inputs[i].GetIndex()) {
+				if (_inputs[i].GetTransctionHash() == hash && n == _inputs[i].GetIndex()) {
 					return true;
 				}
 			}
@@ -229,12 +228,12 @@ namespace Elastos {
 		size_t Transaction::GetSize() {
 			ByteStream ostream;
 			Serialize(ostream);
-			return ostream.GetBuffer().GetSize();
+			return ostream.GetBytes().size();
 		}
 
 		nlohmann::json Transaction::GetSignedInfo() const {
 			nlohmann::json info;
-			UInt256 md = GetShaData();
+			uint256 md = GetShaData();
 
 			for (size_t i = 0; i < _programs.size(); ++i) {
 				info.push_back(_programs[i].GetSignedInfo(md));
@@ -249,7 +248,7 @@ namespace Elastos {
 			if (_programs.size() == 0)
 				return false;
 
-			UInt256 md = GetShaData();
+			uint256 md = GetShaData();
 
 			for (size_t i = 0; i < _programs.size(); ++i) {
 				if (!_programs[i].VerifySignature(md))
@@ -290,11 +289,6 @@ namespace Elastos {
 			}
 
 			return true;
-		}
-
-		UInt256 Transaction::GetReverseHash() {
-
-			return UInt256Reverse(&_txHash);
 		}
 
 		uint64_t Transaction::GetMinOutputAmount() {
@@ -349,7 +343,7 @@ namespace Elastos {
 		void Transaction::Serialize(ByteStream &ostream) const {
 			SerializeUnsigned(ostream);
 
-			ostream.writeVarUint(_programs.size());
+			ostream.WriteVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
 				_programs[i].Serialize(ostream);
 			}
@@ -368,17 +362,17 @@ namespace Elastos {
 
 			_payload->Serialize(ostream, _payloadVersion);
 
-			ostream.writeVarUint(_attributes.size());
+			ostream.WriteVarUint(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); i++) {
 				_attributes[i].Serialize(ostream);
 			}
 
-			ostream.writeVarUint(_inputs.size());
+			ostream.WriteVarUint(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); i++) {
 				_inputs[i].Serialize(ostream);
 			}
 
-			ostream.writeVarUint(_outputs.size());
+			ostream.WriteVarUint(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); i++) {
 				_outputs[i].Serialize(ostream, _version);
 			}
@@ -386,7 +380,7 @@ namespace Elastos {
 			ostream.WriteUint32(_lockTime);
 		}
 
-		bool Transaction::Deserialize(ByteStream &istream) {
+		bool Transaction::Deserialize(const ByteStream &istream) {
 			Reinit();
 
 			uint8_t flagByte = 0;
@@ -421,7 +415,7 @@ namespace Elastos {
 				return false;
 
 			uint64_t attributeLength = 0;
-			if (!istream.readVarUint(attributeLength))
+			if (!istream.ReadVarUint(attributeLength))
 				return false;
 
 			for (size_t i = 0; i < attributeLength; i++) {
@@ -434,7 +428,7 @@ namespace Elastos {
 			}
 
 			uint64_t inCount = 0;
-			if (!istream.readVarUint(inCount)) {
+			if (!istream.ReadVarUint(inCount)) {
 				Log::error("deserialize tx inCount error");
 				return false;
 			}
@@ -449,7 +443,7 @@ namespace Elastos {
 			}
 
 			uint64_t outputLength = 0;
-			if (!istream.readVarUint(outputLength)) {
+			if (!istream.ReadVarUint(outputLength)) {
 				Log::error("deserialize tx output len error");
 				return false;
 			}
@@ -469,7 +463,7 @@ namespace Elastos {
 			}
 
 			uint64_t programLength = 0;
-			if (!istream.readVarUint(programLength)) {
+			if (!istream.ReadVarUint(programLength)) {
 				Log::error("deserialize tx program length error");
 				return false;
 			}
@@ -483,10 +477,9 @@ namespace Elastos {
 				_programs.push_back(program);
 			}
 
-			ByteStream ostream;
-			SerializeUnsigned(ostream);
-			CMBlock buff = ostream.GetBuffer();
-			BRSHA256_2(&_txHash, buff, buff.GetSize());
+			ByteStream stream;
+			SerializeUnsigned(stream);
+			_txHash = sha256_2((stream.GetBytes()));
 
 			return true;
 		}
@@ -496,7 +489,7 @@ namespace Elastos {
 
 			jsonData["IsRegistered"] = _isRegistered;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(GetHash(), true);
+			jsonData["TxHash"] = GetHash().GetHex();
 			jsonData["Version"] = _version;
 			jsonData["LockTime"] = _lockTime;
 			jsonData["BlockHeight"] = _blockHeight;
@@ -543,7 +536,7 @@ namespace Elastos {
 			try {
 				_isRegistered = jsonData["IsRegistered"];
 
-				_txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
+				_txHash.SetHex(jsonData["TxHash"].get<std::string>());
 				uint8_t version = jsonData["Version"].get<uint8_t>();
 				_version = static_cast<TxVersion>(version);
 				_lockTime = jsonData["LockTime"].get<uint32_t>();
@@ -621,7 +614,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
-			std::string remark = wallet->GetRemark(Utils::UInt256ToString(GetHash(), true));
+			std::string remark = wallet->GetRemark(GetHash().GetHex());
 			SetRemark(remark);
 
 			std::string addr;
@@ -703,7 +696,7 @@ namespace Elastos {
 				amount = 0;
 			}
 
-			summary["TxHash"] = Utils::UInt256ToString(GetHash(), true);
+			summary["TxHash"] = GetHash().GetHex();
 			summary["Status"] = confirms <= 6 ? "Pending" : "Confirmed";
 			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
 			summary["Timestamp"] = GetTimestamp();
@@ -729,13 +722,10 @@ namespace Elastos {
 			return summary;
 		}
 
-		UInt256 Transaction::GetShaData() const {
-			ByteStream ostream;
-			SerializeUnsigned(ostream);
-			CMBlock data = ostream.GetBuffer();
-			UInt256 shaData;
-			BRSHA256(&shaData, data, data.GetSize());
-			return shaData;
+		uint256 Transaction::GetShaData() const {
+			ByteStream stream;
+			SerializeUnsigned(stream);
+			return uint256(sha256(stream.GetBytes()));
 		}
 
 		void Transaction::InitPayloadFromType(Type type) {
@@ -796,7 +786,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsEqual(const Transaction *tx) const {
-			return (tx == this || UInt256Eq(&_txHash, &tx->GetHash()));
+			return (tx == this || _txHash == tx->GetHash());
 		}
 
 		uint32_t Transaction::GetConfirms(uint32_t walletBlockHeight) const {
@@ -806,8 +796,8 @@ namespace Elastos {
 			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
 		}
 
-		UInt256 Transaction::GetAssetID() const {
-			UInt256 result = UINT256_ZERO;
+		uint256 Transaction::GetAssetID() const {
+			uint256 result;
 			if (!_outputs.empty())
 				result = _outputs.begin()->GetAssetId();
 			return result;

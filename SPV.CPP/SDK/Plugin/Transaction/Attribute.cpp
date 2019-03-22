@@ -7,8 +7,6 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRInt.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -17,12 +15,10 @@ namespace Elastos {
 		}
 
 		Attribute::Attribute(const Attribute &attr) {
-			this->_usage = attr._usage;
-			this->_data.Resize(attr._data.GetSize());
-			memcpy(this->_data, attr._data, attr._data.GetSize());
+			operator=(attr);
 		}
 
-		Attribute::Attribute(Attribute::Usage usage, const CMBlock &data) :
+		Attribute::Attribute(Attribute::Usage usage, const bytes_t &data) :
 			_usage(usage),
 			_data(data) {
 
@@ -31,11 +27,17 @@ namespace Elastos {
 		Attribute::~Attribute() {
 		}
 
+		Attribute& Attribute::operator=(const Attribute &attr) {
+			this->_usage = attr._usage;
+			this->_data = attr._data;
+			return *this;
+		}
+
 		Attribute::Usage Attribute::GetUsage() const {
 			return _usage;
 		}
 
-		const CMBlock &Attribute::GetData() const {
+		const bytes_t &Attribute::GetData() const {
 			return _data;
 		}
 
@@ -53,7 +55,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_data);
 		}
 
-		bool Attribute::Deserialize(ByteStream &istream) {
+		bool Attribute::Deserialize(const ByteStream &istream) {
 			if (!istream.ReadBytes(&_usage, 1)) {
 				Log::error("Attribute deserialize usage fail");
 				return false;
@@ -73,16 +75,16 @@ namespace Elastos {
 		}
 
 		nlohmann::json Attribute::ToJson() const {
-			nlohmann::json jsonData;
-			jsonData["Usage"] = _usage;
-			jsonData["Data"] = Utils::EncodeHex(_data);
+			nlohmann::json j;
+			j["Usage"] = _usage;
+			j["Data"] = _data.getHex();
 
-			return jsonData;
+			return j;
 		}
 
-		void Attribute::FromJson(const nlohmann::json &jsonData) {
-			_usage = jsonData["Usage"].get<Usage>();
-			_data = Utils::DecodeHex(jsonData["Data"].get<std::string>());
+		void Attribute::FromJson(const nlohmann::json &j) {
+			_usage = j["Usage"].get<Usage>();
+			_data.setHex(j["Data"].get<std::string>());
 		}
 	}
 }

@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_SPVSDK_ASSET_H
 
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <Core/BRInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -51,18 +50,18 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &jsonData);
 
-			virtual UInt256 &GetHash() const;
+			virtual uint256 &GetHash() const;
 
-			void SetHash(const UInt256 &hash);
+			void SetHash(const uint256 &hash);
 
 		public:
-			static const UInt256 &GetELAAssetID();
+			static const uint256 &GetELAAssetID();
 
 		private:
 			std::string _name;
@@ -70,9 +69,9 @@ namespace Elastos {
 			uint8_t _precision;
 			AssetType _assetType;
 			AssetRecordType _recordType;
-			mutable UInt256 _hash;
+			mutable uint256 _hash;
 
-			static UInt256 _elaAsset;
+			static uint256 _elaAsset;
 		};
 	}
 }

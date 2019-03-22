@@ -11,11 +11,11 @@ namespace Elastos {
 
 		}
 
-		CMBlock IPayload::GetData(uint8_t version) const {
+		bytes_t IPayload::GetData(uint8_t version) const {
 			ByteStream stream;
 			Serialize(stream, version);
 
-			return stream.GetBuffer();
+			return stream.GetBytes();
 		}
 
 		bool IPayload::IsValid() const {

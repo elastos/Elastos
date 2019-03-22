@@ -8,9 +8,6 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <SDK/Common/CMemBlock.h>
-
-#include <Core/BRInt.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <utility>
@@ -25,7 +22,7 @@ namespace Elastos {
 			{
 			}
 
-			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp,
+			TransactionEntity(const bytes_t &buff, uint32_t blockHeight, uint32_t timeStamp,
 							  const std::string &assetID,
 							  const std::string &remark,
 							  const std::string &txHash) :
@@ -38,7 +35,7 @@ namespace Elastos {
 			{
 			}
 
-			CMBlock buff;
+			bytes_t buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
 			std::string assetID;

@@ -21,15 +21,15 @@ namespace Elastos {
 
 		}
 
-		const CMBlock &PayloadCancelProducer::GetPublicKey() const {
+		const bytes_t &PayloadCancelProducer::GetPublicKey() const {
 			return _publicKey;
 		}
 
-		void PayloadCancelProducer::SetPublicKey(const CMBlock &key) {
+		void PayloadCancelProducer::SetPublicKey(const bytes_t &key) {
 			_publicKey = key;
 		}
 
-		void PayloadCancelProducer::SetSignature(const CMBlock &signature) {
+		void PayloadCancelProducer::SetSignature(const bytes_t &signature) {
 			_signature = signature;
 		}
 
@@ -37,7 +37,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_publicKey);
 		}
 
-		bool PayloadCancelProducer::DeserializeUnsigned(ByteStream &istream, uint8_t version) {
+		bool PayloadCancelProducer::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
 			return istream.ReadVarBytes(_publicKey);
 		}
 
@@ -46,7 +46,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_signature);
 		}
 
-		bool PayloadCancelProducer::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadCancelProducer::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!DeserializeUnsigned(istream, version)) {
 				Log::error("Deserialize: cancel producer payload read unsigned");
 				return false;
@@ -62,14 +62,14 @@ namespace Elastos {
 
 		nlohmann::json PayloadCancelProducer::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["PublicKey"] = Utils::EncodeHex(_publicKey);
-			j["Signature"] = Utils::EncodeHex(_signature);
+			j["PublicKey"] = _publicKey.getHex();
+			j["Signature"] = _signature.getHex();
 			return j;
 		}
 
 		void PayloadCancelProducer::FromJson(const nlohmann::json &j, uint8_t version) {
-			_publicKey = Utils::DecodeHex(j["PublicKey"].get<std::string>());
-			_signature = Utils::DecodeHex(j["Signature"].get<std::string>());
+			_publicKey.setHex(j["PublicKey"].get<std::string>());
+			_signature.setHex(j["Signature"].get<std::string>());
 		}
 
 		IPayload &PayloadCancelProducer::operator=(const IPayload &payload) {
@@ -84,8 +84,8 @@ namespace Elastos {
 		}
 
 		PayloadCancelProducer &PayloadCancelProducer::operator=(const PayloadCancelProducer &payload) {
-			_publicKey.Memcpy(payload._publicKey);
-			_signature.Memcpy(payload._signature);
+			_publicKey = payload._publicKey;
+			_signature = payload._signature;
 			return *this;
 		}
 

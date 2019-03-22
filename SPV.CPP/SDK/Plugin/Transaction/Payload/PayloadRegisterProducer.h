@@ -18,13 +18,13 @@ namespace Elastos {
 
 			~PayloadRegisterProducer();
 
-			const CMBlock &GetPublicKey() const;
+			const bytes_t &GetPublicKey() const;
 
-			void SetPublicKey(const CMBlock &key);
+			void SetPublicKey(const bytes_t &key);
 
-			const CMBlock &GetNodePublicKey() const;
+			const bytes_t &GetNodePublicKey() const;
 
-			void SetNodePublicKey(const CMBlock &key);
+			void SetNodePublicKey(const bytes_t &key);
 
 			const std::string &GetNickName() const;
 
@@ -42,17 +42,17 @@ namespace Elastos {
 
 			void SetAddress(const std::string &address);
 
-			const CMBlock &GetSignature() const;
+			const bytes_t &GetSignature() const;
 
-			void SetSignature(const CMBlock &signature);
+			void SetSignature(const bytes_t &signature);
 
 			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeUnsigned(ByteStream &istream, uint8_t version);
+			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
-			virtual bool Deserialize(ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
@@ -63,13 +63,13 @@ namespace Elastos {
 			PayloadRegisterProducer &operator=(const PayloadRegisterProducer &payload);
 
 		private:
-			CMBlock _ownerPublicKey;
-			CMBlock _nodePublicKey;
+			bytes_t _ownerPublicKey;
+			bytes_t _nodePublicKey;
 			std::string _nickName;
 			std::string _url;
 			uint64_t _location;
 			std::string _address;
-			CMBlock _signature;
+			bytes_t _signature;
 		};
 
 	}

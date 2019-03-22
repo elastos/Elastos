@@ -19,7 +19,7 @@ namespace Elastos {
 			virtual ~ELAMessageSerializable() {}
 
 			virtual void Serialize(ByteStream &ostream) const = 0;
-			virtual bool Deserialize(ByteStream &istream) = 0;
+			virtual bool Deserialize(const ByteStream &istream) = 0;
 
 			virtual nlohmann::json ToJson() const = 0;
 			virtual void FromJson(const nlohmann::json &j) = 0;

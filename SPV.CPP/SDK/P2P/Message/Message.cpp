@@ -39,12 +39,12 @@ namespace Elastos {
 				_peer->_listener->OnRelayedTx(_peer->shared_from_this(), tx);
 		}
 
-		void Message::FireHasTx(const UInt256 &txHash) {
+		void Message::FireHasTx(const uint256 &txHash) {
 			if (_peer->_listener != nullptr)
 				_peer->_listener->OnHasTx(_peer->shared_from_this(), txHash);
 		}
 
-		void Message::FireRejectedTx(const UInt256 &txHash, uint8_t code, const std::string &reason) {
+		void Message::FireRejectedTx(const uint256 &txHash, uint8_t code, const std::string &reason) {
 			if (_peer->_listener != nullptr)
 				_peer->_listener->OnRejectedTx(_peer->shared_from_this(), txHash, code, reason);
 		}
@@ -59,7 +59,7 @@ namespace Elastos {
 				_peer->_listener->OnRelayedPingMsg(_peer->shared_from_this());
 		}
 
-		void Message::FireNotfound(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {
+		void Message::FireNotfound(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes) {
 			if (_peer->_listener != nullptr)
 				_peer->_listener->OnNotfound(_peer->shared_from_this(), txHashes, blockHashes);
 		}
@@ -69,7 +69,7 @@ namespace Elastos {
 				_peer->_listener->OnSetFeePerKb(_peer->shared_from_this(), feePerKb);
 		}
 
-		const TransactionPtr &Message::FireRequestedTx(const UInt256 &txHash) {
+		const TransactionPtr &Message::FireRequestedTx(const uint256 &txHash) {
 			if (_peer->_listener != nullptr)
 				return _peer->_listener->OnRequestedTx(_peer->shared_from_this(), txHash);
 			return nullptr;
@@ -86,7 +86,7 @@ namespace Elastos {
 				_peer->_listener->OnThreadCleanup(_peer->shared_from_this());
 		}
 
-		void Message::SendMessage(const CMBlock &msg, const std::string &type) {
+		void Message::SendMessage(const bytes_t &msg, const std::string &type) {
 			_peer->SendMessage(msg, type);
 		}
 	}

@@ -7,6 +7,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/hash.h>
 
 #include <Core/BRCrypto.h>
 #include <Core/BRMerkleBlock.h>
@@ -30,10 +31,10 @@ namespace Elastos {
 		}
 
 		MerkleBlock &MerkleBlock::operator=(const MerkleBlock &other) {
-			UInt256Set(&_blockHash, other._blockHash);
+			_blockHash = other._blockHash;
 			_version = other._version;
-			UInt256Set(&_prevBlock, other._prevBlock);
-			UInt256Set(&_merkleRoot, other._merkleRoot);
+			_prevBlock = other._prevBlock;
+			_merkleRoot = other._merkleRoot;
 			_timestamp = other._timestamp;
 			_target = other._target;
 			_nonce = other._nonce;
@@ -46,15 +47,11 @@ namespace Elastos {
 			return *this;
 		}
 
-		const UInt256 &MerkleBlock::GetHash() const {
-			UInt256 zero = UINT256_ZERO;
-			if (UInt256Eq(&_blockHash, &zero)) {
+		const uint256 &MerkleBlock::GetHash() const {
+			if (_blockHash == 0) {
 				ByteStream ostream;
 				MerkleBlockBase::SerializeNoAux(ostream);
-				UInt256 hash = UINT256_ZERO;
-				CMBlock buf = ostream.GetBuffer();
-				BRSHA256_2(&hash, buf, buf.GetSize());
-				UInt256Set((void *) &_blockHash, hash);
+				_blockHash = sha256_2(ostream.GetBytes());
 			}
 			return _blockHash;
 		}
@@ -69,11 +66,11 @@ namespace Elastos {
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
 			const uint32_t size = _target >> 24, target = _target & 0x00ffffff;
 			size_t hashIdx = 0, flagIdx = 0;
-			UInt256 merkleRoot = MerkleBlockRootR(&hashIdx, &flagIdx, 0), t = UINT256_ZERO;
+			uint256 merkleRoot = MerkleBlockRootR(&hashIdx, &flagIdx, 0), t;
 			int r = 1;
 
 			// check if merkle root is correct
-			if (_totalTx > 0 && !UInt256Eq(&merkleRoot, &_merkleRoot))
+			if (_totalTx > 0 && merkleRoot != _merkleRoot)
 				r = 0;
 
 			// check if _timestamp is too far in future
@@ -84,14 +81,16 @@ namespace Elastos {
 			if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget))
 				r = 0;
 
-			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
-			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
+			if (size > 3)
+				*(uint32_t *)(t.begin() + size - 3) = target;
+			else
+				*(uint32_t *)t.begin() = target >> (3 - size) * 8;
 
-			UInt256 auxBlockHash = _auxPow.GetParBlockHeaderHash();
-			for (int i = sizeof(t) - 1; r && i >= 0; i--) { // check proof-of-work
-				if (auxBlockHash.u8[i] < t.u8[i])
+			uint256 auxBlockHash = _auxPow.GetParBlockHeaderHash();
+			for (int i = t.size() - 1; r && i >= 0; i--) { // check proof-of-work
+				if (auxBlockHash.begin()[i] < t.begin()[i])
 					break;
-				if (auxBlockHash.u8[i] > t.u8[i])
+				if (auxBlockHash.begin()[i] > t.begin()[i])
 					r = 0;
 			}
 
@@ -104,7 +103,7 @@ namespace Elastos {
 			MerkleBlockBase::SerializeAfterAux(ostream);
 		}
 
-		bool MerkleBlock::Deserialize(ByteStream &istream) {
+		bool MerkleBlock::Deserialize(const ByteStream &istream) {
 			if (!MerkleBlockBase::DeserializeNoAux(istream) || !_auxPow.Deserialize(istream) ||
 				!MerkleBlockBase::DeserializeAfterAux(istream))
 				return false;
@@ -119,14 +118,6 @@ namespace Elastos {
 
 		void MerkleBlock::SetAuxPow(const AuxPow &pow) {
 			_auxPow = pow;
-		}
-
-		nlohmann::json MerkleBlock::ToJson() const {
-			return MerkleBlockBase::ToJson();
-		}
-
-		void MerkleBlock::FromJson(const nlohmann::json &j) {
-			MerkleBlockBase::FromJson(j);
 		}
 
 		MerkleBlockPtr MerkleBlockFactory::createBlock() {

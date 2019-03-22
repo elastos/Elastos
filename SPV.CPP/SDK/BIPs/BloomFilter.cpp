@@ -6,10 +6,8 @@
 
 #include <SDK/Common/Log.h>
 
-#include <Core/BRInt.h>
-#include <Core/BRAddress.h>
-
 #include <cfloat>
+#include <Core/BRCrypto.h>
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
@@ -25,9 +23,7 @@ namespace Elastos {
 			if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
 			if (length < 1) length = 1;
 
-			_filter.Resize(length);
-			memset(_filter, 0, length * sizeof(*_filter));
-
+			_filter = bytes_t(length, 0);
 			_hashFuncs = uint32_t(((length * 8.0) / elemCount) * M_LN2);
 			if (_hashFuncs > BLOOM_MAX_HASH_FUNCS) _hashFuncs = BLOOM_MAX_HASH_FUNCS;
 		}
@@ -43,7 +39,7 @@ namespace Elastos {
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH
-		bool BloomFilter::Deserialize(ByteStream &istream) {
+		bool BloomFilter::Deserialize(const ByteStream &istream) {
 			if (!istream.ReadVarBytes(_filter)) {
 				Log::error("Bloom filter deserialize filter fail");
 				return false;
@@ -69,13 +65,7 @@ namespace Elastos {
 
 		nlohmann::json BloomFilter::ToJson() const {
 			nlohmann::json jsonData;
-			jsonData["length"] = _filter.GetSize();
-
-			std::vector<uint8_t> filters(_filter.GetSize());
-			for (int i = 0; i < filters.size(); ++i) {
-				filters[i] = _filter[i];
-			}
-			jsonData["filter"] = filters;
+			jsonData["filter"] = _filter.getBase64();
 			jsonData["hashFuncs"] = _hashFuncs;
 			jsonData["tweak"] = _tweak;
 
@@ -83,43 +73,35 @@ namespace Elastos {
 		}
 
 		void BloomFilter::FromJson(const nlohmann::json &jsonData) {
-			size_t length = jsonData["length"].get<size_t>();
-
-			_filter.Resize(length);
-			std::vector<uint8_t> filters = jsonData["filter"];
-			assert(length == filters.size());
-			for (int i = 0; i < length; ++i) {
-				_filter[i] = filters[i];
-			}
-
+			_filter.setBase64(jsonData["filter"].get<std::string>());
 			_hashFuncs = jsonData["hashFuncs"].get<uint32_t>();
 			_tweak = jsonData["tweak"].get<uint32_t>();
 		}
 
-		void BloomFilter::InsertData(const void *data, size_t dataLen) {
+		void BloomFilter::InsertData(const bytes_t &data) {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = CalculateHash(data, dataLen, i);
+				idx = CalculateHash(data, i);
 				_filter[idx >> 3] |= (1 << (7 & idx));
 			}
 
-			if (data != nullptr) _elemCount++;
+			if (!data.empty()) _elemCount++;
 		}
 
-		uint32_t BloomFilter::CalculateHash(const void *data, size_t dataLen, uint32_t hashNum) {
-			return BRMurmur3_32(data, dataLen, hashNum * 0xfba4c795 + _tweak) % (_filter.GetSize() * 8);
+		uint32_t BloomFilter::CalculateHash(const bytes_t &data, uint32_t hashNum) {
+			return BRMurmur3_32(data.data(), data.size(), hashNum * 0xfba4c795 + _tweak) % (_filter.size() * 8);
 		}
 
-		bool BloomFilter::ContainsData(const void *data, size_t dataLen) {
+		bool BloomFilter::ContainsData(const bytes_t &data) {
 			size_t i, idx;
 
 			for (i = 0; i < _hashFuncs; i++) {
-				idx = CalculateHash(data, dataLen, i);
+				idx = CalculateHash(data, i);
 				if (!(_filter[idx >> 3] & (1 << (7 & idx)))) return false;
 			}
 
-			return data != nullptr ? true : false;
+			return !data.empty() ? true : false;
 		}
 	}
 }

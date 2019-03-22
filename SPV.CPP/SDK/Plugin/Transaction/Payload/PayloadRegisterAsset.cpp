@@ -10,8 +10,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		PayloadRegisterAsset::PayloadRegisterAsset() :
-				_amount(0),
-				_controller(UINT168_ZERO) {
+				_amount(0) {
 			_asset.SetName("ELA");
 			_asset.SetPrecision(0x08);
 			_asset.SetAssetType(Asset::AssetType::Token);
@@ -41,11 +40,11 @@ namespace Elastos {
 			return _amount;
 		}
 
-		void PayloadRegisterAsset::SetController(const UInt168 &controller) {
+		void PayloadRegisterAsset::SetController(const uint168 &controller) {
 			_controller = controller;
 		}
 
-		const UInt168 &PayloadRegisterAsset::GetController() const {
+		const uint168 &PayloadRegisterAsset::GetController() const {
 			return _controller;
 		}
 
@@ -60,10 +59,10 @@ namespace Elastos {
 			_asset.Serialize(ostream);
 
 			ostream.WriteBytes(&_amount, sizeof(_amount));
-			ostream.WriteBytes(_controller.u8, sizeof(_controller));
+			ostream.WriteBytes(_controller);
 		}
 
-		bool PayloadRegisterAsset::Deserialize(ByteStream &istream, uint8_t version) {
+		bool PayloadRegisterAsset::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!_asset.Deserialize(istream)) {
 				Log::error("Payload register asset deserialize asset fail");
 				return false;
@@ -74,7 +73,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.ReadBytes(_controller.u8, sizeof(_controller))) {
+			if (!istream.ReadBytes(_controller)) {
 				Log::error("Payload register asset deserialize controller fail");
 				return false;
 			}
@@ -87,7 +86,7 @@ namespace Elastos {
 
 			j["Asset"] = _asset.ToJson();
 			j["Amount"] = _amount;
-			j["Controller"] = Utils::UInt168ToString(_controller);
+			j["Controller"] = _controller.GetHex();
 
 			return j;
 		}
@@ -95,7 +94,7 @@ namespace Elastos {
 		void PayloadRegisterAsset::FromJson(const nlohmann::json &j, uint8_t version) {
 			_asset.FromJson(j["Asset"]);
 			_amount = j["Amount"].get<uint64_t>();
-			_controller = Utils::UInt168FromString(j["Controller"].get<std::string>());
+			_controller.SetHex(j["Controller"].get<std::string>());
 		}
 
 		IPayload &PayloadRegisterAsset::operator=(const IPayload &payload) {

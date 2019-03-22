@@ -15,18 +15,17 @@ using namespace Elastos::ElaWallet;
 TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 
 	SECTION("Serialize and deserialize") {
-		PayloadCoinBase p1(getRandCMBlock(50)), p2;
+		PayloadCoinBase p1(getRandBytes(50)), p2;
 
 		ByteStream stream;
 		p1.Serialize(stream, 0);
 
-		stream.SetPosition(0);
 		REQUIRE(p2.Deserialize(stream, 0));
 		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
 	}
 
 	SECTION("to json and from json") {
-		PayloadCoinBase p1(getRandCMBlock(50)), p2;
+		PayloadCoinBase p1(getRandBytes(50)), p2;
 
 		nlohmann::json p1Json = p1.ToJson(0);
 		p2.FromJson(p1Json, 0);

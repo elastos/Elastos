@@ -8,27 +8,19 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
-#include <Core/BRInt.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 		RejectMessage::RejectMessage(const MessagePeerPtr &peer) :
 			Message(peer) {
 		}
 
-		bool RejectMessage::Accept(const CMBlock &msg) {
-			size_t hashLen = 0;
-
+		bool RejectMessage::Accept(const bytes_t &msg) {
 			ByteStream stream(msg);
 
 			std::string type;
 			if (!stream.ReadVarString(type)) {
 				_peer->error("malformed reject message, read var string 'type' error");
 				return false;
-			}
-
-			if (type == MSG_TX) {
-				hashLen = sizeof(UInt256);
 			}
 
 			uint8_t code;
@@ -43,17 +35,16 @@ namespace Elastos {
 				return false;
 			}
 
-			UInt256 txHash = UINT256_ZERO;
-			if (hashLen == sizeof(UInt256)) {
-				if (!stream.ReadBytes(txHash.u8, sizeof(UInt256))) {
+			if (type == MSG_TX) {
+				uint256 txHash;
+
+				if (!stream.ReadBytes(txHash)) {
 					_peer->error("malformed reject message, read tx hash error");
 					return false;
 				}
-			}
 
-			if (!UInt256IsZero(&txHash)) {
 				_peer->info("rejected {} code: 0x{:x} reason: {} txid: {}", type, code,
-							reason, Utils::UInt256ToString(txHash, true));
+							reason, txHash.GetHex());
 				FireRejectedTx(txHash, code, reason);
 			} else {
 				_peer->info("rejected {} code: {:x} reason: {}", type, code, reason);

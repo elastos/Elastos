@@ -11,12 +11,11 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionInput::TransactionInput() :
-				_txHash(UINT256_ZERO),
 				_index(0),
 				_sequence(0) {
 		}
 
-		TransactionInput::TransactionInput(const UInt256 &txHash, uint32_t index) :
+		TransactionInput::TransactionInput(const uint256 &txHash, uint32_t index) :
 				_txHash(txHash),
 				_index(index),
 				_sequence(0) {
@@ -27,11 +26,11 @@ namespace Elastos {
 
 		}
 
-		const UInt256 &TransactionInput::GetTransctionHash() const {
+		const uint256 &TransactionInput::GetTransctionHash() const {
 			return _txHash;
 		}
 
-		void TransactionInput::SetTransactionHash(const UInt256 &hash) {
+		void TransactionInput::SetTransactionHash(const uint256 &hash) {
 			_txHash = hash;
 		}
 
@@ -52,17 +51,17 @@ namespace Elastos {
 		}
 
 		size_t TransactionInput::GetSize() const {
-			return sizeof(_txHash) + sizeof(_index) + sizeof(_sequence);
+			return _txHash.size() + sizeof(_index) + sizeof(_sequence);
 		}
 
 		void TransactionInput::Serialize(ByteStream &ostream) const {
-			ostream.WriteBytes(_txHash.u8, sizeof(UInt256));
+			ostream.WriteBytes(_txHash);
 			ostream.WriteUint16(uint16_t(_index));
 			ostream.WriteUint32(_sequence);
 		}
 
-		bool TransactionInput::Deserialize(ByteStream &istream) {
-			if (!istream.ReadBytes(_txHash.u8, sizeof(_txHash))) {
+		bool TransactionInput::Deserialize(const ByteStream &istream) {
+			if (!istream.ReadBytes(_txHash)) {
 				Log::error("deserialize tx's txHash error");
 				return false;
 			}
@@ -84,14 +83,14 @@ namespace Elastos {
 
 		nlohmann::json TransactionInput::ToJson() const {
 			nlohmann::json jsonData;
-			jsonData["TxHash"] = Utils::UInt256ToString(_txHash, true);
+			jsonData["TxHash"] = _txHash.GetHex();
 			jsonData["Index"] = _index;
 			jsonData["Sequence"] = _sequence;
 			return jsonData;
 		}
 
 		void TransactionInput::FromJson(const nlohmann::json &jsonData) {
-			_txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
+			_txHash = uint256(jsonData["TxHash"].get<std::string>());
 			_index = jsonData["Index"].get<uint32_t>();
 			_sequence = jsonData["Sequence"].get<uint32_t>();
 		}
