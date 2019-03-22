@@ -292,7 +292,7 @@ public class CarrierFileTransferManager: NSObject {
     /// - Returns: The new CarrierFileTransfer
     ///
     /// - Throws: CarrierError
-    @objc(createFileTransferToAddress:withFileInfo:delegate:)
+    @objc(createFileTransferToAddress:withFileInfo:delegate:error:)
     public func createFileTransfer(to address: String,
                                    withFileInfo fileInfo: CarrierFileTransferInfo?,
                                    delegate: CarrierFileTransferDelegate)
