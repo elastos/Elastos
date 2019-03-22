@@ -203,18 +203,25 @@ func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 // used to examine the inventory being advertised by the remote peer and react
 // accordingly.  We pass the message down to blockmanager which will call
 // QueueMessage with any appropriate responses.
-func (sp *serverPeer) OnInv(_ *peer.Peer, msg *msg.Inv) {
-	if len(msg.InvList) > 0 {
-		sp.server.syncManager.QueueInv(msg, sp.Peer)
+func (sp *serverPeer) OnInv(_ *peer.Peer, inv *msg.Inv) {
+	if len(inv.InvList) > 0 {
+		sp.server.syncManager.QueueInv(inv, sp.Peer)
 	}
 }
 
 // OnNotFound is invoked when a peer receives an notfounc message.
 // A peer should not response a notfound message so we just disconnect it.
-func (sp *serverPeer) OnNotFound(_ *peer.Peer, msg *msg.NotFound) {
-	log.Debugf("%s sent us notfound message --  disconnecting", sp)
-	sp.AddBanScore(100, 0, msg.CMD())
-	sp.Disconnect()
+func (sp *serverPeer) OnNotFound(_ *peer.Peer, notFound *msg.NotFound) {
+	for _, i := range notFound.InvList {
+		if i.Type == msg.InvTypeTx {
+			continue
+		}
+
+		log.Debugf("%s sent us notfound message --  disconnecting", sp)
+		sp.AddBanScore(100, 0, notFound.CMD())
+		sp.Disconnect()
+		return
+	}
 }
 
 // handleGetData is invoked when a peer receives a getdata message and
