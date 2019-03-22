@@ -18,6 +18,7 @@ type Arbitrators interface {
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
 	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
+	GetDutyIndexByHeight(height uint32) int
 	GetDutyIndex() int
 	GetArbitersRoundReward() map[common.Uint168]common.Fixed64
 	GetFinalRoundChange() common.Fixed64
