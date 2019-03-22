@@ -752,6 +752,12 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		// connected block from the transaction pool.
 		sm.txMemPool.CleanSubmittedTransactions(block)
 
+		// Remove the block and its confirmation which is connected from
+		// the block pool.
+		// Block pool holding its mutex here when called AppendDposBlock,
+		// so need a goroutine calling here.
+		go sm.blockMemPool.CleanFinalConfirmedBlock(block.Height)
+
 		// A block has been disconnected from the main block chain.
 	case events.ETBlockDisconnected:
 		block, ok := event.Data.(*types.Block)
