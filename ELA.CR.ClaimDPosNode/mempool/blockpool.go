@@ -13,6 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA/events"
 )
 
+const cachedCount = 6
+
 type BlockPool struct {
 	Chain     *blockchain.BlockChain
 	Store     blockchain.IChainStore
@@ -223,6 +225,18 @@ func (bm *BlockPool) GetConfirm(hash common.Uint256) (
 
 	confirm, ok := bm.confirms[hash]
 	return confirm, ok
+}
+
+func (bm *BlockPool) CleanFinalConfirmedBlock(height uint32) {
+	bm.Lock()
+	defer bm.Unlock()
+
+	for _, block := range bm.blocks {
+		if block.Height < height-cachedCount {
+			delete(bm.blocks, block.Hash())
+			delete(bm.confirms, block.Hash())
+		}
+	}
 }
 
 func NewBlockPool(params *config.Params) *BlockPool {
