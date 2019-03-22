@@ -839,7 +839,8 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
-		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(config.Parameters.MinCrossChainTxFee) {
+		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] >
+			txn.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(b.chainParams.MinCrossChainTxFee) {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}
@@ -855,7 +856,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 		totalOutput += output.Value
 	}
 
-	if totalInput-totalOutput < common.Fixed64(config.Parameters.MinCrossChainTxFee) {
+	if totalInput-totalOutput < common.Fixed64(b.chainParams.MinCrossChainTxFee) {
 		return errors.New("Invalid transaction fee")
 	}
 	return nil
@@ -1088,7 +1089,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 	}
 
 	if inputValue-penalty < common.Fixed64(
-		config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+		b.chainParams.MinTransactionFee)+outputValue {
 		return fmt.Errorf("overspend deposit")
 	}
 

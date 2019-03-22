@@ -86,6 +86,17 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 	return nil
 }
 
+func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
+	a.mtx.Lock()
+	if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
+		index = a.dutyIndex % len(a.currentArbitrators)
+	} else {
+		index = int(height) % len(a.currentArbitrators)
+	}
+	a.mtx.Unlock()
+	return index
+}
+
 func (a *arbitrators) GetDutyIndex() int {
 	a.mtx.Lock()
 	index := a.dutyIndex

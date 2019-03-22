@@ -48,6 +48,10 @@ func (a *ArbitratorsMock) GetFinalRoundChange() common.Fixed64 {
 	return a.FinalRoundChange
 }
 
+func (a *ArbitratorsMock) GetDutyIndexByHeight(height uint32) int {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) GetDutyIndex() int {
 	panic("implement me")
 }
