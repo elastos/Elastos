@@ -16,8 +16,8 @@ func FromArray(array []interface{}, fields ...string) Params {
 	return params
 }
 
-func (p Params) Int(filed string) (int64, bool) {
-	value, ok := p[filed]
+func (p Params) Int(field string) (int64, bool) {
+	value, ok := p[field]
 	if !ok {
 		return 0, false
 	}
@@ -25,7 +25,7 @@ func (p Params) Int(filed string) (int64, bool) {
 	case float64:
 		return int64(v), true
 	case string:
-		int, err := strconv.ParseInt(p[filed].(string), 10, 64)
+		int, err := strconv.ParseInt(p[field].(string), 10, 64)
 		if err != nil {
 			return 0, false
 		}
@@ -35,8 +35,8 @@ func (p Params) Int(filed string) (int64, bool) {
 	}
 }
 
-func (p Params) Uint(filed string) (uint32, bool) {
-	value, ok := p[filed]
+func (p Params) Uint(field string) (uint32, bool) {
+	value, ok := p[field]
 	if !ok {
 		return 0, false
 	}
@@ -47,7 +47,7 @@ func (p Params) Uint(filed string) (uint32, bool) {
 		}
 		return uint32(v), true
 	case string:
-		uint, err := strconv.ParseUint(p[filed].(string), 10, 64)
+		uint, err := strconv.ParseUint(p[field].(string), 10, 64)
 		if err != nil {
 			return 0, false
 		}
@@ -57,8 +57,8 @@ func (p Params) Uint(filed string) (uint32, bool) {
 	}
 }
 
-func (p Params) Float(filed string) (float64, bool) {
-	value, ok := p[filed]
+func (p Params) Float(field string) (float64, bool) {
+	value, ok := p[field]
 	if !ok {
 		return 0, false
 	}
@@ -66,7 +66,7 @@ func (p Params) Float(filed string) (float64, bool) {
 	case float64:
 		return v, true
 	case string:
-		float, err := strconv.ParseFloat(p[filed].(string), 64)
+		float, err := strconv.ParseFloat(p[field].(string), 64)
 		if err != nil {
 			return 0, false
 		}
