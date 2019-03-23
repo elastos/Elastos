@@ -101,7 +101,7 @@ type DPOSManager struct {
 	chainParams *config.Params
 	broadcast   func(p2p.Message)
 
-	notHandledVotes      int
+	notHandledProposal   map[string]struct{}
 	neededMajorityStatus int
 	statusMap            map[uint32]map[string]*dmsg.ConsensusStatus
 }
@@ -185,7 +185,7 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 
 	if d.handler.TryStartNewConsensus(b) {
-		d.notHandledVotes = 0
+		d.notHandledProposal = make(map[string]struct{})
 		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 	}
 }
@@ -202,24 +202,25 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
-	d.handler.StartNewProposal(p)
-}
-
-func (d *DPOSManager) OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote) {
-	log.Info("[OnVoteReceived] started")
-	defer log.Info("[OnVoteReceived] end")
-	succeed, finished := d.handler.ProcessAcceptVote(id, p)
-	if finished {
-		d.changeHeight()
-	} else if !succeed {
-		d.notHandledVotes++
-		if d.arbitrators.HasArbitersMinorityCount(d.notHandledVotes) {
+	if !d.handler.StartNewProposal(p) {
+		pubKey := common.BytesToHexString(id[:])
+		d.notHandledProposal[pubKey] = struct{}{}
+		if d.arbitrators.HasArbitersMinorityCount(len(d.notHandledProposal)) {
 			log.Info("[OnVoteAccepted] has minority not handled votes, need recover")
 			if d.recoverAbnormalState() {
 				log.Info("[OnVoteAccepted] recover start")
 			}
 			log.Error("[OnVoteAccepted] has no active peers recover failed")
 		}
+	}
+}
+
+func (d *DPOSManager) OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote) {
+	log.Info("[OnVoteReceived] started")
+	defer log.Info("[OnVoteReceived] end")
+	_, finished := d.handler.ProcessAcceptVote(id, p)
+	if finished {
+		d.changeHeight()
 	}
 }
 
@@ -292,12 +293,13 @@ func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusSt
 		log.Infof("[OnResponseConsensus] recover received %d status at "+
 			"viewoffset:%d", len(d.statusMap[status.ViewOffset]), status.ViewOffset)
 		d.handler.RecoverAbnormal(status)
-		d.notHandledVotes = 0
+		d.notHandledProposal = make(map[string]struct{})
 		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 	}
 }
 
 func (d *DPOSManager) OnBadNetwork() {
+	log.Info("[OnBadNetwork] found network bad")
 	if d.recoverAbnormalState() {
 		log.Info("[OnBadNetwork] start recover")
 	}
@@ -305,9 +307,13 @@ func (d *DPOSManager) OnBadNetwork() {
 }
 
 func (d *DPOSManager) recoverAbnormalState() bool {
-	if peers := d.network.GetActivePeers(); len(peers) != 0 {
-		log.Error("[recoverAbnormalState] can not find active peer")
-		d.neededMajorityStatus = len(peers)/3 + 1
+	if arbiters := d.arbitrators.GetArbitrators(); len(arbiters) != 0 {
+		if peers := d.network.GetActivePeers(); len(peers) == 0 {
+			log.Error("[recoverAbnormalState] can not find active peer")
+			return false
+		}
+
+		d.neededMajorityStatus = len(arbiters)/3 + 1
 		d.handler.RequestAbnormalRecovering()
 		return true
 	}
@@ -316,7 +322,7 @@ func (d *DPOSManager) recoverAbnormalState() bool {
 
 func (d *DPOSManager) OnChangeView() {
 	if d.consensus.TryChangeView() {
-		d.notHandledVotes = 0
+		log.Info("[TryChangeView] succeed")
 	}
 }
 
