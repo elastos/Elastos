@@ -181,8 +181,8 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 		return
 	}
 
-	log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
-	d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+	//log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
+	//d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 
 	if d.handler.TryStartNewConsensus(b) {
 		d.notHandledProposal = make(map[string]struct{})
@@ -202,7 +202,7 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
 
-	if !d.handler.StartNewProposal(p) {
+	if !d.handler.ProcessProposal(id, p) {
 		pubKey := common.BytesToHexString(id[:])
 		d.notHandledProposal[pubKey] = struct{}{}
 		if d.arbitrators.HasArbitersMinorityCount(len(d.notHandledProposal)) {
