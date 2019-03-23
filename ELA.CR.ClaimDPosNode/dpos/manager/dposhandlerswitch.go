@@ -19,8 +19,7 @@ type DPOSEventConditionHandler interface {
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p *payload.DPOSProposal) (handled bool)
-
+	ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool)
 	ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
 	ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
 }
@@ -91,8 +90,8 @@ func (h *DPOSHandlerSwitch) FinishConsensus() {
 	h.proposalDispatcher.FinishConsensus()
 }
 
-func (h *DPOSHandlerSwitch) StartNewProposal(p *payload.DPOSProposal) (handled bool) {
-	handled = h.currentHandler.StartNewProposal(p)
+func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
+	handled = h.currentHandler.ProcessProposal(id, p)
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(p.Sponsor),
