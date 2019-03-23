@@ -60,7 +60,7 @@ func (h *DPOSNormalHandler) tryGetCurrentProposal(id peer.PID, p *payload.DPOSPr
 	return currentProposal.Hash(), true
 }
 
-func (h *DPOSNormalHandler) StartNewProposal(p *payload.DPOSProposal) {
+func (h *DPOSNormalHandler) StartNewProposal(p *payload.DPOSProposal) (handled bool) {
 	log.Info("[Normal][StartNewProposal] start")
 	defer log.Info("[Normal][StartNewProposal] end")
 
@@ -68,9 +68,11 @@ func (h *DPOSNormalHandler) StartNewProposal(p *payload.DPOSProposal) {
 		h.consensus.TryChangeView()
 	}
 
-	if needRecord := h.proposalDispatcher.ProcessProposal(p, false); needRecord {
+	needRecord, handled := h.proposalDispatcher.ProcessProposal(p, false)
+	if needRecord {
 		h.proposalDispatcher.illegalMonitor.AddProposal(p)
 	}
+	return handled
 }
 
 func (h *DPOSNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
