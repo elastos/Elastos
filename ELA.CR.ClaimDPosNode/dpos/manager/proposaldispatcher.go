@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
@@ -110,7 +111,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	}
 	p.processingBlock = b
 
-	p.cfg.Network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+	//p.cfg.Network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 	proposal := &payload.DPOSProposal{Sponsor: p.cfg.Manager.GetPublicKey(),
 		BlockHash: b.Hash(), ViewOffset: p.cfg.Consensus.GetViewOffset()}
 	var err error
@@ -199,7 +200,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	}
 }
 
-func (p *ProposalDispatcher) ProcessProposal(d *payload.DPOSProposal,
+func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposal,
 	force bool) (needRecord bool, handled bool) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
@@ -254,6 +255,7 @@ func (p *ProposalDispatcher) ProcessProposal(d *payload.DPOSProposal,
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
+		p.tryGetBlock(id, d.BlockHash)
 		log.Info("received pending proposal")
 		return true, false
 	} else {
@@ -275,6 +277,11 @@ func (p *ProposalDispatcher) ProcessProposal(d *payload.DPOSProposal,
 	}
 
 	return true, true
+}
+
+func (d *ProposalDispatcher) tryGetBlock(id peer.PID, blockHash common.Uint256) error {
+	getBlock := dmsg.NewGetBlock(blockHash)
+	return d.cfg.Network.SendMessageToPeer(id, getBlock)
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
@@ -301,7 +308,9 @@ func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
 	if p.cfg.Consensus.IsRunning() {
 		for k, v := range p.pendingProposals {
 			if v.BlockHash.IsEqual(b.Hash()) {
-				if needRecord, _ := p.ProcessProposal(v, true); needRecord {
+				// block is already exist, will not use PID, given PID{} is ok
+				if needRecord, _ := p.ProcessProposal(
+					peer.PID{}, v, true); needRecord {
 					p.illegalMonitor.AddProposal(v)
 				}
 				delete(p.pendingProposals, k)
