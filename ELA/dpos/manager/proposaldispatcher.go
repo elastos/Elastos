@@ -200,46 +200,46 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 }
 
 func (p *ProposalDispatcher) ProcessProposal(d *payload.DPOSProposal,
-	force bool) (needRecord bool) {
+	force bool) (needRecord bool, handled bool) {
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
 	if !blockchain.IsProposalValid(d) {
 		log.Warn("invalid proposal.")
-		return false
+		return false, true
 	}
 
 	if p.IsViewChangedTimeOut() {
 		log.Info("enter emergency state, proposal will be discard")
-		return true
+		return true, false
 	}
 
 	if p.processingProposal != nil && d.Hash().IsEqual(
 		p.processingProposal.Hash()) {
 		log.Info("already processing proposal")
-		return true
+		return true, false
 	}
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
 		log.Info("already exist block in block chain")
-		return true
+		return true, false
 	}
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
 		log.Info("have different view offset")
-		return true
+		return true, false
 	}
 
 	if !force {
 		if _, ok := p.pendingProposals[d.Hash()]; ok {
 			log.Info("already have proposal, wait for processing")
-			return true
+			return true, false
 		}
 	}
 
 	if anotherProposal, ok := p.illegalMonitor.IsLegalProposal(d); !ok {
 		p.illegalMonitor.ProcessIllegalProposal(d, anotherProposal)
-		return true
+		return true, true
 	}
 
 	if !p.cfg.Consensus.IsArbitratorOnDuty(d.Sponsor) {
@@ -248,33 +248,33 @@ func (p *ProposalDispatcher) ProcessProposal(d *payload.DPOSProposal,
 			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
-		return true
+		return true, true
 	}
 
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
 		log.Info("received pending proposal")
-		return true
+		return true, false
 	} else {
 		p.TryStartSpeculatingProposal(currentBlock)
 	}
 
 	if currentBlock.Height != p.processingBlock.Height {
 		log.Warn("[ProcessProposal] Invalid block height")
-		return true
+		return true, false
 	}
 
 	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
 		log.Warn("[ProcessProposal] Invalid block hash")
-		return true
+		return true, false
 	}
 
 	if !p.proposalProcessFinished {
 		p.acceptProposal(d)
 	}
 
-	return true
+	return true, true
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
@@ -301,7 +301,7 @@ func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
 	if p.cfg.Consensus.IsRunning() {
 		for k, v := range p.pendingProposals {
 			if v.BlockHash.IsEqual(b.Hash()) {
-				if needRecord := p.ProcessProposal(v, true); needRecord {
+				if needRecord, _ := p.ProcessProposal(v, true); needRecord {
 					p.illegalMonitor.AddProposal(v)
 				}
 				delete(p.pendingProposals, k)
