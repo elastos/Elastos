@@ -139,6 +139,7 @@ func (d *DPOSManager) Initialize(handler *DPOSHandlerSwitch,
 	d.blockPool = blockPool
 	d.txPool = txPool
 	d.broadcast = broadcast
+	d.notHandledProposal = make(map[string]struct{})
 	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 }
 
