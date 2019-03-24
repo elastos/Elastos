@@ -133,16 +133,18 @@ namespace Elastos {
 			std::vector<TransactionInput> &inputs = tx->GetInputs();
 			for (size_t i = 0; i < inputs.size(); ++i) {
 				TransactionPtr txInput = wallet->TransactionForHash(inputs[i].GetTransctionHash());
-				TransactionOutput &o = txInput->GetOutputs()[inputs[i].GetIndex()];
-				Address addr = o.GetAddress();
-				if (o.GetOutputLock() > tx->GetLockTime()) {
-					tx->SetLockTime(o.GetOutputLock());
-				}
+				if (txInput) {
+					TransactionOutput &o = txInput->GetOutputs()[inputs[i].GetIndex()];
+					Address addr = o.GetAddress();
+					if (o.GetOutputLock() > tx->GetLockTime()) {
+						tx->SetLockTime(o.GetOutputLock());
+					}
 
-				if (uniqueAddress.find(addr) == uniqueAddress.end()) {
-					uniqueAddress.insert(addr);
-					bytes_t code = _subAccount->GetRedeemScript(addr);
-					tx->AddProgram(Program(code, bytes_t()));
+					if (uniqueAddress.find(addr) == uniqueAddress.end()) {
+						uniqueAddress.insert(addr);
+						bytes_t code = _subAccount->GetRedeemScript(addr);
+						tx->AddProgram(Program(code, bytes_t()));
+					}
 				}
 			}
 

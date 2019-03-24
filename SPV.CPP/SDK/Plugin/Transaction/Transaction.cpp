@@ -536,7 +536,6 @@ namespace Elastos {
 			try {
 				_isRegistered = jsonData["IsRegistered"];
 
-				_txHash.SetHex(jsonData["TxHash"].get<std::string>());
 				uint8_t version = jsonData["Version"].get<uint8_t>();
 				_version = static_cast<TxVersion>(version);
 				_lockTime = jsonData["LockTime"].get<uint32_t>();
@@ -584,6 +583,9 @@ namespace Elastos {
 				_fee = jsonData["Fee"].get<uint64_t>();
 
 				_remark = jsonData["Remark"].get<std::string>();
+
+				_txHash = 0;
+				GetHash();
 			} catch (const std::bad_cast &e) {
 				ErrorChecker::ThrowLogicException(Error::Code::JsonFormatError, "tx from json: " +
 																				std::string(e.what()));

@@ -1208,7 +1208,7 @@ namespace Elastos {
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
 				RemovePeerFromList(peer, txHash, _txRequests);
 
-				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
+				for (size_t i = _publishedTx.size(); i > 0 && tx != nullptr; --i) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
 						pubTx = _publishedTx[i - 1];
 						if (code != 0x12) {
