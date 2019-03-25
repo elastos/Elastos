@@ -1,4 +1,5 @@
 import React from 'react'
+import { Modal, Col, Button } from 'antd'
 import BaseComponent from '@/model/BaseComponent'
 import CVoteForm from '@/module/form/CVoteForm/Container'
 import I18N from '@/I18N'
@@ -6,12 +7,62 @@ import I18N from '@/I18N'
 import { Container } from './style'
 
 export default class extends BaseComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      creating: false,
+    }
+  }
+
   ord_render() {
-    const { onCreate, onCancel } = this.props
+    const { className, style, btnText } = this.props
+    const classNameLocal = `cr-btn cr-btn-primary ${className}`
+    const createBtn = (
+      <Button onClick={this.switchCreateMode} className={classNameLocal} style={style}>
+        {btnText || I18N.get('from.CVoteForm.button.add')}
+      </Button>
+    )
+    const form = this.renderForm()
     return (
-      <Container>
-        <CVoteForm header={I18N.get('from.CVoteForm.button.add')} onCreate={onCreate} onCancel={onCancel} />
-      </Container>
-    );
+      <span>
+        {createBtn}
+        {form}
+      </span>
+    )
+  }
+
+  renderForm() {
+    const props = {
+      ...this.props,
+      onCreated: this.onCreated,
+      onCanceled: this.switchCreateMode,
+      header: I18N.get('from.CVoteForm.button.add'),
+    }
+    return (
+      <Modal
+        className="project-detail-nobar"
+        visible={this.state.creating}
+        onOk={this.switchCreateMode}
+        onCancel={this.switchCreateMode}
+        footer={null}
+        width="70%"
+      >
+        <Container>
+          <CVoteForm {...props} />
+        </Container>
+      </Modal>
+    )
+  }
+
+  switchCreateMode = () => {
+    const { creating } = this.state
+    this.setState({
+      creating: !creating,
+    })
+  }
+
+  onCreated = () => {
+    this.switchCreateMode()
+    this.props.onCreated()
   }
 }

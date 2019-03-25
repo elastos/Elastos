@@ -7,6 +7,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component"
 import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
+import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import StandardPage from '../../StandardPage'
@@ -45,7 +46,7 @@ export default class extends StandardPage {
     const translationBtn = this.renderTranslationBtn()
     const actionsNode = this.renderActionsNode()
     const ownerActionsNode = this.renderOwnerActionsNode()
-    // const councilActionsNode = this.renderCouncilActionsNode()
+    const councilActionsNode = this.renderCouncilActionsNode()
     const editForm = this.renderEditForm()
     const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
@@ -59,7 +60,7 @@ export default class extends StandardPage {
               {translationBtn}
               {actionsNode}
               {ownerActionsNode}
-              {/* {councilActionsNode} */}
+              {councilActionsNode}
             </div>
             <div>{mySuggestionNode}</div>
             <div style={{ marginTop: 60 }}>{commentNode}</div>
@@ -72,7 +73,7 @@ export default class extends StandardPage {
                 {translationBtn}
                 {actionsNode}
                 {ownerActionsNode}
-                {/* {councilActionsNode} */}
+                {councilActionsNode}
                 <div style={{ marginTop: 60 }}>{commentNode}</div>
               </Col>
               <Col span={9}>{mySuggestionNode}</Col>
@@ -110,6 +111,11 @@ export default class extends StandardPage {
     return <ActionsContainer data={detail} />
   }
 
+  onCreated = () => {
+    this.refetch()
+    this.props.history.push('/proposals')
+  }
+
   renderOwnerActionsNode() {
     const { detail, currentUserId } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id')
@@ -122,7 +128,24 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { detail, consider, needMoreInfo, makeIntoProposal, isCouncil } = this.props
+    const { consider, needMoreInfo, isCouncil, detail } = this.props
+    const { title, desc, displayId, link, _id } = detail
+    const proposalContent = `
+      <p><strong>Suggestion Description:</strong></p>
+      <p>${desc}</p>
+      ${link ? `<p><strong>Suggestion Link:</strong></p><p>${link}</p>` : ''}
+    `
+    const props = {
+      data: {
+        title,
+        content: proposalContent,
+      },
+      suggestionDisplayId: displayId,
+      suggestionId: _id,
+      onCreated: this.onCreated,
+      btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
+    }
+    const createFormBtn = <ProposalForm {...props} />
     const res = isCouncil && (
       <BtnGroup>
         <Row type="flex" justify="start">
@@ -137,9 +160,7 @@ export default class extends StandardPage {
             </StyledButton>
           </Col>
           <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-primary" onClick={makeIntoProposal}>
-              {I18N.get('suggestion.btnText.makeIntoProposal')}
-            </StyledButton>
+            {createFormBtn}
           </Col>
         </Row>
       </BtnGroup>
