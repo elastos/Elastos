@@ -8,8 +8,9 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/Base58.h>
 #include <SDK/Common/Base64.h>
+#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/BIPs/Base58.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
@@ -18,8 +19,6 @@
 #include <Interface/MasterWalletManager.h>
 #include <Config.h>
 
-#include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRCrypto.h>
 
 #include <boost/filesystem.hpp>
 
@@ -70,13 +69,8 @@ namespace Elastos {
 			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			Mnemonic mnemonic = Mnemonic(boost::filesystem::path(_rootPath));
-			std::string standardPhrase;
-			ErrorChecker::CheckCondition(!mnemonic.PhraseIsValid(phrase, standardPhrase),
-										 Error::Mnemonic, "Invalid mnemonic words");
 
-			uint512 seed;
-			BRBIP39DeriveKey(seed.begin(), standardPhrase.c_str(), phrasePassword.c_str());
-
+			uint512 seed = mnemonic.DeriveSeed(phrase, phrasePassword);
 
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootKey(hdseed.getExtendedKey(true));
@@ -84,7 +78,6 @@ namespace Elastos {
 			bytes_t pubkey = rootKey.getChild("1'/0").pubkey();
 
 			seed = 0;
-			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 
 			return pubkey.getHex();
 		}

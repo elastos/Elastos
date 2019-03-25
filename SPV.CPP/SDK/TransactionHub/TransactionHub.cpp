@@ -10,16 +10,14 @@
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/MultiSignSubAccount.h>
+#include <SDK/BIPs/Mnemonic.h>
 
-#include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRArray.h>
-#include <Core/BRTransaction.h>
+#include <Interface/ISubWallet.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <cstdlib>
-#include <Interface/ISubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -143,10 +141,6 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				_transactions[assetID]->SetFeePerKb(fee);
 			}
-		}
-
-		uint64_t TransactionHub::GetMaxFeePerKb() {
-			return MAX_FEE_PER_KB;
 		}
 
 		uint64_t TransactionHub::GetDefaultFeePerKb() {

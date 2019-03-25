@@ -6,51 +6,80 @@
 
 
 #include "catch.hpp"
-#include <SDK/KeyStore/Mnemonic.h>
-#include <Core/BRBIP39Mnemonic.h>
+#include <SDK/BIPs/Mnemonic.h>
 
 using namespace Elastos::ElaWallet;
 
 #define ROOT_PATH "./Data/"
 
 TEST_CASE("Mnemonic of English test", "[English]") {
-	Mnemonic mnemonic("english", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "abandon");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "zoo");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("english"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, ""));
+	REQUIRE(seed != 0);
 }
 
 TEST_CASE("Mnemonic of Chinese test", "[Chinese]") {
-	Mnemonic mnemonic("chinese", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "的");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "歇");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("chinese"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "123"));
+	REQUIRE(seed != 0);
 }
 
 TEST_CASE("Mnemonic of French test", "[French]") {
-	Mnemonic mnemonic("french", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "abaisser");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "zoologie");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("french"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "456"));
+	REQUIRE(seed != 0);
 }
 
 TEST_CASE("Mnemonic of Italian test", "[Italian]") {
-	Mnemonic mnemonic("italian", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "abaco");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "zuppa");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("italian"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "abc"));
+	REQUIRE(seed != 0);
 }
 
 TEST_CASE("Mnemonic of Japanese test", "[Japanese]") {
-	Mnemonic mnemonic("japanese", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "あいこくしん");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "われる");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("japanese"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "hello"));
+	REQUIRE(seed != 0);
 }
 
 TEST_CASE("Mnemonic of Spanish test", "[Spanish]") {
-	Mnemonic mnemonic("spanish", ROOT_PATH);
-	REQUIRE(mnemonic.Words().size() == BIP39_WORDLIST_COUNT);
-	REQUIRE(mnemonic.Words()[0] == "ábaco");
-	REQUIRE(mnemonic.Words()[BIP39_WORDLIST_COUNT - 1] == "zurdo");
+	Mnemonic mnemonic(ROOT_PATH);
+
+	std::string phrase;
+
+	REQUIRE_NOTHROW(phrase = mnemonic.Create("spanish"));
+
+	uint512 seed;
+	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "world"));
+	REQUIRE(seed != 0);
 }

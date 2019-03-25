@@ -9,34 +9,27 @@
 #include <SDK/BIPs/Base58.h>
 #include <SDK/BIPs/Address.h>
 #include <SDK/Crypto/AES.h>
+#include <SDK/BIPs/Mnemonic.h>
 
-#include <Core/BRCrypto.h>
-#include <Core/BRBIP39Mnemonic.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		StandardAccount::StandardAccount(const std::string &rootPath,
-										 const std::string &phrase,
+										 const std::string &mnemonic,
 										 const std::string &phrasePassword,
 										 const std::string &payPassword) :
 				_rootPath(rootPath) {
 
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(boost::filesystem::path(_rootPath)));
-			std::string standardPhrase;
-			ErrorChecker::CheckCondition(!_mnemonic->PhraseIsValid(phrase, standardPhrase),
-										 Error::Mnemonic, "Invalid mnemonic words");
-			_language = _mnemonic->GetLanguage();
 
-			_encryptedMnemonic = AES::EncryptCCM(bytes_t(standardPhrase.c_str(), standardPhrase.size()), payPassword);
+			_encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.c_str(), mnemonic.size()), payPassword);
 			_encryptedPhrasePass = AES::EncryptCCM(bytes_t(phrasePassword.c_str(), phrasePassword.size()), payPassword);
 
 			Key key = DeriveMultiSignKey(payPassword);
 			_multiSignPublicKey = key.PubKey();
 
 			_masterIDPubKey = DeriveIDMasterPubKey(payPassword);
-
-			std::for_each(standardPhrase.begin(), standardPhrase.end(), [](char &c) { c = 0; });
 		}
 
 		StandardAccount::StandardAccount(const std::string &rootPath) :
@@ -97,21 +90,16 @@ namespace Elastos {
 			bytes_t chainCode = j["IDChainCode"].get<std::string>();
 			bytes_t pubKey = j["IDMasterKeyPubKey"].get<std::string>();
 			p._masterIDPubKey = HDKeychain(pubKey, chainCode);
-			p._mnemonic->LoadLanguage(p._language);
 		}
 
 		uint512 StandardAccount::DeriveSeed(const std::string &payPassword) {
-			uint512 result;
-
 			bytes_t bytes = AES::DecryptCCM(GetEncryptedMnemonic(), payPassword);
-			std::string phrase((char *)&bytes[0], bytes.size());
+			std::string mnemonic((char *)&bytes[0], bytes.size());
 
 			bytes = AES::DecryptCCM(GetEncryptedPhrasePassword(), payPassword);
 			std::string phrasePassword((char *)&bytes[0], bytes.size());
 
-			BRBIP39DeriveKey(result.begin(), phrase.c_str(), phrasePassword.c_str());
-
-			return result;
+			return _mnemonic->DeriveSeed(mnemonic, phrasePassword);
 		}
 
 		Key StandardAccount::DeriveMultiSignKey(const std::string &payPassword) {

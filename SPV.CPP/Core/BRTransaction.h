@@ -66,7 +66,7 @@ typedef struct {
     uint32_t sequence;
 } BRTxInput;
 
-void BRTxInputSetAddress(BRTxInput *input, const char *address);
+//void BRTxInputSetAddress(BRTxInput *input, const char *address);
 void BRTxInputSetScript(BRTxInput *input, const uint8_t *script, size_t scriptLen);
 void BRTxInputSetSignature(BRTxInput *input, const uint8_t *signature, size_t sigLen);
 
@@ -80,7 +80,7 @@ typedef struct {
 #define BR_TX_OUTPUT_NONE ((BRTxOutput) { "", 0, NULL, 0 })
 
 // when creating a BRTxOutput struct outside of a BRTransaction, set address or script to NULL when done to free memory
-void BRTxOutputSetAddress(BRTxOutput *output, const char *address);
+//void BRTxOutputSetAddress(BRTxOutput *output, const char *address);
 void BRTxOutputSetScript(BRTxOutput *output, const uint8_t *script, size_t scriptLen);
 
 typedef struct {
@@ -103,11 +103,11 @@ BRTransaction *BRTransactionCopy(const BRTransaction *tx);
 
 // buf must contain a serialized tx
 // retruns a transaction that must be freed by calling BRTransactionFree()
-BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen);
+//BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen);
 
 // returns number of bytes written to buf, or total bufLen needed if buf is NULL
 // (tx->blockHeight and tx->timestamp are not serialized)
-size_t BRTransactionSerialize(const BRTransaction *tx, uint8_t *buf, size_t bufLen);
+//size_t BRTransactionSerialize(const BRTransaction *tx, uint8_t *buf, size_t bufLen);
 
 // adds an input to tx
 void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, uint64_t amount,
@@ -118,13 +118,13 @@ void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, ui
 void BRTransactionAddOutput(BRTransaction *tx, uint64_t amount, const uint8_t *script, size_t scriptLen);
 
 // shuffles order of tx outputs
-void BRTransactionShuffleOutputs(BRTransaction *tx);
+//void BRTransactionShuffleOutputs(BRTransaction *tx);
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
-size_t BRTransactionSize(const BRTransaction *tx);
+//size_t BRTransactionSize(const BRTransaction *tx);
     
 // minimum transaction fee needed for tx to relay across the bitcoin network
-uint64_t BRTransactionStandardFee(const BRTransaction *tx);
+//uint64_t BRTransactionStandardFee(const BRTransaction *tx);
 
 // checks if all signatures exist, but does not verify them
 int BRTransactionIsSigned(const BRTransaction *tx);
@@ -135,19 +135,19 @@ int BRTransactionIsSigned(const BRTransaction *tx);
 //int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCount);
 
 // true if tx meets IsStandard() rules: https://bitcoin.org/en/developer-guide#standard-transactions
-int BRTransactionIsStandard(const BRTransaction *tx);
+//int BRTransactionIsStandard(const BRTransaction *tx);
 
 // returns a hash value for tx suitable for use in a hashtable
-inline static size_t BRTransactionHash(const void *tx)
-{
-    return (size_t)((const BRTransaction *)tx)->txHash.u32[0];
-}
+//inline static size_t BRTransactionHash(const void *tx)
+//{
+//    return (size_t)((const BRTransaction *)tx)->txHash.u32[0];
+//}
 
 // true if tx and otherTx have equal txHash values
-inline static int BRTransactionEq(const void *tx, const void *otherTx)
-{
-    return (tx == otherTx || UInt256Eq(&(((BRTransaction *)tx)->txHash), &(((BRTransaction *)otherTx)->txHash)));
-}
+//inline static int BRTransactionEq(const void *tx, const void *otherTx)
+//{
+//    return (tx == otherTx || UInt256Eq(&(((BRTransaction *)tx)->txHash), &(((BRTransaction *)otherTx)->txHash)));
+//}
 
 // frees memory allocated for tx
 void BRTransactionFree(BRTransaction *tx);

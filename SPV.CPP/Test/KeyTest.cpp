@@ -8,12 +8,11 @@
 
 #include "TestHelper.h"
 
-#include <SDK/BIPs/Key.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/KeyStore/Mnemonic.h>
-
-#include <Core/BRBIP39Mnemonic.h>
+#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/BIPs/BIP39.h>
+#include <SDK/BIPs/Key.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
@@ -30,8 +29,7 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 	std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 	std::string phrasePasswd = "";
 
-	uint512 seed;
-	BRBIP39DeriveKey(seed.begin(), phrase.c_str(), phrasePasswd.c_str());
+	uint512 seed = BIP39::DeriveSeed(phrase, phrasePasswd);
 
 	HDKeychain child = HDKeychain(HDSeed(seed.bytes()).getExtendedKey(true)).getChild("44'/0'/0'/0/0");
 

@@ -27,8 +27,7 @@ namespace Elastos {
 				return dice();
 			}
 
-		private:
-			static bytes_t GetRandom(size_t bits);
+			static bytes_t GetRandom(size_t bytes);
 		};
 	}
 }

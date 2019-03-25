@@ -12,8 +12,8 @@
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Common/Lockable.h>
-#include <SDK/BIPs/Address.h>
 #include <SDK/Common/ElementSet.h>
+#include <SDK/BIPs/Address.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/weak_ptr.hpp>
@@ -23,9 +23,16 @@
 #include <string>
 #include <map>
 
+#define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
+#define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
+#define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
+#define TX_UNCONFIRMED INT32_MAX
 #define DEFAULT_FEE_PER_KB (10000)                  // 10 satoshis-per-byte
 #define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee
 #define MAX_FEE_PER_KB     ((TX_FEE_PER_KB*1000100 + 190)/191) // slightly higher than a 10,000bit fee on a 191byte tx
+#define TX_MAX_LOCK_HEIGHT   500000000   // a lockTime below this value is a block height, otherwise a timestamp
+#define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)/1000) //no txout can be below this amount
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -79,8 +86,6 @@ namespace Elastos {
 			uint64_t GetFeePerKb(const uint256 &assetID) const;
 
 			void SetFeePerKb(const uint256 &assetID, uint64_t fee);
-
-			uint64_t GetMaxFeePerKb();
 
 			uint64_t GetDefaultFeePerKb();
 

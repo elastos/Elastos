@@ -14,11 +14,9 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/BIPs/Mnemonic.h>
 #include <SDK/BIPs/Base58.h>
 #include <Config.h>
-
-#include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRCrypto.h>
 
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -145,24 +143,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			uint128 entropy;
-			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
-
-			for (size_t i = 0; i < entropy.size(); ++i) {
-				entropy.begin()[i] = Utils::getRandomByte();
-			}
-
-			const std::vector<std::string> &words = mnemonic.Words();
-			const char *wordList[words.size()];
-			for (size_t i = 0; i < words.size(); i++) {
-				wordList[i] = words[i].c_str();
-			}
-			size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, entropy.begin(), entropy.size());
-
-			char phrase[phraselen];
-			BRBIP39Encode(phrase, phraselen, wordList, entropy.begin(), entropy.size());
-
-			return phrase;
+			return Mnemonic(boost::filesystem::path(rootPath)).Create(language);
 		}
 
 		void MasterWallet::ClearLocal() {

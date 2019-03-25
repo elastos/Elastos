@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_STANDARDACCOUNT_H__
 
 #include <SDK/Account/IAccount.h>
-#include <SDK/KeyStore/Mnemonic.h>
+#include <SDK/BIPs/Mnemonic.h>
 #include <SDK/Common/Mstream.h>
 #include <SDK/BIPs/Address.h>
 

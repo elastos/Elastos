@@ -11,12 +11,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		bytes_t Utils::GetRandom(size_t bits) {
-			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
+		bytes_t Utils::GetRandom(size_t bytes) {
 			bytes_t out(bytes);
-			for (size_t i = 0; i < bytes; i++) {
+
+			for (size_t i = 0; i < out.size(); i++) {
 				out[i] = Utils::getRandomByte();
 			}
+
 			return out;
 		}
 

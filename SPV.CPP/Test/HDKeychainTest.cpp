@@ -15,7 +15,11 @@
 #include <SDK/Account/SubAccountGenerator.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/Crypto/AES.h>
-#include <Core/BRBIP39Mnemonic.h>
+#include <SDK/BIPs/BIP39.h>
+#include <SDK/BIPs/Mnemonic.h>
+
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 using namespace Elastos::ElaWallet;
 
@@ -64,8 +68,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		std::string payPassword = "12345678";
 		uint32_t coinIndex = 0;
 
-		uint512 seed;
-		BRBIP39DeriveKey(seed.begin(), mnemonic.c_str(), phrasePassword.c_str());
+		uint512 seed = BIP39::DeriveSeed(phrase, phrasePassword);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(hdseed.getExtendedKey(true));
@@ -171,8 +174,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		std::string mnemonic = keystore["mnemonic"];
 		std::string phrasePasswd = keystore["PhrasePassword"];
 
-		uint512 seed;
-		BRBIP39DeriveKey(seed.begin(), mnemonic.c_str(), phrasePasswd.c_str());
+		uint512 seed = BIP39::DeriveSeed(mnemonic, phrasePasswd);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(hdseed.getExtendedKey(true));
@@ -283,8 +285,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		REQUIRE_NOTHROW(bytes = AES::DecryptCCM(phrasePasswd, "s12345678"));
 		std::string phrasepass((char *)bytes.data(), bytes.size());
 
-		uint512 seed;
-		BRBIP39DeriveKey(seed.begin(), phrase.c_str(), phrasepass.c_str());
+		uint512 seed = BIP39::DeriveSeed(phrase, phrasepass);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(hdseed.getExtendedKey(true));

@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
 #include <SDK/KeyStore/CoinConfig.h>
-#include <SDK/KeyStore/Mnemonic.h>
+#include <SDK/BIPs/Mnemonic.h>
 #include <SDK/KeyStore/KeyStore.h>
 #include <SDK/KeyStore/CoinInfo.h>
 #include <SDK/KeyStore/MasterWalletStore.h>
