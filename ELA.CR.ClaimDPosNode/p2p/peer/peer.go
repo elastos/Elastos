@@ -726,7 +726,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- struct{}) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() {
+	if !p.Connected() || !p.VerAckReceived() {
 		if doneChan != nil {
 			go func() {
 				doneChan <- struct{}{}
