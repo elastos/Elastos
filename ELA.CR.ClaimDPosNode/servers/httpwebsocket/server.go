@@ -185,17 +185,29 @@ func (server *WebSocketServer) webSocketHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (server *WebSocketServer) IsValidMsg(reqMsg map[string]interface{}) bool {
-	if _, ok := reqMsg["Hash"].(string); !ok && reqMsg["Hash"] != nil {
-		return false
+func (server *WebSocketServer) IsValidMsg(action string, reqMsg map[string]interface{}) bool {
+	valid := true
+	switch action {
+	case "getblockbyheight":
+		_, valid = reqMsg["height"]
+	case "getblockbyhash":
+		_, valid = reqMsg["blockhash"]
+	case "gettransaction":
+		_, valid = reqMsg["hash"]
+	case "getasset":
+		_, valid = reqMsg["hash"]
+	case "getunspendoutput":
+		_, ok1 := reqMsg["addr"]
+		_, ok2 := reqMsg["assetid"]
+		if ok1 && ok2 {
+			valid = true
+		} else {
+			valid = false
+		}
+	case "sendrawtransaction":
+		_, valid = reqMsg["data"]
 	}
-	if _, ok := reqMsg["Addr"].(string); !ok && reqMsg["Addr"] != nil {
-		return false
-	}
-	if _, ok := reqMsg["AssetId"].(string); !ok && reqMsg["AssetId"] != nil {
-		return false
-	}
-	return true
+	return valid
 }
 
 func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []byte, r *http.Request) bool {
@@ -208,24 +220,22 @@ func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []by
 		log.Error("websocket OnDataHandle:", err)
 		return false
 	}
-	actionName := req["Action"].(string)
-
+	actionName, ok := req["action"].(string)
+	if !ok {
+		resp := ResponsePack(InvalidMethod, "")
+		server.response(currentSession.SessionID, resp)
+		return false
+	}
 	action, ok := server.ActionMap[actionName]
 	if !ok {
 		resp := ResponsePack(InvalidMethod, "")
 		server.response(currentSession.SessionID, resp)
 		return false
 	}
-	if !server.IsValidMsg(req) {
+	if !server.IsValidMsg(actionName, req) {
 		resp := ResponsePack(InvalidParams, "")
 		server.response(currentSession.SessionID, resp)
 		return true
-	}
-	if height, ok := req["Height"].(float64); ok {
-		req["Height"] = strconv.FormatInt(int64(height), 10)
-	}
-	if raw, ok := req["Raw"].(float64); ok {
-		req["Raw"] = strconv.FormatInt(int64(raw), 10)
 	}
 
 	resp := action(req)
