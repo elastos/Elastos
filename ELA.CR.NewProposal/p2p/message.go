@@ -39,14 +39,14 @@ const (
 	CmdMerkleBlock = "merkleblock"
 	CmdReject      = "reject"
 	CmdTxFilter    = "txfilter"
+	CmdDAddr       = "daddr"
 )
 
 var (
-	ErrDisconnected    = fmt.Errorf("[P2P] peer disconnected")
-	ErrInvalidHeader   = fmt.Errorf("[P2P] invalid message header")
-	ErrInvalidPayload  = fmt.Errorf("[P2P] invalid message payload")
-	ErrUnmatchedMagic  = fmt.Errorf("[P2P] unmatched magic")
-	ErrMsgSizeExceeded = fmt.Errorf("[P2P] message size exceeded")
+	ErrInvalidHeader   = fmt.Errorf("invalid message header")
+	ErrInvalidPayload  = fmt.Errorf("invalid message payload")
+	ErrUnmatchedMagic  = fmt.Errorf("unmatched magic")
+	ErrMsgSizeExceeded = fmt.Errorf("message size exceeded")
 )
 
 // The message flying in the peer to peer network
