@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 )

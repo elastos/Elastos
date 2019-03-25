@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/ripemd160"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 )
 
 const (
@@ -43,11 +44,11 @@ func ToProgramHash(code []byte) (*common.Uint168, error) {
 	}
 	switch code[len(code)-1] {
 	case common.STANDARD:
-		return common.ToProgramHash(common.PrefixStandard, code), nil
+		return common.ToProgramHash(byte(contract.PrefixStandard), code), nil
 	case common.MULTISIG:
-		return common.ToProgramHash(common.PrefixMultisig, code), nil
+		return common.ToProgramHash(byte(contract.PrefixMultiSig), code), nil
 	case common.CROSSCHAIN:
-		return common.ToProgramHash(common.PrefixCrossChain, code), nil
+		return common.ToProgramHash(byte(contract.PrefixCrossChain), code), nil
 	default:
 		return ToCodeHash(code)
 	}

@@ -14,9 +14,7 @@ import (
 	ser "github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/restful"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
@@ -100,8 +98,6 @@ func init() {
 	pow.UseLogger(minrlog)
 	spv.UseLogger(spvslog)
 	ser.UseLogger(httplog)
-	jsonrpc.UseLogger(rpcslog)
-	restful.UseLogger(restlog)
 
 	avm.UseLogger(avmlog)
 	store.UseLogger(avmlog)

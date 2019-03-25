@@ -18,9 +18,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/signal"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/common"
 
 	mp "github.com/elastos/Elastos.ELA.SideChain.NeoVM/mempool"
@@ -238,7 +238,6 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("getrawmempool", service.GetTransactionPool)
 	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
-	s.RegisterAction("getnodestate", service.GetNodeState)
 	s.RegisterAction("sendrechargetransaction", service.SendRechargeToSideChainTxByHash)
 	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getbestblockhash", service.GetBestBlockHash)

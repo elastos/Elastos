@@ -47,8 +47,8 @@ var (
 		SideAuxPow: auxpow.SideAuxPow{
 			SideAuxBlockTx: ela.Transaction{
 				TxType:         ela.SideChainPow,
-				PayloadVersion: payload.SideChainPowPayloadVersion,
-				Payload:        new(payload.PayloadSideChainPow),
+				PayloadVersion: payload.SideChainPowVersion,
+				Payload:        new(payload.SideChainPow),
 			},
 		},
 	}

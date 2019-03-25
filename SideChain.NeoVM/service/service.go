@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA/utils/http"
 
 	sideser "github.com/elastos/Elastos.ELA.SideChain/service"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
@@ -200,7 +200,7 @@ func GetPayloadInfo(p side.Payload, pVersion byte) sideser.PayloadInfo {
 }
 
 
-func (s *HttpServiceExtend) GetReceivedByAddress(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) GetReceivedByAddress(param http.Params) (interface{}, error) {
 	tokenValueList := make(map[Uint256]*big.Int)
 	var elaValue Fixed64
 	str, ok := param.String("address")
@@ -242,29 +242,28 @@ func (s *HttpServiceExtend) GetReceivedByAddress(param util.Params) (interface{}
 	}
 }
 
-func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) {
 	bestHeight := s.cfg.Chain.GetBestHeight()
 	var result []UTXOInfo
 	addresses, ok := ArrayString(param["addresses"])
 	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "need addresses in an array!")
+		return nil, errors.New("need a param called address")
 	}
 	for _, address := range addresses {
 		programHash, err := Uint168FromAddress(address)
 		if err != nil {
-			return nil, util.NewError(int(sideser.InvalidParams), "Invalid address: "+address)
+			return nil, errors.New("Invalid address: "+address)
 		}
 		unspends, err := s.cfg.Chain.GetUnspents(*programHash)
 		if err != nil {
-			return nil, util.NewError(int(sideser.InvalidParams), "cannot get asset with program")
+			return nil, errors.New("cannot get asset with program")
 		}
 
 		unspents := unspends[s.elaAssetID]
 		for _, unspent := range unspents {
 			_, height, err := s.cfg.Chain.GetTransaction(unspent.TxId)
 			if err != nil {
-				return nil, util.NewError(int(sideser.InternalError),
-					"unknown transaction "+unspent.TxId.String()+" from persisted utxo")
+				return nil, errors.New("unknown transaction "+unspent.TxId.String()+" from persisted utxo")
 			}
 
 			result = append(result, UTXOInfo{
@@ -280,14 +279,14 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 	return result, nil
 }
 
-func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) InvokeScript(param http.Params) (interface{}, error) {
 	script, ok := param.String("script")
 	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "Invalid script: "+ script)
+		return nil, errors.New("Invalid script: "+ script)
 	}
 	code, err := HexStringToBytes(script)
 	if err != nil {
-		return nil, util.NewError(int(sideser.InvalidParams), "script is error hexString")
+		return nil, errors.New("script is error hexString")
 	}
 
 	returntype, ok:= param.String("returntype")
@@ -310,7 +309,7 @@ func (s *HttpServiceExtend) InvokeScript(param util.Params) (interface{}, error)
 	return ret, err
 }
 
-func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) InvokeFunction(param http.Params) (interface{}, error) {
 	buffer := new(bytes.Buffer)
 	paramBuilder := avm.NewParamsBuider(buffer)
 
@@ -335,11 +334,11 @@ func (s *HttpServiceExtend) InvokeFunction(param util.Params) (interface{}, erro
 
 	script, ok := param.String("scripthash")
 	if !ok {
-		return nil, util.NewError(int(sideser.InvalidParams), "Invalid hex: "+ script)
+		return nil, errors.New("Invalid hex: "+ script)
 	}
 	codeHashBytes, err := HexStringToBytes(script)
 	if err != nil {
-		return nil, util.NewError(int(sideser.InvalidParams), "Invalid hex: "+ err.Error())
+		return nil, errors.New("Invalid hex: "+ err.Error())
 	}
 	codeHash, err := Uint168FromBytes(codeHashBytes)
 	if err != nil {
@@ -454,13 +453,13 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 	return ""
 }
 
-func (s *HttpServiceExtend) GetOpPrice(param util.Params) (interface{}, error) {
+func (s *HttpServiceExtend) GetOpPrice(param http.Params) (interface{}, error) {
 	var ret map[string]interface{}
 	ret = make(map[string]interface{})
 
 	op, ok := param.String("op")
 	if !ok {
-		return ret, util.NewError(int(sideser.InvalidParams), "Invalid script: "+ op)
+		return ret, errors.New("Invalid script: "+ op)
 	}
 	isSysCall := false
 	opcode, err := avm.GetOPCodeByName(op)

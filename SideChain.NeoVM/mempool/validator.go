@@ -10,6 +10,7 @@ import (
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
@@ -111,13 +112,18 @@ func (v *validator) checkTransactionOutput(txn *side.Transaction) error {
 }
 
 func checkOutputProgramHash(programHash common.Uint168) bool {
-	var empty = common.Uint168{}
-	prefix := programHash[0]
-	if prefix == common.PrefixStandard ||
-		prefix == common.PrefixMultisig ||
-		prefix == common.PrefixCrossChain ||
-		prefix == params.PrefixSmartContract ||
-		programHash == empty {
+	if programHash.IsEqual(common.Uint168{}) {
+		return true
+	}
+
+	switch contract.PrefixType(programHash[0]) {
+	case contract.PrefixStandard:
+		fallthrough
+	case contract.PrefixMultiSig:
+		fallthrough
+	case contract.PrefixCrossChain:
+		return true
+	case params.PrefixSmartContract:
 		return true
 	}
 	return false

@@ -1,14 +1,13 @@
 package websocket
 
 import (
+	"encoding/json"
+
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
-
-	"encoding/json"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/utils/http"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
@@ -55,7 +54,7 @@ func (s *SocketServer) OnEvent(et *events.Event) {
 func (s *SocketServer) response(resp *store.ResponseExt, err error) {
 	if err != nil {
 		switch e := err.(type) {
-		case *util.Error:
+		case *http.Error:
 			resp.Error = e.Code
 		}
 	}
