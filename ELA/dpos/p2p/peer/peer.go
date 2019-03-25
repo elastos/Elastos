@@ -141,6 +141,7 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
+	started    int32
 	disconnect int32
 
 	conn net.Conn
@@ -633,7 +634,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() {
+	if !p.Connected() || atomic.LoadInt32(&p.started) == 0 {
 		if doneChan != nil {
 			go func() {
 				doneChan <- ErrPeerDisconnected
@@ -838,6 +839,10 @@ func (p *Peer) start() error {
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
+
+	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
+		return errors.New("negotiated before")
+	}
 
 	return nil
 }
