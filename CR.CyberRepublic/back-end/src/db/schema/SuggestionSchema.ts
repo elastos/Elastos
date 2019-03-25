@@ -81,4 +81,8 @@ export const Suggestion = {
   //     type: Number,
   //     default: 0,
   // },
+  referred: {
+    type: String,
+    resource: Schema.Types.ObjectId,
+  },
 }
