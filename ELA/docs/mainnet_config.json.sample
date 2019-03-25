@@ -1,21 +1,6 @@
 {
   "Configuration": {
-    "Magic": 2017001,
-    "Version": 23,
-    "SeedList": [
-      "node-mainnet-002.elastos.org:20866",
-      "node-mainnet-006.elastos.org:20866",
-      "node-mainnet-014.elastos.org:20866",
-      "node-mainnet-016.elastos.org:20866",
-      "node-mainnet-021.elastos.org:20866",
-      "node-mainnet-003.elastos.org:20866",
-      "node-mainnet-007.elastos.org:20866",
-      "node-mainnet-015.elastos.org:20866",
-      "node-mainnet-017.elastos.org:20866",
-      "node-mainnet-022.elastos.org:20866",
-      "node-mainnet-004.elastos.org:20866",
-      "node-mainnet-023.elastos.org:20866"
-    ],
+    "ActiveNet": "mainnet",
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,
     "HttpRestPort": 20334,
@@ -23,15 +8,11 @@
     "HttpJsonPort": 20336,
     "NodePort": 20338,
     "PrintLevel": 1,
-    "MaxTransactionInBlock": 10000,
-    "MinCrossChainTxFee": 10000,
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
-      "AutoMining": false,
       "MinerInfo": "ELA",
-      "MinTxFee": 100,
+      "MinTxFee": 100
     },
-    "VoteHeight": 290000,
     "RpcConfiguration": {
       "User": "ElaUser",
       "Pass": "Ela123",
