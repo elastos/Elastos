@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
@@ -237,7 +236,7 @@ func DecodePoint(encodeData []byte) (*PublicKey, error) {
 	if len(encodeData) == 0 {
 		return nil, errors.New("the encodeData cann't be nil")
 	}
-	expectedLength := (algSet.EccParams.P.BitLen() + 7) / 8
+	expectedLength := (DefaultParams.P.BitLen() + 7) / 8
 
 	switch encodeData[0] {
 	case 0x02, 0x03: //compressed
@@ -247,7 +246,7 @@ func DecodePoint(encodeData []byte) (*PublicKey, error) {
 
 		yTilde := int(encodeData[0] & 1)
 		return deCompress(yTilde, encodeData[FLAGLEN:FLAGLEN+XORYVALUELEN],
-			&algSet.EccParams)
+			DefaultParams)
 
 	case 0x04, 0x06, 0x07: //uncompressed
 		if len(encodeData) != NOCOMPRESSEDLEN {
@@ -296,17 +295,10 @@ func (e *PublicKey) EncodePoint(isCompressed bool) ([]byte, error) {
 }
 
 func NewPubKey(priKey []byte) *PublicKey {
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.PublicKey.Curve = algSet.Curve
-
-	k := new(big.Int)
-	k.SetBytes(priKey)
-	privateKey.D = k
-
-	privateKey.PublicKey.X, privateKey.PublicKey.Y = algSet.Curve.ScalarBaseMult(k.Bytes())
+	d := new(big.Int)
+	d.SetBytes(priKey)
 
 	pubKey := new(PublicKey)
-	pubKey.X = privateKey.PublicKey.X
-	pubKey.Y = privateKey.PublicKey.Y
+	pubKey.X, pubKey.Y = DefaultCurve.ScalarBaseMult(d.Bytes())
 	return pubKey
 }
