@@ -132,14 +132,14 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err := checkTransactionOutput(s.HeightVersion1, tx)
+	err := s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// outputs < 2
 	tx.Outputs = []*types.Output{
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "coinbase output is not enough, at least 2")
 
 	// invalid asset id
@@ -147,7 +147,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "Asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30% (CheckTxOut version)
@@ -159,7 +159,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// reward to foundation in coinbase < 30% (CheckTxOut version)
@@ -169,7 +169,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "Reward to foundation in coinbase < 30%")
 
 	// normal transaction
@@ -178,12 +178,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.NoError(err)
 
 	// outputs < 1
 	tx.Outputs = nil
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "transaction has no outputs")
 
 	// invalid asset ID
@@ -192,7 +192,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.AssetID = common.EmptyHash
 		output.ProgramHash = common.Uint168{}
 	}
-	err = checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "asset ID in output is invalid")
 
 	// invalid program hash

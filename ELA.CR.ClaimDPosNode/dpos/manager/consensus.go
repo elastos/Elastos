@@ -84,7 +84,7 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 		OnDutyArbitrator: common.BytesToHexString(c.GetOnDutyArbitrator()),
 		StartTime:        time.Now(),
 		Offset:           c.GetViewOffset(),
-		Height:           c.manager.dispatcher.CurrentHeight(),
+		Height:           b.Height,
 	}
 	c.manager.dispatcher.cfg.EventMonitor.OnViewStarted(&viewEvent)
 }
