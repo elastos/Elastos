@@ -83,7 +83,11 @@ func main() {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, chainStore.GetHeight)
+	arbiters, err := state.NewArbitrators(activeNetParams,
+		chainStore.GetHeight, func() (*types.Block, error) {
+			hash := chainStore.GetCurrentBlockHash()
+			return chainStore.GetBlock(hash)
+		})
 	if err != nil {
 		printErrorAndExit(err)
 	}

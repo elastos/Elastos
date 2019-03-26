@@ -52,7 +52,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 		return ErrInvalidInput
 	}
 
-	if err := checkTransactionOutput(blockHeight, txn); err != nil {
+	if err := b.checkTransactionOutput(blockHeight, txn); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
@@ -369,7 +369,8 @@ func checkTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
+func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
+	txn *Transaction) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -393,7 +394,8 @@ func checkTransactionOutput(blockHeight uint32, txn *Transaction) error {
 
 		foundationReward := txn.Outputs[0].Value
 
-		if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
+		if blockHeight <= b.chainParams.PublicDPOSHeight &&
+			common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
