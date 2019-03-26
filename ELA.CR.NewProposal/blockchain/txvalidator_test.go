@@ -170,7 +170,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
 	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
-	s.EqualError(err, "Reward to foundation in coinbase < 30%")
+	s.EqualError(err, "reward to foundation in coinbase < 30%")
 
 	// normal transaction
 	tx = buildTx()
