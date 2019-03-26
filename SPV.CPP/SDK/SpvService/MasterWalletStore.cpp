@@ -154,7 +154,11 @@ namespace Elastos {
 				bytes_t pubKey, chainCode;
 				stream.ReadBytes(chainCode, 32);
 				stream.ReadBytes(pubKey, 33);
-				masterPubKeyMap[it.key()] = HDKeychain(pubKey, chainCode);
+				if (chainCode.size() == 32 && pubKey.size() == 33) {
+					masterPubKeyMap[it.key()] = HDKeychain(pubKey, chainCode);
+				} else {
+					masterPubKeyMap[it.key()] = HDKeychain();
+				}
 			}
 			p.SetMasterPubKeyMap(masterPubKeyMap);
 
