@@ -142,17 +142,21 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 	realReward := common.Fixed64(0)
+	arbitratorsMock.ArbitersRoundReward = map[common.Uint168]common.Fixed64{}
 	for hash, vote := range ownerVotes {
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		if _, ok := arbitratorHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward + individualBlockConfirmReward
 		}
 
 		if _, ok := candidateHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward
 		}
 	}
 	arbitratorsChange := dposTotalReward - realReward
+	arbitratorsMock.FinalRoundChange = arbitratorsChange
 
 	tx := &types.Transaction{
 		Version: types.TxVersion09,
@@ -203,24 +207,28 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	rewardInCoinbase = common.Fixed64(999)
 	foundationReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.3))
 	foundationRewardNormal := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	dposTotalReward = common.Fixed64(float64(rewardInCoinbase) * 0.35)
+	dposTotalReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.35))
 	minerReward = rewardInCoinbase - foundationReward - dposTotalReward
 	totalBlockConfirmReward = float64(dposTotalReward) * 0.25
 	totalTopProducersReward = float64(dposTotalReward) - totalBlockConfirmReward
 	individualBlockConfirmReward = common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
 	rewardPerVote = totalTopProducersReward / float64(totalVotesInRound)
 	realReward = common.Fixed64(0)
+	arbitratorsMock.ArbitersRoundReward = map[common.Uint168]common.Fixed64{}
 	for hash, vote := range ownerVotes {
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		if _, ok := arbitratorHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward + individualBlockConfirmReward
 		}
 
 		if _, ok := candidateHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward
 		}
 	}
 	arbitratorsChange = dposTotalReward - realReward
+	arbitratorsMock.FinalRoundChange = arbitratorsChange
 
 	tx = &types.Transaction{
 		Version: types.TxVersion09,

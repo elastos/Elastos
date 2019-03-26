@@ -138,6 +138,7 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		CandidateOwnerProgramHashes: candidateHashes,
 		OwnerVotesInRound:           ownerVotes,
 		TotalVotesInRound:           common.Fixed64(totalVotesInRound),
+		ArbitersRoundReward:         map[common.Uint168]common.Fixed64{},
 	}
 	DefaultLedger = &Ledger{
 		Arbitrators: arbitratorsMock,
@@ -159,21 +160,19 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		{ProgramHash: common.Uint168{}, Value: common.Fixed64(float64(rewardInCoinbase) * 0.35)},
 	}
 
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
-
 	for _, v := range arbitratorHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		arbitratorsMock.ArbitersRoundReward[*v] = individualBlockConfirmReward + individualProducerReward
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
 	}
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
-
 	for _, v := range candidateHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		arbitratorsMock.ArbitersRoundReward[*v] = individualProducerReward
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})
 	}
-	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
+	assert.NoError(t, checkCoinbaseArbitratorsReward(tx))
 
 	DefaultLedger = originLedger
 }

@@ -20,17 +20,13 @@ type Arbitrators interface {
 	GetNextCandidates() [][]byte
 	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
 	GetDutyIndex() int
+	GetArbitersRoundReward() map[common.Uint168]common.Fixed64
+	GetFinalRoundChange() common.Fixed64
 
 	GetCRCProducer(publicKey []byte) *Producer
 	GetCRCArbitrators() []config.CRCArbiter
 	IsCRCArbitrator(pk []byte) bool
-	IsCRCArbitratorProgramHash(hash *common.Uint168) bool
 	IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool
-
-	GetCurrentOwnerProgramHashes() []*common.Uint168
-	GetCandidateOwnerProgramHashes() []*common.Uint168
-	GetOwnerVotes(programHash *common.Uint168) common.Fixed64
-	GetTotalVotesInRound() common.Fixed64
 
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte

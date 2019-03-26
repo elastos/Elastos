@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"strconv"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
@@ -320,85 +321,44 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 }
 
 func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
-	var rewardInCoinbase = Fixed64(0)
-	outputAddressMap := make(map[Uint168]Fixed64)
-
-	for index, output := range coinbase.Outputs {
-		rewardInCoinbase += output.Value
-
-		if index >= 2 {
-			outputAddressMap[output.ProgramHash] = output.Value
+	// old version [0, H2)
+	if blockHeight < b.chainParams.PublicDPOSHeight {
+		var rewardInCoinbase = Fixed64(0)
+		for _, output := range coinbase.Outputs {
+			rewardInCoinbase += output.Value
 		}
-	}
 
-	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != b.chainParams.RewardPerBlock {
-		return errors.New("Reward amount in coinbase not correct")
-	}
-
-	if err := checkCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
-		return err
+		// Reward in coinbase must match inflation 4% per year
+		if rewardInCoinbase-totalTxFee != b.chainParams.RewardPerBlock {
+			return errors.New("Reward amount in coinbase not correct, " +
+				"height:" + strconv.FormatUint(uint64(blockHeight),
+				10) + "dposheight: " + strconv.FormatUint(uint64(config.
+				DefaultParams.PublicDPOSHeight), 10))
+		}
+	} else { // main version >= H2
+		if err := checkCoinbaseArbitratorsReward(coinbase); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error {
-	// main version >= H2
-	if height >= config.DefaultParams.PublicDPOSHeight {
-		outputAddressMap := make(map[Uint168]Fixed64)
-		for i := 2; i < len(coinbase.Outputs); i++ {
-			outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
-		}
-
-		currentOwnerHashes := DefaultLedger.Arbitrators.GetCurrentOwnerProgramHashes()
-		candidateOwnerHashes := DefaultLedger.Arbitrators.GetCandidateOwnerProgramHashes()
-		if len(currentOwnerHashes)+len(candidateOwnerHashes) != len(coinbase.Outputs)-2 {
-			return errors.New("coinbase output count not match")
-		}
-
-		dposTotalReward := float64(rewardInCoinbase) * 0.35
-		totalBlockConfirmReward := dposTotalReward * 0.25
-		totalTopProducersReward := dposTotalReward - totalBlockConfirmReward
-		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(currentOwnerHashes))))
-		totalVotesInRound := DefaultLedger.Arbitrators.GetTotalVotesInRound()
-		rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
-
-		for _, hash := range currentOwnerHashes {
-			amount, ok := outputAddressMap[*hash]
-			if !ok {
-				return errors.New("unknown dpos reward address")
-			}
-
-			if DefaultLedger.Arbitrators.IsCRCArbitratorProgramHash(hash) {
-				if amount != individualBlockConfirmReward {
-					return errors.New("incorrect dpos reward amount")
-				}
-			} else {
-				votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
-				individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
-				if amount != individualProducerReward+individualBlockConfirmReward {
-					return errors.New("incorrect dpos reward amount")
-				}
-			}
-		}
-
-		for _, hash := range candidateOwnerHashes {
-			amount, ok := outputAddressMap[*hash]
-			if !ok {
-				return errors.New("unknown dpos reward address")
-			}
-
-			votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
-			individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
-			if amount != individualProducerReward {
-				return errors.New("incorrect dpos reward amount")
-			}
-		}
-
-		return nil
+func checkCoinbaseArbitratorsReward(coinbase *Transaction) error {
+	rewards := DefaultLedger.Arbitrators.GetArbitersRoundReward()
+	if len(rewards) != len(coinbase.Outputs)-2 {
+		return errors.New("coinbase output count not match")
 	}
 
-	// old version [0, H2)
+	for i := 2; i < len(coinbase.Outputs); i++ {
+		amount, ok := rewards[coinbase.Outputs[i].ProgramHash]
+		if !ok {
+			return errors.New("unknown dpos reward address")
+		}
+		if amount != coinbase.Outputs[i].Value {
+			return errors.New("incorrect dpos reward amount")
+		}
+	}
+
 	return nil
 }

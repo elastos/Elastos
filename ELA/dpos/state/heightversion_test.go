@@ -42,9 +42,8 @@ func TestHeightVersionInit(t *testing.T) {
 	activeNetParams := &config.DefaultParams
 	var err error
 	bestHeight = 0
-	arbiters, err = NewArbitrators(activeNetParams, func() uint32 {
-		return bestHeight
-	})
+	arbiters, err = NewArbitrators(activeNetParams,
+		func() uint32 { return bestHeight }, nil)
 	assert.NoError(t, err)
 	arbiters.State = NewState(activeNetParams, nil)
 
