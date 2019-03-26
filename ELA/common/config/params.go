@@ -133,9 +133,9 @@ func (p *Params) TestNet() *Params {
 		{"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9", "127.0.0.1"},
 	}
 	copy.CheckAddressHeight = 0
-	copy.VoteStartHeight = 0         //fixme edit height later
-	copy.CRCOnlyDPOSHeight = 1008812 //fixme edit height later
-	copy.PublicDPOSHeight = 1108812  //fixme edit height later
+	copy.VoteStartHeight = 200000
+	copy.CRCOnlyDPOSHeight = 252600
+	copy.PublicDPOSHeight = 1108812 //fixme edit height later
 	return &copy
 }
 
@@ -181,7 +181,7 @@ func (p *Params) RegNet() *Params {
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
-	copy.PublicDPOSHeight = 1000000
+	copy.PublicDPOSHeight = 1000000 //fixme edit height later
 	return &copy
 }
 
