@@ -321,8 +321,20 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 }
 
 func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
-	// old version [0, H2)
-	if blockHeight < b.chainParams.PublicDPOSHeight {
+	// main version >= H2
+	if blockHeight >= b.chainParams.PublicDPOSHeight {
+		totalReward := totalTxFee + b.chainParams.RewardPerBlock
+		rewardDPOSArbiter := Fixed64(math.Ceil(float64(totalReward) * 0.35))
+		if totalReward-rewardDPOSArbiter+DefaultLedger.Arbitrators.
+			GetFinalRoundChange() != coinbase.Outputs[0].Value+
+			coinbase.Outputs[1].Value {
+			return errors.New("reward amount in coinbase not correct")
+		}
+
+		if err := checkCoinbaseArbitratorsReward(coinbase); err != nil {
+			return err
+		}
+	} else { // old version [0, H2)
 		var rewardInCoinbase = Fixed64(0)
 		for _, output := range coinbase.Outputs {
 			rewardInCoinbase += output.Value
@@ -334,10 +346,6 @@ func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbas
 				"height:" + strconv.FormatUint(uint64(blockHeight),
 				10) + "dposheight: " + strconv.FormatUint(uint64(config.
 				DefaultParams.PublicDPOSHeight), 10))
-		}
-	} else { // main version >= H2
-		if err := checkCoinbaseArbitratorsReward(coinbase); err != nil {
-			return err
 		}
 	}
 
