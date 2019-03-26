@@ -39,3 +39,17 @@ func (p pubKeySlice) Less(i, j int) bool {
 func (p pubKeySlice) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
+
+func TestEncryptDecrypt(t *testing.T) {
+	priKey, pubKey, _ := GenerateKeyPair()
+
+	message := []byte("Hello World!")
+
+	cipher, err := Encrypt(pubKey, message)
+	assert.NoError(t, err)
+
+	m, err := Decrypt(priKey, cipher)
+	assert.NoError(t, err)
+
+	assert.Equal(t, message, m)
+}

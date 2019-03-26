@@ -12,6 +12,7 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto/ecies"
 )
 
 const (
@@ -20,34 +21,26 @@ const (
 	NegativeBigLength = 33
 )
 
-type CryptoAlgSet struct {
-	EccParams elliptic.CurveParams
-	Curve     elliptic.Curve
-}
-
-var algSet CryptoAlgSet
+var (
+	DefaultCurve  = elliptic.P256()
+	DefaultParams = DefaultCurve.Params()
+)
 
 type PublicKey struct {
 	X, Y *big.Int
 }
 
-func init() {
-	algSet.Curve = elliptic.P256()
-	algSet.EccParams = *(algSet.Curve.Params())
-}
-
 func GenerateKeyPair() ([]byte, *PublicKey, error) {
-
-	privateKey, err := ecdsa.GenerateKey(algSet.Curve, rand.Reader)
+	privateKey, err := ecdsa.GenerateKey(DefaultCurve, rand.Reader)
 	if err != nil {
 		return nil, nil, errors.New("Generate key pair error")
 	}
 
-	publicKey := new(PublicKey)
-	publicKey.X = new(big.Int).Set(privateKey.PublicKey.X)
-	publicKey.Y = new(big.Int).Set(privateKey.PublicKey.Y)
+	publicKey := PublicKey{}
+	publicKey.X = privateKey.PublicKey.X
+	publicKey.Y = privateKey.PublicKey.Y
 
-	return privateKey.D.Bytes(), publicKey, nil
+	return privateKey.D.Bytes(), &publicKey, nil
 }
 
 func GenerateSubKeyPair(index int, chainCode, parentPrivateKey []byte) ([]byte, *PublicKey, error) {
@@ -62,10 +55,10 @@ func GenerateSubKeyPair(index int, chainCode, parentPrivateKey []byte) ([]byte, 
 		digest = temp[:]
 	}
 
-	publicKey := new(PublicKey)
-	publicKey.X, publicKey.Y = algSet.Curve.ScalarBaseMult(digest)
+	publicKey := PublicKey{}
+	publicKey.X, publicKey.Y = DefaultCurve.ScalarBaseMult(digest)
 
-	return digest, publicKey, nil
+	return digest, &publicKey, nil
 }
 
 func Sign(priKey []byte, data []byte) ([]byte, error) {
@@ -73,7 +66,7 @@ func Sign(priKey []byte, data []byte) ([]byte, error) {
 	digest := sha256.Sum256(data)
 
 	privateKey := new(ecdsa.PrivateKey)
-	privateKey.Curve = algSet.Curve
+	privateKey.Curve = DefaultCurve
 	privateKey.D = big.NewInt(0)
 	privateKey.D.SetBytes(priKey)
 
@@ -104,17 +97,38 @@ func Verify(publicKey PublicKey, data []byte, signature []byte) error {
 
 	digest := sha256.Sum256(data)
 
-	pub := new(ecdsa.PublicKey)
-	pub.Curve = algSet.Curve
+	pub := ecdsa.PublicKey{}
+	pub.Curve = DefaultCurve
+	pub.X = publicKey.X
+	pub.Y = publicKey.Y
 
-	pub.X = new(big.Int).Set(publicKey.X)
-	pub.Y = new(big.Int).Set(publicKey.Y)
-
-	if !ecdsa.Verify(pub, digest[:], r, s) {
+	if !ecdsa.Verify(&pub, digest[:], r, s) {
 		return errors.New("[Validation], Verify failed.")
 	}
 
 	return nil
+}
+
+// Encrypt encrypts a message using ECIES as specified in SEC 1, 5.1.
+func Encrypt(publicKey *PublicKey, message []byte) (ct []byte, err error) {
+	pubKey := ecies.PublicKey{
+		X:      publicKey.X,
+		Y:      publicKey.Y,
+		Curve:  DefaultCurve,
+		Params: ecies.ParamsFromCurve(DefaultCurve),
+	}
+
+	return ecies.Encrypt(rand.Reader, &pubKey, message, nil, nil)
+}
+
+// Decrypt decrypts an ECIES ciphertext.
+func Decrypt(privateKey, cipher []byte) (m []byte, err error) {
+	priKey := ecies.PrivateKey{}
+	priKey.D = new(big.Int).SetBytes(privateKey)
+	priKey.Curve = DefaultCurve
+	priKey.Params = ecies.ParamsFromCurve(DefaultCurve)
+
+	return priKey.Decrypt(cipher, nil, nil)
 }
 
 func (e *PublicKey) Serialize(w io.Writer) error {
