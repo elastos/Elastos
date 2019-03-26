@@ -13,7 +13,7 @@
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/Common/ElementSet.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/weak_ptr.hpp>

@@ -7,9 +7,9 @@
 
 #include "IdItem.h"
 
-#include <SDK/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/Common/Mstream.h>
-#include <SDK/BIPs/Address.h>
 
 #include <map>
 #include <vector>

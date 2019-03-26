@@ -7,7 +7,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/KeyStore/CoinInfo.h>
+#include <SDK/SpvService/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterProducer.h>

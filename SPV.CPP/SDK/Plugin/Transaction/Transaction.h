@@ -10,7 +10,7 @@
 #include "Attribute.h"
 #include "TransactionInput.h"
 
-#include <SDK/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 

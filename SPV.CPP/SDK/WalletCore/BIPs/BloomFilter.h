@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTER_H__
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-
+#include <SDK/Common/ByteStream.h>
+#include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
 
 #define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0005 // use 0.00005 for less data, 0.001 for good anonymity
@@ -19,8 +19,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class BloomFilter :
-				ELAMessageSerializable {
+		class BloomFilter {
 		public:
 			BloomFilter(double falsePositiveRate, size_t elemCount, uint32_t tweak, uint8_t flags);
 
@@ -37,6 +36,13 @@ namespace Elastos {
 			void InsertData(const bytes_t &data);
 
 			bool ContainsData(const bytes_t &data);
+
+		private:
+			inline uint32_t ROTL32(uint32_t x, int8_t r) {
+				return (x << r) | (x >> (32 - r));
+			}
+
+			uint32_t MurmurHash3(uint32_t seed, const uchar_vector& data);
 
 			uint32_t CalculateHash(const bytes_t &data, uint32_t hashNum);
 

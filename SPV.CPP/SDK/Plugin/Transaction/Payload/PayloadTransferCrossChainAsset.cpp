@@ -4,9 +4,9 @@
 
 #include "PayloadTransferCrossChainAsset.h"
 #include <SDK/Common/Log.h>
-#include <SDK/BIPs/Base58.h>
-#include <SDK/BIPs/Key.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {

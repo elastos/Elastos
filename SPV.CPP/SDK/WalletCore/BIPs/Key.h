@@ -7,8 +7,8 @@
 
 #include <SDK/Common/uint256.h>
 #include <SDK/Common/typedefs.h>
-#include <SDK/BIPs/secp256k1_openssl.h>
-#include <SDK/BIPs/HDKeychain.h>
+#include <SDK/WalletCore/BIPs/secp256k1_openssl.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 
 #include <boost/shared_ptr.hpp>
 #include <openssl/obj_mac.h>

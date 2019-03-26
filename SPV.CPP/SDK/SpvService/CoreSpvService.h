@@ -9,7 +9,7 @@
 
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/P2P/PeerManager.h>
-#include <SDK/SpvService/ChainParams.h>
+#include <SDK/P2P/ChainParams.h>
 #include <SDK/Account/ISubAccount.h>
 
 #include <boost/thread.hpp>

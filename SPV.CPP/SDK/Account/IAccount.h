@@ -6,8 +6,8 @@
 #define __ELASTOS_SDK_IACCOUNT_H__
 
 
-#include <SDK/BIPs/Key.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>

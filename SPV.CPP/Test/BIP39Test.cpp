@@ -6,8 +6,8 @@
 
 #include "catch.hpp"
 
-#include <SDK/BIPs/BIP39.h>
-#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/Common/Log.h>
 
 #include <boost/algorithm/string/split.hpp>

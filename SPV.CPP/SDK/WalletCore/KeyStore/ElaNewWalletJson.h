@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_ELANEWWALLETJSON_H__
 
 #include "ElaWebWalletJson.h"
-#include "CoinInfo.h"
+#include "SDK/SpvService/CoinInfo.h"
 
 #include <SDK/Common/Mstream.h>
 

@@ -7,7 +7,6 @@
 #include <SDK/Common/Log.h>
 
 #include <cfloat>
-#include <Core/BRCrypto.h>
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
@@ -89,8 +88,59 @@ namespace Elastos {
 			if (!data.empty()) _elemCount++;
 		}
 
+		uint32_t BloomFilter::MurmurHash3(uint32_t seed, const uchar_vector& data) {
+			// The following is MurmurHash3 (x86_32), see http://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
+			uint32_t h1 = seed;
+			const uint32_t c1 = 0xcc9e2d51;
+			const uint32_t c2 = 0x1b873593;
+
+			const int nblocks = data.size() / 4;
+
+			//----------
+			// body
+			const uint32_t * blocks = (const uint32_t *)(&data[0] + nblocks*4);
+
+			for(int i = -nblocks; i; i++)
+			{
+				uint32_t k1 = blocks[i];
+
+				k1 *= c1;
+				k1 = ROTL32(k1,15);
+				k1 *= c2;
+
+				h1 ^= k1;
+				h1 = ROTL32(h1,13);
+				h1 = h1*5+0xe6546b64;
+			}
+
+			//----------
+			// tail
+			const uint8_t * tail = (const uint8_t*)(&data[0] + nblocks*4);
+
+			uint32_t k1 = 0;
+
+			switch(data.size() & 3)
+			{
+				case 3: k1 ^= tail[2] << 16;
+				case 2: k1 ^= tail[1] << 8;
+				case 1: k1 ^= tail[0];
+					k1 *= c1; k1 = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
+			};
+
+			//----------
+			// finalization
+			h1 ^= data.size();
+			h1 ^= h1 >> 16;
+			h1 *= 0x85ebca6b;
+			h1 ^= h1 >> 13;
+			h1 *= 0xc2b2ae35;
+			h1 ^= h1 >> 16;
+
+			return h1;
+		}
+
 		uint32_t BloomFilter::CalculateHash(const bytes_t &data, uint32_t hashNum) {
-			return BRMurmur3_32(data.data(), data.size(), hashNum * 0xfba4c795 + _tweak) % (_filter.size() * 8);
+			return (uint32_t)(MurmurHash3((uint32_t)(hashNum * 0xfba4c795 + _tweak), data) % (_filter.size() * 8));
 		}
 
 		bool BloomFilter::ContainsData(const bytes_t &data) {
@@ -101,7 +151,7 @@ namespace Elastos {
 				if (!(_filter[idx >> 3] & (1 << (7 & idx)))) return false;
 			}
 
-			return !data.empty() ? true : false;
+			return !data.empty();
 		}
 	}
 }

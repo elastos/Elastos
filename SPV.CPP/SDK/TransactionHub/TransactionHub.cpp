@@ -10,7 +10,7 @@
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/MultiSignSubAccount.h>
-#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
 
 #include <Interface/ISubWallet.h>
 

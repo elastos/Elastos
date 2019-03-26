@@ -11,8 +11,8 @@
 
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Lockable.h>
-#include <SDK/BIPs/BloomFilter.h>
-#include <SDK/SpvService/ChainParams.h>
+#include <SDK/WalletCore/BIPs/BloomFilter.h>
+#include <SDK/P2P/ChainParams.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Registry.h>

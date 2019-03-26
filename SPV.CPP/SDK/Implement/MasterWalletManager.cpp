@@ -9,8 +9,8 @@
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Base64.h>
-#include <SDK/BIPs/Mnemonic.h>
-#include <SDK/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>

@@ -5,10 +5,10 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include <SDK/BIPs/Address.h>
-#include <SDK/BIPs/Mnemonic.h>
-#include <SDK/BIPs/HDKeychain.h>
-#include <SDK/BIPs/BIP39.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
 
 using namespace Elastos::ElaWallet;
 

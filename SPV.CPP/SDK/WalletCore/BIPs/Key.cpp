@@ -6,7 +6,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/secp256k1_openssl.h>
+#include <SDK/WalletCore/BIPs/secp256k1_openssl.h>
 
 #include <cstring>
 #include <openssl/ec.h>

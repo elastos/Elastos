@@ -9,7 +9,7 @@
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
 #include <set>
 #include <boost/bind.hpp>

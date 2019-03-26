@@ -7,7 +7,7 @@
 
 #include "ISubAccount.h"
 
-#include <SDK/KeyStore/CoinInfo.h>
+#include <SDK/SpvService/CoinInfo.h>
 
 namespace Elastos {
 	namespace ElaWallet {

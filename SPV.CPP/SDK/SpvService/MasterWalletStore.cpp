@@ -11,7 +11,7 @@
 #include <SDK/Account/MultiSignAccount.h>
 #include <SDK/Account/SimpleAccount.h>
 #include <SDK/Account/AccountFactory.h>
-#include <SDK/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 
 #include <fstream>
 

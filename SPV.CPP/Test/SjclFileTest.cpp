@@ -7,7 +7,7 @@
 #include <catch.hpp>
 
 #include <nlohmann/json.hpp>
-#include <SDK/KeyStore/SjclFile.h>
+#include <SDK/WalletCore/KeyStore/SjclFile.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>

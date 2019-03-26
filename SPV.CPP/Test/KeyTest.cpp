@@ -10,9 +10,9 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/BIPs/Mnemonic.h>
-#include <SDK/BIPs/BIP39.h>
-#include <SDK/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>

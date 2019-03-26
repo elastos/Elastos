@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_MASTERWALLET_H__
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
-#include <SDK/KeyStore/CoinConfig.h>
-#include <SDK/BIPs/Mnemonic.h>
-#include <SDK/KeyStore/KeyStore.h>
-#include <SDK/KeyStore/CoinInfo.h>
-#include <SDK/KeyStore/MasterWalletStore.h>
+#include <SDK/SpvService/CoinConfig.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/KeyStore/KeyStore.h>
+#include <SDK/SpvService/CoinInfo.h>
+#include <SDK/SpvService/MasterWalletStore.h>
 #include <SDK/IdAgent/IdAgentImpl.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Transaction.h>

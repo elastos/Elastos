@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_MASTERWALLETSTORE_H__
 
 #include <SDK/Account/IAccount.h>
-#include <SDK/KeyStore/CoinInfo.h>
+#include <SDK/SpvService/CoinInfo.h>
 #include <SDK/IdAgent/IdAgentImpl.h>
 
 #include <boost/filesystem.hpp>

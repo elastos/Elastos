@@ -7,8 +7,8 @@
 
 #include "IAccount.h"
 
-#include <SDK/BIPs/Key.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <boost/shared_ptr.hpp>

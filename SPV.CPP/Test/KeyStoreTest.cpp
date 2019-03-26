@@ -7,7 +7,7 @@
 #include <catch.hpp>
 #include <nlohmann/json.hpp>
 #include <SDK/Account/IAccount.h>
-#include <SDK/KeyStore/KeyStore.h>
+#include <SDK/WalletCore/KeyStore/KeyStore.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>

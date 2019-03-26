@@ -10,7 +10,7 @@
 #include <SDK/Account/StandardAccount.h>
 
 #include <algorithm>
-#include <SDK/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 
 using namespace nlohmann;
 

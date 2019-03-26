@@ -16,8 +16,8 @@
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/BIPs/Base58.h>
-#include <SDK/BIPs/BloomFilter.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/BloomFilter.h>
 
 #include <netdb.h>
 #include <netinet/in.h>

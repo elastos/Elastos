@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_FILTERLoadMESSAGE_H__
 
 #include "Message.h"
-#include <SDK/BIPs/BloomFilter.h>
+#include <SDK/WalletCore/BIPs/BloomFilter.h>
 
 namespace Elastos {
 	namespace ElaWallet {

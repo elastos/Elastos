@@ -9,13 +9,13 @@
 #include "MasterWallet.h"
 
 #include <SDK/Account/SubAccountGenerator.h>
-#include <SDK/Crypto/AES.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/Mnemonic.h>
-#include <SDK/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/Crypto/AES.h>
 #include <Config.h>
 
 #include <vector>

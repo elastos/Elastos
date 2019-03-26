@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
 #include <SDK/Account/MultiSignAccount.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
 #include <vector>
 #include <map>

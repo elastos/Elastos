@@ -9,7 +9,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Base64.h>
-#include <SDK/Crypto/AES.h>
+#include <Crypto/AES.h>
 #include <SDK/Account/StandardAccount.h>
 #include <SDK/Account/SimpleAccount.h>
 #include <SDK/Account/MultiSignAccount.h>

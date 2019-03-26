@@ -6,18 +6,18 @@
 
 #include "catch.hpp"
 #include "TestHelper.h"
-#include <SDK/BIPs/HDKeychain.h>
-#include <SDK/BIPs/Base58.h>
+
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/HDSubAccount.h>
 #include <SDK/Account/StandardAccount.h>
 #include <SDK/Account/SubAccountGenerator.h>
 #include <SDK/Common/Lockable.h>
-#include <SDK/Crypto/AES.h>
-#include <SDK/BIPs/BIP39.h>
-#include <SDK/BIPs/Mnemonic.h>
-
+#include <SDK/WalletCore/Crypto/AES.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 

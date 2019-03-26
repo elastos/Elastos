@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
-#include <SDK/KeyStore/CoinInfo.h>
-#include <SDK/SpvService/ChainParams.h>
+#include <SDK/SpvService/CoinInfo.h>
+#include <SDK/P2P/ChainParams.h>
 #include <SDK/SpvService/SpvService.h>
 #include <SDK/Account/ISubAccount.h>
 

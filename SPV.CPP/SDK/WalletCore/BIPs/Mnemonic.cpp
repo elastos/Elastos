@@ -4,11 +4,11 @@
 
 #include "Mnemonic.h"
 #include "WordLists/English.h"
+#include "BIP39.h"
 
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/uint256.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/BIPs/BIP39.h>
 
 #include <fstream>
 #include <sstream>

@@ -7,7 +7,7 @@
 
 #include <SDK/Implement/SubWalletType.h>
 #include <SDK/Common/Mstream.h>
-#include <SDK/SpvService/CheckPoint.h>
+#include <SDK/P2P/CheckPoint.h>
 
 #include <nlohmann/json.hpp>
 

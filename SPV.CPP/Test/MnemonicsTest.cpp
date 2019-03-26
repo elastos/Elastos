@@ -6,7 +6,7 @@
 
 
 #include "catch.hpp"
-#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -33,6 +33,8 @@ TEST_CASE("Mnemonic of Chinese test", "[Chinese]") {
 
 	uint512 seed;
 	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "123"));
+	REQUIRE_THROWS(seed = mnemonic.DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 县", ""));
+	REQUIRE_THROWS(seed = mnemonic.DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县", ""));
 	REQUIRE(seed != 0);
 }
 

@@ -8,7 +8,6 @@
 #include "SDK/Common/uchar_vector.h"
 #include "SDK/Common/hash.h"
 #include "SDK/Common/BigInt.h"
-#include <Core/BRCrypto.h>
 
 namespace Elastos {
 	namespace ElaWallet {

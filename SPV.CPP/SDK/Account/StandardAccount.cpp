@@ -6,10 +6,10 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/BIPs/Base58.h>
-#include <SDK/BIPs/Address.h>
-#include <SDK/Crypto/AES.h>
-#include <SDK/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/Crypto/AES.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
 
 
 namespace Elastos {

@@ -5,7 +5,7 @@
 #include "FilterLoadMessage.h"
 
 #include <SDK/P2P/Peer.h>
-#include <SDK/BIPs/BloomFilter.h>
+#include <SDK/WalletCore/BIPs/BloomFilter.h>
 #include <SDK/Common/ByteStream.h>
 
 namespace Elastos {

@@ -1,5 +1,16 @@
 
-file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
+add_subdirectory(WalletCore)
+
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES
+	"Account/*.cpp"
+	"Common/*.cpp"
+	"Database/*.cpp"
+	"IdAgent/*.cpp"
+	"Implement/*.cpp"
+	"P2P/*.cpp"
+	"Plugin/*.cpp"
+	"SpvService/*.cpp"
+	"TransactionHub/*.cpp")
 
 set(
 	SPVSDK_SOURCE_FILES

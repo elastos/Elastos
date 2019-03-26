@@ -8,7 +8,7 @@
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
 #include <boost/shared_ptr.hpp>
 

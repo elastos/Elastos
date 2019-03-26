@@ -10,7 +10,7 @@
 
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Database/DatabaseManager.h>
-#include <SDK/KeyStore/KeyStore.h>
+#include <SDK/WalletCore/KeyStore/KeyStore.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <nlohmann/json.hpp>
