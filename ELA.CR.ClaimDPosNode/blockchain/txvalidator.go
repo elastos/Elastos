@@ -384,19 +384,27 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 			return errors.New("First output address should be foundation address.")
 		}
 
-		var totalReward = common.Fixed64(0)
-		for _, output := range txn.Outputs {
-			if output.AssetID != config.ELAAssetID {
-				return errors.New("Asset ID in coinbase is invalid")
-			}
-			totalReward += output.Value
-		}
-
 		foundationReward := txn.Outputs[0].Value
+		var totalReward = common.Fixed64(0)
+		if blockHeight < b.chainParams.PublicDPOSHeight {
+			for _, output := range txn.Outputs {
+				if output.AssetID != config.ELAAssetID {
+					return errors.New("Asset ID in coinbase is invalid")
+				}
+				totalReward += output.Value
+			}
 
-		if blockHeight <= b.chainParams.PublicDPOSHeight &&
-			common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
-			return errors.New("Reward to foundation in coinbase < 30%")
+
+			if foundationReward < common.Fixed64(float64(totalReward)*0.3) {
+				return errors.New("reward to foundation in coinbase < 30%")
+			}
+		} else {
+			// check the ratio of FoundationAddress reward with miner reward
+			totalReward = txn.Outputs[0].Value + txn.Outputs[1].Value
+			if len(txn.Outputs) == 2 && foundationReward <
+				common.Fixed64(float64(totalReward)*0.3/0.65) {
+				return errors.New("reward to foundation in coinbase < 30%")
+			}
 		}
 
 		return nil
