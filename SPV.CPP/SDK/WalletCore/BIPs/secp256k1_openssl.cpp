@@ -212,7 +212,7 @@ finish:
 finish:
 			if (bn) BN_clear_free(bn);
 
-			ErrorChecker::CheckLogic(!err.empty(), Error::Key, std::string("invalid key") + err);
+			ErrorChecker::CheckLogic(!err.empty(), Error::Key, std::string("invalid key: ") + err);
 		}
 
 		bytes_t secp256k1_point::bytes() const {
