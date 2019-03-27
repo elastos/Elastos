@@ -1,6 +1,11 @@
 # Elastos Local PrivateNet - v0.1
 
-## This is official but unsupported and ALPHA version
+## We are currently updating to the new version to support the DPoS Supernodes
+
+If you are starting to set this up now it's recommended that you wait until the new version which will have
+the new DPoS nodes and possibly the ETH sidechain.
+
+### This is official but unsupported and ALPHA version
 
 These executables are built from the private repo [https://github.com/ClarenceL/ela-privnet-staging](https://github.com/ClarenceL/ela-privnet-staging) 
 which we use to compile the executables into the right environment, only the executables can be found here.
