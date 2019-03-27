@@ -205,9 +205,9 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if ok, signed := blockchain.IsProposalValid(d); !ok {
+	if ok := blockchain.IsProposalValid(d); !ok {
 		log.Warn("invalid proposal.")
-		return false, !signed
+		return false, true
 	}
 
 	if p.IsViewChangedTimeOut() {
@@ -249,7 +249,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
-		return true, true
+		return true, false
 	}
 
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
