@@ -302,7 +302,7 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
-func GetDPOSPeersInfo(params Params) map[string]interface{} {
+func GetArbiterPeersInfo(params Params) map[string]interface{} {
 	if Arbiter == nil {
 		return ResponsePack(InternalError, "arbiter disabled")
 	}
@@ -314,7 +314,7 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 		ConnState      string `json:"connstate"`
 	}
 
-	peers := Arbiter.GetDPOSPeersInfo()
+	peers := Arbiter.GetArbiterPeersInfo()
 
 	result := make([]peerInfo, 0)
 	for _, p := range peers {
