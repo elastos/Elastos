@@ -450,6 +450,7 @@ parameters:
 | addresses | array[string] | addresses     |
 | utxotype  | string        | the utxo type |
 
+if not set utxotype will use "mixed" as default value
 if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
@@ -1370,29 +1371,126 @@ result sample:
 
 ```json
 {
-    "error": null,
-    "id": null,
-    "jsonrpc": "2.0",
-    "result": {
-        "arbiters": [
-            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
-            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
-            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
-            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
-        ],
-        "candidates": [],
-        "nextarbiters": [
-            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
-            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
-            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
-            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
-        ],
-        "nextcandidates": [],
-        "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-        "currentturnstartheight": 200,
-        "nextturnstartheight": 212
-    }
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "arbiters": [
+      "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+      "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+      "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+        "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+      "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+    ],
+    "candidates": [],
+    "nextarbiters": [
+      "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+      "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+      "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+      "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+      "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+    ],
+    "nextcandidates": [],
+    "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+    "currentturnstartheight": 200,
+    "nextturnstartheight": 212
+  }
+}
+```
+
+#### getutxosbyamount
+
+description: get utxo by given amount, amount of utxo >= given amount.
+
+parameters:
+
+| name     | type   | description                |
+| -------- | ------ | -------------------------- |
+| address  | string | the address of ela         |
+| amount   | string | the min amount to get utxo |
+| utxotype | string | the utxo type              |
+
+if not set utxotype will use "mixed" as default value
+if set utxotype to "mixed" or not set will get all utxos ignore the type
+if set utxotype to "vote" will get vote utxos
+if set utxotype to "normal" will get normal utxos without vote
+
+result:
+please see below
+
+argument sample:
+
+```json
+{
+  "method":"getutxosbyamount",
+  "params":{
+    "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+    "amount": "0.25"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": [
+    {
+      "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+      "txid": "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
+      "vout": 0,
+      "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+      "amount": "0.1",
+      "confirmations": 1102,
+      "outputlock": 0
+    },
+    {
+      "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+      "txid": "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "vout": 0,
+      "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+      "amount": "0.2",
+      "confirmations": 846,
+      "outputlock": 0
+     }
+  ]
+}
+```
+
+#### getamountbyinputs
+
+description: get amount of given inputs.
+
+parameters:
+
+| name    | type   | description              |
+| ------- | ------ | ------------------------ |
+| inputs  | string | the hex string of inputs |
+
+result: 
+amount of all given inputs, the type is string, if not found input will return error
+
+argument sample:
+
+```json
+{
+  "method":"getamountbyinputs",
+  "params":{
+    "inputs": "029132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad17680000000000003edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e000000000000"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": "0.3"
 }
 ```
