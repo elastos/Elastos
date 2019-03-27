@@ -78,6 +78,10 @@ func loadConfigParams() *config.ConfigParams {
 		activeNetParams.Foundation = *foundation
 		activeNetParams.GenesisBlock = config.GenesisBlock(foundation)
 	}
+	crcAddress, err := common.Uint168FromAddress(cfg.CRCAddress)
+	if err == nil {
+		activeNetParams.CRCAddress = *crcAddress
+	}
 	if len(cfg.ArbiterConfiguration.OriginArbiters) > 0 {
 		activeNetParams.OriginArbiters = cfg.ArbiterConfiguration.OriginArbiters
 	}

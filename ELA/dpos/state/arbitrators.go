@@ -251,6 +251,7 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
+	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
 	realDPOSReward := common.Fixed64(0)
 	for _, ownerHash := range ownerHashes {
 		votes := a.ownerVotesInRound[*ownerHash]
@@ -258,8 +259,10 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 		r := individualBlockConfirmReward + individualProducerReward
 		if _, ok := a.crcArbitratorsProgramHashes[*ownerHash]; ok {
 			r = individualBlockConfirmReward
+			a.arbitersRoundReward[a.chainParams.CRCAddress] += r
+		} else {
+			a.arbitersRoundReward[*ownerHash] = r
 		}
-		a.arbitersRoundReward[*ownerHash] = r
 
 		realDPOSReward += r
 	}
