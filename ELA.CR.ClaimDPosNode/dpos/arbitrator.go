@@ -60,7 +60,7 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
-func (a *Arbitrator) GetDPOSPeersInfo() []*dposp2p.PeerInfo {
+func (a *Arbitrator) GetArbiterPeersInfo() []*dposp2p.PeerInfo {
 	return a.network.p2pServer.DumpPeersInfo()
 }
 
