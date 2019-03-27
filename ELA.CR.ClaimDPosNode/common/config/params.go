@@ -38,6 +38,20 @@ var (
 		0x14, 0x4d, 0xf8, 0x22, 0xb7, 0xd9, 0x24,
 		0x6c, 0x58, 0xdf, 0x68, 0xeb, 0x11, 0xce,
 	}
+
+	//fixme modify the address in the future
+	mainNetCRCAddress = common.Uint168{
+		0x12, 0x9e, 0x9c, 0xf1, 0xc5, 0xf3, 0x36,
+		0xfc, 0xf3, 0xa6, 0xc9, 0x54, 0x44, 0x4e,
+		0xd4, 0x82, 0xc5, 0xd9, 0x16, 0xe5, 0x06,
+	}
+
+	//fixme modify the address in the future
+	testNetCRCAddress = common.Uint168{
+		0x12, 0xc8, 0xa2, 0xe0, 0x67, 0x72, 0x27,
+		0x14, 0x4d, 0xf8, 0x22, 0xb7, 0xd9, 0x24,
+		0x6c, 0x58, 0xdf, 0x68, 0xeb, 0x11, 0xce,
+	}
 )
 
 // DefaultParams defines the default network parameters.
@@ -61,6 +75,7 @@ var DefaultParams = Params{
 	},
 
 	Foundation:   mainNetFoundation,
+	CRCAddress:   mainNetCRCAddress,
 	GenesisBlock: GenesisBlock(&mainNetFoundation),
 	OriginArbiters: []string{
 		"0248df6705a909432be041e0baa25b8f648741018f70d1911f2ed28778db4b8fe4",
@@ -121,6 +136,7 @@ func (p *Params) TestNet() *Params {
 	}
 
 	copy.Foundation = testNetFoundation
+	copy.CRCAddress = testNetCRCAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.OriginArbiters = []string{
 		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
@@ -166,6 +182,7 @@ func (p *Params) RegNet() *Params {
 	}
 
 	copy.Foundation = testNetFoundation
+	copy.CRCAddress = testNetCRCAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.OriginArbiters = []string{
 		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
@@ -222,6 +239,9 @@ type Params struct {
 	// Foundation defines the foundation address which receiving mining
 	// rewards.
 	Foundation common.Uint168
+
+	// CRCAddress defines the CRC address which receiving mining rewards.
+	CRCAddress common.Uint168
 
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
