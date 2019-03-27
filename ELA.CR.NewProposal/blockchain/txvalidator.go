@@ -1281,9 +1281,8 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 	if d.Evidence.Proposal.ViewOffset != d.Evidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
-	eValid, _ := IsProposalValid(&d.Evidence.Proposal)
-	cValid, _ := IsProposalValid(&d.CompareEvidence.Proposal)
-	if !eValid || !cValid {
+	if !IsProposalValid(&d.Evidence.Proposal) ||
+		!IsProposalValid(&d.CompareEvidence.Proposal) {
 		return errors.New("proposal should be valid")
 	}
 
@@ -1324,9 +1323,8 @@ func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
-	eValid, _ := IsProposalValid(&d.Evidence.Proposal)
-	cValid, _ := IsProposalValid(&d.CompareEvidence.Proposal)
-	if !eValid || !cValid ||
+	if !IsProposalValid(&d.Evidence.Proposal) ||
+		!IsProposalValid(&d.CompareEvidence.Proposal) ||
 		!IsVoteValid(&d.Evidence.Vote) ||
 		!IsVoteValid(&d.CompareEvidence.Vote) {
 		return errors.New("votes and related proposals should be valid")
