@@ -215,6 +215,7 @@ func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, p interface{})
 				OnNotFound: s.onNotFound,
 				OnReject:   s.onReject,
 			})
+		sp.Start()
 
 		peers[p] = sp
 		s.syncManager.NewPeer(sp)
