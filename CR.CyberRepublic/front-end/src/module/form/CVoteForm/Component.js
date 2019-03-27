@@ -33,7 +33,7 @@ class C extends BaseComponent {
   handleSubmit = async (e, fields = {}) => {
     e.preventDefault()
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
-    const { edit, form, updateCVote, createCVote, onCreated, onEdit } = this.props
+    const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
       if (err) return
@@ -49,6 +49,7 @@ class C extends BaseComponent {
         ...fields,
       }
       if (!edit) param.proposedBy = fullName
+      if (suggestionId) param.suggestionId = suggestionId
 
       this.ord_loading(true)
       if (edit) {

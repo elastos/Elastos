@@ -31,12 +31,14 @@ const formatUsername = (user) => {
 export default class extends Base {
 
   public async create(param): Promise<Document> {
-    const db_cvote = this.getDBModel('CVote');
-    const db_user = this.getDBModel('User');
+    const db_cvote = this.getDBModel('CVote')
+    const db_user = this.getDBModel('User')
+    const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
       title, type, content, published, proposedBy, motionId, isConflict, notes,
-    } = param;
+      suggestionId,
+    } = param
 
     const vid = await this.getNewVid()
     const status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT
@@ -53,9 +55,14 @@ export default class extends Base {
       isConflict,
       notes,
       createdBy: this.currentUser._id
-    };
+    }
 
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    if (!_.isEmpty(suggestion)) {
+      doc.suggestion = suggestionId
+    }
+
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
@@ -69,7 +76,13 @@ export default class extends Base {
     }
 
     try {
-      const res = await db_cvote.save(doc);
+      const res = await db_cvote.save(doc)
+      console.log('cvote create, suggestion is: ', suggestion)
+      // add reference with suggestion
+      if (!_.isEmpty(suggestion)) {
+        await db_suggestion.update({ _id: suggestionId }, { $set: { proposal: res._id }})
+      }
+
       // notify council member to vote
       if (published) {
         const subject = `New Proposal: ${title}`

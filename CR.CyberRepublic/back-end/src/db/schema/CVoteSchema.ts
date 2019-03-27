@@ -95,8 +95,5 @@ export const CVote = {
     type: Boolean,
     default: false,
   },
-  referred: {
-    type: String,
-    resource: Schema.Types.ObjectId,
-  },
+  suggestion: Schema.Types.ObjectId,
 }
