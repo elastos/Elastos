@@ -781,6 +781,7 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnTxFilterLoad: sp.OnTxFilterLoad,
 			OnReject:       sp.OnReject,
 		})
+		sp.Start()
 
 		peers[p.IPeer] = sp
 		s.syncManager.NewPeer(sp.Peer)
