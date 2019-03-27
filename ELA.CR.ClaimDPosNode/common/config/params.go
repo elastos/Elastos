@@ -134,7 +134,7 @@ func (p *Params) TestNet() *Params {
 	}
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
-	copy.CRCOnlyDPOSHeight = 252600
+	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 1108812 //fixme edit height later
 	return &copy
 }
