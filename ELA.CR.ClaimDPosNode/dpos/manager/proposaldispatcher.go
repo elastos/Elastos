@@ -205,9 +205,9 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if !blockchain.IsProposalValid(d) {
+	if ok, signed := blockchain.IsProposalValid(d); !ok {
 		log.Warn("invalid proposal.")
-		return false, true
+		return false, !signed
 	}
 
 	if p.IsViewChangedTimeOut() {

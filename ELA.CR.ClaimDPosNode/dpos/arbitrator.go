@@ -42,9 +42,12 @@ type Arbitrator struct {
 
 func (a *Arbitrator) Start() {
 	a.network.Start()
-	go a.dposManager.Recover()
 
 	go a.changeViewLoop()
+}
+
+func (a *Arbitrator) Recover() {
+	go a.dposManager.Recover()
 }
 
 func (a *Arbitrator) Stop() error {
@@ -186,8 +189,8 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:                  cfg.Store,
-				Arbitrators:            cfg.Arbitrators,
+				Store:       cfg.Store,
+				Arbitrators: cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
