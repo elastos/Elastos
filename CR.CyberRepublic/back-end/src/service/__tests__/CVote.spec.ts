@@ -220,8 +220,8 @@ describe('Tests for CVote', () => {
             }
         ))
 
-        expect(rs.suggestion.toString()).to.be.equal(suggestion._id.toString())
+        expect(rs.reference[rs.reference.length - 1].toString()).to.be.equal(suggestion._id.toString())
         suggestion = await DB.getModel('Suggestion').findById(suggestion._id)
-        expect(rs._id.toString()).to.be.equal(suggestion.proposal.toString())
+        expect(rs._id.toString()).to.be.equal(suggestion.reference.toString())
     })
 })

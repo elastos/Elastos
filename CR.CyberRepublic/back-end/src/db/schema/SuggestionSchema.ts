@@ -81,5 +81,11 @@ export const Suggestion = {
   //     type: Number,
   //     default: 0,
   // },
-  proposal: Schema.Types.ObjectId,
+
+  reference: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'cvote',
+    }
+  ],
 }

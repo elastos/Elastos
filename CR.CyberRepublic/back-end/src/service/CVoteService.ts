@@ -59,7 +59,7 @@ export default class extends Base {
 
     const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
     if (!_.isEmpty(suggestion)) {
-      doc.suggestion = suggestionId
+      doc.reference = suggestionId
     }
 
     const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
@@ -80,7 +80,7 @@ export default class extends Base {
       console.log('cvote create, suggestion is: ', suggestion)
       // add reference with suggestion
       if (!_.isEmpty(suggestion)) {
-        await db_suggestion.update({ _id: suggestionId }, { $set: { proposal: res._id }})
+        await db_suggestion.update({ _id: suggestionId }, { $addToSet: { reference: res._id }})
       }
 
       // notify council member to vote
@@ -126,7 +126,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    console.log('to Users: ', toUsers)
+
     const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
       return {
         _id: user._id,
@@ -334,6 +334,7 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs;
   }
 

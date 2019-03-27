@@ -112,6 +112,7 @@ export default class extends Base {
     const doc = await this.model.getDBInstance()
       .findById(_id)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID)
 
     if (_.isEmpty(doc.comments)) return doc
 
