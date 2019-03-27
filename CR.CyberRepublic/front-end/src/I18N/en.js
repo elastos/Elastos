@@ -680,6 +680,7 @@ const en = {
   'council.voting': 'Voting',
   'council.list.proposals': 'Any suggestions, proposals can be sent to',
   'council.voting.proposal': 'Proposal',
+  'council.voting.referred': 'Referred to',
   'council.voting.proposalList': 'Proposals',
   'council.voting.number': 'No.',
   'council.voting.published': 'Published',

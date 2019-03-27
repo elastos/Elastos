@@ -680,6 +680,7 @@ const zh = {
   'council.voting': '表决意见',
   'council.list.proposals': '如果有意见和建议，请发送提案到',
   'council.voting.proposal': '提案',
+  'council.voting.referred': '引用自',
   'council.voting.proposalList': '提案清单',
   'council.voting.number': '编号',
   'council.voting.published': '已发布',
