@@ -25,8 +25,14 @@ export const Title = styled.div`
   margin-bottom: 18px;
   `
 
+export const Label = styled.span`
+  background: #F2F6FB;
+  padding: 3px 10px;
+`
+
 export const Desc = styled.div`
   color: black;
+  margin-top: 15px;
 `
 
 export const StyledLink = styled.div`

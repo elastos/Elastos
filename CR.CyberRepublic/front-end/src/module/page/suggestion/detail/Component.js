@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash'
 import { Row, Col, Spin, Button, Modal } from 'antd'
+import { Link } from 'react-router-dom';
 import MediaQuery from 'react-responsive'
 import Comments from '@/module/common/comments/Container'
 import Footer from '@/module/layout/Footer/Container'
@@ -10,12 +11,13 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
+import { CVOTE_STATUS } from '@/constant'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
-import { Container, Title, Desc, StyledLink, BtnGroup, StyledButton } from './style'
+import { Container, Title, Label, Desc, StyledLink, BtnGroup, StyledButton } from './style'
 
 export default class extends StandardPage {
   constructor(props) {
@@ -89,12 +91,14 @@ export default class extends StandardPage {
   renderDetail() {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
+    const labelNode = this.renderLabelNode()
     const descNode = this.renderDescNode()
     const linkNode = this.renderLinkNode()
     return (
       <div>
         {metaNode}
         {titleNode}
+        {labelNode}
         {descNode}
         {linkNode}
       </div>
@@ -172,6 +176,22 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Title>{detail.title}</Title>
+    )
+  }
+
+  renderLabelNode() {
+    const reference = _.get(this.props.detail, 'reference')
+    if (_.isEmpty(reference)) return null
+    const { _id, vid, status } = _.last(reference)
+    // when proposal is draft, do not show the label
+    if (status === CVOTE_STATUS.DRAFT) return null
+    const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
+    return (
+      <Label>
+        {`${I18N.get('suggestion.referred')} `}
+        <Link to={`/proposals/${_id}`}>{linkText}</Link>
+        {` (${I18N.get(`cvoteStatus.${status}`)})`}
+      </Label>
     )
   }
 
