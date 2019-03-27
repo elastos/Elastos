@@ -164,16 +164,31 @@ func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 }
 
 func (d *DPOSManager) Recover() {
+	if !d.isCurrentArbiter() {
+		return
+	}
+
 	d.changeHeight()
 	for {
+
 		log.Info("Recover when start")
-		if d.recoverAbnormalState() {
+		if d.recoverAbnormalState(true) {
 			log.Info("Recover finished")
 			return
 		}
 
 		time.Sleep(time.Second)
 	}
+}
+
+func (d *DPOSManager) isCurrentArbiter() bool {
+	arbiters := d.arbitrators.GetArbitrators()
+	for _, a := range arbiters {
+		if bytes.Equal(a, d.publicKey) {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
@@ -208,7 +223,7 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 		d.notHandledProposal[pubKey] = struct{}{}
 		if d.arbitrators.HasArbitersMinorityCount(len(d.notHandledProposal)) {
 			log.Info("[OnVoteAccepted] has minority not handled votes, need recover")
-			if d.recoverAbnormalState() {
+			if d.recoverAbnormalState(false) {
 				log.Info("[OnVoteAccepted] recover start")
 			}
 			log.Error("[OnVoteAccepted] has no active peers recover failed")
@@ -301,20 +316,23 @@ func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusSt
 
 func (d *DPOSManager) OnBadNetwork() {
 	log.Info("[OnBadNetwork] found network bad")
-	if d.recoverAbnormalState() {
+	if d.recoverAbnormalState(false) {
 		log.Info("[OnBadNetwork] start recover")
 	}
 	log.Error("[OnBadNetwork] has no active peers recover failed")
 }
 
-func (d *DPOSManager) recoverAbnormalState() bool {
+func (d *DPOSManager) recoverAbnormalState(firstRecover bool) bool {
 	if arbiters := d.arbitrators.GetArbitrators(); len(arbiters) != 0 {
 		if peers := d.network.GetActivePeers(); len(peers) == 0 {
 			log.Error("[recoverAbnormalState] can not find active peer")
 			return false
 		}
-
-		d.neededMajorityStatus = len(arbiters)/3 + 1
+		if firstRecover {
+			d.neededMajorityStatus = 1
+		} else {
+			d.neededMajorityStatus = len(arbiters)/3 + 1
+		}
 		d.handler.RequestAbnormalRecovering()
 		return true
 	}
@@ -338,14 +356,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		return
 	}
 
-	isCurrentArbiter := false
-	arbiters := d.arbitrators.GetArbitrators()
-	for _, a := range arbiters {
-		if bytes.Equal(a, d.publicKey) {
-			isCurrentArbiter = true
-		}
-	}
-	if !isCurrentArbiter {
+	if !d.isCurrentArbiter() {
 		return
 	}
 

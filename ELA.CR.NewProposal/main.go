@@ -171,6 +171,10 @@ func main() {
 	}
 	pgBar.Stop()
 
+	if arbitrator != nil {
+		arbitrator.Recover()
+	}
+
 	log.Info("Start the P2P networks")
 	server.Start()
 	defer server.Stop()
