@@ -245,6 +245,16 @@ public:
     void clean() {
         memset(this->data(), 0, size());
     }
+
+    bool isZero() {
+        for (size_t i = 0; i < this->size(); ++i) {
+            if ((*this)[i] != 0)
+                return false;
+        }
+
+        return true;
+    }
+
 };
 
 typedef std::string string_secure;
