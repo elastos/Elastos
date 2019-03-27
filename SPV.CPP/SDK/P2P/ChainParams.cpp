@@ -148,7 +148,7 @@ namespace Elastos {
 			_checkpoints.emplace_back(322560, "8ca8aa2c69bcc45727396ffc6eee0ed2019ea2b2fc4ff17ced85796a18669cff", 1551388640, 406145876);
 			_checkpoints.emplace_back(324576, "aea8458dfafe6e6ce7a325220cd9c2ef422a41cc8a90aa0364699dbda62183d7", 1551631041, 406048162);
 			_checkpoints.emplace_back(326592, "ebb2ba952f8bb5b1d005f6c5355970ba3351b23f48e6965b7007f7b4e29ee92c", 1551876151, 406029313);
-			_standardPort = 20866;
+			_standardPort = 20338;
 			_magicNumber = 2017001;
 			_services = 0;
 			_targetTimeSpan = 86400;
@@ -260,7 +260,7 @@ namespace Elastos {
 			_checkpoints.emplace_back(229824, "8ed32800d95e6703a871726ceb68faed1d5a8b047dd625c7ea01d76c5bce84a6", 1551313167, 520311485);
 			_checkpoints.emplace_back(231840, "6ca4aafd19df42379062f677ad0b7147e63d42cf115d32d41e5fd201986426f1", 1551559204, 520321991);
 			_checkpoints.emplace_back(233856, "7c8b242b3366e1ebf1a99b92cb20067df7a451bb2ee20bbeeb6083273e4e2048", 1551813488, 520346523);
-			_standardPort = 21866;
+			_standardPort = 21338;
 			_magicNumber = 2018001;
 			_services = 0;
 			_targetTimeSpan = 86400;
@@ -380,7 +380,7 @@ namespace Elastos {
 			_checkpoints.emplace_back(195552, "b00e02d1b42b8fcfdfa06663cb33b17ec65398164ab901844c16cc1aa53f5377", 1550879731, 539440815);
 			_checkpoints.emplace_back(199584, "6bdfcf51a9512a61fe48c75591e733f716be679ea13bbb9d9ad65912dd78d30e", 1551401692, 540766560);
 			_checkpoints.emplace_back(203616, "e1b62cfd7cdf3ec6863dcf1cc2fa025e13af2ee7b0e4aff90f85750b87bc3bab", 1551958709, 544545113);
-			_standardPort = 22866;
+			_standardPort = 22338;
 			_magicNumber = 20180627;
 			_services = 0;
 			_targetTimeSpan = 86400;
