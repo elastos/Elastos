@@ -53,6 +53,8 @@ func StartRPCServer() {
 	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getexistwithdrawtransactions"] = GetExistWithdrawTransactions
 	mainMux["listunspent"] = ListUnspent
+	mainMux["getutxosbyamount"] = GetUTXOsByAmount
+	mainMux["getamountbyinputs"] = GetAmountByInputs
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
 	// aux interfaces
 	mainMux["help"] = AuxHelp

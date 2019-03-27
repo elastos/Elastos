@@ -863,6 +863,107 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	return ResponsePack(Success, totalValue.String())
 }
 
+func GetUTXOsByAmount(param Params) map[string]interface{} {
+	bestHeight := Store.GetHeight()
+
+	result := make([]UTXOInfo, 0)
+	address, ok := param.String("address")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named address!")
+	}
+	amountStr, ok := param.String("amount")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named amount!")
+	}
+	amount, err := common.StringToFixed64(amountStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid amount!")
+	}
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address: "+address)
+	}
+	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
+	if err != nil {
+		return ResponsePack(InvalidParams, "cannot get asset with program")
+	}
+	utxoType := "mixed"
+	if t, ok := param.String("utxotype"); ok {
+		switch t {
+		case "mixed", "vote", "normal":
+			utxoType = t
+		default:
+			return ResponsePack(InvalidParams, "invalid utxotype")
+		}
+	}
+	totalAmount := common.Fixed64(0)
+	for _, unspent := range unspents[config.ELAAssetID] {
+		if totalAmount >= *amount {
+			break
+		}
+		tx, height, err := Store.GetTransaction(unspent.TxID)
+		if err != nil {
+			return ResponsePack(InternalError, "unknown transaction "+
+				unspent.TxID.String()+" from persisted utxo")
+		}
+		if utxoType == "vote" && (tx.Version < TxVersion09 ||
+			tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type != OTVote) {
+			continue
+		}
+		if utxoType == "normal" && tx.Version >= TxVersion09 &&
+			tx.Outputs[unspent.Index].Type == OTVote {
+			continue
+		}
+		totalAmount += unspent.Value
+		result = append(result, UTXOInfo{
+			TxType:        byte(tx.TxType),
+			TxID:          ToReversedString(unspent.TxID),
+			AssetID:       ToReversedString(config.ELAAssetID),
+			VOut:          unspent.Index,
+			Amount:        unspent.Value.String(),
+			Address:       address,
+			OutputLock:    tx.Outputs[unspent.Index].OutputLock,
+			Confirmations: bestHeight - height + 1,
+		})
+	}
+
+	if totalAmount < *amount {
+		return ResponsePack(InternalError, "not enough utxo")
+	}
+
+	return ResponsePack(Success, result)
+}
+
+func GetAmountByInputs(param Params) map[string]interface{} {
+	inputStr, ok := param.String("inputs")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named inputs!")
+	}
+
+	inputBytes, _ := common.HexStringToBytes(inputStr)
+	r := bytes.NewReader(inputBytes)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid inputs")
+	}
+
+	amount := common.Fixed64(0)
+	for i := uint64(0); i < count; i++ {
+		input := new(Input)
+		if err := input.Deserialize(r); err != nil {
+			return ResponsePack(InvalidParams, "invalid inputs")
+		}
+		tx, _, err := Store.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return ResponsePack(InternalError, "unknown transaction "+
+				input.Previous.TxID.String()+" from persisted utxo")
+		}
+		amount += tx.Outputs[input.Previous.Index].Value
+	}
+
+	return ResponsePack(Success, amount.String())
+}
+
 func ListUnspent(param Params) map[string]interface{} {
 	bestHeight := Store.GetHeight()
 
