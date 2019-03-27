@@ -455,7 +455,10 @@ func (a *arbitrators) HasArbitersMajorityCount(num int) bool {
 }
 
 func (a *arbitrators) HasArbitersMinorityCount(num int) bool {
-	return num >= a.arbitersCount-a.GetArbitersMajorityCount()
+	a.mtx.Lock()
+	count := len(a.currentArbitrators)
+	a.mtx.Unlock()
+	return num >= count-a.GetArbitersMajorityCount()
 }
 
 func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
