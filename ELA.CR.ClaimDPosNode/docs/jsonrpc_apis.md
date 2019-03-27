@@ -1140,7 +1140,7 @@ result sample:
 }
 ```
 
-#### getdpospeersinfo
+#### getarbiterpeersinfo
 
 description: get dpos peers information.
 
@@ -1157,7 +1157,7 @@ named arguments sample:
 
 ```json
 {
-  "method": "getdpospeersinfo"
+  "method": "getarbiterpeersinfo"
 }
 ```
 
