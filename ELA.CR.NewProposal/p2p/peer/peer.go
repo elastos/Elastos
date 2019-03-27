@@ -727,7 +727,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- struct{}) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() || atomic.LoadInt32(&p.started) == 0 {
+	if !p.Connected() {
 		if doneChan != nil {
 			go func() {
 				doneChan <- struct{}{}
@@ -747,7 +747,9 @@ func (p *Peer) OnSendDone(sendDoneChan chan<- struct{}) {
 // This function is safe for concurrent access.
 func (p *Peer) Connected() bool {
 	return atomic.LoadInt32(&p.connected) != 0 &&
+		atomic.LoadInt32(&p.started) != 0 &&
 		atomic.LoadInt32(&p.disconnect) == 0
+
 }
 
 // Disconnect disconnects the peer by closing the connection.  Calling this
@@ -893,8 +895,8 @@ func (p *Peer) negotiateOutboundProtocol() error {
 	return p.readRemoteVersionMsg()
 }
 
-// start begins processing input and output messages.
-func (p *Peer) start() error {
+// negotiateProtocol negotiates the peer-to-peer network protocol.
+func (p *Peer) negotiateProtocol() error {
 	negotiateErr := make(chan error, 1)
 	go func() {
 		if p.inbound {
@@ -915,19 +917,21 @@ func (p *Peer) start() error {
 	}
 	log.Debugf("Connected to %s", p.Addr())
 
+	return p.writeMessage(&msg.VerAck{})
+}
+
+// Start begins processing input and output messages.
+func (p *Peer) Start() {
+	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
+		log.Warnf("%s already started", p)
+		return
+	}
+
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
-
-	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
-		return errors.New("negotiated before")
-	}
-
-	// Send our verack message now that the IO processing machinery has started.
-	p.SendMessage(&msg.VerAck{}, nil)
-	return nil
 }
 
 // AssociateConnection associates the given conn to the peer.   Calling this
@@ -957,8 +961,8 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 	}
 
 	go func() {
-		if err := p.start(); err != nil {
-			log.Debugf("Cannot start peer %v: %v", p, err)
+		if err := p.negotiateProtocol(); err != nil {
+			log.Debugf("Cannot negotiate peer %v: %v", p, err)
 			p.Disconnect()
 		}
 	}()
