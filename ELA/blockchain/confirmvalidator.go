@@ -91,18 +91,18 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	return nil
 }
 
-func IsProposalValid(proposal *payload.DPOSProposal) bool {
+func IsProposalValid(proposal *payload.DPOSProposal) (bool, bool) {
 	if err := ProposalSanityCheck(proposal); err != nil {
 		log.Warn("[ProposalSanityCheck] error: ", err.Error())
-		return false
+		return false, false
 	}
 
 	if err := ProposalContextCheck(proposal); err != nil {
 		log.Warn("[ProposalContextCheck] error: ", err.Error())
-		return false
+		return false, true
 	}
 
-	return true
+	return true, true
 }
 
 func ProposalSanityCheck(proposal *payload.DPOSProposal) error {
