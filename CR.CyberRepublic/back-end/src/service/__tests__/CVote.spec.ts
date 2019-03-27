@@ -219,9 +219,10 @@ describe('Tests for CVote', () => {
                 suggestionId: suggestion._id,
             }
         ))
+        expect(rs.reference.toString()).to.be.equal(suggestion._id.toString())
 
-        expect(rs.reference[rs.reference.length - 1].toString()).to.be.equal(suggestion._id.toString())
         suggestion = await DB.getModel('Suggestion').findById(suggestion._id)
-        expect(rs._id.toString()).to.be.equal(suggestion.reference.toString())
+
+        expect(rs._id.toString()).to.be.equal(suggestion.reference[suggestion.reference.length - 1].toString())
     })
 })

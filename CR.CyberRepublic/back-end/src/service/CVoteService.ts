@@ -77,7 +77,6 @@ export default class extends Base {
 
     try {
       const res = await db_cvote.save(doc)
-      console.log('cvote create, suggestion is: ', suggestion)
       // add reference with suggestion
       if (!_.isEmpty(suggestion)) {
         await db_suggestion.update({ _id: suggestionId }, { $addToSet: { reference: res._id }})
