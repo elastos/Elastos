@@ -1020,7 +1020,8 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	// common ancenstor (the point where the chain forked).
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
 	// forbid reorganize if detaching nodes more than irreversibleHeight
-	if detachNodes.Len() > irreversibleHeight {
+	if block.Height > b.chainParams.CRCOnlyDPOSHeight &&
+		detachNodes.Len() > irreversibleHeight {
 		return false, nil
 	}
 	//for e := detachNodes.Front(); e != nil; e = e.Next() {
@@ -1055,7 +1056,8 @@ func (b *BlockChain) ReorganizeChain(block *Block) error {
 
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
 	// forbid reorganize if detaching nodes more than irreversibleHeight
-	if detachNodes.Len() > irreversibleHeight {
+	if block.Height > b.chainParams.CRCOnlyDPOSHeight &&
+		detachNodes.Len() > irreversibleHeight {
 		return nil
 	}
 
