@@ -108,7 +108,7 @@ var DefaultParams = Params{
 // TestNet returns the network parameters for the test network.
 func (p *Params) TestNet() *Params {
 	copy := *p
-	copy.Magic = 2018001
+	copy.Magic = 2018101
 	copy.DefaultPort = 21338
 
 	copy.SeedList = []string{
@@ -153,7 +153,7 @@ func (p *Params) TestNet() *Params {
 // RegNet returns the network parameters for the test network.
 func (p *Params) RegNet() *Params {
 	copy := *p
-	copy.Magic = 2018002
+	copy.Magic = 2018201
 	copy.DefaultPort = 22338
 
 	copy.SeedList = []string{
