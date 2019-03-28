@@ -93,8 +93,8 @@ var DefaultParams = Params{
 	MinTransactionFee:        100,
 	MinCrossChainTxFee:       10000,
 	CheckAddressHeight:       88812,
-	VoteStartHeight:          88812,   //fixme edit height later
-	CRCOnlyDPOSHeight:        1008812, //fixme edit height later
+	VoteStartHeight:          290000,
+	CRCOnlyDPOSHeight:        343400,
 	PublicDPOSHeight:         1108812, //fixme edit height later
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          100 * 100000000,
