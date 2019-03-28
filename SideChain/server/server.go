@@ -39,10 +39,14 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 }
 
 // newPeerMsg represent a new connected peer.
-type newPeerMsg p2psvr.IPeer
+type newPeerMsg struct {
+	p2psvr.IPeer
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg p2psvr.IPeer
+type donePeerMsg struct {
+	p2psvr.IPeer
+}
 
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
@@ -695,18 +699,19 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 			OnTxFilterLoad: sp.OnTxFilterLoad,
 			OnReject:       sp.OnReject,
 		})
+		sp.Start()
 
-		peers[p] = sp
+		peers[p.IPeer] = sp
 		s.syncManager.NewPeer(sp.Peer)
 
 	case donePeerMsg:
-		sp, ok := peers[p]
+		sp, ok := peers[p.IPeer]
 		if !ok {
 			log.Errorf("unknown done peer %v", p)
 			return
 		}
 
-		delete(peers, p)
+		delete(peers, p.IPeer)
 		s.syncManager.DonePeer(sp.Peer)
 
 	}
@@ -719,12 +724,12 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p p2psvr.IPeer) {
-	s.peerQueue <- newPeerMsg(p)
+	s.peerQueue <- newPeerMsg{p}
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p p2psvr.IPeer) {
-	s.peerQueue <- donePeerMsg(p)
+	s.peerQueue <- donePeerMsg{p}
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
