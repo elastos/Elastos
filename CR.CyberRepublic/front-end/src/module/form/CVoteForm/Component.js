@@ -239,7 +239,7 @@ class C extends BaseComponent {
   renderCancelBtn() {
     return (
       <FormItem>
-        <Button loading={this.state.loading} onClick={this.props.onCanceled} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+        <Button loading={this.state.loading} onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
           {I18N.get('from.CVoteForm.button.cancel')}
         </Button>
       </FormItem>
@@ -290,7 +290,7 @@ class C extends BaseComponent {
           this.ord_loading(false)
         })
       },
-      onCanceled() {
+      onCancel() {
       },
     })
   }

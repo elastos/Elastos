@@ -35,12 +35,13 @@ export default class extends BaseComponent {
     const props = {
       ...this.props,
       onCreated: this.onCreated,
-      onCanceled: this.switchCreateMode,
+      onCancel: this.switchCreateMode,
       header: I18N.get('from.CVoteForm.button.add'),
     }
     return (
       <Modal
         className="project-detail-nobar"
+        maskClosable={false}
         visible={this.state.creating}
         onOk={this.switchCreateMode}
         onCancel={this.switchCreateMode}
