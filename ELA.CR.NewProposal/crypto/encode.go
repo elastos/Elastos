@@ -240,21 +240,14 @@ func DecodePoint(encodeData []byte) (*PublicKey, error) {
 	expectedLength := (algSet.EccParams.P.BitLen() + 7) / 8
 
 	switch encodeData[0] {
-	case 0x00:
-		return &PublicKey{nil, nil}, nil
-
 	case 0x02, 0x03: //compressed
 		if len(encodeData) != expectedLength+1 {
 			return nil, errors.New("the encodeData format is error")
 		}
 
 		yTilde := int(encodeData[0] & 1)
-		pubKey, err := deCompress(yTilde, encodeData[FLAGLEN:FLAGLEN+XORYVALUELEN],
+		return deCompress(yTilde, encodeData[FLAGLEN:FLAGLEN+XORYVALUELEN],
 			&algSet.EccParams)
-		if nil != err {
-			return nil, errors.New("invalid point encoding")
-		}
-		return pubKey, nil
 
 	case 0x04, 0x06, 0x07: //uncompressed
 		if len(encodeData) != NOCOMPRESSEDLEN {

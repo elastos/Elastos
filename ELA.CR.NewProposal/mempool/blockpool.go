@@ -9,160 +9,240 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/events"
 )
 
+const cachedCount = 6
+
 type BlockPool struct {
+	Chain     *blockchain.BlockChain
+	Store     blockchain.IChainStore
+	IsCurrent func() bool
+
 	sync.RWMutex
-	blockCnt   uint64
-	blockMap   map[common.Uint256]*types.Block
-	confirmMap map[common.Uint256]*types.DPosProposalVoteSlot
+	blocks      map[common.Uint256]*types.Block
+	confirms    map[common.Uint256]*payload.Confirm
+	chainParams *config.Params
 }
 
-func (pool *BlockPool) Init() {
-	pool.Lock()
-	defer pool.Unlock()
+func (bm *BlockPool) AppendConfirm(confirm *payload.Confirm) (bool,
+	bool, error) {
+	bm.Lock()
+	defer bm.Unlock()
 
-	pool.blockMap = make(map[common.Uint256]*types.Block)
-	pool.confirmMap = make(map[common.Uint256]*types.DPosProposalVoteSlot)
+	return bm.appendConfirm(confirm)
 }
 
-func (pool *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
-	log.Debugf("[AppendDposBlock] start")
-	defer log.Debugf("[AppendDposBlock] end")
+func (bm *BlockPool) AddDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	// main version >=H1
+	if dposBlock.Block.Height >= bm.chainParams.CRCOnlyDPOSHeight {
+		return bm.AppendDposBlock(dposBlock)
+	}
 
+	// old version [0, H1)
+	return bm.Chain.ProcessBlock(dposBlock.Block, dposBlock.Confirm)
+}
+
+func (bm *BlockPool) AppendDposBlock(dposBlock *types.DposBlock) (bool, bool, error) {
+	bm.Lock()
+	defer bm.Unlock()
+	if !dposBlock.HaveConfirm {
+		return bm.appendBlock(dposBlock)
+	}
+	return bm.appendBlockAndConfirm(dposBlock)
+}
+
+func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error) {
 	// add block
 	block := dposBlock.Block
 	hash := block.Hash()
-	if _, exist := pool.GetBlock(hash); exist {
+	if _, ok := bm.blocks[hash]; ok {
 		return false, false, errors.New("duplicate block in pool")
 	}
 	// verify block
-	if err := blockchain.PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit,
-		blockchain.DefaultLedger.Blockchain.TimeSource); err != nil {
+	if err := bm.Chain.CheckBlockSanity(block); err != nil {
 		return false, false, err
 	}
-	pool.AddToBlockMap(block)
+	bm.blocks[block.Hash()] = block
 
-	// add confirm
-	if dposBlock.ConfirmFlag {
-		inMainChain, isOrphan, err := pool.AppendConfirm(dposBlock.Confirm)
-		if err != nil {
-			return false, false, err
+	// confirm block
+	inMainChain, isOrphan, err := bm.confirmBlock(hash)
+	if err != nil {
+		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
+
+		// Notify the caller that the new block without confirm was accepted.
+		// The caller would typically want to react by relaying the inventory
+		// to other peers.
+		events.Notify(events.ETBlockAccepted, block)
+		if block.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
+			events.Notify(events.ETNewBlockReceived, dposBlock)
 		}
 		return inMainChain, isOrphan, nil
 	}
 
-	// confirm block
-	isConfirmed := true
-	inMainChain, isOrphan, err := pool.ConfirmBlock(hash)
-	if err != nil {
-		log.Debug("[AppendDposBlock] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
-		isConfirmed = false
-	}
+	copyBlock := *dposBlock
+	confirm := bm.confirms[hash]
+	copyBlock.HaveConfirm = confirm != nil
+	copyBlock.Confirm = confirm
 
-	// notify arbiter new block received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
-		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
-			v.OnBlockReceived(block, isConfirmed)
-		}
-	}
+	// notify new block received
+	events.Notify(events.ETNewBlockReceived, &copyBlock)
+
 	return inMainChain, isOrphan, nil
 }
 
-func (pool *BlockPool) AppendConfirm(confirm *types.DPosProposalVoteSlot) (bool, bool, error) {
-	if _, exist := pool.GetConfirm(confirm.Hash); exist {
-		return false, false, errors.New("duplicate confirm in pool")
-	}
-
-	// verify confirmation
-	if err := blockchain.CheckConfirm(confirm); err != nil {
+func (bm *BlockPool) appendBlockAndConfirm(dposBlock *types.DposBlock) (bool, bool, error) {
+	block := dposBlock.Block
+	hash := block.Hash()
+	// verify block
+	if err := bm.Chain.CheckBlockSanity(block); err != nil {
 		return false, false, err
 	}
-
-	pool.Lock()
-	if _, exist := pool.confirmMap[confirm.Hash]; exist {
-		pool.Unlock()
-		return false, false, errors.New("duplicate confirm in pool")
+	// add block
+	bm.blocks[block.Hash()] = block
+	// confirm block
+	inMainChain, isOrphan, err := bm.appendConfirm(dposBlock.Confirm)
+	if err != nil {
+		log.Debug("[appendBlockAndConfirm] ConfirmBlock failed, hash:", hash.String(), "err: ", err)
+		return inMainChain, isOrphan, nil
 	}
-	pool.confirmMap[confirm.Hash] = confirm
-	pool.Unlock()
 
-	inMainChain, isOrphan, err := pool.ConfirmBlock(confirm.Hash)
+	// notify new block received
+	events.Notify(events.ETNewBlockReceived, dposBlock)
+
+	return inMainChain, isOrphan, nil
+}
+
+func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
+	bool, bool, error) {
+
+	// verify confirmation
+	if err := blockchain.ConfirmSanityCheck(confirm); err != nil {
+		return false, false, err
+	}
+	bm.confirms[confirm.Proposal.BlockHash] = confirm
+
+	inMainChain, isOrphan, err := bm.confirmBlock(confirm.Proposal.BlockHash)
 	if err != nil {
 		return inMainChain, isOrphan, err
 	}
 
-	// notify arbiter new confirm received
-	if blockchain.DefaultLedger.Blockchain.NewBlocksListeners != nil {
-		for _, v := range blockchain.DefaultLedger.Blockchain.NewBlocksListeners {
-			v.OnConfirmReceived(confirm)
-		}
-	}
+	// notify new confirm accepted.
+	events.Notify(events.ETConfirmAccepted, confirm)
 
 	return inMainChain, isOrphan, nil
 }
 
-func (pool *BlockPool) ConfirmBlock(hash common.Uint256) (bool, bool, error) {
+func (bm *BlockPool) ConfirmBlock(hash common.Uint256) (bool, bool, error) {
+	bm.Lock()
+	inMainChain, isOrphan, err := bm.confirmBlock(hash)
+	bm.Unlock()
+	return inMainChain, isOrphan, err
+}
+
+func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 	log.Info("[ConfirmBlock] block hash:", hash)
 
-	block, exist := pool.GetBlock(hash)
-	if !exist {
+	block, ok := bm.blocks[hash]
+	if !ok {
 		return false, false, errors.New("there is no block in pool when confirming block")
 	}
 
-	confirm, exist := pool.confirmMap[hash]
-	if !exist {
+	confirm, ok := bm.confirms[hash]
+	if !ok {
 		return false, false, errors.New("there is no block confirmation in pool when confirming block")
-	}
-	if err := blockchain.CheckBlockWithConfirmation(block, confirm); err != nil {
-		return false, false, errors.New("block confirmation validate failed")
 	}
 
 	log.Info("[ConfirmBlock] block height:", block.Height)
-	if !blockchain.DefaultLedger.Blockchain.BlockExists(&hash) {
-		inMainChain, isOrphan, err := blockchain.DefaultLedger.Blockchain.AddBlock(block)
+	if !bm.Chain.BlockExists(&hash) {
+		inMainChain, isOrphan, err := bm.Chain.ProcessBlock(block, confirm)
 		if err != nil {
-			return false, false, errors.New("add block failed," + err.Error())
+			return inMainChain, isOrphan, errors.New("add block failed," + err.Error())
+		}
+
+		if !inMainChain && !isOrphan {
+			if err := bm.CheckConfirmedBlockOnFork(bm.Store.GetHeight(), block); err != nil {
+				return inMainChain, isOrphan, err
+			}
+		}
+
+		if isOrphan && !inMainChain {
+			bm.Chain.AddOrphanConfirm(confirm)
 		}
 
 		if isOrphan || !inMainChain {
 			return inMainChain, isOrphan, errors.New("add orphan block")
 		}
+	} else {
+		return false, false, errors.New("already processed block")
 	}
 
-	err := blockchain.DefaultLedger.Blockchain.AddConfirm(confirm)
-	if err != nil {
-		return true, false, errors.New("add confirm failed")
-	}
 	return true, false, nil
 }
 
-func (pool *BlockPool) AddToBlockMap(block *types.Block) {
-	pool.Lock()
-	defer pool.Unlock()
+func (bm *BlockPool) AddToBlockMap(block *types.Block) {
+	bm.Lock()
+	defer bm.Unlock()
 
-	pool.blockMap[block.Hash()] = block
+	bm.blocks[block.Hash()] = block
 }
 
-func (pool *BlockPool) GetBlock(hash common.Uint256) (*types.Block, bool) {
-	pool.RLock()
-	defer pool.RUnlock()
+func (bm *BlockPool) GetBlock(hash common.Uint256) (*types.Block, bool) {
+	bm.RLock()
+	defer bm.RUnlock()
 
-	block, ok := pool.blockMap[hash]
+	block, ok := bm.blocks[hash]
 	return block, ok
 }
 
-func (pool *BlockPool) AddToConfirmMap(confirm *types.DPosProposalVoteSlot) {
-	pool.Lock()
-	defer pool.Unlock()
+func (bm *BlockPool) GetDposBlockByHash(hash common.Uint256) (*types.DposBlock, error) {
+	bm.RLock()
+	defer bm.RUnlock()
 
-	pool.confirmMap[confirm.Hash] = confirm
+	if block := bm.blocks[hash]; block != nil {
+		confirm := bm.confirms[hash]
+		return &types.DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		}, nil
+	}
+	return nil, errors.New("not found dpos block")
 }
 
-func (pool *BlockPool) GetConfirm(hash common.Uint256) (*types.DPosProposalVoteSlot, bool) {
-	pool.Lock()
-	defer pool.Unlock()
+func (bm *BlockPool) AddToConfirmMap(confirm *payload.Confirm) {
+	bm.Lock()
+	defer bm.Unlock()
 
-	confirm, ok := pool.confirmMap[hash]
+	bm.confirms[confirm.Proposal.BlockHash] = confirm
+}
+
+func (bm *BlockPool) GetConfirm(hash common.Uint256) (
+	*payload.Confirm, bool) {
+	bm.Lock()
+	defer bm.Unlock()
+
+	confirm, ok := bm.confirms[hash]
 	return confirm, ok
+}
+
+func (bm *BlockPool) CleanFinalConfirmedBlock(height uint32) {
+	bm.Lock()
+	defer bm.Unlock()
+
+	for _, block := range bm.blocks {
+		if block.Height < height-cachedCount {
+			delete(bm.blocks, block.Hash())
+			delete(bm.confirms, block.Hash())
+		}
+	}
+}
+
+func NewBlockPool(params *config.Params) *BlockPool {
+	return &BlockPool{
+		blocks:      make(map[common.Uint256]*types.Block),
+		confirms:    make(map[common.Uint256]*payload.Confirm),
+		chainParams: params,
+	}
 }

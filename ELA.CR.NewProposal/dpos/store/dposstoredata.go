@@ -3,14 +3,13 @@ package store
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 func (s *DposStore) getDposDutyChangedCount() (uint32, error) {
 	key := []byte{byte(DPOSDutyChangedCount)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err == nil {
 		result, err := common.ReadUint32(bytes.NewReader(data))
 		if err != nil {
@@ -25,7 +24,7 @@ func (s *DposStore) getDposDutyChangedCount() (uint32, error) {
 func (s *DposStore) getCurrentArbitrators() ([][]byte, error) {
 	var currentArbitrators [][]byte
 	key := []byte{byte(DPOSCurrentArbitrators)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err == nil {
 
 		r := bytes.NewReader(data)
@@ -49,7 +48,7 @@ func (s *DposStore) getCurrentArbitrators() ([][]byte, error) {
 func (s *DposStore) getCurrentCandidates() ([][]byte, error) {
 	var currentCandidates [][]byte
 	key := []byte{byte(DPOSCurrentCandidates)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err == nil {
 
 		r := bytes.NewReader(data)
@@ -73,7 +72,7 @@ func (s *DposStore) getCurrentCandidates() ([][]byte, error) {
 func (s *DposStore) getNextArbitrators() ([][]byte, error) {
 	var nextArbitrators [][]byte
 	key := []byte{byte(DPOSNextArbitrators)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err == nil {
 
 		r := bytes.NewReader(data)
@@ -96,7 +95,7 @@ func (s *DposStore) getNextArbitrators() ([][]byte, error) {
 func (s *DposStore) getNextCandidates() ([][]byte, error) {
 	var nextCandidates [][]byte
 	key := []byte{byte(DPOSNextCandidates)}
-	data, err := s.Get(key)
+	data, err := s.db.Get(key)
 	if err == nil {
 
 		r := bytes.NewReader(data)
@@ -148,7 +147,7 @@ func (s *DposStore) persistBytesArray(batch Batch, bytesArray [][]byte, prefix D
 	key.WriteByte(byte(prefix))
 
 	value := new(bytes.Buffer)
-	if err := common.WriteUint64(value, uint64(len(bytesArray))); err != nil {
+	if err := common.WriteVarUint(value, uint64(len(bytesArray))); err != nil {
 		return err
 	}
 
@@ -162,7 +161,7 @@ func (s *DposStore) persistBytesArray(batch Batch, bytesArray [][]byte, prefix D
 	return nil
 }
 
-func (s *DposStore) persistDirectPeers(batch Batch, peers []*interfaces.DirectPeers) error {
+func (s *DposStore) persistDirectPeers(batch Batch, peers []*DirectPeers) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DPOSDirectPeers))
 

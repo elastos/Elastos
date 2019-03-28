@@ -7,7 +7,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 // key: DATAHeader || block hash
@@ -309,28 +309,18 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
 			return err
 		}
+
 		switch txn.TxType {
 		case RegisterAsset:
-			regPayload := txn.Payload.(*PayloadRegisterAsset)
+			regPayload := txn.Payload.(*payload.RegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
+
 		case WithdrawFromSideChain:
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				c.PersistSidechainTx(hash)
-			}
-		case IllegalProposalEvidence:
-			if err := c.persistIllegalProposal(txn.Payload.(*PayloadIllegalProposal)); err != nil {
-				return err
-			}
-		case IllegalVoteEvidence:
-			if err := c.persistIllegalVote(txn.Payload.(*PayloadIllegalVote)); err != nil {
-				return err
-			}
-		case IllegalBlockEvidence:
-			if err := c.persistIllegalBlock(txn.Payload.(*PayloadIllegalBlock)); err != nil {
-				return err
 			}
 		}
 	}
@@ -349,7 +339,7 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				return err
 			}
 		case WithdrawFromSideChain:
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHashes {
 				if err := c.rollbackSidechainTx(hash); err != nil {
 					return err
@@ -491,10 +481,11 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistConfirm(confirm *DPosProposalVoteSlot) error {
+func (c *ChainStore) PersistConfirm(
+	confirm *payload.Confirm) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATAConfirm))
-	if err := confirm.Hash.Serialize(key); err != nil {
+	if err := confirm.Proposal.BlockHash.Serialize(key); err != nil {
 		return err
 	}
 

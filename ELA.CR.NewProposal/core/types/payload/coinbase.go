@@ -8,26 +8,26 @@ import (
 
 const (
 	// MaxPayloadDataSize is the maximum allowed length of payload data.
-	MaxCoinbasePayloadDataSize = 1024 * 1024 // 1MB
+	MaxPayloadDataSize = 1024 * 1024 // 1MB
 )
 
-const PayloadCoinBaseVersion byte = 0x04
+const CoinBaseVersion byte = 0x04
 
-type PayloadCoinBase struct {
-	CoinbaseData []byte
+type CoinBase struct {
+	Content []byte
 }
 
-func (a *PayloadCoinBase) Data(version byte) []byte {
-	return a.CoinbaseData
+func (a *CoinBase) Data(version byte) []byte {
+	return a.Content
 }
 
-func (a *PayloadCoinBase) Serialize(w io.Writer, version byte) error {
-	return common.WriteVarBytes(w, a.CoinbaseData)
+func (a *CoinBase) Serialize(w io.Writer, version byte) error {
+	return common.WriteVarBytes(w, a.Content)
 }
 
-func (a *PayloadCoinBase) Deserialize(r io.Reader, version byte) error {
-	temp, err := common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+func (a *CoinBase) Deserialize(r io.Reader, version byte) error {
+	temp, err := common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload coinbase data")
-	a.CoinbaseData = temp
+	a.Content = temp
 	return err
 }

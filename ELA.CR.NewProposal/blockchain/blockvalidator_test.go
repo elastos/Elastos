@@ -3,14 +3,17 @@ package blockchain
 import (
 	"bytes"
 	"encoding/hex"
-	"math/big"
+	"fmt"
+	"math"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/blockchain/mock"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/state"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +37,8 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	log.Init(
+	config.Parameters = config.ConfigParams{Configuration: &config.Template}
+	log.NewDefault(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
@@ -44,18 +48,24 @@ func TestCheckBlockSanity(t *testing.T) {
 		return
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest")
+	chainStore, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	err = Init(chainStore, mock.NewBlockHeightMock())
+	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
+	if DefaultLedger == nil {
+		DefaultLedger = &Ledger{
+			Blockchain: chain,
+			Store:      chainStore,
+		}
+	}
+
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	powLimit := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 	timeSource := NewMedianTime()
 	blockData, err := hex.DecodeString(TestBlockHex)
 	if err != nil {
@@ -64,7 +74,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	var block types.Block
 	block.Deserialize(bytes.NewReader(blockData))
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
+	err = chain.CheckBlockSanity(&block)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -72,7 +82,98 @@ func TestCheckBlockSanity(t *testing.T) {
 	// change of time stamp, this will change the block hash
 	// and the proof check would fail
 	block.Timestamp = uint32(timeSource.AdjustedTime().Unix())
-	err = PowCheckBlockSanity(&block, powLimit, timeSource)
+	err = chain.CheckBlockSanity(&block)
 	assert.Error(t, err, "[Error] block passed check with invalid hash")
 	assert.EqualError(t, err, "[PowCheckBlockSanity] block check aux pow failed")
+}
+
+func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
+	arbitratorsStr := []string{
+		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
+		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
+		"0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
+		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
+	}
+	candidatesStr := []string{
+		"03e333657c788a20577c0288559bd489ee65514748d18cb1dc7560ae4ce3d45613",
+		"02dd22722c3b3a284929e4859b07e6a706595066ddd2a0b38e5837403718fb047c",
+		"03e4473b918b499e4112d281d805fc8d8ae7ac0a71ff938cba78006bf12dd90a85",
+		"03dd66833d28bac530ca80af0efbfc2ec43b4b87504a41ab4946702254e7f48961",
+		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
+	}
+
+	arbitrators := make([][]byte, 0)
+	candidates := make([][]byte, 0)
+	arbitratorHashes := make([]*common.Uint168, 0)
+	candidateHashes := make([]*common.Uint168, 0)
+	ownerVotes := make(map[common.Uint168]common.Fixed64)
+	totalVotesInRound := 0
+
+	for i, v := range arbitratorsStr {
+		vote := i + 10
+		a, _ := common.HexStringToBytes(v)
+		arbitrators = append(arbitrators, a)
+		hash, _ := contract.PublicKeyToStandardProgramHash(a)
+		arbitratorHashes = append(arbitratorHashes, hash)
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
+	}
+	fmt.Println()
+	for i, v := range candidatesStr {
+		vote := i + 1
+		a, _ := common.HexStringToBytes(v)
+		candidates = append(candidates, a)
+		hash, _ := contract.PublicKeyToStandardProgramHash(a)
+		candidateHashes = append(candidateHashes, hash)
+		ownerVotes[*hash] = common.Fixed64(vote)
+		totalVotesInRound += vote
+	}
+
+	originLedger := DefaultLedger
+	arbitratorsMock := &state.ArbitratorsMock{
+		CurrentArbitrators:          arbitrators,
+		CurrentCandidates:           candidates,
+		CurrentOwnerProgramHashes:   arbitratorHashes,
+		CandidateOwnerProgramHashes: candidateHashes,
+		OwnerVotesInRound:           ownerVotes,
+		TotalVotesInRound:           common.Fixed64(totalVotesInRound),
+	}
+	DefaultLedger = &Ledger{
+		Arbitrators: arbitratorsMock,
+	}
+	DefaultLedger.Arbitrators = arbitratorsMock
+
+	rewardInCoinbase := common.Fixed64(1000)
+	dposTotalReward := float64(rewardInCoinbase) * 0.35
+	totalBlockConfirmReward := float64(dposTotalReward) * 0.25
+	totalTopProducersReward := dposTotalReward - totalBlockConfirmReward
+	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
+	tx := &types.Transaction{
+		Version: 0,
+		TxType:  types.CoinBase,
+	}
+	tx.Outputs = []*types.Output{
+		{ProgramHash: FoundationAddress, Value: common.Fixed64(float64(rewardInCoinbase) * 0.30)},
+		{ProgramHash: common.Uint168{}, Value: common.Fixed64(float64(rewardInCoinbase) * 0.35)},
+	}
+
+	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
+
+	for _, v := range arbitratorHashes {
+		vote := ownerVotes[*v]
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
+	}
+	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
+
+	for _, v := range candidateHashes {
+		vote := ownerVotes[*v]
+		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})
+	}
+	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
+
+	DefaultLedger = originLedger
 }

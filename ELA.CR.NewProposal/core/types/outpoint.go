@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/hex"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -34,6 +35,10 @@ func (op *OutPoint) Bytes() []byte {
 	buf := new(bytes.Buffer)
 	op.Serialize(buf)
 	return buf.Bytes()
+}
+
+func (op *OutPoint) ReferKey() string {
+	return hex.EncodeToString(op.Bytes())
 }
 
 func NewOutPoint(txID common.Uint256, index uint16) *OutPoint {

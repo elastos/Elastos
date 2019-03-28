@@ -3,10 +3,10 @@ package blockchain
 import (
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
 var FoundationAddress Uint168
@@ -15,10 +15,9 @@ var DefaultLedger *Ledger
 
 // Ledger - the struct for ledger
 type Ledger struct {
-	Blockchain     *Blockchain
-	Store          IChainStore
-	Arbitrators    interfaces.Arbitrators
-	HeightVersions interfaces.HeightVersions
+	Blockchain  *BlockChain
+	Store       IChainStore
+	Arbitrators state.Arbitrators
 }
 
 //check weather the transaction contains the doubleSpend.
@@ -30,7 +29,7 @@ func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 //Note: the later version will support the mutiLedger.So this func mybe expired later.
 
 //Get the Asset from store.
-func (l *Ledger) GetAsset(assetID Uint256) (*Asset, error) {
+func (l *Ledger) GetAsset(assetID Uint256) (*payload.Asset, error) {
 	asset, err := l.Store.GetAsset(assetID)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetAsset failed with assetID =" + assetID.String())
@@ -60,11 +59,6 @@ func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
 	return bk, nil
 }
 
-//BlockInLedger checks if the block existed in ledger
-func (l *Ledger) BlockInLedger(hash Uint256) bool {
-	return l.Store.IsBlockInStore(hash)
-}
-
 //Get transaction with hash.
 func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 	tx, _, err := l.Store.GetTransaction(hash)
@@ -76,7 +70,7 @@ func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 
 //Get local block chain height.
 func (l *Ledger) GetLocalBlockChainHeight() uint32 {
-	return l.Blockchain.GetBestHeight()
+	return l.Blockchain.GetHeight()
 }
 
 //Get blocks and confirms by given height range, if end equals zero will be treat as current highest block height

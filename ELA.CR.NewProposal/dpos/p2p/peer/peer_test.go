@@ -7,17 +7,31 @@ package peer_test
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
+
+func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
+	switch cmd {
+	case p2p.CmdVersion:
+		message = new(msg.Version)
+	case p2p.CmdVerAck:
+		message = new(msg.VerAck)
+	default:
+		err = fmt.Errorf("unknown message type %s", cmd)
+	}
+
+	return message, err
+}
 
 // conn mocks a network connection by implementing the net.Conn interface.  It
 // is used to test peer connection without actually opening a network
@@ -85,8 +99,6 @@ type peerStats struct {
 	wantServices        uint64
 	wantProtocolVersion uint32
 	wantConnected       bool
-	wantVersionKnown    bool
-	wantVerAckReceived  bool
 	wantBestHeight      uint32
 	wantStartingHeight  uint32
 	wantLastPingTime    time.Time
@@ -108,16 +120,6 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 
 	if p.LastPingMicros() != s.wantLastPingMicros {
 		t.Errorf("testPeer: wrong LastPingMicros - got %v, want %v", p.LastPingMicros(), s.wantLastPingMicros)
-		return
-	}
-
-	if p.VerAckReceived() != s.wantVerAckReceived {
-		t.Errorf("testPeer: wrong VerAckReceived - got %v, want %v", p.VerAckReceived(), s.wantVerAckReceived)
-		return
-	}
-
-	if p.VersionKnown() != s.wantVersionKnown {
-		t.Errorf("testPeer: wrong VersionKnown - got %v, want %v", p.VersionKnown(), s.wantVersionKnown)
 		return
 	}
 
@@ -190,8 +192,8 @@ func TestPeerConnection(t *testing.T) {
 		}
 	}
 
-	peer1Cfg := peerConfig(123123, p2p.EIP001Version, 0)
-	peer2Cfg := peerConfig(123123, p2p.EIP001Version, 1)
+	peer1Cfg := peerConfig(123123, pact.EBIP001Version, 0)
+	peer2Cfg := peerConfig(123123, pact.EBIP001Version, 1)
 	peer1Cfg.MakeEmptyMessage = makeMessage
 	peer2Cfg.MakeEmptyMessage = makeMessage
 	peer1Cfg.AddMessageFunc(messageFunc)
@@ -199,20 +201,16 @@ func TestPeerConnection(t *testing.T) {
 
 	wantStats1 := peerStats{
 		wantServices:        0,
-		wantProtocolVersion: p2p.EIP001Version,
+		wantProtocolVersion: pact.EBIP001Version,
 		wantConnected:       true,
-		wantVersionKnown:    true,
-		wantVerAckReceived:  true,
 		wantLastPingTime:    time.Time{},
 		wantLastPingMicros:  int64(0),
 		wantTimeOffset:      int64(0),
 	}
 	wantStats2 := peerStats{
 		wantServices:        1,
-		wantProtocolVersion: p2p.EIP001Version,
+		wantProtocolVersion: pact.EBIP001Version,
 		wantConnected:       true,
-		wantVersionKnown:    true,
-		wantVerAckReceived:  true,
 		wantLastPingTime:    time.Time{},
 		wantLastPingMicros:  int64(0),
 		wantTimeOffset:      int64(0),
@@ -359,8 +357,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	nonce := [32]byte{}
 	rand.Read(nonce[:])
 	// Remote peer writes version message advertising invalid protocol version 1
-	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID,
-		nonce, peerCfg.SignNonce(nonce[:]))
+	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID, nonce)
 
 	err = p2p.WriteMessage(
 		remoteConn.Writer,

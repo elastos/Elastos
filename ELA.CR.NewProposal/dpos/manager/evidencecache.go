@@ -1,25 +1,35 @@
 package manager
 
 import (
-	"github.com/elastos/Elastos.ELA/core/types"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 type evidenceCache struct {
-	evidences map[common.Uint256]types.DposIllegalData
+	evidences map[common.Uint256]payload.DPOSIllegalData
 }
 
-func (e *evidenceCache) AddEvidence(evidence types.DposIllegalData) {
+func (e *evidenceCache) AddEvidence(evidence payload.DPOSIllegalData) {
 	if evidence != nil {
 		e.evidences[evidence.Hash()] = evidence
 	}
 }
 
 func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
+	if len(e.evidences) == 0 {
+		return true
+	}
+
 	necessaryEvidences := make(map[common.Uint256]interface{})
 	for k, v := range e.evidences {
-		if v.GetBlockHeight()+WaitHeightTolerance <= block.Height {
+		tolerance := WaitHeightTolerance
+		if v.Type() == payload.IllegalBlock ||
+			v.Type() == payload.InactiveArbitrator {
+			tolerance = 0
+		}
+		if v.GetBlockHeight()+tolerance < block.Height {
 			necessaryEvidences[k] = nil
 		}
 	}
@@ -31,6 +41,9 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 			}
 		}
 	}
+
+	log.Debug("[IsBlockValid] necessaryEvidences count left count :",
+		len(necessaryEvidences))
 
 	return len(necessaryEvidences) == 0
 }
@@ -47,21 +60,26 @@ func (e *evidenceCache) Reset(block *types.Block) {
 
 func (e *evidenceCache) tryGetEvidenceHash(tx *types.Transaction) (common.Uint256, bool) {
 	var hash common.Uint256
-	result := false
+	result := true
 
 	switch tx.TxType {
 	case types.IllegalProposalEvidence:
-		proposalPayload := tx.Payload.(*types.PayloadIllegalProposal)
-		hash = proposalPayload.DposIllegalProposals.Hash()
-		result = true
+		proposalPayload := tx.Payload.(*payload.DPOSIllegalProposals)
+		hash = proposalPayload.Hash()
 	case types.IllegalVoteEvidence:
-		votePayload := tx.Payload.(*types.PayloadIllegalVote)
-		hash = votePayload.DposIllegalVotes.Hash()
-		result = true
+		votePayload := tx.Payload.(*payload.DPOSIllegalVotes)
+		hash = votePayload.Hash()
 	case types.IllegalBlockEvidence:
-		blockPayload := tx.Payload.(*types.PayloadIllegalBlock)
-		hash = blockPayload.DposIllegalBlocks.Hash()
-		result = true
+		blockPayload := tx.Payload.(*payload.DPOSIllegalBlocks)
+		hash = blockPayload.Hash()
+	case types.IllegalSidechainEvidence:
+		sidechainPayload := tx.Payload.(*payload.SidechainIllegalData)
+		hash = sidechainPayload.Hash()
+	case types.InactiveArbitrators:
+		inactiveArbitrators := tx.Payload.(*payload.InactiveArbitrators)
+		hash = inactiveArbitrators.Hash()
+	default:
+		result = false
 	}
 
 	return hash, result
