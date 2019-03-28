@@ -57,7 +57,7 @@ TODO.
 The distribution has been published to CocoaPods platform. So, the simple way to use **ElastosCarrier.framework** is just to add the following line to your **Podfile**:
 
 ```
-  pod "ElastosCarrierSDK"
+  pod 'ElastosCarrierSDK'
 ```
 
 Then run the command below to install it before open your iOS workspace:
