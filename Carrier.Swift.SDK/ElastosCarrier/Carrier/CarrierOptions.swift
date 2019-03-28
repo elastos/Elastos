@@ -66,5 +66,5 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
 internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
-    UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate(capacity: cOptions.bootstraps_size)
+    UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate()
 }

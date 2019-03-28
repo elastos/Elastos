@@ -22,7 +22,7 @@
 
 internal extension String {
 
-    internal static func toHardString(_ str: String?) -> String {
+    static func toHardString(_ str: String?) -> String {
         if (str == nil) {
             return "<nil>"
         } else if (str == "") {
@@ -32,7 +32,7 @@ internal extension String {
         }
     }
 
-    internal init<T>(cCharPointer pointer: UnsafePointer<T>) {
+    init<T>(cCharPointer pointer: UnsafePointer<T>) {
         self.init(cString: UnsafeRawPointer(pointer).assumingMemoryBound(to: CChar.self))
     }
 

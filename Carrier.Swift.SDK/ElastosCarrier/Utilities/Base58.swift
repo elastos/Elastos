@@ -83,7 +83,7 @@ internal class Base58 {
         for i in zeroCount ..< byteInput.count - 1 {
             let ch = byteInput[i]
 
-            guard var carry = byteAlphabet.index(of: ch) else {
+            guard var carry = byteAlphabet.firstIndex(of: ch) else {
                 return nil
             }
 
