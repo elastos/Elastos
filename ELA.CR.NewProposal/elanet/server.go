@@ -28,6 +28,15 @@ const (
 	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering | pact.SFNodeBloom
 )
 
+// naFilter defines a network address filter for the main chain server, for now
+// it is used to filter SPV wallet addresses from relaying to other peers.
+type naFilter struct{}
+
+func (f *naFilter) Filter(na *p2p.NetAddress) bool {
+	service := pact.ServiceFlag(na.Services)
+	return service&pact.SFNodeNetwork == pact.SFNodeNetwork
+}
+
 // newPeerMsg represent a new connected peer.
 type newPeerMsg struct {
 	svr.IPeer
@@ -870,6 +879,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
 	)
 	svrCfg.DataDir = dataDir
+	svrCfg.NAFilter = &naFilter{}
 
 	s := server{
 		chain:        cfg.Chain,
