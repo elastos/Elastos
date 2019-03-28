@@ -126,6 +126,7 @@ export default class extends StandardPage {
     return (
       <Modal
         className="project-detail-nobar"
+        maskClosable={false}
         visible={this.state.showForm}
         onOk={this.showCreateForm}
         onCancel={this.showCreateForm}

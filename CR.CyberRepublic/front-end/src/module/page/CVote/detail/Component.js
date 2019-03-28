@@ -99,6 +99,7 @@ class C extends StandardPage {
     return (
       <Modal
         className="project-detail-nobar"
+        maskClosable={false}
         visible={this.state.editing}
         onOk={this.switchEditMode}
         onCancel={this.switchEditMode}
