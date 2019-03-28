@@ -1,12 +1,11 @@
 {
   "Configuration": {
-    "Magic": 7638402,
+    "Magic": 7638404,
     "SpvMagic": 7638401,
-    "Version": 23,
     "SeedList": [
     ],
     "SpvSeedList": [
-      "ela-mainchain:20337"
+      "ela-mainchain:20338"
     ],
     "ExchangeRate": 1.0,
     "MinCrossChainTxFee": 10000,
@@ -14,18 +13,25 @@
     "HttpWsPort": 20605,
     "HttpJsonPort": 20606,
     "NodePort": 20608,
-    "PrintLevel": 2,
+    "PrintLevel": 1,
     "MaxLogsSize": 0,
     "MaxPerLogSize": 0,
-    "DisableTxFilters": false,
-    "MainChainFoundationAddress": "ERfSYxiBDs1pjrUQjN5hHTdGYGeFkNJVTf",
-    "FoundationAddress": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE",
+    "DisableTxFilters": true,
+    "MainChainFoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+    "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
     "PowConfiguration": {
-      "PayToAddr": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE",
+      "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
       "AutoMining": true,
       "MinerInfo": "DID",
       "MinTxFee": 100,
       "InstantBlock": false
+    },
+    "RpcConfiguration": {
+      "User": "",
+      "Pass": "",
+      "WhiteIPList": [
+        "0.0.0.0"
+      ]
     }
   }
 }

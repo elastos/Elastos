@@ -40,13 +40,13 @@ These are located in the `wallets` folder:
     - Docker Machine 0.16.1
 
 2. The following are the GIT SHAs we're using for each project:
-    - Elastos.ELA: tag v0.2.2 3f1e5e6435468d735f7fcd12e8d0706832c6ed31
-    - Elastos.ELA.SideChain.ID: tag v0.0.2 07599ad42ad32315c692c61b1ab340341080d08f
-    - Elastos.ELA.SideChain.Token: release_v0.0.1 2c2138019d5946e80e4fc909227e5e85a7cf19d2
-    - Elastos.ELA.Arbiter: tag v0.0.3 8970efe9fec3d77f4d4bab6c19505b33cdb11dec
-    - Elastos.ORG.Wallet.Service: master 6f079a98421656a9286d87127049eb75f49df277
+    - Elastos.ELA: release_v0.3.0 49c58777eebbea0eb9c0920b4def5133dcfcfc88
+    - Elastos.ELA.Arbiter: release_v.0.1.0 a033509b70dbb40960786928c9bb9db084233d38
+    - Elastos.ELA.SideChain.ID: release_v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
+    - Elastos.ELA.SideChain.Token: release_v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
+    - Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
     - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
-    - Elastos.ORG.API.Misc: master 78c2c6a621cf088dacbce6f40e0080b873719aee
+    - Elastos.ORG.API.Misc: master 3a811f6932d7ba8f2680e2b1f081eda0dc6a5508
     - Elastos.NET.Hive.IPFS: dev-master 6a5e24032b0d0c79e06a103f1b4078a648fa0e2e
     - Elastos.NET.Hive.Cluster: dev-master 390b912df5cf496b7c9e6e5d3f6e0fb897a76db1
     

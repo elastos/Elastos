@@ -17,11 +17,86 @@ services:
       - blockchain
     tty: true
 
+  ela-arbitrator-normal-1:
+    container_name: ela-arbitrator-normal-1
+    image: ela-arbitrator-normal-1
+    depends_on:
+      - ela-mainchain
+    build:
+      context: ela-arbitrator/arbitrator-normal-1
+    ports:
+      - 10536:10536
+      - 10538:10538
+    networks:
+      - blockchain
+    tty: true
+
+  ela-arbitrator-normal-2:
+    container_name: ela-arbitrator-normal-2
+    image: ela-arbitrator-normal-2
+    depends_on:
+      - ela-mainchain
+    build:
+      context: ela-arbitrator/arbitrator-normal-2
+    ports:
+      - 11536:10536
+      - 11538:10538
+    networks:
+      - blockchain
+    tty: true
+
+  ela-arbitrator-normal-3:
+    container_name: ela-arbitrator-normal-3
+    image: ela-arbitrator-normal-3
+    depends_on:
+      - ela-mainchain
+    build:
+      context: ela-arbitrator/arbitrator-normal-3
+    ports:
+      - 12536:10536
+      - 12538:10538
+    networks:
+      - blockchain
+    tty: true
+
+  ela-arbitrator-crc-1:
+    container_name: ela-arbitrator-crc-1
+    image: ela-arbitrator-crc-1
+    depends_on:
+      - ela-mainchain
+    build:
+      context: ela-arbitrator/arbitrator-crc-1
+    ports:
+      - 20339:20339
+      - 20538:10538
+    networks:
+      - blockchain
+    tty: true
+
+  ela-arbitrator-crc-2:
+    container_name: ela-arbitrator-crc-2
+    image: ela-arbitrator-crc-2
+    depends_on:
+      - ela-mainchain
+    build:
+      context: ela-arbitrator/arbitrator-crc-2
+    ports:
+      - 21339:20339
+      - 21538:10538
+    networks:
+      - blockchain
+    tty: true
+
   ela-sidechain-did:
     container_name: ela-sidechain-did
     image: ela-sidechain-did
     depends_on:
       - ela-mainchain
+      - ela-arbitrator-normal-1
+      - ela-arbitrator-normal-2
+      - ela-arbitrator-normal-3
+      - ela-arbitrator-crc-1
+      - ela-arbitrator-crc-2
     build:
       context: ela-sidechain/did
     ports:
@@ -40,47 +115,17 @@ services:
     image: ela-sidechain-token
     depends_on:
       - ela-mainchain
+      - ela-arbitrator-normal-1
+      - ela-arbitrator-normal-2
+      - ela-arbitrator-normal-3
+      - ela-arbitrator-crc-1
+      - ela-arbitrator-crc-2
     build:
       context: ela-sidechain/token
     ports:
-      - 20614-20618:20614-20618
+      - 20615-20618:20615-20618
     healthcheck:
       test: ["CMD", "curl", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:20616"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-1:
-    container_name: ela-arbitrator-1
-    image: ela-arbitrator-1
-    depends_on:
-      - ela-mainchain
-      - ela-sidechain-did
-    build:
-      context: ela-arbitrator/arbitrator-1
-    ports:
-      - 10336:10336
-      - 10338:10338
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-2:
-    container_name: ela-arbitrator-2
-    image: ela-arbitrator-2
-    depends_on:
-      - ela-mainchain
-      - ela-sidechain-did
-    build:
-      context: ela-arbitrator/arbitrator-2
-    ports:
-      - 11336:11336
-      - 11338:11338
-    healthcheck:
-      test: ["CMD", "curl", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "--data", "'{\"method\":\"getmainchainblockheight\"}'", "http://localhost:11336"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -92,7 +137,6 @@ services:
     container_name: ela-wallet-service
     image: ela-wallet-service
     depends_on:
-      - ela-mysql
       - ela-mainchain
       - ela-sidechain-did
     build:
