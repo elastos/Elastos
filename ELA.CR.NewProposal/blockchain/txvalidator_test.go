@@ -83,7 +83,6 @@ func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 func (s *txValidatorTestSuite) TestCheckTransactionInput() {
 	// coinbase transaction
 	tx := newCoinBaseTransaction(new(payload.CoinBase), 0)
-	tx.Inputs[0].Previous.Index = math.MaxUint16
 	err := checkTransactionInput(tx)
 	s.NoError(err)
 
@@ -229,7 +228,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	err := checkAttributeProgram(s.HeightVersion1, tx)
+	err := checkAttributeProgram(tx)
 	s.EqualError(err, "no programs found in transaction")
 
 	// invalid attributes
@@ -245,20 +244,20 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	for i := 0; i < 10; i++ {
 		attr := types.NewAttribute(getInvalidUsage(), nil)
 		tx.Attributes = []*types.Attribute{&attr}
-		err := checkAttributeProgram(s.HeightVersion1, tx)
+		err := checkAttributeProgram(tx)
 		s.EqualError(err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
 	tx.Programs = []*program.Program{}
-	err = checkAttributeProgram(s.HeightVersion1, tx)
+	err = checkAttributeProgram(tx)
 	s.EqualError(err, "no programs found in transaction")
 
 	// nil program code
 	p := &program.Program{}
 	tx.Programs = append(tx.Programs, p)
-	err = checkAttributeProgram(s.HeightVersion1, tx)
+	err = checkAttributeProgram(tx)
 	s.EqualError(err, "invalid program code nil")
 
 	// nil program parameter
@@ -266,7 +265,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	rand.Read(code)
 	p = &program.Program{Code: code}
 	tx.Programs = []*program.Program{p}
-	err = checkAttributeProgram(s.HeightVersion1, tx)
+	err = checkAttributeProgram(tx)
 	s.EqualError(err, "invalid program parameter nil")
 }
 
@@ -915,9 +914,9 @@ func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
 			{
 				Previous: types.OutPoint{
 					TxID:  common.EmptyHash,
-					Index: 0x0000,
+					Index: math.MaxUint16,
 				},
-				Sequence: 0x00000000,
+				Sequence: math.MaxUint32,
 			},
 		},
 		Attributes: []*types.Attribute{},

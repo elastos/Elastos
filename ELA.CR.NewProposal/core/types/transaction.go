@@ -371,6 +371,14 @@ func (tx *Transaction) IsSideChainPowTx() bool {
 	return tx.TxType == SideChainPow
 }
 
+func (tx *Transaction) IsNewSideChainPowTx() bool {
+	if !tx.IsSideChainPowTx() || len(tx.Inputs) != 0 {
+		return false
+	}
+
+	return true
+}
+
 func (tx *Transaction) IsTransferCrossChainAssetTx() bool {
 	return tx.TxType == TransferCrossChainAsset
 }

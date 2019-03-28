@@ -62,7 +62,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 		return ErrAssetPrecision
 	}
 
-	if err := checkAttributeProgram(blockHeight, txn); err != nil {
+	if err := checkAttributeProgram(txn); err != nil {
 		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
@@ -136,6 +136,9 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 			log.Warn("[CheckSideChainPowConsensus],", err)
 			return ErrSideChainPowConsensus
+		}
+		if txn.IsNewSideChainPowTx() {
+			return Success
 		}
 
 	case RegisterProducer:
@@ -335,18 +338,19 @@ func checkTransactionInput(txn *Transaction) error {
 		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
 		}
-		coinbaseInputHash := txn.Inputs[0].Previous.TxID
-		coinbaseInputIndex := txn.Inputs[0].Previous.Index
-		//TODO :check sequence
-		if !coinbaseInputHash.IsEqual(common.EmptyHash) || coinbaseInputIndex != math.MaxUint16 {
+		inputHash := txn.Inputs[0].Previous.TxID
+		inputIndex := txn.Inputs[0].Previous.Index
+		sequence := txn.Inputs[0].Sequence
+		if !inputHash.IsEqual(common.EmptyHash) || inputIndex != math.MaxUint16 || sequence != math.MaxUint32 {
 			return errors.New("invalid coinbase input")
 		}
 
 		return nil
 	}
-	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
+
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() || txn.IsNewSideChainPowTx() {
 		if len(txn.Inputs) != 0 {
-			return errors.New("illegal transactions must has no input")
+			return errors.New("no cost transactions must has no input")
 		}
 		return nil
 	}
@@ -394,7 +398,6 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 				totalReward += output.Value
 			}
 
-
 			if foundationReward < common.Fixed64(float64(totalReward)*0.3) {
 				return errors.New("reward to foundation in coinbase < 30%")
 			}
@@ -413,6 +416,20 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
+		}
+
+		return nil
+	}
+
+	if txn.IsNewSideChainPowTx() {
+		if len(txn.Outputs) != 1 {
+			return errors.New("sideChainPow tx must has only one output")
+		}
+		if txn.Outputs[0].Value != 0 {
+			return errors.New("the value of sideChainPow tx output must be 0")
+		}
+		if txn.Outputs[0].Type != OTNone {
+			return errors.New("the type of sideChainPow tx output must be OTNone")
 		}
 
 		return nil
@@ -589,7 +606,7 @@ func checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	return nil
 }
 
-func checkAttributeProgram(blockHeight uint32, tx *Transaction) error {
+func checkAttributeProgram(tx *Transaction) error {
 	switch tx.TxType {
 	case CoinBase:
 		// Coinbase and illegal transactions do not check attribute and program
@@ -619,6 +636,13 @@ func checkAttributeProgram(blockHeight uint32, tx *Transaction) error {
 		}
 		if len(tx.Attributes) != 1 {
 			return errors.New("inactive arbitrators transactions should have one and only one arbitrator")
+		}
+	case SideChainPow:
+		if tx.IsNewSideChainPowTx() {
+			if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
+				return errors.New("sideChainPow transactions should have no attributes and programs")
+			}
+			return nil
 		}
 	}
 
@@ -727,7 +751,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 
 	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideChainPow.SignedData)
 	if err != nil {
-		return errors.New("Arbitrator is not matched")
+		return errors.New("Arbitrator is not matched. " + err.Error())
 	}
 
 	return nil
