@@ -1,7 +1,7 @@
 {
   "Configuration": {
-    "Magic": 201901251,
-    "SpvMagic": 2018001,
+    "Magic": 2018102,
+    "SpvMagic": 2018101,
     "SeedList": [
       "node-testnet-011.elastos.org:21608",
       "node-testnet-012.elastos.org:21608",
