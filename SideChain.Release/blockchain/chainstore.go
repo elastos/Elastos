@@ -686,6 +686,7 @@ func (s *ChainStore) GetAssetUnspents(programHash common.Uint168, assetid common
 	key = append(key, programHash.Bytes()...)
 	key = append(key, assetid.Bytes()...)
 	iter := s.NewIterator(key)
+	defer iter.Release()
 	for iter.Next() {
 		r := bytes.NewReader(iter.Value())
 		listNum, err := common.ReadVarUint(r, 0)
@@ -713,6 +714,7 @@ func (s *ChainStore) GetUnspents(programHash common.Uint168) (map[common.Uint256
 	prefix := []byte{byte(IX_Unspent_UTXO)}
 	key := append(prefix, programHash.Bytes()...)
 	iter := s.NewIterator(key)
+	defer iter.Release()
 	for iter.Next() {
 		rk := bytes.NewReader(iter.Key())
 
@@ -777,6 +779,7 @@ func (s *ChainStore) GetAssets() map[common.Uint256]*types.Asset {
 	assets := make(map[common.Uint256]*types.Asset)
 
 	iter := s.NewIterator([]byte{byte(ST_Info)})
+	defer iter.Release()
 	for iter.Next() {
 		rk := bytes.NewReader(iter.Key())
 
