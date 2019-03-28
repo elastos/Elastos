@@ -40,7 +40,7 @@ These are located in the `wallets` folder:
     - Docker Machine 0.16.1
 
 2. The following are the GIT SHAs we're using for each project:
-    - Elastos.ELA: release_v0.3.0 49c58777eebbea0eb9c0920b4def5133dcfcfc88
+    - Elastos.ELA: release_v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
     - Elastos.ELA.Arbiter: release_v.0.1.0 a033509b70dbb40960786928c9bb9db084233d38
     - Elastos.ELA.SideChain.ID: release_v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
     - Elastos.ELA.SideChain.Token: release_v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
