@@ -9,11 +9,18 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 )
 
+// OutputType represents the type of a output payload.
 type OutputType byte
 
 const (
-	DefaultOutput OutputType = 0x00
-	VoteOutput    OutputType = 0x01
+	// OTNone indicates there is no payload for this output.
+	OTNone OutputType = iota
+
+	// OTVote indicates the output payload is a vote.
+	OTVote
+
+	// OTMapping indicates the output payload is a mapping.
+	OTMapping
 )
 
 type OutputPayload interface {
@@ -26,12 +33,12 @@ type OutputPayload interface {
 }
 
 type Output struct {
-	AssetID       common.Uint256
-	Value         common.Fixed64
-	OutputLock    uint32
-	ProgramHash   common.Uint168
-	OutputType    OutputType
-	OutputPayload OutputPayload
+	AssetID     common.Uint256
+	Value       common.Fixed64
+	OutputLock  uint32
+	ProgramHash common.Uint168
+	Type        OutputType
+	Payload     OutputPayload
 }
 
 func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
@@ -52,10 +59,10 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 	}
 
 	if txVersion >= TxVersion09 {
-		if err := common.WriteUint8(w, byte(o.OutputType)); err != nil {
+		if err := common.WriteUint8(w, byte(o.Type)); err != nil {
 			return err
 		}
-		if err := o.OutputPayload.Serialize(w); err != nil {
+		if err := o.Payload.Serialize(w); err != nil {
 			return err
 		}
 	}
@@ -87,12 +94,12 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 		if err != nil {
 			return err
 		}
-		o.OutputType = OutputType(outputType)
-		o.OutputPayload, err = getOutputPayload(OutputType(outputType))
+		o.Type = OutputType(outputType)
+		o.Payload, err = getOutputPayload(OutputType(outputType))
 		if err != nil {
 			return err
 		}
-		if err = o.OutputPayload.Deserialize(r); err != nil {
+		if err = o.Payload.Deserialize(r); err != nil {
 			return err
 		}
 	}
@@ -107,8 +114,8 @@ func (o *Output) String() string {
 		"OutputLock: ", o.OutputLock, "\n\t",
 		"ProgramHash: ", o.ProgramHash.String(), "\n\t")
 
-	if o.OutputPayload != nil {
-		outputStr += fmt.Sprint("OutputType: ", o.OutputType, "\n\t", "OutputPayload: ", o.OutputPayload, "\n\t")
+	if o.Payload != nil {
+		outputStr += fmt.Sprint("Type: ", o.Type, "\n\t", "Payload: ", o.Payload, "\n\t")
 	}
 	outputStr += "}"
 
@@ -118,10 +125,12 @@ func (o *Output) String() string {
 func getOutputPayload(outputType OutputType) (OutputPayload, error) {
 	var op OutputPayload
 	switch outputType {
-	case DefaultOutput:
+	case OTNone:
 		op = new(outputpayload.DefaultOutput)
-	case VoteOutput:
+	case OTVote:
 		op = new(outputpayload.VoteOutput)
+	case OTMapping:
+		op = new(outputpayload.Mapping)
 	default:
 		return nil, errors.New("invalid transaction output type")
 	}

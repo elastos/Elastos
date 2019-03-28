@@ -1,83 +1,90 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
-	"github.com/elastos/Elastos.ELA/common"
 )
 
-type DposNormalHandler struct {
-	*dposHandlerSwitch
+type DPOSNormalHandler struct {
+	*DPOSHandlerSwitch
 }
 
-func (h *DposNormalHandler) ProcessAcceptVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSNormalHandler) ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Normal-ProcessAcceptVote] start")
 	defer log.Info("[Normal-ProcessAcceptVote] end")
 
 	if !h.consensus.IsRunning() {
-		return
+		return false, false
 	}
 
 	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
-		h.proposalDispatcher.ProcessVote(p, true)
+		return h.proposalDispatcher.ProcessVote(p, true)
 	}
+
+	return false, false
 }
 
-func (h *DposNormalHandler) ProcessRejectVote(id peer.PID, p types.DPosProposalVote) {
+func (h *DPOSNormalHandler) ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool) {
 	log.Info("[Normal-ProcessRejectVote] start")
 	defer log.Info("[Normal-ProcessRejectVote] end")
 
 	if !h.consensus.IsRunning() {
 		log.Info("[Normal-ProcessRejectVote] consensus is not running")
-		return
+		return false, false
 	}
 
 	currentProposal, ok := h.tryGetCurrentProposal(id, p)
 	if !ok {
 		h.proposalDispatcher.AddPendingVote(p)
 	} else if currentProposal.IsEqual(p.ProposalHash) {
-		h.proposalDispatcher.ProcessVote(p, false)
+		return h.proposalDispatcher.ProcessVote(p, false)
 	}
+
+	return false, false
 }
 
-func (h *DposNormalHandler) tryGetCurrentProposal(id peer.PID, p types.DPosProposalVote) (common.Uint256, bool) {
+func (h *DPOSNormalHandler) tryGetCurrentProposal(id peer.PID, p *payload.DPOSProposalVote) (common.Uint256, bool) {
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal == nil {
 		requestProposal := &msg.RequestProposal{ProposalHash: p.ProposalHash}
-		h.network.SendMessageToPeer(id, requestProposal)
+		h.cfg.Network.SendMessageToPeer(id, requestProposal)
 		return common.Uint256{}, false
 	}
 	return currentProposal.Hash(), true
 }
 
-func (h *DposNormalHandler) StartNewProposal(p types.DPosProposal) {
-	log.Info("[Normal][StartNewProposal] start")
-	defer log.Info("[Normal][StartNewProposal] end")
+func (h *DPOSNormalHandler) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
+	log.Info("[Normal][ProcessProposal] start")
+	defer log.Info("[Normal][ProcessProposal] end")
 
 	if h.consensus.IsRunning() {
 		h.consensus.TryChangeView()
 	}
 
-	h.proposalDispatcher.ProcessProposal(p)
+	needRecord, handled := h.proposalDispatcher.ProcessProposal(id, p, false)
+	if needRecord {
+		h.proposalDispatcher.illegalMonitor.AddProposal(p)
+	}
+	return handled
 }
 
-func (h *DposNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
+func (h *DPOSNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
 	log.Info("[OnViewChanged] clean proposal")
 	h.proposalDispatcher.CleanProposals(true)
 }
 
-func (h *DposNormalHandler) TryStartNewConsensus(b *types.Block) bool {
+func (h *DPOSNormalHandler) TryStartNewConsensus(b *types.Block) bool {
 	result := false
 
 	if h.consensus.IsReady() {
 		log.Info("[Normal][OnBlockReceived] received first unsigned block, start consensus")
-		h.proposalDispatcher.CleanProposals(false)
 		h.consensus.StartConsensus(b)
 		result = true
 	} else { //running

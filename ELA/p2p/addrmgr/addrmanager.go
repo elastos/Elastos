@@ -359,8 +359,7 @@ func (a *AddrManager) savePeers() {
 	sam.Version = serialisationVersion
 	copy(sam.Key[:], a.key[:])
 
-	sam.Addresses = make([]*serializedKnownAddress, len(a.addrIndex))
-	i := 0
+	sam.Addresses = make([]*serializedKnownAddress, 0, len(a.addrIndex))
 	for k, v := range a.addrIndex {
 		// Filter network address here to update address saved in peers.json.
 		if a.filter != nil && !a.filter.Filter(v.na) {
@@ -376,8 +375,7 @@ func (a *AddrManager) savePeers() {
 		ska.LastSuccess = v.lastsuccess.Unix()
 		// Tried and refs are implicit in the rest of the structure
 		// and will be worked out from context on unserialisation.
-		sam.Addresses[i] = ska
-		i++
+		sam.Addresses = append(sam.Addresses, ska)
 	}
 	for i := range a.addrNew {
 		sam.NewBuckets[i] = make([]string, len(a.addrNew[i]))

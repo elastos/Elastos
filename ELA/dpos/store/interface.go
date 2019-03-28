@@ -17,3 +17,34 @@ type Database interface {
 	NewIterator(prefix []byte) blockchain.IIterator
 	Close() error
 }
+
+type IDBOperator interface {
+	Create(table *DBTable) error
+	Insert(table *DBTable, fields []*Field) (uint64, error)
+	Select(table *DBTable, inputFields []*Field) ([][]*Field, error)
+	Update(table *DBTable, inputFields []*Field, updateFields []*Field) ([]uint64, error)
+	SelectID(table *DBTable, inputFields []*Field) ([]uint64, error)
+	Close() error
+}
+
+type DirectPeers struct {
+	PublicKey []byte
+	Address   string
+	Sequence  uint32
+}
+
+type IEventRecord interface {
+	StartEventRecord()
+	AddProposalEvent(event interface{}) error
+	UpdateProposalEvent(event interface{}) error
+	AddVoteEvent(event interface{}) error
+	AddViewEvent(event interface{}) error
+	AddConsensusEvent(event interface{}) error
+	UpdateConsensusEvent(event interface{}) error
+}
+
+// IDposStore provides func for dpos
+type IDposStore interface {
+	IDBOperator
+	IEventRecord
+}

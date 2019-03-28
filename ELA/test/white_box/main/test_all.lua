@@ -7,6 +7,7 @@ local function do_files(files, base_path)
 
     local result = 0
     for i = 1, #files do
+        print("test file" .. files[i])
         local temp = dofile(files[i])
 
         if temp == nil then

@@ -3,29 +3,24 @@ package blockchain
 import (
 	"bytes"
 	"errors"
-	"sync"
+	"path/filepath"
+	"sync/atomic"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const (
 	TaskChanCap = 4
-
-	ProducerUnRegistered ProducerState = 0x00
-	ProducerRegistered   ProducerState = 0x01
-	ProducerRegistering  ProducerState = 0x02
 )
 
 type ProducerState byte
 
 type ProducerInfo struct {
-	Payload   *PayloadRegisterProducer
+	Payload   *payload.ProducerInfo
 	RegHeight uint32
 	Vote      Fixed64
 }
@@ -38,12 +33,8 @@ type rollbackBlockTask struct {
 }
 
 type persistBlockTask struct {
-	block *Block
-	reply chan bool
-}
-
-type persistConfirmTask struct {
-	confirm *DPosProposalVoteSlot
+	block   *Block
+	confirm *payload.Confirm
 	reply   chan bool
 }
 
@@ -53,38 +44,26 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
-	mu sync.RWMutex // guard the following var
-
 	currentBlockHeight uint32
-
-	producerVotes     map[string]*ProducerInfo // key: public key
-	producerAddress   map[string]string        // key: address  value: public key
-	dirty             map[outputpayload.VoteType]bool
-	canceledProducers map[string]uint32 // key: public key value: height
-	orderedProducers  []*PayloadRegisterProducer
 }
 
-func NewChainStore(filePath string) (IChainStore, error) {
-	st, err := NewLevelDB(filePath)
+func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
+	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
 
-	store := &ChainStore{
-		IStore:             st,
-		currentBlockHeight: 0,
-		taskCh:             make(chan persistTask, TaskChanCap),
-		quit:               make(chan chan bool, 1),
-		producerVotes:      make(map[string]*ProducerInfo),
-		producerAddress:    make(map[string]string),
-		dirty:              make(map[outputpayload.VoteType]bool),
-		canceledProducers:  make(map[string]uint32),
-		orderedProducers:   make([]*PayloadRegisterProducer, 0),
+	s := &ChainStore{
+		IStore:      db,
+		taskCh:      make(chan persistTask, TaskChanCap),
+		quit:        make(chan chan bool, 1),
 	}
 
-	go store.loop()
+	go s.taskHandler()
 
-	return store, nil
+	s.init(genesisBlock)
+
+	return s, nil
 }
 
 func (c *ChainStore) Close() {
@@ -94,22 +73,17 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) loop() {
+func (c *ChainStore) taskHandler() {
 	for {
 		select {
 		case t := <-c.taskCh:
 			now := time.Now()
 			switch task := t.(type) {
 			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block)
+				c.handlePersistBlockTask(task.block, task.confirm)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
-			case *persistConfirmTask:
-				c.handlePersistConfirmTask(task.confirm)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle confirm exetime: %g block hash:%s", tcall, task.confirm.Hash.String())
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
@@ -124,11 +98,7 @@ func (c *ChainStore) loop() {
 	}
 }
 
-func (c *ChainStore) InitProducerVotes() error {
-	return c.reloadProducersFromChainForMempool()
-}
-
-func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
+func (c *ChainStore) init(genesisBlock *Block) error {
 	prefix := []byte{byte(CFGVersion)}
 	version, err := c.Get(prefix)
 	if err != nil {
@@ -146,71 +116,41 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 
 		err := c.BatchCommit()
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// persist genesis block
-		err = c.persist(genesisBlock)
+		err = c.persist(genesisBlock, nil)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// put version to db
 		err = c.Put(prefix, []byte{0x01})
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
 	// GenesisBlock should exist in chain
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
-	if !c.IsBlockInStore(hash) {
-		return 0, errors.New("genesis block is not consistent with the chain")
+	if !c.IsBlockInStore(&hash) {
+		return errors.New("genesis block is not consistent with the chain")
 	}
-	DefaultLedger.Blockchain.GenesisHash = hash
-	//c.headerIndex[0] = hash
 
 	// Get Current Block
 	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
 	data, err := c.Get(currentBlockPrefix)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	r := bytes.NewReader(data)
 	var blockHash Uint256
 	blockHash.Deserialize(r)
 	c.currentBlockHeight, err = ReadUint32(r)
-	endHeight := c.currentBlockHeight
-
-	startHeight := uint32(0)
-	if endHeight > MinMemoryNodes {
-		startHeight = endHeight - MinMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := c.GetBlockHash(start)
-		if err != nil {
-			return 0, err
-		}
-		header, err := c.GetHeader(hash)
-		if err != nil {
-			return 0, err
-		}
-		node, err := DefaultLedger.Blockchain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return 0, err
-		}
-
-		// This node is now the end of the best chain.
-		DefaultLedger.Blockchain.BestChain = node
-
-	}
-	//c.ledger.Blockchain.DumpState()
-
-	return c.currentBlockHeight, nil
-
+	return err
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
@@ -329,7 +269,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
+func (c *ChainStore) PersistAsset(assetID Uint256, asset payload.Asset) error {
 	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
@@ -350,8 +290,8 @@ func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	return nil
 }
 
-func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	asset := new(Asset)
+func (c *ChainStore) GetAsset(hash Uint256) (*payload.Asset, error) {
+	asset := new(payload.Asset)
 	prefix := []byte{byte(STInfo)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
@@ -443,7 +383,6 @@ func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debugf("transaction header + hash: %x", key)
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -453,7 +392,6 @@ func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debugf("transaction tx data: %x", value)
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -513,17 +451,12 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.RollbackConfirm(b)
 	c.BatchCommit()
 
-	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
-	c.mu.Lock()
-	c.currentBlockHeight = b.Header.Height - 1
-	c.mu.Unlock()
+	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
-
-	return c.rollbackForMempool(b)
+	return nil
 }
 
-func (c *ChainStore) persist(b *Block) error {
+func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	c.NewBatch()
 	if err := c.persistTrimmedBlock(b); err != nil {
 		return err
@@ -543,28 +476,17 @@ func (c *ChainStore) persist(b *Block) error {
 	if err := c.persistCurrentBlock(b); err != nil {
 		return err
 	}
-	if err := c.BatchCommit(); err != nil {
+	if err := c.persistConfirm(confirm); err != nil {
 		return err
 	}
-
-	return c.persistForMempool(b)
+	return c.BatchCommit()
 }
 
-func (c *ChainStore) SaveBlock(b *Block) error {
+func (c *ChainStore) SaveBlock(b *Block, confirm *payload.Confirm) error {
 	log.Debug("SaveBlock()")
 
 	reply := make(chan bool)
-	c.taskCh <- &persistBlockTask{block: b, reply: reply}
-	<-reply
-
-	return nil
-}
-
-func (c *ChainStore) SaveConfirm(confirm *DPosProposalVoteSlot) error {
-	log.Debug("SaveConfirm()")
-
-	reply := make(chan bool)
-	c.taskCh <- &persistConfirmTask{confirm: confirm, reply: reply}
+	c.taskCh <- &persistBlockTask{block: b, confirm: confirm, reply: reply}
 	<-reply
 
 	return nil
@@ -579,46 +501,37 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 	c.rollback(block)
 }
 
-func (c *ChainStore) handlePersistBlockTask(b *Block) {
+func (c *ChainStore) handlePersistBlockTask(b *Block, confirm *payload.Confirm) {
 	if b.Header.Height <= c.currentBlockHeight {
 		return
 	}
 
-	c.persistBlock(b)
+	c.persistBlock(b, confirm)
 }
 
-func (c *ChainStore) handlePersistConfirmTask(confirm *DPosProposalVoteSlot) {
-	c.persistConfirm(confirm)
-}
-
-func (c *ChainStore) persistBlock(block *Block) {
-	err := c.persist(block)
+func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) {
+	err := c.persist(block, confirm)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
 		return
 	}
 
-	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
-	c.mu.Lock()
-	c.currentBlockHeight = block.Header.Height
-	c.mu.Unlock()
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+	atomic.StoreUint32(&c.currentBlockHeight, block.Height)
 }
 
-func (c *ChainStore) persistConfirm(confirm *DPosProposalVoteSlot) {
-	c.NewBatch()
+func (c *ChainStore) persistConfirm(confirm *payload.Confirm) error {
+	if confirm == nil {
+		return nil
+	}
 	if err := c.PersistConfirm(confirm); err != nil {
 		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
-		return
+		return err
 	}
-	if err := c.BatchCommit(); err != nil {
-		log.Fatal("[persistConfirm]: error to commit confirm:", err.Error())
-		return
-	}
+	return nil
 }
 
-func (c *ChainStore) GetConfirm(hash Uint256) (*DPosProposalVoteSlot, error) {
-	var confirm = new(DPosProposalVoteSlot)
+func (c *ChainStore) GetConfirm(hash Uint256) (*payload.Confirm, error) {
+	var confirm = new(payload.Confirm)
 	prefix := []byte{byte(DATAConfirm)}
 	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
@@ -668,14 +581,11 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 }
 
 func (c *ChainStore) GetHeight() uint32 {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	return c.currentBlockHeight
+	return atomic.LoadUint32(&c.currentBlockHeight)
 }
 
-func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
-	b, err := c.GetBlock(hash)
+func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
+	b, err := c.GetBlock(*hash)
 	if err != nil {
 		return false
 	}
@@ -815,8 +725,8 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	return nil
 }
 
-func (c *ChainStore) GetAssets() map[Uint256]*Asset {
-	assets := make(map[Uint256]*Asset)
+func (c *ChainStore) GetAssets() map[Uint256]*payload.Asset {
+	assets := make(map[Uint256]*payload.Asset)
 
 	iter := c.NewIterator([]byte{byte(STInfo)})
 	for iter.Next() {
@@ -828,7 +738,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		assetid.Deserialize(rk)
 		log.Debugf("[GetAssets] assetid: %x", assetid.Bytes())
 
-		asset := new(Asset)
+		asset := new(payload.Asset)
 		r := bytes.NewReader(iter.Value())
 		asset.Deserialize(r)
 
@@ -836,19 +746,4 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 	}
 
 	return assets
-}
-
-func (c *ChainStore) OnIllegalBlockTxnReceived(txn *Transaction) {
-	illegalBlock, ok := txn.Payload.(*PayloadIllegalBlock)
-	if !ok {
-		return
-	}
-	if err := c.persistIllegalBlock(illegalBlock); err != nil {
-		log.Error("Persist illegal block tx error: ", err.Error())
-	}
-	if illegalBlock.CoinType == ELACoin {
-		if err := DefaultLedger.Arbitrators.ForceChange(); err != nil {
-			log.Error("OnIllegalBlockTxnReceived force change failed:", err.Error())
-		}
-	}
 }

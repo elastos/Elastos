@@ -19,15 +19,15 @@ func CreateDepositContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) 
 	sb.AddOp(vm.CHECKSIG)
 
 	return &Contract{
-		Code:       sb.ToArray(),
-		HashPrefix: PrefixDeposit,
+		Code:   sb.ToArray(),
+		Prefix: PrefixDeposit,
 	}, nil
 }
 
 func CreateDepositContractByCode(code []byte) (*Contract, error) {
 	return &Contract{
-		Code:       code,
-		HashPrefix: PrefixDeposit,
+		Code:   code,
+		Prefix: PrefixDeposit,
 	}, nil
 }
 
@@ -42,5 +42,5 @@ func PublicKeyToDepositProgramHash(pubKey []byte) (*common.Uint168, error) {
 		return nil, err
 	}
 
-	return contract.ToProgramHash()
+	return contract.ToProgramHash(), nil
 }

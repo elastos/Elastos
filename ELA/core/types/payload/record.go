@@ -7,42 +7,42 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-const RecordPayloadVersion byte = 0x00
+const RecordVersion byte = 0x00
 
-type PayloadRecord struct {
-	RecordType string
-	RecordData []byte
+type Record struct {
+	Type    string
+	Content []byte
 }
 
-func (a *PayloadRecord) Data(version byte) []byte {
+func (a *Record) Data(version byte) []byte {
 	//TODO: implement RegisterRecord.Data()
 	return []byte{0}
 }
 
 // Serialize is the implement of SignableData interface.
-func (a *PayloadRecord) Serialize(w io.Writer, version byte) error {
-	err := common.WriteVarString(w, a.RecordType)
+func (a *Record) Serialize(w io.Writer, version byte) error {
+	err := common.WriteVarString(w, a.Type)
 	if err != nil {
-		return errors.New("[RecordDetail], RecordType serialize failed.")
+		return errors.New("[RecordDetail], Type serialize failed.")
 	}
-	err = common.WriteVarBytes(w, a.RecordData)
+	err = common.WriteVarBytes(w, a.Content)
 	if err != nil {
-		return errors.New("[RecordDetail], RecordData serialize failed.")
+		return errors.New("[RecordDetail], Record serialize failed.")
 	}
 	return nil
 }
 
 // Deserialize is the implement of SignableData interface.
-func (a *PayloadRecord) Deserialize(r io.Reader, version byte) error {
+func (a *Record) Deserialize(r io.Reader, version byte) error {
 	var err error
-	a.RecordType, err = common.ReadVarString(r)
+	a.Type, err = common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[RecordDetail], RecordType deserialize failed.")
+		return errors.New("[RecordDetail], Type deserialize failed.")
 	}
-	a.RecordData, err = common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+	a.Content, err = common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload record data")
 	if err != nil {
-		return errors.New("[RecordDetail], RecordData deserialize failed.")
+		return errors.New("[RecordDetail], Record deserialize failed.")
 	}
 	return nil
 }

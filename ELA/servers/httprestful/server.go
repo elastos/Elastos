@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/servers"
@@ -23,6 +23,8 @@ const (
 	ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height/:height"
 	ApiGetBlockByHeight    = "/api/v1/block/details/height/:height"
 	ApiGetBlockByHash      = "/api/v1/block/details/hash/:hash"
+	ApiGetConfirmByHeight  = "/api/v1/confirm/details/height/:height"
+	ApiGetConfirmByHash    = "/api/v1/confirm/details/hash/:hash"
 	ApiGetBlockHeight      = "/api/v1/block/height"
 	ApiGetBlockHash        = "/api/v1/block/hash/:height"
 	ApiGetTransaction      = "/api/v1/transaction/:hash"
@@ -70,11 +72,11 @@ func InitRestServer() ApiServer {
 }
 
 func (rt *restServer) Start() {
-	if Parameters.HttpRestPort == 0 {
+	if config.Parameters.HttpRestPort == 0 {
 		log.Fatal("Not configure HttpRestPort port ")
 	}
 
-	if Parameters.HttpRestPort%1000 == servers.TlsPort {
+	if config.Parameters.HttpRestPort%1000 == servers.TlsPort {
 		var err error
 		rt.listener, err = rt.initTlsListen()
 		if err != nil {
@@ -82,7 +84,7 @@ func (rt *restServer) Start() {
 		}
 	} else {
 		var err error
-		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort))
+		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort))
 		if err != nil {
 			log.Fatal("net.Listen: ", err.Error())
 		}
@@ -103,6 +105,8 @@ func (rt *restServer) initializeMethod() {
 		ApiGetBlockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.GetTransactionsByHeight},
 		ApiGetBlockByHeight:    {name: "getblockbyheight", handler: servers.GetBlockByHeight},
 		ApiGetBlockByHash:      {name: "getblockbyhash", handler: servers.GetBlockByHash},
+		ApiGetConfirmByHeight:  {name: "getconfirmbyheight", handler: servers.GetConfirmByHeight},
+		ApiGetConfirmByHash:    {name: "getconfirmbyhash", handler: servers.GetConfirmByHeight},
 		ApiGetBlockHeight:      {name: "getblockheight", handler: servers.GetBlockHeight},
 		ApiGetBlockHash:        {name: "getblockhash", handler: servers.GetBlockHash},
 		ApiGetTransactionPool:  {name: "gettransactionpool", handler: servers.GetTransactionPool},
@@ -130,6 +134,10 @@ func (rt *restServer) getPath(url string) string {
 		return ApiGetBlockByHeight
 	} else if strings.Contains(url, strings.TrimRight(ApiGetBlockByHash, ":hash")) {
 		return ApiGetBlockByHash
+	} else if strings.Contains(url, strings.TrimRight(ApiGetConfirmByHeight, ":height")) {
+		return ApiGetConfirmByHeight
+	} else if strings.Contains(url, strings.TrimRight(ApiGetConfirmByHash, ":hash")) {
+		return ApiGetConfirmByHash
 	} else if strings.Contains(url, strings.TrimRight(ApiGetBlockHash, ":height")) {
 		return ApiGetBlockHash
 	} else if strings.Contains(url, strings.TrimRight(ApiGetTransaction, ":hash")) {
@@ -161,6 +169,12 @@ func (rt *restServer) getParams(r *http.Request, url string, req map[string]inte
 		req["height"] = getParam(r, "height")
 
 	case ApiGetBlockByHash:
+		req["blockhash"] = getParam(r, "hash")
+
+	case ApiGetConfirmByHeight:
+		req["height"] = getParam(r, "height")
+
+	case ApiGetConfirmByHash:
 		req["blockhash"] = getParam(r, "hash")
 
 	case ApiGetBlockHeight:
@@ -287,8 +301,8 @@ func (rt *restServer) Restart(cmd servers.Params) map[string]interface{} {
 
 func (rt *restServer) initTlsListen() (net.Listener, error) {
 
-	CertPath := Parameters.RestCertPath
-	KeyPath := Parameters.RestKeyPath
+	CertPath := config.Parameters.RestCertPath
+	KeyPath := config.Parameters.RestKeyPath
 
 	// load cert
 	cert, err := tls.LoadX509KeyPair(CertPath, KeyPath)
@@ -301,8 +315,8 @@ func (rt *restServer) initTlsListen() (net.Listener, error) {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.HttpRestPort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort), tlsConfig)
+	log.Info("TLS listen port is ", strconv.Itoa(config.Parameters.HttpRestPort))
+	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err

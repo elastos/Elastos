@@ -57,7 +57,7 @@ func (a *Asset) Serialize(w io.Writer) error {
 	}
 	_, err = w.Write([]byte{byte(a.RecordType)})
 	if err != nil {
-		return errors.New("[Asset], RecordType serialize failed.")
+		return errors.New("[Asset], Type serialize failed.")
 	}
 	return nil
 }
@@ -91,7 +91,7 @@ func (a *Asset) Deserialize(r io.Reader) error {
 	if n > 0 {
 		a.RecordType = AssetRecordType(p[0])
 	} else {
-		return errors.New("[Asset], RecordType deserialize failed.")
+		return errors.New("[Asset], Type deserialize failed.")
 	}
 	return nil
 }

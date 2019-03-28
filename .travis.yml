@@ -20,6 +20,6 @@ deploy:
         - dev
         - /(release).{7}/
 script:
-  - go test -v ./...
-  - make client
+  - go test -v -short ./...
+  - make cli
   - ./util.sh test

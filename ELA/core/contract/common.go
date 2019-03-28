@@ -13,6 +13,11 @@ const (
 	Custom
 )
 
+// Extension OP_CODE
+const (
+	CROSSCHAIN = 0xAF
+)
+
 func IsStandard(code []byte) bool {
 	if len(code) != 35 {
 		return false

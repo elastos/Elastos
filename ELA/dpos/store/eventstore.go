@@ -7,12 +7,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
-var ConsensusEventTable = &interfaces.DBTable{
+var ConsensusEventTable = &DBTable{
 	Name:       "ConsensusEvent",
 	PrimaryKey: 4,
 	Indexes:    []uint64{3},
@@ -24,12 +22,12 @@ var ConsensusEventTable = &interfaces.DBTable{
 	},
 }
 
-var ProposalEventTable = &interfaces.DBTable{
+var ProposalEventTable = &DBTable{
 	Name:       "ProposalEvent",
 	PrimaryKey: 7,
 	Indexes:    []uint64{1, 2, 6},
 	Fields: []string{
-		"Proposal",
+		"Sponsor",
 		"BlockHash",
 		"ReceivedTime",
 		"EndTime",
@@ -39,7 +37,7 @@ var ProposalEventTable = &interfaces.DBTable{
 	},
 }
 
-var VoteEventTable = &interfaces.DBTable{
+var VoteEventTable = &DBTable{
 	Name:       "VoteEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -52,7 +50,7 @@ var VoteEventTable = &interfaces.DBTable{
 	},
 }
 
-var ViewEventTable = &interfaces.DBTable{
+var ViewEventTable = &DBTable{
 	Name:       "ViewEvent",
 	PrimaryKey: 0,
 	Indexes:    nil,
@@ -104,7 +102,7 @@ func (s *DposStore) eventLoop() {
 out:
 	for {
 		select {
-		case t := <-s.taskCh:
+		case t := <-s.eventCh:
 			now := time.Now()
 			switch task := t.(type) {
 			case *addConsensusEventTask:
@@ -193,7 +191,7 @@ func (s *DposStore) handleViewProposalEvent(view *log.ViewEvent) {
 	log.Info("add view event succeed at row id:", rowID)
 }
 
-func (s *DposStore) StartRecordEvent() error {
+func (s *DposStore) StartEventRecord() {
 	err := s.createConsensusEventTable()
 	if err != nil {
 		log.Debug("create ConsensusEvent table Connect failed:", err.Error())
@@ -212,8 +210,6 @@ func (s *DposStore) StartRecordEvent() error {
 	}
 
 	go s.eventLoop()
-
-	return nil
 }
 
 func (s *DposStore) createConsensusEventTable() error {
@@ -228,17 +224,21 @@ func (s *DposStore) AddConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &addConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) addConsensusEvent(cons *log.ConsensusEvent) (uint64, error) {
-	return s.Insert(ConsensusEventTable, []*interfaces.Field{
+	buf := new(bytes.Buffer)
+	if err := cons.RawData.Serialize(buf); err != nil{
+		return 0, err
+	}
+	return s.Insert(ConsensusEventTable, []*Field{
 		{"StartTime", cons.StartTime.UnixNano()},
 		{"Height", cons.Height},
-		{"RawData", cons.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 
@@ -249,15 +249,15 @@ func (s *DposStore) UpdateConsensusEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateConsensusEventTask{event: e, reply: reply}
+	s.eventCh <- &updateConsensusEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) updateConsensusEvent(cons *log.ConsensusEvent) ([]uint64, error) {
-	return s.Update(ConsensusEventTable, []*interfaces.Field{
-		{"Height", cons.Height}}, []*interfaces.Field{
+	return s.Update(ConsensusEventTable, []*Field{
+		{"Height", cons.Height}}, []*Field{
 		{"EndTime", cons.EndTime.UnixNano()}})
 }
 
@@ -272,20 +272,24 @@ func (s *DposStore) AddProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &addProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) addProposalEvent(event *log.ProposalEvent) (uint64, error) {
-	return s.Insert(ProposalEventTable, []*interfaces.Field{
-		{"Proposal", event.Proposal},
+	buf := new(bytes.Buffer)
+	if err := event.RawData.Serialize(buf); err != nil{
+		return 0, err
+	}
+	return s.Insert(ProposalEventTable, []*Field{
+		{"Sponsor", event.Sponsor},
 		{"BlockHash", event.BlockHash.Bytes()},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
 		{"ProposalHash", event.ProposalHash},
-		{"RawData", event.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 func (s *DposStore) UpdateProposalEvent(event interface{}) error {
@@ -295,17 +299,17 @@ func (s *DposStore) UpdateProposalEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &updateProposalEventTask{event: e, reply: reply}
+	s.eventCh <- &updateProposalEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) updateProposalEvent(event *log.ProposalEvent) ([]uint64, error) {
-	return s.Update(ProposalEventTable, []*interfaces.Field{
-		{"Proposal", event.Proposal},
+	return s.Update(ProposalEventTable, []*Field{
+		{"Sponsor", event.Sponsor},
 		{"BlockHash", event.BlockHash.Bytes()},
-	}, []*interfaces.Field{
+	}, []*Field{
 		{"EndTime", event.EndTime.UnixNano()},
 		{"Result", event.Result},
 	})
@@ -323,20 +327,16 @@ func (s *DposStore) AddVoteEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addVoteEventTask{event: e, reply: reply}
+	s.eventCh <- &addVoteEventTask{event: e, reply: reply}
 	<-reply
 
 	return nil
 }
 
 func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
-	vote := &types.DPosProposalVote{}
-	err := vote.Deserialize(bytes.NewReader(event.RawData))
-	if err != nil {
-		return 0, err
-	}
+	vote := event.RawData
 	var proposalId uint64
-	rowIDs, err := s.SelectID(ProposalEventTable, []*interfaces.Field{
+	rowIDs, err := s.SelectID(ProposalEventTable, []*Field{
 		{"ProposalHash", vote.ProposalHash},
 	})
 	if err != nil || len(rowIDs) != 1 {
@@ -345,13 +345,18 @@ func (s *DposStore) addVoteEvent(event *log.VoteEvent) (uint64, error) {
 		proposalId = rowIDs[0]
 	}
 
+	buf := new(bytes.Buffer)
+	if err = vote.Serialize(buf); err != nil {
+		return 0, err
+	}
+
 	fmt.Println("[AddVoteEvent] proposalId = ", proposalId)
-	return s.Insert(VoteEventTable, []*interfaces.Field{
+	return s.Insert(VoteEventTable, []*Field{
 		{"ProposalID", proposalId},
 		{"Signer", event.Signer},
 		{"ReceivedTime", event.ReceivedTime.UnixNano()},
 		{"Result", event.Result},
-		{"RawData", event.RawData},
+		{"RawData", buf.Bytes()},
 	})
 }
 
@@ -367,14 +372,14 @@ func (s *DposStore) AddViewEvent(event interface{}) error {
 	}
 
 	reply := make(chan bool)
-	s.taskCh <- &addViewEventTask{event: e, reply: reply}
+	s.eventCh <- &addViewEventTask{event: e, reply: reply}
 	<-reply
 	return nil
 }
 
 func (s *DposStore) addViewEvent(event *log.ViewEvent) (uint64, error) {
 	var consensusId uint64
-	rowIDs, err := s.SelectID(ConsensusEventTable, []*interfaces.Field{
+	rowIDs, err := s.SelectID(ConsensusEventTable, []*Field{
 		{"Height", event.Height},
 	})
 	if err != nil || len(rowIDs) != 1 {
@@ -383,7 +388,7 @@ func (s *DposStore) addViewEvent(event *log.ViewEvent) (uint64, error) {
 		consensusId = rowIDs[0]
 	}
 
-	return s.Insert(ViewEventTable, []*interfaces.Field{
+	return s.Insert(ViewEventTable, []*Field{
 		{"ConsensusID", consensusId},
 		{"OnDutyArbitrator", event.OnDutyArbitrator},
 		{"StartTime", event.StartTime.UnixNano()},
