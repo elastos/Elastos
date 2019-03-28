@@ -62,7 +62,7 @@ type TransactionInfo struct {
 	Confirmations  uint32             `json:"confirmations"`
 	Time           uint32             `json:"time"`
 	BlockTime      uint32             `json:"blocktime"`
-	TxType         TransactionType    `json:"type"`
+	TxType         TxType             `json:"type"`
 	PayloadVersion byte               `json:"payloadversion"`
 	Payload        PayloadInfo        `json:"payload"`
 	Attributes     []AttributeInfo    `json:"attributes"`
@@ -92,34 +92,44 @@ type BlockInfo struct {
 	MinerInfo         string        `json:"minerinfo"`
 }
 
-type NodeState struct {
-	Compile     string // The compile version of this server node
-	ID          uint64 // The nodes's id
-	HexID       string // The nodes's id in hex format
-	Height      uint64 // The ServerNode latest block height
-	Version     uint32 // The network protocol the ServerNode used
-	Services    uint64 // The services the local node supplied
-	Relay       bool   // The relay capability of the ServerNode (merge into capbility flag)
-	TxnCnt      uint64 // The transactions be transmit by
-	RxTxnCnt    uint64 // The transaction received by this ServerNode
-	Port        uint16 // The nodes's port
-	PRCPort     uint16 // The RPC service prot
-	RestPort    uint16 // The RESTful service port
-	WSPort      uint16 // The webservcie port
-	OpenPort    uint16 // The open service port
-	OpenService bool   // If open service is enabled
-	Neighbors   []Neighbor
+type VoteInfo struct {
+	Signer string `json:"signer"`
+	Accept bool   `json:"accept"`
 }
 
-type Neighbor struct {
-	ID         uint64 // The neighbor ID
-	HexID      string // The neighbor ID in hex format
-	Height     uint64 // The neighbor height
-	Services   uint64 // The services the neighbor node supplied
-	Relay      bool   // If this neighbor relay block and transactions
-	External   bool   // If this neighbor is an external node
-	State      string // The state of this neighbor node
-	NetAddress string // The tcp address of this neighbor node
+type ConfirmInfo struct {
+	BlockHash  string     `json:"blockhash"`
+	Sponsor    string     `json:"sponsor"`
+	ViewOffset uint32     `json:"viewoffset"`
+	Votes      []VoteInfo `json:"votes"`
+}
+
+type ServerInfo struct {
+	Compile   string      `json:"compile"`   // The compile version of this server node
+	Height    uint32      `json:"height"`    // The ServerNode latest block height
+	Version   uint32      `json:"version"`   // The network protocol the ServerNode used
+	Services  string      `json:"services"`  // The services the server supports
+	Port      uint16      `json:"port"`      // The nodes's port
+	RPCPort   uint16      `json:"rpcport"`   // The RPC service port
+	RestPort  uint16      `json:"restport"`  // The RESTful service port
+	WSPort    uint16      `json:"wsport"`    // The webservcie port
+	Neighbors []*PeerInfo `json:"neighbors"` // The connected neighbor peers.
+}
+
+type PeerInfo struct {
+	NetAddress     string `json:"netaddress"`
+	Services       string `json:"services"`
+	RelayTx        bool   `json:"relaytx"`
+	LastSend       string `json:"lastsend"`
+	LastRecv       string `json:"lastrecv"`
+	ConnTime       string `json:"conntime"`
+	TimeOffset     int64  `json:"timeoffset"`
+	Version        uint32 `json:"version"`
+	Inbound        bool   `json:"inbound"`
+	StartingHeight uint32 `json:"startingheight"`
+	LastBlock      uint32 `json:"lastblock"`
+	LastPingTime   string `json:"lastpingtime"`
+	LastPingMicros int64  `json:"lastpingmicros"`
 }
 
 type ArbitratorGroupInfo struct {
@@ -158,7 +168,7 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
-type RegisterProducerInfo struct {
+type ProducerInfo struct {
 	OwnerPublicKey string `json:"ownerpublickey"`
 	NodePublicKey  string `json:"nodepublickey"`
 	NickName       string `json:"nickname"`
@@ -173,10 +183,6 @@ type CancelProducerInfo struct {
 	Signature      string `json:"signature"`
 }
 
-type UpdateProducerInfo struct {
-	*RegisterProducerInfo
-}
-
 type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
@@ -186,4 +192,14 @@ type UTXOInfo struct {
 	Amount        string `json:"amount"`
 	OutputLock    uint32 `json:"outputlock"`
 	Confirmations uint32 `json:"confirmations"`
+}
+
+type SidechainIllegalDataInfo struct {
+	IllegalType         uint8
+	Height              uint32
+	IllegalSigner       string
+	Evidence            string
+	CompareEvidence     string
+	GenesisBlockAddress string
+	Signs               []string
 }

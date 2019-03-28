@@ -33,18 +33,10 @@
     "WsHeartbeatInterval": 60,
     "HttpJsonPort": 10336,  //RPC port number
     "NodePort": 10338,      //P2P port number
-    "NodeOpenPort": 10866,  //P2P port number for open service
-    "OpenService": true,    //true to enable open service, false to disable
     "PrintLevel": 1,        //Log level. Level 0 is the highest, 6 is the lowest.
     "MaxLogsSize": 5000,    //Max total logs size in MB
     "MaxPerLogSize": 20,    //Max per log file size in MB
-    "IsTLS": false,         //TLS connection, true or false
-    "CertPath": "./sample-cert.pem",  //Certificate path
-    "KeyPath": "./sample-cert-key.pem",
-    "CAPath": "./sample-ca.pem",
-    "MultiCoreNum": 4,      //Max number of CPU cores to mine ELA
     "MaxTransactionInBlock": 10000, //Max transaction number in each block
-    "MaxBlockSize": 8000000,        //Max size of a block
     "MinCrossChainTxFee": 10000,    //Minimal cross-chain transaction fee
     "PowConfiguration": {           //
       "PayToAddr": "",              //Pay bonus to this address. Cannot be empty if AutoMining set to "true".

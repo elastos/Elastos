@@ -3,10 +3,10 @@ package manager
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain/interfaces"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
 type ViewListener interface {
@@ -17,7 +17,7 @@ type view struct {
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
-	arbitrators   interfaces.Arbitrators
+	arbitrators   state.Arbitrators
 
 	listener ViewListener
 }
@@ -47,7 +47,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	if offset > 0 {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
-		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.Name
+		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.PublicKey
 		log.Info("current onduty arbiter:", currentArbiter)
 
 		v.listener.OnViewChanged(v.isDposOnDuty)
@@ -63,7 +63,9 @@ func (v *view) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) 
 }
 
 func (v *view) TryChangeView(viewOffset *uint32) bool {
-	if time.Now().After(v.viewStartTime.Add(v.signTolerance)) {
+
+	now := time.Now()
+	if now.After(v.viewStartTime.Add(v.signTolerance)) {
 		log.Info("[TryChangeView] succeed")
 		v.ChangeView(viewOffset)
 		return true

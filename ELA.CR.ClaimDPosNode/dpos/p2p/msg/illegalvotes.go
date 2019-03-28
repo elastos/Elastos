@@ -3,13 +3,13 @@ package msg
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const MaxIllegalVoteSize = 1000000
 
 type IllegalVotes struct {
-	Votes types.DposIllegalVotes
+	Votes payload.DPOSIllegalVotes
 }
 
 func (msg *IllegalVotes) CMD() string {
@@ -21,7 +21,7 @@ func (msg *IllegalVotes) MaxLength() uint32 {
 }
 
 func (msg *IllegalVotes) Serialize(w io.Writer) error {
-	if err := msg.Votes.Serialize(w); err != nil {
+	if err := msg.Votes.Serialize(w, payload.IllegalVoteVersion); err != nil {
 		return err
 	}
 
@@ -29,7 +29,7 @@ func (msg *IllegalVotes) Serialize(w io.Writer) error {
 }
 
 func (msg *IllegalVotes) Deserialize(r io.Reader) error {
-	if err := msg.Votes.Deserialize(r); err != nil {
+	if err := msg.Votes.Deserialize(r, payload.IllegalVoteVersion); err != nil {
 		return err
 	}
 

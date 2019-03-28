@@ -1,18 +1,20 @@
 package log
 
 import (
-	"github.com/elastos/Elastos.ELA/common/config"
 	elaLog "github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"path/filepath"
+)
+
+const (
+	dposLogDir = "elastos/logs/dpos/"
 )
 
 var logger *elaLog.Logger
 
 func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = elaLog.NewLogger(filepath.Join(config.DataPath, config.LogDir, config.ArbiterDir), level, maxPerLogSizeMb, maxLogsSizeMb)
+	logger = elaLog.NewLogger(dposLogDir, level, maxPerLogSizeMb, maxLogsSizeMb)
 	connmgr.UseLogger(logger)
 	peer.UseLogger(logger)
 	p2p.UseLogger(logger)
@@ -23,7 +25,7 @@ func Debug(a ...interface{}) {
 }
 
 func Debugf(format string, a ...interface{}) {
-	logger.Debugf("%s %s:%d "+format, a...)
+	logger.Debugf(format, a...)
 }
 
 func Info(a ...interface{}) {
@@ -56,8 +58,4 @@ func Errorf(format string, a ...interface{}) {
 
 func Fatalf(format string, a ...interface{}) {
 	logger.Fatalf(format, a...)
-}
-
-func SetPrintLevel(level uint8) {
-	logger.SetPrintLevel(level)
 }

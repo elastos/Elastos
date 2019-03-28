@@ -67,7 +67,7 @@ arguments sample:
 
 result sample:
 
-```javascript
+```json
 {
   "id": null,
   "jsonrpc": "2.0",
@@ -92,7 +92,7 @@ raw hash
 
 result sample:
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -127,7 +127,7 @@ result:(verbosity=1)
 
 arguments sample:
 
-```javascript
+```json
 {
   "method": "getblock",
   "params": ["0000000000000c128adadedd348061952fa5c9bd78320ee25052d2b74a10573f"],
@@ -174,7 +174,7 @@ result format except 'tx' is the same as it is when verbosity=1
 
 result format in 'tx' please see interface 'getrawtransaction'
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -259,7 +259,7 @@ parameters: none
 
 argument sample:
 
-```javascript
+```json
 {   
   "method":"getblockcount"
 }
@@ -267,12 +267,12 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "result": 171454
+  "jsonrpc": "2.0",
   "id": null,
   "error": null,
-  "jsonrpc": "2.0",
+  "result": 171454
 }
 ```
 
@@ -306,7 +306,7 @@ results:
 
 argument sample:
 
-```javascript
+```json
 {
   "method": "getrawtransaction",
   "params": ["caa0d52ea2b90a08480834b97c271a8b847aadf90057318a33ccc8674b77c796"]
@@ -315,7 +315,7 @@ argument sample:
 
 result sample:(verbose=true)
 
-```javascript
+```json
 {
   "id": null,
   "error": null,
@@ -374,7 +374,7 @@ result sample:(verbose=false)
 
 return raw data
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -391,7 +391,7 @@ parameters: none
 
 argument sample:
 
-```javascript
+```json
 {
   "method":"getrawmempool"
 }
@@ -399,12 +399,12 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "result":["5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941", "5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941"]
   "error": null,
   "id": null,
   "jsonrpc": "2.0",
+  "result":["5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941", "5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941"]
 }
 ```
 
@@ -491,8 +491,9 @@ result sample:
       "amount": "0.01255707",
       "confirmations": 846,
       "outputlock": 0
-  }
-]
+     }
+  ]
+}
 ```
 
 #### setloglevel
@@ -536,7 +537,7 @@ description: get peer's count of this node
 
 argument sample:
 
-```javascript
+```json
 {
   "method": "getconnectioncount"
 }
@@ -559,16 +560,6 @@ description: get peer's info
 
 parameters: none
 
-results:
-
-| name     | type           | description                                                 |
-| -------- | -------------- | ----------------------------------------------------------- |
-| Time     | integer        | current time in unix nano format                            |
-| Services | integer        | node service type. 4 is spv service and 0 is no spv service |
-| IP       | array[integer] | ip in 16-byte representation                                |
-| Port     | integer        | p2p network port                                            |
-| ID       | integer        | node's id                                                   |
-
 argument sample:
 
 ```json
@@ -579,20 +570,19 @@ argument sample:
 
 result sample:
 
-```javascript
+```json
 {
-  "id": null,
-  "error": null,
-  "jsonrpc": "2.0",
-  "result": [
-    {
-      "Time": 1524798750979702000,
-      "Services": 4,
-      "IP": [0,0,0,0,0,0,0,0,0,0,255,255,127,0,0,1],
-      "Port": 30338,
-      "ID": 8775829619427993046
-    }
-  ]
+    "error": null,
+    "id": 123456,
+    "jsonrpc": "2.0",
+    "result": [
+        "127.0.0.1:64890 (inbound)",
+        "127.0.0.1:64880 (inbound)",
+        "127.0.0.1:64822 (inbound)",
+        "127.0.0.1:22338 (outbound)",
+        "127.0.0.1:23338 (outbound)",
+        "127.0.0.1:24338 (outbound)"
+    ]
 }
 ```
 
@@ -606,35 +596,33 @@ results:
 
 | name        | type            | description                                                 |
 | ----------- | --------------- | ----------------------------------------------------------- |
-| Compile     | string          | node's compile version                                      |
-| ID          | integer         | node's id                                                   |
-| HexID       | string          | node's id in hex format                                     |
-| Height      | integer         | current height                                              |
-| Version     | integer         | node's version in config.json                               |
-| Services    | integer         | node service type. 4 is spv service and 0 is no spv service |
-| Relay       | bool            | whether node will relay transaction or not                  |
-| TxnCnt      | integer         | transactions transmitted by this node                       |
-| RxTxnCnt    | integer         | The transaction received by this node                       |
-| Port        | integer         | p2p network port                                            |
-| RPCPort     | integer         | json-RPC service port                                       |
-| RestPort    | integer         | RESTful service port                                        |
-| WSPort      | integer         | webservice port                                             |
-| OpenPort    | integer         | open service port                                           |
-| OpenService | bool            | if opens service enabled                                    |
-| Neighbors   | array[neighbor] | neighbor nodes information                                  |
+| compile     | string          | node's compile version                                      |
+| height      | integer         | current height of local node                                |
+| version     | integer         | peer-to-peer network protocol version of this node          |
+| services    | string          | the services provided by this node                          |
+| port        | integer         | P2P network port                                            |
+| rpcport     | integer         | JSON-RPC service port                                       |
+| restport    | integer         | RESTful service port                                        |
+| wsport      | integer         | webservice port                                             |
+| neighbors   | array[neighbor] | neighbor nodes information                                  |
 
 neighbor:
 
-| name       | type    | description                                                     |
-| ---------- | ------- | --------------------------------------------------------------- |
-| ID         | integer | neighbor's id                                                   |
-| HexID      | string  | neighbor's id in hex format                                     |
-| Height     | integer | neighbor current height                                         |
-| Services   | integer | neighbor service type. 4 is spv service and 0 is no spv service |
-| Relay      | bool    | whether neighbor will relay transaction or not                  |
-| External   | bool    | whether neighbor is from external network                       |
-| State      | string  | neighbor state in string format                                 |
-| NetAddress | string  | neighbor tcp address                                            |
+| name           | type    | description                                                     |
+| -------------- | ------- | --------------------------------------------------------------- |
+| netaddress     | string  | network address of the neighbor in host:port format             |
+| services       | string  | the services neighbor provides                                  |
+| relaytx        | bool    | relay transactions to the neighbor or not                       |
+| lastsend       | string  | the last time send a message to the neighbor                    |
+| lastrecv       | string  | the last time received a message from the neighbor              |
+| conntime       | string  | the time when this neighbor was connected                       |
+| timeoffset     | integer | time offset between local time and the time advertised by the neighbor |
+| version        | integer | peer-to-peer network version advertised by the neighbor         |
+| inbound        | bool    | the connection direction of the neighbor (inbound/outbound)     |
+| startingheight | integer | the height advertised by the neighbor when connected            |
+| lastblock      | integer | the height of the last block advertised by the neighbor         |
+| lastpingtime   | string  | the last time send a ping message to the neighbor               |
+| lastpingmicros | integer | microseconds to receive pong message after sending last ping message |
 
 argument sample:
 ```json
@@ -645,38 +633,51 @@ argument sample:
 
 ```json
 {
-  "id": null,
-  "error": null,
-  "jsonrpc": "2.0",
-  "result": {
-    "Compile": "v0.1.1-50-gcd97",
-    "ID": 10544939963783245780,
-    "HexID": "0x925727070f1eefd4",
-    "Height": 168748,
-    "Version": 0,
-    "Services": 4,
-    "Relay": true,
-    "TxnCnt": 0,
-    "RxTxnCnt": 0,
-    "Port": 20338,
-    "PRCPort": 20336,
-    "RestPort": 20334,
-    "WSPort": 20335,
-    "OpenPort": 20866,
-    "OpenService": true,
-    "Neighbors": [
-      {
-        "ID": 8978226977158442839,
-        "HexID": "0x7c9911ddf65baf57",
-        "Height": 168748,
-        "Services": 4,
-        "Relay": true,
-        "External": false,
-        "State": "ESTABLISH",
-        "NetAddress": "13.229.160.170:20866"
-      }
-    ]
-  }
+    "error": null,
+    "id": 123456,
+    "jsonrpc": "2.0",
+    "result": {
+        "compile": "v0.2.2-231-g75d2-dirty",
+        "height": 0,
+        "version": 20000,
+        "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+        "port": 21338,
+        "rpcport": 21336,
+        "restport": 21334,
+        "wsport": 21335,
+        "neighbors": [
+            {
+                "netaddress": "127.0.0.1:57656",
+                "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+                "relaytx": false,
+                "lastsend": "2019-03-06 14:52:03 +0800 CST",
+                "lastrecv": "2019-03-06 14:52:18 +0800 CST",
+                "conntime": "2019-03-06 14:51:33.65298 +0800 CST m=+36.604516146",
+                "timeoffset": 0,
+                "version": 20000,
+                "inbound": true,
+                "startingheight": 0,
+                "lastblock": 0,
+                "lastpingtime": "2019-03-06 14:52:03.658121 +0800 CST m=+66.609840707",
+                "lastpingmicros": 1033
+            },
+            {
+                "netaddress": "127.0.0.1:22338",
+                "services": "SFNodeNetwork|SFTxFiltering|SFNodeBloom",
+                "relaytx": false,
+                "lastsend": "2019-03-06 14:52:02 +0800 CST",
+                "lastrecv": "2019-03-06 14:52:02 +0800 CST",
+                "conntime": "2019-03-06 14:51:02.097149 +0800 CST m=+5.048492921",
+                "timeoffset": 0,
+                "version": 20000,
+                "inbound": false,
+                "startingheight": 0,
+                "lastblock": 0,
+                "lastpingtime": "2019-03-06 14:52:02.104806 +0800 CST m=+65.056516088",
+                "lastpingmicros": 541
+            }
+        ]
+    }
 }
 ```
 
@@ -884,19 +885,24 @@ parameters:
 
 result:
 
-| name           | type   | description                              |
-| -------------- | ------ | ---------------------------------------- |
-| ownerpublickey | string | the owner public key of producer         |
-| nodepublickey  | string | the node public key of the producer      |
-| nickname       | string | the nick name of the producer            |
-| url            | string | the url of the producer                  |
-| location       | uint64 | the location number of the producer      |
-| active         | bool   | if producer has confirmed                |
-| votes          | string | the votes currently held                 |
-| netaddress     | string | the ip address and port of the producer  |
-| index          | uint64 | the index of the producer                |
-| totalvotes     | string | the total votes of registered producers  |
-| totalcounts    | uint64 | the total counts of registered producers |
+| name           | type   | description                               |
+| -------------- | ------ | ----------------------------------------- |
+| ownerpublickey | string | the owner public key of producer          |
+| nodepublickey  | string | the node public key of the producer       |
+| nickname       | string | the nick name of the producer             |
+| url            | string | the url of the producer                   |
+| location       | uint64 | the location number of the producer       |
+| active         | bool   | if producer has confirmed                 |
+| votes          | string | the votes currently held                  |
+| netaddress     | string | the ip address and port of the producer   |
+| state          | string | the current state of the producer         |
+| registerheight | uint32 | the height of cancel producer             |
+| cancelheight   | uint32 | the cancel height of the producer         |
+| inactiveheight | uint32 | the inactive start height of the producer |
+| illegalheight  | uint32 | the illegal start height of the producer  |
+| index          | uint64 | the index of the producer                 |
+| totalvotes     | string | the total votes of registered producers   |
+| totalcounts    | uint64 | the total counts of registered producers  |
 
 named arguments sample:
 
@@ -928,6 +934,11 @@ result sample:
         "active": true,
         "votes": "3.11100000",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 236,
+        "cancelheight": 0,
+        "inactiveheight": 0,
+        "illegalheight": 0,
         "index": 0
       },
       {
@@ -939,6 +950,11 @@ result sample:
         "active": true,
         "votes": "2.10000000",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 225,
+        "cancelheight": 0,
+        "inactiveheight": 0,
+        "illegalheight": 0,
         "index": 1
       },
       {
@@ -950,6 +966,11 @@ result sample:
         "active": true,
         "votes": "0",
         "netaddress": "127.0.0.1:20339",
+        "state": "Activate",
+        "registerheight": 216,
+        "cancelheight": 0,
+        "inactiveheight": 0,
+        "illegalheight": 0,
         "index": 2
       }
     ],
@@ -1026,7 +1047,7 @@ named arguments sample:
 
 result sample:
 
-```
+```json
 {
   "error": null,
   "id": null,
@@ -1116,5 +1137,262 @@ result sample:
     "available": "3",
     "deducted": "0"
   }
+}
+```
+
+#### getarbiterpeersinfo
+
+description: get dpos peers information.
+
+result:
+
+| name | type | description                       |
+| ---- | ---- | --------------------------------- |
+| ownerpublickey | string  | owner public key of the peer which should be one of current arbiters |
+| nodepublickey | string  | node public key of the peer which should be one of current arbiters |
+| ip    | string  | ip address of the peer (including port) |
+| connstate | string  | connection state about the peer, the value can be: NoneConnection, OutboundOnly, InboundOnly, or 2WayConnection |
+
+named arguments sample:
+
+```json
+{
+  "method": "getarbiterpeersinfo"
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": [
+        {
+            "ownerpublickey": "0243ff13f1417c69686bfefc35227ad4f5f4ca03ccb3d3a635ae8ed67d57c20b97",
+            "nodepublickey": "0243ff13f1417c69686bfefc35227ad4f5f4ca03ccb3d3a635ae8ed67d57c20b97",
+            "ip": "127.0.0.1:22339",
+            "connstate": "2WayConnection"
+        },
+        {
+            "ownerpublickey": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+            "nodepublickey": "0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
+            "ip": "127.0.0.1:23339",
+            "connstate": "InboundOnly"
+        },
+        {
+            "ownerpublickey": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+            "nodepublickey": "03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
+            "ip": "127.0.0.1:24339",
+            "connstate": "NoneConnection"
+        }
+    ]
+}
+```
+
+#### submitsidechainillegaldata
+
+description: submit illegal data from side chain.
+
+parameters:
+
+| name           | type   | description                    |
+| -------------- | ------ | ------------------------------ |
+| illegaldata | string | serialized illegal data in hex string format |
+
+named arguments sample:
+
+```json
+{
+  "method":"submitauxblock",
+  "params":{
+    "illegaldata": "016400000021023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64981855ad8681d0d86d1e91e00167939cb6694d2c422acd208a0072939487f699940353662653933363937386332363162326536343964353864626661663366323364346138363832373466353532326364326164623433303861393535633461330221030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": true
+}
+```
+
+#### getconfirmbyheight
+
+description: get block confirm by height of block.
+
+parameters:
+
+| name      | type   | description                                                                 |
+| --------- | ------ | --------------------------------------------------------------------------- |
+| height    | int    | the height of block                                                         |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
+
+result:
+
+| name       | type           | description                               |
+| -------    | -------------- | ----------------------------------------- |
+| sponsor    | string         | the sponsor nodePublicKey of the proposal |
+| viewoffset | uint32         | the viewoffset of the proposal            |
+| votes      | array[struct]  | the votes of confirm                      |
+| signer     | string         | the singner nodePublicKey of the proposal |
+| accept     | bool           | accept or not of the proposal             |
+
+named arguments sample:
+
+```json
+{
+  "method":"getconfirmbyheight",
+  "params":{
+    "height": 300000,
+    "verbosity": 1
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+    "viewoffset": 0,
+    "votes": [
+      {
+        "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+        "accept": true
+      },
+      {
+        "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "accept": true
+      },
+      {
+        "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+        "accept": true
+      }
+    ]
+  }
+}
+```
+
+#### getconfirmbyhash
+
+description: get block confirm by hash of block.
+
+parameters:
+
+| name      | type   | description                                                                 |
+| --------- | ------ | --------------------------------------------------------------------------- |
+| blockhash | string | the hash of block                                                           |
+| verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
+result:
+
+| name       | type          | description                               |
+| -------    | ------------- | ----------------------------------------- |
+| sponsor    | string        | the sponsor nodePublicKey of the proposal               |
+| viewoffset | uint32        | the viewoffset of the proposal            |
+| votes      | array[struct] | the votes of confirm                      |
+| signer     | string        | the singner nodePublicKey of the proposal |
+| accept     | bool          | accept or not of the proposal             |
+
+named arguments sample:
+
+```json
+{
+  "method":"getconfirmbyhash",
+  "params":{
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
+    "verbosity": 1
+  }
+}
+```
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+    "viewoffset": 0,
+    "votes": [
+      {
+        "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+        "accept": true
+      },
+      {
+        "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "accept": true
+      },
+      {
+        "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+        "accept": true
+      }
+    ]
+  }
+}
+```
+#### getarbitersinfo
+
+description: get arbiters and candidates about current and next turn.
+
+result:
+
+| name | type | description                       |
+| ---- | ---- | --------------------------------- |
+| arbiters | array[string] | get node public keys about arbiters of current turn |
+| candidates | array[string]  | get node public keys about candidates of current turn |
+| nextarbiters | array[string]  | get node public keys about arbiters of next turn |
+| nextcandidates | array[string]  | get node public keys about candidates of next turn |
+| ondutyarbiter | string  | get node public key of current on duty arbiter |
+| currentturnstartheight | integer  | get height of current turn |
+| nextturnstartheight | integer  | get an estimate height of next turn |
+
+named arguments sample:
+
+```json
+{
+  "method": "getarbitersinfo"
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "arbiters": [
+            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+        ],
+        "candidates": [],
+        "nextarbiters": [
+            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+        ],
+        "nextcandidates": [],
+        "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+        "currentturnstartheight": 200,
+        "nextturnstartheight": 212
+    }
 }
 ```

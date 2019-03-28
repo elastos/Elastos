@@ -6,33 +6,31 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 )
 
-var (
-	targetTimespan      = int64(config.Parameters.ChainParam.TargetTimespan / time.Second)
-	targetTimePerBlock  = int64(config.Parameters.ChainParam.TargetTimePerBlock / time.Second)
-	blocksPerRetarget   = uint32(targetTimespan / targetTimePerBlock)
-	minRetargetTimespan = int64(targetTimespan / config.Parameters.ChainParam.AdjustmentFactor)
-	maxRetargetTimespan = int64(targetTimespan * config.Parameters.ChainParam.AdjustmentFactor)
-)
+func (b *BlockChain) CalcCurrentDifficulty(currentBits uint32) string {
+	targetGenesisBlockBig := CompactToBig(b.chainParams.PowLimitBits)
+	targetCurrentBig := CompactToBig(currentBits)
+	return new(big.Int).Div(targetGenesisBlockBig, targetCurrentBig).String()
+}
 
-func CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (uint32, error) {
-	// Genesis block.
-	if (prevNode.Height == 0) || (config.Parameters.ChainParam.Name == "RegNet") {
-		return uint32(config.Parameters.ChainParam.PowLimitBits), nil
+func (b *BlockChain) CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (uint32, error) {
+	// 1. Genesis block.
+	// 2. when we want to generate block instantly, don't change difficulty
+	if (prevNode.Height == 0) || (b.chainParams.PowLimitBits == 0x207fffff) {
+		return uint32(b.chainParams.PowLimitBits), nil
 	}
 
 	// Return the previous block's difficulty requirements if this block
 	// is not at a difficulty retarget interval.
-	if (prevNode.Height+1)%blocksPerRetarget != 0 {
+	if (prevNode.Height+1)%b.blocksPerRetarget != 0 {
 		return prevNode.Bits, nil
 	}
 
 	// Get the block node at the previous retarget (targetTimespan days
 	// worth of blocks).
-	height := prevNode.Height - blocksPerRetarget + 1
+	height := prevNode.Height - b.blocksPerRetarget + 1
 	if height < 0 || height > prevNode.Height {
 		return 0, errors.New("unable to obtain previous retarget block")
 	}
@@ -45,28 +43,31 @@ func CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (ui
 	// Limit the amount of adjustment that can occur to the previous difficulty.
 	actualTimespan := int64(prevNode.Timestamp - firstNode.Timestamp)
 	adjustedTimespan := actualTimespan
-	if actualTimespan < minRetargetTimespan {
-		adjustedTimespan = minRetargetTimespan
-	} else if actualTimespan > maxRetargetTimespan {
-		adjustedTimespan = maxRetargetTimespan
+	if actualTimespan < b.minRetargetTimespan {
+		adjustedTimespan = b.minRetargetTimespan
+	} else if actualTimespan > b.maxRetargetTimespan {
+		adjustedTimespan = b.maxRetargetTimespan
 	}
 
 	// Calculate new target difficulty as:
 	//  currentDifficulty * (adjustedTimespan / targetTimespan)
 	// The result uses integer division which means it will be slightly
-	// rounded down.  Bitcoind also uses integer division to calculate this result.
+	// rounded down.  Bitcoind also uses integer division to calculate this
+	// result.
 	oldTarget := CompactToBig(prevNode.Bits)
 	newTarget := new(big.Int).Mul(oldTarget, big.NewInt(adjustedTimespan))
-	newTarget.Div(newTarget, big.NewInt(targetTimespan))
+	targetTimeSpan := int64(b.chainParams.TargetTimespan / time.Second)
+	newTarget.Div(newTarget, big.NewInt(targetTimeSpan))
 
 	// Limit new value to the proof of work limit.
-	if newTarget.Cmp(config.Parameters.ChainParam.PowLimit) > 0 {
-		newTarget.Set(config.Parameters.ChainParam.PowLimit)
+	if newTarget.Cmp(b.chainParams.PowLimit) > 0 {
+		newTarget.Set(b.chainParams.PowLimit)
 	}
 
 	// Log new target difficulty and return it.  The new target logging is
 	// intentionally converting the bits back to a number instead of using
-	// newTarget since conversion to the compact representation loses precision.
+	// newTarget since conversion to the compact representation loses
+	// precision.
 	newTargetBits := BigToCompact(newTarget)
 	log.Debugf("Difficulty retarget at block height %d", prevNode.Height+1)
 	log.Debugf("Old target %08x (%064x)", prevNode.Bits, oldTarget)
@@ -74,7 +75,7 @@ func CalcNextRequiredDifficulty(prevNode *BlockNode, newBlockTime time.Time) (ui
 	log.Debugf("Actual timespan %v, adjusted timespan %v, target timespan %v",
 		time.Duration(actualTimespan)*time.Second,
 		time.Duration(adjustedTimespan)*time.Second,
-		config.Parameters.ChainParam.TargetTimespan)
+		b.chainParams.TargetTimespan)
 
 	return newTargetBits, nil
 }
@@ -155,11 +156,4 @@ func CompactToBig(compact uint32) *big.Int {
 	}
 
 	return bn
-}
-
-func CalcCurrentDifficulty(currentBits uint32) string {
-	var genesisBlockBits = config.Parameters.ChainParam.PowLimitBits
-	targetGenesisBlockBig := CompactToBig(genesisBlockBits)
-	targetCurrentBig := CompactToBig(currentBits)
-	return new(big.Int).Div(targetGenesisBlockBig, targetCurrentBig).String()
 }

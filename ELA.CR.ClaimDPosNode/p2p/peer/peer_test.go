@@ -5,13 +5,33 @@
 package peer_test
 
 import (
+	"errors"
+	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
+	"github.com/elastos/Elastos.ELA/utils/test"
 )
+
+func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
+	switch cmd {
+	case p2p.CmdVersion:
+		message = new(msg.Version)
+	case p2p.CmdVerAck:
+		message = new(msg.VerAck)
+	default:
+		err = fmt.Errorf("unknown message type %s", cmd)
+	}
+
+	return message, err
+}
 
 // conn mocks a network connection by implementing the net.Conn interface.  It
 // is used to test peer connection without actually opening a network
@@ -166,249 +186,251 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 	}
 }
 
-//fixme move to white box
-//// TestPeerConnection tests connection between inbound and outbound peers.
-//func TestPeerConnection(t *testing.T) {
-//	verack := make(chan struct{})
-//	var makeMessage p2p.MakeEmptyMessage = func(cmd string) (p2p.Message, error) {
-//		switch cmd {
-//		case p2p.CmdVerAck:
-//			verack <- struct{}{}
-//		}
-//		return makeEmptyMessage(cmd)
-//	}
-//	var messageFunc peer.MessageFunc = func(peer *peer.Peer, message p2p.Message) {
-//		switch message.(type) {
-//		case *msg.VerAck:
-//			verack <- struct{}{}
-//		}
-//	}
-//	peer1Cfg := &peer.Config{
-//		Magic:            123123,
-//		ProtocolVersion:  p2p.EIP001Version,
-//		Services:         0,
-//		DisableRelayTx:   true,
-//		HostToNetAddress: nil,
-//		MakeEmptyMessage: makeMessage,
-//		BestHeight: func() uint64 {
-//			return 0
-//		},
-//		IsSelfConnection: func(nonce uint64) bool {
-//			return false
-//		},
-//		GetVersionNonce: func() uint64 {
-//			return rand.Uint64()
-//		},
-//	}
-//	peer2Cfg := &peer.Config{
-//		Magic:            123123,
-//		ProtocolVersion:  p2p.EIP001Version,
-//		Services:         1,
-//		DisableRelayTx:   true,
-//		HostToNetAddress: nil,
-//		MakeEmptyMessage: makeMessage,
-//		BestHeight: func() uint64 {
-//			return 0
-//		},
-//		IsSelfConnection: func(nonce uint64) bool {
-//			return false
-//		},
-//		GetVersionNonce: func() uint64 {
-//			return rand.Uint64()
-//		},
-//	}
-//	peer1Cfg.AddMessageFunc(messageFunc)
-//	peer2Cfg.AddMessageFunc(messageFunc)
-//
-//	wantStats1 := peerStats{
-//		wantServices:        0,
-//		wantProtocolVersion: p2p.EIP001Version,
-//		wantConnected:       true,
-//		wantVersionKnown:    true,
-//		wantVerAckReceived:  true,
-//		wantLastPingTime:    time.Time{},
-//		wantLastPingMicros:  int64(0),
-//		wantTimeOffset:      int64(0),
-//	}
-//	wantStats2 := peerStats{
-//		wantServices:        1,
-//		wantProtocolVersion: p2p.EIP001Version,
-//		wantConnected:       true,
-//		wantVersionKnown:    true,
-//		wantVerAckReceived:  true,
-//		wantLastPingTime:    time.Time{},
-//		wantLastPingMicros:  int64(0),
-//		wantTimeOffset:      int64(0),
-//	}
-//
-//	tests := []struct {
-//		name  string
-//		setup func() (*peer.Peer, *peer.Peer, error)
-//	}{
-//		{
-//			"basic handshake",
-//			func() (*peer.Peer, *peer.Peer, error) {
-//				inConn, outConn := pipe(
-//					&conn{raddr: "10.0.0.1:8333"},
-//					&conn{raddr: "10.0.0.2:8333"},
-//				)
-//				inPeer := peer.NewInboundPeer(peer1Cfg)
-//				inPeer.AssociateConnection(inConn)
-//
-//				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
-//				if err != nil {
-//					return nil, nil, err
-//				}
-//				outPeer.AssociateConnection(outConn)
-//
-//				for i := 0; i < 2; i++ {
-//					select {
-//					case <-verack:
-//					case <-time.After(time.Second):
-//						return nil, nil, errors.New("verack timeout")
-//					}
-//				}
-//				return inPeer, outPeer, nil
-//			},
-//		},
-//		{
-//			"socks proxy",
-//			func() (*peer.Peer, *peer.Peer, error) {
-//				inConn, outConn := pipe(
-//					&conn{raddr: "10.0.0.1:8333"},
-//					&conn{raddr: "10.0.0.2:8333"},
-//				)
-//				inPeer := peer.NewInboundPeer(peer1Cfg)
-//				inPeer.AssociateConnection(inConn)
-//
-//				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
-//				if err != nil {
-//					return nil, nil, err
-//				}
-//				outPeer.AssociateConnection(outConn)
-//
-//				for i := 0; i < 2; i++ {
-//					select {
-//					case <-verack:
-//					case <-time.After(time.Second):
-//						return nil, nil, errors.New("verack timeout")
-//					}
-//				}
-//				return inPeer, outPeer, nil
-//			},
-//		},
-//	}
-//	t.Logf("Running %d tests", len(tests))
-//	for i, test := range tests {
-//		inPeer, outPeer, err := test.setup()
-//		if err != nil {
-//			t.Errorf("TestPeerConnection setup #%d: unexpected err %v", i, err)
-//			return
-//		}
-//		testPeer(t, inPeer, wantStats2)
-//		testPeer(t, outPeer, wantStats1)
-//
-//		inPeer.Disconnect()
-//		outPeer.Disconnect()
-//		inPeer.WaitForDisconnect()
-//		outPeer.WaitForDisconnect()
-//	}
-//}
-//
-//// Tests that the node disconnects from peers with an unsupported protocol
-//// version.
-//func TestUnsupportedVersionPeer(t *testing.T) {
-//	verNonce := rand.Uint64()
-//	peerCfg := &peer.Config{
-//		Magic:            123123,
-//		ProtocolVersion:  0,
-//		Services:         0,
-//		DisableRelayTx:   true,
-//		HostToNetAddress: nil,
-//		MakeEmptyMessage: makeEmptyMessage,
-//		BestHeight: func() uint64 {
-//			return 0
-//		},
-//		IsSelfConnection: func(nonce uint64) bool {
-//			return nonce == verNonce
-//		},
-//		GetVersionNonce: func() uint64 {
-//			return verNonce
-//		},
-//	}
-//
-//	localConn, remoteConn := pipe(
-//		&conn{laddr: "10.0.0.1:8333", raddr: "10.0.0.2:8333"},
-//		&conn{laddr: "10.0.0.2:8333", raddr: "10.0.0.1:8333"},
-//	)
-//
-//	p, err := peer.NewOutboundPeer(peerCfg, "10.0.0.1:8333")
-//	if err != nil {
-//		t.Fatalf("NewOutboundPeer: unexpected err - %v\n", err)
-//	}
-//	p.AssociateConnection(localConn)
-//
-//	// Read outbound messages to peer into a channel
-//	outboundMessages := make(chan p2p.Message)
-//	go func() {
-//		for {
-//			msg, err := p2p.ReadMessage(
-//				remoteConn,
-//				peerCfg.Magic,
-//				makeEmptyMessage,
-//			)
-//			if err == io.EOF {
-//				close(outboundMessages)
-//				return
-//			}
-//			if err != nil {
-//				t.Errorf("Error reading message from local node: %v\n", err)
-//				return
-//			}
-//
-//			outboundMessages <- msg
-//		}
-//	}()
-//
-//	// Read version message sent to remote peer
-//	select {
-//	case omsg := <-outboundMessages:
-//		if _, ok := omsg.(*msg.Version); !ok {
-//			t.Fatalf("Expected version message, got [%s]", omsg.CMD())
-//		}
-//	case <-time.After(time.Second):
-//		t.Fatal("Peer did not send version message")
-//	}
-//
-//	// Remote peer writes version message advertising invalid protocol version 1
-//	invalidVersionMsg := msg.NewVersion(1, 0, verNonce, 0, true)
-//
-//	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg)
-//	if err != nil {
-//		t.Fatalf("p2p.WriteMessageN: unexpected err - %v\n", err)
-//	}
-//
-//	// Expect peer to disconnect automatically
-//	disconnected := make(chan struct{})
-//	go func() {
-//		p.WaitForDisconnect()
-//		disconnected <- struct{}{}
-//	}()
-//
-//	select {
-//	case <-disconnected:
-//		close(disconnected)
-//	case <-time.After(time.Second):
-//		t.Fatal("Peer did not automatically disconnect")
-//	}
-//
-//	// Expect no further outbound messages from peer
-//	select {
-//	case msg, chanOpen := <-outboundMessages:
-//		if chanOpen {
-//			t.Fatalf("Expected no further messages, received [%s]", msg.CMD())
-//		}
-//	case <-time.After(time.Second):
-//		t.Fatal("Timeout waiting for remote reader to close")
-//	}
-//}
+// TestPeerConnection tests connection between inbound and outbound peers.
+func TestPeerConnection(t *testing.T) {
+	test.SkipShort(t)
+	verack := make(chan struct{})
+	var makeMessage p2p.MakeEmptyMessage = func(cmd string) (p2p.Message, error) {
+		switch cmd {
+		case p2p.CmdVerAck:
+			verack <- struct{}{}
+		}
+		return makeEmptyMessage(cmd)
+	}
+	var messageFunc peer.MessageFunc = func(peer *peer.Peer, message p2p.Message) {
+		switch message.(type) {
+		case *msg.VerAck:
+			verack <- struct{}{}
+		}
+	}
+	peer1Cfg := &peer.Config{
+		Magic:            123123,
+		ProtocolVersion:  pact.EBIP001Version,
+		Services:         0,
+		DisableRelayTx:   true,
+		HostToNetAddress: nil,
+		MakeEmptyMessage: makeMessage,
+		BestHeight: func() uint64 {
+			return 0
+		},
+		IsSelfConnection: func(nonce uint64) bool {
+			return false
+		},
+		GetVersionNonce: func() uint64 {
+			return rand.Uint64()
+		},
+	}
+	peer2Cfg := &peer.Config{
+		Magic:            123123,
+		ProtocolVersion:  pact.EBIP001Version,
+		Services:         1,
+		DisableRelayTx:   true,
+		HostToNetAddress: nil,
+		MakeEmptyMessage: makeMessage,
+		BestHeight: func() uint64 {
+			return 0
+		},
+		IsSelfConnection: func(nonce uint64) bool {
+			return false
+		},
+		GetVersionNonce: func() uint64 {
+			return rand.Uint64()
+		},
+	}
+	peer1Cfg.AddMessageFunc(messageFunc)
+	peer2Cfg.AddMessageFunc(messageFunc)
+
+	wantStats1 := peerStats{
+		wantServices:        0,
+		wantProtocolVersion: pact.EBIP001Version,
+		wantConnected:       true,
+		wantVersionKnown:    true,
+		wantVerAckReceived:  true,
+		wantLastPingTime:    time.Time{},
+		wantLastPingMicros:  int64(0),
+		wantTimeOffset:      int64(0),
+	}
+	wantStats2 := peerStats{
+		wantServices:        1,
+		wantProtocolVersion: pact.EBIP001Version,
+		wantConnected:       true,
+		wantVersionKnown:    true,
+		wantVerAckReceived:  true,
+		wantLastPingTime:    time.Time{},
+		wantLastPingMicros:  int64(0),
+		wantTimeOffset:      int64(0),
+	}
+
+	tests := []struct {
+		name  string
+		setup func() (*peer.Peer, *peer.Peer, error)
+	}{
+		{
+			"basic handshake",
+			func() (*peer.Peer, *peer.Peer, error) {
+				inConn, outConn := pipe(
+					&conn{raddr: "10.0.0.1:8333"},
+					&conn{raddr: "10.0.0.2:8333"},
+				)
+				inPeer := peer.NewInboundPeer(peer1Cfg)
+				inPeer.AssociateConnection(inConn)
+
+				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
+				if err != nil {
+					return nil, nil, err
+				}
+				outPeer.AssociateConnection(outConn)
+
+				for i := 0; i < 2; i++ {
+					select {
+					case <-verack:
+					case <-time.After(time.Second):
+						return nil, nil, errors.New("verack timeout")
+					}
+				}
+				return inPeer, outPeer, nil
+			},
+		},
+		{
+			"socks proxy",
+			func() (*peer.Peer, *peer.Peer, error) {
+				inConn, outConn := pipe(
+					&conn{raddr: "10.0.0.1:8333"},
+					&conn{raddr: "10.0.0.2:8333"},
+				)
+				inPeer := peer.NewInboundPeer(peer1Cfg)
+				inPeer.AssociateConnection(inConn)
+
+				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
+				if err != nil {
+					return nil, nil, err
+				}
+				outPeer.AssociateConnection(outConn)
+
+				for i := 0; i < 2; i++ {
+					select {
+					case <-verack:
+					case <-time.After(time.Second):
+						return nil, nil, errors.New("verack timeout")
+					}
+				}
+				return inPeer, outPeer, nil
+			},
+		},
+	}
+	t.Logf("Running %d tests", len(tests))
+	for i, test := range tests {
+		inPeer, outPeer, err := test.setup()
+		if err != nil {
+			t.Errorf("TestPeerConnection setup #%d: unexpected err %v", i, err)
+			return
+		}
+		testPeer(t, inPeer, wantStats2)
+		testPeer(t, outPeer, wantStats1)
+
+		inPeer.Disconnect()
+		outPeer.Disconnect()
+		inPeer.WaitForDisconnect()
+		outPeer.WaitForDisconnect()
+	}
+}
+
+// Tests that the node disconnects from peers with an unsupported protocol
+// version.
+func TestUnsupportedVersionPeer(t *testing.T) {
+	test.SkipShort(t)
+	verNonce := rand.Uint64()
+	peerCfg := &peer.Config{
+		Magic:            123123,
+		ProtocolVersion:  0,
+		Services:         0,
+		DisableRelayTx:   true,
+		HostToNetAddress: nil,
+		MakeEmptyMessage: makeEmptyMessage,
+		BestHeight: func() uint64 {
+			return 0
+		},
+		IsSelfConnection: func(nonce uint64) bool {
+			return nonce == verNonce
+		},
+		GetVersionNonce: func() uint64 {
+			return verNonce
+		},
+	}
+
+	localConn, remoteConn := pipe(
+		&conn{laddr: "10.0.0.1:8333", raddr: "10.0.0.2:8333"},
+		&conn{laddr: "10.0.0.2:8333", raddr: "10.0.0.1:8333"},
+	)
+
+	p, err := peer.NewOutboundPeer(peerCfg, "10.0.0.1:8333")
+	if err != nil {
+		t.Fatalf("NewOutboundPeer: unexpected err - %v\n", err)
+	}
+	p.AssociateConnection(localConn)
+
+	// Read outbound messages to peer into a channel
+	outboundMessages := make(chan p2p.Message)
+	go func() {
+		for {
+			msg, err := p2p.ReadMessage(
+				remoteConn,
+				peerCfg.Magic,
+				makeEmptyMessage,
+			)
+			if err == io.EOF {
+				close(outboundMessages)
+				return
+			}
+			if err != nil {
+				t.Errorf("Error reading message from local node: %v\n", err)
+				return
+			}
+
+			outboundMessages <- msg
+		}
+	}()
+
+	// Read version message sent to remote peer
+	select {
+	case omsg := <-outboundMessages:
+		if _, ok := omsg.(*msg.Version); !ok {
+			t.Fatalf("Expected version message, got [%s]", omsg.CMD())
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Peer did not send version message")
+	}
+
+	// Remote peer writes version message advertising invalid protocol version 1
+	invalidVersionMsg := msg.NewVersion(1, 0, 0, verNonce,
+		0, true)
+
+	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg)
+	if err != nil {
+		t.Fatalf("p2p.WriteMessageN: unexpected err - %v\n", err)
+	}
+
+	// Expect peer to disconnect automatically
+	disconnected := make(chan struct{})
+	go func() {
+		p.WaitForDisconnect()
+		disconnected <- struct{}{}
+	}()
+
+	select {
+	case <-disconnected:
+		close(disconnected)
+	case <-time.After(time.Second):
+		t.Fatal("Peer did not automatically disconnect")
+	}
+
+	// Expect no further outbound messages from peer
+	select {
+	case msg, chanOpen := <-outboundMessages:
+		if chanOpen {
+			t.Fatalf("Expected no further messages, received [%s]", msg.CMD())
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Timeout waiting for remote reader to close")
+	}
+}

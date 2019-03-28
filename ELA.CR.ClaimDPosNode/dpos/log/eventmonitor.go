@@ -4,23 +4,25 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type ProposalEvent struct {
-	Proposal     string
+	Sponsor      string
 	BlockHash    common.Uint256
 	ReceivedTime time.Time
 	EndTime      time.Time
 	Result       bool
 	ProposalHash common.Uint256
-	RawData      []byte
+	RawData      *payload.DPOSProposal
 }
 
 type VoteEvent struct {
 	Signer       string
 	ReceivedTime time.Time
 	Result       bool
-	RawData      []byte
+	RawData      *payload.DPOSProposalVote
 }
 
 type ViewEvent struct {
@@ -34,7 +36,7 @@ type ConsensusEvent struct {
 	StartTime time.Time
 	EndTime   time.Time
 	Height    uint32
-	RawData   []byte
+	RawData   *types.Header
 }
 
 type EventListener interface {
@@ -50,7 +52,7 @@ type EventMonitor struct {
 	listeners []EventListener
 }
 
-func NewEventMoniter() *EventMonitor {
+func NewEventMonitor() *EventMonitor {
 	e := &EventMonitor{
 		listeners: make([]EventListener, 0),
 	}

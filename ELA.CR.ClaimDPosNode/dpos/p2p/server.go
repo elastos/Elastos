@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net"
 	"runtime"
+	"sort"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -56,6 +57,12 @@ func (a simpleAddr) Network() string {
 
 // Ensure simpleAddr implements the net.Addr interface.
 var _ net.Addr = simpleAddr{}
+
+// newPeerMsg represent a new connected peer.
+type newPeerMsg *serverPeer
+
+// donePeerMsg represent a disconnected peer.
+type donePeerMsg *serverPeer
 
 // broadcastMsg provides the ability to house a message to be broadcast
 // to all connected peers except specified excluded peers.
@@ -117,8 +124,7 @@ type server struct {
 
 	cfg         Config
 	connManager *connmgr.ConnManager
-	newPeers    chan *serverPeer
-	donePeers   chan *serverPeer
+	peerQueue   chan interface{}
 	query       chan interface{}
 	broadcast   chan broadcastMsg
 	wg          sync.WaitGroup
@@ -270,7 +276,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 	})
 
 	for _, sp := range groups {
-		sp.SendMessage(bmsg.message, nil)
+		go sp.SendMessage(bmsg.message, nil)
 	}
 }
 
@@ -291,6 +297,10 @@ type getConnCountMsg struct {
 
 type getPeersMsg struct {
 	reply chan []*serverPeer
+}
+
+type dumpPeersInfoMsg struct {
+	reply chan []*PeerInfo
 }
 
 // handleQuery is the central handler for all queries and commands from other
@@ -400,7 +410,62 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 			peers = append(peers, sp)
 		})
 		msg.reply <- peers
+
+	case dumpPeersInfoMsg:
+		// DumpPeesInfo returns the peers info in connect peers list.  The peers
+		// in connect list can be in 4 states.
+		// 1. NoneConnection, no outbound or inbound connection.
+		// 2. 2WayConnection, have both outbound and inbound connections.
+		// 3. OutboundOnly, has one outbound connection.
+		// 4. InboundOnly, has one inbound connection.
+
+		// To get the actual state of a peer in connect list, we need to loop
+		// through outbound peers list, inbound peers list and connect peers
+		// list, these are high cost operations.  So this method should not be
+		// called frequently.
+		peers := make(map[peer.PID]*PeerInfo)
+		for _, sp := range state.outboundPeers {
+			peers[sp.PID()] = &PeerInfo{
+				PID:   sp.PID(),
+				Addr:  sp.Addr(),
+				State: CSOutboundOnly,
+			}
+		}
+		for _, sp := range state.inboundPeers {
+			if pi, ok := peers[sp.PID()]; ok {
+				pi.State = CS2WayConnection
+				continue
+			}
+			peers[sp.PID()] = &PeerInfo{
+				PID:   sp.PID(),
+				Addr:  sp.Addr(),
+				State: CSInboundOnly,
+			}
+		}
+		for _, pa := range state.connectPeers {
+			if _, ok := peers[pa.PID]; ok {
+				continue
+			}
+			peers[pa.PID] = &PeerInfo{
+				PID:   pa.PID,
+				Addr:  pa.Addr,
+				State: CSNoneConnection,
+			}
+		}
+		msg.reply <- sortPeersInfo(peers)
 	}
+}
+
+// sortPeersInfo returns an ordered PeerInfo slice by peer's PID in asc.
+func sortPeersInfo(peers map[peer.PID]*PeerInfo) []*PeerInfo {
+	list := make([]*PeerInfo, 0, len(peers))
+	for _, pi := range peers {
+		list = append(list, pi)
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return bytes.Compare(list[i].PID[:], list[j].PID[:]) < 0
+	})
+	return list
 }
 
 func (s *server) pingNonce(pid peer.PID) uint64 {
@@ -448,8 +513,8 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s)
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -466,15 +531,15 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	}
 	sp.Peer = p
 	sp.connReq = c
-	sp.AssociateConnection(conn)
 	go s.peerDoneHandler(sp)
+	sp.AssociateConnection(conn)
 }
 
 // peerDoneHandler handles peer disconnects by notifiying the server that it's
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.donePeers <- sp
+	s.peerQueue <- donePeerMsg(sp)
 	close(sp.quit)
 }
 
@@ -492,13 +557,9 @@ func (s *server) peerHandler() {
 out:
 	for {
 		select {
-		// New peers connected to the server.
-		case p := <-s.newPeers:
-			s.handleAddPeerMsg(state, p)
-
-			// Disconnected peers.
-		case p := <-s.donePeers:
-			s.handleDonePeerMsg(state, p)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(state, p)
 
 			// Message to broadcast to all connected peers except those
 			// which are excluded by the message.
@@ -524,8 +585,7 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		case <-s.broadcast:
 		case <-s.query:
 		default:
@@ -535,9 +595,21 @@ cleanup:
 	s.wg.Done()
 }
 
+// handlePeerMsg deals with adding/removing and ban peer message.
+func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
+	switch sp := sp.(type) {
+	case newPeerMsg:
+		s.handleAddPeerMsg(state, sp)
+
+	case donePeerMsg:
+		s.handleDonePeerMsg(state, sp)
+
+	}
+}
+
 // AddPeer adds a new peer that has already been connected to the server.
 func (s *server) AddPeer(sp *serverPeer) {
-	s.newPeers <- sp
+	s.peerQueue <- newPeerMsg(sp)
 }
 
 // BroadcastMessage sends msg to all peers currently connected to the server
@@ -586,6 +658,16 @@ func (s *server) ConnectedPeers() []Peer {
 		peers = append(peers, (Peer)(sp))
 	}
 	return peers
+}
+
+// DumpPeersInfo returns an array consisting of all peers state in connect list.
+//
+// This function is safe for concurrent access and is part of the
+// IServer interface implementation.
+func (s *server) DumpPeersInfo() []*PeerInfo {
+	replyChan := make(chan []*PeerInfo)
+	s.query <- dumpPeersInfoMsg{reply: replyChan}
+	return <-replyChan
 }
 
 // Start begins accepting connections from peers.
@@ -708,8 +790,7 @@ func NewServer(origCfg *Config) (*server, error) {
 
 	s := server{
 		cfg:       cfg,
-		newPeers:  make(chan *serverPeer, maxPeers),
-		donePeers: make(chan *serverPeer, maxPeers),
+		peerQueue: make(chan interface{}, maxPeers),
 		query:     make(chan interface{}),
 		broadcast: make(chan broadcastMsg, maxPeers),
 		quit:      make(chan struct{}),

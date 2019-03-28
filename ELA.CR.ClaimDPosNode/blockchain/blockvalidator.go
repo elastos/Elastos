@@ -10,8 +10,9 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
 
@@ -19,13 +20,13 @@ const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
-func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
+func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	header := block.Header
 	hash := header.Hash()
 	if !header.AuxPow.Check(&hash, AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check aux pow failed")
 	}
-	if CheckProofOfWork(&header, powLimit) != nil {
+	if CheckProofOfWork(&header, b.chainParams.PowLimit) != nil {
 		return errors.New("[PowCheckBlockSanity] block check proof of work failed")
 	}
 
@@ -36,7 +37,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// Ensure the block time is not too far in the future.
-	maxTimestamp := timeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
+	maxTimestamp := b.TimeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
 	if tempTime.After(maxTimestamp) {
 		return errors.New("[PowCheckBlockSanity] block timestamp of is too far in the future")
 	}
@@ -48,27 +49,24 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// A block must not have more transactions than the max block payload.
-	if numTx > config.Parameters.MaxTxsInBlock {
+	if numTx > pact.MaxTxPerBlock {
 		return errors.New("[PowCheckBlockSanity]  block contains too many transactions")
 	}
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > config.Parameters.MaxBlockSize {
+	if blockSize > pact.MaxBlockSize {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
 	transactions := block.Transactions
-	for index, tx := range transactions {
-		// The first transaction in a block must be a coinbase.
-		if index == 0 {
-			if !tx.IsCoinBaseTx() {
-				return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
-			}
-			continue
-		}
+	// The first transaction in a block must be a coinbase.
+	if !transactions[0].IsCoinBaseTx() {
+		return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
+	}
 
-		// A block must not have more than one coinbase.
+	// A block must not have more than one coinbase.
+	for _, tx := range transactions[1:] {
 		if tx.IsCoinBaseTx() {
 			return errors.New("[PowCheckBlockSanity] block contains second coinbase")
 		}
@@ -89,7 +87,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(block.Height, txn); errCode != Success {
+		if errCode := b.CheckTransactionSanity(block.Height, txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -103,7 +101,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		if txn.IsWithdrawFromSideChainTx() {
-			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
 			for _, hash := range witPayload.SideChainTransactionHashes {
@@ -115,7 +113,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		if txn.IsRegisterProducerTx() {
-			producerPayload, ok := txn.Payload.(*PayloadRegisterProducer)
+			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid register producer payload")
 			}
@@ -136,7 +134,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		if txn.IsUpdateProducerTx() {
-			producerPayload, ok := txn.Payload.(*PayloadUpdateProducer)
+			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid update producer payload")
 			}
@@ -170,29 +168,29 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	return nil
 }
 
-func CheckBlockContext(block *Block) error {
+func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
-		if errCode := CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
+		if errCode := b.CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(block.Transactions[i], DefaultLedger.Blockchain.AssetID)
+		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID)
 	}
 
-	return checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
+	return b.checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
 }
 
-func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
+func (b *BlockChain) checkBlockContext(block *Block, prevNode *BlockNode) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil
 	}
 
 	header := block.Header
-	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode,
+	expectedDifficulty, err := b.CalcNextRequiredDifficulty(prevNode,
 		time.Unix(int64(header.Timestamp), 0))
 	if err != nil {
 		return err
@@ -217,7 +215,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 		}
 	}
 
-	return nil
+	return b.checkTxsContext(block)
 }
 
 func CheckProofOfWork(header *Header, powLimit *big.Int) error {
@@ -318,7 +316,7 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 	return feeMap, nil
 }
 
-func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
+func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, totalTxFee Fixed64) error {
 	var rewardInCoinbase = Fixed64(0)
 	outputAddressMap := make(map[Uint168]Fixed64)
 
@@ -331,13 +329,73 @@ func checkCoinbaseTransactionContext(blockHeight uint32, coinbase *Transaction, 
 	}
 
 	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+	if rewardInCoinbase-totalTxFee != b.chainParams.RewardPerBlock {
 		return errors.New("Reward amount in coinbase not correct")
 	}
 
-	if err := DefaultLedger.HeightVersions.CheckCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
+	if err := checkCoinbaseArbitratorsReward(blockHeight, coinbase, rewardInCoinbase); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func checkCoinbaseArbitratorsReward(height uint32, coinbase *Transaction, rewardInCoinbase Fixed64) error {
+	// main version >= H2
+	if height >= config.DefaultParams.PublicDPOSHeight {
+		outputAddressMap := make(map[Uint168]Fixed64)
+		for i := 2; i < len(coinbase.Outputs); i++ {
+			outputAddressMap[coinbase.Outputs[i].ProgramHash] = coinbase.Outputs[i].Value
+		}
+
+		currentOwnerHashes := DefaultLedger.Arbitrators.GetCurrentOwnerProgramHashes()
+		candidateOwnerHashes := DefaultLedger.Arbitrators.GetCandidateOwnerProgramHashes()
+		if len(currentOwnerHashes)+len(candidateOwnerHashes) != len(coinbase.Outputs)-2 {
+			return errors.New("coinbase output count not match")
+		}
+
+		dposTotalReward := float64(rewardInCoinbase) * 0.35
+		totalBlockConfirmReward := dposTotalReward * 0.25
+		totalTopProducersReward := dposTotalReward - totalBlockConfirmReward
+		individualBlockConfirmReward := Fixed64(math.Floor(totalBlockConfirmReward / float64(len(currentOwnerHashes))))
+		totalVotesInRound := DefaultLedger.Arbitrators.GetTotalVotesInRound()
+		rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
+
+		for _, hash := range currentOwnerHashes {
+			amount, ok := outputAddressMap[*hash]
+			if !ok {
+				return errors.New("unknown dpos reward address")
+			}
+
+			if DefaultLedger.Arbitrators.IsCRCArbitratorProgramHash(hash) {
+				if amount != individualBlockConfirmReward {
+					return errors.New("incorrect dpos reward amount")
+				}
+			} else {
+				votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
+				individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
+				if amount != individualProducerReward+individualBlockConfirmReward {
+					return errors.New("incorrect dpos reward amount")
+				}
+			}
+		}
+
+		for _, hash := range candidateOwnerHashes {
+			amount, ok := outputAddressMap[*hash]
+			if !ok {
+				return errors.New("unknown dpos reward address")
+			}
+
+			votes := DefaultLedger.Arbitrators.GetOwnerVotes(hash)
+			individualProducerReward := Fixed64(float64(votes) * rewardPerVote)
+			if amount != individualProducerReward {
+				return errors.New("incorrect dpos reward amount")
+			}
+		}
+
+		return nil
+	}
+
+	// old version [0, H2)
 	return nil
 }

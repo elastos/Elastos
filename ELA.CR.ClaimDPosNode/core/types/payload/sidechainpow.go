@@ -8,16 +8,16 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-const SideChainPowPayloadVersion byte = 0x00
+const SideChainPowVersion byte = 0x00
 
-type PayloadSideChainPow struct {
+type SideChainPow struct {
 	SideBlockHash   common.Uint256
 	SideGenesisHash common.Uint256
 	BlockHeight     uint32
 	SignedData      []byte
 }
 
-func (a *PayloadSideChainPow) Data(version byte) []byte {
+func (a *SideChainPow) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := a.Serialize(buf, version); err != nil {
 		return []byte{0}
@@ -26,42 +26,42 @@ func (a *PayloadSideChainPow) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (a *PayloadSideChainPow) Serialize(w io.Writer, version byte) error {
+func (a *SideChainPow) Serialize(w io.Writer, version byte) error {
 	err := a.SideBlockHash.Serialize(w)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SideBlockHash serialize failed.")
+		return errors.New("[SideChainPow], SideBlockHash serialize failed.")
 	}
 	err = a.SideGenesisHash.Serialize(w)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SideGenesisHash serialize failed.")
+		return errors.New("[SideChainPow], SideGenesisHash serialize failed.")
 	}
 	err = common.WriteUint32(w, a.BlockHeight)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], BlockHeight serialize failed.")
+		return errors.New("[SideChainPow], BlockHeight serialize failed.")
 	}
 	err = common.WriteVarBytes(w, a.SignedData)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SignatureData serialize failed.")
+		return errors.New("[SideChainPow], SignatureData serialize failed.")
 	}
 	return nil
 }
 
-func (a *PayloadSideChainPow) Deserialize(r io.Reader, version byte) error {
+func (a *SideChainPow) Deserialize(r io.Reader, version byte) error {
 	err := a.SideBlockHash.Deserialize(r)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
+		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
 	err = a.SideGenesisHash.Deserialize(r)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
+		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
 	a.BlockHeight, err = common.ReadUint32(r)
 	if err != nil {
-		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
+		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
-	if a.SignedData, err = common.ReadVarBytes(r, MaxCoinbasePayloadDataSize,
+	if a.SignedData, err = common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload sidechainpow signed data"); err != nil {
-		return errors.New("[PayloadSideChainPow], SignatureData dserialize failed.")
+		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
 	return nil
 }
