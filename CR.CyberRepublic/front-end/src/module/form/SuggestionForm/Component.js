@@ -8,15 +8,19 @@ import {
   Input,
   Button,
   Icon,
+  DatePicker,
 } from 'antd'
+import moment from 'moment/moment'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
-import './style.scss'
 
-const FormItem = Form.Item
+import './style.scss'
+import { StyledFormItem, StyledFormDesc } from './style'
+
+// const FormItem = Form.Item
 
 // TOTO: add mention module
 // https://github.com/afconsult/quill-mention
@@ -40,33 +44,42 @@ class C extends BaseComponent {
 
     form.validateFields(async (err, values) => {
       if (!err) {
-        if (_.isEmpty(values.description)) {
-          form.setFields({
-            description: {
-              errors: [new Error(I18N.get('suggestion.create.error.descriptionRequired'))],
-            },
-          })
+        // if (_.isEmpty(values.description)) {
+        //   form.setFields({
+        //     description: {
+        //       errors: [new Error(I18N.get('suggestion.create.error.required'))],
+        //     },
+        //   })
 
-          return
-        }
-        if (_.isEmpty(values.description)) {
-          form.setFields({
-            title: {
-              errors: [new Error(I18N.get('suggestion.create.error.titleRequired'))],
-            },
-          })
+        //   return
+        // }
+        // if (_.isEmpty(values.description)) {
+        //   form.setFields({
+        //     title: {
+        //       errors: [new Error(I18N.get('suggestion.create.error.required'))],
+        //     },
+        //   })
 
-          return
-        }
+        //   return
+        // }
 
         const param = {
           title: values.title,
           desc: sanitizeHtml(values.description, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
           }),
-          link: values.link,
+          benefits: values.benefits,
         }
-
+        if (!_.isEmpty(values.funding)) {
+          param.funding = values.funding
+        }
+        if (!_.isEmpty(values.timeline)) {
+          param.timeline = values.timeline
+        }
+        if (!_.isEmpty(values.link)) {
+          param.link = values.link
+        }
+        console.log('param is: ', param)
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
         }
@@ -79,50 +92,63 @@ class C extends BaseComponent {
     const { getFieldDecorator } = this.props.form
     const { data } = this.props
 
-    const input_el = (
-      <Input size="large" placeholder="Title" />
-    )
-
+    const input_el = <Input size="large" />
     const textarea_el = (
       <ReactQuill
-        placeholder="Description"
         modules={{
           toolbar: TOOLBAR_OPTIONS,
           autoLinks: true,
         }}
+        style={{ backgroundColor: 'white' }}
       />
     )
-
-    const link_el = (
-      <Input size="large" placeholder="Info Link" />
-    )
+    const benefits_el = <Input.TextArea />
+    const funding_el = <Input size="large" />
+    const timeline_el = <DatePicker size="large" placeholder="" style={{ width: '100%' }} />
+    const link_el = <Input size="large" />
 
     const title_fn = getFieldDecorator('title', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.titleRequired') },
-        { min: 4, message: I18N.get('suggestion.create.error.titleTooShort') },
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'title', ''),
     })
-    const descInitValue = `
-      <p><strong>${I18N.get('suggestion.form.fields.1')}</strong></p>
-      <p><strong>${I18N.get('suggestion.form.fields.2')}</strong></p>
-      <p><strong>${I18N.get('suggestion.form.fields.3')}</strong></p>
-      <p><strong>${I18N.get('suggestion.form.fields.4')}</strong></p>
-      <p><strong>${I18N.get('suggestion.form.fields.5')}</strong></p>
-    `
 
     const description_fn = getFieldDecorator('description', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
-        { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
-      initialValue: _.get(data, 'desc', descInitValue),
+      initialValue: _.get(data, 'desc', ''),
+    })
+
+    const benefits_fn = getFieldDecorator('benefits', {
+      rules: [
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+      ],
+      initialValue: _.get(data, 'benefits', ''),
+    })
+
+    const funding_fn = getFieldDecorator('funding', {
+      rules: [
+        { required: false },
+      ],
+      initialValue: _.get(data, 'funding', ''),
+    })
+
+    const timeline_fn = getFieldDecorator('timeline', {
+      rules: [
+        { required: false },
+      ],
+      initialValue: moment(_.get(data, 'timeline', undefined)),
     })
 
     const link_fn = getFieldDecorator('link', {
       rules: [
         { type: 'url' },
+        { required: false },
       ],
       initialValue: _.get(data, 'link', ''),
     })
@@ -130,13 +156,22 @@ class C extends BaseComponent {
     return {
       title: title_fn(input_el),
       description: description_fn(textarea_el),
+      benefits: benefits_fn(benefits_el),
+      funding: funding_fn(funding_el),
+      timeline: timeline_fn(timeline_el),
       link: link_fn(link_el),
     }
   }
 
   renderTranslationBtn() {
-    const { title, description } = this.props.form.getFieldsValue(['title', 'description'])
-    const text = `<h1>${title}</h1>${description}`
+    const { title, description, benefits } = this.props.form.getFieldsValue(['title', 'description', 'benefits'])
+    const text = `
+      <h1>${title}</h1>
+      <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
+      ${description}
+      <h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+      <p>${benefits}</p>
+    `
 
     return (
       <div>
@@ -213,20 +248,44 @@ class C extends BaseComponent {
     const p = this.getInputProps()
     const translationBtn = this.renderTranslationBtn()
 
+    const formItemLayout = {
+      labelCol: {
+        span: 24,
+      },
+      wrapperCol: {
+        span: 24,
+      },
+      colon: false,
+    }
     const formContent = (
       <div>
-        <FormItem className="form-title">
+        <StyledFormItem label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
           {p.title}
-        </FormItem>
-        <FormItem className="form-desc">
+        </StyledFormItem>
+        <StyledFormDesc label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
           {p.description}
-        </FormItem>
-        <FormItem className="form-link">
+        </StyledFormDesc>
+        <StyledFormItem label={I18N.get('suggestion.form.fields.benefits')} {...formItemLayout}>
+          {p.benefits}
+        </StyledFormItem>
+        <Row gutter={12}>
+          <Col span={12}>
+            <StyledFormItem label={I18N.get('suggestion.form.fields.funding')} {...formItemLayout}>
+              {p.funding}
+            </StyledFormItem>
+          </Col>
+          <Col span={12}>
+            <StyledFormItem label={I18N.get('suggestion.form.fields.timeline')} {...formItemLayout}>
+              {p.timeline}
+            </StyledFormItem>
+          </Col>
+        </Row>
+        <StyledFormItem label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
           {p.link}
-        </FormItem>
-        <FormItem className="form-link">
+        </StyledFormItem>
+        <StyledFormItem>
           {translationBtn}
-        </FormItem>
+        </StyledFormItem>
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
             <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>

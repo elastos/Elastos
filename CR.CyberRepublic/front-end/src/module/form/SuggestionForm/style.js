@@ -1,27 +1,26 @@
 import styled from 'styled-components'
+import { Form } from 'antd'
+
+const FormItem = Form.Item
 
 export const Container = styled.div`
 `
 
-export const ModalBody = styled.div`
-  padding: 20px;
+export const StyledFormItem = styled(FormItem)`
+  input, textarea {
+    border-radius: 0;
+    &::placeholder {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.65);
+      font-style: italic;
+    }
+  }
 `
 
-export const TranslationText = styled.div`
-  padding: 20px 0;
-`
-
-export const TranslateButton = styled.div`
-  font-size: 13px;
-  line-height: normal;
-  color: rgba(3, 30, 40, 0.4);
-  cursor: pointer;
-`
-
-export const CopyButton = styled.div`
-  font-weight: 500;
-  font-size: 16px;
-  line-height: normal;
-  color: #008D85;
-  cursor: pointer;
+export const StyledFormDesc = styled(FormItem)`
+  min-height: 300px;
+  margin-bottom: 30px;
+  .ql-container {
+    height: 245px;
+  }
 `

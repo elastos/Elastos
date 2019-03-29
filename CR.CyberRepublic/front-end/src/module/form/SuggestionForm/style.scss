@@ -19,24 +19,7 @@
   .ql-toolbar.ql-snow {
     text-align: left;
   }
-  .form-title #title,
-  .form-link #link {
-    border-radius: 0;
-    &::placeholder {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.65);
-      font-style: italic;
-    }
-  }
-  .form-desc {
-    background: white;
-    height: 300px;
-    margin-bottom: 30px;
-    .ql-container {
-      height: 245px;
-    }
-  }
-  .form-actions {}
+
   .ant-btn.cr-btn-primary {
     margin-left: 10px;
   }

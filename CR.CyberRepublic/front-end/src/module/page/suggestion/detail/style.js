@@ -32,13 +32,13 @@ export const Label = styled.span`
 
 export const Desc = styled.div`
   color: black;
-  margin-top: 15px;
+  margin-top: 30px;
 `
 
-export const StyledLink = styled.div`
-  color: ${text.lightGray};
-  margin-top: ${gap.gap_2};
-`
+// export const StyledLink = styled.div`
+//   color: ${text.lightGray};
+//   margin-top: ${gap.gap_2};
+// `
 
 export const BtnGroup = styled.div`
   margin: ${gap.gap_2} 0;

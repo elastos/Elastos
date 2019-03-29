@@ -273,11 +273,13 @@ const zh = {
   'suggestion.editHistory': '编辑历史',
   'suggestion.showEditHistory': '查看编辑历史',
   'suggestion.edited': '编辑于',
-  'suggestion.form.fields.1': '建议',
-  'suggestion.form.fields.2': '对于亦来云社区/生态系统的好处 ',
-  'suggestion.form.fields.3': '预估资金（USD）',
-  'suggestion.form.fields.4': '建议时间线',
-  'suggestion.form.fields.5': '相关链接',
+  'suggestion.form.fields.suggestion': '建议',
+  'suggestion.form.fields.subject': '标题',
+  'suggestion.form.fields.desc': '描述',
+  'suggestion.form.fields.benefits': '对于亦来云社区/生态系统的好处 ',
+  'suggestion.form.fields.funding': '预估资金（USD）',
+  'suggestion.form.fields.timeline': '建议时间线',
+  'suggestion.form.fields.links': '相关链接',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
@@ -286,10 +288,8 @@ const zh = {
   'suggestion.btnText.makeIntoProposal': '转化为提案',
 
   // suggestion error
-  'suggestion.create.error.titleRequired': '建议标题为必填项',
-  'suggestion.create.error.descriptionRequired': '建议描述为必填项',
-  'suggestion.create.error.titleTooShort': '建议标题太短',
-  'suggestion.create.error.descriptionTooShort': '建议描述太短',
+  'suggestion.create.error.required': '必填项',
+  'suggestion.create.error.tooShort': '文字太短',
 
   // suggestion rules
   'suggestion.rules': '规则',
@@ -1475,10 +1475,10 @@ zh[`taskType.${TASK_STATUS.PROJECT}`] = '项目'
 zh[`taskType.${TASK_STATUS.EVENT}`] = '活动'
 
 zh[`cvoteStatus.${CVOTE_STATUS.DRAFT}`] = '草案'
-zh[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = '拟议的'
-zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '待投票'
+zh[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = '投票中'
+zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '已通过'
 zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已拒绝'
-zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '最终版'
+zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '延期的'
 
 export default zh
