@@ -17,7 +17,17 @@ const SuggestionCore = {
     // minlength: 1,
     // maxLength: 10000,
   },
-  link: String,
+  benefits: {
+    type: String,
+    // required: true,
+  },
+  funding: {
+    type: Number,
+  },
+  timeline: {
+    type: Date,
+  },
+  link: [String],
 }
 
 export const Suggestion = {

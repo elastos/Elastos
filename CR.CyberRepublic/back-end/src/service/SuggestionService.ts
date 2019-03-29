@@ -6,7 +6,10 @@ import { validate } from '../utility'
 const emptyDoc = {
   title: '',
   desc: '',
-  link: '',
+  benefits: '',
+  funding: '',
+  timeline: undefined,
+  link: [],
 }
 
 export default class extends Base {
@@ -17,16 +20,31 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const { title, desc, link } = param
+    const { title, desc, benefits, funding, timeline, link, } = param
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
 
-    const docCore = {
+    const docCore: any = {
       title,
       desc,
-      link,
+      benefits,
+      // funding,
+      // timeline,
+      // link,
     }
+    if (!_.isEmpty(funding)) {
+      docCore.funding = funding
+    }
+    if (!_.isEmpty(timeline)) {
+      docCore.timeline = timeline
+    }
+    if (!_.isEmpty(link)) {
+      docCore.link = link
+    }
+
+    console.log('docCore is: ', docCore)
+
     // build document object
     const doc = {
       ...docCore,
@@ -39,9 +57,13 @@ export default class extends Base {
 
   public async update(param: any): Promise<Document> {
     // get param
-    const { id, title, desc, link } = param
+    const { id, title, desc, benefits, funding, timeline, link } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
+
+    if (!currDoc) {
+      throw 'Current document does not exist'
+    }
 
     if (!userId.equals(_.get(currDoc, 'createdBy'))) {
       throw 'Only owner can edit suggestion'
@@ -52,10 +74,22 @@ export default class extends Base {
     this.validateDesc(desc)
 
     // build document object
-    const doc = {
+    const doc: any = {
       title,
       desc,
-      link,
+      benefits,
+      // funding,
+      // timeline,
+      // link,
+    }
+    if (!_.isEmpty(funding)) {
+      doc.funding = funding
+    }
+    if (!_.isEmpty(timeline)) {
+      doc.timeline = timeline
+    }
+    if (!_.isEmpty(link)) {
+      doc.link = link
     }
 
     // update the document
@@ -65,6 +99,9 @@ export default class extends Base {
       const firstHistoryItem = {
         title: currDoc.title,
         desc: currDoc.desc,
+        benefits: currDoc.benefits,
+        funding: currDoc.funding,
+        timeline: currDoc.timeline,
         link: currDoc.link,
       }
       // for old data
@@ -224,13 +261,13 @@ export default class extends Base {
   /**
    * Utils
    */
-  public validateTitle(title) {
+  public validateTitle(title: String) {
     if (!validate.valid_string(title, 4)) {
       throw 'invalid title'
     }
   }
 
-  public validateDesc(desc) {
+  public validateDesc(desc: String) {
     if (!validate.valid_string(desc, 1)) {
       throw 'invalid description'
     }
