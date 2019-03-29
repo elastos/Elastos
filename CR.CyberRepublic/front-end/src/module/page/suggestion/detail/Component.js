@@ -205,8 +205,14 @@ export default class extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { title, desc } = this.props.detail
-    const text = `<h1>${title}</h1>${desc}`
+    const { title, desc, benefits } = this.props.detail
+    const text = `
+      <h1>${title}</h1>
+      <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
+      ${desc}
+      ${benefits ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+      <p>${benefits}</p>` : ''}
+    `
 
     return (
       <div style={{ marginTop: 20 }}>
