@@ -7,41 +7,85 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/utils/http"
 )
 
-type HttpServiceExtend struct {
-	*service.HttpService
-
-	Config *service.Config
-	store  *blockchain.IDChainStore
+type Config struct {
+	service.Config
+	Compile  string
+	NodePort uint16
+	RPCPort  uint16
+	RestPort uint16
+	WSPort   uint16
+	Store    *blockchain.IDChainStore
 }
 
-func NewHttpService(cfg *service.Config, store *blockchain.IDChainStore) *HttpServiceExtend {
-	server := &HttpServiceExtend{
-		HttpService: service.NewHttpService(cfg),
-		store:       store,
-		Config:      cfg,
+type HttpService struct {
+	*service.HttpService
+	cfg   *Config
+	store *blockchain.IDChainStore
+}
+
+func NewHttpService(cfg *Config) *HttpService {
+	server := &HttpService{
+		HttpService: service.NewHttpService(&cfg.Config),
+		cfg:         cfg,
+		store:       cfg.Store,
 	}
 	return server
 }
 
-func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (interface{}, error) {
+func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
+	peers := s.cfg.Server.ConnectedPeers()
+	states := make([]*PeerInfo, 0, len(peers))
+	for _, peer := range peers {
+		snap := peer.ToPeer().StatsSnapshot()
+		states = append(states, &PeerInfo{
+			NetAddress:     snap.Addr,
+			Services:       pact.ServiceFlag(snap.Services).String(),
+			RelayTx:        snap.RelayTx != 0,
+			LastSend:       snap.LastSend.String(),
+			LastRecv:       snap.LastRecv.String(),
+			ConnTime:       snap.ConnTime.String(),
+			TimeOffset:     snap.TimeOffset,
+			Version:        snap.Version,
+			Inbound:        snap.Inbound,
+			StartingHeight: snap.StartingHeight,
+			LastBlock:      snap.LastBlock,
+			LastPingTime:   snap.LastPingTime.String(),
+			LastPingMicros: snap.LastPingMicros,
+		})
+	}
+	return ServerInfo{
+		Compile:   s.cfg.Compile,
+		Height:    s.cfg.Chain.GetBestHeight(),
+		Version:   pact.DPOSStartVersion,
+		Services:  s.cfg.Server.Services().String(),
+		Port:      s.cfg.NodePort,
+		RPCPort:   s.cfg.RPCPort,
+		RestPort:  s.cfg.RestPort,
+		WSPort:    s.cfg.WSPort,
+		Neighbors: states,
+	}, nil
+}
+
+func (s *HttpService) GetIdentificationTxByIdAndPath(param http.Params) (interface{}, error) {
 	id, ok := param.String("id")
 	if !ok {
-		return nil, util.NewError(int(service.InvalidParams), "id is null")
+		return nil, http.NewError(int(service.InvalidParams), "id is null")
 	}
 	_, err := common.Uint168FromAddress(id)
 	if err != nil {
-		return nil, util.NewError(int(service.InvalidParams), "invalid id")
+		return nil, http.NewError(int(service.InvalidParams), "invalid id")
 	}
 	path, ok := param.String("path")
 	if !ok {
-		return nil, util.NewError(int(service.InvalidParams), "path is null")
+		return nil, http.NewError(int(service.InvalidParams), "path is null")
 	}
 
 	buf := new(bytes.Buffer)
@@ -49,31 +93,31 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	buf.WriteString(path)
 	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownTransaction), "get identification transaction failed")
+		return nil, http.NewError(int(service.UnknownTransaction), "get identification transaction failed")
 	}
 	txHash, err := common.Uint256FromBytes(txHashBytes)
 	if err != nil {
-		return nil, util.NewError(int(service.InvalidTransaction), "invalid transaction hash")
+		return nil, http.NewError(int(service.InvalidTransaction), "invalid transaction hash")
 	}
 
 	txn, height, err := s.store.GetTransaction(*txHash)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownTransaction), "get transaction failed")
+		return nil, http.NewError(int(service.UnknownTransaction), "get transaction failed")
 	}
 	bHash, err := s.store.GetBlockHash(height)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownBlock), "get block failed")
+		return nil, http.NewError(int(service.UnknownBlock), "get block failed")
 	}
 	header, err := s.store.GetHeader(bHash)
 	if err != nil {
-		return nil, util.NewError(int(service.UnknownBlock), "get header failed")
+		return nil, http.NewError(int(service.UnknownBlock), "get header failed")
 	}
 
-	return s.Config.GetTransactionInfo(s.Config, header, txn), nil
+	return s.cfg.GetTransactionInfo(&s.cfg.Config, header, txn), nil
 }
 
-func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) {
-	bestHeight := s.Config.Store.GetHeight()
+func (s *HttpService) ListUnspent(param http.Params) (interface{}, error) {
+	bestHeight := s.cfg.Store.GetHeight()
 	type UTXOInfo struct {
 		AssetId       string `json:"assetid"`
 		Txid          string `json:"txid"`
@@ -108,13 +152,13 @@ func (s *HttpServiceExtend) ListUnspent(param util.Params) (interface{}, error) 
 		if err != nil {
 			return nil, errors.New("Invalid address: " + address)
 		}
-		differentAssets, err := s.Config.Chain.GetUnspents(*programHash)
+		differentAssets, err := s.cfg.Chain.GetUnspents(*programHash)
 		if err != nil {
 			return nil, errors.New("cannot get asset with program")
 		}
 		for _, asset := range differentAssets {
 			for _, unspent := range asset {
-				tx, height, err := s.Config.Chain.GetTransaction(unspent.TxId)
+				tx, height, err := s.cfg.Chain.GetTransaction(unspent.TxId)
 				if err != nil {
 					return nil, errors.New("unknown transaction " + unspent.TxId.String() + " from persisted utxo")
 				}

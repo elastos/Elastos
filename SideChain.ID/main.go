@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,13 +20,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
+	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
-
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/restful"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA.Utility/signal"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA/utils/http/restful"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 const (
@@ -164,22 +163,31 @@ func main() {
 	}
 
 	eladlog.Info("5. --Start the RPC service")
-	service := sv.NewHttpService(&service.Config{
-		Server:                      server,
-		Chain:                       chain,
-		Store:                       idChainStore.ChainStore,
-		GenesisAddress:              genesisAddress,
-		TxMemPool:                   txPool,
-		PowService:                  powService,
-		SpvService:                  spvService,
-		SetLogLevel:                 setLogLevel,
-		GetBlockInfo:                service.GetBlockInfo,
-		GetTransactionInfo:          sv.GetTransactionInfo,
-		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
-		GetTransaction:              service.GetTransaction,
-		GetPayloadInfo:              sv.GetPayloadInfo,
-		GetPayload:                  service.GetPayload,
-	}, idChainStore)
+	serviceCfg := sv.Config{
+		Config: service.Config{
+			Server:                      server,
+			Chain:                       chain,
+			Store:                       idChainStore.ChainStore,
+			GenesisAddress:              genesisAddress,
+			TxMemPool:                   txPool,
+			PowService:                  powService,
+			SpvService:                  spvService,
+			SetLogLevel:                 setLogLevel,
+			GetBlockInfo:                service.GetBlockInfo,
+			GetTransactionInfo:          sv.GetTransactionInfo,
+			GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
+			GetTransaction:              service.GetTransaction,
+			GetPayloadInfo:              sv.GetPayloadInfo,
+			GetPayload:                  service.GetPayload,
+		},
+		Compile:  Version,
+		NodePort: cfg.NodePort,
+		RPCPort:  cfg.HttpJsonPort,
+		RestPort: cfg.HttpRestPort,
+		WSPort:   cfg.HttpWsPort,
+		Store:    idChainStore,
+	}
+	service := sv.NewHttpService(&serviceCfg)
 
 	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
 	defer rpcServer.Stop()
@@ -193,11 +201,11 @@ func main() {
 	defer restServer.Stop()
 	go func() {
 		if err := restServer.Start(); err != nil {
-			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
+			eladlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
 		}
 	}()
 
-	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, service.Config)
+	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, &serviceCfg.Config)
 	defer socketServer.Stop()
 	go func() {
 		if err := socketServer.Start(); err != nil {
@@ -211,8 +219,13 @@ func main() {
 	<-interrupt.C
 }
 
-func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Server {
-	s := jsonrpc.NewServer(&jsonrpc.Config{ServePort: port})
+func newJsonRpcServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
+	s := jsonrpc.NewServer(&jsonrpc.Config{
+		ServePort: port,
+		User:      cfg.RPCUser,
+		Pass:      cfg.RPCPass,
+		WhiteList: cfg.RPCWhiteList,
+	})
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getblock", service.GetBlockByHash, "blockhash", "verbosity")
@@ -238,6 +251,8 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("getidentificationtxbyidandpath", service.GetIdentificationTxByIdAndPath, "id", "path")
 	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
+	s.RegisterAction("getillegalevidencebyheight", service.GetIllegalEvidenceByHeight, "height")
+	s.RegisterAction("checkillegalevidence", service.CheckIllegalEvidence, "evidence")
 
 	return s
 }
@@ -247,7 +262,7 @@ func newRESTfulServer(port uint16, service *service.HttpService) *restful.Server
 		s = restful.NewServer(&restful.Config{ServePort: port})
 
 		sendRawTransaction = func(data []byte) (interface{}, error) {
-			var params = util.Params{}
+			var params = http.Params{}
 			if err := json.Unmarshal(data, &params); err != nil {
 				return nil, err
 			}

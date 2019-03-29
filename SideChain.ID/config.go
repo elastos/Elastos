@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 const (
@@ -56,10 +56,16 @@ type config struct {
 			MinTxFee     int64
 			InstantBlock bool
 		}
+		RpcConfiguration struct {
+			User        string
+			Pass        string
+			WhiteIPList []string
+		}
 	}
 }
 
 type appConfig struct {
+	NodePort          uint16
 	HttpRestPort      uint16
 	HttpJsonPort      uint16
 	HttpWsPort        uint16
@@ -70,6 +76,9 @@ type appConfig struct {
 	MaxLogsFolderSize int64
 	MaxPerLogFileSize int64
 	MonitorState      bool
+	RPCUser           string
+	RPCPass           string
+	RPCWhiteList      []string
 }
 
 func loadNewConfig() (*appConfig, error) {
@@ -115,6 +124,7 @@ func loadNewConfig() (*appConfig, error) {
 
 	config := cfg.Configuration
 	powCfg := cfg.Configuration.PowConfiguration
+
 	if config.HttpRestPort > 0 {
 		appCfg.HttpRestPort = config.HttpRestPort
 	}
@@ -139,10 +149,16 @@ func loadNewConfig() (*appConfig, error) {
 	if config.Magic > 0 {
 		activeNetParams.Magic = config.Magic
 	}
+
+	appCfg.RPCUser = cfg.Configuration.RpcConfiguration.User
+	appCfg.RPCPass = cfg.Configuration.RpcConfiguration.Pass
+	appCfg.RPCWhiteList = cfg.Configuration.RpcConfiguration.WhiteIPList
+
 	if config.SeedList != nil {
 		activeNetParams.SeedList = *config.SeedList
 	}
 	if config.NodePort > 0 {
+		appCfg.NodePort = config.NodePort
 		activeNetParams.DefaultPort = config.NodePort
 	}
 	if len(config.FoundationAddress) > 0 {
