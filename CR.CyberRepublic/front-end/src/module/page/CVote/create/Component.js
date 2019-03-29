@@ -15,10 +15,10 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { className, style, btnText } = this.props
+    const { className, btnStyle, btnText } = this.props
     const classNameLocal = `cr-btn cr-btn-primary ${className}`
     const createBtn = (
-      <Button onClick={this.switchCreateMode} className={classNameLocal} style={style}>
+      <Button onClick={this.switchCreateMode} className={classNameLocal} style={btnStyle}>
         {btnText || I18N.get('from.CVoteForm.button.add')}
       </Button>
     )

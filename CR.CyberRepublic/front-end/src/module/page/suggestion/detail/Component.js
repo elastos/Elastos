@@ -238,11 +238,13 @@ export default class extends StandardPage {
 
   renderCouncilActionsNode() {
     const { consider, needMoreInfo, isCouncil, detail } = this.props
-    const { title, desc, displayId, link, _id } = detail
+    const { _id, displayId, title, desc, benefits, funding, timeline, link } = detail
     const proposalContent = `
-      <p><strong>Suggestion Description:</strong></p>
-      <p>${desc}</p>
-      ${link ? `<p><strong>Suggestion Link:</strong></p><p>${link}</p>` : ''}
+      ${desc ? `<p><strong>${I18N.get('suggestion.form.fields.desc')}:</strong></p><p>${desc}</p>` : ''}
+      ${benefits ? `<p><strong>${I18N.get('suggestion.form.fields.benefits')}:</strong></p><p>${benefits}</p>` : ''}
+      ${funding ? `<p><strong>${I18N.get('suggestion.form.fields.funding')}:</strong></p><p>${funding}</p>` : ''}
+      ${timeline ? `<p><strong>${I18N.get('suggestion.form.fields.timeline')}:</strong></p><p>${moment(detail.timeline).format('MMM D, YYYY')}</p>` : ''}
+      ${link ? `<p><strong>${I18N.get('suggestion.form.fields.links')}:</strong></p><p><a href=${link} target="_blank">${link}</a></p>` : ''}
     `
     const props = {
       data: {
@@ -253,12 +255,13 @@ export default class extends StandardPage {
       suggestionId: _id,
       onCreated: this.onCreated,
       btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
+      btnStyle: { width: 200 },
     }
     const createFormBtn = <ProposalForm {...props} />
     const res = isCouncil && (
       <BtnGroup>
         <Row type="flex" justify="start">
-          <Col xs={24} sm={8}>
+          {/* <Col xs={24} sm={8}>
             <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={consider}>
               {I18N.get('suggestion.btnText.consider')}
             </StyledButton>
@@ -267,7 +270,7 @@ export default class extends StandardPage {
             <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={needMoreInfo}>
               {I18N.get('suggestion.btnText.needMoreInfo')}
             </StyledButton>
-          </Col>
+          </Col> */}
           <Col xs={24} sm={8}>
             {createFormBtn}
           </Col>
