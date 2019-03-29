@@ -18,9 +18,9 @@ import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
 
 import './style.scss'
-import { StyledFormItem, StyledFormDesc } from './style'
+import { StyledFormDesc } from './style'
 
-// const FormItem = Form.Item
+const FormItem = Form.Item
 
 // TOTO: add mention module
 // https://github.com/afconsult/quill-mention
@@ -90,7 +90,7 @@ class C extends BaseComponent {
     const title_fn = getFieldDecorator('title', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        // { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
+        { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'title', ''),
     })
@@ -98,7 +98,7 @@ class C extends BaseComponent {
     const description_fn = getFieldDecorator('description', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        // { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'desc', ''),
     })
@@ -106,7 +106,7 @@ class C extends BaseComponent {
     const benefits_fn = getFieldDecorator('benefits', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        // { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'benefits', ''),
     })
@@ -239,33 +239,33 @@ class C extends BaseComponent {
     }
     const formContent = (
       <div>
-        <StyledFormItem label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
           {p.title}
-        </StyledFormItem>
-        <StyledFormDesc label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
+        </FormItem>
+        <FormItem className="form-desc" label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
           {p.description}
-        </StyledFormDesc>
-        <StyledFormItem label={I18N.get('suggestion.form.fields.benefits')} {...formItemLayout}>
+        </FormItem>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.benefits')} {...formItemLayout}>
           {p.benefits}
-        </StyledFormItem>
+        </FormItem>
         <Row gutter={12}>
           <Col span={12}>
-            <StyledFormItem label={I18N.get('suggestion.form.fields.funding')} {...formItemLayout}>
+            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.funding')} {...formItemLayout}>
               {p.funding}
-            </StyledFormItem>
+            </FormItem>
           </Col>
           <Col span={12}>
-            <StyledFormItem label={I18N.get('suggestion.form.fields.timeline')} {...formItemLayout}>
+            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.timeline')} {...formItemLayout}>
               {p.timeline}
-            </StyledFormItem>
+            </FormItem>
           </Col>
         </Row>
-        <StyledFormItem label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
           {p.link}
-        </StyledFormItem>
-        <StyledFormItem>
+        </FormItem>
+        <FormItem className="form-item">
           {translationBtn}
-        </StyledFormItem>
+        </FormItem>
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
             <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>
