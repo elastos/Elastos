@@ -3,18 +3,18 @@
     "Magic": 2017002,
     "SpvMagic": 2017001,
     "SeedList": [
-      "did-mainnet-001.elastos.org:20608",
-      "did-mainnet-002.elastos.org:20608",
-      "did-mainnet-003.elastos.org:20608",
-      "did-mainnet-004.elastos.org:20608",
-      "did-mainnet-005.elastos.org:20608"
+      "node-mainnet-026.elastos.org:20608",
+      "node-mainnet-027.elastos.org:20608",
+      "node-mainnet-028.elastos.org:20608",
+      "node-mainnet-029.elastos.org:20608",
+      "node-mainnet-030.elastos.org:20608"
     ],
     "SpvSeedList": [
-      "node-mainnet-002.elastos.org:20866",
-      "node-mainnet-003.elastos.org:20866",
-      "node-mainnet-004.elastos.org:20866",
-      "node-mainnet-005.elastos.org:20866",
-      "node-mainnet-006.elastos.org:20866"
+      "node-mainnet-002.elastos.org:20338",
+      "node-mainnet-003.elastos.org:20338",
+      "node-mainnet-004.elastos.org:20338",
+      "node-mainnet-005.elastos.org:20338",
+      "node-mainnet-006.elastos.org:20338"
     ],
     "ExchangeRate": 1.0,
     "MinCrossChainTxFee": 10000,
@@ -34,6 +34,13 @@
       "MinerInfo": "ELA",
       "MinTxFee": 100,
       "InstantBlock": false
+    },
+    "RpcConfiguration": {
+        "User": "ElaUser",
+        "Pass": "Ela123",
+        "WhiteIPList": [
+            "127.0.0.1"
+        ]
     }
   }
 }
