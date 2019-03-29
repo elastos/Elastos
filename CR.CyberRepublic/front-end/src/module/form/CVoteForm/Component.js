@@ -33,7 +33,7 @@ class C extends BaseComponent {
   handleSubmit = async (e, fields = {}) => {
     e.preventDefault()
     const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
-    const { edit, form, updateCVote, createCVote, onCreate, onEdit } = this.props
+    const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
       if (err) return
@@ -49,15 +49,16 @@ class C extends BaseComponent {
         ...fields,
       }
       if (!edit) param.proposedBy = fullName
+      if (suggestionId) param.suggestionId = suggestionId
 
       this.ord_loading(true)
       if (edit) {
         try {
           param._id = edit
           await updateCVote(param)
+          this.ord_loading(false)
           await onEdit()
           message.success(I18N.get('from.CVoteForm.message.updated.success'))
-          this.ord_loading(false)
         } catch (error) {
           message.error(error.message)
           this.ord_loading(false)
@@ -65,9 +66,9 @@ class C extends BaseComponent {
       } else {
         try {
           await createCVote(param)
-          await onCreate()
-          message.success(I18N.get('from.CVoteForm.message.create.success'))
           this.ord_loading(false)
+          await onCreated()
+          message.success(I18N.get('from.CVoteForm.message.create.success'))
         } catch (error) {
           message.error(error.message)
           this.ord_loading(false)
@@ -83,7 +84,7 @@ class C extends BaseComponent {
 
     const title_fn = getFieldDecorator('title', {
       rules: [{ required: true }],
-      initialValue: edit ? data.title : '',
+      initialValue: edit ? data.title : _.get(data, 'title', ''),
     })
     const title_el = (
       <Input size="large" type="text" />
@@ -114,7 +115,7 @@ class C extends BaseComponent {
 
     const content_fn = getFieldDecorator('content', {
       rules: [{ required: true }],
-      initialValue: edit ? data.content : '',
+      initialValue: edit ? data.content : _.get(data, 'content', ''),
     })
     const content_el = (
       <ReactQuill
@@ -161,15 +162,11 @@ class C extends BaseComponent {
 
   ord_render() {
     const { edit, data, canManage, isSecretary } = this.props
-    let p = null
     if (!canManage || (edit && !data)) {
       return null
     }
-    if (edit) {
-      p = this.getInputProps(data)
-    } else {
-      p = this.getInputProps()
-    }
+    const formProps = this.getInputProps(data)
+
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -202,24 +199,24 @@ class C extends BaseComponent {
 
           <Row gutter={16} type="flex" justify="space-between">
             <Col sm={24} md={11} lg={11}>
-              <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{p.type}</FormItem>
+              <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{formProps.type}</FormItem>
             </Col>
             <Col sm={24} md={11} lg={11}>
-              <FormItem label={`${I18N.get('council.voting.ifConflicted')}?`} {...formItemLayout}>{p.isConflict}</FormItem>
+              <FormItem label={`${I18N.get('council.voting.ifConflicted')}?`} {...formItemLayout}>{formProps.isConflict}</FormItem>
             </Col>
           </Row>
           <Row gutter={16} type="flex" justify="space-between">
             <Col sm={24} md={11} lg={11}>
-              <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{p.status}</FormItem>
+              <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{formProps.status}</FormItem>
             </Col>
           </Row>
 
 
-          <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayoutOneLine}>{ p.title }</FormItem>
+          <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayoutOneLine}>{ formProps.title }</FormItem>
 
-          <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayoutOneLine}>{p.content}</FormItem>
+          <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayoutOneLine}>{formProps.content}</FormItem>
 
-          {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayoutOneLine}>{p.notes}</FormItem>}
+          {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayoutOneLine}>{formProps.notes}</FormItem>}
 
           <Row gutter={8} type="flex" justify="center">
             {this.renderCancelBtn()}

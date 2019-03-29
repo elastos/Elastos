@@ -25,14 +25,20 @@ export const Title = styled.div`
   margin-bottom: 18px;
   `
 
-export const Desc = styled.div`
-  color: black;
+export const Label = styled.span`
+  background: #F2F6FB;
+  padding: 3px 10px;
 `
 
-export const StyledLink = styled.div`
-  color: ${text.lightGray};
-  margin-top: ${gap.gap_2};
+export const Desc = styled.div`
+  color: black;
+  margin-top: 30px;
 `
+
+// export const StyledLink = styled.div`
+//   color: ${text.lightGray};
+//   margin-top: ${gap.gap_2};
+// `
 
 export const BtnGroup = styled.div`
   margin: ${gap.gap_2} 0;

@@ -25,7 +25,6 @@ export default class extends BaseComponent {
     this.state = {
       list: null,
       loading: true,
-      creating: false,
       voteResult: FILTERS.ALL,
     }
   }
@@ -82,7 +81,7 @@ export default class extends BaseComponent {
           const endsInFloat = moment.duration(moment(proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
           if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) return I18N.get('council.voting.votingEndsIn.ended')
           if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
-          return `${Math.floor(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
+          return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
         },
       },
       {
@@ -120,14 +119,14 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createBtn = canManage && (
-      <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-        <Button onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
-          {I18N.get('from.CVoteForm.button.add')}
-        </Button>
-      </Col>
+    const createFormNode = canManage && (
+      <Row type="flex" align="middle" justify="end">
+        <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
+          <CreateForm onCreated={this.refetch} />
+        </Col>
+      </Row>
     )
-    const createFormNode = this.renderCreateForm()
+
     const filterBtnGroup = (
       <Button.Group className="filter-group">
         <StyledButton
@@ -146,9 +145,7 @@ export default class extends BaseComponent {
     )
     return (
       <Container>
-        <Row type="flex" align="middle" justify="end">
-          {createBtn}
-        </Row>
+        {createFormNode}
         <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
           <Col lg={8} md={8} sm={12} xs={24}>
             <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
@@ -218,33 +215,6 @@ export default class extends BaseComponent {
 
   setFilter = (voteResult) => {
     this.setState({ voteResult }, this.refetch)
-  }
-
-  renderCreateForm() {
-    return (
-      <Modal
-        className="project-detail-nobar"
-        visible={this.state.creating}
-        onOk={this.switchCreateMode}
-        onCancel={this.switchCreateMode}
-        footer={null}
-        width="70%"
-      >
-        <CreateForm onCreate={this.onCreate} onCancel={this.switchCreateMode} />
-      </Modal>
-    )
-  }
-
-  switchCreateMode = () => {
-    const { creating } = this.state
-    this.setState({
-      creating: !creating,
-    })
-  }
-
-  onCreate = () => {
-    this.switchCreateMode()
-    this.refetch()
   }
 
   toDetail(id) {

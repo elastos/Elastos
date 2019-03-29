@@ -31,12 +31,14 @@ const formatUsername = (user) => {
 export default class extends Base {
 
   public async create(param): Promise<Document> {
-    const db_cvote = this.getDBModel('CVote');
-    const db_user = this.getDBModel('User');
+    const db_cvote = this.getDBModel('CVote')
+    const db_user = this.getDBModel('User')
+    const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
       title, type, content, published, proposedBy, motionId, isConflict, notes,
-    } = param;
+      suggestionId,
+    } = param
 
     const vid = await this.getNewVid()
     const status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT
@@ -53,9 +55,14 @@ export default class extends Base {
       isConflict,
       notes,
       createdBy: this.currentUser._id
-    };
+    }
 
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    if (!_.isEmpty(suggestion)) {
+      doc.reference = suggestionId
+    }
+
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
@@ -69,30 +76,65 @@ export default class extends Base {
     }
 
     try {
-      const res = await db_cvote.save(doc);
-      // notify council member to vote
-      if (published) {
-        const subject = `New Proposal: ${title}`
-        const body = `
-          <p>There is a new proposal added:</p>
-          <br />
-          <p>${title}</p>
-          <br />
-          <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${res._id}">${process.env.SERVER_URL}/proposals/${res._id}</a></p>
-          <br /> <br />
-          <p>Thanks</p>
-          <p>Cyber Republic</p>
-        `
-        const toUsers = _.filter(councilMembers, user => !user._id.equals(currentUserId))
-        console.log('to Users: ', toUsers)
-        this.notifyCouncil(res)
+      const res = await db_cvote.save(doc)
+      // add reference with suggestion
+      if (!_.isEmpty(suggestion)) {
+        await db_suggestion.update({ _id: suggestionId }, { $addToSet: { reference: res._id }})
+        // notify creator and subscribers
+        if (published) this.notifySubscribers(res)
       }
+
+      // notify council member to vote
+      if (published) this.notifyCouncil(res)
 
       return res
     } catch (error) {
       console.log('error happened: ', error)
       return
     }
+  }
+
+  private async notifySubscribers(cvote: any) {
+    const db_suggestion = this.getDBModel('Suggestion')
+    const suggestionId = _.get(cvote, 'reference')
+    if (!suggestionId) return
+    const suggestion = await db_suggestion.getDBInstance().findById(suggestionId)
+    .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    // get users: creator and subscribers
+    const toUsers = _.map(suggestion.subscribers, 'user') || []
+    toUsers.push(suggestion.createdBy)
+    const toMails = _.map(toUsers, 'email')
+
+    // compose email object
+    const subject = `The suggestion is referred in Proposal #${cvote.vid}`
+    const body = `
+      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
+      <br />
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
+      return {
+        _id: user._id,
+        username: formatUsername(user)
+      }
+    }))
+
+    const mailObj = {
+      to: toMails,
+      // toName: ownerToName,
+      subject,
+      body,
+      recVariables,
+    }
+
+    // send email
+    mail.send(mailObj)
   }
 
   private async notifyCouncil(cvote: any) {
@@ -113,7 +155,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    console.log('to Users: ', toUsers)
+
     const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
       return {
         _id: user._id,
@@ -259,6 +301,7 @@ export default class extends Base {
     }
 
     const doc: any = {}
+    const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (content) doc.content = content
     if (isConflict) doc.isConflict = isConflict
@@ -266,7 +309,7 @@ export default class extends Base {
     if (title) doc.title = title
     if (type) doc.type = type
 
-    if (published === true && cur.status === constant.CVOTE_STATUS.DRAFT) {
+    if (willChangeToPublish) {
       doc.status = constant.CVOTE_STATUS.PROPOSED
       doc.published = published
       doc.proposedAt = Date.now()
@@ -287,7 +330,10 @@ export default class extends Base {
     try {
       await db_cvote.update({ _id }, doc)
       const res = await this.getById(_id)
-      this.notifyCouncil(res)
+      if (willChangeToPublish) {
+        this.notifyCouncil(res)
+        this.notifySubscribers(res)
+      }
       return res
     } catch (error) {
       console.log('error happened: ', error)
@@ -321,6 +367,7 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs;
   }
 

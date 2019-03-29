@@ -187,4 +187,11 @@ export const DB_SELECTED_FIELDS = {
         NAME_EMAIL: 'profile.firstName profile.lastName username email',
         NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
     },
+    SUGGESTION: {
+        ID: 'displayId',
+    },
+    CVOTE: {
+        ID: 'vid',
+        ID_STATUS: 'vid status',
+    },
 }

@@ -232,6 +232,8 @@ const en = {
   'suggestion.nodata': 'No Data',
   'suggestion.befirst': 'Be the first one to create a suggestion',
   'suggestion.subject': 'Subject',
+  'suggestion.suggestion': 'Suggestion',
+  'suggestion.referred': 'Referred in',
   'suggestion.title': 'Suggestions',
   'suggestion.listTitle': 'All suggestions',
   'suggestion.add': 'Add a Suggestion',
@@ -271,11 +273,13 @@ const en = {
   'suggestion.editHistory': 'Edit History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
-  'suggestion.form.fields.1': 'Suggestion',
-  'suggestion.form.fields.2': 'Benefits to Elastos Community/Ecosystem ',
-  'suggestion.form.fields.3': 'Funding Estimated (USD)',
-  'suggestion.form.fields.4': 'Timeline suggested',
-  'suggestion.form.fields.5': 'Links',
+  'suggestion.form.fields.suggestion': 'Suggestion',
+  'suggestion.form.fields.subject': 'Subject',
+  'suggestion.form.fields.desc': 'Description',
+  'suggestion.form.fields.benefits': 'Benefits to Elastos Community/Ecosystem ',
+  'suggestion.form.fields.funding': 'Funding Estimated (USD)',
+  'suggestion.form.fields.timeline': 'Timeline Suggested',
+  'suggestion.form.fields.links': 'Links',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
@@ -284,10 +288,8 @@ const en = {
   'suggestion.btnText.makeIntoProposal': 'Make into Proposal',
 
   // suggestion error
-  'suggestion.create.error.titleRequired': 'Suggestion title is required',
-  'suggestion.create.error.descriptionRequired': 'Suggestion description is required',
-  'suggestion.create.error.titleTooShort': 'Suggestion title is too short',
-  'suggestion.create.error.descriptionTooShort': 'Suggestion description is too short',
+  'suggestion.create.error.required': 'This field is required',
+  'suggestion.create.error.tooShort': 'This field is too short',
 
   // suggestion rules
   'suggestion.rules': 'Rules',
@@ -677,6 +679,8 @@ const en = {
   'council.list': 'List',
   'council.voting': 'Voting',
   'council.list.proposals': 'Any suggestions, proposals can be sent to',
+  'council.voting.proposal': 'Proposal',
+  'council.voting.referred': 'Referred to',
   'council.voting.proposalList': 'Proposals',
   'council.voting.number': 'No.',
   'council.voting.published': 'Published',
