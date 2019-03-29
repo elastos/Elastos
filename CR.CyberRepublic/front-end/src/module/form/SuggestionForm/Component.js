@@ -44,25 +44,6 @@ class C extends BaseComponent {
 
     form.validateFields(async (err, values) => {
       if (!err) {
-        // if (_.isEmpty(values.description)) {
-        //   form.setFields({
-        //     description: {
-        //       errors: [new Error(I18N.get('suggestion.create.error.required'))],
-        //     },
-        //   })
-
-        //   return
-        // }
-        // if (_.isEmpty(values.description)) {
-        //   form.setFields({
-        //     title: {
-        //       errors: [new Error(I18N.get('suggestion.create.error.required'))],
-        //     },
-        //   })
-
-        //   return
-        // }
-
         const param = {
           title: values.title,
           desc: sanitizeHtml(values.description, {
@@ -110,7 +91,7 @@ class C extends BaseComponent {
     const title_fn = getFieldDecorator('title', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
+        // { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'title', ''),
     })
@@ -118,7 +99,7 @@ class C extends BaseComponent {
     const description_fn = getFieldDecorator('description', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        // { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'desc', ''),
     })
@@ -126,7 +107,7 @@ class C extends BaseComponent {
     const benefits_fn = getFieldDecorator('benefits', {
       rules: [
         { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        // { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
       initialValue: _.get(data, 'benefits', ''),
     })
