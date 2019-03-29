@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSpvInit(t *testing.T) {
 	var programHash common.Uint168
-	programHash[0] = common.PrefixCrossChain
+	programHash[0] = byte(contract.PrefixCrossChain)
 	for i := 1; i < len(programHash); i++ {
 		programHash[i] = 0xff
 	}

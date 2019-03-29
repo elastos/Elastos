@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,15 +63,15 @@ func TestCheckOutputProgramHash(t *testing.T) {
 	assert.Equal(t, true, CheckOutputProgramHash(programHash))
 
 	// prefix standard program hash should pass
-	programHash[0] = common.PrefixStandard
+	programHash[0] = byte(contract.PrefixStandard)
 	assert.Equal(t, true, CheckOutputProgramHash(programHash))
 
 	// prefix multisig program hash should pass
-	programHash[0] = common.PrefixMultisig
+	programHash[0] = byte(contract.PrefixMultiSig)
 	assert.Equal(t, true, CheckOutputProgramHash(programHash))
 
 	// prefix crosschain program hash should pass
-	programHash[0] = common.PrefixCrossChain
+	programHash[0] = byte(contract.PrefixCrossChain)
 	assert.Equal(t, true, CheckOutputProgramHash(programHash))
 
 	// other prefix program hash should not pass

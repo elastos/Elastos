@@ -15,7 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	htp "github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/gorilla/websocket"
 )
 
@@ -48,7 +48,7 @@ var (
 )
 
 // Handler is the registered method to handle a http request.
-type Handler func(util.Params) (interface{}, error)
+type Handler func(htp.Params) (interface{}, error)
 
 // Response represent the response data structure.
 type Response struct {
@@ -108,11 +108,11 @@ func (s *Server) GetSessionList() *SessionList {
 	return s.sessions
 }
 
-func (s *Server) hearBeat(params util.Params) (interface{}, error) {
+func (s *Server) hearBeat(params htp.Params) (interface{}, error) {
 	return params["Userid"], nil
 }
 
-func (s *Server) getSessionCount(util.Params) (interface{}, error) {
+func (s *Server) getSessionCount(htp.Params) (interface{}, error) {
 	return len(s.sessions.list), nil
 }
 
@@ -201,7 +201,7 @@ func (s *Server) response(id, action string, result interface{}, err error) {
 
 	if err != nil {
 		switch e := err.(type) {
-		case *util.Error:
+		case *htp.Error:
 			resp.Error = e.Code
 			resp.Desc = e.Message
 

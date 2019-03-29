@@ -24,6 +24,9 @@ const (
 	// defaultServices describes the default services that are supported by
 	// the server.
 	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom
+
+	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
+	MaxBlocksPerMsg = 500
 )
 
 // naFilter defines a network address filter for the side chain server, for now
@@ -33,6 +36,16 @@ type naFilter struct{}
 func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 	service := pact.ServiceFlag(na.Services)
 	return service&pact.SFNodeNetwork == pact.SFNodeNetwork
+}
+
+// newPeerMsg represent a new connected peer.
+type newPeerMsg struct {
+	p2psvr.IPeer
+}
+
+// donePeerMsg represent a disconnected peer.
+type donePeerMsg struct {
+	p2psvr.IPeer
 }
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -50,8 +63,7 @@ type server struct {
 	chain       *blockchain.BlockChain
 	txMemPool   *mempool.TxPool
 
-	newPeers  chan p2psvr.IPeer
-	donePeers chan p2psvr.IPeer
+	peerQueue chan interface{}
 	relayInv  chan relayMsg
 	quit      chan struct{}
 	services  pact.ServiceFlag
@@ -285,7 +297,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Find the most recent known block in the best chain based on the block
 	// locator and fetch all of the block hashes after it until either
-	// wire.MaxBlocksPerMsg have been fetched or the provided stop hash is
+	// MaxBlocksPerMsg have been fetched or the provided stop hash is
 	// encountered.
 	//
 	// Use the block after the genesis block if no other blocks in the
@@ -294,8 +306,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	//
 	// This mirrors the behavior in the reference implementation.
 	chain := sp.server.chain
-	hashList := chain.LocateBlocks(m.Locator, &m.HashStop,
-		p2p.MaxBlocksPerMsg)
+	hashList := chain.LocateBlocks(m.Locator, &m.HashStop, MaxBlocksPerMsg)
 
 	// Generate inventory message.
 	invMsg := msg.NewInv()
@@ -307,7 +318,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 	// Send the inventory message if there is anything to send.
 	if len(invMsg.InvList) > 0 {
 		invListLen := len(invMsg.InvList)
-		if invListLen == p2p.MaxBlocksPerMsg {
+		if invListLen == MaxBlocksPerMsg {
 			// Intentionally use a copy of the final hash so there
 			// is not a reference into the inventory slice which
 			// would prevent the entire slice from being eligible
@@ -641,37 +652,9 @@ func (s *server) peerHandler() {
 out:
 	for {
 		select {
-		// New peers connected to the server.
-		case p := <-s.newPeers:
-			sp := newServerPeer(s)
-			sp.Peer = peer.New(p, &peer.Listeners{
-				OnMemPool:      sp.OnMemPool,
-				OnTx:           sp.OnTx,
-				OnBlock:        sp.OnBlock,
-				OnInv:          sp.OnInv,
-				OnNotFound:     sp.OnNotFound,
-				OnGetData:      sp.OnGetData,
-				OnGetBlocks:    sp.OnGetBlocks,
-				OnFilterAdd:    sp.OnFilterAdd,
-				OnFilterClear:  sp.OnFilterClear,
-				OnFilterLoad:   sp.OnFilterLoad,
-				OnTxFilterLoad: sp.OnTxFilterLoad,
-				OnReject:       sp.OnReject,
-			})
-
-			peers[p] = sp
-			s.syncManager.NewPeer(sp.Peer)
-
-			// Disconnected peers.
-		case p := <-s.donePeers:
-			sp, ok := peers[p]
-			if !ok {
-				log.Errorf("unknown done peer %v", p)
-				continue
-			}
-
-			delete(peers, p)
-			s.syncManager.DonePeer(sp.Peer)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(peers, p)
 
 			// New inventory to potentially be relayed to other peers.
 		case invMsg := <-s.relayInv:
@@ -689,8 +672,7 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		case <-s.relayInv:
 		default:
 			break cleanup
@@ -698,14 +680,56 @@ cleanup:
 	}
 }
 
+// handlePeerMsg deals with adding and removing peers.
+func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}) {
+	switch p := p.(type) {
+	case newPeerMsg:
+		sp := newServerPeer(s)
+		sp.Peer = peer.New(p, &peer.Listeners{
+			OnMemPool:      sp.OnMemPool,
+			OnTx:           sp.OnTx,
+			OnBlock:        sp.OnBlock,
+			OnInv:          sp.OnInv,
+			OnNotFound:     sp.OnNotFound,
+			OnGetData:      sp.OnGetData,
+			OnGetBlocks:    sp.OnGetBlocks,
+			OnFilterAdd:    sp.OnFilterAdd,
+			OnFilterClear:  sp.OnFilterClear,
+			OnFilterLoad:   sp.OnFilterLoad,
+			OnTxFilterLoad: sp.OnTxFilterLoad,
+			OnReject:       sp.OnReject,
+		})
+		sp.Start()
+
+		peers[p.IPeer] = sp
+		s.syncManager.NewPeer(sp.Peer)
+
+	case donePeerMsg:
+		sp, ok := peers[p.IPeer]
+		if !ok {
+			log.Errorf("unknown done peer %v", p)
+			return
+		}
+
+		delete(peers, p.IPeer)
+		s.syncManager.DonePeer(sp.Peer)
+
+	}
+}
+
+// Services returns the service flags the server supports.
+func (s *server) Services() pact.ServiceFlag {
+	return s.services
+}
+
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p p2psvr.IPeer) {
-	s.newPeers <- p
+	s.peerQueue <- newPeerMsg{p}
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p p2psvr.IPeer) {
-	s.donePeers <- p
+	s.peerQueue <- donePeerMsg{p}
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
@@ -762,8 +786,7 @@ func New(dataDir string, chain *blockchain.BlockChain, txPool *mempool.TxPool, p
 	s := server{
 		chain:     chain,
 		txMemPool: txPool,
-		newPeers:  make(chan p2psvr.IPeer, cfg.MaxPeers),
-		donePeers: make(chan p2psvr.IPeer, cfg.MaxPeers),
+		peerQueue: make(chan interface{}, cfg.MaxPeers),
 		relayInv:  make(chan relayMsg, cfg.MaxPeers),
 		quit:      make(chan struct{}),
 		services:  services,
