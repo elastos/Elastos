@@ -2,7 +2,6 @@ package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -49,6 +48,10 @@ func (a *ArbitratorsMock) GetFinalRoundChange() common.Fixed64 {
 	return a.FinalRoundChange
 }
 
+func (a *ArbitratorsMock) GetDutyIndexByHeight(height uint32) int {
+	panic("implement me")
+}
+
 func (a *ArbitratorsMock) GetDutyIndex() int {
 	panic("implement me")
 }
@@ -89,7 +92,7 @@ func (a *ArbitratorsMock) GetCRCProducer(publicKey []byte) *Producer {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetCRCArbitrators() []config.CRCArbiter {
+func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
 	panic("implement me")
 }
 
@@ -175,4 +178,8 @@ func (a *ArbitratorsMock) HasArbitersMajorityCount(num int) bool {
 
 func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 	return num >= len(a.CurrentArbitrators)-a.MajorityCount
+}
+
+func (a *ArbitratorsMock) DumpInfo() {
+	panic("implement me")
 }

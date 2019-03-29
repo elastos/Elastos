@@ -13,7 +13,6 @@ var Template = Configuration{
 	PrintLevel:         0,
 	MaxLogsSize:        0,
 	MaxPerLogSize:      0,
-	MaxTxsInBlock:      10000,
 	MinCrossChainTxFee: 10000,
 	PowConfiguration: PowConfiguration{
 		PayToAddr:  "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
@@ -47,7 +46,7 @@ var Template = Configuration{
 		WhiteIPList: []string{"127.0.0.1"},
 	},
 	CheckAddressHeight: 88812,
-	VoteStartHeight: 88812,
-	CRCOnlyDPOSHeight: 1008812, //fixme edit height later
-	PublicDPOSHeight: 1108812, //fixme edit height later
+	VoteStartHeight:    88812,
+	CRCOnlyDPOSHeight:  1008812, //fixme edit height later
+	PublicDPOSHeight:   1108812, //fixme edit height later
 }

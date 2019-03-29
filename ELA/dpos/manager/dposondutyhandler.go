@@ -37,7 +37,8 @@ func (h *DPOSOnDutyHandler) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 	return false, false
 }
 
-func (h *DPOSOnDutyHandler) StartNewProposal(p *payload.DPOSProposal) {
+func (h *DPOSOnDutyHandler) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
+	return false
 }
 
 func (h *DPOSOnDutyHandler) ChangeView(firstBlockHash *common.Uint256) {

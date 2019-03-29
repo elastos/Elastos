@@ -100,12 +100,6 @@ func main() {
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
 
-	// initialize producer state after arbiters has initialized
-	if err = chain.InitializeProducersState(interrupt.C); err != nil {
-		printErrorAndExit(err)
-	}
-
-	log.Info("Start the P2P networks")
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:        chain,
 		ChainParams:  activeNetParams,
@@ -115,26 +109,25 @@ func main() {
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	server.Start()
-	defer server.Stop()
 
 	blockMemPool.IsCurrent = server.IsCurrent
+
+	var arbitrator *dpos.Arbitrator
 	if config.Parameters.EnableArbiter {
 		log.Info("Start the manager")
 		pwd, err := cmdcom.GetFlagPassword()
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		arbitrator, err := dpos.NewArbitrator(pwd, dpos.Config{
-			EnableEventLog: true,
-			EnableEventRecord: config.Parameters.ArbiterConfiguration.
-				EnableEventRecord,
-			Params:       cfg.ArbiterConfiguration,
-			ChainParams:  activeNetParams,
-			Arbitrators:  arbiters,
-			Store:        dposStore,
-			TxMemPool:    txMemPool,
-			BlockMemPool: blockMemPool,
+		arbitrator, err = dpos.NewArbitrator(pwd, dpos.Config{
+			EnableEventLog:    true,
+			EnableEventRecord: false,
+			Params:            cfg.ArbiterConfiguration,
+			ChainParams:       activeNetParams,
+			Arbitrators:       arbiters,
+			Store:             dposStore,
+			TxMemPool:         txMemPool,
+			BlockMemPool:      blockMemPool,
 			Broadcast: func(msg p2p.Message) {
 				server.BroadcastMessage(msg)
 			},
@@ -142,8 +135,6 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		defer arbitrator.Stop()
-		arbitrator.Start()
 		servers.Arbiter = arbitrator
 	}
 
@@ -167,6 +158,26 @@ func main() {
 		},
 		Arbitrators: arbiters,
 	})
+
+	if arbitrator != nil {
+		arbitrator.Start()
+		defer arbitrator.Stop()
+	}
+
+	// initialize producer state after arbiters has initialized
+	if err = chain.InitializeProducersState(interrupt.C, pgBar.Start,
+		pgBar.Increase); err != nil {
+		printErrorAndExit(err)
+	}
+	pgBar.Stop()
+
+	if arbitrator != nil {
+		arbitrator.Recover()
+	}
+
+	log.Info("Start the P2P networks")
+	server.Start()
+	defer server.Stop()
 
 	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()

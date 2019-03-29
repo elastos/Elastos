@@ -19,8 +19,7 @@ type DPOSEventConditionHandler interface {
 
 	ChangeView(firstBlockHash *common.Uint256)
 
-	StartNewProposal(p *payload.DPOSProposal)
-
+	ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool)
 	ProcessAcceptVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
 	ProcessRejectVote(id peer.PID, p *payload.DPOSProposalVote) (succeed bool, finished bool)
 }
@@ -57,6 +56,10 @@ func NewHandler(cfg DPOSHandlerConfig) *DPOSHandlerSwitch {
 	return h
 }
 
+func (h *DPOSHandlerSwitch) IsAbnormal() bool {
+	return h.isAbnormal
+}
+
 func (h *DPOSHandlerSwitch) Initialize(dispatcher *ProposalDispatcher,
 	consensus *Consensus) {
 	h.proposalDispatcher = dispatcher
@@ -87,8 +90,8 @@ func (h *DPOSHandlerSwitch) FinishConsensus() {
 	h.proposalDispatcher.FinishConsensus()
 }
 
-func (h *DPOSHandlerSwitch) StartNewProposal(p *payload.DPOSProposal) {
-	h.currentHandler.StartNewProposal(p)
+func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
+	handled = h.currentHandler.ProcessProposal(id, p)
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(p.Sponsor),
@@ -99,6 +102,8 @@ func (h *DPOSHandlerSwitch) StartNewProposal(p *payload.DPOSProposal) {
 		Result:       false,
 	}
 	h.cfg.Monitor.OnProposalArrived(&proposalEvent)
+
+	return handled
 }
 
 func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
