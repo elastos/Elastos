@@ -130,7 +130,7 @@ namespace Elastos {
 
 			ByteStream stream(_code);
 
-			if (signType == SignTypeMultiSign) {
+			if (signType == SignTypeMultiSign || signType == SignTypeCrossChain) {
 				stream.Skip(1);
 			} else if (signType != SignTypeStandard) {
 				Log::error("unsupport sign type");
