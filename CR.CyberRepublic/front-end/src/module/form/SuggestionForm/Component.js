@@ -60,7 +60,6 @@ class C extends BaseComponent {
         if (!_.isEmpty(values.link)) {
           param.link = values.link
         }
-        console.log('param is: ', param)
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
         }
@@ -123,7 +122,7 @@ class C extends BaseComponent {
       rules: [
         { required: false },
       ],
-      initialValue: moment(_.get(data, 'timeline', undefined)),
+      initialValue: _.get(data, 'timeline') ? moment(_.get(data, 'timeline')) : undefined,
     })
 
     const link_fn = getFieldDecorator('link', {
