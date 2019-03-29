@@ -17,7 +17,7 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 20339
+EXPOSE 10536
 EXPOSE 10538
 
 ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p elastos"]

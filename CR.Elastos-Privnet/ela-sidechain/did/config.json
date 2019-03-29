@@ -5,7 +5,9 @@
     "SeedList": [
     ],
     "SpvSeedList": [
-      "ela-mainchain:20338"
+      "127.0.0.1:20338",
+      "127.0.0.1:21338",
+      "127.0.0.1:22338"
     ],
     "ExchangeRate": 1.0,
     "MinCrossChainTxFee": 10000,
@@ -16,7 +18,7 @@
     "PrintLevel": 1,
     "MaxLogsSize": 0,
     "MaxPerLogSize": 0,
-    "DisableTxFilters": true,
+    "DisableTxFilters": false,
     "MainChainFoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
     "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
     "PowConfiguration": {

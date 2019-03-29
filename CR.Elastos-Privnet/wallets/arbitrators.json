@@ -1,28 +1,4 @@
 {
-    "arbitrator_normal_1": {
-        "name": "Arbitrator Wallet 1",
-        "description": "This is where the rewards for this arbitrator will go to",
-        "privateKey": "11f8fa5c38d79c1ca73ffaa6cb852da81aaf1ebd6d625fa2ac474e20c7ad5e74",
-        "publicKey": "0260dc060a8ea8a70af73b72ac35d4d79437d1355e152bda063978a5fa19ed50ff",
-        "address": "EKkVgLDTXnXEp12GRdn8W5V5Vwa8Qakksu",
-        "passwordforkeystore": "elastos"
-    },
-    "arbitrator_normal_2": {
-        "name": "Arbitrator Wallet 2",
-        "description": "This is where the rewards for this arbitrator will go to",
-        "privateKey": "91dccdf9cea024ab78ae36cecdad0b8199da692df2f46e3f3e00d3e77cdeeec5",
-        "publicKey": "033c0edd6822c0913baa13c7441567b6f6febed23e79bf9c4fe727aac4eda06a7e",
-        "address": "ESFmLrdPehgeyHFfdzyoxhMWYCShsv1qK3",
-        "passwordforkeystore": "elastos"
-    },
-    "arbitrator_normal_3": {
-        "name": "Arbitrator Wallet 3",
-        "description": "This is where the rewards for this arbitrator will go to",
-        "privateKey": "c24dc9bedbdd3b29e334b2ccb597756014081f0957fc9f3e67d56d0830c924b8",
-        "publicKey": "02ecfc3fa3d96d4dbac7a23c0b915289f67576725e31dff80f3fbf02a6300053ee",
-        "address": "EWMeiEcyRHmPiFSgqaEiARYx4oHt2jxkpz",
-        "passwordforkeystore": "elastos"
-    },
     "arbitrator_crc_1": {
         "name": "CRC Arbitrator Wallet 1",
         "description": "This is where the rewards for this arbitrator will go to",

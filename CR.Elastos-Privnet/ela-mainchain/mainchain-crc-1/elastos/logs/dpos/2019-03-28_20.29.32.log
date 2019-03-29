@@ -1,0 +1,593 @@
+2019/03/28 20:29:32.421128 [1;35m[INF][m GID 1, ID: 020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91
+2019/03/28 20:29:32.421722 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  99
+2019/03/28 20:29:32.421785 [1;35m[INF][m GID 31, Server listening on [::]:21339
+2019/03/28 20:29:32.421864 [1;35m[INF][m GID 30, Server listening on 0.0.0.0:21339
+2019/03/28 20:29:32.421914 [1;31m[ERR][m GID 1, self not in direct peers list
+2019/03/28 20:29:44.131646 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:29:44.131740 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:44.131769 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:29:44.644757 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:29:44.644946 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:44.644978 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:29:45.071429 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:29:45.071475 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:45.071495 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:29:47.783215 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:29:47.783303 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:47.783322 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:29:53.018446 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:29:53.018692 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:53.018722 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:29:58.757264 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:29:58.760347 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:29:58.760404 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:01.036867 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:01.039962 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:01.040315 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:02.330484 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:02.331300 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:02.331343 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:10.564920 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:10.565079 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:10.565113 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:12.355389 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:12.355508 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:12.355555 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:13.564734 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:13.564804 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:13.564827 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:20.153210 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:20.153332 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:20.153363 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:21.212725 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:21.213095 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:21.213395 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:23.058952 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:23.060460 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:23.060793 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:23.109276 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:23.109864 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:23.109958 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:24.655753 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:24.656231 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:24.657223 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:26.030345 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:26.034736 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:26.034776 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:27.914697 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:27.914949 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:27.915030 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:30.410107 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:30.410375 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:30.411387 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:33.438222 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:33.438843 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:33.438870 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:34.627591 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:34.627663 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:34.627687 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:38.006782 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:38.006924 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:38.007087 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:39.575024 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:39.575094 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:39.575116 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:42.625339 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:42.625602 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:42.625640 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:46.158457 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:46.162125 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:46.162181 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:47.098217 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:47.098298 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:47.098346 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:48.787449 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:48.787599 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:48.787624 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:50.142485 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:50.142577 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:50.142604 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:52.591925 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:30:52.592855 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:52.592980 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:30:55.941269 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:30:55.941466 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:30:55.941599 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:04.433760 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:04.434751 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:04.434820 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:05.728076 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:05.732956 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:05.733260 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:05.749990 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:31:05.750071 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:05.750093 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:05.983441 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:31:05.983576 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:05.983600 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:06.322101 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:31:06.322172 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:06.322201 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:07.896799 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:07.898087 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:07.898116 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:11.653875 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:31:11.653947 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:11.653969 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:24.824463 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:24.824960 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:24.824990 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:27.486057 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:27.486521 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:27.486587 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:39.259747 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:39.261317 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:39.261508 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:50.675972 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:50.676328 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:50.676367 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:51.514130 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:31:51.514206 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:51.514236 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:56.058654 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:56.069392 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:56.069670 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:31:57.388590 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:31:57.391877 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:31:57.391908 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:00.149341 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:00.154391 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:00.154499 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:00.163123 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:00.165388 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:00.165427 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:04.869520 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:04.869574 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:04.869601 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:06.870386 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:06.870534 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:06.870569 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:07.028291 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:07.028367 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:07.028388 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:07.187751 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:07.188328 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:07.188400 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:09.972054 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:09.972121 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:09.972145 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:12.231460 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:12.238609 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:12.238782 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:16.017945 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:16.018011 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:16.018047 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:19.394171 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:19.394210 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:19.394232 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:23.837051 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:23.837215 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:23.837262 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:30.360503 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:30.360832 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:30.360863 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:34.323635 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:34.323842 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:34.323871 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:36.408365 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:36.421598 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:36.422170 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:41.319369 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:41.319793 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:41.320154 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:49.893897 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:49.893961 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:49.893984 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:51.459549 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:51.459798 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:51.459827 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:52.230454 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:52.233255 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:52.233669 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:53.183543 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:53.595347 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:53.595458 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:53.986288 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:32:53.986662 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:53.986703 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:54.390074 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:54.390143 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:54.390166 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:32:58.920392 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:32:58.920461 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:32:58.920483 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:03.070082 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:03.074008 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:03.074074 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:05.625745 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:05.630895 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:05.633902 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:08.134898 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:08.134982 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:08.135010 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:09.547772 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:09.548199 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:09.548230 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:14.961689 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:14.965901 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:14.965934 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:16.727603 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:16.727695 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:16.727719 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:18.696957 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:18.697033 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:18.697082 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:22.598168 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:22.598252 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:22.598277 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:31.971896 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:31.973007 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:31.973041 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:34.837160 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:34.837480 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:34.837570 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:37.304510 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:37.316737 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:37.316901 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:37.468450 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:37.468563 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:37.468639 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:38.491945 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:38.491987 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:38.492008 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:41.186774 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:41.186939 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:41.186984 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:45.747557 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:45.747818 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:45.748109 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:47.415356 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:33:47.416024 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:47.416071 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:33:56.039140 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:33:56.039255 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:33:56.039285 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:01.193091 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:01.194159 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:01.194197 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:08.506025 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:08.506122 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:08.506148 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:09.177946 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:09.177990 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:09.178011 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:11.981533 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:11.981583 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:11.981606 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:15.720051 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:15.720191 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:15.720313 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:24.869060 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:24.869235 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:24.869314 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:26.877134 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:26.877203 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:26.877245 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:29.492790 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:29.498118 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:29.498175 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:36.773786 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:36.773851 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:36.773876 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:37.672567 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:37.673249 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:37.673306 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:38.554238 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:38.561947 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:38.562097 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:40.848736 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:40.849228 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:40.849286 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:41.012961 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:41.013714 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:41.013785 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:41.086946 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:41.087110 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:41.087139 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:43.016462 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:43.016560 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:43.016646 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:53.306930 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:53.308725 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:53.310081 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:53.372476 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:53.372922 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:53.373009 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:53.625823 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:53.626624 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:53.626659 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:53.756275 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:34:53.756447 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:53.756482 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:34:58.318794 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:34:58.319035 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:34:58.319067 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:04.500707 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:04.500848 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:04.500877 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:11.603224 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:11.605293 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:11.605327 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:22.488255 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:35:22.488351 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:22.488420 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:25.552209 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:25.552342 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:25.552388 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:31.635686 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:35:31.635725 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:31.635745 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:43.255072 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:43.255661 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:43.255760 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:46.877720 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:35:46.877848 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:46.877924 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:48.692489 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:48.694205 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:48.694246 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:49.198670 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:49.198865 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:49.198910 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:56.935943 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:35:56.936611 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:56.942525 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:35:59.978773 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:35:59.978847 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:35:59.978875 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:00.553226 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:00.553431 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:00.553477 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:06.349893 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:06.349930 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:06.349950 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:14.392892 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:14.392982 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:14.393006 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:16.592736 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:16.592786 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:16.592812 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:16.861212 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:16.861330 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:16.861442 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:20.059677 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:20.059719 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:20.059738 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:28.764065 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:28.769755 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:28.769832 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:30.648188 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:30.648405 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:30.648457 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:34.655646 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:36:34.655982 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:34.656024 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:38.758281 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:38.764429 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:38.764464 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:42.580996 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:42.581470 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:42.583241 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:47.908409 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:47.909494 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:47.909546 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:51.525703 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:51.525902 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:51.526308 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:36:55.864061 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:36:55.864332 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:36:55.864576 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:00.224809 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:00.226768 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:00.226832 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:00.228977 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:00.229048 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:00.229080 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:00.753018 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:00.753292 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:00.753355 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:03.722793 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:03.722916 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:03.723009 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:08.265323 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:08.266985 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:08.267028 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:09.112209 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:09.112281 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:09.112357 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:11.419258 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:11.419657 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:11.419739 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:12.928655 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:12.928866 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:12.929024 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:18.176451 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:18.176576 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:18.176647 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:24.520057 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:24.520193 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:24.521745 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:26.973464 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:26.973724 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:26.973763 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:28.031485 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:28.031562 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:28.031585 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:36.178151 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:36.178307 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:36.178336 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:41.567178 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:41.567642 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:41.567740 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:42.644577 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:37:42.644691 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:42.644731 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:44.031824 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:44.037320 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:44.037403 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:37:52.621813 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:37:52.622033 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:37:52.622354 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:02.244451 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:02.244511 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:02.244647 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:05.283391 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:05.283427 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:05.283447 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:05.855784 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:05.855869 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:05.855908 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:05.887305 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:05.887422 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:05.887452 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:11.882727 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:11.883023 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:11.883061 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:13.661396 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:13.661547 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:13.661583 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:14.336988 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:14.337071 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:14.337102 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:20.796067 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:20.796199 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:20.796367 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:21.839483 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:21.847186 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:21.847246 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:35.401189 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:35.404701 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:35.404741 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:35.787918 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:35.788010 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:35.788035 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:42.870952 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:42.874422 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:42.874492 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:44.995502 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:45.013700 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:45.016656 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:45.889029 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:45.889847 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:45.889885 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:46.583958 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:38:46.585340 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:46.585385 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:38:58.803857 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:38:58.803983 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:38:58.804010 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:09.286135 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:09.286170 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:09.286206 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:11.977517 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:11.984217 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:11.984256 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:12.468788 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:12.469068 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:12.469175 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:17.668478 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:17.669045 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:17.669111 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:17.983849 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:17.985025 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:17.986594 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:18.763471 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:18.763833 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:18.763875 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:23.603585 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:23.603631 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:23.603686 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:25.748623 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:25.749562 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:25.749621 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:28.390289 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:28.390435 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:28.390501 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:33.313531 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:33.319256 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:33.319353 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:42.386687 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:42.387114 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:42.387153 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:44.600927 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:44.601279 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:44.601316 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:54.430925 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:54.437173 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:54.437270 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:57.831038 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:57.831419 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:57.831454 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:59.019477 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:39:59.019521 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:59.019542 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:39:59.888483 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:39:59.897015 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:39:59.897063 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:01.817485 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:01.817695 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:01.817747 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:01.906489 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:01.907555 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:01.907726 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:02.197798 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:02.197865 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:02.197887 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:03.770222 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:03.771110 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:03.771136 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:03.837141 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:03.838339 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:03.838418 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:08.042271 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:08.043844 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:08.043880 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:10.246815 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:10.246874 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:10.246902 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:16.363584 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:16.363645 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:16.363677 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:22.410190 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:22.410266 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:22.410289 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:23.922463 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:23.922603 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:23.922650 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:26.286654 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:26.286832 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:26.286861 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:26.381010 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:40:26.381122 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:26.381227 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:28.447675 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:28.448006 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:28.448056 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:38.787989 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:38.792692 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:38.792752 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:40:40.959776 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:40:40.960082 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:40:40.960198 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:41:09.829652 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/03/28 20:41:09.829705 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:41:09.829726 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:41:12.997542 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:41:12.997656 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:41:12.997690 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:41:15.628934 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:41:15.629211 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:41:15.629250 [1;35m[INF][m GID 16, [OnBlockReceived] end
+2019/03/28 20:41:16.670462 [1;35m[INF][m GID 144, [OnBlockReceived] listener received block
+2019/03/28 20:41:16.670907 [1;35m[INF][m GID 16, [OnBlockReceived] start
+2019/03/28 20:41:16.670971 [1;35m[INF][m GID 16, [OnBlockReceived] end

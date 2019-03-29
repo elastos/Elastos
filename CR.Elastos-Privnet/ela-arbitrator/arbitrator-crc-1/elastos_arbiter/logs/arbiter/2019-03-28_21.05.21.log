@@ -1,0 +1,197 @@
+2019/03/28 21:05:21.392258 [1;35m[INF][m GID 1, Init wallet.
+2019/03/28 21:05:21.411082 [1;35m[INF][m GID 1, Arbiter version:  a033
+2019/03/28 21:05:21.411276 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/03/28 21:05:21.624836 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/03/28 21:05:21.625282 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/03/28 21:05:21.625573 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/03/28 21:05:21.626474 [1;35m[INF][m GID 73, currentHeight: 169  chainHeight: 170
+2019/03/28 21:05:21.626910 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:21.627896 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  395
+2019/03/28 21:05:21.634399 [1;35m[INF][m GID 1, [processBlock] block height: 335 current height: 335
+2019/03/28 21:05:21.634851 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  335
+2019/03/28 21:05:21.636070 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  170
+2019/03/28 21:05:21.636212 [1;35m[INF][m GID 1, [processBlock] block height: 336 current height: 336
+2019/03/28 21:05:21.636454 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  336
+2019/03/28 21:05:21.637208 [1;35m[INF][m GID 1, [processBlock] block height: 337 current height: 337
+2019/03/28 21:05:21.637512 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  337
+2019/03/28 21:05:21.638251 [1;35m[INF][m GID 1, [processBlock] block height: 338 current height: 338
+2019/03/28 21:05:21.638525 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  338
+2019/03/28 21:05:21.647352 [1;35m[INF][m GID 1, [processBlock] block height: 339 current height: 339
+2019/03/28 21:05:21.647723 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  339
+2019/03/28 21:05:21.649213 [1;35m[INF][m GID 1, [processBlock] block height: 340 current height: 340
+2019/03/28 21:05:21.649888 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  340
+2019/03/28 21:05:21.650609 [1;35m[INF][m GID 1, [processBlock] block height: 341 current height: 341
+2019/03/28 21:05:21.650847 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  341
+2019/03/28 21:05:21.651492 [1;35m[INF][m GID 1, [processBlock] block height: 342 current height: 342
+2019/03/28 21:05:21.651756 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  342
+2019/03/28 21:05:21.653851 [1;35m[INF][m GID 1, [processBlock] block height: 343 current height: 343
+2019/03/28 21:05:21.654113 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  343
+2019/03/28 21:05:21.655126 [1;35m[INF][m GID 1, [processBlock] block height: 344 current height: 344
+2019/03/28 21:05:21.655362 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  344
+2019/03/28 21:05:21.656960 [1;35m[INF][m GID 1, [processBlock] block height: 345 current height: 345
+2019/03/28 21:05:21.657192 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  345
+2019/03/28 21:05:21.664132 [1;35m[INF][m GID 1, [processBlock] block height: 346 current height: 346
+2019/03/28 21:05:21.664549 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  346
+2019/03/28 21:05:21.667652 [1;35m[INF][m GID 1, [processBlock] block height: 347 current height: 347
+2019/03/28 21:05:21.667983 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  347
+2019/03/28 21:05:21.669888 [1;35m[INF][m GID 1, [processBlock] block height: 348 current height: 348
+2019/03/28 21:05:21.670154 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  348
+2019/03/28 21:05:21.683911 [1;35m[INF][m GID 1, [processBlock] block height: 349 current height: 349
+2019/03/28 21:05:21.684243 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  349
+2019/03/28 21:05:21.700132 [1;35m[INF][m GID 1, [processBlock] block height: 350 current height: 350
+2019/03/28 21:05:21.700482 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  350
+2019/03/28 21:05:21.701315 [1;35m[INF][m GID 1, [processBlock] block height: 351 current height: 351
+2019/03/28 21:05:21.701608 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  351
+2019/03/28 21:05:21.702390 [1;35m[INF][m GID 1, [processBlock] block height: 352 current height: 352
+2019/03/28 21:05:21.702635 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  352
+2019/03/28 21:05:21.703351 [1;35m[INF][m GID 1, [processBlock] block height: 353 current height: 353
+2019/03/28 21:05:21.703592 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  353
+2019/03/28 21:05:21.704370 [1;35m[INF][m GID 1, [processBlock] block height: 354 current height: 354
+2019/03/28 21:05:21.704608 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  354
+2019/03/28 21:05:21.706611 [1;35m[INF][m GID 1, [processBlock] block height: 355 current height: 355
+2019/03/28 21:05:21.706880 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  355
+2019/03/28 21:05:21.709291 [1;35m[INF][m GID 1, [processBlock] block height: 356 current height: 356
+2019/03/28 21:05:21.709546 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  356
+2019/03/28 21:05:21.740285 [1;35m[INF][m GID 1, [processBlock] block height: 357 current height: 357
+2019/03/28 21:05:21.740729 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  357
+2019/03/28 21:05:21.752304 [1;35m[INF][m GID 1, [processBlock] block height: 358 current height: 358
+2019/03/28 21:05:21.752695 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  358
+2019/03/28 21:05:21.754639 [1;35m[INF][m GID 1, [processBlock] block height: 359 current height: 359
+2019/03/28 21:05:21.754887 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  359
+2019/03/28 21:05:21.765081 [1;35m[INF][m GID 1, [processBlock] block height: 360 current height: 360
+2019/03/28 21:05:21.765406 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  360
+2019/03/28 21:05:21.772554 [1;35m[INF][m GID 1, [processBlock] block height: 361 current height: 361
+2019/03/28 21:05:21.772853 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  361
+2019/03/28 21:05:21.773532 [1;35m[INF][m GID 1, [processBlock] block height: 362 current height: 362
+2019/03/28 21:05:21.773769 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  362
+2019/03/28 21:05:21.775147 [1;35m[INF][m GID 1, [processBlock] block height: 363 current height: 363
+2019/03/28 21:05:21.775401 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  363
+2019/03/28 21:05:21.776367 [1;35m[INF][m GID 1, [processBlock] block height: 364 current height: 364
+2019/03/28 21:05:21.776656 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  364
+2019/03/28 21:05:21.777855 [1;35m[INF][m GID 1, [processBlock] block height: 365 current height: 365
+2019/03/28 21:05:21.778204 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  365
+2019/03/28 21:05:21.785506 [1;35m[INF][m GID 1, [processBlock] block height: 366 current height: 366
+2019/03/28 21:05:21.785917 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  366
+2019/03/28 21:05:21.787425 [1;35m[INF][m GID 1, [processBlock] block height: 367 current height: 367
+2019/03/28 21:05:21.787723 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  367
+2019/03/28 21:05:21.788452 [1;35m[INF][m GID 1, [processBlock] block height: 368 current height: 368
+2019/03/28 21:05:21.788698 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  368
+2019/03/28 21:05:21.791598 [1;35m[INF][m GID 1, [processBlock] block height: 369 current height: 369
+2019/03/28 21:05:21.791908 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  369
+2019/03/28 21:05:21.798083 [1;35m[INF][m GID 1, [processBlock] block height: 370 current height: 370
+2019/03/28 21:05:21.798435 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  370
+2019/03/28 21:05:21.799341 [1;35m[INF][m GID 1, [processBlock] block height: 371 current height: 371
+2019/03/28 21:05:21.799557 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  371
+2019/03/28 21:05:21.804827 [1;35m[INF][m GID 1, [processBlock] block height: 372 current height: 372
+2019/03/28 21:05:21.805116 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  372
+2019/03/28 21:05:21.805826 [1;35m[INF][m GID 1, [processBlock] block height: 373 current height: 373
+2019/03/28 21:05:21.806018 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  373
+2019/03/28 21:05:21.806757 [1;35m[INF][m GID 1, [processBlock] block height: 374 current height: 374
+2019/03/28 21:05:21.806957 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  374
+2019/03/28 21:05:21.807601 [1;35m[INF][m GID 1, [processBlock] block height: 375 current height: 375
+2019/03/28 21:05:21.808065 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  375
+2019/03/28 21:05:21.810413 [1;35m[INF][m GID 1, [processBlock] block height: 376 current height: 376
+2019/03/28 21:05:21.810696 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  376
+2019/03/28 21:05:21.812288 [1;35m[INF][m GID 1, [processBlock] block height: 377 current height: 377
+2019/03/28 21:05:21.812707 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  377
+2019/03/28 21:05:21.813869 [1;35m[INF][m GID 1, [processBlock] block height: 378 current height: 378
+2019/03/28 21:05:21.814088 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  378
+2019/03/28 21:05:21.818597 [1;35m[INF][m GID 1, [processBlock] block height: 379 current height: 379
+2019/03/28 21:05:21.818870 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  379
+2019/03/28 21:05:21.819687 [1;35m[INF][m GID 1, [processBlock] block height: 380 current height: 380
+2019/03/28 21:05:21.819931 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  380
+2019/03/28 21:05:21.824901 [1;35m[INF][m GID 1, [processBlock] block height: 381 current height: 381
+2019/03/28 21:05:21.825513 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  381
+2019/03/28 21:05:21.826379 [1;35m[INF][m GID 1, [processBlock] block height: 382 current height: 382
+2019/03/28 21:05:21.826614 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  382
+2019/03/28 21:05:21.827291 [1;35m[INF][m GID 1, [processBlock] block height: 383 current height: 383
+2019/03/28 21:05:21.827536 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  383
+2019/03/28 21:05:21.828145 [1;35m[INF][m GID 1, [processBlock] block height: 384 current height: 384
+2019/03/28 21:05:21.828405 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  384
+2019/03/28 21:05:21.829820 [1;35m[INF][m GID 1, [processBlock] block height: 385 current height: 385
+2019/03/28 21:05:21.830026 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  385
+2019/03/28 21:05:21.842436 [1;35m[INF][m GID 1, [processBlock] block height: 386 current height: 386
+2019/03/28 21:05:21.842804 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  386
+2019/03/28 21:05:21.847517 [1;35m[INF][m GID 1, [processBlock] block height: 387 current height: 387
+2019/03/28 21:05:21.850376 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  387
+2019/03/28 21:05:21.851154 [1;35m[INF][m GID 1, [processBlock] block height: 388 current height: 388
+2019/03/28 21:05:21.851348 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  388
+2019/03/28 21:05:21.852622 [1;35m[INF][m GID 1, [processBlock] block height: 389 current height: 389
+2019/03/28 21:05:21.852835 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  389
+2019/03/28 21:05:21.853438 [1;35m[INF][m GID 1, [processBlock] block height: 390 current height: 390
+2019/03/28 21:05:21.853647 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  390
+2019/03/28 21:05:21.854247 [1;35m[INF][m GID 1, [processBlock] block height: 391 current height: 391
+2019/03/28 21:05:21.858057 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  391
+2019/03/28 21:05:21.860653 [1;35m[INF][m GID 1, [processBlock] block height: 392 current height: 392
+2019/03/28 21:05:21.861028 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  392
+2019/03/28 21:05:21.863668 [1;35m[INF][m GID 1, [processBlock] block height: 393 current height: 393
+2019/03/28 21:05:21.863900 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  393
+2019/03/28 21:05:21.864544 [1;35m[INF][m GID 1, [processBlock] block height: 394 current height: 394
+2019/03/28 21:05:21.864756 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  394
+2019/03/28 21:05:21.865504 [1;35m[INF][m GID 1, [processBlock] block height: 395 current height: 395
+2019/03/28 21:05:21.865690 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  395
+2019/03/28 21:05:21.870624 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 395 current height: 395
+2019/03/28 21:05:21.871604 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/03/28 21:05:21.871650 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 7630401 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:20338 127.0.0.1:21338 127.0.0.1:22338] 20338 4 100 <nil>}
+2019/03/28 21:05:21.912828 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx
+2019/03/28 21:05:21.912948 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/03/28 21:05:21.913046 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/03/28 21:05:21.913211 [1;35m[INF][m GID 1, 7. Start servers.
+2019/03/28 21:05:21.913231 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/03/28 21:05:21.913470 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/03/28 21:05:21.913640 [1;35m[INF][m GID 218, Check and remove cross chain transactions from dbcache finished
+2019/03/28 21:05:22.638231 [1;35m[INF][m GID 73, currentHeight: 170  chainHeight: 171
+2019/03/28 21:05:22.638589 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:22.641783 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  171
+2019/03/28 21:05:22.935942 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  396
+2019/03/28 21:05:22.945266 [1;35m[INF][m GID 216, [processBlock] block height: 396 current height: 396
+2019/03/28 21:05:22.945587 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  396
+2019/03/28 21:05:22.979654 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 396 current height: 396
+2019/03/28 21:05:24.984292 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  397
+2019/03/28 21:05:24.987146 [1;35m[INF][m GID 216, [processBlock] block height: 397 current height: 397
+2019/03/28 21:05:24.987417 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  397
+2019/03/28 21:05:24.991069 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 397 current height: 397
+2019/03/28 21:05:28.002241 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  398
+2019/03/28 21:05:28.002876 [1;35m[INF][m GID 216, [processBlock] block height: 398 current height: 398
+2019/03/28 21:05:28.003107 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  398
+2019/03/28 21:05:28.009203 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 398 current height: 398
+2019/03/28 21:05:29.011852 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  399
+2019/03/28 21:05:29.012824 [1;35m[INF][m GID 216, [processBlock] block height: 399 current height: 399
+2019/03/28 21:05:29.013092 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  399
+2019/03/28 21:05:29.017226 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 399 current height: 399
+2019/03/28 21:05:30.677804 [1;35m[INF][m GID 73, currentHeight: 171  chainHeight: 172
+2019/03/28 21:05:30.678101 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:30.681559 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  172
+2019/03/28 21:05:34.685053 [1;35m[INF][m GID 73, currentHeight: 172  chainHeight: 173
+2019/03/28 21:05:34.685382 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:34.688837 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  173
+2019/03/28 21:05:35.048087 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  401
+2019/03/28 21:05:35.076350 [1;35m[INF][m GID 216, [processBlock] block height: 400 current height: 400
+2019/03/28 21:05:35.076703 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  400
+2019/03/28 21:05:35.078082 [1;35m[INF][m GID 216, [processBlock] block height: 401 current height: 401
+2019/03/28 21:05:35.078341 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  401
+2019/03/28 21:05:35.086112 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 401 current height: 401
+2019/03/28 21:05:35.689555 [1;35m[INF][m GID 73, currentHeight: 173  chainHeight: 174
+2019/03/28 21:05:35.689817 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:35.693000 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  174
+2019/03/28 21:05:36.087784 [1;35m[INF][m GID 216, [arbitrator] Main chain height:  403
+2019/03/28 21:05:36.088583 [1;35m[INF][m GID 216, [processBlock] block height: 402 current height: 402
+2019/03/28 21:05:36.088805 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  402
+2019/03/28 21:05:36.095280 [1;35m[INF][m GID 216, [processBlock] block height: 403 current height: 403
+2019/03/28 21:05:36.095526 [1;35m[INF][m GID 216, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  403
+2019/03/28 21:05:36.106138 [1;32m[DBG][m GID 216, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:273 No need sync, chain height: 403 current height: 403
+2019/03/28 21:05:37.694499 [1;35m[INF][m GID 73, currentHeight: 174  chainHeight: 175
+2019/03/28 21:05:37.698370 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:37.818011 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  175
+2019/03/28 21:05:38.819000 [1;35m[INF][m GID 73, currentHeight: 175  chainHeight: 176
+2019/03/28 21:05:38.819522 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:38.822811 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  176
+2019/03/28 21:05:42.831507 [1;35m[INF][m GID 73, currentHeight: 176  chainHeight: 177
+2019/03/28 21:05:42.831811 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:42.841452 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  177
+2019/03/28 21:05:44.859050 [1;35m[INF][m GID 73, currentHeight: 177  chainHeight: 178
+2019/03/28 21:05:44.864374 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:44.867963 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  178
+2019/03/28 21:05:51.890005 [1;35m[INF][m GID 73, currentHeight: 178  chainHeight: 179
+2019/03/28 21:05:51.890561 [1;32m[DBG][m GID 73, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:172 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/03/28 21:05:51.902857 [1;35m[INF][m GID 73,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  179

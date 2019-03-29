@@ -1,0 +1,60 @@
+{
+    "Configuration": {
+      "ActiveNet": "MainNet",
+      "Magic": 7638401,
+      "Version": 23,
+      "SeedList": [
+        "127.0.0.1:20338",
+        "127.0.0.1:21338",
+        "127.0.0.1:22338"
+      ],
+      "HttpInfoPort": 22333,
+      "HttpInfoStart": true,
+      "HttpRestPort": 22334,
+      "HttpWsPort": 22335,
+      "HttpJsonPort": 22336,
+      "NodePort": 22338,
+      "PrintLevel": 1,
+      "MaxLogsSize": 0,
+      "MaxPerLogSize": 0,
+      "MinCrossChainTxFee": 10000,
+      "PowConfiguration": {
+        "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+        "AutoMining": true,
+        "MinerInfo": "ELA",
+        "MinTxFee": 100
+      },
+      "RpcConfiguration": {
+        "User": "",
+        "Pass": "",
+        "WhiteIPList": [
+          "0.0.0.0"
+        ]
+      },
+      "EnableArbiter": true,
+      "ArbiterConfiguration": {
+        "PublicKey": "0235e697ef1c375d4df6f07da8111ea06839965e616655f4ffcf6cef852c4c51f5",
+        "Magic": 7638402,
+        "NodePort": 22339,
+        "ProtocolVersion": 0,
+        "Services": 0,
+        "PrintLevel": 1,
+        "SignTolerance": 5,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "OriginArbiters": [
+        ],
+        "CRCArbiters": [{
+            "PublicKey": "020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91",
+            "NetAddress": "127.0.0.1:21339"
+          },
+          {
+            "PublicKey": "0235e697ef1c375d4df6f07da8111ea06839965e616655f4ffcf6cef852c4c51f5",
+            "NetAddress": "127.0.0.1:22339"
+          }
+        ]
+      },
+      "VoteStartHeight": 100,
+      "CRCOnlyDPOSHeight": 100
+    }
+  }

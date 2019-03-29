@@ -1,0 +1,37 @@
+=============== Mar 28, 2019 (EDT) ===============
+20:20:26.118561 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:20:26.131289 db@open opening
+20:20:26.131873 version@stat F·[] S·0B[] Sc·[]
+20:20:26.142810 db@janitor F·2 G·0
+20:20:26.142836 db@open done T·11.521445ms
+20:25:58.431569 db@close closing
+20:25:58.431594 db@close done T·24.5µs
+=============== Mar 28, 2019 (EDT) ===============
+20:26:23.756743 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:26:23.756884 version@stat F·[] S·0B[] Sc·[]
+20:26:23.756900 db@open opening
+20:26:23.756956 journal@recovery F·1
+20:26:23.757591 journal@recovery recovering @1
+20:26:23.773377 memdb@flush created L0@2 N·716 S·49KiB "\x00\x00\x00\x00\x00,v2":"\xf0,v9"
+20:26:23.774001 version@stat F·[1] S·49KiB[49KiB] Sc·[0.25]
+20:26:23.789149 db@janitor F·3 G·0
+20:26:23.789206 db@open done T·32.294392ms
+20:28:53.519517 db@close closing
+20:28:53.519661 db@close done T·142.4µs
+=============== Mar 28, 2019 (EDT) ===============
+20:29:29.860170 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:29:29.860309 version@stat F·[1] S·49KiB[49KiB] Sc·[0.25]
+20:29:29.860326 db@open opening
+20:29:29.860370 journal@recovery F·1
+20:29:29.861024 journal@recovery recovering @3
+20:29:29.863628 memdb@flush created L0@5 N·189 S·12KiB "\x00f\x00\x00\x00,v719":"\x91!K..\x00\x00\x00,v903"
+20:29:29.865475 version@stat F·[2] S·62KiB[62KiB] Sc·[0.50]
+20:29:29.885423 db@janitor F·4 G·0
+20:29:29.885471 db@open done T·25.133082ms
+20:29:29.911525 table@compaction L0·2 -> L1·0 S·62KiB Q·907
+20:29:29.926224 table@build created L1@8 N·777 S·58KiB "\x00\x00\x00\x00\x00,v2":"\xf0,v9"
+20:29:29.926293 version@stat F·[0 1] S·58KiB[0B 58KiB] Sc·[0.00 0.00]
+20:29:29.927673 table@compaction committed F-1 S-4KiB Ke·0 D·128 T·16.091108ms
+20:29:29.927768 table@remove removed @2
+20:41:17.076245 db@close closing
+20:41:17.076365 db@close done T·118.225µs

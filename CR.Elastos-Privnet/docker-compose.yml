@@ -1,11 +1,11 @@
 version : "3.2"
 services:
 
-  ela-mainchain:
-    container_name: ela-mainchain
-    image: ela-mainchain
+  ela-mainchain-normal:
+    container_name: ela-mainchain-normal
+    image: ela-mainchain-normal
     build:
-      context: ela-mainchain
+      context: ela-mainchain/mainchain-normal
     ports:
       - 20333-20338:20333-20338
     healthcheck:
@@ -17,72 +17,38 @@ services:
       - blockchain
     tty: true
 
-  ela-arbitrator-normal-1:
-    container_name: ela-arbitrator-normal-1
-    image: ela-arbitrator-normal-1
+  ela-mainchain-crc-1:
+    container_name: ela-mainchain-crc-1
+    image: ela-mainchain-crc-1
     depends_on:
-      - ela-mainchain
+      - ela-mainchain-normal
     build:
-      context: ela-arbitrator/arbitrator-normal-1
+      context: ela-mainchain/mainchain-crc-1
     ports:
-      - 10536:10536
-      - 10538:10538
+      - 21333-21339:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21334/api/v1/node/connectioncount"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - blockchain
     tty: true
-
-  ela-arbitrator-normal-2:
-    container_name: ela-arbitrator-normal-2
-    image: ela-arbitrator-normal-2
+    
+  ela-mainchain-crc-2:
+    container_name: ela-mainchain-crc-2
+    image: ela-mainchain-crc-2
     depends_on:
-      - ela-mainchain
+      - ela-mainchain-normal
     build:
-      context: ela-arbitrator/arbitrator-normal-2
+      context: ela-mainchain/mainchain-crc-2
     ports:
-      - 11536:10536
-      - 11538:10538
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-normal-3:
-    container_name: ela-arbitrator-normal-3
-    image: ela-arbitrator-normal-3
-    depends_on:
-      - ela-mainchain
-    build:
-      context: ela-arbitrator/arbitrator-normal-3
-    ports:
-      - 12536:10536
-      - 12538:10538
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-crc-1:
-    container_name: ela-arbitrator-crc-1
-    image: ela-arbitrator-crc-1
-    depends_on:
-      - ela-mainchain
-    build:
-      context: ela-arbitrator/arbitrator-crc-1
-    ports:
-      - 20339:20339
-      - 20538:10538
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-crc-2:
-    container_name: ela-arbitrator-crc-2
-    image: ela-arbitrator-crc-2
-    depends_on:
-      - ela-mainchain
-    build:
-      context: ela-arbitrator/arbitrator-crc-2
-    ports:
-      - 21339:20339
-      - 21538:10538
+      - 22333-22339:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:22334/api/v1/node/connectioncount"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - blockchain
     tty: true
@@ -90,13 +56,6 @@ services:
   ela-sidechain-did:
     container_name: ela-sidechain-did
     image: ela-sidechain-did
-    depends_on:
-      - ela-mainchain
-      - ela-arbitrator-normal-1
-      - ela-arbitrator-normal-2
-      - ela-arbitrator-normal-3
-      - ela-arbitrator-crc-1
-      - ela-arbitrator-crc-2
     build:
       context: ela-sidechain/did
     ports:
@@ -110,25 +69,30 @@ services:
       - blockchain
     tty: true
 
-  ela-sidechain-token:
-    container_name: ela-sidechain-token
-    image: ela-sidechain-token
+  ela-arbitrator-crc-1:
+    container_name: ela-arbitrator-crc-1
+    image: ela-arbitrator-crc-1
     depends_on:
-      - ela-mainchain
-      - ela-arbitrator-normal-1
-      - ela-arbitrator-normal-2
-      - ela-arbitrator-normal-3
-      - ela-arbitrator-crc-1
-      - ela-arbitrator-crc-2
+      - ela-sidechain-did
     build:
-      context: ela-sidechain/token
+      context: ela-arbitrator/arbitrator-crc-1
     ports:
-      - 20615-20618:20615-20618
-    healthcheck:
-      test: ["CMD", "curl", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:20616"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - 10536:10536
+      - 10538:10538
+    networks:
+      - blockchain
+    tty: true
+
+  ela-arbitrator-crc-2:
+    container_name: ela-arbitrator-crc-2
+    image: ela-arbitrator-crc-2
+    depends_on:
+      - ela-sidechain-did
+    build:
+      context: ela-arbitrator/arbitrator-crc-2
+    ports:
+      - 11536:10536
+      - 11538:10538
     networks:
       - blockchain
     tty: true
@@ -137,8 +101,7 @@ services:
     container_name: ela-wallet-service
     image: ela-wallet-service
     depends_on:
-      - ela-mainchain
-      - ela-sidechain-did
+      - ela-mainchain-normal
     build:
       context: restful-services/wallet-service
     ports:
@@ -150,13 +113,12 @@ services:
       retries: 10
     networks:
       - blockchain
-    tty: true   
-    
+    tty: true 
+
   ela-did-service:
     container_name: ela-did-service
     image: ela-did-service
     depends_on:
-      - ela-mainchain
       - ela-sidechain-did
     build:
       context: restful-services/did-service
@@ -170,90 +132,6 @@ services:
     networks:
       - blockchain
     tty: true  
-
-  ela-api-misc-mainchain:
-    container_name: ela-api-misc-mainchain
-    image: ela-api-misc-mainchain
-    depends_on:
-      - ela-mysql
-    build:
-      context: restful-services/api-misc
-      dockerfile: mainchain/Dockerfile
-    ports:
-      - 8093:8093
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-api-misc-sidechain-did:
-    container_name: ela-api-misc-sidechain-did
-    image: ela-api-misc-sidechain-did
-    depends_on:
-      - ela-mysql
-      - ela-api-misc-mainchain
-    build:
-      context: restful-services/api-misc
-      dockerfile: sidechain/did/Dockerfile
-    ports:
-      - 8094:8093
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8094/api/1/ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-mysql:
-    container_name: ela-mysql
-    image: mysql:5.6
-    environment:
-      - MYSQL_ROOT_PASSWORD=12345678
-      - MYSQL_DATABASE=ws
-      - MYSQL_USER=elastos
-      - MYSQL_PASSWORD=12345678
-    ports:
-      - 3307:3306
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 20s
-      retries: 10
-    networks:
-      - blockchain
-    tty: true
-
-  ela-hive-ipfs-peer:
-    container_name: ela-hive-ipfs-peer
-    image: ela-hive-ipfs-peer
-    build:
-      context: ela-hive/hive-ipfs
-      dockerfile: Dockerfile
-    ports:
-      - 9093:8080 
-    networks:
-      - hive
-    tty: true
-
-  ela-hive-cluster:
-    container_name: ela-hive-cluster
-    image: ela-hive-cluster
-    depends_on:
-      - ela-hive-ipfs-peer
-    build:
-      context: ela-hive/hive-cluster
-      dockerfile: Dockerfile
-    ports:
-      - 9094-9096:9094-9096
-    networks:
-      - hive
-    tty: true
 
 networks:
   blockchain:

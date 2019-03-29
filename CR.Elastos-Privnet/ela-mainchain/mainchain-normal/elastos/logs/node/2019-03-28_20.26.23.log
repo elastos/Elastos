@@ -1,0 +1,271 @@
+2019/03/28 20:26:23.756462 [1;35m[INF][m GID 1, Node version: v0.3.0-dirty
+2019/03/28 20:26:23.756651 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/03/28 20:26:23.819566 [1;35m[INF][m GID 1, Start the P2P networks
+2019/03/28 20:26:23.819629 [1;35m[INF][m GID 1, Start services
+2019/03/28 20:26:28.820276 [1;35m[INF][m GID 1, Start consensus
+2019/03/28 20:26:28.820324 [1;35m[INF][m GID 1, Start POW Services
+2019/03/28 20:26:28.820402 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:30.993754 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50864 (inbound)
+2019/03/28 20:26:30.993909 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:30.995520 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50864 (inbound)
+2019/03/28 20:26:33.821214 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:26:33.821322 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:34.017415 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:34.018192 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:34.974421 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50866 (inbound)
+2019/03/28 20:26:34.974484 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:34.980919 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50866 (inbound)
+2019/03/28 20:26:35.433661 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:35.434165 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:36.006912 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50868 (inbound)
+2019/03/28 20:26:36.006972 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:36.014780 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50868 (inbound)
+2019/03/28 20:26:38.997166 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:38.997559 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:39.996267 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50870 (inbound)
+2019/03/28 20:26:39.996363 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:40.004114 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50870 (inbound)
+2019/03/28 20:26:40.021860 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:40.022315 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:41.017932 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50872 (inbound)
+2019/03/28 20:26:41.018010 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:41.027443 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50872 (inbound)
+2019/03/28 20:26:45.002132 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50874 (inbound)
+2019/03/28 20:26:45.002298 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:45.010040 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50874 (inbound)
+2019/03/28 20:26:45.023388 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:26:45.023596 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:45.595657 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:45.596860 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:46.026844 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50876 (inbound)
+2019/03/28 20:26:46.026935 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:46.038260 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50876 (inbound)
+2019/03/28 20:26:48.266101 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:48.266852 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:49.857683 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:26:49.860619 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:50.012197 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50878 (inbound)
+2019/03/28 20:26:50.012496 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:50.015913 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50878 (inbound)
+2019/03/28 20:26:51.063938 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50880 (inbound)
+2019/03/28 20:26:51.063991 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:51.066679 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50880 (inbound)
+2019/03/28 20:26:54.862754 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:26:54.867420 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:26:55.016854 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50882 (inbound)
+2019/03/28 20:26:55.016952 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:55.019955 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50882 (inbound)
+2019/03/28 20:26:56.073811 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50884 (inbound)
+2019/03/28 20:26:56.074193 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:26:56.078525 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50884 (inbound)
+2019/03/28 20:26:59.868977 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:26:59.869391 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:00.026913 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50910 (inbound)
+2019/03/28 20:27:00.027069 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:00.034275 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50910 (inbound)
+2019/03/28 20:27:01.082018 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50912 (inbound)
+2019/03/28 20:27:01.083494 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:01.089326 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50912 (inbound)
+2019/03/28 20:27:04.871326 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:04.871483 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:05.035120 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50914 (inbound)
+2019/03/28 20:27:05.035171 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:05.037365 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50914 (inbound)
+2019/03/28 20:27:06.090691 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50916 (inbound)
+2019/03/28 20:27:06.092095 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:06.105697 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50916 (inbound)
+2019/03/28 20:27:09.872440 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:09.872711 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:10.038560 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50918 (inbound)
+2019/03/28 20:27:10.038656 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:10.047144 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50918 (inbound)
+2019/03/28 20:27:11.102186 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50920 (inbound)
+2019/03/28 20:27:11.102341 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:11.109653 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50920 (inbound)
+2019/03/28 20:27:11.939103 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:11.942164 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:13.424076 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:13.424669 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:14.584872 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:14.585291 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:15.050034 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50922 (inbound)
+2019/03/28 20:27:15.050394 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:15.056516 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50922 (inbound)
+2019/03/28 20:27:16.049054 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:16.050385 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:16.110129 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50924 (inbound)
+2019/03/28 20:27:16.110203 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:16.112111 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50924 (inbound)
+2019/03/28 20:27:17.717532 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:17.718010 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:20.400774 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50926 (inbound)
+2019/03/28 20:27:20.400856 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:20.409988 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50926 (inbound)
+2019/03/28 20:27:21.113424 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50928 (inbound)
+2019/03/28 20:27:21.113540 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:21.116607 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50928 (inbound)
+2019/03/28 20:27:22.719826 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:22.719949 [1;35m[INF][m GID 90, difficulty:  520095999
+2019-03-28 20:27:23.820 [INF] STAT: -> 113 []
+2019/03/28 20:27:25.413422 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50930 (inbound)
+2019/03/28 20:27:25.413490 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:25.415709 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50930 (inbound)
+2019/03/28 20:27:26.119613 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50932 (inbound)
+2019/03/28 20:27:26.120145 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:26.130269 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50932 (inbound)
+2019/03/28 20:27:27.720367 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:27.721117 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:30.025470 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:30.027564 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:30.420506 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50934 (inbound)
+2019/03/28 20:27:30.420598 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:30.425798 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50934 (inbound)
+2019/03/28 20:27:31.131077 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50936 (inbound)
+2019/03/28 20:27:31.131313 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:31.132179 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50936 (inbound)
+2019/03/28 20:27:35.027900 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:35.029039 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:35.426329 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50938 (inbound)
+2019/03/28 20:27:35.426804 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:35.428544 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50938 (inbound)
+2019/03/28 20:27:36.451903 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50940 (inbound)
+2019/03/28 20:27:36.452094 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:36.460046 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50940 (inbound)
+2019/03/28 20:27:39.606016 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:39.606614 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:40.433732 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50966 (inbound)
+2019/03/28 20:27:40.437467 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:40.438089 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50966 (inbound)
+2019/03/28 20:27:41.460591 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50968 (inbound)
+2019/03/28 20:27:41.462471 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:41.464238 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50968 (inbound)
+2019/03/28 20:27:43.131055 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:43.131367 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:45.438772 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50970 (inbound)
+2019/03/28 20:27:45.438831 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:45.445797 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50970 (inbound)
+2019/03/28 20:27:46.465730 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50972 (inbound)
+2019/03/28 20:27:46.465802 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:46.467145 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50972 (inbound)
+2019/03/28 20:27:48.134351 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:27:48.134514 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:49.310955 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:49.313635 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:50.118429 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:50.118773 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:50.176774 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:50.177102 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:50.449847 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50974 (inbound)
+2019/03/28 20:27:50.450357 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:50.457166 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50974 (inbound)
+2019/03/28 20:27:51.467754 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50976 (inbound)
+2019/03/28 20:27:51.467813 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:51.483481 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50976 (inbound)
+2019/03/28 20:27:54.311179 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:54.313858 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:54.433848 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:54.434737 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:55.459781 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50978 (inbound)
+2019/03/28 20:27:55.460166 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:55.471664 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50978 (inbound)
+2019/03/28 20:27:56.462214 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:27:56.462690 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:27:56.475149 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50980 (inbound)
+2019/03/28 20:27:56.475203 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:27:56.494360 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50980 (inbound)
+2019/03/28 20:28:00.473903 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50982 (inbound)
+2019/03/28 20:28:00.474003 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:00.477822 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50982 (inbound)
+2019/03/28 20:28:00.898185 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:00.898755 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:01.495112 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50984 (inbound)
+2019/03/28 20:28:01.495187 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:01.499989 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50984 (inbound)
+2019/03/28 20:28:05.479527 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50986 (inbound)
+2019/03/28 20:28:05.479604 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:05.485747 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50986 (inbound)
+2019/03/28 20:28:05.901184 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:05.901284 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:06.543809 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50988 (inbound)
+2019/03/28 20:28:06.543870 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:06.558470 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50988 (inbound)
+2019/03/28 20:28:09.163092 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:09.169279 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:10.488955 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50990 (inbound)
+2019/03/28 20:28:10.489049 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:10.499236 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50990 (inbound)
+2019/03/28 20:28:11.555474 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50992 (inbound)
+2019/03/28 20:28:11.555591 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:11.565242 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50992 (inbound)
+2019/03/28 20:28:11.830752 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:11.831635 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:15.497638 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50994 (inbound)
+2019/03/28 20:28:15.498036 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:15.500769 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50994 (inbound)
+2019/03/28 20:28:16.567116 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50996 (inbound)
+2019/03/28 20:28:16.567184 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:16.576210 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50996 (inbound)
+2019/03/28 20:28:16.832156 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:16.832329 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:20.501045 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:50998 (inbound)
+2019/03/28 20:28:20.501119 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:20.506434 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:50998 (inbound)
+2019/03/28 20:28:21.177918 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:21.178336 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:21.579941 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51000 (inbound)
+2019/03/28 20:28:21.580004 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:21.594251 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51000 (inbound)
+2019-03-28 20:28:23.825 [INF] STAT: -> 126 []
+2019/03/28 20:28:25.507383 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51026 (inbound)
+2019/03/28 20:28:25.507593 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:25.514052 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51026 (inbound)
+2019/03/28 20:28:26.184339 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:26.190832 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:26.597542 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51028 (inbound)
+2019/03/28 20:28:26.597654 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:26.622833 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51028 (inbound)
+2019/03/28 20:28:30.147480 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:30.152902 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:30.515451 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51030 (inbound)
+2019/03/28 20:28:30.516500 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:30.532021 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51030 (inbound)
+2019/03/28 20:28:31.635879 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51032 (inbound)
+2019/03/28 20:28:31.635971 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:31.656305 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51032 (inbound)
+2019/03/28 20:28:35.153169 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:35.155323 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:35.825549 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51034 (inbound)
+2019/03/28 20:28:35.825608 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:35.829385 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51034 (inbound)
+2019/03/28 20:28:36.658176 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51036 (inbound)
+2019/03/28 20:28:36.658252 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:36.828880 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51036 (inbound)
+2019/03/28 20:28:40.156340 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:40.157005 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:40.831650 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51038 (inbound)
+2019/03/28 20:28:40.831701 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:40.838677 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51038 (inbound)
+2019/03/28 20:28:41.830088 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51040 (inbound)
+2019/03/28 20:28:41.830209 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:41.832221 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51040 (inbound)
+2019/03/28 20:28:45.158785 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:45.158994 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:45.834345 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51042 (inbound)
+2019/03/28 20:28:45.834395 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:45.835824 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51042 (inbound)
+2019/03/28 20:28:46.836596 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51044 (inbound)
+2019/03/28 20:28:46.836782 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:46.842031 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51044 (inbound)
+2019/03/28 20:28:50.159937 [1;35m[INF][m GID 90, five second countdown ends. Re-generate block.
+2019/03/28 20:28:50.160128 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:50.838603 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51046 (inbound)
+2019/03/28 20:28:50.838657 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:50.847412 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51046 (inbound)
+2019/03/28 20:28:51.843564 [1;35m[INF][m GID 30, New valid peer 127.0.0.1:51048 (inbound)
+2019/03/28 20:28:51.843657 [1;33m[WRN][m GID 30, No sync peer candidates available
+2019/03/28 20:28:51.847249 [1;35m[INF][m GID 30, Lost peer 127.0.0.1:51048 (inbound)
+2019/03/28 20:28:52.633262 [1;35m[INF][m GID 90, <================Solved Block==============>
+2019/03/28 20:28:52.633659 [1;35m[INF][m GID 90, difficulty:  520095999
+2019/03/28 20:28:53.510568 [1;33m[WRN][m GID 1, Server shutting down
+2019/03/28 20:28:53.515852 [1;33m[WRN][m GID 1, server shutting down
+2019/03/28 20:28:53.517013 [1;35m[INF][m GID 44, Sync manager shutting down

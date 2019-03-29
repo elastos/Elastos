@@ -1,0 +1,25 @@
+=============== Mar 28, 2019 (EDT) ===============
+20:20:40.464812 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:20:40.471229 db@open opening
+20:20:40.472871 version@stat F·[] S·0B[] Sc·[]
+20:20:40.474994 db@janitor F·2 G·0
+20:20:40.475016 db@open done T·3.774202ms
+=============== Mar 28, 2019 (EDT) ===============
+20:26:30.932300 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:26:30.933358 version@stat F·[] S·0B[] Sc·[]
+20:26:30.937248 db@open opening
+20:26:30.937296 journal@recovery F·1
+20:26:30.938888 journal@recovery recovering @1
+20:26:30.944688 memdb@flush created L0@2 N·8 S·488B "t_i..ent,v2":"t_i..ent,v5"
+20:26:30.950358 version@stat F·[1] S·488B[488B] Sc·[0.25]
+20:26:30.962159 db@janitor F·3 G·0
+20:26:30.962194 db@open done T·24.932155ms
+=============== Mar 28, 2019 (EDT) ===============
+20:29:32.391962 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:29:32.392182 version@stat F·[1] S·488B[488B] Sc·[0.25]
+20:29:32.392213 db@open opening
+20:29:32.397612 journal@recovery F·1
+20:29:32.397896 journal@recovery recovering @3
+20:29:32.400364 version@stat F·[1] S·488B[488B] Sc·[0.25]
+20:29:32.410478 db@janitor F·3 G·0
+20:29:32.410598 db@open done T·18.376492ms

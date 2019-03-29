@@ -1,0 +1,13 @@
+2019/03/28 20:20:40.484990 [1;35m[INF][m GID 1, ID: 020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91
+2019/03/28 20:20:40.485366 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  0
+2019/03/28 20:20:40.485394 [1;31m[ERR][m GID 1, self not in direct peers list
+2019/03/28 20:20:40.485513 [1;35m[INF][m GID 40, Server listening on [::]:21339
+2019/03/28 20:20:40.485582 [1;35m[INF][m GID 39, Server listening on 0.0.0.0:21339
+2019/03/28 20:25:48.837323 [1;35m[INF][m GID 86, [OnBlockReceived] listener received block
+2019/03/28 20:25:48.839632 [1;35m[INF][m GID 12, [OnBlockReceived] start
+2019/03/28 20:25:48.839755 [1;35m[INF][m GID 12, [onDutyArbitratorChanged] not onduty
+2019/03/28 20:25:48.839831 [1;35m[INF][m GID 12, [OnBlockReceived] received confirmed block
+2019/03/28 20:25:48.839904 [1;35m[INF][m GID 12, [OnBlockReceived] end
+2019/03/28 20:25:50.596492 [1;35m[INF][m GID 28, [OnBlockReceived] listener received block
+2019/03/28 20:25:50.596642 [1;35m[INF][m GID 12, [OnBlockReceived] start
+2019/03/28 20:25:50.596687 [1;35m[INF][m GID 12, [OnBlockReceived] end
