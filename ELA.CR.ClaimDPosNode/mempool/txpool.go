@@ -31,7 +31,9 @@ type TxPool struct {
 func (mp *TxPool) AppendToTxnPool(tx *Transaction) ErrCode {
 	mp.Lock()
 	code := mp.appendToTxPool(tx)
-	go events.Notify(events.ETTransactionAccepted, tx)
+	if code == Success {
+		go events.Notify(events.ETTransactionAccepted, tx)
+	}
 	mp.Unlock()
 
 	return code

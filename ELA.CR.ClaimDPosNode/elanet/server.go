@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
@@ -27,11 +28,24 @@ const (
 	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering | pact.SFNodeBloom
 )
 
+// naFilter defines a network address filter for the main chain server, for now
+// it is used to filter SPV wallet addresses from relaying to other peers.
+type naFilter struct{}
+
+func (f *naFilter) Filter(na *p2p.NetAddress) bool {
+	service := pact.ServiceFlag(na.Services)
+	return service&pact.SFNodeNetwork == pact.SFNodeNetwork
+}
+
 // newPeerMsg represent a new connected peer.
-type newPeerMsg svr.IPeer
+type newPeerMsg struct {
+	svr.IPeer
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg svr.IPeer
+type donePeerMsg struct {
+	svr.IPeer
+}
 
 // relayMsg packages an inventory vector along with the newly discovered
 // inventory so the relay has access to that information.
@@ -45,6 +59,7 @@ type server struct {
 	svr.IServer
 	syncManager  *netsync.SyncManager
 	chain        *blockchain.BlockChain
+	chainParams  *config.Params
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
 
@@ -197,18 +212,25 @@ func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 // used to examine the inventory being advertised by the remote peer and react
 // accordingly.  We pass the message down to blockmanager which will call
 // QueueMessage with any appropriate responses.
-func (sp *serverPeer) OnInv(_ *peer.Peer, msg *msg.Inv) {
-	if len(msg.InvList) > 0 {
-		sp.server.syncManager.QueueInv(msg, sp.Peer)
+func (sp *serverPeer) OnInv(_ *peer.Peer, inv *msg.Inv) {
+	if len(inv.InvList) > 0 {
+		sp.server.syncManager.QueueInv(inv, sp.Peer)
 	}
 }
 
 // OnNotFound is invoked when a peer receives an notfounc message.
 // A peer should not response a notfound message so we just disconnect it.
-func (sp *serverPeer) OnNotFound(_ *peer.Peer, msg *msg.NotFound) {
-	log.Debugf("%s sent us notfound message --  disconnecting", sp)
-	sp.AddBanScore(100, 0, msg.CMD())
-	sp.Disconnect()
+func (sp *serverPeer) OnNotFound(_ *peer.Peer, notFound *msg.NotFound) {
+	for _, i := range notFound.InvList {
+		if i.Type == msg.InvTypeTx {
+			continue
+		}
+
+		log.Debugf("%s sent us notfound message --  disconnecting", sp)
+		sp.AddBanScore(100, 0, notFound.CMD())
+		sp.Disconnect()
+		return
+	}
 }
 
 // handleGetData is invoked when a peer receives a getdata message and
@@ -651,6 +673,9 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 // handleRelayInvMsg deals with relaying inventory to peers that are not already
 // known to have it.  It is invoked from the peerHandler goroutine.
 func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMsg) {
+	// TODO remove after main net growth higher than H1 for efficiency.
+	current := s.chain.GetHeight()
+
 	for _, sp := range peers {
 		if !sp.Connected() {
 			continue
@@ -680,14 +705,19 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 		}
 
 		// Compatible for old version SPV client.
-		if sp.filter.IsLoaded() {
-			// Do not send unconfirmed block to SPV client.
-			if rmsg.invVect.Type == msg.InvTypeBlock {
+		if rmsg.invVect.Type != msg.InvTypeTx && sp.filter.IsLoaded() {
+			// Do not send unconfirmed block to SPV client after H1.
+			if current > s.chainParams.CRCOnlyDPOSHeight &&
+				rmsg.invVect.Type == msg.InvTypeBlock {
 				continue
 			}
 
 			// Change inv type to InvTypeBlock for compatible.
-			rmsg.invVect.Type = msg.InvTypeBlock
+			invVect := *rmsg.invVect
+			invVect.Type = msg.InvTypeBlock
+
+			go sp.QueueInventory(&invVect)
+			continue
 		}
 
 		// Queue the inventory to be relayed with the next batch.
@@ -714,8 +744,8 @@ out:
 	for {
 		select {
 		// Deal with peer messages.
-		case p := <-s.peerQueue:
-			s.handlePeerMsg(peers, p)
+		case peer := <-s.peerQueue:
+			s.handlePeerMsg(peers, peer)
 
 			// New inventory to potentially be relayed to other peers.
 		case invMsg := <-s.relayInv:
@@ -760,18 +790,19 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnTxFilterLoad: sp.OnTxFilterLoad,
 			OnReject:       sp.OnReject,
 		})
+		sp.Start()
 
-		peers[p] = sp
+		peers[p.IPeer] = sp
 		s.syncManager.NewPeer(sp.Peer)
 
 	case donePeerMsg:
-		sp, ok := peers[p]
+		sp, ok := peers[p.IPeer]
 		if !ok {
 			log.Errorf("unknown done peer %v", p)
 			return
 		}
 
-		delete(peers, p)
+		delete(peers, p.IPeer)
 		s.syncManager.DonePeer(sp.Peer)
 	}
 }
@@ -783,12 +814,12 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p svr.IPeer) {
-	s.peerQueue <- newPeerMsg(p)
+	s.peerQueue <- newPeerMsg{p}
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p svr.IPeer) {
-	s.peerQueue <- donePeerMsg(p)
+	s.peerQueue <- donePeerMsg{p}
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
@@ -848,9 +879,11 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
 	)
 	svrCfg.DataDir = dataDir
+	svrCfg.NAFilter = &naFilter{}
 
 	s := server{
 		chain:        cfg.Chain,
+		chainParams:  cfg.ChainParams,
 		txMemPool:    cfg.TxMemPool,
 		blockMemPool: cfg.BlockMemPool,
 		peerQueue:    make(chan interface{}, svrCfg.MaxPeers),

@@ -68,6 +68,11 @@ func loadConfigParams() *config.ConfigParams {
 	if len(cfg.SeedList) > 0 {
 		activeNetParams.SeedList = cfg.SeedList
 	}
+
+	if cfg.MinCrossChainTxFee > 0 {
+		activeNetParams.MinCrossChainTxFee = cfg.MinCrossChainTxFee
+	}
+
 	foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 	if err == nil {
 		activeNetParams.Foundation = *foundation
@@ -77,10 +82,7 @@ func loadConfigParams() *config.ConfigParams {
 		activeNetParams.OriginArbiters = cfg.ArbiterConfiguration.OriginArbiters
 	}
 	if len(cfg.ArbiterConfiguration.CRCArbiters) > 0 {
-		arbiters, err := convertArbitrators(cfg.ArbiterConfiguration.CRCArbiters)
-		if err == nil {
-			activeNetParams.CRCArbiters = arbiters
-		}
+		activeNetParams.CRCArbiters = cfg.ArbiterConfiguration.CRCArbiters
 	}
 	if cfg.VoteStartHeight > 0 {
 		activeNetParams.VoteStartHeight = cfg.VoteStartHeight
@@ -124,16 +126,4 @@ func loadConfigParams() *config.ConfigParams {
 	}
 
 	return &config.Parameters
-}
-
-func convertArbitrators(arbiters []config.CRCArbiterInfo) (result []config.CRCArbiter, err error) {
-	for _, v := range arbiters {
-		arbiterByte, err := common.HexStringToBytes(v.PublicKey)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, config.CRCArbiter{PublicKey: arbiterByte, NetAddress: v.NetAddress})
-	}
-
-	return result, nil
 }

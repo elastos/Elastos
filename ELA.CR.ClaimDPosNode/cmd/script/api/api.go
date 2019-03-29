@@ -142,6 +142,10 @@ func setArbitrators(L *lua.LState) int {
 }
 
 func initLedger(L *lua.LState) int {
+	config.Parameters = config.ConfigParams{
+		Configuration: &config.Template,
+		ChainParam:    &config.MainNet,
+	}
 	logLevel := uint8(L.ToInt(1))
 
 	log.NewDefault(logLevel, 0, 0)
@@ -165,7 +169,7 @@ func initLedger(L *lua.LState) int {
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Store = chainStore
 
-	if err = chain.InitializeProducersState(interrupt.C); err != nil {
+	if err = chain.InitializeProducersState(interrupt.C, nil, nil); err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())
 	}
 
