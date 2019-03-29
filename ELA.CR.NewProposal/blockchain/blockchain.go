@@ -120,10 +120,15 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 
 // InitializeProducersState go through all blocks since the start of DPOS
 // consensus to initialize producers and votes state.
-func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err error) {
+func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{},
+	start func(total uint32), increase func()) (err error) {
 	bestHeight := b.db.GetHeight()
 	done := make(chan struct{})
 	go func() {
+		// Notify initialize process start.
+		if start != nil && bestHeight >= b.chainParams.VoteStartHeight {
+			start(bestHeight - b.chainParams.VoteStartHeight)
+		}
 		for i := b.chainParams.VoteStartHeight; i <= bestHeight; i++ {
 			hash, e := b.db.GetBlockHash(i)
 			if e != nil {
@@ -137,6 +142,11 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{}) (err er
 			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
 			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+
+			// Notify process increase.
+			if increase != nil {
+				increase()
+			}
 		}
 		done <- struct{}{}
 	}()
@@ -749,6 +759,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		// update state after connected block
 		if block.Height >= b.chainParams.VoteStartHeight {
 			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+			DefaultLedger.Arbitrators.DumpInfo()
 		}
 
 		delete(b.blockCache, *n.Hash)
@@ -911,6 +922,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+		DefaultLedger.Arbitrators.DumpInfo()
 	}
 
 	// Notify the caller that the new block was accepted into the block
@@ -1008,7 +1020,8 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	// common ancenstor (the point where the chain forked).
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
 	// forbid reorganize if detaching nodes more than irreversibleHeight
-	if detachNodes.Len() > irreversibleHeight {
+	if block.Height > b.chainParams.CRCOnlyDPOSHeight &&
+		detachNodes.Len() > irreversibleHeight {
 		return false, nil
 	}
 	//for e := detachNodes.Front(); e != nil; e = e.Next() {
@@ -1043,7 +1056,8 @@ func (b *BlockChain) ReorganizeChain(block *Block) error {
 
 	detachNodes, attachNodes := b.getReorganizeNodes(node)
 	// forbid reorganize if detaching nodes more than irreversibleHeight
-	if detachNodes.Len() > irreversibleHeight {
+	if block.Height > b.chainParams.CRCOnlyDPOSHeight &&
+		detachNodes.Len() > irreversibleHeight {
 		return nil
 	}
 

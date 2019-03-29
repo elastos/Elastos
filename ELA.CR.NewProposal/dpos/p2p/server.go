@@ -276,7 +276,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 	})
 
 	for _, sp := range groups {
-		sp.SendMessage(bmsg.message, nil)
+		go sp.SendMessage(bmsg.message, nil)
 	}
 }
 

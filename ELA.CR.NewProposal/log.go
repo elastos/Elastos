@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"time"
+
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
@@ -9,6 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
+
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 type logWrapper struct {
@@ -100,11 +106,57 @@ func wrap(logger *log.Logger, level elalog.Level) *logWrapper {
 	return &logWrapper{logger: logger, level: level}
 }
 
+const (
+	// progressRefreshRate indicates the duration between refresh progress.
+	progressRefreshRate = time.Millisecond * 500
+
+	// startString defines the print out message when start progress.
+	startString = "[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]"
+
+	// finishString defines the print out message when finish progress.
+	finishString = "[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]"
+)
+
+// progress shows a progress bar in the terminal and print blockchain initialize
+// progress into log file.
+type progress struct {
+	w  io.Writer
+	pb *pb.ProgressBar
+}
+
+func (p *progress) Start(total uint32) {
+	fmt.Fprintln(p.w, startString)
+	p.pb = pb.New64(int64(total))
+	p.pb.Output = p.w
+	p.pb.ShowTimeLeft = false
+	p.pb.ShowFinalTime = true
+	p.pb.SetRefreshRate(progressRefreshRate)
+	p.pb.Start()
+}
+
+func (p *progress) Increase() {
+	if p.pb != nil {
+		p.pb.Increment()
+	}
+}
+
+func (p *progress) Stop() {
+	if p.pb != nil {
+		p.pb.FinishPrint(finishString)
+	}
+}
+
+// newProgress creates a progress instance.
+func newProgress(w io.Writer) *progress {
+	return &progress{w: w}
+}
+
 // log is a logger that is initialized with no output filters.  This
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
 	logger = log.NewDefault(cfg.PrintLevel, cfg.MaxPerLogSize, cfg.MaxLogsSize)
+	pgBar  = newProgress(logger.Writer())
 	level  = elalog.Level(cfg.PrintLevel)
 
 	admrlog = wrap(logger, elalog.LevelOff)

@@ -26,6 +26,9 @@ const (
 	// negotiateTimeout is the duration of inactivity before we timeout a
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 30 * time.Second
+
+	// writeTimeout is the duration of write message before we time out a peer.
+	writeTimeout = 30 * time.Second
 )
 
 // outMsg is used to house a message to be sent along with a channel to signal
@@ -128,6 +131,7 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
+	started    int32
 	disconnect int32
 
 	conn net.Conn
@@ -517,7 +521,18 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	// Handle write message timeout.
+	doneChan := make(chan error)
+	go func() {
+		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	}()
+
+	select {
+	case err := <-doneChan:
+		return err
+	case <-time.After(writeTimeout):
+	}
+	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
@@ -732,7 +747,9 @@ func (p *Peer) OnSendDone(sendDoneChan chan<- struct{}) {
 // This function is safe for concurrent access.
 func (p *Peer) Connected() bool {
 	return atomic.LoadInt32(&p.connected) != 0 &&
+		atomic.LoadInt32(&p.started) != 0 &&
 		atomic.LoadInt32(&p.disconnect) == 0
+
 }
 
 // Disconnect disconnects the peer by closing the connection.  Calling this
@@ -878,8 +895,8 @@ func (p *Peer) negotiateOutboundProtocol() error {
 	return p.readRemoteVersionMsg()
 }
 
-// start begins processing input and output messages.
-func (p *Peer) start() error {
+// negotiateProtocol negotiates the peer-to-peer network protocol.
+func (p *Peer) negotiateProtocol() error {
 	negotiateErr := make(chan error, 1)
 	go func() {
 		if p.inbound {
@@ -900,15 +917,21 @@ func (p *Peer) start() error {
 	}
 	log.Debugf("Connected to %s", p.Addr())
 
+	return p.writeMessage(&msg.VerAck{})
+}
+
+// Start begins processing input and output messages.
+func (p *Peer) Start() {
+	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
+		log.Warnf("%s already started", p)
+		return
+	}
+
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
-
-	// Send our verack message now that the IO processing machinery has started.
-	p.SendMessage(&msg.VerAck{}, nil)
-	return nil
 }
 
 // AssociateConnection associates the given conn to the peer.   Calling this
@@ -938,8 +961,8 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 	}
 
 	go func() {
-		if err := p.start(); err != nil {
-			log.Debugf("Cannot start peer %v: %v", p, err)
+		if err := p.negotiateProtocol(); err != nil {
+			log.Debugf("Cannot negotiate peer %v: %v", p, err)
 			p.Disconnect()
 		}
 	}()

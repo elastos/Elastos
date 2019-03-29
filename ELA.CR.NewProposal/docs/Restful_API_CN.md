@@ -247,6 +247,71 @@
         }
     }
     ```
+    
+    
+* `/api/v1/confirm/details/height/<height>` : 根据区块 `height` 获取区块确认详细信息
+
+    Example:
+
+    ```bash
+    curl http://localhost:20334/api/v1/confirm/details/height/123
+    {
+      "error": null,
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": {
+        "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+        "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "viewoffset": 0,
+        "votes": [
+          {
+            "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+            "accept": true
+          },
+          {
+            "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+            "accept": true
+          },
+          {
+            "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+            "accept": true
+          }
+        ]
+      }
+    }
+    ```
+
+* `/api/v1/confirm/details/hash/<hash>` : 根据区块 `hash` 获取区块确认详细信息
+
+    Example:
+
+    ```bash
+    curl http://localhost:20334/api/v1/confirm/details/hash/65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8
+    {
+      "error": null,
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": {
+        "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+        "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+        "viewoffset": 0,
+        "votes": [
+          {
+            "signer": "024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb",
+            "accept": true
+          },
+          {
+            "signer": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
+            "accept": true
+          },
+          {
+            "signer": "0274fe9f165574791f74d5c4358415596e408b704be9003f51a25e90fd527660b5",
+            "accept": true
+          }
+        ]
+      }
+    }
+    ```
 
 * `/api/v1/block/transactions/height/<height>` : 根据区块 `height` 获取区块所有交易 `hash`
 

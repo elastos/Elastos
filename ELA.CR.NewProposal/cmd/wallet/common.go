@@ -30,7 +30,7 @@ func FormatOutput(o []byte) error {
 	return err
 }
 
-func ShowAccountInfo(client *account.ClientImpl) error {
+func ShowAccountInfo(client *account.Client) error {
 	fmt.Printf("%-34s %-66s\n", "ADDRESS", "PUBLIC KEY")
 	fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 
@@ -67,12 +67,12 @@ func ShowAccountBalance(walletPath string) error {
 		return err
 	}
 
-	for _, a := range storeAccounts {
+	for i, a := range storeAccounts {
 		available, locked, err := getAddressBalance(a.Address)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%5d %34s %-20s%22s \n", 0, a.Address, available.String(), "("+locked.String()+")")
+		fmt.Printf("%5d %34s %-20s%22s \n", i, a.Address, available.String(), "("+locked.String()+")")
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42))
 	}
 
@@ -96,7 +96,7 @@ func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, er
 	var availableUTXOs []servers.UTXOInfo
 	var lockedUTXOs []servers.UTXOInfo
 	for _, utxo := range UTXOs {
-		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
+		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 101 {
 			lockedUTXOs = append(lockedUTXOs, utxo)
 			continue
 		}

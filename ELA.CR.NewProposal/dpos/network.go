@@ -3,7 +3,6 @@ package dpos
 import (
 	"encoding/hex"
 	"errors"
-	"math/rand"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -67,8 +66,8 @@ func (n *network) Start() {
 	n.p2pServer.Start()
 
 	if err := n.UpdatePeers(blockchain.DefaultLedger.Arbitrators.
-		GetNeedConnectArbiters(blockchain.DefaultLedger.Blockchain.GetHeight()));
-		err != nil {
+		GetNeedConnectArbiters(blockchain.DefaultLedger.Blockchain.
+			GetHeight())); err != nil {
 		log.Error(err)
 	}
 
@@ -98,15 +97,10 @@ func (n *network) Start() {
 func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
 	result = make(map[string]p2p.PeerAddr)
 	crcs := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
-	for _, c := range crcs {
-		if len(c.PublicKey) != 33 {
-			log.Warn("[getProducersConnectionInfo] invalid public key")
-			continue
-		}
+	for k, v := range crcs {
 		pid := peer.PID{}
-		copy(pid[:], c.PublicKey)
-		result[hex.EncodeToString(c.PublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: c.NetAddress}
+		copy(pid[:], v.NodePublicKey())
+		result[k] = p2p.PeerAddr{PID: pid, Addr: v.Info().NetAddress}
 	}
 
 	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
@@ -157,24 +151,12 @@ func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
 }
 
 func (n *network) BroadcastMessage(msg elap2p.Message) {
-	log.Info("[BroadcastMessage] current connected peers:",
-		len(n.p2pServer.ConnectedPeers()))
+	log.Info("[BroadcastMessage] msg:", msg.CMD())
 	n.p2pServer.BroadcastMessage(msg)
 }
 
-func (n *network) GetActivePeer() *peer.PID {
-	peers := n.p2pServer.ConnectedPeers()
-	log.Debug("[GetActivePeer] current connected peers:", len(peers))
-	if len(peers) == 0 {
-		return nil
-	}
-	if len(peers) == 1 {
-		id := peers[0].PID()
-		return &id
-	}
-	i := rand.Int31n(int32(len(peers)) - 1)
-	id := peers[i].PID()
-	return &id
+func (n *network) GetActivePeers() []p2p.Peer {
+	return n.p2pServer.ConnectedPeers()
 }
 
 func (n *network) PostChangeViewTask() {
@@ -218,7 +200,7 @@ func (n *network) processMessage(msgItem *messageItem) {
 	case msg.CmdAcceptVote:
 		msgVote, processed := m.(*msg.Vote)
 		if processed {
-			n.listener.OnVoteReceived(msgItem.ID, &msgVote.Vote)
+			n.listener.OnVoteAccepted(msgItem.ID, &msgVote.Vote)
 		}
 	case msg.CmdRejectVote:
 		msgVote, processed := m.(*msg.Vote)
@@ -334,7 +316,8 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 	return uint64(n.proposalDispatcher.CurrentHeight())
 }
 
-func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener, dposAccount account.DposAccount) (*network, error) {
+func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener,
+	dposAccount account.DposAccount) (*network, error) {
 	network := &network{
 		listener:                 listener,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file

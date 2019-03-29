@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/crypto"
 	"io"
 	"net"
 	"strconv"
@@ -15,18 +14,21 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 const (
 	// idleTimeout is the duration of inactivity before we time out a peer.
-	idleTimeout = 2 * time.Minute
+	idleTimeout = 30 * time.Second
 
 	// negotiateTimeout is the duration of inactivity before we timeout a
 	// peer that hasn't completed the initial version negotiation.
-	negotiateTimeout = 30 * time.Second
+	negotiateTimeout = 5 * time.Second
+
+	// writeTimeout is the duration of write message before we time out a peer.
+	writeTimeout = 5 * time.Second
 )
 
 var (
@@ -139,6 +141,7 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
+	started    int32
 	disconnect int32
 
 	conn net.Conn
@@ -432,7 +435,18 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	// Handle write message timeout.
+	doneChan := make(chan error)
+	go func() {
+		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	}()
+
+	select {
+	case err := <-doneChan:
+		return err
+	case <-time.After(writeTimeout):
+	}
+	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
@@ -620,7 +634,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() {
+	if !p.Connected() || atomic.LoadInt32(&p.started) == 0 {
 		if doneChan != nil {
 			go func() {
 				doneChan <- ErrPeerDisconnected
@@ -825,6 +839,10 @@ func (p *Peer) start() error {
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
+
+	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
+		return errors.New("negotiated before")
+	}
 
 	return nil
 }

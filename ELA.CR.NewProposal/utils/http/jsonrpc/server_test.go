@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"testing"
 	"time"
-	"github.com/elastos/Elastos.ELA/utils/test"
-	htp "github.com/elastos/Elastos.ELA/utils/http"
 
+	htp "github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
 //if bRunServer is true .run server for every testcase
@@ -25,6 +25,12 @@ var (
 	clientAuthPass string
 	pServer        *http.Server
 )
+
+type RpcConfiguration struct {
+	User        string
+	Pass        string
+	WhiteIPList []string
+}
 
 func initUrl() {
 	ipNotLoopBack := resolveHostIp()
@@ -50,7 +56,7 @@ func init() {
 	initUrl()
 }
 
-func registerTestAction(s *Server, t *testing.T ){
+func registerTestAction(s *Server, t *testing.T) {
 
 	s.RegisterAction("/api/test", func(data htp.Params) (interface{}, error) {
 		t.Logf("client_side Receive POST request from path %s, data %v", "/api/test", data)
@@ -153,7 +159,6 @@ func Wait(s *Server) {
 	}
 }
 
-
 func TestServer_NotInitRpcConf(t *testing.T) {
 
 	t.Logf("NotInitRpcConf1 request with no authorization and 127.0.0.1 begin")
@@ -166,8 +171,10 @@ func TestServer_NotInitRpcConf(t *testing.T) {
 	}
 
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)
@@ -220,7 +227,7 @@ func TestServer_NotInitRpcConf(t *testing.T) {
 }
 
 func TestServer_WithUserPassNoIp(t *testing.T) {
-	t.Logf("WithUserPassNoIp1    authorization(user,pass) ok and localhost begin")
+	t.Logf("TestServer_WithUserPassNoIp    authorization(user,pass) ok and localhost begin")
 	test.SkipShort(t)
 
 	svrConf := RpcConfiguration{
@@ -230,8 +237,10 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 	}
 
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)
@@ -301,7 +310,7 @@ func TestServer_WithUserPassNoIp(t *testing.T) {
 
 	urlLocalhostNoAuthTest := func(url string, withAuthorization bool, expectStatus int, t *testing.T) {
 		clientAuthUser = svrConf.User
-		clientAuthPass = "123"
+		clientAuthPass = svrConf.Pass
 		initReqObject()
 		PostReq(url, withAuthorization, expectStatus, t)
 
@@ -322,8 +331,10 @@ func TestServer_NoUserPassWithIp(t *testing.T) {
 		WhiteIPList: []string{"127.0.0.1"},
 	}
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)
@@ -382,8 +393,10 @@ func TestServer_WithUserPassWithIp(t *testing.T) {
 		WhiteIPList: []string{"127.0.0.1"},
 	}
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)
@@ -445,8 +458,10 @@ func TestServer_WithIp0000(t *testing.T) {
 	}
 
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)
@@ -496,7 +511,6 @@ func TestServer_WithIp0000(t *testing.T) {
 
 func TestServer_WithIpNotLoopBackIp(t *testing.T) {
 
-
 	t.Logf("TestServer_WithIpNotLoopBackIp begin")
 	ipNotLoopBack := resolveHostIp()
 
@@ -511,8 +525,10 @@ func TestServer_WithIpNotLoopBackIp(t *testing.T) {
 	t.Logf("TestServer_WithIpNotLoopBackIp %v", svrConf)
 
 	s := NewServer(&Config{
-		ServePort:        20336,
-		RpcConfiguration: svrConf,
+		ServePort: 20336,
+		User:      svrConf.User,
+		Pass:      svrConf.Pass,
+		WhiteList: svrConf.WhiteIPList,
 	})
 
 	registerTestAction(s, t)

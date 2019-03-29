@@ -302,7 +302,7 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
-func GetDPOSPeersInfo(params Params) map[string]interface{} {
+func GetArbiterPeersInfo(params Params) map[string]interface{} {
 	if Arbiter == nil {
 		return ResponsePack(InternalError, "arbiter disabled")
 	}
@@ -314,7 +314,7 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 		ConnState      string `json:"connstate"`
 	}
 
-	peers := Arbiter.GetDPOSPeersInfo()
+	peers := Arbiter.GetArbiterPeersInfo()
 
 	result := make([]peerInfo, 0)
 	for _, p := range peers {
@@ -737,32 +737,21 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 
 	hash, err := Store.GetBlockHash(height)
 	if err != nil {
-		return ResponsePack(UnknownBlock, "")
+		return ResponsePack(UnknownBlock, "not found block hash at given height")
 	}
 
-	block, err := Store.GetBlock(hash)
-	if err != nil {
-		return ResponsePack(InternalError, "")
-	}
-
-	arbitratorsBytes := Arbiters.GetArbitrators()
-	Arbiters.GetOnDutyArbitrator()
-	var index int
-	if block.Height >= config.Parameters.PublicDPOSHeight-1 {
-		index = int(block.Height-config.Parameters.PublicDPOSHeight+1) % len(arbitratorsBytes)
-	} else if block.Height >= config.Parameters.CRCOnlyDPOSHeight-1 {
-		index = int(block.Height-config.Parameters.CRCOnlyDPOSHeight+1) % len(arbitratorsBytes)
-	} else {
-		index = int(block.Header.Height) % len(arbitratorsBytes)
+	block, _ := Store.GetBlock(hash)
+	if block == nil {
+		return ResponsePack(InternalError, "not found block at given height")
 	}
 
 	var arbitrators []string
-	for _, data := range arbitratorsBytes {
+	for _, data := range Arbiters.GetArbitrators() {
 		arbitrators = append(arbitrators, common.BytesToHexString(data))
 	}
 
 	result := ArbitratorGroupInfo{
-		OnDutyArbitratorIndex: index,
+		OnDutyArbitratorIndex: Arbiters.GetDutyIndexByHeight(height),
 		Arbitrators:           arbitrators,
 	}
 
@@ -1375,8 +1364,10 @@ func VerifyAndSendTx(tx *Transaction) ErrCode {
 		return errCode
 	}
 
-	// Broadcast to peer-to-peer network.
-	Server.BroadcastMessage(msg.NewTx(tx))
+	// Relay tx inventory to other peers.
+	txHash := tx.Hash()
+	iv := msg.NewInvVect(msg.InvTypeTx, &txHash)
+	Server.RelayInventory(iv, tx)
 
 	return Success
 }
