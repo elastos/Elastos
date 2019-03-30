@@ -17,7 +17,7 @@ var (
 	// connection is allowed to grow to.  This is necessary since the retry
 	// logic uses a backoff mechanism which increases the interval base times
 	// the number of retries that have been done.
-	maxRetryDuration = time.Minute * 5
+	maxRetryDuration = time.Minute
 
 	// defaultRetryDuration is the default duration of time for retrying
 	// persistent connections.
@@ -75,7 +75,7 @@ func (c *ConnReq) State() ConnState {
 
 // String returns a human-readable string for the connection request.
 func (c *ConnReq) String() string {
-	if c.Addr.String() == "" {
+	if c.Addr == nil || c.Addr.String() == "" {
 		return fmt.Sprintf("reqid %d", atomic.LoadUint64(&c.id))
 	}
 	return fmt.Sprintf("%s (reqid %d)", c.Addr, atomic.LoadUint64(&c.id))
@@ -118,9 +118,8 @@ type Config struct {
 	// connection is disconnected.
 	OnDisconnection func(*ConnReq)
 
-	// GetNewAddress is a way to get an address to make a network connection
-	// to.  If nil, no new connections will be made automatically.
-	//GetNewAddress func() (net.Addr, error)
+	// GetAddr get the network address of the given PID.
+	GetAddr func(pid [33]byte) (na net.Addr, err error)
 
 	// Dial connects to the address on the named network. It cannot be nil.
 	Dial func(net.Addr) (net.Conn, error)
@@ -345,6 +344,17 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	}
 
 	log.Debugf("Attempting to connect to %v", c)
+
+	// Attempt to find the network address for the request.
+	na, err := cm.cfg.GetAddr(c.PID)
+	if err != nil {
+		select {
+		case cm.requests <- handleFailed{c, err}:
+		case <-cm.quit:
+		}
+		return
+	}
+	c.Addr = na
 
 	conn, err := cm.cfg.Dial(c.Addr)
 	if err != nil {

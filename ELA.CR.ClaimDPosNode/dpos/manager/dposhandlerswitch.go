@@ -1,11 +1,11 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -66,8 +66,7 @@ func (h *DPOSHandlerSwitch) Initialize(dispatcher *ProposalDispatcher,
 	h.consensus = consensus
 	currentArbiter := h.cfg.Manager.GetArbitrators().GetNextOnDutyArbitrator(h.
 		consensus.GetViewOffset())
-	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.
-		Parameters.ArbiterConfiguration.PublicKey
+	isDposOnDuty := bytes.Equal(currentArbiter, dispatcher.cfg.Account.PublicKeyBytes())
 	h.SwitchTo(isDposOnDuty)
 }
 

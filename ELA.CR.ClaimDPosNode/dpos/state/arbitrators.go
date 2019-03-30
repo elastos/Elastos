@@ -44,6 +44,7 @@ type arbitrators struct {
 	arbitersCount int
 
 	mtx                sync.Mutex
+	started            bool
 	dutyIndex          int
 	currentArbitrators [][]byte
 	currentCandidates  [][]byte
@@ -61,6 +62,12 @@ type arbitrators struct {
 	finalRoundChange            common.Fixed64
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
+}
+
+func (a *arbitrators) Start() {
+	a.mtx.Lock()
+	a.started = true
+	a.mtx.Unlock()
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -179,7 +186,9 @@ func (a *arbitrators) ForceChange(height uint32) error {
 
 	a.mtx.Unlock()
 
-	events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters(height))
+	if a.started {
+		events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
+	}
 
 	return nil
 }
@@ -229,9 +238,8 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 
 	a.mtx.Unlock()
 
-	if notify {
-		events.Notify(events.ETDirectPeersChanged,
-			a.GetNeedConnectArbiters(versionHeight))
+	if a.started && notify {
+		events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
 	}
 }
 
@@ -331,54 +339,42 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) {
 	}
 }
 
-func (a *arbitrators) GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr {
-	arbiters := make(map[string]*p2p.PeerAddr)
+func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
 
-	if height >= a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
-		a.mtx.Lock()
-		for k, v := range a.crcArbitratorsNodePublicKey {
-			arbiters[k] = a.generatePeerAddr(v.info.NodePublicKey,
-				v.info.NetAddress)
-		}
-
-		for _, v := range a.currentArbitrators {
-			str := common.BytesToHexString(v)
-			if _, exist := arbiters[str]; exist {
-				continue
-			}
-			arbiters[str] = a.getArbiterPeerAddr(v)
-		}
-
-		for _, v := range a.nextArbitrators {
-			str := common.BytesToHexString(v)
-			if _, exist := arbiters[str]; exist {
-				continue
-			}
-			arbiters[str] = a.getArbiterPeerAddr(v)
-		}
-		a.mtx.Unlock()
-	}
-
-	return arbiters
-}
-
-func (a *arbitrators) getArbiterPeerAddr(pk []byte) *p2p.PeerAddr {
-	producer := a.GetProducer(pk)
-	if producer == nil {
+	height := a.history.height + 1
+	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
 	}
 
-	return a.generatePeerAddr(pk, producer.info.NetAddress)
-}
-
-func (a *arbitrators) generatePeerAddr(pk []byte, ip string) *p2p.PeerAddr {
-	pid := peer.PID{}
-	copy(pid[:], pk)
-
-	return &p2p.PeerAddr{
-		PID:  pid,
-		Addr: ip,
+	pids := make(map[string]peer.PID)
+	for k, p := range a.crcArbitratorsNodePublicKey {
+		var pid peer.PID
+		copy(pid[:], p.NodePublicKey())
+		pids[k] = pid
 	}
+
+	for _, v := range a.currentArbitrators {
+		key := common.BytesToHexString(v)
+		var pid peer.PID
+		copy(pid[:], v)
+		pids[key] = pid
+	}
+
+	for _, v := range a.nextArbitrators {
+		key := common.BytesToHexString(v)
+		var pid peer.PID
+		copy(pid[:], v)
+		pids[key] = pid
+	}
+
+	peers := make([]peer.PID, 0, len(pids))
+	for _, pid := range pids {
+		peers = append(peers, pid)
+	}
+
+	return peers
 }
 
 func (a *arbitrators) IsArbitrator(pk []byte) bool {

@@ -45,6 +45,11 @@ func (p PID) Equal(o PID) bool {
 	return bytes.Equal(p[:], o[:])
 }
 
+// String returns the hexadecimal format string of the PID.
+func (p PID) String() string {
+	return hex.EncodeToString(p[:])
+}
+
 // outMsg is used to house a message to be sent along with a channel to signal
 // when the message has been sent (or won't be sent due to things such as
 // shutdown)
@@ -77,24 +82,13 @@ type Config struct {
 	Magic            uint32
 	ProtocolVersion  uint32
 	Services         uint64
+	Port             uint16
 	PingInterval     time.Duration
-	SignNonce        func(nonce []byte) (signature [64]byte)
+	Sign             func(data []byte) []byte
 	PingNonce        func(pid PID) uint64
 	PongNonce        func(pid PID) uint64
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
-	messageFuncs     []MessageFunc
-}
-
-func (c *Config) AddMessageFunc(messageFunc MessageFunc) {
-	if messageFunc != nil {
-		c.messageFuncs = append(c.messageFuncs, messageFunc)
-	}
-}
-
-func (c *Config) handleMessage(peer *Peer, msg p2p.Message) {
-	for _, messageFunc := range c.messageFuncs {
-		messageFunc(peer, msg)
-	}
+	MessageFunc      MessageFunc
 }
 
 // minUint32 is a helper function to return the minimum of two uint32s.
@@ -148,9 +142,10 @@ type Peer struct {
 
 	// These fields are set at creation time and never modified, so they are
 	// safe to read from concurrently without a mutex.
-	addr    string
-	cfg     Config
-	inbound bool
+	addr         string
+	cfg          Config
+	inbound      bool
+	messageFuncs []MessageFunc
 
 	flagsMtx           sync.Mutex // protects the peer flags below
 	id                 uint64
@@ -177,7 +172,16 @@ type Peer struct {
 
 // AddMessageFunc add a new message handler for the peer.
 func (p *Peer) AddMessageFunc(messageFunc MessageFunc) {
-	p.cfg.AddMessageFunc(messageFunc)
+	if messageFunc != nil {
+		p.messageFuncs = append(p.messageFuncs, messageFunc)
+	}
+}
+
+// handleMessage will be invoked when a message received.
+func (p *Peer) handleMessage(peer *Peer, msg p2p.Message) {
+	for _, messageFunc := range p.messageFuncs {
+		messageFunc(peer, msg)
+	}
 }
 
 // String returns the peer's address and directionality as a human-readable
@@ -380,16 +384,16 @@ func (p *Peer) handlePongMsg(pong *msg.Pong) {
 func (p *Peer) makeEmptyMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
-	case p2p.CmdVersion:
+	case msg.CmdVersion:
 		message = &msg.Version{}
 
-	case p2p.CmdVerAck:
+	case msg.CmdVerAck:
 		message = &msg.VerAck{}
 
-	case p2p.CmdPing:
+	case msg.CmdPing:
 		message = &msg.Ping{}
 
-	case p2p.CmdPong:
+	case msg.CmdPong:
 		message = &msg.Pong{}
 
 	default:
@@ -537,7 +541,7 @@ out:
 		}
 
 		// Call handle message which is configured on peer creation.
-		p.cfg.handleMessage(p, rmsg)
+		p.handleMessage(p, rmsg)
 
 		// A message was received so reset the idle timer.
 		idleTimer.Reset(idleTimeout)
@@ -724,7 +728,7 @@ func (p *Peer) readRemoteVersionMsg() ([]byte, error) {
 	p.services = verMsg.Services
 	p.flagsMtx.Unlock()
 
-	p.cfg.handleMessage(p, verMsg)
+	p.handleMessage(p, verMsg)
 	return verMsg.Nonce[:], nil
 }
 
@@ -747,7 +751,7 @@ func (p *Peer) readRemoteVerAckMsg(nonce []byte) error {
 	}
 
 	// Verify signature of the message nonce.
-	p.cfg.handleMessage(p, verAck)
+	p.handleMessage(p, verAck)
 	return crypto.Verify(*p.pk, nonce, verAck.Signature[:])
 }
 
@@ -759,14 +763,14 @@ func (p *Peer) writeLocalVersionMsg() ([]byte, error) {
 
 	// Version message.
 	localVerMsg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services,
-		p.cfg.PID, nonce)
+		p.cfg.Port, p.cfg.PID, nonce)
 
 	return nonce[:], p.writeMessage(localVerMsg)
 }
 
 // writeLocalVerAckMsg writes our verack message to the remote peer.
 func (p *Peer) writeLocalVerAckMsg(nonce []byte) error {
-	localVarAck := msg.NewVerAck(p.cfg.SignNonce(nonce))
+	localVarAck := msg.NewVerAck(p.cfg.Sign(nonce))
 	return p.writeMessage(localVarAck)
 }
 
@@ -836,13 +840,10 @@ func (p *Peer) start() error {
 
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
+	atomic.AddInt32(&p.started, 1)
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
-
-	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
-		return errors.New("negotiated before")
-	}
 
 	return nil
 }
@@ -912,6 +913,7 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 		services:        cfg.Services,
 		protocolVersion: cfg.ProtocolVersion,
 	}
+	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
 }
 
