@@ -38,12 +38,16 @@ class App extends Component{
         
 
         <Content>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getVersion')}>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidId')}>
+            <Text>isValidId</Text>
+          </Button>
+
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
             <Text>getAddress</Text>
           </Button>
@@ -110,6 +114,10 @@ class App extends Component{
         // tmp = await this.openPrompt('Enter an address');
         rs = await Carrier.isValidAddress(targetAddress);
         rs = tmp + ' is a valid address => '+rs.toString();
+        break;
+      case 'isValidId':
+        rs = await Carrier.isValidId(target);
+        rs = target + ' is a valid nodeId => '+rs.toString();
         break;
       case 'getAddress':
         rs = await this.carrier.getAddress();

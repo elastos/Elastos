@@ -36,6 +36,10 @@ const Carrier = class {
     return exec('isValidAddress', address);
   }
 
+  static isValidId(nodeId){
+    return exec('isValidId', nodeId);
+  }
+
   constructor(id, callbacks){
     this.id = id;
 
@@ -144,7 +148,6 @@ const Carrier = class {
   }
 
   // TODO
-  static isValidId(){}
   getNodeId(){}
   addService(){}
   removeService(){}
