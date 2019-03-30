@@ -27,7 +27,15 @@ namespace Elastos {
 				return dice();
 			}
 
-			static bytes_t GetRandom(size_t bytes);
+			static bytes_t GetRandom(size_t bytes) {
+				bytes_t out(bytes);
+
+				for (size_t i = 0; i < out.size(); i++) {
+					out[i] = Utils::getRandomByte();
+				}
+
+				return out;
+			}
 		};
 	}
 }

@@ -425,9 +425,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json MasterWallet::GetBasicInfo() const {
-			nlohmann::json j;
-			j["Account"] = _account->GetBasicInfo();
-			return j;
+			return _account->GetBasicInfo();
 		}
 
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {

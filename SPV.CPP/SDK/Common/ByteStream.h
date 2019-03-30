@@ -18,84 +18,247 @@ namespace Elastos {
 		class ByteStream {
 		public:
 
-			ByteStream();
+#define VAR_INT16_HEADER  0xfd
+#define VAR_INT32_HEADER  0xfe
+#define VAR_INT64_HEADER  0xff
+#define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 
-			ByteStream(size_t size);
+			ByteStream() :
+				_rpos(0) {
+			}
 
-			ByteStream(const void *buf, size_t size);
+			ByteStream(const void *buf, size_t size)
+				: _rpos(0), _buf((const unsigned char *)buf, size)  {
+			}
 
-			ByteStream(const bytes_t &buf);
+			explicit ByteStream(const bytes_t &buf)
+				: _rpos(0), _buf(buf) {
+			}
 
-			~ByteStream();
+			~ByteStream() {
+			}
 
-		public:
-			void Reset();
+			void Reset() {
+				_rpos = 0;
+				_buf.clear();
+			}
 
-			uint64_t size() const;
+			uint64_t size() const {
+				return _buf.size();
+			}
 
-			void Skip(size_t bytes = 1) const;
+			void Skip(size_t bytes = 1) const {
+				if (_rpos + bytes <= _buf.size())
+					_rpos += bytes;
+			}
 
-			const bytes_t &GetBytes() const;
+			const bytes_t &GetBytes() const {
+				return _buf;
+			}
 
-		public:
-			bool ReadByte(uint8_t &val) const;
+			bool ReadByte(uint8_t &val) const {
+				return ReadBytes(&val, 1);
+			}
 
-			bool ReadUint8(uint8_t &val) const;
+			bool ReadUint8(uint8_t &val) const {
+				return ReadBytes(&val, 1);
+			}
 
-			bool ReadUint16(uint16_t &val) const;
+			bool ReadUint16(uint16_t &val) const {
+				return ReadBytes(&val, sizeof(uint16_t));
+			}
 
-			bool ReadUint32(uint32_t &val) const;
+			bool ReadUint32(uint32_t &val) const {
+				return ReadBytes(&val, sizeof(uint32_t));
+			}
 
-			bool ReadUint64(uint64_t &val) const;
+			bool ReadUint64(uint64_t &val) const {
+				return ReadBytes(&val, sizeof(uint64_t));
+			}
 
-			bool ReadBytes(void *buf, size_t len) const;
+			bool ReadBytes(void *buf, size_t len) const {
+				if (_rpos + len > _buf.size())
+					return false;
 
-			bool ReadBytes(bytes_t &bytes, size_t len) const;
+				memcpy(buf, &_buf[_rpos], len);
+				_rpos += len;
 
-			bool ReadBytes(uint128 &u) const;
+				return true;
+			}
 
-			bool ReadBytes(uint160 &u) const;
+			bool ReadBytes(bytes_t &bytes, size_t len) const {
+				if (_rpos + len > _buf.size())
+					return false;
 
-			bool ReadBytes(uint168 &u) const;
+				bytes.assign(_buf.begin() + _rpos, _buf.begin() + _rpos + len);
 
-			bool ReadBytes(uint256 &u) const;
+				_rpos += len;
+				return true;
+			}
 
-			bool ReadVarBytes(bytes_t &bytes) const;
+			bool ReadBytes(uint128 &u) const {
+				if (_rpos + u.size() > _buf.size())
+					return false;
 
-			bool ReadVarUint(uint64_t &len) const;
+				memcpy(u.begin(), &_buf[_rpos], u.size());
+				_rpos += u.size();
+				return true;
+			}
 
-			bool ReadVarString(std::string &str) const;
+			bool ReadBytes(uint160 &u) const {
+				if (_rpos + u.size() > _buf.size())
+					return false;
 
+				memcpy(u.begin(), &_buf[_rpos], u.size());
+				_rpos += u.size();
+				return true;
+			}
 
-			void WriteByte(uint8_t val);
+			bool ReadBytes(uint168 &u) const {
+				if (_rpos + u.size() > _buf.size())
+					return false;
 
-			void WriteUint8(uint8_t val);
+				memcpy(u.begin(), &_buf[_rpos], u.size());
+				_rpos += u.size();
+				return true;
+			}
 
-			void WriteUint16(uint16_t val);
+			bool ReadBytes(uint256 &u) const {
+				if (_rpos + u.size() > _buf.size())
+					return false;
 
-			void WriteUint32(uint32_t val);
+				memcpy(u.begin(), &_buf[_rpos], u.size());
+				_rpos += u.size();
+				return true;
+			}
 
-			void WriteUint64(uint64_t val);
+			bool ReadVarBytes(bytes_t &bytes) const {
+				uint64_t length = 0;
+				if (!ReadVarUint(length)) {
+					return false;
+				}
 
-			void WriteBytes(const void *buf, size_t len);
+				return ReadBytes(bytes, length);
+			}
 
-			void WriteBytes(const bytes_t &bytes);
+			bool ReadVarUint(uint64_t &len) const {
+				if (_rpos + 1 > _buf.size())
+					return false;
 
-			void WriteBytes(const uint128 &u);
+				uint8_t h = _buf[_rpos++];
 
-			void WriteBytes(const uint160 &u);
+				switch (h) {
+					case VAR_INT16_HEADER:
+						if (_rpos + 2 > _buf.size())
+							return false;
+						len = *(uint16_t *)&_buf[_rpos];
+						_rpos += 2;
+						break;
 
-			void WriteBytes(const uint168 &u);
+					case VAR_INT32_HEADER:
+						if (_rpos + 4 > _buf.size())
+							return false;
+						len = *(uint32_t *)&_buf[_rpos];
+						_rpos += 4;
+						break;
 
-			void WriteBytes(const uint256 &u);
+					case VAR_INT64_HEADER:
+						if (_rpos + 8 > _buf.size())
+							return false;
+						len = *(uint64_t *)&_buf[_rpos];
+						_rpos += 8;
+						break;
 
-			void WriteVarBytes(const void *bytes, size_t len);
+					default:
+						len = h;
+						break;
+				}
 
-			void WriteVarBytes(const bytes_t &bytes);
+				return true;
+			}
 
-			void WriteVarUint(uint64_t len);
+			bool ReadVarString(std::string &str) const {
+				bytes_t bytes;
+				if (!ReadVarBytes(bytes)) {
+					return false;
+				}
+				str = std::string((const char *)bytes.data(), bytes.size());
 
-			void WriteVarString(const std::string &str);
+				return true;
+			}
+
+			void WriteByte(uint8_t val) {
+				_buf.push_back(val);
+			}
+
+			void WriteUint8(uint8_t val) {
+				_buf.push_back(val);
+			}
+
+			void WriteUint16(uint16_t val) {
+				WriteBytes(&val, sizeof(uint16_t));
+			}
+
+			void WriteUint32(uint32_t val) {
+				WriteBytes(&val, sizeof(uint32_t));
+			}
+
+			void WriteUint64(uint64_t val) {
+				WriteBytes(&val, sizeof(uint64_t));
+			}
+
+			void WriteBytes(const void *buf, size_t len) {
+				_buf += bytes_t(buf, len);
+			}
+
+			void WriteBytes(const bytes_t &bytes) {
+				_buf += bytes;
+			}
+
+			void WriteBytes(const uint128 &u) {
+				_buf += u.bytes();
+			}
+
+			void WriteBytes(const uint160 &u) {
+				_buf += u.bytes();
+			}
+
+			void WriteBytes(const uint168 &u) {
+				_buf += u.bytes();
+			}
+
+			void WriteBytes(const uint256 &u) {
+				_buf += u.bytes();
+			}
+
+			void WriteVarBytes(const void *bytes, size_t len) {
+				WriteVarUint((uint64_t)len);
+				WriteBytes(bytes, len);
+			}
+
+			void WriteVarBytes(const bytes_t &bytes) {
+				WriteVarUint((uint64_t)bytes.size());
+				WriteBytes(bytes);
+			}
+
+			void WriteVarUint(uint64_t len) {
+				if (len < VAR_INT16_HEADER) {
+					_buf.push_back((uint8_t)len);
+				} else if (len <= UINT16_MAX) {
+					_buf.push_back(VAR_INT16_HEADER);
+					_buf += bytes_t((unsigned char *)&len, 2);
+				} else if (len <= UINT32_MAX) {
+					_buf.push_back(VAR_INT32_HEADER);
+					_buf += bytes_t((unsigned char *)&len, 4);
+				} else {
+					_buf.push_back(VAR_INT64_HEADER);
+					_buf += bytes_t((unsigned char *)&len, 8);
+				}
+			}
+
+			void WriteVarString(const std::string &str) {
+				WriteVarBytes(str.c_str(), str.length());
+			}
 
 		private:
 			mutable size_t _rpos;
