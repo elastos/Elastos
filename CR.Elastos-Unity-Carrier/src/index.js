@@ -130,6 +130,13 @@ const Carrier = class {
     }, info);
     return exec('setSelfInfo', this.id, user_info);
   }
+
+  /*
+   * @brief: set current node presence status
+   * @param: (number)presence, 0:online, 1:away, 2:busy
+   * @return: ok
+   * @error: throw an error if failure
+   */
   setSelfPresence(presence){
     return exec('setSelfPresence', this.id, presence);
   }
