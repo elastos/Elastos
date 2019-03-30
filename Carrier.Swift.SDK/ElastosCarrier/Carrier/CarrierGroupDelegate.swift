@@ -23,11 +23,11 @@
 import Foundation
 
 /**
-    The protocol to Carrier group instance.
+ The protocol to Carrier group instance.
  */
 @objc(ELACarrierGroupDelegate)
 public protocol CarrierGroupDelegate {
-
+    
     /// Tell the delegate that Carrier node will be connected to the group.
     ///
     /// - Parameters:
@@ -36,7 +36,7 @@ public protocol CarrierGroupDelegate {
     /// - Returns: Void
     @objc(carrierGroupDidConnect:) optional
     func groupDidConnect(_ group: CarrierGroup)
-
+    
     /// Tell the delegate that an group message has been received.
     ///
     /// - Parameters:
@@ -49,7 +49,7 @@ public protocol CarrierGroupDelegate {
     func didReceiveGroupMessage(_ group: CarrierGroup,
                                 _ from: String,
                                 _ data: Data)
-
+    
     /// Tell the delegate that group title has been changed.
     ///
     /// - Parameters:
@@ -62,7 +62,7 @@ public protocol CarrierGroupDelegate {
     func groupTitleDidChange(_ group: CarrierGroup,
                              _ from: String,
                              _ newTitle: String)
-
+    
     /// Tell the delegate that group peer name has been changed.
     ///
     /// - Parameters:
@@ -75,7 +75,7 @@ public protocol CarrierGroupDelegate {
     func groupPeerNameDidChange(_ group: CarrierGroup,
                                 _ from: String,
                                 _ newName: String)
-
+    
     /// Tell the delegate that group peer list has been changed.
     ///
     /// - Parameters:

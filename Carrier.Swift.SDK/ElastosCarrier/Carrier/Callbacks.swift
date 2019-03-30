@@ -28,51 +28,51 @@ func getCarrier(_ cctxt: UnsafeMutableRawPointer) -> Carrier {
 }
 
 private func onIdle(_: OpaquePointer?, cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     handler.willBecomeIdle?(carrier)
 }
 
 private func onConnection(_: OpaquePointer?, cstatus: UInt32,
                           cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let status  = CarrierConnectionStatus(rawValue: Int(cstatus))!
     let handler = carrier.delegate!
-
+    
     handler.connectionStatusDidChange?(carrier, status)
 }
 
 private func onReady(_: OpaquePointer?, cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     handler.didBecomeReady?(carrier)
 }
 
 private func onSelfInfoChanged(_: OpaquePointer?,
                                cinfo: UnsafeRawPointer?,
                                cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let cUserInfo = cinfo!.assumingMemoryBound(to: CUserInfo.self).pointee
     let info = convertCUserInfoToCarrierUserInfo(cUserInfo)
-
+    
     handler.selfUserInfoDidChange?(carrier, info)
 }
 
 private func onFriendIterated(_: OpaquePointer?,
                               cinfo: UnsafeRawPointer?,
                               cctxt: UnsafeMutableRawPointer?) -> CBool {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     if (cinfo != nil) {
         let cFriendInfo = cinfo!.assumingMemoryBound(to: CFriendInfo.self).pointee
         let info = convertCFriendInfoToCarrierFriendInfo(cFriendInfo)
@@ -81,7 +81,7 @@ private func onFriendIterated(_: OpaquePointer?,
         handler.didReceiveFriendsList?(carrier, carrier.friends)
         carrier.friends.removeAll()
     }
-
+    
     return true
 }
 
@@ -89,13 +89,13 @@ private func onFriendConnectionChanged(_: OpaquePointer?,
                                        cfriendId: UnsafePointer<Int8>?,
                                        cstatus: UInt32,
                                        cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let friendId = String(cString: cfriendId!)
     let status = CarrierConnectionStatus(rawValue: Int(cstatus))!
-
+    
     handler.friendConnectionDidChange?(carrier, friendId, status)
 }
 
@@ -103,14 +103,14 @@ private func onFriendInfoChanged(_: OpaquePointer?,
                                  cfriendId: UnsafePointer<Int8>?,
                                  cinfo: UnsafeRawPointer?,
                                  cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let friendId = String(cString: cfriendId!)
     let cFriendInfo = cinfo!.assumingMemoryBound(to: CFriendInfo.self).pointee
     let info = convertCFriendInfoToCarrierFriendInfo(cFriendInfo)
-
+    
     handler.friendInfoDidChange?(carrier,friendId, info)
 }
 
@@ -118,13 +118,13 @@ private func onFriendPresence(_: OpaquePointer?,
                               cfriendId: UnsafePointer<Int8>?,
                               cpresence: UInt32,
                               cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let friendId = String(cString: cfriendId!)
     let presence = CarrierPresenceStatus(rawValue: Int(cpresence))!
-
+    
     handler.friendPresenceDidChange?(carrier, friendId, presence)
 }
 
@@ -133,38 +133,38 @@ private func onFriendRequest(_: OpaquePointer?,
                              cinfo: UnsafeRawPointer?,
                              chello: UnsafePointer<Int8>?,
                              cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let userId = String(cString: cuserId!)
     let cUserInfo = cinfo!.assumingMemoryBound(to: CUserInfo.self).pointee
     let info   = convertCUserInfoToCarrierUserInfo(cUserInfo)
     let hello  = String(cString: chello!)
-
+    
     handler.didReceiveFriendRequest?(carrier, userId, info, hello)
 }
 
 private func onFriendAdded(_: OpaquePointer?,
                            cinfo: UnsafeRawPointer?,
                            cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let cFriendInfo = cinfo!.assumingMemoryBound(to: CFriendInfo.self).pointee
     let info = convertCFriendInfoToCarrierFriendInfo(cFriendInfo)
-
+    
     handler.newFriendAdded?(carrier, info)
 }
 
 private func onFriendRemoved(_: OpaquePointer?,
                              cfriendId: UnsafePointer<Int8>?,
                              cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let friendId = String(cString: cfriendId!)
     handler.friendRemoved?(carrier, friendId)
 }
@@ -172,13 +172,13 @@ private func onFriendRemoved(_: OpaquePointer?,
 private func onFriendMessage(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
                              cmessage: UnsafePointer<Int8>?, len : Int,
                              cctxt: UnsafeMutableRawPointer?) {
-
+    
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let from = String(cString: cfrom!)
     let msg  = Data(bytes: cmessage!, count: len)
-
+    
     handler.didReceiveFriendMessage?(carrier, from, msg)
 }
 
@@ -188,10 +188,10 @@ private func onFriendInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
                             cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let from = String(cString: cfrom!)
     let data = String(cString: cdata!)
-
+    
     handler.didReceiveFriendInviteRequest?(carrier, from, data)
 }
 
@@ -200,10 +200,10 @@ private func onGroupInvite(_: OperationQueue?, cfrom: UnsafePointer<Int8>?,
                            cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
-
+    
     let from = String(cString: cfrom!)
     let cookie = Data(bytes: ccookie!, count: length)
-
+    
     handler.didReceiveGroupInvite?(carrier, from, cookie)
 }
 
@@ -212,10 +212,10 @@ private func onGroupConnected(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
     let carrier = getCarrier(cctxt!)
     let groupid = String(cString: cgroupid!)
     let group   = carrier.groups[groupid]
-
+    
     if (group != nil)  {
         let handler = group!.delegate!
-
+        
         handler.groupDidConnect?(group!)
     }
 }
@@ -227,12 +227,12 @@ private func onGroupMessage(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
     let carrier = getCarrier(cctxt!)
     let groupid = String(cString: cgroupid!)
     let group   = carrier.groups[groupid]
-
+    
     if (group != nil) {
         let handler = group!.delegate!
         let from    = String(cString: cfrom!)
         let message = Data(bytes: cmsg!, count: length)
-
+        
         handler.didReceiveGroupMessage?(group!, from, message)
     }
 }
@@ -245,13 +245,13 @@ private func onGroupTitle(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
     let carrier = getCarrier(cctxt!)
     let groupid = String(cString: cgroupid!)
     let group   = carrier.groups[groupid]
-
+    
     if (group != nil) {
         let handler = group!.delegate!
-
+        
         let from  = String(cString: cfrom!)
         let title = String(cString: ctitle!)
-
+        
         handler.groupTitleDidChange?(group!, from, title)
     }
 }
@@ -264,13 +264,13 @@ private func onPeerName(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?,
     let carrier = getCarrier(cctxt!)
     let groupid = String(cString: cgroupid!)
     let group   = carrier.groups[groupid]
-
+    
     if (group != nil)  {
         let handler = group!.delegate!
-
+        
         let from = String(cString: cfrom!)
         let name = String(cString: cname!)
-
+        
         handler.groupPeerNameDidChange?(group!, from, name)
     }
 }
@@ -281,18 +281,18 @@ private func onPeerListChanged(_: OpaquePointer?, cgroupid: UnsafePointer<Int8>?
     let carrier = getCarrier(cctxt!)
     let groupid = String(cString: cgroupid!)
     let group   = carrier.groups[groupid]
-
+    
     if (group != nil)  {
         let handler = group!.delegate!
-
+        
         handler.groupPeerListDidChange?(group!)
     }
 }
 
 internal func getNativeHandlers() -> CCallbacks {
-
+    
     var callbacks = CCallbacks()
-
+    
     callbacks.idle = onIdle
     callbacks.connection_status = onConnection
     callbacks.ready = onReady
@@ -313,6 +313,6 @@ internal func getNativeHandlers() -> CCallbacks {
     callbacks.group_callbacks.group_title = onGroupTitle
     callbacks.group_callbacks.peer_name = onPeerName
     callbacks.group_callbacks.peer_list_changed = onPeerListChanged
-
+    
     return callbacks
 }

@@ -23,84 +23,84 @@
 import Foundation
 
 /**
-    A class representing the Carrier user information.
-
-    In Elastos carrier SDK, self and all friends are carrier user, and have
-    same user attributes.
+ A class representing the Carrier user information.
+ 
+ In Elastos carrier SDK, self and all friends are carrier user, and have
+ same user attributes.
  */
 @objc(ELACarrierUserInfo)
 public class CarrierUserInfo: NSObject {
-
+    
     /// Elastos carrier User ID max length.
-    public static let MAX_ID_LEN: Int = 45
-
+    @objc public static let MAX_ID_LEN: Int = 45
+    
     /// Elastos carrier user name max length.
-    public static let MAX_USER_NAME_LEN: Int = 63
-
+    @objc public static let MAX_USER_NAME_LEN: Int = 63
+    
     /// Elastos carrier user description max length.
-    public static let MAX_USER_DESCRIPTION_LEN: Int = 127
-
+    @objc public static let MAX_USER_DESCRIPTION_LEN: Int = 127
+    
     /// Elastos carrier user gender max length.
-    public static let MAX_GENDER_LEN: Int = 31
-
+    @objc public static let MAX_GENDER_LEN: Int = 31
+    
     /// Elastos carrier user phone number max length.
-    public static let MAX_PHONE_LEN: Int = 31
-
+    @objc public static let MAX_PHONE_LEN: Int = 31
+    
     /// Elastos carrier user email address max length.
-    public static let MAX_EMAIL_LEN: Int = 127
-
+    @objc public static let MAX_EMAIL_LEN: Int = 127
+    
     /// Elastos carrier user region max length.
-    public static let MAX_REGION_LEN: Int = 127
-
+    @objc public static let MAX_REGION_LEN: Int = 127
+    
     internal override init() {
         self.hasAvatar = false
         super.init()
     }
-
+    
     /**
-        User ID.
+     User ID.
      */
-    public internal(set) var userId: String?
-
+    @objc public internal(set) var userId: String?
+    
     /**
-        Nickname, also as display name.
+     Nickname, also as display name.
      */
-    public var name: String?
-
+    @objc public var name: String?
+    
     /**
-        User's brief description, also as what's up.
+     User's brief description, also as what's up.
      */
-    public var briefDescription: String?
-
+    @objc public var briefDescription: String?
+    
     /**
-        If user has avatar.
+     If user has avatar.
      */
-    public var hasAvatar: Bool
-
+    @objc public var hasAvatar: Bool
+    
     /**
-        User's gender.
+     User's gender.
      */
-    public var gender: String?
-
+    @objc public var gender: String?
+    
     /**
-        User's phone number.
+     User's phone number.
      */
-    public var phone: String?
-
+    @objc public var phone: String?
+    
     /**
-        User's email address.
+     User's email address.
      */
-    public var email: String?
-
+    @objc public var email: String?
+    
     /**
-        User's region information.
+     User's region information.
      */
-    public var region: String?
-
+    @objc public var region: String?
+    
     internal static func format(_ info: CarrierUserInfo) -> String {
         return String(format: "userId[%@], name[%@], briefDescription[%@]," +
-                      "hasAvatar[%@], gender[%@], phone[%@]" +
-                      "email[%@], region[%@]",
+            "hasAvatar[%@], gender[%@], phone[%@]" +
+            "email[%@], region[%@]",
                       String.toHardString(info.userId),
                       String.toHardString(info.name),
                       String.toHardString(info.briefDescription),
@@ -110,7 +110,7 @@ public class CarrierUserInfo: NSObject {
                       String.toHardString(info.email),
                       String.toHardString(info.region))
     }
-
+    
     public override var description: String {
         return CarrierUserInfo.format(self)
     }
@@ -118,7 +118,7 @@ public class CarrierUserInfo: NSObject {
 
 internal func convertCarrierUserInfoToCUserInfo(_ info: CarrierUserInfo) -> CUserInfo {
     var cInfo = CUserInfo()
-
+    
     info.userId?.writeToCCharPointer(&cInfo.userid)
     info.name?.writeToCCharPointer(&cInfo.name)
     info.briefDescription?.writeToCCharPointer(&cInfo.description)
@@ -126,16 +126,16 @@ internal func convertCarrierUserInfoToCUserInfo(_ info: CarrierUserInfo) -> CUse
     info.phone?.writeToCCharPointer(&cInfo.phone)
     info.email?.writeToCCharPointer(&cInfo.email)
     info.region?.writeToCCharPointer(&cInfo.region)
-
+    
     cInfo.has_avatar = Int32(info.hasAvatar ? 1: 0)
-
+    
     return cInfo
 }
 
 internal func convertCUserInfoToCarrierUserInfo(_ cInfo: CUserInfo) -> CarrierUserInfo {
     let info = CarrierUserInfo()
     var temp = cInfo
-
+    
     info.userId = String(cCharPointer: &temp.userid)
     info.name = String(cCharPointer: &temp.name)
     info.briefDescription = String(cCharPointer: &temp.description)
@@ -143,8 +143,8 @@ internal func convertCUserInfoToCarrierUserInfo(_ cInfo: CUserInfo) -> CarrierUs
     info.phone = String(cCharPointer: &temp.phone)
     info.email = String(cCharPointer: &temp.email)
     info.region = String(cCharPointer: &temp.region)
-
+    
     info.hasAvatar = (cInfo.has_avatar != 0)
-
+    
     return info
 }

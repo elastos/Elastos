@@ -23,57 +23,57 @@
 import Foundation
 
 /**
-    A class representing the Carrier group peer information.
+ A class representing the Carrier group peer information.
  */
 @objc(ELACarrierGroupPeer)
 public class CarrierGroupPeer: NSObject {
-
+    
     /// Elastos carrier peer ID max length.
-    public static let MAX_ID_LEN: Int = 45
-
+    @objc public static let MAX_ID_LEN: Int = 45
+    
     /// Elastos carrier peer name max length.
-    public static let MAX_NAME_LEN: Int = 63
-
+    @objc public static let MAX_NAME_LEN: Int = 63
+    
     internal override init() {
         super.init()
     }
-
+    
     /**
-        User ID.
+     User ID.
      */
-    public internal(set) var userId: String?
-
+    @objc public internal(set) var userId: String?
+    
     /**
-        Nickname, also as display name.
+     Nickname, also as display name.
      */
-    public var name: String?
-
+    @objc public var name: String?
+    
     internal static func format(_ info: CarrierGroupPeer) -> String {
         return String(format: "userId[%@], name[%@]",
                       String.toHardString(info.userId),
                       String.toHardString(info.name))
     }
-
-    public override var description: String {
+    
+    @objc public override var description: String {
         return CarrierGroupPeer.format(self)
     }
 }
 
 internal func convertCarrierGroupPeerToCGroupPeer(_ peer: CarrierGroupPeer) -> CGroupPeer {
     var cPeer = CGroupPeer();
-
+    
     peer.userId?.writeToCCharPointer(&cPeer.userid)
     peer.name?.writeToCCharPointer(&cPeer.name)
-
+    
     return cPeer
 }
 
 internal func convertCGroupPeerToCarrierGroupPeer(_ cPeer: CGroupPeer) -> CarrierGroupPeer {
     let peer = CarrierGroupPeer();
     var temp = cPeer;
-
+    
     peer.userId = String(cCharPointer: &temp.userid)
     peer.name = String(cCharPointer: &temp.name)
-
+    
     return peer
 }

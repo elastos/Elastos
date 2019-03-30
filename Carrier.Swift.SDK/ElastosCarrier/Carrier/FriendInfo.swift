@@ -29,21 +29,21 @@ import Foundation
  */
 @objc(ELACarrierFriendInfo)
 public class CarrierFriendInfo: CarrierUserInfo {
-
+    
     /// carrier friend label max length.
-    public static let MAX_LABEL_LEN = 63
-
+    @objc public static let MAX_LABEL_LEN = 63
+    
     /// carrier node presence max length.
-    public static let MAX_USER_PRESENCE_LEN = 31
-
+    @objc public static let MAX_USER_PRESENCE_LEN = 31
+    
     internal override init() {
         presence = CarrierPresenceStatus.None
         status   = CarrierConnectionStatus.Disconnected
         super.init()
     }
-
+    
     /**
-        Friend's user information.
+     Friend's user information.
      */
     internal var userInfo: CarrierUserInfo? {
         set {
@@ -60,58 +60,58 @@ public class CarrierFriendInfo: CarrierUserInfo {
             return self as CarrierUserInfo
         }
     }
-
+    
     /**
-        Friend's presence status.
+     Friend's presence status.
      */
-    public var status: CarrierConnectionStatus
-
+    @objc public var status: CarrierConnectionStatus
+    
     /**
-        Label name for the friend.
+     Label name for the friend.
      */
-    public var label: String?
-
+    @objc public var label: String?
+    
     /**
-        Friend's presence status.
+     Friend's presence status.
      */
-    public var presence: CarrierPresenceStatus
-
+    @objc public var presence: CarrierPresenceStatus
+    
     internal static func format2(_ info: CarrierFriendInfo) -> String {
         return String(format: "FriendInfo: userInfo[%@], status[%@]," +
-                      " label[%@], presence[%@]",
+            " label[%@], presence[%@]",
                       CarrierUserInfo.format(info),
                       String.toHardString(info.status.description),
                       String.toHardString(info.label),
                       String.toHardString(info.presence.description))
     }
-
-    public override var description: String {
+    
+    @objc public override var description: String {
         return CarrierFriendInfo.format2(self)
     }
 }
 
 internal func convertCarrierFriendInfoToCFriendInfo(_ info: CarrierFriendInfo) -> CFriendInfo {
     var cInfo = CFriendInfo()
-
+    
     cInfo.user_info = convertCarrierUserInfoToCUserInfo(info)
     cInfo.status = Int32(info.status.rawValue)
     cInfo.presence = Int32(info.presence.rawValue)
-
+    
     info.label?.writeToCCharPointer(&cInfo.label)
-
+    
     return cInfo
 }
 
 internal func convertCFriendInfoToCarrierFriendInfo(_ cInfo: CFriendInfo) -> CarrierFriendInfo {
     let info = CarrierFriendInfo()
-
+    
     info.userInfo = convertCUserInfoToCarrierUserInfo(cInfo.user_info)
     info.status = convertCConnectionStatusToCarrierConnectionStatus(cInfo.status)
     info.presence = convertCPresenceStatusToCarrierPresenceStatus(cInfo.presence)
     info.presence = convertCPresenceStatusToCarrierPresenceStatus(cInfo.presence)
-
+    
     var label = cInfo.label
     info.label = String(cCharPointer: &label)
-
+    
     return info
 }

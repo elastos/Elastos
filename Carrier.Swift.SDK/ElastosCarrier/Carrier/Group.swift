@@ -26,49 +26,49 @@ import Foundation
 @objc(ELACarrierGroup)
 public class CarrierGroup: NSObject {
     /// Carrier group message max length.
-    public static let MAX_APP_MESSAGE_LEN: Int = 2048
-
+    @objc public static let MAX_APP_MESSAGE_LEN: Int = 2048
+    
     private static let TAG: String = "CarrierGroup"
     private static let MAX_GROUP_TITLE_LEN: Int = 127
     private static let MAX_ADDRESS_LEN: Int = 52
     private static let MAX_ID_LEN: Int = 45
-
+    
     internal var ccarrier: OpaquePointer?
     internal var groupid : String
     private  var didLeave : Bool
     weak var delegate: CarrierGroupDelegate?
-
+    
     init(_ ccarrier: OpaquePointer!, _ groupid: String,
-                 _ delegate: CarrierGroupDelegate) {
-
+         _ delegate: CarrierGroupDelegate) {
+        
         self.ccarrier = ccarrier
         self.groupid  = groupid
         self.delegate = delegate
         self.didLeave = false
-
+        
         super.init()
     }
-
+    
     deinit {
         leave()
     }
-
+    
     @objc(leave)
-   public func leave() {
+    public func leave() {
         objc_sync_enter(self)
-
+        
         if (!didLeave) {
             Log.d(CarrierGroup.TAG, "Destroying group \(groupid) ...");
-
+            
             self.ccarrier = nil
             self.delegate = nil
             self.didLeave = true
             Log.i(CarrierGroup.TAG, "Group \(groupid) destroyed")
         }
-
+        
         objc_sync_exit(self)
     }
-
+    
     /// Get groupid in string way.
     ///
     /// - Returns:
@@ -78,7 +78,7 @@ public class CarrierGroup: NSObject {
     public func getId() -> String {
         return self.groupid
     }
-
+    
     /// Invite a specified friend into group.
     ///
     /// - Parameters:
@@ -94,16 +94,16 @@ public class CarrierGroup: NSObject {
                 return ela_group_invite(ccarrier, cgroupid, cfriendid)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(CarrierGroup.TAG, "Invite friend \(friendId) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(CarrierGroup.TAG, "Invite friend \(friendId) to group \(groupid) success.")
     }
-
+    
     /// Send a message to a group.
     ///
     /// The message length may not exceed MAX_APP_MESSAGE_LEN. Larger messages
@@ -123,16 +123,16 @@ public class CarrierGroup: NSObject {
                 return ela_group_send_message(ccarrier, cgroupid, cdata, data.count)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(CarrierGroup.TAG, "Send group message to \(groupid) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(CarrierGroup.TAG, "Sended group \(groupid) message: \(data).")
     }
-
+    
     /// Get group title.
     ///
     /// - Returns:
@@ -145,7 +145,7 @@ public class CarrierGroup: NSObject {
     public func getTitle() throws -> String {
         let len = CarrierGroup.MAX_GROUP_TITLE_LEN + 1
         var data = Data(count: len)
-
+        
         let title = groupid.withCString{ (cgroupid) -> String? in
             return data.withUnsafeMutableBytes() {
                 (ptr: UnsafeMutablePointer<Int8>) -> String? in
@@ -153,17 +153,17 @@ public class CarrierGroup: NSObject {
                 return result >= 0 ? String(cString: ptr) : nil
             }
         }
-
+        
         guard title != nil else {
             let errno: Int = getErrorCode();
             Log.e(CarrierGroup.TAG, "Get group \(groupid) title error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(CarrierGroup.TAG, "Current group \(groupid) title: \(title!)")
         return title!
     }
-
+    
     /// Set new group title.
     ///
     /// - Parameters:
@@ -179,14 +179,14 @@ public class CarrierGroup: NSObject {
                 return ela_group_set_title(ccarrier, cgroupid, ctitle)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(CarrierGroup.TAG, "Set group \(groupid) title error: 0x%x", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
     }
-
+    
     /// Get group peer list
     ///
     /// - Returns:
@@ -206,7 +206,7 @@ public class CarrierGroup: NSObject {
             }
             return true
         }
-
+        
         var peers = [CarrierGroupPeer]()
         let result = withUnsafeMutablePointer(to: &peers) { (ptr) -> Int32 in
             return groupid.withCString{ (cgroupid) -> Int32 in
@@ -214,22 +214,22 @@ public class CarrierGroup: NSObject {
                 return ela_group_get_peers(ccarrier, cgroupid, cb, cctxt)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(CarrierGroup.TAG, "Get group \(groupid) peers error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(CarrierGroup.TAG, "Current group peers listed below: +++>>")
         for peer in peers {
             Log.d(CarrierGroup.TAG, "\(peer)");
         }
         Log.d(CarrierGroup.TAG, "<<+++")
-
+        
         return peers
     }
-
+    
     /// Get group peer
     ///
     /// - Returns:
@@ -247,13 +247,13 @@ public class CarrierGroup: NSObject {
                 return ela_group_get_peer(ccarrier, cgroupid, cpeerid, &cpeer)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(CarrierGroup.TAG, "Get peer \(peerId) info error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let peer = convertCGroupPeerToCarrierGroupPeer(cpeer)
         Log.d(CarrierGroup.TAG, "Current peer infos: \(peer)")
         return peer

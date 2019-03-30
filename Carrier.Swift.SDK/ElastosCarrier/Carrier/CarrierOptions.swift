@@ -23,43 +23,43 @@
 import Foundation
 
 /**
-    CarrierOptions defines several settings that control the way the carrier
-    node connects to others.
+ CarrierOptions defines several settings that control the way the carrier
+ node connects to others.
  */
 @objc(ELACarrierOptions)
 public class CarrierOptions: NSObject {
-
-    public override init() {
+    
+    @objc public override init() {
         udpEnabled = true
         super.init()
     }
-
+    
     /**
-        The application defined persistent data location.
-        The location must be set.
+     The application defined persistent data location.
+     The location must be set.
      */
-    public var persistentLocation: String?
-
+    @objc public var persistentLocation: String?
+    
     /**
-        The option to decide to use udp transport or not. Setting this option
-        to false will force Carrier node to use TCP only, which will
-        potentially slow down the message to run through.
+     The option to decide to use udp transport or not. Setting this option
+     to false will force Carrier node to use TCP only, which will
+     potentially slow down the message to run through.
      */
-    public var udpEnabled: Bool
-
-    public var bootstrapNodes: [BootstrapNode]?
+    @objc public var udpEnabled: Bool
+    
+    @objc public var bootstrapNodes: [BootstrapNode]?
 }
 
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {
     var cOptions = COptions()
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
-
+    
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
     cOptions.udp_enabled = options.udpEnabled
     (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
-
+    
     cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
-
+    
     return cOptions
 }
 

@@ -30,30 +30,30 @@ import Foundation
 /// The class representing carrier node.
 @objc(ELACarrier)
 public class Carrier: NSObject {
-
+    
     public typealias CarrierFriendInviteResponseHandler =
         (_ carrier: Carrier, _ from: String, _ status: Int, _ reason: String?,
-         _ data: String?) ->Void
-
+        _ data: String?) ->Void
+    
     /// Carrier node App message max length.
-    public static let MAX_APP_MESSAGE_LEN: Int = 2048
-
+    @objc public static let MAX_APP_MESSAGE_LEN: Int = 2048
+    
     private static let TAG: String = "Carrier"
     private static let MAX_ADDRESS_LEN: Int = 52;
     private static let MAX_ID_LEN: Int = 45
-
+    
     private static var carrierInst: Carrier?
-
+    
     internal var ccarrier: OpaquePointer?
     private  var didKill : Bool
     private  let semaph  : DispatchSemaphore
-
+    
     internal weak var delegate: CarrierDelegate?
-
+    
     internal var friends: [CarrierFriendInfo]
-
+    
     internal var groups: [String: CarrierGroup]
-
+    
     /// Get current carrier node version.
     ///
     /// - Returns: The current carrier node version.
@@ -61,7 +61,7 @@ public class Carrier: NSObject {
     public static func getVersion() -> String {
         return String(cString: ela_get_version())
     }
-
+    
     /// Check if the carrier address ID is valid.
     ///
     /// - Parameter address: The carrier address to be check
@@ -71,7 +71,7 @@ public class Carrier: NSObject {
     public static func isValidAddress(_ address: String) -> Bool {
         return (Base58.decode(address)?.count == 38)
     }
-
+    
     /// Check if the carrier public ID is valid.
     ///
     /// - Parameter id: The carrier id to be check
@@ -81,7 +81,7 @@ public class Carrier: NSObject {
     public static func isValidUserId(_ id: String) -> Bool {
         return (Base58.decode(id)?.count == 32)
     }
-
+    
     /// Extract ID from the carrier node address.
     ///
     /// - Parameter address: The carrier node address.
@@ -95,7 +95,7 @@ public class Carrier: NSObject {
             return nil
         }
     }
-
+    
     /// Set log level for carrier node.
     /// Default level to control log output is `CarrierLogLevel.Info`
     ///
@@ -105,7 +105,7 @@ public class Carrier: NSObject {
         Log.setLevel(level)
         ela_log_init(convertCarrierLogLevelToCLogLevel(level), nil, nil)
     }
-
+    
     /// Create node singleton instance. After initialize the instance,
     /// it's ready to start and therefore connect to the carrier network.
     ///
@@ -116,34 +116,34 @@ public class Carrier: NSObject {
     /// - Throws: CarrierError
     @objc(initializeSharedInstance:delegate:error:)
     public static func initializeSharedInstance(options: CarrierOptions,
-                                   delegate: CarrierDelegate) throws {
+                                                delegate: CarrierDelegate) throws {
         if (carrierInst == nil) {
             Log.d(TAG, "Attempt to create native carrier instance ...")
-
+            
             var copts = convertCarrierOptionsToCOptions(options);
             defer {
                 cleanupCOptions(copts)
             }
-
+            
             let carrier = Carrier(delegate)
             var chandler = getNativeHandlers()
             let cctxt = Unmanaged.passUnretained(carrier).toOpaque()
             let ccarrier = ela_new(&copts, &chandler, cctxt)
-
+            
             guard ccarrier != nil else {
                 let errno = getErrorCode()
                 Log.e(TAG, "Create native carrier instance error: 0x%X", errno)
                 throw CarrierError.FromErrorCode(errno: errno)
             }
-
+            
             carrier.ccarrier = ccarrier
             carrier.didKill = false
-
+            
             Log.i(TAG, "Native carrier node instance created.")
             carrierInst = carrier
         }
     }
-
+    
     /// Get a carrier node singleton instance.
     ///
     /// - Returns: The carrier node instance or ni
@@ -151,7 +151,7 @@ public class Carrier: NSObject {
     public static func sharedInstance() -> Carrier? {
         return carrierInst
     }
-
+    
     private init(_ delegate: CarrierDelegate) {
         self.delegate = delegate
         self.didKill = true
@@ -160,11 +160,11 @@ public class Carrier: NSObject {
         self.groups = [String: CarrierGroup]()
         super.init()
     }
-
+    
     deinit {
         kill()
     }
-
+    
     /// Start carrier node asynchronously to connect to carrier network.
     /// If the connection to network is successful, carrier node starts
     /// working.
@@ -177,22 +177,22 @@ public class Carrier: NSObject {
         guard iterateInterval >= 0 else {
             throw CarrierError.InvalidArgument
         }
-
+        
         let backgroundQueue = DispatchQueue(label: "org.elastos.queue",
                                             qos: .background, target: nil)
         weak var weakSelf = self
-
+        
         backgroundQueue.async {
             Log.i(Carrier.TAG, "Native carrier node started.")
             _ = ela_run(weakSelf?.ccarrier, Int32(iterateInterval))
             Log.i(Carrier.TAG, "Native carrier node stopped.")
-
+            
             DispatchQueue.global(qos: .background).async {
                 weakSelf?.semaph.signal()
             }
         }
     }
-
+    
     /// Disconnect carrier node from the server, and destroy all associated
     /// resources to carrier node instance.
     ///
@@ -201,10 +201,10 @@ public class Carrier: NSObject {
     @objc(kill)
     public func kill() {
         objc_sync_enter(self)
-
+        
         if (!didKill) {
             Log.d(Carrier.TAG, "Actively to kill native carrier node ...");
-
+            
             ela_kill(ccarrier)
             ccarrier = nil
             semaph.wait()
@@ -213,10 +213,10 @@ public class Carrier: NSObject {
             didKill = true
             Log.i(Carrier.TAG, "Native carrier node killed and exited")
         }
-
+        
         objc_sync_exit(self)
     }
-
+    
     /// Get node address associated with carrier node instance.
     ///
     /// Returns: The node address
@@ -224,16 +224,16 @@ public class Carrier: NSObject {
     public func getAddress() -> String {
         let len = Carrier.MAX_ADDRESS_LEN + 1
         var data = Data(count: len);
-
+        
         let address = data.withUnsafeMutableBytes() {
             (ptr: UnsafeMutablePointer<Int8>) -> String in
             return String(cString: ela_get_address(ccarrier, ptr, len))
         }
-
+        
         Log.d(Carrier.TAG, "Current carrier address: \(address)")
         return address;
     }
-
+    
     /// Get node identifier associated with the carrier node instance.
     ///
     /// - Returns: The node identifier
@@ -241,16 +241,16 @@ public class Carrier: NSObject {
     public func getNodeId() -> String {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len)
-
+        
         let nodeId = data.withUnsafeMutableBytes() {
             (ptr: UnsafeMutablePointer<Int8>) -> String in
             return String(cString: ela_get_nodeid(ccarrier, ptr, len))
         }
-
+        
         Log.d(Carrier.TAG, "Current carrier NodeId: \(nodeId)")
         return nodeId
     }
-
+    
     /// Get user identifier associated with the carrier node instance.
     ///
     /// - Returns: The user identifier
@@ -258,16 +258,16 @@ public class Carrier: NSObject {
     public func getUserId() -> String {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len)
-
+        
         let userId = data.withUnsafeMutableBytes() {
             (ptr: UnsafeMutablePointer<Int8>) -> String in
-                return String(cString: ela_get_userid(ccarrier, ptr, len))
+            return String(cString: ela_get_userid(ccarrier, ptr, len))
         }
-
+        
         Log.d(Carrier.TAG, "Current carrier UserId: \(userId)")
         return userId
     }
-
+    
     /// Update the nospam for carrier node address
     ///
     /// Update the 4-byte nospam part of the Carrier address with host byte order
@@ -280,16 +280,16 @@ public class Carrier: NSObject {
     @objc(setSelfNospam:error:)
     public func setSelfNospam(_ newNospam: UInt32) throws {
         let result = ela_set_self_nospam(ccarrier, newNospam)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set self nospam error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.i(Carrier.TAG, "Current nospam updated.")
     }
-
+    
     /// Get the nospam for Carrier address.
     ///
     /// Get the 4-byte nospam part of the Carrier address with host byte order
@@ -302,17 +302,17 @@ public class Carrier: NSObject {
     public func getSelfNospam() throws -> UInt32 {
         var nospam: UInt32 = 0
         let result = ela_get_self_nospam(ccarrier, &nospam)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get self nospam error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.i(Carrier.TAG, "Current node spam: \(nospam)")
         return nospam
     }
-
+    
     @objc(getSelfNospam:)
     public func getSelfNospam(error: NSErrorPointer) -> UInt32 {
         var nospam: UInt32 = 0
@@ -323,13 +323,13 @@ public class Carrier: NSObject {
         }
         return nospam
     }
-
+    
     /// Update self user information.
     ///
     /// After self user information changed, carrier node will update this
     /// information to network, and thereupon network broadcasts the change to
     //  all friends.
-
+    
     /// - Parameter newUserInfo: The new user information to set
     ///
     /// - Throws: CarrierError
@@ -337,16 +337,16 @@ public class Carrier: NSObject {
     public func setSelfUserInfo(_ newUserInfo: CarrierUserInfo) throws {
         var cinfo = convertCarrierUserInfoToCUserInfo(newUserInfo)
         let result = ela_set_self_info(ccarrier, &cinfo)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Update self user infos error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.i(Carrier.TAG, "Current user information updated.")
     }
-
+    
     /// Get self user information.
     ///
     /// - Returns: The current user information
@@ -356,18 +356,18 @@ public class Carrier: NSObject {
     public func getSelfUserInfo() throws -> CarrierUserInfo {
         var cinfo = CUserInfo()
         let result = ela_get_self_info(ccarrier, &cinfo)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get current user infos error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let info = convertCUserInfoToCarrierUserInfo(cinfo)
         Log.d(Carrier.TAG, "Current user infos: \(info)")
         return info
     }
-
+    
     /// Set self presence status
     ///
     /// - Parameter newPresence: The new presence status to friends.
@@ -377,16 +377,16 @@ public class Carrier: NSObject {
     public func setSelfPresence(_ newPresence: CarrierPresenceStatus) throws {
         let presence = convertCarrierPresenceStatusToCPresenceStatus(newPresence)
         let result = ela_set_self_presence(ccarrier, presence)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set self presence error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Self presence updated to be: \(newPresence)")
     }
-
+    
     /// Get self presence status
     ///
     /// - Returns: The current presence status
@@ -395,18 +395,18 @@ public class Carrier: NSObject {
     public func getSelfPresence() throws -> CarrierPresenceStatus {
         var cpresence = CPresenceStatus_None
         let result = ela_get_self_presence(ccarrier, &cpresence)
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get self presence error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let presence = convertCPresenceStatusToCarrierPresenceStatus(cpresence.rawValue)
         Log.d(Carrier.TAG, "Current self presence: \(presence)")
         return presence
     }
-
+    
     @objc(getSelfPresence:)
     public func getSelfPresence(error: NSErrorPointer) -> CarrierPresenceStatus {
         var presence : CarrierPresenceStatus = .None
@@ -417,7 +417,7 @@ public class Carrier: NSObject {
         }
         return presence
     }
-
+    
     /// Check if carrier node instance is being ready.
     ///
     /// - Returns: true if the carrier node instance is ready, or false if not
@@ -425,7 +425,7 @@ public class Carrier: NSObject {
     public func isReady() -> Bool {
         return ela_is_ready(ccarrier)
     }
-
+    
     /// Get current user's friend list
     ///
     /// - Returns: The list of friend information
@@ -433,7 +433,7 @@ public class Carrier: NSObject {
     /// - Throws: CarrierError
     @objc(getFriends:)
     public func getFriends() throws -> [CarrierFriendInfo] {
-
+        
         let cb: CFriendsIterateCallback = { (cinfo, ctxt) in
             if cinfo != nil {
                 let cFriendInfo = cinfo!.assumingMemoryBound(to: CFriendInfo.self).pointee
@@ -443,28 +443,28 @@ public class Carrier: NSObject {
             }
             return true
         }
-
+        
         var friends = [CarrierFriendInfo]()
         let result = withUnsafeMutablePointer(to: &friends) { (ptr) -> Int32 in
             let cctxt = UnsafeMutableRawPointer(ptr)
             return ela_get_friends(ccarrier, cb, cctxt)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get current user's friends error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Current user's friends listed below: +++>>")
         for friend in friends {
             Log.d(Carrier.TAG, "\(friend)");
         }
         Log.d(Carrier.TAG, "<<+++")
-
+        
         return friends
     }
-
+    
     /// Get specified friend information.
     ///
     /// - Parameter friendId: The user identifier of friend
@@ -478,18 +478,18 @@ public class Carrier: NSObject {
         let result = friendId.withCString { (cfriendId) -> Int32 in
             return ela_get_friend_info(ccarrier, cfriendId, &cinfo)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get infos of friend \(friendId) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let info = convertCFriendInfoToCarrierFriendInfo(cinfo)
         Log.d(Carrier.TAG, "The infos of friend \(friendId): \(info)")
         return info
     }
-
+    
     /// Set the label of the specified friend.
     ///
     /// The label of a friend is a private alias name for current user. 
@@ -503,22 +503,22 @@ public class Carrier: NSObject {
     /// - Throws: CarrierError
     @objc(setLabelForFriend:withLabel:error:)
     public func setFriendLabel(forFriend friendId: String, newLabel: String) throws {
-
+        
         let result = friendId.withCString { (cfriendId) in
             return newLabel.withCString { (clabel) in
                 return ela_set_friend_label(ccarrier, cfriendId, clabel);
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set friend \(friendId)'s label error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Friend \(friendId)'s label changed -> \(newLabel)")
     }
-
+    
     /// Check if the user ID is friend.
     ///
     /// - Parameter userId: The userId to check
@@ -530,7 +530,7 @@ public class Carrier: NSObject {
             return Bool(ela_is_friend(ccarrier, ptr))
         }
     }
-
+    
     /// Attempt to add friend by sending a new friend request.
     ///
     /// This function will add a new friend with specific address, and then
@@ -545,26 +545,26 @@ public class Carrier: NSObject {
     @objc(addFriendWith:withGreeting:error:)
     public func addFriend(with userId: String,
                           withGreeting hello: String) throws {
-
+        
         Log.d(Carrier.TAG, "Begin to add be friend with user \(userId)" +
             "by sending friend request with hello: \(hello) to \(userId)")
-
+        
         let result = userId.withCString { (cuserId) in
             return hello.withCString { (chello) in
                 return ela_add_friend(ccarrier, cuserId, chello)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send friend request to user \(userId)" +
                 " error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Sended a friend request to user \(userId).")
     }
-
+    
     /// Accept the friend request.
     ///
     /// This function is used to add a friend in response to a friend request.
@@ -575,21 +575,21 @@ public class Carrier: NSObject {
     /// - Throws: CarrierError
     @objc(acceptFriend:error:)
     public func acceptFriend(with userId: String) throws {
-
+        
         let result = userId.withCString { (cuserId) -> Int32 in
             return ela_accept_friend(ccarrier, cuserId)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Accept user \(userId) as be friend " +
                 "error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Accepted user \(userId) as friend.")
     }
-
+    
     /// Remove friendship with the specified friend.
     ///
     /// If all correct, Carrier network will clean the friend relationship,
@@ -603,16 +603,16 @@ public class Carrier: NSObject {
         let result = friendId.withCString { (cfriendId) -> Int32 in
             return ela_remove_friend(ccarrier, cfriendId)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Remove friend \(friendId) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Friend \(friendId) was removed")
     }
-
+    
     /// Send a message to the specified friend.
     ///
     /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
@@ -631,7 +631,7 @@ public class Carrier: NSObject {
         let msgData = msg.data(using: .utf8)
         try sendFriendMessage(to: target, withData: msgData!)
     }
-
+    
     /// Send a message to the specified friend.
     ///
     /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
@@ -651,16 +651,16 @@ public class Carrier: NSObject {
                 return ela_send_friend_message(ccarrier, cto, cdata, data.count)
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Sended message: \(data) to \(target).")
     }
-
+    
     /// Send invite request to the specified friend
     ///
     /// Application can attach the application defined data with in the invite
@@ -676,55 +676,55 @@ public class Carrier: NSObject {
     public func sendInviteFriendRequest(to target: String,
                                         withData data: String,
                                         responseHandler: @escaping CarrierFriendInviteResponseHandler) throws {
-
+        
         let cb: CFriendInviteResponseCallback = {
-
-           (_, cfrom, _, cstatus, creason, cdata, clen, cctxt) in
-
-                let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
-                    .takeRetainedValue() as! [AnyObject?]
-
-                let carrier = ectxt[0] as! Carrier
-                let handler = ectxt[1] as! CarrierFriendInviteResponseHandler
-
-                let from = String(cString: cfrom!)
-                let status = Int(cstatus)
-                var reason: String? = nil
-                var _data : String? = nil
-
-                if status != 0 {
-                    reason = String(cString: creason!)
-                } else {
-                    _data = String(cString: cdata!)
-                }
-
-                handler(carrier, from, status, reason, _data)
+            
+            (_, cfrom, _, cstatus, creason, cdata, clen, cctxt) in
+            
+            let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
+                .takeRetainedValue() as! [AnyObject?]
+            
+            let carrier = ectxt[0] as! Carrier
+            let handler = ectxt[1] as! CarrierFriendInviteResponseHandler
+            
+            let from = String(cString: cfrom!)
+            let status = Int(cstatus)
+            var reason: String? = nil
+            var _data : String? = nil
+            
+            if status != 0 {
+                reason = String(cString: creason!)
+            } else {
+                _data = String(cString: cdata!)
+            }
+            
+            handler(carrier, from, status, reason, _data)
         }
-
+        
         let econtext: [AnyObject?] = [self, responseHandler as AnyObject]
         let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
         let cctxt = unmanaged.toOpaque()
-
+        
         Log.d(Carrier.TAG, "Begin to invite friend to \(target) with greet data" +
             " \(data)")
-
+        
         let result = target.withCString { (cto) -> Int32 in
             return data.withCString { (cdata) -> Int32 in
                 let len = data.utf8CString.count
                 return ela_invite_friend(ccarrier, cto, nil, cdata, len, cb, cctxt)
             }
         }
-
+        
         guard result >= 0 else {
             unmanaged.release()
             let errno = getErrorCode()
             Log.e(Carrier.TAG, "Invite friend to \(target) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Sended friend invite request to \(target).")
     }
-
+    
     /// Reply the friend invite request.
     ///
     /// This function will send a invite response to friend.
@@ -743,28 +743,28 @@ public class Carrier: NSObject {
                                          withStatus status: Int,
                                          reason: String?,
                                          data: String?) throws {
-
+        
         if status == 0 && data == nil {
             throw CarrierError.InvalidArgument
         }
-
+        
         if status != 0 && reason == nil {
             throw CarrierError.InvalidArgument
         }
-
+        
         if status == 0 {
             Log.d(Carrier.TAG, "Begin to confirm friend invite request to" +
-            "\(target) with data: \(data!)")
+                "\(target) with data: \(data!)")
         } else {
             Log.d(Carrier.TAG, "Begin to refuse friend invite request to" +
-            "\(target) with status: \(status) and reason: \(reason!)")
+                "\(target) with status: \(status) and reason: \(reason!)")
         }
-
+        
         let result = target.withCString { (cto) -> Int32 in
             var creason: UnsafeMutablePointer<Int8>?
             var cdata: UnsafeMutablePointer<Int8>?
             var len: Int = 0
-
+            
             if status != 0 {
                 creason = reason!.withCString() { (ptr) in
                     return strdup(ptr)
@@ -773,10 +773,10 @@ public class Carrier: NSObject {
                 cdata = data!.withCString() { (ptr) in
                     return strdup(ptr)
                 }
-
+                
                 len = data!.utf8CString.count
             }
-
+            
             defer {
                 if creason != nil {
                     free(creason)
@@ -785,20 +785,20 @@ public class Carrier: NSObject {
                     free(cdata)
                 }
             }
-
+            
             return ela_reply_friend_invite(ccarrier, cto, nil, CInt(status),
                                            creason, cdata, len)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Reply friend invite to \(target) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         Log.d(Carrier.TAG, "Sended reply to friend invite request to \(target)")
     }
-
+    
     /// New a group with specified delegate.
     ///
     /// - Parameters:
@@ -814,28 +814,28 @@ public class Carrier: NSObject {
     public func createGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);
-
+        
         let result = data.withUnsafeMutableBytes() {
             (ptr: UnsafeMutablePointer<Int8>) -> Int32 in
             return ela_new_group(ccarrier, ptr, len)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "New group error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let groupid = data.withUnsafeBytes() {
             (ptr: UnsafePointer<Int8>) -> String in
-                return String(cString: ptr)
+            return String(cString: ptr)
         }
-
+        
         let group = CarrierGroup(ccarrier, groupid, delegate)
         groups[groupid] = group
         return group
     }
-
+    
     /// Join a group with specific cookie information.
     ///
     /// This function should be called only if application received a group
@@ -854,37 +854,37 @@ public class Carrier: NSObject {
     ///
     @objc(joinGroupCreatedBy:withCookie:delegate:error:)
     public func joinGroup(createdBy friendId: String, withCookie cookie: Data,
-                            delegate: CarrierGroupDelegate) throws -> CarrierGroup {
-
+                          delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+        
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);
-
+        
         let result = friendId.withCString { (cfriendid) -> Int32 in
             return cookie.withUnsafeBytes { (ccookie: UnsafePointer<Int8>) -> Int32 in
                 return data.withUnsafeMutableBytes()  {
                     (cdata: UnsafeMutablePointer<Int8>) -> Int32 in
-                        return ela_group_join(ccarrier, cfriendid, ccookie,
-                                              cookie.count, cdata, len)
+                    return ela_group_join(ccarrier, cfriendid, ccookie,
+                                          cookie.count, cdata, len)
                 }
             }
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "New group error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         let groupid = data.withUnsafeBytes() {
             (ptr: UnsafePointer<Int8>) -> String in
-                return String(cString: ptr)
+            return String(cString: ptr)
         }
-
+        
         let group = CarrierGroup(ccarrier, groupid, delegate)
         groups[groupid] = group
         return group
     }
-
+    
     /// Leave from a specified group.
     ///
     /// - Parameters:
@@ -896,21 +896,21 @@ public class Carrier: NSObject {
     @objc(leaveGroup:error:)
     public func leaveGroup(from group: CarrierGroup) throws {
         let groupid = group.getId()
-
+        
         let result = groupid.withCString() { (ptr) in
             return ela_leave_group(ccarrier, ptr)
         }
-
+        
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Leave group \(groupid) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
+        
         groups.removeValue(forKey: groupid)
         group.leave()
     }
-
+    
     /// Get groups in the Carrier instance.
     ///
     /// - Returns:

@@ -24,27 +24,27 @@ import Foundation;
 
 @objc(ELABootstrapNode)
 public class BootstrapNode: NSObject {
-
+    
     /**
-        Ipv4 address.
+     Ipv4 address.
      */
-    public var ipv4: String?
-
+    @objc public var ipv4: String?
+    
     /**
-        Ipv6 address.
+     Ipv6 address.
      */
-    public var ipv6: String?
-
+    @objc public var ipv6: String?
+    
     /**
-        Port.
+     Port.
      */
-    public var port: String?
-
+    @objc public var port: String?
+    
     /**
-        public address.
+     public address.
      */
-    public var publicKey: String?
-
+    @objc public var publicKey: String?
+    
     internal static func format(_ node: BootstrapNode) -> String {
         return String(format: "ipv4[%@], ipv6[%@], port[%@], publicKey[%@]",
                       String.toHardString(node.ipv4),
@@ -52,22 +52,22 @@ public class BootstrapNode: NSObject {
                       String.toHardString(node.port),
                       String.toHardString(node.publicKey))
     }
-
-    public override var description: String {
+    
+    @objc public override var description: String {
         return BootstrapNode.format(self)
     }
 }
 
 internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -> (UnsafeMutablePointer<CBootstrapNode>?, Int) {
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
-
+    
     cNodes = UnsafeMutablePointer<CBootstrapNode>.allocate(capacity: nodes.count)
     if cNodes == nil {
         return (nil, 0)
     }
-
+    
     for (index, node) in nodes.enumerated() {
-
+        
         var cNode = CBootstrapNode()
         node.ipv4?.withCString { (ipv4) in
             cNode.ipv4 = UnsafePointer<Int8>(strdup(ipv4))
@@ -84,12 +84,12 @@ internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -
         
         (cNodes! + index).initialize(to: cNode)
     }
-
+    
     return (cNodes, nodes.count)
 }
 
 internal func cleanupCBootstrap(_ cNodes: UnsafePointer<CBootstrapNode>, _ count: Int) -> Void {
-
+    
     for index in 0..<count {
         let cNode: CBootstrapNode = (cNodes + index).pointee
         if cNode.ipv4 != nil {

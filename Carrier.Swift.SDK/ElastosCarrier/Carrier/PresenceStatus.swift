@@ -23,24 +23,24 @@
 import Foundation
 
 /**
-    Carrier node presence status to friends
+ Carrier node presence status to friends
  */
 @objc(ELACarrierPresenceStatus)
 
 public enum CarrierPresenceStatus : Int, CustomStringConvertible {
-
+    
     /// Carrier node in online or available to friends.
     case None = 0
-
+    
     /// Carrier node is being away.
     case Away = 1
-
+    
     /// Carrier node is being busy.
     case Busy = 2
-
+    
     internal static func format(_ presence: CarrierPresenceStatus) -> String {
         var value : String
-
+        
         switch presence {
         case None:
             value = "None"
@@ -51,7 +51,7 @@ public enum CarrierPresenceStatus : Int, CustomStringConvertible {
         }
         return value
     }
-
+    
     public var description: String {
         return CarrierPresenceStatus.format(self)
     }
