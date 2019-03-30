@@ -56,12 +56,13 @@ class App extends Component{
             <Text>getNodeId</Text>
           </Button>
 
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'setSelfInfo')}>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
             <Text>setSelfInfo</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getSelfInfo')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
             <Text>getSelfInfo</Text>
           </Button>
+          
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'addFriend')}>
             <Text>addFriend</Text>
           </Button>
@@ -271,7 +272,9 @@ class App extends Component{
         
       }
     });
-    await this.carrier.start();
+    const k = await this.carrier.start();
+    this.setLog('start carrier => '+k);
+
     this.setLog('carrier init success');
   }
     
