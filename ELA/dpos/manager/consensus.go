@@ -29,7 +29,12 @@ func NewConsensus(manager *DPOSManager, tolerance time.Duration,
 		consensusStatus: consensusReady,
 		viewOffset:      0,
 		manager:         manager,
-		currentView:     view{signTolerance: tolerance, listener: viewListener, arbitrators: manager.GetArbitrators()},
+		currentView: view{
+			publicKey:     manager.publicKey,
+			signTolerance: tolerance,
+			listener:      viewListener,
+			arbitrators:   manager.arbitrators,
+		},
 	}
 
 	return c

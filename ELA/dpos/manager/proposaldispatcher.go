@@ -26,7 +26,7 @@ type ProposalDispatcherConfig struct {
 	Consensus    *Consensus
 	Network      DPOSNetwork
 	Manager      *DPOSManager
-	Account      account.DposAccount
+	Account      account.Account
 	ChainParams  *config.Params
 }
 

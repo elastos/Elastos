@@ -4,10 +4,11 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/dpos/p2p"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
 
 type Arbitrators interface {
+	Start()
 	CheckDPOSIllegalTx(block *types.Block) error
 	ProcessBlock(block *types.Block, confirm *payload.Confirm)
 	ProcessSpecialTxPayload(p types.Payload, height uint32) error
@@ -18,7 +19,7 @@ type Arbitrators interface {
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
-	GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr
+	GetNeedConnectArbiters() []peer.PID
 	GetDutyIndexByHeight(height uint32) int
 	GetDutyIndex() int
 	GetArbitersRoundReward() map[common.Uint168]common.Fixed64

@@ -41,13 +41,12 @@ func (cs ConnState) String() string {
 	return fmt.Sprintf("ConnState%d", cs)
 }
 
-// PeerAddr represent a connect peer's ID and it's IP address
+// PeerAddr represent a DPOS peer's ID and it's network address
 type PeerAddr struct {
 	// PID is the peer's public key id.
 	PID peer.PID
 
-	// Addr is the peer's IP address.  It can be host:port format,
-	// or host only and use the DefaultPort passed by server config.
+	// Addr is the peer's network address in host:port format.
 	Addr string
 }
 
@@ -78,8 +77,8 @@ type StateNotifier interface {
 	// OnConnectPeers will be invoked when server received a connect peers
 	// message.
 	//
-	// Notify: do not modify the invoked addr list.  It's read only.
-	OnConnectPeers(addrList map[peer.PID]PeerAddr)
+	// Notify: do not modify the invoked list.  It's read only.
+	OnConnectPeers(peers []peer.PID)
 
 	// OnNewPeer will be invoked when a new peer negotiated.
 	OnNewPeer(pid peer.PID)
@@ -97,9 +96,12 @@ type Server interface {
 	// peers and the main listener.
 	Stop() error
 
-	// ConnectPeers let server connect the peers in the given addrList, and
-	// disconnect peers that not in the addrList.
-	ConnectPeers(addrList []PeerAddr)
+	// AddAddr adds an arbiter address into AddrManager.
+	AddAddr(pid peer.PID, addr string)
+
+	// ConnectPeers let server connect the peers in the given list, and
+	// disconnect peers that not in the list.
+	ConnectPeers(peers []peer.PID)
 
 	// SendMessageToPeer send a message to the peer with the given id, error
 	// will be returned if there is no matches, or fail to send the message.
