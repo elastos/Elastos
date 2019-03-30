@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
+	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -62,6 +63,7 @@ type server struct {
 	chainParams  *config.Params
 	txMemPool    *mempool.TxPool
 	blockMemPool *mempool.BlockPool
+	routes       *routes.Routes
 
 	peerQueue chan interface{}
 	relayInv  chan relayMsg
@@ -180,18 +182,14 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 // blocks until the block has been fully processed.
 func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 	block := msgBlock.Serializable.(*types.DposBlock)
-
+	blockHash := block.Block.Hash()
+	iv := msg.NewInvVect(msg.InvTypeBlock, &blockHash)
 	if block.HaveConfirm {
-		// Add the block to the known inventory for the peer.
-		blockHash := block.Block.Hash()
-		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
-		sp.AddKnownInventory(iv)
-	} else {
-		// Add the block to the known inventory for the peer.
-		blockHash := block.Block.Hash()
-		iv := msg.NewInvVect(msg.InvTypeBlock, &blockHash)
-		sp.AddKnownInventory(iv)
+		iv.Type = msg.InvTypeConfirmedBlock
 	}
+
+	// Add the block to the known inventory for the peer.
+	sp.AddKnownInventory(iv)
 
 	// Queue the block up to be handled by the block
 	// manager and intentionally block further receives
@@ -215,6 +213,7 @@ func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
 func (sp *serverPeer) OnInv(_ *peer.Peer, inv *msg.Inv) {
 	if len(inv.InvList) > 0 {
 		sp.server.syncManager.QueueInv(inv, sp.Peer)
+		sp.server.routes.QueueInv(sp.Peer, inv)
 	}
 }
 
@@ -236,6 +235,9 @@ func (sp *serverPeer) OnNotFound(_ *peer.Peer, notFound *msg.NotFound) {
 // handleGetData is invoked when a peer receives a getdata message and
 // is used to deliver block and transaction information.
 func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
+	// Notify the GetData message to DPOS routes.
+	sp.server.routes.QueueGetData(sp.Peer, getData)
+
 	numAdded := 0
 	notFound := msg.NewNotFound()
 
@@ -681,7 +683,8 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 			continue
 		}
 
-		if rmsg.invVect.Type == msg.InvTypeTx {
+		switch rmsg.invVect.Type {
+		case msg.InvTypeTx:
 			// Don't relay the transaction to the peer when it has
 			// transaction relaying disabled.
 			if sp.RelayTxDisabled() {
@@ -702,22 +705,25 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 				!sp.filter.MatchUnconfirmed(tx) {
 				continue
 			}
-		}
 
-		// Compatible for old version SPV client.
-		if rmsg.invVect.Type != msg.InvTypeTx && sp.filter.IsLoaded() {
-			// Do not send unconfirmed block to SPV client after H1.
-			if current > s.chainParams.CRCOnlyDPOSHeight &&
-				rmsg.invVect.Type == msg.InvTypeBlock {
+		case msg.InvTypeBlock:
+			fallthrough
+		case msg.InvTypeConfirmedBlock:
+			// Compatible for old version SPV client.
+			if sp.filter.IsLoaded() {
+				// Do not send unconfirmed block to SPV client after H1.
+				if current > s.chainParams.CRCOnlyDPOSHeight &&
+					rmsg.invVect.Type == msg.InvTypeBlock {
+					continue
+				}
+
+				// Change inv type to InvTypeBlock for compatible.
+				invVect := *rmsg.invVect
+				invVect.Type = msg.InvTypeBlock
+
+				go sp.QueueInventory(&invVect)
 				continue
 			}
-
-			// Change inv type to InvTypeBlock for compatible.
-			invVect := *rmsg.invVect
-			invVect.Type = msg.InvTypeBlock
-
-			go sp.QueueInventory(&invVect)
-			continue
 		}
 
 		// Queue the inventory to be relayed with the next batch.
@@ -789,10 +795,12 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnFilterLoad:   sp.OnFilterLoad,
 			OnTxFilterLoad: sp.OnTxFilterLoad,
 			OnReject:       sp.OnReject,
+			OnDAddr:        s.routes.QueueDAddr,
 		})
 		sp.Start()
 
 		peers[p.IPeer] = sp
+		s.routes.NewPeer(sp.Peer)
 		s.syncManager.NewPeer(sp.Peer)
 
 	case donePeerMsg:
@@ -803,6 +811,7 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 		}
 
 		delete(peers, p.IPeer)
+		s.routes.DonePeer(sp.Peer)
 		s.syncManager.DonePeer(sp.Peer)
 	}
 }
@@ -836,6 +845,7 @@ func (s *server) IsCurrent() bool {
 
 // Start begins accepting connections from peers.
 func (s *server) Start() {
+	s.routes.Start()
 	s.IServer.Start()
 
 	go s.peerHandler()
@@ -844,12 +854,12 @@ func (s *server) Start() {
 // Stop gracefully shuts down the server by stopping and disconnecting all
 // peers and the main listener.
 func (s *server) Stop() error {
-	log.Warnf("Server shutting down")
+	s.routes.Stop()
+	err := s.IServer.Stop()
 
-	s.IServer.Stop()
 	// Signal the remaining goroutines to quit.
 	close(s.quit)
-	return nil
+	return err
 }
 
 // NewServer returns a new elanet server configured to listen on addr for the
@@ -886,6 +896,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		chainParams:  cfg.ChainParams,
 		txMemPool:    cfg.TxMemPool,
 		blockMemPool: cfg.BlockMemPool,
+		routes:       cfg.Routes,
 		peerQueue:    make(chan interface{}, svrCfg.MaxPeers),
 		relayInv:     make(chan relayMsg, svrCfg.MaxPeers),
 		quit:         make(chan struct{}),
@@ -950,6 +961,9 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 
 	case p2p.CmdReject:
 		message = &msg.Reject{}
+
+	case p2p.CmdDAddr:
+		message = &msg.DAddr{}
 
 	default:
 		return nil, fmt.Errorf("unhandled command [%s]", cmd)

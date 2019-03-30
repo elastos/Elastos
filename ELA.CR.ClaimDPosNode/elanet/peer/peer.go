@@ -86,6 +86,9 @@ type Listeners struct {
 
 	// OnReject is invoked when a peer receives a reject message.
 	OnReject func(p *Peer, msg *msg.Reject)
+
+	// OnDAddr is invoked when a peer receives a daddr message.
+	OnDAddr func(p *Peer, msg *msg.DAddr)
 }
 
 // outMsg is used to house a message to be sent along with a channel to signal
@@ -483,13 +486,18 @@ out:
 				// If this is a new block, then we'll blast it
 				// out immediately, sipping the inv trickle
 				// queue.
-				if iv.Type == msg.InvTypeBlock ||
-					iv.Type == msg.InvTypeConfirmedBlock {
+				switch iv.Type {
+				case msg.InvTypeBlock:
+					fallthrough
+				case msg.InvTypeConfirmedBlock:
+					fallthrough
+				case msg.InvTypeAddress:
 					invMsg := msg.NewInvSize(1)
 					invMsg.AddInvVect(iv)
 					waiting = queuePacket(outMsg{msg: invMsg},
 						pendingMsgs, waiting)
-				} else {
+
+				default:
 					invSendQueue.PushBack(iv)
 				}
 			}
@@ -673,6 +681,9 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 
 		case *msg.Reject:
 			listeners.OnReject(p, m)
+
+		case *msg.DAddr:
+			listeners.OnDAddr(p, m)
 
 		case *msg.VerAck, *msg.GetAddr, *msg.Addr, *msg.Ping, *msg.Pong:
 		//	Basic messages have been handled, ignore them.

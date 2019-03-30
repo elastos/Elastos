@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -14,9 +15,11 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos"
+	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
+	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -56,6 +59,18 @@ func main() {
 	log.Info(GoVersion)
 
 	var interrupt = signal.NewInterrupt()
+
+	var act account.Account
+	if config.Parameters.EnableArbiter {
+		password, err := cmdcom.GetFlagPassword()
+		if err != nil {
+			printErrorAndExit(err)
+		}
+		act, err = account.Open(password)
+		if err != nil {
+			printErrorAndExit(err)
+		}
+	}
 
 	// fixme remove singleton Ledger
 	ledger := blockchain.Ledger{}
@@ -100,26 +115,34 @@ func main() {
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
 
+	routesCfg := &routes.Config{}
+	if act != nil {
+		routesCfg.PID = act.PublicKeyBytes()
+		routesCfg.Addr = fmt.Sprintf("%s:%d",
+			cfg.ArbiterConfiguration.IPAddress,
+			cfg.ArbiterConfiguration.NodePort)
+		routesCfg.Sign = act.Sign
+		routesCfg.TimeSource = chain.TimeSource
+	}
+	routes := routes.New(routesCfg)
+
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:        chain,
 		ChainParams:  activeNetParams,
 		TxMemPool:    txMemPool,
 		BlockMemPool: blockMemPool,
+		Routes:       routes,
 	})
 	if err != nil {
 		printErrorAndExit(err)
 	}
-
+	routesCfg.IsCurrent = server.IsCurrent
+	routesCfg.RelayAddr = server.RelayInventory
 	blockMemPool.IsCurrent = server.IsCurrent
 
 	var arbitrator *dpos.Arbitrator
-	if config.Parameters.EnableArbiter {
-		log.Info("Start the manager")
-		pwd, err := cmdcom.GetFlagPassword()
-		if err != nil {
-			printErrorAndExit(err)
-		}
-		arbitrator, err = dpos.NewArbitrator(pwd, dpos.Config{
+	if act != nil {
+		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
 			Params:            cfg.ArbiterConfiguration,
@@ -135,7 +158,10 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err)
 		}
+		routesCfg.OnCipherAddr = arbitrator.OnCipherAddr
 		servers.Arbiter = arbitrator
+		arbitrator.Start()
+		defer arbitrator.Stop()
 	}
 
 	servers.Compile = Version
@@ -159,21 +185,12 @@ func main() {
 		Arbitrators: arbiters,
 	})
 
-	if arbitrator != nil {
-		arbitrator.Start()
-		defer arbitrator.Stop()
-	}
-
-	// initialize producer state after arbiters has initialized
-	if err = chain.InitializeProducersState(interrupt.C, pgBar.Start,
+	// initialize producer state after arbiters has initialized.
+	if err = chain.InitProducerState(interrupt.C, pgBar.Start,
 		pgBar.Increase); err != nil {
 		printErrorAndExit(err)
 	}
 	pgBar.Stop()
-
-	if arbitrator != nil {
-		arbitrator.Recover()
-	}
 
 	log.Info("Start the P2P networks")
 	server.Start()

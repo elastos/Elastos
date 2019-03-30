@@ -66,7 +66,7 @@ func newDposManager(L *lua.LState) int {
 
 	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[index])
 	pubKey, _ := crypto.DecodePoint(pub)
-	mockManager.Account = account.NewDposAccountFromExisting(&account2.Account{
+	mockManager.Account = account.New(&account2.Account{
 		PrivateKey: priKey,
 		PublicKey:  pubKey,
 	})
@@ -216,8 +216,7 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 	return 1
 }
 
-func confirmsEqual(con1 *payload.Confirm,
-	con2 *payload.Confirm) bool {
+func confirmsEqual(con1 *payload.Confirm, con2 *payload.Confirm) bool {
 
 	if !con1.Proposal.BlockHash.IsEqual(con2.Proposal.BlockHash) {
 		return false
@@ -321,7 +320,7 @@ func dposManagerSignVote(L *lua.LState) int {
 //mock object of dpos manager
 type manager struct {
 	*DPOSManager
-	Account        account.DposAccount
+	Account        account.Account
 	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor
 	Handler        *DPOSHandlerSwitch

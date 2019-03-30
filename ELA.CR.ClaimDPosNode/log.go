@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
+	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
@@ -163,6 +164,7 @@ var (
 	cmgrlog = wrap(logger, elalog.LevelOff)
 	synclog = wrap(logger, level)
 	peerlog = wrap(logger, level)
+	routlog = wrap(logger, level)
 	elanlog = wrap(logger, level)
 	statlog = wrap(logger, level)
 )
@@ -173,6 +175,7 @@ func init() {
 	connmgr.UseLogger(cmgrlog)
 	netsync.UseLogger(synclog)
 	peer.UseLogger(peerlog)
+	routes.UseLogger(routlog)
 	elanet.UseLogger(elanlog)
 	state.UseLogger(statlog)
 }

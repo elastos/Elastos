@@ -72,19 +72,7 @@ type Config struct {
 	BestHeight       func() uint64
 	IsSelfConnection func(nonce uint64) bool
 	GetVersionNonce  func() uint64
-	messageFuncs     []MessageFunc
-}
-
-func (c *Config) AddMessageFunc(messageFunc MessageFunc) {
-	if messageFunc != nil {
-		c.messageFuncs = append(c.messageFuncs, messageFunc)
-	}
-}
-
-func (c *Config) handleMessage(peer *Peer, msg p2p.Message) {
-	for _, messageFunc := range c.messageFuncs {
-		messageFunc(peer, msg)
-	}
+	MessageFunc      MessageFunc
 }
 
 // minUint32 is a helper function to return the minimum of two uint32s.
@@ -138,9 +126,10 @@ type Peer struct {
 
 	// These fields are set at creation time and never modified, so they are
 	// safe to read from concurrently without a mutex.
-	addr    string
-	cfg     Config
-	inbound bool
+	addr         string
+	cfg          Config
+	inbound      bool
+	messageFuncs []MessageFunc
 
 	flagsMtx           sync.Mutex // protects the peer flags below
 	na                 *p2p.NetAddress
@@ -170,7 +159,16 @@ type Peer struct {
 
 // AddMessageFunc add a new message handler for the peer.
 func (p *Peer) AddMessageFunc(messageFunc MessageFunc) {
-	p.cfg.AddMessageFunc(messageFunc)
+	if messageFunc != nil {
+		p.messageFuncs = append(p.messageFuncs, messageFunc)
+	}
+}
+
+// handleMessage will be invoked when a message received.
+func (p *Peer) handleMessage(peer *Peer, msg p2p.Message) {
+	for _, messageFunc := range p.messageFuncs {
+		messageFunc(peer, msg)
+	}
 }
 
 // String returns the peer's address and directionality as a human-readable
@@ -628,7 +626,7 @@ out:
 		}
 
 		// Call handle message which is configured on peer creation.
-		p.cfg.handleMessage(p, rmsg)
+		p.handleMessage(p, rmsg)
 
 		// A message was received so reset the idle timer.
 		idleTimer.Reset(idleTimeout)
@@ -838,7 +836,7 @@ func (p *Peer) readRemoteVersionMsg() error {
 		return err
 	}
 
-	p.cfg.handleMessage(p, remoteVerMsg)
+	p.handleMessage(p, remoteVerMsg)
 	return nil
 }
 
@@ -991,6 +989,7 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 		services:        cfg.Services,
 		protocolVersion: cfg.ProtocolVersion,
 	}
+	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
 }
 

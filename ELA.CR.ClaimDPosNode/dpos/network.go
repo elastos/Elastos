@@ -3,7 +3,6 @@ package dpos
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/elastos/Elastos.ELA/common"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -312,7 +311,6 @@ func NewDposNetwork(account account.Account,
 
 	var pid peer.PID
 	copy(pid[:], account.PublicKeyBytes())
-	log.Info("ID:", common.BytesToHexString(pid[:]))
 	server, err := p2p.NewServer(&p2p.Config{
 		PID:              pid,
 		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,

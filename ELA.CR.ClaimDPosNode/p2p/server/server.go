@@ -660,7 +660,7 @@ func disconnectPeer(peerList map[uint64]*serverPeer, compareFunc func(*serverPee
 
 // newPeerConfig returns the configuration for the given serverPeer.
 func newPeerConfig(sp *serverPeer) *peer.Config {
-	cfg := &peer.Config{
+	return &peer.Config{
 		Magic:            sp.server.cfg.MagicNumber,
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
 		DefaultPort:      sp.server.cfg.DefaultPort,
@@ -677,23 +677,20 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 			sp.server.sentNonces.Add(nonce)
 			return nonce
 		},
+		MessageFunc: func(peer *peer.Peer, m p2p.Message) {
+			switch m := m.(type) {
+			case *msg.Version:
+				sp.OnVersion(peer, m)
+
+			case *msg.GetAddr:
+				sp.OnGetAddr(peer, m)
+
+			case *msg.Addr:
+				sp.OnAddr(peer, m)
+
+			}
+		},
 	}
-
-	// Add default message function for peer configuration.
-	cfg.AddMessageFunc(func(peer *peer.Peer, m p2p.Message) {
-		switch m := m.(type) {
-		case *msg.Version:
-			sp.OnVersion(peer, m)
-
-		case *msg.GetAddr:
-			sp.OnGetAddr(peer, m)
-
-		case *msg.Addr:
-			sp.OnAddr(peer, m)
-
-		}
-	})
-	return cfg
 }
 
 // inboundPeerConnected is invoked by the connection manager when a new inbound
