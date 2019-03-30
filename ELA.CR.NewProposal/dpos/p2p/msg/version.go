@@ -13,6 +13,7 @@ var _ p2p.Message = (*Version)(nil)
 type Version struct {
 	Version  uint32
 	Services uint64
+	Port     uint16
 	PID      [33]byte
 	Nonce    [32]byte
 }
@@ -22,42 +23,33 @@ func (msg *Version) CMD() string {
 }
 
 func (msg *Version) MaxLength() uint32 {
-	return 77 // 4+8+33+32
+	return 79 // 4+8+2+33+32
 }
 
 func (msg *Version) Serialize(w io.Writer) error {
-	err := common.WriteElements(w, msg.Version, msg.Services)
-	if err != nil {
-		return err
-	}
-
-	if _, err = w.Write(msg.PID[:]); err != nil {
-		return err
-	}
-
-	_, err = w.Write(msg.Nonce[:])
-	return err
+	return common.WriteElements(w,
+		msg.Version,
+		msg.Services,
+		msg.Port,
+		msg.PID,
+		msg.Nonce)
 }
 
 func (msg *Version) Deserialize(r io.Reader) error {
-	err := common.ReadElements(r, &msg.Version, &msg.Services)
-	if err != nil {
-		return err
-	}
-
-	if _, err = io.ReadFull(r, msg.PID[:]); err != nil {
-		return err
-	}
-
-	_, err = io.ReadFull(r, msg.Nonce[:])
-	return err
+	return common.ReadElements(r,
+		&msg.Version,
+		&msg.Services,
+		&msg.Port,
+		&msg.PID,
+		&msg.Nonce)
 }
 
-func NewVersion(pver uint32, services uint64, pid [33]byte,
+func NewVersion(pver uint32, services uint64, port uint16, pid [33]byte,
 	nonce [32]byte) *Version {
 	return &Version{
 		Version:  pver,
 		Services: services,
+		Port:     port,
 		PID:      pid,
 		Nonce:    nonce,
 	}

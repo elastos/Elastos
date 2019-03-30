@@ -31,6 +31,8 @@ func (msg *VerAck) Deserialize(r io.Reader) error {
 	return err
 }
 
-func NewVerAck(signature [64]byte) *VerAck {
-	return &VerAck{Signature: signature}
+func NewVerAck(signature []byte) *VerAck {
+	verAck := VerAck{}
+	copy(verAck.Signature[:], signature)
+	return &verAck
 }

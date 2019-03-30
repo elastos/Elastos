@@ -22,10 +22,10 @@ import (
 
 func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	switch cmd {
-	case p2p.CmdVersion:
-		message = new(msg.Version)
-	case p2p.CmdVerAck:
-		message = new(msg.VerAck)
+	case msg.CmdVersion:
+		message = &msg.Version{}
+	case msg.CmdVerAck:
+		message = &msg.VerAck{}
 	default:
 		err = fmt.Errorf("unknown message type %s", cmd)
 	}
@@ -156,7 +156,7 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 	}
 }
 
-func peerConfig(magic, prev uint32, services uint64) *peer.Config {
+func peerConfig(magic, prev uint32, services uint64, verack chan<- struct{}) *peer.Config {
 	var pid peer.PID
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
 	ePubKey, _ := pubKey.EncodePoint(true)
@@ -167,10 +167,18 @@ func peerConfig(magic, prev uint32, services uint64) *peer.Config {
 		Services:        services,
 		PID:             pid,
 		PingInterval:    time.Second * 30,
-		SignNonce: func(nonce []byte) (signature [64]byte) {
+		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
-			copy(signature[:], sign)
-			return signature
+			return sign
+		},
+		MakeEmptyMessage: func(cmd string) (p2p.Message, error) {
+			return makeEmptyMessage(cmd)
+		},
+		MessageFunc: func(peer *peer.Peer, message p2p.Message) {
+			switch message.(type) {
+			case *msg.VerAck:
+				verack <- struct{}{}
+			}
 		},
 	}
 }
@@ -178,26 +186,8 @@ func peerConfig(magic, prev uint32, services uint64) *peer.Config {
 // TestPeerConnection tests connection between inbound and outbound peers.
 func TestPeerConnection(t *testing.T) {
 	verack := make(chan struct{})
-	var makeMessage p2p.MakeEmptyMessage = func(cmd string) (p2p.Message, error) {
-		switch cmd {
-		case p2p.CmdVerAck:
-			verack <- struct{}{}
-		}
-		return makeEmptyMessage(cmd)
-	}
-	var messageFunc peer.MessageFunc = func(peer *peer.Peer, message p2p.Message) {
-		switch message.(type) {
-		case *msg.VerAck:
-			verack <- struct{}{}
-		}
-	}
-
-	peer1Cfg := peerConfig(123123, pact.EBIP001Version, 0)
-	peer2Cfg := peerConfig(123123, pact.EBIP001Version, 1)
-	peer1Cfg.MakeEmptyMessage = makeMessage
-	peer2Cfg.MakeEmptyMessage = makeMessage
-	peer1Cfg.AddMessageFunc(messageFunc)
-	peer2Cfg.AddMessageFunc(messageFunc)
+	peer1Cfg := peerConfig(123123, pact.EBIP001Version, 0, verack)
+	peer2Cfg := peerConfig(123123, pact.EBIP001Version, 1, verack)
 
 	wantStats1 := peerStats{
 		wantServices:        0,
@@ -280,6 +270,7 @@ func TestPeerConnection(t *testing.T) {
 			t.Errorf("TestPeerConnection setup #%d: unexpected err %v", i, err)
 			return
 		}
+		time.Sleep(time.Millisecond)
 		testPeer(t, inPeer, wantStats2)
 		testPeer(t, outPeer, wantStats1)
 
@@ -303,10 +294,9 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		Services:        0,
 		PID:             pid,
 		PingInterval:    time.Second * 30,
-		SignNonce: func(nonce []byte) (signature [64]byte) {
+		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
-			copy(signature[:], sign)
-			return signature
+			return sign
 		},
 		MakeEmptyMessage: makeEmptyMessage,
 	}
@@ -357,7 +347,8 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	nonce := [32]byte{}
 	rand.Read(nonce[:])
 	// Remote peer writes version message advertising invalid protocol version 1
-	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID, nonce)
+	invalidVersionMsg := msg.NewVersion(1, 0, 8333,
+		peerCfg.PID, nonce)
 
 	err = p2p.WriteMessage(
 		remoteConn.Writer,

@@ -5,14 +5,13 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
-	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
+	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -35,6 +34,7 @@ type Config struct {
 
 type Arbitrator struct {
 	cfg            Config
+	account        account.Account
 	enableViewLoop bool
 	network        *network
 	dposManager    *manager.DPOSManager
@@ -44,9 +44,6 @@ func (a *Arbitrator) Start() {
 	a.network.Start()
 
 	go a.changeViewLoop()
-}
-
-func (a *Arbitrator) Recover() {
 	go a.dposManager.Recover()
 }
 
@@ -60,7 +57,7 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
-func (a *Arbitrator) GetArbiterPeersInfo() []*dposp2p.PeerInfo {
+func (a *Arbitrator) GetArbiterPeersInfo() []*dp2p.PeerInfo {
 	return a.network.p2pServer.DumpPeersInfo()
 }
 
@@ -114,10 +111,8 @@ func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
 	a.network.PostConfirmReceivedTask(p)
 }
 
-func (a *Arbitrator) OnPeersChanged(arbiters map[string]*dposp2p.PeerAddr) {
-	if err := a.network.UpdatePeers(arbiters); err != nil {
-		log.Warn("[OnPeersChanged] update peers error: ", err)
-	}
+func (a *Arbitrator) OnPeersChanged(peers []peer.PID) {
+	a.network.UpdatePeers(peers)
 }
 
 func (a *Arbitrator) changeViewLoop() {
@@ -128,31 +123,27 @@ func (a *Arbitrator) changeViewLoop() {
 	}
 }
 
-func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
+// OnCipherAddr will be invoked when an address cipher received.
+func (a *Arbitrator) OnCipherAddr(pid peer.PID, cipher []byte) {
+	addr, err := a.account.DecryptAddr(cipher)
+	if err != nil {
+		log.Errorf("decrypt address cipher error %s", err)
+		return
+	}
+	a.network.p2pServer.AddAddr(pid, addr)
+}
+
+func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
 		cfg.Params.MaxLogsSize)
 
-	dposAccount, err := account.NewDposAccount(password)
-	if err != nil {
-		log.Error("init dpos account error")
-		return nil, err
-	}
-
-	pubKey, err := common.HexStringToBytes(cfg.Params.PublicKey)
-	if err != nil {
-		log.Error("init dpos account error")
-		return nil, err
-	}
 	dposManager := manager.NewManager(manager.DPOSManagerConfig{
-		PublicKey:   pubKey,
+		PublicKey:   account.PublicKeyBytes(),
 		Arbitrators: cfg.Arbitrators,
 		ChainParams: cfg.ChainParams,
 	})
-	pk := config.Parameters.GetArbiterID()
-	var id peer.PID
-	copy(id[:], pk)
-	log.Info("ID:", common.BytesToHexString(pk))
-	network, err := NewDposNetwork(id, dposManager, dposAccount)
+
+	network, err := NewDposNetwork(account, dposManager)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil, err
@@ -185,12 +176,12 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 			Consensus:    consensus,
 			Network:      network,
 			Manager:      dposManager,
-			Account:      dposAccount,
+			Account:      account,
 			ChainParams:  cfg.ChainParams,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
-				Store:       cfg.Store,
-				Arbitrators: cfg.Arbitrators,
+				Store:                  cfg.Store,
+				Arbitrators:            cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)
@@ -200,16 +191,17 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 	network.Initialize(manager.DPOSNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
 		Store:              cfg.Store,
-		PublicKey:          pubKey,
+		PublicKey:          account.PublicKeyBytes(),
 	})
 
 	cfg.Store.StartEventRecord()
 
 	a := Arbitrator{
+		cfg:            cfg,
+		account:        account,
 		enableViewLoop: true,
 		dposManager:    dposManager,
 		network:        network,
-		cfg:            cfg,
 	}
 
 	events.Subscribe(func(e *events.Event) {
@@ -222,7 +214,7 @@ func NewArbitrator(password []byte, cfg Config) (*Arbitrator, error) {
 			a.OnConfirmReceived(e.Data.(*payload.Confirm))
 
 		case events.ETDirectPeersChanged:
-			a.OnPeersChanged(e.Data.(map[string]*dposp2p.PeerAddr))
+			a.OnPeersChanged(e.Data.([]peer.PID))
 
 		case events.ETTransactionAccepted:
 			tx := e.Data.(*types.Transaction)

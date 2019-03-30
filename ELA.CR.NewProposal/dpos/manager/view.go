@@ -1,10 +1,9 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -14,6 +13,7 @@ type ViewListener interface {
 }
 
 type view struct {
+	publicKey     []byte
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
@@ -47,7 +47,7 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	if offset > 0 {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
-		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.PublicKey
+		v.isDposOnDuty = bytes.Equal(currentArbiter, v.publicKey)
 		log.Info("current onduty arbiter:", currentArbiter)
 
 		v.listener.OnViewChanged(v.isDposOnDuty)
