@@ -38,19 +38,24 @@ class App extends Component{
         
 
         <Content>
-          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'getVersion')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
           <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
-          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidId')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'isValidId')}>
             <Text>isValidId</Text>
           </Button>
+          
 
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'getAddress')}>
             <Text>getAddress</Text>
           </Button>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getNodeId')}>
+            <Text>getNodeId</Text>
+          </Button>
+
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'setSelfInfo')}>
             <Text>setSelfInfo</Text>
           </Button>
@@ -122,6 +127,10 @@ class App extends Component{
       case 'getAddress':
         rs = await this.carrier.getAddress();
         break;
+      case 'getNodeId':
+        rs = await this.carrier.getNodeId();
+        break;
+        
       case 'setSelfInfo':
         const info = {
           name : 'bbb',

@@ -108,16 +108,16 @@ RCT_EXPORT_METHOD
   callback(@[NULL_ERR, address]);
 }
 
-//RCT_EXPORT_METHOD
-//(getNodeId : (NSString *)cid :(RCTResponseSenderBlock)callback){
-//  if(![self checkCarrierInstance:cid cb:callback]){
-//    return;
-//  }
-//  
-//  ELACarrier *elaCarrier = [self getELACarrier:cid];
-//  NSString *address = [elaCarrier getNodeId];
-//  callback(@[NULL_ERR, address]);
-//}
+RCT_EXPORT_METHOD
+(getNodeId : (NSString *)cid :(RCTResponseSenderBlock)callback){
+  if(![self checkCarrierInstance:cid cb:callback]){
+    return;
+  }
+
+  ELACarrier *elaCarrier = [self getELACarrier:cid];
+  NSString *address = [elaCarrier getUserId];
+  callback(@[NULL_ERR, address]);
+}
 
 RCT_EXPORT_METHOD
 (getUserId : (NSString *)cid :(RCTResponseSenderBlock)callback){

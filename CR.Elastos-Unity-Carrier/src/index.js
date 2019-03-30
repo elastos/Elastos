@@ -74,6 +74,10 @@ const Carrier = class {
     return exec('getAddress', this.id);
   }
 
+  getNodeId(){
+    return exec('getNodeId', this.id);
+  }
+
   getSelfInfo(){
     return exec('getSelfInfo', this.id);
   }
@@ -148,7 +152,7 @@ const Carrier = class {
   }
 
   // TODO
-  getNodeId(){}
+  
   addService(){}
   removeService(){}
   openPortFowarding(){}
