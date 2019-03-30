@@ -29,10 +29,9 @@ TEST_CASE("Json convert", "[SjclFile]") {
 		s1.SetSalt("ZRVja4LFrFY=");
 		s1.SetCt("FCuQWGYz3onE/lRt/7vCl5A=");
 
-		nlohmann::json json;
-		json << s1;
+		nlohmann::json json = s1.ToJson();
 
-		json >> s2;
+		s2.FromJson(json);
 
 		REQUIRE(s1.GetIv() == s2.GetIv());
 		REQUIRE(s1.GetV() == s2.GetV());

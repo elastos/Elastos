@@ -7,7 +7,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/SpvService/CoinInfo.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterProducer.h>
@@ -94,7 +94,7 @@ namespace Elastos {
 			pr.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pr.SetSignature(key.Sign(prUnsigned));
 
 			return pr.ToJson(0);
@@ -119,7 +119,7 @@ namespace Elastos {
 			pc.SerializeUnsigned(ostream, 0);
 			bytes_t pcUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pc.SetSignature(key.Sign(pcUnsigned));
 
 			return pc.ToJson(0);
@@ -229,8 +229,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			bytes_t pubkey(_subAccount->GetVotePublicKey());
-			std::string fromAddress = Address(PrefixDeposit, pubkey).String();
+			std::string fromAddress = Address(PrefixDeposit, _subAccount->OwnerPubKey()).String();
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
 
@@ -247,7 +246,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			return _subAccount->GetVotePublicKey().getHex();
+			return _subAccount->OwnerPubKey().getHex();
 		}
 
 		nlohmann::json

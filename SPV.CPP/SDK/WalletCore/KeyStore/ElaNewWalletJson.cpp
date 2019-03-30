@@ -7,121 +7,58 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		ElaNewWalletJson::ElaNewWalletJson(const std::string &rootPath) :
-				_rootPath(rootPath),
-				_requiredSignCount(0) {
+		ElaNewWalletJson::ElaNewWalletJson() :
+			_singleAddress(false) {
+
 		}
 
 		ElaNewWalletJson::~ElaNewWalletJson() {
-
+			_passphrase.resize(_passphrase.size(), 0);
 		}
 
-		void ElaNewWalletJson::AddCoinInfo(const CoinInfo &info) {
-			_coinInfoList.push_back(info);
-		}
+		void to_json(nlohmann::json &j, const ElaNewWalletJson &p, bool withPrivKey) {
+			to_json(j, dynamic_cast<const ElaWebWalletJson &>(p), withPrivKey);
 
-		void ElaNewWalletJson::ClearCoinInfo() {
-			_coinInfoList.clear();
-		}
-
-		const std::vector<CoinInfo> &ElaNewWalletJson::GetCoinInfoList() const {
-			return _coinInfoList;
-		}
-
-		nlohmann::json &operator<<(nlohmann::json &j, const ElaNewWalletJson &p) {
-			j << *(ElaWebWalletJson *) &p;
-
-			to_json(j, p);
-
-			return j;
-		}
-
-		const nlohmann::json &operator>>(const nlohmann::json &j, ElaNewWalletJson &p) {
-			j >> *(ElaWebWalletJson *) &p;
-
-			from_json(j, p);
-
-			return j;
-		}
-
-		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {
 			j["CoinInfoList"] = p._coinInfoList;
-			j["Type"] = p._type;
-			j["Language"] = p._language;
-			j["CoSigners"] = p._coSigners;
-			j["RequiredSignCount"] = p._requiredSignCount;
-			j["PrivateKey"] = p._privateKey;
-			j["PhrasePassword"] = p._phrasePassword;
-			j["IsSingleAddress"] = p._isSingleAddress;
+			j["SingleAddress"] = p._singleAddress;
 		}
 
 		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
-			p._coinInfoList = j.find("CoinInfoList") != j.end() ? j["CoinInfoList"].get<std::vector<CoinInfo>>()
-																: std::vector<CoinInfo>();
-			p._type = j.find("Type") != j.end() ? j["Type"].get<std::string>() : "";
-			p._language = j.find("Language") != j.end() ? j["Language"].get<std::string>() : "english";
-			p._coSigners = j.find("CoSigners") != j.end() ? j["CoSigners"].get<std::vector<std::string>>()
-														  : std::vector<std::string>();
-			p._requiredSignCount = j.find("RequiredSignCount") != j.end() ? j["RequiredSignCount"].get<uint32_t>() : 0;
-			p._privateKey = j.find("PrivateKey") != j.end() ? j["PrivateKey"].get<std::string>() : "";
-			p._phrasePassword = j.find("PhrasePassword") != j.end() ? j["PhrasePassword"].get<std::string>() : "";
-			p._isSingleAddress = j.find("IsSingleAddress") != j.end() ? j["IsSingleAddress"].get<bool>() : false;
-		}
+			from_json(j, dynamic_cast<ElaWebWalletJson &>(p));
 
-		const std::string& ElaNewWalletJson::GetType() const {
-			return _type;
-		}
+			p._old = false;
+			if (j.find("CoinInfoList") != j.end()) {
+				p._coinInfoList = j["CoinInfoList"].get<std::vector<CoinInfo>>();
+			}
 
-		void ElaNewWalletJson::SetType(const std::string &type) {
-			_type = type;
-		}
+			if (j.find("CoSigners") != j.end() && j["Type"] == "MultiSign") {
+				p._old = true;
+				std::vector<std::string> coSigners;
+				coSigners = j["CoSigners"].get<std::vector<std::string>>();
+				for (size_t i = 0; i < coSigners.size(); ++i) {
+					p.AddPublicKeyRing(PublicKeyRing(coSigners[i]));
+				}
+				p._singleAddress = true;
+			} else if (j.find("IsSingleAddress") != j.end()) {
+				p._old = true;
+				p._singleAddress = j["IsSingleAddress"];
+			}
 
-		const std::string &ElaNewWalletJson::GetLanguage() const {
-			return _language;
-		}
+			if (j.find("RequiredSignCount") != j.end()) {
+				p._old = true;
+				p.SetM(j["RequiredSignCount"]);
+			}
 
-		void ElaNewWalletJson::SetLanguage(const std::string &la) {
-			_language = la;
-		}
+			if (j.find("PhrasePassword") != j.end()) {
+				p._old = true;
+				p._passphrase = j["PhrasePassword"];
+				if (!p._passphrase.empty())
+					p.SetHasPassPhrase(true);
+			}
 
-		const std::vector<std::string> &ElaNewWalletJson::GetCoSigners() const {
-			return _coSigners;
-		}
-
-		void ElaNewWalletJson::SetCoSigners(const std::vector<std::string> &coSigners) {
-			_coSigners = coSigners;
-		}
-
-		uint32_t ElaNewWalletJson::GetRequiredSignCount() const {
-			return _requiredSignCount;
-		}
-
-		void ElaNewWalletJson::SetRequiredSignCount(uint32_t count) {
-			_requiredSignCount = count;
-		}
-
-		const std::string &ElaNewWalletJson::GetPrivateKey() const {
-			return _privateKey;
-		}
-
-		void ElaNewWalletJson::SetPrivateKey(const std::string &key) {
-			_privateKey = key;
-		}
-
-		const std::string &ElaNewWalletJson::GetPhrasePassword() const {
-			return _phrasePassword;
-		}
-
-		void ElaNewWalletJson::SetPhrasePassword(const std::string &phrasePassword) {
-			_phrasePassword = phrasePassword;
-		}
-
-		void ElaNewWalletJson::SetIsSingleAddress(bool value) {
-			_isSingleAddress = value;
-		}
-
-		bool ElaNewWalletJson::GetIsSingleAddress() const {
-			return _isSingleAddress;
+			if (j.find("SingleAddress") != j.end()) {
+				p._singleAddress = j["SingleAddress"];
+			}
 		}
 
 	}

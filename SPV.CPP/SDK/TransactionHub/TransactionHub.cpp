@@ -9,7 +9,6 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/Account/MultiSignSubAccount.h>
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 
 #include <Interface/ISubWallet.h>
@@ -29,7 +28,7 @@ namespace Elastos {
 				_subAccount(subAccount),
 				_transactions(this, assetArray, txArray, subAccount, listener) {
 
-			_subAccount->InitAccount(txArray, this);
+			_subAccount->Init(txArray, this);
 
 			_transactions.InitWithTransactions(txArray);
 
@@ -332,11 +331,11 @@ namespace Elastos {
 		}
 
 		Address TransactionHub::GetVoteDepositAddress() const {
-			if ("Multi-Sign Account" == _subAccount->GetBasicInfo()["Type"]) {
+			if (Account::MultiSign == _subAccount->Parent()->GetSignType()) {
 				return Address();
 			}
 
-			return Address(PrefixDeposit, _subAccount->GetVotePublicKey());
+			return Address(PrefixDeposit, _subAccount->OwnerPubKey());
 		}
 
 		bool TransactionHub::IsVoteDepositAddress(const Address &addr) const {
@@ -349,15 +348,6 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				result = _subAccount->ContainsAddress(address);
-			}
-			return result;
-		}
-
-		bool TransactionHub::AddressIsUsed(const Address &address) {
-			bool result;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				result = _subAccount->IsAddressUsed(address);
 			}
 			return result;
 		}

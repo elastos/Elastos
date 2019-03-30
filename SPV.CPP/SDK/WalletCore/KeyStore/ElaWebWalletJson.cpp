@@ -12,29 +12,19 @@ namespace Elastos {
 		}
 
 		ElaWebWalletJson::~ElaWebWalletJson() {
-
+			_mnemonic.resize(_mnemonic.size(), 0);
 		}
 
-		nlohmann::json &operator<<(nlohmann::json &j, const ElaWebWalletJson &p) {
-			j << *(BitcoreWalletClientJson *) &p;
-
-			to_json(j, p);
-
-			return j;
-		}
-
-		const nlohmann::json &operator>>(const nlohmann::json &j, ElaWebWalletJson &p) {
-			j >> *(BitcoreWalletClientJson *) &p;
-
-			from_json(j, p);
-
-			return j;
-		}
-
-		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
+		void to_json(nlohmann::json &j, const ElaWebWalletJson &p, bool withPrivKey) {
+			to_json(j, dynamic_cast<const BitcoreWalletClientJson &>(p), withPrivKey);
+			if (withPrivKey && !p._mnemonic.empty())
+				j["mnemonic"] = p._mnemonic;
 		}
 
 		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
+			from_json(j, dynamic_cast<BitcoreWalletClientJson &>(p));
+			if (j.find("mnemonic") != j.end())
+				p._mnemonic = j["mnemonic"];
 		}
 	}
 }

@@ -13,20 +13,35 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+		class PublicKeyRing {
+		public:
+			PublicKeyRing() {}
+
+			PublicKeyRing(const std::string &pubkey) :
+				_requestPubKey(pubkey) {}
+
+			PublicKeyRing(const std::string &pubkey, const std::string &xpub) :
+				_requestPubKey(pubkey), _xPubKey(xpub) {}
+
+			const std::string &GetxPubKey() const { return _xPubKey; }
+
+			const std::string &GetRequestPubKey() const { return _requestPubKey; }
+
+			void SetRequestPubKey(const std::string &pubkey) { _requestPubKey = pubkey; }
+
+			void SetxPubKey(const std::string &xpubkey) { _xPubKey = xpubkey; }
+
+			TO_JSON(PublicKeyRing);
+
+			FROM_JSON(PublicKeyRing);
+
+		private:
+			std::string _xPubKey;
+			std::string _requestPubKey;
+		};
+
 
 		class BitcoreWalletClientJson {
-		public:
-			struct PubKeyItem {
-				std::string xPubKey;
-				std::string requestPubKey;
-				//std::string copayerName;
-
-			private:
-				JSON_SM_LS(PubKeyItem);
-				JSON_SM_RS(PubKeyItem);
-				TO_JSON(PubKeyItem);
-				FROM_JSON(PubKeyItem);
-			};
 
 		public:
 			BitcoreWalletClientJson();
@@ -34,25 +49,53 @@ namespace Elastos {
 			virtual ~BitcoreWalletClientJson();
 
 		public:
-			const std::string &GetEncryptedEntropySource() const;
+			const std::string &xPrivKey() const { return _xPrivKey; }
 
-			void SetEncryptedEntropySource(const std::string &entropy);
+			void SetxPrivKey(const std::string &xprv) { _xPrivKey = xprv; }
 
-			const std::string &GetMnemonic() const;
+			const std::string &xPubKey() const { return _xPubKey; }
 
-			void SetMnemonic(const std::string mnemonic);
+			void SetxPubKey(const std::string &xpub) { _xPubKey = xpub; }
 
-			bool HasPhrasePassword() const;
+			const std::string &RequestPrivKey() const { return _requestPrivKey; }
 
-			void SetHasPhrasePassword(bool has);
+			void SetRequestPrivKey(const std::string &key) { _requestPrivKey = key; }
 
-		private:
-			JSON_SM_LS(BitcoreWalletClientJson);
-			JSON_SM_RS(BitcoreWalletClientJson);
-			TO_JSON(BitcoreWalletClientJson);
-			FROM_JSON(BitcoreWalletClientJson);
+			const std::string &RequestPubKey() const { return _requestPubKey; }
 
-		private:
+			void SetRequestPubKey(const std::string &pubkey) { _requestPubKey = pubkey; }
+
+			bool HasPassPhrase() const { return _mnemonicHasPassphrase; }
+
+			void SetHasPassPhrase(bool has) { _mnemonicHasPassphrase = has; }
+
+			const std::vector<PublicKeyRing> &GetPublicKeyRing() const { return _publicKeyRing; }
+
+			void AddPublicKeyRing(const PublicKeyRing &publicKeyRing) { _publicKeyRing.push_back(publicKeyRing); }
+
+			void SetPublicKeyRing(const std::vector<PublicKeyRing> &ring) { _publicKeyRing = ring; }
+
+			int GetM() const { return _m; }
+
+			void SetM(int m) { _m = m; }
+
+			int GetN() const { return _n; }
+
+			void SetN(int n) { _n = n; }
+
+			const std::string &DerivationStrategy() const { return _derivationStrategy; }
+
+			void SetDerivationStrategy(const std::string &strategy) { _derivationStrategy = strategy; }
+
+			int Account() const { return _account; }
+
+			void SetAccount(int account) { _account = account; }
+
+			friend void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p, bool withPrivKey);
+
+			friend void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p);
+
+		protected:
 			std::string _coin;
 			std::string _network;
 			std::string _xPrivKey;
@@ -60,7 +103,7 @@ namespace Elastos {
 			std::string _requestPrivKey;
 			std::string _requestPubKey;
 			std::string _copayerId;
-			std::vector<PubKeyItem> _publicKeyRing;
+			std::vector<PublicKeyRing> _publicKeyRing;
 			std::string _walletId;
 			std::string _walletName;
 			int _m;
@@ -69,7 +112,6 @@ namespace Elastos {
 			std::string _personalEncryptingKey;
 			std::string _sharedEncryptingKey;
 			std::string _copayerName;
-			std::string _mnemonic;
 			std::string _entropySource;
 			bool _mnemonicHasPassphrase;
 			std::string _derivationStrategy;

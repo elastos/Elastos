@@ -32,7 +32,7 @@ namespace Elastos {
 
 		class IdAgentImpl {
 		public:
-			IdAgentImpl(MasterWallet *parentWallet, const IdAgentInfo &info);
+			IdAgentImpl(MasterWallet *parentWallet);
 
 			~IdAgentImpl();
 

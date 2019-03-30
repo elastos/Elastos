@@ -10,11 +10,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Account/MultiSignSubAccount.h>
-#include <SDK/Account/SubAccountGenerator.h>
-
-#include <Core/BRTransaction.h>
-#include <Core/BRArray.h>
+#include <SDK/Account/SubAccount.h>
 
 #include <algorithm>
 #include <boost/scoped_ptr.hpp>
@@ -39,19 +35,7 @@ namespace Elastos {
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.GetChainId() + DB_FILE_EXTENSION;
 
-			{
-				SubAccountGenerator generator;
-				generator.SetCoinInfo(_info);
-				generator.SetParentAccount(_parent->_localStore.Account());
-				generator.SetMasterPubKey(_parent->GetMasterPubKey(_info.GetChainId()));
-				generator.SetVotePubKey(_parent->_localStore.GetVotePublicKey(_info.GetChainId()));
-				_subAccount = SubAccountPtr(generator.Generate());
-
-				_info.SetChainCode(generator.GetResultChainCode().getHex());
-				if (generator.GetResultPublicKey().size() > 0)
-					_info.SetPublicKey(generator.GetResultPublicKey().getHex());
-			}
-
+			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _info.GetIndex()));
 			_walletManager = WalletManagerPtr(
 					new SpvService(_subAccount, subWalletDbPath,
 								   _info.GetEarliestPeerTime(), _info.GetReconnectSeconds(),
@@ -213,9 +197,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
-
-			Key key = _subAccount->DeriveMultiSignKey(payPassword);
-			return key.Sign(message).getHex();
+			return _parent->Sign(message, payPassword);
 		}
 
 		bool SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
@@ -436,13 +418,12 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetPublicKey() const {
-			return _subAccount->GetMultiSignPublicKey().getHex();
+			return _parent->GetPublicKey();
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
 			nlohmann::json j;
-			j["Type"] = "Normal";
-			j["Account"] = _subAccount->GetBasicInfo();
+			j["SubAccount"] = _subAccount->GetBasicInfo();
 			return j;
 		}
 

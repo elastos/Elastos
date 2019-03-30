@@ -7,7 +7,6 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MasterWallet.h>
-#include <SDK/Account/StandardAccount.h>
 
 #include <algorithm>
 #include <SDK/WalletCore/BIPs/Base58.h>
@@ -42,9 +41,8 @@ namespace Elastos {
 			}
 		}
 
-		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet, const IdAgentInfo &info) :
-			_parentWallet(parentWallet),
-			_info(info) {
+		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet) :
+			_parentWallet(parentWallet) {
 
 		}
 
@@ -63,11 +61,7 @@ namespace Elastos {
 				return existedId;
 			}
 
-			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
-										 "This account can not create ID");
-
-			const HDKeychain &mpk = standardAccount->GetIDMasterPubKey();
+			HDKeychain mpk = _parentWallet->_account->MasterPubKey();
 
 			bytes_t pubKey = mpk.getChild(purpose).getChild(index).pubkey();
 			Address address(PrefixIDChain, pubKey);
@@ -102,13 +96,7 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IdItem item = _info.Ids[id];
 
-			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
-										 "This account can not create ID");
-
-
-			HDSeed hdseed(standardAccount->DeriveSeed(password).bytes());
-			HDKeychain rootKey(hdseed.getExtendedKey(true));
+			HDKeychain rootKey = _parentWallet->_account->RootKey(password);
 
 			HDKeychain key = rootKey.getChild("44'/0'/0'").getChild(item.Purpose).getChild(item.Index);
 
@@ -129,11 +117,8 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IdItem item = _info.Ids[id];
 
-			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
-										 "This account can not create ID");
-
-			bytes_t pubkey = standardAccount->GetIDMasterPubKey().getChild(item.Purpose).getChild(item.Index).pubkey();
+			HDKeychain mpk = _parentWallet->_account->MasterPubKey();
+			bytes_t pubkey = mpk.getChild(item.Purpose).getChild(item.Index).pubkey();
 			return Address(PrefixIDChain, pubkey).RedeemScript().getHex();
 		}
 

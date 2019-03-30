@@ -586,7 +586,7 @@ namespace Elastos {
 
 				_txHash = 0;
 				GetHash();
-			} catch (const std::bad_cast &e) {
+			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowLogicException(Error::Code::JsonFormatError, "tx from json: " +
 																				std::string(e.what()));
 			}

@@ -10,7 +10,7 @@
 #include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/P2P/PeerManager.h>
 #include <SDK/P2P/ChainParams.h>
-#include <SDK/Account/ISubAccount.h>
+#include <SDK/Account/SubAccount.h>
 
 #include <boost/thread.hpp>
 

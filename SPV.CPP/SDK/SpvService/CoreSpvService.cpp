@@ -6,7 +6,6 @@
 
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Account/SingleSubAccount.h>
 
 #include <sstream>
 

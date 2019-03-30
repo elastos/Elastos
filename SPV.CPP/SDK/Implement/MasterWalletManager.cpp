@@ -25,6 +25,7 @@
 using namespace boost::filesystem;
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
+#define LOCAL_STORE_FILE "LocalStore.json"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -233,30 +234,6 @@ namespace Elastos {
 		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletId,
 													  const nlohmann::json &keystoreContent,
 													  const std::string &backupPassword,
-													  const std::string &payPassword,
-													  const std::string &phrasePassword) {
-			ErrorChecker::CheckParamNotEmpty(masterWalletId, "Master wallet ID");
-			ErrorChecker::CheckParam(!keystoreContent.is_object(), Error::KeyStore, "key store should be json object");
-			ErrorChecker::CheckPassword(backupPassword, "Backup");
-			ErrorChecker::CheckPassword(payPassword, "Pay");
-			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
-
-			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
-				return _masterWalletMap[masterWalletId];
-
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
-														  phrasePassword,
-														  payPassword, _rootPath, _p2pEnable,
-														  ImportFromKeyStore);
-			checkRedundant(masterWallet);
-			_masterWalletMap[masterWalletId] = masterWallet;
-			return masterWallet;
-		}
-
-		IMasterWallet *
-		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletId,
-													  const nlohmann::json &keystoreContent,
-													  const std::string &backupPassword,
 													  const std::string &payPassword) {
 			ErrorChecker::CheckParamNotEmpty(masterWalletId, "Master wallet ID");
 			ErrorChecker::CheckParam(!keystoreContent.is_object(), Error::KeyStore, "key store should be json object");
@@ -272,6 +249,7 @@ namespace Elastos {
 														  ImportFromKeyStore);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
+			masterWallet->InitSubWallets();
 			return masterWallet;
 		}
 
@@ -297,13 +275,13 @@ namespace Elastos {
 
 		nlohmann::json
 		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													  const std::string &payPassword) const {
+													  const std::string &payPassword, bool withPrivKey) const {
 
 			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			return wallet->exportKeyStore(backupPassword, payPassword);
+			return wallet->exportKeyStore(backupPassword, payPassword, withPrivKey);
 		}
 
 		std::string
@@ -314,10 +292,7 @@ namespace Elastos {
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 
-			std::string mnemonic;
-			ErrorChecker::CheckCondition(!wallet->exportMnemonic(payPassword, mnemonic), Error::WrongPasswd,
-										 "Wrong pay password");
-			return mnemonic;
+			return wallet->exportMnemonic(payPassword);
 		}
 
 		nlohmann::json MasterWalletManager::EncodeTransactionToString(const nlohmann::json &tx) {
@@ -399,10 +374,8 @@ namespace Elastos {
 				}
 
 				std::string masterWalletId = temp.filename().string();
-				temp /= MASTER_WALLET_STORE_FILE;
-				if (exists(temp)) {
-					if (GetWallet(masterWalletId))
-						_masterWalletMap[masterWalletId] = GetWallet(masterWalletId);
+				if (exists((*it) / LOCAL_STORE_FILE) || exists((*it) / MASTER_WALLET_STORE_FILE)) {
+					GetWallet(masterWalletId);
 				}
 				++it;
 			}
@@ -425,21 +398,11 @@ namespace Elastos {
 				_masterWalletMap[masterWalletId] != nullptr)
 				return _masterWalletMap[masterWalletId];
 
-			path masterWalletStoreFile = _rootPath;
-			masterWalletStoreFile /= masterWalletId;
-			masterWalletStoreFile /= MASTER_WALLET_STORE_FILE;
-			MasterWallet *masterWallet = nullptr;
-
-			try {
-				masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable,
-												ImportFromLocalStore);
-			} catch (nlohmann::json::exception &e) {
-				Log::getLogger()->error("new master wallet {} error", masterWalletId);
-				return nullptr;
-			}
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, _rootPath, _p2pEnable, ImportFromLocalStore);
 
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
+			masterWallet->InitSubWallets();
 			return masterWallet;
 		}
 

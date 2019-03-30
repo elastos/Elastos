@@ -13,6 +13,7 @@
 #include <SDK/Implement/SidechainSubWallet.h>
 #include <SDK/Implement/IdChainSubWallet.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -30,7 +31,7 @@ public:
 					 ImportFromMnemonic) {
 	}
 
-	TestMasterWallet(const std::string &phrasePassword,
+	explicit TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword) :
 			MasterWallet("MasterWalletTest",
 						 "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
@@ -55,51 +56,27 @@ public:
 			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, singleAddress, false, "Data", ImportFromMnemonic) {
 	}
 
-	TestMasterWallet(const boost::filesystem::path &localStore) :
-			MasterWallet(localStore, "Data", false, ImportFromMnemonic) {
+	TestMasterWallet(const std::string &id) :
+			MasterWallet(id, "Data", false, ImportFromMnemonic) {
 	}
 
-	void restoreLocalStoreWrapper() {
-		restoreLocalStore();
+	TestMasterWallet(const nlohmann::json &keystore, const std::string &backupPassword, const std::string &payPasswd) :
+		MasterWallet("MasterWalletTest", keystore, backupPassword, payPasswd, "Data", false, ImportFromKeyStore) {
+
 	}
 
-	const MasterWalletStore &getMasterWalletStore() { return _localStore; }
-
-	void initFromKeyStoreWrapper(const KeyStore &keyStore, const std::string &payPassword) {
-		initFromKeyStore(keyStore, payPassword);
+	nlohmann::json ExportKeystore(const std::string &backupPassword,
+										  const std::string &payPassword,
+										  bool withPrivKey) {
+		return exportKeyStore(backupPassword, payPassword, withPrivKey);
 	}
 
-	void restoreKeyStoreWrapper(KeyStore &keyStore, const std::string &payPassword) {
-		restoreKeyStore(keyStore, payPassword);
+	std::string GetxPubKey() {
+		return _localStore->GetxPubKey();
 	}
+	
+	
 
-	std::string getEncryptedPhrasePassword() {
-		return _localStore.Account()->GetEncryptedPhrasePassword();
-	}
-
-	ISubWallet *CreateSubWalletEx(
-			const std::string &chainID,
-			bool singleAddress,
-			SubWalletType subWalletType,
-			int coinTypeIndex,
-			uint64_t feePerKb = 0) {
-
-		tryInitCoinConfig();
-		CoinInfo info;
-		info.SetEaliestPeerTime(0);
-		info.SetWalletType(subWalletType);
-		info.SetIndex(coinTypeIndex);
-		info.SetSingleAddress(singleAddress);
-		info.SetUsedMaxAddressIndex(0);
-		info.SetChainId(chainID);
-		info.SetFeePerKb(feePerKb);
-		info.SetChainCode("0000000000000000000000000000000000000000000000000000000000000000");
-		info.SetPublicKey("038bc7fbfa77b10b85cdf9ef75c0d994924adab73a7a7486e9c392398899faac33");
-		std::vector<CoinInfo> coinInfoList = {info};
-		restoreSubWallets(coinInfoList);
-
-		return _createdWallets[chainID];
-	}
 };
 
 TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
@@ -157,25 +134,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
-	SECTION("Create normal sub wallet") {
-		ISubWallet *subWallet = masterWallet->CreateSubWalletEx(chainId, false, Normal, 0);
-
-		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
-		REQUIRE(normalSubWallet != nullptr);
-
-		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
-		REQUIRE_FALSE(mainchainSubWallet != nullptr);
-
-		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
-		REQUIRE_FALSE(sidechainSubWallet != nullptr);
-
-		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
-		REQUIRE_FALSE(idChainSubWallet != nullptr);
-
-		masterWallet->DestroyWallet(subWallet);
-	}
 	SECTION("Create mainchain sub wallet") {
-		ISubWallet *subWallet = masterWallet->CreateSubWalletEx(chainId, false, Mainchain, 0);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
 
 		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
 		REQUIRE(normalSubWallet != nullptr);
@@ -183,21 +143,14 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
 		REQUIRE(mainchainSubWallet != nullptr);
 
-		masterWallet->DestroyWallet(subWallet);
-	}
-	SECTION("Create mainchain sub wallet") {
-		ISubWallet *subWallet = masterWallet->CreateSubWalletEx(chainId, false, Sidechain, 0);
-
-		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
-		REQUIRE(normalSubWallet != nullptr);
-
 		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
-		REQUIRE(sidechainSubWallet != nullptr);
+		REQUIRE(sidechainSubWallet == nullptr);
 
 		masterWallet->DestroyWallet(subWallet);
 	}
+
 	SECTION("Create idchain sub wallet") {
-		ISubWallet *subWallet = masterWallet->CreateSubWalletEx(chainId, false, Idchain, 0);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("IdChain", feePerKB);
 
 		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
 		REQUIRE(normalSubWallet != nullptr);
@@ -205,8 +158,12 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
 		REQUIRE(idChainSubWallet != nullptr);
 
+		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
+		REQUIRE(mainchainSubWallet == nullptr);
+
 		masterWallet->DestroyWallet(subWallet);
 	}
+
 	SECTION("Create all sub wallets in list") {
 		std::vector<std::string> chainIds = masterWallet->GetSupportedChains();
 		for (int i = 0; i < chainIds.size(); ++i) {
@@ -214,6 +171,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 			REQUIRE(subWallet != nullptr);
 		}
 	}
+
 	SECTION("Return exist sub wallet with same id") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, feePerKB);
 		REQUIRE(subWallet != nullptr);
@@ -586,30 +544,6 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 	}
 }
 
-TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string masterWalletId = "MasterWalletId";
-	uint64_t feePerKB = 10000;
-
-	std::string chainId1 = "ELA";
-	std::string chainId2 = "IdChain";
-	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
-	masterWallet->CreateSubWallet(chainId1, feePerKB);
-	masterWallet->CreateSubWallet(chainId2, feePerKB);
-
-	KeyStore keyStore("Data");
-	masterWallet->restoreKeyStoreWrapper(keyStore, payPassword);
-
-	IAccount *account = keyStore.CreateAccountFromJson(payPassword);
-	CHECK(keyStore.json().GetMnemonic() == mnemonic);
-	CHECK(account->GetEncryptedPhrasePassword() == masterWallet->getEncryptedPhrasePassword());
-
-	std::vector<CoinInfo> coinInfoList = keyStore.json().GetCoinInfoList();
-	REQUIRE(coinInfoList.size() == 2);
-}
-
 TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -621,15 +555,12 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 	masterWallet->CreateSubWallet("ELA", feePerKB);
 	masterWallet->CreateSubWallet("IdChain", feePerKB);
 
-	std::string publicKey = masterWallet->GetPublicKey();
+	std::string publicKey = masterWallet->GetxPubKey();
 
-	KeyStore keyStore("Data");
-	masterWallet->restoreKeyStoreWrapper(keyStore, payPassword);
+	nlohmann::json keystore = masterWallet->ExportKeystore("12345678", payPassword, true);
 
-	masterWallet.reset(new TestMasterWallet());
-
-	masterWallet->initFromKeyStoreWrapper(keyStore, payPassword);
-	std::string publicKey1 = masterWallet->GetPublicKey();
+	TestMasterWallet masterWallet1(keystore, "12345678", payPassword);
+	std::string publicKey1 = masterWallet1.GetxPubKey();
 
 	REQUIRE(publicKey == publicKey1);
 	REQUIRE(masterWallet->GetAllSubWallets().size() == 2);
@@ -660,8 +591,9 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		localStore /= "MasterWalletTest";
 		localStore /= "MasterWalletStore.json";
 		masterWallet->Save();
-		masterWallet.reset(new TestMasterWallet(localStore)); //save and reload in this line
+		masterWallet.reset(new TestMasterWallet("MasterWalletTest")); //save and reload in this line
 		REQUIRE_NOTHROW(masterWallet->Sign("MyMessage", newPassword));
+		masterWallet->InitSubWallets();
 
 		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
 		REQUIRE(subwallets.size() == 2);

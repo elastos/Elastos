@@ -439,16 +439,18 @@ static void InitWallets(MasterWalletManager *manager) {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-//		masterWallet = ImportWalletWithMnemonic(manager);
 		masterWallet = ImportWalletWithKeystore(manager);
-//		masterWallet = NewWalletWithMnemonic(manager);
-//		masterWallet = NewReadOnlyMultiSignWallet(manager);
-//		masterWallet = NewMultiSignWalletWithMnemonic(manager);
-//		masterWallet = NewMultiSignWalletWithPrvKey(manager);
-		masterWallets.push_back(masterWallet);
+		if (masterWallet == nullptr) {
+//			masterWallet = ImportWalletWithMnemonic(manager);
+			masterWallet = NewWalletWithMnemonic(manager);
+//			masterWallet = NewReadOnlyMultiSignWallet(manager);
+//			masterWallet = NewMultiSignWalletWithMnemonic(manager);
+//			masterWallet = NewMultiSignWalletWithPrvKey(manager);
 
-		masterWallet->CreateSubWallet(gMainchainSubWalletID);
-		masterWallet->CreateSubWallet(gSidechainSubWalletID);
+			masterWallet->CreateSubWallet(gMainchainSubWalletID);
+			masterWallet->CreateSubWallet(gSidechainSubWalletID);
+		}
+		masterWallets.push_back(masterWallet);
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {

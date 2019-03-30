@@ -7,30 +7,30 @@
 #include "catch.hpp"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Account/StandardAccount.h>
+#include <SDK/Account/Account.h>
 
 #include <Core/BRAddress.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Derive id public and private key", "[Id agent]") {
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
+	std::string phrasePasswd = "phrasePassword";
+	std::string payPasswd = "payPassword";
 	std::string chainId = "chainid";
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
 	std::string language = "english";
 
 	SECTION("Address derived from public and private key should be same") {
-		StandardAccount account("Data", mnemonic, phrasePassword, payPassword);
+		LocalStorePtr localstore(new LocalStore("Data/1", mnemonic, phrasePasswd, false, payPasswd));
+		Account account(localstore, "Data");
 
-		const HDKeychain &mpk = account.GetIDMasterPubKey();
+		const HDKeychain &mpk = account.MasterPubKey();
 
 		bytes_t pubKey = mpk.getChild("0/0").pubkey();
 
 		std::string pubId = Address(PrefixIDChain, pubKey).String();
 
-		HDSeed hdseed(account.DeriveSeed(payPassword).bytes());
-		pubKey = HDKeychain(hdseed.getExtendedKey(true)).getChild("44'/0'/0'/0/0").pubkey();
+		pubKey = account.RootKey(payPasswd).getChild("44'/0'/0'/0/0").pubkey();
 
 		std::string privId = Address(PrefixIDChain, pubKey).String();
 
@@ -41,12 +41,12 @@ TEST_CASE("Derive id public and private key", "[Id agent]") {
 TEST_CASE("Derive public and private key", "[HD wallet]") {
 	SECTION("Address") {
 		int coinIndex = 0;
-		std::string payPassword = "payPassword";
+		std::string payPasswd = "payPassword";
 		std::string mnemonic = "flat universe quantum uniform emerge blame lemon detail april sting aerobic disease";
+		LocalStorePtr localstore(new LocalStore("Data/1", mnemonic, "", false, payPasswd));
 		for (size_t i = 0; i < 1; ++i) {
-			StandardAccount account("Data", mnemonic, "", "payPassword");
-			HDSeed hdseed(account.DeriveSeed(payPassword).bytes());
-			bytes_t pubkey = HDKeychain(hdseed.getExtendedKey(true)).getChild("44'/0'/0'/0/0").pubkey();
+			AccountPtr account(new Account(localstore, "Data"));
+			bytes_t pubkey = account->RootKey(payPasswd).getChild("44'/0'/0'/0/0").pubkey();
 			REQUIRE("EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh" == Address(PrefixStandard, pubkey).String());
 		}
 	}

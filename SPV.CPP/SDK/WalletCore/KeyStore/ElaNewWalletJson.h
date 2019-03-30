@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_ELANEWWALLETJSON_H__
 
 #include "ElaWebWalletJson.h"
-#include "SDK/SpvService/CoinInfo.h"
+#include "CoinInfo.h"
 
 #include <SDK/Common/Mstream.h>
 
@@ -16,60 +16,53 @@ namespace Elastos {
 		class ElaNewWalletJson :
 				public ElaWebWalletJson {
 		public:
-			ElaNewWalletJson(const std::string &rootPath);
+			ElaNewWalletJson();
 
 			~ElaNewWalletJson();
 
-			void AddCoinInfo(const CoinInfo &info);
+			void AddCoinInfo(const CoinInfo &info) { _coinInfoList.push_back(info); }
 
-			void ClearCoinInfo();
+			void ClearCoinInfo() { _coinInfoList.clear(); }
 
-			const std::vector<CoinInfo> &GetCoinInfoList() const;
+			const std::vector<CoinInfo> &GetCoinInfoList() const { return _coinInfoList; }
 
-			const std::string &GetType() const;
+			void SetCoinInfoList(const std::vector<CoinInfo> &list) { _coinInfoList = list; }
 
-			void SetType(const std::string &type);
+			const std::string &PassPhrase() const { return _passphrase; }
 
-			const std::string &GetLanguage() const;
+			void SetPassPhrase(const std::string &passphrase) { _passphrase = passphrase; }
 
-			void SetLanguage(const std::string &language);
+			bool SingleAddress() const { return _singleAddress; }
 
-			const std::vector<std::string> &GetCoSigners() const;
+			void SetSingleAddress(bool value) { _singleAddress = value; }
 
-			void SetCoSigners(const std::vector<std::string> &coSigners);
+			bool Old() const { return _old; }
 
-			uint32_t GetRequiredSignCount() const;
+			ElaNewWalletJson &operator=(const nlohmann::json &j) {
+				from_json(j, *this);
+				return *this;
+			}
 
-			void SetRequiredSignCount(uint32_t count);
+			nlohmann::json ToJson(bool withPrivKey) const {
+				nlohmann::json j;
+				to_json(j, *this, withPrivKey);
+				return j;
+			}
 
-			const std::string &GetPrivateKey() const;
+			void FromJson(const nlohmann::json &j) {
+				from_json(j, *this);
+			}
 
-			void SetPrivateKey(const std::string &key);
+			friend void to_json(nlohmann::json &j, const ElaNewWalletJson &p, bool withPrivKey);
 
-			const std::string &GetPhrasePassword() const;
-
-			void SetPhrasePassword(const std::string &phrasePassword);
-
-			bool GetIsSingleAddress() const;
-
-			void SetIsSingleAddress(bool value);
-
-		private:
-			JSON_SM_LS(ElaNewWalletJson);
-			JSON_SM_RS(ElaNewWalletJson);
-			TO_JSON(ElaNewWalletJson);
-			FROM_JSON(ElaNewWalletJson);
+			friend void from_json(const nlohmann::json &j, ElaNewWalletJson &p);
 
 		private:
-			std::string _rootPath;
 			std::vector<CoinInfo> _coinInfoList;
-			std::string _type;
-			std::string _language;
-			std::vector<std::string> _coSigners;
-			uint32_t _requiredSignCount;
-			std::string _privateKey;
-			std::string _phrasePassword;
-			bool _isSingleAddress;
+			std::string _passphrase __attribute((deprecated));
+			bool _singleAddress;
+
+			bool _old;
 		};
 	}
 }

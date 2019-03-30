@@ -20,6 +20,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define BIP32_SEED_KEY "Bitcoin seed"
 		const uchar_vector BITCOIN_SEED("426974636f696e2073656564"); // key = "Bitcoin seed"
 #define BIP32_HARD                  0x80000000
 

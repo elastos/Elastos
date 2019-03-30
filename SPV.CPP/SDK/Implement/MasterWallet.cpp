@@ -8,7 +8,6 @@
 #include "SubWallet.h"
 #include "MasterWallet.h"
 
-#include <SDK/Account/SubAccountGenerator.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
@@ -21,33 +20,33 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
-#define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
-#define BIP32_SEED_KEY "Bitcoin seed"
 
 namespace fs = boost::filesystem;
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWallet::MasterWallet(const boost::filesystem::path &localStore,
+		MasterWallet::MasterWallet(const std::string &id,
 								   const std::string &rootPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
+				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_localStore(rootPath) {
+				_initFrom(from) {
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id));
+			_account = AccountPtr(new Account(_localStore, _rootPath));
 
-			_localStore.Load(localStore);
-			_id = localStore.parent_path().filename().string();
-
-			initFromLocalStore(_localStore);
+			if (_account->GetSignType() > Account::MultiSign)
+				_idAgentImpl = nullptr;
+			else
+				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::string &mnemonic,
-								   const std::string &phrasePassword,
+								   const std::string &passphrase,
 								   const std::string &payPassword,
 								   bool singleAddress,
 								   bool p2pEnable,
@@ -56,30 +55,16 @@ namespace Elastos {
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_localStore(rootPath) {
+				_initFrom(from) {
 
-			_localStore.IsSingleAddress() = singleAddress;
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromMnemonic(mnemonic, phrasePassword, payPassword);
-		}
+			Mnemonic m(_rootPath);
+			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
-		MasterWallet::MasterWallet(const std::string &id,
-								   const nlohmann::json &keystoreContent,
-								   const std::string &backupPassword,
-								   const std::string &phrasePassword,
-								   const std::string &payPassword,
-								   const std::string &rootPath,
-								   bool p2pEnable,
-								   MasterWalletInitFrom from) :
-			_id(id),
-			_rootPath(rootPath),
-			_p2pEnable(p2pEnable),
-			_initFrom(from),
-			_localStore(rootPath) {
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase,
+													   singleAddress, payPassword));
+			_account = AccountPtr(new Account(_localStore, _rootPath));
 
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -92,11 +77,19 @@ namespace Elastos {
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_localStore(rootPath) {
+				_initFrom(from) {
 
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromKeyStore(keystoreContent, backupPassword, payPassword);
+			KeyStore keystore;
+			keystore.Import(keystoreContent, backupPassword);
+
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keystore.WalletJson(), payPassword));
+			_account = AccountPtr(new Account(_localStore, _rootPath));
+
+			if (_account->GetSignType() > Account::MultiSign) {
+				_idAgentImpl = nullptr;
+			} else {
+				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
+			}
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -108,9 +101,12 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_localStore(rootPath),
 				_idAgentImpl(nullptr) {
-			initFromMultiSigners("", "", coSigners, requiredSignCount);
+			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
+			ErrorChecker::CheckParam(coSigners.size() < requiredSignCount, Error::InvalidArgument, "Invalid M");
+
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, coSigners, requiredSignCount));
+			_account = AccountPtr(new Account(_localStore, _rootPath));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
@@ -120,13 +116,12 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_localStore(rootPath),
 				_idAgentImpl(nullptr) {
-			initFromMultiSigners(privKey, payPassword, coSigners, requiredSignCount);
+			ErrorChecker::ThrowLogicException(Error::KeyStore, "Deprecated interface: will refactor later");
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
-								   const std::string &phrasePassword, const std::string &payPassword,
+								   const std::string &passphrase, const std::string &payPassword,
 								   const nlohmann::json &coSigners,
 								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath,
 								   MasterWalletInitFrom from) :
@@ -134,8 +129,18 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_localStore(rootPath) {
-			initFromMultiSigners(mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount);
+				_idAgentImpl(nullptr) {
+
+			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
+			ErrorChecker::CheckParam(coSigners.size() + 1 < requiredSignCount, Error::InvalidArgument, "Invalid M");
+
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase, true, payPassword));
+			for (nlohmann::json::const_iterator it = coSigners.cbegin(); it != coSigners.cend(); ++it)
+				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
+
+			_localStore->SetM(requiredSignCount);
+			_localStore->SetN(_localStore->GetPublicKeyRing().size());
+			_account = AccountPtr(new Account(_localStore, _rootPath));
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -155,18 +160,16 @@ namespace Elastos {
 		}
 
 		void MasterWallet::Save() {
-			restoreLocalStore();
 
-			boost::filesystem::path path = _rootPath;
-			path /= GetId();
-			if (!boost::filesystem::exists(path))
-				boost::filesystem::create_directory(path);
-			path /= MASTER_WALLET_STORE_FILE;
-			_localStore.Save(path);
-		}
+			_localStore->ClearSubWalletInfoList();
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr) continue;
 
-		HDKeychain MasterWallet::GetMasterPubKey(const std::string &chainID) const {
-			return _localStore.GetMasterPubKey(chainID);
+				_localStore->AddSubWalletInfoList(subWallet->getCoinInfo());
+			}
+
+			_localStore->Save();
 		}
 
 		std::string MasterWallet::GetId() const {
@@ -189,8 +192,6 @@ namespace Elastos {
 			ErrorChecker::CheckParamNotEmpty(chainID, "Chain ID");
 			ErrorChecker::CheckParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
 
-			//todo limit coinTypeIndex and feePerKb if needed in future
-
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
 				return _createdWallets[chainID];
 			}
@@ -205,8 +206,6 @@ namespace Elastos {
 			info.SetEnableP2P(coinConfig.EnableP2P);
 			info.SetReconnectSeconds(coinConfig.ReconnectSeconds);
 
-			info.SetSingleAddress(_localStore.IsSingleAddress());
-			info.SetUsedMaxAddressIndex(0);
 			info.SetChainId(chainID);
 			info.SetFeePerKb(feePerKb);
 
@@ -215,17 +214,6 @@ namespace Elastos {
 			startPeerManager(subWallet);
 			Save();
 			return subWallet;
-		}
-
-		void MasterWallet::restoreSubWallets(const std::vector<CoinInfo> &coinInfoList) {
-
-			for (int i = 0; i < coinInfoList.size(); ++i) {
-				if (_createdWallets.find(coinInfoList[i].GetChainId()) != _createdWallets.end()) continue;
-
-				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].GetChainId());
-				_createdWallets[coinInfoList[i].GetChainId()] =
-						SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig), this);
-			}
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
@@ -251,79 +239,39 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
-			return _localStore.Account()->GetMultiSignPublicKey().getHex();
+			return _localStore->GetRequestPubKey();
 		}
 
-		// to support old web keystore
-		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
-											  const std::string &payPassword, const std::string &phrasePassword) {
+		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword,
+													const std::string &payPassword,
+													bool withPrivKey) {
+			KeyStore keyStore;
 
-			KeyStore keyStore(_rootPath);
+			_localStore->GetWalletJson(keyStore.WalletJson(), payPassword);
 
-			ErrorChecker::CheckCondition(!keyStore.Import(keystoreContent, backupPassword, phrasePassword),
-										 Error::WrongPasswd, "Wrong backup password");
+			keyStore.WalletJson().ClearCoinInfo();
+			std::for_each(_createdWallets.begin(), _createdWallets.end(),
+						  [&keyStore](const WalletMap::value_type &item) {
+							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
+							  keyStore.WalletJson().AddCoinInfo(subWallet->_info);
+						  });
 
-			ErrorChecker::CheckCondition(!keyStore.IsOld(), Error::KeyStore,
-										 "This interface use for support old keystore");
-			ErrorChecker::CheckCondition(!keyStore.HasPhrasePassword(), Error::KeyStore,
-										 "This keystore should has phrase password");
+			Save();
 
-			Log::getLogger()->info("Import from old keystore");
-			_initFrom = ImportFromOldKeyStore;
-
-			initFromKeyStore(keyStore, payPassword);
+			return keyStore.Export(backupPassword, withPrivKey);
 		}
 
-		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
-											  const std::string &payPassword) {
-
-			KeyStore keyStore(_rootPath);
-			ErrorChecker::CheckCondition(!keyStore.Import(keystoreContent, backupPassword), Error::WrongPasswd,
-										 "Wrong backup password");
-
-			if (keyStore.IsOld()) {
-				Log::info("Import from old keystore");
-				if (keyStore.HasPhrasePassword()) {
-					ErrorChecker::CheckCondition(true, Error::KeyStoreNeedPhrasePassword,
-												 "Old keystore need Phrase password");
-				}
-				_initFrom = ImportFromOldKeyStore;
-			}
-
-			initFromKeyStore(keyStore, payPassword);
-		}
-
-		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
-											  const std::string &phrasePassword,
-											  const std::string &payPassword) {
-			_localStore.Reset(mnemonic, phrasePassword, payPassword);
-			initSubWalletsPubKeyMap(payPassword);
-		}
-
-		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
-			KeyStore keyStore(_rootPath);
-			restoreKeyStore(keyStore, payPassword);
-
-			nlohmann::json result;
-			ErrorChecker::CheckCondition(!keyStore.Export(result, backupPassword), Error::KeyStore, "Export key error.");
-
-			return result;
-		}
-
-		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
-			std::string encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
+		std::string MasterWallet::exportMnemonic(const std::string &payPassword) {
+			std::string encryptedMnemonic = _localStore->GetMnemonic();
 			bytes_t bytes = AES::DecryptCCM(encryptedMnemonic, payPassword);
-			mnemonic = std::string((char *)bytes.data(), bytes.size());
-			return true;
+			return std::string((char *)bytes.data(), bytes.size());
 		}
 
-		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
+		void MasterWallet::InitSubWallets() {
+			const std::vector<CoinInfo> &coinInfoList = _localStore->GetSubWalletInfoList();
+
 			tryInitCoinConfig();
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
-			initSubWallets(localStore.GetSubWalletInfoList());
-		}
 
-		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].GetChainId());
 				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig,
@@ -343,7 +291,7 @@ namespace Elastos {
 			ErrorChecker::CheckParamNotEmpty(message, "Sign message");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 
-			Key key = _localStore.Account()->DeriveMultiSignKey(payPassword);
+			Key key = _account->RequestPrivKey(payPassword);
 			return key.Sign(message).getHex();
 		}
 
@@ -367,8 +315,7 @@ namespace Elastos {
 
 			if (_initFrom == CreateNormal) {
 				fixedInfo.SetEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
-			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic ||
-					   _initFrom == ImportFromOldKeyStore) {
+			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic) {
 				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
 			} else if (_initFrom == ImportFromKeyStore || _initFrom == ImportFromLocalStore) {
 				fixedInfo.SetEaliestPeerTime(info.GetEarliestPeerTime());
@@ -469,100 +416,22 @@ namespace Elastos {
 			}
 		}
 
-		void MasterWallet::initSubWalletsPubKeyMap(const std::string &payPassword) {
-			tryInitCoinConfig();
-
-			MasterPubKeyMap subWalletsPubKeyMap;
-			VotePubKeyMap votePubKeyMap;
-			typedef std::map<std::string, uint32_t> IdIndexMap;
-			IdIndexMap idIndexMap = _coinConfigReader.GetChainIdsAndIndices();
-			std::for_each(idIndexMap.begin(), idIndexMap.end(),
-						  [this, &subWalletsPubKeyMap, &votePubKeyMap, &payPassword](const IdIndexMap::value_type &item) {
-							  subWalletsPubKeyMap[item.first] = SubAccountGenerator::GenerateMasterPubKey(
-									  _localStore.Account(),
-									  item.second, payPassword);
-							  if (item.first == "ELA") {
-								  votePubKeyMap[item.first] = SubAccountGenerator::GenerateVotePubKey(
-									  _localStore.Account(), item.second, payPassword);
-							  } else {
-								  votePubKeyMap[item.first] = bytes_t();
-							  }
-						  });
-			_localStore.SetMasterPubKeyMap(subWalletsPubKeyMap);
-			_localStore.SetVotePublicKeyMap(votePubKeyMap);
-		}
-
-		void MasterWallet::restoreLocalStore() {
-			if (_idAgentImpl != nullptr)
-				_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
-
-			std::vector<CoinInfo> coinInfos;
-			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet == nullptr) continue;
-				coinInfos.push_back(subWallet->getCoinInfo());
-			}
-			_localStore.SetSubWalletInfoList(coinInfos);
-		}
-
-		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword) {
-			tryInitCoinConfig();
-
-			IAccount *account = keyStore.CreateAccountFromJson(payPassword);
-			if (!account->IsReadOnly()) {
-				ErrorChecker::CheckPassword(payPassword, "Pay");
-			}
-
-			_localStore.Reset(account);
-			_localStore.IsSingleAddress() = keyStore.json().GetIsSingleAddress();
-			initSubWalletsPubKeyMap(payPassword);
-			initSubWallets(keyStore.json().GetCoinInfoList());
-		}
-
-		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
-			keyStore.InitJsonFromAccount(_localStore.Account(), payPassword);
-
-			keyStore.json().ClearCoinInfo();
-			std::for_each(_createdWallets.begin(), _createdWallets.end(),
-						  [&keyStore](const WalletMap::value_type &item) {
-							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
-							  keyStore.json().AddCoinInfo(subWallet->_info);
-						  });
-			keyStore.json().SetIsSingleAddress(_localStore.IsSingleAddress());
-		}
-
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			_localStore.Account()->ChangePassword(oldPassword, newPassword);
+			_account->ChangePassword(oldPassword, newPassword);
 		}
 
 		IIdAgent *MasterWallet::GetIIdAgent() {
 			return this;
 		}
 
-		void MasterWallet::initFromMultiSigners(const std::string &privKey, const std::string &payPassword,
-												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
-			if (privKey.empty())
-				_localStore.Reset(coSigners, requiredSignCount);
-			else
-				_localStore.Reset(privKey, coSigners, payPassword, requiredSignCount);
-			_localStore.IsSingleAddress() = true;
-		}
-
 		nlohmann::json MasterWallet::GetBasicInfo() const {
 			nlohmann::json j;
-			j["Account"] = _localStore.Account()->GetBasicInfo();
-			j["Account"]["SingleAddress"] = _localStore.IsSingleAddress();
+			j["Account"] = _account->GetBasicInfo();
 			return j;
 		}
 
-		void MasterWallet::initFromMultiSigners(const std::string &mnemonic, const std::string &phrasePassword,
-												const std::string &payPassword,
-												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
-			_localStore.Reset(mnemonic, phrasePassword, coSigners, payPassword, requiredSignCount);
-		}
-
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {
-			return _localStore.Account()->IsEqual(*wallet._localStore.Account());
+			return _account->Equal(*wallet._account);
 		}
 
 	}

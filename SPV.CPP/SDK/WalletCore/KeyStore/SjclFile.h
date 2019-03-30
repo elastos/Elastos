@@ -19,50 +19,58 @@ namespace Elastos {
 
 			virtual ~SjclFile();
 
-			const std::string &GetIv() const;
+			const std::string &GetIv() const { return _iv; }
 
-			void SetIv(const std::string &iv);
+			void SetIv(const std::string &iv) { _iv = iv; }
 
-			uint32_t GetV() const;
+			uint32_t GetV() const { return _v; }
 
-			void SetV(uint32_t value);
+			void SetV(uint32_t value) { _v = value; }
 
-			uint32_t GetIter() const;
+			uint32_t GetIter() const { return _iter; }
 
-			void SetIter(uint32_t value);
+			void SetIter(uint32_t value) { _iter = value; }
 
-			uint32_t GetKs() const;
+			uint32_t GetKs() const { return _ks; }
 
-			void SetKs(uint32_t value);
+			void SetKs(uint32_t value) { _ks = value; }
 
-			uint32_t GetTs() const;
+			uint32_t GetTs() const { return _ts; }
 
-			void SetTs(uint32_t value);
+			void SetTs(uint32_t value) { _ts = value; }
 
-			const std::string &GetMode() const;
+			const std::string &GetMode() const { return _mode; }
 
-			void SetMode(const std::string &mode);
+			void SetMode(const std::string &mode) { _mode = mode; }
 
-			const std::string &GetAdata() const;
+			const std::string &GetAdata() const { return _adata; }
 
-			void SetAdata(const std::string &adata);
+			void SetAdata(const std::string &adata) { _adata = adata; }
 
-			const std::string &GetCipher() const;
+			const std::string &GetCipher() const { return _cipher; }
 
-			void SetCipher(const std::string &cipher);
+			void SetCipher(const std::string &cipher) { _cipher = cipher; }
 
-			const std::string &GetSalt() const;
+			const std::string &GetSalt() const { return _salt; }
 
-			void SetSalt(const std::string &salt);
+			void SetSalt(const std::string &salt) { _salt = salt; }
 
-			const std::string &GetCt() const;
+			const std::string &GetCt() const { return _ct; }
 
-			void SetCt(const std::string &ct);
+			void SetCt(const std::string &ct) { _ct = ct; }
 
-		private:
-			JSON_SM_LS(SjclFile);
-			JSON_SM_RS(SjclFile);
+			nlohmann::json ToJson() const {
+				nlohmann::json j;
+				to_json(j, *this);
+				return j;
+			}
+
+			void FromJson(const nlohmann::json &j) {
+				from_json(j, *this);
+			}
+
 			TO_JSON(SjclFile);
+
 			FROM_JSON(SjclFile);
 
 		private:

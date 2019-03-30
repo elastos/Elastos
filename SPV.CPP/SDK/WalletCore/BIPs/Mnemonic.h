@@ -17,12 +17,14 @@ namespace Elastos {
 		public:
 			Mnemonic(const boost::filesystem::path &rootPath);
 
-			std::string Create(const std::string &language);
+			std::string Create(const std::string &language) const;
 
-			uint512 DeriveSeed(const std::string &mnemonic, const std::string &passphrase);
+			bool Validate(const std::string &mnemonic) const;
+
+			uint512 DeriveSeed(const std::string &mnemonic, const std::string &passphrase) const;
 
 		private:
-			void LoadPath(const boost::filesystem::path &filePath, std::vector<std::string> &wordLists);
+			void LoadPath(const boost::filesystem::path &filePath, std::vector<std::string> &wordLists) const;
 
 		private:
 			boost::filesystem::path _rootPath;

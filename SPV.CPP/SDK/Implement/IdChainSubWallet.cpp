@@ -29,7 +29,8 @@ namespace Elastos {
 			uint32_t purpose = (uint32_t) info.GetIndex();
 			std::set<std::string> bufferIds(registeredIds.begin(), registeredIds.end());
 
-			if (_subAccount->GetParent()->GetType() == "Standard") { //We only derive ids when accout type is "Standard"
+			//We only derive ids when accout type is "Standard"
+			if (_subAccount->Parent()->GetSignType() != Account::MultiSign) {
 				for (int i = 0; i < registeredIds.size() + ID_REGISTER_BUFFER_COUNT; ++i) {
 					bufferIds.insert(_parent->DeriveIdAndKeyForPurpose(purpose, i));
 				}
