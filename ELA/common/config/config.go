@@ -1,9 +1,7 @@
 package config
 
 import (
-	"log"
 	"math/big"
-	"os"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -102,8 +100,8 @@ type Configuration struct {
 }
 
 type ArbiterConfiguration struct {
-	PublicKey                string         `json:"PublicKey"`
 	Magic                    uint32         `json:"Magic"`
+	IPAddress                string         `json:"IPAddress"`
 	NodePort                 uint16         `json:"NodePort"`
 	ProtocolVersion          uint32         `json:"ProtocolVersion"`
 	Services                 uint64         `json:"Services"`
@@ -148,14 +146,4 @@ type ChainParams struct {
 type ConfigParams struct {
 	*Configuration
 	ChainParam *ChainParams
-}
-
-func (config *Configuration) GetArbiterID() []byte {
-	publicKey, err := common.HexStringToBytes(config.ArbiterConfiguration.PublicKey)
-	if err != nil || len(publicKey) != 33 {
-		log.Fatalf("get arbiter public key error %v", err)
-		os.Exit(1)
-	}
-
-	return publicKey
 }

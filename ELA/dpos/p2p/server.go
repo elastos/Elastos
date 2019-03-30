@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
 	"math/rand"
 	"net"
 	"runtime"
@@ -14,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
