@@ -142,6 +142,7 @@ func setArbitrators(L *lua.LState) int {
 }
 
 func initLedger(L *lua.LState) int {
+	chainParams := &config.DefaultParams
 	config.Parameters = config.ConfigParams{
 		Configuration: &config.Template,
 		ChainParam:    &config.MainNet,
@@ -151,25 +152,34 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox",
+		chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
+	arbiters, err := state.NewArbitrators(chainParams, chainStore.GetHeight,
+		func() (block *types.Block, e error) {
+			hash := chainStore.GetCurrentBlockHash()
+			return chainStore.GetBlock(hash)
+		})
+
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil))
+	chain, err := blockchain.New(chainStore, chainParams,
+		state.NewState(chainParams, arbiters.GetArbitrators))
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
 	ledger := blockchain.Ledger{}
-	blockchain.FoundationAddress = config.DefaultParams.Foundation
+	blockchain.FoundationAddress = chainParams.Foundation
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Store = chainStore
+	blockchain.DefaultLedger.Arbitrators = arbiters
 
-	if err = chain.InitializeProducersState(interrupt.C, nil, nil); err != nil {
+	err = chain.InitProducerState(interrupt.C, nil, nil)
+	if err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())
 	}
 

@@ -32,8 +32,8 @@
     },
     "EnableArbiter": false,
     "ArbiterConfiguration": {
-      "PublicKey": "030c756d9ac85337b3c9a4d94a70e2d3f99c6cbb6f78becbfc08baa3df830e5fb4",
       "Magic": 7630403,
+      "IPAddress": "192.168.0.1",
       "NodePort": 30338,
       "ProtocolVersion": 0,
       "Services": 0,

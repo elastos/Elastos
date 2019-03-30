@@ -4,6 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	svr "github.com/elastos/Elastos.ELA/p2p/server"
@@ -22,6 +23,9 @@ type Config struct {
 
 	// BlockMemPool is the block mempool uses by DPOS consensus.
 	BlockMemPool *mempool.BlockPool
+
+	// Routes is the DPOS network routes depends on the normal P2P network.
+	Routes *routes.Routes
 }
 
 // Server represent the elanet server.

@@ -219,6 +219,7 @@ func TestPeerConnection(t *testing.T) {
 		GetVersionNonce: func() uint64 {
 			return rand.Uint64()
 		},
+		MessageFunc: messageFunc,
 	}
 	peer2Cfg := &peer.Config{
 		Magic:            123123,
@@ -236,9 +237,8 @@ func TestPeerConnection(t *testing.T) {
 		GetVersionNonce: func() uint64 {
 			return rand.Uint64()
 		},
+		MessageFunc: messageFunc,
 	}
-	peer1Cfg.AddMessageFunc(messageFunc)
-	peer2Cfg.AddMessageFunc(messageFunc)
 
 	wantStats1 := peerStats{
 		wantServices:        0,
@@ -274,12 +274,14 @@ func TestPeerConnection(t *testing.T) {
 				)
 				inPeer := peer.NewInboundPeer(peer1Cfg)
 				inPeer.AssociateConnection(inConn)
+				inPeer.Start()
 
 				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
 				if err != nil {
 					return nil, nil, err
 				}
 				outPeer.AssociateConnection(outConn)
+				outPeer.Start()
 
 				for i := 0; i < 2; i++ {
 					select {
@@ -300,12 +302,14 @@ func TestPeerConnection(t *testing.T) {
 				)
 				inPeer := peer.NewInboundPeer(peer1Cfg)
 				inPeer.AssociateConnection(inConn)
+				inPeer.Start()
 
 				outPeer, err := peer.NewOutboundPeer(peer2Cfg, "10.0.0.2:8333")
 				if err != nil {
 					return nil, nil, err
 				}
 				outPeer.AssociateConnection(outConn)
+				outPeer.Start()
 
 				for i := 0; i < 2; i++ {
 					select {

@@ -56,7 +56,7 @@ func (a *ArbitratorsMock) Start() {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetDutyIndexByHeight(height uint32) int {
+func (a *ArbitratorsMock) GetDutyIndexByHeight(uint32) int {
 	panic("implement me")
 }
 
