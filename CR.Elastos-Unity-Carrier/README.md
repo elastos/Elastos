@@ -1,13 +1,10 @@
 # React Native Elastos Carrier Plugin
 
-The purpose of this repository is to provide an npm package for [Elastos React Native Framework](https://github.com/cyber-republic/elastos-ReactNative-framework) Alpha Release.
-
 Elastos Carrier is a decentralized peer-to-peer platform that takes over all network traffic between virtual machines and conveys information on applications’ behalf.
 
-The release version for plugin is [here](https://www.npmjs.com/package/react-native-elastos-carrier)
+This repo is the react native bridge between native carrier lib and javascript api. so developer could easy to create a elastos dapp with carrier module by javascript.
 
-## Primary Code Reviewer
-[Jacky Li](https://github.com/liyangwood)
+The release version for plugin is [here](https://www.npmjs.com/package/react-native-elastos-carrier)
 
 ## Getting started
 ```

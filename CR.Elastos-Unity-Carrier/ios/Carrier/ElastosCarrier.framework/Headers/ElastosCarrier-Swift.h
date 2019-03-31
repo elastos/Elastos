@@ -279,7 +279,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) NSInteger MAX_APP_ME
 ///
 /// returns:
 /// The node identifier
-- (NSString * _Nonnull)getNodeId SWIFT_WARN_UNUSED_RESULT;
+- (NSString * _Nonnull)r SWIFT_WARN_UNUSED_RESULT;
 /// Get user identifier associated with the carrier node instance.
 ///
 /// returns:

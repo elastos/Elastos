@@ -113,9 +113,9 @@ RCT_EXPORT_METHOD
   if(![self checkCarrierInstance:cid cb:callback]){
     return;
   }
-  
+
   ELACarrier *elaCarrier = [self getELACarrier:cid];
-  NSString *address = [elaCarrier getNodeId];
+  NSString *address = [elaCarrier getUserId];
   callback(@[NULL_ERR, address]);
 }
 

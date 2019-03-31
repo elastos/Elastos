@@ -38,21 +38,31 @@ class App extends Component{
         
 
         <Content>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getVersion')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'isValidAddress')}>
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getAddress')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'isValidId')}>
+            <Text>isValidId</Text>
+          </Button>
+          
+
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'getAddress')}>
             <Text>getAddress</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'setSelfInfo')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getNodeId')}>
+            <Text>getNodeId</Text>
+          </Button>
+
+          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
             <Text>setSelfInfo</Text>
           </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getSelfInfo')}>
+          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
             <Text>getSelfInfo</Text>
           </Button>
+          
           <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'addFriend')}>
             <Text>addFriend</Text>
           </Button>
@@ -111,9 +121,17 @@ class App extends Component{
         rs = await Carrier.isValidAddress(targetAddress);
         rs = tmp + ' is a valid address => '+rs.toString();
         break;
+      case 'isValidId':
+        rs = await Carrier.isValidId(target);
+        rs = target + ' is a valid nodeId => '+rs.toString();
+        break;
       case 'getAddress':
         rs = await this.carrier.getAddress();
         break;
+      case 'getNodeId':
+        rs = await this.carrier.getNodeId();
+        break;
+        
       case 'setSelfInfo':
         const info = {
           name : 'bbb',
@@ -254,7 +272,9 @@ class App extends Component{
         
       }
     });
-    await this.carrier.start();
+    const k = await this.carrier.start();
+    this.setLog('start carrier => '+k);
+
     this.setLog('carrier init success');
   }
     

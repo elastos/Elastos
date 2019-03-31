@@ -11,7 +11,6 @@ const Listener = new NativeEventEmitter(NativeCarrier);
  */
 
 
-
 const exec = async (fnName, ...args)=>{
   return new Promise((resolve, reject)=>{
     NativeCarrier[fnName](...args, (err, rs)=>{
@@ -28,12 +27,29 @@ const exec = async (fnName, ...args)=>{
 
 const Carrier = class {
   static config = config;
+
+  /*
+   * @brief: get current carrier version
+   * @return: (string) current verison
+   */
   static getVersion(){
     return exec('getVersion');
   }
 
+  /*
+   * @brief: check given address is a valid carrier address or not
+   * @return: (boolean) true or false.
+   */
   static isValidAddress(address){
     return exec('isValidAddress', address);
+  }
+
+  /*
+   * @brief: check given nodeId is a valid carrier node id or not
+   * @return: (boolean) true or false.
+   */
+  static isValidId(nodeId){
+    return exec('isValidId', nodeId);
   }
 
   constructor(id, callbacks){
@@ -62,17 +78,47 @@ const Carrier = class {
     });
   }
 
+  /*
+   * @brief: connect the local node to carrier network.
+   * @return: ok
+   * @error: if connect failure, throw an error here.
+   */
   start(){
     return exec('createObject', this.config);
   }
 
+  /*
+   * @brief: get current node address
+   * @return: (string) node address
+   */
   getAddress(){
     return exec('getAddress', this.id);
   }
 
+  /*
+   * @brief: get current node id.
+   * @return: (string) node id.
+   */
+  getNodeId(){
+    return exec('getNodeId', this.id);
+  }
+
+  /*
+   * @brief: get current node profile
+   * @return: (json) node profile
+   * @formatter: userId, gender, region, phone, email, description, name
+   */
   getSelfInfo(){
     return exec('getSelfInfo', this.id);
   }
+
+  /*
+   * @brief: set value to node profile
+   * @param: (json)info
+   * @formatter: userId, gender, region, phone, email, description, name
+   * @return: ok
+   * @error: throw an error if failure
+   */
   setSelfInfo(info){
     const user_info = _.extend({
       name : '',
@@ -84,6 +130,13 @@ const Carrier = class {
     }, info);
     return exec('setSelfInfo', this.id, user_info);
   }
+
+  /*
+   * @brief: set current node presence status
+   * @param: (number)presence, 0:online, 1:away, 2:busy
+   * @return: ok
+   * @error: throw an error if failure
+   */
   setSelfPresence(presence){
     return exec('setSelfPresence', this.id, presence);
   }
@@ -144,10 +197,16 @@ const Carrier = class {
   }
 
   // TODO
+  
   addService(){}
   removeService(){}
   openPortFowarding(){}
   closePortForwarding(){}
+  openChannel(){}
+  closeChannel(){}
+  writeChannel(){}
+  pendChannel(){}
+  resumeChannel(){}
   
 
   
