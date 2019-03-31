@@ -38,7 +38,7 @@ namespace Elastos {
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 
-			if (_account->GetSignType() > Account::MultiSign)
+			if (_account->GetSignType() == Account::MultiSign)
 				_idAgentImpl = nullptr;
 			else
 				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
@@ -85,7 +85,7 @@ namespace Elastos {
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keystore.WalletJson(), payPassword));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 
-			if (_account->GetSignType() > Account::MultiSign) {
+			if (_account->GetSignType() == Account::MultiSign) {
 				_idAgentImpl = nullptr;
 			} else {
 				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
