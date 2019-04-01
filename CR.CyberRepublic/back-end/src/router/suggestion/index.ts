@@ -1,5 +1,6 @@
 import Base from '../Base'
 import create from './create'
+import update from './update'
 import list from './list'
 import show from './show'
 import like from './like'
@@ -28,11 +29,11 @@ export default Base.setRouter([
     router: show,
     method: 'get',
   },
-  // {
-  //   path: '/:id/update',
-  //   router: update,
-  //   method: 'post',
-  // },
+  {
+    path: '/:id/update',
+    router: update,
+    method: 'post',
+  },
   {
     path: '/:id/like',
     router: like,

@@ -6,12 +6,15 @@ import db from '../../db'
 import '../../config'
 import CVoteService from '../CVoteService'
 import UserService from '../UserService'
+import SuggestionService from '../SuggestionService'
 
 declare var global, describe, test, require, process, beforeAll, afterAll
 
 const sinon = require('sinon')
 const user: any = {}
 let DB, mailMethod
+let suggestion
+const suggestionService: any = {}
 
 beforeAll(async ()=>{
     DB = await db.create()
@@ -47,6 +50,17 @@ beforeAll(async ()=>{
         role: constant.USER_ROLE.COUNCIL
     })
     user.council = await userService.getDBModel('User').findOne({ _id: council._id })
+
+    // create suggestion service
+    suggestionService.council = new SuggestionService(DB, {
+        user: user.council,
+    })
+    // create a suggestion instance
+    suggestion = await suggestionService.council.create(Object.assign(
+        global.DB.SUGGESTION_1, {
+            createdBy: user.member._id
+        })
+    )
 })
 
 describe('Tests for CVote', () => {
@@ -190,5 +204,25 @@ describe('Tests for CVote', () => {
         })
 
         expect(rs.length).to.be.equal(1)
+    })
+
+    test('council attempt to make suggestion to proposal should pass', async () => {
+        // get suggestion
+        // create proposal with suggestion info
+        const cvoteService = new CVoteService(DB, {
+            user : user.council
+        })
+
+        const rs: any = await cvoteService.create(Object.assign(
+            global.DB.CVOTE_1, {
+                createdBy: user.council._id,
+                suggestionId: suggestion._id,
+            }
+        ))
+        expect(rs.reference.toString()).to.be.equal(suggestion._id.toString())
+
+        suggestion = await DB.getModel('Suggestion').findById(suggestion._id)
+
+        expect(rs._id.toString()).to.be.equal(suggestion.reference[suggestion.reference.length - 1].toString())
     })
 })

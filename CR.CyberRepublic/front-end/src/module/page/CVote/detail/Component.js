@@ -3,6 +3,7 @@ import StandardPage from '../../StandardPage'
 import {
   Form, Spin, Button, Input, message, Modal, Icon,
 } from 'antd'
+import { Link } from 'react-router-dom';
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { LANGUAGES } from '@/config/constant'
@@ -14,6 +15,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from "@/module/shared/BackLink/Component";
 import CRPopover from "@/module/shared/Popover/Component";
 
+import { Title, Label } from './style'
 import './style.scss'
 
 const { TextArea } = Input;
@@ -65,6 +67,7 @@ class C extends StandardPage {
     }
     const metaNode = this.renderMeta()
     const titleNode = this.renderTitle()
+    const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
     const contentNode = this.renderContent()
     const notesNode = this.renderNotes()
@@ -78,6 +81,7 @@ class C extends StandardPage {
           <BackLink link="/proposals" />
           {metaNode}
           {titleNode}
+          {labelNode}
           {subTitleNode}
           {contentNode}
           {notesNode}
@@ -95,6 +99,7 @@ class C extends StandardPage {
     return (
       <Modal
         className="project-detail-nobar"
+        maskClosable={false}
         visible={this.state.editing}
         onOk={this.switchEditMode}
         onCancel={this.switchEditMode}
@@ -128,7 +133,7 @@ class C extends StandardPage {
 
   renderTitle() {
     const { title } = this.state.data
-    return <h2>{title}</h2>
+    return <Title>{title}</Title>
   }
 
   renderSubTitle() {
@@ -166,6 +171,19 @@ class C extends StandardPage {
       voteObj,
     ]
     return <SubTitle dataList={dataList} />
+  }
+
+  renderLabelNode() {
+    const reference = _.get(this.state.data, 'reference')
+    if (_.isEmpty(reference)) return null
+    const { _id, displayId } = reference
+    const linkText = `${I18N.get('suggestion.suggestion')} #${displayId}`
+    return (
+      <Label>
+        {`${I18N.get('council.voting.referred')} `}
+        <Link to={`/suggestion/${_id}`}>{linkText}</Link>
+      </Label>
+    )
   }
 
   renderContent() {
@@ -309,12 +327,6 @@ class C extends StandardPage {
       message.error(error.message)
       this.ord_loading(false)
     }
-  }
-
-  gotoEditPage = () => {
-    const { match, history } = this.props
-    const id = _.get(match, 'params.id')
-    history.push(`/cvote/edit/${id}`)
   }
 
   renderVoteResults() {

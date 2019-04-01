@@ -1329,7 +1329,7 @@ export default class extends Base {
         const taskAssignee = _.filter(task.candidates, {status: constant.TASK_CANDIDATE_STATUS.APPROVED})
 
         if (taskAssignee.length) {
-            return taskAssignee[0].user
+            return _.get(taskAssignee[0], 'user')
         }
     }
 

@@ -139,6 +139,8 @@ export const CVOTE_RESULT = {
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000*60*60*24*7;
 
+export const ONE_DAY = 1000 * 60 * 60 * 24
+
 export const USER_SKILLSET = {
     DESIGN: create(['LOGO_DESIGN', 'FLYERS', 'PACKAGING', 'ILLUSTRATION', 'INFOGRAPHIC', 'PRODUCT_DESIGN',
         'MERCHANDISE', 'PHOTOSHOP']),
@@ -182,6 +184,14 @@ export const DB_EXCLUDED_FIELDS = {
 export const DB_SELECTED_FIELDS = {
     USER: {
         NAME: 'profile.firstName profile.lastName username',
+        NAME_EMAIL: 'profile.firstName profile.lastName username email',
         NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
+    },
+    SUGGESTION: {
+        ID: 'displayId',
+    },
+    CVOTE: {
+        ID: 'vid',
+        ID_STATUS: 'vid status',
     },
 }

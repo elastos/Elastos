@@ -1,11 +1,13 @@
 import BaseService from '../model/BaseService'
 import _ from 'lodash'
 import { api_request } from '@/util'
+import { message } from 'antd';
 
 export default class extends BaseService {
   constructor() {
     super()
     this.selfRedux = this.store.getRedux('suggestion')
+    this.prefixPath = '/api/suggestion'
   }
 
   async saveFilter(filter) {
@@ -16,6 +18,10 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.sortBy_update(sortBy))
   }
 
+  async saveEditHistory(editHistory) {
+    this.dispatch(this.selfRedux.actions.edit_history_update(editHistory))
+  }
+
   async loadMore(qry) {
     this.list(qry)
   }
@@ -23,7 +29,7 @@ export default class extends BaseService {
   async list(qry) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
 
-    const path = '/api/suggestion/list'
+    const path = `${this.prefixPath}/list`
     this.abortFetch(path)
 
     let result
@@ -49,7 +55,7 @@ export default class extends BaseService {
   async myList(qry) {
     this.dispatch(this.selfRedux.actions.my_suggestions_loading_update(true))
 
-    const path = '/api/suggestion/list'
+    const path = `${this.prefixPath}/list`
     // this.abortFetch(path)
 
     let result
@@ -87,22 +93,45 @@ export default class extends BaseService {
   async create(doc) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
 
-    const res = await api_request({
-      path: '/api/suggestion/create',
-      method: 'post',
-      data: doc,
-    })
+    const path = `${this.prefixPath}/create`
+    let res
+    try {
+      res = await api_request({
+        path,
+        method: 'post',
+        data: doc,
+      })
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+    }
+    return res
+  }
 
-    this.dispatch(this.selfRedux.actions.loading_update(false))
+  async update(doc) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
 
+    const path = `${this.prefixPath}/${doc.id}/update`
+    let res
+    try {
+      res = await api_request({
+        path,
+        method: 'post',
+        data: doc,
+      })
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+    }
     return res
   }
 
   async getDetail({ id, incViewsNum }) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
 
+    const path = `${this.prefixPath}/${id}/show`
     const result = await api_request({
-      path: `/api/suggestion/${id}/show`,
+      path,
       method: 'get',
       data: { incViewsNum },
     })
@@ -114,8 +143,10 @@ export default class extends BaseService {
   }
 
   async like(id) {
+    const path = `${this.prefixPath}/${id}/like`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/like`,
+      path,
       method: 'post',
     })
 
@@ -123,8 +154,10 @@ export default class extends BaseService {
   }
 
   async dislike(id) {
+    const path = `${this.prefixPath}/${id}/dislike`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/dislike`,
+      path,
       method: 'post',
     })
 
@@ -132,8 +165,10 @@ export default class extends BaseService {
   }
 
   async reportAbuse(id) {
+    const path = `${this.prefixPath}/${id}/reportabuse`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/reportabuse`,
+      path,
       method: 'post',
     })
 
@@ -142,8 +177,10 @@ export default class extends BaseService {
 
   // ADMIN ONLY
   async abuse(id) {
+    const path = `${this.prefixPath}/${id}/abuse`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/abuse`,
+      path,
       method: 'post',
     })
 
@@ -152,8 +189,10 @@ export default class extends BaseService {
 
   // ADMIN ONLY
   async archive(id) {
+    const path = `${this.prefixPath}/${id}/archive`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/archive`,
+      path,
       method: 'post',
     })
 
@@ -162,8 +201,10 @@ export default class extends BaseService {
 
   // ADMIN ONLY
   async delete(id) {
+    const path = `${this.prefixPath}/${id}/delete`
+
     const res = await api_request({
-      path: `/api/suggestion/${id}/delete`,
+      path,
       method: 'post',
     })
 

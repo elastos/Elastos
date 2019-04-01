@@ -4,8 +4,8 @@ import I18N from '@/I18N'
 
 import { StyledLink, Arrow, Text } from './style'
 
-const Component = ({ link }) => (
-  <StyledLink to={link}>
+const Component = ({ link, style }) => (
+  <StyledLink to={link} style={style}>
     <Arrow src="/assets/images/arrow.svg" />
     <Text>{I18N.get('link.back')}</Text>
   </StyledLink>
@@ -13,6 +13,7 @@ const Component = ({ link }) => (
 
 const propTypes = {
   link: PropTypes.string.isRequired,
+  style: PropTypes.object,
 }
 
 Component.propTypes = propTypes

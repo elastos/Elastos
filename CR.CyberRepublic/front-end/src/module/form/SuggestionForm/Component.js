@@ -8,13 +8,17 @@ import {
   Input,
   Button,
   Icon,
-  Modal,
+  DatePicker,
 } from 'antd'
+import moment from 'moment/moment'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
+import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
+
 import './style.scss'
+import { StyledFormDesc } from './style'
 
 const FormItem = Form.Item
 
@@ -26,8 +30,7 @@ class C extends BaseComponent {
     super(props)
 
     this.state = {
-      isTranslateModalOpen: false,
-      showRules: false
+      showRules: false,
     }
   }
   //   componentDidMount() {
@@ -37,131 +40,136 @@ class C extends BaseComponent {
   handleSubmit(e) {
     e.preventDefault()
 
-    this.props.form.validateFields(async (err, values) => {
+    const { form, onFormSubmit, data } = this.props
+
+    form.validateFields(async (err, values) => {
       if (!err) {
-        if (_.isEmpty(values.description)) {
-          this.props.form.setFields({
-            description: {
-              errors: [new Error(I18N.get('suggestion.create.error.descriptionRequired'))],
-            },
-          })
-
-          return
-        }
-        if (_.isEmpty(values.description)) {
-          this.props.form.setFields({
-            title: {
-              errors: [new Error(I18N.get('suggestion.create.error.titleRequired'))],
-            },
-          })
-
-          return
-        }
-
-        const createParams = {
+        const param = {
           title: values.title,
           desc: sanitizeHtml(values.description, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
           }),
-          link: values.link
+          benefits: values.benefits,
         }
-
-        try {
-          await this.props.create(createParams)
-          this.props.showCreateForm()
-          this.props.refetch()
-        } catch (error) {
-          // console.log(error)
+        if (!_.isEmpty(values.funding)) {
+          param.funding = values.funding
         }
+        if (!_.isEmpty(values.timeline)) {
+          param.timeline = values.timeline
+        }
+        if (!_.isEmpty(values.link)) {
+          param.link = values.link
+        }
+        if (_.get(data, '_id')) {
+          param.id = _.get(data, '_id')
+        }
+        onFormSubmit(param)
       }
     })
   }
 
   getInputProps() {
     const { getFieldDecorator } = this.props.form
+    const { data } = this.props
 
-    const input_el = (
-      <Input size="large" placeholder="Title" />
-    )
-
+    const input_el = <Input size="large" />
     const textarea_el = (
       <ReactQuill
-        placeholder="Description"
         modules={{
           toolbar: TOOLBAR_OPTIONS,
+          autoLinks: true,
         }}
+        style={{ backgroundColor: 'white' }}
       />
     )
-
-    const link_el = (
-      <Input size="large" placeholder="Info Link" />
-    )
+    const benefits_el = <Input.TextArea />
+    const funding_el = <Input size="large" />
+    const timeline_el = <DatePicker size="large" placeholder="" style={{ width: '100%' }} />
+    const link_el = <Input size="large" />
 
     const title_fn = getFieldDecorator('title', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.titleRequired') },
-        { min: 4, message: I18N.get('suggestion.create.error.titleTooShort') },
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
       ],
-      initialValue: '',
+      initialValue: _.get(data, 'title', ''),
     })
 
     const description_fn = getFieldDecorator('description', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.descriptionRequired') },
-        { min: 20, message: I18N.get('suggestion.create.error.descriptionTooShort') },
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
       ],
-      initialValue: ''
+      initialValue: _.get(data, 'desc', ''),
+    })
+
+    const benefits_fn = getFieldDecorator('benefits', {
+      rules: [
+        { required: true, message: I18N.get('suggestion.create.error.required') },
+        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+      ],
+      initialValue: _.get(data, 'benefits', ''),
+    })
+
+    const funding_fn = getFieldDecorator('funding', {
+      rules: [
+        { required: false },
+      ],
+      initialValue: _.get(data, 'funding', ''),
+    })
+
+    const timeline_fn = getFieldDecorator('timeline', {
+      rules: [
+        { required: false },
+      ],
+      initialValue: _.get(data, 'timeline') ? moment(_.get(data, 'timeline')) : undefined,
     })
 
     const link_fn = getFieldDecorator('link', {
       rules: [
-        {type: 'url'}
-      ]
+        { type: 'url' },
+        { required: false },
+      ],
+      initialValue: _.get(data, 'link', ''),
     })
 
     return {
       title: title_fn(input_el),
       description: description_fn(textarea_el),
-      link: link_fn(link_el)
+      benefits: benefits_fn(benefits_el),
+      funding: funding_fn(funding_el),
+      timeline: timeline_fn(timeline_el),
+      link: link_fn(link_el),
     }
   }
 
-  translate = () => {
-    console.log('translate: ', this.props.form.getFieldsValue(['title', 'description']));
-  }
+  renderTranslationBtn() {
+    const { title, description, benefits } = this.props.form.getFieldsValue(['title', 'description', 'benefits'])
+    const text = `
+      <h1>${title}</h1>
+      <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
+      ${description}
+      <h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+      <p>${benefits}</p>
+    `
 
-  renderTranslationModal() {
-    const { isTranslateModalOpen } = this.state
-    if (!isTranslateModalOpen) return null
-    const translation = 'Translating...'
-    // TODO: translation
-    // translation =
     return (
-      <Modal
-        className="translate-modal-container"
-        visible={this.state.isTranslateModalOpen}
-        onOk={this.showTranslate}
-        onCancel={this.showCreateForm}
-        footer={null}
-        width="70%"
-      >
-        {translation}
-      </Modal>
+      <div>
+        <Translation text={text} />
+      </div>
     )
   }
 
-  showTranslate = () => {
-    this.setState({
-      showTranslate: !this.state.isTranslateModalOpen,
-    })
-  }
-
   renderHeader() {
+    let header = this.props.header || I18N.get('suggestion.add').toUpperCase()
+    if (this.state.showRules) {
+      header = I18N.get('suggestion.rules.rulesAndGuidelines')
+    }
     return (
       <Row>
         <Col span={18}>
           <h2 className="title komu-a">
-            {this.props.header || I18N.get('suggestion.add').toUpperCase()}
+            {header}
           </h2>
         </Col>
         <Col span={6}>
@@ -222,41 +230,61 @@ class C extends BaseComponent {
     const headerNode = this.renderHeader()
     const rulesNode = this.renderRules()
     const p = this.getInputProps()
+    const translationBtn = this.renderTranslationBtn()
 
     const formItemLayout = {
       labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
+        span: 24,
       },
       wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 20 },
+        span: 24,
       },
+      colon: false,
     }
-
     const formContent = (
       <div>
-        <FormItem className="form-title">
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
           {p.title}
         </FormItem>
-        <FormItem className="form-desc">
+        <FormItem className="form-desc" label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
           {p.description}
         </FormItem>
-        <FormItem className="form-link">
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.benefits')} {...formItemLayout}>
+          {p.benefits}
+        </FormItem>
+        <Row gutter={12}>
+          <Col span={12}>
+            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.funding')} {...formItemLayout}>
+              {p.funding}
+            </FormItem>
+          </Col>
+          <Col span={12}>
+            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.timeline')} {...formItemLayout}>
+              {p.timeline}
+            </FormItem>
+          </Col>
+        </Row>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
           {p.link}
         </FormItem>
-        <FormItem wrapperCol={{ xs: { span: 24, offset: 0 }, sm: { span: 12, offset: 8 } }} className="form-actions">
-          <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.showCreateForm}>
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-            {I18N.get('suggestion.submit')}
-          </Button>
+        <FormItem className="form-item">
+          {translationBtn}
         </FormItem>
+        <Row type="flex" justify="center">
+          <Col xs={24} sm={12} md={6}>
+            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>
+              {I18N.get('suggestion.cancel')}
+            </Button>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
+              {I18N.get('suggestion.submit')}
+            </Button>
+          </Col>
+        </Row>
       </div>
     )
-    // TODO
-    // const translationModal = this.renderTranslationModal()
+
     return (
       <div className="c_SuggestionForm">
         {headerNode}
@@ -266,8 +294,6 @@ class C extends BaseComponent {
             {formContent}
           </Form>
         }
-        {/* <div onClick={this.showTranslate}>{I18N.get('suggestion.translate')}</div> */}
-        {/* {translationModal} */}
       </div>
     )
   }

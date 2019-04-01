@@ -14,6 +14,9 @@ const mapDispatch = () => {
     async create(param) {
       return suggestionService.create(param)
     },
+    async update(param) {
+      return suggestionService.update(param)
+    },
   };
 }
 

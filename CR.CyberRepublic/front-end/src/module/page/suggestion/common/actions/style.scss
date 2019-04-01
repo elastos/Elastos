@@ -2,6 +2,8 @@
 @import "@/style/color";
 
 .c_SuggestionActions {
+  margin-top: 27px;
+  margin-bottom: 50px;
   color: $text_lighter_gray;
   display: flex;
   align-items: center;
@@ -43,7 +45,7 @@
     padding: 5px 0;
     .selected {
       color: black;
-    }  
+    }
   }
   .follow-icon svg {
     stroke: currentColor;

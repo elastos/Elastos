@@ -11,7 +11,12 @@ import CreateForm from '../create/Container'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
-import { Container, List, Item, ItemUndecided } from './style'
+import { Container, List, Item, ItemUndecided, StyledButton, VoteFilter } from './style'
+
+const FILTERS = {
+  ALL: 'all',
+  UNVOTED: CVOTE_RESULT.UNDECIDED,
+}
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -20,7 +25,7 @@ export default class extends BaseComponent {
     this.state = {
       list: null,
       loading: true,
-      creating: false,
+      voteResult: FILTERS.ALL,
     }
   }
 
@@ -29,7 +34,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { canManage } = this.props
+    const { canManage, isCouncil } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -67,6 +72,19 @@ export default class extends BaseComponent {
         dataIndex: 'proposedBy',
       },
       {
+        title: I18N.get('council.voting.votingEndsIn'),
+        dataIndex: 'proposedAt',
+        key: 'endsIn',
+        render: (proposedAt, item) => {
+          if (item.status === CVOTE_STATUS.DRAFT) return null
+          // only show when status is PROPOSED
+          const endsInFloat = moment.duration(moment(proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
+          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) return I18N.get('council.voting.votingEndsIn.ended')
+          if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
+        },
+      },
+      {
         title: I18N.get('council.voting.voteByCouncil'),
         render: (id, item) => this.voteDataByUser(item),
       },
@@ -75,9 +93,9 @@ export default class extends BaseComponent {
         render: (id, item) => I18N.get(`cvoteStatus.${item.status}`) || '',
       },
       {
-        title: I18N.get('council.voting.createdAt'),
-        dataIndex: 'createdAt',
-        render: createdAt => moment(createdAt).format('MMM D, YYYY'),
+        title: I18N.get('council.voting.proposedAt'),
+        dataIndex: 'proposedAt',
+        render: (proposedAt, doc) => doc.published && moment(proposedAt || doc.createdAt).format('MMM D, YYYY'),
       },
     ]
 
@@ -101,20 +119,34 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createBtn = canManage && (
-      <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-        <Button onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
-          {I18N.get('from.CVoteForm.button.add')}
-        </Button>
-      </Col>
+    const createFormNode = canManage && (
+      <Row type="flex" align="middle" justify="end">
+        <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
+          <CreateForm onCreated={this.refetch} />
+        </Col>
+      </Row>
     )
-    const createFormNode = this.renderCreateForm()
+
+    const filterBtnGroup = (
+      <Button.Group className="filter-group">
+        <StyledButton
+          className={(this.state.voteResult === FILTERS.ALL && 'selected') || ''}
+          onClick={this.clearFilters}
+        >
+          {I18N.get('council.voting.voteResult.all')}
+        </StyledButton>
+        <StyledButton
+          className={(this.state.voteResult === FILTERS.UNVOTED && 'selected') || ''}
+          onClick={() => this.setFilter(FILTERS.UNVOTED)}
+        >
+          {I18N.get('council.voting.voteResult.unvoted')}
+        </StyledButton>
+      </Button.Group>
+    )
     return (
       <Container>
-        <Row type="flex" align="middle" justify="end">
-          {createBtn}
-        </Row>
-        <Row type="flex" align="middle" justify="space-between">
+        {createFormNode}
+        <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
           <Col lg={8} md={8} sm={12} xs={24}>
             <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
               {I18N.get('council.voting.proposalList')}
@@ -122,6 +154,12 @@ export default class extends BaseComponent {
           </Col>
           <Col lg={8} md={8} sm={12} xs={24}>
             {statusIndicator}
+            {isCouncil && (
+              <VoteFilter>
+                <span>{`${I18N.get('council.voting.voteResult.show')}: `}</span>
+                {filterBtnGroup}
+              </VoteFilter>
+            )}
           </Col>
         </Row>
         <Table
@@ -132,15 +170,23 @@ export default class extends BaseComponent {
         />
         {createFormNode}
       </Container>
-
     )
+  }
+
+  getQuery = () => {
+    const query = {}
+    if (this.state.voteResult === FILTERS.UNVOTED) {
+      query.voteResult = FILTERS.UNVOTED
+    }
+    return query
   }
 
   refetch = async () => {
     this.ord_loading(true);
     const { listData, canManage } = this.props
+    const param = this.getQuery()
     try {
-      const list = await listData({}, canManage);
+      const list = await listData(param, canManage);
       this.setState({ list });
     } catch (error) {
       // do sth
@@ -149,39 +195,30 @@ export default class extends BaseComponent {
     this.ord_loading(false);
   }
 
-  renderCreateForm() {
-    return (
-      <Modal
-        className="project-detail-nobar"
-        visible={this.state.creating}
-        onOk={this.switchCreateMode}
-        onCancel={this.switchCreateMode}
-        footer={null}
-        width="70%"
-      >
-        <CreateForm onCreate={this.onCreate} onCancel={this.switchCreateMode} />
-      </Modal>
-    )
+  onFilterChanged = (value) => {
+    switch (value) {
+      case FILTERS.ALL:
+        this.clearFilters()
+        break
+      case FILTERS.UNVOTED:
+        this.setFilter(FILTERS.UNVOTED)
+        break
+      default:
+        this.clearFilters()
+        break
+    }
   }
 
-  switchCreateMode = () => {
-    const { creating } = this.state
-    this.setState({
-      creating: !creating,
-    })
+  clearFilters = () => {
+    this.setState({ voteResult: FILTERS.ALL }, this.refetch)
   }
 
-  onCreate = () => {
-    this.switchCreateMode()
-    this.refetch()
+  setFilter = (voteResult) => {
+    this.setState({ voteResult }, this.refetch)
   }
 
   toDetail(id) {
-    this.props.history.push(`/cvote/${id}`);
-  }
-
-  toCreate = () => {
-    this.props.history.push('/cvote/create');
+    this.props.history.push(`/proposals/${id}`);
   }
 
   voteDataByUser = (data) => {

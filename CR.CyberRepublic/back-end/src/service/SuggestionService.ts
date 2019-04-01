@@ -3,6 +3,15 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate } from '../utility'
 
+const emptyDoc = {
+  title: '',
+  desc: '',
+  benefits: '',
+  funding: '',
+  timeline: undefined,
+  link: [],
+}
+
 export default class extends Base {
   private model: any
   protected init() {
@@ -11,19 +20,89 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const { title, desc, link } = param
+    const { title, desc, benefits, funding, timeline, link, } = param
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
-    // build document object
-    const doc = {
+
+    const docCore: any = {
       title,
       desc,
-      link,
+      benefits,
+      // funding,
+      // timeline,
+      // link,
+    }
+    if (!_.isEmpty(funding)) {
+      docCore.funding = funding
+    }
+    if (!_.isEmpty(timeline)) {
+      docCore.timeline = timeline
+    }
+    if (!_.isEmpty(link)) {
+      docCore.link = link
+    }
+
+    console.log('docCore is: ', docCore)
+
+    // build document object
+    const doc = {
+      ...docCore,
       createdBy: _.get(this.currentUser, '_id'),
+      editHistory: [emptyDoc, docCore],
     }
     // save the document
     return await this.model.save(doc)
+  }
+
+  public async update(param: any): Promise<Document> {
+    // get param
+    const { id, title, desc, benefits, funding, timeline, link } = param
+    const userId = _.get(this.currentUser, '_id')
+    const currDoc = await this.model.getDBInstance().findById(id)
+
+    if (!currDoc) {
+      throw 'Current document does not exist'
+    }
+
+    if (!userId.equals(_.get(currDoc, 'createdBy'))) {
+      throw 'Only owner can edit suggestion'
+    }
+
+    // validation
+    this.validateTitle(title)
+    this.validateDesc(desc)
+
+    // build document object
+    const doc: any = {
+      title,
+      desc,
+      benefits,
+      funding,
+      timeline,
+      link,
+    }
+    if (_.isEmpty(link)) {
+      doc.link = []
+    }
+
+    // update the document
+    if (!_.isEmpty(currDoc.editHistory)) {
+      await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
+    } else {
+      const firstHistoryItem = {
+        title: currDoc.title,
+        desc: currDoc.desc,
+        benefits: currDoc.benefits,
+        funding: currDoc.funding,
+        timeline: currDoc.timeline,
+        link: currDoc.link,
+      }
+      // for old data
+      await this.model.update({_id: id}, {$set: { ...doc, editHistory: [emptyDoc, firstHistoryItem, doc] }})
+    }
+
+    return await this.show({ id })
   }
 
   public async list(param: any): Promise<Object> {
@@ -64,6 +143,7 @@ export default class extends Base {
     const doc = await this.model.getDBInstance()
       .findById(_id)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 
     if (_.isEmpty(doc.comments)) return doc
 
@@ -175,13 +255,13 @@ export default class extends Base {
   /**
    * Utils
    */
-  public validateTitle(title) {
+  public validateTitle(title: String) {
     if (!validate.valid_string(title, 4)) {
       throw 'invalid title'
     }
   }
 
-  public validateDesc(desc) {
+  public validateDesc(desc: String) {
     if (!validate.valid_string(desc, 1)) {
       throw 'invalid description'
     }

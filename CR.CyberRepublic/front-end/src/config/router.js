@@ -82,14 +82,13 @@ import CouncilPage from '../module/page/council/Container';
 import CouncilListPage from '../module/page/council/list/Container';
 import CouncilDetailPage from '../module/page/council/detail/Container';
 
-import CVoteCreatePage from '@/module/page/CVote/create/Container';
-import CVoteListPage from '@/module/page/CVote/list/Container';
-import CVoteEditPage from '@/module/page/CVote/edit/Container';
 import CVoteDetailPage from '@/module/page/CVote/detail/Container';
 
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
+import SuggestionEditHistoryPage from '@/module/page/suggestion/edit_history/Container'
+
 import ConstitutionPage from '@/module/page/constitution/Container'
 
 import NotFound from '@/module/page/error/NotFound'
@@ -253,6 +252,10 @@ export default [
   {
     path: '/suggestion/:id',
     page: SuggestionDetailPage,
+  },
+  {
+    path: '/suggestion/history/:id',
+    page: SuggestionEditHistoryPage,
   },
   /*
     ********************************************************************************
@@ -445,6 +448,14 @@ export default [
     page: CouncilPage,
   },
   {
+    path: '/cvote/:id',
+    page: CVoteDetailPage,
+  },
+  {
+    path: '/proposals/:id',
+    page: CVoteDetailPage,
+  },
+  {
     path: '/council',
     page: CouncilSecretariatPage,
   },
@@ -455,22 +466,6 @@ export default [
   {
     path: '/council/detail/:id',
     page: CouncilDetailPage,
-  },
-  {
-    path: '/cvote/create',
-    page: CVoteCreatePage,
-  },
-  {
-    path: '/cvote/list',
-    page: CVoteListPage,
-  },
-  {
-    path: '/cvote/:id',
-    page: CVoteDetailPage,
-  },
-  {
-    path: '/cvote/edit/:id',
-    page: CVoteEditPage,
   },
 
 

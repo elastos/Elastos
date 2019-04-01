@@ -107,10 +107,26 @@ export default class extends StandardPage {
     )
   }
 
-  renderCreateForm() {
+  onFormSubmit = async (param) => {
+    try {
+      await this.props.create(param)
+      this.showCreateForm()
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  renderCreateForm = () => {
+    const props = {
+      onFormCancel: this.showCreateForm,
+      onFormSubmit: this.onFormSubmit,
+    }
+
     return (
       <Modal
         className="project-detail-nobar"
+        maskClosable={false}
         visible={this.state.showForm}
         onOk={this.showCreateForm}
         onCancel={this.showCreateForm}
@@ -118,7 +134,7 @@ export default class extends StandardPage {
         width="70%"
       >
         { this.state.showForm
-          && <SuggestionForm showCreateForm={this.showCreateForm} refetch={this.refetch} />
+          && <SuggestionForm {...props} />
         }
       </Modal>
     )

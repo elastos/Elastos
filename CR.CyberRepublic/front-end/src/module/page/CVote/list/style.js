@@ -1,6 +1,9 @@
 import styled from 'styled-components'
+import { Button } from 'antd'
 import { grid } from '../common/variable'
 import { CVOTE_RESULT_COLOR, CVOTE_RESULT } from '@/constant'
+import { breakPoint } from '@/constants/breakPoint'
+import { bg } from '@/constants/color'
 
 export const Container = styled.div`
   background: #ffffff;
@@ -42,5 +45,21 @@ export const ItemUndecided = styled(Item)`
     top: 0;
     left: 0;
     background: url("/assets/images/bg-line.png") 0 0 repeat;
+  }
+`
+
+export const StyledButton = styled(Button)`
+  border-radius: 0 !important;
+  &.selected {
+    color: white !important;
+    background-color: ${bg.obsidian} !important;
+    border-color: ${bg.obsidian} !important;
+  }
+`
+export const VoteFilter = styled.div`
+  margin: 20px 0;
+  text-align: right;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    text-align: left;
   }
 `

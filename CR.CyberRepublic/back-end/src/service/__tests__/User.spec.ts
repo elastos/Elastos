@@ -1,4 +1,4 @@
-declare var describe, test, expect, require, process;
+declare var global, describe, test, require, process, beforeAll, afterAll
 
 import {expect, assert} from 'chai'
 
@@ -6,7 +6,6 @@ import {constant} from '../../constant';
 import db from '../../db';
 import '../../config';
 import UserService from '../UserService';
-
 
 let DB, userService
 

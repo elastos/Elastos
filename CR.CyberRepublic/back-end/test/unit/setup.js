@@ -82,3 +82,4 @@ global.DB = {
 }
 
 require('./data/cvote')
+require('./data/suggestion')
