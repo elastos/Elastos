@@ -236,16 +236,16 @@ const zh = {
   'suggestion.referred': '引用在',
   'suggestion.title': '建议',
   'suggestion.listTitle': '所有建议',
-  'suggestion.add': '添加一项建议',
+  'suggestion.add': '添加建议',
   'suggestion.sort': '排序方式',
   'suggestion.likes': '点赞量',
-  'suggestion.views': '浏览量',
+  'suggestion.views': '浏览',
   'suggestion.activeness': '活跃度',
   'suggestion.owner': '提议人',
   'suggestion.dateAdded': '添加日期',
   'suggestion.postedBy': '发布者',
   'suggestion.follow': '关注',
-  'suggestion.reportAbuse': '举报滥用',
+  'suggestion.reportAbuse': '举报',
   'suggestion.translate': '翻译为: ',
   'suggestion.translate.en': 'English',
   'suggestion.translate.zh': '简体中文',
@@ -276,16 +276,16 @@ const zh = {
   'suggestion.form.fields.suggestion': '建议',
   'suggestion.form.fields.subject': '标题',
   'suggestion.form.fields.desc': '描述',
-  'suggestion.form.fields.benefits': '对于亦来云社区/生态系统的好处 ',
-  'suggestion.form.fields.funding': '预估资金（USD）',
-  'suggestion.form.fields.timeline': '建议时间线',
+  'suggestion.form.fields.benefits': '对于亦来云社区/生态的价值',
+  'suggestion.form.fields.funding': '预算（USD）',
+  'suggestion.form.fields.timeline': '启动时间',
   'suggestion.form.fields.links': '相关链接',
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
   'suggestion.btnText.consider': '考虑',
   'suggestion.btnText.needMoreInfo': '需要更多信息',
-  'suggestion.btnText.makeIntoProposal': '转化为提案',
+  'suggestion.btnText.makeIntoProposal': '形成提案',
 
   // suggestion error
   'suggestion.create.error.required': '必填项',
@@ -295,7 +295,7 @@ const zh = {
   'suggestion.rules': '规则',
   'suggestion.intro.1': '提出建议是可能成为',
   'suggestion.intro.1.proposals': '提案',
-  'suggestion.intro.1.1': '的第一步。委员会成员挑选最佳或最受欢迎的想法，将其变成提案，然后进入投票裁决。',
+  'suggestion.intro.1.1': '的第一步。委员会成员挑选最佳或最受欢迎的想法，将其形成提案，然后进入投票表决。',
   'suggestion.intro.2': '这个过程称为CR共识，基本信息请参阅我们的',
   'suggestion.intro.2.blog': '博客。',
   'suggestion.intro.3': '更多信息请参考：',
@@ -696,19 +696,19 @@ const zh = {
   'council.voting.votingEndsIn.days': '天',
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
-  'council.voting.proposedAt': '提案日期',
+  'council.voting.proposedAt': '发布日期',
 
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',
   'council.voting.type.anythingElse': '其它事宜',
-  'council.voting.type.support': '支持',
-  'council.voting.type.reject': '拒绝',
+  'council.voting.type.support': '赞成',
+  'council.voting.type.reject': '否决',
   'council.voting.type.abstention': '弃权',
-  'council.voting.type.undecided': '未定',
+  'council.voting.type.undecided': '待投票',
   'council.voting.ifConflicted': '与现行章程存在潜在冲突',
 
-  'council.voting.btnText.yes': '投赞成票',
-  'council.voting.btnText.no': '投反对票并给出理由',
+  'council.voting.btnText.yes': '赞成',
+  'council.voting.btnText.no': '反对',
   'council.voting.btnText.abstention': '弃权',
   'council.voting.btnText.notesSecretary': '秘书处记录',
   'council.voting.btnText.editNotes': '编辑记录',
@@ -729,7 +729,7 @@ const zh = {
 
   'council.voting.voteResult.show': '显示',
   'council.voting.voteResult.all': '所有',
-  'council.voting.voteResult.unvoted': '未投票',
+  'council.voting.voteResult.unvoted': '待投票',
 
   // Landing
   'landing.elastos': 'Elastos',
@@ -1079,7 +1079,7 @@ const zh = {
   'from.CVoteForm.label.motion.help': '如果这是针对现有的议案作出的提议，请指明现有的议案编号',
   'from.CVoteForm.label.conflict': '有冲突？',
   'from.CVoteForm.label.conflict.help': '该提案是否可能与现有的章程相冲突？',
-  'from.CVoteForm.label.note': '秘书处的记录',
+  'from.CVoteForm.label.note': '秘书处记录',
   'from.CVoteForm.message.note.update.success': '记录更新成功！',
   'from.CVoteForm.text.onlycouncil': '只有委员会委员才可以创建和编辑提案。',
 
@@ -1477,8 +1477,8 @@ zh[`taskType.${TASK_STATUS.EVENT}`] = '活动'
 zh[`cvoteStatus.${CVOTE_STATUS.DRAFT}`] = '草案'
 zh[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = '投票中'
 zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '已通过'
-zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已拒绝'
+zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已否决'
 zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
-zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '延期的'
+zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
 
 export default zh
