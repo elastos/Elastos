@@ -1,37 +1,8 @@
-=============== Mar 28, 2019 (EDT) ===============
-20:38:19.966478 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-20:38:19.977071 db@open opening
-20:38:19.987019 version@stat F·[] S·0B[] Sc·[]
-20:38:19.988599 db@janitor F·2 G·0
-20:38:19.988624 db@open done T·11.528459ms
-20:41:19.256068 db@close closing
-20:41:19.256091 db@close done T·22.647µs
-=============== Mar 28, 2019 (EDT) ===============
-20:41:52.152890 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-20:41:52.152965 version@stat F·[] S·0B[] Sc·[]
-20:41:52.152981 db@open opening
-20:41:52.153015 journal@recovery F·1
-20:41:52.163231 journal@recovery recovering @1
-20:41:52.178028 memdb@flush created L0@2 N·237 S·17KiB "\x00\x00\x00\x00\x00,v2":"\xf0,v6"
-20:41:52.180114 version@stat F·[1] S·17KiB[17KiB] Sc·[0.25]
-20:41:52.199964 db@janitor F·3 G·0
-20:41:52.199994 db@open done T·47.00198ms
-20:57:09.343168 db@close closing
-20:57:09.343223 db@close done T·54.154µs
-=============== Mar 28, 2019 (EDT) ===============
-21:05:16.655893 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-21:05:16.655974 version@stat F·[1] S·17KiB[17KiB] Sc·[0.25]
-21:05:16.655991 db@open opening
-21:05:16.656027 journal@recovery F·1
-21:05:16.698946 journal@recovery recovering @3
-21:05:16.708547 memdb@flush created L0@5 N·952 S·75KiB "\x00\"\x00\x00\x00,v240":"\x91!K..\x00\x00\x00,v1188"
-21:05:16.708840 version@stat F·[2] S·93KiB[93KiB] Sc·[0.50]
-21:05:16.718876 db@janitor F·4 G·0
-21:05:16.718897 db@open done T·62.898509ms
-21:05:16.768924 table@compaction L0·2 -> L1·0 S·93KiB Q·1191
-21:05:16.774319 table@build created L1@8 N·1020 S·87KiB "\x00\x00\x00\x00\x00,v2":"\xf0,v6"
-21:05:16.774363 version@stat F·[0 1] S·87KiB[0B 87KiB] Sc·[0.00 0.00]
-21:05:16.779293 table@compaction committed F-1 S-5KiB Ke·0 D·169 T·10.31443ms
-21:05:16.779492 table@remove removed @2
-21:12:36.637986 db@close closing
-21:12:36.638136 db@close done T·149.147µs
+=============== Apr 1, 2019 (EDT) ===============
+08:39:55.434048 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+08:39:55.437665 db@open opening
+08:39:55.450006 version@stat F·[] S·0B[] Sc·[]
+08:39:55.452330 db@janitor F·2 G·0
+08:39:55.452351 db@open done T·14.672317ms
+09:44:22.730639 db@close closing
+09:44:22.731239 db@close done T·599.133µs

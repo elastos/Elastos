@@ -1,6 +1,6 @@
 ﻿{
   "Configuration": {
-    "ActiveNet": "MainNet",
+    "ActiveNet": "main",
     "Magic": 7638401,
     "Version": 23,
     "SeedList": [
@@ -34,7 +34,7 @@
     "EnableArbiter": true,
     "ArbiterConfiguration": {
       "PublicKey": "020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91",
-      "Magic": 7638402,
+      "Magic": 7638403,
       "NodePort": 21339,
       "ProtocolVersion": 0,
       "Services": 0,
@@ -43,6 +43,7 @@
       "MaxLogsSize": 0,
       "MaxPerLogSize": 0,
       "OriginArbiters": [
+        "03cb63c72f8700ba5d2db8bffdcb19c57421de652a55c27c61cb9afb29d7260d14"
       ],
       "CRCArbiters": [{
           "PublicKey": "020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91",
@@ -54,7 +55,9 @@
         }
       ]
     },
+    "CheckAddressHeight": 100,
     "VoteStartHeight": 100,
-    "CRCOnlyDPOSHeight": 100
+    "CRCOnlyDPOSHeight": 100,
+    "PublicDPOSHeight": 1000000000
   }
 }

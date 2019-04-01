@@ -24,7 +24,7 @@
     "PowConfiguration": {
       "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
       "AutoMining": true,
-      "MinerInfo": "DID",
+      "MinerInfo": "ELA",
       "MinTxFee": 100,
       "InstantBlock": false
     },

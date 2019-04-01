@@ -1,0 +1,76 @@
+﻿{
+  "Configuration": {
+    "Magic": 7638402,
+    "Version": 0,
+    "NodePort": 10538,
+    "PrintLevel": 1,
+    "SpvPrintLevel": 4,
+    "HttpJsonPort": 10536,
+    "MainNode": {
+      "Rpc": {
+        "IpAddress": "127.0.0.1",
+        "HttpJsonPort": 20336,
+        "User": "",
+        "Pass": ""
+      },
+      "SpvSeedList": [
+        "127.0.0.1:20338",
+        "127.0.0.1:21338",
+        "127.0.0.1:22338"
+      ],
+      "Magic": 7638401,
+      "MinOutbound": 4,
+      "MaxConnections": 100,
+      "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+      "DefaultPort": 20338
+    },
+    "SideNodeList": [
+      {
+        "Rpc": {
+          "IpAddress": "127.0.0.1",
+          "HttpJsonPort": 20606,
+            "User": "",
+            "Pass": ""
+        },
+        "ExchangeRate": 1.0,
+        "GenesisBlock": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
+        "MiningAddr": "ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx",
+        "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+        "PowChain": true
+      }
+    ],
+    "OriginCrossChainArbiters":[{
+        "PublicKey": "03cb63c72f8700ba5d2db8bffdcb19c57421de652a55c27c61cb9afb29d7260d14",
+        "NetAddress": "127.0.0.1:10538"
+      }
+    ],
+    "CRCCrossChainArbiters": [ {
+       "PublicKey": "020bef648cf30d3d59c98583c88030d986e6d9ed080a7f9138b9ebc426caf4fa91",
+        "NetAddress": "127.0.0.1:11538"
+      },
+      {
+       "PublicKey": "0235e697ef1c375d4df6f07da8111ea06839965e616655f4ffcf6cef852c4c51f5",
+        "NetAddress": "127.0.0.1:12538"
+      }
+    ],
+    "CRCOnlyDPOSHeight": 100,
+    "MinThreshold": 10000000,
+    "DepositAmount": 10000000,
+    "SyncInterval": 1000,
+    "SideChainMonitorScanInterval": 1000,
+    "ClearTransactionInterval": 60000,
+    "MinReceivedUsedUtxoMsgNumber": 1,
+    "MinOutbound": 4,
+    "MaxConnections": 100,
+    "SideAuxPowFee": 50000,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "RpcConfiguration": {
+      "User": "",
+      "Pass": "" ,
+      "WhiteIPList":[
+        "0.0.0.0"
+      ]
+    }
+  }
+}

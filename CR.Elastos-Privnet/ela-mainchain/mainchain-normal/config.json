@@ -1,6 +1,6 @@
 ﻿{
   "Configuration": {
-    "ActiveNet": "MainNet",
+    "ActiveNet": "main",
     "Magic": 7638401,
     "Version": 23,
     "SeedList": [

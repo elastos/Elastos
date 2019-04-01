@@ -41,12 +41,12 @@ These are located in the `wallets` folder:
 
 2. The following are the GIT SHAs we're using for each project:
     - Elastos.ELA: release_v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
-    - Elastos.ELA.Arbiter: release_v.0.1.0 a033509b70dbb40960786928c9bb9db084233d38
+    - Elastos.ELA.Arbiter: release_v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
     - Elastos.ELA.SideChain.ID: release_v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
     - Elastos.ELA.SideChain.Token: release_v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
     - Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
     - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
-    - Elastos.ORG.API.Misc: master 3a811f6932d7ba8f2680e2b1f081eda0dc6a5508
+    - Elastos.ORG.API.Misc: master 4818a285e313641aae7c9d06ebba471304a8d404
     - Elastos.NET.Hive.IPFS: dev-master 6a5e24032b0d0c79e06a103f1b4078a648fa0e2e
     - Elastos.NET.Hive.Cluster: dev-master 390b912df5cf496b7c9e6e5d3f6e0fb897a76db1
     
