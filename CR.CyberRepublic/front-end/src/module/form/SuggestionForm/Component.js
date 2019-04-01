@@ -161,11 +161,15 @@ class C extends BaseComponent {
   }
 
   renderHeader() {
+    let header = this.props.header || I18N.get('suggestion.add').toUpperCase()
+    if (this.state.showRules) {
+      header = I18N.get('suggestion.rules.rulesAndGuidelines')
+    }
     return (
       <Row>
         <Col span={18}>
           <h2 className="title komu-a">
-            {this.props.header || I18N.get('suggestion.add').toUpperCase()}
+            {header}
           </h2>
         </Col>
         <Col span={6}>
