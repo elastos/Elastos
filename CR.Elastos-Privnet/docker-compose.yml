@@ -69,6 +69,20 @@ services:
       - blockchain
     tty: true
 
+  ela-arbitrator-origin:
+    container_name: ela-arbitrator-origin
+    image: ela-arbitrator-origin
+    depends_on:
+      - ela-sidechain-did
+    build:
+      context: ela-arbitrator/arbitrator-origin
+    ports:
+      - 10536:10536
+      - 10538:10538
+    networks:
+      - blockchain
+    tty: true
+
   ela-arbitrator-crc-1:
     container_name: ela-arbitrator-crc-1
     image: ela-arbitrator-crc-1
@@ -77,8 +91,8 @@ services:
     build:
       context: ela-arbitrator/arbitrator-crc-1
     ports:
-      - 10536:10536
-      - 10538:10538
+      - 11536:10536
+      - 11538:10538
     networks:
       - blockchain
     tty: true
@@ -91,8 +105,8 @@ services:
     build:
       context: ela-arbitrator/arbitrator-crc-2
     ports:
-      - 11536:10536
-      - 11538:10538
+      - 12536:10536
+      - 12538:10538
     networks:
       - blockchain
     tty: true

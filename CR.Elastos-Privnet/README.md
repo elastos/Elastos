@@ -40,10 +40,10 @@ These are located in the `wallets` folder:
     - Docker Machine 0.16.1
 
 2. The following are the GIT SHAs we're using for each project:
-    - Elastos.ELA: release_v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
-    - Elastos.ELA.Arbiter: release_v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
-    - Elastos.ELA.SideChain.ID: release_v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
-    - Elastos.ELA.SideChain.Token: release_v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
+    - Elastos.ELA: tag v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
+    - Elastos.ELA.Arbiter: tag v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
+    - Elastos.ELA.SideChain.ID: tag v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
+    - Elastos.ELA.SideChain.Token: tag v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
     - Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
     - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
     - Elastos.ORG.API.Misc: master 4818a285e313641aae7c9d06ebba471304a8d404
@@ -133,7 +133,7 @@ These are located in the `wallets` folder:
 10. Verify that cross-chain mainchain to sidechain transfers work
     NOTE: Make sure to give at least 1-2 minutes(after docker container has started) before you call the following API and do not re-attempt the same command because it might fail otherwise.
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EZngB4JXYAVhj8XZXR1HNWh2NkV5ttJtrE","privateKey": "2e900f236671edfd39a31e65a938491df5fc9a53b6b16e8ea0d697fe2f0a3d52"}],"receiver": [{"address": "EJWT3HbQWXNZk9gDwvGJwXdvv87qkdRkhE","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U","privateKey": "100094e9b4b029fe7b49e4c8ceb14aacc2e830bce94c9e713e51e26d6a665a0b"}],"receiver": [{"address": "ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
     ```
     
     You should see the transaction hash returned and a 200 status
