@@ -141,6 +141,11 @@ namespace Elastos {
 
 					if (isInvalid) {
 						_invalidTx.Insert(tx);
+					} else {
+						// add inputs to spent output set
+						for (j = 0; j < tx->GetInputs().size(); j++) {
+							_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+						}
 					}
 					continue;
 				}
