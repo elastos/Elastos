@@ -97,8 +97,6 @@ type addViewEventTask struct {
 }
 
 func (s *DposStore) eventLoop() {
-	s.wg.Add(1)
-
 out:
 	for {
 		select {
@@ -209,6 +207,7 @@ func (s *DposStore) StartEventRecord() {
 		log.Debug("create ViewEvent table failed:", err.Error())
 	}
 
+	s.wg.Add(1)
 	go s.eventLoop()
 }
 

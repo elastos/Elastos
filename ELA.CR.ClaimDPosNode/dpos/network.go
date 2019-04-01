@@ -313,7 +313,7 @@ func (n *network) sidechainIllegalEvidenceReceived(
 }
 
 func (n *network) getCurrentHeight(pid peer.PID) uint64 {
-	return uint64(n.proposalDispatcher.CurrentHeight())
+	return uint64(blockchain.DefaultLedger.Blockchain.GetHeight())
 }
 
 func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener,
