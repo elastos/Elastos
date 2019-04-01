@@ -78,18 +78,12 @@ export default class extends Base {
       title,
       desc,
       benefits,
-      // funding,
-      // timeline,
-      // link,
+      funding,
+      timeline,
+      link,
     }
-    if (!_.isEmpty(funding)) {
-      doc.funding = funding
-    }
-    if (!_.isEmpty(timeline)) {
-      doc.timeline = timeline
-    }
-    if (!_.isEmpty(link)) {
-      doc.link = link
+    if (_.isEmpty(link)) {
+      doc.link = []
     }
 
     // update the document
