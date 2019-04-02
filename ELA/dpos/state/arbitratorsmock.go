@@ -40,6 +40,10 @@ type ArbitratorsMock struct {
 	FinalRoundChange            common.Fixed64
 }
 
+func (a *ArbitratorsMock) CheckDPOSIllegalTx(block *types.Block) error {
+	return nil
+}
+
 func (a *ArbitratorsMock) GetArbitersRoundReward() map[common.Uint168]common.Fixed64 {
 	return a.ArbitersRoundReward
 }
