@@ -399,6 +399,10 @@ func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
 	return p.inactiveCountDown.IsTimeOut()
 }
 
+func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
+	p.inactiveCountDown.SetEliminated()
+}
+
 func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
 	var err error
@@ -711,16 +715,15 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:       make(map[common.Uint256]*payload.DPOSProposalVote),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: cfg.InactiveEliminateCount,
-			Store:       cfg.Store,
-			Arbitrators: cfg.Arbitrators,
+			Store:                  cfg.Store,
+			Arbitrators:            cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{
-		dispatcher:                    p,
-		consensus:                     cfg.Consensus,
-		arbitrators:                   cfg.Arbitrators,
-		timeoutRefactor:               0,
-		inactiveArbitratorsEliminated: false,
+		dispatcher:      p,
+		consensus:       cfg.Consensus,
+		arbitrators:     cfg.Arbitrators,
+		timeoutRefactor: 0,
 	}
 	p.inactiveCountDown.Reset()
 
