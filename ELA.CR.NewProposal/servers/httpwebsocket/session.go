@@ -42,9 +42,11 @@ func (s *Session) SessionTimeoverCheck() bool {
 }
 
 func (sl *SessionList) CloseSession(session *Session) {
+	sl.Lock()
 	delete(sl.OnlineList, session.SessionID)
 	session.Connection.Close()
 	session.SessionID = ""
+	sl.Unlock()
 }
 
 func (sl *SessionList) ForEachSession(visit func(*Session)) {
