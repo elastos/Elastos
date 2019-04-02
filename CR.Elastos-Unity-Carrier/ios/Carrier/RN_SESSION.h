@@ -84,6 +84,15 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) close: (NSString *)friendId
       error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
 
+-(BOOL) addService: (NSString *)friendId
+       serviceName: (NSString *)serviceName
+              host: (NSString *)host
+              port: (NSString *)port
+             error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+-(void) removeService: (NSString *)friendId
+          serviceName: (NSString *)serviceName;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

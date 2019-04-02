@@ -394,6 +394,28 @@ RCT_EXPORT_METHOD
   }
 }
 
+RCT_EXPORT_METHOD
+(addService: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(NSString *)host :(NSString *)port :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    BOOL flag = [_rn addService:friendId serviceName:serviceName host:host port:port error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(removeService: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    
+    [_rn removeService:friendId serviceName:serviceName];
+    callback(@[NULL_ERR, OK]);
+}
+
 
 -(CarrierSendEvent) carrierCallback : (NSDictionary *)config{
   __weak __typeof(self) weakSelf = self;

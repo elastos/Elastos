@@ -150,6 +150,28 @@
   [FriendSessionStream removeByFriendId:friendId];
 }
 
+-(BOOL) addService: (NSString *)friendId
+       serviceName: (NSString *)serviceName
+              host: (NSString *)host
+              port: (NSString *)port
+              error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    if(fss == nil){
+        NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
+        *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
+        return;
+    }
+    BOOL flag = [fss.session addServiceWithName: serviceName protocol:1 host:host port:port error:error];
+    return flag;
+}
+-(void) removeService: (NSString *)friendId
+          serviceName: (NSString *)serviceName
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    [fss.session removeServiceWithName: serviceName];
+}
+
 
 #pragma mark - ELACarrierStreamDelegate
 -(void) carrierStream:(ELACarrierStream *)stream
