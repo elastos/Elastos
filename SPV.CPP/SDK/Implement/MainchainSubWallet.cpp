@@ -384,7 +384,7 @@ namespace Elastos {
 						info["Location"] = pu->GetLocation();
 						info["Address"] = pu->GetAddress();
 
-						j["Stataus"] = "Registered";
+						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
 				} else if (allTxs[i]->GetTransactionType() == Transaction::CancelProducer) {
