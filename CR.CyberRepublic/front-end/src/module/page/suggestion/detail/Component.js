@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash'
-import { Row, Col, Spin, Button, Modal } from 'antd'
+import { Row, Col, Spin, Button, Modal, Input } from 'antd'
 import { Link } from 'react-router-dom';
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -12,13 +12,15 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS } from '@/constant'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
 import { Container, Title, Label, Desc, BtnGroup, StyledButton } from './style'
+
+const { TextArea } = Input;
 
 export default class extends StandardPage {
   constructor(props) {
@@ -267,16 +269,16 @@ export default class extends StandardPage {
     const res = isCouncil && (
       <BtnGroup>
         <Row type="flex" justify="start">
-          {/* <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={consider}>
+          <Col xs={24} sm={8}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
               {I18N.get('suggestion.btnText.consider')}
             </StyledButton>
           </Col>
           <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={needMoreInfo}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showAddTagModal}>
               {I18N.get('suggestion.btnText.needMoreInfo')}
             </StyledButton>
-          </Col> */}
+          </Col>
           <Col xs={24} sm={8}>
             {createFormBtn}
           </Col>
@@ -297,6 +299,49 @@ export default class extends StandardPage {
         returnUrl={`/suggestion/${detail._id}`}
       />
     )
+  }
+
+  consider = async () => {
+    const { _id } = this.props.detail
+    try {
+      await this.props.addTag({
+        id: _id,
+        type: SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
+      })
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  needMoreInfo = async () => {
+    const { comment } = this.state
+    const { _id } = this.props.detail
+    try {
+      await this.props.addTag({
+        id: _id,
+        type: SUGGESTION_TAG_TYPE.INFO_NEEDED,
+        desc: comment,
+      })
+      // this.showAddTagModal()
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  showAddTagModal = () => {
+    Modal.confirm({
+      title: I18N.get('suggestion.modal.addTagComment'),
+      content: <TextArea onChange={this.onCommentChanged} />,
+      okText: I18N.get('suggestion.modal.confirm'),
+      cancelText: I18N.get('suggestion.modal.cancel'),
+      onOk: () => this.needMoreInfo(),
+    })
+  }
+
+  onCommentChanged = (e) => {
+    this.setState({ comment: e.target.value })
   }
 
   onFormSubmit = async (param) => {

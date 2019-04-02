@@ -281,6 +281,14 @@ const en = {
   'suggestion.form.fields.timeline': 'Timeline Suggested',
   'suggestion.form.fields.links': 'Links',
 
+  suggestion: {
+    modal: {
+      addTagComment: 'Add Comment',
+      confirm: 'Confirm',
+      cancel: 'Cancel',
+    },
+  },
+
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
   'suggestion.btnText.consider': 'Consider',

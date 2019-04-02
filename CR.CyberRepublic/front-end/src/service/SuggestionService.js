@@ -126,6 +126,24 @@ export default class extends BaseService {
     return res
   }
 
+  async addTag(doc) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+
+    const path = `${this.prefixPath}/${doc.id}/addtag`
+    let res
+    try {
+      res = await api_request({
+        path,
+        method: 'post',
+        data: doc,
+      })
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+    }
+    return res
+  }
+
   async getDetail({ id, incViewsNum }) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
 

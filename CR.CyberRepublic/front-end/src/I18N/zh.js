@@ -281,6 +281,14 @@ const zh = {
   'suggestion.form.fields.timeline': '启动时间',
   'suggestion.form.fields.links': '相关链接',
 
+  suggestion: {
+    modal: {
+      addTagComment: '添加评论',
+      confirm: '确认',
+      cancel: '取消',
+    },
+  },
+
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
   'suggestion.btnText.consider': '考虑',
