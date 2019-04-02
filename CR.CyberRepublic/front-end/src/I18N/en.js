@@ -114,9 +114,9 @@ const en = {
   'home.summary_2': 'formed to promote Elastos in our communities. Membership is open to everyone.',
 
   'home.box_1.title': 'What is Cyber Republic?',
-  'home.box_1.description': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers working together to promote Elastos in our communities. Membership is open to all.',
+  'home.box_1.description': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
 
-  'home.explanation_1.part_1': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers working together to promote Elastos in our communities. Membership is open to all.',
+  'home.explanation_1.part_1': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
   'home.explanation_1.part_2': '',
 
   'home.box_2.title': 'What is the Cyber Republic Council?',
