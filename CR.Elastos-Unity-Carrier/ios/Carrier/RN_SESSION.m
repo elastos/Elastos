@@ -213,6 +213,15 @@
     BOOL flag = [fss.stream closeChannel: channelId error:error];
     return flag;
 }
+-(NSNumber *)writeChannel: (NSString *)friendId
+                channelId: (NSNumber *)channelId
+                     data: (NSString *)data
+                    error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    NSNumber *rs = [fss.stream writeChannel: channelId data:[data dataUsingEncoding:NSUTF8StringEncoding] error:error];
+    return rs;
+}
 
 
 #pragma mark - ELACarrierStreamDelegate

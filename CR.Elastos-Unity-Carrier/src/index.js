@@ -216,11 +216,14 @@ const Carrier = class {
   closeChannel(friendId, channelId){
     return exec('closeChannel', this.id, friendId, channelId);
   }
+  writeChannel(friendId, channelId, data){
+    return exec('writeChannel', this.id, friendId, channelId, data)
+  }
 
   // TODO
 
   
-  writeChannel(){}
+ 
   pendChannel(){}
   resumeChannel(){}
   

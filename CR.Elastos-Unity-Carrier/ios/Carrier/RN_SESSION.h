@@ -106,6 +106,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL) closeChannel: (NSString *)friendId
            channelId: (NSNumber *)channelId
                error:(NSError * _Nullable * _Nullable)error;
+-(NSNumber *)writeChannel: (NSString *)friendId
+                channelId: (NSNumber *)channelId
+                     data: (NSString *)data
+                    error: (NSError * _Nullable * _Nullable)error;
 
 
 @end
