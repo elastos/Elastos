@@ -196,10 +196,15 @@ const Carrier = class {
     return exec('closeSession', this.id, friendId);
   }
 
+  addService(friendId, serviceName, host, port){
+    return exec('addService', this.id, friendId, serviceName, host, port);
+  }
+
+  removeService(friendId, serviceName){
+    return exec('removeService', this.id, friendId, serviceName);
+  }
+
   // TODO
-  
-  addService(){}
-  removeService(){}
   openPortFowarding(){}
   closePortForwarding(){}
   openChannel(){}
