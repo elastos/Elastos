@@ -205,6 +205,14 @@
     NSNumber *rs = [fss.stream openChannelWithCookie: cookie error:error];
     return rs;
 }
+-(BOOL) closeChannel: (NSString *)friendId
+           channelId: (NSNumber *)channelId
+               error:(NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream closeChannel: channelId error:error];
+    return flag;
+}
 
 
 #pragma mark - ELACarrierStreamDelegate

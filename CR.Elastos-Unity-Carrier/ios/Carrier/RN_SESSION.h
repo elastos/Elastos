@@ -103,6 +103,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSNumber *) openChannel: (NSString *)friendId
                    cookie: (NSString *)cookie
                     error: (NSError * _Nullable * _Nullable)error;
+-(BOOL) closeChannel: (NSString *)friendId
+           channelId: (NSNumber *)channelId
+               error:(NSError * _Nullable * _Nullable)error;
 
 
 @end

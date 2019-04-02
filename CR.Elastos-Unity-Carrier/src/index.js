@@ -213,12 +213,13 @@ const Carrier = class {
   openChannel(friendId, cookie){
     return exec('openChannel', this.id, friendId, cookie);
   }
+  closeChannel(friendId, channelId){
+    return exec('closeChannel', this.id, friendId, channelId);
+  }
 
   // TODO
 
- 
-
-  closeChannel(){}
+  
   writeChannel(){}
   pendChannel(){}
   resumeChannel(){}
