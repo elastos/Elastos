@@ -219,18 +219,12 @@ const Carrier = class {
   writeChannel(friendId, channelId, data){
     return exec('writeChannel', this.id, friendId, channelId, data)
   }
-
-  // TODO
-
-  
- 
-  pendChannel(){}
-  resumeChannel(){}
-  
-
-  
-
-  
+  pendChannel(friendId, channelId){
+    return exec('pendChannel', this.id, friendId, channelId);
+  }
+  resumeChannel(friendId, channelId){
+    return exec('resumeChannel', this.id, friendId, channelId);
+  }
 
   test(){
     NativeCarrier.test();

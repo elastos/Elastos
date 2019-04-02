@@ -480,6 +480,32 @@ RCT_EXPORT_METHOD
         callback(@[NULL_ERR, rs]);
     }
 }
+RCT_EXPORT_METHOD
+(pendChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn pendChannel:friendId channel:channelId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(resumeChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn resumeChannel:friendId channel:channelId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
 
 
 -(CarrierSendEvent) carrierCallback : (NSDictionary *)config{

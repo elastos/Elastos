@@ -222,6 +222,22 @@
     NSNumber *rs = [fss.stream writeChannel: channelId data:[data dataUsingEncoding:NSUTF8StringEncoding] error:error];
     return rs;
 }
+-(BOOL) pendChannel: (NSString *)friendId
+            channel: (NSNumber *)channelId
+              error:(NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream pendChannel: channelId error:error];
+    return flag;
+}
+-(BOOL) resumeChannel: (NSString *)friendId
+              channel: (NSNumber *)channelId
+                error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream resumeChannel: channelId error:error];
+    return flag;
+}
 
 
 #pragma mark - ELACarrierStreamDelegate

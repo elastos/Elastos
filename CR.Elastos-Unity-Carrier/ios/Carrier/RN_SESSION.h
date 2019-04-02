@@ -110,7 +110,12 @@ NS_ASSUME_NONNULL_BEGIN
                 channelId: (NSNumber *)channelId
                      data: (NSString *)data
                     error: (NSError * _Nullable * _Nullable)error;
-
+-(BOOL) pendChannel: (NSString *)friendId
+            channel: (NSNumber *)channelId
+              error:(NSError * _Nullable * _Nullable)error;
+-(BOOL) resumeChannel: (NSString *)friendId
+              channel: (NSNumber *)channelId
+                error: (NSError * _Nullable * _Nullable)error;
 
 @end
 
