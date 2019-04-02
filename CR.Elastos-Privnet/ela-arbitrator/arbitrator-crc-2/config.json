@@ -53,7 +53,7 @@
         "NetAddress": "127.0.0.1:12538"
       }
     ],
-    "CRCOnlyDPOSHeight": 100,
+    "CRCOnlyDPOSHeight": 0,
     "MinThreshold": 10000000,
     "DepositAmount": 10000000,
     "SyncInterval": 1000,

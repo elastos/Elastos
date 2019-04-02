@@ -4,9 +4,6 @@
     "Magic": 7638401,
     "Version": 23,
     "SeedList": [
-      "127.0.0.1:20338",
-      "127.0.0.1:21338",
-      "127.0.0.1:22338"
     ],
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,

@@ -133,7 +133,9 @@ These are located in the `wallets` folder:
 10. Verify that cross-chain mainchain to sidechain transfers work
     NOTE: Make sure to give at least 1-2 minutes(after docker container has started) before you call the following API and do not re-attempt the same command because it might fail otherwise.
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U","privateKey": "100094e9b4b029fe7b49e4c8ceb14aacc2e830bce94c9e713e51e26d6a665a0b"}],"receiver": [{"address": "ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx","amount": "1"}]}' localhost:8091/api/1/cross/m2d/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw","privateKey": "79aaa0b2df79e82e687063ff7fd03579130095ec93aa2d1861ee669aabff69c3"}],"receiver": [{"address": "ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx","amount": "10"}]}' localhost:8091/api/1/cross/m2d/transfer
+
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U","privateKey": "100094e9b4b029fe7b49e4c8ceb14aacc2e830bce94c9e713e51e26d6a665a0b"}],"receiver": [{"address": "ENG8Htd1wmmdeLMqivVgE5aeGHNjutQxhx","amount": "1"}]}' localhost:8091/api/1/transfer
     ```
     
     You should see the transaction hash returned and a 200 status

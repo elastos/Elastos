@@ -5,7 +5,6 @@
     "Version": 23,
     "SeedList": [
       "127.0.0.1:20338",
-      "127.0.0.1:21338",
       "127.0.0.1:22338"
     ],
     "HttpInfoPort": 21333,
@@ -55,9 +54,9 @@
         }
       ]
     },
-    "CheckAddressHeight": 100,
-    "VoteStartHeight": 100,
-    "CRCOnlyDPOSHeight": 100,
+    "CheckAddressHeight": 0,
+    "VoteStartHeight": 0,
+    "CRCOnlyDPOSHeight": 0,
     "PublicDPOSHeight": 1000000000
   }
 }
