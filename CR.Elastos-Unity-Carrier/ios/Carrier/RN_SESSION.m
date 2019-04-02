@@ -160,7 +160,7 @@
     if(fss == nil){
         NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
         *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
-        return;
+        return NO;
     }
     BOOL flag = [fss.session addServiceWithName: serviceName protocol:1 host:host port:port error:error];
     return flag;
@@ -178,14 +178,23 @@
                           error: (NSError *__autoreleasing  _Nullable * _Nullable)error
 {
     FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    
+    NSNumber *rs = [fss.stream openPortForwardingForService:serviceName withProtocol:1 host:host port:port error:error];
+    return rs;
+}
+-(BOOL) closePortForwarding: (NSString *)friendId
+           portForwardingId: (NSNumber *)pid
+                      error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
     if(fss == nil){
         NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
         *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
-        return;
+        return NO;
     }
     
-    NSNumber *rs = [fss.session openPortForwardingForService: serviceName protocol:1 host:host port:port error:error];
-    return rs;
+    BOOL flag = [fss.stream closePortForwarding: pid error:error];
+    return flag;
 }
 
 

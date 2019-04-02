@@ -399,7 +399,7 @@ RCT_EXPORT_METHOD
     Carrier *carrier = [self getCarrier:cid];
     RN_SESSION *_rn = [carrier getRNSessionInstance];
     NSError *error = nil;
-    BOOL flag = [_rn addService:friendId serviceName:serviceName host:host port:port error:&error];
+    [_rn addService:friendId serviceName:serviceName host:host port:port error:&error];
     if(error){
         callback(@[[self create_error:error]]);
     }
@@ -420,12 +420,25 @@ RCT_EXPORT_METHOD
     Carrier *carrier = [self getCarrier:cid];
     RN_SESSION *_rn = [carrier getRNSessionInstance];
     NSError *error = nil;
-    NSNumber rs = [_rn openPortFowarding:friendId serviceName:serviceName host:host port:port error:&error];
+    NSNumber *rs = [_rn openPortFowarding:friendId serviceName:serviceName host:host port:port error:&error];
     if(error){
         callback(@[[self create_error:error]]);
     }
     else{
         callback(@[NULL_ERR, rs]);
+    }
+}
+RCT_EXPORT_METHOD
+(closePortForwarding: (NSString *)cid :(NSString *)friendId :(NSNumber *)portForwardingId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn closePortForwarding:friendId portForwardingId:portForwardingId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
     }
 }
 

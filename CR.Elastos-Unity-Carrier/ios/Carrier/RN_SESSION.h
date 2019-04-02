@@ -97,6 +97,10 @@ NS_ASSUME_NONNULL_BEGIN
                            host: (NSString *)host
                            port: (NSString *)port
                            error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+-(BOOL) closePortForwarding: (NSString *)friendId
+           portForwardingId: (NSNumber *)pid
+                      error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+
 
 
 @end

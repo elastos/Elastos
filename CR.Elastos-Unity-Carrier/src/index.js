@@ -207,10 +207,13 @@ const Carrier = class {
   openPortFowarding(friendId, serviceName, host, port){
     return exec('openPortFowarding', this.id, friendId, serviceName, host, port);
   }
+  closePortForwarding(friendId, portForwardingId){
+    return exec('closePortForwarding', this.id, friendId, portForwardingId);
+  }
 
   // TODO
 
-  closePortForwarding(){}
+ 
   openChannel(){}
   closeChannel(){}
   writeChannel(){}
