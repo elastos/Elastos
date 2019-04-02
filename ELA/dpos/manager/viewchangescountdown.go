@@ -7,8 +7,8 @@ import (
 const (
 	// firstTimeoutFactor specified the factor first dynamic change
 	// arbitrators in one consensus
-	// (timeout will occurred in about 180 seconds)
-	firstTimeoutFactor = uint32(1)
+	// (timeout will occurred in about 1 hour)
+	firstTimeoutFactor = uint32(20)
 
 	// othersTimeoutFactor specified the factor after first dynamic change
 	// arbitrators in one consensus
