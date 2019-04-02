@@ -197,6 +197,15 @@
     return flag;
 }
 
+-(NSNumber *) openChannel: (NSString *)friendId
+                   cookie: (NSString *)cookie
+                    error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    NSNumber *rs = [fss.stream openChannelWithCookie: cookie error:error];
+    return rs;
+}
+
 
 #pragma mark - ELACarrierStreamDelegate
 -(void) carrierStream:(ELACarrierStream *)stream

@@ -210,11 +210,14 @@ const Carrier = class {
   closePortForwarding(friendId, portForwardingId){
     return exec('closePortForwarding', this.id, friendId, portForwardingId);
   }
+  openChannel(friendId, cookie){
+    return exec('openChannel', this.id, friendId, cookie);
+  }
 
   // TODO
 
  
-  openChannel(){}
+
   closeChannel(){}
   writeChannel(){}
   pendChannel(){}

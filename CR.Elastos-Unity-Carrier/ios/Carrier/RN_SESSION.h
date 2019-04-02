@@ -100,7 +100,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL) closePortForwarding: (NSString *)friendId
            portForwardingId: (NSNumber *)pid
                       error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
-
+-(NSNumber *) openChannel: (NSString *)friendId
+                   cookie: (NSString *)cookie
+                    error: (NSError * _Nullable * _Nullable)error;
 
 
 @end
