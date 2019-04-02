@@ -60,6 +60,7 @@ type arbitrators struct {
 	accumulativeReward          common.Fixed64
 	finalRoundChange            common.Fixed64
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
+	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -67,15 +68,49 @@ func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm)
 	a.IncreaseChainHeight(block)
 }
 
+func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
+
+	a.mtx.Lock()
+	hashes := a.illegalBlocksPayloadHashes
+	a.mtx.Unlock()
+
+	if hashes == nil || len(hashes) == 0 {
+		return nil
+	}
+
+	foundMap := make(map[common.Uint256]bool)
+	for k := range hashes {
+		foundMap[k] = false
+	}
+
+	for _, tx := range block.Transactions {
+		if tx.IsIllegalBlockTx() {
+			foundMap[tx.Payload.(*payload.DPOSIllegalBlocks).Hash()] = true
+		}
+	}
+
+	for _, found := range foundMap {
+		if !found {
+			return errors.New("expect an illegal blocks transaction in this block")
+		}
+	}
+	return nil
+}
+
 func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 	height uint32) error {
-	switch p.(type) {
-	case *payload.DPOSIllegalBlocks, *payload.InactiveArbitrators:
-		a.State.ProcessSpecialTxPayload(p)
-		return a.ForceChange(height)
+	switch obj := p.(type) {
+	case *payload.DPOSIllegalBlocks:
+		a.mtx.Lock()
+		a.illegalBlocksPayloadHashes[obj.Hash()] = nil
+		a.mtx.Unlock()
+	case *payload.InactiveArbitrators:
 	default:
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
+
+	a.State.ProcessSpecialTxPayload(p)
+	return a.ForceChange(height)
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
@@ -190,6 +225,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 		a.dutyIndex++
 		notify = false
 	}
+	a.illegalBlocksPayloadHashes = make(map[common.Uint256]interface{})
 
 	a.mtx.Unlock()
 
@@ -697,7 +733,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -794,6 +830,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		accumulativeReward:          common.Fixed64(0),
 		finalRoundChange:            common.Fixed64(0),
 		arbitersRoundReward:         nil,
+		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
 

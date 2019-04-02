@@ -8,6 +8,7 @@ import (
 )
 
 type Arbitrators interface {
+	CheckDPOSIllegalTx(block *types.Block) error
 	ProcessBlock(block *types.Block, confirm *payload.Confirm)
 	ProcessSpecialTxPayload(p types.Payload, height uint32) error
 	RollbackTo(height uint32) error
