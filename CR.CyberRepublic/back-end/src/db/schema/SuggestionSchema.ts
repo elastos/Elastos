@@ -30,6 +30,25 @@ const SuggestionCore = {
   link: [String],
 }
 
+const tag = {
+  type: {
+    type: String,
+    enum: _.values(constant.SUGGESTION_TAG_TYPE),
+    uppercase: true,
+    required: true,
+  },
+  desc: String,
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'users',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+}
+
 export const Suggestion = {
   ...SuggestionCore,
   editHistory: [{
@@ -98,4 +117,5 @@ export const Suggestion = {
       ref: 'cvote',
     }
   ],
+  tags: [tag],
 }

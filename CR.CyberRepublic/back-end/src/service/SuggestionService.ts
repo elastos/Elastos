@@ -223,10 +223,35 @@ export default class extends Base {
   }
 
   /**
+   * Council only
+   */
+  public async addTag(param: any): Promise<Document> {
+    const { id: _id, type, desc } = param
+    const currDoc = await this.model.getDBInstance().findById(_id)
+
+    if (!currDoc) {
+      throw 'Current document does not exist'
+    }
+
+    if (_.findIndex(currDoc.tags, (tagObj: any) => tagObj.type === type) !== -1) return currDoc
+
+    const tag: any = {
+      type,
+      createdBy: _.get(this.currentUser, '_id'),
+    }
+    if (desc) tag.desc = desc
+    const updateObject = {
+      $addToSet: { tags: tag }
+    }
+
+    await this.model.findOneAndUpdate({ _id }, updateObject)
+    return this.model.findById(_id)
+  }
+
+  /**
    * Admin only
    */
   public async abuse(param: any): Promise<Document> {
-    // TODO: checkPermission admin
     const { id: _id } = param
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ABUSED,
@@ -237,7 +262,6 @@ export default class extends Base {
   }
 
   public async archive(param: any): Promise<Document> {
-    // TODO: checkPermission admin
     const { id: _id } = param
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,
@@ -247,7 +271,6 @@ export default class extends Base {
   }
 
   public async delete(param: any): Promise<Document> {
-    // TODO: checkPermission admin
     const { id: _id } = param
     return this.model.findByIdAndDelete(_id)
   }
