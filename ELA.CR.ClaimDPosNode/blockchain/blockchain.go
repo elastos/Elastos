@@ -228,7 +228,10 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
-	b.state.ProcessSpecialTxPayload(payload)
+	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
+		b.BestChain.Height); err != nil {
+		log.Error("process illegal block error: ", err)
+	}
 }
 
 type OrphanBlock struct {
