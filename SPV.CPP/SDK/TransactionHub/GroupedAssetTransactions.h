@@ -117,7 +117,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> _transactions;
 			uint64_t _balance, _votedBalance, _lockedBalance, _depositBalance, _feePerKb;
 			UTXOList _utxos, _utxosLocked;
-			UTXOList _spentOutputs;
+			UTXOList _spentOutputs, _pendingSpentOutputs;
 			TransactionSet _allTx, _invalidTx;
 
 			Lockable *_lockable;
