@@ -21,28 +21,20 @@ type ViewChangesCountDown struct {
 	consensus   *Consensus
 	arbitrators state.Arbitrators
 
-	timeoutRefactor               uint32
-	inactiveArbitratorsEliminated bool
+	timeoutRefactor uint32
 }
 
 func (c *ViewChangesCountDown) Reset() {
-	c.inactiveArbitratorsEliminated = false
-	c.timeoutRefactor = 0
+	c.timeoutRefactor = firstTimeoutFactor
 }
 
 func (c *ViewChangesCountDown) SetEliminated() {
-	c.inactiveArbitratorsEliminated = true
-
-	if c.timeoutRefactor == 0 {
-		c.timeoutRefactor += firstTimeoutFactor
-	} else {
-		c.timeoutRefactor += othersTimeoutFactor
-	}
+	c.timeoutRefactor += othersTimeoutFactor
 }
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
-	if c.dispatcher.CurrentHeight() <= c.dispatcher.cfg.ChainParams.
-		PublicDPOSHeight || c.timeoutRefactor == 0 {
+	if c.dispatcher.CurrentHeight() <=
+		c.dispatcher.cfg.ChainParams.PublicDPOSHeight {
 		return false
 	}
 

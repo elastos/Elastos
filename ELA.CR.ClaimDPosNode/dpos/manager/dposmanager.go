@@ -398,6 +398,7 @@ func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
 		return
 	}
 	d.illegalMonitor.AddEvidence(i)
+	d.dispatcher.OnIllegalBlocksTxReceived(i)
 }
 
 func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData) {
