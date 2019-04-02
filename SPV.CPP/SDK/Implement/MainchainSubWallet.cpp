@@ -390,9 +390,18 @@ namespace Elastos {
 				} else if (allTxs[i]->GetTransactionType() == Transaction::CancelProducer) {
 					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->GetPayload());
 					if (pc) {
+						uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
+
+						nlohmann::json info;
+
+						info["Confirms"] = allTxs[i]->GetConfirms(lastBlockHeight);
+
 						j["Status"] = "Canceled";
-						j["Info"] = nlohmann::json();
+						j["Info"] = info;
 					}
+				} else if (allTxs[i]->GetTransactionType() == Transaction::ReturnDepositCoin) {
+					j["Status"] = "ReturnDeposit";
+					j["Info"] = nlohmann::json();
 				}
 			}
 
