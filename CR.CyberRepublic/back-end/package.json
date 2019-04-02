@@ -8,11 +8,10 @@
     "build:ts": "tsc",
     "tsc": "tsc || echo TSC compilation has errors.",
     "tslint": "tslint -c tslint.json -p tsconfig.json -t codeFrame",
-    "tslint-quiet": "tslint --quiet -c tslint.json -p tsconfig.json -t codeFrame",
     "setup-pm2": "npm install -g pm2 && pm2 install pm2-logrotate",
     "start:staging": "npm run build && npm run setup-pm2 && pm2 delete all; NODE_ENV=staging pm2 start dist/index.js --node-args='--max-old-space-size=1768' --log-date-format 'DD-MM HH:mm:ss.SSS' --log ./output.log && tail -f /dev/null",
     "start:production": "npm run build && npm run setup-pm2 && pm2 delete all; NODE_ENV=production pm2 start dist/index.js --node-args='--max-old-space-size=1768' --log-date-format 'DD-MM HH:mm:ss.SSS' --log ./output.log && tail -f /dev/null",
-    "unit": "NODE_ENV=jest jest --config test/unit/jest.conf.js --coverage",
+    "unit": "NODE_ENV=test jest --config test/unit/jest.conf.js --coverage",
     "test:prod": "node node_modules/jest/bin/jest.js --config test/unit/jest.conf.js --runInBand --bail --setupTestFrameworkScriptFile=./test/jest_setup.js --forceExit",
     "test": "npm run unit"
   },

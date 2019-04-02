@@ -30,6 +30,7 @@ beforeAll(async ()=>{
     await DB.getModel('User').remove({
         username: global.DB.COUNCIL_USER.username
     })
+
     await DB.getModel('Task').remove({})
     await DB.getModel('CVote').remove({})
 
