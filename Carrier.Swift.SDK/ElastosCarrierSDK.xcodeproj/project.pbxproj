@@ -26,9 +26,9 @@
 		A38A7CC4214B6A9D0010D5EB /* libelasession.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */; };
 		A38A7CC5214B6A9D0010D5EB /* libelacarrier.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */; };
 		A38A7CC6214B6A9D0010D5EB /* libcrystal.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC3214B6A9D0010D5EB /* libcrystal.dylib */; };
-		A3B497C12003736300420421 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrier.framework */; };
+		A3B497C12003736300420421 /* ElastosCarrierSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrierSDK.framework */; };
 		A3B497C62003736300420421 /* ElastosCarrierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497C52003736300420421 /* ElastosCarrierTests.swift */; };
-		A3B497C82003736300420421 /* ElastosCarrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497BA2003736300420421 /* ElastosCarrier.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A3B497C82003736300420421 /* ElastosCarrierSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497BA2003736300420421 /* ElastosCarrierSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A3B497D72003759400420421 /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D52003759400420421 /* ela_session.h */; };
 		A3B497D82003759400420421 /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D62003759400420421 /* ela_carrier.h */; };
 		A3B497E82003763600420421 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497DE2003763500420421 /* LogLevel.swift */; };
@@ -105,10 +105,10 @@
 		A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelasession.dylib; path = NativeDistributions/libs/libelasession.dylib; sourceTree = "<group>"; };
 		A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelacarrier.dylib; path = NativeDistributions/libs/libelacarrier.dylib; sourceTree = "<group>"; };
 		A38A7CC3214B6A9D0010D5EB /* libcrystal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrystal.dylib; path = NativeDistributions/libs/libcrystal.dylib; sourceTree = "<group>"; };
-		A3B497B72003736200420421 /* ElastosCarrier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A3B497BA2003736300420421 /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrier.h; sourceTree = "<group>"; };
+		A3B497B72003736200420421 /* ElastosCarrierSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrierSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3B497BA2003736300420421 /* ElastosCarrierSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrierSDK.h; sourceTree = "<group>"; };
 		A3B497BB2003736300420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A3B497C02003736300420421 /* ElastosCarrierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosCarrierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3B497C02003736300420421 /* ElastosCarrierSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosCarrierSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B497C52003736300420421 /* ElastosCarrierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElastosCarrierTests.swift; sourceTree = "<group>"; };
 		A3B497C72003736300420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A3B497D52003759400420421 /* ela_session.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_session.h; path = NativeDistributions/include/ela_session.h; sourceTree = "<group>"; };
@@ -157,7 +157,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3B497C12003736300420421 /* ElastosCarrier.framework in Frameworks */,
+				A3B497C12003736300420421 /* ElastosCarrierSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,8 +201,8 @@
 		A3B497B82003736200420421 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A3B497B72003736200420421 /* ElastosCarrier.framework */,
-				A3B497C02003736300420421 /* ElastosCarrierTests.xctest */,
+				A3B497B72003736200420421 /* ElastosCarrierSDK.framework */,
+				A3B497C02003736300420421 /* ElastosCarrierSDKTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -215,7 +215,7 @@
 				A3B497DB200375F600420421 /* Session */,
 				A35CE15621BD428B00AF4FE3 /* FileTransfer */,
 				A3B497DC200375FD00420421 /* Utilities */,
-				A3B497BA2003736300420421 /* ElastosCarrier.h */,
+				A3B497BA2003736300420421 /* ElastosCarrierSDK.h */,
 				A3B497BB2003736300420421 /* Info.plist */,
 			);
 			path = ElastosCarrier;
@@ -326,7 +326,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A3B497D72003759400420421 /* ela_session.h in Headers */,
-				A3B497C82003736300420421 /* ElastosCarrier.h in Headers */,
+				A3B497C82003736300420421 /* ElastosCarrierSDK.h in Headers */,
 				A35CE15A21BD42B200AF4FE3 /* ela_filetransfer.h in Headers */,
 				A3B497D82003759400420421 /* ela_carrier.h in Headers */,
 			);
@@ -335,9 +335,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		A3B497B62003736200420421 /* ElastosCarrier */ = {
+		A3B497B62003736200420421 /* ElastosCarrierSDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A3B497CB2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrier" */;
+			buildConfigurationList = A3B497CB2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierSDK" */;
 			buildPhases = (
 				A3B497B22003736200420421 /* Sources */,
 				A3B497B32003736200420421 /* Frameworks */,
@@ -349,14 +349,14 @@
 			);
 			dependencies = (
 			);
-			name = ElastosCarrier;
+			name = ElastosCarrierSDK;
 			productName = ElastosCarrier;
-			productReference = A3B497B72003736200420421 /* ElastosCarrier.framework */;
+			productReference = A3B497B72003736200420421 /* ElastosCarrierSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		A3B497BF2003736300420421 /* ElastosCarrierTests */ = {
+		A3B497BF2003736300420421 /* ElastosCarrierSDKTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A3B497CE2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierTests" */;
+			buildConfigurationList = A3B497CE2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierSDKTests" */;
 			buildPhases = (
 				A3B497BC2003736300420421 /* Sources */,
 				A3B497BD2003736300420421 /* Frameworks */,
@@ -367,9 +367,9 @@
 			dependencies = (
 				A3B497C32003736300420421 /* PBXTargetDependency */,
 			);
-			name = ElastosCarrierTests;
+			name = ElastosCarrierSDKTests;
 			productName = ElastosCarrierTests;
-			productReference = A3B497C02003736300420421 /* ElastosCarrierTests.xctest */;
+			productReference = A3B497C02003736300420421 /* ElastosCarrierSDKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -394,7 +394,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A3B497B12003736200420421 /* Build configuration list for PBXProject "ElastosCarrier" */;
+			buildConfigurationList = A3B497B12003736200420421 /* Build configuration list for PBXProject "ElastosCarrierSDK" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -407,8 +407,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A3B497B62003736200420421 /* ElastosCarrier */,
-				A3B497BF2003736300420421 /* ElastosCarrierTests */,
+				A3B497B62003736200420421 /* ElastosCarrierSDK */,
+				A3B497BF2003736300420421 /* ElastosCarrierSDKTests */,
 			);
 		};
 /* End PBXProject section */
@@ -487,7 +487,7 @@
 /* Begin PBXTargetDependency section */
 		A3B497C32003736300420421 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A3B497B62003736200420421 /* ElastosCarrier */;
+			target = A3B497B62003736200420421 /* ElastosCarrierSDK */;
 			targetProxy = A3B497C22003736300420421 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -716,7 +716,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A3B497B12003736200420421 /* Build configuration list for PBXProject "ElastosCarrier" */ = {
+		A3B497B12003736200420421 /* Build configuration list for PBXProject "ElastosCarrierSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A3B497C92003736300420421 /* Debug */,
@@ -725,7 +725,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A3B497CB2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrier" */ = {
+		A3B497CB2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A3B497CC2003736300420421 /* Debug */,
@@ -734,7 +734,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A3B497CE2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierTests" */ = {
+		A3B497CE2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierSDKTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A3B497CF2003736300420421 /* Debug */,
