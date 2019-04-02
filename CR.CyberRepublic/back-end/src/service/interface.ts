@@ -1,8 +1,8 @@
-import {Document} from 'mongoose';
+import {Document} from 'mongoose'
 
 export interface DataList {
-    total : number,
-    list : Document[],
-    pageSize? : number,
-    page? : number
+    total: number,
+    list: Document[],
+    pageSize?: number,
+    page?: number
 }

@@ -1,14 +1,14 @@
-import Base from '../Base';
-import TaskService from '../../service/TaskService';
+import Base from '../Base'
+import TaskService from '../../service/TaskService'
 
 export default class extends Base{
 
-    protected needLogin = true;
+    protected needLogin = true
 
     public async action(){
-        const taskService = this.buildService(TaskService);
-        const rs = await taskService.markCandidateVisited(this.getParam());
+        const taskService = this.buildService(TaskService)
+        const rs = await taskService.markCandidateVisited(this.getParam())
 
-        return this.result(1, rs);
+        return this.result(1, rs)
     }
 }

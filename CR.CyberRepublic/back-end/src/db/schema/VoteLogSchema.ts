@@ -6,7 +6,7 @@
  *
  * This is for v1.5
  */
-import {Schema} from 'mongoose';
+import {Schema} from 'mongoose'
 
 /**
  * This collection is for all transactions involving ELA
@@ -52,4 +52,4 @@ export const VoteLog = {
         required : false,
         min : Date.now
     }
-};
+}

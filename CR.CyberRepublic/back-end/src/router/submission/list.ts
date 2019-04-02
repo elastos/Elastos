@@ -1,9 +1,9 @@
-import Base from '../Base';
-import SubmissionService from '../../service/SubmissionService';
-import * as _ from 'lodash';
-import {constant} from '../../constant';
-import {Types} from 'mongoose';
-const ObjectId = Types.ObjectId;
+import Base from '../Base'
+import SubmissionService from '../../service/SubmissionService'
+import * as _ from 'lodash'
+import {constant} from '../../constant'
+import {Types} from 'mongoose'
+const ObjectId = Types.ObjectId
 
 export default class extends Base{
 
@@ -12,12 +12,12 @@ export default class extends Base{
      * @returns {Promise<["mongoose".Document]>}
      */
     public async action(){
-        const submissionService = this.buildService(SubmissionService);
+        const submissionService = this.buildService(SubmissionService)
 
-        const param = this.getParam();
+        const param = this.getParam()
         const query: any = {
             archived: {$ne: true}
-        };
+        }
 
         // allow overwrite if we want to show archived
         if (param.archived) {
@@ -34,7 +34,7 @@ export default class extends Base{
         if (param.admin) {
             // by default we only show tasks with these statuses
             query.type = {$nin: [constant.SUBMISSION_TYPE.FORM_EXT, constant.SUBMISSION_TYPE.EMPOWER_35]}
-            delete param.admin;
+            delete param.admin
 
         } else if (param.profileListFor) {
 
@@ -61,12 +61,12 @@ export default class extends Base{
             }
         }
 
-        const list = await submissionService.list(query);
-        const count = await submissionService.getDBModel('Submission').count(query);
+        const list = await submissionService.list(query)
+        const count = await submissionService.getDBModel('Submission').count(query)
 
         return this.result(1, {
             list,
             total: count
-        });
+        })
     }
 }

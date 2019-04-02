@@ -1,7 +1,7 @@
-import Base from '../Base';
-import TeamService from '../../service/TeamService';
-import * as _ from 'lodash';
-import {constant} from '../../constant';
+import Base from '../Base'
+import TeamService from '../../service/TeamService'
+import * as _ from 'lodash'
+import {constant} from '../../constant'
 
 export default class extends Base{
 
@@ -13,8 +13,8 @@ export default class extends Base{
      * @returns {Promise<["mongoose".Document]>}
      */
     public async action(){
-        const teamService = this.buildService(TeamService);
-        const param = this.getParam();
+        const teamService = this.buildService(TeamService)
+        const param = this.getParam()
 
         if (param.search) {
             param.name = { $regex: _.trim(param.search), $options: 'i' }

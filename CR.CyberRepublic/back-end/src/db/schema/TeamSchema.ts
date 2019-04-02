@@ -1,11 +1,11 @@
-import {Schema} from 'mongoose';
+import {Schema} from 'mongoose'
 import {PictureSchema} from './PictureSchema'
 import {CommentSchema} from './CommentSchema'
 
 export const TeamProfile = {
     description: String,
     logo : String
-};
+}
 
 export const Team = {
     name: {
@@ -37,7 +37,7 @@ export const Team = {
             ela: Number
         }
     }
-};
+}
 
 export const User_Team = {
     status: {
@@ -50,4 +50,4 @@ export const User_Team = {
     team: {type: Schema.Types.ObjectId, ref: 'team'},
     user: {type: Schema.Types.ObjectId, ref: 'users'},
     comments: [[CommentSchema]]
-};
+}

@@ -1,58 +1,58 @@
-import * as express from 'express';
-import * as Rollbar from 'rollbar';
-import * as bodyParser from 'body-parser';
-import * as helmet from 'helmet';
-import * as morgan from 'morgan';
-import * as timeout from 'connect-timeout';
-import * as session from 'express-session';
-import * as ConnectMongo from 'connect-mongo';
-import * as cors from 'cors';
-import * as fileUpload from 'express-fileupload';
-import * as compression from 'compression';
-import * as fs from 'fs';
+import * as express from 'express'
+import * as Rollbar from 'rollbar'
+import * as bodyParser from 'body-parser'
+import * as helmet from 'helmet'
+import * as morgan from 'morgan'
+import * as timeout from 'connect-timeout'
+import * as session from 'express-session'
+import * as ConnectMongo from 'connect-mongo'
+import * as cors from 'cors'
+import * as fileUpload from 'express-fileupload'
+import * as compression from 'compression'
+import * as fs from 'fs'
 import AccessControl from './utility/accessControl'
-import db from './db';
+import db from './db'
 
-import router, {middleware} from './router';
+import router, {middleware} from './router'
 
-import './config';
+import './config'
 
-let rollbar = null;
+let rollbar = undefined
 
 if (process.env.NODE_ENV === 'production') {
-    rollbar = new Rollbar({ accessToken: process.env.ROLLBAR_TOKEN });
+    rollbar = new Rollbar({ accessToken: process.env.ROLLBAR_TOKEN })
 }
 
 (async ()=>{
-    const app = express();
-    const DB = await db.create();
+    const app = express()
+    const DB = await db.create()
     const permissions = await DB.getModel('Permission').find()
     const prefix = '/api'
 
     app.set('trust proxy', true)
-    app.use(cors());
-    app.use(compression());
-    app.options('*', cors());
+    app.use(cors())
+    app.use(compression())
+    app.options('*', cors())
 
     // TODO: seems resetTimeout in Base isn't working, this is the temp workaround
-    const TIMEOUT = '600s';
-    app.use(timeout(TIMEOUT));
+    const TIMEOUT = '600s'
+    app.use(timeout(TIMEOUT))
 
 
-    morgan.format('ebp', '[Backend] :method :url :status :res[content-length] - :response-time ms');
-    app.use(morgan('ebp'));
+    morgan.format('ebp', '[Backend] :method :url :status :res[content-length] - :response-time ms')
+    app.use(morgan('ebp'))
     app.use(morgan('common', {stream: fs.createWriteStream('./access.log', {flags: 'a'})}))
 
 
-    app.use(helmet());
+    app.use(helmet())
     const bodyParserOptions = {
         strict: false,
         limit: '2mb'
-    };
-    app.use(bodyParser.json(bodyParserOptions));
-    app.use(bodyParser.urlencoded({extended: false}));
+    }
+    app.use(bodyParser.json(bodyParserOptions))
+    app.use(bodyParser.urlencoded({extended: false}))
 
-    const SessionStore = ConnectMongo(session);
+    const SessionStore = ConnectMongo(session)
     app.use(session({
         name: 'ebp-token',
         secret: process.env.APP_SECRET || 'session_secret',
@@ -65,25 +65,25 @@ if (process.env.NODE_ENV === 'production') {
             secure: false,
             maxAge: 1000*60*60*24*30 // 30 days
         }
-    }));
+    }))
 
     // init router
-    app.use(middleware);
-    app.use(fileUpload());
+    app.use(middleware)
+    app.use(fileUpload())
 
     // setup access control for REST apis before the router middleware
-    AccessControl(prefix, app, permissions);
+    AccessControl(prefix, app, permissions)
 
-    app.use(prefix, router);
+    app.use(prefix, router)
 
     if (process.env.NODE_ENV === 'production') {
         app.use(rollbar.errorHandler())
     }
 
-    const port = process.env.SERVER_PORT;
+    const port = process.env.SERVER_PORT
     app.listen(port, () => {
-        console.log(`start server at port ${port}`);
-    });
+        console.log(`start server at port ${port}`)
+    })
 
-})();
+})()
 

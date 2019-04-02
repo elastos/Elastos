@@ -1,11 +1,11 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
+import Base from './Base'
+import {Document} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions } from '../utility';
-import CommunityService from "./CommunityService";
+import { validate, utilCrypto, mail, permissions } from '../utility'
+import CommunityService from './CommunityService'
 
 const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
 
@@ -30,14 +30,14 @@ export default class extends Base {
      */
     public async registerNewUser(param): Promise<Document>{
 
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
-        const username = param.username.toLowerCase();
-        const email = param.email.toLowerCase();
+        const username = param.username.toLowerCase()
+        const email = param.email.toLowerCase()
 
-        this.validate_username(username);
-        this.validate_password(param.password);
-        this.validate_email(email);
+        this.validate_username(username)
+        this.validate_password(param.password)
+        this.validate_email(email)
 
         // check username and email unique
         if (await db_user.findOne({ username })) {
@@ -47,9 +47,9 @@ export default class extends Base {
             throw 'This email is already taken'
         }
 
-        const salt = uuid.v4();
+        const salt = uuid.v4()
 
-        const doc:any = {
+        const doc: any = {
             username,
             password : this.getPassword(param.password, salt),
             email,
@@ -67,7 +67,7 @@ export default class extends Base {
             },
             role : constant.USER_ROLE.MEMBER,
             active: true
-        };
+        }
 
         if (process.env.NODE_ENV === 'test') {
             if (param._id) {
@@ -85,23 +85,23 @@ export default class extends Base {
 
     // record user login date
     public async recordLogin(param) {
-        const db_user = this.getDBModel('User');
-        await db_user.update({ _id: param.userId }, { $push: { logins: new Date() } });
+        const db_user = this.getDBModel('User')
+        await db_user.update({ _id: param.userId }, { $push: { logins: new Date() } })
     }
 
     public async getUserSalt(username): Promise<String>{
-        const isEmail = validate.email(username);
-        username = username.toLowerCase();
+        const isEmail = validate.email(username)
+        username = username.toLowerCase()
 
-        const query = {[isEmail ? 'email' : 'username'] : username};
+        const query = {[isEmail ? 'email' : 'username'] : username}
 
-        const db_user = this.getDBModel('User');
-        const user = await db_user.db.findOne(query);
+        const db_user = this.getDBModel('User')
+        const user = await db_user.db.findOne(query)
 
         if(!user){
-            throw 'invalid username or email';
+            throw 'invalid username or email'
         }
-        return user.salt;
+        return user.salt
     }
 
     /**
@@ -157,7 +157,7 @@ export default class extends Base {
 
     public async updateRole(param) {
       const { userId, role } = param
-      const db_user = this.getDBModel('User');
+      const db_user = this.getDBModel('User')
       const userRole = _.get(this.currentUser, 'role')
       const isUserAdmin = permissions.isAdmin(userRole)
 
@@ -174,7 +174,7 @@ export default class extends Base {
     public async update(param) {
         const { userId } = param
         const updateObj: any = _.omit(param, restrictedFields.update)
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
         let user = await db_user.findById(userId)
         const isSelf = _.get(this.currentUser, '_id', '').toString() === userId
         const userRole = _.get(this.currentUser, 'role')
@@ -211,25 +211,25 @@ export default class extends Base {
         }
 
         if (param.password) {
-            const salt = uuid.v4();
+            const salt = uuid.v4()
             updateObj.password = this.getPassword(param.password, salt)
             updateObj.salt = salt
         }
 
         if (param.removeAttachment) {
-            updateObj.avatar = null
+            updateObj.avatar = undefined
             updateObj.avatarFileType = ''
             updateObj.avatarFilename = ''
         }
 
         if (param.removeBanner) {
-            updateObj.banner = null
+            updateObj.banner = undefined
             updateObj.bannerFileType = ''
             updateObj.bannerFilename = ''
         }
 
         if (param.popupUpdate) {
-            updateObj.popupUpdate = param.popupUpdate;
+            updateObj.popupUpdate = param.popupUpdate
         }
 
         await db_user.update({_id: userId}, updateObj)
@@ -247,8 +247,8 @@ export default class extends Base {
     }
 
     public async findUser(query): Promise<Document>{
-        const db_user = this.getDBModel('User');
-        const isEmail = validate.email(query.username);
+        const db_user = this.getDBModel('User')
+        const isEmail = validate.email(query.username)
         return await db_user.getDBInstance().findOne({
             [isEmail ? 'email' : 'username']: query.username.toLowerCase(),
             password: query.password,
@@ -256,11 +256,11 @@ export default class extends Base {
                 {banned: {$exists: false}},
                 {banned: false}
             ]
-        }).select(selectFields).populate('circles');
+        }).select(selectFields).populate('circles')
     }
 
     public async findUsers(query): Promise<Document[]>{
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
         const strictSelectFields = selectFields + ' -email'
 
         return await db_user.getDBInstance().find({
@@ -278,8 +278,8 @@ export default class extends Base {
     ************************************************************************************
      */
     public async findAll(query): Promise<Object>{
-        const db_user = this.getDBModel('User');
-        let excludeFields = selectFields;
+        const db_user = this.getDBModel('User')
+        let excludeFields = selectFields
         const userRole = _.get(this.currentUser, 'role')
         const isUserAdmin = permissions.isAdmin(userRole)
 
@@ -287,7 +287,7 @@ export default class extends Base {
             excludeFields += ' -email'
         }
 
-        const finalQuery:any = {
+        const finalQuery: any = {
             active: true,
             archived: {$ne: true}
         }
@@ -349,36 +349,36 @@ export default class extends Base {
     }
 
     public async changePassword(param): Promise<boolean>{
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
-        const {oldPassword, password} = param;
-        const username = param.username.toLowerCase();
+        const {oldPassword, password} = param
+        const username = param.username.toLowerCase()
         const userRole = _.get(this.currentUser, 'role')
         const isUserAdmin = permissions.isAdmin(userRole)
         const isSelf = _.get(this.currentUser, 'username') === username
 
-        this.validate_password(oldPassword);
-        this.validate_password(password);
-        this.validate_username(username);
+        this.validate_password(oldPassword)
+        this.validate_password(password)
+        this.validate_username(username)
 
         if (!isUserAdmin && !isSelf) {
             throw 'Access Denied'
         }
 
-        let user = await db_user.findOne({username}, {reject: false});
+        let user = await db_user.findOne({username}, {reject: false})
         if(!user){
-            throw 'user does not exist';
+            throw 'user does not exist'
         }
 
         if(user.password !== this.getPassword(oldPassword, user.salt)){
-            throw 'old password is incorrect';
+            throw 'old password is incorrect'
         }
 
         const res = await db_user.update({username}, {
             $set : {
                 password : this.getPassword(password, user.salt)
             }
-        });
+        })
 
         user = db_user.getDBInstance().findOne({username})
             .populate('circles')
@@ -399,7 +399,7 @@ export default class extends Base {
 
         console.log(`forgotPassword called on email: ${email}`)
 
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
         const userEmailMatch = await db_user.findOne({
             email: email,
@@ -434,10 +434,10 @@ export default class extends Base {
 
     public async resetPassword(param) {
 
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
         const {resetToken, password} = param
 
-        this.validate_password(password);
+        this.validate_password(password)
 
         const userMatchedByToken = await db_user.db.findOne({
             resetToken: resetToken,
@@ -456,7 +456,7 @@ export default class extends Base {
             $unset: {
                 resetToken: 1
             }
-        });
+        })
 
         if (!result.nModified) {
             console.error(`resetToken ${resetToken} password update failed`)
@@ -472,12 +472,12 @@ export default class extends Base {
     * param : user's elaBudget
     * */
     public getSumElaBudget(ela){
-        let total = 0;
+        let total = 0
         _.each(ela, (item)=>{
-            total += item.amount;
-        });
+            total += item.amount
+        })
 
-        return total;
+        return total
     }
 
     /*
@@ -486,22 +486,22 @@ export default class extends Base {
     *
     * */
     public getPassword(password, salt){
-        return utilCrypto.sha512(password+salt);
+        return utilCrypto.sha512(password+salt)
     }
 
     public validate_username(username){
         if(!validate.valid_string(username, 6)){
-            throw 'invalid username';
+            throw 'invalid username'
         }
     }
     public validate_password(password){
         if(!validate.valid_string(password, 8)){
-            throw 'invalid password';
+            throw 'invalid password'
         }
     }
     public validate_email(email){
         if(!validate.email(email)){
-            throw 'invalid email';
+            throw 'invalid email'
         }
     }
 
@@ -523,7 +523,7 @@ export default class extends Base {
             throw 'User mismatch - from user must = sender'
         }
 
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
         const fromUser = await db_user.findById(fromUserId)
         const toUser = await db_user.findById(toUserId)
@@ -599,11 +599,11 @@ export default class extends Base {
     }
 
     private async linkCountryCommunity(user) {
-        const db_community = this.getDBModel('Community');
-        const communityService = this.getService(CommunityService);
+        const db_community = this.getDBModel('Community')
+        const communityService = this.getService(CommunityService)
 
         if (!user.profile || _.isEmpty(user.profile.country)) {
-            return;
+            return
         }
 
         // 1st check if the country already exists
@@ -618,7 +618,7 @@ export default class extends Base {
                 name: geo.geolocationMap[user.profile.country],
                 type: constant.COMMUNITY_TYPE.COUNTRY,
                 geolocation: user.profile.country,
-                parentCommunityId: null
+                parentCommunityId: undefined
             })
 
         }
@@ -631,11 +631,11 @@ export default class extends Base {
     }
 
     public async checkEmail(param) {
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
-        const email = param.email.toLowerCase();
+        const email = param.email.toLowerCase()
 
-        this.validate_email(email);
+        this.validate_email(email)
 
         if (await db_user.findOne({ email: email })) {
             throw 'This email is already taken'

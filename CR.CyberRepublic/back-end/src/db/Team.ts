@@ -1,9 +1,9 @@
-import Base from './Base';
-import {Team} from './schema/TeamSchema';
+import Base from './Base'
+import {Team} from './schema/TeamSchema'
 
 export default class extends Base {
     protected getSchema(){
-        return Team;
+        return Team
     }
     protected getName(){
         return 'team'
@@ -11,6 +11,6 @@ export default class extends Base {
     protected rejectFields(){
         return {
 
-        };
+        }
     }
 }

@@ -1,8 +1,8 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate} from '../utility';
+import Base from './Base'
+import {Document} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
+import {validate} from '../utility'
 
 const restrictedFields = {
     update: [
@@ -51,10 +51,10 @@ export default class extends Base {
 
     public async list(query): Promise<Document> {
         const db_submission = this.getDBModel('Submission')
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
         const submissions = await db_submission.list(query, {
             updatedAt: -1
-        });
+        })
 
         for (let submission of submissions) {
 
@@ -112,7 +112,7 @@ export default class extends Base {
             passportUploadType,
             passportFilename
 
-        } = param;
+        } = param
         this.validate_title(title)
         this.validate_type(type)
 
@@ -153,7 +153,7 @@ export default class extends Base {
             passportUploadType,
             passportFilename,
 
-            createdBy: this.currentUser ? this.currentUser._id : null
+            createdBy: this.currentUser ? this.currentUser._id : undefined
         }
 
         const db_submission = this.getDBModel('Submission')
@@ -188,7 +188,7 @@ export default class extends Base {
         } = param
 
         const db_submission = this.getDBModel('Submission')
-        const updateObj:any = _.omit(param, restrictedFields.update)
+        const updateObj: any = _.omit(param, restrictedFields.update)
 
         await db_submission.update({_id: submissionId}, updateObj)
 

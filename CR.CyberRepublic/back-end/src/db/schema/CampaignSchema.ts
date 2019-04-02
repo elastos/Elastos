@@ -1,5 +1,5 @@
-import {Schema} from 'mongoose';
-import {ELA, VotePower} from "./UserSchema";
+import {Schema} from 'mongoose'
+import {ELA, VotePower} from './UserSchema'
 
 /*
 *****************************************************************
@@ -9,12 +9,12 @@ import {ELA, VotePower} from "./UserSchema";
 export const CampaignOutput = {
     description: String,
     images : [String]
-};
+}
 
 export const CampaignReward = {
     ela : ELA,
     votePower : VotePower
-};
+}
 
 export const CampaignCandidate = {
     /*
@@ -29,7 +29,7 @@ export const CampaignCandidate = {
         type : String
     },
     output : CampaignOutput
-};
+}
 
 export const Campaign = {
     name : {
@@ -76,4 +76,4 @@ export const Campaign = {
     candidates : [CampaignCandidate],
 
     reward : CampaignReward
-};
+}

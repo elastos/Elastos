@@ -1,13 +1,13 @@
-import Base from '../Base';
+import Base from '../Base'
 
-import create from './create';
-import list from './list';
-import list_public from './list_public';
-import get from './get';
-import update from './update';
-import vote from './vote';
-import finish from './finish';
-import update_notes from './update_notes';
+import create from './create'
+import list from './list'
+import list_public from './list_public'
+import get from './get'
+import update from './update'
+import vote from './vote'
+import finish from './finish'
+import update_notes from './update_notes'
 
 export default Base.setRouter([
     {
@@ -50,4 +50,4 @@ export default Base.setRouter([
         router : update_notes,
         method : 'post'
     }
-]);
+])

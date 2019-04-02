@@ -105,4 +105,4 @@ export default Base.setRouter([
         router : unsubscribe,
         method : 'post'
     }
-]);
+])

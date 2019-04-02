@@ -1,27 +1,27 @@
-import * as _ from 'lodash';
-import {constant} from "../constant";
+import * as _ from 'lodash'
+import {constant} from '../constant'
 
 export default class Base {
-    protected db;
-    private session;
-    protected currentUser;
+    protected db
+    private session
+    protected currentUser
 
     constructor(db, session){
-        this.db = db;
-        this.session = session;
-        this.currentUser = session.user;
+        this.db = db
+        this.session = session
+        this.currentUser = session.user
 
-        this.init();
+        this.init()
     }
 
     protected init(){}
 
     public getDBModel(name: string){
-        return this.db.getModel(name);
+        return this.db.getModel(name)
     }
 
     protected getService<T extends Base>(service: { new(...args): T }): T{
-        return new service(this.db, this.session);
+        return new service(this.db, this.session)
     }
 
     protected async markLastSeenComment(commentable, createdBy, db_commentable) {

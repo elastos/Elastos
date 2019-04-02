@@ -47,13 +47,13 @@ export default {
 
             mailgun.messages().send(data, function (err, body) {
                 if (err) {
-                    console.error(err);
+                    console.error(err)
                     reject(err)
                     return
                 }
                 // console.log(body);
                 resolve()
-            });
+            })
         })
 
     }
