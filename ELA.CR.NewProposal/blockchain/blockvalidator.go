@@ -216,6 +216,10 @@ func (b *BlockChain) checkBlockContext(block *Block, prevNode *BlockNode) error 
 		}
 	}
 
+	if err := DefaultLedger.Arbitrators.CheckDPOSIllegalTx(block); err != nil {
+		return err
+	}
+
 	return b.checkTxsContext(block)
 }
 
