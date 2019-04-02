@@ -92,6 +92,12 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) removeService: (NSString *)friendId
           serviceName: (NSString *)serviceName;
 
+-(NSNumber *) openPortFowarding: (NSString *)friendId
+                    serviceName: (NSString *)serviceName
+                           host: (NSString *)host
+                           port: (NSString *)port
+                           error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+
 
 @end
 

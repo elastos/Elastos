@@ -171,6 +171,22 @@
     FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
     [fss.session removeServiceWithName: serviceName];
 }
+-(NSNumber *) openPortFowarding: (NSString *)friendId
+                    serviceName: (NSString *)serviceName
+                           host: (NSString *)host
+                           port: (NSString *)port
+                          error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    if(fss == nil){
+        NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
+        *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
+        return;
+    }
+    
+    NSNumber *rs = [fss.session openPortForwardingForService: serviceName protocol:1 host:host port:port error:error];
+    return rs;
+}
 
 
 #pragma mark - ELACarrierStreamDelegate
