@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 
-#include "Interface/IIdChainSubWallet.h"
 #include "SidechainSubWallet.h"
+#include <Interface/IIdChainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -26,24 +26,17 @@ namespace Elastos {
 			friend class MasterWallet;
 
 			IdChainSubWallet(const CoinInfo &info,
-							 const MasterPubKeyPtr &masterPubKey,
 							 const ChainParams &chainParams,
-							 const PluginTypes &pluginTypes,
+							 const PluginType &pluginTypes,
 							 MasterWallet *parent);
 
 			virtual nlohmann::json GetBasicInfo() const;
-
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
-
-			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
-			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		};
 

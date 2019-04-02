@@ -6,10 +6,12 @@
 #define __ELASTOS_SDK_TESTHELPER_H__
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define TEST_ASCII_BEGIN 48
 
-#include "AuxPow.h"
-#include "ELAMerkleBlock.h"
+#include <SDK/Plugin/Block/AuxPow.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,8 +24,8 @@ namespace Elastos {
 			return u;
 		}
 
-		static CMBlock getRandCMBlock(size_t size) {
-			CMBlock block(size);
+		static bytes_t getRandBytes(size_t size) {
+			bytes_t block(size);
 
 			for (size_t i = 0; i < size; ++i) {
 				block[i] = (uint8_t) rand();
@@ -32,60 +34,233 @@ namespace Elastos {
 			return block;
 		}
 
+		static uint256 getRanduint256(void) {
+			return uint256(getRandBytes(32));
+		}
+
+		static std::string getRandHexString(size_t length) {
+			char buf[length];
+			for (size_t i = 0; i < length; ) {
+				char ch = rand();
+				if (isxdigit(ch)) {
+					buf[i++] = ch;
+				}
+			}
+
+			return std::string(buf, length);
+		}
+
 		static std::string getRandString(size_t length) {
 			char buf[length];
-			for (size_t i = 0; i < length; ++i) {
-				buf[i] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % 75);
+			for (size_t i = 0; i < length; ) {
+				char ch = rand();
+				if (isalnum(ch)) {
+					buf[i++] = ch;
+				}
 			}
 
-			return std::string(buf);
+			return std::string(buf, length);
 		}
 
-		static UInt168 getRandUInt168(void) {
-			UInt168 u;
-			for (size_t i = 0; i < ARRAY_SIZE(u.u8); ++i) {
-				u.u8[i] = rand();
-			}
-			return u;
+		static uint64_t getRandUInt64() {
+			return uint64_t(rand());
 		}
+
+		static uint32_t getRandUInt32() {
+			return uint32_t(rand());
+		}
+
+		static uint16_t getRandUInt16() {
+			return uint16_t(rand());
+		}
+
+		static uint8_t getRandUInt8() {
+			return uint8_t(rand());
+		}
+
+		static uint128 getRandUInt128(void) {
+			return uint128(getRandBytes(16));
+		}
+
+		static uint168 getRandUInt168(void) {
+			return uint168(getRandBytes(21));
+		}
+
+		static void initTransaction(Transaction &tx, const Transaction::TxVersion &version) {
+			tx.SetVersion(version);
+			tx.SetLockTime(getRandUInt32());
+			tx.SetBlockHeight(getRandUInt32());
+			tx.SetTimestamp(getRandUInt32());
+			tx.SetTransactionType(Transaction::TransferAsset);
+			tx.SetPayloadVersion(getRandUInt8());
+			tx.SetFee(getRandUInt64());
+			tx.SetRemark(getRandString(40));
+
+			for (size_t i = 0; i < 20; ++i) {
+				TransactionInput input;
+				input.SetTransactionHash(getRanduint256());
+				input.SetIndex(getRandUInt16());
+				input.SetSequence(getRandUInt32());
+				tx.AddInput(input);
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				TransactionOutput output;
+				output.SetAmount(getRandUInt64());
+				output.SetAssetId(getRanduint256());
+				output.SetOutputLock(getRandUInt32());
+				output.SetProgramHash(getRandUInt168());
+				if (version >= Transaction::TxVersion::V09) {
+					output.SetType(TransactionOutput::Type(i % 2));
+					if (output.GetType() == TransactionOutput::VoteOutput) {
+						std::vector<bytes_t> candidates;
+						for (size_t i = 0; i < 50; ++i) {
+							candidates.push_back(getRandBytes(33));
+						}
+						PayloadVote::VoteContent vc(PayloadVote::Delegate, candidates);
+						output.SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
+					} else {
+						output.SetPayload(OutputPayloadPtr(new PayloadDefault()));
+					}
+				}
+				tx.AddOutput(output);
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				bytes_t data = getRandBytes(25);
+				tx.AddAttribute(Attribute(Attribute::Script, data));
+			}
+
+			for (size_t i = 0; i < 20; ++i) {
+				bytes_t code = getRandBytes(25);
+				bytes_t parameter = getRandBytes(25);
+				tx.AddProgram(Program(code, parameter));
+			}
+
+			tx.GetHash();
+		}
+
+		static void verifyTransaction(const Transaction &tx1, const Transaction &tx2, bool checkAll = true) {
+			REQUIRE(tx1.GetLockTime() == tx2.GetLockTime());
+			REQUIRE(tx1.GetTransactionType() == tx2.GetTransactionType());
+			REQUIRE(tx1.GetPayloadVersion() == tx2.GetPayloadVersion());
+			REQUIRE(tx1.GetVersion() == tx2.GetVersion());
+			if (checkAll) {
+				REQUIRE(tx1.GetBlockHeight() == tx2.GetBlockHeight());
+				REQUIRE(tx1.GetTimestamp() == tx2.GetTimestamp());
+				REQUIRE(tx1.GetFee() == tx2.GetFee());
+				REQUIRE(tx1.GetRemark() == tx2.GetRemark());
+			}
+
+			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
+			REQUIRE(tx1.GetHash() == tx2.GetHash());
+			REQUIRE(tx1.GetInputs().size() == tx2.GetInputs().size());
+			for (size_t i = 0; i < tx1.GetInputs().size(); ++i) {
+				TransactionInput in1, in2;
+				in1 = tx1.GetInputs()[i];
+				in2 = tx2.GetInputs()[i];
+				REQUIRE(in1.GetTransctionHash() == in2.GetTransctionHash());
+				REQUIRE(in1.GetIndex() == in2.GetIndex());
+				REQUIRE(in1.GetSequence() == in2.GetSequence());
+			}
+
+			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
+			for (size_t i = 0; i < tx2.GetOutputs().size(); ++i) {
+				TransactionOutput o1, o2;
+				o1 = tx1.GetOutputs()[i];
+				o2 = tx2.GetOutputs()[i];
+				REQUIRE(o2.GetAssetId() == o1.GetAssetId());
+				REQUIRE(o2.GetProgramHash() == o1.GetProgramHash());
+				REQUIRE(o2.GetOutputLock() == o1.GetOutputLock());
+				REQUIRE(o2.GetAmount() == o1.GetAmount());
+
+				REQUIRE(o1.GetType() == o2.GetType());
+				OutputPayloadPtr p1 = o1.GetPayload();
+				OutputPayloadPtr p2 = o2.GetPayload();
+				if (o1.GetType() == TransactionOutput::VoteOutput) {
+					const PayloadVote *pv1 = dynamic_cast<const PayloadVote *>(p1.get());
+					const PayloadVote *pv2 = dynamic_cast<const PayloadVote *>(p2.get());
+					REQUIRE(pv1 != nullptr);
+					REQUIRE(pv2 != nullptr);
+					const std::vector<PayloadVote::VoteContent> &vc1 = pv1->GetVoteContent();
+					const std::vector<PayloadVote::VoteContent> &vc2 = pv2->GetVoteContent();
+					REQUIRE(vc1.size() == vc2.size());
+
+					for (size_t j = 0; j < vc1.size(); ++j) {
+						REQUIRE(vc1[j].type == vc2[j].type);
+						const std::vector<bytes_t> &cand1 = vc1[j].candidates;
+						const std::vector<bytes_t> &cand2 = vc2[j].candidates;
+
+						REQUIRE(cand1.size() == cand2.size());
+						for (size_t k = 0; k < cand1.size(); ++k) {
+							REQUIRE(cand1[k] == cand2[k]);
+						}
+					}
+				} else {
+					const PayloadDefault *pd1 = dynamic_cast<const PayloadDefault *>(p1.get());
+					const PayloadDefault *pd2 = dynamic_cast<const PayloadDefault *>(p2.get());
+					REQUIRE(pd1 != nullptr);
+					REQUIRE(pd2 != nullptr);
+				}
+			}
+
+			REQUIRE(tx1.GetAttributes().size() == tx2.GetAttributes().size());
+			for (size_t i = 0; i < tx1.GetAttributes().size(); ++i) {
+				Attribute attr1, attr2;
+				attr1 = tx1.GetAttributes()[i];
+				attr2 = tx2.GetAttributes()[i];
+				REQUIRE(attr1.GetUsage() == attr2.GetUsage());
+				REQUIRE((attr1.GetData() == attr2.GetData()));
+			}
+
+			REQUIRE(tx1.GetPrograms().size() == tx2.GetPrograms().size());
+			for (size_t i = 0; i < tx2.GetPrograms().size(); ++i) {
+				Program p1, p2;
+				p1 = tx1.GetPrograms()[i];
+				p2 = tx2.GetPrograms()[i];
+				REQUIRE((p1.GetCode() == p2.GetCode()));
+				REQUIRE((p1.GetParameter() == p2.GetParameter()));
+			}
+		}
+
 
 		static AuxPow createDummyAuxPow() {
 			AuxPow auxPow;
 
-			std::vector<UInt256> hashes(3);
+			std::vector<uint256> hashes(3);
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				hashes[i] = getRandUInt256();
+				hashes[i] = getRanduint256();
 			}
-			auxPow.setAuxMerkleBranch(hashes);
+			auxPow.SetAuxMerkleBranch(hashes);
 
 			for (size_t i = 0; i < hashes.size(); ++i) {
-				hashes[i] = getRandUInt256();
+				hashes[i] = getRanduint256();
 			}
-			auxPow.setCoinBaseMerkle(hashes);
+			auxPow.SetCoinBaseMerkle(hashes);
 
-			auxPow.setAuxMerkleIndex(123);
-			auxPow.setParMerkleIndex(456);
+			auxPow.SetAuxMerkleIndex(123);
+			auxPow.SetParMerkleIndex(456);
 
-			auxPow.setParentHash(getRandUInt256());
+			auxPow.SetParentHash(getRanduint256());
 
 			// init transaction
 			BRTransaction *tx = BRTransactionNew();
 			tx->txHash = getRandUInt256();
 			tx->version = rand();
 			for (size_t i = 0; i < 3; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				CMBlock signature = getRandCMBlock(28);
+				bytes_t script = getRandBytes(25);
+				bytes_t signature = getRandBytes(28);
 				BRTransactionAddInput(tx, getRandUInt256(), i, rand(),
-									  script, script.GetSize(), signature, signature.GetSize(), rand());
+									  &script[0], script.size(), &signature[0], signature.size(), rand());
 			}
 			for (size_t i = 0; i < 4; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				BRTransactionAddOutput(tx, rand(), script, script.GetSize());
+				bytes_t script = getRandBytes(25);
+				BRTransactionAddOutput(tx, rand(), &script[0], script.size());
 			}
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
 			tx->timestamp = rand();
-			auxPow.setBTCTransaction(tx);
+			auxPow.SetBTCTransaction(tx);
 
 			// init merkle block
 			BRMerkleBlock *block = BRMerkleBlockNew(nullptr);
@@ -102,40 +277,40 @@ namespace Elastos {
 				MBHashes[i] = getRandUInt256();
 			}
 			block->hashesCount = ARRAY_SIZE(MBHashes);
-			CMBlock flags = getRandCMBlock(5);
-			block->flagsLen = flags.GetSize();
-			BRMerkleBlockSetTxHashes(block, MBHashes, ARRAY_SIZE(MBHashes), flags, flags.GetSize());
+			bytes_t flags = getRandBytes(5);
+			block->flagsLen = flags.size();
+			BRMerkleBlockSetTxHashes(block, MBHashes, ARRAY_SIZE(MBHashes), &flags[0], flags.size());
 			block->height = rand();
-			auxPow.setParBlockHeader(block);
+			auxPow.SetParBlockHeader(block);
 
 			return auxPow;
 		}
 
 		static void verrifyAuxPowEqual(const AuxPow &auxPow, const AuxPow &auxPowVerify, bool checkAll = true) {
-			const std::vector<UInt256> &origMerkleBranch = auxPow.getAuxMerkleBranch();
-			const std::vector<UInt256> &merkleBranch = auxPowVerify.getAuxMerkleBranch();
+			const std::vector<uint256> &origMerkleBranch = auxPow.GetAuxMerkleBranch();
+			const std::vector<uint256> &merkleBranch = auxPowVerify.GetAuxMerkleBranch();
 			REQUIRE(merkleBranch.size() == origMerkleBranch.size());
 			for (size_t i = 0; i < merkleBranch.size(); ++i) {
-				REQUIRE(UInt256Eq(&merkleBranch[i], &origMerkleBranch[i]));
+				REQUIRE(merkleBranch[i] == origMerkleBranch[i]);
 			}
 
-			const std::vector<UInt256> &origCoinBaseMerkle = auxPow.getParCoinBaseMerkle();
-			const std::vector<UInt256> &coinBaseMerkle = auxPowVerify.getParCoinBaseMerkle();
+			const std::vector<uint256> &origCoinBaseMerkle = auxPow.GetParCoinBaseMerkle();
+			const std::vector<uint256> &coinBaseMerkle = auxPowVerify.GetParCoinBaseMerkle();
 			REQUIRE(origCoinBaseMerkle.size() == coinBaseMerkle.size());
 			for (size_t i = 0; i < coinBaseMerkle.size(); ++i) {
-				REQUIRE(UInt256Eq(&coinBaseMerkle[i], &origCoinBaseMerkle[i]));
+				REQUIRE(coinBaseMerkle[i] == origCoinBaseMerkle[i]);
 			}
 
-			REQUIRE(auxPow.getAuxMerkleIndex() == auxPowVerify.getAuxMerkleIndex());
-			REQUIRE(auxPow.getParMerkleIndex() == auxPowVerify.getParMerkleIndex());
+			REQUIRE(auxPow.GetAuxMerkleIndex() == auxPowVerify.GetAuxMerkleIndex());
+			REQUIRE(auxPow.GetParMerkleIndex() == auxPowVerify.GetParMerkleIndex());
 
-			const UInt256 &parentHash = auxPow.getParentHash();
-			const UInt256 &parentHashVerify = auxPowVerify.getParentHash();
-			REQUIRE(UInt256Eq(&parentHash, &parentHashVerify));
+			const uint256 &parentHash = auxPow.GetParentHash();
+			const uint256 &parentHashVerify = auxPowVerify.GetParentHash();
+			REQUIRE(parentHash == parentHashVerify);
 
 			// verify transaction
-			BRTransaction *origTxn = auxPow.getBTCTransaction();
-			BRTransaction *txn = auxPowVerify.getBTCTransaction();
+			BRTransaction *origTxn = auxPow.GetBTCTransaction();
+			BRTransaction *txn = auxPowVerify.GetBTCTransaction();
 			if (checkAll) {
 				REQUIRE(origTxn->blockHeight == txn->blockHeight);
 				REQUIRE(UInt256Eq(&origTxn->txHash, &txn->txHash));
@@ -171,8 +346,8 @@ namespace Elastos {
 			}
 
 			// verify merkle block
-			BRMerkleBlock *origBlock = auxPow.getParBlockHeader();
-			BRMerkleBlock *blockVerify = auxPowVerify.getParBlockHeader();
+			BRMerkleBlock *origBlock = auxPow.GetParBlockHeader();
+			BRMerkleBlock *blockVerify = auxPowVerify.GetParBlockHeader();
 			if (checkAll) {
 				REQUIRE(UInt256Eq(&origBlock->blockHash, &blockVerify->blockHash));
 			}
@@ -196,86 +371,82 @@ namespace Elastos {
 			}
 		}
 
-		static ELAMerkleBlock *createELAMerkleBlock() {
-			ELAMerkleBlock *block = ELAMerkleBlockNew();
+		static void setMerkleBlockValues(MerkleBlock *block) {
+			block->SetHeight((uint32_t) rand());
+			block->SetTimestamp((uint32_t) rand());
+			block->SetVersion((uint32_t) rand());
 
-			block->raw.height = (uint32_t)rand();
-			block->raw.timestamp = (uint32_t)rand();
-			block->raw.version = (uint32_t)rand();
-
-			block->raw.flagsLen = 10;
-			block->raw.flags = (uint8_t *)malloc(block->raw.flagsLen);
-			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-				block->raw.flags[i] = (uint8_t)rand();
-			}
-
-			block->raw.hashesCount = 10;
-			block->raw.hashes = (UInt256 *) malloc(sizeof(UInt256) * block->raw.hashesCount);
-			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-				block->raw.hashes[i] = getRandUInt256();
-			}
-			block->raw.merkleRoot = getRandUInt256();
-			block->raw.nonce = (uint32_t)rand();
-			block->raw.prevBlock = getRandUInt256();
-			block->raw.target = (uint32_t)rand();
-			block->raw.totalTx = (uint32_t)rand();
-
-			std::vector<UInt256> hashes;
+			std::vector<uint8_t> flags;
 			for (size_t i = 0; i < 10; ++i) {
-				hashes.push_back(getRandUInt256());
+				flags.push_back((uint8_t) rand());
 			}
-			block->auxPow.setAuxMerkleBranch(hashes);
+
+			std::vector<uint256> hashes;
+			for (size_t i = 0; i < 10; ++i) {
+				hashes.push_back(getRanduint256());
+			}
+
+			block->SetRootBlockHash(getRanduint256());
+			block->SetNonce((uint32_t) rand());
+			block->SetPrevBlockHash(getRanduint256());
+			block->SetTarget((uint32_t) rand());
+			block->SetTransactionCount((uint32_t) rand());
+
+			AuxPow auxPow;
+			hashes.clear();
+			for (size_t i = 0; i < 10; ++i) {
+				hashes.push_back(getRanduint256());
+			}
+			auxPow.SetAuxMerkleBranch(hashes);
 
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
-				hashes.push_back(getRandUInt256());
+				hashes.push_back(getRanduint256());
 			}
-			block->auxPow.setCoinBaseMerkle(hashes);
-			block->auxPow.setAuxMerkleIndex(rand());
+			auxPow.SetCoinBaseMerkle(hashes);
+			auxPow.SetAuxMerkleIndex(rand());
 
 			BRTransaction *tx = BRTransactionNew();
 			tx->txHash = getRandUInt256();
-			tx->version = (uint32_t)rand();
+			tx->version = (uint32_t) rand();
 			for (size_t i = 0; i < 10; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				CMBlock signature = getRandCMBlock(35);
-				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t)rand(), (uint64_t)rand(), script, script.GetSize(), signature, signature.GetSize(), (uint32_t)rand());
+				bytes_t script = getRandBytes(25);
+				bytes_t signature = getRandBytes(35);
+				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t) rand(), (uint64_t) rand(), &script[0],
+									  script.size(), &signature[0], signature.size(), (uint32_t) rand());
 			}
 			for (size_t i = 0; i < 10; ++i) {
-				CMBlock script = getRandCMBlock(25);
-				BRTransactionAddOutput(tx, rand(), script, script.GetSize());
+				bytes_t script = getRandBytes(25);
+				BRTransactionAddOutput(tx, rand(), &script[0], script.size());
 			}
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
 			tx->timestamp = rand();
-			block->auxPow.setBTCTransaction(tx);
-
-			return block;
+			auxPow.SetBTCTransaction(tx);
+			block->SetAuxPow(auxPow);
 		}
 
-		static void verifyELAMerkleBlock(ELAMerkleBlock *newBlock, ELAMerkleBlock *block) {
+		static void verifyELAMerkleBlock(const MerkleBlock &newBlock, const MerkleBlock &block) {
 
-			REQUIRE(0 == memcmp(&newBlock->raw.blockHash, &block->raw.blockHash, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.height == block->raw.height);
-			REQUIRE(newBlock->raw.timestamp == block->raw.timestamp);
-			REQUIRE(newBlock->raw.version == block->raw.version);
-			REQUIRE(newBlock->raw.flagsLen == block->raw.flagsLen);
-			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-				REQUIRE(newBlock->raw.flags[i] == block->raw.flags[i]);
+			REQUIRE(newBlock.GetHash() == block.GetHash());
+			REQUIRE(newBlock.GetHeight() == block.GetHeight());
+			REQUIRE(newBlock.GetTimestamp() == block.GetTimestamp());
+			REQUIRE(newBlock.GetVersion() == block.GetVersion());
+			REQUIRE(newBlock.GetFlags().size() == block.GetFlags().size());
+			for (size_t i = 0; i < block.GetFlags().size(); ++i) {
+				REQUIRE(newBlock.GetFlags()[i] == block.GetFlags()[i]);
 			}
-			REQUIRE(newBlock->raw.hashesCount == block->raw.hashesCount);
-			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-				REQUIRE(0 == memcmp(&newBlock->raw.hashes[i], &block->raw.hashes[i], sizeof(UInt256)));
+			REQUIRE(newBlock.GetHashes().size() == block.GetHashes().size());
+			for (size_t i = 0; i < block.GetHashes().size(); ++i) {
+				REQUIRE(newBlock.GetHashes()[i] == block.GetHashes()[i]);
 			}
-			REQUIRE(0 == memcmp(&newBlock->raw.hashes[1], &block->raw.hashes[1], sizeof(UInt256)));
-			REQUIRE(0 == memcmp(&newBlock->raw.hashes[2], &block->raw.hashes[2], sizeof(UInt256)));
-			REQUIRE(0 == memcmp(&newBlock->raw.merkleRoot, &block->raw.merkleRoot, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.nonce == block->raw.nonce);
-			REQUIRE(0 == memcmp(&newBlock->raw.prevBlock, &block->raw.prevBlock, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.target == block->raw.target);
-			REQUIRE(newBlock->raw.totalTx == block->raw.totalTx);
+			REQUIRE(newBlock.GetRootBlockHash() == block.GetRootBlockHash());
+			REQUIRE(newBlock.GetNonce() == block.GetNonce());
+			REQUIRE(newBlock.GetPrevBlockHash() == block.GetPrevBlockHash());
+			REQUIRE(newBlock.GetTarget() == block.GetTarget());
+			REQUIRE(newBlock.GetTransactionCount() == block.GetTransactionCount());
 
-			verrifyAuxPowEqual(newBlock->auxPow, block->auxPow, false);
+			verrifyAuxPowEqual(newBlock.GetAuxPow(), block.GetAuxPow(), false);
 		}
 
 	}

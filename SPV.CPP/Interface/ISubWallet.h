@@ -14,6 +14,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		enum BalanceType {
+			Default,
+			Voted,
+			Total,
+		};
+
 		class ISubWallet {
 		public:
 			/**
@@ -57,13 +63,20 @@ namespace Elastos {
 			 * Get balances of all addresses in json format.
 			 * @return balances of all addresses in json format.
 			 */
-			virtual nlohmann::json GetBalanceInfo() = 0;
+			virtual nlohmann::json GetBalanceInfo() const = 0;
 
 			/**
-			 * Get sum of balances of all addresses.
+			 * Get sum of balances of all addresses according to balance type.
 			 * @return sum of balances.
 			 */
-			virtual uint64_t GetBalance() = 0;
+			virtual uint64_t GetBalance(BalanceType type = Default) const = 0;
+
+			/**
+			 * Get balance of only the specified address.
+			 * @param address is one of addresses created by current sub wallet.
+			 * @return balance of specified address.
+			 */
+			virtual uint64_t GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const = 0;
 
 			/**
 			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
@@ -79,14 +92,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetAllAddress(
 					uint32_t start,
-					uint32_t count) = 0;
-
-			/**
-			 * Get balance of only the specified address.
-			 * @param address is one of addresses created by current sub wallet.
-			 * @return balance of specified address.
-			 */
-			virtual uint64_t GetBalanceWithAddress(const std::string &address) = 0;
+					uint32_t count) const = 0;
 
 			/**
 			 * Add a sub wallet callback object listened to current sub wallet.
@@ -114,7 +120,8 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
-					const std::string &remark) = 0;
+					const std::string &remark,
+					bool useVotedUTXO = false) = 0;
 
 			/**
 			 * Create a multi-sign transaction and return the content of transaction in json format.
@@ -128,7 +135,9 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const std::string &remark,
+					bool useVotedUTXO = false) = 0;
 
 			/**
 			 * Calculate transaction fee by content of transaction.
@@ -148,7 +157,8 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json UpdateTransactionFee(
 					const nlohmann::json &transactionJson,
-					uint64_t fee) = 0;
+					uint64_t fee,
+					const std::string &fromAddress) = 0;
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
@@ -164,15 +174,14 @@ namespace Elastos {
 			 * Get signers already signed specified transaction.
 			 * @param rawTransaction a multi-sign transaction to find signed signers.
 			 * @return Signed signers in json format. An example of result will be displayed as follows:
-			 * {
-			 * 	[
-			 * 		"03b73a64f50c142c1f08710e04b928553508c3028e045dfdfdc5489434df13275e",
-			 * 		"02f925e82f4482a9aa853a35203ab8965439c9db6aee8ef1783d2e1a491c28a482"
-			 * 	]
-			 * }
+			 *
+			 * [{"M":3,"N":4,"SignType":"MultiSign","Signers":["02753416fc7c1fb43c91e29622e378cd16243b53577ec971c6c3624a775722491a","0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280","030f5bdbee5e62f035f19153c5c32966e0fc72e419c2b4867ba533c43340c86b78"]}]
+			 * or
+			 * [{"SignType":"Standard","Signers":["028e0ce09c7a5905f876f38473d4e1e0a85327122372e5db14fc72f88311c30e75"]}]
+			 *
 			 */
 			virtual nlohmann::json GetTransactionSignedSigners(
-					const nlohmann::json &rawTransaction) = 0;
+					const nlohmann::json &rawTransaction) const = 0;
 
 			/**
 			 * Send a transaction by p2p network.
@@ -193,7 +202,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid) = 0;
+					const std::string &addressOrTxid) const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.
@@ -210,12 +219,20 @@ namespace Elastos {
 			 * @param publicKey belong to the private key signed the signature.
 			 * @param message raw data.
 			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return the result wrapper by a json.
+			 * @return true or false.
 			 */
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			/**
+			 * Get an asset details by specified asset ID
+			 * @param assetID asset hex code from asset hash.
+			 * @return details about asset in json format.
+			 */
+			virtual nlohmann::json GetAssetDetails(
+					const std::string &assetID) const = 0;
 
 			/**
 			 * Get root public key of current sub wallet.

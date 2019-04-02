@@ -5,10 +5,11 @@
 #ifndef __ELASTOS_SDK_TABLEBASE_H__
 #define __ELASTOS_SDK_TABLEBASE_H__
 
+#include "Sqlite.h"
+#include <Config.h>
+
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
-
-#include "Sqlite.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,9 +23,9 @@ namespace Elastos {
 			virtual ~TableBase();
 
 		protected:
-			void initializeTable(const std::string &constructScript);
+			void InitializeTable(const std::string &constructScript);
 
-			bool doTransaction(const boost::function<void()> &fun) const;
+			bool DoTransaction(const boost::function<void()> &fun) const;
 
 		protected:
 			Sqlite *_sqlite;

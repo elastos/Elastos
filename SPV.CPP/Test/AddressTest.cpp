@@ -4,80 +4,24 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <BRTransaction.h>
-#include <BRKey.h>
-#include <SDK/KeyStore/ElaNewWalletJson.h>
-#include <SDK/KeyStore/KeyStore.h>
-#include <SDK/Common/Log.h>
-#include <Core/BRBIP39Mnemonic.h>
-#include <Core/BRBIP32Sequence.h>
-#include <Core/BRKey.h>
-
 #include "catch.hpp"
-#include "Address.h"
-#include "SDK/Transaction/Transaction.h"
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE( "Address test", "[Address]" )
-{
-	SECTION("Default constructor") {
-		Address address;
-		REQUIRE(address.getRaw() != nullptr);
+TEST_CASE("Address test", "[Address]") {
+	SECTION("Address with public key derived from mnemonic") {
+
+		std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
+		std::string phrasePasswd = "";
+
+		uint512 seed = BIP39::DeriveSeed(phrase, phrasePasswd);
+
+		HDKeychain child = HDKeychain(HDSeed(seed.bytes()).getExtendedKey(true)).getChild("44'/0'/0'/0/0");
+
+		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == Address(PrefixStandard, child.pubkey()).String());
 	}
-
-	SECTION("Constructor init with BRAddress") {
-		BRAddress raw ;
-		Address address(raw);
-		REQUIRE(address.getRaw() != nullptr);
-	}
-
-	SECTION("Create Address width String") {
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address address(content);
-		REQUIRE(address.stringify() == content);
-	}
-
-	SECTION("Create Address width ScriptPubKey") {
-		CHECK_THROWS_AS(Address::fromScriptPubKey(CMBlock(), ELA_STANDARD), std::logic_error);
-
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-
-		CMBlock script = myaddress.getPubKeyScript();
-		boost::shared_ptr<Address> address1 = Address::fromScriptPubKey(script, ELA_STANDARD);
-		Address* address2 = address1.get();
-		REQUIRE(address2->toString() == content);
-
-		content = "XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU";
-		Address crossAddress(content);
-		script = crossAddress.getPubKeyScript();
-		address1 = Address::fromScriptPubKey(script, ELA_CROSSCHAIN);
-		REQUIRE(address1->toString() == content);
-
-	}
-
-	SECTION("Create Address with ScriptSignature") {
-
-		CHECK_THROWS_AS(Address::fromScriptSignature(CMBlock()), std::logic_error);
-		//todo completed width Signature Script ; now is no signature Script
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-
-		CMBlock script = myaddress.getPubKeyScript();
-
-		boost::shared_ptr<Address> address1 = Address::fromScriptSignature(script);
-		REQUIRE(address1->toString() != content);
-	}
-
-	SECTION("Address Valid Test") {
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address address(content);
-		REQUIRE(address.isValid() == true);
-
-		content = "DTFELUtMYwPpb96QrYaP6tBztEsUbQrytE";
-		Address address1(content);
-		REQUIRE(address1.isValid() == false);
-	}
-
 }

@@ -31,26 +31,67 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
-					const uint64_t amount,
-					const nlohmann::json &sidechainAccounts,
-					const nlohmann::json &sidechainAmounts,
-					const nlohmann::json &sidechainIndices,
+					const std::string &lockedAddress,
+					uint64_t amount,
+					const std::string &sideChainAddress,
 					const std::string &memo,
-					const std::string &remark) = 0;
+					const std::string &remark,
+					bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json GenerateProducerPayload(
+				const std::string &publicKey,
+				const std::string &nodePublicKey,
+				const std::string &nickName,
+				const std::string &url,
+				const std::string &ipAddress,
+				uint64_t location,
+				const std::string &payPasswd) const = 0;
+
+			virtual nlohmann::json GenerateCancelProducerPayload(
+				const std::string &publicKey,
+				const std::string &payPasswd) const = 0;
 
 			virtual nlohmann::json CreateRegisterProducerTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					const std::string &publicKey,
-					const std::string &nickName,
-					const std::string &url,
-					uint64_t location) = 0;
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				uint64_t amount,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false) = 0;
 
-			virtual nlohmann::json CreateCancelProducerTransaction(const std::string &publicKey) = 0;
+			virtual nlohmann::json CreateUpdateProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json CreateCancelProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false) = 0;
+
+			virtual nlohmann::json CreateRetrieveDepositTransaction(
+				uint64_t amount,
+				const std::string &memo,
+				const std::string &remark) = 0;
+
+			virtual std::string GetPublicKeyForVote() const = 0;
 
 			virtual nlohmann::json CreateVoteProducerTransaction(
-					uint64_t stake, const nlohmann::json &pubicKeys) = 0;
+					const std::string &fromAddress,
+					uint64_t stake,
+					const nlohmann::json &pubicKeys,
+					const std::string &memo,
+					const std::string &remark,
+					bool useVotedUTXO = false) = 0;
+
+			virtual	nlohmann::json GetVotedProducerList() const = 0;
+
+			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
+
 		};
 
 	}

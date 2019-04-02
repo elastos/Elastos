@@ -5,12 +5,13 @@
 #ifndef __ELASTOS_SDK_IDPATH_H__
 #define __ELASTOS_SDK_IDPATH_H__
 
-#include <cstdint>
-#include <string>
+#include <SDK/Common/Mstream.h>
+#include <SDK/Common/typedefs.h>
 
 #include <nlohmann/json.hpp>
 
-#include "SDK/Common/Mstream.h"
+#include <cstdint>
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,11 +19,10 @@ namespace Elastos {
 		struct IdItem {
 			IdItem() :
 					Purpose(0),
-					Index(0),
-					PublicKey("") {
+					Index(0) {
 			}
 
-			IdItem(uint32_t purpose, uint32_t index, const std::string &pubKey = "") :
+			IdItem(uint32_t purpose, uint32_t index, const bytes_t &pubKey = bytes_t()) :
 					Purpose(purpose),
 					Index(index),
 					PublicKey(pubKey) {
@@ -48,7 +48,7 @@ namespace Elastos {
 
 			uint32_t Purpose;
 			uint32_t Index;
-			std::string PublicKey;
+			bytes_t PublicKey;
 		};
 
 	}

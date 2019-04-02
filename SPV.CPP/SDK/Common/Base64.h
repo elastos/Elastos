@@ -32,7 +32,7 @@
 #ifndef __ELASTOS_SDK_BASE64_H__
 #define __ELASTOS_SDK_BASE64_H__
 
-#include <CMemBlock.h>
+#include <SDK/Common/typedefs.h>
 
 #include <string>
 
@@ -40,14 +40,12 @@ namespace Elastos {
 	namespace ElaWallet {
 		class Base64 {
 		public:
-			static std::string Encode(const CMBlock &input);
+			static std::string Encode(const void *input, size_t inputLen);
 
-			static CMBlock Decode(const std::string &input);
+			static std::string Encode(const bytes_t &input);
 
-		private:
-			static inline bool is_base64(unsigned char c) {
-				return (isalnum(c) || (c == '+') || (c == '/'));
-			}
+			static bytes_t Decode(const std::string &input);
+
 		};
 	}
 }

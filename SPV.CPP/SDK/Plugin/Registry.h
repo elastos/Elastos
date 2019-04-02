@@ -5,58 +5,60 @@
 #ifndef __ELASTOS_SDK_REGISTRY_H__
 #define __ELASTOS_SDK_REGISTRY_H__
 
+#include "Interface/IPlugin.h"
+
+#include <fruit/fruit.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 #include <map>
 #include <memory>
-
-#include "Interface/IMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Registry {
+		typedef std::string PluginType;
+
+		class Registry : public boost::noncopyable {
 		public:
+			typedef boost::shared_ptr<fruit::Injector<>> PluginInjectorPtr;
+
 			static Registry *Instance(bool erase = false);
 
-			IMerkleBlock *CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw);
+			void RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)());
 
-			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw);
+			void UnRegisterPlugin(const std::string &pluginType);
 
-			void AddMerkleBlockProto(IMerkleBlock *merkleBlock);
-
-			void RemoveMerkleBlockProto(IMerkleBlock *merkleBlock);
+			MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType);
 
 		private:
-
 			Registry();
 
-			typedef std::map<std::string, MerkleBlockPtr> MerkleBlockMap;
-			MerkleBlockMap _merkleBlocks;
+			std::map<std::string, PluginInjectorPtr> _pluginInjectors;
+			std::map<std::string, IPlugin *> _plugins;
 		};
 
-		template<class T>
-		class RegisterMerkleBlockProxy {
+
+		class RegisterProxy {
 		public:
-			RegisterMerkleBlockProxy() {
+			RegisterProxy(const std::string &pluginType, fruit::Component<> (*pluginFun)()) :
+					_pluginType(pluginType) {
 				if (Registry::Instance()) {
-					_block = new T;
-					Registry::Instance()->AddMerkleBlockProto(_block);
+					Registry::Instance()->RegisterPlugin(pluginType, pluginFun);
 				}
 			}
 
-			~RegisterMerkleBlockProxy() {
+			~RegisterProxy() {
 				if (Registry::Instance()) {
-					Registry::Instance()->RemoveMerkleBlockProto(_block);
+					Registry::Instance()->UnRegisterPlugin(_pluginType);
 				}
 			}
-
-			T *get() { return _block; }
 
 		private:
-			T *_block;
+			std::string _pluginType;
 		};
 
-#define REGISTER_MERKLEBLOCKPLUGIN(classname) \
-    static Elastos::ElaWallet::RegisterMerkleBlockProxy<classname> g_proxy_##classname;
+#define REGISTER_MERKLEBLOCKPLUGIN(pluginKey, pluginComponentFunction) \
+        static RegisterProxy g_plugin_proxy_##pluginKey = RegisterProxy(#pluginKey, pluginComponentFunction);
 
 	}
 

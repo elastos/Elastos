@@ -5,21 +5,23 @@
 #ifndef __ELASTOS_SDK_SIMPLEACCOUNT_H__
 #define __ELASTOS_SDK_SIMPLEACCOUNT_H__
 
-#include "IAccount.h"
-#include "SDK/Common/Mstream.h"
+#include <SDK/Account/IAccount.h>
+#include <SDK/Common/Mstream.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class SimpleAccount : public IAccount {
 		public:
-			SimpleAccount(const std::string &privKey, const std::string &payPassword);
+			SimpleAccount(const bytes_t &privKey, const std::string &payPassword);
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual Key DeriveVoteKey(const std::string &payPasswd, uint32_t coinIndex, uint32_t account, uint32_t change);
+
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -35,17 +37,19 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
+			const std::string &GetEncryptedKey() const;
 
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual bytes_t GetVotePublicKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
+
+			virtual Address GetAddress() const;
 
 		private:
 			friend class AccountFactory;
@@ -63,7 +67,7 @@ namespace Elastos {
 		private:
 
 			std::string _emptyString;
-			std::string _publicKey;
+			bytes_t _publicKey;
 			std::string _encryptedKey; // encode with base64
 		};
 

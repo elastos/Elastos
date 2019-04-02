@@ -1,37 +1,39 @@
-/*
-   base64.cpp and base64.h
-
-   base64 encoding and decoding with C++.
-
-   Version: 1.01.00
-
-   Copyright (C) 2004-2017 René Nyffenegger
-
-   This source code is provided 'as-is', without any express or implied
-   warranty. In no event will the author be held liable for any damages
-   arising from the use of this software.
-
-   Permission is granted to anyone to use this software for any purpose,
-   including commercial applications, and to alter it and redistribute it
-   freely, subject to the following restrictions:
-
-   1. The origin of this source code must not be misrepresented; you must not
-      claim that you wrote the original source code. If you use this source code
-      in a product, an acknowledgment in the product documentation would be
-      appreciated but is not required.
-
-   2. Altered source versions must be plainly marked as such, and must not be
-      misrepresented as being the original source code.
-
-   3. This notice may not be removed or altered from any source distribution.
-
-   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
-
-*/
+/**
+ *  base64.cpp and base64.h
+ *
+ *  base64 encoding and decoding with C++.
+ *
+ *  Version: 1.01.00
+ *
+ *  Copyright (C) 2004-2017 René Nyffenegger
+ *
+ *  This source code is provided 'as-is', without any express or implied
+ *  warranty. In no event will the author be held liable for any damages
+ *  arising from the use of this software.
+ *
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
+ *
+ *  1. The origin of this source code must not be misrepresented; you must not
+ *     claim that you wrote the original source code. If you use this source code
+ *     in a product, an acknowledgment in the product documentation would be
+ *     appreciated but is not required.
+ *
+ *  2. Altered source versions must be plainly marked as such, and must not be
+ *     misrepresented as being the original source code.
+ *
+ *  3. This notice may not be removed or altered from any source distribution.
+ *
+ *  René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+ */
 
 #include "Base64.h"
 
-#include <SDK/Wrapper/ByteStream.h>
+#include <SDK/Common/ByteStream.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/buffer.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -41,82 +43,49 @@ namespace Elastos {
 			"abcdefghijklmnopqrstuvwxyz"
 			"0123456789+/";
 
-		std::string Base64::Encode(const CMBlock &input) {
-			std::string ret;
-			int i = 0;
-			int j = 0;
-			unsigned char char_array_3[3];
-			unsigned char char_array_4[4];
-			size_t in_len = input.GetSize();
-			unsigned char *bytes_to_encode = (unsigned char *)input;
-
-			while (in_len--) {
-				char_array_3[i++] = *(bytes_to_encode++);
-				if (i == 3) {
-					char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-					char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-					char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-					char_array_4[3] = char_array_3[2] & 0x3f;
-
-					for(i = 0; (i <4) ; i++)
-						ret += base64_chars[char_array_4[i]];
-					i = 0;
-				}
-			}
-
-			if (i)
-			{
-				for(j = i; j < 3; j++)
-					char_array_3[j] = '\0';
-
-				char_array_4[0] = ( char_array_3[0] & 0xfc) >> 2;
-				char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-				char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-
-				for (j = 0; (j < i + 1); j++)
-					ret += base64_chars[char_array_4[j]];
-
-				while((i++ < 3))
-					ret += '=';
-
-			}
-			return ret;
+		std::string Base64::Encode(const void *input, size_t len) {
+			return Encode(bytes_t(input, len));
 		}
 
-		CMBlock Base64::Decode(const std::string &encoded_string) {
-			int in_len = encoded_string.size();
-			int i = 0;
-			int j = 0;
-			int in_ = 0;
-			unsigned char char_array_4[4], char_array_3[3];
-			ByteStream stream;
+		std::string Base64::Encode(const bytes_t &input) {
+			BIO *bio, *b64;
+			BUF_MEM *bufferPtr;
+			b64 = BIO_new(BIO_f_base64());
+			bio = BIO_new(BIO_s_mem());
+			bio = BIO_push(b64, bio);
 
-			while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
-				char_array_4[i++] = encoded_string[in_]; in_++;
-				if (i ==4) {
-					for (i = 0; i <4; i++)
-						char_array_4[i] = base64_chars.find(char_array_4[i]);
+			BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+			BIO_write(bio, &input[0], input.size());
+			BIO_flush(bio);
+			BIO_get_mem_ptr(bio, &bufferPtr);
+			std::string result(bufferPtr->data, bufferPtr->length);
+			BIO_set_close(bio, BIO_CLOSE);
+			BIO_free_all(bio);
+			return result;
+		}
 
-					char_array_3[0] = ( char_array_4[0] << 2       ) + ((char_array_4[1] & 0x30) >> 4);
-					char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-					char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+		bytes_t Base64::Decode(const std::string &input) {
+			size_t len = input.size(), padding = 0;
+			if (input[len - 1] == '=' && input[len - 2] == '=') //last two chars are =
+				padding = 2;
+			else if (input[len - 1] == '=') //last char is =
+				padding = 1;
 
-					stream.writeBytes(char_array_3, 3);
-					i = 0;
-				}
-			}
+			int decodedLen = (len*3)/4 - padding;
 
-			if (i) {
-				for (j = 0; j < i; j++)
-					char_array_4[j] = base64_chars.find(char_array_4[j]);
+			BIO *bio, *b64;
 
-				char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-				char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			bytes_t buffer(decodedLen);
 
-				stream.writeBytes(char_array_3, i - 1);
-			}
+			bio = BIO_new_mem_buf(input.c_str(), -1);
+			b64 = BIO_new(BIO_f_base64());
+			bio = BIO_push(b64, bio);
 
-			return stream.getBuffer();
+			BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+			decodedLen = BIO_read(bio, &buffer[0], input.size());
+			BIO_free_all(bio);
+			buffer.resize(decodedLen);
+			return buffer;
 		}
 
 	}

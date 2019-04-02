@@ -5,13 +5,11 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 #define __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 
+#include "Sqlite.h"
+#include "TableBase.h"
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
-
-#include "BRInt.h"
-#include "Sqlite.h"
-#include "CMemBlock.h"
-#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -23,7 +21,7 @@ namespace Elastos {
 			{
 			}
 
-			MerkleBlockEntity(long i, CMBlock bytes, uint32_t h) :
+			MerkleBlockEntity(long i, const bytes_t &bytes, uint32_t h) :
 				id(i),
 				blockBytes(bytes),
 				blockHeight(h)
@@ -31,7 +29,7 @@ namespace Elastos {
 			}
 
 			long id;
-			CMBlock blockBytes;
+			bytes_t blockBytes;
 			uint32_t blockHeight;
 		};
 
@@ -42,14 +40,14 @@ namespace Elastos {
 			MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~MerkleBlockDataSource();
 
-			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool deleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
+			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool DeleteAllBlocks(const std::string &iso);
+			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
 
 		private:
-			bool putMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
 
 
 		private:

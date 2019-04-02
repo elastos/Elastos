@@ -5,9 +5,8 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "BRInt.h"
-#include "Payload/PayloadRegisterIdentification.h"
-#include "Utils.h"
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Common/Utils.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -53,44 +52,44 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		std::string str = rawJson.dump();
 
 		PayloadRegisterIdentification payload;
-		REQUIRE_NOTHROW(payload.fromJson(rawJson));
+		REQUIRE_NOTHROW(payload.FromJson(rawJson, 0));
 	}
 
 	SECTION("Convert from and to json") {
 
 		PayloadRegisterIdentification payload;
-		payload.setId(ID);
+		payload.SetID(ID);
 
 		PayloadRegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
-		payload.addContent(content);
+		payload.AddContent(content);
 
 		PayloadRegisterIdentification::SignContent content2;
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
+		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
-		payload.addContent(content2);
+		payload.AddContent(content2);
 
-		nlohmann::json j = payload.toJson();
+		nlohmann::json j = payload.ToJson(0);
 
 		PayloadRegisterIdentification payload2;
-		payload2.fromJson(j);
+		payload2.FromJson(j, 0);
 
-		REQUIRE(payload.getId() == payload2.getId());
+		REQUIRE(payload.GetID() == payload2.GetID());
 
-		REQUIRE(payload.getPath(0) == payload2.getPath(0));
-		REQUIRE(payload.getProof(0, 0) == payload2.getProof(0, 0));
-		REQUIRE(UInt256Eq(&payload.getDataHash(0, 0), &payload2.getDataHash(0, 0)));
+		REQUIRE(payload.GetPath(0) == payload2.GetPath(0));
+		REQUIRE(payload.GetProof(0, 0) == payload2.GetProof(0, 0));
+		REQUIRE(payload.GetDataHash(0, 0) == payload2.GetDataHash(0, 0));
 
-		REQUIRE(payload.getPath(1) == payload2.getPath(1));
-		REQUIRE(payload.getProof(1, 0) == payload2.getProof(1, 0));
-		REQUIRE(UInt256Eq(&payload.getDataHash(1, 0), &payload2.getDataHash(1, 0)));
+		REQUIRE(payload.GetPath(1) == payload2.GetPath(1));
+		REQUIRE(payload.GetProof(1, 0) == payload2.GetProof(1, 0));
+		REQUIRE(payload.GetDataHash(1, 0) == payload2.GetDataHash(1, 0));
 	}
 }
 
@@ -99,39 +98,38 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 	SECTION("Deserialize from a serialized payload") {
 
 		PayloadRegisterIdentification payload;
-		payload.setId(ID);
+		payload.SetID(ID);
 
 		PayloadRegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
-		item.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
-		payload.addContent(content);
+		payload.AddContent(content);
 
 		PayloadRegisterIdentification::SignContent content2;
 		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
-		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
+		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
-		payload.addContent(content2);
+		payload.AddContent(content2);
 
 		ByteStream stream;
-		payload.Serialize(stream);
+		payload.Serialize(stream, 0);
 
-		stream.setPosition(0);
 		PayloadRegisterIdentification payload2;
-		payload2.Deserialize(stream);
+		payload2.Deserialize(stream, 0);
 
-		REQUIRE(payload.getId() == payload2.getId());
+		REQUIRE(payload.GetID() == payload2.GetID());
 
-		REQUIRE(payload.getPath(0) == payload2.getPath(0));
-		REQUIRE(payload.getProof(0, 0) == payload2.getProof(0, 0));
-		REQUIRE(UInt256Eq(&payload.getDataHash(0, 0), &payload2.getDataHash(0, 0)));
+		REQUIRE(payload.GetPath(0) == payload2.GetPath(0));
+		REQUIRE(payload.GetProof(0, 0) == payload2.GetProof(0, 0));
+		REQUIRE(payload.GetDataHash(0, 0) == payload2.GetDataHash(0, 0));
 
-		REQUIRE(payload.getPath(1) == payload2.getPath(1));
-		REQUIRE(payload.getProof(1, 0) == payload2.getProof(1, 0));
-		REQUIRE(UInt256Eq(&payload.getDataHash(1, 0), &payload2.getDataHash(1, 0)));
+		REQUIRE(payload.GetPath(1) == payload2.GetPath(1));
+		REQUIRE(payload.GetProof(1, 0) == payload2.GetProof(1, 0));
+		REQUIRE(payload.GetDataHash(1, 0) == payload2.GetDataHash(1, 0));
 	}
 }

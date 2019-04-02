@@ -1,6 +1,7 @@
 // Copyright (c) 2012-2018 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#include <memory.h>
 #include "BRInt.h"
 
 int UInt128Eq(const UInt128* a, const UInt128* b)
@@ -29,6 +30,10 @@ int UInt168Eq(const UInt168* a, const UInt168* b)
 int UInt256Eq(const UInt256* a, const UInt256* b)
 {
 	return (a->u64[0] == b->u64[0] && a->u64[1] == b->u64[1] && a->u64[2] == b->u64[2] && a->u64[3] == b->u64[3]);
+}
+
+int UInt256LessThan(const UInt256* a, const UInt256* b) {
+	return memcmp(a, b, sizeof(UInt256)) < 0;
 }
 
 int UInt512Eq(const UInt512* a, const UInt512* b)

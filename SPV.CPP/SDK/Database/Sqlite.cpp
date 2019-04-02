@@ -2,11 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Sqlite.h"
+
+#include <SDK/Common/Log.h>
+#include <SDK/Common/typedefs.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
-
-#include "Sqlite.h"
-#include "Log.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,14 +21,14 @@ namespace Elastos {
 			close();
 		}
 
-		bool Sqlite::isValid() {
+		bool Sqlite::IsValid() {
 			return _dataBasePtr != NULL;
 		}
 
 		bool Sqlite::exec(const std::string &sql, ExecCallBack callBack, void *arg) {
 			char *errmsg;
 
-			if (!isValid()) {
+			if (!IsValid()) {
 				Log::error("sqlite is invalid");
 				return false;
 			}
@@ -34,7 +36,7 @@ namespace Elastos {
 			int r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
-					Log::getLogger()->error("sqlite exec \"{}\" error: {}", sql, errmsg);
+					Log::error("sqlite exec \"{}\" error: {}", sql, errmsg);
 					sqlite3_free(errmsg);
 				}
 				return false;
@@ -43,40 +45,18 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Sqlite::beginTransaction(SqliteTransactionType type) {
-			return exec("BEGIN " + getTxTypeString(type) + ";", nullptr, nullptr);
+		bool Sqlite::BeginTransaction(SqliteTransactionType type) {
+			return exec("BEGIN " + GetTxTypeString(type) + ";", nullptr, nullptr);
 		}
 
-		bool Sqlite::endTransaction() {
+		bool Sqlite::EndTransaction() {
 			return exec("COMMIT;", nullptr, nullptr);
 		}
 
-//		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
-//			std::string typeStr;
-//
-//			if (true != beginTransaction(type)) {
-//				Log::getLogger()->error("sqlite beginTransaction error", typeStr);
-//				return false;
-//			}
-//
-//			if (true != exec(sql.c_str(), callBack, arg)) {
-//				Log::getLogger()->error("sqlite exec \"{}\"", sql);
-//				endTransaction();
-//				return false;
-//			}
-//
-//			if (true != endTransaction()) {
-//				Log::getLogger()->error("sqlite endTransaction error");
-//				return false;
-//			}
-//
-//			return true;
-//		}
-
-		bool Sqlite::prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
+		bool Sqlite::Prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
 			int r = 0;
 
-			if (!isValid()) {
+			if (!IsValid()) {
 				Log::error("sqlite is invalid");
 				return false;
 			}
@@ -93,63 +73,67 @@ namespace Elastos {
 			return true;
 		}
 
-		int Sqlite::step(sqlite3_stmt *pStmt) {
+		int Sqlite::Step(sqlite3_stmt *pStmt) {
 			return sqlite3_step(pStmt);
 		}
 
-		bool Sqlite::finalize(sqlite3_stmt *pStmt) {
-			return isValid() && SQLITE_OK == sqlite3_finalize(pStmt);
+		bool Sqlite::Finalize(sqlite3_stmt *pStmt) {
+			return IsValid() && SQLITE_OK == sqlite3_finalize(pStmt);
 		}
 
-		bool Sqlite::bindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack) {
-			return isValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob, blob.GetSize(), callBack);
+		bool Sqlite::BindBlob(sqlite3_stmt *pStmt, int idx, const void *blob, size_t size, BindCallBack callBack) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob, size, callBack);
 		}
 
-		bool Sqlite::bindDouble(sqlite3_stmt *pStmt, int idx, double d) {
-			return isValid() && SQLITE_OK == sqlite3_bind_double(pStmt, idx, d);
+		bool Sqlite::BindBlob(sqlite3_stmt *pStmt, int idx, const bytes_t &blob, BindCallBack callBack) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, &blob[0], blob.size(), callBack);
 		}
 
-		bool Sqlite::bindInt(sqlite3_stmt *pStmt, int idx, int i) {
-			return isValid() && SQLITE_OK == sqlite3_bind_int(pStmt, idx, i);
+		bool Sqlite::BindDouble(sqlite3_stmt *pStmt, int idx, double d) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_double(pStmt, idx, d);
 		}
 
-		bool Sqlite::bindInt64(sqlite3_stmt *pStmt, int idx, int64_t i) {
-			return isValid() && SQLITE_OK == sqlite3_bind_int64(pStmt, idx, i);
+		bool Sqlite::BindInt(sqlite3_stmt *pStmt, int idx, int i) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_int(pStmt, idx, i);
 		}
 
-		bool Sqlite::bindNull(sqlite3_stmt *pStmt, int idx) {
-			return isValid() && SQLITE_OK == sqlite3_bind_null(pStmt, idx);
+		bool Sqlite::BindInt64(sqlite3_stmt *pStmt, int idx, int64_t i) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_int64(pStmt, idx, i);
 		}
 
-		bool Sqlite::bindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack) {
-			return isValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
+		bool Sqlite::BindNull(sqlite3_stmt *pStmt, int idx) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_null(pStmt, idx);
 		}
 
-		const void *Sqlite::columnBlob(sqlite3_stmt *pStmt, int iCol) {
+		bool Sqlite::BindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack) {
+			return IsValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
+		}
+
+		const void *Sqlite::ColumnBlob(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_blob(pStmt, iCol);
 		}
 
-		double Sqlite::columnDouble(sqlite3_stmt *pStmt, int iCol) {
+		double Sqlite::ColumnDouble(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_double(pStmt, iCol);
 		}
 
-		int Sqlite::columnInt(sqlite3_stmt *pStmt, int iCol) {
+		int Sqlite::ColumnInt(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_int(pStmt, iCol);
 		}
 
-		int64_t Sqlite::columnInt64(sqlite3_stmt *pStmt, int iCol) {
+		int64_t Sqlite::ColumnInt64(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_int64(pStmt, iCol);
 		}
 
-		std::string Sqlite::columnText(sqlite3_stmt *pStmt, int iCol) {
+		std::string Sqlite::ColumnText(sqlite3_stmt *pStmt, int iCol) {
 			return std::string((char *)sqlite3_column_text(pStmt, iCol));
 		}
 
-		int Sqlite::columnBytes(sqlite3_stmt *pStmt, int iCol) {
+		int Sqlite::ColumnBytes(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_bytes(pStmt, iCol);
 		}
 
-		std::string Sqlite::getTxTypeString(SqliteTransactionType type) {
+		std::string Sqlite::GetTxTypeString(SqliteTransactionType type) {
 			if (type == DEFERRED) {
 				return "DEFERRED";
 			} else if (type == IMMEDIATE) {
@@ -169,9 +153,8 @@ namespace Elastos {
 
 			boost::filesystem::path parentPath = path.parent_path();
 			if (!parentPath.empty() && !boost::filesystem::exists(parentPath)) {
-				SPDLOG_TRACE(Log::getLogger(), "directory \"{}\" do not exist", parentPath.string());
 				if (!boost::filesystem::create_directories(parentPath)) {
-					Log::getLogger()->error("create directory \"{}\" error", parentPath.string());
+					Log::error("create directory \"{}\" error", parentPath.string());
 					return false;
 				}
 			}

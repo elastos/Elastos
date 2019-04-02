@@ -5,13 +5,12 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 #define __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 
+#include "Sqlite.h"
+#include "TableBase.h"
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <utility>
-#include "BRInt.h"
-#include "Sqlite.h"
-#include "CMemBlock.h"
-#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,25 +18,27 @@ namespace Elastos {
 		struct TransactionEntity {
 			TransactionEntity() :
 				blockHeight(0),
-				timeStamp(0),
-				remark(""),
-				txHash("")
+				timeStamp(0)
 			{
 			}
 
-			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp,
-							  const std::string &remark, const std::string &txHash) :
+			TransactionEntity(const bytes_t &buff, uint32_t blockHeight, uint32_t timeStamp,
+							  const std::string &assetID,
+							  const std::string &remark,
+							  const std::string &txHash) :
 				buff(buff),
 				blockHeight(blockHeight),
 				timeStamp(timeStamp),
+				assetID(assetID),
 				remark(remark),
 				txHash(txHash)
 			{
 			}
 
-			CMBlock buff;
+			bytes_t buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
+			std::string assetID;
 			std::string remark;
 			std::string txHash;
 		};
@@ -48,15 +49,15 @@ namespace Elastos {
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool putTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool deleteAllTransactions(const std::string &iso);
-			size_t getAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
-			bool updateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool deleteTxByHash(const std::string &iso, const std::string &hash);
+			bool PutTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool DeleteAllTransactions(const std::string &iso);
+			size_t GetAllTransactionsCount(const std::string &iso) const;
+			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			bool UpdateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 
 		private:
-			bool selectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
+			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
 
 		private:
 			/*
@@ -69,6 +70,7 @@ namespace Elastos {
 			const std::string TX_TIME_STAMP = "transactionTimeStamp";
 			const std::string TX_ISO = "transactionISO";
 			const std::string TX_REMARK = "transactionRemark";
+			const std::string TX_ASSETID = "assetID";
 
 			const std::string TX_DATABASE_CREATE = "create table if not exists " + TX_TABLE_NAME + " (" +
 				TX_COLUMN_ID + " text not null, " +
@@ -76,6 +78,7 @@ namespace Elastos {
 				TX_BLOCK_HEIGHT + " integer, " +
 				TX_TIME_STAMP + " integer, " +
 				TX_REMARK + " text DEFAULT '', " +
+				TX_ASSETID + " text not null, " +
 				TX_ISO + " text DEFAULT 'ELA' );";
 		};
 

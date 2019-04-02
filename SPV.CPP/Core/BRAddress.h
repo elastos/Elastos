@@ -38,24 +38,11 @@ extern "C" {
 #pragma message "testnet build"
 #endif
 
-#define ELA_SIDECHAIN_DESTROY_ADDR "1111111111111111111114oLvT2"
 // bitcoin address prefixes
 #define BITCOIN_PUBKEY_ADDRESS      0
 #define BITCOIN_SCRIPT_ADDRESS      5
 #define BITCOIN_PUBKEY_ADDRESS_TEST 111
 #define BITCOIN_SCRIPT_ADDRESS_TEST 196
-
-#define ELA_STANDARD                0xAC
-#define ELA_MULTISIG                0xAE
-#define ELA_CROSSCHAIN              0xAF
-#define ELA_IDCHAIN                 0xAD
-#define ELA_DESTROY                 0xAA
-
-#define ELA_STAND_ADDRESS            33  //0x21
-#define ELA_MULTISIG_ADDRESS         18  //0x12
-#define ELA_CROSSCHAIN_ADDRESS       75  //0x4B
-#define ELA_IDCHAIN_ADDRESS          103 //0x67
-#define ELA_DESTROY_ADDRESS          0
 
 // bitcoin script opcodes: https://en.bitcoin.it/wiki/Script#Constants
 #define OP_0           0x00
@@ -109,7 +96,7 @@ size_t BRAddressFromScriptSig(char *addr, size_t addrLen, const uint8_t *script,
 
 // writes the bitcoin address for a witness to addr
 // returns the number of bytes written, or addrLen needed if addr is NULL
-size_t BRAddressFromWitness(char *addr, size_t addrLen, const uint8_t *witness, size_t witLen);
+//size_t BRAddressFromWitness(char *addr, size_t addrLen, const uint8_t *witness, size_t witLen);
 
 // writes the scriptPubKey for addr to script
 // returns the number of bytes written, or scriptLen needed if script is NULL
@@ -118,17 +105,11 @@ size_t BRAddressScriptPubKey(uint8_t *script, size_t scriptLen, const char *addr
 // returns true if addr is a valid bitcoin address
 int BRAddressIsValid(const char *addr);
 
-// writes the 20 byte hash160 of addr to md20 and returns true on success
-int BRAddressHash160(void *md20, const char *addr);
-
-// writes the 21 byte hash168 of addr to md21 and returns true on success
-int BRAddressHash168(void *md21, const char *addr);
-
 // returns a hash value for addr suitable for use in a hashtable
-inline static size_t BRAddressHash(const void *addr)
-{
-    return BRMurmur3_32(addr, strlen((const char *)addr), 0);
-}
+//inline static size_t BRAddressHash(const void *addr)
+//{
+//    return BRMurmur3_32(addr, strlen((const char *)addr), 0);
+//}
 
 // true if addr and otherAddr are equal
 inline static int BRAddressEq(const void *addr, const void *otherAddr)

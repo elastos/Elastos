@@ -1,22 +1,19 @@
 
-set(
-	SPVSDK_INC_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/Common
-	${CMAKE_CURRENT_SOURCE_DIR}/Database
-	${CMAKE_CURRENT_SOURCE_DIR}/ELACoreExt
-	${CMAKE_CURRENT_SOURCE_DIR}/Implement
-	${CMAKE_CURRENT_SOURCE_DIR}/SpvService
-	${CMAKE_CURRENT_SOURCE_DIR}/Wrapper
-	${CMAKE_CURRENT_SOURCE_DIR}/Account
-	${CMAKE_CURRENT_SOURCE_DIR}
-	CACHE INTERNAL "spv core include directories"
-)
+add_subdirectory(WalletCore)
 
-file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES
+	"Account/*.cpp"
+	"Common/*.cpp"
+	"Database/*.cpp"
+	"IdAgent/*.cpp"
+	"Implement/*.cpp"
+	"P2P/*.cpp"
+	"Plugin/*.cpp"
+	"SpvService/*.cpp"
+	"TransactionHub/*.cpp")
 
 set(
 	SPVSDK_SOURCE_FILES
 	${SPVSDK_SOURCE_FILES}
 	CACHE INTERNAL "spv sdk source files" FORCE
 )
-

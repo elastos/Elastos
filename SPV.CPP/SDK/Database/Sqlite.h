@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_SQLITE_H__
 #define __ELASTOS_SDK_SQLITE_H__
 
+#include <SDK/Common/typedefs.h>
+
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
-
-#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -27,7 +27,7 @@ namespace Elastos {
 			Sqlite(const boost::filesystem::path &path);
 			~Sqlite();
 
-			bool isValid();
+			bool IsValid();
 			/*
 			 * The sqlite3_exec() interface is a convenience wrapper around sqlite3_prepare_v2(),
 			 * sqlite3_step(), and sqlite3_finalize(), that allows an application to run multiple
@@ -35,38 +35,29 @@ namespace Elastos {
 			 */
 			bool exec(const std::string &sql, ExecCallBack callBack, void *arg);
 
-			bool beginTransaction(SqliteTransactionType type);
-			bool endTransaction();
-			/*
-			 * Transactions created using BEGIN...COMMIT do not nest. For nested transactions,
-			 * use the SAVEPOINT and RELEASE commands.
-			 * Transactions can be deferred, immediate, or exclusive.The default transaction
-			 * behavior is deferred. Deferred means that no locks are acquired on the database
-			 * until the database is first accessed.
-			 * After a BEGIN IMMEDIATE, no other database connection will be able to write to
-			 * the database or do a BEGIN IMMEDIATE or BEGIN EXCLUSIVE.
-			 */
-//			bool transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg);
+			bool BeginTransaction(SqliteTransactionType type);
+			bool EndTransaction();
 
-			bool prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
-			int step(sqlite3_stmt *pStmt);
-			bool finalize(sqlite3_stmt *pStmt);
-			bool bindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack);
-			bool bindDouble(sqlite3_stmt *pStmt, int idx, double d);
-			bool bindInt(sqlite3_stmt *pStmt, int idx, int i);
-			bool bindInt64(sqlite3_stmt *pStmt, int idx, int64_t i);
-			bool bindNull(sqlite3_stmt *pStmt, int idx);
-			bool bindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack);
+			bool Prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
+			int Step(sqlite3_stmt *pStmt);
+			bool Finalize(sqlite3_stmt *pStmt);
+			bool BindBlob(sqlite3_stmt *pStmt, int idx, const bytes_t &blob, BindCallBack callBack);
+			bool BindBlob(sqlite3_stmt *pStmt, int idx, const void *blob, size_t size, BindCallBack callBack);
+			bool BindDouble(sqlite3_stmt *pStmt, int idx, double d);
+			bool BindInt(sqlite3_stmt *pStmt, int idx, int i);
+			bool BindInt64(sqlite3_stmt *pStmt, int idx, int64_t i);
+			bool BindNull(sqlite3_stmt *pStmt, int idx);
+			bool BindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack);
 
-			const void *columnBlob(sqlite3_stmt *pStmt, int iCol);
-			double columnDouble(sqlite3_stmt *pStmt, int iCol);
-			int columnInt(sqlite3_stmt *pStmt, int iCol);
-			int64_t columnInt64(sqlite3_stmt *pStmt, int iCol);
-			std::string columnText(sqlite3_stmt *pStmt, int iCol);
-			int columnBytes(sqlite3_stmt *pStmt, int iCol);
+			const void *ColumnBlob(sqlite3_stmt *pStmt, int iCol);
+			double ColumnDouble(sqlite3_stmt *pStmt, int iCol);
+			int ColumnInt(sqlite3_stmt *pStmt, int iCol);
+			int64_t ColumnInt64(sqlite3_stmt *pStmt, int iCol);
+			std::string ColumnText(sqlite3_stmt *pStmt, int iCol);
+			int ColumnBytes(sqlite3_stmt *pStmt, int iCol);
 
 		private:
-			std::string getTxTypeString(SqliteTransactionType type);
+			std::string GetTxTypeString(SqliteTransactionType type);
 			bool open(const boost::filesystem::path &path);
 			void close();
 

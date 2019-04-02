@@ -12,18 +12,23 @@ namespace Elastos {
 
 		class StandardSingleSubAccount : public SingleSubAccount {
 		public:
-			StandardSingleSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex);
+			StandardSingleSubAccount(const HDKeychain &masterPubKey, const bytes_t &votePubKey,
+									 IAccount *account, uint32_t coinIndex);
 
-			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet);
+			virtual bytes_t GetRedeemScript(const Address &addr) const;
 
-			virtual Key DeriveMainAccountKey(const std::string &payPassword);
+			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
-			virtual std::string GetMainAccountPublicKey() const;
+			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
-		protected:
-			virtual WrapperList<Key, BRKey>
-			DeriveAccountAvailableKeys(const std::string &payPassword,
-									   const TransactionPtr &transaction);
+			virtual size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const;
+
+			virtual bool ContainsAddress(const Address &address) const;
+
+			virtual Key DeriveVoteKey(const std::string &payPasswd);
+
+		private:
+			Address _address;
 		};
 
 	}

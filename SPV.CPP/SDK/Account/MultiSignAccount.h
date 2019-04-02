@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_MULTISIGNACCOUNT_H__
 #define __ELASTOS_SDK_MULTISIGNACCOUNT_H__
 
-#include <vector>
+#include <SDK/Account/IAccount.h>
+#include <SDK/Common/Mstream.h>
 
-#include "IAccount.h"
-#include "StandardAccount.h"
+#include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -17,19 +17,19 @@ namespace Elastos {
 		public:
 			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners, uint32_t requiredSignCount);
 
-			CMBlock GenerateRedeemScript() const;
+			const bytes_t &GetRedeemScript() const;
 
 			IAccount *GetInnerAccount() const;
 
-			const std::vector<std::string> &GetCoSigners() const;
+			const std::vector<bytes_t> &GetCoSigners() const;
 
 			uint32_t GetRequiredSignCount() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -45,17 +45,15 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
-
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual Address GetAddress() const;
 
 		private:
 			friend class AccountFactory;
@@ -70,15 +68,14 @@ namespace Elastos {
 
 			FROM_JSON(MultiSignAccount);
 
-			bool Compare(const std::string &a, const std::string &b) const;
-
 			void checkSigners() const;
 
 		private:
+			mutable bytes_t _redeemScript;
 			AccountPtr _me;
-			std::vector<std::string> _coSigners;
+			std::vector<bytes_t> _coSigners;
 			uint32_t _requiredSignCount;
-			mutable std::string _address;
+			mutable Address _address;
 			std::string _rootPath;
 		};
 

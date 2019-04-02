@@ -5,21 +5,21 @@
 #ifndef __ELASTOS_SDK_MASTERWALLET_H__
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
+#include <SDK/SpvService/CoinConfig.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/KeyStore/KeyStore.h>
+#include <SDK/SpvService/CoinInfo.h>
+#include <SDK/SpvService/MasterWalletStore.h>
+#include <SDK/IdAgent/IdAgentImpl.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+
+#include <Interface/IMasterWallet.h>
+#include <Interface/IIdAgent.h>
+
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <SDK/Transaction/Transaction.h>
-#include <SDK/KeyStore/CoinConfig.h>
-
-#include "MasterPubKey.h"
-#include "Interface/IMasterWallet.h"
-#include "Interface/IIdAgent.h"
-#include "SDK/KeyStore/Mnemonic.h"
-#include "KeyStore/KeyStore.h"
-#include "KeyStore/CoinInfo.h"
-#include "KeyStore/MasterWalletStore.h"
-#include "IdAgent/IdAgentImpl.h"
-#include "Plugin/PluginTypes.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -51,6 +51,8 @@ namespace Elastos {
 
 			bool IsEqual(const MasterWallet &wallet) const;
 
+			HDKeychain GetMasterPubKey(const std::string &chainID) const;
+
 		public: //override from IMasterWallet
 
 			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath);
@@ -65,29 +67,26 @@ namespace Elastos {
 					const std::string &chainID,
 					uint64_t feePerKb = 0);
 
-			virtual ISubWallet *RecoverSubWallet(
-					const std::string &chainID,
-					uint32_t limitGap,
-					uint64_t feePerKb = 0);
-
 			virtual void DestroyWallet(ISubWallet *wallet);
 
-			virtual std::string GetPublicKey();
+			virtual std::string GetPublicKey() const;
 
 			virtual std::string Sign(
 					const std::string &message,
 					const std::string &payPassword);
 
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
 
-			virtual bool IsAddressValid(const std::string &address);
+			virtual bool IsAddressValid(const std::string &address) const;
 
-			virtual std::vector<std::string> GetSupportedChains();
+			virtual std::vector<std::string> GetSupportedChains() const;
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
+
+			virtual IIdAgent *GetIIdAgent();
 
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
@@ -108,7 +107,7 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetAllIds() const;
 
-			virtual std::string GetPublicKey(const std::string &id);
+			virtual std::string GetPublicKey(const std::string &id) const;
 
 		protected:
 
@@ -233,7 +232,6 @@ namespace Elastos {
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const CoinConfig &config,
 											  const ChainParams &chainParams,
-											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);
 
 
@@ -241,7 +239,7 @@ namespace Elastos {
 
 			virtual void stopPeerManager(SubWallet *wallet);
 
-			void tryInitCoinConfig();
+			void tryInitCoinConfig() const;
 
 			void initSubWalletsPubKeyMap(const std::string &payPassword);
 
@@ -255,7 +253,7 @@ namespace Elastos {
 			std::string _id;
 			std::string _rootPath;
 
-			CoinConfigReader _coinConfigReader;
+			mutable CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 

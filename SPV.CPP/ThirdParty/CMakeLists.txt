@@ -1,12 +1,11 @@
 
 include(openssl.cmake)
 include(boost.cmake)
-#include(fruit.cmake)
+include(fruit.cmake)
 include(sqlite.cmake)
 include(catch2.cmake)
 include(json.cmake)
 include(spdlog.cmake)
-include(bigint.cmake)
 
 set(
 	ThirdParty_INC_DIRS

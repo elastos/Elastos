@@ -5,32 +5,49 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "BRInt.h"
-#include "Payload/PayloadSideMining.h"
+#include "TestHelper.h"
+//#include "BRInt.h"
+#include <SDK/Plugin/Transaction/Payload/PayloadSideMining.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 
-    SECTION("init test") {
-        //fixme
-//        PayloadSideMining psm, psm_re;
-//        psm.setSideBlockHash(UINT256_ZERO);
-//        psm.setSideGenesisHash(UINT256_ZERO);
-//
-//        ByteStream stream;
-//        psm.Serialize(stream);
-//        stream.setPosition(0);
-//
-//        psm_re.Deserialize(stream);
-//
-//        CMBlock bd_src = psm.getData();
-//        CMBlock bd_rc = psm_re.getData();
-//
-//        size_t mem_len = sizeof(UInt256) * 2;
-//        REQUIRE(mem_len == bd_src.GetSize());
-//        if (bd_src && bd_rc)
-//            REQUIRE(0 == memcmp(bd_src, bd_rc, mem_len));
-    }
+	SECTION("Serialize and deserialize") {
+		PayloadSideMining p1, p2;
+
+		p1.SetSideBlockHash(getRanduint256());
+		p1.SetSideGenesisHash(getRanduint256());
+		p1.SetBlockHeight(getRandUInt32());
+		p1.SetSignedData(getRandBytes(100));
+
+		ByteStream stream;
+		p1.Serialize(stream, 0);
+
+		REQUIRE(p2.Deserialize(stream, 0));
+
+		REQUIRE(p1.GetSideBlockHash() == p2.GetSideBlockHash());
+		REQUIRE(p1.GetSideGenesisHash() == p2.GetSideGenesisHash());
+		REQUIRE(p1.GetBlockHeight() == p2.GetBlockHeight());
+		REQUIRE((p1.GetSignedData() == p2.GetSignedData()));
+	}
+
+	SECTION("to json and from json") {
+		PayloadSideMining p1, p2;
+
+		p1.SetSideBlockHash(getRanduint256());
+		p1.SetSideGenesisHash(getRanduint256());
+		p1.SetBlockHeight(getRandUInt32());
+		p1.SetSignedData(getRandBytes(100));
+
+		nlohmann::json p1Json = p1.ToJson(0);
+
+		p2.FromJson(p1Json, 0);
+
+		REQUIRE(p1.GetSideBlockHash() == p2.GetSideBlockHash());
+		REQUIRE(p1.GetSideGenesisHash() == p2.GetSideGenesisHash());
+		REQUIRE(p1.GetBlockHeight() == p2.GetBlockHeight());
+		REQUIRE((p1.GetSignedData() == p2.GetSignedData()));
+	}
 
 }

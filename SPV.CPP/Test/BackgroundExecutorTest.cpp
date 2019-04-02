@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "SpvService/BackgroundExecutor.h"
+#include <SDK/SpvService/BackgroundExecutor.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -14,7 +14,7 @@ TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
 
 		const int expectValue = 3;
 		int actualValue = 1;
-		executor.execute(Runnable([&actualValue, expectValue]()-> void {
+		executor.Execute(Runnable([&actualValue, expectValue]() -> void {
 			actualValue = expectValue;
 		}));
 
@@ -29,12 +29,12 @@ TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
 
 		std::vector<int> array(100, 1);
 		for (int i = 0; i < array.size(); ++i) {
-			executor.execute(Runnable([&array, i, expectValue]()-> void {
+			executor.Execute(Runnable([&array, i, expectValue]() -> void {
 				array[i] = expectValue;
 			}));
 		}
 
-		executor.execute(Runnable([&finished]()-> void {
+		executor.Execute(Runnable([&finished]() -> void {
 			finished = true;
 		}));
 

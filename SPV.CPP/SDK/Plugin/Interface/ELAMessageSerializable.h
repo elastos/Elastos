@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_ELAMESSAGESERIALIZABLE_H__
 #define __ELASTOS_SDK_ELAMESSAGESERIALIZABLE_H__
 
+#include <SDK/Common/ByteStream.h>
+#include <nlohmann/json.hpp>
+
 #include <istream>
 #include <ostream>
-
-#include "ByteStream.h"
-#include "nlohmann/json.hpp"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,10 +19,10 @@ namespace Elastos {
 			virtual ~ELAMessageSerializable() {}
 
 			virtual void Serialize(ByteStream &ostream) const = 0;
-			virtual bool Deserialize(ByteStream &istream) = 0;
+			virtual bool Deserialize(const ByteStream &istream) = 0;
 
-			virtual nlohmann::json toJson() const = 0;
-			virtual void fromJson(const nlohmann::json &) = 0;
+			virtual nlohmann::json ToJson() const = 0;
+			virtual void FromJson(const nlohmann::json &j) = 0;
 		};
 
 	}

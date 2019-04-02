@@ -5,25 +5,25 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Payload/PayloadIssueToken.h"
 #include "TestHelper.h"
+
+#include <SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
-	CMBlock merkleProof = getRandCMBlock(50);
-	CMBlock mainChainTx = getRandCMBlock(100);
+TEST_CASE("PayloadRechargeToSideChain test", "[PayloadRechargeToSideChain]") {
+	bytes_t merkleProof = getRandBytes(50);
+	bytes_t mainChainTx = getRandBytes(100);
 
-	PayloadIssueToken issueToken(merkleProof, mainChainTx);
+	PayloadRechargeToSideChain p1(merkleProof, mainChainTx);
 	ByteStream stream;
-	issueToken.Serialize(stream);
-	stream.setPosition(0);
-	PayloadIssueToken issueToken1;
-	REQUIRE(issueToken1.Deserialize(stream));
+	p1.Serialize(stream, 0);
+	PayloadRechargeToSideChain p2;
+	REQUIRE(p2.Deserialize(stream, 0));
 
-	CMBlock data = issueToken.getData();
-	CMBlock data1 = issueToken1.getData();
+	bytes_t data1 = p1.GetData(0);
+	bytes_t data2 = p2.GetData(0);
 
-	REQUIRE(data.GetSize() == data1.GetSize());
-	REQUIRE(0 == memcmp(data, data1, data.GetSize()));
+	REQUIRE(data1.size() == data2.size());
+	REQUIRE(data1 == data2);
 }

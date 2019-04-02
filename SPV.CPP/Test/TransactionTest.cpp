@@ -4,179 +4,39 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <Core/BRTransaction.h>
-#include "ELATxOutput.h"
-#include "SDK/Transaction/TransactionOutput.h"
-#include "ELATransaction.h"
-#include "catch.hpp"
-#include "SDK/Transaction/Transaction.h"
-#include "BRTransaction.h"
-#include "Address.h"
-#include "Payload/PayloadCoinBase.h"
-#include "Utils.h"
-#include "Log.h"
+#include <catch.hpp>
 #include "TestHelper.h"
+
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadCoinBase.h>
+#include <SDK/Plugin/Transaction/Attribute.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <Core/BRTransaction.h>
+#include <Core/BRTransaction.h>
 
 using namespace Elastos::ElaWallet;
 
-static ELATransaction *createELATransaction() {
-	ELATransaction *tx = ELATransactionNew();
-
-	tx->raw.outCount = 0;
-	tx->raw.outputs = nullptr;
-	tx->raw.version = rand();
-	for (size_t i = 0; i < 20; ++i) {
-		UInt256 txHash = getRandUInt256();
-		uint32_t index = (uint16_t)rand();
-		uint64_t amount = rand();
-		CMBlock script = getRandCMBlock(25);
-		CMBlock signature = getRandCMBlock(50);
-		uint32_t squence = rand();
-		BRTransactionAddInput(&tx->raw, txHash, index, amount,
-							  script, script.GetSize(), signature, signature.GetSize(),
-							  squence);
-	}
-
-	for (size_t i = 0; i < 20; ++i) {
-		ELATxOutput *o = ELATxOutputNew();
-		o->assetId = getRandUInt256();
-		o->programHash = getRandUInt168();
-		o->outputLock = rand();
-		o->signType = rand();
-		uint64_t amount = rand();
-		CMBlock script = getRandCMBlock(25);
-		ELATxOutputSetScript(o, script, script.GetSize());
-		TransactionOutput *output = new TransactionOutput(o);
-		tx->outputs.push_back(output);
-	}
-	tx->raw.lockTime = rand();
-	tx->raw.blockHeight = rand();
-	tx->raw.timestamp = rand();
-
-	tx->type = ELATransaction::TransferAsset;
-	delete tx->payload;
-	tx->payload = ELAPayloadNew(tx->type);
-
-	tx->payloadVersion = rand();
-	tx->fee = rand();
-
-	for (size_t i = 0; i < 20; ++i) {
-		CMBlock data = getRandCMBlock(25);
-		Attribute *attr = new Attribute(Attribute::Script, data);
-		tx->attributes.push_back(attr);
-	}
-
-	for (size_t i = 0; i < 20; ++i) {
-		CMBlock code = getRandCMBlock(25);
-		CMBlock parameter = getRandCMBlock(25);
-		Program *program = new Program(code, parameter);
-		tx->programs.push_back(program);
-	}
-
-	tx->Remark = getRandString(40);
-
-	return tx;
-}
-
-static void verifyELATransaction(const ELATransaction *tx1, const ELATransaction *tx, bool checkAll = true) {
-	REQUIRE(tx1->raw.outCount == tx->raw.outCount);
-	REQUIRE(tx1->raw.outputs == nullptr);
-	REQUIRE(UInt256Eq(&tx1->raw.txHash, &tx->raw.txHash));
-	if (checkAll)
-		REQUIRE(tx1->raw.version == tx->raw.version);
-	REQUIRE(tx1->raw.inCount == tx->raw.inCount);
-	for (size_t i = 0; i < tx1->raw.inCount; ++i) {
-		REQUIRE(UInt256Eq(&tx1->raw.inputs[i].txHash, &tx->raw.inputs[i].txHash));
-		if (checkAll) {
-			REQUIRE(!strcmp(tx1->raw.inputs[i].address, tx->raw.inputs[i].address));
-			REQUIRE(tx1->raw.inputs[i].amount == tx->raw.inputs[i].amount);
-		}
-		REQUIRE(tx1->raw.inputs[i].index == tx->raw.inputs[i].index);
-		REQUIRE(tx1->raw.inputs[i].sequence == tx->raw.inputs[i].sequence);
-		if (checkAll) {
-			REQUIRE(tx1->raw.inputs[i].scriptLen == tx->raw.inputs[i].scriptLen);
-			REQUIRE(!memcmp(tx1->raw.inputs[i].script, tx->raw.inputs[i].script, tx->raw.inputs[i].scriptLen));
-			REQUIRE(tx1->raw.inputs[i].sigLen == tx->raw.inputs[i].sigLen);
-			REQUIRE(!memcmp(tx1->raw.inputs[i].signature, tx->raw.inputs[i].signature, tx->raw.inputs[i].sigLen));
-		}
-	}
-
-	REQUIRE(tx1->outputs.size() == tx->outputs.size());
-	for (size_t i = 0; i < tx->outputs.size(); ++i) {
-		ELATxOutput *o, *o1;
-		o = (ELATxOutput *)tx->outputs[i]->getRaw();
-		o1 = (ELATxOutput *)tx1->outputs[i]->getRaw();
-		REQUIRE(UInt256Eq(&o1->assetId, &o->assetId));
-		REQUIRE(o1->signType == o->signType);
-		REQUIRE(UInt168Eq(&o1->programHash, &o->programHash));
-		REQUIRE(o1->outputLock == o->outputLock);
-		if (checkAll) {
-			REQUIRE(o1->raw.scriptLen == o->raw.scriptLen);
-			REQUIRE(!memcmp(o1->raw.script, o->raw.script, o->raw.scriptLen));
-		}
-		REQUIRE(o1->raw.amount == o->raw.amount);
-		if (checkAll) {
-			REQUIRE(!strcmp(o1->raw.address, o->raw.address));
-		}
-	}
-
-	REQUIRE(tx1->raw.lockTime == tx->raw.lockTime);
-	if (checkAll) {
-		REQUIRE(tx1->raw.blockHeight == tx->raw.blockHeight);
-		REQUIRE(tx1->raw.timestamp == tx->raw.timestamp);
-	}
-	REQUIRE(tx1->type == tx->type);
-	REQUIRE(tx1->payloadVersion == tx->payloadVersion);
-	if (checkAll) {
-		REQUIRE(tx1->fee == tx->fee);
-		REQUIRE(tx1->Remark == tx->Remark);
-	}
-	REQUIRE(tx1->attributes.size() == tx->attributes.size());
-	for (size_t i = 0; i < tx1->attributes.size(); ++i) {
-		REQUIRE(tx1->attributes[i]->GetUsage() == tx->attributes[i]->GetUsage());
-		const CMBlock &data = tx->attributes[i]->GetData();
-		const CMBlock &data1 = tx1->attributes[i]->GetData();
-		REQUIRE(data1.GetSize() == data.GetSize());
-		REQUIRE(!memcmp(data1, data, data.GetSize()));
-	}
-
-	REQUIRE(tx1->programs.size() == tx->programs.size());
-	for (size_t i = 0; i < tx->programs.size(); ++i) {
-		const CMBlock &code = tx->programs[i]->getCode();
-		const CMBlock &code1 = tx1->programs[i]->getCode();
-		REQUIRE(code1.GetSize() == code.GetSize());
-		REQUIRE(!memcmp(code1, code, code.GetSize()));
-		const CMBlock &parameter = tx->programs[i]->getParameter();
-		const CMBlock &parameter1 = tx1->programs[i]->getParameter();
-		REQUIRE(parameter1.GetSize() == parameter.GetSize());
-		REQUIRE(!memcmp(parameter1, parameter, parameter.GetSize()));
-	}
-}
 
 TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 	srand(time(nullptr));
 
 	SECTION("transaction Serialize test") {
-		ELATransaction *tx = createELATransaction();
-
-		Transaction txn(tx);
-		tx->raw.txHash = txn.getHash();
+		Transaction tx1;
+		initTransaction(tx1, Transaction::TxVersion::Default);
 
 		ByteStream stream;
-		txn.Serialize(stream);
+		tx1.Serialize(stream);
 
-		Transaction txn1;
-		stream.setPosition(0);
-		REQUIRE(txn1.Deserialize(stream));
+		Transaction tx2;
+		REQUIRE(tx2.Deserialize(stream));
 
-		ELATransaction *tx1 = (ELATransaction *)txn1.getRaw();
+		verifyTransaction(tx1, tx2, false);
 
-		verifyELATransaction(tx1, tx, false);
+		tx2 = tx1;
 
-		Transaction txn2 = txn;
-		ELATransaction *tx2 = (ELATransaction *)txn2.getRaw();
-
-		verifyELATransaction(tx2, tx, true);
+		verifyTransaction(tx1, tx2, true);
 	}
 
 }
@@ -185,126 +45,114 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 	srand(time(nullptr));
 
 	SECTION("to and from json") {
-		Transaction tx;
-		tx.isRegistered() = true;
-		ELATransaction *ela = (ELATransaction *)tx.getRaw();
+		Transaction tx1;
 
-		ela->raw.txHash = getRandUInt256();
-		ela->raw.version = rand();
-		for (size_t i = 0; i < 3; ++i) {
-			CMBlock script = getRandCMBlock(25);
-			CMBlock signature = getRandCMBlock(28);
-			BRTransactionAddInput(&ela->raw, getRandUInt256(), i, rand(),
-					script, script.GetSize(), signature, signature.GetSize(), rand());
-		}
+		initTransaction(tx1, Transaction::TxVersion::V09);
 
-		ela->raw.lockTime = rand();
-		ela->raw.blockHeight = rand();
-		ela->raw.timestamp = rand();
-		ela->type = ELATransaction::Type::TransferAsset;// ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
-		ela->payloadVersion = rand() % sizeof(ela->payloadVersion);
-		ela->fee = rand();
-		delete ela->payload;
-		ela->payload = ELAPayloadNew(ela->type);
+		nlohmann::json txJson = tx1.ToJson();
 
-		for (size_t i = 0; i < 4; ++i) {
-			TransactionOutput *output = new TransactionOutput();
-			ELATxOutput *o = (ELATxOutput *)output->getRaw();
-			CMBlock script = getRandCMBlock(25);
-			ELATxOutputSetScript(o, script, script.GetSize());
-			o->raw.amount = rand();
-			o->assetId = getRandUInt256();
-			o->outputLock = rand();
-			o->programHash = getRandUInt168();
-			ela->outputs.push_back(output);
-		}
+		Transaction tx2;
+		tx2.FromJson(txJson);
 
-		nlohmann::json txJson = tx.toJson();
-
-		/* verify transaction */
-		Transaction txn;
-		txn.fromJson(txJson);
-
-		// TODO [heropan] complete me later
+		verifyTransaction(tx1, tx2, true);
 	}
-}
 
-TEST_CASE("public function test", "[Transaction]") {
-	srand(time(nullptr));
+	SECTION("from json string") {
+		nlohmann::json j = R"({
+			"Attributes":[{"Data":"31393532323632373233","Usage":0}],
+			"BlockHeight":2147483647,
+			"Fee":20000,
+			"Inputs":[
+			{
+				"Index":1,
+				"Sequence":0,
+				"TxHash":"a693bd76ef3aa8c2001ae11cf7b26c3fa8a2a35385cb160e739ffb1edebe263b"
+			}],
+			"IsRegistered":false,
+			"LockTime":0,
+			"Outputs":[
+			{
+				"Address":"ERSqjfWDwTYw7iLrCZYLHKzSzEYzF4QZUz",
+				"Amount":2300000000,
+				"AssetId":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+				"OutputLock":0,
+				"OutputType":1,
+				"Payload":
+				{
+					"Version":0,
+					"VoteContent":[
+					{
+						"Candidates":[
+							"03330ee8520088b7f578a9afabaef0c034fa31fe1354cb3a14410894f974132800",
+							"033c495238ca2b6bb8b7f5ae172363caea9a55cf245ffb3272d078126b1fe3e7cd",
+							"0337e6eaabfab6321d109d48e135190560898d42a1d871bfe8fecc67f4c3992250",
+							"03c78467b91805c95ada2530513069bef1f1f1e7b756861381ab534efa6d94e40a",
+							"021d59a84d2243111e39e8c2af0a5089127d142d52b18c3e4bf744e0c6f8af44e0",
+							"036417ab256114a32bcff38f3e10f0384cfa9238afa41a163017687b3ce1fa17f2",
+							"02e578a6f4295765ad3be4cdac9be15de5aedaf1ae76e86539bb54c397e467cd5e",
+							"02ddd829f3495a2ce76d908c3e6e7d4505e12c4718c5af4b4cbff309cfd3aeab88",
+							"03c7b1f234d5d16472fcdd24d121e4cd224e1074f558a3eb1a6a146aa91dcf9c0d",
+							"03b688e0124580de452c400e01c628a690527e8742b6fa4645026dbc70155d7c8b",
+							"03bc2c2b75009a3a551e98bf206730501ecdf46e71b0405840ff1d5750094bd4ff",
+							"0230d383546d154d67cfafc6091c0736c0b26a8c7c16e879ef8011d91df976f1fb",
+							"028fb1a85f6a30a516b9e3516d03267403a3af0c96d73b0284ca0c1165318531ff",
+							"02db921cfb4bf504c83038212aafe52cc1d0a07eb71a399a0d2162fe0cd4d47720",
+							"033fb33f39276b93d3474cf7999887bed16c3211ee7f904399eeead4c480d7d592",
+							"030e4b487daf8e14dbd7023e3f6f475d00145a1f1cc87be4b8d58a4291ab0a3b1a",
+							"0234048d3ee92a7d34fbe3da22bc69583b1785e8f6684c9f4f11804c518cb4e53d",
+							"0203c80103bb094b5870f6b99b0bc6ab857fa87bab1896fc845108bba7aafbfe3c",
+							"0210694f4ab518037bc2dcc3f5e1a1030e8a36821ab019c10f29d4a894b8034498",
+							"02771568d40c1b20f3cbc2f4de327d3f61ae1a97a3e4a014838d267c818f2f999e",
+							"02d1c315626710a4f556ee56f1978787e07d464b2287170e7789f2cb1ca60ece11",
+							"03ba357f743e5dcab39dcd60a0a62f9ad573eae0d911291fd30846891f5ce29987",
+							"038796d13f0ed94b2587ba2e13ca99b3cafd4d5cea2b08b2d06b841ed10d177a51"
+						],
+						"Type":0
+					}]
+				},
+				"ProgramHash":"215af4f0f51ff9f011b1e21703a22dedc71fab3c8d"
+			},
+			{
+				"Address":"ERSqjfWDwTYw7iLrCZYLHKzSzEYzF4QZUz",
+				"Amount":2687533220000,
+				"AssetId":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+				"OutputLock":0,
+				"OutputType":0,
+				"Payload":null,
+				"ProgramHash":"215af4f0f51ff9f011b1e21703a22dedc71fab3c8d"
+			}],
+			"PayLoad":null,
+			"PayloadVersion":0,
+			"Programs":[
+			{
+				"Code":"2102676d08015cdabae42647de70667a3f33f56037495d1d10a00092f9361b5c6cc0ac",
+				"Parameter":"40be01660cb4501c7741ea7437a284cdcb5dca33c1e01b6b1a47e4814135c36430eeb19f8b2c89162bb45396e5f34c3a65f5ac05ec90f342a6ead2a48b6beb8a2f"
+			}],
+			"Remark":"",
+			"Timestamp":118,
+			"TxHash":"caed058f3a852547f5d44323ed7c97efd9876fab171f3db24416faee5fe1b63a",
+			"Type":2,
+			"Version":9
+		})"_json;
 
-	SECTION("removeDuplicatePrograms test") {
-		SECTION("situation 1") {
-			Transaction tx;
-			for (size_t i = 0; i < 20; ++i) {
-				CMBlock code = getRandCMBlock(25);
-				CMBlock parameter = getRandCMBlock(25);
-				Program *program = new Program(code, parameter);
-				tx.addProgram(program);
-			}
+		Transaction tx;
+		tx.FromJson(j);
 
-			REQUIRE(tx.getPrograms().size() == 20);
+		uint256 hash = tx.GetHash();
 
-			tx.addProgram(new Program(*tx.getPrograms()[0]));
-			tx.addProgram(new Program(*tx.getPrograms()[1]));
-			tx.addProgram(new Program(*tx.getPrograms()[1]));
-			tx.addProgram(new Program(*tx.getPrograms()[3]));
-			tx.addProgram(new Program(*tx.getPrograms()[5]));
-			tx.addProgram(new Program(*tx.getPrograms()[7]));
-			tx.addProgram(new Program(*tx.getPrograms()[19]));
+		REQUIRE(j["TxHash"] == hash.GetHex());
+		REQUIRE(tx.IsSigned());
+	}
 
-			REQUIRE(tx.getPrograms().size() == 27);
+	SECTION("Deserialize from raw tx") {
+		std::string rawtx = "09020001000a31393532323632373233013b26bede1efb9f730e16cb8553a3a2a83f6cb2f71ce11a00c2a83aef76bd93a601000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3003717890000000000000000215af4f0f51ff9f011b1e21703a22dedc71fab3c8d01000100172103330ee8520088b7f578a9afabaef0c034fa31fe1354cb3a14410894f97413280021033c495238ca2b6bb8b7f5ae172363caea9a55cf245ffb3272d078126b1fe3e7cd210337e6eaabfab6321d109d48e135190560898d42a1d871bfe8fecc67f4c39922502103c78467b91805c95ada2530513069bef1f1f1e7b756861381ab534efa6d94e40a21021d59a84d2243111e39e8c2af0a5089127d142d52b18c3e4bf744e0c6f8af44e021036417ab256114a32bcff38f3e10f0384cfa9238afa41a163017687b3ce1fa17f22102e578a6f4295765ad3be4cdac9be15de5aedaf1ae76e86539bb54c397e467cd5e2102ddd829f3495a2ce76d908c3e6e7d4505e12c4718c5af4b4cbff309cfd3aeab882103c7b1f234d5d16472fcdd24d121e4cd224e1074f558a3eb1a6a146aa91dcf9c0d2103b688e0124580de452c400e01c628a690527e8742b6fa4645026dbc70155d7c8b2103bc2c2b75009a3a551e98bf206730501ecdf46e71b0405840ff1d5750094bd4ff210230d383546d154d67cfafc6091c0736c0b26a8c7c16e879ef8011d91df976f1fb21028fb1a85f6a30a516b9e3516d03267403a3af0c96d73b0284ca0c1165318531ff2102db921cfb4bf504c83038212aafe52cc1d0a07eb71a399a0d2162fe0cd4d4772021033fb33f39276b93d3474cf7999887bed16c3211ee7f904399eeead4c480d7d59221030e4b487daf8e14dbd7023e3f6f475d00145a1f1cc87be4b8d58a4291ab0a3b1a210234048d3ee92a7d34fbe3da22bc69583b1785e8f6684c9f4f11804c518cb4e53d210203c80103bb094b5870f6b99b0bc6ab857fa87bab1896fc845108bba7aafbfe3c210210694f4ab518037bc2dcc3f5e1a1030e8a36821ab019c10f29d4a894b80344982102771568d40c1b20f3cbc2f4de327d3f61ae1a97a3e4a014838d267c818f2f999e2102d1c315626710a4f556ee56f1978787e07d464b2287170e7789f2cb1ca60ece112103ba357f743e5dcab39dcd60a0a62f9ad573eae0d911291fd30846891f5ce2998721038796d13f0ed94b2587ba2e13ca99b3cafd4d5cea2b08b2d06b841ed10d177a51b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a08076bd7102000000000000215af4f0f51ff9f011b1e21703a22dedc71fab3c8d0000000000014140be01660cb4501c7741ea7437a284cdcb5dca33c1e01b6b1a47e4814135c36430eeb19f8b2c89162bb45396e5f34c3a65f5ac05ec90f342a6ead2a48b6beb8a2f232102676d08015cdabae42647de70667a3f33f56037495d1d10a00092f9361b5c6cc0ac";
+		bytes_t bytes(rawtx);
+		ByteStream stream(bytes);
 
-			for (size_t i = 0; i < 20; ++i) {
-				CMBlock code = getRandCMBlock(25);
-				CMBlock parameter = getRandCMBlock(25);
-				Program *program = new Program(code, parameter);
-				tx.addProgram(program);
-			}
+		Transaction tx;
+		REQUIRE(tx.Deserialize(stream));
 
-			REQUIRE(tx.getPrograms().size() == 47);
-
-			tx.removeDuplicatePrograms();
-
-			REQUIRE(tx.getPrograms().size() == 40);
-		}
-
-		SECTION("situation 2") {
-			Transaction tx;
-			for (size_t i = 0; i < 20; ++i) {
-				CMBlock code = getRandCMBlock(25);
-				CMBlock parameter = getRandCMBlock(25);
-				Program *program = new Program(code, parameter);
-				tx.addProgram(program);
-			}
-
-			REQUIRE(tx.getPrograms().size() == 20);
-
-			for (size_t i = 0; i < 20; ++i) {
-				tx.addProgram(new Program(*tx.getPrograms()[i]));
-			}
-
-			REQUIRE(tx.getPrograms().size() == 40);
-
-			tx.removeDuplicatePrograms();
-
-			REQUIRE(tx.getPrograms().size() == 20);
-		}
-
-		SECTION("situation 3") {
-			Transaction tx;
-			for (size_t i = 0; i < 20; ++i) {
-				CMBlock code = getRandCMBlock(25);
-				CMBlock parameter = getRandCMBlock(25);
-				Program *program = new Program(code, parameter);
-				tx.addProgram(program);
-			}
-
-			REQUIRE(tx.getPrograms().size() == 20);
-
-			tx.removeDuplicatePrograms();
-
-			REQUIRE(tx.getPrograms().size() == 20);
-		}
-
+		uint256 hash = tx.GetHash();
+		REQUIRE("caed058f3a852547f5d44323ed7c97efd9876fab171f3db24416faee5fe1b63a" == hash.GetHex());
 	}
 }

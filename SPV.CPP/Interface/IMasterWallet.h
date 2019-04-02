@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_IMASTERWALLET_H__
 
 #include "ISubWallet.h"
+#include "IIdAgent.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -68,18 +69,6 @@ namespace Elastos {
 					uint64_t feePerKb = 0) = 0;
 
 			/**
-			 * Recover a sub wallet from scratch.
-			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param limitGap specify the max gap length for recover addresses and transactions.
-			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
-			 * @return If success will return a pointer of sub wallet interface.
-			 */
-			virtual ISubWallet *RecoverSubWallet(
-					const std::string &chainID,
-					uint32_t limitGap,
-					uint64_t feePerKb = 0) = 0;
-
-			/**
 			 * Destroy a sub wallet created by the master wallet.
 			 * @param wallet sub wallet object, should created by the master wallet.
 			 */
@@ -89,7 +78,7 @@ namespace Elastos {
 			 * Get public key of the root private key belongs to the master wallet.
 			 * @return public key of the root private key
 			 */
-			virtual std::string GetPublicKey() = 0;
+			virtual std::string GetPublicKey() const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.
@@ -106,9 +95,9 @@ namespace Elastos {
 			 * @param publicKey belong to the private key signed the signature.
 			 * @param message raw data.
 			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return the result wrapper by a json.
+			 * @return true or false.
 			 */
-			virtual nlohmann::json CheckSign(
+			virtual bool CheckSign(
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
@@ -118,13 +107,13 @@ namespace Elastos {
 			 * @param address to be verified.
 			 * @return True if valid, otherwise return false.
 			 */
-			virtual bool IsAddressValid(const std::string &address) = 0;
+			virtual bool IsAddressValid(const std::string &address) const = 0;
 
 			/**
 			 * Get all chain ids of supported chains.
 			 * @return a list of chain id.
 			 */
-			virtual std::vector<std::string> GetSupportedChains() = 0;
+			virtual std::vector<std::string> GetSupportedChains() const = 0;
 
 			/**
 			 * Change pay password which encrypted private key and other important data in memory.
@@ -132,6 +121,8 @@ namespace Elastos {
 			 * @param newPassword new pay password.
 			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
+
+			virtual IIdAgent *GetIIdAgent() = 0;
 		};
 
 	}

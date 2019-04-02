@@ -249,7 +249,7 @@ size_t BRAddressFromScriptPubKey(char *addr, size_t addrLen, const uint8_t *scri
     if (count == 5 && *elems[0] == OP_DUP && *elems[1] == OP_HASH160 && *elems[2] == 20 &&
         *elems[3] == OP_EQUALVERIFY && *elems[4] == OP_CHECKSIG) {
         // pay-to-pubkey-hash scriptPubKey
-        data[0] = ELA_STAND_ADDRESS;
+        data[0] = BITCOIN_PUBKEY_ADDRESS;
 #if BITCOIN_TESTNET
         data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -258,7 +258,7 @@ size_t BRAddressFromScriptPubKey(char *addr, size_t addrLen, const uint8_t *scri
     }
     else if (count == 3 && *elems[0] == OP_HASH160 && *elems[1] == 20 && *elems[2] == OP_EQUAL) {
         // pay-to-script-hash scriptPubKey
-        data[0] = ELA_STAND_ADDRESS;
+        data[0] = BITCOIN_SCRIPT_ADDRESS;
 #if BITCOIN_TESTNET
         data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -267,7 +267,7 @@ size_t BRAddressFromScriptPubKey(char *addr, size_t addrLen, const uint8_t *scri
     }
     else if (count == 2 && (*elems[0] == 65 || *elems[0] == 33) && *elems[1] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
-        data[0] = ELA_STAND_ADDRESS;
+        data[0] = BITCOIN_PUBKEY_ADDRESS;
 #if BITCOIN_TESTNET
         data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -300,7 +300,7 @@ size_t BRAddressFromScriptSig(char *addr, size_t addrLen, const uint8_t *script,
     const uint8_t *d = NULL, *elems[BRScriptElements(NULL, 0, script, scriptLen)];
     size_t l = 0, count = BRScriptElements(elems, sizeof(elems)/sizeof(*elems), script, scriptLen);
 
-    data[0] = ELA_STAND_ADDRESS;
+    data[0] = BITCOIN_PUBKEY_ADDRESS;
 #if BITCOIN_TESTNET
     data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -313,7 +313,7 @@ size_t BRAddressFromScriptSig(char *addr, size_t addrLen, const uint8_t *script,
     }
     else if (count >= 2 && *elems[count - 2] <= OP_PUSHDATA4 && *elems[count - 1] <= OP_PUSHDATA4 &&
              *elems[count - 1] > 0) { // pay-to-script-hash scriptSig
-        data[0] = ELA_MULTISIG_ADDRESS;
+        data[0] = BITCOIN_SCRIPT_ADDRESS;
 #if BITCOIN_TESTNET
         data[0] = ELA_MULTISIG_ADDRESS;
 #endif
@@ -330,16 +330,16 @@ size_t BRAddressFromScriptSig(char *addr, size_t addrLen, const uint8_t *script,
 
 // writes the bitcoin address for a witness to addr
 // returns the number of bytes written, or addrLen needed if addr is NULL
-size_t BRAddressFromWitness(char *addr, size_t addrLen, const uint8_t *witness, size_t witLen)
-{
-    return 0; // TODO: XXX implement
-}
+//size_t BRAddressFromWitness(char *addr, size_t addrLen, const uint8_t *witness, size_t witLen)
+//{
+//    return 0; // TODO: XXX implement
+//}
 
 // writes the scriptPubKey for addr to script
 // returns the number of bytes written, or scriptLen needed if script is NULL
 size_t BRAddressScriptPubKey(uint8_t *script, size_t scriptLen, const char *addr)
 {
-    uint8_t data[42], pubkeyAddress = ELA_STAND_ADDRESS, scriptAddress = ELA_MULTISIG_ADDRESS;
+    uint8_t data[42], pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
     char hrp[84], *bech32Prefix = "bc";
     size_t dataLen, r = 0;
 
@@ -396,11 +396,9 @@ int BRAddressIsValid(const char *addr)
     assert(addr != NULL);
 
     if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
-        data[0] == ELA_IDCHAIN_ADDRESS);
+        r = (data[0] == BITCOIN_PUBKEY_ADDRESS || data[0] == BITCOIN_SCRIPT_ADDRESS);
 #if BITCOIN_TESTNET
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
-        data[0] == ELA_IDCHAIN_ADDRESS);
+        r = (data[0] == BITCOIN_PUBKEY_ADDRESS_TEST || data[0] == BITCOIN_PUBKEY_ADDRESS_TEST);
 #endif
     }
     else if (BRBech32Decode(hrp, data, addr) > 2) {
@@ -410,35 +408,18 @@ int BRAddressIsValid(const char *addr)
 #endif
     }
 
-    if (r == 0 && strcmp(addr, ELA_SIDECHAIN_DESTROY_ADDR) == 0) {
-        r = 1;
-    }
-
     return r;
 }
 
 // writes the 20 byte hash160 of addr to md20 and returns true on success
-int BRAddressHash160(void *md20, const char *addr)
-{
-    uint8_t data[21];
-    int r = 0;
-
-    assert(md20 != NULL);
-    assert(addr != NULL);
-    r = (BRBase58CheckDecode(data, sizeof(data), addr) == 21);
-    if (r) memcpy(md20, &data[1], 20);
-    return r;
-}
-
-// writes the 21 byte hash168 of addr to md21 and returns true on success
-int BRAddressHash168(void *md21, const char *addr)
-{
-    uint8_t data[21];
-    int r = 0;
-
-    assert(md21 != NULL);
-    assert(addr != NULL);
-    r = (BRBase58CheckDecode(data, sizeof(data), addr) == 21);
-    if (r) memcpy(md21, &data[0], 21);
-    return r;
-}
+//int BRAddressHash160(void *md20, const char *addr)
+//{
+//    uint8_t data[21];
+//    int r = 0;
+//
+//    assert(md20 != NULL);
+//    assert(addr != NULL);
+//    r = (BRBase58CheckDecode(data, sizeof(data), addr) == 21);
+//    if (r) memcpy(md20, &data[1], 20);
+//    return r;
+//}

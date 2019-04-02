@@ -5,12 +5,12 @@
 #ifndef __ELASTOS_SDK_IACCOUNT_H__
 #define __ELASTOS_SDK_IACCOUNT_H__
 
-#include <boost/shared_ptr.hpp>
-#include <nlohmann/json.hpp>
 
-#include "BRInt.h"
-#include "Key.h"
-#include "MasterPubKey.h"
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+
+#include <nlohmann/json.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -23,9 +23,9 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword) = 0;
+			virtual uint512 DeriveSeed(const std::string &payPassword) = 0;
 
-			virtual Key DeriveKey(const std::string &payPassword) = 0;
+			virtual Key DeriveMultiSignKey(const std::string &payPassword) = 0;
 
 			virtual std::string GetType() const = 0;
 
@@ -39,17 +39,15 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const = 0;
-
 			virtual const std::string &GetEncryptedMnemonic() const = 0;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const = 0;
 
-			virtual const std::string &GetPublicKey() const = 0;
+			virtual bytes_t GetMultiSignPublicKey() const = 0;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
+			virtual const HDKeychain &GetIDMasterPubKey() const = 0;
 
-			virtual std::string GetAddress() const = 0;
+			virtual Address GetAddress() const = 0;
 		};
 
 		typedef boost::shared_ptr<IAccount> AccountPtr;

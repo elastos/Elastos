@@ -5,13 +5,12 @@
 #ifndef __ELASTOS_SDK_STANDARDACCOUNT_H__
 #define __ELASTOS_SDK_STANDARDACCOUNT_H__
 
-#include <nlohmann/json.hpp>
+#include <SDK/Account/IAccount.h>
+#include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/Common/Mstream.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 
-#include "IAccount.h"
-#include "SDK/KeyStore/Mnemonic.h"
-#include "SDK/Common/CMemBlock.h"
-#include "SDK/Wrapper/MasterPubKey.h"
-#include "SDK/Common/Mstream.h"
+#include <nlohmann/json.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -25,9 +24,9 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -43,19 +42,19 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
-
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress() const;
+			virtual Address GetAddress() const;
 
 			const std::string &GetLanguage() const;
+
+			HDKeychain DeriveIDMasterPubKey(const std::string &payPasswd);
 
 		private:
 			friend class AccountFactory;
@@ -71,11 +70,10 @@ namespace Elastos {
 			FROM_JSON(StandardAccount);
 
 		private:
-			std::string _encryptedKey;
 			std::string _encryptedMnemonic;
 			std::string _encryptedPhrasePass;
-			std::string _publicKey;
-			MasterPubKey _masterIDPubKey;
+			bytes_t _multiSignPublicKey;
+			HDKeychain _masterIDPubKey;
 			std::string _language;
 
 			boost::shared_ptr<Mnemonic> _mnemonic;

@@ -2,8 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "Utils.h"
-#include "ParamChecker.h"
 #include "SubAccountGenerator.h"
 #include "HDSubAccount.h"
 #include "SingleSubAccount.h"
@@ -11,12 +9,16 @@
 #include "MultiSignSubAccount.h"
 #include "StandardSingleSubAccount.h"
 
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/ErrorChecker.h>
+
+#include <Core/BRCrypto.h>
+
 namespace Elastos {
 	namespace ElaWallet {
 
-		SubAccountGenerator::SubAccountGenerator() :
-				_masterPubKey(nullptr),
-				_resultChainCode(UINT256_ZERO) {
+		SubAccountGenerator::SubAccountGenerator() {
 
 		}
 
@@ -30,16 +32,17 @@ namespace Elastos {
 			if (multiSignAccount != nullptr) {
 				return new MultiSignSubAccount(_parentAccount);
 			} else {
-				if (_coinInfo.getSingleAddress()) {
-					if (_masterPubKey == nullptr)
+				if (_coinInfo.GetSingleAddress()) {
+					if (!_masterPubKey.valid())
 						return new SingleSubAccount(_parentAccount);
 					else
-						return new StandardSingleSubAccount(*_masterPubKey, _parentAccount, _coinInfo.getIndex());
+						return new StandardSingleSubAccount(_masterPubKey, _votePubKey, _parentAccount,
+															_coinInfo.GetIndex());
 				} else {
-					if (_masterPubKey == nullptr)
+					if (!_masterPubKey.valid())
 						return GenerateFromCoinInfo(_parentAccount, _coinInfo);
 					else
-						return GenerateFromHDPath(_parentAccount, _coinInfo.getIndex());
+						return GenerateFromHDPath(_parentAccount, _coinInfo.GetIndex());
 				}
 			}
 		}
@@ -55,61 +58,71 @@ namespace Elastos {
 		void SubAccountGenerator::Clean() {
 		}
 
-		const CMBlock &SubAccountGenerator::GetResultPublicKey() const {
+		const bytes_t &SubAccountGenerator::GetResultPublicKey() const {
 			return _resultPubKey;
 		}
 
-		const UInt256 &SubAccountGenerator::GetResultChainCode() const {
+		const bytes_t &SubAccountGenerator::GetResultChainCode() const {
 			return _resultChainCode;
 		}
 
 		ISubAccount *SubAccountGenerator::GenerateFromCoinInfo(IAccount *account, const CoinInfo &coinInfo) {
-			ParamChecker::checkArgumentNotEmpty(coinInfo.getPublicKey(), "Sub account public key");
-			ParamChecker::checkArgumentNotEmpty(coinInfo.getChainCode(), "Sub account chain code");
+			ErrorChecker::CheckParamNotEmpty(coinInfo.GetPublicKey(), "Sub account public key");
+			ErrorChecker::CheckParamNotEmpty(coinInfo.GetChainCode(), "Sub account chain code");
 
-			CMBlock pubKey = Utils::decodeHex(coinInfo.getPublicKey());
-			MasterPubKey masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(coinInfo.getChainCode()));
+			_resultChainCode.setHex(coinInfo.GetChainCode());
+			_resultPubKey.setHex(coinInfo.GetPublicKey());
+			HDKeychain masterPubKey = HDKeychain(_resultPubKey, _resultChainCode);
 
-			_resultChainCode = Utils::UInt256FromString(coinInfo.getChainCode());
-			_resultPubKey = Utils::decodeHex(coinInfo.getPublicKey());
-
-			return new HDSubAccount(masterPubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(masterPubKey, _votePubKey, account, _coinInfo.GetIndex());
 		}
 
 		ISubAccount *
 		SubAccountGenerator::GenerateFromHDPath(IAccount *account, uint32_t coinIndex) {
-			return new HDSubAccount(*_masterPubKey, account, _coinInfo.getIndex());
+			return new HDSubAccount(_masterPubKey, _votePubKey, account, _coinInfo.GetIndex());
 		}
 
-		void SubAccountGenerator::SetMasterPubKey(const MasterPubKeyPtr &masterPubKey) {
+		void SubAccountGenerator::SetMasterPubKey(const HDKeychain &masterPubKey) {
 			_masterPubKey = masterPubKey;
-			if (_masterPubKey != nullptr) {
-				_resultPubKey = _masterPubKey->getPubKey();
-				_resultChainCode = _masterPubKey->getChainCode();
+			if (_masterPubKey.valid()) {
+				_resultPubKey = _masterPubKey.pubkey();
+				_resultChainCode = _masterPubKey.chain_code();
 			}
 		}
 
-		MasterPubKeyPtr SubAccountGenerator::GenerateMasterPubKey(IAccount *account, uint32_t coinIndex,
+		void SubAccountGenerator::SetVotePubKey(const bytes_t &pubKey) {
+			_votePubKey = pubKey;
+		}
+
+		HDKeychain SubAccountGenerator::GenerateMasterPubKey(IAccount *account, uint32_t coinIndex,
 																  const std::string &payPassword) {
-			UInt256 chainCode;
 			if (account->GetType() == "MultiSign") {
 				MultiSignAccount *multiSignAccount = static_cast<MultiSignAccount *>(account);
+				if (multiSignAccount->GetInnerAccount() == nullptr)
+					return HDKeychain();
 				if ("Simple" == multiSignAccount->GetInnerAccount()->GetType()) {
-					Key prvKey = account->DeriveKey(payPassword);
-					return MasterPubKeyPtr(new MasterPubKey(*prvKey.getRaw(), chainCode));
+					Key key = account->DeriveMultiSignKey(payPassword);
+					return HDKeychain(key.PubKey(), bytes_t());
 				}
 			}
 
-			UInt512 seed = account->DeriveSeed(payPassword);
-			BRKey key;
-			BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-							   coinIndex | BIP32_HARD, 0 | BIP32_HARD);
-			var_clean(&seed);
-
-			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
-			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-
-			return MasterPubKeyPtr(new MasterPubKey(key, chainCode));
+			HDSeed hdseed(account->DeriveSeed(payPassword).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+			return rootKey.getChild("44'/0'/0'").getPublic();
 		}
+
+		bytes_t SubAccountGenerator::GenerateVotePubKey(IAccount *account, uint32_t coinIndex, const std::string &payPasswd) {
+			bytes_t votePubKey;
+
+			if (account->GetType() == "Standard") {
+				HDSeed hdseed(account->DeriveSeed(payPasswd).bytes());
+				HDKeychain rootKey(hdseed.getExtendedKey(true));
+				// account is 1
+				votePubKey = rootKey.getChild("44'/0'/1'/0/0").pubkey();
+			}
+
+			return votePubKey;
+		}
+
 	}
 }

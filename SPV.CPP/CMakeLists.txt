@@ -21,6 +21,15 @@ if(NOT DEFINED SPV_PLATFORM)
 endif()
 set_property(CACHE SPV_PLATFORM PROPERTY STRINGS ${SPV_PLATFORM_ANDROID} ${SPV_PLATFORM_IOS} Host)
 
+execute_process(
+	COMMAND git describe --dirty --always --tags
+	COMMAND tr -d "\n"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
+)
+
+message(STATUS "SPV version ${SPVSDK_VERSION_MESSAGE}")
+
 if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 	message(STATUS "Build spv for android")
 
@@ -72,13 +81,6 @@ project(SPVSDK)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-execute_process(
-	COMMAND git describe --dirty --always --tags
-	COMMAND tr -d "\n"
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
-)
-
 if(NOT DEFINED SPDLOG_LEVEL)
 	set(SPDLOG_LEVEL info CACHE STRING "Android ABI (architecture)" FORCE)
 endif()
@@ -104,6 +106,7 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 	set(CMAKE_INSTALL_PREFIX "/usr/local/" CACHE PATH "Install prefix prepended to target to create install location")
 endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
+option_with_default(SPVSDK_DEBUG "SPV debug" OFF)
 option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
 option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
@@ -119,12 +122,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_TRACE_ON)
 endif()
 
-set(
-	OTHER_INC_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	CACHE INTERNAL "config files" FORCE
-)
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/Config.h
@@ -136,12 +133,9 @@ add_subdirectory(SDK)
 add_subdirectory(Interface)
 
 include_directories(
-	${OTHER_INC_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
 	${ThirdParty_INC_DIRS}
-	${SPVCORE_INC_DIRS}
-	${SPVSDK_INC_DIRS}
-	${INTERFACE_INC_DIRS}
-	${FRUIT_INC_DIRS}
 )
 
 set(SPVSDK_OBJECT_TARGET spvsdk_object)
@@ -150,12 +144,12 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(spvsdk $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
@@ -180,7 +174,7 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 		unset(COMBIN_VERBOSE)
 	endif()
 
-	set(ALL_LIBRARIES $<TARGET_FILE:spvsdk>;$<TARGET_FILE:sqlite>;$<TARGET_FILE:bigint>)
+	set(ALL_LIBRARIES $<TARGET_FILE:spvsdk>;$<TARGET_FILE:sqlite>;$<TARGET_FILE:fruit>;$<TARGET_FILE:walletcore>)
 	foreach(Boost_Library ${Boost_LIBRARIES})
 		set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:${Boost_Library}>)
 	endforeach()
@@ -206,7 +200,7 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 	endif()
 
 	set(SPVSDK_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
-	set(COMBIN_STATIC_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/platforms/scripts/combin_static_libraries.sh)
+	set(COMBIN_STATIC_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/Platforms/Scripts/combin_static_libraries.sh)
 
 	set(
 		COMPOSE_COMMAND

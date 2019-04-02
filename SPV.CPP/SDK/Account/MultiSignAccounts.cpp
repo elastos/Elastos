@@ -2,8 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ParamChecker.h>
 #include "MultiSignAccounts.h"
+
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -16,8 +17,8 @@ namespace Elastos {
 
 		void MultiSignAccounts::AddAccount(const std::vector<std::string> &coSigners, uint32_t requiredSignCount) {
 			MultiSignAccount *account = new MultiSignAccount(_innerAccount.get(), coSigners, requiredSignCount);
-			if (_accounts.find(account->GetAddress()) == _accounts.end()) {
-				_accounts[account->GetAddress()] = MultiSignAccoutPtr(account);
+			if (_accounts.find(account->GetAddress().String()) == _accounts.end()) {
+				_accounts[account->GetAddress().String()] = MultiSignAccoutPtr(account);
 			}
 		}
 
@@ -41,12 +42,12 @@ namespace Elastos {
 			return nullptr;
 		}
 
-		Key MultiSignAccounts::DeriveKey(const std::string &payPassword) {
+		Key MultiSignAccounts::DeriveMultiSignKey(const std::string &payPassword){
 			checkCurrentAccount();
-			return _currentAccount->DeriveKey(payPassword);
+			return _currentAccount->DeriveMultiSignKey(payPassword);
 		}
 
-		UInt512 MultiSignAccounts::DeriveSeed(const std::string &payPassword) {
+		uint512 MultiSignAccounts::DeriveSeed(const std::string &payPassword) {
 			checkCurrentAccount();
 			return _currentAccount->DeriveSeed(payPassword);
 		}
@@ -66,11 +67,6 @@ namespace Elastos {
 
 		}
 
-		const std::string &MultiSignAccounts::GetEncryptedKey() const {
-			checkCurrentAccount();
-			return _currentAccount->GetEncryptedKey();
-		}
-
 		const std::string &MultiSignAccounts::GetEncryptedMnemonic() const {
 			checkCurrentAccount();
 			return _currentAccount->GetEncryptedMnemonic();
@@ -81,22 +77,22 @@ namespace Elastos {
 			return _currentAccount->GetEncryptedPhrasePassword();
 		}
 
-		const std::string &MultiSignAccounts::GetPublicKey() const {
+		bytes_t MultiSignAccounts::GetMultiSignPublicKey() const {
 			checkCurrentAccount();
-			return _currentAccount->GetPublicKey();
+			return _currentAccount->GetMultiSignPublicKey();
 		}
 
-		const MasterPubKey &MultiSignAccounts::GetIDMasterPubKey() const {
+		const HDKeychain &MultiSignAccounts::GetIDMasterPubKey() const {
 			checkCurrentAccount();
 			return _currentAccount->GetIDMasterPubKey();
 		}
 
 		void MultiSignAccounts::checkCurrentAccount() const {
-			ParamChecker::checkCondition(_currentAccount == nullptr, Error::NoCurrentMultiSinAccount,
+			ErrorChecker::CheckCondition(_currentAccount == nullptr, Error::NoCurrentMultiSinAccount,
 										 "Do not have current account");
 		}
 
-		std::string MultiSignAccounts::GetAddress() {
+		Address MultiSignAccounts::GetAddress() {
 			checkCurrentAccount();
 			return _currentAccount->GetAddress();
 		}

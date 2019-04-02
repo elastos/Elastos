@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_MAINCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_MAINCHAINSUBWALLET_H__
 
-#include "Interface/IMainchainSubWallet.h"
 #include "SubWallet.h"
+#include <Interface/IMainchainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -17,44 +17,76 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
-					const uint64_t amount,
-					const nlohmann::json &sidechainAccounts,
-					const nlohmann::json &sidechainAmounts,
-					const nlohmann::json &sidechainIndices,
+					const std::string &lockedAddress,
+					uint64_t Amount,
+					const std::string &sideChainAddress,
 					const std::string &memo,
-					const std::string &remark);
+					const std::string &remark,
+					bool useVotedUTXO = false);
+
+			virtual nlohmann::json GenerateProducerPayload(
+				const std::string &publicKey,
+				const std::string &nodePublicKey,
+				const std::string &nickName,
+				const std::string &url,
+				const std::string &ipAddress,
+				uint64_t location,
+				const std::string &payPasswd) const;
+
+			virtual nlohmann::json GenerateCancelProducerPayload(
+				const std::string &publicKey,
+				const std::string &payPasswd) const;
 
 			virtual nlohmann::json CreateRegisterProducerTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					const std::string &publicKey,
-					const std::string &nickName,
-					const std::string &url,
-					uint64_t location);
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				uint64_t amount,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false);
 
-			virtual nlohmann::json CreateCancelProducerTransaction(const std::string &publicKey);
+			virtual nlohmann::json CreateUpdateProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				const std::string &remark,
+				bool useVotedUTXO = false);
+
+			virtual nlohmann::json CreateCancelProducerTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &emmo,
+				const std::string &remark,
+				bool useVotedUTXO = false);
+
+			virtual nlohmann::json CreateRetrieveDepositTransaction(
+				uint64_t amount,
+				const std::string &memo,
+				const std::string &remark);
+
+			virtual std::string GetPublicKeyForVote() const;
 
 			virtual nlohmann::json CreateVoteProducerTransaction(
+					const std::string &fromAddress,
 					uint64_t stake,
-					const nlohmann::json &pubicKeys);
+					const nlohmann::json &publicKeys,
+					const std::string &memo,
+					const std::string &remark,
+					bool useVotedUTXO = false);
+
+			virtual	nlohmann::json GetVotedProducerList() const;
+
+			virtual nlohmann::json GetRegisteredProducerInfo() const;
 
 		protected:
 			friend class MasterWallet;
 
 			MainchainSubWallet(const CoinInfo &info,
-							   const MasterPubKeyPtr &masterPubKey,
 							   const ChainParams &chainParams,
-							   const PluginTypes &pluginTypes,
+							   const PluginType &pluginTypes,
 							   MasterWallet *parent);
 
 			virtual nlohmann::json GetBasicInfo() const;
-
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
-
-			virtual void verifyRawTransaction(const TransactionPtr &transaction);
-
-			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 		};
 

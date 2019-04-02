@@ -5,10 +5,11 @@
 #ifndef __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 #define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
+#include <SDK/Account/MultiSignAccount.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+
 #include <vector>
 #include <map>
-
-#include "MultiSignAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -27,9 +28,9 @@ namespace Elastos {
 
 			MultiSignAccount *FindAccount(const std::string &address);
 
-			virtual Key DeriveKey(const std::string &payPassword);
+			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual UInt512 DeriveSeed(const std::string &payPassword);
+			virtual uint512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -39,17 +40,15 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const std::string &GetEncryptedKey() const;
-
 			virtual const std::string &GetEncryptedMnemonic() const;
 
 			virtual const std::string &GetEncryptedPhrasePassword() const;
 
-			virtual const std::string &GetPublicKey() const;
+			virtual bytes_t GetMultiSignPublicKey() const;
 
-			virtual const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const HDKeychain &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress();
+			virtual Address GetAddress();
 
 		private:
 			void checkCurrentAccount() const;

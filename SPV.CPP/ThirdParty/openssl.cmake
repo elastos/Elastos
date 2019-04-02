@@ -12,7 +12,6 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 	set(
 		OPENSSL_BUILD_COMMAND
 		./build.sh
-		--verbose
 		--build-dir=${OPENSSL_BUILD_DIR}
 		--prefix=${OPENSSL_INSTALL_DIR}
 		--arch=${CMAKE_ANDROID_ARCH_ABI}
@@ -40,7 +39,6 @@ else()
 	set(
 		OPENSSL_BUILD_COMMAND
 		./build.sh
-		--verbose
 		--build-dir=${OPENSSL_BUILD_DIR}
 		--prefix=${OPENSSL_INSTALL_DIR}
 		)

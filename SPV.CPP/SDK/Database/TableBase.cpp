@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "TableBase.h"
-#include "Log.h"
+
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -24,35 +25,35 @@ namespace Elastos {
 
 		}
 
-		bool TableBase::doTransaction(const boost::function<void()> &fun) const {
+		bool TableBase::DoTransaction(const boost::function<void()> &fun) const {
 #ifdef SQLITE_MUTEX_LOCK_ON
 			boost::mutex::scoped_lock lock(_lockMutex);
 #endif
 			bool result = true;
-			_sqlite->beginTransaction(_txType);
+			_sqlite->BeginTransaction(_txType);
 			try {
 				fun();
 			}
 			catch (std::exception ex) {
 				result = false;
-				Log::getLogger()->error("Data base error: ", ex.what());
+				Log::error("Data base error: ", ex.what());
 			}
 			catch (...) {
 				result = false;
 				Log::error("Unknown data base error.");
 			}
-			_sqlite->endTransaction();
+			_sqlite->EndTransaction();
 
 			return result;
 		}
 
-		void TableBase::initializeTable(const std::string &constructScript) {
+		void TableBase::InitializeTable(const std::string &constructScript) {
 #ifdef SQLITE_MUTEX_LOCK_ON
 			boost::mutex::scoped_lock lock(_lockMutex);
 #endif
-			_sqlite->beginTransaction(_txType);
+			_sqlite->BeginTransaction(_txType);
 			_sqlite->exec(constructScript, nullptr, nullptr);
-			_sqlite->endTransaction();
+			_sqlite->EndTransaction();
 		}
 	}
 }

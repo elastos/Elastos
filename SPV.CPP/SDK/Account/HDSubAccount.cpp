@@ -2,126 +2,112 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Wrapper/Wallet.h>
+#include "HDSubAccount.h"
+
+#include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Common/ParamChecker.h>
-#include "HDSubAccount.h"
+#include <SDK/Common/ErrorChecker.h>
+
+#include <Core/BRCrypto.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		HDSubAccount::HDSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex) :
+
+
+		HDSubAccount::HDSubAccount(const HDKeychain &masterPubKey, const bytes_t &votePubKey,
+								   IAccount *account, uint32_t coinIndex) :
 				SubAccountBase(account) {
 				_coinIndex = coinIndex;
 				_masterPubKey = masterPubKey;
+				_votePublicKey = votePubKey;
+				if (votePubKey.size() > 0)
+					_depositAddress = Address(PrefixDeposit, votePubKey);
 		}
 
-		void HDSubAccount::InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet) {
-			wallet->IsSingleAddress = false;
-			wallet->SingleAddress = "";
+		void HDSubAccount::InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) {
+			_lock = lock;
 
-			wallet->Raw.masterPubKey = *_masterPubKey.getRaw();
+			for (size_t i = 0; i < transactions.size(); i++) {
+				if (transactions[i]->IsSigned()) {
+					AddUsedAddrs(transactions[i]);
+				}
+			}
 
-			BRTransaction *tx;
-			for (size_t i = 0; transactions && i < txCount; i++) {
-				tx = transactions[i];
-				if (!wallet->Raw.TransactionIsSigned(tx)) continue;
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+		}
 
-				if (wallet->Raw.WalletAddUsedAddrs) {
-					wallet->Raw.WalletAddUsedAddrs((BRWallet *) wallet, tx);
-				} else {
-					for (size_t j = 0; j < tx->outCount; j++) {
-						if (tx->outputs[j].address[0] != '\0') BRSetAdd(wallet->Raw.usedAddrs, tx->outputs[j].address);
+		bytes_t HDSubAccount::GetRedeemScript(const Address &addr) const {
+			uint32_t index;
+			bytes_t pubKey;
+
+			if (IsDepositAddress(addr)) {
+				pubKey = GetVotePublicKey();
+				return Address(PrefixDeposit, pubKey).RedeemScript();
+			}
+
+			for (index = internalChain.size(); index > 0; index--) {
+				if (internalChain[index - 1] == addr) {
+					pubKey = _masterPubKey.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(index - 1).pubkey();
+					break;
+				}
+			}
+
+			for (index = externalChain.size(); index > 0 && pubKey.empty(); index--) {
+				if (externalChain[index - 1] == addr) {
+					pubKey = _masterPubKey.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(index - 1).pubkey();
+					break;
+				}
+			}
+
+			ErrorChecker::CheckLogic(pubKey.empty(), Error::Address, "Can't found pubKey for addr " +
+																			addr.String());
+
+			return Address(PrefixStandard, pubKey).RedeemScript();
+		}
+
+		bool HDSubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
+			if (SubAccountBase::FindKey(key, pubKey, payPasswd))
+				return true;
+
+			bool found = false;
+			Address addr = Address(PrefixStandard, pubKey);
+			uint32_t index, change;
+
+			_lock->Lock();
+
+			for (index = (uint32_t) internalChain.size(); index > 0; --index) {
+				if (addr == internalChain[index - 1]) {
+					found = true;
+					change = SEQUENCE_INTERNAL_CHAIN;
+					break;
+				}
+			}
+
+			if (!found) {
+				for (index = (uint32_t) externalChain.size(); index > 0; --index) {
+					if (addr == externalChain[index - 1]) {
+						found = true;
+						change = SEQUENCE_EXTERNAL_CHAIN;
+						break;
 					}
 				}
 			}
 
-			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+			_lock->Unlock();
 
-			wallet->Raw.WalletUpdateBalance((BRWallet *) wallet);
+			if (!found)
+				return false;
 
-			if (txCount > 0 && !wallet->Raw.WalletContainsTx((BRWallet *) wallet,
-															 transactions[0])) { // verify transactions match master pubKey
-				ELAWalletFree(wallet);
-				wallet = NULL;
-				std::stringstream ess;
-				ess << "txCount = " << txCount
-					<< ", wallet do not contain tx[0] = "
-					<< Utils::UInt256ToString(transactions[0]->txHash, true);
-				ParamChecker::checkCondition(true, Error::Wallet, ess.str());
-			}
-		}
+			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
 
-		Key HDSubAccount::DeriveMainAccountKey(const std::string &payPassword) {
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-			Key key;
-			UInt256 chainCode;
-			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD);
-			var_clean(&seed);
-			return key;
-		}
+			HDKeychain masterKey = rootKey.getChild("44'/0'/0'");
+			key = masterKey.getChild(change).getChild(index - 1);
 
-		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
-										   const std::string &payPassword) {
-			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(wallet, payPassword, transaction);
-			ParamChecker::checkCondition(!transaction->sign(keyList, 0), Error::Sign,
-										 "Transaction Sign error!");
-		}
-
-		WrapperList<Key, BRKey>
-		HDSubAccount::DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
-												 const TransactionPtr &transaction) {
-			BRTransaction *tx = transaction->getRaw();
-			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
-			size_t i, internalCount = 0, externalCount = 0;
-
-			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
-			pthread_mutex_lock(&wallet->Raw.lock);
-			for (i = 0; i < tx->inCount; i++) {
-				if (wallet->Raw.internalChain) {
-					for (j = (uint32_t) array_count(wallet->Raw.internalChain); j > 0; j--) {
-						if (BRAddressEq(tx->inputs[i].address, &wallet->Raw.internalChain[j - 1])) {
-							internalIdx[internalCount++] = j - 1;
-						}
-					}
-				}
-
-				for (j = (uint32_t) array_count(wallet->Raw.externalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->Raw.externalChain[j - 1])) {
-						externalIdx[externalCount++] = j - 1;
-					}
-				}
-			}
-			pthread_mutex_unlock(&wallet->Raw.lock);
-			Log::getLogger()->info("SubWallet signTransaction end get indices.");
-
-			UInt512 seed = _parentAccount->DeriveSeed(payPassword);
-
-			BRKey keys[internalCount + externalCount];
-			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _coinIndex,
-							   SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			BRBIP44PrivKeyList(&keys[internalCount], externalCount, &seed, sizeof(seed), _coinIndex,
-							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
-			var_clean(&seed);
-
-			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
-
-			WrapperList<Key, BRKey> keyList;
-			if (tx) {
-				Log::getLogger()->info("SubWallet signTransaction begin sign method.");
-				for (i = 0; i < internalCount + externalCount; ++i) {
-					Key key(keys[i].secret, keys[i].compressed);
-					keyList.push_back(key);
-				}
-
-				Log::getLogger()->info("SubWallet signTransaction end sign method.");
-			}
-
-			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
-			return keyList;
+			return true;
 		}
 
 		nlohmann::json HDSubAccount::GetBasicInfo() const {
@@ -133,8 +119,110 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string HDSubAccount::GetMainAccountPublicKey() const {
-			return Utils::encodeHex(_masterPubKey.getPubKey());
+		bool HDSubAccount::IsSingleAddress() const {
+			return false;
+		}
+
+		size_t HDSubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
+			size_t maxCount = externalChain.size() + (containInternal ? internalChain.size() : 0);
+
+			addr.clear();
+
+			if ((!containInternal && start >= externalChain.size()) ||
+				(containInternal && start >= externalChain.size() + internalChain.size())) {
+				return maxCount;
+			}
+
+			_lock->Lock();
+
+			for (size_t i = start; i < externalChain.size() && addr.size() < count; i++) {
+				addr.push_back(externalChain[i]);
+			}
+
+			if (containInternal) {
+				maxCount += internalChain.size();
+				for (size_t i = start + addr.size(); addr.size() < count && i < externalChain.size() + internalChain.size(); i++) {
+					addr.push_back(internalChain[i - externalChain.size()]);
+				}
+			}
+
+			_lock->Unlock();
+
+			return maxCount;
+		}
+
+		std::vector<Address> HDSubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
+
+			size_t i, j = 0, count, startCount;
+			uint32_t chain = (internal) ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+
+			assert(gapLimit > 0);
+
+			_lock->Lock();
+			std::vector<Address> &addrChain = internal ? internalChain : externalChain;
+			i = count = startCount = addrChain.size();
+
+			// keep only the trailing contiguous block of addresses with no transactions
+			while (i > 0 && usedAddrs.find(addrChain[i - 1]) == usedAddrs.end()) i--;
+
+			std::vector<Address> addrs;
+			while (i + gapLimit > count) { // generate new addresses up to gapLimit
+				bytes_t pubKey = _masterPubKey.getChild(chain).getChild(count).pubkey();
+
+				Address address(PrefixStandard, pubKey);
+
+				if (!address.Valid()) break;
+
+				addrChain.push_back(address);
+				count++;
+				if (usedAddrs.find(address) != usedAddrs.end()) i = count;
+			}
+
+			if (i + gapLimit <= count) {
+				for (j = 0; j < gapLimit; j++) {
+					addrs.push_back(addrChain[i + j]);
+				}
+			}
+
+			for (i = startCount; i < count; i++) {
+				allAddrs.insert(addrChain[i]);
+			}
+			_lock->Unlock();
+
+			return addrs;
+		}
+
+		void HDSubAccount::AddUsedAddrs(const TransactionPtr &tx) {
+			if (tx == nullptr)
+				return;
+
+			for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
+				usedAddrs.insert(tx->GetOutputs()[j].GetAddress());
+			}
+		}
+
+		bool HDSubAccount::IsAddressUsed(const Address &address) const {
+			return usedAddrs.find(address) != usedAddrs.end();
+		}
+
+		bool HDSubAccount::ContainsAddress(const Address &address) const {
+			if (IsDepositAddress(address)) {
+				return true;
+			}
+
+			return allAddrs.find(address) != allAddrs.end();
+		}
+
+		void HDSubAccount::ClearUsedAddresses() {
+			usedAddrs.clear();
+		}
+
+		Key HDSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+
+			// 44'/coinIndex'/account'/change/index
+			return rootKey.getChild("44'/0'/1'/0/0");
 		}
 
 	}

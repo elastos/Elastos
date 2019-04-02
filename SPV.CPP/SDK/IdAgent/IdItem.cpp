@@ -24,13 +24,13 @@ namespace Elastos {
 		void to_json(json &j, const IdItem &p) {
 			j["Purpose"] = p.Purpose;
 			j["Index"] = p.Index;
-			j["PublicKey"] = p.PublicKey;
+			j["PublicKey"] = p.PublicKey.getHex();
 		}
 
 		void from_json(const json &j, IdItem &p) {
 			p.Purpose = j["Purpose"].get<uint32_t>();
 			p.Index = j["Index"].get<uint32_t>();
-			p.PublicKey = j["PublicKey"].get<std::string>();
+			p.PublicKey.setHex(j["PublicKey"].get<std::string>());
 		}
 
 	}

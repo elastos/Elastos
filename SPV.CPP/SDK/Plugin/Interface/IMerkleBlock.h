@@ -5,39 +5,62 @@
 #ifndef __ELASTOS_SDK_IMERKLEBLOCK_H__
 #define __ELASTOS_SDK_IMERKLEBLOCK_H__
 
-#include <boost/shared_ptr.hpp>
-
-#include "BRMerkleBlock.h"
-
-#include "IClonable.h"
 #include "ELAMessageSerializable.h"
+
+#include <Core/BRInt.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IMerkleBlock : public ELAMessageSerializable, public IClonable<IMerkleBlock> {
+		class IMerkleBlock {
 		public:
 			virtual ~IMerkleBlock() {}
 
-			virtual BRMerkleBlock *getRawBlock() const = 0;
+			virtual void Serialize(ByteStream &ostream) const = 0;
 
-			virtual void deleteRawBlock() = 0;
+			virtual bool Deserialize(const ByteStream &istream) = 0;
 
-			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw) = 0;
+			virtual uint32_t GetHeight() const = 0;
 
-			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
+			virtual void SetHeight(uint32_t height) = 0;
 
-			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
+			virtual uint32_t GetTimestamp() const = 0;
 
-			virtual UInt256 getBlockHash() const = 0;
+			virtual void SetTimestamp(uint32_t timestamp) = 0;
 
-			virtual uint32_t getHeight() const = 0;
+			virtual uint32_t GetTarget() const = 0;
 
-			virtual void setHeight(uint32_t height) = 0;
+			virtual void SetTarget(uint32_t target) = 0;
 
-			virtual bool isValid(uint32_t currentTime) const = 0;
+			virtual const uint256 &GetPrevBlockHash() const = 0;
 
-			virtual std::string getBlockType() const = 0;
+			virtual void SetPrevBlockHash(const uint256 &hash) = 0;
+
+			virtual const uint256 &GetRootBlockHash() const = 0;
+
+			virtual void SetRootBlockHash(const uint256 &hash) = 0;
+
+			virtual uint32_t GetNonce() const = 0;
+
+			virtual void SetNonce(uint32_t nonce) = 0;
+
+			virtual uint32_t GetTransactionCount() const = 0;
+
+			virtual void SetTransactionCount(uint32_t count) = 0;
+
+			virtual const uint256 &GetHash() const = 0;
+
+			virtual void SetHash(const uint256 &hash) = 0;
+
+			virtual bool IsValid(uint32_t currentTime) const = 0;
+
+			virtual bool IsEqual(const IMerkleBlock *block) const = 0;
+
+			virtual std::string GetBlockType() const = 0;
+
+			virtual size_t MerkleBlockTxHashes(std::vector<uint256> &txHashes) const = 0;
 		};
 
 		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;

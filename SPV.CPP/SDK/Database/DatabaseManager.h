@@ -8,8 +8,7 @@
 #include "MerkleBlockDataSource.h"
 #include "TransactionDataStore.h"
 #include "PeerDataSource.h"
-#include "ExternalAddresses.h"
-#include "InternalAddresses.h"
+#include "AssetDataStore.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -22,52 +21,45 @@ namespace Elastos {
 			~DatabaseManager();
 
 			// Transaction's database interface
-			bool putTransaction(const std::string &iso, const TransactionEntity &tx);
-			bool deleteAllTransactions(const std::string &iso);
-			size_t getAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
-			bool updateTransaction(const std::string &iso, const TransactionEntity &txEntity);
-			bool deleteTxByHash(const std::string &iso, const std::string &hash);
+			bool PutTransaction(const std::string &iso, const TransactionEntity &tx);
+			bool DeleteAllTransactions(const std::string &iso);
+			size_t GetAllTransactionsCount(const std::string &iso) const;
+			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			bool UpdateTransaction(const std::string &iso, const TransactionEntity &txEntity);
+			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 
 			// Peer's database interface
-			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool deleteAllPeers(const std::string &iso);
-			size_t getAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool DeleteAllPeers(const std::string &iso);
+			size_t GetAllPeersCount(const std::string &iso) const;
+			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
 			// MerkleBlock's database interface
-			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool deleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
+			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool DeleteAllBlocks(const std::string &iso);
+			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
 
-			// InternalAddresses's database interface
-			bool putInternalAddress(uint32_t startIndex, const std::string &address);
-			bool putInternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
-			bool clearInternalAddresses();
-			std::vector<std::string> getInternalAddresses(uint32_t startIndex, uint32_t count);
-			uint32_t getInternalAvailableAddresses(uint32_t startIndex);
+			// Asset's database interface
+			bool PutAsset(const std::string &iso, const AssetEntity &asset);
+			bool PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets);
+			bool DeleteAsset(const std::string &iso, const std::string &assetID);
+			bool DeleteAllAssets(const std::string &iso);
+			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
+			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
-			// ExternalAddresses's database interface
-			bool putExternalAddress(uint32_t startIndex, const std::string &address);
-			bool putExternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
-			bool clearExternalAddresses();
-			std::vector<std::string> getExternalAddresses(uint32_t startIndex, uint32_t count);
-			uint32_t getExternalAvailableAddresses(uint32_t startIndex);
-
-			const boost::filesystem::path &getPath() const;
+			const boost::filesystem::path &GetPath() const;
 
 		private:
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;
-			ExternalAddresses		_externalAddresses;
-			InternalAddresses		_internalAddresses;
 			PeerDataSource        	_peerDataSource;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;
+			AssetDataStore 			_assetDataStore;
 		};
 
 	}

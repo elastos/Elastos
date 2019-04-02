@@ -5,71 +5,31 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "BRInt.h"
-#include "Log.h"
-#include "Payload/PayloadCoinBase.h"
+#include "TestHelper.h"
+//#include "BRInt.h"
+#include <SDK/Common/Log.h>
+#include "SDK/Plugin/Transaction/Payload/PayloadCoinBase.h"
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 
-    SECTION("none init test") {
-        PayloadCoinBase pcb, pcb_re;
-        ByteStream stream;
-        CMBlock bd_src, bd_re;
+	SECTION("Serialize and deserialize") {
+		PayloadCoinBase p1(getRandBytes(50)), p2;
 
-        pcb.Serialize(stream);
-        stream.setPosition(0);
-        pcb_re.Deserialize(stream);
+		ByteStream stream;
+		p1.Serialize(stream, 0);
 
-        bd_src = pcb.getData();
-        bd_re  = pcb_re.getData();
+		REQUIRE(p2.Deserialize(stream, 0));
+		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
+	}
 
-        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
-        if (bd_src && bd_re)
-            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
-    }
+	SECTION("to json and from json") {
+		PayloadCoinBase p1(getRandBytes(50)), p2;
 
-    SECTION("init test") {
-        PayloadCoinBase pcb, pcb_re;
-        ByteStream stream;
-        CMBlock bd_src, bd_re;
+		nlohmann::json p1Json = p1.ToJson(0);
+		p2.FromJson(p1Json, 0);
 
-        uint8_t buf[] = {'I', ' ', 'a', 'm', ' ', 'O', 'K', '\0'};
-        CMBlock bd;
-        bd.SetMemFixed(buf, sizeof(buf));
-        pcb.setCoinBaseData(bd);
-        pcb.Serialize(stream);
-        stream.setPosition(0);
-
-        pcb_re.Deserialize(stream);
-
-        bd_src = pcb.getData();
-        bd_re  = pcb_re.getData();
-
-        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
-        if (bd_src && bd_re)
-            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
-    }
-
-    SECTION("toJson fromJson test") {
-        uint8_t buf[] = {'I', ' ', 'a', 'm', ' ', 'O', 'K', '\0'};
-        CMBlock bd;
-        bd.SetMemFixed(buf, sizeof(buf));
-
-        PayloadCoinBase payloadCoinBase(bd);
-
-        nlohmann::json jsonData = payloadCoinBase.toJson();
-
-        PayloadCoinBase payloadCoinBase1;
-        payloadCoinBase1.fromJson(jsonData);
-
-        CMBlock bd_src, bd_re;
-        bd_src = payloadCoinBase.getData();
-        bd_re  = payloadCoinBase1.getData();
-
-        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
-        if (bd_src && bd_re)
-            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
-    }
+		REQUIRE((p1.GetCoinBaseData() == p2.GetCoinBaseData()));
+	}
 }

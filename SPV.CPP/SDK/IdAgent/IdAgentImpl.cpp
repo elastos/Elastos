@@ -2,14 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <algorithm>
-#include <SDK/Common/ParamChecker.h>
-
-#include "Utils.h"
 #include "IdAgentImpl.h"
-#include "MasterWallet.h"
-#include "Wrapper/Address.h"
-#include "SDK/Account/StandardAccount.h"
+
+#include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/Utils.h>
+#include <SDK/Implement/MasterWallet.h>
+#include <SDK/Account/StandardAccount.h>
+
+#include <algorithm>
+#include <SDK/WalletCore/BIPs/Base58.h>
 
 using namespace nlohmann;
 
@@ -51,10 +52,10 @@ namespace Elastos {
 
 		}
 
-		std::string
+		Address
 		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
-			ParamChecker::checkCondition(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
+			ErrorChecker::CheckParam(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
 
 			IdItem item(purpose, index);
 			std::string existedId;
@@ -63,31 +64,30 @@ namespace Elastos {
 			}
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
-			const MasterPubKey &publicKey = standardAccount->GetIDMasterPubKey();
-			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *publicKey.getRaw(),
-										 purpose, index)];
-			size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *publicKey.getRaw(), purpose, index);
+			const HDKeychain &mpk = standardAccount->GetIDMasterPubKey();
 
-			BRKey rawKey;
-			BRKeySetPubKey(&rawKey, pubKey, len);
-			Key key(rawKey);
-			std::string id = key.keyToAddress(ELA_IDCHAIN);
-			item.PublicKey = Utils::encodeHex(pubKey, len);
-			_info.Ids[id] = item;
-
-			return id;
+			bytes_t pubKey = mpk.getChild(purpose).getChild(index).pubkey();
+			Address address(PrefixIDChain, pubKey);
+			item.PublicKey = pubKey;
+			_info.Ids[address.String()] = item;
+			return address;
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
-			return Address::isValidIdAddress(id);
+			return Address(id).IsIDAddress();
+		}
+
+		bytes_t IdAgentImpl::Sign(const std::string &id, const bytes_t &data, const std::string &passwd) {
+			KeyPtr key = generateKey(id, passwd);
+			return key->Sign(data);
 		}
 
 		std::string IdAgentImpl::Sign(const std::string &id, const std::string &message, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-			return key->compactSign(message);
+			return key->Sign(message).getHex();
 		}
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {
@@ -99,19 +99,19 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknown ID " + id);
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IdItem item = _info.Ids[id];
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
 										 "This account can not create ID");
 
-			UInt512 seed = standardAccount->DeriveSeed(password);
-			BRKey key;
-			UInt256 chainCode;
-			BRBIP32PrivKeyPath(&key, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, item.Purpose,
-							   item.Index);
-			var_clean(&seed);
+
+			HDSeed hdseed(standardAccount->DeriveSeed(password).bytes());
+			HDKeychain rootKey(hdseed.getExtendedKey(true));
+
+			HDKeychain key = rootKey.getChild("44'/0'/0'").getChild(item.Purpose).getChild(item.Index);
+
 			return KeyPtr(new Key(key));
 		}
 
@@ -126,18 +126,24 @@ namespace Elastos {
 		}
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
-			KeyPtr key = generateKey(id, password);
-			key->setPublicKey();
-			return key->keyToRedeemScript(ELA_IDCHAIN);
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
+			IdItem item = _info.Ids[id];
+
+			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
+			ErrorChecker::CheckCondition(standardAccount == nullptr, Error::WrongAccountType,
+										 "This account can not create ID");
+
+			bytes_t pubkey = standardAccount->GetIDMasterPubKey().getChild(item.Purpose).getChild(item.Index).pubkey();
+			return Address(PrefixIDChain, pubkey).RedeemScript().getHex();
 		}
 
 		const IdAgentInfo &IdAgentImpl::GetIdAgentInfo() const {
 			return _info;
 		}
 
-		std::string IdAgentImpl::GetPublicKey(const std::string &id) {
-			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
-			return _info.Ids[id].PublicKey;
+		bytes_t IdAgentImpl::GetPublicKey(const std::string &id) const {
+			ErrorChecker::CheckCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
+			return _info.Ids.find(id)->second.PublicKey;
 		}
 
 	}

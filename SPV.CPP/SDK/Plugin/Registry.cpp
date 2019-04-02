@@ -3,13 +3,15 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Registry.h"
+#include "ELAPlugin.h"
+#include "IDPlugin.h"
+#include "TokenPlugin.h"
+
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		Registry::Registry() {
-
-		}
 
 		Registry *Registry::Instance(bool erase) {
 			static std::shared_ptr<Registry> instance(new Registry);
@@ -20,26 +22,28 @@ namespace Elastos {
 			return instance.get();
 		}
 
-		void Registry::AddMerkleBlockProto(IMerkleBlock *merkleBlock) {
-			_merkleBlocks[merkleBlock->getBlockType()] = MerkleBlockPtr(merkleBlock);
+		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &pluginType) {
+			if (_plugins.find(pluginType) == _plugins.end()) {
+				if (_pluginInjectors.find(pluginType) == _pluginInjectors.end())
+					return nullptr;
+
+				std::vector<IPlugin *> plugins = _pluginInjectors[pluginType]->getMultibindings<IPlugin>();
+				assert(!plugins.empty());
+				_plugins[pluginType] = *plugins.begin();
+			}
+			return _plugins[pluginType]->CreateBlock();
 		}
 
-		void Registry::RemoveMerkleBlockProto(IMerkleBlock *merkleBlock) {
-			_merkleBlocks.erase(merkleBlock->getBlockType());
+		Registry::Registry() {
 		}
 
-		IMerkleBlock *Registry::CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw) {
-			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
-				return nullptr;
-
-			return _merkleBlocks[blockType]->Clone(block, manageRaw);
+		void Registry::RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)()) {
+			_pluginInjectors[pluginType] = PluginInjectorPtr(new fruit::Injector<>(pluginFun));
 		}
 
-		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw) {
-			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
-				return nullptr;
-
-			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
+		void Registry::UnRegisterPlugin(const std::string &pluginType) {
+			if (_pluginInjectors.find(pluginType) != _pluginInjectors.end())
+				_pluginInjectors.erase(pluginType);
 		}
 
 	}

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 
 #include "BRTransaction.h"
-#include "BRKey.h"
+//#include "BRKey.h"
 #include "BRAddress.h"
 #include "BRArray.h"
 #include <stdlib.h>
@@ -540,6 +540,7 @@ int BRTransactionIsSigned(const BRTransaction *tx)
 // adds signatures to any inputs with NULL signatures that can be signed with any keys
 // forkId is 0 for bitcoin, 0x40 for b-cash, 0x4f for b-gold
 // returns true if tx is signed
+#if 0
 int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCount)
 {
     BRAddress addrs[keysCount], address;
@@ -600,6 +601,7 @@ int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCo
     }
     else return 0;
 }
+#endif
 
 // true if tx meets IsStandard() rules: https://bitcoin.org/en/developer-guide#standard-transactions
 int BRTransactionIsStandard(const BRTransaction *tx)

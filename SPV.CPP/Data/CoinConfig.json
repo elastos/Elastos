@@ -16,5 +16,14 @@
     "ReconnectSeconds": 300,
     "PluginType": "SideStandard",
     "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ"
+  },
+  "TokenChain": {
+    "Type": "Tokenchain",
+    "CoinIndex": 2,
+    "NetType": "MainNet",
+    "MinFee": 10000,
+    "ReconnectSeconds": 300,
+    "PluginType": "Token",
+    "GenesisAddress" : ""
   }
 }

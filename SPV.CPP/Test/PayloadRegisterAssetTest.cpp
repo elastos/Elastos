@@ -5,74 +5,75 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Payload/PayloadRegisterAsset.h"
+#include "TestHelper.h"
+#include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 
 using namespace Elastos::ElaWallet;
 
+static void initAsset(Asset &asset) {
+	asset.SetName(getRandString(20));
+	asset.SetDescription(getRandString(50));
+	asset.SetPrecision(getRandUInt8());
+	asset.SetAssetType(Asset::AssetType::Share);
+	asset.SetAssetRecordType(Asset::AssetRecordType::Balance);
+}
+
 TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 
-	SECTION("PayloadRegisterAsset interface test") {
-		PayloadRegisterAsset payloadRegisterAsset;
+	SECTION("serialize and deserialize") {
+		PayloadRegisterAsset p1, p2;
 
 		Asset asset;
-		std::string name = "testName";
-		std::string desc = "a test description";
+		initAsset(asset);
+		p1.SetAsset(asset);
+		p1.SetAmount(getRandUInt64());
+		p1.SetController(getRandUInt168());
 
-		asset.setName(name);
-		asset.setDescription(desc);
-		asset.setAssetType(Asset::AssetType::Share);
-		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+		ByteStream stream;
 
-		payloadRegisterAsset.setAsset(asset);
-		payloadRegisterAsset.setAmount(888);
-		UInt168 hash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6"
-				"\xd4\x8f\x60\x7d\x42\xc1\xd2\xa2\x15\x16";
-		payloadRegisterAsset.setController(hash);
+		p1.Serialize(stream, 0);
 
-		Asset asset1 = payloadRegisterAsset.getAsset();
-		REQUIRE(asset1.getName() == name);
-		REQUIRE(asset1.getDescription() == desc);
-		REQUIRE(asset1.getAssetType() == Asset::AssetType::Share);
-		REQUIRE(asset1.getAssetRecordType() == Asset::AssetRecordType::Balance);
-		REQUIRE(payloadRegisterAsset.getAmount() == 888);
+		REQUIRE(p2.Deserialize(stream, 0));
 
-		const UInt168 &controller = payloadRegisterAsset.getController();
-		int res = UInt168Eq(&hash, &controller);
-		REQUIRE(res == 1);
+		Asset asset1 = p1.GetAsset();
+		Asset asset2 = p2.GetAsset();
+		REQUIRE(asset1.GetName() == asset2.GetName());
+		REQUIRE(asset1.GetDescription() == asset2.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
+		REQUIRE(asset1.GetHash() == asset2.GetHash());
+
+		REQUIRE(p1.GetAmount() == p2.GetAmount());
+		REQUIRE(p1.GetController() == p2.GetController());
 	}
 
 	SECTION("toJson fromJson test") {
-		PayloadRegisterAsset payloadRegisterAsset;
+		PayloadRegisterAsset p1, p2;
 
 		Asset asset;
-		std::string name = "testName";
-		std::string desc = "a test description";
+		initAsset(asset);
+		p1.SetAsset(asset);
+		p1.SetAmount(getRandUInt64());
+		p1.SetController(getRandUInt168());
 
-		asset.setName(name);
-		asset.setDescription(desc);
-		asset.setAssetType(Asset::AssetType::Share);
-		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+		ByteStream stream;
 
-		payloadRegisterAsset.setAsset(asset);
-		payloadRegisterAsset.setAmount(888);
-		UInt168 hash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6"
-				"\xd4\x8f\x60\x7d\x42\xc1\xd2\xa2\x15\x16";
-		payloadRegisterAsset.setController(hash);
+		nlohmann::json p1Json = p1.ToJson(0);
 
-		nlohmann::json jsonData = payloadRegisterAsset.toJson();
+		p2.FromJson(p1Json, 0);
 
-		PayloadRegisterAsset payloadRegisterAsset1;
-		payloadRegisterAsset1.fromJson(jsonData);
+		Asset asset1 = p1.GetAsset();
+		Asset asset2 = p2.GetAsset();
+		REQUIRE(asset1.GetName() == asset2.GetName());
+		REQUIRE(asset1.GetDescription() == asset2.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset2.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset2.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset2.GetAssetRecordType());
+		REQUIRE(asset1.GetHash() == asset2.GetHash());
 
-		Asset asset1 = payloadRegisterAsset1.getAsset();
-		REQUIRE(asset1.getName() == name);
-		REQUIRE(asset1.getDescription() == desc);
-		REQUIRE(asset1.getAssetType() == Asset::AssetType::Share);
-		REQUIRE(asset1.getAssetRecordType() == Asset::AssetRecordType::Balance);
-		REQUIRE(payloadRegisterAsset.getAmount() == 888);
-
-		const UInt168 &controller = payloadRegisterAsset1.getController();
-		int res = UInt168Eq(&hash, &controller);
-		REQUIRE(res == 1);
+		REQUIRE(p1.GetAmount() == p2.GetAmount());
+		REQUIRE(p1.GetController() == p2.GetController());
 	}
 }

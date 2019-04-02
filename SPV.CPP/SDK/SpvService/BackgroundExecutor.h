@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_BACKGROUNDEXECUTOR_H__
 #define __ELASTOS_SDK_BACKGROUNDEXECUTOR_H__
 
-#include <queue>
+#include "Executor.h"
+
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-
-#include "Executor.h"
+#include <queue>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -21,11 +21,11 @@ namespace Elastos {
 
 			virtual ~BackgroundExecutor();
 
-			virtual void execute(const Runnable &runnable);
+			virtual void Execute(const Runnable &runnable);
 
-			void stopThread();
+			void StopThread();
 
-			void initThread(uint8_t threadCount);
+			void InitThread(uint8_t threadCount);
 
 		protected:
 			boost::asio::io_service _workerService;

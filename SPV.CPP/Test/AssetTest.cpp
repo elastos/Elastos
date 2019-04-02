@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Payload/Asset.h"
 #include "TestHelper.h"
+#include <SDK/Plugin/Transaction/Asset.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -14,48 +14,65 @@ TEST_CASE("Asset test", "[Asset]") {
 
 	srand(time(nullptr));
 
-	SECTION("Asset interface Test") {
+	SECTION("Asset serialize and deserialize test") {
 		Asset asset;
 
-		asset.setName(getRandString(50));
-		asset.setDescription(getRandString(80));
-		asset.setPrecision(rand());
-		asset.setAssetType(Asset::AssetType::Share);
-		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+		asset.SetName(getRandString(50));
+		asset.SetDescription(getRandString(80));
+		asset.SetPrecision(getRandUInt8());
+		asset.SetAssetType(Asset::AssetType::Share);
+		asset.SetAssetRecordType(Asset::AssetRecordType::Balance);
 
 		ByteStream stream;
 		asset.Serialize(stream);
 
-		stream.setPosition(0);
-
 		Asset asset1;
 		asset1.Deserialize(stream);
 
-		REQUIRE(asset1.getName() == asset.getName());
-		REQUIRE(asset1.getDescription() == asset.getDescription());
-		REQUIRE(asset1.getPrecision() == asset.getPrecision());
-		REQUIRE(asset1.getAssetType() == asset.getAssetType());
-		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
+		REQUIRE(asset1.GetName() == asset.GetName());
+		REQUIRE(asset1.GetDescription() == asset.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset.GetAssetRecordType());
 	}
 
 	SECTION("toJson fromJson test") {
 		Asset asset;
 
-		asset.setName(getRandString(80));
-		asset.setDescription(getRandString(40));
-		asset.setPrecision(rand());
-		asset.setAssetType(Asset::AssetType::Share);
-		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+		asset.SetName(getRandString(80));
+		asset.SetDescription(getRandString(40));
+		asset.SetPrecision(getRandUInt8());
+		asset.SetAssetType(Asset::AssetType::Share);
+		asset.SetAssetRecordType(Asset::AssetRecordType::Balance);
 
-		nlohmann::json j = asset.toJson();
+		nlohmann::json j = asset.ToJson();
 
 		Asset asset1;
-		asset1.fromJson(j);
+		asset1.FromJson(j);
 
-		REQUIRE(asset1.getName() == asset.getName());
-		REQUIRE(asset1.getDescription() == asset.getDescription());
-		REQUIRE(asset1.getPrecision() == asset.getPrecision());
-		REQUIRE(asset1.getAssetType() == asset.getAssetType());
-		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
+		REQUIRE(asset1.GetName() == asset.GetName());
+		REQUIRE(asset1.GetDescription() == asset.GetDescription());
+		REQUIRE(asset1.GetPrecision() == asset.GetPrecision());
+		REQUIRE(asset1.GetAssetType() == asset.GetAssetType());
+		REQUIRE(asset1.GetAssetRecordType() == asset.GetAssetRecordType());
 	}
+
+	SECTION("operator= test") {
+		Asset a1, a2;
+
+		a1.SetName(getRandString(100));
+		a1.SetDescription(getRandString(70));
+		a1.SetPrecision(getRandUInt8());
+		a1.SetAssetType(Asset::AssetType::Token);
+		a1.SetAssetRecordType(Asset::AssetRecordType::Unspent);
+
+		a2 = a1;
+
+		REQUIRE(a1.GetName()            == a2.GetName());
+		REQUIRE(a1.GetDescription()     == a2.GetDescription());
+		REQUIRE(a1.GetPrecision()       == a2.GetPrecision());
+		REQUIRE(a1.GetAssetType()       == a2.GetAssetType());
+		REQUIRE(a1.GetAssetRecordType() == a2.GetAssetRecordType());
+	}
+
 }

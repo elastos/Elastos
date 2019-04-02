@@ -5,12 +5,13 @@
 #ifndef __ELASTOS_SDK_PEERDATASOURCE_H__
 #define __ELASTOS_SDK_PEERDATASOURCE_H__
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
-
-#include "BRInt.h"
 #include "Sqlite.h"
 #include "TableBase.h"
+
+#include <SDK/Common/uint256.h>
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,13 +19,12 @@ namespace Elastos {
 		struct PeerEntity {
 			PeerEntity() :
 				id(0),
-				address({0}),
 				port(0),
 				timeStamp(0)
 			{
 			}
 
-			PeerEntity(long i, const UInt128 &addr, uint16_t p, uint64_t ts) :
+			PeerEntity(long i, const uint128 &addr, uint16_t p, uint64_t ts) :
 				id(i),
 				address(addr),
 				port(p),
@@ -33,7 +33,7 @@ namespace Elastos {
 			}
 
 			long id;
-			UInt128 address;
+			uint128 address;
 			uint16_t port;
 			uint64_t timeStamp;
 		};
@@ -45,15 +45,15 @@ namespace Elastos {
 			PeerDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~PeerDataSource();
 
-			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool deleteAllPeers(const std::string &iso);
-			size_t getAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool DeleteAllPeers(const std::string &iso);
+			size_t GetAllPeersCount(const std::string &iso) const;
+			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
 		private:
-			bool putPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
 
 		private:
 			/*

@@ -2,45 +2,46 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/ParamChecker.h>
-
 #include "MerkleBlockDataSource.h"
+
+#include <SDK/Common/Utils.h>
+#include <SDK/Common/ErrorChecker.h>
+
+#include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite) :
 			TableBase(sqlite) {
-			initializeTable(MB_DATABASE_CREATE);
+			InitializeTable(MB_DATABASE_CREATE);
 		}
 
 		MerkleBlockDataSource::MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite) :
 			TableBase(type, sqlite) {
-			initializeTable(MB_DATABASE_CREATE);
+			InitializeTable(MB_DATABASE_CREATE);
 		}
 
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
 		}
 
-		bool MerkleBlockDataSource::putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return doTransaction([&iso, &blockEntity, this]() {
-				this->putMerkleBlockInternal(iso, blockEntity);
+		bool MerkleBlockDataSource::PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+			return DoTransaction([&iso, &blockEntity, this]() {
+				this->PutMerkleBlockInternal(iso, blockEntity);
 			});
 		}
 
-		bool MerkleBlockDataSource::putMerkleBlocks(const std::string &iso,
+		bool MerkleBlockDataSource::PutMerkleBlocks(const std::string &iso,
 													const std::vector<MerkleBlockEntity> &blockEntities) {
-			return doTransaction([&iso, &blockEntities, this]() {
+			return DoTransaction([&iso, &blockEntities, this]() {
 				for (size_t i = 0; i < blockEntities.size(); ++i) {
-					this->putMerkleBlockInternal(iso, blockEntities[i]);
+					this->PutMerkleBlockInternal(iso, blockEntities[i]);
 				}
 			});
 		}
 
 		bool
-		MerkleBlockDataSource::putMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+		MerkleBlockDataSource::PutMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity) {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << MB_TABLE_NAME << " (" <<
@@ -50,53 +51,46 @@ namespace Elastos {
 			   ") VALUES (?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 										 "prepare sql " + ss.str());
-#ifdef NDEBUG
-			_sqlite->bindBlob(stmt, 1, blockEntity.blockBytes, nullptr);
-#else
-			std::string str = Utils::encodeHex(blockEntity.blockBytes);
-			CMBlock bytes;
-			bytes.SetMemFixed((const uint8_t *) str.c_str(), str.length() + 1);
-			_sqlite->bindBlob(stmt, 1, bytes, nullptr);
-#endif
-			_sqlite->bindInt(stmt, 2, blockEntity.blockHeight);
-			_sqlite->bindText(stmt, 3, iso, nullptr);
+			_sqlite->BindBlob(stmt, 1, blockEntity.blockBytes, nullptr);
+			_sqlite->BindInt(stmt, 2, blockEntity.blockHeight);
+			_sqlite->BindText(stmt, 3, iso, nullptr);
 
-			_sqlite->step(stmt);
-			_sqlite->finalize(stmt);
+			_sqlite->Step(stmt);
+			_sqlite->Finalize(stmt);
 			return true;
 		}
 
-		bool MerkleBlockDataSource::deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return doTransaction([&iso, &blockEntity, this]() {
+		bool MerkleBlockDataSource::DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+			return DoTransaction([&iso, &blockEntity, this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << MB_TABLE_NAME <<
 				   " WHERE " << MB_COLUMN_ID << " = " << blockEntity.id <<
 				   " AND " << MB_ISO << " = " << "'" << iso << "';";
 
-				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "exec sql " + ss.str());
 			});
 		}
 
-		bool MerkleBlockDataSource::deleteAllBlocks(const std::string &iso) {
-			return doTransaction([&iso, this]() {
+		bool MerkleBlockDataSource::DeleteAllBlocks(const std::string &iso) {
+			return DoTransaction([&iso, this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << MB_TABLE_NAME <<
 				   " WHERE " << MB_ISO << " = '" << iso << "';";
 
-				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "exec sql " + ss.str());
 			});
 		}
 
-		std::vector<MerkleBlockEntity> MerkleBlockDataSource::getAllMerkleBlocks(const std::string &iso) const {
+		std::vector<MerkleBlockEntity> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &iso) const {
 			std::vector<MerkleBlockEntity> merkleBlocks;
 
-			doTransaction([&iso, &merkleBlocks, this]() {
+			DoTransaction([&iso, &merkleBlocks, this]() {
 				MerkleBlockEntity merkleBlock;
 				std::stringstream ss;
 				ss << "SELECT " <<
@@ -107,34 +101,26 @@ namespace Elastos {
 				   " WHERE " << MB_ISO << " = '" << iso << "';";
 
 				sqlite3_stmt *stmt;
-				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 											 "prepare sql " + ss.str());
 
-				while (SQLITE_ROW == _sqlite->step(stmt)) {
-					CMBlock blockBytes;
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					// id
-					merkleBlock.id = _sqlite->columnInt(stmt, 0);
+					merkleBlock.id = _sqlite->ColumnInt(stmt, 0);
 
 					// blockBytes
-					const uint8_t *pblob = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
-					size_t len = _sqlite->columnBytes(stmt, 1);
-#ifdef NDEBUG
-					blockBytes.Resize(len);
-					memcpy(blockBytes, pblob, len);
+					const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+					size_t len = _sqlite->ColumnBytes(stmt, 1);
 
-					merkleBlock.blockBytes = blockBytes;
-#else
-					std::string str((char *) pblob);
-					merkleBlock.blockBytes = Utils::decodeHex(str);
-#endif
+					merkleBlock.blockBytes.assign(pblob, pblob + len);
 
 					// blockHeight
-					merkleBlock.blockHeight = _sqlite->columnInt(stmt, 2);
+					merkleBlock.blockHeight = _sqlite->ColumnInt(stmt, 2);
 
 					merkleBlocks.push_back(merkleBlock);
 				}
 
-				_sqlite->finalize(stmt);
+				_sqlite->Finalize(stmt);
 			});
 
 			return merkleBlocks;

@@ -5,12 +5,14 @@
 #ifndef __ELASTOS_SDK_IDAGENTIMPL_H__
 #define __ELASTOS_SDK_IDAGENTIMPL_H__
 
+#include "IdItem.h"
+
+#include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/Common/Mstream.h>
+
 #include <map>
 #include <vector>
-
-#include "IdItem.h"
-#include "Wrapper/Key.h"
-#include "SDK/Common/Mstream.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -34,11 +36,13 @@ namespace Elastos {
 
 			~IdAgentImpl();
 
-			std::string DeriveIdAndKeyForPurpose(
+			Address DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
 					uint32_t index);
 
 			bool IsIdValid(const std::string &id);
+
+			bytes_t Sign(const std::string &id, const bytes_t &data, const std::string &passwd);
 
 			std::string Sign(
 					const std::string &id,
@@ -51,7 +55,7 @@ namespace Elastos {
 
 			const IdAgentInfo &GetIdAgentInfo() const;
 
-			std::string GetPublicKey(const std::string &id);
+			bytes_t GetPublicKey(const std::string &id) const;
 
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);

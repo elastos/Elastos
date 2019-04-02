@@ -5,60 +5,48 @@
 #ifndef __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
-#include "IdMerkleBlock.h"
-#include "Plugin/Interface/IMerkleBlock.h"
+#include "MerkleBlockBase.h"
+#include <SDK/Plugin/Block/IDAuxPow.h>
+
+#include <fruit/fruit.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class SidechainMerkleBlock :
-				public Wrapper<BRMerkleBlock>,
-				public IMerkleBlock {
+				public MerkleBlockBase {
 		public:
 			SidechainMerkleBlock();
 
-			SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw);
-
 			virtual ~SidechainMerkleBlock();
-
-			virtual std::string toString() const;
-
-			virtual BRMerkleBlock *getRaw() const;
-
-			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
-
-			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
-
-			virtual IMerkleBlock *Clone(const BRMerkleBlock *block, bool manageRaw) const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual bool Deserialize(ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream);
 
-			virtual nlohmann::json toJson() const;
+			virtual const uint256 &GetHash() const;
 
-			virtual void fromJson(const nlohmann::json &);
+			virtual bool IsValid(uint32_t currentTime) const;
 
-			virtual BRMerkleBlock *getRawBlock() const;
-
-			virtual void deleteRawBlock();
-
-			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
-
-			virtual UInt256 getBlockHash() const;
-
-			virtual uint32_t getHeight() const;
-
-			virtual void setHeight(uint32_t height);
-
-			virtual bool isValid(uint32_t currentTime) const;
-
-			virtual std::string getBlockType() const;
+			virtual std::string GetBlockType() const;
 
 		private:
-			IdMerkleBlock *_merkleBlock;
-			bool _manageRaw;
+			IDAuxPow idAuxPow;
 		};
+
+		class ISidechainMerkleBlockFactory {
+		public:
+			virtual MerkleBlockPtr createBlock() = 0;
+		};
+
+		class SidechainMerkleBlockFactory : public ISidechainMerkleBlockFactory {
+		public:
+			INJECT(SidechainMerkleBlockFactory()) = default;
+
+			virtual MerkleBlockPtr createBlock();
+		};
+
+		fruit::Component<ISidechainMerkleBlockFactory> getSidechainMerkleBlockFactoryComponent();
 
 	}
 }
