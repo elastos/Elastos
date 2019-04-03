@@ -15,9 +15,9 @@ import permissionRole from './redux/permissionRole'
 
 const default_state = {
   init: false,
-};
+}
 
-const appReducer = (state = default_state, action) => {
+const appReducer = (state = default_state) => {
   // switch (action.type) {}
 
   return state

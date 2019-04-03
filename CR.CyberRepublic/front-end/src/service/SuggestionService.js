@@ -1,7 +1,7 @@
-import BaseService from '../model/BaseService'
 import _ from 'lodash'
 import { api_request } from '@/util'
-import { message } from 'antd';
+import { message } from 'antd'
+import BaseService from '../model/BaseService'
 
 export default class extends BaseService {
   constructor() {

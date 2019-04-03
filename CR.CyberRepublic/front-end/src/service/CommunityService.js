@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import BaseService from '../model/BaseService'
 import { api_request } from '@/util'
 import { COMMUNITY_TYPE } from '@/constant'
@@ -6,7 +5,7 @@ import config from '@/config'
 
 export default class extends BaseService {
   async addCountry(country) {
-    const res = await api_request({
+    await api_request({
       path: '/api/community/create',
       method: 'post',
       // Mock data

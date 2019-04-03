@@ -7,8 +7,8 @@ export default class extends BaseService {
       path: '/api/sso/login',
       method: 'get',
       data: params,
-    });
+    })
 
-    return result;
+    return result
   }
 }

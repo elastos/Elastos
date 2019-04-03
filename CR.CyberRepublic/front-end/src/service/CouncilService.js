@@ -1,6 +1,4 @@
 import BaseService from '../model/BaseService'
-import _ from 'lodash'
-import { api_request } from '@/util'
 
 const councilTabKeys = ['board', 'list', 'vote']
 

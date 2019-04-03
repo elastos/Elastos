@@ -10,9 +10,9 @@ export default class extends BaseService {
       path: '/api/task/list',
       method: 'get',
       data: filter,
-    });
+    })
 
-    return result;
+    return result
   }
 
   async loadMore(qry) {
@@ -76,7 +76,7 @@ export default class extends BaseService {
 
     // Format data for dropdown select community
     if (result) {
-      result.taskCommunity = [];
+      result.taskCommunity = []
       if (result.communityParent) {
         result.taskCommunity.push(result.communityParent._id)
       }

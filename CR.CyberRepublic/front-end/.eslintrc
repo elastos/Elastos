@@ -17,8 +17,27 @@
   ],
   "rules": {
     "react/jsx-filename-extension": [0, { "extensions": [".js", ".jsx"] }],
-    "semi": "off",
-    "camelcase": [0, { "properties": "never" }]
+    "react/no-unused-state": 0,
+    "semi": [2, "never"],
+    "camelcase": [0, { "properties": "never" }],
+    "import/no-unresolved": 0,
+    "import/prefer-default-export": 0,
+    "no-unused-vars": 1,
+    "object-curly-spacing": 0,
+    "class-methods-use-this": 0,
+    "comma-dangle": 0,
+    "prefer-destructuring": 1,
+    "arrow-body-style": 0,
+    "prefer-template": 1,
+    "no-underscore-dangle": 0,
+    "no-nested-ternary": 0,
+    "import/no-dynamic-require": 0,
+    "global-require": 0,
+    "max-len": [1,100],
+    "padded-blocks": 0,
+    "no-console": 1,
+    "consistent-return": 1,
+    "no-param-reassign": 0
   }
 }
 

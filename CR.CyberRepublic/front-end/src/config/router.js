@@ -1,4 +1,4 @@
-import LandingPage from '@/module/page/landing/Container'
+// import LandingPage from '@/module/page/landing/Container'
 import HomePage from '@/module/page/home/Container'
 import SSOPage from '@/module/page/sso/Container'
 import DeveloperPage from '@/module/page/developer/Container'
@@ -52,9 +52,9 @@ import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Con
 import MemberPage from '@/module/page/member/Container'
 
 // admin pages
-import TeamListPage from '@/module/page/admin/teams/TeamListPage';
-import AdminSuggestionPage from '@/module/page/admin/suggestion/list/Container';
-import AdminPermissionPage from '@/module/page/admin/permission/main/Container';
+import TeamListPage from '@/module/page/admin/teams/TeamListPage'
+import AdminSuggestionPage from '@/module/page/admin/suggestion/list/Container'
+import AdminPermissionPage from '@/module/page/admin/permission/main/Container'
 import AdminUsersPage from '@/module/page/admin/users/Container'
 import AdminProfileDetailPage from '@/module/page/admin/profile_detail/Container'
 import AdminFormsPage from '@/module/page/admin/forms/Container'
@@ -77,12 +77,12 @@ import FormAnniversaryVideo from '@/module/page/form_ext/anni2018_video/Containe
 import FormTraining1Page from '@/module/page/form_ext/training_1/Container'
 
 // council
-import CouncilSecretariatPage from '../module/page/council_secretariat/Container';
-import CouncilPage from '../module/page/council/Container';
-import CouncilListPage from '../module/page/council/list/Container';
-import CouncilDetailPage from '../module/page/council/detail/Container';
+import CouncilSecretariatPage from '../module/page/council_secretariat/Container'
+import CouncilPage from '../module/page/council/Container'
+import CouncilListPage from '../module/page/council/list/Container'
+import CouncilDetailPage from '../module/page/council/detail/Container'
 
-import CVoteDetailPage from '@/module/page/CVote/detail/Container';
+import CVoteDetailPage from '@/module/page/CVote/detail/Container'
 
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
