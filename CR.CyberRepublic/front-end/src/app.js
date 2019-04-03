@@ -64,12 +64,8 @@ const render = () => {
   )
 }
 
-if (!sessionStorage.getItem('api-token')) {
-  if (localStorage.getItem('api-token')) {
-    sessionStorage.setItem('api-token', localStorage.getItem('api-token'))
-  } else {
-    store.history.push('/login')
-  }
+if (localStorage.getItem('api-token') && !sessionStorage.getItem('api-token')) {
+  sessionStorage.setItem('api-token', localStorage.getItem('api-token'))
 }
 
 if (sessionStorage.getItem('api-token')) {
