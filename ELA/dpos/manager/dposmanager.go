@@ -315,11 +315,16 @@ func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusSt
 }
 
 func (d *DPOSManager) OnBadNetwork() {
-	log.Info("[OnBadNetwork] found network bad")
-	if d.recoverAbnormalState(false) {
-		log.Info("[OnBadNetwork] start recover")
+	if d.isCurrentArbiter() {
+		log.Warn("[OnBadNetwork] found network bad")
+		if d.recoverAbnormalState(false) {
+			log.Info("[OnBadNetwork] start recover")
+			return
+		}
+		log.Error("[OnBadNetwork] has no active peers recover failed")
+	} else {
+		log.Info("[OnBadNetwork] found network bad")
 	}
-	log.Error("[OnBadNetwork] has no active peers recover failed")
 }
 
 func (d *DPOSManager) recoverAbnormalState(firstRecover bool) bool {
